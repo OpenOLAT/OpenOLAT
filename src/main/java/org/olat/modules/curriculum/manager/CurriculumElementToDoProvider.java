@@ -315,24 +315,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			task.setDescription(description);
 			task.setStatus(status);
 			task.setPriority(priority);
-			if (relativeDates != null) {
-				task.setRelativeDates(relativeDates);
-				if (relativeDates.getStartRef() != null && relativeDates.getStartUnit() != null) {
-					task.setStartDate(computeRelativeDate(relativeDates.getStartRef(), relativeDates.getStartUnit(),
-							relativeDates.getStartValue(), element.getBeginDate(), element.getEndDate()));
-				} else {
-					task.setStartDate(startDate);
-				}
-				if (relativeDates.getDueRef() != null && relativeDates.getDueUnit() != null) {
-					task.setDueDate(computeRelativeDate(relativeDates.getDueRef(), relativeDates.getDueUnit(),
-							relativeDates.getDueValue(), element.getBeginDate(), element.getEndDate()));
-				} else {
-					task.setDueDate(dueDate);
-				}
-			} else {
-				task.setStartDate(startDate);
-				task.setDueDate(dueDate);
-			}
+			applyDates(task, relativeDates, startDate, dueDate, element.getBeginDate(), element.getEndDate());
 			task.setExpenditureOfWork(expenditureOfWork);
 			task.setAssigneeRights(ASSIGNEE_RIGHTS);
 			task.setContentModifiedDate(new Date());
@@ -586,6 +569,28 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		}
 	}
 
+	private static void applyDates(ToDoTask task, ToDoRelativeDates relativeDates,
+			Date startDate, Date dueDate, Date beginDate, Date endDate) {
+		task.setRelativeDates(relativeDates);
+		if (relativeDates != null) {
+			if (relativeDates.getStartRef() != null && relativeDates.getStartUnit() != null) {
+				task.setStartDate(computeRelativeDate(relativeDates.getStartRef(), relativeDates.getStartUnit(),
+						relativeDates.getStartValue(), beginDate, endDate));
+			} else {
+				task.setStartDate(startDate);
+			}
+			if (relativeDates.getDueRef() != null && relativeDates.getDueUnit() != null) {
+				task.setDueDate(computeRelativeDate(relativeDates.getDueRef(), relativeDates.getDueUnit(),
+						relativeDates.getDueValue(), beginDate, endDate));
+			} else {
+				task.setDueDate(dueDate);
+			}
+		} else {
+			task.setStartDate(startDate);
+			task.setDueDate(dueDate);
+		}
+	}
+
 	public static Date computeRelativeDate(String ref, ToDoDateUnit unit, Integer value, Date beginDate, Date endDate) {
 		if (ref == null || unit == null) {
 			return null;
@@ -665,10 +670,9 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			copy.setDescription(sourceTask.getDescription());
 			copy.setPriority(sourceTask.getPriority());
 			copy.setExpenditureOfWork(sourceTask.getExpenditureOfWork());
-			copy.setStartDate(sourceTask.getStartDate());
-			copy.setDueDate(sourceTask.getDueDate());
+			applyDates(copy, ToDoRelativeDates.copy(sourceTask.getRelativeDates()),
+					sourceTask.getStartDate(), sourceTask.getDueDate(), target.getBeginDate(), target.getEndDate());
 			copy.setAssigneeRights(sourceTask.getAssigneeRights());
-			copy.setRelativeDates(ToDoRelativeDates.copy(sourceTask.getRelativeDates()));
 			copy.setContentModifiedDate(new Date());
 			toDoService.update(doer, copy, null);
 

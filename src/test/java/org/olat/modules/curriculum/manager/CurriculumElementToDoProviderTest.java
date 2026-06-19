@@ -342,6 +342,67 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		assertThat(count).isEqualTo(0);
 	}
 
+	@Test
+	public void shouldMaterializeDates_onCopyToDoTasks() {
+		CurriculumElement source = createCurriculumElement(null, null);
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ToDoTask task = createCurriculumElementTask(doer, source);
+
+		ToDoRelativeDates config = new ToDoRelativeDates();
+		config.setStartValue(2);
+		config.setStartUnit(ToDoDateUnit.DAYS);
+		config.setStartRef(DATE_REF_AFTER_BEGIN);
+		config.setDueValue(5);
+		config.setDueUnit(ToDoDateUnit.DAYS);
+		config.setDueRef(DATE_REF_BEFORE_END);
+		task.setRelativeDates(config);
+		toDoService.update(doer, task, ToDoStatus.open);
+		dbInstance.commitAndCloseSession();
+
+		Date targetBegin = addDays(new Date(), 10);
+		Date targetEnd = addDays(targetBegin, 30);
+		CurriculumElement target = createCurriculumElement(targetBegin, targetEnd);
+
+		curriculumElementToDoProvider.copyToDoTasks(source, target, false, null, doer);
+		dbInstance.commitAndCloseSession();
+
+		ToDoTaskSearchParams searchParams = curriculumElementToDoProvider.createActiveSearchParams(
+				List.of(target.getKey().toString()));
+		List<ToDoTask> copies = toDoService.getToDoTasks(searchParams);
+		assertThat(copies).hasSize(1);
+		assertThat(copies.get(0).getStartDate()).isCloseTo(addDays(targetBegin, 2), DELTA_MS);
+		assertThat(copies.get(0).getDueDate()).isCloseTo(addDays(targetEnd, -5), DELTA_MS);
+		assertThat(copies.get(0).getRelativeDates()).isNotNull();
+	}
+
+	@Test
+	public void shouldCopyAbsoluteDates_whenNoRelativeConfig() {
+		Date sourceBegin = addDays(new Date(), 5);
+		Date sourceEnd = addDays(sourceBegin, 20);
+		CurriculumElement source = createCurriculumElement(sourceBegin, sourceEnd);
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ToDoTask task = createCurriculumElementTask(doer, source);
+		task.setStartDate(sourceBegin);
+		task.setDueDate(sourceEnd);
+		toDoService.update(doer, task, ToDoStatus.open);
+		dbInstance.commitAndCloseSession();
+
+		Date targetBegin = addDays(new Date(), 15);
+		Date targetEnd = addDays(targetBegin, 30);
+		CurriculumElement target = createCurriculumElement(targetBegin, targetEnd);
+
+		curriculumElementToDoProvider.copyToDoTasks(source, target, false, null, doer);
+		dbInstance.commitAndCloseSession();
+
+		ToDoTaskSearchParams searchParams = curriculumElementToDoProvider.createActiveSearchParams(
+				List.of(target.getKey().toString()));
+		List<ToDoTask> copies = toDoService.getToDoTasks(searchParams);
+		assertThat(copies).hasSize(1);
+		assertThat(copies.get(0).getStartDate()).isCloseTo(sourceBegin, DELTA_MS);
+		assertThat(copies.get(0).getDueDate()).isCloseTo(sourceEnd, DELTA_MS);
+		assertThat(copies.get(0).getRelativeDates()).isNull();
+	}
+
 	private CurriculumElement createCurriculumElement(Date beginDate, Date endDate) {
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(),
