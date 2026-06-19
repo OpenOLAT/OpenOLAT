@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="taxonomyEmbeddingIndexTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="org.olat.taxonomy.embedding.index.job.${cluster.singleton.services}" />
+		<property name="cronExpression" value="0 0 3 * * ?" />
+		<property name="startDelay" value="300000" />
+	</bean>
+
+	<bean id="org.olat.taxonomy.embedding.index.job.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.modules.taxonomy.matching.manager.TaxonomyEmbeddingIndexJob" />
+	</bean>
+
+	<bean id="org.olat.taxonomy.embedding.index.job.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+
+</beans>

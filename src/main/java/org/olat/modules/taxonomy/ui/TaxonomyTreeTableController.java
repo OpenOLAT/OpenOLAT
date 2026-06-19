@@ -86,6 +86,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomySecurityCallback;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
 import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.olat.modules.taxonomy.ui.TaxonomyTreeTableModel.TaxonomyLevelCols;
@@ -137,6 +138,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private TaxonomyMatchingService taxonomyMatchingService;
 	@Autowired
 	private I18nModule i18nModule;
 	@Autowired
@@ -632,6 +635,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				}
 	        }
 
+	    	taxonomyMatchingService.startIndexing();
 	    	return StepsMainRunController.DONE_MODIFIED;
 	    }
 	}

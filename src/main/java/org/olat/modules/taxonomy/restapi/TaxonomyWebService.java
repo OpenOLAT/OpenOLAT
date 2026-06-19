@@ -56,6 +56,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeManagedFlag;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
 import org.olat.modules.taxonomy.model.TaxonomyCompetenceRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyLevelTypeRefImpl;
@@ -78,12 +79,14 @@ public class TaxonomyWebService {
 	private final Taxonomy taxonomy;
 	private final BaseSecurity securityManager;
 	private final TaxonomyService taxonomyService;
+	private final TaxonomyMatchingService taxonomyMatchingService;
 	private final I18nModule i18nModule;
 	private final I18nManager i18nManager;
-	
+
 	public TaxonomyWebService(Taxonomy taxonomy) {
 		this.taxonomy = taxonomy;
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
+		taxonomyMatchingService = CoreSpringFactory.getImpl(TaxonomyMatchingService.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
 		i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
@@ -212,6 +215,7 @@ public class TaxonomyWebService {
 			level = taxonomyService.moveTaxonomyLevel(level, newParentLevel);
 		}
 		
+		taxonomyMatchingService.startIndexing();
 		TaxonomyLevelVO newLevelVo = TaxonomyLevelVO.valueOf(level);
 		return Response.ok(newLevelVo).build();
 	}

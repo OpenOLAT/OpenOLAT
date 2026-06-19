@@ -4119,6 +4119,23 @@ create table o_tax_level_embedding (
     references o_tax_taxonomy(id)
 );
 
+-- Taxonomy level index state (durable async indexing queue)
+create table o_tax_level_index_state (
+  id bigserial primary key,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  t_status varchar(16) not null,
+  t_attempt_count int4 not null default 0,
+  t_last_error text,
+  t_indexed_model_id varchar(128),
+  t_indexed_model_version varchar(64),
+  t_last_index_date timestamp,
+  fk_level int8 not null,
+  constraint fk_tax_idx_state_level foreign key (fk_level)
+    references o_tax_taxonomy_level(id),
+  constraint uq_tax_idx_state_level unique (fk_level)
+);
+
 -- dialog elements
 create table o_dialog_element (
   id bigserial,
@@ -7345,6 +7362,10 @@ create index idx_tax_level_to_ident_idx on o_tax_taxonomy_competence (fk_identit
 create index idx_tax_emb_level on o_tax_level_embedding(fk_level);
 create index idx_tax_emb_taxonomy on o_tax_level_embedding(fk_taxonomy);
 create unique index idx_tax_emb_unique on o_tax_level_embedding(fk_level, t_locale, t_model_id, t_text_variant);
+
+-- Taxonomy level index state (durable async indexing queue)
+create index idx_tax_lvl_idx_state_level on o_tax_level_index_state(fk_level);
+create index idx_tax_lvl_idx_state_status on o_tax_level_index_state(t_status);
 
 -- dialog elements
 alter table o_dialog_element add constraint dial_el_author_idx foreign key (fk_author) references o_bs_identity (id);

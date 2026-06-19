@@ -37,6 +37,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelTypeRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,7 +57,9 @@ public class TypeTaxonomyLevelController extends FormBasicController {
 
 	@Autowired
 	private TaxonomyService taxonomyService;
-	
+	@Autowired
+	private TaxonomyMatchingService taxonomyMatchingService;
+
 	public TypeTaxonomyLevelController(UserRequest ureq, WindowControl wControl, List<TaxonomyLevel> levels, Taxonomy taxonomy) {
 		super(ureq, wControl, "type_taxonomy_levels");
 		this.levels = levels;
@@ -140,6 +143,7 @@ public class TypeTaxonomyLevelController extends FormBasicController {
 			level.setType(selectedType);
 			level = taxonomyService.updateTaxonomyLevel(level);
 		}
+		taxonomyMatchingService.startIndexing();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

@@ -5,7 +5,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -27,11 +27,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import jakarta.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
@@ -41,6 +42,8 @@ import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.manager.AiLoggingEmbeddingModel;
 import org.olat.core.commons.services.ai.manager.AiUsageLogDAO;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
+import org.olat.core.commons.services.taskexecutor.TaskRunnable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -48,7 +51,6 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyRef;
-import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.matching.PgVectorType;
 import org.olat.modules.taxonomy.matching.TaxonomyEmbeddingTextVariant;
@@ -56,6 +58,7 @@ import org.olat.modules.taxonomy.matching.TaxonomyMatchingModule;
 import org.olat.modules.taxonomy.matching.TaxonomyMatchingReindexEvent;
 import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
 import org.olat.modules.taxonomy.matching.manager.TaxonomyLevelEmbeddingDAO.TaxonomyLevelEmbeddingWithVector;
+import org.olat.modules.taxonomy.matching.model.TaxonomyLevelIndexState;
 import org.olat.modules.taxonomy.matching.model.TaxonomyMatch;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,10 +71,9 @@ import dev.langchain4j.model.output.Response;
 /**
  * Implementation of {@link TaxonomyMatchingService}.
  * <p>
- * When pgvector is available and a model dimension can be resolved, creates the
- * {@code t_vector vector(dim)} column and {@code idx_tax_emb_vector} HNSW index
- * at runtime and delegates similarity search to the database. Without pgvector,
- * or before the first indexing pass, falls back to in-memory cosine similarity.
+ * Uses a durable per-level index state table as a queue. Embedding work is
+ * fully deferred to an async single-flight indexing task running on the
+ * {@link TaskRunnable.Queue#aiBatch} pool.
  *
  * Initial date: 2026-06-05<br>
  * @author uhensler, https://www.frentix.com
@@ -86,24 +88,36 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 	@Autowired
 	private TaxonomyLevelEmbeddingDAO embeddingDao;
 	@Autowired
-	private TaxonomyLevelDAO taxonomyLevelDao;
+	private TaxonomyLevelIndexStateDAO indexStateDao;
 	@Autowired
-	private TaxonomyDAO taxonomyDao;
+	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private TaxonomyMatchingModule matchingModule;
 	@Autowired
 	private AiModule aiModule;
 	@Autowired
 	private AiUsageLogDAO aiUsageLogDAO;
+	@Autowired
+	private TaskExecutorManager taskExecutorManager;
 
 	private EmbeddingModel embeddingModel;
 
 	private volatile String pgVectorEnsuredKey;
 	private volatile PgVectorType pgVectorType;
-	private final AtomicLong reindexGeneration = new AtomicLong(0);
-	private final ExecutorService reindexExecutor = Executors.newSingleThreadExecutor(
-			r -> new Thread(r, "taxonomy-embedding-reindex"));
-	private volatile boolean reindexing;
+
+	private final AtomicBoolean indexerRunning = new AtomicBoolean(false);
+	private final AtomicInteger indexGeneration = new AtomicInteger(0);
+	private volatile boolean reindexPending = false;
+
+	@PostConstruct
+	public void init() {
+		int reset = indexStateDao.resetInWorkToScheduled();
+		if (reset > 0) {
+			log.info("TaxonomyMatchingServiceImpl boot: reset {} stuck indexing rows to scheduled", reset);
+		}
+		dbInstance.commitAndCloseSession();
+		startIndexing();
+	}
 
 	@Override
 	public List<TaxonomyMatch> suggestLevels(AiUsageContext context, String text, TaxonomyRef taxonomy, int limit, double minScore) {
@@ -219,100 +233,92 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 	}
 
 	@Override
-	public void indexLevel(TaxonomyLevelRef levelRef) {
-		if (reindexing) {
+	public void scheduleIndex(TaxonomyLevel level) {
+		if (!aiModule.isTaxonomyMatchingEnabled()) {
 			return;
 		}
-		TaxonomyLevel level = taxonomyLevelDao.loadByKey(levelRef.getKey());
-		if (level == null) {
-			return;
-		}
-		EmbeddingModel model = getEmbeddingModel();
-		if (model == null) {
-			return;
-		}
-		ensurePgVector(model, false);
-		indexLevelInternal(level, model, null, "taxonomy-embedding-index", AiUsageContext.createContextId());
+		indexStateDao.upsertScheduled(level);
 	}
 
-	public boolean isReindexing() {
-		return reindexing;
+	@Override
+	public void scheduleSubtree(TaxonomyLevel level) {
+		if (!aiModule.isTaxonomyMatchingEnabled()) {
+			return;
+		}
+		indexStateDao.scheduleSubtree(level);
+	}
+
+	@Override
+	public void deleteIndexState(TaxonomyLevelRef level) {
+		indexStateDao.deleteByLevel(level);
+	}
+
+	@Override
+	public void startIndexing() {
+		if (!aiModule.isTaxonomyMatchingEnabled()) {
+			return;
+		}
+		if (!indexerRunning.compareAndSet(false, true)) {
+			return;
+		}
+		try {
+			taskExecutorManager.execute(new IndexingTask());
+			reindexPending = false;
+		} catch (Exception e) {
+			indexerRunning.set(false);
+			log.warn("Failed to submit taxonomy embedding indexing task", e);
+		}
+	}
+
+	private void requestStartIndexing() {
+		reindexPending = true;
+		startIndexing();
 	}
 
 	@Override
 	public void scheduleFullReindex() {
-		long myGen = reindexGeneration.incrementAndGet();
-		reindexExecutor.submit(() -> runFullReindex(myGen));
+		if (!aiModule.isTaxonomyMatchingEnabled()) {
+			return;
+		}
+		
+		EmbeddingModel model = getEmbeddingModel();
+		if (model == null) {
+			log.warn("Taxonomy embedding full reindex requested but no embedding model configured");
+			return;
+		}
+
+		pgVectorEnsuredKey = null;
+		pgVectorType = null;
+		matchingModule.setPgVectorActive(false);
+
+		ensurePgVector(model, true);
+		dbInstance.commitAndCloseSession();
+
+		if ("postgresql".equals(dbInstance.getDbVendor()) && pgVectorType == null) {
+			log.warn("Taxonomy embedding full reindex aborted: could not resolve pgvector column type for model '{}' — existing embeddings preserved",
+					matchingModule.getModel());
+			return;
+		}
+
+		embeddingDao.deleteAll();
+		matchingModule.clearVectorKeyAndDim();
+		dbInstance.commitAndCloseSession();
+
+		indexStateDao.scheduleAll();
+		dbInstance.commitAndCloseSession();
+
+		indexGeneration.incrementAndGet();
+		requestStartIndexing();
 	}
 
-	private void runFullReindex(long myGen) {
-		reindexing = true;
-		try {
-			log.info("Taxonomy embedding full reindex started (generation {})", myGen);
-			EmbeddingModel model = getEmbeddingModel();
-			if (model == null) {
-				log.warn("Taxonomy embedding reindex aborted: no embedding model configured");
-				return;
-			}
-
-			pgVectorEnsuredKey = null;
-			pgVectorType = null;
-			matchingModule.setPgVectorActive(false);
-
-			ensurePgVector(model, true);
-			dbInstance.commitAndCloseSession();
-
-			if ("postgresql".equals(dbInstance.getDbVendor()) && pgVectorType == null) {
-				log.warn("Taxonomy embedding reindex aborted: could not resolve pgvector column type for model '{}' — existing embeddings preserved",
-						matchingModule.getModel());
-				return;
-			}
-
-			embeddingDao.deleteAll();
-			matchingModule.clearVectorKeyAndDim();
-			dbInstance.commitAndCloseSession();
-
-			String contextId = AiUsageContext.createContextId();
-			List<Taxonomy> taxonomies = taxonomyDao.getTaxonomyList();
-			for (Taxonomy taxonomy : taxonomies) {
-				List<TaxonomyLevel> levels = taxonomyLevelDao.getLevels(List.of(taxonomy));
-				Map<Long, TaxonomyLevel> levelMap = levels.stream()
-						.collect(Collectors.toMap(TaxonomyLevel::getKey, Function.identity()));
-				int count = 0;
-				for (TaxonomyLevel level : levels) {
-					if (reindexGeneration.get() != myGen) {
-						log.info("Taxonomy embedding reindex cancelled (generation {} superseded by {})",
-								myGen, reindexGeneration.get());
-						return;
-					}
-					indexLevelInternal(level, model, levelMap, "taxonomy-embedding-index-full", contextId);
-					count++;
-					if (count % 50 == 0) {
-						dbInstance.intermediateCommit();
-						log.info("Taxonomy embedding reindex progress: {}/{} levels indexed for taxonomy {} (generation {})",
-								count, levels.size(), taxonomy.getKey(), myGen);
-					}
-				}
-				dbInstance.intermediateCommit();
-			}
-
-			log.info("Taxonomy embedding full reindex completed (generation {})", myGen);
-
-			org.olat.core.util.coordinate.CoordinatorManager.getInstance().getCoordinator()
-					.getEventBus().fireEventToListenersOf(
-							new TaxonomyMatchingReindexEvent(),
-							OresHelper.createOLATResourceableType("TaxonomyMatching"));
-		} catch (Exception e) {
-			log.error("Taxonomy embedding full reindex failed (generation {}): {}", myGen, e.getMessage(), e);
-		} finally {
-			dbInstance.commitAndCloseSession();
-			reindexing = false;
-		}
+	@Override
+	public void deleteEmbeddings(TaxonomyLevelRef level) {
+		embeddingDao.deleteByLevel(level);
 	}
 
 	public void indexLevelInternal(TaxonomyLevel level, EmbeddingModel model, Map<Long, TaxonomyLevel> levelMap,
-			String usageContextType, String usageContextId) {
-		if ("postgresql".equals(dbInstance.getDbVendor()) && pgVectorType == null) {
+			String usageContextType, String usageContextId, PgVectorType vectorType) {
+		if ("postgresql".equals(dbInstance.getDbVendor()) && vectorType == null) {
 			log.warn("Skipping index of taxonomy level {}: pgvector column type not resolved", level.getKey());
 			return;
 		}
@@ -320,43 +326,24 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 		for (Locale locale : locales) {
 			var translator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 			for (TaxonomyEmbeddingTextVariant textVariant : TaxonomyEmbeddingTextVariant.values()) {
-				try {
-					String text = TaxonomyEmbeddingTextBuilder.build(level, translator, levelMap, textVariant);
-					if (text == null) {
-						continue;
-					}
-					AiUsageContext indexContext = AiUsageContext.builder()
-							.usageContextType(usageContextType)
-							.usageContextId(usageContextId)
-							.resourceType("TaxonomyLevel")
-							.resourceId(level.getKey())
-							.resourceSubId(locale.getLanguage())
-							.build();
-					float[] vector = embed(model, matchingModule.getPassagePrefix() + text, indexContext);
-					if (vector != null) {
-						embeddingDao.upsert(level, locale.getLanguage(), textVariant, text, vector,
-								matchingModule.getModel(), null, pgVectorType);
-					}
-				} catch (Exception e) {
-					log.warn("Failed to index taxonomy level {} for locale {} textVariant {}: {}", level.getKey(), locale, textVariant, e.getMessage(), e);
+				String text = TaxonomyEmbeddingTextBuilder.build(level, translator, levelMap, textVariant);
+				if (text == null) {
+					continue;
+				}
+				AiUsageContext indexContext = AiUsageContext.builder()
+						.usageContextType(usageContextType)
+						.usageContextId(usageContextId)
+						.resourceType("TaxonomyLevel")
+						.resourceId(level.getKey())
+						.resourceSubId(locale.getLanguage())
+						.build();
+				float[] vector = embed(model, matchingModule.getPassagePrefix() + text, indexContext);
+				if (vector != null) {
+					embeddingDao.upsert(level, locale.getLanguage(), textVariant, text, vector,
+							matchingModule.getModel(), null, vectorType);
 				}
 			}
 		}
-	}
-	
-	@Override
-	public void deleteEmbeddings(TaxonomyLevelRef level) {
-		embeddingDao.deleteByLevel(level);
-	}
-
-	@Override
-	public boolean isIndexStale(TaxonomyRef taxonomy) {
-		String configuredModel = matchingModule.getModel();
-		if (configuredModel == null || configuredModel.isBlank()) {
-			return false;
-		}
-		long count = embeddingDao.countByTaxonomy(taxonomy, configuredModel);
-		return count == 0;
 	}
 
 	private void ensurePgVector(EmbeddingModel model, boolean allowRebuild) {
@@ -469,5 +456,111 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 
 	public void setEmbeddingModel(EmbeddingModel embeddingModel) {
 		this.embeddingModel = embeddingModel;
+	}
+
+	/**
+	 * Single-flight indexing task submitted to the {@code aiBatch} pool.
+	 * Loops until the scheduled backlog is empty, then clears the indexerRunning flag.
+	 * Captures the generation counter at submit time; exits the loop early when the
+	 * generation changes (model change in progress).
+	 */
+	private class IndexingTask implements TaskRunnable {
+
+		private final int taskGeneration = indexGeneration.get();
+
+		@Override
+		public Queue getExecutorsQueue() {
+			return Queue.aiBatch;
+		}
+
+		@Override
+		public void run() {
+			try {
+				indexScheduled();
+			} finally {
+				indexerRunning.set(false);
+				if (reindexPending) {
+					reindexPending = false;
+					startIndexing();
+				}
+			}
+		}
+
+		private void indexScheduled() {
+			if (!aiModule.isTaxonomyMatchingEnabled()) {
+				log.debug("TaxonomyEmbeddingIndexing: taxonomy matching disabled, leaving rows scheduled");
+				return;
+			}
+			EmbeddingModel model = getEmbeddingModel();
+			if (model == null) {
+				log.debug("TaxonomyEmbeddingIndexing: no embedding model available, leaving rows scheduled");
+				return;
+			}
+
+			ensurePgVector(model, false);
+			dbInstance.commitAndCloseSession();
+			PgVectorType taskVectorType = pgVectorType;
+
+			String contextId = AiUsageContext.createContextId();
+			int indexed = 0;
+
+			while (true) {
+				if (taskGeneration != indexGeneration.get()) {
+					log.debug("TaxonomyEmbeddingIndexing: generation changed, stopping stale task");
+					break;
+				}
+				TaxonomyLevelIndexState state = indexStateDao.claimNextScheduled();
+				dbInstance.commitAndCloseSession();
+				if (state == null) {
+					break;
+				}
+
+				TaxonomyLevel level = state.getLevel();
+				try {
+					Map<Long, TaxonomyLevel> levelMap = buildLevelMap(level);
+					indexLevelInternal(level, model, levelMap, "taxonomy-embedding-index", contextId, taskVectorType);
+					if (dbInstance.isError()) {
+						throw new RuntimeException("DB error after indexLevelInternal for level " + level.getKey());
+					}
+					indexStateDao.markIndexed(state, matchingModule.getModel(), null);
+					dbInstance.commitAndCloseSession();
+					indexed++;
+					if (indexed % 50 == 0) {
+						log.info("TaxonomyEmbeddingIndexing: indexed {} levels so far", indexed);
+					}
+				} catch (Exception e) {
+					log.warn("TaxonomyEmbeddingIndexing: failed to index level {}: {}", level.getKey(), e.getMessage(), e);
+					dbInstance.rollbackAndCloseSession();
+					try {
+						indexStateDao.markFailed(state, e.getMessage());
+						dbInstance.commitAndCloseSession();
+					} catch (Exception ex) {
+						dbInstance.rollbackAndCloseSession();
+					}
+				}
+			}
+
+			if (indexed > 0) {
+				log.info("TaxonomyEmbeddingIndexing: completed, indexed {} levels", indexed);
+				if (indexStateDao.countByStatuses(List.of(TaxonomyLevelIndexState.IndexStatus.scheduled,
+						TaxonomyLevelIndexState.IndexStatus.indexing)) == 0) {
+					matchingModule.setPgVectorActive(true);
+					org.olat.core.util.coordinate.CoordinatorManager.getInstance().getCoordinator()
+							.getEventBus().fireEventToListenersOf(
+									new TaxonomyMatchingReindexEvent(),
+									OresHelper.createOLATResourceableType("TaxonomyMatching"));
+				}
+			}
+		}
+
+		private Map<Long, TaxonomyLevel> buildLevelMap(TaxonomyLevel level) {
+			try {
+				Taxonomy taxonomy = level.getTaxonomy();
+				List<TaxonomyLevel> levels = taxonomyLevelDao.getLevels(List.of(taxonomy));
+				return levels.stream().collect(Collectors.toMap(TaxonomyLevel::getKey, Function.identity()));
+			} catch (Exception e) {
+				return Map.of();
+			}
+		}
 	}
 }

@@ -22,6 +22,7 @@ package org.olat.modules.taxonomy.matching;
 import java.util.List;
 
 import org.olat.core.commons.services.ai.model.AiUsageContext;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.matching.model.TaxonomyMatch;
@@ -48,10 +49,29 @@ public interface TaxonomyMatchingService {
 	List<TaxonomyMatch> suggestLevels(AiUsageContext context, String text, TaxonomyRef taxonomy, int limit, double minScore);
 
 	/**
-	 * Index or re-index a single taxonomy level in all configured locales.
-	 * Synchronous for LocalOnnxSPI; asynchronous (fire-and-forget) for remote SPIs.
+	 * Schedule a single taxonomy level for async embedding indexing.
+	 * Cheap: only writes a state row; does not call the embedding model.
+	 * The caller must invoke {@link #startIndexing()} after all DB changes are committed.
 	 */
-	void indexLevel(TaxonomyLevelRef level);
+	void scheduleIndex(TaxonomyLevel level);
+
+	/**
+	 * Schedule the given level and its entire subtree for async indexing.
+	 * Used when a level is renamed or moved so descendants are also re-embedded.
+	 */
+	void scheduleSubtree(TaxonomyLevel level);
+
+	/**
+	 * Remove the index state row for a deleted taxonomy level.
+	 */
+	void deleteIndexState(TaxonomyLevelRef level);
+
+	/**
+	 * Start the async indexing worker if it is not already running.
+	 * Must be called after the triggering transaction is committed so the worker
+	 * reads up-to-date data.
+	 */
+	void startIndexing();
 
 	/**
 	 * Trigger a full asynchronous reindex of all taxonomy levels across all taxonomies.
@@ -63,9 +83,4 @@ public interface TaxonomyMatchingService {
 	 * Remove all stored embeddings for a deleted taxonomy level.
 	 */
 	void deleteEmbeddings(TaxonomyLevelRef level);
-
-	/**
-	 * @return true if the stored embeddings are stale (model changed, index incomplete)
-	 */
-	boolean isIndexStale(TaxonomyRef taxonomy);
 }

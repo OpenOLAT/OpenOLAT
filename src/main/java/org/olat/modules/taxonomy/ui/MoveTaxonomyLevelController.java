@@ -43,6 +43,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.TaxonomySecurityCallback;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
 import org.olat.modules.taxonomy.manager.TaxonomyAllTreesBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +68,9 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
-	
+	@Autowired
+	private TaxonomyMatchingService taxonomyMatchingService;
+
 	public MoveTaxonomyLevelController(UserRequest ureq, WindowControl wControl, TaxonomySecurityCallback secCallback,
 			List<TaxonomyLevel> levelsToMove, Taxonomy taxonomy) {
 		super(ureq, wControl, "move_taxonomy_level");
@@ -244,6 +247,7 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 				}
 			}
 		}
+		taxonomyMatchingService.startIndexing();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

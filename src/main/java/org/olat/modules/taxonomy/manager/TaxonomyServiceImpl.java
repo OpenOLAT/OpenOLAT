@@ -152,9 +152,7 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 			TaxonomyLevelManagedFlag[] flags, TaxonomyLevel parent, Taxonomy taxonomy) {
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel(identifier, i18nSuffix, null, null, externalId,
 				flags, parent, null, taxonomy);
-		if (taxonomyMatchingService != null) {
-			taxonomyMatchingService.indexLevel(level);
-		}
+		taxonomyMatchingService.scheduleIndex(level);
 		return level;
 	}
 
@@ -204,18 +202,15 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 			checkLevelTypeCompetences(level.getType());
 		}
 		TaxonomyLevel updated = taxonomyLevelDao.updateTaxonomyLevel(level);
-		if (taxonomyMatchingService != null) {
-			taxonomyMatchingService.indexLevel(updated);
-		}
+		taxonomyMatchingService.scheduleIndex(updated);
+		taxonomyMatchingService.scheduleSubtree(updated);
 		return updated;
 	}
 
 	@Override
 	public TaxonomyLevel moveTaxonomyLevel(TaxonomyLevel level, TaxonomyLevel newParentLevel) {
 		TaxonomyLevel moved = taxonomyLevelDao.moveTaxonomyLevel(level, newParentLevel);
-		if (taxonomyMatchingService != null) {
-			taxonomyMatchingService.indexLevel(moved);
-		}
+		taxonomyMatchingService.scheduleSubtree(moved);
 		return moved;
 	}
 
@@ -273,9 +268,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 
 			curriculumElementToTaxonomyLevelDao.deleteRelation(reloadedTaxonomyLevel);
 
-			if (taxonomyMatchingService != null) {
-				taxonomyMatchingService.deleteEmbeddings(reloadedTaxonomyLevel);
-			}
+			taxonomyMatchingService.deleteEmbeddings(reloadedTaxonomyLevel);
+			taxonomyMatchingService.deleteIndexState(reloadedTaxonomyLevel);
 			return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
 		}
 

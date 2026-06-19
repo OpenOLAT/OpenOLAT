@@ -67,6 +67,27 @@ create index idx_tax_emb_level on o_tax_level_embedding(fk_level);
 create index idx_tax_emb_taxonomy on o_tax_level_embedding(fk_taxonomy);
 create unique index idx_tax_emb_unique on o_tax_level_embedding(fk_level, t_locale, t_model_id, t_text_variant);
 
+-- Taxonomy level index state
+create table o_tax_level_index_state (
+  id bigserial primary key,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  t_status varchar(16) not null,
+  t_attempt_count int4 not null default 0,
+  t_last_error text,
+  t_indexed_model_id varchar(128),
+  t_indexed_model_version varchar(64),
+  t_last_index_date timestamp,
+  fk_level int8 not null,
+  constraint fk_tax_idx_state_level foreign key (fk_level)
+    references o_tax_taxonomy_level(id),
+  constraint uq_tax_idx_state_level unique (fk_level)
+);
+
+create index idx_tax_lvl_idx_state_level on o_tax_level_index_state(fk_level);
+create index idx_tax_lvl_idx_state_status on o_tax_level_index_state(t_status);
+
+
 -- ac offer indexes
 drop index idx_offer_guest_idx;
 drop index idx_offer_open_idx;
@@ -1063,5 +1084,4 @@ create index idx_grad_assign_log_assign_idx on o_grad_assignment_log (fk_assigne
 -- Curriculum element type
 alter table o_cur_element_type add column c_impl_only bool default false not null;
 alter table o_cur_element_type add column c_status varchar(32) default 'active' not null;
-
 

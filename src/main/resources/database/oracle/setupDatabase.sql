@@ -4172,6 +4172,24 @@ create table o_tax_level_embedding (
     references o_tax_taxonomy(id)
 );
 
+-- Taxonomy level index state (durable async indexing queue)
+create table o_tax_level_index_state (
+  id number(20) generated always as identity,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  t_status varchar2(16) not null,
+  t_attempt_count number(10) default 0 not null,
+  t_last_error clob,
+  t_indexed_model_id varchar2(128),
+  t_indexed_model_version varchar2(64),
+  t_last_index_date timestamp,
+  fk_level number(20) not null,
+  constraint pk_tax_idx_state primary key (id),
+  constraint fk_tax_idx_state_level foreign key (fk_level)
+    references o_tax_taxonomy_level(id),
+  constraint uq_tax_idx_state_level unique (fk_level)
+);
+
 -- dialog elements
 create table o_dialog_element (
   id number(20) generated always as identity,
@@ -7283,6 +7301,10 @@ create index idx_tax_level_to_ident_idx on o_tax_taxonomy_competence (fk_identit
 create index idx_tax_emb_level on o_tax_level_embedding(fk_level);
 create index idx_tax_emb_taxonomy on o_tax_level_embedding(fk_taxonomy);
 create unique index idx_tax_emb_unique on o_tax_level_embedding(fk_level, t_locale, t_model_id, t_text_variant);
+
+-- Taxonomy level index state (durable async indexing queue)
+create index idx_tax_lvl_idx_state_level on o_tax_level_index_state(fk_level);
+create index idx_tax_lvl_idx_state_status on o_tax_level_index_state(t_status);
 
 -- lectures
 alter table o_lecture_block add constraint lec_block_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

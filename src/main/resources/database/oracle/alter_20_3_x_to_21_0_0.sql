@@ -68,6 +68,27 @@ create index idx_tax_emb_level on o_tax_level_embedding(fk_level);
 create index idx_tax_emb_taxonomy on o_tax_level_embedding(fk_taxonomy);
 create unique index idx_tax_emb_unique on o_tax_level_embedding(fk_level, t_locale, t_model_id, t_text_variant);
 
+-- Taxonomy level index state
+create table o_tax_level_index_state (
+  id number(20) generated always as identity,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  t_status varchar2(16) not null,
+  t_attempt_count number(10) default 0 not null,
+  t_last_error clob,
+  t_indexed_model_id varchar2(128),
+  t_indexed_model_version varchar2(64),
+  t_last_index_date timestamp,
+  fk_level number(20) not null,
+  constraint pk_tax_idx_state primary key (id),
+  constraint fk_tax_idx_state_level foreign key (fk_level)
+    references o_tax_taxonomy_level(id),
+  constraint uq_tax_idx_state_level unique (fk_level)
+);
+
+create index idx_tax_lvl_idx_state_level on o_tax_level_index_state(fk_level);
+create index idx_tax_lvl_idx_state_status on o_tax_level_index_state(t_status);
+
 -- ac offer indexes
 drop index idx_offer_guest_idx;
 drop index idx_offer_open_idx;

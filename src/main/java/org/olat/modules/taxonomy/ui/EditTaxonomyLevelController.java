@@ -114,6 +114,8 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
+	private org.olat.modules.taxonomy.matching.TaxonomyMatchingService taxonomyMatchingService;
+	@Autowired
 	private CatalogV2Module catalogV2Module;
 
 	public EditTaxonomyLevelController(UserRequest ureq, WindowControl wControl, TaxonomySecurityCallback secCallback, TaxonomyLevel level) {
@@ -523,11 +525,13 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		for (TranslationItem translationItem : translationItems) {
 			I18nItem displayNameItem = i18nManager.getI18nItem(BUNDLE_NAME, displayNameKey, translationItem.getOverlayLocale());
 			i18nManager.saveOrUpdateI18nItem(displayNameItem, translationItem.getDisplayNameEl().getValue());
-			
+
 			I18nItem descriptionItem = i18nManager.getI18nItem(BUNDLE_NAME, descriptionKey, translationItem.getOverlayLocale());
 			i18nManager.saveOrUpdateI18nItem(descriptionItem, translationItem.getDescriptionEl().getValue());
 		}
-		
+
+		taxonomyMatchingService.startIndexing();
+
 		if (teaserImageEl.getUploadFile() != null) {
 			taxonomyService.storeTeaserImage(level, getIdentity(), teaserImageEl.getUploadFile(), teaserImageEl.getUploadFileName());
 		} else if (teaserImageEl.getInitialFile() == null) {
