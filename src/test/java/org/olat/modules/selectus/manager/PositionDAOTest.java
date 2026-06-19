@@ -32,6 +32,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.modules.selectus.RecruitingDuplicateApplicationAlgorithm;
 import org.olat.modules.selectus.model.AcceptPolicyEnum;
 import org.olat.modules.selectus.model.AcceptPolicyImpl;
 import org.olat.modules.selectus.model.Application;
@@ -44,6 +45,7 @@ import org.olat.modules.selectus.model.PositionLight;
 import org.olat.modules.selectus.model.PositionLightWithStatistics;
 import org.olat.modules.selectus.model.PositionRole;
 import org.olat.modules.selectus.model.PositionStatus;
+import org.olat.modules.selectus.model.application.ParallelApplication;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -349,7 +351,7 @@ public class PositionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void findParallelApplicationsLight() {
+	public void findParallelApplicationsPositionLight() {
 		//position 1
 		Position pos1 = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
 		pos1.setPlaningsNumber("MX-814");
@@ -369,16 +371,102 @@ public class PositionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(app2);
 		
 		//find parallel applications
-		List<PositionLight> parallelPositions = positionDao.findParallelApplicationsLight(email, pos1.getKey(), null);
+		List<PositionLight> parallelPositions = positionDao.findParallelApplicationsLight(email, null, null,
+				pos1.getKey(), null, RecruitingDuplicateApplicationAlgorithm.EMAIL);
 		Assert.assertNotNull(parallelPositions);
 		Assert.assertEquals(1, parallelPositions.size());
 		Assert.assertEquals(pos2.getKey(), parallelPositions.get(0).getKey());
 		
 		//double check
-		List<PositionLight> parallelPositionsInverted = positionDao.findParallelApplicationsLight(email, pos2.getKey(), null);
+		List<PositionLight> parallelPositionsInverted = positionDao.findParallelApplicationsLight(email, null, null,
+				pos2.getKey(), null, RecruitingDuplicateApplicationAlgorithm.EMAIL);
 		Assert.assertNotNull(parallelPositionsInverted);
 		Assert.assertEquals(1, parallelPositionsInverted.size());
 		Assert.assertEquals(pos1.getKey(), parallelPositionsInverted.get(0).getKey());
+	}
+	
+ 	@Test
+	public void findParallelApplicationsPositionLightWithNames() {
+		//position 1
+		Position pos1 = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
+		pos1.setPlaningsNumber("MX-814");
+		pos1.setStatus(PositionStatus.published.name());
+		pos1 = positionDao.savePosition(pos1);
+		//position 2
+		Position pos2 = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
+		pos2.setPlaningsNumber("MX-815");
+		pos2.setStatus(PositionStatus.published.name());
+		pos2 = positionDao.savePosition(pos2);
+		
+		String firstName = "Yacinthe" + UUID.randomUUID().toString().replace("-", "");
+		String lastName = "Bron";
+		String email =  firstName + "@frentix.com";
+		Application app1 = createRandomApplication(pos1, email, firstName, lastName);
+		Application app2 = createRandomApplication(pos2, email, firstName, lastName);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(app1);
+		Assert.assertNotNull(app2);
+		
+		//find parallel applications
+		List<ParallelApplication> parallelPositions = positionDao.findParallelApplications(pos1.getKey(), null,
+				RecruitingDuplicateApplicationAlgorithm.EMAIL_FIRST_LAST_NAME);
+		Assertions.assertThat(parallelPositions)
+			.hasSize(1)
+			.map(ParallelApplication::getApplicationKey)
+			.containsExactly(app2.getKey());
+		
+		//double check
+		List<ParallelApplication> parallelPositionsInverted = positionDao.findParallelApplications(pos2.getKey(), null,
+				RecruitingDuplicateApplicationAlgorithm.EMAIL_FIRST_LAST_NAME);
+		Assertions.assertThat(parallelPositionsInverted)
+			.hasSize(1)
+			.map(ParallelApplication::getApplicationKey)
+			.containsExactly(app1.getKey());
+	}
+	
+	@Test
+	public void findParallelApplicationsLightWithNames() {
+		//position 1
+		Position pos1 = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
+		pos1.setPlaningsNumber("MX-814");
+		pos1.setStatus(PositionStatus.published.name());
+		pos1 = positionDao.savePosition(pos1);
+		//position 2
+		Position pos2 = positionDao.createPosition("none", "none", defaultUnitTestOrganisation);
+		pos2.setPlaningsNumber("MX-815");
+		pos2.setStatus(PositionStatus.published.name());
+		pos2 = positionDao.savePosition(pos2);
+		
+		String firstName = "Yacinthe" + UUID.randomUUID().toString().replace("-", "");
+		String lastName = "Bron";
+		String email =  firstName + "@frentix.com";
+		Application app1 = createRandomApplication(pos1, email, firstName, lastName);
+		Application app2 = createRandomApplication(pos2, email, firstName, lastName);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(app1);
+		Assert.assertNotNull(app2);
+		
+		//find parallel applications
+		List<PositionLight> parallelPositions = positionDao.findParallelApplicationsLight(email, firstName, lastName,
+				pos1.getKey(), null, RecruitingDuplicateApplicationAlgorithm.EMAIL_FIRST_LAST_NAME);
+		Assertions.assertThat(parallelPositions)
+			.hasSize(1)
+			.map(PositionLight::getKey)
+			.containsExactly(pos2.getKey());
+		
+		//double check
+		List<PositionLight> parallelPositionsInverted = positionDao.findParallelApplicationsLight(email, firstName, lastName,
+				pos2.getKey(), null, RecruitingDuplicateApplicationAlgorithm.EMAIL_FIRST_LAST_NAME);
+		Assertions.assertThat(parallelPositionsInverted)
+			.hasSize(1)
+			.map(PositionLight::getKey)
+			.containsExactly(pos1.getKey());
+		
+		//Negative check check
+		List<PositionLight> parallelPositionsOtherKid = positionDao.findParallelApplicationsLight(email, "James", lastName,
+				pos2.getKey(), null, RecruitingDuplicateApplicationAlgorithm.EMAIL_FIRST_LAST_NAME);
+		Assertions.assertThat(parallelPositionsOtherKid)
+			.isEmpty();
 	}
 	
 	@Test
@@ -646,11 +734,17 @@ public class PositionDAOTest extends OlatTestCase {
 		return createRandomApplication(pos, null);
 	}
 
-	private Application createRandomApplication(Position pos, String email) {
+ 	private Application createRandomApplication(Position pos, String email) {
+		String firstName = "Albert " + UUID.randomUUID();
+		String lastName = "Le Vert";
+		return createRandomApplication(pos, email, firstName, lastName);
+	}
+	
+	private Application createRandomApplication(Position pos, String email, String firstName, String lastName) {
 		Application app = applicationDao.createApplication(pos);
 		Person person = app.getPerson();
-		person.setFirstName("Albert " + UUID.randomUUID());
-		person.setLastName("Le Vert");
+		person.setFirstName(firstName);
+		person.setLastName(lastName);
 		person.setNationality("CH");
 		if(email == null) {
 			person.setMail( person.getFirstName().toLowerCase() + "@frentix.com");

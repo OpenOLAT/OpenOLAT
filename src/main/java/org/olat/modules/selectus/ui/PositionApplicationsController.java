@@ -108,6 +108,7 @@ import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.FeedbackService;
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.ParallelApplicationScope;
+import org.olat.modules.selectus.RecruitingDuplicateApplicationAlgorithm;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingService;
@@ -138,6 +139,7 @@ import org.olat.modules.selectus.model.RecruitingAuditLog.ActionTarget;
 import org.olat.modules.selectus.model.ReferenceType;
 import org.olat.modules.selectus.model.application.ApplicationRefImpl;
 import org.olat.modules.selectus.model.application.ParallelApplication;
+import org.olat.modules.selectus.model.application.ParallelApplicationKey;
 import org.olat.modules.selectus.model.assignment.AssignmentKey;
 import org.olat.modules.selectus.model.attributes.PositionAttributeDefinitionConfiguration;
 import org.olat.modules.selectus.model.category.ApplicationCategoryInfos;
@@ -1204,7 +1206,8 @@ public class PositionApplicationsController extends FormBasicController implemen
 		SelectionValues keyValues = new SelectionValues();
 		
 		ParallelApplicationScope scope = recruitingModule.getParallelApplicationScope();
-		List<ParallelApplication> apps = recruitingService.getParallelApplications(position, scope);
+		RecruitingDuplicateApplicationAlgorithm algorithm = recruitingModule.getApplicationDuplicateAlgorithm();
+		List<ParallelApplication> apps = recruitingService.getParallelApplications(position, scope, algorithm);
 		Set<PositionLight> positions = new HashSet<>();
 		for(ParallelApplication app:apps) {
 			positions.add(app.getPosition());
@@ -1303,8 +1306,9 @@ public class PositionApplicationsController extends FormBasicController implemen
 			}
 		}
 		
-		Map<String,List<ParallelApplication>> paralellApps = loadParalellApplications();
-		
+		Map<ParallelApplicationKey,List<ParallelApplication>> paralellApps = loadParalellApplications();
+		RecruitingDuplicateApplicationAlgorithm algorithm = recruitingModule.getApplicationDuplicateAlgorithm();
+		 		
 		String pathPrefix = "[Positions:0][Position:" + position.getKey() + "][Applications:";
 
 		List<ApplicationRow> rows = new ArrayList<>(applications.size());
@@ -1318,9 +1322,9 @@ public class PositionApplicationsController extends FormBasicController implemen
 			ApplicationRow row = new ApplicationRow(application, appNotes, refereesStats,
 					additionalValues, url);
 			
-			String mail = row.getMail();
-			if(StringHelper.containsNonWhitespace(mail)) {
-				row.setParallelApplications(paralellApps.get(mail.toLowerCase()));
+			ParallelApplicationKey key = ParallelApplicationKey.valueOf(application.getPerson(), algorithm);
+			if(!key.isEmpty()) {
+				row.setParallelApplications(paralellApps.get(key));
 			}
 			
 			UserRatingMapper userRatingMapper = new UserRatingMapper(application);
@@ -1421,15 +1425,15 @@ public class PositionApplicationsController extends FormBasicController implemen
 		tableEl.reset(true, true, false);
 	}
 	
-	private Map<String,List<ParallelApplication>> loadParalellApplications() {
-		Map<String,List<ParallelApplication>> apps = new HashMap<>();
+	private Map<ParallelApplicationKey,List<ParallelApplication>> loadParalellApplications() {
+		Map<ParallelApplicationKey,List<ParallelApplication>> apps = new HashMap<>();
 		if(secCallback.canViewParalellApplications()) {
 			ParallelApplicationScope scope = recruitingModule.getParallelApplicationScope();
-			List<ParallelApplication> parallelApps =  recruitingService.getParallelApplications(position, scope);
+			RecruitingDuplicateApplicationAlgorithm algorithm = recruitingModule.getApplicationDuplicateAlgorithm();
+			List<ParallelApplication> parallelApps =  recruitingService.getParallelApplications(position, scope, algorithm);
 			for(ParallelApplication parallelApp:parallelApps) {
-				String email = parallelApp.getApplicationEmail();
-				email = email.toLowerCase();
-				apps.computeIfAbsent(email, m -> new ArrayList<>(1))
+				ParallelApplicationKey key = ParallelApplicationKey.valueOf(parallelApp, algorithm);
+				apps.computeIfAbsent(key, m -> new ArrayList<>(1))
 					.add(parallelApp);
 			}	
 		}

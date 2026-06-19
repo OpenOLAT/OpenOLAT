@@ -322,9 +322,11 @@ public interface RecruitingService {
 	 * @param application
 	 * @return
 	 */
-	public List<PositionLight> getParallelApplications(Application application, Position position, ParallelApplicationScope scope);
+	public List<PositionLight> getParallelApplications(Application application, Position position,
+			ParallelApplicationScope scope, RecruitingDuplicateApplicationAlgorithm algorithm);
 	
-	public List<ParallelApplication> getParallelApplications(Position position, ParallelApplicationScope scope);
+	public List<ParallelApplication> getParallelApplications(Position position,
+			ParallelApplicationScope scope, RecruitingDuplicateApplicationAlgorithm algorithm);
 	
 	public Position deleteAttachment(Position position, Attachment attachment);
 	

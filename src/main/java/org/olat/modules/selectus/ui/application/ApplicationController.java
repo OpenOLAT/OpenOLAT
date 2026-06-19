@@ -34,11 +34,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.ParallelApplicationScope;
+import org.olat.modules.selectus.RecruitingDuplicateApplicationAlgorithm;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingService;
@@ -55,6 +53,8 @@ import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.application.ApplicationOverviewController.PositionInfo;
 import org.olat.modules.selectus.ui.events.DecisionEvent;
 import org.olat.modules.selectus.ui.events.FinalDecisionChangeEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -133,7 +133,8 @@ public class ApplicationController extends FormBasicController {
 		
 		if(secCallback.canViewParalellApplications() && formLayout instanceof FormLayoutContainer) {
 			ParallelApplicationScope scope = recruitingModule.getParallelApplicationScope();
-			List<PositionLight> parallelApps =  erFrontendManager.getParallelApplications(application, position, scope);
+			RecruitingDuplicateApplicationAlgorithm algorithm = recruitingModule.getApplicationDuplicateAlgorithm();
+			List<PositionLight> parallelApps =  erFrontendManager.getParallelApplications(application, position, scope, algorithm);
 			if(parallelApps != null && !parallelApps.isEmpty()) {
 				List<PositionInfo> infos = new ArrayList<>(parallelApps.size());
 				for(PositionLight parallelApp:parallelApps) {

@@ -31,26 +31,36 @@ public class ParallelApplication {
 	
 	private final Long applicationKey;
 	private final String applicationEmail;
+	private final String applicationFirstName;
+	private final String applicationLastName;
 	private final PositionLight position;
 	
 	
-	public ParallelApplication(Long applicationKey, String applicationEmail, PositionLight position) {
+	public ParallelApplication(Long applicationKey, String applicationEmail,
+			String applicationFirstName, String applicationLastName,  PositionLight position) {
 		this.applicationKey = applicationKey;
 		this.applicationEmail = applicationEmail;
+		this.applicationFirstName = applicationFirstName;
+		this.applicationLastName = applicationLastName;
 		this.position = position;
 	}
-
 
 	public Long getApplicationKey() {
 		return applicationKey;
 	}
 
-
 	public String getApplicationEmail() {
 		return applicationEmail;
 	}
 
+	public String getApplicationFirstName() {
+		return applicationFirstName;
+	}
 
+	public String getApplicationLastName() {
+		return applicationLastName;
+	}
+		
 	public PositionLight getPosition() {
 		return position;
 	}

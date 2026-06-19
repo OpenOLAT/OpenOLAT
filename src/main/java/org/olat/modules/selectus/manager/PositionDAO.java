@@ -31,6 +31,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.persistence.TypedQuery;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
@@ -46,9 +48,11 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.modules.selectus.DocumentEnum;
 import org.olat.modules.selectus.DocumentOption;
+import org.olat.modules.selectus.RecruitingDuplicateApplicationAlgorithm;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.model.AcceptPolicyEnum;
 import org.olat.modules.selectus.model.AcceptPolicyImpl;
@@ -76,8 +80,6 @@ import org.olat.modules.selectus.model.position.PositionLightWithMembership;
 import org.olat.modules.selectus.ui.app_wizard.ApplicationAttributesDelegate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -477,12 +479,20 @@ public class PositionDAO {
 		return false;
 	}
 	
-	public List<PositionLight> findParallelApplicationsLight(String email, Long referencePositionKey, Long organisationKey) {
+	public List<PositionLight> findParallelApplicationsLight(String email, String firstName, String lastName,
+			Long referencePositionKey, Long organisationKey, RecruitingDuplicateApplicationAlgorithm algorithm) {
+		boolean withNames = algorithm == RecruitingDuplicateApplicationAlgorithm.EMAIL_FIRST_LAST_NAME
+				&& StringHelper.containsNonWhitespace(firstName)
+				&& StringHelper.containsNonWhitespace(lastName);
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select position from rpositionlight position")
 		  .append(" where not(position.key=:refPosKey) and exists (select app.key from rapplication as app")
-		  .append("  where app.position.key=position.key and lower(app.person.email)=:mail and app.valid=:valid")
-		  .append(" )");
+		  .append("  where app.position.key=position.key and app.valid=:valid and lower(app.person.email)=:mail");
+		if(withNames) {
+			sb.append(" and lower(app.person.firstName)=:firstName and lower(app.person.lastName)=:lastName");
+		}
+		sb.append(" )");
 		if(organisationKey != null) {
 			sb.append(" and position.organisation.key=:organisationKey");
 		}
@@ -492,19 +502,27 @@ public class PositionDAO {
 				.setParameter("mail", email.toLowerCase())
 				.setParameter("valid", Boolean.TRUE)
 				.setParameter("refPosKey", referencePositionKey);
+		if(withNames) {
+			query.setParameter("firstName", firstName.toLowerCase());
+			query.setParameter("lastName", lastName.toLowerCase());
+		}
 		if(organisationKey != null) {
 			query.setParameter("organisationKey", organisationKey);
 		}
 		return query.getResultList();
 	}
 	
-	public List<ParallelApplication> findParallelApplications(Long referencePositionKey, Long organisationKey) {
+	public List<ParallelApplication> findParallelApplications(Long referencePositionKey, Long organisationKey,
+			RecruitingDuplicateApplicationAlgorithm algorithm) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select app.key, app.person.email, position from rapplication as app")
+		sb.append("select app.key, app.person.email, app.person.firstName, app.person.lastName, position from rapplication as app")
 		  .append(" inner join rpositionlight position on (app.position.key=position.key)")
 		  .append(" where not(position.key=:refPosKey) and app.valid=:valid and exists (select refApp.key from rapplication as refApp")
-		  .append("  where refApp.position.key=:refPosKey and lower(app.person.email)=lower(refApp.person.email) and refApp.valid=:valid")
-		  .append(" )");
+		  .append("  where refApp.position.key=:refPosKey and refApp.valid=:valid and lower(app.person.email)=lower(refApp.person.email)");
+		if(algorithm == RecruitingDuplicateApplicationAlgorithm.EMAIL_FIRST_LAST_NAME) {
+			sb.append(" and lower(app.person.firstName)=lower(refApp.person.firstName) and lower(app.person.lastName)=lower(refApp.person.lastName)");
+		}
+		sb.append(" )");
 		if(organisationKey != null) {
 			sb.append(" and position.organisation.key=:organisationKey");
 		}
@@ -522,8 +540,10 @@ public class PositionDAO {
 		for(Object[] objects:rawObjects) {
 			Long applicationKey = (Long)objects[0];
 			String applicationEmail = (String)objects[1];
-			PositionLight position = (PositionLight)objects[2];
-			apps.add(new ParallelApplication(applicationKey, applicationEmail, position));
+			String applicationFirstName = (String)objects[2];
+			String applicationLastName = (String)objects[3];
+			PositionLight position = (PositionLight)objects[4];
+			apps.add(new ParallelApplication(applicationKey, applicationEmail, applicationFirstName, applicationLastName, position));
 		}
 		return apps;
 	}

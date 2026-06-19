@@ -839,16 +839,20 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	}
 
 	@Override
-	public List<PositionLight> getParallelApplications(Application application, Position position, ParallelApplicationScope scope) {
+	public List<PositionLight> getParallelApplications(Application application, Position position,
+			ParallelApplicationScope scope, RecruitingDuplicateApplicationAlgorithm algorithm) {
 		List<PositionLight> apps;
 		if(application != null && application.getPerson() != null && application.getPerson().getMail() != null) {
 			String email = application.getPerson().getMail();
+			String firstName = application.getPerson().getFirstName();
+			String lastName = application.getPerson().getLastName();
 			Long positionKey = position.getKey();
 			Long organisationKey = null;
 			if(scope == ParallelApplicationScope.organisation && position.getOrganisation() != null) {
 				organisationKey = position.getOrganisation().getKey();
 			}
-			apps = positionDao.findParallelApplicationsLight(email, positionKey, organisationKey);
+			apps = positionDao.findParallelApplicationsLight(email, firstName, lastName, 
+					positionKey, organisationKey, algorithm);
 		} else {
 			apps = Collections.emptyList();
 		}
@@ -856,12 +860,13 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	}
 	
 	@Override
-	public List<ParallelApplication> getParallelApplications(Position position, ParallelApplicationScope scope) {
+	public List<ParallelApplication> getParallelApplications(Position position, ParallelApplicationScope scope,
+			RecruitingDuplicateApplicationAlgorithm algorithm) {
 		Long organisationKey = null;
 		if(scope == ParallelApplicationScope.organisation && position.getOrganisation() != null) {
 			organisationKey = position.getOrganisation().getKey();
 		}
-		return positionDao.findParallelApplications(position.getKey(), organisationKey);
+		return positionDao.findParallelApplications(position.getKey(), organisationKey, algorithm);
 	}
 
 	@Override
