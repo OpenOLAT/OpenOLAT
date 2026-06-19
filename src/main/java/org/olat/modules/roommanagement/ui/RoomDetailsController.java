@@ -84,7 +84,7 @@ public class RoomDetailsController extends FormBasicController {
 		calendarLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
 
 		if (room.getStatus() != RoomStatus.deleted) {
-			editLink = uifactory.addFormLink("room.detail.edit", formLayout, Link.BUTTON);
+			editLink = uifactory.addFormLink("edit", formLayout, Link.BUTTON);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
 

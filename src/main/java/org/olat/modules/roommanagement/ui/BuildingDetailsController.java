@@ -86,7 +86,7 @@ public class BuildingDetailsController extends FormBasicController {
 		formLayout.contextPut("statusLabel", translate("building.status." + building.getStatus().name()));
 
 		if (building.getStatus() != RoomStatus.deleted) {
-			editLink = uifactory.addFormLink("building.detail.edit", formLayout, Link.BUTTON);
+			editLink = uifactory.addFormLink("edit", formLayout, Link.BUTTON);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
 

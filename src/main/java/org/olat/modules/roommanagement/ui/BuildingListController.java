@@ -601,7 +601,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 			VelocityContainer mainVC = createVelocityContainer("tools");
 
 			List<String> links = new ArrayList<>();
-			addLink("building.tools.edit", "edit", "o_icon o_icon-fw o_icon_edit", links, mainVC);
+			addLink("edit", "edit", "o_icon o_icon-fw o_icon_edit", links, mainVC);
 			if (row.getBuilding().getStatus() == RoomStatus.active) {
 				addLink("building.tools.deactivate", "deactivate", "o_icon o_icon-fw o_icon_ban", links, mainVC);
 			} else {
