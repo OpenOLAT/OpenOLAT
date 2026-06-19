@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarManager;
@@ -79,6 +80,7 @@ import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomRef;
 import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.model.RoomRefImpl;
+import org.olat.modules.roommanagement.model.SearchBuildingParameters;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
 import org.olat.modules.roommanagement.ui.RoomListDataModel.RoomCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +92,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RoomListController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 
 	private static final String FILTER_STATUS = "status";
+	private static final String FILTER_BUILDINGS = "buildings";
 	private static final String TAB_ID_ALL = "all";
 	private static final String TAB_ID_RELEVANT = "relevant";
 	private static final String TAB_ID_DELETED = "deleted";
@@ -194,6 +197,18 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		filters.add(new FlexiTableMultiSelectionFilter(translate("room.filter.status"),
 				FILTER_STATUS, statusValues, true));
 
+		SelectionValues buildingValues = new SelectionValues();
+		roomManagementService.searchBuildings(new SearchBuildingParameters(), roles).forEach(b -> {
+			String label = StringHelper.containsNonWhitespace(b.getExternalRef()) ? b.getExternalRef() : b.getDescription();
+			if (StringHelper.containsNonWhitespace(label)) {
+				buildingValues.add(SelectionValues.entry(b.getKey().toString(), label));
+			}
+		});
+		if (!buildingValues.isEmpty()) {
+			filters.add(new FlexiTableMultiSelectionFilter(translate("room.filter.buildings"),
+					FILTER_BUILDINGS, buildingValues, true));
+		}
+
 		tableEl.setFilters(true, filters, false, false);
 	}
 
@@ -250,6 +265,14 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		}
 
 		List<Room> rooms = roomManagementService.searchRooms(params, roles);
+
+		Set<Long> selectedBuildingKeys = getSelectedLongKeys(FILTER_BUILDINGS);
+		if (!selectedBuildingKeys.isEmpty()) {
+			rooms = rooms.stream()
+					.filter(r -> r.getBuilding() != null && selectedBuildingKeys.contains(r.getBuilding().getKey()))
+					.collect(Collectors.toList());
+		}
+
 		List<RoomRow> rows = new ArrayList<>(rooms.size());
 		for (Room room : rooms) {
 			rows.add(forgeRow(room));
@@ -506,6 +529,18 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		cmc.activate();
 	}
 
+	private Set<Long> getSelectedLongKeys(String filterId) {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		if (filters == null) return Set.of();
+		return filters.stream()
+				.filter(f -> filterId.equals(f.getFilter()) && f instanceof FlexiTableMultiSelectionFilter)
+				.map(f -> ((FlexiTableMultiSelectionFilter) f).getValues())
+				.filter(values -> values != null)
+				.flatMap(List::stream)
+				.map(Long::valueOf)
+				.collect(Collectors.toSet());
+	}
+
 	private void cleanUpToolsCallout() {
 		removeAsListenerAndDispose(toolsCalloutWindowCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
@@ -589,7 +624,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			VelocityContainer mainVC = createVelocityContainer("tools");
 
 			List<String> links = new ArrayList<>();
-			addLink("room.tools.edit", "edit", "o_icon o_icon-fw o_icon_edit", links, mainVC);
+			addLink("edit", "edit", "o_icon o_icon-fw o_icon_edit", links, mainVC);
 			if (row.getRoom().getStatus() == RoomStatus.active) {
 				addLink("room.tools.deactivate", "deactivate", "o_icon o_icon-fw o_icon_ban", links, mainVC);
 			} else {
@@ -597,7 +632,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			}
 			if (row.getRoom().getStatus() == RoomStatus.inactive) {
 				links.add("-");
-				addLink("room.tools.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links, mainVC);
+				addLink("delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links, mainVC);
 			}
 
 			mainVC.contextPut("links", links);
