@@ -319,7 +319,7 @@ public class PFManager {
 	 * @param dropbox
 	 * @return the VFSSecurityCallback
 	 */
-	private VFSSecurityCallback calculateCallback(CourseEnvironment courseEnv, String quotaPath, PFCourseNode pfNode, VFSContainer dropbox, boolean webdav) {
+	private VFSSecurityCallback calculateCallback(CourseEnvironment courseEnv, String quotaPath, PFCourseNode pfNode, VFSContainer dropbox) {
 		VFSSecurityCallback callback;
 		SubscriptionContext folderSubContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
 		int count = countFiles(dropbox);
@@ -327,15 +327,11 @@ public class PFManager {
 		boolean limitCount = limitEnabled && pfNode.isGreaterOrEqualToLimit(count);
 		boolean timeFrame = pfNode.hasDropboxTimeFrameConfigured() && !pfNode.isInDropboxTimeFrame();
 		boolean alterFile = (pfNode.hasParticipantBoxConfigured() && pfNode.hasAlterFileConfigured());
-		if (timeFrame || limitCount && !alterFile){
+		if (timeFrame || limitCount && !alterFile) {
 			callback = new ReadOnlyCallback(folderSubContext, quotaPath);
-		} else if (webdav) {
-			callback= new CountingCallback(folderSubContext, dropbox, pfNode.getLimitCount(), alterFile);
-		} else if (limitCount && alterFile) {
-			callback = new ReadDeleteCallback(folderSubContext);
 		} else if (limitEnabled) {
-			callback= new CountingCallback(folderSubContext, dropbox, pfNode.getLimitCount(), alterFile);
-		} else if (!limitCount && !alterFile) {
+			callback = new CountingCallback(folderSubContext, dropbox, pfNode.getLimitCount(), alterFile);
+		} else if (!alterFile) {
 			callback = new ReadWriteCallback(folderSubContext, quotaPath);
 		} else {
 			callback = new ReadWriteDeleteCallback(folderSubContext, quotaPath);
@@ -390,11 +386,11 @@ public class PFManager {
 				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(subsContext, quotaPath));
 			} else {
 				VFSContainer dropbox = resolveOrCreateDropFolder(courseEnv, pfNode, identity);
-				VFSSecurityCallback callback = calculateCallback(courseEnv, quotaPath, pfNode, dropbox, true);
+				VFSSecurityCallback callback = calculateCallback(courseEnv, quotaPath, pfNode, dropbox);
 				dropContainer.setLocalSecurityCallback(callback);
 			}
 			namedCourseFolder.addItem(dropContainer);
-		}		
+		}
 		if (pfNode.hasCoachBoxConfigured()){
 			VFSContainer returnContainer = new NamedContainerImpl(toFileSystem(translator.translate(PFCourseNode.FOLDER_RETURN_BOX)),
 					VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_RETURNBOX));
@@ -435,7 +431,7 @@ public class PFManager {
 				//if coach is also participant, can user his/her webdav folder with participant rights
 				if (identity.equals(participant)){
 					VFSContainer dropbox = resolveOrCreateDropFolder(courseEnv, pfNode, identity);
-					VFSSecurityCallback callback = calculateCallback(courseEnv, quotaPath, pfNode, dropbox, true);
+					VFSSecurityCallback callback = calculateCallback(courseEnv, quotaPath, pfNode, dropbox);
 					dropContainer.setLocalSecurityCallback(callback);
 				} else {
 					dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
@@ -557,7 +553,7 @@ public class PFManager {
 				returnContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext, quotaPath));
 			} else {
 				VFSContainer dropbox = resolveOrCreateDropFolder(courseEnv, pfNode, identity);
-				VFSSecurityCallback callback = calculateCallback(courseEnv, quotaPath, pfNode, dropbox, false);
+				VFSSecurityCallback callback = calculateCallback(courseEnv, quotaPath, pfNode, dropbox);
 				dropContainer.setLocalSecurityCallback(callback);
 				returnContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext, quotaPath));
 			}

@@ -703,10 +703,12 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(context, assessedIdentity, mailTemplate, null, null, result);
-		if(bccList.hasAddresses()) {
-			bundle.setContactList(bccList);
+		if(bundle != null) {// Can be null, assessed identity has email disabled...
+			if(bccList.hasAddresses()) {
+				bundle.setContactList(bccList);
+			}
+			mailManager.sendMessageAsync(bundle);
 		}
-		mailManager.sendMessageAsync(bundle);
 	}
 
 	public void pullAssessmentTestSession(AssessmentTestSession session, UserCourseEnvironment assessedUserCourseEnv,
