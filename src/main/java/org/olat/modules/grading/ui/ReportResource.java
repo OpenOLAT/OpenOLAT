@@ -304,7 +304,11 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		row.addCell(pos++, CalendarUtils.convertSecondsToMinutes(assignmentWithInfos.getMetadataTimeRecordedInSeconds()), null);
 		row.addCell(pos++, CalendarUtils.convertSecondsToMinutes(assignmentWithInfos.getTimeRecordedInSeconds()), null);
 		row.addCell(pos++, assignment.getAssignmentDate(), workbook.getStyles().getDateStyle());
-		row.addCell(pos++, assignment.getClosingDate(), workbook.getStyles().getDateStyle());
+		if(status == GradingAssignmentStatus.done) {
+			row.addCell(pos++, assignment.getClosingDate(), workbook.getStyles().getDateStyle());
+		} else {
+			pos++;
+		}
 		row.addCell(pos++, assignmentWithInfos.getScore(), null);
 		
 		Boolean passed = assignmentWithInfos.getPassed();
@@ -385,7 +389,7 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		
 		List<GradingAssignmentLog> assignmentsLogs = gradingService.getGradingAssignmentsLogs(searchParams);
 		for(GradingAssignmentLog assignmentLog:assignmentsLogs) {
-			if(!assignmentsKeys.contains(assignmentLog.getGradingAssignmentKey()) && !assignmentLog.isDeleted()) {
+			if(!assignmentsKeys.contains(assignmentLog.getGradingAssignmentKey()) || assignmentLog.isDeleted() ) {
 				createAssignmentsLogData(assignmentLog, sheet, workbook);
 			}
 		}
