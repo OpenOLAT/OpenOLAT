@@ -36,7 +36,7 @@
 			   autocomplete="off"
 			   required="required" />
 	#elseif($isCorrectionHelp && $r.isItemSessionEnded())
-		<span class="$r.textEntryType($interaction) o_correction_value" #if($interaction.expectedLength) style="min-width: ${interaction.expectedLength}em" #end>#if($responseInputString && !$responseInputString.isEmpty())$r.escapeHtml($responseInputString)#end</span>
+		<span class="$r.textEntryType($interaction) o_correction_value" #if($interaction.expectedLength) style="min-width: ${interaction.expectedLength}em" #end>#if($responseInputString && !$responseInputString.isEmpty())$r.escapeHtml($responseInputString)#else &nbsp; #end</span>
 	#else
 		<input id="od_${responseIdentifier}" type="text" class="$r.textEntryType($interaction)" name="qtiworks_response_${responseIdentifier}" #if($responseInputString && !$responseInputString.isEmpty()) value="$r.escapeHtml($responseInputString)" #else value="" #end #if(!$r.isItemSessionEnded()) $r.placeholder($interaction) #end #if($r.isItemSessionEnded()) disabled #end #if($isBadResponse) class='badResponse' #end #if($interaction.expectedLength) size='$interaction.expectedLength' #end #if($checks && $checks.size() > 0) onchange='$checkJavaScript' #end autocomplete="off" required="required"/>
 	#end
