@@ -119,15 +119,18 @@ public class IntegerElementImpl extends TextElementImpl implements InlineInteger
 	}
 
 	private boolean intValueCheck() {
+		boolean allOk = true;
 		if(StringHelper.containsNonWhitespace(getValue())) {
 			try {
 				Integer.parseInt(getValue());
 			} catch (NumberFormatException nfe) {
 				setErrorKey(intValueErrorKey);
-				return false;
+				allOk &= false;
 			}
+		} else {
+			allOk &= false;
 		}
-		return true;
+		return allOk;
 	}
 
 	@Override

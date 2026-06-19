@@ -8,4 +8,13 @@
 	$r.render("learningTime.second")
 	<span class="form-control-static">$r.translate("educational.learningTime.second")</span>
 </div>
+#if($f.hasError("learningTime.day"))
+	$r.render("learningTime.day","error")
+#elseif($f.hasError("learningTime.hour"))
+	$r.render("learningTime.hour","error")
+#elseif($f.hasError("learningTime.minute"))
+	$r.render("learningTime.minute","error")
+#elseif($f.hasError("learningTime.second"))
+	$r.render("learningTime.second","error")
+#end
 

@@ -226,6 +226,10 @@ public class QuestionMetadataEditController extends FormBasicController {
 		allOk &= validateInteger(numAnswerAltEl, 0, Integer.MAX_VALUE, true);
 		allOk &= validateInteger(usageEl, 0, Integer.MAX_VALUE, true);
 		allOk &= validateInteger(correctionTimeMinuteElement, 0, Integer.MAX_VALUE, true);
+		allOk &= validateInteger(learningTimeDayElement, true);
+		allOk &= validateInteger(learningTimeHourElement, true);
+		allOk &= validateInteger(learningTimeMinuteElement, true);
+		allOk &= validateInteger(learningTimeSecondElement, true);
 		return allOk;
 	}
 	

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
+import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -162,6 +163,18 @@ public class MetaUIFactory {
 			}
 		}
 		return allOk;
+	}
+	
+	public static boolean validateInteger(IntegerElement el, boolean enabled) {
+		boolean allOk = true;
+		el.clearError();
+		if(enabled) {
+			if(!el.validateIntValue()) {
+				el.setErrorKey("error.wrongInteger");
+				allOk = false;
+			}
+		}
+		return allOk;	
 	}
 	
 	public static boolean validateInteger(TextElement el, int min, int max, boolean enabled) {
