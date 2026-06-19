@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -53,14 +54,19 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -92,6 +98,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private FormLink createRoomButton;
 	private CloseableModalController cmc;
 	private EditRoomController editRoomCtrl;
+	private ToolsController toolsCtrl;
+	private CloseableCalloutWindowController toolsCalloutWindowCtrl;
+	private DialogBoxController confirmDeactivateDialog;
+	private DialogBoxController confirmDeleteDialog;
 	private FlexiTableElement tableEl;
 	private RoomListDataModel dataModel;
 	private FullCalendarElement calendarEl;
@@ -137,6 +147,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		DefaultFlexiColumnModel calendarIconCol = new DefaultFlexiColumnModel(RoomCols.calendarIcon);
 		calendarIconCol.setIconHeader(RoomCols.calendarIcon.iconHeader());
 		columnsModel.addFlexiColumnModel(calendarIconCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(RoomCols.tools));
 
 		dataModel = new RoomListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "rooms", dataModel, 20, false,
@@ -310,6 +321,12 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			}
 		}
 
+		if (room.getStatus() != RoomStatus.deleted) {
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
+			toolsLink.setUserObject(row);
+			row.setToolsLink(toolsLink);
+		}
+
 		return row;
 	}
 
@@ -325,6 +342,22 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			cleanUp();
 		} else if (source instanceof RoomDetailsController detailsCtrl && event == Event.CHANGED_EVENT) {
 			doEditRoom(ureq, detailsCtrl.getRoom());
+		} else if (source == toolsCalloutWindowCtrl) {
+			cleanUpToolsCallout();
+		} else if (source == confirmDeactivateDialog) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				RoomRow row = (RoomRow) confirmDeactivateDialog.getUserObject();
+				doDeactivate(row);
+			}
+			removeAsListenerAndDispose(confirmDeactivateDialog);
+			confirmDeactivateDialog = null;
+		} else if (source == confirmDeleteDialog) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				RoomRow row = (RoomRow) confirmDeleteDialog.getUserObject();
+				doDelete(row);
+			}
+			removeAsListenerAndDispose(confirmDeleteDialog);
+			confirmDeleteDialog = null;
 		}
 		super.event(ureq, source, event);
 	}
@@ -380,6 +413,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 					}
 				} else if ("calendar".equals(cmd)) {
 					doOpenRoomCalendar(ureq, row);
+				} else if ("tools".equals(cmd)) {
+					doOpenTools(ureq, row, link);
 				}
 			} else if ("building".equals(cmd)) {
 				doOpenBuilding(ureq, link);
@@ -471,9 +506,129 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		cmc.activate();
 	}
 
+	private void cleanUpToolsCallout() {
+		removeAsListenerAndDispose(toolsCalloutWindowCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
+		toolsCalloutWindowCtrl = null;
+		toolsCtrl = null;
+	}
+
+	private void doOpenTools(UserRequest ureq, RoomRow row, FormLink link) {
+		cleanUpToolsCallout();
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+		toolsCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutWindowCtrl);
+		toolsCalloutWindowCtrl.activate();
+	}
+
+	private void doConfirmDeactivate(UserRequest ureq, RoomRow row) {
+		String title = translate("room.confirm.deactivate.title");
+		String text = translate("room.confirm.deactivate");
+		List<String> buttons = List.of(translate("room.tools.deactivate"), translate("cancel"));
+		confirmDeactivateDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), title, text, buttons);
+		listenTo(confirmDeactivateDialog);
+		confirmDeactivateDialog.setUserObject(row);
+		confirmDeactivateDialog.activate();
+	}
+
+	private void doDeactivate(RoomRow row) {
+		Room room = roomManagementService.getRoom(new RoomRefImpl(row.getRoom().getKey()));
+		if (room == null) return;
+		room.setStatus(RoomStatus.inactive);
+		roomManagementService.updateRoom(room, getIdentity());
+		loadModel();
+	}
+
+	private void doActivate(RoomRow row) {
+		Room room = roomManagementService.getRoom(new RoomRefImpl(row.getRoom().getKey()));
+		if (room == null) return;
+		room.setStatus(RoomStatus.active);
+		roomManagementService.updateRoom(room, getIdentity());
+		loadModel();
+	}
+
+	private void doConfirmDelete(UserRequest ureq, RoomRow row) {
+		String title = translate("room.confirm.delete.title");
+		String text = translate("room.confirm.delete");
+		List<String> buttons = List.of(translate("delete"), translate("cancel"));
+		confirmDeleteDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), title, text, buttons);
+		confirmDeleteDialog.setDanger(0);
+		listenTo(confirmDeleteDialog);
+		confirmDeleteDialog.setUserObject(row);
+		confirmDeleteDialog.activate();
+	}
+
+	private void doDelete(RoomRow row) {
+		Room room = roomManagementService.getRoom(new RoomRefImpl(row.getRoom().getKey()));
+		if (room == null) return;
+		List<RoomBooking> bookings = roomManagementService.getBookingsForRoom(
+				new RoomRefImpl(room.getKey()), new Date(), null);
+		if (!bookings.isEmpty()) {
+			showError("room.error.has.active.bookings");
+			return;
+		}
+		roomManagementService.deleteRoom(new RoomRefImpl(room.getKey()), getIdentity());
+		loadModel();
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private class ToolsController extends BasicController {
+
+		private final RoomRow row;
+
+		public ToolsController(UserRequest ureq, WindowControl wControl, RoomRow row) {
+			super(ureq, wControl);
+			setTranslator(RoomListController.this.getTranslator());
+			this.row = row;
+			VelocityContainer mainVC = createVelocityContainer("tools");
+
+			List<String> links = new ArrayList<>();
+			addLink("room.tools.edit", "edit", "o_icon o_icon-fw o_icon_edit", links, mainVC);
+			if (row.getRoom().getStatus() == RoomStatus.active) {
+				addLink("room.tools.deactivate", "deactivate", "o_icon o_icon-fw o_icon_ban", links, mainVC);
+			} else {
+				addLink("room.tools.activate", "activate", "o_icon o_icon-fw o_icon_check", links, mainVC);
+			}
+			if (row.getRoom().getStatus() == RoomStatus.inactive) {
+				links.add("-");
+				addLink("room.tools.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links, mainVC);
+			}
+
+			mainVC.contextPut("links", links);
+			putInitialPanel(mainVC);
+		}
+
+		private void addLink(String name, String cmd, String iconCSS, List<String> links, VelocityContainer vc) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), vc, this, Link.LINK);
+			link.setIconLeftCSS(iconCSS);
+			vc.put(name, link);
+			links.add(name);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if (source instanceof Link link) {
+				switch (link.getCommand()) {
+					case "edit" -> { close(); doEditRoom(ureq, row.getRoom()); }
+					case "deactivate" -> { close(); doConfirmDeactivate(ureq, row); }
+					case "activate" -> { close(); doActivate(row); }
+					case "delete" -> { close(); doConfirmDelete(ureq, row); }
+					default -> { /* ignore */ }
+				}
+			}
+		}
+
+		private void close() {
+			toolsCalloutWindowCtrl.deactivate();
+			cleanUpToolsCallout();
+		}
 	}
 
 	private static final class BuildingCellRenderer extends AbstractBuildingCellRenderer {
