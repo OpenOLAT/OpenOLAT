@@ -706,6 +706,36 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return AssessmentRenderFunctions.getResponseDeclaration(assessmentItem, identifier);
 	}
 	
+	public Boolean isCorrectInlineChoice(InlineChoiceInteraction inlineChoiceInteraction) {
+		if(inlineChoiceInteraction == null) {
+			return null;
+		}
+		
+		Value val = getResponseValue(inlineChoiceInteraction.getResponseIdentifier());
+		if(val == null) {
+			val = NullValue.INSTANCE;
+		}
+		
+		boolean correct = false;
+		String stringuifiedResponses = toString(val);
+		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(inlineChoiceInteraction.getResponseIdentifier());
+		if(responseDeclaration != null && stringuifiedResponses != null) {
+			InlineChoiceInteractionEntry forScore = new InlineChoiceInteractionEntry(inlineChoiceInteraction);
+			GapAssessmentItemBuilder.extractInlineChoicesInteractionSettingsFromResponseDeclaration(responseDeclaration, forScore);
+			Identifier correctIdentifier = forScore.getCorrectResponseId();
+			if(correctIdentifier.equals(Identifier.assumedLegal(stringuifiedResponses))) {
+				correct = true;
+			} else if(forScore.hasScores()) {
+				Double score = forScore.getScore(Identifier.assumedLegal(stringuifiedResponses));
+				if(score != null && score.doubleValue() > 0.0d) {
+					correct = true;
+				}
+			}
+		}
+
+		return Boolean.valueOf(correct);
+	}
+	
 	public String renderInlineChoiceScoreAndAlternatives(InlineChoiceInteraction inlineChoiceInteraction, boolean solutionMode, boolean correctionMode) {
 		if(inlineChoiceInteraction == null || inlineChoiceInteraction.getResponseIdentifier() == null) return "";
 		

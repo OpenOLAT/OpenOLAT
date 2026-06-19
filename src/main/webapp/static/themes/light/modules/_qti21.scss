@@ -1146,6 +1146,33 @@ tr.choiceinteraction {
 	}
 }
 
+/* Inline choice */
+.inlineChoiceInteraction {
+	&.has-feedback {
+		padding-right: 5px;
+		display: inline-block;
+		border: 1px solid $state-success-text;
+		border-radius: $input-border-radius;
+	}
+	&.has-feedback span.o_correction_value {
+		padding-right: 26px;
+		vertical-align: baseline;
+		display: inline-block;
+	}
+	
+	&.has-error {
+		border-color: $state-danger-text;
+	}
+	&.has-success {
+		border-color: $state-success-text;
+	}
+	
+	.o_feedback_right {
+		margin: 0;
+		padding: 0;
+	}
+}
+
 /* Match interaction */
 .matchInteraction.choiceright table tr td.o_qti_item_kprim_text {
 	background-color: $o-qti-choice-tablelayout-bg;

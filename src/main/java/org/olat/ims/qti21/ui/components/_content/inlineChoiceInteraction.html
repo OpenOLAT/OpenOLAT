@@ -12,7 +12,7 @@
 #end
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
-<span class="$answerCorrectnessClass $localName#if($r.isTrue($isOffline)) o_qti_offline#end">
+<span class="$answerCorrectnessClass $localName #if($r.isTrue($isCorrectionHelp)) has-feedback #if($r.isCorrectInlineChoice($interaction)) has-success #else has-error #end #end #if($r.isTrue($isOffline)) o_qti_offline#end">
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
 	<span class="o_error badResponse">$r.translate("error.choice")</span>
 	#end
@@ -68,4 +68,6 @@
 	
 	$r.appendFlexiFormDirty("oo_${responseIdentifier}")
 	#end
+	
+	#if($r.isTrue($isCorrectionHelp))<span class="o_icon #if($r.isCorrectInlineChoice($interaction)) o_icon_qti_summary_correct #else o_icon_error #end o_feedback_right"> </span> #end
 </span>
