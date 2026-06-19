@@ -473,6 +473,48 @@ public class CurriculumElementWithViewsDataModelFilterStatusTest {
 		Assertions.assertThat(result).doesNotContain(ce3Row);
 	}
 
+	@Test
+	public void filterTab_publishedCourseUnderPreparationLine_notInPreparationTab() {
+		CurriculumElementWithViewsDataModel model = createModel();
+		CurriculumElementImpl l2 = mockCE(CurriculumElementStatus.active);
+		CurriculumElementImpl l21 = mockCE(CurriculumElementStatus.preparation, l2);
+		CurriculumElementImpl l211 = mockCE(CurriculumElementStatus.preparation, l21);
+		CurriculumElementWithViewsRow l2Row = ceOnlyRow(l2, 0);
+		l2Row.setCurriculumMember(true);
+		CurriculumElementWithViewsRow l21Row = ceOnlyRow(l21, 0);
+		l21Row.setCurriculumMember(true);
+		CurriculumElementWithViewsRow l211Row = ceCombinedRow(l211, mockRE(RepositoryEntryStatusEnum.published));
+		l211Row.setCurriculumMember(true);
+		l21Row.setParent(l2Row);
+		l211Row.setParent(l21Row);
+		model.setObjects(List.of(l2Row, l21Row, l211Row));
+
+		model.filterTab(null, tab(CurriculumElementListController.PREPARATION_TAB));
+
+		Assertions.assertThat(model.getObjects()).isEmpty();
+	}
+
+	@Test
+	public void filterTab_publishedCourseUnderPreparationLine_appearsInActiveTab() {
+		CurriculumElementWithViewsDataModel model = createModel();
+		CurriculumElementImpl l2 = mockCE(CurriculumElementStatus.active);
+		CurriculumElementImpl l21 = mockCE(CurriculumElementStatus.preparation, l2);
+		CurriculumElementImpl l211 = mockCE(CurriculumElementStatus.preparation, l21);
+		CurriculumElementWithViewsRow l2Row = ceOnlyRow(l2, 0);
+		l2Row.setCurriculumMember(true);
+		CurriculumElementWithViewsRow l21Row = ceOnlyRow(l21, 0);
+		l21Row.setCurriculumMember(true);
+		CurriculumElementWithViewsRow l211Row = ceCombinedRow(l211, mockRE(RepositoryEntryStatusEnum.published));
+		l211Row.setCurriculumMember(true);
+		l21Row.setParent(l2Row);
+		l211Row.setParent(l21Row);
+		model.setObjects(List.of(l2Row, l21Row, l211Row));
+
+		model.filterTab(null, tab(CurriculumElementListController.ACTIVE_TAB));
+
+		Assertions.assertThat(model.getObjects()).contains(l2Row, l21Row, l211Row);
+	}
+
 	private static final class TestRepositoryEntryView implements RepositoryEntryMyView {
 
 		private final Long key;

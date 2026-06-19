@@ -192,7 +192,7 @@ public class ImplementationsListController extends FormBasicController implement
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.displayName, CMD_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.extRefVisibilityDefault(), ImplementationsCols.externalRef));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.curriculum,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ImplementationsCols.curriculum,
 				new CurriculumCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.lifecycleStart,
 				new DateFlexiCellRenderer(getLocale())));
@@ -296,7 +296,7 @@ public class ImplementationsListController extends FormBasicController implement
 		
 		finishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FINISHED_TAB_ID, translate("filter.finished"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-						List.of(CurriculumElementStatus.finished.name()))));
+						List.of(CurriculumElementStatus.finished.name(), CurriculumElementStatus.cancelled.name()))));
 		tabs.add(finishedTab);
 		
 		tableEl.setFilterTabs(true, tabs);

@@ -66,10 +66,12 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 			Long searchKey = StringHelper.isLong(lowerSearchString) ? Long.valueOf(lowerSearchString) : null;
 			List<CurriculumElementStatus> statusList = filteredStatus(tab);
 			List<RepositoryEntryStatusEnum> entryStatusList = filteredEntryStatus(tab);
+			Set<CurriculumElementWithViewsRow> withSingleCourseDescendant = rowsWithSingleCourseDescendant(backupRows);
 
 			List<CurriculumElementWithViewsRow> filteredRows = backupRows.stream()
 				.filter(row -> (quickSearch(lowerSearchString, row) || searchKey(searchKey, row)))
 				.filter(row -> filterStatus(row, statusList, entryStatusList))
+				.filter(row -> statusList.isEmpty() || !(row.isCurriculumElementOnly() && withSingleCourseDescendant.contains(row)))
 				.collect(Collectors.toList());
 
 			reconstructParentLine(filteredRows);
@@ -175,6 +177,18 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		return elementStatus != null && statusList.contains(elementStatus);
 	}
 	
+	private Set<CurriculumElementWithViewsRow> rowsWithSingleCourseDescendant(List<CurriculumElementWithViewsRow> rows) {
+		Set<CurriculumElementWithViewsRow> withCourse = new HashSet<>();
+		for(CurriculumElementWithViewsRow row:rows) {
+			if(row.isCurriculumElementWithEntry()) {
+				for(CurriculumElementWithViewsRow parent=row.getParent(); parent != null && !withCourse.contains(parent); parent=parent.getParent()) {
+					withCourse.add(parent);
+				}
+			}
+		}
+		return withCourse;
+	}
+
 	private void reconstructParentLine(List<CurriculumElementWithViewsRow> rows) {
 		Set<CurriculumElementWithViewsRow> rowSet = new HashSet<>(rows);
 		for(int i=0; i<rows.size(); i++) {
@@ -281,7 +295,7 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		curriculum("table.header.curriculum"),
 		completion("table.header.completion"),
 		details("table.header.details"),
-		start("table.header.start"),
+		start("open"),
 		calendars("table.header.calendars"),
 		beginDate("table.header.begin.date"),
 		endDate("table.header.end.date");

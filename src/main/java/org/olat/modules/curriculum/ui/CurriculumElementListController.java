@@ -238,7 +238,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 					new RolesFlexiCellRenderer(getTranslator())));
 		}
 		if (config.withStatus()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.elementStatus,
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.elementStatus,
 					new CurriculumStatusCellRenderer(getTranslator())));
 		}
 		if(config.withCompletion()) {
