@@ -363,8 +363,12 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
-		} else if (source instanceof RoomDetailsController detailsCtrl && event == Event.CHANGED_EVENT) {
-			doEditRoom(ureq, detailsCtrl.getRoom());
+		} else if (source instanceof RoomDetailsController detailsCtrl) {
+			if (event == Event.CHANGED_EVENT) {
+				doEditRoom(ureq, detailsCtrl.getRoom());
+			} else if ("viewCalendar".equals(event.getCommand())) {
+				doOpenRoomCalendar(ureq, detailsCtrl.getRoom());
+			}
 		} else if (source == toolsCalloutWindowCtrl) {
 			cleanUpToolsCallout();
 		} else if (source == confirmDeactivateDialog) {
@@ -459,6 +463,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private void doOpenRoomCalendar(UserRequest ureq, RoomRow row) {
 		Room room = roomManagementService.getRoom(new RoomRefImpl(row.getRoom().getKey()));
 		if (room == null) return;
+		doOpenRoomCalendar(ureq, room);
+	}
+
+	private void doOpenRoomCalendar(UserRequest ureq, Room room) {
 		RoomCalendarController calendarCtrl = new RoomCalendarController(ureq, getWindowControl(), room);
 		String name = StringHelper.containsNonWhitespace(room.getExternalRef())
 				? room.getExternalRef() : room.getDescription();

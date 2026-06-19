@@ -1,8 +1,9 @@
 <div class="o_rm_details">
 	<div class="o_flex_header">
-		#if($reference)
-		<div class="o_rm_title"><h3>$r.escapeHtml($reference)</h3></div>
-		#end
+		<div class="o_rm_title">
+			#if($reference)<h3>$r.escapeHtml($reference)</h3>#end
+			#if($description)<h3><small> &middot; $r.escapeHtml($description)</small></h3>#end
+		</div>
 
 		<div class="o_rm_status">
 			<span class="o_labeled o_rm_status_$r.escapeHtml($statusName)" title="$r.escapeHtml($statusLabel)">

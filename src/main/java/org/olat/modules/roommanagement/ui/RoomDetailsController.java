@@ -76,6 +76,11 @@ public class RoomDetailsController extends FormBasicController {
 			formLayout.contextPut("reference", reference);
 		}
 
+		String description = room.getDescription();
+		if (StringHelper.containsNonWhitespace(description) && !description.equals(reference)) {
+			formLayout.contextPut("description", description);
+		}
+
 		formLayout.contextPut("statusName", room.getStatus().name());
 		formLayout.contextPut("statusLabel", translate("building.status." + room.getStatus().name()));
 
