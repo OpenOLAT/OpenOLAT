@@ -668,6 +668,7 @@ public class GapEditorController extends FormBasicController {
 	private void updateGlobalChoices() {
 		addGlobalChoiceToggle.setVisible(inlineChoice);
 		addGlobalChoiceToggle.toggle(!globalChoicesWrappers.isEmpty());
+		addGlobalChoiceToggle.setEnabled(globalChoicesWrappers.isEmpty());
 		globalChoicesCont.contextPut("wrappers", globalChoicesWrappers);
 		globalChoicesCont.setVisible(inlineChoice && globalChoicesWrappers.size() > 0);
 		flc.setDirty(true);
@@ -773,8 +774,6 @@ public class GapEditorController extends FormBasicController {
 				interactionWrapper = createInlineChoiceInteraction(responseIdentifier, selectedText);
 			}
 		}
-		
-		this.itemBuilder.getScoreEvaluationMode();
 		
 		choicesSettingsCtrl = new InlineChoiceInteractionSettingsController(ureq, getWindowControl(), interactionWrapper,
 				restrictedEdit, readOnly);
