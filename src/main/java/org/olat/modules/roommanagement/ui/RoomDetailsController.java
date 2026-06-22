@@ -23,7 +23,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,8 +30,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -162,58 +159,8 @@ public class RoomDetailsController extends FormBasicController {
 		}
 
 		// Card
-		String cardId = "roomCard_" + room.getKey();
-		FormLayoutContainer cardCont = FormLayoutContainer.createCustomFormLayout(
-				cardId, getTranslator(), velocity_root + "/room_card.html");
-		formLayout.add(cardCont);
+		String cardId = RoomUIHelper.forgeRoomCard(formLayout, room, velocity_root, getTranslator());
 		formLayout.contextPut("roomCardId", cardId);
-
-		if (StringHelper.containsNonWhitespace(room.getExternalRef())) {
-			cardCont.contextPut("reference", room.getExternalRef());
-		}
-		
-		if (StringHelper.containsNonWhitespace(room.getDescription())) {
-			cardCont.contextPut("description", room.getDescription());
-		}
-		
-		if (building != null) {
-			if (StringHelper.containsNonWhitespace(building.getExternalRef())) {
-				cardCont.contextPut("buildingRef", building.getExternalRef());
-			}
-			String buildingDesc = building.getDescription();
-			if (StringHelper.containsNonWhitespace(buildingDesc)
-					&& !buildingDesc.equals(building.getExternalRef())) {
-				cardCont.contextPut("buildingDesc", buildingDesc);
-			}
-			if (StringHelper.containsNonWhitespace(building.getAddress())) {
-				cardCont.contextPut("address", building.getAddress());
-			}
-			if (StringHelper.containsNonWhitespace(building.getColorCss())) {
-				cardCont.contextPut("colorCss", building.getColorCss());
-			}
-			if (StringHelper.containsNonWhitespace(building.getInfoUrl())) {
-				cardCont.contextPut("infoUrl", building.getInfoUrl());
-			}
-
-			if (building.getGeoLatitude() != null && building.getGeoLongitude() != null) {
-				String mapId = "roomCardMap_" + room.getKey();
-				FormLayoutContainer mapCont = FormLayoutContainer.createCustomFormLayout(
-						mapId, getTranslator(), velocity_root + "/building_detail_map.html");
-				cardCont.add(mapCont);
-				cardCont.contextPut("roomCardMapId", mapId);
-
-				mapCont.contextPut("geoLat", building.getGeoLatitude());
-				mapCont.contextPut("geoLon", building.getGeoLongitude());
-				if (StringHelper.containsNonWhitespace(building.getColorCss())) {
-					mapCont.contextPut("colorCss", building.getColorCss());
-				}
-				String leafletCssUri = StaticMediaDispatcher.getStaticURI("js/leaflet/leaflet.css");
-				JSAndCSSComponent leafletLoader = new JSAndCSSComponent("leafletLoader",
-						new String[] { "js/leaflet/leaflet.min.js" },
-						new String[] { leafletCssUri });
-				mapCont.put("leafletLoader", leafletLoader);
-			}
-		}
 	}
 
 	@Override

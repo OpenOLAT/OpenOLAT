@@ -27,9 +27,9 @@
 			}).addTo(map);
 			var pin = L.divIcon({
 				className: '',
-				html: '<div class="o_building_map_pin o_color_background o_color_border_darken ' + color + '"></div>',
-				iconSize: [24, 32],
-				iconAnchor: [12, 32]
+				html: '<div class="o_building_map_pin o_color ' + color + '"><i class="o_icon o_icon_location"> </i></div>',
+				iconSize: [24, 48],  // font-size: 32px and line-height: 1.5: location icon is 24x48 pixels 
+				iconAnchor: [12, 38] // line-height: 1.5: vertical padding of 0.25 (12px) with a correction of 2px (icon geometry)
 			});
 			L.marker([lat, lng], { icon: pin }).addTo(map);
 		}

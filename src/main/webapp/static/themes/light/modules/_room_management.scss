@@ -147,6 +147,9 @@
 	border-radius: 4px;
 	overflow: hidden;
 	border: 1px solid $input-border;
+
+	container-type: inline-size;
+	container-name: o-building-map-container;
 }
 
 .o_room_card {
@@ -171,13 +174,13 @@
 }
 
 .o_building_map_pin {
-	width: 20px;
-	height: 20px;
-	border-radius: 50% 50% 50% 0;
-	border: 2px solid rgba(255, 255, 255, 0.85);
-	transform: rotate(-45deg);
-	margin-left: 2px;
-	margin-top: 6px;
+	font-size: 32px;
+}
+
+@container o-building-map-container (max-width: 200px) {
+	.o_building_map_pin {
+		transform: translate(0, 5px) scale(0.75); // additional vertical correction of 5px
+	}
 }
 
 .o_rm_detail_attribute_row {
