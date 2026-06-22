@@ -1484,6 +1484,10 @@ dialog {
 		border-top-left-radius: 0;
 		border-bottom-left-radius: 0;
 	}
+	
+	+.form-control-feedback {
+		display: none;
+	}
 }
 
 /* Restore border-radius on .form-control elements inside a non-addon span
