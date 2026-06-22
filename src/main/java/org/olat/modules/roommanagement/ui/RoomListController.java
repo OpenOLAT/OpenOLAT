@@ -21,6 +21,7 @@ package org.olat.modules.roommanagement.ui;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -93,6 +94,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 
 	private static final String FILTER_STATUS = "status";
 	private static final String FILTER_BUILDINGS = "buildings";
+	private static final String FILTER_ROOMS = "rooms";
 	private static final String TAB_ID_ALL = "all";
 	private static final String TAB_ID_RELEVANT = "relevant";
 	private static final String TAB_ID_DELETED = "deleted";
@@ -197,19 +199,90 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		filters.add(new FlexiTableMultiSelectionFilter(translate("room.filter.status"),
 				FILTER_STATUS, statusValues, true));
 
+		initBuildingFilter(filters);
+		initRoomFilter(filters);
+
+		tableEl.setFilters(true, filters, false, false);
+	}
+
+	private void initBuildingFilter(List<FlexiTableExtendedFilter> filters) {
 		SelectionValues buildingValues = new SelectionValues();
-		roomManagementService.searchBuildings(new SearchBuildingParameters(), roles).forEach(b -> {
-			String label = StringHelper.containsNonWhitespace(b.getExternalRef()) ? b.getExternalRef() : b.getDescription();
-			if (StringHelper.containsNonWhitespace(label)) {
-				buildingValues.add(SelectionValues.entry(b.getKey().toString(), label));
+		List<Building> buildings = roomManagementService.searchBuildings(new SearchBuildingParameters(), roles);
+		buildings.sort(Comparator.comparing(b -> {
+			String sortLabel = StringHelper.containsNonWhitespace(b.getExternalRef()) ? b.getExternalRef() : b.getDescription();
+			return sortLabel != null ? sortLabel.toLowerCase() : "";
+		}));
+		for (Building b : buildings) {
+			String ref = b.getExternalRef();
+			String desc = b.getDescription();
+			boolean hasRef = StringHelper.containsNonWhitespace(ref);
+			boolean hasDesc = StringHelper.containsNonWhitespace(desc);
+			if (!hasRef && !hasDesc) {
+				continue;
 			}
-		});
+			StringBuilder html = new StringBuilder();
+			if (hasRef) {
+				html.append("<span>").append(StringHelper.escapeHtml(ref)).append("</span>");
+			}
+			if (hasDesc) {
+				html.append("<span class=\"text-muted\"> &middot; ").append(StringHelper.escapeHtml(desc)).append("</span>");
+			}
+			if (b.getStatus() != null) {
+				String statusName = b.getStatus().name();
+				String statusLabel = translate("building.status." + statusName);
+				html.append("&nbsp;|&nbsp;");
+				html.append("<div class=\"o_building_room_status_icon\">");
+				html.append("<i class=\"o_icon o_icon_circle_color o_building_room_status_").append(StringHelper.escapeHtml(statusName)).append("\"> </i>");
+				html.append("</div>");
+				html.append("&nbsp;");
+				html.append("<span>").append(StringHelper.escapeHtml(statusLabel)).append("</span>");
+			}
+			buildingValues.add(SelectionValues.entry(b.getKey().toString(), html.toString()));
+		}
 		if (!buildingValues.isEmpty()) {
 			filters.add(new FlexiTableMultiSelectionFilter(translate("room.filter.buildings"),
 					FILTER_BUILDINGS, buildingValues, true));
 		}
+	}
 
-		tableEl.setFilters(true, filters, false, false);
+	private void initRoomFilter(List<FlexiTableExtendedFilter> filters) {
+		SelectionValues roomValues = new SelectionValues();
+		List<Room> rooms = roomManagementService.searchRooms(new SearchRoomParameters(), roles);
+		rooms.sort(Comparator.comparing(r -> {
+			String sortLabel = StringHelper.containsNonWhitespace(r.getExternalRef()) ? r.getExternalRef() : r.getDescription();
+			return sortLabel != null ? sortLabel.toLowerCase() : "";
+		}));
+		for (Room r : rooms) {
+			String ref = r.getExternalRef();
+			String desc = r.getDescription();
+			boolean hasRef = StringHelper.containsNonWhitespace(ref);
+			boolean hasDesc = StringHelper.containsNonWhitespace(desc);
+			if (!hasRef && !hasDesc) {
+				continue;
+			}
+			StringBuilder html = new StringBuilder();
+			if (hasRef) {
+				html.append("<span>").append(StringHelper.escapeHtml(ref)).append("</span>");
+			}
+			if (hasDesc) {
+				html.append("<span class=\"text-muted\"> &middot; ").append(StringHelper.escapeHtml(desc)).append("</span>");
+			}
+			if (r.getStatus() != null) {
+				String statusName = r.getStatus().name();
+				String statusLabel = translate("building.status." + statusName);
+				html.append("&nbsp;|&nbsp;");
+				html.append("<div class=\"o_building_room_status_icon\">");
+				html.append("<i class=\"o_icon o_icon_circle_color o_building_room_status_").append(StringHelper.escapeHtml(statusName)).append("\"> </i>");
+				html.append("</div>");
+				html.append("&nbsp;");
+				html.append("<span>").append(StringHelper.escapeHtml(statusLabel)).append("</span>");
+			}
+			roomValues.add(SelectionValues.entry(r.getKey().toString(), html.toString()));
+		}
+		if (!roomValues.isEmpty()) {
+			filters.add(new FlexiTableMultiSelectionFilter(translate("room.filter.rooms"),
+					FILTER_ROOMS, roomValues, true));
+		}
 	}
 
 	private void initFilterTabs(UserRequest ureq) {
@@ -270,6 +343,13 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		if (!selectedBuildingKeys.isEmpty()) {
 			rooms = rooms.stream()
 					.filter(r -> r.getBuilding() != null && selectedBuildingKeys.contains(r.getBuilding().getKey()))
+					.collect(Collectors.toList());
+		}
+
+		Set<Long> selectedRoomKeys = getSelectedLongKeys(FILTER_ROOMS);
+		if (!selectedRoomKeys.isEmpty()) {
+			rooms = rooms.stream()
+					.filter(r -> selectedRoomKeys.contains(r.getKey()))
 					.collect(Collectors.toList());
 		}
 
