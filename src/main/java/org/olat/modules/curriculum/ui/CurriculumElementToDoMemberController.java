@@ -50,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -258,7 +259,7 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (tableEl == source && event instanceof FlexiTableFilterTabEvent) {
+		if (tableEl == source && (event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent)) {
 			dataModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 			tableEl.reset(true, true, true);
 		}
