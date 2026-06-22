@@ -172,7 +172,7 @@ implements SortableFlexiTableDataModel<EditDatesLecturesEntryRow>, FlexiTableCss
 		for(Identity teacher:row.getTeachers()) {
 			if(sb.length() > 0) sb.append("; ");
 			String fullName = userManager.getUserDisplayName(teacher);
-			sb.append(StringHelper.escapeHtml(fullName));
+			sb.append(fullName);
 		}
 		return sb.toString();
 	}
