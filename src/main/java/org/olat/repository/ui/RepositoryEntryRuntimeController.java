@@ -786,8 +786,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void processClosedUnclosedEvent(UserRequest ureq) {
 		loadRepositoryEntry();
-		reloadSecurity(ureq);
 		toolbarPanel.popUpToRootController(ureq);
+		reloadSecurity(ureq);
 	}
 	
 	protected void processReloadSettingsEvent(ReloadSettingsEvent event) {
@@ -980,11 +980,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				doRestore(ureq);
 			}
 		} else if(confirmCloseCtrl == source) {
-			cmc.deactivate();
-			if(event == Event.DONE_EVENT || (event instanceof EntryChangedEvent ece && ece.getChange() == Change.closed)) {
+			if(event == Event.DONE_EVENT) {
+				cmc.deactivate();
 				doCloseResource(ureq);
+				cleanUp();
+			} else if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
 			}
-			cleanUp();
 		}
 	}
 	

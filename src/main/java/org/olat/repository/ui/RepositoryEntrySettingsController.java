@@ -48,9 +48,9 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRuntimeType;
-import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -273,7 +273,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 				cleanUpConfirmation();
 			}
 		} else if(confirmCloseCtrl == source) {
-			if(event instanceof EntryChangedEvent) {
+			if(event == Event.DONE_EVENT) {
 				cmc.deactivate();
 				cleanUp();
 				doCloseResource(ureq);
