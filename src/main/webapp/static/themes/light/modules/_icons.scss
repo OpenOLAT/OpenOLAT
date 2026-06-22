@@ -276,7 +276,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_italic { @include o-add-icon('italic');}
 .o_icon_keyboard { @include o-add-icon('keyboard', false);}
 .o_icon_landingpage { @include o-add-icon('bullseye');}
-.o_icon_language { @include o-add-icon('globe');}
+.o_icon_language { @include o-add-icon('book-atlas');}
 .o_icon_layout { @include o-add-icon('file-image', false);}
 .o_icon_legal_folder { @include o-add-icon('section');}
 .o_icon_learning_path { @include o-add-icon('map-signs');}
