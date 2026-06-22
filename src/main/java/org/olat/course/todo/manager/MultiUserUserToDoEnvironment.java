@@ -161,6 +161,9 @@ public class MultiUserUserToDoEnvironment implements CourseToDoEnvironment {
 		
 		if (contentChanged) {
 			toDoTask.setContentModifiedDate(new Date());
+			if (status == ToDoStatus.deleted && previousStatus != status) {
+				toDoTask.setDeletedDate(toDoTask.getContentModifiedDate());
+			}
 		}
 		if (contentChanged || originChanged) {
 			getToDoService().update(null, toDoTask, previousStatus);

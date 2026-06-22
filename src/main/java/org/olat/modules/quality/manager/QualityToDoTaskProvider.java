@@ -149,6 +149,9 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider, ToDoConte
 		
 		toDoTask.setStatus(ToDoStatus.deleted);
 		toDoTask.setContentModifiedDate(new Date());
+		toDoTask.setDeletedDate(toDoTask.getContentModifiedDate());
+		toDoTask.setDeletedBy(doer);
+		
 		toDoService.update(doer, toDoTask, previousStatus);
 		
 		toDoTask = getToDoTask(toDoTaskRef, false);

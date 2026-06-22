@@ -221,6 +221,8 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 			ToDoStatus previousStatus = toDoTaskElement.getStatus();
 			toDoTaskElement.setStatus(ToDoStatus.deleted);
 			toDoTaskElement.setContentModifiedDate(new Date());
+			toDoTaskElement.setDeletedDate(toDoTaskElement.getContentModifiedDate());
+			toDoTaskElement.setDeletedBy(doer);
 			toDoService.update(doer, toDoTaskElement, previousStatus);
 		});
 		
@@ -250,6 +252,12 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 		
 		reloadedToDoTask.setStatus(status);
 		reloadedToDoTask.setContentModifiedDate(new Date());
+		
+		if (status == ToDoStatus.deleted) {
+			reloadedToDoTask.setDeletedDate(reloadedToDoTask.getContentModifiedDate());
+			reloadedToDoTask.setDeletedBy(doer);
+		}
+		
 		toDoService.update(doer, reloadedToDoTask, previousStatus);
 	}
 

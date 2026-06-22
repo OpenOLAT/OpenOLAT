@@ -37,10 +37,9 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.date.RelativeDateDisplayValue;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.date.RelativeDateDisplayValue;
-import org.olat.repository.ExecutionPeriodRelativeDateContext;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
@@ -88,6 +87,7 @@ import org.olat.modules.todo.ui.ToDoTaskEditController;
 import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoTaskMemberConfig;
 import org.olat.modules.todo.ui.ToDoUIFactory;
+import org.olat.repository.ExecutionPeriodRelativeDateContext;
 import org.olat.user.IdentitySelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -509,6 +509,12 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 
 		reloadedToDoTask.setStatus(status);
 		reloadedToDoTask.setContentModifiedDate(new Date());
+		
+		if (status == ToDoStatus.deleted) {
+			reloadedToDoTask.setDeletedDate(reloadedToDoTask.getContentModifiedDate());
+			reloadedToDoTask.setDeletedBy(doer);
+		}
+		
 		toDoService.update(doer, reloadedToDoTask, previousStatus);
 	}
 	

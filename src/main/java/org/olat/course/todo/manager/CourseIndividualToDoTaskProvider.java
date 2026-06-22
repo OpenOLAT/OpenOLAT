@@ -257,6 +257,12 @@ public class CourseIndividualToDoTaskProvider implements ToDoProvider {
 		
 		reloadedToDoTask.setStatus(status);
 		reloadedToDoTask.setContentModifiedDate(new Date());
+		
+		if (status == ToDoStatus.deleted) {
+			reloadedToDoTask.setDeletedDate(reloadedToDoTask.getContentModifiedDate());
+			reloadedToDoTask.setDeletedBy(doer);
+		}
+		
 		toDoService.update(doer, reloadedToDoTask, previousStatus);
 	}
 

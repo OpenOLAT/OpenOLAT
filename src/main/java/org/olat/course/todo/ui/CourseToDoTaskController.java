@@ -290,7 +290,12 @@ public class CourseToDoTaskController extends ToDoTaskListController {
 			ToDoStatus previousStatus = toDoTaskElement.getStatus();
 			toDoTaskElement.setStatus(status);
 			toDoTaskElement.setContentModifiedDate(new Date());
-			toDoService.update(ureq.getIdentity(), toDoTaskElement, previousStatus);
+			if (status == ToDoStatus.deleted) {
+				toDoTaskElement.setDeletedDate(toDoTaskElement.getContentModifiedDate());
+				toDoTaskElement.setDeletedBy(getIdentity());
+			}
+			
+			toDoService.update(getIdentity(), toDoTaskElement, previousStatus);
 		});
 	}
 	
