@@ -1,0 +1,39 @@
+<div class="o_room_card">
+	#if($roomCardMapId)
+	<div>
+		$r.render($roomCardMapId)
+	</div>
+	#end
+	<div class="o_room_card_info">
+		<div class="o_room_card_name">
+			#if($colorCss)
+			<div class="o_building_rect_container">
+				<div class="o_building_rect o_color_background $r.escapeHtml($colorCss)"> </div>
+			</div>
+			#end
+			#if($reference)
+			<span class="o_room_card_ref">$r.escapeHtml($reference)</span>
+			#end
+			#if($description)
+			&nbsp;&middot;&nbsp;
+			<span class="text-muted">$r.escapeHtml($description)</span>
+			#end
+		</div>
+		#if($buildingRef || $buildingDesc)
+		<div class="o_room_card_building_name">
+			#if($buildingRef && $buildingDesc)
+			$r.translate("room.in.2", $r.escapeHtml($buildingRef), $r.escapeHtml($buildingDesc))
+			#elseif($buildingRef)
+			$r.translate("room.in.1", $r.escapeHtml($buildingRef))
+			#else
+			$r.translate("room.in.1", $r.escapeHtml($buildingDesc))
+			#end
+		</div>
+		#end
+		#if($address)
+		<div class="o_room_card_address">
+			<i class="o_icon o_icon_location"> </i>&nbsp;$r.escapeHtml($address)
+		</div>
+		#end
+	</div>
+</div>

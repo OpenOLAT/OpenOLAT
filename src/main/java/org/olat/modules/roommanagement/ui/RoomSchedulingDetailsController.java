@@ -260,7 +260,7 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 
 			String cardId = "roomCard_" + room.getKey();
 			FormLayoutContainer cardCont = FormLayoutContainer.createCustomFormLayout(
-					cardId, getTranslator(), velocity_root + "/room_scheduling_room_card.html");
+					cardId, getTranslator(), velocity_root + "/room_card.html");
 			formLayout.add(cardCont);
 
 			if (StringHelper.containsNonWhitespace(room.getExternalRef())) {
@@ -287,13 +287,14 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 					cardCont.contextPut("colorCss", building.getColorCss());
 				}
 
-				String mapId = "roomCardMap_" + room.getKey();
-				FormLayoutContainer mapCont = FormLayoutContainer.createCustomFormLayout(
-						mapId, getTranslator(), velocity_root + "/building_detail_map.html");
-				cardCont.add(mapCont);
-				cardCont.contextPut("roomCardMapId", mapId);
 
 				if (building.getGeoLatitude() != null && building.getGeoLongitude() != null) {
+					String mapId = "roomCardMap_" + room.getKey();
+					FormLayoutContainer mapCont = FormLayoutContainer.createCustomFormLayout(
+							mapId, getTranslator(), velocity_root + "/building_detail_map.html");
+					cardCont.add(mapCont);
+					cardCont.contextPut("roomCardMapId", mapId);
+
 					mapCont.contextPut("geoLat", building.getGeoLatitude());
 					mapCont.contextPut("geoLon", building.getGeoLongitude());
 					if (StringHelper.containsNonWhitespace(building.getColorCss())) {

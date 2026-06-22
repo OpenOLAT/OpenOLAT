@@ -161,31 +161,57 @@ public class RoomDetailsController extends FormBasicController {
 			formLayout.contextPut("adminInfo", StringHelper.xssScan(room.getAdminInfo()));
 		}
 
-		if (building != null) {
-			if (building.getGeoLatitude() != null && building.getGeoLongitude() != null) {
-				// Visiting card map sub-layout (reuse building_detail_map.html)
-				FormLayoutContainer mapCont = FormLayoutContainer.createCustomFormLayout(
-						"roomVisitingCardMap", getTranslator(), velocity_root + "/building_detail_map.html");
-				formLayout.add(mapCont);
+		// Card
+		String cardId = "roomCard_" + room.getKey();
+		FormLayoutContainer cardCont = FormLayoutContainer.createCustomFormLayout(
+				cardId, getTranslator(), velocity_root + "/room_card.html");
+		formLayout.add(cardCont);
+		formLayout.contextPut("roomCardId", cardId);
 
+		if (StringHelper.containsNonWhitespace(room.getExternalRef())) {
+			cardCont.contextPut("reference", room.getExternalRef());
+		}
+		
+		if (StringHelper.containsNonWhitespace(room.getDescription())) {
+			cardCont.contextPut("description", room.getDescription());
+		}
+		
+		if (building != null) {
+			if (StringHelper.containsNonWhitespace(building.getExternalRef())) {
+				cardCont.contextPut("buildingRef", building.getExternalRef());
+			}
+			String buildingDesc = building.getDescription();
+			if (StringHelper.containsNonWhitespace(buildingDesc)
+					&& !buildingDesc.equals(building.getExternalRef())) {
+				cardCont.contextPut("buildingDesc", buildingDesc);
+			}
+			if (StringHelper.containsNonWhitespace(building.getAddress())) {
+				cardCont.contextPut("address", building.getAddress());
+			}
+			if (StringHelper.containsNonWhitespace(building.getColorCss())) {
+				cardCont.contextPut("colorCss", building.getColorCss());
+			}
+			if (StringHelper.containsNonWhitespace(building.getInfoUrl())) {
+				cardCont.contextPut("infoUrl", building.getInfoUrl());
+			}
+
+			if (building.getGeoLatitude() != null && building.getGeoLongitude() != null) {
+				String mapId = "roomCardMap_" + room.getKey();
+				FormLayoutContainer mapCont = FormLayoutContainer.createCustomFormLayout(
+						mapId, getTranslator(), velocity_root + "/building_detail_map.html");
+				cardCont.add(mapCont);
+				cardCont.contextPut("roomCardMapId", mapId);
+
+				mapCont.contextPut("geoLat", building.getGeoLatitude());
+				mapCont.contextPut("geoLon", building.getGeoLongitude());
 				if (StringHelper.containsNonWhitespace(building.getColorCss())) {
 					mapCont.contextPut("colorCss", building.getColorCss());
 				}
-				mapCont.contextPut("geoLat", building.getGeoLatitude());
-				mapCont.contextPut("geoLon", building.getGeoLongitude());
 				String leafletCssUri = StaticMediaDispatcher.getStaticURI("js/leaflet/leaflet.css");
 				JSAndCSSComponent leafletLoader = new JSAndCSSComponent("leafletLoader",
 						new String[] { "js/leaflet/leaflet.min.js" },
 						new String[] { leafletCssUri });
 				mapCont.put("leafletLoader", leafletLoader);
-			}
-
-			if (StringHelper.containsNonWhitespace(building.getAddress())) {
-				formLayout.contextPut("address", building.getAddress());
-			}
-
-			if (StringHelper.containsNonWhitespace(building.getInfoUrl())) {
-				formLayout.contextPut("infoUrl", building.getInfoUrl());
 			}
 		}
 	}
