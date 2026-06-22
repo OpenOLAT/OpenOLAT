@@ -299,7 +299,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 				cleanUpConfirmation();
 			}
 		} else if(confirmCloseCtrl == source) {
-			if(event instanceof EntryChangedEvent) {
+			if(event == Event.DONE_EVENT) {
 				cmc.deactivate();
 				cleanUp();
 				doCloseResource(ureq);
