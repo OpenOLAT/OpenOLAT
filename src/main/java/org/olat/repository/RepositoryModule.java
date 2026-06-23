@@ -98,7 +98,7 @@ public class RepositoryModule extends AbstractSpringModule {
 
 	@Value("${site.catalog.enable:true}")
 	private boolean catalogSiteEnabled;
-	@Value("${catalog.enable:true}")
+	@Value("${catalog.enable:false}")
 	private boolean catalogEnabled;
 	@Value("${repo.catalog.browsing.enable}")
 	private boolean catalogBrowsingEnabled;

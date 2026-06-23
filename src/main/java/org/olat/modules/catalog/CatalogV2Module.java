@@ -74,7 +74,7 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	private static final String KEY_LAUNCHER_TAXONOMY_LEVEL_STYLE = "catalog.v2.launcher.taxonomy.level.style";
 	private static final String KEY_CARD_VIEW = "catalog.v2.card.view";
 
-	@Value("${catalog.v2.enabled:false}")
+	@Value("${catalog.v2.enabled:true}")
 	private boolean enabled;
 	@Value("${catalog.v2.web.publish.enabled:false}")
 	private boolean webPublishEnabled;

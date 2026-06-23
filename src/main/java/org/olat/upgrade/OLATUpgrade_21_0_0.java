@@ -19,13 +19,20 @@
  */
 package org.olat.upgrade;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
@@ -46,6 +53,7 @@ public class OLATUpgrade_21_0_0 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_21.0.0";
 	private static final String MIGRATE_OFFER_VALID_STATUS = "MIGRATE OFFER VALID STATUS";
 	private static final String MIGRATE_CURRICULUM_ELEMENT_TYPE = "MIGRATE CURRICULUM ELEMENT TYPE";
+	private static final String MIGRATE_CATALOG_DEFAULTS = "MIGRATE CATALOG DEFAULTS";
 
 	@Autowired
 	private DB dbInstance;
@@ -69,6 +77,7 @@ public class OLATUpgrade_21_0_0 extends OLATUpgrade {
 		boolean allOk = true;
 		allOk &= migrateOfferValidStatus(upgradeManager, uhd);
 		allOk &= migrateElementTypes(upgradeManager, uhd);
+		allOk &= migrateCatalogDefaults(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -278,10 +287,44 @@ public class OLATUpgrade_21_0_0 extends OLATUpgrade {
 				inner join el.type as elType
 				inner join el.parent as parentEl
 				where parentEl.type.key=:elementTypeKey""";
-		
+
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, CurriculumElementType.class)
 				.setParameter("elementTypeKey", elementType.getKey())
 				.getResultList();
+	}
+
+	private boolean migrateCatalogDefaults(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_CATALOG_DEFAULTS)) {
+			try {
+				pinPropertyDefault("org.olat.repository.RepositoryModule.properties", "catalog.enable", "true");
+				pinPropertyDefault("org.olat.modules.catalog.CatalogV2Module.properties", "catalog.v2.enabled", "false");
+				log.info("Catalog defaults migrated.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(MIGRATE_CATALOG_DEFAULTS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
+	private void pinPropertyDefault(String fileName, String key, String value) throws Exception {
+		Path propsPath = Paths.get(WebappHelper.getUserDataRoot(), "system", "configuration", fileName);
+		Properties props = new Properties();
+		if (Files.exists(propsPath)) {
+			try (FileInputStream input = new FileInputStream(propsPath.toFile())) {
+				props.load(input);
+			}
+		}
+		if (!props.containsKey(key)) {
+			props.setProperty(key, value);
+			Files.createDirectories(propsPath.getParent());
+			try (FileOutputStream output = new FileOutputStream(propsPath.toFile())) {
+				props.store(output, "");
+			}
+		}
 	}
 }
