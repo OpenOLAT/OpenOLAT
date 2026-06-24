@@ -51,6 +51,7 @@ public class RoomDetailsController extends FormBasicController {
 
 	private FormLink editLink;
 	private FormLink calendarLink;
+	private FormLink detailsLink;
 	private final Room room;
 
 	@Autowired
@@ -89,6 +90,10 @@ public class RoomDetailsController extends FormBasicController {
 			editLink = uifactory.addFormLink("edit", formLayout, Link.BUTTON);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
+
+		detailsLink = uifactory.addFormLink("room.detail.open.details", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_circle_info");
+		detailsLink.setTitle(translate("room.detail.open.details"));
 
 		// Seats
 		formLayout.contextPut("seats", room.getSeats());
@@ -169,12 +174,18 @@ public class RoomDetailsController extends FormBasicController {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == calendarLink) {
 			fireEvent(ureq, new Event("viewCalendar"));
+		} else if (source == detailsLink) {
+			doOpenDetails(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	private void doOpenDetails(UserRequest ureq) {
 		//
 	}
 }

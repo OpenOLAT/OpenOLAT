@@ -211,6 +211,28 @@
 	margin-bottom: 8px;
 }
 
+.o_rm_detail_preview_row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	align-items: center;
+	gap: 16px 16px;
+
+	.o_rm_detail_preview_details {
+		margin-left: 32px;
+	}
+}
+
+@media (max-width: $screen-sm-max) {
+	.o_rm_detail_preview_row {
+		grid-template-columns: 1fr;
+
+		.o_rm_detail_preview_details {
+			margin-left: 0;
+		}
+	}
+}
+
+
 .o_room_card {
 	display: grid;
 	grid-template-columns: auto 1fr;
