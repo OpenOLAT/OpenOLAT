@@ -55,19 +55,24 @@ public class STRootGradeEvaluator implements RootPassedEvaluator {
 		if (getGradeModule().isEnabled() && gradeApplied && currentEvaluation.getScore() != null) {
 			GradeScoreRange gradeScoreRange = getGradeScoreRange(currentEvaluation, courseNode, courseEntry,
 					assessedIdentity);
-			return GradePassed.of(
-					gradeScoreRange.getGrade(),
-					gradeScoreRange.getGradeSystemIdent(),
-					gradeScoreRange.getPerformanceClassIdent(),
-					gradeScoreRange.getPassed());
+			if (gradeScoreRange != null) {
+				return GradePassed.of(
+						gradeScoreRange.getGrade(),
+						gradeScoreRange.getGradeSystemIdent(),
+						gradeScoreRange.getPerformanceClassIdent(),
+						gradeScoreRange.getPassed());
+			}
 		}
 		return GradePassed.none();
 	}
 
 	GradeScoreRange getGradeScoreRange(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
 			RepositoryEntry courseEntry, Identity assessedIdentity) {
-		Locale locale = getI18nManager().getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
 		GradeScale gradeScale = getGradeService().getGradeScale(courseEntry, courseNode.getIdent());
+		if (gradeScale == null) {
+			return null;
+		}
+		Locale locale = getI18nManager().getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
 		NavigableSet<GradeScoreRange> gradeScoreRanges = getGradeService().getGradeScoreRanges(gradeScale, locale);
 		GradeScoreRange gradeScoreRange = getGradeService().getGradeScoreRange(gradeScoreRanges, currentEvaluation.getScore());
 		return gradeScoreRange;
@@ -83,6 +88,11 @@ public class STRootGradeEvaluator implements RootPassedEvaluator {
 	// For testing only
 	void setGradeModule(GradeModule gradeModule) {
 		this.gradeModule = gradeModule;
+	}
+
+	// For testing only
+	void setGradeService(GradeService gradeService) {
+		this.gradeService = gradeService;
 	}
 
 	private GradeService getGradeService() {

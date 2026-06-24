@@ -124,8 +124,8 @@ public class QTI21EditForm extends FormBasicController {
 	private IntegerElement followupTimeEl;
 	private FormToggle gradeEnabledEl;
 	private SingleSelection gradeAutoEl;
-	private StaticTextElement gradeScaleEl;
-	private FormLayoutContainer gradeScaleButtonsCont;
+	private TextElement gradeScaleEl;
+	private FormLayoutContainer gradeScaleCont;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement passedGradeEl;
 	private FormToggle incorporateInCourseAssessmentEl;
@@ -284,12 +284,17 @@ public class QTI21EditForm extends FormBasicController {
 			gradeAutoEl.select(Boolean.toString(modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO)), true);
 			
 			gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
-			gradeScaleEl = uifactory.addStaticTextElement("node.grade.scale.not", "grade.scale", "", formLayout);
-			
-			gradeScaleButtonsCont = FormLayoutContainer.createButtonLayout("gradeButtons", getTranslator());
-			gradeScaleButtonsCont.setRootForm(mainForm);
-			formLayout.add(gradeScaleButtonsCont);
-			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, Link.BUTTON);
+			gradeScaleCont = FormLayoutContainer.createInputGroupLayout("gradeScaleCont", getTranslator(), null, null);
+			gradeScaleCont.setLabel("grade.scale", null);
+			gradeScaleCont.setRootForm(mainForm);
+			formLayout.add(gradeScaleCont);
+			gradeScaleEl = uifactory.addTextElement("node.grade.scale.not", null, 255, "", gradeScaleCont);
+			gradeScaleEl.setEnabled(false);
+			gradeScaleEl.setDomReplacementWrapperRequired(false);
+			gradeScaleEl.setElementCssClass("o_omit_margin");
+			gradeScaleEl.setAriaLabel(translate("grade.scale"));
+			gradeScaleEditLink = uifactory.addFormLink("rightAddOn", "grade.scale.edit", "grade.scale.edit", null, gradeScaleCont, Link.BUTTON);
+			gradeScaleEditLink.setElementCssClass("input-group-addon");
 			
 			passedGradeEl = uifactory.addStaticTextElement("score.passed.grade", "score.passed", translate("score.passed.grade"), formLayout);
 			
@@ -813,9 +818,10 @@ public class QTI21EditForm extends FormBasicController {
 					? translate("node.grade.scale.not.available")
 					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 			gradeScaleEl.setValue(gradeScaleText);
+			gradeScaleEl.getComponent().setDirty(false);
+			gradeScaleCont.setDirty(true);
 			boolean hasGrade = gradeEnabledEl.isVisible() && gradeEnabledEl.isOn();
-			gradeScaleEl.setVisible(hasGrade);
-			gradeScaleButtonsCont.setVisible(hasGrade);
+			gradeScaleCont.setVisible(hasGrade);
 			
 			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
 			passedGradeEl.setVisible(hasGrade && minRange != null);

@@ -141,13 +141,12 @@ public class STAssessmentHandler implements AssessmentHandler {
 					.withDurationEvaluator(CUMULATION_DURATION_EVALUATOR)
 					.withStatusEvaluator(LEARNING_PATH_STATUS_EVALUATOR)
 					.withFullyAssessedEvaluator(FULLY_ASSESSED_EVALUATOR)
-					.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
-					.withRootPassedEvaluator(LEARNING_PATH_ROOT_PASSED_EVALUATOR);
+					.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR);
 			CompletionEvaluator completionEvaluator = CompletionType.duration.equals(courseConfig.getCompletionType())
 					? new AverageCompletionEvaluator(DURATION_WEIGHTED)
 					: new AverageCompletionEvaluator(UNWEIGHTED);
 			builder.withCompletionEvaluator(completionEvaluator);
-			
+
 			ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 			String sequenceKey = moduleConfig.getStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_DEFAULT);
 			if (STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL.equals(sequenceKey)) {
@@ -155,8 +154,13 @@ public class STAssessmentHandler implements AssessmentHandler {
 			} else {
 				builder.withBlockerEvaluator(WITHOUT_SEQUENCE_BLOCKER_EVALUATOR);
 			}
-			
+
 			ModuleConfiguration rootConfig = getRoot(courseNode).getModuleConfiguration();
+			if (rootConfig.getBooleanSafe(STCourseNode.CONFIG_KEY_GRADE_ENABLED)) {
+				builder.withRootPassedEvaluator(GRADE_ROOT_PASSED_EVALUATOR);
+			} else {
+				builder.withRootPassedEvaluator(LEARNING_PATH_ROOT_PASSED_EVALUATOR);
+			}
 			if (rootConfig.has(STCourseNode.CONFIG_SCORE_KEY)) {
 				String scoreKey = rootConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY);
 				if (STCourseNode.CONFIG_SCORE_VALUE_SUM.equals(scoreKey)) {

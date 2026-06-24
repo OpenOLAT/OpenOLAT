@@ -173,7 +173,6 @@ public class STAssessmentConfig implements AssessmentConfig {
 	@Override
 	public Mode getPassedMode() {
 		 if (hasGrade()) {
-			// Conventional course by grade
 			return CoreSpringFactory.getImpl(GradeService.class).hasPassed(courseEntry, courseNode.getIdent())
 					? Mode.evaluated
 					: Mode.none;

@@ -76,6 +76,11 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeScaleEditController;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -97,6 +102,11 @@ public class CourseScoreController extends FormBasicController {
 	private FormLayoutContainer settingsCont;
 	private SingleSelection scoreEl;
 	private FormToggle scoreEnableEl;
+	private FormToggle gradeEnableEl;
+	private TextElement gradeScaleEl;
+	private FormLayoutContainer gradeScaleCont;
+	private FormLink gradeScaleEditLink;
+	private StaticTextElement gradePassedEl;
 	private FormToggle passedEnableEl;
 	private MultipleSelectionElement passedByProgressEl;
 	private MultipleSelectionElement passedByPassedEnableEl;
@@ -104,7 +114,6 @@ public class CourseScoreController extends FormBasicController {
 	private MultipleSelectionElement passedByScoreEl;
 	
 	private InfoPanelItem passedEnableInfosEl;
-	private StaticTextElement passedLabelEl;
 	private TextElement passedNumberCutEl;
 	private TextElement passedPointsCutEl;
 	private FormLink passedByProgressButton;
@@ -114,10 +123,14 @@ public class CourseScoreController extends FormBasicController {
 	private FormLayoutContainer passedNumberCutOverviewCont;
 	private FormLayoutContainer passedPointsCutOverviewCont;
 	
-	private CloseableModalController overviewCmc;
+	private CloseableModalController cmc;
 	private CourseOverviewController overviewCtrl;
+	private GradeScaleEditController gradeScaleCtrl;
 	private StepsMainRunController resetDataWizardCtrl;
-	
+
+	private GradeScale gradeScale;
+	private String rootNodeIdent;
+
 	private final RepositoryEntry courseEntry;
 	private final boolean editable;
 	private final boolean mandatoryNodesAvailable;
@@ -128,10 +141,13 @@ public class CourseScoreController extends FormBasicController {
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	@Autowired
+	private GradeService gradeService;
+	@Autowired
 	private LearningPathService learningPathService;
 
 	public CourseScoreController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean editable) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 		this.courseEntry = entry;
 		this.editable = editable;
@@ -190,8 +206,8 @@ public class CourseScoreController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		flc.removeAll();
 		setFormTitle("options.score.title");
-		setFormInfo("options.score.description");
-		setFormContextHelp("manual_user/learningresources/Course_Settings/#assessment-settings-for-learning-path-courses");
+		setFormInfo("options.score.info");
+		setFormInfoHelp("manual_user/learningresources/Course_Settings_Assessment/");
 		
 		settingsCont = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
 		settingsCont.setRootForm(mainForm);
@@ -199,7 +215,9 @@ public class CourseScoreController extends FormBasicController {
 		
 		// Scoring
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		ModuleConfiguration moduleConfig = course.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration();
+		CourseNode rootNode = course.getCourseEnvironment().getRunStructure().getRootNode();
+		rootNodeIdent = rootNode.getIdent();
+		ModuleConfiguration moduleConfig = rootNode.getModuleConfiguration();
 		String scoreKey = moduleConfig.has(STCourseNode.CONFIG_SCORE_KEY)? moduleConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY): SCORE_VALUE_NONE;
 		scoreEnableEl = uifactory.addToggleButton("options.score.enable", "options.score.enable", translate("on"), translate("off"), settingsCont);
 		scoreEnableEl.addActionListener(FormEvent.ONCHANGE);
@@ -224,10 +242,39 @@ public class CourseScoreController extends FormBasicController {
 			scoreEl.select(scoreKey, true);
 		}
 		
-		uifactory.addSpacerElement("passed.spacer", settingsCont, false);
+		uifactory.addSpacerElement("grade.spacer", settingsCont, false);
 		
+		gradeEnableEl = uifactory.addToggleButton("options.grade.enable", "options.grade.enable", translate("on"), translate("off"), settingsCont);
+		gradeEnableEl.addActionListener(FormEvent.ONCHANGE);
+		gradeEnableEl.setEnabled(editable);
+		gradeEnableEl.setHelpText(translate("options.grade.enable.help"));
+		gradeEnableEl.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Assessment/");
+		if (moduleConfig.getBooleanSafe(STCourseNode.CONFIG_KEY_GRADE_ENABLED)) {
+			gradeEnableEl.toggleOn();
+		} else {
+			gradeEnableEl.toggleOff();
+		}
+
+		gradeScale = gradeService.getGradeScale(courseEntry, rootNodeIdent);
+		gradeScaleCont = FormLayoutContainer.createInputGroupLayout("gradeScaleCont", getTranslator(), null, null);
+		gradeScaleCont.setLabel("grade.scale", null);
+		gradeScaleCont.setRootForm(mainForm);
+		settingsCont.add(gradeScaleCont);
+		gradeScaleEl = uifactory.addTextElement("grade.scale.display", null, 255, "", gradeScaleCont);
+		gradeScaleEl.setDomReplacementWrapperRequired(false);
+		gradeScaleEl.setElementCssClass("o_omit_margin");
+		gradeScaleEl.setAriaLabel(translate("grade.scale"));
+		gradeScaleEl.setEnabled(false);
+		gradeScaleEditLink = uifactory.addFormLink("rightAddOn", "grade.scale.edit", "grade.scale.edit", null, gradeScaleCont, Link.BUTTON);
+		gradeScaleEditLink.setElementCssClass("input-group-addon");
+		gradeScaleEditLink.setEnabled(editable);
+
+		gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "options.grade.passed.condition", "", settingsCont);
+
+		uifactory.addSpacerElement("passed.spacer", settingsCont, false);
+
 		// Passed evaluation
-		passedEnableEl = uifactory.addToggleButton("options.passed.enable", "options.passed.enable", translate("on"), translate("off"), settingsCont);
+		passedEnableEl = uifactory.addToggleButton("options.passed.active", "options.passed.active", translate("on"), translate("off"), settingsCont);
 		passedEnableEl.addActionListener(FormEvent.ONCHANGE);
 		passedEnableEl.setEnabled(editable);
 		if(moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_PROGRESS)
@@ -240,9 +287,6 @@ public class CourseScoreController extends FormBasicController {
 		}
 		
 		passedEnableInfosEl = uifactory.addInfoPanel("passed.info", null, settingsCont);
-		passedEnableInfosEl.setInformations(translate("options.passed.infos"));
-		
-		passedLabelEl = uifactory.addStaticTextElement("options.passed", "options.passed", "", settingsCont);
 		
 		SelectionValues passedByProgressSV = new SelectionValues();
 		passedByProgressSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_PROGRESS, translate("options.passed.progress")));
@@ -363,33 +407,66 @@ public class CourseScoreController extends FormBasicController {
 
 	private void updateUI() {
 		scoreEl.setVisible(scoreEnableEl.isOn());
+		gradeEnableEl.setEnabled(editable && scoreEnableEl.isOn());
+		if (!scoreEnableEl.isOn()) {
+			gradeEnableEl.toggleOff();
+		}
+
+		boolean gradeEnabled = gradeEnableEl.isOn();
+		String gradeScaleText = gradeScale == null
+				? translate("node.grade.scale.not.available")
+				: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
+		gradeScaleEl.setValue(gradeScaleText);
+		gradeScaleEl.getComponent().setDirty(false);
+		gradeScaleCont.setDirty(true);
+		gradeScaleCont.setVisible(gradeEnabled);
+
+		GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
+		gradePassedEl.setValue(GradeUIFactory.translateMinPassed(getTranslator(), minRange));
+		gradePassedEl.setVisible(gradeEnabled && minRange != null);
+
+		if (gradeEnableEl.isVisible() && gradeEnableEl.isOn()) {
+			passedEnableEl.setEnabled(false);
+			if (gradeScale != null && gradeScale.getGradeSystem().hasPassed()) {
+				passedEnableEl.toggleOn();
+				passedEnableInfosEl.setInformations(translate("options.passed.infos.grade.passed"));
+			} else {
+				passedEnableEl.toggleOff();
+				passedEnableInfosEl.setInformations(translate("options.passed.infos.grade.no.passed"));
+			}
+		} else {
+			passedEnableEl.setEnabled(editable);
+			passedEnableInfosEl.setInformations(translate("options.passed.infos.default"));
+		}
+
 		boolean weighted = scoreEnableEl.isOn() && scoreEl.isOneSelected()
 				&& STCourseNode.CONFIG_SCORE_VALUE_SUM_WEIGHTED.equals(scoreEl.getSelectedKey());
 		String cutI18n = weighted ? "options.passed.points.cut.weighted" : "options.passed.points.cut";
 		passedPointsCutEl.setLabel(cutI18n, null);
-		
+
 		boolean passedEnabled = passedEnableEl.isOn();
-		passedByProgressElCont.setVisible(passedEnabled);
-		passedEnableInfosEl.setVisible(passedEnabled);
-		passedLabelEl.setVisible(passedEnabled);
+		passedByProgressEl.setVisible(!gradeEnabled && passedEnabled);
+		passedByProgressElCont.setVisible(!gradeEnabled && passedEnabled);
+		passedEnableInfosEl.setVisible(gradeEnabled || passedEnabled);
 		
-		passedByPassedEnableEl.setVisible(passedEnabled);
+		passedByPassedEnableEl.setVisible(!gradeEnabled && passedEnabled);
 		boolean passedByPassedEnabled = passedByPassedEnableEl.isAtLeastSelected(1);
-		passedByPassedEl.setVisible(passedEnabled && passedByPassedEnabled);
-		
-		boolean passedNumber = passedEnabled && passedByPassedEnabled
+		passedByPassedEl.setVisible(!gradeEnabled && passedEnabled && passedByPassedEnabled);
+
+		boolean passedNumber = !gradeEnabled && passedEnabled && passedByPassedEnabled
 				&& passedByPassedEl.isOneSelected() && STCourseNode.CONFIG_PASSED_NUMBER.equals(passedByPassedEl.getSelectedKey());
 		passedNumberCutEl.setVisible(passedNumber);
-		passedNumberCutOverviewCont.setVisible(passedEnabled);
+		passedNumberCutOverviewCont.setVisible(!gradeEnabled && passedEnabled);
 		
 		String cutExplain = weighted
 				? translate("options.passed.points.cut.explain.weighted", AssessmentHelper.getRoundedScore(infos.getWeightedMaxScore()))
 				: translate("options.passed.points.cut.explain", AssessmentHelper.getRoundedScore(infos.getMaxScore()));
 		passedPointsCutOverviewCont.contextPut("msg", cutExplain);
 		
-		boolean passedPoints = passedEnabled && passedByScoreEl.isKeySelected(STCourseNode.CONFIG_PASSED_POINTS);
+		passedByScoreEl.setVisible(!gradeEnabled && passedEnabled);
+		boolean passedPoints = !gradeEnabled && passedEnabled && passedByScoreEl.isKeySelected(STCourseNode.CONFIG_PASSED_POINTS);
 		passedPointsCutEl.setVisible(passedPoints);
-		passedPointsCutOverviewCont.setVisible(passedEnabled);
+		passedPointsCutOverviewCont.setVisible(!gradeEnabled && passedEnabled);
 		
 		settingsCont.setElementCssClass(null);
 		if (!mandatoryNodesAvailable && passedByProgressEl.isKeySelected(STCourseNode.CONFIG_PASSED_PROGRESS)) {
@@ -403,10 +480,12 @@ public class CourseScoreController extends FormBasicController {
 		if(source == passedEnableEl) {
 			updatePassedUI();
 			updateUI();
-		} else if (source == scoreEnableEl || source == scoreEl
+		} else if (source == scoreEnableEl || source == scoreEl || source == gradeEnableEl
 				|| source == passedByProgressEl || source == passedByPassedEnableEl
 				|| source == passedByPassedEl || source == passedByScoreEl) {
 			updateUI();
+		} else if (source == gradeScaleEditLink) {
+			doEditGradeScale(ureq);
 		} else if(passedByProgressButton == source) {
 			doOpenOverviewCourseElements(ureq, PROGRESS_OPTIONS);
 		} else if(passedNumberCutOverviewButton == source) {
@@ -419,14 +498,23 @@ public class CourseScoreController extends FormBasicController {
 	
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
-		if(passedNumberCutOverviewButton != fiSrc && passedPointsCutOverviewButton != fiSrc && passedByProgressButton != fiSrc) {
+		if(passedNumberCutOverviewButton != fiSrc && passedPointsCutOverviewButton != fiSrc
+				&& passedByProgressButton != fiSrc && gradeScaleEditLink != fiSrc) {
 			super.propagateDirtinessToContainer(fiSrc, event);
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(resetDataWizardCtrl == source) {
+		if (source == gradeScaleCtrl) {
+			if (event == Event.DONE_EVENT) {
+				gradeScale = gradeService.getGradeScale(courseEntry, rootNodeIdent);
+				updateUI();
+				markDirty();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(resetDataWizardCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -435,9 +523,9 @@ public class CourseScoreController extends FormBasicController {
 				cleanUp();
 			}
 		} else if(source == overviewCtrl) {
-			overviewCmc.deactivate();
+			cmc.deactivate();
 			cleanUp();
-		} else if(source == overviewCmc) {
+		} else if(source == cmc) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -445,11 +533,13 @@ public class CourseScoreController extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(resetDataWizardCtrl);
+		removeAsListenerAndDispose(gradeScaleCtrl);
 		removeControllerListener(overviewCtrl);
-		removeAsListenerAndDispose(overviewCmc);
+		removeAsListenerAndDispose(cmc);
 		resetDataWizardCtrl = null;
-		overviewCmc = null;
+		gradeScaleCtrl = null;
 		overviewCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -555,15 +645,34 @@ public class CourseScoreController extends FormBasicController {
 		doConfirmSetting(ureq);
 	}
 	
+	private void doEditGradeScale(UserRequest ureq) {
+		if (guardModalController(gradeScaleCtrl)) return;
+
+		double rawMax = infos.getWeightedMaxScore() > 0d ? infos.getWeightedMaxScore() : infos.getMaxScore();
+		if (rawMax <= 0d) {
+			showWarning("error.score.min.max.not.set");
+			return;
+		}
+		Float maxScore = (float) rawMax;
+
+		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, rootNodeIdent, 0f, maxScore, false, true);
+		listenTo(gradeScaleCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				gradeScaleCtrl.getInitialComponent(), true, translate("grade.scale.edit"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
 	private void doOpenOverviewCourseElements(UserRequest ureq, OverviewListOptions listOptions) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		overviewCtrl = new CourseOverviewController(ureq, getWindowControl(), course, listOptions);
 		listenTo(overviewCtrl);
 		
-		overviewCmc = new CloseableModalController(getWindowControl(), translate("close"),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				overviewCtrl.getInitialComponent(), true, translate("overview.cours.elements"), true);
-		listenTo(overviewCmc);
-		overviewCmc.activate();
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private boolean doSave() {
@@ -589,7 +698,17 @@ public class CourseScoreController extends FormBasicController {
 			runConfig.remove(STCourseNode.CONFIG_SCORE_KEY);
 			editorConfig.remove(STCourseNode.CONFIG_SCORE_KEY);
 		}
-		
+
+		if (gradeEnableEl.isOn()) {
+			runConfig.setBooleanEntry(STCourseNode.CONFIG_KEY_GRADE_ENABLED, true);
+			editorConfig.setBooleanEntry(STCourseNode.CONFIG_KEY_GRADE_ENABLED, true);
+		} else {
+			runConfig.remove(STCourseNode.CONFIG_KEY_GRADE_ENABLED);
+			editorConfig.remove(STCourseNode.CONFIG_KEY_GRADE_ENABLED);
+			gradeService.deleteGradeScale(courseEntry, rootNodeIdent);
+			gradeScale = null;
+		}
+
 		boolean passedProgress = passedEnableEl.isOn() && passedByProgressEl.isKeySelected(STCourseNode.CONFIG_PASSED_PROGRESS);
 		if (passedProgress) {
 			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);

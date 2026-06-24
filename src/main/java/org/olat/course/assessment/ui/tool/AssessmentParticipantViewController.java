@@ -309,9 +309,10 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		if (hasGrade) {
 			hasPerformanceSummary = true;
+			GradeSystem gradeSystem = gradeSystemSupplier.getGradeSystem();
 			String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEval.getGradeSystemIdent())
 					? assessmentEval.getGradeSystemIdent()
-					: gradeSystemSupplier.getGradeSystem().getIdentifier();
+					: gradeSystem != null ? gradeSystem.getIdentifier() : null;
 			String translatePerformanceClass = GradeUIFactory.translatePerformanceClass(getTranslator(), 
 					assessmentEval.getPerformanceClassIdent(), assessmentEval.getGrade(), assessmentEval.getGradeSystemIdent());
 			

@@ -80,9 +80,9 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	private SpacerElement scoreSpacer;
 	private FormToggle gradeEnabledEl;
 	private SingleSelection gradeAutoEl;
-	private StaticTextElement gradeScaleEl;
+	private TextElement gradeScaleEl;
 	private SpacerElement gradingSpacer;
-	private FormLayoutContainer gradeScaleButtonsCont;
+	private FormLayoutContainer gradeScaleCont;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement gradePassedEl;
 	private SpacerElement passedSpacer;
@@ -238,11 +238,17 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		gradeAutoEl.select(Boolean.toString(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO)), true);
 		
 		gradeScale = gradeService.getGradeScale(ores, nodeIdent);
-		gradeScaleEl = uifactory.addStaticTextElement("node.grade.scale.not", "grade.scale", "", formLayout);
-		
-		gradeScaleButtonsCont = uifactory.addButtonsFormLayout("gradeButtons", null, formLayout);
-		gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, Link.BUTTON);
-		gradeScaleEditLink.setElementCssClass("o_sel_grade_edit_scale");
+		gradeScaleCont = FormLayoutContainer.createInputGroupLayout("gradeScaleCont", getTranslator(), null, null);
+		gradeScaleCont.setLabel("grade.scale", null);
+		gradeScaleCont.setRootForm(mainForm);
+		formLayout.add(gradeScaleCont);
+		gradeScaleEl = uifactory.addTextElement("node.grade.scale.not", null, 255, "", gradeScaleCont);
+		gradeScaleEl.setEnabled(false);
+		gradeScaleEl.setDomReplacementWrapperRequired(false);
+		gradeScaleEl.setElementCssClass("o_omit_margin");
+		gradeScaleEl.setAriaLabel(translate("grade.scale"));
+		gradeScaleEditLink = uifactory.addFormLink("rightAddOn", "grade.scale.edit", "grade.scale.edit", null, gradeScaleCont, Link.BUTTON);
+		gradeScaleEditLink.setElementCssClass("input-group-addon o_sel_grade_edit_scale");
 		
 		gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", formLayout);
 	}
@@ -315,8 +321,9 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 					? translate("node.grade.scale.not.available")
 					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 			gradeScaleEl.setValue(gradeScaleText);
-			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabled);
-			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabled);
+			gradeScaleEl.getComponent().setDirty(false);
+			gradeScaleCont.setDirty(true);
+			gradeScaleCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabled);
 			
 			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
 			gradePassedEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabled && minRange != null);

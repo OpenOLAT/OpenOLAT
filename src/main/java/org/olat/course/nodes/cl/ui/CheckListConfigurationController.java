@@ -91,8 +91,8 @@ public class CheckListConfigurationController extends FormBasicController {
 	private SpacerElement gradeSpacer;
 	private FormToggle gradeEnabledEl;
 	private SingleSelection gradeAutoEl;
-	private StaticTextElement gradeScaleEl;
-	private FormLayoutContainer gradeScaleButtonsCont;
+	private TextElement gradeScaleEl;
+	private FormLayoutContainer gradeScaleCont;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement gradePassedEl;
 	
@@ -242,12 +242,17 @@ public class CheckListConfigurationController extends FormBasicController {
 			gradeAutoEl.select(Boolean.valueOf(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO)).toString(), true);
 			
 			gradeScale = courseNode != null? gradeService.getGradeScale(courseEntry, courseNode.getIdent()): null;
-			gradeScaleEl = uifactory.addStaticTextElement("node.grade.scale.not", "grade.scale", "", formLayout);
-			
-			gradeScaleButtonsCont = FormLayoutContainer.createButtonLayout("gradeButtons", getTranslator());
-			gradeScaleButtonsCont.setRootForm(mainForm);
-			formLayout.add(gradeScaleButtonsCont);
-			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, Link.BUTTON);
+			gradeScaleCont = FormLayoutContainer.createInputGroupLayout("gradeScaleCont", getTranslator(), null, null);
+			gradeScaleCont.setLabel("grade.scale", null);
+			gradeScaleCont.setRootForm(mainForm);
+			formLayout.add(gradeScaleCont);
+			gradeScaleEl = uifactory.addTextElement("node.grade.scale.not", null, 255, "", gradeScaleCont);
+			gradeScaleEl.setEnabled(false);
+			gradeScaleEl.setDomReplacementWrapperRequired(false);
+			gradeScaleEl.setElementCssClass("o_omit_margin");
+			gradeScaleEl.setAriaLabel(translate("grade.scale"));
+			gradeScaleEditLink = uifactory.addFormLink("rightAddOn", "grade.scale.edit", "grade.scale.edit", null, gradeScaleCont, Link.BUTTON);
+			gradeScaleEditLink.setElementCssClass("input-group-addon");
 			
 			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "config.passed", "", formLayout);
 		}
@@ -589,8 +594,9 @@ public class CheckListConfigurationController extends FormBasicController {
 					? translate("node.grade.scale.not.available")
 					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 			gradeScaleEl.setValue(gradeScaleText);
-			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
-			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
+			gradeScaleEl.getComponent().setDirty(false);
+			gradeScaleCont.setDirty(true);
+			gradeScaleCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
 			
 			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
 			gradePassedEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn() && minRange != null);

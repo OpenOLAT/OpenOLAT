@@ -92,7 +92,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 
 	private FormLayoutContainer messageCont;
 	private FormLayoutContainer gradeSystemCont;
-	private StaticTextElement gradeSystemEl;
+	private TextElement gradeSystemEl;
 	private FormLink gradeSystemEditLink;
 	private StaticTextElement resolutionEl;
 	private StaticTextElement roundingEl;
@@ -235,15 +235,18 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		generalCont.setElementCssClass("o_sel_grade_scale_general");
 		formLayout.add(generalCont);
 
-		gradeSystemCont = FormLayoutContainer.createButtonLayout("gradeCont", getTranslator());
-		gradeSystemCont.setElementCssClass("o_inline_cont");
+		gradeSystemCont = FormLayoutContainer.createInputGroupLayout("gradeCont", getTranslator(), null, null);
 		gradeSystemCont.setLabel("grade.system", null);
 		gradeSystemCont.setRootForm(mainForm);
 		generalCont.add(gradeSystemCont);
 
-		gradeSystemEl = uifactory.addStaticTextElement("grade.system", "", gradeSystemCont);
-		gradeSystemEditLink = uifactory.addFormLink("grade.system.selection.button", gradeSystemCont, Link.BUTTON);
-		gradeSystemEditLink.setElementCssClass("o_sel_grade_system_select");
+		gradeSystemEl = uifactory.addTextElement("grade.system", null, 255, "", gradeSystemCont);
+		gradeSystemEl.setEnabled(false);
+		gradeSystemEl.setDomReplacementWrapperRequired(false);
+		gradeSystemEl.setElementCssClass("o_omit_margin");
+		gradeSystemEl.setAriaLabel(translate("grade.system"));
+		gradeSystemEditLink = uifactory.addFormLink("rightAddOn", "grade.system.selection.button", "grade.system.selection.button", null, gradeSystemCont, Link.BUTTON);
+		gradeSystemEditLink.setElementCssClass("input-group-addon o_sel_grade_system_select");
 
 		resolutionEl = uifactory.addStaticTextElement("grade.system.resolution", "", generalCont);
 		roundingEl = uifactory.addStaticTextElement("grade.system.rounding", "", generalCont);
@@ -760,6 +763,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 
 	private void updateSystemUI() {
 		gradeSystemEl.setValue(GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
+		gradeSystemEl.getComponent().setDirty(false);
+		gradeSystemCont.setDirty(true);
 
 		boolean numeric = GradeSystemType.numeric == gradeSystem.getType();
 		if (numeric) {

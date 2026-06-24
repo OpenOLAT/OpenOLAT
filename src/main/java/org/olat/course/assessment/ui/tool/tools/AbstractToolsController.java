@@ -66,6 +66,7 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,12 +193,15 @@ public abstract class AbstractToolsController extends BasicController {
 				&& scoreEval.getScore() != null
 				&& !StringHelper.containsNonWhitespace(scoreEval.getGrade());
 		if (canApplyGrade) {
-			applyGradeLink = LinkFactory.createLink("tool.grade.apply", "tool.grade.apply", getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
-			applyGradeLink.setIconLeftCSS( "o_icon o_icon-fw o_icon_grade");
-			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeSystem(courseEntry, courseNode.getIdent()));
-			applyGradeLink.setCustomDisplayText(translate("grade.apply.label", gradeSystemLabel));
-			mainVC.put("tool.grade.apply", applyGradeLink);
-			links.add("tool.grade.apply");
+			GradeSystem gradeSystem = gradeService.getGradeSystem(courseEntry, courseNode.getIdent());
+			if (gradeSystem != null) {
+				applyGradeLink = LinkFactory.createLink("tool.grade.apply", "tool.grade.apply", getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
+				applyGradeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
+				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
+				applyGradeLink.setCustomDisplayText(translate("grade.apply.label", gradeSystemLabel));
+				mainVC.put("tool.grade.apply", applyGradeLink);
+				links.add("tool.grade.apply");
+			}
 		}
 	}
 	

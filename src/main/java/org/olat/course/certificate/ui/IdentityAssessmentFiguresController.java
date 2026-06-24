@@ -84,6 +84,7 @@ import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
@@ -342,9 +343,10 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		boolean hasGrade = gradeEnabled && assessmentConfig.hasGrade() && gradeApplied && gradeModule.isEnabled();
 		String gradeSystemident = null;
 		if (hasGrade) {
+			GradeSystem gradeSystem = gradeService.getGradeSystem(courseEntry, courseNode.getIdent());
 			gradeSystemident = StringHelper.containsNonWhitespace(assessmentEvaluation.getGradeSystemIdent())
 					? assessmentEvaluation.getGradeSystemIdent()
-					: gradeService.getGradeSystem(courseEntry, courseNode.getIdent()).toString();
+					: gradeSystem != null ? gradeSystem.toString() : null;
 		}
 		updateGradeUI(hasGrade, resultsVisible, assessmentEvaluation.getPerformanceClassIdent(), assessmentEvaluation.getGrade(), gradeSystemident);
 		

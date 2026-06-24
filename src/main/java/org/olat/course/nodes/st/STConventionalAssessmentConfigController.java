@@ -102,8 +102,8 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 	private FormLayoutContainer gradeConfigCont;
 	private FormLayoutContainer gradeCont;
 	private SingleSelection gradeAutoEl;
-	private StaticTextElement gradeScaleEl;
-	private FormLayoutContainer gradeScaleButtonsCont;
+	private TextElement gradeScaleEl;
+	private FormLayoutContainer gradeScaleCont;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement gradeMinMaxEl;
 	private StaticTextElement gradePassedEl;
@@ -314,13 +314,17 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		gradeAutoEl.select(gradeAutoEl.getKey(0), true);
 		
 		gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
-		gradeScaleEl = uifactory.addStaticTextElement("node.grade.scale.not", "grade.scale", "", gradeCont);
-		
-		gradeScaleButtonsCont = FormLayoutContainer.createButtonLayout("gradeButtons", getTranslator());
-		gradeScaleButtonsCont.setRootForm(mainForm);
-		gradeCont.add(gradeScaleButtonsCont);
-		gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, Link.BUTTON);
-		gradeScaleEditLink.setElementCssClass("o_sel_grade_edit_scale");
+		gradeScaleCont = FormLayoutContainer.createInputGroupLayout("gradeScaleCont", getTranslator(), null, null);
+		gradeScaleCont.setLabel("grade.scale", null);
+		gradeScaleCont.setRootForm(mainForm);
+		gradeCont.add(gradeScaleCont);
+		gradeScaleEl = uifactory.addTextElement("node.grade.scale.not", null, 255, "", gradeScaleCont);
+		gradeScaleEl.setEnabled(false);
+		gradeScaleEl.setDomReplacementWrapperRequired(false);
+		gradeScaleEl.setElementCssClass("o_omit_margin");
+		gradeScaleEl.setAriaLabel(translate("grade.scale"));
+		gradeScaleEditLink = uifactory.addFormLink("rightAddOn", "grade.scale.edit", "grade.scale.edit", null, gradeScaleCont, Link.BUTTON);
+		gradeScaleEditLink.setElementCssClass("input-group-addon o_sel_grade_edit_scale");
 		
 		gradeMinMaxEl = uifactory.addStaticTextElement("score.min.max", "score.min.max", "", gradeCont);
 		gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", gradeCont);
@@ -482,8 +486,9 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 				? translate("node.grade.scale.not.available")
 				: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 		gradeScaleEl.setValue(gradeScaleText);
-		gradeScaleEl.setVisible(gradeEnabled);
-		gradeScaleButtonsCont.setVisible(gradeEnabled);
+		gradeScaleEl.getComponent().setDirty(false);
+		gradeScaleCont.setDirty(true);
+		gradeScaleCont.setVisible(gradeEnabled);
 		gradeScaleEditLink.setVisible(gradeEnabled);
 		
 		String scoreMinMax = gradeScale != null

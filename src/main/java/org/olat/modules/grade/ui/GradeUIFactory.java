@@ -60,6 +60,9 @@ public class GradeUIFactory {
 	}
 
 	public static String translateGradeSystemName(Translator translator, GradeSystem gradeSystem) {
+		if (gradeSystem == null) {
+			return translateGradeSystemLabelFallback(translator);
+		}
 		String i18nKey = getGradeSystemNameI18nKey(gradeSystem);
 		String translation = translator.translate(i18nKey);
 		if (i18nKey.equals(translation) || translation.length() > 256) {
@@ -73,6 +76,9 @@ public class GradeUIFactory {
 	}
 
 	public static String translateGradeSystemLabel(Translator translator, GradeSystem gradeSystem) {
+		if (gradeSystem == null) {
+			return translateGradeSystemLabelFallback(translator);
+		}
 		return translateGradeSystemLabel(translator, gradeSystem.getIdentifier());
 	}
 	

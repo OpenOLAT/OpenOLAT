@@ -51,6 +51,7 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,15 +103,17 @@ public class IdentityConditionalScoreController extends BasicController {
 		
 		if (gradeEnabled) {
 			AssessmentEvaluation assessmentEvaluation = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(courseNode);
+			GradeSystem gradeSystem = gradeService.getGradeSystem(courseEntry, courseNode.getIdent());
 			String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEvaluation.getGradeSystemIdent())
 					? assessmentEvaluation.getGradeSystemIdent()
-					: gradeService.getGradeSystem(courseEntry, courseNode.getIdent()).toString();
+					: gradeSystem != null ? gradeSystem.toString() : null;
 			gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemident);
-			
-			gradeApplyLink = LinkFactory.createCustomLink("grade.apply.button", "grade", "", Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
-			gradeApplyLink.setCustomDisplayText(translate("grade.apply.label", gradeSystemLabel));
-			gradeApplyLink.setIconLeftCSS("o_icon o_icon_grade");
-			gradeApplyLink.setElementCssClass("a_button_bottom");
+			if (gradeSystem != null) {
+				gradeApplyLink = LinkFactory.createCustomLink("grade.apply.button", "grade", "", Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
+				gradeApplyLink.setCustomDisplayText(translate("grade.apply.label", gradeSystemLabel));
+				gradeApplyLink.setIconLeftCSS("o_icon o_icon_grade");
+				gradeApplyLink.setElementCssClass("a_button_bottom");
+			}
 		}
 		
 		reload();

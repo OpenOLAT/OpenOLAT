@@ -107,8 +107,8 @@ public class MSEditFormController extends FormBasicController {
 	private SpacerElement gradeSpacer;
 	private FormToggle gradeEnabledEl;
 	private SingleSelection gradeAutoEl;
-	private StaticTextElement gradeScaleEl;
-	private FormLayoutContainer gradeScaleButtonsCont;
+	private TextElement gradeScaleEl;
+	private FormLayoutContainer gradeScaleCont;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement gradePassedEl;
 
@@ -228,13 +228,17 @@ public class MSEditFormController extends FormBasicController {
 			gradeAutoEl.select(Boolean.valueOf(modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO)).toString(), true);
 			
 			gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
-			gradeScaleEl = uifactory.addStaticTextElement("node.grade.scale.not", "grade.scale", "", formLayout);
-			
-			gradeScaleButtonsCont = FormLayoutContainer.createButtonLayout("gradeButtons", getTranslator());
-			gradeScaleButtonsCont.setRootForm(mainForm);
-			formLayout.add(gradeScaleButtonsCont);
-			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, Link.BUTTON);
-			gradeScaleEditLink.setElementCssClass("o_sel_grade_edit_scale");
+			gradeScaleCont = FormLayoutContainer.createInputGroupLayout("gradeScaleCont", getTranslator(), null, null);
+			gradeScaleCont.setLabel("grade.scale", null);
+			gradeScaleCont.setRootForm(mainForm);
+			formLayout.add(gradeScaleCont);
+			gradeScaleEl = uifactory.addTextElement("node.grade.scale.not", null, 255, "", gradeScaleCont);
+			gradeScaleEl.setEnabled(false);
+			gradeScaleEl.setDomReplacementWrapperRequired(false);
+			gradeScaleEl.setElementCssClass("o_omit_margin");
+			gradeScaleEl.setAriaLabel(translate("grade.scale"));
+			gradeScaleEditLink = uifactory.addFormLink("rightAddOn", "grade.scale.edit", "grade.scale.edit", null, gradeScaleCont, Link.BUTTON);
+			gradeScaleEditLink.setElementCssClass("input-group-addon o_sel_grade_edit_scale");
 			
 			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", formLayout);
 		}
@@ -356,8 +360,9 @@ public class MSEditFormController extends FormBasicController {
 					? translate("node.grade.scale.not.available")
 					: GradeUIFactory.translateGradeSystemName(getTranslator(), gradeScale.getGradeSystem());
 			gradeScaleEl.setValue(gradeScaleText);
-			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
-			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
+			gradeScaleEl.getComponent().setDirty(false);
+			gradeScaleCont.setDirty(true);
+			gradeScaleCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn());
 			
 			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
 			gradePassedEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn() && minRange != null);
@@ -438,8 +443,8 @@ public class MSEditFormController extends FormBasicController {
 		for (String formItemName : formItems.keySet()) {
 			formItems.get(formItemName).setEnabled(!displayOnly);
 		}
-		if (gradeScaleButtonsCont != null) {
-			gradeScaleButtonsCont.setVisible(!displayOnly);
+		if (gradeScaleCont != null) {
+			gradeScaleCont.setVisible(!displayOnly);
 		}
 	}
 	

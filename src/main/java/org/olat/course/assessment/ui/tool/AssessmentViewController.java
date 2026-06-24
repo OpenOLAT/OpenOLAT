@@ -73,6 +73,7 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -194,9 +195,10 @@ public class AssessmentViewController extends BasicController implements Assessm
 		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		mainVC.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
 		if (hasGrade) {
+			GradeSystem gradeSystem = gradeService.getGradeSystem(coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent());
 			String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEntry.getGradeSystemIdent())
 					? assessmentEntry.getGradeSystemIdent()
-					: gradeService.getGradeSystem(coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent()).toString();
+					: gradeSystem != null ? gradeSystem.toString() : null;
 			mainVC.contextPut("gradeLabel", GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemident));
 		}
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();

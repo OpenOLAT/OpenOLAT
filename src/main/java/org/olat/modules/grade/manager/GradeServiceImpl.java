@@ -316,6 +316,9 @@ public class GradeServiceImpl implements GradeService {
 
 	@Override
 	public NavigableSet<GradeScoreRange> getGradeScoreRanges(GradeScale gradeScale, Locale locale) {
+		if (gradeScale == null) {
+			return Collections.emptyNavigableSet();
+		}
 		GradeSystem gradeSystem = gradeScale.getGradeSystem();
 		return getGradeScoreRanges(gradeSystem, getBreakpoints(gradeScale), gradeScale.getMinScore(),
 				gradeScale.getMaxScore(), locale);

@@ -37,6 +37,7 @@ import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.model.GradeScoreRangeImpl;
 import org.olat.repository.RepositoryEntry;
 
@@ -100,6 +101,36 @@ public class STRootGradeEvaluatorTest {
 		assertThat(gradePassed.getPassed()).isNull();
 	}
 	
+	@Test
+	public void shouldReturnNoneIfNoGradeScoreRange() {
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(3f, random(), random(), random(), null);
+		CourseNode courseNode = new STCourseNode();
+		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
+
+		STRootGradeEvaluator sut = createSut(Boolean.TRUE, null);
+		GradePassed gradePassed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry, null);
+
+		assertThat(gradePassed.getGrade()).isNull();
+		assertThat(gradePassed.getGradeSystemIdent()).isNull();
+		assertThat(gradePassed.getPerformanceClassIdent()).isNull();
+		assertThat(gradePassed.getPassed()).isNull();
+	}
+
+	@Test
+	public void shouldReturnNullRangeIfNoGradeScale() {
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(3f, random(), random(), random(), null);
+		CourseNode courseNode = new STCourseNode();
+
+		GradeService gradeService = mock(GradeService.class);
+		when(gradeService.getGradeScale(dummyEntry, courseNode.getIdent())).thenReturn(null);
+
+		STRootGradeEvaluator sut = new STRootGradeEvaluator();
+		sut.setGradeService(gradeService);
+		GradeScoreRange result = sut.getGradeScoreRange(currentEvaluation, courseNode, dummyEntry, null);
+
+		assertThat(result).isNull();
+	}
+
 	@Test
 	public void shouldReturnNullIfModuleDisabled() {
 		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(3f, random(), random(), random(), null);
