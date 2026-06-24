@@ -1,0 +1,51 @@
+<div class="o_rm_details o_rm_detail">
+	<div class="o_flex_header">
+	
+		#if($colorCss)
+		<div class="o_rm_rect_container">
+			<div class="o_rm_rect o_color_background $r.escapeHtml($colorCss)"> </div>
+		</div>
+		#end
+	
+		<div class="o_rm_title">
+			#if($reference)<h3>$r.escapeHtml($reference)</h3>#end
+			#if($description)<h3><small> &middot; $r.escapeHtml($description)</small></h3>#end
+		</div>
+	</div>
+	#if($buildingRef || $buildingDesc)
+	<div class="o_rm_detail_building_name">
+		#if($buildingRef && $buildingDesc)
+		$r.translate("room.in.2", $r.escapeHtml($buildingRef), $r.escapeHtml($buildingDesc))
+		#elseif($buildingRef)
+		$r.translate("room.in.1", $r.escapeHtml($buildingRef))
+		#else
+		$r.translate("room.in.1", $r.escapeHtml($buildingDesc))
+		#end
+		#if($infoUrl)
+		<a href="$r.escapeHtml($infoUrl)" target="_blank" rel="noopener noreferrer" class="o_link">
+			<i class="o_icon o_icon-fw o_icon_arrow_up_right_from_square"> </i>$r.escapeHtml($infoUrlLabel)
+		</a>
+		#end
+	</div>
+	#end
+	#if($address)
+	<div class="o_rm_detail_address">
+		<i class="o_icon o_icon_location"> </i>&nbsp;$r.escapeHtml($address)
+	</div>
+	#end
+	#if($roomInfo)
+	<div class="o_rm_detail_attribute_section">
+		<div class="o_rm_detail_label">$r.translate("room.detail.view.room.info")</div>
+		<div class="o_rm_detail_value o_rich_text">$roomInfo</div>
+	</div>
+	#end
+	#if($buildingInfo)
+	<div class="o_rm_detail_attribute_section">
+		<div class="o_rm_detail_label">$r.translate("room.detail.view.building.info")</div>
+		<div class="o_rm_detail_value o_rich_text">$buildingInfo</div>
+	</div>
+	#end
+	#if($r.available("roomDetailMap"))
+	$r.render("roomDetailMap")
+	#end
+</div>

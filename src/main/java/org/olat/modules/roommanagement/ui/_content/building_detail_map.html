@@ -31,10 +31,18 @@ $r.render("leafletLoader")
 	})();
 	</script>
 	#end
-	#if($r.available("detail.apple.maps") || $r.available("detail.google.maps"))
+	#if($appleMapsUrl || $googleMapsUrl)
 	<div class="o_building_detail_map_actions">
-		#if($r.available("detail.apple.maps"))$r.render("detail.apple.maps")#end
-		#if($r.available("detail.google.maps"))$r.render("detail.google.maps")#end
+		#if($appleMapsUrl)
+		<a href="$r.escapeHtml($appleMapsUrl)" target="_blank" rel="noopener noreferrer" class="btn btn-default">
+			<i class="o_icon o_icon-fw o_icon_arrow_up_right_from_square"> </i>$r.translate("building.apple.maps")
+		</a>
+		#end
+		#if($googleMapsUrl)
+		<a href="$r.escapeHtml($googleMapsUrl)" target="_blank" rel="noopener noreferrer" class="btn btn-default">
+			<i class="o_icon o_icon-fw o_icon_arrow_up_right_from_square"> </i>$r.translate("building.google.maps")
+		</a>
+		#end
 	</div>
 	#end
 </div>

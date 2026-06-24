@@ -34,6 +34,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
@@ -52,6 +53,9 @@ public class RoomDetailsController extends FormBasicController {
 	private FormLink editLink;
 	private FormLink calendarLink;
 	private FormLink detailsLink;
+
+	private CloseableModalController cmc;
+	private RoomDetailViewController roomDetailViewCtrl;
 	private final Room room;
 
 	@Autowired
@@ -181,11 +185,31 @@ public class RoomDetailsController extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == cmc) {
+			removeAsListenerAndDispose(cmc);
+			cmc = null;
+			removeAsListenerAndDispose(roomDetailViewCtrl);
+			roomDetailViewCtrl = null;
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
 
 	private void doOpenDetails(UserRequest ureq) {
-		//
+		removeAsListenerAndDispose(roomDetailViewCtrl);
+		removeAsListenerAndDispose(cmc);
+
+		roomDetailViewCtrl = new RoomDetailViewController(ureq, getWindowControl(), room);
+		listenTo(roomDetailViewCtrl);
+
+		String title = StringHelper.containsNonWhitespace(room.getExternalRef()) ? room.getExternalRef() : "";
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), roomDetailViewCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

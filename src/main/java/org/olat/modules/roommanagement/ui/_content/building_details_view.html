@@ -34,11 +34,13 @@
 				<div class="o_building_detail_section_value">$r.escapeHtml($address)</div>
 			</div>
 			#end
-			#if($r.available("detail.info.url"))
+			#if($infoUrl)
 			<div class="o_building_detail_section">
 				<div class="o_building_detail_section_label">$r.translate("building.col.info.url")</div>
 				<div class="o_building_detail_section_value">
-					$r.render("detail.info.url")
+					<a href="$r.escapeHtml($infoUrl)" target="_blank" rel="noopener noreferrer" class="o_link">
+						<i class="o_icon o_icon-fw o_icon_arrow_up_right_from_square"> </i>$r.escapeHtml($infoUrlLabel)
+					</a>
 				</div>
 			</div>
 			#end

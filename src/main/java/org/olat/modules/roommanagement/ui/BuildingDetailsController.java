@@ -53,9 +53,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BuildingDetailsController extends FormBasicController {
 
 	private FormLink editLink;
-	private FormLink infoUrlLink;
-	private FormLink appleMapsLink;
-	private FormLink googleMapsLink;
 	private final Building building;
 
 	@Autowired
@@ -95,11 +92,8 @@ public class BuildingDetailsController extends FormBasicController {
 		}
 
 		if (StringHelper.containsNonWhitespace(building.getInfoUrl())) {
-			infoUrlLink = uifactory.addFormLink("detail.info.url", "detail.info.url", "building.information",
-					null, formLayout, Link.LINK);
-			infoUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
-			infoUrlLink.setUrl(building.getInfoUrl());
-			infoUrlLink.setNewWindow(true, true, false);
+			formLayout.contextPut("infoUrl", building.getInfoUrl());
+			formLayout.contextPut("infoUrlLabel", translate("building.information"));
 		}
 
 		List<Organisation> orgs = roomManagementService.getOrganisations(building);
@@ -146,20 +140,8 @@ public class BuildingDetailsController extends FormBasicController {
 
 			if (StringHelper.containsNonWhitespace(building.getAddress())) {
 				String query = URLEncoder.encode(building.getAddress(), StandardCharsets.UTF_8);
-				String appleMapsUrl = "https://maps.apple.com/?q=" + query;
-				String googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=" + query;
-
-				appleMapsLink = uifactory.addFormLink("detail.apple.maps", "detail.apple.maps",
-						"building.apple.maps", null, mapCont, Link.BUTTON);
-				appleMapsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
-				appleMapsLink.setUrl(appleMapsUrl);
-				appleMapsLink.setNewWindow(true, true, false);
-
-				googleMapsLink = uifactory.addFormLink("detail.google.maps", "detail.google.maps",
-						"building.google.maps", null, mapCont, Link.BUTTON);
-				googleMapsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");
-				googleMapsLink.setUrl(googleMapsUrl);
-				googleMapsLink.setNewWindow(true, true, false);
+				mapCont.contextPut("appleMapsUrl", "https://maps.apple.com/?q=" + query);
+				mapCont.contextPut("googleMapsUrl", "https://maps.google.com/?q=" + query);
 			}
 		}
 	}

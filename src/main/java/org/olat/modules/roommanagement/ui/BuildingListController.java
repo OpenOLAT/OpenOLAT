@@ -696,7 +696,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 
 			String query = URLEncoder.encode(building.getAddress(), StandardCharsets.UTF_8);
 			appleMapsUrl = "https://maps.apple.com/?q=" + query;
-			googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=" + query;
+			googleMapsUrl = "https://maps.google.com/?q=" + query;
 
 			appleMapsLink = LinkFactory.createLink("building.open.apple.maps", mainVC, this);
 			appleMapsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_up_right_from_square");

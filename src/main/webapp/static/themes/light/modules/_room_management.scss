@@ -299,8 +299,23 @@
 			margin-left: 16px;
 		}
 	}
+	
+	.o_rm_detail_building_name {
+		display: flex;
+		gap: 8px;
+		margin: 8px 0;
+	}
+	
+	.o_rm_detail_address {
+		margin: 8px 0;
+	}
 }
 
+.o_rm_detail {
+	.o_building_map_container {
+		margin-top: 16px;	
+	}
+}
 .o_rm_scheduling_details {
 	.o_lecture_subjects {
 		margin-top: -12px;
