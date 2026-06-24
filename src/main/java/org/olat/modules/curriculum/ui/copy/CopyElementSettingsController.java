@@ -125,7 +125,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		
 		String type = elementToCopy.getType() == null ? null : elementToCopy.getType().getDisplayName(); 
 		if(StringHelper.containsNonWhitespace(type)) {
-			uifactory.addStaticTextElement("curriculum.element.type", type, formLayout);
+			uifactory.addStaticTextElement("curriculum.element.type", StringHelper.escapeHtml(type), formLayout);
 		}
 	}
 	

@@ -24,7 +24,7 @@
 			
 			#if ($isEntryAuthor || $roles.isAdministrator() || $roles.isAuthor() || $roles.isLearnResourceManager())
 				#if ($r.isNotEmpty($technicalType))
-					<tr><th scope="row">$r.translate("cif.technical.type")</th><td>$technicalType</td></tr>
+					<tr><th scope="row">$r.translate("cif.technical.type")</th><td>$r.escapeHtml($technicalType)</td></tr>
 				#end
 				<tr><th scope="row">$r.translate("cif.initialAuthor")</th><td>$r.escapeHtml($v.getInitialAuthor())</td></tr>
 				<tr>

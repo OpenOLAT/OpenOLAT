@@ -137,7 +137,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	
 	@Override
 	protected String getStartLinkText() {
-		return translate("open.with.type", element.getType().getDisplayName());
+		return translate("open.with.type", StringHelper.escapeHtml(element.getType().getDisplayName()));
 	}
 
 	@Override
