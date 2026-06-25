@@ -75,7 +75,6 @@ public class OLATUpgrade_20_1_1 extends OLATUpgrade {
 		if (!uhd.getBooleanDataValue(UPDATE_MY_COURSES_SETTING)) {
 			try {
 				log.info("Set my courses to compatibility mode");
-				repositoryModule.setMyCoursesParticipantsOnly(false);
 				repositoryModule.setMyCoursesCoachingToolHint(false);
 			} catch (Exception e) {
 				log.error("", e);

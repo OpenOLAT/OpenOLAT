@@ -19,7 +19,6 @@
  */
 package org.olat.repository.ui;
 
-import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
@@ -56,15 +55,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryAdminAccessController extends FormBasicController {
 	
-	private static final String OWNER_COACH_ACCESS_KEY = "ownercoach";
-	private static final String COACHING_KEY = "coaching";
-	
 	private static final String SITE_COACHING_TOOL = "olatsites_coaching";
 	private static final String SITE_MY_COURSES = "olatsites_mycourses";
 	
 	private FormToggle hintEl;
 	private FormLink sitesButton;
-	private SingleSelection accessEl;
 	private SingleSelection finishedAccessEl;
 	private FormLayoutContainer overviewCont;
 	private StaticTextElement myCoursesSiteEl;
@@ -97,21 +92,6 @@ public class RepositoryAdminAccessController extends FormBasicController {
 		accessCont.setFormTitle(translate("admin.access"));
 		formLayout.add(accessCont);
 		accessCont.setRootForm(mainForm);
-		
-		SelectionValues accessPk = new SelectionValues();
-		accessPk.add(SelectionValues.entry(OWNER_COACH_ACCESS_KEY, translate("admin.access.coaching.with.owner"),
-				translate("admin.access.coaching.with.owner.descr"), null, null, true));
-		accessPk.add(SelectionValues.entry(COACHING_KEY, translate("admin.access.coaching.with.tool"),
-				translate("admin.access.coaching.with.tool.descr"), null, null, true));
-		
-		accessEl = uifactory.addCardSingleSelectHorizontal("admin.access.coaching", accessCont,
-				accessPk.keys(), accessPk.values(), accessPk.descriptions(), accessPk.icons());
-		accessEl.addActionListener(FormEvent.ONCLICK);
-		if(repositoryModule.isMyCoursesParticipantsOnly()) {
-			accessEl.select(COACHING_KEY, true);
-		} else {
-			accessEl.select(OWNER_COACH_ACCESS_KEY, true);
-		}
 		
 		hintEl = uifactory.addToggleButton("admin.coaching.hint", "admin.coaching.hint", translate("on"), translate("off"), accessCont);
 		hintEl.setHelpTextKey("admin.coaching.hint.help", null);
@@ -177,7 +157,7 @@ public class RepositoryAdminAccessController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(accessEl == source || hintEl == source || finishedAccessEl == source) {
+		if(hintEl == source || finishedAccessEl == source) {
 			doSaveSettings();
 		} else if(sitesButton == source) {
 			doOpenSitesSettings(ureq);
@@ -191,22 +171,8 @@ public class RepositoryAdminAccessController extends FormBasicController {
 	}
 	
 	private void doSaveSettings() {
-		boolean participantsOnly = accessEl.isOneSelected() && COACHING_KEY.equals(accessEl.getSelectedKey());
-		repositoryModule.setMyCoursesParticipantsOnly(participantsOnly);
 		repositoryModule.setMyCoursesCoachingToolHint(hintEl.isOn());
 		
-		if(participantsOnly) {
-			SiteConfiguration coachingToolConfig = siteDefinitions.getConfigurationSite(coachingToolSiteDef);
-			List<SiteConfiguration> configs = sitesModule.getSitesConfiguration();
-			for(SiteConfiguration config:configs) {
-				if(config.getId().equals(coachingToolConfig.getId()) && !config.isEnabled()) {
-					config.setEnabled(true);
-					sitesModule.setSitesConfiguration(configs);
-					break;
-				}
-			}
-		}
-
 		RepositoryEntryFinishedAccessOptions finishedOption = RepositoryEntryFinishedAccessOptions.readonly;
 		if(finishedAccessEl.isOneSelected()) {
 			try {
