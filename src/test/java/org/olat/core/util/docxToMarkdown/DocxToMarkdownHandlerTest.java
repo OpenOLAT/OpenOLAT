@@ -19,6 +19,7 @@
  */
 package org.olat.core.util.docxToMarkdown;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -494,6 +495,39 @@ public class DocxToMarkdownHandlerTest {
 		String md = convertDocumentXml(body);
 		assertTrue("Text box must produce NOTE admonition", md.contains("> [!NOTE]"));
 		assertTrue("Text box content must appear", md.contains("Box text"));
+	}
+
+	/**
+	 * Design/PDF exports lay a page out as a group of many positioned text
+	 * boxes, often one per word. Each such box must NOT become its own NOTE
+	 * admonition; all boxes of one drawing are merged into a single NOTE.
+	 */
+	@Test
+	public void multipleTextBoxesInOneDrawingMergeToSingleNote() throws Exception {
+		String wpsBox = "<wps:wsp xmlns:wps=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\">"
+				+ "<wps:txbx><w:txbxContent><w:p><w:r><w:t xml:space=\"preserve\">%s</w:t></w:r></w:p>"
+				+ "</w:txbxContent></wps:txbx></wps:wsp>";
+		String group = String.format(wpsBox, "Dings") + String.format(wpsBox, " ")
+				+ String.format(wpsBox, "&amp;") + String.format(wpsBox, " ")
+				+ String.format(wpsBox, "Dongs");
+		String body =
+				"<w:p><w:r><w:rPr><w:noProof/></w:rPr>"
+				+ "<mc:AlternateContent><mc:Choice Requires=\"wpg\">"
+				+ "<w:drawing><wp:anchor>"
+				+ "<a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">"
+				+ "<a:graphicData>"
+				+ "<wpg:wgp xmlns:wpg=\"http://schemas.microsoft.com/office/word/2010/wordprocessingGroup\">"
+				+ group
+				+ "</wpg:wgp>"
+				+ "</a:graphicData></a:graphic>"
+				+ "</wp:anchor></w:drawing>"
+				+ "</mc:Choice><mc:Fallback/></mc:AlternateContent>"
+				+ "</w:r></w:p>";
+		String md = convertDocumentXml(body);
+
+		int noteCount = md.split("\\Q> [!NOTE]\\E", -1).length - 1;
+		assertEquals("All boxes of one drawing merge into exactly one NOTE", 1, noteCount);
+		assertTrue("Merged box text must appear joined", md.contains("Dings & Dongs"));
 	}
 
 	// -----------------------------------------------------------------------

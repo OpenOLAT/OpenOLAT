@@ -232,6 +232,15 @@ class DocxToMarkdownHandler extends DefaultHandler {
 	private boolean hadTextBox = false;
 	private int savedDrawingDepth = 0;
 	private final StringBuilder textBoxContent = new StringBuilder();
+	/**
+	 * Nesting level of w:drawing / w:pict containers, independent of the
+	 * {@link #drawingDepth} text-suppression counter (which text boxes reset).
+	 * Text boxes are accumulated per drawing and flushed when the outermost
+	 * drawing closes — see {@link #flushDrawingTextBoxes()}.
+	 */
+	private int noteDrawingDepth = 0;
+	/** Trimmed content of each text box in the current (outermost) drawing. */
+	private final List<String> drawingBoxContents = new ArrayList<>();
 
 	// -----------------------------------------------------------------------
 	// Checkbox state (SDT)
@@ -557,6 +566,7 @@ class DocxToMarkdownHandler extends DefaultHandler {
 			// ----------------------------------------------------------------
 			case "w:drawing":
 				drawingDepth++;
+				noteDrawingDepth++;
 				currentDrawingWidthPx = 0;
 				currentDrawingHeightPx = 0;
 				break;
@@ -579,6 +589,7 @@ class DocxToMarkdownHandler extends DefaultHandler {
 
 			case "w:pict":
 				drawingDepth++;
+				noteDrawingDepth++;
 				break;
 
 			case "wp:docPr": {
@@ -965,6 +976,11 @@ class DocxToMarkdownHandler extends DefaultHandler {
 			case "w:drawing":
 			case "w:pict":
 				if (drawingDepth > 0) drawingDepth--;
+				if (noteDrawingDepth > 0) noteDrawingDepth--;
+				// Outermost drawing closed: emit accumulated text boxes as one NOTE
+				if (noteDrawingDepth == 0) {
+					flushDrawingTextBoxes();
+				}
 				break;
 
 			case "a:custGeom":
@@ -1040,12 +1056,14 @@ class DocxToMarkdownHandler extends DefaultHandler {
 					String tbContent = textBoxContent.toString().trim();
 					textBoxContent.setLength(0);
 					if (!tbContent.isEmpty()) {
-						// Emit as note admonition
-						markdown.append("\n> [!NOTE]\n");
-						for (String line : tbContent.split("\n")) {
-							markdown.append("> ").append(line).append('\n');
+						// Accumulate; all text boxes of one drawing are merged
+						// into a single NOTE when the drawing closes.
+						drawingBoxContents.add(tbContent);
+						// Defensive: a text box not wrapped in a drawing would
+						// never be flushed otherwise — emit it immediately.
+						if (noteDrawingDepth == 0) {
+							flushDrawingTextBoxes();
 						}
-						markdown.append('\n');
 					}
 				}
 				break;
@@ -1145,6 +1163,37 @@ class DocxToMarkdownHandler extends DefaultHandler {
 			markdown.append("\n\n");
 			previousWasList = false;
 		}
+	}
+
+	/**
+	 * Emits the text boxes accumulated for the current drawing as a single
+	 * {@code > [!NOTE]} admonition, then clears the buffer.
+	 * <p>
+	 * A drawing with a single text box is a genuine callout: its internal line
+	 * structure is preserved. A drawing with many text boxes is a positional
+	 * page layout (common in PDF/InDesign exports, often one box per word); its
+	 * boxes are joined in document order into one flowing block so the import
+	 * does not produce one NOTE per word.
+	 */
+	private void flushDrawingTextBoxes() {
+		if (drawingBoxContents.isEmpty()) {
+			return;
+		}
+		String note;
+		if (drawingBoxContents.size() == 1) {
+			note = drawingBoxContents.get(0);
+		} else {
+			note = String.join(" ", drawingBoxContents).replaceAll("\\s+", " ").trim();
+		}
+		drawingBoxContents.clear();
+		if (note.isEmpty()) {
+			return;
+		}
+		markdown.append("\n> [!NOTE]\n");
+		for (String line : note.split("\n")) {
+			markdown.append("> ").append(line).append('\n');
+		}
+		markdown.append('\n');
 	}
 
 	/**
