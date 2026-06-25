@@ -92,7 +92,10 @@ public class JupyterHubConfigTabController extends FormBasicController {
 		setFormTitle("jupyterHub.configuration.title");
 		formLayout.setElementCssClass("o_sel_jupyterhub_configuration");
 
-		SelectionValues jupyterHubKV = jupyterManager.getJupyterHubsKV();
+		SelectionValues jupyterHubKV = new SelectionValues();
+		for (JupyterHub hub : jupyterManager.getActiveJupyterHubs()) {
+			jupyterHubKV.add(SelectionValues.entry(hub.getKey().toString(), hub.getName()));
+		}
 
 		if (jupyterHubKV.isEmpty()) {
 			setFormWarning("form.warning.noHubs");
@@ -100,15 +103,19 @@ public class JupyterHubConfigTabController extends FormBasicController {
 		}
 
 		jupyterManager.initializeJupyterHubDeployment(courseEntry, subIdent, null, null, null);
+		JupyterDeployment jupyterDeployment = jupyterManager.getJupyterDeployment(courseEntry, subIdent);
+		JupyterHub configuredHub = jupyterDeployment.getJupyterHub();
+
+		boolean hubInactive = configuredHub.getStatus() != JupyterHub.JupyterHubStatus.active;
+		if (hubInactive) {
+			jupyterHubKV.add(SelectionValues.entry(configuredHub.getKey().toString(), configuredHub.getName()));
+		}
 
 		jupyterHubEl = uifactory.addDropdownSingleselect("jupyterHub", formLayout, jupyterHubKV.keys(), jupyterHubKV.values());
 		jupyterHubEl.addActionListener(FormEvent.ONCHANGE);
-		JupyterDeployment jupyterDeployment = jupyterManager.getJupyterDeployment(courseEntry, subIdent);
-
-		String hubKey = jupyterDeployment.getJupyterHub().getKey().toString();
-		jupyterHubEl.select(hubKey, true);
-		if (!jupyterHubEl.isOneSelected() && !jupyterHubKV.isEmpty()) {
-			jupyterHubEl.select(jupyterHubKV.keys()[0], true);
+		jupyterHubEl.select(configuredHub.getKey().toString(), true);
+		if (hubInactive) {
+			jupyterHubEl.setWarningKey("jupyterHub.inactive.warning");
 		}
 
 		cpuGuaranteeEl = uifactory.addStaticTextElement("cpuGuarantee", "table.header.hub.cpu.guarantee", "", formLayout);
@@ -126,7 +133,7 @@ public class JupyterHubConfigTabController extends FormBasicController {
 		suppressDataTransmissionAgreementEl = uifactory.addCheckboxesHorizontal("form.suppressDataTransmissionAgreement", formLayout,
 				suppressDataTransmissionAgreementKV.keys(), suppressDataTransmissionAgreementKV.values());
 
-		jupyterHub = jupyterDeployment.getJupyterHub();
+		jupyterHub = configuredHub;
 		setValues(jupyterDeployment.getImage(), jupyterDeployment.getSuppressDataTransmissionAgreement());
 
 		uifactory.addFormSubmitButton("submit", formLayout);
