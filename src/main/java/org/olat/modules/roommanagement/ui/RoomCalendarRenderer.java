@@ -53,7 +53,7 @@ public class RoomCalendarRenderer extends AbstractFlexiTableRenderer {
 
 		renderHeaders(renderer, sb, ftE, ubu, translator, renderResult, args);
 
-		sb.append("<div class=\"o_table_wrapper o_table_flexi o_rendertype_user o_rendertype_calendar\">");
+		sb.append("<div class=\"o_table_wrapper o_table_flexi o_rendertype_user o_rendertype_calendar o_cal\">");
 		sb.append("<div class=\"o_table_body\">");
 		renderBody(renderer, sb, ftC, ubu, translator, renderResult);
 		sb.append("</div>");

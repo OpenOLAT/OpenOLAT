@@ -19,16 +19,24 @@
  */
 package org.olat.modules.roommanagement.ui;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
+import org.olat.commons.calendar.model.Kalendar;
+import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -72,6 +80,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.roommanagement.Building;
@@ -118,6 +128,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private final Roles roles;
 	private final BreadcrumbedStackedPanel stackPanel;
 
+	@Autowired
+	private CalendarModule calendarModule;
 	@Autowired
 	private RoomManagementService roomManagementService;
 
@@ -322,6 +334,16 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void loadModel() {
+		List<Room> rooms = loadRooms();
+		List<RoomRow> rows = new ArrayList<>(rooms.size());
+		for (Room room : rooms) {
+			rows.add(forgeRow(room));
+		}
+		dataModel.setObjects(rows);
+		tableEl.reset(true, true, true);
+	}
+	
+	private List<Room> loadRooms() {
 		SearchRoomParameters params = new SearchRoomParameters();
 
 		List<FlexiTableFilter> filters = tableEl.getFilters();
@@ -352,13 +374,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 					.filter(r -> selectedRoomKeys.contains(r.getKey()))
 					.collect(Collectors.toList());
 		}
-
-		List<RoomRow> rows = new ArrayList<>(rooms.size());
-		for (Room room : rooms) {
-			rows.add(forgeRow(room));
-		}
-		dataModel.setObjects(rows);
-		tableEl.reset(true, true, true);
+		
+		return rooms;
 	}
 
 	private RoomRow forgeRow(Room room) {
@@ -568,7 +585,111 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void loadCalendar() {
-		//
+		List<Room> rooms = loadRooms();
+		Map<Long, Room> roomByKey = rooms.stream().collect(Collectors.toMap(Room::getKey, r -> r));
+
+		// Group rooms by building key; rooms without a building are collected separately
+		Map<Long, List<Room>> roomsByBuildingKey = new LinkedHashMap<>();
+		List<Room> roomsWithoutBuilding = new ArrayList<>();
+		for (Room room : rooms) {
+			Building building = room.getBuilding();
+			if (building != null) {
+				roomsByBuildingKey.computeIfAbsent(building.getKey(), k -> new ArrayList<>()).add(room);
+			} else {
+				roomsWithoutBuilding.add(room);
+			}
+		}
+
+		Map<Long, Building> buildingByKey = rooms.stream()
+				.map(Room::getBuilding)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toMap(Building::getKey, b -> b, (a, b) -> a));
+
+		List<RoomBooking> allBookings = roomManagementService.getBookings(null, null);
+		List<RoomBooking> visibleBookings = allBookings.stream()
+				.filter(b -> b.getRoom() != null && roomByKey.containsKey(b.getRoom().getKey()))
+				.toList();
+
+		// Group bookings by building key
+		Map<Long, List<RoomBooking>> bookingsByBuildingKey = new LinkedHashMap<>();
+		List<RoomBooking> bookingsWithoutBuilding = new ArrayList<>();
+		for (RoomBooking booking : visibleBookings) {
+			Room room = roomByKey.get(booking.getRoom().getKey());
+			if (room != null && room.getBuilding() != null) {
+				bookingsByBuildingKey.computeIfAbsent(room.getBuilding().getKey(), k -> new ArrayList<>()).add(booking);
+			} else {
+				bookingsWithoutBuilding.add(booking);
+			}
+		}
+
+		List<KalendarRenderWrapper> wrappers = new ArrayList<>();
+
+		for (Map.Entry<Long, List<Room>> entry : roomsByBuildingKey.entrySet()) {
+			Long buildingKey = entry.getKey();
+			Building building = buildingByKey.get(buildingKey);
+			List<RoomBooking> buildingBookings = bookingsByBuildingKey.getOrDefault(buildingKey, List.of());
+
+			String calId = "rooms.building." + buildingKey;
+			Kalendar calendar = new Kalendar("Room", calId);
+			for (RoomBooking booking : buildingBookings) {
+				addCalendarEvent(calendar, booking, roomByKey);
+			}
+
+			String displayName = StringHelper.containsNonWhitespace(building.getExternalRef())
+					? building.getExternalRef() : building.getDescription();
+			if (!StringHelper.containsNonWhitespace(displayName)) {
+				displayName = calId;
+			}
+			KalendarRenderWrapper wrapper = new KalendarRenderWrapper(calendar, displayName, calId);
+			wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+			wrapper.setPrivateEventsVisible(true);
+			String colorCss = StringHelper.containsNonWhitespace(building.getColorCss())
+					? building.getColorCss() : KalendarRenderWrapper.CALENDAR_COLOR_BLUE;
+			wrapper.setCssClass("o_color_background " + colorCss);
+			wrappers.add(wrapper);
+		}
+
+		if (!roomsWithoutBuilding.isEmpty()) {
+			String calId = "rooms.nobuilding";
+			Kalendar calendar = new Kalendar("Room", calId);
+			for (RoomBooking booking : bookingsWithoutBuilding) {
+				addCalendarEvent(calendar, booking, roomByKey);
+			}
+			KalendarRenderWrapper wrapper = new KalendarRenderWrapper(calendar, "", calId);
+			wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+			wrapper.setPrivateEventsVisible(true);
+			wrapper.setCssClass(KalendarRenderWrapper.CALENDAR_COLOR_BLUE);
+			wrappers.add(wrapper);
+		}
+
+		calendarEl.setCalendars(wrappers);
+	}
+
+	private void addCalendarEvent(Kalendar calendar, RoomBooking booking, Map<Long, Room> roomByKey) {
+		if (booking.getStartDate() == null || booking.getEndDate() == null) return;
+		Room room = roomByKey.get(booking.getRoom().getKey());
+		String subject = resolveCalendarSubject(booking, room);
+		String eventId = CodeHelper.getGlobalForeverUniqueID();
+		ZonedDateTime zStart = DateUtils.toZonedDateTime(booking.getStartDate(), calendarModule.getDefaultZoneId());
+		ZonedDateTime zEnd = DateUtils.toZonedDateTime(booking.getEndDate(), calendarModule.getDefaultZoneId());
+		calendar.addEvent(new KalendarEvent(eventId, null, subject, zStart, zEnd));
+	}
+
+	private String resolveCalendarSubject(RoomBooking booking, Room room) {
+		String roomRef = room != null && StringHelper.containsNonWhitespace(room.getExternalRef())
+				? room.getExternalRef() : (room != null ? room.getDescription() : null);
+		String blockTitle = booking.getLectureBlock() != null
+				? booking.getLectureBlock().getTitle() : null;
+		if (StringHelper.containsNonWhitespace(roomRef) && StringHelper.containsNonWhitespace(blockTitle)) {
+			return roomRef + " · " + blockTitle;
+		}
+		if (StringHelper.containsNonWhitespace(roomRef)) {
+			return roomRef;
+		}
+		if (StringHelper.containsNonWhitespace(blockTitle)) {
+			return blockTitle;
+		}
+		return "";
 	}
 
 	@Override
