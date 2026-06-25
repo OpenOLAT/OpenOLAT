@@ -115,6 +115,7 @@ intentionally contains only term mappings, not user-facing definitions.
 | Instant messaging | Chat | Messagerie instantanée |  | Messaggistica istantanea |
 | Learning path | Lernpfad | Parcours d'apprentissage |  | Percorso |
 | Licenses | Lizenzen |  |  |  |
+| Lightbox mode | Lightbox-Modus |  |  |  |
 | Notes | Notizen | Notes |  | Appunti |
 | OAI-PMH | OAI-PMH | OAI-PMH |  | OAI-PMH |
 | Passkey | Passkey |  |  |  |
@@ -149,6 +150,7 @@ intentionally contains only term mappings, not user-facing definitions.
 | Corrector | Korrektor{in} |  |  |  |
 | Course element | Kursbaustein |  |  |  |
 | Course lifecycle | Kurs-Lebenszyklus |  |  |  |
+| Course template | Kurstemplate |  |  |  |
 | Curriculum element |  |  |  |  |
 | Delivery format | Durchführungsformat |  |  |  |
 | Drop box | Abgabeordner |  |  |  |
@@ -162,6 +164,7 @@ intentionally contains only term mappings, not user-facing definitions.
 | Learning resource | Lernressource |  |  |  |
 | Lesson block | Lektionsblock |  |  |  |
 | Metadata | Metadaten |  |  |  |
+| Occasion | Anlass |  |  |  |
 | Offer | Angebot | Offre |  | Offerta |
 | Product | Produkt | Produit |  | Prodotto |
 | Publication status | Publikationsstatus | Statut de publication |  | Stato di pubblicazione |
@@ -170,8 +173,10 @@ intentionally contains only term mappings, not user-facing definitions.
 | Rubric | Rubrik |  |  |  |
 | Sample solutions | Musterlösungen |  |  |  |
 | Storage folder | Ablageordner | Dossier de stockage |  | Cartella di conservazione |
+| Subject | Fachbereich |  |  |  |
 | Teaser | Teaser |  |  |  |
 | Template course | Vorlagekurs |  |  |  |
+| Trash can | Papierkorb |  |  |  |
 | Waiting list | Warteliste |  |  |  |
 
 ## Standards
@@ -213,21 +218,31 @@ intentionally contains only term mappings, not user-facing definitions.
 | Blog | Blog | Blogue |  | Blog |
 | CP learning content | CP-Lerninhalt | Contenu didactique CP |  | Contenuto didattico CP |
 | Calendar | Kalender | Calendrier |  | Calendario |
+| card2brain | card2brain |  |  |  |
 | Check list | Checkliste | Listes de contr\u00F4le |  | Checklist |
 | Check list (old) | Checkliste (alt) | Check-list (ancienne) |  | Check list |
+| Document | Dokument |  |  |  |
 | E-mail | E-Mail | E-mail | Formulario de contacto | E-mail |
+| Edubase | Edubase |  |  |  |
+| edu-sharing | edu-sharing |  |  |  |
 | Enrolment | Einschreibung | Inscription |  | Iscrizione |
 | External page | Externe Seite | Page externe | P\u00E1gina externa | Pagina esterna |
 | File dialog | Dateidiskussion | Fichier discut\u00E9 | Di\u00E1logo de archivo | Discussione documentata |
 | Folder | Ordner | Dossier | Carpeta | Cartella |
 | Form | Formular | Formulaire |  | Questionario |
 | Forum | Forum | Forum | Foro | Forum |
+| GoToMeeting | GoToMeeting |  |  |  |
 | Grouptask | Gruppenaufgabe | Devoir de groupe |  | Compito di gruppo |
 | HTML-Page | HTML-Seite | Page HTML |  | Pagina HTML |
+| JupyterHub | JupyterHub |  |  |  |
 | LTI page | LTI-Seite | Page LTI |  | Pagina LTI |
 | Link list | Linkliste | Liste de liens | Lista de enlaces | Lista link |
+| Live stream | Live-Stream |  |  |  |
+| Mediasite | Mediasite |  |  |  |
 | Microsoft Teams | Microsoft Teams | Microsoft Teams |  | Microsoft Teams |
 | Notifications | Mitteilungen |  |  |  |
+| Opencast | Opencast |  |  |  |
+| OpenMeetings | OpenMeetings |  |  |  |
 | Page | Seite | Page |  | Pagina |
 | Participant Folder | Teilnehmer{innen} Ordner | Dossier participant |  | Cartella di consegna |
 | Participant list | Liste der Teilnehmer{innen} | Liste des participants |  | Lista dei partecipanti |
@@ -246,6 +261,7 @@ intentionally contains only term mappings, not user-facing definitions.
 | Topic broker | Themenb\u00F6rse | Foire aux sujets |  | Broker di argomenti |
 | Video | Video | Vid\u00E9o |  | Video |
 | Video task | Videoaufgabe | Devoir vid\u00E9o |  | Compito video |
+| Vitero | Vitero |  |  |  |
 | Wiki | Wiki | Page Wiki | P\u00E1gina colaborativa | Wiki |
 | Zoom | Zoom | Zoom |  | Zoom |
 
