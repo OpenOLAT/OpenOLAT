@@ -138,6 +138,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		}
 		
 		FormLayoutContainer enableCont = uifactory.addDefaultFormLayout("enable.container", null, formLayout);
+		enableCont.setFormInfo(translate("mode.safeexambrowser.descr"));
 		initSafeExamBrowserForm(enableCont);
 
 		specificCont = uifactory.addDefaultFormLayout("specific.container", null, formLayout);
@@ -146,6 +147,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		
 		sebConfigCont = uifactory.addDefaultFormLayout("seb.config", null, formLayout);
 		sebConfigCont.setFormTitle(translate("mode.safeexambrowser.section.title"));
+		sebConfigCont.setFormInfo(translate("mode.safeexambrowser.section.descr"));
 		initConfigurationForm(sebConfigCont, sebConfig);
 		
 		FormLayoutContainer keyConfigCont = uifactory.addDefaultFormLayout("key.config", null, formLayout);
@@ -155,6 +157,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		
 		rawConfigurationCont = uifactory.addDefaultFormLayout("raw.container", null, formLayout);
 		rawConfigurationCont.setFormTitle(translate("mode.safeexambrowser.template.readonly.section.title"));
+		rawConfigurationCont.setFormInfo(translate("mode.safeexambrowser.template.readonly.section.descr"));
 		initRawConfigurationForm(rawConfigurationCont, ureq);
 	}
 	

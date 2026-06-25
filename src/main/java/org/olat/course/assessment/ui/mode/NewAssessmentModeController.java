@@ -188,7 +188,7 @@ public class NewAssessmentModeController extends FormBasicController {
 		assessmentMode.setLeadTime(Math.max(leadTimeEl.getIntValue(), 0));
 		assessmentMode.setEnd(endEl.getDate());
 		assessmentMode.setFollowupTime(Math.max(followupTimeEl.getIntValue(), 0));
-		assessmentMode.setManualBeginEnd(startModeEl.isOneSelected() && startModeEl.isSelected(1));
+		assessmentMode.setManualBeginEnd(startModeEl.isOneSelected() && startModeEl.isSelected(0));
 		assessmentMode = assessmentModeMgr.merge(assessmentMode, false, getIdentity());
 
 		dbInstance.commit();
