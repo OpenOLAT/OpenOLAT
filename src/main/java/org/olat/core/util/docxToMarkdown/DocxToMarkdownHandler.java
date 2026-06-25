@@ -143,10 +143,10 @@ class DocxToMarkdownHandler extends DefaultHandler {
 	private boolean inTableCell = false;
 	/**
 	 * Text accumulated for the current table cell (may span multiple w:p inside
-	 * the cell — paragraphs are joined with a space).
+	 * the cell — paragraphs are separated by a newline, rendered as a space in
+	 * a GFM row or as separate lines when a 1×1 table becomes a NOTE).
 	 */
 	private final StringBuilder cellText = new StringBuilder();
-	private boolean cellFirstParagraph = true;
 	private boolean cellHasBold = false;
 	private final List<String> currentRowCells = new ArrayList<>();
 	private final List<Boolean> currentRowBold = new ArrayList<>();
@@ -1130,11 +1130,14 @@ class DocxToMarkdownHandler extends DefaultHandler {
 		}
 
 		if (inTableCell) {
-			// Multi-paragraph cells: join with space
-			if (!cellFirstParagraph && cellText.length() > 0) {
-				cellText.append(' ');
+			// Separate paragraphs within a cell by a newline. This is rendered
+			// as a space in a GFM table row, or as separate lines when a 1×1
+			// table is emitted as a NOTE. (A trailing newline is trimmed in
+			// onEndTableCell.) Using a per-paragraph terminator avoids gluing
+			// adjacent runs across the paragraph boundary (e.g. **A****B**).
+			if (cellText.length() > 0) {
+				cellText.append('\n');
 			}
-			cellFirstParagraph = false;
 			return;
 		}
 
@@ -1590,6 +1593,23 @@ class DocxToMarkdownHandler extends DefaultHandler {
 	// Table logic
 	// -----------------------------------------------------------------------
 
+	/**
+	 * Ensures the markdown buffer ends with a blank line (two newlines) so the
+	 * next thing emitted starts as its own block. No-op at the start of the
+	 * document. Adds at most what is missing — never piles up blank lines.
+	 */
+	private void ensureBlankLineBeforeBlock() {
+		int len = markdown.length();
+		if (len == 0) {
+			return;
+		}
+		if (markdown.charAt(len - 1) != '\n') {
+			markdown.append("\n\n");
+		} else if (len < 2 || markdown.charAt(len - 2) != '\n') {
+			markdown.append('\n');
+		}
+	}
+
 	private void onStartTable() {
 		tableNestingDepth++;
 		if (tableNestingDepth > 1) {
@@ -1627,7 +1647,6 @@ class DocxToMarkdownHandler extends DefaultHandler {
 		if (tableNestingDepth == 1) {
 			inTableCell = true;
 			cellText.setLength(0);
-			cellFirstParagraph = true;
 			cellHasBold = false;
 		}
 	}
@@ -1662,6 +1681,21 @@ class DocxToMarkdownHandler extends DefaultHandler {
 			numCols = Math.max(numCols, row.size());
 		}
 		if (numCols == 0) return;
+
+		// A pipe table must be its own block, preceded by a blank line. List
+		// items end with a single newline, so a table directly following a
+		// list item would otherwise be read as a lazy continuation of the item
+		// (the table would not be detected). Emit it as a standalone block.
+		ensureBlankLineBeforeBlock();
+		previousWasList = false;
+
+		// A single-cell table (1×1) is a styled callout/layout box, not a data
+		// table. Render its content as a NOTE admonition (one line per cell
+		// paragraph) instead of a degenerate single-column GFM table.
+		if (tableRows.size() == 1 && numCols == 1) {
+			emitSingleCellAsNote(tableRows.get(0).isEmpty() ? "" : tableRows.get(0).get(0));
+			return;
+		}
 
 		// Priority 1: Explicit header rows (w:tblHeader)
 		int explicitHeaderCount = 0;
@@ -1708,10 +1742,29 @@ class DocxToMarkdownHandler extends DefaultHandler {
 		markdown.append('\n');
 	}
 
+	/**
+	 * Emits the content of a single-cell table as a NOTE admonition, one line
+	 * per cell paragraph (paragraphs are separated by newlines in the cell
+	 * buffer). A blank line before the block is already ensured by the caller.
+	 */
+	private void emitSingleCellAsNote(String cellContent) {
+		String content = cellContent.trim();
+		if (content.isEmpty()) {
+			markdown.append('\n');
+			return;
+		}
+		markdown.append("> [!NOTE]\n");
+		for (String line : content.split("\n")) {
+			markdown.append("> ").append(line).append('\n');
+		}
+		markdown.append('\n');
+	}
+
 	private void emitTableRow(List<String> cells, int numCols) {
 		StringBuilder row = new StringBuilder("|");
 		for (int c = 0; c < numCols; c++) {
-			String cell = c < cells.size() ? cells.get(c) : "";
+			// GFM cells are single-line: render in-cell paragraph breaks as spaces
+			String cell = c < cells.size() ? cells.get(c).replace("\n", " ") : "";
 			row.append(' ').append(cell).append(" |");
 		}
 		markdown.append(row).append('\n');

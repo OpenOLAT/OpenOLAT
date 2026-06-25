@@ -530,6 +530,82 @@ public class DocxToMarkdownHandlerTest {
 		assertTrue("Merged box text must appear joined", md.contains("Dings & Dongs"));
 	}
 
+	/**
+	 * A table that directly follows a list item must be emitted as its own
+	 * block, separated by a blank line. Without the blank line, Markdown
+	 * parsers treat the pipe rows as a lazy continuation of the list item and
+	 * the table is not detected.
+	 */
+	@Test
+	public void tableAfterListItemIsSeparatedAsOwnBlock() throws Exception {
+		String body =
+				"<w:p><w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/></w:numPr></w:pPr>"
+				+ "<w:r><w:t>ListItem</w:t></w:r></w:p>"
+				+ "<w:tbl>"
+				+ "<w:tr><w:tc><w:p><w:r><w:t>A1</w:t></w:r></w:p></w:tc>"
+				+ "<w:tc><w:p><w:r><w:t>B1</w:t></w:r></w:p></w:tc></w:tr>"
+				+ "<w:tr><w:tc><w:p><w:r><w:t>A2</w:t></w:r></w:p></w:tc>"
+				+ "<w:tc><w:p><w:r><w:t>B2</w:t></w:r></w:p></w:tc></w:tr>"
+				+ "</w:tbl>";
+		String md = convertDocumentXml(body);
+
+		int li = md.indexOf("ListItem");
+		int tbl = md.indexOf("|", li);
+		assertTrue("List item must be present", li >= 0);
+		assertTrue("Table must be present", tbl >= 0);
+		String between = md.substring(li + "ListItem".length(), tbl);
+		assertTrue("Table must be separated from the list item by a blank line",
+				between.contains("\n\n"));
+	}
+
+	/**
+	 * A 1×1 table is a styled callout box, not a data table. It must be
+	 * rendered as a NOTE admonition, one line per cell paragraph — not as a
+	 * degenerate single-column GFM table with the paragraphs collapsed onto one
+	 * line.
+	 */
+	@Test
+	public void singleCellTableBecomesNoteWithOneLinePerParagraph() throws Exception {
+		String body =
+				"<w:tbl><w:tr><w:tc>"
+				+ "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Kontakt</w:t></w:r></w:p>"
+				+ "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>frentix GmbH</w:t></w:r>"
+				+ "<w:r><w:t xml:space=\"preserve\"> · Zürich, Schweiz</w:t></w:r></w:p>"
+				+ "<w:p><w:r><w:t>someemail@example.com · www.frentix.com</w:t></w:r></w:p>"
+				+ "</w:tc></w:tr></w:tbl>";
+		String md = convertDocumentXml(body);
+
+		assertTrue("Single-cell table must become a NOTE", md.contains("> [!NOTE]"));
+		assertFalse("Must not render as a GFM table", md.contains("|---|"));
+		assertFalse("Adjacent bold runs must not glue into ****", md.contains("****"));
+		assertTrue("First line preserved", md.contains("> **Kontakt**"));
+		assertTrue("Second line preserved", md.contains("> **frentix GmbH** · Zürich, Schweiz"));
+		assertTrue("Third line preserved", md.contains("> someemail@example.com · www.frentix.com"));
+	}
+
+	/**
+	 * In a real (multi-cell) table, a cell with several paragraphs must join
+	 * them with a separator — adjacent bold runs across paragraphs must never
+	 * glue into '****'.
+	 */
+	@Test
+	public void multiParagraphCellDoesNotGlueBoldRuns() throws Exception {
+		String body =
+				"<w:tbl>"
+				+ "<w:tr>"
+				+ "<w:tc><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>A</w:t></w:r></w:p>"
+				+ "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>B</w:t></w:r></w:p></w:tc>"
+				+ "<w:tc><w:p><w:r><w:t>C</w:t></w:r></w:p></w:tc>"
+				+ "</w:tr>"
+				+ "<w:tr><w:tc><w:p><w:r><w:t>D</w:t></w:r></w:p></w:tc>"
+				+ "<w:tc><w:p><w:r><w:t>E</w:t></w:r></w:p></w:tc></w:tr>"
+				+ "</w:tbl>";
+		String md = convertDocumentXml(body);
+
+		assertFalse("Bold runs across paragraphs must not glue", md.contains("**A****B**"));
+		assertTrue("Paragraphs in a cell are separated", md.contains("**A** **B**"));
+	}
+
 	// -----------------------------------------------------------------------
 	// Underline
 	// -----------------------------------------------------------------------
