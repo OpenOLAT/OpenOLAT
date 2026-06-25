@@ -174,7 +174,6 @@ form .o_form, form.o_form {
 	.o_form_two_cols .o_date ~ .o_error,
 	.o_form_two_cols .o_date ~ .o_warning {
 		grid-column: 1 / span 2;
-		margin-top: -10px;
 	}
 	
 	.o_form_two_cols .o_time .o_date_ms,
@@ -313,6 +312,10 @@ form .o_form, form.o_form {
 	
 	.form-control-static  > .o_info_with_icon {
 		margin-top: 0;
+	}
+	
+	.o_form_two_cols input.o_form_number {
+		width: auto;
 	}
 
 /* Card Radio Buttons */

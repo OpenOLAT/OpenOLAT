@@ -1797,6 +1797,14 @@ public class FormUIFactory {
 		return customContainer;
 	}
 	
+	public FormLayoutContainer addTwoColumnsFormLayout(String id, String i18nLabel,  FormItemContainer formLayout) {
+		FormLayoutContainer twoColsLayout = FormLayoutContainer.createTwoColsFormLayout(id, formLayout.getTranslator());
+		formLayout.add(twoColsLayout);
+
+		setLabelIfNotNull(i18nLabel, twoColsLayout);
+		return twoColsLayout;
+	}
+	
 	/**
 	 * Factory method for the inline layout, a standard layout to present
 	 * all form items in a line. An "errors" component is automatically added to the 
