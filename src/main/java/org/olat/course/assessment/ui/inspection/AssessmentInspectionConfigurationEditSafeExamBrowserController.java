@@ -60,7 +60,10 @@ public class AssessmentInspectionConfigurationEditSafeExamBrowserController exte
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
-		
+	}
+	
+	@Override
+	protected void initButtonsForm(FormItemContainer formLayout, UserRequest ureq) {
 		FormLayoutContainer buttonsWrapperCont = uifactory.addDefaultFormLayout("buttonsWrapper", null, formLayout);		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, buttonsWrapperCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);

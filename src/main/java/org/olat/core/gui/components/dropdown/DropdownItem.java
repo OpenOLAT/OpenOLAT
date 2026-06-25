@@ -89,6 +89,10 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 		dropdown.setCarretIconCSS(carretIconCSS);
 	}
 	
+	public void setToggleCSS(String toggleCSS) {
+		dropdown.setToggleCSS(toggleCSS);
+	}
+	
 	public void setTranslatedLabel(String label) {
 		dropdown.setTranslatedLabel(label);
 	}
@@ -103,6 +107,10 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 	
 	public void setCaretPosition(CaretPosition caretPosition) {
 		dropdown.setCaretPosition(caretPosition);
+	}
+	
+	public void setLabeled(boolean labeledToggle, boolean labeledMenu) {
+		dropdown.setLabeled(labeledToggle, labeledMenu);
 	}
 	
 	public void setDomReplacementWrapperRequired(boolean required) {

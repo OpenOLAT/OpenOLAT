@@ -32,6 +32,7 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.ILoggingResourceable;
 import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -109,6 +110,11 @@ public class TransientAssessmentMode implements Serializable, LockRequest {
 		if(mode.isSafeExamBrowser()) {
 			safeExamBrowserKey = mode.getSafeExamBrowserKey();
 			safeExamBrowserHint = mode.getSafeExamBrowserHint();
+			if(!StringHelper.isHtml(safeExamBrowserHint)) {
+				safeExamBrowserHint = Formatter.escWithBR(safeExamBrowserHint).toString();
+				safeExamBrowserHint = Formatter.formatURLsAsLinks(safeExamBrowserHint, false);
+			}
+			
 			safeExamBrowserConfigPList = mode.getSafeExamBrowserConfigPList();
 			safeExamBrowserConfigPListKey = mode.getSafeExamBrowserConfigPListKey();
 			safeExamBrowserConfigDownload = mode.isSafeExamBrowserConfigDownload();

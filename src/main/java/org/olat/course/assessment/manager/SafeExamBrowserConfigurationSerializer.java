@@ -19,6 +19,13 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.transform.TransformerException;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
@@ -28,9 +35,13 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
@@ -53,13 +64,119 @@ public class SafeExamBrowserConfigurationSerializer {
 		xstream.addPermission(new ExplicitTypePermission(types));
 	}
 	
+    public static final Comparator<String> CASE_INSENSITIVE_ORDINAL = (a, b) -> {
+        int c = a.compareToIgnoreCase(b);
+        if (c != 0) {
+            return c;
+        }
+        // Forced ordering: deterministic tie-break for case-only differences.
+        return a.compareTo(b);
+    };
+	
 	private SafeExamBrowserConfigurationSerializer() {
 		//
 	}
 	
+
+	public static PList toPList(String plistAsXml) {
+		return PList.valueOf(plistAsXml);
+	}
+	
+	/**
+	 * Convert a property list to its JSON representation. The keys of every
+	 * dictionary (the root dictionary as well as nested ones) are ordered
+	 * alphabetically, case-insensitively, as required by the Safe Exam Browser
+	 * configuration key specification. The order of array elements is preserved.
+	 *
+	 * @param plist The property list to convert
+	 * @return The JSON object as a string, or null if the plist is empty
+	 */
+	public static String toJSON(PList plist) {
+		if(plist == null || plist.getRootDict() == null) {
+			return null;
+		}
+		return toJsonObject(plist.getRootDict()).toString();
+	}
+
+	private static JsonObject toJsonObject(Element dictElement) {
+		List<Map.Entry<String, JsonElement>> entries = new ArrayList<>();
+		String key = null;
+		for(Node node = dictElement.getFirstChild(); node != null; node = node.getNextSibling()) {
+			if(node instanceof Element element) {
+				if("key".equalsIgnoreCase(element.getNodeName())) {
+					key = element.getTextContent();
+				} else if(key != null) {
+					JsonElement jsonValue = toJsonValue(element);
+					if(!isEmpty(jsonValue) && !"originatorVersion".equals(key)) {
+						entries.add(Map.entry(key, jsonValue));
+					}
+					key = null;
+				}
+			}
+		}
+
+		entries.sort((e1, e2) -> CASE_INSENSITIVE_ORDINAL.compare(e1.getKey(), e2.getKey()));
+
+		JsonObject json = new JsonObject();
+		for(Map.Entry<String, JsonElement> entry:entries) {
+			json.add(entry.getKey(), entry.getValue());
+		}
+		return json;
+	}
+	
+	private static boolean isEmpty(JsonElement jsonValue) {
+		if(jsonValue instanceof JsonArray array) {
+			//return array.isEmpty();
+		}
+		return false;
+	}
+
+	private static JsonElement toJsonValue(Element valueElement) {
+		String type = valueElement.getNodeName().toLowerCase();
+		return switch(type) {
+			case "true" -> new JsonPrimitive(Boolean.TRUE);
+			case "false" -> new JsonPrimitive(Boolean.FALSE);
+			case "integer" -> new JsonPrimitive(parseLong(valueElement.getTextContent()));
+			case "real" -> new JsonPrimitive(parseDouble(valueElement.getTextContent()));
+			case "dict" -> toJsonObject(valueElement);
+			case "array" -> toJsonArray(valueElement);
+			case "string", "data", "date" -> new JsonPrimitive(valueElement.getTextContent());
+			default -> JsonNull.INSTANCE;
+		};
+	}
+	
+	private static JsonArray toJsonArray(Element arrayElement) {
+		JsonArray array = new JsonArray();
+		for(Node node = arrayElement.getFirstChild(); node != null; node = node.getNextSibling()) {
+			if(node instanceof Element element) {
+				array.add(toJsonValue(element));
+			}
+		}
+		
+		return array;
+	}
+
+	private static Long parseLong(String value) {
+		try {
+			return Long.valueOf(value.trim());
+		} catch (NumberFormatException e) {
+			log.warn("Cannot parse plist integer: {}", value);
+			return Long.valueOf(0l);
+		}
+	}
+
+	private static Double parseDouble(String value) {
+		try {
+			return Double.valueOf(value.trim());
+		} catch (NumberFormatException e) {
+			log.warn("Cannot parse plist real: {}", value);
+			return Double.valueOf(0d);
+		}
+	}
+	
 	public static String toPList(SafeExamBrowserConfiguration configuration, AssessmentModule assessmentModule) {
 		try {
-			PList plist = new PList();
+			PList plist = PList.emptyPList();
 			plist.add("showTaskBar", configuration.isShowTaskBar());
 			plist.add("showReloadButton", configuration.isShowReloadButton());
 			plist.add("showTime", configuration.isShowTimeClock());
@@ -82,7 +199,7 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.add("browserWindowAllowReload", configuration.isBrowserWindowAllowReload());
 			if(StringHelper.containsNonWhitespace(configuration.getPasswordToExit())) {
 				plist.add("hashedQuitPassword", Encoder.sha256Exam(configuration.getPasswordToExit()));
-			}
+			}//TODO seb
 			plist.add("browserViewMode", configuration.getBrowserViewMode() < 0 ? 0 : configuration.getBrowserViewMode());
 			plist.add("browserWindowWebView", 3);
 			plist.add("downloadAndOpenSebConfig", Boolean.TRUE);
@@ -186,13 +303,17 @@ public class SafeExamBrowserConfigurationSerializer {
 
 			plist.addProperty("urlFilterTrustedContent", isUrlFilterTrustedContent(configuration));
 
-			String jsonPList = plist.toString();
-			jsonPList = jsonPList.replace(BACKSLASH_SUBSTITUTE, "\\");
-			return jsonPList;
+			return toJsonString(plist);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
+	}
+	
+	public static String toJsonString(JsonObject plist) {
+		String jsonPList = plist.toString();
+		jsonPList = jsonPList.replace(BACKSLASH_SUBSTITUTE, "\\");
+		return jsonPList;
 	}
 	
 	private static boolean isUrlFilterRegex(SafeExamBrowserConfiguration configuration) {
@@ -223,13 +344,46 @@ public class SafeExamBrowserConfigurationSerializer {
 		return filter;
 	}
 	
-	
-	
 	public static SafeExamBrowserConfiguration fromXml(String xstreamXml) {
 		return (SafeExamBrowserConfiguration)XStreamHelper.readObject(xstream, xstreamXml);
 	}
 	
 	public static String toXml(SafeExamBrowserConfiguration configuration) {
 		return xstream.toXML(configuration);
+	}
+	
+	/**
+	 * Calculate the hash key from a configuration file with 2 options overriden.
+	 * 
+	 * @param originalPListConfig The original PList file
+	 * @param allowQuit If allow to quit
+	 * @param passwordToExit The password
+	 * @return An hash
+	 */
+	public static String calculateKey(String originalPListConfig, boolean allowQuit, String passwordToExit) {
+		PList plist = overridePListConfig(originalPListConfig, allowQuit, passwordToExit);
+		String jsonText = toJSON(plist);
+		return Encoder.sha256Exam(jsonText);
+	}
+	
+	public static String overridePList(String originalPListConfig, boolean allowQuit, String passwordToExit) {
+		try {
+			PList plist = overridePListConfig(originalPListConfig, allowQuit, passwordToExit);
+			return plist.toPlistString();
+		} catch (TransformerException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	private static final PList overridePListConfig(String originalPListConfig, boolean allowQuit, String passwordToExit) {
+		PList plist = PList.valueOf(originalPListConfig);
+		plist.replace("allowQuit", allowQuit);
+		if(StringHelper.containsNonWhitespace(passwordToExit)) {
+			plist.replace("hashedQuitPassword", Encoder.sha256Exam(passwordToExit));
+		} else {
+			plist.replace(originalPListConfig, "");
+		}
+		return plist;
 	}
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment;
 
+import org.olat.core.util.xml.PList;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 
 /**
@@ -45,6 +46,8 @@ public interface SafeExamBrowserEnabled {
 
 	void setSafeExamBrowserConfiguration(SafeExamBrowserConfiguration configuration);
 	
+	void setSafeExamBrowserConfigurationPList(PList plist);
+	
 	String getSafeExamBrowserConfigPList();
 
 	String getSafeExamBrowserConfigPListKey();
@@ -56,6 +59,13 @@ public interface SafeExamBrowserEnabled {
 	String getSafeExamBrowserHint();
 
 	void setSafeExamBrowserHint(String safeExamBrowserHint);
+	
+	String getSafeExamBrowserConfigExitPassword();
 
+	void setSafeExamBrowserConfigExitPassword(String password);
+
+	Boolean getSafeExamBrowserConfigAllowExit();
+
+	void setSafeExamBrowserConfigAllowExit(Boolean allowExit);
 
 }

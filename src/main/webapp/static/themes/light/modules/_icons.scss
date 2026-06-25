@@ -913,6 +913,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_assessment_inspection_cancelled { @include o-add-icon('circle-stop'); }
 .o_icon_assessment_inspection_withdrawn { @include o-add-icon('ban'); }
 
+/* SEB template status */
+.o_icon_seb_template_status_active { @include o-add-icon('check'); }
+.o_icon_seb_template_status_inactive { @include o-add-icon('ban'); }
+
 /* lectures */
 .o_lectures_current { @include o-add-icon('circle'); color: $brand-warning;}
 .o_lectures_next { @include o-add-icon('clock', false);  }

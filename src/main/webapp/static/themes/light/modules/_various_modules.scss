@@ -1003,6 +1003,32 @@ div.o_assessment_mini_conditional_overview {
 	}
 }
 
+.o_labeled_light {
+	&.o_seb_template_status_active {
+		font-weight: normal;
+		@extend %o_labeled_light_green;
+	}
+	&.o_seb_template_status_inactive {
+		font-weight: normal;
+		@extend %o_labeled_light_grey;
+	}
+}
+
+.o_labeled {
+	&.o_seb_template_status_active {
+		font-weight: normal;
+		@extend %o_labeled_green;
+	}
+	&.o_seb_template_status_inactive {
+		font-weight: normal;
+		@extend %o_labeled_grey;
+	}
+}
+
+.o_seb_template_status .btn-group {
+	padding: 6px 0;
+}
+
 
 /* BigBlueButton */
 .o_bbb_deleted td {

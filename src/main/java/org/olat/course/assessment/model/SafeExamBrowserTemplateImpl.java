@@ -23,6 +23,8 @@ import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,6 +38,7 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
+import org.olat.course.assessment.SafeExamBrowserTemplateType;
 import org.olat.course.assessment.manager.SafeExamBrowserConfigurationSerializer;
 
 /**
@@ -72,6 +75,22 @@ public class SafeExamBrowserTemplateImpl implements Persistable, SafeExamBrowser
 	@Column(name="a_name", nullable=true, insertable=true, updatable=true)
 	private String name;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name="a_type", nullable=false, insertable=true, updatable=false)
+	private SafeExamBrowserTemplateType type;
+	
+	@Column(name="a_download", nullable=true, insertable=true, updatable=true)
+	private Boolean safeExamBrowserConfigDownload;
+	
+	@Column(name="a_exit_password", nullable=true, insertable=true, updatable=true)
+	private String safeExamBrowserConfigExitPassword;
+	
+	@Column(name="a_allow_exit", nullable=true, insertable=true, updatable=true)
+	private Boolean safeExamBrowserConfigAllowExit;
+	
+	@Column(name="a_config_filename", nullable=true, insertable=true, updatable=true)
+	private String safeExamBrowserConfigFilename;
+
 	@Column(name="a_safeexambrowserconfig_xml", nullable=true, insertable=true, updatable=true)
 	private String safeExamBrowserConfigXml;
 
@@ -83,6 +102,9 @@ public class SafeExamBrowserTemplateImpl implements Persistable, SafeExamBrowser
 
 	@Column(name="a_safeexambrowserhint", nullable=true, insertable=true, updatable=true)
 	private String safeExamBrowserHint;
+	
+	@Column(name="a_safeexambrowserauthorhint", nullable=true, insertable=true, updatable=true)
+	private String safeExamBrowserAuthorHint;
 
 	@Override
 	public Long getKey() {
@@ -143,6 +165,55 @@ public class SafeExamBrowserTemplateImpl implements Persistable, SafeExamBrowser
 	}
 
 	@Override
+	public SafeExamBrowserTemplateType getType() {
+		return type;
+	}
+
+	public void setType(SafeExamBrowserTemplateType type) {
+		this.type = type;
+	}
+
+	@Override
+	public Boolean getSafeExamBrowserConfigDownload() {
+		return safeExamBrowserConfigDownload;
+	}
+
+	@Override
+	public void setSafeExamBrowserConfigDownload(Boolean enabled) {
+		this.safeExamBrowserConfigDownload = enabled;
+	}
+	
+	@Override
+	public Boolean getSafeExamBrowserConfigAllowExit() {
+		return safeExamBrowserConfigAllowExit;
+	}
+
+	@Override
+	public void setSafeExamBrowserConfigAllowExit(Boolean safeExamBrowserConfigAllowExit) {
+		this.safeExamBrowserConfigAllowExit = safeExamBrowserConfigAllowExit;
+	}
+
+	@Override
+	public String getSafeExamBrowserConfigFilename() {
+		return safeExamBrowserConfigFilename;
+	}
+
+	@Override
+	public void setSafeExamBrowserConfigFilename(String safeExamBrowserConfigFilename) {
+		this.safeExamBrowserConfigFilename = safeExamBrowserConfigFilename;
+	}
+
+	@Override
+	public String getSafeExamBrowserConfigExitPassword() {
+		return safeExamBrowserConfigExitPassword;
+	}
+
+	@Override
+	public void setSafeExamBrowserConfigExitPassword(String password) {
+		this.safeExamBrowserConfigExitPassword = password;
+	}
+
+	@Override
 	public SafeExamBrowserConfiguration getSafeExamBrowserConfiguration() {
 		if (StringHelper.containsNonWhitespace(safeExamBrowserConfigXml)) {
 			return SafeExamBrowserConfigurationSerializer.fromXml(safeExamBrowserConfigXml);
@@ -166,6 +237,15 @@ public class SafeExamBrowserTemplateImpl implements Persistable, SafeExamBrowser
 			if(json != null) {
 				setSafeExamBrowserConfigPListKey(Encoder.sha256Exam(json));
 			}
+			
+			System.out.println(plist);
+			
+			System.out.println(json);
+			System.out.println(Encoder.sha256Exam(json));
+			
+			
+			
+			
 		}
 	}
 
@@ -199,6 +279,16 @@ public class SafeExamBrowserTemplateImpl implements Persistable, SafeExamBrowser
 	@Override
 	public void setSafeExamBrowserHint(String hint) {
 		this.safeExamBrowserHint = hint;
+	}
+
+	@Override
+	public String getSafeExamBrowserAuthorHint() {
+		return safeExamBrowserAuthorHint;
+	}
+
+	@Override
+	public void setSafeExamBrowserAuthorHint(String safeExamBrowserAuthorHint) {
+		this.safeExamBrowserAuthorHint = safeExamBrowserAuthorHint;
 	}
 
 	@Override

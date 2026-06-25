@@ -22,8 +22,11 @@ package org.olat.course.assessment.ui.mode;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -31,6 +34,8 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -39,6 +44,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
+import org.olat.course.assessment.SafeExamBrowserTemplateType;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,10 +55,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class SafeExamBrowserTemplateEditController extends FormBasicController {
-
+	
+	private static final String ACTIVE_STATUS_KEY = "active";
+	private static final String INACTIVE_STATUS_KEY = "inactive";
+	
 	private TextElement nameEl;
-	private FormToggle activeEl;
-	private SingleSelection allowToExitEl;
+	private FormLink activeLink;
+	private FormLink inactiveLink;
+	private DropdownItem statusDropdown;
+	private FormToggle allowToExitEl;
 	private TextElement passwordToQuitEl;
 	private SingleSelection linkToQuitEl;
 	private SingleSelection askUserToConfirmQuitEl;
@@ -83,7 +94,7 @@ public class SafeExamBrowserTemplateEditController extends FormBasicController {
 	private AssessmentModeManager assessmentModeManager;
 
 	public SafeExamBrowserTemplateEditController(UserRequest ureq, WindowControl wControl, SafeExamBrowserTemplate sebTemplate) {
-		super(ureq, wControl);
+		super(ureq, wControl, "seb_configuration");
 		this.sebTemplate = sebTemplate;
 
 		initForm(ureq);
@@ -99,25 +110,49 @@ public class SafeExamBrowserTemplateEditController extends FormBasicController {
 		if (config == null) {
 			config = new SafeExamBrowserConfiguration();
 		}
+		
+		FormLayoutContainer templateCont = uifactory.addDefaultFormLayout("templatecont", null, formLayout);
+		initTemplateForm(templateCont, formLayout); 
 
+		FormLayoutContainer configurationCont = uifactory.addDefaultFormLayout("configurationcont", null, formLayout);
+		configurationCont.setFormTitle(translate("seb.raw.section.title"));
+		initConfigurationForm(configurationCont, config, ureq);
+	}
+
+	private void initTemplateForm(FormItemContainer templateCont, FormItemContainer formLayout) {
 		String name = sebTemplate != null ? sebTemplate.getName() : "";
-		nameEl = uifactory.addTextElement("seb.template.name", "seb.template.name", 255, name, formLayout);
+		nameEl = uifactory.addTextElement("seb.template.name", "seb.template.name", 255, name, templateCont);
 		nameEl.setMandatory(true);
 
-		activeEl = uifactory.addToggleButton("seb.template.active", "seb.template.active", translate("on"), translate("off"), formLayout);
-		activeEl.toggle(sebTemplate == null || sebTemplate.isActive());
-		activeEl.setEnabled(sebTemplate == null || !sebTemplate.isDefault());
-
-		uifactory.addSpacerElement("spacer", formLayout, false);
-
+		statusDropdown = uifactory.addDropdownMenu("seb.template.status", "seb.template.status", templateCont, getTranslator());
+		statusDropdown.setLabel("seb.template.status", null, true);
+		statusDropdown.setTranslatedLabel(null);
+		statusDropdown.setOrientation(DropdownOrientation.right);
+		statusDropdown.setElementCssClass("o_seb_template_status");
+		statusDropdown.setEmbbeded(true);
+		statusDropdown.setLabeled(true, true);
+		boolean active = sebTemplate == null || sebTemplate.isActive();
+		updateStatus(active ? ACTIVE_STATUS_KEY : INACTIVE_STATUS_KEY);
+		
+		activeLink = uifactory.addFormLink("seb.template.active", formLayout, Link.LINK);
+		activeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_seb_template_status_active");
+		activeLink.setElementCssClass("o_labeled o_seb_template_status_active");
+		statusDropdown.addElement(activeLink);
+		
+		inactiveLink = uifactory.addFormLink("seb.template.inactive", formLayout, Link.LINK);
+		inactiveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_seb_template_status_inactive");
+		inactiveLink.setElementCssClass("o_labeled o_seb_template_status_inactive");
+		statusDropdown.addElement(inactiveLink);
+	}
+	
+	private void initConfigurationForm(FormItemContainer formLayout, SafeExamBrowserConfiguration config, UserRequest ureq) {
 		SelectionValues trueFalseValues = new SelectionValues();
 		trueFalseValues.add(SelectionValues.entry("true", translate("yes")));
 		trueFalseValues.add(SelectionValues.entry("false", translate("no")));
 
-		allowToExitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.toexit", formLayout,
-				trueFalseValues.keys(), trueFalseValues.values());
-		allowToExitEl.addActionListener(FormEvent.ONCHANGE);
-		allowToExitEl.select(trueFalseKey(config.isAllowQuit()), true);
+		allowToExitEl = uifactory.addToggleButton("mode.safeexambrowser.allow.toexit", "mode.safeexambrowser.allow.toexit",
+				translate("on"), translate("off"), formLayout);
+		allowToExitEl.toggle(config.isAllowQuit());
 
 		passwordToQuitEl = uifactory.addTextElement("password.quit", "mode.safeexambrowser.password.exit", 255, config.getPasswordToExit(), formLayout);
 
@@ -210,7 +245,8 @@ public class SafeExamBrowserTemplateEditController extends FormBasicController {
 
 		String hint = sebTemplate != null ? sebTemplate.getSafeExamBrowserHint() : "";
 		safeExamBrowserHintEl = uifactory.addRichTextElementForStringData("safeexamhint", "mode.safeexambrowser.hint",
-				hint, 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+				hint, 6, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		safeExamBrowserHintEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -218,9 +254,16 @@ public class SafeExamBrowserTemplateEditController extends FormBasicController {
 		uifactory.addFormSubmitButton("ok", sebTemplate != null ? "save" : "add", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
+	
+	private void updateStatus(String status) {
+		statusDropdown.setIconCSS("o_icon o_icon_seb_template_status_" + status);
+		statusDropdown.setInnerText(translate("seb.template." + status));
+		statusDropdown.setToggleCSS("o_labeled o_seb_template_status_" + status);
+		statusDropdown.setUserObject(status);
+	}
 
 	private void updateUI() {
-		boolean allowExit = allowToExitEl.isOneSelected() && allowToExitEl.isKeySelected("true");
+		boolean allowExit = allowToExitEl.isOn();
 		passwordToQuitEl.setVisible(allowExit);
 
 		boolean urlFilterEnabled = urlFilterEl.isOneSelected() && urlFilterEl.isKeySelected("true");
@@ -263,15 +306,15 @@ public class SafeExamBrowserTemplateEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (sebTemplate == null) {
-			sebTemplate = assessmentModeManager.createSafeExamBrowserTemplate(nameEl.getValue());
+			sebTemplate = assessmentModeManager.createSafeExamBrowserTemplate(nameEl.getValue(), SafeExamBrowserTemplateType.OO_FORM);
 		} else {
 			sebTemplate.setName(nameEl.getValue());
 		}
-		sebTemplate.setActive(activeEl.isOn());
+		sebTemplate.setActive(ACTIVE_STATUS_KEY.equals(statusDropdown.getUserObject()));
 		
 		SafeExamBrowserConfiguration config = new SafeExamBrowserConfiguration();
 		config.setStartUrl(Settings.getServerContextPathURI());
-		config.setAllowQuit(isSelected(allowToExitEl));
+		config.setAllowQuit(allowToExitEl.isOn());
 		if(StringHelper.containsNonWhitespace(passwordToQuitEl.getValue())) {
 			config.setPasswordToExit(passwordToQuitEl.getValue());
 		} else {
@@ -341,7 +384,11 @@ public class SafeExamBrowserTemplateEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (urlFilterEl == source || showTaskBarEl == source || audioControlEnabledEl == source
+		if(source == activeLink) {
+			updateStatus(ACTIVE_STATUS_KEY);
+		} else if(source == inactiveLink) {
+			updateStatus(INACTIVE_STATUS_KEY);
+		} else if (urlFilterEl == source || showTaskBarEl == source || audioControlEnabledEl == source
 				|| allowToExitEl == source) {
 			updateUI();
 		}

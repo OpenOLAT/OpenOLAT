@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
 import org.olat.course.assessment.SafeExamBrowserTemplateSearchParams;
+import org.olat.course.assessment.SafeExamBrowserTemplateType;
 import org.olat.course.assessment.model.SafeExamBrowserTemplateImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,10 +47,11 @@ public class SafeExamBrowserTemplateDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public SafeExamBrowserTemplate createTemplate(String name) {
+	public SafeExamBrowserTemplate createTemplate(String name, SafeExamBrowserTemplateType type) {
 		SafeExamBrowserTemplateImpl sebTemplate = new SafeExamBrowserTemplateImpl();
 		sebTemplate.setCreationDate(new Date());
 		sebTemplate.setLastModified(sebTemplate.getCreationDate());
+		sebTemplate.setType(type);
 		sebTemplate.setActive(true);
 		sebTemplate.setDefault(false);
 		sebTemplate.setName(name);

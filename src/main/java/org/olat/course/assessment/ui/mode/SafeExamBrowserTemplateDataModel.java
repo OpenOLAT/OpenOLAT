@@ -66,7 +66,8 @@ public class SafeExamBrowserTemplateDataModel
 		SafeExamBrowserConfiguration config = row.getConfiguration();
 		return switch (COLS[col]) {
 			case name -> row.getName();
-			case active -> Boolean.valueOf(row.isActive());
+			case type -> row.getType();
+			case status -> Boolean.valueOf(row.isActive());
 			case isDefault -> Boolean.valueOf(row.isDefault());
 			case usages -> Long.valueOf(row.getUsage());
 			case browserViewMode -> config != null ? Integer.valueOf(config.getBrowserViewMode()) : null;
@@ -91,7 +92,8 @@ public class SafeExamBrowserTemplateDataModel
 
 	public enum SEBTemplateCols implements FlexiSortableColumnDef {
 		name("seb.template.name"),
-		active("seb.template.active"),
+		type("seb.template.type"),
+		status("seb.template.status"),
 		isDefault("seb.template.default"),
 		usages("seb.template.usages"),
 		browserViewMode("mode.safeexambrowser.browser.view.mode"),

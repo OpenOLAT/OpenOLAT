@@ -34,17 +34,22 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.SafeExamBrowserEnabled;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
 import org.olat.course.assessment.SafeExamBrowserTemplateSearchParams;
+import org.olat.course.assessment.SafeExamBrowserTemplateType;
+import org.olat.course.assessment.manager.SafeExamBrowserConfigurationSerializer;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,7 +65,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	protected SingleSelection configSourceEl;
 	protected SingleSelection templateEl;
 	protected SingleSelection downloadConfigEl;
-	protected SingleSelection allowToExitEl;
+	protected FormToggle allowToExitEl;
 	protected SingleSelection linkToQuitEl;
 	protected SingleSelection quitUrlConfirmEl;
 	protected TextElement passwordToQuitEl;
@@ -85,17 +90,22 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	protected TextElement allowedRegexEl;
 	protected TextElement blockedExpressionsEl;
 	protected TextElement blockedRegexEl;
+	protected StaticTextElement informationsForAuthorsEl;
 	protected StaticTextElement safeExamBrowserConfigKeyEl;
 	
 	protected TextElement safeExamBrowserKeyEl;
 	protected RichTextElement safeExamBrowserHintEl;
 	protected FormToggle safeExamBrowserEl;
-	
+
+	protected FormLayoutContainer specificCont;
 	protected FormLayoutContainer sebConfigCont;
+	protected FormLayoutContainer rawConfigurationCont;
 
 	private List<SafeExamBrowserTemplate> templates;
 	private String defaultSafeExamBrowserHint;
 	private SafeExamBrowserEnabled configuration;
+	
+	protected SafeExamBrowserRawConfigurationController rawConfigurationCtrl;
 	
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
@@ -127,19 +137,28 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 			defaultSafeExamBrowserHint = assessmentModeMgr.getDefaultSafeExamBrowserTemplate().getSafeExamBrowserHint();
 		}
 		
-		FormLayoutContainer enableCont = FormLayoutContainer.createDefaultFormLayout("enable.container", getTranslator());
-		formLayout.add(enableCont);
+		FormLayoutContainer enableCont = uifactory.addDefaultFormLayout("enable.container", null, formLayout);
 		initSafeExamBrowserForm(enableCont);
+
+		specificCont = uifactory.addDefaultFormLayout("specific.container", null, formLayout);
+		specificCont.setFormTitle(translate("mode.safeexambrowser.specific.section.title"));
+		initSpecificForm(specificCont, ureq);
 		
-		sebConfigCont = FormLayoutContainer.createDefaultFormLayout("seb.config", getTranslator());
+		sebConfigCont = uifactory.addDefaultFormLayout("seb.config", null, formLayout);
 		sebConfigCont.setFormTitle(translate("mode.safeexambrowser.section.title"));
-		formLayout.add(sebConfigCont);
 		initConfigurationForm(sebConfigCont, sebConfig);
 		
-		FormLayoutContainer keyConfigCont = FormLayoutContainer.createDefaultFormLayout("key.config", getTranslator());
-		formLayout.add(keyConfigCont);
-		initKeyForm(keyConfigCont, ureq);
+		FormLayoutContainer keyConfigCont = uifactory.addDefaultFormLayout("key.config", null, formLayout);
+		initKeyForm(keyConfigCont);
+		
+		initButtonsForm(formLayout, ureq);
+		
+		rawConfigurationCont = uifactory.addDefaultFormLayout("raw.container", null, formLayout);
+		rawConfigurationCont.setFormTitle(translate("mode.safeexambrowser.template.readonly.section.title"));
+		initRawConfigurationForm(rawConfigurationCont, ureq);
 	}
+	
+	protected abstract void initButtonsForm(FormItemContainer formLayout, UserRequest ureq);
 	
 	protected void initSafeExamBrowserForm(FormItemContainer enableCont) {
 		boolean editable = isEditable();
@@ -150,9 +169,12 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		safeExamBrowserEl.setEnabled(editable);
 		
 		SelectionValues typeOfUse = new SelectionValues();
-		typeOfUse.add(SelectionValues.entry("keys", translate("mode.safeexambrowser.type.keys")));
-		typeOfUse.add(SelectionValues.entry("inConfig", translate("mode.safeexambrowser.type.inOpenOlat")));
-		typeOfUseEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.typeofuse", enableCont, typeOfUse.keys(), typeOfUse.values());
+		typeOfUse.add(SelectionValues.entry("keys", translate("mode.safeexambrowser.type.keys"),
+				translate("mode.safeexambrowser.type.keys.descr"), null, null, true));
+		typeOfUse.add(SelectionValues.entry("inConfig", translate("mode.safeexambrowser.type.inOpenOlat"),
+				translate("mode.safeexambrowser.type.inOpenOlat.descr"), null, null, true));
+		typeOfUseEl = uifactory.addCardSingleSelectHorizontal("mode.safeexambrowser.typeofuse", "mode.safeexambrowser.typeofuse", enableCont,
+				typeOfUse.keys(), typeOfUse.values(), typeOfUse.descriptions(), typeOfUse.icons());
 		typeOfUseEl.setEnabled(editable);
 		typeOfUseEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -165,8 +187,8 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		SelectionValues configSourceValues = new SelectionValues();
 		configSourceValues.add(SelectionValues.entry("template", translate("mode.safeexambrowser.template.source.template")));
 		configSourceValues.add(SelectionValues.entry("custom", translate("custom")));
-		configSourceEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.template.source", enableCont,
-				configSourceValues.keys(), configSourceValues.values());
+		configSourceEl = uifactory.addCardSingleSelectHorizontal("mode.safeexambrowser.template.source", "mode.safeexambrowser.template.source", enableCont,
+				configSourceValues.keys(), configSourceValues.values(), configSourceValues.descriptions(), configSourceValues.icons());
 		configSourceEl.setEnabled(editable);
 		configSourceEl.addActionListener(FormEvent.ONCHANGE);
 
@@ -204,14 +226,47 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 				templateEl.select(defaultTemplate.getKey().toString(), true);
 			}
 		}
+		
+		informationsForAuthorsEl = uifactory.addStaticTextElement("mode.safeexambrowser.hint.author", null, enableCont);
+		informationsForAuthorsEl.setDomWrapperElement(DomWrapperElement.div);
+		informationsForAuthorsEl.setVisible(false);
+	}
 
+	protected void initSpecificForm(FormItemContainer formLayout, UserRequest ureq) {
 		SelectionValues trueFalseValues = new SelectionValues();
 		trueFalseValues.add(SelectionValues.entry("true", translate("yes")));
 		trueFalseValues.add(SelectionValues.entry("false", translate("no")));
 
-		downloadConfigEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.download.config", enableCont,
+		downloadConfigEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.download.config", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
 		downloadConfigEl.select(trueFalseKey(configuration.isSafeExamBrowserConfigDownload()), true);
+		
+		String hint = configuration.getSafeExamBrowserHint();
+		safeExamBrowserHintEl = uifactory.addRichTextElementForStringData("safeexamhint", "mode.safeexambrowser.hint",
+				hint, 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		safeExamBrowserHintEl.setVisible(configuration.isSafeExamBrowser());
+		safeExamBrowserHintEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		
+		uifactory.addSpacerElement("specific-spacer", formLayout, false);
+		
+		boolean allowToExit = configuration.getSafeExamBrowserConfigAllowExit() != null
+				&& configuration.getSafeExamBrowserConfigAllowExit().booleanValue();
+		allowToExitEl = uifactory.addToggleButton("mode.safeexambrowser.allow.toexit", "mode.safeexambrowser.allow.toexit", translate("on"), translate("off"), formLayout);
+		allowToExitEl.addActionListener(FormEvent.ONCHANGE);
+		allowToExitEl.toggle(allowToExit);
+		
+		String password = configuration.getSafeExamBrowserConfigExitPassword();
+		passwordToQuitEl = uifactory.addTextElement("password.quit", "mode.safeexambrowser.password.exit", 255, password, formLayout);
+		passwordToQuitEl.setExampleKey("mode.safeexambrowser.password.exit.hint", null);
+	}
+	
+	protected void initRawConfigurationForm(FormItemContainer rawConfigCont, UserRequest ureq) {
+		rawConfigurationCtrl = new SafeExamBrowserRawConfigurationController(ureq, getWindowControl(), mainForm);
+		listenTo(rawConfigurationCtrl);
+		
+		FormItem rawTableEl = rawConfigurationCtrl.getInitialFormItem();
+		rawTableEl.setFormLayout("nolayout");
+		rawConfigCont.add(rawTableEl);
 	}
 
 	protected void initConfigurationForm(FormItemContainer sebConfigCont, SafeExamBrowserConfiguration sebConfig ) {
@@ -220,16 +275,6 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		SelectionValues trueFalseValues = new SelectionValues();
 		trueFalseValues.add(SelectionValues.entry("true", translate("yes")));
 		trueFalseValues.add(SelectionValues.entry("false", translate("no")));
-
-		allowToExitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.toexit", sebConfigCont,
-				trueFalseValues.keys(), trueFalseValues.values());
-		allowToExitEl.addActionListener(FormEvent.ONCHANGE);
-		allowToExitEl.setEnabled(editable);
-		allowToExitEl.select(trueFalseKey(sebConfig.isAllowQuit()), true);
-		
-		String password = sebConfig.getPasswordToExit();
-		passwordToQuitEl = uifactory.addTextElement("password.quit", "mode.safeexambrowser.password.exit", 255, password, sebConfigCont);
-		passwordToQuitEl.setEnabled(editable);
 		
 		linkToQuitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.link.to.quit", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
@@ -343,7 +388,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 				2000, 2, 60, false, false, sebConfig.getBlockedUrlRegex(), sebConfigCont);
 	}
 
-	protected void initKeyForm(FormItemContainer keyConfigCont, UserRequest ureq) {
+	protected void initKeyForm(FormItemContainer keyConfigCont) {
 		safeExamBrowserConfigKeyEl = uifactory.addStaticTextElement("mode.safeexambrowser.config.key", configuration.getSafeExamBrowserConfigPListKey(), keyConfigCont);
 		safeExamBrowserConfigKeyEl.setExampleKey("mode.safeexambrowser.config.key.hint", null);
 		
@@ -351,17 +396,13 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 16000, 6, 60, false, false, key, keyConfigCont);
 		safeExamBrowserKeyEl.setMaxLength(16000);
 		safeExamBrowserKeyEl.setVisible(configuration.isSafeExamBrowser());
-
-		String hint = configuration.getSafeExamBrowserHint();
-		safeExamBrowserHintEl = uifactory.addRichTextElementForStringData("safeexamhint", "mode.safeexambrowser.hint",
-				hint, 10, -1, false, null, null, keyConfigCont, ureq.getUserSession(), getWindowControl());
-		safeExamBrowserHintEl.setVisible(configuration.isSafeExamBrowser());
 	}
 	
 	protected void updateUI() {
 		boolean enabled = safeExamBrowserEl.isOn();
 		boolean inConfig = typeOfUseEl.isOneSelected() && typeOfUseEl.isKeySelected("inConfig");
 		boolean useTemplate = configSourceEl.isOneSelected() && configSourceEl.isKeySelected("template");
+		boolean sebFileConfig = false;
 
 		typeOfUseEl.setVisible(enabled);
 		configSourceEl.setVisible(enabled && inConfig);
@@ -370,61 +411,53 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		if(inConfig && useTemplate) {
 			SafeExamBrowserTemplate selectedTemplate = getSelectedTemplate();
 			if(selectedTemplate != null) {
-				SafeExamBrowserConfiguration sebConfig = selectedTemplate.getSafeExamBrowserConfiguration();
-				if(sebConfig != null) {
-					updateConfigurationValues(sebConfig);
-				}
-				String configPListKey = selectedTemplate.getSafeExamBrowserConfigPListKey();
-				safeExamBrowserConfigKeyEl.setValue(configPListKey != null ? configPListKey : "");
-				String templateHint = selectedTemplate.getSafeExamBrowserHint();
-				safeExamBrowserHintEl.setValue(templateHint != null ? templateHint : "");
-				
-				if(StringHelper.containsNonWhitespace(sebConfig.getLinkToQuit())) {
-					linkToQuitEl.setExampleKey("noTransOnlyParam", new String[] { sebConfig.getLinkToQuit() });
-				}
+				updateFromTemplate(selectedTemplate);
+				sebFileConfig = selectedTemplate.getType() == SafeExamBrowserTemplateType.SEB_FILE;
 			}
 		}
 
 		boolean urlFilterEnabled = urlFilterEl.isOneSelected() && urlFilterEl.isKeySelected("true");
 		boolean audioControl = showAudioOptionsEl.isOneSelected() && showAudioOptionsEl.isKeySelected("true");
 		boolean taskBar = showSebTaskListEl.isOneSelected() && showSebTaskListEl.isKeySelected("true");
-		boolean allowExit = allowToExitEl.isOneSelected() && allowToExitEl.isKeySelected("true");
+		boolean allowExit = allowToExitEl.isOn();
 		boolean configEditable = isEditable() && !(inConfig && useTemplate);
 
 		downloadConfigEl.setVisible(enabled && inConfig);
 
 		// In configuration
-		browserViewModeEl.setVisible(enabled && inConfig);
-		quitUrlConfirmEl.setVisible(enabled && inConfig);
-		allowToExitEl.setVisible(enabled && inConfig);
-		passwordToQuitEl.setVisible(enabled && inConfig && allowExit);
-		enableReloadInExamEl.setVisible(enabled && inConfig);
+		browserViewModeEl.setVisible(enabled && inConfig && !sebFileConfig);
+		quitUrlConfirmEl.setVisible(enabled && inConfig && !sebFileConfig);
+		allowToExitEl.setVisible(enabled && (inConfig || sebFileConfig));
+		passwordToQuitEl.setVisible(enabled && allowExit && (inConfig || sebFileConfig));
+		linkToQuitEl.setEnabled(enabled && inConfig && !sebFileConfig);
+		enableReloadInExamEl.setVisible(enabled && inConfig && !sebFileConfig);
 
-		showSebTaskListEl.setVisible(enabled && inConfig);
-		showTimeClockEl.setVisible(enabled && inConfig && taskBar);
-		showKeyboardLayoutEl.setVisible(enabled && inConfig && taskBar);
-		showReloadButtonEl.setVisible(enabled && inConfig && taskBar);
-		allowWlanEl.setVisible(enabled && inConfig && taskBar);
+		showSebTaskListEl.setVisible(enabled && inConfig && !sebFileConfig);
+		showTimeClockEl.setVisible(enabled && inConfig && taskBar && !sebFileConfig);
+		showKeyboardLayoutEl.setVisible(enabled && inConfig && taskBar && !sebFileConfig);
+		showReloadButtonEl.setVisible(enabled && inConfig && taskBar && !sebFileConfig);
+		allowWlanEl.setVisible(enabled && inConfig && taskBar && !sebFileConfig);
 
-		showAudioOptionsEl.setVisible(enabled && inConfig);
-		audioMuteEl.setVisible(enabled && inConfig && audioControl);
+		showAudioOptionsEl.setVisible(enabled && inConfig && !sebFileConfig);
+		audioMuteEl.setVisible(enabled && inConfig && audioControl && !sebFileConfig);
 
-		allowAudioCaptureEl.setVisible(enabled && inConfig);
-		allowVideoCaptureEl.setVisible(enabled && inConfig);
-		allowSpellCheckEl.setVisible(enabled && inConfig);
-		allowZoomEl.setVisible(enabled && inConfig);
-		urlFilterEl.setVisible(enabled && inConfig);
-		urlContentFilterEl.setVisible(enabled && inConfig && urlFilterEnabled);
-		allowedExpressionsEl.setVisible(enabled && inConfig && urlFilterEnabled);
-		allowedRegexEl.setVisible(enabled && inConfig && urlFilterEnabled);
-		blockedExpressionsEl.setVisible(enabled && inConfig && urlFilterEnabled);
-		blockedRegexEl.setVisible(enabled && inConfig && urlFilterEnabled);
+		allowAudioCaptureEl.setVisible(enabled && inConfig && !sebFileConfig);
+		allowVideoCaptureEl.setVisible(enabled && inConfig && !sebFileConfig);
+		allowSpellCheckEl.setVisible(enabled && inConfig && !sebFileConfig);
+		allowZoomEl.setVisible(enabled && inConfig && !sebFileConfig);
+		urlFilterEl.setVisible(enabled && inConfig && !sebFileConfig);
+		urlContentFilterEl.setVisible(enabled && inConfig && urlFilterEnabled && !sebFileConfig);
+		allowedExpressionsEl.setVisible(enabled && inConfig && urlFilterEnabled && !sebFileConfig);
+		allowedRegexEl.setVisible(enabled && inConfig && urlFilterEnabled && !sebFileConfig);
+		blockedExpressionsEl.setVisible(enabled && inConfig && urlFilterEnabled && !sebFileConfig);
+		blockedRegexEl.setVisible(enabled && inConfig && urlFilterEnabled && !sebFileConfig);
 
-		safeExamBrowserConfigKeyEl.setVisible(enabled && inConfig);
-		sebConfigCont.setVisible(enabled && inConfig);
+		safeExamBrowserConfigKeyEl.setVisible(enabled && inConfig && !sebFileConfig);
+		sebConfigCont.setVisible(enabled && inConfig && !sebFileConfig);
+		specificCont.setVisible(enabled);
 
-		allowToExitEl.setEnabled(configEditable);
-		passwordToQuitEl.setEnabled(configEditable);
+		allowToExitEl.setEnabled(configEditable || (isEditable() && sebFileConfig));
+		passwordToQuitEl.setEnabled(configEditable || (isEditable() && sebFileConfig));
 		linkToQuitEl.setEnabled(configEditable);
 		quitUrlConfirmEl.setEnabled(configEditable);
 		enableReloadInExamEl.setEnabled(configEditable);
@@ -448,18 +481,59 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		blockedRegexEl.setEnabled(configEditable);
 
 		// Keys
-		safeExamBrowserKeyEl.setVisible(enabled && !inConfig);
+		safeExamBrowserKeyEl.setVisible(enabled && !inConfig && !sebFileConfig);
+		
+		// Raw configuration of a SEB file
+		rawConfigurationCont.setVisible(enabled && sebFileConfig);
+		rawConfigurationCtrl.getInitialFormItem().setVisible(enabled && sebFileConfig);
 
 		// Both
 		safeExamBrowserHintEl.setVisible(enabled);
-		safeExamBrowserHintEl.setEnabled(isEditable() && !(inConfig && useTemplate));
+		safeExamBrowserHintEl.setEnabled(isEditable() && (!(inConfig && useTemplate) || sebFileConfig));
 		if(enabled && !(inConfig && useTemplate) && !StringHelper.containsNonWhitespace(safeExamBrowserHintEl.getValue())) {
 			safeExamBrowserHintEl.setValue(defaultSafeExamBrowserHint != null ? defaultSafeExamBrowserHint : "");
 		}
 	}
+	
+	private void updateFromTemplate(SafeExamBrowserTemplate selectedTemplate) {
+		if(selectedTemplate.getType() == SafeExamBrowserTemplateType.OO_FORM) {
+			SafeExamBrowserConfiguration sebConfig = selectedTemplate.getSafeExamBrowserConfiguration();
+			if(sebConfig != null) {
+				updateConfigurationValues(sebConfig);
+				
+				if(StringHelper.containsNonWhitespace(sebConfig.getLinkToQuit())) {
+					linkToQuitEl.setExampleKey("noTransOnlyParam", new String[] { sebConfig.getLinkToQuit() });
+				}
+			}
+			String configPListKey = selectedTemplate.getSafeExamBrowserConfigPListKey();
+			safeExamBrowserConfigKeyEl.setValue(configPListKey != null ? configPListKey : "");
+		} else if(selectedTemplate.getType() == SafeExamBrowserTemplateType.SEB_FILE) {
+			String configPList = selectedTemplate.getSafeExamBrowserConfigPList();
+			String configPListKey = SafeExamBrowserConfigurationSerializer
+					.calculateKey(configPList, allowToExitEl.isOn(), passwordToQuitEl.getValue());
+			safeExamBrowserConfigKeyEl.setValue(configPListKey != null ? configPListKey : "");
+			rawConfigurationCtrl.loadConfiguration(selectedTemplate.getSafeExamBrowserConfigPList());
+		}
+		
+		String templateHint = selectedTemplate.getSafeExamBrowserHint();
+		safeExamBrowserHintEl.setValue(templateHint != null ? templateHint : "");
+		
+		String authorHint = selectedTemplate.getSafeExamBrowserAuthorHint();
+		if(StringHelper.containsNonWhitespace(authorHint) && !authorHint.equalsIgnoreCase("<p></p>")) {
+			if(!StringHelper.isHtml(authorHint)) {
+				authorHint = Formatter.escWithBR(authorHint).toString();
+				authorHint = Formatter.formatURLsAsLinks(authorHint, false);
+			}
+			informationsForAuthorsEl.setValue("<p class='o_info_with_icon'>" + StringHelper.xssScan(authorHint) + "</p>");
+			informationsForAuthorsEl.setVisible(true);
+		} else {
+			informationsForAuthorsEl.setValue("");
+			informationsForAuthorsEl.setVisible(false);
+		}
+	}
 
 	private void updateConfigurationValues(SafeExamBrowserConfiguration sebConfig) {
-		allowToExitEl.select(trueFalseKey(sebConfig.isAllowQuit()), true);
+		allowToExitEl.toggle(sebConfig.isAllowQuit());
 		passwordToQuitEl.setValue(sebConfig.getPasswordToExit());
 		String quitLink = sebConfig.getLinkToQuit();
 		linkToQuitEl.select(trueFalseKey(StringHelper.containsNonWhitespace(quitLink)), true);
@@ -492,7 +566,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	private SafeExamBrowserConfiguration getConfiguration() {
 		SafeExamBrowserConfiguration configuration = new SafeExamBrowserConfiguration();
 		configuration.setStartUrl(Settings.getServerContextPathURI());
-		configuration.setAllowQuit(allowToExitEl.isKeySelected("true"));
+		configuration.setAllowQuit(allowToExitEl.isOn());
 		configuration.setQuitURLConfirm(quitUrlConfirmEl.isKeySelected("true"));
 		if(StringHelper.containsNonWhitespace(passwordToQuitEl.getValue())) {
 			configuration.setPasswordToExit(passwordToQuitEl.getValue());
@@ -586,22 +660,36 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 				configuration.setSafeExamBrowserKey(safeExamBrowserKeyEl.getValue());
 				configuration.setSafeExamBrowserConfiguration(null);
 				configuration.setSafeExamBrowserTemplate(null);
+				configuration.setSafeExamBrowserConfigAllowExit(null);
+				configuration.setSafeExamBrowserConfigExitPassword(null);
 				configuration.setSafeExamBrowserHint(safeExamBrowserHintEl.getValue());
 			} else if(configSourceEl.isKeySelected("template") && templateEl.isOneSelected()) {
 				configuration.setSafeExamBrowserKey(null);
 				SafeExamBrowserTemplate selectedTemplate = getSelectedTemplate();
 				configuration.setSafeExamBrowserTemplate(selectedTemplate);
 				configuration.setSafeExamBrowserConfigDownload(downloadConfigEl.isOneSelected() && downloadConfigEl.isKeySelected("true"));
-				configuration.setSafeExamBrowserHint(null);
+				if(selectedTemplate.getType() == SafeExamBrowserTemplateType.SEB_FILE) {
+					configuration.setSafeExamBrowserConfigAllowExit(allowToExitEl.isOn());
+					configuration.setSafeExamBrowserConfigExitPassword(passwordToQuitEl.getValue());
+					configuration.setSafeExamBrowserHint(safeExamBrowserHintEl.getValue());
+				} else {
+					configuration.setSafeExamBrowserConfigAllowExit(null);
+					configuration.setSafeExamBrowserConfigExitPassword(null);
+					configuration.setSafeExamBrowserHint(null);
+				}
 			} else {
 				configuration.setSafeExamBrowserKey(null);
 				configuration.setSafeExamBrowserTemplate(null);
 				configuration.setSafeExamBrowserConfiguration(getConfiguration());
 				configuration.setSafeExamBrowserConfigDownload(downloadConfigEl.isOneSelected() && downloadConfigEl.isKeySelected("true"));
+				configuration.setSafeExamBrowserConfigAllowExit(null);// There are in configuration
+				configuration.setSafeExamBrowserConfigExitPassword(null);
 				configuration.setSafeExamBrowserHint(safeExamBrowserHintEl.getValue());
 			}
 		} else {
 			configuration.setSafeExamBrowserKey(null);
+			configuration.setSafeExamBrowserConfigAllowExit(null);
+			configuration.setSafeExamBrowserConfigExitPassword(null);
 			configuration.setSafeExamBrowserHint(null);
 			configuration.setSafeExamBrowserConfiguration(null);
 			configuration.setSafeExamBrowserTemplate(null);

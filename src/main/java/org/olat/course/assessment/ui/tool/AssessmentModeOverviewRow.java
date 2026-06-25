@@ -36,6 +36,7 @@ import org.olat.course.assessment.ui.tool.component.AssessmentModeProgressionIte
 public class AssessmentModeOverviewRow {
 	
 	private FormLink actionButton;
+	private FormLink viewPasswordButton;
 	private AssessmentModeProgressionItem waitBarItem;
 	private final List<FormLink> elementLinks = new ArrayList<>();
 	
@@ -45,6 +46,8 @@ public class AssessmentModeOverviewRow {
 	private final long endInMilliSeconds;
 	private final AssessmentMode assessmentMode;
 	private final String assessmentModeRendered;
+	
+	private boolean passwordView = false;
 	
 	public AssessmentModeOverviewRow(AssessmentMode assessmentMode, boolean today, boolean endSoon, long endInMilliSeconds, String assessmentModeRendered) {
 		this.today = today;
@@ -63,6 +66,18 @@ public class AssessmentModeOverviewRow {
 		return assessmentMode.getName();
 	}
 	
+	public String getPasswordToExit() {
+		return assessmentMode.getSafeExamBrowserConfigExitPassword();
+	}
+	
+	public boolean isPasswordView() {
+		return passwordView;
+	}
+
+	public void setPasswordView(boolean passwordView) {
+		this.passwordView = passwordView;
+	}
+
 	public boolean isToday() {
 		return today;
 	}
@@ -103,6 +118,18 @@ public class AssessmentModeOverviewRow {
 		return actionButton == null ? null : actionButton.getComponent().getComponentName();
 	}
 	
+	public FormLink getViewPasswordButton() {
+		return viewPasswordButton;
+	}
+
+	public void setViewPasswordButton(FormLink viewPasswordButton) {
+		this.viewPasswordButton = viewPasswordButton;
+	}
+	
+	public String getViewPasswordButtonName() {
+		return viewPasswordButton == null ? null : viewPasswordButton.getComponent().getComponentName();
+	}
+
 	public List<String> getElementLinkNames() {
 		List<String> names = new ArrayList<>(elementLinks.size());
 		for(FormLink elementLink:elementLinks) {

@@ -288,6 +288,7 @@ import org.junit.runners.Suite;
 	org.olat.course.assessment.manager.IpListValidatorTest.class,
 	org.olat.course.assessment.manager.SafeExamBrowserTemplateDAOTest.class,
 	org.olat.course.assessment.manager.SafeExamBrowserValidatorTest.class,
+	org.olat.course.assessment.manager.SafeExamBrowserConfigurationSerializerTest.class,
 	org.olat.course.assessment.manager.AssessmentModeManagerTest.class,
 	org.olat.course.assessment.manager.AssessmentToolManagerTest.class,
 	org.olat.course.assessment.manager.CourseAssessmentQueriesTest.class,

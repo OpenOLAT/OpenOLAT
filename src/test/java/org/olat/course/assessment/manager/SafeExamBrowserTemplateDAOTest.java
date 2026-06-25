@@ -34,6 +34,7 @@ import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
 import org.olat.course.assessment.SafeExamBrowserTemplateSearchParams;
+import org.olat.course.assessment.SafeExamBrowserTemplateType;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -59,7 +60,7 @@ public class SafeExamBrowserTemplateDAOTest extends OlatTestCase {
 
 	@Test
 	public void createTemplate() {
-		SafeExamBrowserTemplate template = sebTemplateDao.createTemplate("Test SEB Template");
+		SafeExamBrowserTemplate template = sebTemplateDao.createTemplate("Test SEB Template", SafeExamBrowserTemplateType.OO_FORM);
 		dbInstance.commitAndCloseSession();
 
 		assertThat(template).isNotNull();
@@ -73,7 +74,7 @@ public class SafeExamBrowserTemplateDAOTest extends OlatTestCase {
 
 	@Test
 	public void updateTemplate() {
-		SafeExamBrowserTemplate template = sebTemplateDao.createTemplate("Before Update");
+		SafeExamBrowserTemplate template = sebTemplateDao.createTemplate("Before Update", SafeExamBrowserTemplateType.OO_FORM);
 		Long key = template.getKey();
 		dbInstance.commitAndCloseSession();
 
@@ -102,7 +103,7 @@ public class SafeExamBrowserTemplateDAOTest extends OlatTestCase {
 
 	@Test
 	public void deleteTemplate() {
-		SafeExamBrowserTemplate template = sebTemplateDao.createTemplate("To Delete");
+		SafeExamBrowserTemplate template = sebTemplateDao.createTemplate("To Delete", SafeExamBrowserTemplateType.OO_FORM);
 		dbInstance.commitAndCloseSession();
 		Long key = template.getKey();
 
@@ -119,11 +120,11 @@ public class SafeExamBrowserTemplateDAOTest extends OlatTestCase {
 
 	@Test
 	public void loadTemplates_filterDefault() {
-		SafeExamBrowserTemplate defaultTemplate = sebTemplateDao.createTemplate("Default Template");
+		SafeExamBrowserTemplate defaultTemplate = sebTemplateDao.createTemplate("Default Template", SafeExamBrowserTemplateType.OO_FORM);
 		defaultTemplate.setDefault(true);
 		defaultTemplate = sebTemplateDao.updateTemplate(defaultTemplate);
 
-		SafeExamBrowserTemplate nonDefaultTemplate = sebTemplateDao.createTemplate("Non-Default Template");
+		SafeExamBrowserTemplate nonDefaultTemplate = sebTemplateDao.createTemplate("Non-Default Template", SafeExamBrowserTemplateType.OO_FORM);
 		nonDefaultTemplate.setDefault(false);
 		nonDefaultTemplate = sebTemplateDao.updateTemplate(nonDefaultTemplate);
 		dbInstance.commitAndCloseSession();
@@ -149,9 +150,9 @@ public class SafeExamBrowserTemplateDAOTest extends OlatTestCase {
 
 	@Test
 	public void loadTemplates_filterKeys() {
-		SafeExamBrowserTemplate template1 = sebTemplateDao.createTemplate("Keys Template 1");
-		SafeExamBrowserTemplate template2 = sebTemplateDao.createTemplate("Keys Template 2");
-		SafeExamBrowserTemplate template3 = sebTemplateDao.createTemplate("Keys Template 3");
+		SafeExamBrowserTemplate template1 = sebTemplateDao.createTemplate("Keys Template 1", SafeExamBrowserTemplateType.OO_FORM);
+		SafeExamBrowserTemplate template2 = sebTemplateDao.createTemplate("Keys Template 2", SafeExamBrowserTemplateType.OO_FORM);
+		SafeExamBrowserTemplate template3 = sebTemplateDao.createTemplate("Keys Template 3", SafeExamBrowserTemplateType.OO_FORM);
 		dbInstance.commitAndCloseSession();
 
 		SafeExamBrowserTemplateSearchParams params = new SafeExamBrowserTemplateSearchParams();
@@ -166,8 +167,8 @@ public class SafeExamBrowserTemplateDAOTest extends OlatTestCase {
 
 	@Test
 	public void loadTemplates_filterKey() {
-		SafeExamBrowserTemplate template1 = sebTemplateDao.createTemplate("Single Key Template 1");
-		SafeExamBrowserTemplate template2 = sebTemplateDao.createTemplate("Single Key Template 2");
+		SafeExamBrowserTemplate template1 = sebTemplateDao.createTemplate("Single Key Template 1", SafeExamBrowserTemplateType.OO_FORM);
+		SafeExamBrowserTemplate template2 = sebTemplateDao.createTemplate("Single Key Template 2", SafeExamBrowserTemplateType.OO_FORM);
 		dbInstance.commitAndCloseSession();
 
 		SafeExamBrowserTemplateSearchParams params = new SafeExamBrowserTemplateSearchParams();
@@ -182,11 +183,11 @@ public class SafeExamBrowserTemplateDAOTest extends OlatTestCase {
 
 	@Test
 	public void loadTemplates_filterActive() {
-		SafeExamBrowserTemplate activeTemplate = sebTemplateDao.createTemplate("Active Template");
+		SafeExamBrowserTemplate activeTemplate = sebTemplateDao.createTemplate("Active Template", SafeExamBrowserTemplateType.OO_FORM);
 		activeTemplate.setActive(true);
 		activeTemplate = sebTemplateDao.updateTemplate(activeTemplate);
 
-		SafeExamBrowserTemplate inactiveTemplate = sebTemplateDao.createTemplate("Inactive Template");
+		SafeExamBrowserTemplate inactiveTemplate = sebTemplateDao.createTemplate("Inactive Template", SafeExamBrowserTemplateType.OO_FORM);
 		inactiveTemplate.setActive(false);
 		inactiveTemplate = sebTemplateDao.updateTemplate(inactiveTemplate);
 		dbInstance.commitAndCloseSession();
@@ -214,10 +215,10 @@ public class SafeExamBrowserTemplateDAOTest extends OlatTestCase {
 	public void getTemplateToUsageCount() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 
-		SafeExamBrowserTemplate template1 = sebTemplateDao.createTemplate("Count Template 1");
-		SafeExamBrowserTemplate template2 = sebTemplateDao.createTemplate("Count Template 2");
-		SafeExamBrowserTemplate template3 = sebTemplateDao.createTemplate("Count Template 3");
-		SafeExamBrowserTemplate template4 = sebTemplateDao.createTemplate("Count Template 4");
+		SafeExamBrowserTemplate template1 = sebTemplateDao.createTemplate("Count Template 1", SafeExamBrowserTemplateType.OO_FORM);
+		SafeExamBrowserTemplate template2 = sebTemplateDao.createTemplate("Count Template 2", SafeExamBrowserTemplateType.OO_FORM);
+		SafeExamBrowserTemplate template3 = sebTemplateDao.createTemplate("Count Template 3", SafeExamBrowserTemplateType.OO_FORM);
+		SafeExamBrowserTemplate template4 = sebTemplateDao.createTemplate("Count Template 4", SafeExamBrowserTemplateType.OO_FORM);
 
 		createAndPersistModeWithTemplate(entry, template1);
 		createAndPersistModeWithTemplate(entry, template1);

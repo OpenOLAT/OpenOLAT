@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.transform.TransformerException;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -40,6 +42,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.xml.PList;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
@@ -92,6 +95,10 @@ public class AssessmentInspectionConfigurationImpl implements AssessmentInspecti
 	@Column(name="a_safeexambrowserconfig_dload", nullable=true, insertable=true, updatable=true)
 	private boolean safeExamBrowserConfigDownload;
 	
+	@Column(name="a_safeexambrowser_exit_password", nullable=true, insertable=true, updatable=true)
+	private String safeExamBrowserConfigExitPassword;
+	@Column(name="a_safeexambrowser_allow_exit", nullable=true, insertable=true, updatable=true)
+	private Boolean safeExamBrowserConfigAllowExit;
 	@Column(name="a_safeexambrowserhint", nullable=true, insertable=true, updatable=true)
 	private String safeExamBrowserHint;
 
@@ -265,6 +272,23 @@ public class AssessmentInspectionConfigurationImpl implements AssessmentInspecti
 		}
 	}
 
+	@Override
+	public void setSafeExamBrowserConfigurationPList(PList plist) {
+		try {
+			safeExamBrowserTemplate = null;
+			setSafeExamBrowserConfigXml(null);
+			String plistAsString = plist.toPlistString();
+			setSafeExamBrowserConfigPList(plistAsString);
+			String json = SafeExamBrowserConfigurationSerializer.toJSON(plist);
+			if(json != null) {
+				setSafeExamBrowserConfigPListKey(Encoder.sha256Exam(json));
+			}
+		} catch (TransformerException e) {
+			// TODO seb Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public String getSafeExamBrowserConfigXml() {
 		return safeExamBrowserConfigXml;
 	}
@@ -299,6 +323,26 @@ public class AssessmentInspectionConfigurationImpl implements AssessmentInspecti
 	@Override
 	public void setSafeExamBrowserConfigDownload(boolean safeExamBrowserConfigDownload) {
 		this.safeExamBrowserConfigDownload = safeExamBrowserConfigDownload;
+	}
+
+	@Override
+	public String getSafeExamBrowserConfigExitPassword() {
+		return safeExamBrowserConfigExitPassword;
+	}
+
+	@Override
+	public void setSafeExamBrowserConfigExitPassword(String safeExamBrowserConfigExitPassword) {
+		this.safeExamBrowserConfigExitPassword = safeExamBrowserConfigExitPassword;
+	}
+
+	@Override
+	public Boolean getSafeExamBrowserConfigAllowExit() {
+		return safeExamBrowserConfigAllowExit;
+	}
+
+	@Override
+	public void setSafeExamBrowserConfigAllowExit(Boolean safeExamBrowserConfigAllowExit) {
+		this.safeExamBrowserConfigAllowExit = safeExamBrowserConfigAllowExit;
 	}
 
 	@Override

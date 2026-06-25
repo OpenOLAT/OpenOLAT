@@ -49,6 +49,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.xml.PList;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
@@ -648,6 +649,11 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		}
 
 		@Override
+		public void setSafeExamBrowserConfigurationPList(PList plist) {
+			//
+		}
+
+		@Override
 		public String getSafeExamBrowserConfigPList() {
 			return sebTemplate.getSafeExamBrowserConfigPList();
 		}
@@ -665,6 +671,26 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		@Override
 		public void setSafeExamBrowserConfigDownload(boolean safeExamBrowserConfigDownload) {
 			// 
+		}
+		
+		@Override
+		public String getSafeExamBrowserConfigExitPassword() {
+			return sebTemplate.getSafeExamBrowserConfigExitPassword();
+		}
+
+		@Override
+		public void setSafeExamBrowserConfigExitPassword(String password) {
+			//
+		}
+
+		@Override
+		public Boolean getSafeExamBrowserConfigAllowExit() {
+			return sebTemplate.getSafeExamBrowserConfigAllowExit();
+		}
+
+		@Override
+		public void setSafeExamBrowserConfigAllowExit(Boolean allowExit) {
+			//
 		}
 
 		@Override
@@ -699,6 +725,11 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		}
 
 		@Override
+		protected void initButtonsForm(FormItemContainer formLayout, UserRequest ureq) {
+			//
+		}
+
+		@Override
 		protected void updateUI() {
 			super.updateUI();
 
@@ -708,6 +739,9 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 			templateEl.setVisible(false);
 			downloadConfigEl.setEnabled(isEditable());
 			safeExamBrowserHintEl.setEnabled(isEditable());
+			
+			rawConfigurationCont.setVisible(false);
+			rawConfigurationCtrl.getInitialFormItem().setVisible(false);
 		}
 
 		@Override
