@@ -81,7 +81,7 @@ public class SafeExamBrowserRawConfigurationController extends FormBasicControll
 					if("key".equalsIgnoreCase(element.getNodeName())) {
 						key = element.getTextContent();
 					} else if(key != null) {
-						Object value = toJsonValue(element);
+						Object value = toStringValue(element);
 						if(value != null) {
 							rows.add(new SafeExamBrowserConfigurationKeyValueRow(key, value));
 						}
@@ -95,16 +95,55 @@ public class SafeExamBrowserRawConfigurationController extends FormBasicControll
 		tableEl.reset(true, true, true);
 	}
 	
-	private static Object toJsonValue(Element valueElement) {
+	private static String toStringValue(Element valueElement) {
 		String type = valueElement.getNodeName().toLowerCase();
 		return switch(type) {
-			case "true" -> Boolean.TRUE;
-			case "false" -> Boolean.FALSE;
+			case "true" -> Boolean.TRUE.toString().toLowerCase();
+			case "false" -> Boolean.FALSE.toString().toLowerCase();
 			case "integer", "real", "string", "data", "date" -> valueElement.getTextContent();
-			//case "dict" -> toJsonObject(valueElement);
-			//case "array" -> toJsonArray(valueElement);
+			case "dict" -> dictToStringValue(valueElement);
+			case "array" -> arrayToStringValue(valueElement);
 			default -> null;
 		};
+	}
+	
+	private static String arrayToStringValue(Element arrayElement) {	
+		StringBuilder array = new StringBuilder();
+		
+		for(Node node = arrayElement.getFirstChild(); node != null; node = node.getNextSibling()) {
+			if(node instanceof Element element) {
+				String str = toStringValue(element);
+				if(StringHelper.containsNonWhitespace(str)) {
+					if(!array.isEmpty()) {
+						array.append(" , ");
+					}
+					array.append(str);
+				}
+			}
+		}
+
+		return array.isEmpty() ? "" : "[ " + array.toString() + " ]";
+	}
+	
+	private static String dictToStringValue(Element arrayElement) {	
+		StringBuilder dict = new StringBuilder();
+
+		String key = null;
+		for(Node node = arrayElement.getFirstChild(); node != null; node = node.getNextSibling()) {
+			if(node instanceof Element element) {
+				if("key".equalsIgnoreCase(element.getNodeName())) {
+					key = element.getTextContent();
+				} else if(key != null) {
+					Object value = toStringValue(element);
+					if(value != null) {
+						dict.append("{ ").append(key).append(" : ").append(value).append(" }");
+					}
+					key = null;
+				}
+			}
+		}
+
+		return dict.isEmpty() ? "" : dict.toString();
 	}
 
 	@Override

@@ -20,7 +20,7 @@
 		<div class="o_assessment_seb">
 			<strong>$r.translate("seb.password.exit")</strong>
 			#if($r.isTrue($row.passwordView))
-				<span>${row.passwordToExit}</span>
+				<span>$r.escapeHtml($row.passwordToExit)</span>
 			#else
 				<span>********</span>
 			#end

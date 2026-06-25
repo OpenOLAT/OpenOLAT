@@ -170,6 +170,13 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			mode.setSafeExamBrowserHint(assessmentMode.getSafeExamBrowserHint());
 			mode.setSafeExamBrowserConfiguration(assessmentMode.getSafeExamBrowserConfiguration());
 			mode.setSafeExamBrowserConfigDownload(assessmentMode.isSafeExamBrowserConfigDownload());
+			mode.setSafeExamBrowserConfigAllowExit(assessmentMode.getSafeExamBrowserConfigAllowExit());
+			mode.setSafeExamBrowserConfigExitPassword(assessmentMode.getSafeExamBrowserConfigExitPassword());
+			
+			SafeExamBrowserTemplate template = assessmentMode.getSafeExamBrowserTemplate();
+			if(template != null) {
+				mode.setSafeExamBrowserTemplate(template);
+			}
 		}
 		
 		mode.setStatus(Status.none);
@@ -177,6 +184,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		mode.setTargetAudience(assessmentMode.getTargetAudience());
 		mode.setRepositoryEntry(assessmentMode.getRepositoryEntry());
 		mode.setApplySettingsForCoach(assessmentMode.isApplySettingsForCoach());
+
 		return mode;
 	}
 
