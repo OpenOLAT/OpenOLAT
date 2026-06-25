@@ -173,7 +173,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		StringBuilder informations = new StringBuilder();
 		
 		String hintI18nKey = repositoryModule.isMyCoursesParticipantsOnly()
-				? "coaching.tool.hint.participants.only"
+				? "coaching.tool.hint.participant.only"
 				: "coaching.tool.hint";
 		
 		informations.append(translate(hintI18nKey))
