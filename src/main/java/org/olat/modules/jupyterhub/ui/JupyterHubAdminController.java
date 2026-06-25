@@ -21,6 +21,7 @@ package org.olat.modules.jupyterhub.ui;
 
 import static org.olat.core.gui.components.link.LinkFactory.createLink;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -30,18 +31,28 @@ import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -53,6 +64,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.id.context.StateEntry;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.modules.jupyterhub.JupyterHub;
@@ -70,6 +82,9 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 	private static final String CMD_TOOLS = "tools";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_SHOW_APPLICATIONS = "showApplications";
+	private static final String FILTER_STATUS = "status";
+	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_ACTIVE = "Active";
 
 	@Autowired
 	private LTI13Module lti13Module;
@@ -81,9 +96,13 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 	private final boolean ltiEnabled;
 	private final SelectionValues enabledKV;
 	private MultipleSelectionElement enabledEl;
+	private FormLayoutContainer titleCont;
 	private FormLink addJupyterHubButton;
 	private JupyterHubsTableModel hubsTableModel;
 	private FlexiTableElement hubsTable;
+	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabActive;
+	private List<JupyterHubRow> allRows = new ArrayList<>();
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private EditJupyterHubController editJupyterHubController;
@@ -93,7 +112,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 	private ShowJupyterHubApplicationsController showApplicationsCtrl;
 
 	public JupyterHubAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		enabledKV = new SelectionValues();
 		enabledKV.add(SelectionValues.entry("on", translate("on")));
 		ltiEnabled = lti13Module.isEnabled();
@@ -106,28 +125,45 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("jupyterHub.title");
-		setFormInfoHelp("manual_user/learningresources/Course_Element_JupyterHub/");
-		setFormContextHelp("manual_user/learningresources/Course_Element_JupyterHub/");
-		formLayout.setElementCssClass("o_sel_jupyterhub_admin_configuration");
+		FormLayoutContainer topCont = FormLayoutContainer.createDefaultFormLayout("topCont", getTranslator());
+		formLayout.add("topCont", topCont);
 
+		topCont.setFormTitle(translate("jupyterHub.title"));
+		topCont.setElementCssClass("o_sel_jupyterhub_admin_configuration");
+		topCont.setFormInfoHelp("manual_user/learningresources/Course_Element_JupyterHub/");
+		topCont.setFormContextHelp("manual_user/learningresources/Course_Element_JupyterHub/");
+		
 		if (!ltiEnabled) {
-			setFormWarning("jupyterHub.warning.no.lti");
+			topCont.setFormWarning("jupyterHub.warning.no.lti");
 			return;
 		}
 
-		enabledEl = uifactory.addCheckboxesHorizontal("jupyterHub.courseElement", formLayout, enabledKV.keys(), enabledKV.values());
+		enabledEl = uifactory.addCheckboxesHorizontal("jupyterHub.courseElement", topCont, enabledKV.keys(), enabledKV.values());
 		enabledEl.setElementCssClass("o_sel_jupyterhub_admin_enable");
 		enabledEl.select(enabledKV.keys()[0], jupyterHubModule.isEnabled() && jupyterHubModule.isEnabledForCourseElement());
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
 
-		initTable(formLayout);
+		titleCont = FormLayoutContainer.createDefaultFormLayout("titleCont", getTranslator());
+		titleCont.setFormTitle(translate("jupyterHub.configurations"));
+		titleCont.setElementCssClass("o_block_top");
+		formLayout.add("titleCont", titleCont);
+		
+		FormLayoutContainer tableCont = FormLayoutContainer.createVerticalFormLayout("tableCont", getTranslator());
+		tableCont.setElementCssClass("o_sel_jupyterhub_admin_configuration");
+		formLayout.add("tableCont", tableCont);
+		
+		initTable(tableCont, ureq);
 
-		addJupyterHubButton = uifactory.addFormLink("jupyterHub.add", formLayout, Link.BUTTON);
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createVerticalFormLayout("buttonsCont", getTranslator());
+		buttonsCont.setElementCssClass("o_block_top o_sel_jupyterhub_admin_configuration");
+		formLayout.add("buttonsCont", buttonsCont);
+		
+		addJupyterHubButton = uifactory.addFormLink("jupyterHub.add", buttonsCont, Link.BUTTON);
+		addJupyterHubButton.setPrimary(true);
 		addJupyterHubButton.setElementCssClass("o_sel_jupyterhub_add");
 	}
 
-	private void initTable(FormItemContainer formLayout) {
+	private void initTable(FormItemContainer formLayout, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.status));
@@ -152,13 +188,61 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 
 		hubsTable = uifactory.addTableElement(getWindowControl(), "hubs", hubsTableModel, 10,
 				false, getTranslator(), formLayout);
-		hubsTable.setLabel("jupyterHub.configurations", null);
+		hubsTable.setSearchEnabled(true);
+		hubsTable.setCustomizeColumns(true);
+		hubsTable.setAndLoadPersistedPreferences(ureq, "jupyterhub-admin-hubs");
+		initFilters();
+		initFilterTabs(ureq);
 	}
 
-	private void loadModel() {	
-		List<JupyterHubRow> rows = jupyterManager.getJupyterHubsWithApplicationCounts().stream().map(this::mapHubToHubRow).toList();
-		hubsTableModel.setObjects(rows);
-		hubsTable.reset(true, true, true);
+	private void initFilters() {
+		SelectionValues statusValues = new SelectionValues();
+		statusValues.add(SelectionValues.entry(JupyterHub.JupyterHubStatus.active.name(), translate("hub.status.active")));
+		statusValues.add(SelectionValues.entry(JupyterHub.JupyterHubStatus.inactive.name(), translate("hub.status.inactive")));
+		hubsTable.setFilters(true,
+				List.of(new FlexiTableMultiSelectionFilter(translate("table.header.hub.status"), FILTER_STATUS, statusValues, true)),
+				false, false);
+	}
+
+	private void initFilterTabs(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		tabAll = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_ALL, translate("all"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(tabAll);
+
+		tabActive = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_ID_ACTIVE, translate("hub.status.active"),
+				TabSelectionBehavior.nothing,
+				List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, List.of(JupyterHub.JupyterHubStatus.active.name()))));
+		tabs.add(tabActive);
+
+		hubsTable.setFilterTabs(true, tabs);
+		hubsTable.setSelectedFilterTab(ureq, tabActive);
+	}
+
+	private void loadModel() {
+		allRows = jupyterManager.getJupyterHubsWithApplicationCounts().stream()
+				.map(this::mapHubToHubRow)
+				.toList();
+		applyFilters(true);
+	}
+
+	private void applyFilters(boolean resetAll) {
+		String searchText = hubsTable.getQuickSearchString();
+		List<FlexiTableFilter> filters = hubsTable.getFilters();
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, FILTER_STATUS);
+		List<String> statusValues = statusFilter instanceof FlexiTableExtendedFilter extFilter
+				? extFilter.getValues() : null;
+
+		List<JupyterHubRow> filtered = allRows.stream()
+				.filter(row -> statusValues == null || statusValues.isEmpty()
+						|| statusValues.contains(row.getStatus().name()))
+				.filter(row -> !StringHelper.containsNonWhitespace(searchText)
+						|| row.getName().toLowerCase().contains(searchText.toLowerCase()))
+				.toList();
+
+		hubsTableModel.setObjects(filtered);
+		hubsTable.reset(resetAll, resetAll, true);
 	}
 
 	private JupyterHubRow mapHubToHubRow(JupyterManager.JupyterHubWithCounts jupyterHubWithCounts) {
@@ -232,9 +316,11 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		enabledEl.select(enabledKV.keys()[0], jupyterHubModule.isEnabled() && jupyterHubModule.isEnabledForCourseElement());
 
 		if (enabledEl.isAtLeastSelected(1)) {
+			titleCont.setVisible(true);
 			hubsTable.setVisible(true);
 			addJupyterHubButton.setVisible(true);
 		} else {
+			titleCont.setVisible(false);
 			hubsTable.setVisible(false);
 			addJupyterHubButton.setVisible(false);
 		}
@@ -258,6 +344,8 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 				} else if (CMD_SHOW_APPLICATIONS.equals(selectionEvent.getCommand())) {
 					doShowApplications(ureq, hubsTableModel.getObject(selectionEvent.getIndex()));
 				}
+			} else if (event instanceof FlexiTableFilterTabEvent || event instanceof FlexiTableSearchEvent) {
+				applyFilters(false);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
