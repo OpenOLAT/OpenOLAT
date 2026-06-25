@@ -115,6 +115,25 @@ public class JupyterHubDAOTest extends OlatTestCase {
 	}
 
 	@Test
+	public void testGetActiveJupyterHubs() {
+		String clientId1 = UUID.randomUUID().toString();
+		String clientId2 = UUID.randomUUID().toString();
+		JupyterHub activeHub = createTestJupyterHub(clientId1, "ActiveHub", "1G", "2G",
+				BigDecimal.valueOf(1), BigDecimal.valueOf(2), JupyterHub.AgreementSetting.suppressAgreement);
+		JupyterHub inactiveHub = createTestJupyterHub(clientId2, "InactiveHub", "1G", "2G",
+				BigDecimal.valueOf(1), BigDecimal.valueOf(2), JupyterHub.AgreementSetting.suppressAgreement);
+		inactiveHub.setStatus(JupyterHub.JupyterHubStatus.inactive);
+		jupyterHubDAO.updateJupyterHub(inactiveHub);
+
+		List<JupyterHub> allHubs = jupyterHubDAO.getJupyterHubs();
+		List<JupyterHub> activeHubs = jupyterHubDAO.getActiveJupyterHubs();
+
+		Assert.assertTrue(allHubs.containsAll(List.of(activeHub, inactiveHub)));
+		Assert.assertTrue(activeHubs.contains(activeHub));
+		Assert.assertFalse(activeHubs.contains(inactiveHub));
+	}
+
+	@Test
 	public void testGetApplications() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("jupyter-author-1");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
