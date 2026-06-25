@@ -41,6 +41,8 @@ public interface JupyterManager {
 
 	List<JupyterHub> getJupyterHubs();
 
+	List<JupyterHub> getActiveJupyterHubs();
+
 	SelectionValues getJupyterHubsKV();
 
 	List<JupyterHubWithCounts> getJupyterHubsWithApplicationCounts();

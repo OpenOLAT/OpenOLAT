@@ -123,6 +123,11 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	}
 
 	@Override
+	public List<JupyterHub> getActiveJupyterHubs() {
+		return jupyterHubDAO.getActiveJupyterHubs();
+	}
+
+	@Override
 	public List<JupyterHubWithCounts> getJupyterHubsWithApplicationCounts() {
 		return jupyterHubDAO.getJupyterHubsWithApplicationCounts().stream().map((j) ->
 			new JupyterHubWithCounts(j.getJupyterHub(), j.getApplicationCount(), getParticipantCount(j.getJupyterHub().getKey()))
