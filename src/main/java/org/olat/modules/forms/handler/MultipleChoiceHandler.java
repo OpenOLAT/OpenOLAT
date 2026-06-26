@@ -88,6 +88,9 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 			RenderingHints options) {
 		if (element instanceof MultipleChoice multipleChoice) {
 			EvaluationFormResponseController ctrl = new MultipleChoiceController(ureq, wControl, multipleChoice);
+			if (options != null && options.isEditable()) {
+				ctrl.setReadOnly(true);
+			}
 			return new EvaluationFormResponseControllerElement(ctrl);
 		}
 		return null;

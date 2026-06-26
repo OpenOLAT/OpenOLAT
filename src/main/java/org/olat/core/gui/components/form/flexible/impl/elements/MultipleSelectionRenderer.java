@@ -104,13 +104,19 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append(" open");
 		}
 		sb.append("'>");
-		sb.append("<button type='button' class='btn btn-default dropdown-toggle o_button_printed o_ms_button' data-toggle='dropdown'");
-		if (stF.hasLabel()) {
-			sb.append(" aria-labelledby=\"o_cl").append(stC.getDispatchID()).append("\"");
+		if (stC.isEnabled()) {
+			sb.append("<button type='button' class='btn btn-default dropdown-toggle o_button_printed o_ms_button' data-toggle='dropdown'");
+			if (stF.hasLabel()) {
+				sb.append(" aria-labelledby=\"o_cl").append(stC.getDispatchID()).append("\"");
+			}
+			sb.append(">");
+			sb.append("<span id='").append(buttonTitleId).append("'></span>&nbsp;<span class='caret o_ms_carret'></span>");
+			sb.append("</button>");
+		} else {
+			sb.append("<span class='btn btn-default o_button_printed o_ms_button disabled'>");
+			sb.append("<span id='").append(buttonTitleId).append("'></span>&nbsp;<span class='caret o_ms_carret'></span>");
+			sb.append("</span>");
 		}
-		sb.append(">");
-		sb.append("<span id='").append(buttonTitleId).append("'></span>&nbsp;<span class='caret o_ms_carret'></span>");
-		sb.append("</button>");
 		sb.append("<ul class='dropdown-menu o_ms_list' id='");
 		sb.append(listId);
 		sb.append("'>");
