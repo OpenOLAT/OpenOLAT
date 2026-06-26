@@ -29,6 +29,7 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
 import org.olat.commons.calendar.ui.components.FullCalendarViews;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -38,6 +39,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
@@ -56,6 +58,8 @@ public class RoomCalendarController extends FormBasicController {
 	private RoomManagementService roomManagementService;
 	@Autowired
 	private CalendarModule calendarModule;
+	@Autowired
+	private ColorService colorService;
 
 	public RoomCalendarController(UserRequest ureq, WindowControl wControl, Room room) {
 		super(ureq, wControl, "room_calendar");
@@ -67,7 +71,7 @@ public class RoomCalendarController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String calId = "room." + room.getKey();
-		Kalendar calendar = new Kalendar("Room", calId);
+		Kalendar calendar = new Kalendar(calId, "Room");
 
 		List<RoomBooking> bookings = roomManagementService.getBookingsForRoom(new RoomRefImpl(room.getKey()), null, null);
 		for (RoomBooking booking : bookings) {
@@ -84,7 +88,10 @@ public class RoomCalendarController extends FormBasicController {
 		KalendarRenderWrapper wrapper = new KalendarRenderWrapper(calendar, displayName, calId);
 		wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 		wrapper.setPrivateEventsVisible(true);
-		wrapper.setCssClass("o_cal_blue");
+		Building building = room.getBuilding();
+		String colorCss = building != null && StringHelper.containsNonWhitespace(building.getColorCss())
+				? building.getColorCss() : colorService.getDefaultColor();
+		wrapper.setCssClass("o_color_background o_color_border_darken " + colorCss);
 
 		FullCalendarElement calendarEl = new FullCalendarElement(ureq, "roomCalendar", List.of(wrapper), getTranslator());
 		calendarEl.setView(FullCalendarViews.timeGridWeek);

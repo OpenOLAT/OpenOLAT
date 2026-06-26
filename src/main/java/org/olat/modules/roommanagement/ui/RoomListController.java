@@ -37,6 +37,7 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -132,6 +133,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private CalendarModule calendarModule;
 	@Autowired
 	private RoomManagementService roomManagementService;
+	@Autowired
+	private ColorService colorService;
 
 	public RoomListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel) {
 		super(ureq, wControl, "rooms_admin");
@@ -630,7 +633,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			List<RoomBooking> buildingBookings = bookingsByBuildingKey.getOrDefault(buildingKey, List.of());
 
 			String calId = "rooms.building." + buildingKey;
-			Kalendar calendar = new Kalendar("Room", calId);
+			Kalendar calendar = new Kalendar(calId, "Room");
 			for (RoomBooking booking : buildingBookings) {
 				addCalendarEvent(calendar, booking, roomByKey);
 			}
@@ -644,21 +647,21 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 			wrapper.setPrivateEventsVisible(true);
 			String colorCss = StringHelper.containsNonWhitespace(building.getColorCss())
-					? building.getColorCss() : KalendarRenderWrapper.CALENDAR_COLOR_BLUE;
-			wrapper.setCssClass("o_color_background " + colorCss);
+					? building.getColorCss() : colorService.getDefaultColor();
+			wrapper.setCssClass("o_color_background o_color_border_darken " + colorCss);
 			wrappers.add(wrapper);
 		}
 
 		if (!roomsWithoutBuilding.isEmpty()) {
 			String calId = "rooms.nobuilding";
-			Kalendar calendar = new Kalendar("Room", calId);
+			Kalendar calendar = new Kalendar(calId, "Room");
 			for (RoomBooking booking : bookingsWithoutBuilding) {
 				addCalendarEvent(calendar, booking, roomByKey);
 			}
 			KalendarRenderWrapper wrapper = new KalendarRenderWrapper(calendar, "", calId);
 			wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 			wrapper.setPrivateEventsVisible(true);
-			wrapper.setCssClass(KalendarRenderWrapper.CALENDAR_COLOR_BLUE);
+			wrapper.setCssClass("o_color_background o_color_border_darken " + colorService.getDefaultColor());
 			wrappers.add(wrapper);
 		}
 
