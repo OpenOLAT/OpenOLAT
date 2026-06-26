@@ -296,7 +296,7 @@ public class QTI21EditForm extends FormBasicController {
 			gradeScaleEditLink = uifactory.addFormLink("rightAddOn", "grade.scale.edit", "grade.scale.edit", null, gradeScaleCont, Link.BUTTON);
 			gradeScaleEditLink.setElementCssClass("input-group-addon");
 			
-			passedGradeEl = uifactory.addStaticTextElement("score.passed.grade", "score.passed", translate("score.passed.grade"), formLayout);
+			passedGradeEl = uifactory.addStaticTextElement("score.passed.grade", "grade.success.criterion", translate("score.passed.grade"), formLayout);
 			
 			uifactory.addSpacerElement("grade.spacer", formLayout, false);
 		}

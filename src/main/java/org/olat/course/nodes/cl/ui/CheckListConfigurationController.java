@@ -254,7 +254,7 @@ public class CheckListConfigurationController extends FormBasicController {
 			gradeScaleEditLink = uifactory.addFormLink("rightAddOn", "grade.scale.edit", "grade.scale.edit", null, gradeScaleCont, Link.BUTTON);
 			gradeScaleEditLink.setElementCssClass("input-group-addon");
 			
-			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "config.passed", "", formLayout);
+			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "grade.success.criterion", "", formLayout);
 		}
 		
 		passedSpacer = uifactory.addSpacerElement("spacer-points", formLayout, false);

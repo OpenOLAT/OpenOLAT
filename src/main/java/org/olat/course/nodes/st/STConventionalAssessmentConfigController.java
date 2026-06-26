@@ -327,7 +327,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		gradeScaleEditLink.setElementCssClass("input-group-addon o_sel_grade_edit_scale");
 		
 		gradeMinMaxEl = uifactory.addStaticTextElement("score.min.max", "score.min.max", "", gradeCont);
-		gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", gradeCont);
+		gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "grade.success.criterion", "", gradeCont);
 		
 		FormLayoutContainer buttonWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonWrapper", getTranslator());
 		buttonWrapperCont.setElementCssClass("o_sel_score_buttons");

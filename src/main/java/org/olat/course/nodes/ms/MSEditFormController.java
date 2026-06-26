@@ -240,7 +240,7 @@ public class MSEditFormController extends FormBasicController {
 			gradeScaleEditLink = uifactory.addFormLink("rightAddOn", "grade.scale.edit", "grade.scale.edit", null, gradeScaleCont, Link.BUTTON);
 			gradeScaleEditLink.setElementCssClass("input-group-addon o_sel_grade_edit_scale");
 			
-			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", formLayout);
+			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "grade.success.criterion", "", formLayout);
 		}
 		
 		passedSpacer = uifactory.addSpacerElement("spacer1", formLayout, false);
