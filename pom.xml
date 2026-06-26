@@ -77,8 +77,8 @@
 		<org.slf4j>2.0.18</org.slf4j>
 		<org.bouncycastle>1.84</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
-		<io.undertow>2.4.1.Final</io.undertow>
-		<io.undertow.ee>2.0.0.Final</io.undertow.ee>
+		<io.undertow>2.4.2.Final</io.undertow>
+		<io.undertow.ee>2.0.1.Final</io.undertow.ee>
 		<jackson.version>2.22.0</jackson.version>
 		<jackson.annotations.version>2.22</jackson.annotations.version>
 		<swagger.ui.version>5.32.8</swagger.ui.version>
