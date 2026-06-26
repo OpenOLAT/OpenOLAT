@@ -97,7 +97,7 @@ public class CurriculumMemberQueries {
 		if(curriculumElementsKeys.isEmpty()) {
 			return new ArrayList<>();
 		}
-		
+
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ident, membership.role, membership.inheritanceModeString, membership.creationDate from curriculumelement el")
 		  .append(" inner join el.group baseGroup")
@@ -131,6 +131,59 @@ public class CurriculumMemberQueries {
 		return members;
 	}
 	
+	public List<CurriculumMember> getCurriculumElementsMembersIntersection(SearchMemberParameters params) {
+		List<Long> curriculumElementsKeys = params.getCurriculumElementsKeys();
+		if(curriculumElementsKeys.isEmpty()) {
+			return new ArrayList<>();
+		}
+		long elementCount = curriculumElementsKeys.stream().distinct().count();
+
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ident, membership.role, membership.inheritanceModeString, membership.creationDate from curriculumelement el")
+		  .append(" inner join el.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where el.key in (:elementsKeys)")
+		  .append(" and ident.key in (")
+		  .append("  select ident2.key from curriculumelement el2")
+		  .append("  inner join el2.group baseGroup2")
+		  .append("  inner join baseGroup2.members membership2")
+		  .append("  inner join membership2.identity ident2")
+		  .append("  where el2.key in (:elementsKeys)");
+		if(params.getRoles() != null && !params.getRoles().isEmpty()) {
+			sb.append("  and membership2.role in (:roles)");
+		}
+		sb.append("  group by ident2.key")
+		  .append("  having count(distinct el2.key) = :elementCount")
+		  .append(")");
+		createQueryPart(sb, params);
+		createUserPropertiesQueryPart(sb, params.getLogin(), params.getSearchString(),
+				params.getUserProperties(), params.getUserPropertiesSearch());
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("elementsKeys", curriculumElementsKeys)
+				.setParameter("elementCount", elementCount);
+		createQueryParameters(query, params);
+		createUserPropertiesQueryParameters(query, params.getLogin(), params.getSearchString(), params.getUserPropertiesSearch());
+
+		List<Object[]> objects = query.getResultList();
+		List<CurriculumMember> members = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			Identity identity = (Identity)object[0];
+			String role = (String)object[1];
+			String inheritanceModeString = (String)object[2];
+			GroupMembershipInheritance inheritanceMode = GroupMembershipInheritance.none;
+			if(StringHelper.containsNonWhitespace(inheritanceModeString)) {
+				inheritanceMode = GroupMembershipInheritance.valueOf(inheritanceModeString);
+			}
+			Date creationDate = (Date)object[3];
+			members.add(new CurriculumMember(identity, role, inheritanceMode, creationDate));
+		}
+		return members;
+	}
+
 	public List<CurriculumMemberWithElement> getCurriculumElementsMembersWith(SearchMemberParameters params) {
 		List<Long> curriculumElementsKeys = params.getCurriculumElementsKeys();
 		if(curriculumElementsKeys.isEmpty()) {

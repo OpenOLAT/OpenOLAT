@@ -182,4 +182,67 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		List<CurriculumMember> noMembers = memberQueries.getCurriculumElementsMembers(noParams);
 		Assert.assertTrue(noMembers.isEmpty());
 	}
+
+	@Test
+	public void getCurriculumElementMembersIntersection() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity userBoth = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-intersect-both");
+		Identity userE1Only = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-intersect-e1");
+		Identity userE2Only = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-intersect-e2");
+		Identity userMixedRoles = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-intersect-mixed");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-intersect", "Curriculum intersect", null, false, null);
+		CurriculumElement e1 = curriculumService.createCurriculumElement("e1-intersect", "E1",
+				CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement e2 = curriculumService.createCurriculumElement("e2-intersect", "E2",
+				CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(e1, userBoth, CurriculumRoles.owner, actor);
+		curriculumService.addMember(e2, userBoth, CurriculumRoles.owner, actor);
+		curriculumService.addMember(e1, userE1Only, CurriculumRoles.owner, actor);
+		curriculumService.addMember(e2, userE2Only, CurriculumRoles.curriculumelementowner, actor);
+		curriculumService.addMember(e1, userMixedRoles, CurriculumRoles.owner, actor);
+		curriculumService.addMember(e2, userMixedRoles, CurriculumRoles.curriculumelementowner, actor);
+		dbInstance.commitAndCloseSession();
+
+		SearchMemberParameters params = new SearchMemberParameters(List.of(e1, e2));
+		params.setRoles(List.of(CurriculumRoles.owner, CurriculumRoles.curriculumelementowner));
+		List<CurriculumMember> members = memberQueries.getCurriculumElementsMembersIntersection(params);
+
+		assertThat(members)
+				.extracting(CurriculumMember::getIdentity)
+				.contains(userBoth, userMixedRoles)
+				.doesNotContain(userE1Only, userE2Only);
+	}
+
+	@Test
+	public void getCurriculumElementMembersUnion() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity userBoth = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-union-both");
+		Identity userE1Only = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-union-e1");
+		Identity userE2Only = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-union-e2");
+		Identity userMixedRoles = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-union-mixed");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-union", "Curriculum union", null, false, null);
+		CurriculumElement e1 = curriculumService.createCurriculumElement("e1-union", "E1",
+				CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement e2 = curriculumService.createCurriculumElement("e2-union", "E2",
+				CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(e1, userBoth, CurriculumRoles.owner, actor);
+		curriculumService.addMember(e2, userBoth, CurriculumRoles.owner, actor);
+		curriculumService.addMember(e1, userE1Only, CurriculumRoles.owner, actor);
+		curriculumService.addMember(e2, userE2Only, CurriculumRoles.curriculumelementowner, actor);
+		curriculumService.addMember(e1, userMixedRoles, CurriculumRoles.owner, actor);
+		curriculumService.addMember(e2, userMixedRoles, CurriculumRoles.curriculumelementowner, actor);
+		dbInstance.commitAndCloseSession();
+
+		SearchMemberParameters params = new SearchMemberParameters(List.of(e1, e2));
+		params.setRoles(List.of(CurriculumRoles.owner, CurriculumRoles.curriculumelementowner));
+		List<CurriculumMember> members = memberQueries.getCurriculumElementsMembers(params);
+
+		assertThat(members)
+				.extracting(CurriculumMember::getIdentity)
+				.contains(userBoth, userE1Only, userE2Only, userMixedRoles);
+	}
 }

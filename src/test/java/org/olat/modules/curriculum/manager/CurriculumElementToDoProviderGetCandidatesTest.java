@@ -109,6 +109,33 @@ public class CurriculumElementToDoProviderGetCandidatesTest extends OlatTestCase
 	}
 
 	@Test
+	public void shouldReturnOnlyMembersInAllElements() {
+		Organisation org = organisationService.createOrganisation(random(), random(), null, null, null,
+				JunitTestHelper.getDefaultActor());
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, org);
+		CurriculumElement e1 = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		CurriculumElement e2 = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		Identity ownerBoth = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity ownerOne = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		curriculumService.addMember(e1, ownerBoth, CurriculumRoles.curriculumelementowner, JunitTestHelper.getDefaultActor());
+		curriculumService.addMember(e2, ownerBoth, CurriculumRoles.curriculumelementowner, JunitTestHelper.getDefaultActor());
+		curriculumService.addMember(e1, ownerOne, CurriculumRoles.curriculumelementowner, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumMember> candidates = curriculumElementToDoProvider.getCandidates(List.of(e1, e2));
+
+		assertThat(candidates).extracting(CurriculumMember::getIdentity)
+				.contains(ownerBoth)
+				.doesNotContain(ownerOne);
+	}
+
+	@Test
 	public void shouldNotReturnMembersOfOtherOrg() {
 		CurriculumElement element = createCurriculumElement();
 		Organisation otherOrg = organisationService.createOrganisation(random(), random(), null, null, null,

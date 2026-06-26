@@ -1165,7 +1165,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public List<CurriculumMember> getCurriculumElementsMembers(SearchMemberParameters params) {
 		return memberQueries.getCurriculumElementsMembers(params);
 	}
-	
+
+	@Override
+	public List<CurriculumMember> getCurriculumElementsMembersIntersection(SearchMemberParameters params) {
+		return memberQueries.getCurriculumElementsMembersIntersection(params);
+	}
+
 	@Override
 	public List<CurriculumMemberStats> getMembersWithStats(SearchMemberParameters params) {
 		List<CurriculumMember> members = memberQueries.getCurriculumElementsMembers(params);

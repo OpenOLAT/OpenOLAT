@@ -466,7 +466,9 @@ public interface CurriculumService {
 	 * @return The list of memberships
 	 */
 	public List<CurriculumMember> getCurriculumElementsMembers(SearchMemberParameters params);
-	
+
+	public List<CurriculumMember> getCurriculumElementsMembersIntersection(SearchMemberParameters params);
+
 	public List<CurriculumMemberStats> getMembersWithStats(SearchMemberParameters params);
 	
 	/**

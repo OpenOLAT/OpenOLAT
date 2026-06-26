@@ -264,7 +264,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		}
 		SearchMemberParameters elementParams = new SearchMemberParameters(List.copyOf(elements));
 		elementParams.setRoles(List.of(CurriculumRoles.curriculumelementowner, CurriculumRoles.owner));
-		List<CurriculumMember> elementMembers = curriculumService.getCurriculumElementsMembers(elementParams);
+		List<CurriculumMember> elementMembers = curriculumService.getCurriculumElementsMembersIntersection(elementParams);
 
 		CurriculumElement first = elements.iterator().next();
 		SearchMemberParameters curriculumParams = new SearchMemberParameters(first.getCurriculum());
