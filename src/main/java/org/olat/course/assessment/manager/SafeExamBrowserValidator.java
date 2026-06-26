@@ -123,4 +123,62 @@ public class SafeExamBrowserValidator {
 		return safe;
 	}
 
+	public static boolean isBrowserVersionAllowed(String browserVersion, String minimalVersion) {
+		return compareVersions(browserVersion, minimalVersion) >= 0;
+	}
+
+	/**
+	 * Compare 2 version strings segment by segment, each dot-separated segment being compared
+	 * as an integer. Missing segments are treated as 0, e.g. {@code 3.8} equals {@code 3.8.0}.
+	 *
+	 * @param version The version to check
+	 * @param minimalVersion The minimal required version
+	 * @return a negative integer, zero or a positive integer as version is lower than, equal to
+	 * 		or greater than the minimal version
+	 */
+	private static int compareVersions(String version, String minimalVersion) {
+		int[] versionSegments = toSegments(version);
+		int[] minimalSegments = toSegments(minimalVersion);
+
+		int length = Math.max(versionSegments.length, minimalSegments.length);
+		for(int i=0; i<length; i++) {
+			int v = i < versionSegments.length ? versionSegments[i] : 0;
+			int m = i < minimalSegments.length ? minimalSegments[i] : 0;
+			if(v != m) {
+				return Integer.compare(v, m);
+			}
+		}
+		return 0;
+	}
+
+	private static int[] toSegments(String version) {
+		if(!StringHelper.containsNonWhitespace(version)) {
+			return new int[0];
+		}
+
+		String[] rawSegments = version.trim().split("\\.");
+		int[] segments = new int[rawSegments.length];
+		for(int i=0; i<rawSegments.length; i++) {
+			segments[i] = parseSegment(rawSegments[i]);
+		}
+		return segments;
+	}
+
+	private static int parseSegment(String segment) {
+		// Keep the leading digits only to be tolerant with suffixes like "3rc1"
+		int end = 0;
+		while(end < segment.length() && Character.isDigit(segment.charAt(end))) {
+			end++;
+		}
+		if(end == 0) {
+			return 0;
+		}
+		try {
+			return Integer.parseInt(segment.substring(0, end));
+		} catch (NumberFormatException e) {
+			log.warn("Cannot parse Safe Exam Browser version segment: {}", segment);
+			return 0;
+		}
+	}
+
 }

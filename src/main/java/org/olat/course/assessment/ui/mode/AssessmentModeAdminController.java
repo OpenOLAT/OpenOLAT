@@ -37,7 +37,7 @@ import org.olat.core.util.resource.OresHelper;
 /**
  * 
  * Initial date: 06.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeAdminController extends BasicController {
@@ -46,11 +46,13 @@ public class AssessmentModeAdminController extends BasicController {
 	private final Link settingsLink;
 	private final Link assessmentModesLink;
 	private final Link safeExamBrowserLink;
+	private final Link safeExamBrowserVersionsLink;
 	private final SegmentViewComponent segmentView;
 	
 	private AssessmentModeAdminListController modeListCtrl;
 	private AssessmentModeAdminSettingsController settingsCtrl;
 	private SafeExamBrowserTemplateListController safeExamBrowserCtrl;
+	private SafeExamBrowserVersionsController safeExamBrowserVersionCtrl;
 	
 	public AssessmentModeAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -67,6 +69,8 @@ public class AssessmentModeAdminController extends BasicController {
 		segmentView.addSegment(assessmentModesLink, false);
 		safeExamBrowserLink = LinkFactory.createLink("admin.assessment.mode.seb", mainVC, this);
 		segmentView.addSegment(safeExamBrowserLink, false);
+		safeExamBrowserVersionsLink = LinkFactory.createLink("admin.assessment.mode.seb.versions", mainVC, this);
+		segmentView.addSegment(safeExamBrowserVersionsLink, false);
 
 		putInitialPanel(mainVC);
 	}
@@ -83,6 +87,8 @@ public class AssessmentModeAdminController extends BasicController {
 					doOpenAssessmentModes(ureq);
 				} else if(clickedLink == safeExamBrowserLink) {
 					doOpenSafeExamBrowserConfiguration(ureq);
+				} else if(clickedLink == safeExamBrowserVersionsLink) {
+					doOpenSafeExamBrowserVersions(ureq);
 				}
 			}
 		}
@@ -116,5 +122,15 @@ public class AssessmentModeAdminController extends BasicController {
 		safeExamBrowserCtrl = new SafeExamBrowserTemplateListController(ureq, bwControl);
 		listenTo(safeExamBrowserCtrl);
 		mainVC.put("segmentCmp", safeExamBrowserCtrl.getInitialComponent());
+	}
+	
+	private void doOpenSafeExamBrowserVersions(UserRequest ureq) {
+		removeControllerListener(safeExamBrowserVersionCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("SafeExamBrowserVersions", 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		safeExamBrowserVersionCtrl = new SafeExamBrowserVersionsController(ureq, bwControl);
+		listenTo(safeExamBrowserVersionCtrl);
+		mainVC.put("segmentCmp", safeExamBrowserVersionCtrl.getInitialComponent());
 	}
 }

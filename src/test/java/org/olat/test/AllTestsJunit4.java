@@ -296,6 +296,7 @@ import org.junit.runners.Suite;
 	org.olat.course.assessment.manager.ScoreAccountingProcessorTest.class,
 	org.olat.course.assessment.manager.ScoreAccountingTriggerDAOTest.class,
 	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,
+	org.olat.course.assessment.model.SafeExamBrowserVersionTest.class,
 	org.olat.course.reminder.manager.ReminderRuleDAOTest.class,
 	org.olat.course.reminder.manager.ReminderRulesXStreamTest.class,
 	org.olat.course.reminder.rule.NextRecertificationDateTest.class,
