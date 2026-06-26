@@ -130,6 +130,15 @@ intentionally contains only term mappings, not user-facing definitions.
 | WebDAV | WebDAV | WebDAV |  | WebDAV |
 | Whiteboard | Whiteboard | Tableau blanc |  | Lavagna |
 
+## Dashboard Widgets
+
+| English | Deutsch | Francais | Espanol | Italiano |
+|---------|---------|----------|---------|----------|
+| Table widget | Tabellen-Widget (Titel: Tabelle) |  |  |  |
+| Event widget | Termine-Widget (Titel: Termine) |  |  |  |
+| Content widget | Kursinhalt-Widget (Titel: Kursinhalt) |  |  |  |
+| Catalog widget | Katalog-Widget (Titel: Katalog) |  |  |  |
+
 ## Areas
 
 | English | Deutsch | Francais | Espanol | Italiano |
