@@ -24,7 +24,6 @@ import static org.olat.modules.grade.ui.GradeUIFactory.THREE_DIGITS;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -34,7 +33,6 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -44,12 +42,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.CssCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -62,8 +54,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
-import org.olat.modules.assessment.ui.component.GradeChart;
-import org.olat.modules.assessment.ui.component.GradeChart.GradeCount;
 import org.olat.modules.grade.Breakpoint;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
@@ -74,10 +64,6 @@ import org.olat.modules.grade.GradeSystemType;
 import org.olat.modules.grade.PerformanceClass;
 import org.olat.modules.grade.model.BreakpointWrapper;
 import org.olat.modules.grade.model.GradeScaleWrapper;
-import org.olat.modules.grade.ui.PerformanceClassBreakpointDataModel.PerformanceClassBreakpointCols;
-import org.olat.modules.grade.ui.component.GradeScaleChart;
-import org.olat.modules.grade.ui.component.GradeScoreRangeTable;
-import org.olat.modules.grade.ui.component.PostionCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -88,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GradeScaleEditController extends FormBasicController implements FlexiTableCssDelegate {
+public class GradeScaleEditController extends FormBasicController {
 
 	private FormLayoutContainer messageCont;
 	private FormLayoutContainer gradeSystemCont;
@@ -113,13 +99,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	private FormLink refreshNumericalLink;
 	private FormLink refreshTextLink;
 	private FormLayoutContainer scaleCont;
-	private FormLayoutContainer numericCont;
-	private FormLayoutContainer textCont;
-	private GradeScoreRangeTable gradeScoreRangeTable;
-	private PerformanceClassBreakpointDataModel dataModel;
-	private FlexiTableElement tableEl;
-	private GradeScaleChart gradeScaleChart;
-	private GradeChart gradeCountChart;
+	private GradeScaleVisualizationController vizCtrl;
 	private FormSubmit submitButton;
 
 	private CloseableModalController cmc;
@@ -362,47 +342,12 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		refreshNumericalLink = uifactory.addFormLink("grade.scale.update.num", "grade.scale.update", null,
 				refreshNumericalCont, Link.BUTTON);
 
-		// Numeric
-		numericCont = FormLayoutContainer.createCustomFormLayout("editNumeric", getTranslator(),
-				velocity_root + "/scale_edit_numeric.html");
-		numericCont.setRootForm(mainForm);
-		formLayout.add(numericCont);
+		vizCtrl = new GradeScaleVisualizationController(ureq, getWindowControl(), mainForm, false);
+		listenTo(vizCtrl);
+		formLayout.add("viz", vizCtrl.getInitialFormItem());
 
-		gradeScoreRangeTable = new GradeScoreRangeTable("ranges");
-		gradeScoreRangeTable.setDomReplacementWrapperRequired(false);
-		numericCont.put("ranges", gradeScoreRangeTable);
-
-		// Text
-		textCont = FormLayoutContainer.createCustomFormLayout("editText", getTranslator(),
-				velocity_root + "/scale_edit_text.html");
-		textCont.setRootForm(mainForm);
-		formLayout.add(textCont);
-
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.position,
-				new CssCellRenderer("o_gr_passed_cell", new PostionCellRenderer())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.name,
-				new CssCellRenderer("o_gr_passed_cell")));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassBreakpointCols.lowerBound));
-		dataModel = new PerformanceClassBreakpointDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(),
-				textCont);
-		tableEl.setCustomizeColumns(false);
-		tableEl.setNumOfRowsEnabled(false);
-		tableEl.setCssDelegate(this);
-
-		refreshTextLink = uifactory.addFormLink("grade.scale.update.text", "grade.scale.update", null, textCont,
-				Link.BUTTON);
-
-		gradeScaleChart = new GradeScaleChart("scale.chart");
-		gradeScaleChart.setDomReplacementWrapperRequired(false);
-		numericCont.put("gradeScaleChart", gradeScaleChart);
-		textCont.put("gradeScaleChart", gradeScaleChart);
-
-		gradeCountChart = new GradeChart("chart");
-		gradeCountChart.setGradeSystem(gradeSystem);
-		numericCont.put("gradeChart", gradeCountChart);
-		textCont.put("gradeChart", gradeCountChart);
+		refreshTextLink = uifactory.addFormLink("grade.scale.update.text", "grade.scale.update", null,
+				vizCtrl.getTextCont(), Link.BUTTON);
 
 		if (!wizard) {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -460,30 +405,6 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		refreshNumericalLink.setVisible(false);
 		refreshTextLink.setVisible(false);
 		submitButton.setVisible(false);
-	}
-
-	@Override
-	public String getWrapperCssClass(FlexiTableRendererType type) {
-		return null;
-	}
-
-	@Override
-	public String getTableCssClass(FlexiTableRendererType type) {
-		return null;
-	}
-
-	@Override
-	public String getRowCssClass(FlexiTableRendererType type, int pos) {
-		if (gradeSystem.hasPassed()) {
-			PerformanceClassBreakpointRow row = dataModel.getObject(pos);
-			if (row.getPerformanceClass() != null) {
-				return  row.getPerformanceClass().isPassed()
-						? "o_gr_passed_row"
-						: "o_gr_failed_row";
-			}
-			
-		}
-		return null;
 	}
 
 	@Override
@@ -608,9 +529,9 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 	private boolean validateTextBreakpoints() {
 		boolean allOk = true;
 
-		tableEl.clearError();
-		if (textCont.isVisible()) {
-			for (PerformanceClassBreakpointRow row : dataModel.getObjects()) {
+		vizCtrl.getTableEl().clearError();
+		if (vizCtrl.getTextCont().isVisible()) {
+			for (PerformanceClassBreakpointRow row : vizCtrl.getTableModel().getObjects()) {
 				row.getLowerBoundEl().clearError();
 				if (!StringHelper.containsNonWhitespace(row.getLowerBoundEl().getValue())) {
 					row.getLowerBoundEl().setErrorKey("form.legende.mandatory");
@@ -618,12 +539,12 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 				}
 			}
 			if (allOk) {
-				for (PerformanceClassBreakpointRow row : dataModel.getObjects()) {
+				for (PerformanceClassBreakpointRow row : vizCtrl.getTableModel().getObjects()) {
 					allOk &= GradeUIFactory.validateDouble(row.getLowerBoundEl(), false);
 				}
 				if (allOk) {
 					BigDecimal lastValue = null;
-					for (PerformanceClassBreakpointRow row : dataModel.getObjects()) {
+					for (PerformanceClassBreakpointRow row : vizCtrl.getTableModel().getObjects()) {
 						if (allOk) {
 							BigDecimal value = new BigDecimal(row.getLowerBoundEl().getValue());
 							if (allOk && !minMaxFromScale && value.compareTo(maxScore) > 0) {
@@ -638,8 +559,9 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 						}
 					}
 					if (allOk && minMaxFromScale) {
-						minScore = new BigDecimal(dataModel.getObjects().get(dataModel.getObjects().size()-1).getLowerBoundEl().getValue());
-						maxScore = new BigDecimal(dataModel.getObjects().get(0).getLowerBoundEl().getValue());
+						List<PerformanceClassBreakpointRow> rows = vizCtrl.getTableModel().getObjects();
+						minScore = new BigDecimal(rows.get(rows.size()-1).getLowerBoundEl().getValue());
+						maxScore = new BigDecimal(rows.get(0).getLowerBoundEl().getValue());
 					}
 				}
 			}
@@ -708,7 +630,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			}
 			return breakpoints;
 		} else if (GradeSystemType.text == gradeSystem.getType()) {
-			List<PerformanceClassBreakpointRow> rows = dataModel.getObjects();
+			List<PerformanceClassBreakpointRow> rows = vizCtrl.getTableModel().getObjects();
 			List<Breakpoint> breakpoints = new ArrayList<>(rows.size());
 			for (PerformanceClassBreakpointRow row : rows) {
 				if (row.getPerformanceClass() == null) {
@@ -839,19 +761,14 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 
 	private void updateScaleUI(UserRequest ureq) {
 		updateNumericalBreakpointsUI();
-		
+
 		boolean numeric = gradeSystem != null && GradeSystemType.numeric == gradeSystem.getType();
 		if (numeric) {
-			numericCont.setVisible(true);
-			textCont.setVisible(false);
-			gradeScaleChart.setVisible(true);
 			updateNumericUI(ureq);
 		} else {
-			numericCont.setVisible(false);
-			textCont.setVisible(true);
 			updateTextUI();
 		}
-		
+
 		if (minMaxFromScale) {
 			minScoreEl.setValue(AssessmentHelper.getRoundedScore(minScore));
 			maxScoreEl.setValue(AssessmentHelper.getRoundedScore(maxScore));
@@ -883,27 +800,21 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			List<Breakpoint> breakpoints = getBreakpoints();
 			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeSystem, breakpoints,
 					minScore, maxScore, getLocale());
-			gradeScoreRangeTable.setGradeScoreRanges(gradeScoreRanges);
-			updateGradeScaleChartUI(breakpoints, gradeScoreRanges);
-			numericCont.setVisible(true);
-			boolean hasScores = scoreToCount != null && !scoreToCount.isEmpty();
-			if (hasScores) {
-				updateGradeCountChartUI(gradeScoreRanges);
-			}
-			gradeCountChart.setVisible(hasScores);
+			vizCtrl.setNumericData(gradeSystem, breakpoints, gradeScoreRanges, scoreToCount);
+			vizCtrl.setMode(true);
 		} else {
 			validateDeferredFormLogic(ureq);
-			numericCont.setVisible(false);
+			vizCtrl.setNumericContVisible(false);
 		}
 	}
 
 	private void updateTextUI() {
 		if (validateNumericMinMax()) {
-			textCont.setVisible(true);
+			vizCtrl.setMode(false);
 			updateTextBreakpointModel();
 			updateTextDiagramlUI();
 		} else {
-			textCont.setVisible(false);
+			vizCtrl.setTextContVisible(false);
 		}
 	}
 	
@@ -921,14 +832,15 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		if (minMaxFromScale) {
 			PerformanceClassBreakpointRow row = new PerformanceClassBreakpointRow(null, null);
 			row.setTranslatedName(translate("maximum"));
-			
-			TextElement lowerBoundEl = uifactory.addTextElement("lb_max", null, 10, THREE_DIGITS.format(maxScore), numericCont);
+			// lb_* TextElements must be registered in numericCont so the FlexiTable can
+			// render them as form components; they are displayed in the text layout column.
+			TextElement lowerBoundEl = uifactory.addTextElement("lb_max", null, 10, THREE_DIGITS.format(maxScore), vizCtrl.getNumericCont());
 			lowerBoundEl.setDisplaySize(10);
 			lowerBoundEl.setUserObject(row);
 			row.setLowerBoundEl(lowerBoundEl);
 			rows.add(row);
 		}
-		
+
 		for (int i = 0; i < performanceClasses.size(); i++) {
 			PerformanceClass performanceClass = performanceClasses.get(i);
 			Breakpoint breakpoint = positionToBreakpoint.get(performanceClass.getBestToLowest());
@@ -952,8 +864,10 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 				lowerBound = minScore;
 			}
 			String lowerBoundText = THREE_DIGITS.format(lowerBound);
+			// lb_* TextElements must be registered in numericCont so the FlexiTable can
+			// render them as form components; they are displayed in the text layout column.
 			TextElement lowerBoundEl = uifactory.addTextElement("lb_" + performanceClass.getBestToLowest(), null, 10,
-					lowerBoundText, numericCont);
+					lowerBoundText, vizCtrl.getNumericCont());
 			lowerBoundEl.setDisplaySize(10);
 			lowerBoundEl.setUserObject(row);
 			if (i == performanceClasses.size() - 1) {
@@ -965,8 +879,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			rows.add(row);
 		}
 
-		dataModel.setObjects(rows);
-		tableEl.reset();
+		vizCtrl.getTableModel().setObjects(rows);
+		vizCtrl.getTableEl().reset();
 	}
 
 	private void updateTextDiagramlUI() {
@@ -974,48 +888,10 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			List<Breakpoint> breakpoints = getBreakpoints();
 			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeSystem, breakpoints,
 					minScore, maxScore, getLocale());
-			updateGradeScaleChartUI(breakpoints, gradeScoreRanges);
-			gradeScaleChart.setVisible(true);
-			boolean hasScores = scoreToCount != null && !scoreToCount.isEmpty();
-			if (hasScores) {
-				updateGradeCountChartUI(gradeScoreRanges);
-			}
-			gradeCountChart.setVisible(hasScores);
+			vizCtrl.setTextData(gradeSystem, breakpoints, gradeScoreRanges, scoreToCount);
 		} else {
-			gradeScaleChart.setVisible(false);
-			gradeCountChart.setVisible(false);
+			vizCtrl.hideCharts();
 		}
-	}
-
-	private void updateGradeScaleChartUI(List<Breakpoint> breakpoints, NavigableSet<GradeScoreRange> gradeScoreRanges) {
-		gradeScaleChart.setGradeSystem(gradeSystem);
-		gradeScaleChart.setBreakpoints(breakpoints);
-		gradeScaleChart.setGradeScoreRanges(gradeScoreRanges);
-	}
-
-	private void updateGradeCountChartUI(NavigableSet<GradeScoreRange> gradeScoreRanges) {
-		List<GradeCount> gradeCounts = new ArrayList<>(gradeScoreRanges.size());
-		Iterator<GradeScoreRange> rangeIterator = gradeScoreRanges.iterator();
-		while (rangeIterator.hasNext()) {
-			GradeScoreRange range = rangeIterator.next();
-			gradeCounts.add(new GradeCount(range.getGrade(), Long.valueOf(0)));
-		}
-		Collections.reverse(gradeCounts);
-
-		for (Map.Entry<Integer, Long> entry : scoreToCount.entrySet()) {
-			// Maybe rounding problems if decimal score rounded to integer. But it's only a
-			// overview chart.
-			GradeScoreRange range = gradeService.getGradeScoreRange(gradeScoreRanges,
-					Float.valueOf(entry.getKey().floatValue()));
-			GradeCount gradeCount = getGradeCount(gradeCounts, range.getGrade());
-			gradeCount.setCount(Long.valueOf(gradeCount.getCount().longValue() + entry.getValue().longValue()));
-		}
-
-		gradeCountChart.setGradeCounts(gradeCounts);
-	}
-
-	private GradeCount getGradeCount(List<GradeCount> gradeCounts, String grade) {
-		return gradeCounts.stream().filter(gc -> gc.getGrade().equals(grade)).findFirst().orElse(null);
 	}
 
 }

@@ -44,6 +44,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.TimeElement;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -251,6 +253,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private Link previousLink;
 	protected FlexiTableElement tableEl;
 	private FormLink gradeScaleButton;
+	private FormLink applyGradeAllButton;
+	private DropdownItem gradeScaleDropdown;
 	private FormLink bulkDoneButton;
 	private FormLink bulkEmailButton;
 	private FormLink bulkApplyGradeButton;
@@ -850,9 +854,35 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	protected void initGradeScaleEditButton(FormLayoutContainer formLayout) {
 		if (Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade()) {
-			gradeScaleButton = uifactory.addFormLink("tool.grade.scale", formLayout, Link.BUTTON);
+			boolean readOnly = coachCourseEnv.isCourseReadOnly();
+			GradeSystem gradeSystem = null;
+			if (gradeModule.isEnabled() && !assessmentConfig.isAutoGrade()
+					&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode()
+							.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY))) {
+				gradeSystem = gradeService.getGradeSystem(courseEntry, courseNode.getIdent());
+			}
+
+			if (gradeSystem != null) {
+				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
+				applyGradeAllButton = uifactory.addFormLink("apply.grade.all", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
+				applyGradeAllButton.setElementCssClass("o_sel_assessment_apply_grade");
+				applyGradeAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
+				applyGradeAllButton.setI18nKey(translate("grade.apply.label", gradeSystemLabel));
+				applyGradeAllButton.setVisible(!readOnly);
+
+				gradeScaleDropdown = uifactory.addDropdownMenu("tool.grade.scale.more", null, formLayout, getTranslator());
+				gradeScaleDropdown.setDropdownLabel(null);
+				gradeScaleDropdown.setOrientation(DropdownOrientation.right);
+				gradeScaleDropdown.setVisible(!readOnly);
+			}
+
+			int gradeScaleLinkType = gradeSystem != null ? Link.LINK : Link.BUTTON;
+			gradeScaleButton = uifactory.addFormLink("tool.grade.scale", formLayout, gradeScaleLinkType);
 			gradeScaleButton.setIconLeftCSS("o_icon o_icon_grade_scale");
-			gradeScaleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+			gradeScaleButton.setVisible(!readOnly);
+			if (gradeScaleDropdown != null) {
+				gradeScaleDropdown.addElement(gradeScaleButton);
+			}
 		}
 	}
 
@@ -1468,6 +1498,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 				List<ParticipantType> participantTypes = getParticipantTypeFilter(tableEl.getFilters());
 				fireEvent(ureq, new ParticipantTypeFilterEvent(participantTypes));
 			}
+		} else if(applyGradeAllButton == source) {
+			doConfirmApplyGradeAll(ureq);
 		} else if(gradeScaleButton == source) {
 			doEditGradeScale(ureq);
 		} else if(bulkDoneButton == source) {
@@ -1770,19 +1802,30 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	private void doConfirmApplyGrade(UserRequest ureq) {
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
-		List<Long> identityKeys = new ArrayList<>(selections.size());
-		for(Integer i:selections) {
-			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
-			if(row != null && row.getScore() != null && !StringHelper.containsNonWhitespace(row.getGrade())) {
+		List<AssessedIdentityElementRow> rows = new ArrayList<>(selections.size());
+		for (Integer i : selections) {
+			rows.add(usersTableModel.getObject(i.intValue()));
+		}
+		doConfirmApplyGrade(ureq, rows, bulkApplyGradeButton.getI18nKey());
+	}
+
+	private void doConfirmApplyGradeAll(UserRequest ureq) {
+		doConfirmApplyGrade(ureq, usersTableModel.getObjects(), applyGradeAllButton.getI18nKey());
+	}
+
+	private void doConfirmApplyGrade(UserRequest ureq, List<AssessedIdentityElementRow> rows, String title) {
+		List<Long> identityKeys = new ArrayList<>(rows.size());
+		for (AssessedIdentityElementRow row : rows) {
+			if (row != null && row.getScore() != null && !StringHelper.containsNonWhitespace(row.getGrade())) {
 				identityKeys.add(row.getIdentityKey());
 			}
 		}
-		
+
 		if (identityKeys.isEmpty()) {
 			showWarning("warning.bulk.apply.grade");
 			return;
 		}
-		
+
 		GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
 		List<Breakpoint> breakpoints = gradeService.getBreakpoints(gradeScale);
 		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
@@ -1791,11 +1834,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 		listenTo(gradeApplyConfirmationCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				gradeApplyConfirmationCtrl.getInitialComponent(), true, bulkApplyGradeButton.getI18nKey());
+				gradeApplyConfirmationCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}
-	
+
 	private void doApplyGrade(UserRequest ureq, List<Identity> identities) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
