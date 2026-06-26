@@ -49,6 +49,7 @@ import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
@@ -63,6 +64,7 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.IpListValidator;
 import org.olat.course.assessment.manager.SafeExamBrowserValidator;
+import org.olat.course.assessment.model.SafeExamBrowserVersion;
 import org.olat.course.assessment.model.TransientAssessmentInspection;
 import org.olat.course.assessment.ui.mode.ContinueEvent;
 import org.olat.course.assessment.ui.mode.SafeExamBrowserConfigurationMediaResource;
@@ -216,6 +218,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 			}
 			allowed &= ipInRange;
 		}
+		
 		if(StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserKey())) {
 			boolean safeExamCheck = isSafelyAllowed(ureq, inspection.getSafeExamBrowserKey(), null, useHeaders);
 			if(!safeExamCheck) {
@@ -235,6 +238,24 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 				guard.getDownloadSEBConfigurationButton().setVisible(inspection.isSafeExamBrowserConfigDownload());
 			}
 			allowed &= safeExamCheck;
+		}
+		
+		if(assessmentModule.isSafeExamBrowserEnforceMinimalVersion()
+				&& (StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserKey()) || StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserConfigPList()))) {
+			String browserVersion = ureq.getParameter("browserVersion");
+			SafeExamBrowserVersion versionInfos = SafeExamBrowserVersion.valueOf(browserVersion);
+			if(versionInfos == null && !allowed) {
+				// Don't write message twice
+			} else {
+				boolean authorizedVersion = isVersionAllowed(ureq, versionInfos);
+				if(!authorizedVersion) {
+					sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
+					sb.append(translate("error.safe.exam.version"));
+					sb.append("</h4>");
+					sb.append(translate("error.safe.exam.version.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
+				}
+				allowed &= authorizedVersion;
+			}
 		}
 
 		String state;
@@ -309,6 +330,17 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 			return translate("inspection.fromto", format.formatDateAndTime(from), format.formatDateAndTime(to));
 		}
 		return "-";
+	}
+	
+	private boolean isVersionAllowed(UserRequest ureq, SafeExamBrowserVersion versionInfos) {
+		String browserVersion = ureq.getParameter("browserVersion");
+		String userAgent = ServletUtil.getUserAgent(ureq.getHttpReq());
+		getLogger().info("SEB browser version: {} (User-Agent: {})", browserVersion, userAgent);
+		if(versionInfos == null) {
+			return false;
+		}
+		String minimalVersion = assessmentModule.getSafeExamBrowserMinimalVersion(versionInfos.os());
+		return SafeExamBrowserValidator.isBrowserVersionAllowed(versionInfos.version(), minimalVersion);
 	}
 	
 	private boolean isSafelyAllowed(UserRequest ureq, String safeExamBrowserKeys, String configurationKey, Boolean useHeaders) {

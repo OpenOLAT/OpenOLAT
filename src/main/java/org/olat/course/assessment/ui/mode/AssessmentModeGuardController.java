@@ -247,17 +247,6 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			allowed &= ipInRange;
 		}
 		
-		if(assessmentModule.isSafeExamBrowserEnforceMinimalVersion()) {
-			boolean authorizedVersion = isVersionAllowed(ureq);
-			if(!authorizedVersion) {
-				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
-				sb.append(translate("error.safe.exam.version"));
-				sb.append("</h4>");
-				sb.append(translate("error.safe.exam.version.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
-			}
-			allowed &= authorizedVersion;
-		}
-		
 		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey())) {
 			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, mode.getSafeExamBrowserKey(), null, useHeaders);
 			if(!safeExamCheck) {
@@ -281,6 +270,24 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			allowed &= safeExamCheck;
 		}
 		
+		if(assessmentModule.isSafeExamBrowserEnforceMinimalVersion()
+				&& (StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey()) || StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList()))) {
+			String browserVersion = ureq.getParameter("browserVersion");
+			SafeExamBrowserVersion versionInfos = SafeExamBrowserVersion.valueOf(browserVersion);
+			if(versionInfos == null && !allowed) {
+				// Don't write message twice
+			} else {
+				boolean authorizedVersion = isVersionAllowed(ureq, versionInfos);
+				if(!authorizedVersion) {
+					sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
+					sb.append(translate("error.safe.exam.version"));
+					sb.append("</h4>");
+					sb.append(translate("error.safe.exam.version.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
+				}
+				allowed &= authorizedVersion;
+			}
+		}
+		
 		guard.getCountDown().setDate(mode.getBegin());
 
 		String state;
@@ -301,12 +308,10 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		return guard;
 	}
 	
-	private boolean isVersionAllowed(UserRequest ureq) {
+	private boolean isVersionAllowed(UserRequest ureq, SafeExamBrowserVersion versionInfos) {
 		String browserVersion = ureq.getParameter("browserVersion");
 		String userAgent = ServletUtil.getUserAgent(ureq.getHttpReq());
 		getLogger().info("SEB browser version: {} (User-Agent: {})", browserVersion, userAgent);
-		
-		SafeExamBrowserVersion versionInfos = SafeExamBrowserVersion.valueOf(browserVersion);
 		if(versionInfos == null) {
 			return false;
 		}
