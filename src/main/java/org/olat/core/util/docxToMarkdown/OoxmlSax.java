@@ -1,0 +1,57 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.core.util.docxToMarkdown;
+
+import org.xml.sax.Attributes;
+
+/**
+ * Small shared SAX helpers for the OOXML parsers in this package. These were
+ * previously copy-pasted into every parser; consolidating them keeps the
+ * prefix-stripping and attribute-lookup behaviour identical across parsers.
+ *
+ * @author frentix GmbH, https://www.frentix.com
+ */
+final class OoxmlSax {
+
+	private OoxmlSax() {
+		// utility
+	}
+
+	/**
+	 * Strips the namespace prefix from a qualified element name.
+	 * E.g. {@code "w:style"} -> {@code "style"}, {@code "style"} -> {@code "style"}.
+	 */
+	static String stripPrefix(String qName) {
+		int idx = qName.indexOf(':');
+		return idx >= 0 ? qName.substring(idx + 1) : qName;
+	}
+
+	/**
+	 * Reads a WordprocessingML attribute, trying the {@code w:}-prefixed form
+	 * first and falling back to the bare (namespace-unaware) name.
+	 */
+	static String getWAttr(Attributes attributes, String name) {
+		String val = attributes.getValue("w:" + name);
+		if (val == null) {
+			val = attributes.getValue(name);
+		}
+		return val;
+	}
+}

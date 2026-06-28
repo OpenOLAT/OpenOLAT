@@ -185,4 +185,79 @@ public class DocxZipExtractorTest {
 			DocxZipExtractor.extract(zf);
 		}
 	}
+
+	@Test
+	public void rejectMacroCarriesReason() throws Exception {
+		Map<String, String> entries = new LinkedHashMap<>();
+		entries.put("word/document.xml", MINIMAL_DOCUMENT_XML);
+		entries.put("word/vbaProject.bin", "binary data");
+		File docx = createTestDocx(entries);
+
+		try (ZipFile zf = new ZipFile(docx)) {
+			DocxZipExtractor.extract(zf);
+			org.junit.Assert.fail("expected DocxSecurityException");
+		} catch (DocxSecurityException e) {
+			org.junit.Assert.assertEquals(DocxSecurityException.Reason.MACRO_DETECTED, e.getReason());
+		}
+	}
+
+	@Test
+	public void rejectPathTraversalCarriesReason() throws Exception {
+		File f = File.createTempFile("traversal", ".docx", new File("target"));
+		f.deleteOnExit();
+		try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(f))) {
+			ZipEntry safe = new ZipEntry("word/document.xml");
+			zos.putNextEntry(safe);
+			zos.write(MINIMAL_DOCUMENT_XML.getBytes(StandardCharsets.UTF_8));
+			zos.closeEntry();
+			ZipEntry traversal = new ZipEntry("word/../../../etc/passwd");
+			zos.putNextEntry(traversal);
+			zos.write("root:x:0:0".getBytes(StandardCharsets.UTF_8));
+			zos.closeEntry();
+		}
+		try (ZipFile zf = new ZipFile(f)) {
+			DocxZipExtractor.extract(zf);
+			org.junit.Assert.fail("expected DocxSecurityException");
+		} catch (DocxSecurityException e) {
+			org.junit.Assert.assertEquals(DocxSecurityException.Reason.ZIP_SLIP, e.getReason());
+		}
+	}
+
+	@Test
+	public void rejectTooManyEntriesAsZipBomb() throws Exception {
+		Map<String, String> entries = new LinkedHashMap<>();
+		entries.put("word/document.xml", MINIMAL_DOCUMENT_XML);
+		// Exceed the entry limit with many tiny media entries.
+		for (int i = 0; i < 1100; i++) {
+			entries.put("word/media/image" + i + ".png", "x");
+		}
+		File docx = createTestDocx(entries);
+
+		try (ZipFile zf = new ZipFile(docx)) {
+			DocxZipExtractor.extract(zf);
+			org.junit.Assert.fail("expected DocxSecurityException for too many entries");
+		} catch (DocxSecurityException e) {
+			org.junit.Assert.assertEquals(DocxSecurityException.Reason.ZIP_BOMB, e.getReason());
+		}
+	}
+
+	@Test
+	public void inspectsEntriesBeyondOldLimit() throws Exception {
+		// A malicious entry placed beyond the old hard-coded scan cap (64) must
+		// still be inspected; previously the loop stopped scanning at 64.
+		Map<String, String> entries = new LinkedHashMap<>();
+		entries.put("word/document.xml", MINIMAL_DOCUMENT_XML);
+		for (int i = 0; i < 100; i++) {
+			entries.put("word/media/image" + i + ".png", "x");
+		}
+		entries.put("word/vbaProject.bin", "binary data");
+		File docx = createTestDocx(entries);
+
+		try (ZipFile zf = new ZipFile(docx)) {
+			DocxZipExtractor.extract(zf);
+			org.junit.Assert.fail("expected macro detection beyond old scan cap");
+		} catch (DocxSecurityException e) {
+			org.junit.Assert.assertEquals(DocxSecurityException.Reason.MACRO_DETECTED, e.getReason());
+		}
+	}
 }

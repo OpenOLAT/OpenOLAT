@@ -78,7 +78,7 @@ class DocxThemeParser {
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)
 				throws SAXException {
-			String name = stripPrefix(qName);
+			String name = OoxmlSax.stripPrefix(qName);
 			if ("clrScheme".equals(name)) {
 				inClrScheme = true;
 			} else if (inClrScheme) {
@@ -101,7 +101,7 @@ class DocxThemeParser {
 
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
-			String name = stripPrefix(qName);
+			String name = OoxmlSax.stripPrefix(qName);
 			if ("clrScheme".equals(name)) {
 				inClrScheme = false;
 				currentSchemeColor = null;
@@ -125,9 +125,5 @@ class DocxThemeParser {
 			}
 		}
 
-		private static String stripPrefix(String qName) {
-			int idx = qName.indexOf(':');
-			return idx >= 0 ? qName.substring(idx + 1) : qName;
-		}
 	}
 }

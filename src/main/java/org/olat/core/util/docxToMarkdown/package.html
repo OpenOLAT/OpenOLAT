@@ -128,8 +128,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
     <span>Java 17+</span>
     <span>Spring @Service</span>
     <span>Core Utility</span>
-    <span>16 Java Files</span>
-    <span>~3,000 LOC</span>
+    <span>21 Java Files</span>
+    <span>~6,800 LOC</span>
   </div>
 </header>
 
@@ -404,9 +404,9 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><td><strong>Checkboxes</strong></td><td>SDT checkboxes (<code>w14:checked</code>)</td><td><code>[x]</code> / <code>[ ]</code></td></tr>
   <tr><td><strong>Videos</strong></td><td><code>a:videoFile</code></td><td><code>[Video: name](media/file.mp4)</code> (streamed to disk)</td></tr>
   <tr><td><strong>SmartArt diagrams</strong></td><td><code>diagrams/drawing*.xml</code> shapes</td><td>Rendered to SVG with shapes (rect, chevron, ellipse) + text</td></tr>
-  <tr><td><strong>Charts</strong></td><td><code>mc:Fallback</code> images</td><td>Fallback PNG/EMF extracted if available</td></tr>
+  <tr><td><strong>Charts</strong></td><td><code>c:chart</code></td><td>Not converted; reported as unsupported element</td></tr>
   <tr><td><strong>Image Dimensions</strong></td><td><code>wp:extent</code> cx/cy (EMU &rarr; px at 96 DPI)</td><td><code>![alt](url){width=280 height=186}</code> via CommonMark image-attributes extension</td></tr>
-  <tr><td><strong>Track Changes</strong></td><td>Insertions accepted, Deletions skipped</td><td>Final accepted text only</td></tr>
+  <tr><td><strong>Track Changes</strong></td><td>Insertions accepted, Deletions skipped (with warning)</td><td>Final accepted text only</td></tr>
   <tr><td><strong>Metadata</strong></td><td><code>docProps/core.xml</code> &rarr; YAML front matter</td><td><code>---\ntitle: ...\nauthor: ...\n---</code></td></tr>
 </table>
 
@@ -444,7 +444,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <text x="40" y="60" font-size="11" font-weight="700" fill="#1b5e20">ZIP Layer</text>
   <rect x="140" y="48" width="135" height="30" rx="5" fill="url(#threatGrad)" stroke="#c62828" stroke-width="1"/>
   <text x="207" y="68" text-anchor="middle" font-size="9" fill="#b71c1c">Zip Bomb</text>
-  <text x="295" y="75" font-size="8" fill="#2e7d32">max 64 entries, 50 MB/entry</text>
+  <text x="295" y="75" font-size="8" fill="#2e7d32">reject &gt; 1024 entries, 50 MB/entry</text>
   <rect x="440" y="48" width="100" height="30" rx="5" fill="url(#threatGrad)" stroke="#c62828" stroke-width="1"/>
   <text x="490" y="68" text-anchor="middle" font-size="9" fill="#b71c1c">Zip Slip</text>
   <text x="555" y="75" font-size="8" fill="#2e7d32">reject ".." in paths</text>
@@ -487,11 +487,11 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 <table>
   <tr><th>#</th><th>Attack Vector</th><th>Protection</th><th>Implementation</th></tr>
   <tr><td>1</td><td>XXE (XML External Entities)</td><td><code>disallow-doctype-decl</code> on ALL SAX parsers</td><td><code>XMLFactories</code> + explicit feature flag</td></tr>
-  <tr><td>2</td><td>Zip bomb</td><td>Entry count limit (64) + per-entry size limit (50 MB)</td><td><code>DocxZipExtractor.MAX_ENTRIES</code>, <code>MAX_ENTRY_SIZE</code></td></tr>
+  <tr><td>2</td><td>Zip bomb</td><td>Archive rejected above 1024 entries (every entry inspected) + per-entry size limit (50 MB)</td><td><code>DocxZipExtractor.MAX_ENTRIES</code>, <code>MAX_ENTRY_SIZE</code>, <code>DocxSecurityException</code></td></tr>
   <tr><td>3</td><td>Zip slip</td><td>Reject entry names containing <code>..</code></td><td><code>DocxZipExtractor.extract()</code></td></tr>
   <tr><td>4</td><td>Macros</td><td>Scan for <code>vbaProject.bin</code> during extraction</td><td><code>DocxZipExtractor.extract()</code></td></tr>
   <tr><td>5</td><td>JavaScript URLs</td><td>Protocol whitelist: <code>http</code>, <code>https</code>, <code>mailto</code></td><td><code>DocxRelationshipParser.ALLOWED_SCHEMES</code></td></tr>
-  <tr><td>6</td><td>OLE/ActiveX</td><td>Entries skipped entirely</td><td>Not processed by any stage</td></tr>
+  <tr><td>6</td><td>OLE/ActiveX</td><td><code>o:OLEObject</code> / <code>w:control</code> skipped with warning</td><td><code>DocxToMarkdownHandler</code> (<code>warn.ole</code>)</td></tr>
   <tr><td>7</td><td>HTML injection</td><td>Pure markdown output; <code>renderMessagesAsHtml()</code> escapes <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code></td><td><code>DocxToMarkdownResult.renderMessagesAsHtml()</code></td></tr>
   <tr><td>8</td><td>SVG script injection</td><td>Generated SVGs contain only <code>&lt;path&gt;</code> shape data</td><td><code>VmlToSvgConverter.convert()</code></td></tr>
 </table>
@@ -529,14 +529,17 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><td>Nested tables</td><td>Flattened to text with warning</td><td><code>docx.convert.warn.table.nested</code></td></tr>
   <tr><td>Merged cells</td><td>Ignored (GFM limitation)</td><td><code>docx.convert.warn.merged.cells</code></td></tr>
   <tr><td>Math (OOXML)</td><td>fmath conversion attempted; text fallback via <code>extractMathText()</code></td><td><code>docx.convert.warn.math.failed</code></td></tr>
-  <tr><td>Charts without fallback</td><td>Skipped</td><td><code>docx.convert.warn.smartart</code></td></tr>
-  <tr><td>Encrypted DOCX</td><td>Rejected with error</td><td><code>docx.convert.error.encrypted</code></td></tr>
+  <tr><td>Charts (<code>c:chart</code>)</td><td>Not converted; reported as unsupported element</td><td><code>docx.convert.warn.element.unsupported</code></td></tr>
+  <tr><td>SmartArt that cannot render</td><td>Skipped with warning</td><td><code>docx.convert.warn.smartart</code></td></tr>
+  <tr><td>Encrypted DOCX</td><td>Detected by OLE2 magic bytes; rejected</td><td><code>docx.convert.error.encrypted</code></td></tr>
   <tr><td>.docm files</td><td>Rejected (macro detection via <code>vbaProject.bin</code>)</td><td><code>docx.convert.error.macro.detected</code></td></tr>
   <tr><td>Images &gt; 10 MB</td><td>Skipped with warning</td><td><code>docx.convert.warn.image.skipped</code></td></tr>
+  <tr><td>Media basename collisions</td><td>Uniquified (e.g. <code>image1.png</code> &rarr; <code>image1-1.png</code>)</td><td>—</td></tr>
   <tr><td>Missing numbering.xml</td><td>Treated as bullet list</td><td><code>docx.convert.warn.numbering.missing</code></td></tr>
   <tr><td>Comments</td><td>Skipped</td><td><code>docx.convert.warn.comments</code></td></tr>
-  <tr><td>OLE objects</td><td>Skipped</td><td><code>docx.convert.warn.ole</code></td></tr>
-  <tr><td>Unsafe URLs</td><td>Rejected at relationship parsing</td><td><code>docx.convert.warn.url.rejected</code></td></tr>
+  <tr><td>OLE objects</td><td>Skipped with warning</td><td><code>docx.convert.warn.ole</code></td></tr>
+  <tr><td>Footnotes/Endnotes</td><td>Rendered as <code>[^N]</code> references (not skipped)</td><td>—</td></tr>
+  <tr><td>Unsafe URLs</td><td>Protocol whitelist; non-safe targets dropped (text kept)</td><td><code>docx.convert.warn.url.rejected</code></td></tr>
 </table>
 
 <!-- ===== PACKAGE STRUCTURE ===== -->
@@ -701,10 +704,11 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><td><code>DocxConversionMessage</code></td><td>record</td><td>Message: <code>level</code>, <code>i18nKey</code>, <code>args</code></td></tr>
 </table>
 
-<h3>Internal (13 package-private classes)</h3>
+<h3>Internal (18 package-private classes)</h3>
 <table>
   <tr><th>Class</th><th>Type</th><th>Purpose</th></tr>
   <tr><td><code>DocxZipExtractor</code></td><td>utility</td><td>ZIP reading + security checks</td></tr>
+  <tr><td><code>DocxSecurityException</code></td><td>exception</td><td>Typed rejection (<code>Reason</code>: MACRO_DETECTED, ZIP_SLIP, ZIP_BOMB, ENCRYPTED)</td></tr>
   <tr><td><code>DocxArchiveContent</code></td><td>record</td><td>byte[] holders for auxiliary XML parts</td></tr>
   <tr><td><code>DocxRelationshipParser</code></td><td>SAX handler</td><td><code>.rels</code> &rarr; <code>Map&lt;id, DocxRelTarget&gt;</code></td></tr>
   <tr><td><code>DocxRelTarget</code></td><td>record</td><td>Relationship type + target</td></tr>
@@ -714,9 +718,13 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><td><code>DocxMetadataParser</code></td><td>SAX handler</td><td><code>docProps</code> &rarr; <code>DocxMetadata</code></td></tr>
   <tr><td><code>DocxMetadata</code></td><td>record</td><td>title, author, keywords, etc. + <code>toYamlFrontMatter()</code></td></tr>
   <tr><td><code>DocxFootnoteParser</code></td><td>SAX handler</td><td>footnotes/endnotes &rarr; <code>Map&lt;id, text&gt;</code></td></tr>
+  <tr><td><code>DocxThemeParser</code></td><td>SAX handler</td><td><code>theme1.xml</code> &rarr; <code>Map&lt;schemeColor, hexRGB&gt;</code></td></tr>
   <tr><td><code>DocxToMarkdownHandler</code></td><td>SAX handler</td><td>Main converter (2,100+ LOC)</td></tr>
   <tr><td><code>DocxMathConverter</code></td><td>utility</td><td>OOXML math &rarr; LaTeX via fmath</td></tr>
   <tr><td><code>VmlToSvgConverter</code></td><td>utility</td><td>VML/DrawingML &rarr; SVG</td></tr>
+  <tr><td><code>SmartArtRenderer</code></td><td>utility</td><td>SmartArt correlation + diagram rendering to SVG</td></tr>
+  <tr><td><code>PresetGeometryPath</code></td><td>utility</td><td>OOXML preset geometry &rarr; SVG path data</td></tr>
+  <tr><td><code>OoxmlSax</code></td><td>utility</td><td>Shared SAX helpers (<code>stripPrefix</code>, <code>getWAttr</code>)</td></tr>
 </table>
 
 <!-- ===== I18N ===== -->
@@ -734,19 +742,17 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><td><code>docx.convert.warn.numbering.missing</code></td><td>WARNING</td><td>Numbering definitions missing</td></tr>
   <tr><td><code>docx.convert.warn.track.changes</code></td><td>WARNING</td><td>Track changes detected</td></tr>
   <tr><td><code>docx.convert.warn.superscript</code></td><td>WARNING</td><td>Superscript/subscript note</td></tr>
-  <tr><td><code>docx.convert.warn.footnotes</code></td><td>WARNING</td><td>Footnotes/endnotes skipped</td></tr>
   <tr><td><code>docx.convert.warn.comments</code></td><td>WARNING</td><td>Comments skipped</td></tr>
-  <tr><td><code>docx.convert.warn.smartart</code></td><td>WARNING</td><td>SmartArt/chart skipped</td></tr>
-  <tr><td><code>docx.convert.warn.ole</code></td><td>WARNING</td><td>Embedded object skipped</td></tr>
-  <tr><td><code>docx.convert.warn.merged.cells</code></td><td>WARNING</td><td>Merged table cells ignored</td></tr>
-  <tr><td><code>docx.convert.warn.url.rejected</code></td><td>WARNING</td><td>Unsafe URL protocol rejected</td></tr>
+  <tr><td><code>docx.convert.warn.smartart</code></td><td>WARNING</td><td>SmartArt could not be rendered, skipped</td></tr>
+  <tr><td><code>docx.convert.warn.ole</code></td><td>WARNING</td><td>Embedded OLE object skipped</td></tr>
+  <tr><td><code>docx.convert.warn.merged.cells</code></td><td>WARNING</td><td>Merged table cells flattened</td></tr>
+  <tr><td><code>docx.convert.warn.url.rejected</code></td><td>WARNING</td><td>Unsafe URL protocol dropped</td></tr>
   <tr><td><code>docx.convert.error.macro.detected</code></td><td>ERROR</td><td>Macro detected, document rejected</td></tr>
   <tr><td><code>docx.convert.error.invalid.format</code></td><td>ERROR</td><td>Not a valid DOCX</td></tr>
   <tr><td><code>docx.convert.error.encrypted</code></td><td>ERROR</td><td>Encrypted document</td></tr>
   <tr><td><code>docx.convert.error.read.failed</code></td><td>ERROR</td><td>Read failure</td></tr>
-  <tr><td><code>docx.convert.error.zip.bomb</code></td><td>ERROR</td><td>Suspicious archive structure</td></tr>
+  <tr><td><code>docx.convert.error.zip.bomb</code></td><td>ERROR</td><td>Too many entries / suspicious archive</td></tr>
   <tr><td><code>docx.convert.error.zip.slip</code></td><td>ERROR</td><td>Invalid entry path</td></tr>
-  <tr><td><code>docx.convert.info.metadata.partial</code></td><td>INFO</td><td>Some metadata fields empty</td></tr>
 </table>
 
 <!-- ===== INTEGRATION ===== -->

@@ -68,6 +68,13 @@ class DocxToMarkdownHandler extends DefaultHandler {
 	private final ZipFile zipFile;
 	/** Directory to write extracted media files to (null = skip images). */
 	private final File mediaDir;
+	/**
+	 * Basenames already written to {@link #mediaDir}. Used to uniquify media
+	 * filenames so two source files sharing a basename across folders (e.g.
+	 * {@code media/image1.png} and {@code media/sub/image1.png}) do not
+	 * overwrite each other.
+	 */
+	private final java.util.Set<String> usedMediaNames = new java.util.HashSet<>();
 
 	// -----------------------------------------------------------------------
 	// Output
@@ -268,10 +275,29 @@ class DocxToMarkdownHandler extends DefaultHandler {
 	private int elementDepth = 0;
 
 	// -----------------------------------------------------------------------
-	// One-shot warning flags
+	// One-shot warnings
 	// -----------------------------------------------------------------------
 
-	private boolean commentWarningEmitted = false;
+	/**
+	 * Tracks warning keys already emitted so structural warnings (track changes,
+	 * merged cells, OLE objects, ...) are reported once per document rather than
+	 * once per occurrence.
+	 */
+	private final java.util.Set<String> emittedWarnings = new java.util.HashSet<>();
+
+	/**
+	 * Allowed URL protocols for hyperlinks. Anything outside this whitelist
+	 * (e.g. {@code javascript:}, {@code data:}, {@code file:}) is rejected.
+	 */
+	private static final java.util.Set<String> SAFE_URL_SCHEMES =
+		java.util.Set.of("http", "https", "mailto");
+
+	/** Adds a WARNING message for {@code key} at most once per document. */
+	private void warnOnce(String key) {
+		if (emittedWarnings.add(key)) {
+			messages.add(new DocxConversionMessage(Level.WARNING, key));
+		}
+	}
 
 	// -----------------------------------------------------------------------
 	// Constructor
@@ -347,6 +373,9 @@ class DocxToMarkdownHandler extends DefaultHandler {
 		if ("w:del".equals(qName)) {
 			inDeletion = true;
 			deletionEntryDepth = elementDepth;
+			// Tracked deletion: content is dropped. Signal once that the
+			// document carries track changes (insertions are accepted silently).
+			warnOnce("docx.convert.warn.track.changes");
 			return;
 		}
 		if (inDeletion) {
@@ -498,6 +527,9 @@ class DocxToMarkdownHandler extends DefaultHandler {
 					String val = attrVal(attrs, "w:val", "val");
 					superscript = "superscript".equals(val);
 					subscript = "subscript".equals(val);
+					if (superscript || subscript) {
+						warnOnce("docx.convert.warn.superscript");
+					}
 				}
 				break;
 			}
@@ -559,6 +591,19 @@ class DocxToMarkdownHandler extends DefaultHandler {
 
 			case "w:tc":
 				onStartTableCell();
+				break;
+
+			// Merged table cells cannot be represented in GitHub-flavoured
+			// Markdown tables; the merge is flattened and reported once.
+			case "w:gridSpan": {
+				String span = attrVal(attrs, "w:val", "val");
+				if (span != null && !"1".equals(span)) {
+					warnOnce("docx.convert.warn.merged.cells");
+				}
+				break;
+			}
+			case "w:vMerge":
+				warnOnce("docx.convert.warn.merged.cells");
 				break;
 
 			// ----------------------------------------------------------------
@@ -627,14 +672,20 @@ class DocxToMarkdownHandler extends DefaultHandler {
 				break;
 			}
 
+			case "c:chart":
+				// DrawingML charts are not converted to Markdown.
+				warnOnce("docx.convert.warn.element.unsupported");
+				break;
+
 			case "dgm:relIds": {
 				// SmartArt diagram — look up pre-rendered SVG by diagramData rel ID (r:dm)
 				String dmRelId = attrs.getValue("r:dm");
-				if (dmRelId != null) {
-					String svgFile = smartArtSvgs.get(dmRelId);
-					if (svgFile != null) {
-						emitAsBlock(buildImageMarkdown("", "media/" + svgFile));
-					}
+				String svgFile = dmRelId != null ? smartArtSvgs.get(dmRelId) : null;
+				if (svgFile != null) {
+					emitAsBlock(buildImageMarkdown("", "media/" + svgFile));
+				} else {
+					// No SVG could be rendered for this diagram — it is skipped.
+					warnOnce("docx.convert.warn.smartart");
 				}
 				break;
 			}
@@ -871,13 +922,18 @@ class DocxToMarkdownHandler extends DefaultHandler {
 				break;
 
 			// ----------------------------------------------------------------
+			// Embedded OLE objects (spreadsheets, ActiveX, ...) — not converted
+			// ----------------------------------------------------------------
+			case "o:OLEObject":
+			case "w:control":
+				warnOnce("docx.convert.warn.ole");
+				break;
+
+			// ----------------------------------------------------------------
 			// Comments
 			// ----------------------------------------------------------------
 			case "w:commentRangeStart":
-				if (!commentWarningEmitted) {
-					messages.add(new DocxConversionMessage(Level.WARNING, "docx.convert.warn.comments"));
-					commentWarningEmitted = true;
-				}
+				warnOnce("docx.convert.warn.comments");
 				break;
 
 			default:
@@ -1238,6 +1294,10 @@ class DocxToMarkdownHandler extends DefaultHandler {
 			}
 			String indent = "    ".repeat(Math.max(0, listLevel));
 			DocxNumberingDef def = numbering.get(listNumId);
+			if (def == null) {
+				// No numbering definition for this list — fall back to a bullet.
+				warnOnce("docx.convert.warn.numbering.missing");
+			}
 			boolean ordered = (def != null) && def.isOrdered(listLevel);
 			return prefix + indent + (ordered ? "1. " : "- ");
 		}
@@ -1577,6 +1637,13 @@ class DocxToMarkdownHandler extends DefaultHandler {
 		String text = hyperlinkText.toString();
 		String url = (hyperlinkUrl != null) ? hyperlinkUrl : "";
 
+		// Reject URLs with an unsafe protocol (e.g. javascript:, data:, file:).
+		// The link target is dropped, but the visible text is preserved.
+		if (!url.isEmpty() && !isSafeUrl(url)) {
+			warnOnce("docx.convert.warn.url.rejected");
+			url = "";
+		}
+
 		if (text.isEmpty()) {
 			text = url;
 		}
@@ -1587,6 +1654,25 @@ class DocxToMarkdownHandler extends DefaultHandler {
 		hyperlinkText.setLength(0);
 
 		emitToParagraph(linkMarkdown);
+	}
+
+	/**
+	 * Returns {@code true} for URLs that are safe to emit. Relative URLs,
+	 * fragment anchors ({@code #...}) and scheme-relative paths are allowed;
+	 * absolute URLs must use a whitelisted scheme (http, https, mailto).
+	 */
+	private static boolean isSafeUrl(String url) {
+		String trimmed = url.trim();
+		int colon = trimmed.indexOf(':');
+		int slash = trimmed.indexOf('/');
+		int hash = trimmed.indexOf('#');
+		// No scheme component (no colon, or a path/fragment separator comes
+		// first) → treat as a relative/anchor URL and allow it.
+		if (colon < 0 || (slash >= 0 && slash < colon) || (hash >= 0 && hash < colon)) {
+			return true;
+		}
+		String scheme = trimmed.substring(0, colon).toLowerCase(java.util.Locale.ROOT);
+		return SAFE_URL_SCHEMES.contains(scheme);
 	}
 
 	// -----------------------------------------------------------------------
@@ -1966,7 +2052,7 @@ class DocxToMarkdownHandler extends DefaultHandler {
 		String svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + pxW
 			+ "\" height=\"" + pxH + "\">" + svgElement + "</svg>";
 
-		String filename = "shape_" + System.nanoTime() + ".svg";
+		String filename = uniqueMediaName("shape_" + System.nanoTime() + ".svg");
 		try {
 			File svgFile = new File(mediaDir, filename);
 			Files.writeString(svgFile.toPath(), svg);
@@ -2009,6 +2095,45 @@ class DocxToMarkdownHandler extends DefaultHandler {
 	}
 
 	// -----------------------------------------------------------------------
+	// Media helpers
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Builds the ZIP entry path for a relationship target. Targets are normally
+	 * relative to {@code word/}, but some documents already store an absolute
+	 * {@code word/...} target — guard the prefix so it is not duplicated.
+	 */
+	private static String mediaEntryPath(String target) {
+		return target.startsWith("word/") ? target : "word/" + target;
+	}
+
+	/**
+	 * Returns a media filename that is unique within {@link #mediaDir}. If
+	 * {@code basename} is already taken, a numeric suffix is inserted before the
+	 * extension ({@code image1.png} -> {@code image1-1.png}). The returned name
+	 * is recorded as used.
+	 */
+	private String uniqueMediaName(String basename) {
+		String candidate = basename;
+		if (usedMediaNames.contains(candidate)) {
+			String stem = basename;
+			String ext = "";
+			int dot = basename.lastIndexOf('.');
+			if (dot > 0) {
+				stem = basename.substring(0, dot);
+				ext = basename.substring(dot);
+			}
+			int counter = 1;
+			do {
+				candidate = stem + "-" + counter + ext;
+				counter++;
+			} while (usedMediaNames.contains(candidate));
+		}
+		usedMediaNames.add(candidate);
+		return candidate;
+	}
+
+	// -----------------------------------------------------------------------
 	// Video logic
 	// -----------------------------------------------------------------------
 
@@ -2020,8 +2145,8 @@ class DocxToMarkdownHandler extends DefaultHandler {
 		}
 
 		String target = rel.target();
-		String entryPath = target.startsWith("word/") ? target : "word/" + target;
-		String filename = target.contains("/")
+		String entryPath = mediaEntryPath(target);
+		String basename = target.contains("/")
 				? target.substring(target.lastIndexOf('/') + 1)
 				: target;
 
@@ -2031,6 +2156,7 @@ class DocxToMarkdownHandler extends DefaultHandler {
 				log.debug("Video entry not found in ZIP: {}", entryPath);
 				return;
 			}
+			String filename = uniqueMediaName(basename);
 			try {
 				// Stream directly to file to avoid loading large videos into memory
 				File videoFile = new File(mediaDir, filename);
@@ -2058,12 +2184,14 @@ class DocxToMarkdownHandler extends DefaultHandler {
 		}
 
 		String target = rel.target(); // e.g. "media/image1.png"
-		// The relationship target is relative to word/; ZipFile entry is word/<target>
-		String entryPath = "word/" + target;
-		String filename = target.contains("/")
+		// The relationship target is normally relative to word/; guard the
+		// prefix so an already-absolute "word/..." target is not duplicated
+		// (consistent with processVideo).
+		String entryPath = mediaEntryPath(target);
+		String basename = target.contains("/")
 				? target.substring(target.lastIndexOf('/') + 1)
 				: target;
-		String ext = fileExtension(filename).toLowerCase();
+		String ext = fileExtension(basename).toLowerCase();
 
 		String mimeType = switch (ext) {
 			case "png" -> "image/png";
@@ -2078,14 +2206,14 @@ class DocxToMarkdownHandler extends DefaultHandler {
 		};
 
 		if (mimeType == null) {
-			log.debug("Unsupported image extension '{}' — skipping image '{}'", ext, filename);
+			log.debug("Unsupported image extension '{}' — skipping image '{}'", ext, basename);
 			return;
 		}
 
 		ZipEntry entry = zipFile.getEntry(entryPath);
 		if (entry == null) {
 			messages.add(new DocxConversionMessage(Level.WARNING,
-					"docx.convert.warn.image.missing", new String[]{filename}));
+					"docx.convert.warn.image.missing", new String[]{basename}));
 			return;
 		}
 
@@ -2094,7 +2222,7 @@ class DocxToMarkdownHandler extends DefaultHandler {
 			// entrySize == -1 means unknown; still skip if stream read exceeds limit
 			if (entrySize > MAX_IMAGE_BYTES) {
 				messages.add(new DocxConversionMessage(Level.WARNING,
-						"docx.convert.warn.image.skipped", new String[]{filename}));
+						"docx.convert.warn.image.skipped", new String[]{basename}));
 				return;
 			}
 		}
@@ -2105,20 +2233,22 @@ class DocxToMarkdownHandler extends DefaultHandler {
 		} catch (IOException e) {
 			log.warn("Could not read image entry '{}': {}", entryPath, e.getMessage());
 			messages.add(new DocxConversionMessage(Level.WARNING,
-					"docx.convert.warn.image.missing", new String[]{filename}));
+					"docx.convert.warn.image.missing", new String[]{basename}));
 			return;
 		}
 
 		if (imageBytes.length > MAX_IMAGE_BYTES) {
 			messages.add(new DocxConversionMessage(Level.WARNING,
-					"docx.convert.warn.image.skipped", new String[]{filename}));
+					"docx.convert.warn.image.skipped", new String[]{basename}));
 			return;
 		}
 
 		String alt = (imageAlt != null) ? escapeMarkdown(imageAlt) : "";
 
 		if (mediaDir != null) {
-			// Write image to media directory, reference relatively
+			// Write image to media directory under a collision-free name,
+			// reference relatively.
+			String filename = uniqueMediaName(basename);
 			try {
 				File imageFile = new File(mediaDir, filename);
 				log.debug("Writing image: {} ({} bytes)", filename, imageBytes.length);
@@ -2130,7 +2260,7 @@ class DocxToMarkdownHandler extends DefaultHandler {
 			} catch (IOException e) {
 				log.warn("Failed to write image '{}': {}", filename, e.getMessage());
 				messages.add(new DocxConversionMessage(Level.WARNING,
-						"docx.convert.warn.image.missing", new String[]{filename}));
+						"docx.convert.warn.image.missing", new String[]{basename}));
 			}
 		} else {
 			// Fallback: inline base64 (for tests or when no media dir is provided)

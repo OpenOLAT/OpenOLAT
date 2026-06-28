@@ -39,7 +39,17 @@ class DocxZipExtractor {
 
 	private static final Logger log = Tracing.createLoggerFor(DocxZipExtractor.class);
 
-	private static final int MAX_ENTRIES = 64;
+	/**
+	 * Maximum number of ZIP entries accepted in a single DOCX. A legitimate
+	 * document is mostly XML parts plus one media entry per embedded image;
+	 * even an image-heavy document rarely passes a few hundred entries. 1024
+	 * leaves generous head-room for real documents while still bounding a
+	 * malicious archive (a zip bomb typically packs tens of thousands of
+	 * entries). Archives that exceed this limit are rejected outright rather
+	 * than truncated, so every entry is either inspected or the archive is
+	 * refused — there is no unscanned tail.
+	 */
+	private static final int MAX_ENTRIES = 1024;
 	private static final long MAX_ENTRY_SIZE = 50L * 1024L * 1024L;
 
 	private static final String ENTRY_DOCUMENT   = "word/document.xml";
@@ -57,18 +67,26 @@ class DocxZipExtractor {
 	}
 
 	static DocxArchiveContent extract(ZipFile zipFile) throws IOException {
-		// Security scan: check entry count, path traversal, macros
+		// Security scan: every entry is inspected for path traversal and macros.
+		// If the archive exceeds the entry limit it is rejected as a zip bomb
+		// rather than silently truncated, so there is never an unscanned tail.
 		int count = 0;
-		for (Enumeration<? extends ZipEntry> entries = zipFile.entries();
-				entries.hasMoreElements() && count < MAX_ENTRIES; count++) {
+		for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
 			ZipEntry entry = entries.nextElement();
+			count++;
+			if (count > MAX_ENTRIES) {
+				throw new DocxSecurityException(DocxSecurityException.Reason.ZIP_BOMB,
+					"DOCX archive exceeds the maximum of " + MAX_ENTRIES + " entries — rejected.");
+			}
 			String name = entry.getName();
 
 			if (name.contains("..")) {
-				throw new IOException("Rejected ZIP entry with path traversal: " + name);
+				throw new DocxSecurityException(DocxSecurityException.Reason.ZIP_SLIP,
+					"Rejected ZIP entry with path traversal: " + name);
 			}
 			if (name.endsWith("vbaProject.bin")) {
-				throw new IOException("DOCX contains VBA macro project — rejected.");
+				throw new DocxSecurityException(DocxSecurityException.Reason.MACRO_DETECTED,
+					"DOCX contains VBA macro project — rejected.");
 			}
 		}
 
@@ -89,14 +107,6 @@ class DocxZipExtractor {
 
 		return new DocxArchiveContent(relsXml, numberingXml, stylesXml,
 			corePropsXml, appPropsXml, footnotesXml, endnotesXml, themeXml);
-	}
-
-	private static byte[] readRequired(ZipFile zipFile, String entryName) throws IOException {
-		byte[] data = readOptional(zipFile, entryName);
-		if (data == null) {
-			throw new IOException("Required DOCX entry missing: " + entryName);
-		}
-		return data;
 	}
 
 	private static byte[] readOptional(ZipFile zipFile, String entryName) throws IOException {

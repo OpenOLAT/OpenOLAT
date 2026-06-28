@@ -86,6 +86,232 @@ public class DocxToMarkdownHandlerTest {
 		return handler.getMarkdown();
 	}
 
+	/**
+	 * Runs {@code bodyContent} through a fresh handler and returns the handler
+	 * itself so tests can inspect both markdown and conversion messages.
+	 */
+	private DocxToMarkdownHandler runHandler(String bodyContent,
+			Map<String, DocxRelTarget> rels,
+			Map<Integer, DocxNumberingDef> numbering) throws Exception {
+		String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<w:document"
+				+ " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
+				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""
+				+ " xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\""
+				+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
+				+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+				+ " xmlns:o=\"urn:schemas-microsoft-com:office:office\""
+				+ " xmlns:dgm=\"http://schemas.openxmlformats.org/drawingml/2006/diagram\""
+				+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\""
+				+ " xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\">"
+				+ "<w:body>" + bodyContent + "</w:body></w:document>";
+		DocxToMarkdownHandler handler = new DocxToMarkdownHandler(rels, numbering,
+				Collections.emptyMap(), null);
+		javax.xml.parsers.SAXParser parser = XMLFactories.newSAXParser();
+		parser.getXMLReader().setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		org.xml.sax.XMLReader reader = parser.getXMLReader();
+		reader.setContentHandler(handler);
+		reader.parse(new InputSource(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
+		return handler;
+	}
+
+	private boolean hasWarning(DocxToMarkdownHandler handler, String key) {
+		return handler.getMessages().stream()
+				.anyMatch(m -> m.level() == DocxConversionMessage.Level.WARNING
+						&& key.equals(m.i18nKey()));
+	}
+
+	// -----------------------------------------------------------------------
+	// Conversion-message warnings (i18n key wiring)
+	// -----------------------------------------------------------------------
+
+	@Test
+	public void trackChangesDeletionEmitsWarning() throws Exception {
+		// w:del marks a tracked deletion; its content is dropped and a single
+		// track-changes warning is emitted.
+		DocxToMarkdownHandler handler = runHandler(
+				"<w:p><w:r><w:t>Kept</w:t></w:r>"
+				+ "<w:del><w:r><w:delText>Removed</w:delText></w:r></w:del></w:p>",
+				Collections.emptyMap(), Collections.emptyMap());
+		assertTrue("deleted run text must not appear", !handler.getMarkdown().contains("Removed"));
+		assertTrue("track-changes warning expected",
+				hasWarning(handler, "docx.convert.warn.track.changes"));
+	}
+
+	@Test
+	public void superscriptEmitsWarning() throws Exception {
+		DocxToMarkdownHandler handler = runHandler(
+				"<w:p><w:r><w:rPr><w:vertAlign w:val=\"superscript\"/></w:rPr>"
+				+ "<w:t>2</w:t></w:r></w:p>",
+				Collections.emptyMap(), Collections.emptyMap());
+		assertTrue("superscript warning expected",
+				hasWarning(handler, "docx.convert.warn.superscript"));
+	}
+
+	@Test
+	public void missingNumberingEmitsWarning() throws Exception {
+		// A list paragraph references numId 7, but no numbering definition is
+		// supplied — handler falls back to a bullet and warns once.
+		DocxToMarkdownHandler handler = runHandler(
+				"<w:p><w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"7\"/></w:numPr></w:pPr>"
+				+ "<w:r><w:t>Item</w:t></w:r></w:p>",
+				Collections.emptyMap(), Collections.emptyMap());
+		assertTrue("bullet fallback expected", handler.getMarkdown().contains("- Item"));
+		assertTrue("numbering-missing warning expected",
+				hasWarning(handler, "docx.convert.warn.numbering.missing"));
+	}
+
+	@Test
+	public void unsafeUrlEmitsWarningAndIsDropped() throws Exception {
+		// javascript: is not in the http/https/mailto whitelist.
+		java.util.Map<String, DocxRelTarget> rels = java.util.Map.of(
+				"rId1", new DocxRelTarget("hyperlink", "javascript:alert(1)"));
+		DocxToMarkdownHandler handler = runHandler(
+				"<w:p><w:hyperlink r:id=\"rId1\"><w:r><w:t>click</w:t></w:r></w:hyperlink></w:p>",
+				rels, Collections.emptyMap());
+		assertTrue("unsafe URL must not be emitted as a link target",
+				!handler.getMarkdown().contains("javascript:"));
+		assertTrue("url-rejected warning expected",
+				hasWarning(handler, "docx.convert.warn.url.rejected"));
+	}
+
+	@Test
+	public void safeUrlIsKept() throws Exception {
+		java.util.Map<String, DocxRelTarget> rels = java.util.Map.of(
+				"rId1", new DocxRelTarget("hyperlink", "https://example.org"));
+		DocxToMarkdownHandler handler = runHandler(
+				"<w:p><w:hyperlink r:id=\"rId1\"><w:r><w:t>click</w:t></w:r></w:hyperlink></w:p>",
+				rels, Collections.emptyMap());
+		assertTrue("safe URL must be kept", handler.getMarkdown().contains("https://example.org"));
+		assertTrue("no url-rejected warning for safe URL",
+				!hasWarning(handler, "docx.convert.warn.url.rejected"));
+	}
+
+	@Test
+	public void oleObjectEmitsWarning() throws Exception {
+		DocxToMarkdownHandler handler = runHandler(
+				"<w:p><w:r><w:object><o:OLEObject Type=\"Embed\" ProgID=\"Excel.Sheet.12\"/>"
+				+ "</w:object></w:r></w:p>",
+				Collections.emptyMap(), Collections.emptyMap());
+		assertTrue("OLE warning expected", hasWarning(handler, "docx.convert.warn.ole"));
+	}
+
+	@Test
+	public void mergedCellEmitsWarning() throws Exception {
+		String body = "<w:tbl><w:tr>"
+				+ "<w:tc><w:tcPr><w:gridSpan w:val=\"2\"/></w:tcPr>"
+				+ "<w:p><w:r><w:t>Wide</w:t></w:r></w:p></w:tc>"
+				+ "</w:tr></w:tbl>";
+		DocxToMarkdownHandler handler = runHandler(body,
+				Collections.emptyMap(), Collections.emptyMap());
+		assertTrue("merged-cell warning expected",
+				hasWarning(handler, "docx.convert.warn.merged.cells"));
+	}
+
+	@Test
+	public void chartEmitsUnsupportedWarning() throws Exception {
+		// A DrawingML chart reference (c:chart) cannot be converted to Markdown
+		// and is reported as an unsupported element.
+		DocxToMarkdownHandler handler = runHandler(
+				"<w:p><w:r><w:drawing><wp:inline>"
+				+ "<a:graphic><a:graphicData>"
+				+ "<c:chart xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\""
+				+ " r:id=\"rId9\"/>"
+				+ "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>",
+				Collections.emptyMap(), Collections.emptyMap());
+		assertTrue("unsupported-element warning expected",
+				hasWarning(handler, "docx.convert.warn.element.unsupported"));
+	}
+
+	@Test
+	public void footnotesAreRenderedNotSkipped() throws Exception {
+		// Footnotes are rendered as [^N] references, so the "footnotes skipped"
+		// behaviour does not occur and no such warning key exists/fires.
+		DocxToMarkdownHandler handler = runHandler(
+				"<w:p><w:r><w:t>Text</w:t></w:r></w:p>",
+				Collections.emptyMap(), Collections.emptyMap());
+		assertTrue("no footnotes-skipped warning",
+				!hasWarning(handler, "docx.convert.warn.footnotes"));
+	}
+
+	// -----------------------------------------------------------------------
+	// Media filename collision handling
+	// -----------------------------------------------------------------------
+
+	@Test
+	public void imagesWithSameBasenameAreUniquified() throws Exception {
+		// Two images share the basename "image1.png" but live in different
+		// folders. Both must be written without overwriting each other and be
+		// referenced by distinct relative paths.
+		byte[] pngA = pngBytes((byte) 0xAA);
+		byte[] pngB = pngBytes((byte) 0xBB);
+
+		java.io.File docx = java.io.File.createTempFile("collide", ".docx", new java.io.File("target"));
+		docx.deleteOnExit();
+		try (java.util.zip.ZipOutputStream zos =
+				new java.util.zip.ZipOutputStream(new java.io.FileOutputStream(docx))) {
+			zos.putNextEntry(new java.util.zip.ZipEntry("word/media/image1.png"));
+			zos.write(pngA);
+			zos.closeEntry();
+			zos.putNextEntry(new java.util.zip.ZipEntry("word/media/sub/image1.png"));
+			zos.write(pngB);
+			zos.closeEntry();
+		}
+
+		java.io.File mediaDir = java.nio.file.Files.createTempDirectory("collide_media_").toFile();
+		mediaDir.deleteOnExit();
+
+		Map<String, DocxRelTarget> rels = Map.of(
+				"rId1", new DocxRelTarget("image", "media/image1.png"),
+				"rId2", new DocxRelTarget("image", "media/sub/image1.png"));
+
+		String body =
+				"<w:p><w:r><w:drawing><wp:inline><a:graphic><a:graphicData>"
+				+ "<pic:pic><pic:blipFill><a:blip r:embed=\"rId1\"/></pic:blipFill></pic:pic>"
+				+ "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>"
+				+ "<w:p><w:r><w:drawing><wp:inline><a:graphic><a:graphicData>"
+				+ "<pic:pic><pic:blipFill><a:blip r:embed=\"rId2\"/></pic:blipFill></pic:pic>"
+				+ "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>";
+
+		String md;
+		try (ZipFile zf = new ZipFile(docx)) {
+			DocxToMarkdownHandler handler = new DocxToMarkdownHandler(rels,
+					Collections.emptyMap(), Collections.emptyMap(), zf, mediaDir,
+					Collections.emptyMap(), Collections.emptyMap());
+			javax.xml.parsers.SAXParser parser = XMLFactories.newSAXParser();
+			parser.getXMLReader().setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			org.xml.sax.XMLReader reader = parser.getXMLReader();
+			reader.setContentHandler(handler);
+			String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><w:document"
+					+ " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
+					+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""
+					+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
+					+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+					+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
+					+ "<w:body>" + body + "</w:body></w:document>";
+			reader.parse(new InputSource(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
+			md = handler.getMarkdown();
+		}
+
+		java.io.File[] written = mediaDir.listFiles();
+		assertNotNull(written);
+		assertEquals("both images must be written without overwriting", 2, written.length);
+
+		// The two image references in the markdown must point to different files.
+		java.util.regex.Matcher m = java.util.regex.Pattern
+				.compile("\\(media/([^)]+)\\)").matcher(md);
+		java.util.Set<String> refs = new java.util.HashSet<>();
+		while (m.find()) {
+			refs.add(m.group(1));
+		}
+		assertEquals("two distinct media references expected", 2, refs.size());
+	}
+
+	/** Minimal valid PNG (8-byte signature + one filler byte). */
+	private static byte[] pngBytes(byte filler) {
+		return new byte[] { (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, filler };
+	}
+
 	// -----------------------------------------------------------------------
 	// Basic text
 	// -----------------------------------------------------------------------
@@ -674,5 +900,291 @@ public class DocxToMarkdownHandlerTest {
 		String between = md.substring(itemEnd, normalStart);
 		assertTrue("Blank line must separate list from paragraph",
 				between.contains("\n\n"));
+	}
+
+	// -----------------------------------------------------------------------
+	// Math (OMML → LaTeX via DocxMathConverter / fmath)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Builds a document.xml envelope that declares the full set of namespaces
+	 * used by media, math, VML and structured-document-tag fixtures, runs it
+	 * through a handler built with the given media dir / footnote maps, and
+	 * returns that handler so tests can inspect both the markdown and the
+	 * conversion messages.
+	 */
+	private DocxToMarkdownHandler runFullHandler(String bodyContent,
+			Map<String, DocxRelTarget> rels,
+			ZipFile zipFile,
+			java.io.File mediaDir,
+			Map<String, String> footnotes,
+			Map<String, String> endnotes) throws Exception {
+		String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<w:document"
+				+ " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
+				+ " xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\""
+				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""
+				+ " xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\""
+				+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
+				+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+				+ " xmlns:o=\"urn:schemas-microsoft-com:office:office\""
+				+ " xmlns:v=\"urn:schemas-microsoft-com:vml\""
+				+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\""
+				+ " xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\">"
+				+ "<w:body>" + bodyContent + "</w:body></w:document>";
+		DocxToMarkdownHandler handler = new DocxToMarkdownHandler(
+				rels, Collections.emptyMap(), Collections.emptyMap(),
+				zipFile, mediaDir, footnotes, endnotes);
+		javax.xml.parsers.SAXParser parser = XMLFactories.newSAXParser();
+		parser.getXMLReader().setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		org.xml.sax.XMLReader reader = parser.getXMLReader();
+		reader.setContentHandler(handler);
+		reader.parse(new InputSource(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
+		return handler;
+	}
+
+	/**
+	 * A simple equation (x = a + b) expressed as OMML must be converted to a
+	 * LaTeX display-math block. The handler always emits {@code $$...$$} blocks
+	 * (the markdown importer only supports display math, never inline {@code $}).
+	 */
+	@Test
+	public void mathSimpleEquationRendersAsDisplayBlock() throws Exception {
+		String oMath =
+				"<m:oMathPara><m:oMath>"
+				+ "<m:r><m:t>x</m:t></m:r><m:r><m:t>=</m:t></m:r>"
+				+ "<m:r><m:t>a</m:t></m:r><m:r><m:t>+</m:t></m:r>"
+				+ "<m:r><m:t>b</m:t></m:r>"
+				+ "</m:oMath></m:oMathPara>";
+		String md = convertDocumentXml("<w:p>" + oMath + "</w:p>");
+
+		assertTrue("Math must be wrapped in a $$ display block",
+				md.contains("$$\nx=a+b\n$$"));
+		assertFalse("Display math block must not be emitted as inline $...$",
+				md.contains("$x=a+b$"));
+	}
+
+	/**
+	 * A bare {@code m:oMath} (not wrapped in {@code m:oMathPara}) is the inline
+	 * form in OOXML, but the handler still emits it as a {@code $$} display
+	 * block because the importer does not support inline math.
+	 */
+	@Test
+	public void mathBareOMathAlsoRendersAsDisplayBlock() throws Exception {
+		String md = convertDocumentXml(
+				"<w:p><w:r><m:oMath><m:r><m:t>E</m:t></m:r>"
+				+ "<m:r><m:t>=</m:t></m:r><m:r><m:t>m</m:t></m:r>"
+				+ "</m:oMath></w:r></w:p>");
+		assertTrue("Bare m:oMath must render as a $$ display block",
+				md.contains("$$\nE=m\n$$"));
+	}
+
+	/**
+	 * When the OMML carries no convertible content (no {@code m:t} text, so
+	 * both the fmath conversion and the plain-text fallback yield nothing), the
+	 * handler emits the {@code warn.math.failed} warning instead of a block.
+	 */
+	@Test
+	public void mathWithoutTextEmitsMathFailedWarning() throws Exception {
+		DocxToMarkdownHandler handler = runFullHandler(
+				"<w:p><m:oMath><m:r/></m:oMath></w:p>",
+				Collections.emptyMap(), null, null,
+				Collections.emptyMap(), Collections.emptyMap());
+		assertFalse("No display block must be emitted for empty math",
+				handler.getMarkdown().contains("$$"));
+		assertTrue("math-failed warning expected for unconvertible math",
+				hasWarning(handler, "docx.convert.warn.math.failed"));
+	}
+
+	// -----------------------------------------------------------------------
+	// Footnotes / endnotes
+	// -----------------------------------------------------------------------
+
+	/**
+	 * A footnote reference must render an inline {@code [^N]} marker, and the
+	 * footnote definition must be appended at the end of the document as
+	 * {@code [^N]: text}.
+	 */
+	@Test
+	public void footnoteReferenceRendersMarkerAndDefinition() throws Exception {
+		Map<String, String> footnotes = Map.of("2", "The footnote body.");
+		DocxToMarkdownHandler handler = runFullHandler(
+				"<w:p><w:r><w:t>Statement</w:t></w:r>"
+				+ "<w:r><w:footnoteReference w:id=\"2\"/></w:r></w:p>",
+				Collections.emptyMap(), null, null,
+				footnotes, Collections.emptyMap());
+		String md = handler.getMarkdown();
+		assertTrue("Inline footnote marker [^1] must appear next to the text",
+				md.contains("Statement[^1]"));
+		assertTrue("Footnote definition must be appended at the end",
+				md.contains("[^1]: The footnote body."));
+	}
+
+	/**
+	 * An endnote reference shares the same {@code [^N]} numbering space as
+	 * footnotes and is also appended as a definition at the end.
+	 */
+	@Test
+	public void endnoteReferenceRendersMarkerAndDefinition() throws Exception {
+		Map<String, String> endnotes = Map.of("5", "An endnote.");
+		DocxToMarkdownHandler handler = runFullHandler(
+				"<w:p><w:r><w:t>Body</w:t></w:r>"
+				+ "<w:r><w:endnoteReference w:id=\"5\"/></w:r></w:p>",
+				Collections.emptyMap(), null, null,
+				Collections.emptyMap(), endnotes);
+		String md = handler.getMarkdown();
+		assertTrue("Inline endnote marker [^1] must appear", md.contains("Body[^1]"));
+		assertTrue("Endnote definition must be appended", md.contains("[^1]: An endnote."));
+	}
+
+	/**
+	 * Separator footnote ids ("0" and "-1") and references to unknown ids must
+	 * not produce a marker or a definition.
+	 */
+	@Test
+	public void footnoteSeparatorAndUnknownIdsAreIgnored() throws Exception {
+		Map<String, String> footnotes = Map.of("3", "real");
+		DocxToMarkdownHandler handler = runFullHandler(
+				"<w:p><w:r><w:t>Text</w:t></w:r>"
+				+ "<w:r><w:footnoteReference w:id=\"0\"/></w:r>"
+				+ "<w:r><w:footnoteReference w:id=\"99\"/></w:r></w:p>",
+				Collections.emptyMap(), null, null,
+				footnotes, Collections.emptyMap());
+		String md = handler.getMarkdown();
+		assertFalse("Separator/unknown footnote ids must not emit a marker",
+				md.contains("[^1]"));
+		assertFalse("No definitions must be appended", md.contains("[^1]:"));
+	}
+
+	// -----------------------------------------------------------------------
+	// Video extraction
+	// -----------------------------------------------------------------------
+
+	/**
+	 * A document embedding a video (a:videoFile referencing a media entry) must
+	 * write the media file to the media directory and emit a markdown link of
+	 * the form {@code [Video: name](media/name)} — videos are linked, not
+	 * embedded like images.
+	 */
+	@Test
+	public void videoIsExtractedAndLinked() throws Exception {
+		byte[] videoData = "fake-mp4-bytes".getBytes(StandardCharsets.UTF_8);
+
+		java.io.File docx = java.io.File.createTempFile("video", ".docx", new java.io.File("target"));
+		docx.deleteOnExit();
+		try (java.util.zip.ZipOutputStream zos =
+				new java.util.zip.ZipOutputStream(new java.io.FileOutputStream(docx))) {
+			zos.putNextEntry(new java.util.zip.ZipEntry("word/media/clip.mp4"));
+			zos.write(videoData);
+			zos.closeEntry();
+		}
+
+		java.io.File mediaDir = java.nio.file.Files.createTempDirectory("video_media_").toFile();
+		mediaDir.deleteOnExit();
+
+		Map<String, DocxRelTarget> rels = Map.of(
+				"rId7", new DocxRelTarget("video", "media/clip.mp4"));
+
+		// A video is referenced via a:videoFile inside a drawing; an mc:Choice
+		// carries the DrawingML video reference in real documents.
+		String body =
+				"<w:p><w:r><w:drawing><wp:inline><a:graphic><a:graphicData>"
+				+ "<pic:pic><pic:nvPicPr><pic:nvPr>"
+				+ "<a:videoFile r:link=\"rId7\"/>"
+				+ "</pic:nvPr></pic:nvPicPr></pic:pic>"
+				+ "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>";
+
+		String md;
+		try (ZipFile zf = new ZipFile(docx)) {
+			DocxToMarkdownHandler handler = runFullHandlerWithZip(body, rels, zf, mediaDir);
+			md = handler.getMarkdown();
+		}
+
+		java.io.File[] written = mediaDir.listFiles();
+		assertNotNull(written);
+		assertEquals("video file must be written to the media directory", 1, written.length);
+		assertEquals("clip.mp4", written[0].getName());
+		assertTrue("markdown must contain the video link",
+				md.contains("[Video: clip.mp4](media/clip.mp4)"));
+	}
+
+	// -----------------------------------------------------------------------
+	// Checkboxes (structured document tags)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * A checked SDT checkbox must render as a {@code [x] } markdown task marker.
+	 */
+	@Test
+	public void checkedCheckboxRendersAsCheckedTask() throws Exception {
+		String body =
+				"<w:p><w:sdt><w:sdtPr>"
+				+ "<w14:checkbox><w14:checked w14:val=\"1\"/></w14:checkbox>"
+				+ "</w:sdtPr><w:sdtContent><w:r><w:t>Done</w:t></w:r></w:sdtContent>"
+				+ "</w:sdt><w:r><w:t> task</w:t></w:r></w:p>";
+		String md = convertDocumentXml(body);
+		assertTrue("Checked checkbox must render as [x]", md.contains("[x]"));
+		assertFalse("Checked checkbox must not render as [ ]", md.contains("[ ]"));
+	}
+
+	/**
+	 * An unchecked SDT checkbox must render as an empty {@code [ ] } task marker.
+	 */
+	@Test
+	public void uncheckedCheckboxRendersAsEmptyTask() throws Exception {
+		String body =
+				"<w:p><w:sdt><w:sdtPr>"
+				+ "<w14:checkbox><w14:checked w14:val=\"0\"/></w14:checkbox>"
+				+ "</w:sdtPr><w:sdtContent><w:r><w:t>Todo</w:t></w:r></w:sdtContent>"
+				+ "</w:sdt></w:p>";
+		String md = convertDocumentXml(body);
+		assertTrue("Unchecked checkbox must render as [ ]", md.contains("[ ]"));
+	}
+
+	// -----------------------------------------------------------------------
+	// VML legacy shapes
+	// -----------------------------------------------------------------------
+
+	/**
+	 * A legacy VML shape ({@code w:pict} containing a {@code v:shape} with path
+	 * data) must be run through {@link VmlToSvgConverter}: the resulting SVG is
+	 * written to the media directory and referenced as an image in the markdown.
+	 */
+	@Test
+	public void vmlShapeIsConvertedToSvgAndReferenced() throws Exception {
+		java.io.File mediaDir = java.nio.file.Files.createTempDirectory("vml_media_").toFile();
+		mediaDir.deleteOnExit();
+
+		String body =
+				"<w:p><w:r><w:pict>"
+				+ "<v:shape style=\"width:50pt;height:30pt\" path=\"m 0,0 l 100,0 100,50 x e\""
+				+ " strokecolor=\"#156082\" fillcolor=\"#ffffff\" filled=\"t\"/>"
+				+ "</w:pict></w:r></w:p>";
+
+		DocxToMarkdownHandler handler = runFullHandler(body,
+				Collections.emptyMap(), null, mediaDir,
+				Collections.emptyMap(), Collections.emptyMap());
+		String md = handler.getMarkdown();
+
+		java.io.File[] written = mediaDir.listFiles();
+		assertNotNull(written);
+		assertEquals("VML shape must produce exactly one SVG file", 1, written.length);
+		assertTrue("written file must be an SVG", written[0].getName().endsWith(".svg"));
+		assertTrue("SVG file content must be valid SVG",
+				java.nio.file.Files.readString(written[0].toPath()).contains("<svg"));
+		assertTrue("markdown must reference the generated SVG as an image",
+				md.contains("](media/" + written[0].getName() + ")"));
+	}
+
+	/**
+	 * Helper variant that runs a fixture with relationships, an open ZipFile
+	 * and a media dir (for image/video extraction) but no footnotes.
+	 */
+	private DocxToMarkdownHandler runFullHandlerWithZip(String bodyContent,
+			Map<String, DocxRelTarget> rels,
+			ZipFile zipFile,
+			java.io.File mediaDir) throws Exception {
+		return runFullHandler(bodyContent, rels, zipFile, mediaDir,
+				Collections.emptyMap(), Collections.emptyMap());
 	}
 }

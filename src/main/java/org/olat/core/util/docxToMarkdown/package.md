@@ -3,7 +3,7 @@
 **Package:** `org.olat.core.util.docxToMarkdown`
 **Type:** Core Utility (zero external dependencies beyond fmath for math conversion)
 **Design:** Stateless `@Service`, thread-safe — all state is local to each `convert()` call
-**Files:** 16 Java files (~3,000 LOC), 2 i18n property files
+**Files:** 21 Java files (~6,800 LOC), 2 i18n property files
 **Pipeline:** 6-stage SAX-based conversion from DOCX (ZIP) to Markdown
 
 ---
@@ -104,8 +104,10 @@ DOCX (ZIP)
   v
 [1] DocxZipExtractor
   |   Validates ZIP structure, checks for path traversal,
-  |   macros (vbaProject.bin), entry count (max 64),
-  |   entry size (max 50 MB). Extracts auxiliary XML as byte[].
+  |   macros (vbaProject.bin), entry count (rejects > 1024 entries
+  |   as a zip bomb), entry size (max 50 MB). Every entry is inspected.
+  |   Throws DocxSecurityException (with a Reason) on rejection.
+  |   Extracts auxiliary XML as byte[].
   |   document.xml is NOT buffered — streamed later.
   |
   +---> byte[] relsXml ---------> [2] DocxRelationshipParser
@@ -128,9 +130,17 @@ DOCX (ZIP)
   |     byte[] endnotesXml            word/footnotes.xml + endnotes.xml
   |                                    -> Map<id, text>
   |
+  +---> byte[] themeXml --------> [5c] DocxThemeParser
+  |                                    word/theme/theme1.xml
+  |                                    -> Map<schemeColor, hexRGB>
+  |
+  +-----------------------------> [5d] SmartArtRenderer.renderAll
+  |                                    correlates diagramData ↔ diagramDrawing
+  |                                    -> Map<diagramData relId, svgFile>
+  |
   v
 [6] DocxToMarkdownHandler (SAX on document.xml, streamed from ZIP)
-  |   Uses outputs from stages 2-5b as lookup tables.
+  |   Uses outputs from stages 2-5d as lookup tables.
   |   Images/videos extracted on-demand from open ZipFile.
   |   VML shapes converted via VmlToSvgConverter.
   |   Math equations converted via DocxMathConverter (fmath).
@@ -162,9 +172,9 @@ Markdown string + media files on disk (temp directory)
 | **Footnotes/Endnotes** | Numbered references | `[^N]` + definitions |
 | **Checkboxes** | SDT checkboxes | `[x]` / `[ ]` |
 | **Videos** | a:videoFile | `[Video: name](media/file.mp4)` streamed |
-| **SmartArt diagrams** | diagrams/drawing*.xml shapes | Rendered to SVG with shapes + text |
-| **Charts** | mc:Fallback images | Fallback PNG/EMF extracted |
-| **Track changes** | Insertions accepted, Deletions skipped | |
+| **SmartArt diagrams** | diagrams/drawing*.xml shapes | Rendered to SVG with shapes + text (skipped with warning if it cannot render) |
+| **Charts** | DrawingML `c:chart` | Not converted; reported as unsupported element |
+| **Track changes** | Insertions accepted, Deletions skipped (with warning) | |
 | **Metadata** | docProps -> YAML front matter | `---\ntitle: ...\n---` |
 | **Image dimensions** | wp:extent -> CommonMark attributes | `{width=N height=N}` |
 
@@ -186,11 +196,11 @@ Image dimensions come from `wp:extent` in OOXML (EMU units), representing the **
 | # | Attack Vector | Protection |
 |---|---|---|
 | 1 | XXE | `XMLFactories` + `disallow-doctype-decl` on ALL parsers |
-| 2 | Zip bomb | Entry count limit (64) + per-entry size limit (50 MB) |
-| 3 | Zip slip | Entry name validation (rejects paths containing `..`) |
-| 4 | Macros | `vbaProject.bin` scan during ZIP extraction |
-| 5 | JavaScript URLs | Protocol whitelist: `http`, `https`, `mailto` only |
-| 6 | OLE/ActiveX | Entries skipped |
+| 2 | Zip bomb | Archive **rejected** above 1024 entries (`DocxSecurityException.Reason.ZIP_BOMB`) + per-entry size limit (50 MB). Every entry is inspected — there is no unscanned tail. |
+| 3 | Zip slip | Entry name validation (rejects paths containing `..`) → `Reason.ZIP_SLIP` |
+| 4 | Macros | `vbaProject.bin` scan during ZIP extraction → `Reason.MACRO_DETECTED` |
+| 5 | JavaScript URLs | Protocol whitelist: `http`, `https`, `mailto` only (others dropped with `warn.url.rejected`) |
+| 6 | OLE/ActiveX | `o:OLEObject` / `w:control` skipped with `warn.ole` |
 | 7 | HTML injection | Pure markdown output; `renderMessagesAsHtml()` escapes `&`, `<`, `>` |
 | 8 | SVG script injection | Generated SVGs contain only `<path>` shape data |
 
@@ -225,15 +235,17 @@ Memory is proportional to text content, not file size. Images and videos are str
 | Situation | Handling |
 |---|---|
 | Nested tables | Flattened with warning |
-| Merged cells | Ignored (GFM limitation) |
+| Merged cells | Flattened; reported with `warn.merged.cells` (GFM limitation) |
 | Math (OOXML) | fmath conversion attempted; text fallback via `extractMathText()` if it fails |
-| Charts without fallback | Skipped |
-| Encrypted DOCX | Rejected with error |
-| .docm files | Rejected (macro detection via `vbaProject.bin`) |
+| Charts (`c:chart`) | Not converted; reported with `warn.element.unsupported` |
+| Encrypted DOCX | Detected by OLE2 magic bytes; rejected with `error.encrypted` |
+| .docm files | Rejected (macro detection via `vbaProject.bin`) → `error.macro.detected` |
 | Images > 10 MB | Skipped with warning |
-| Missing numbering.xml | Treated as bullet list with warning |
+| Media basename collisions | Uniquified (e.g. `image1.png` → `image1-1.png`) so files in different folders do not overwrite |
+| Missing numbering.xml | Treated as bullet list with `warn.numbering.missing` |
 | Comments | Skipped with warning |
-| OLE objects | Skipped with warning |
+| OLE objects | Skipped with `warn.ole` |
+| Footnotes/Endnotes | Rendered as `[^N]` references (not skipped) |
 
 ---
 
@@ -247,11 +259,12 @@ Memory is proportional to text content, not file size. Images and videos are str
 | `DocxToMarkdownResult` | record | Result: `markdown`, `basePath`, `messages` |
 | `DocxConversionMessage` | record | Message: `level`, `i18nKey`, `args` |
 
-### Internal (13 package-private classes)
+### Internal (18 package-private classes)
 
 | Class | Type | Purpose |
 |---|---|---|
 | `DocxZipExtractor` | utility | ZIP reading + security checks |
+| `DocxSecurityException` | exception | Typed rejection (`Reason`: MACRO_DETECTED, ZIP_SLIP, ZIP_BOMB, ENCRYPTED) |
 | `DocxArchiveContent` | record | byte[] holders for auxiliary XML parts |
 | `DocxRelationshipParser` | SAX handler | `.rels` -> `Map<id, DocxRelTarget>` |
 | `DocxRelTarget` | record | Relationship type + target |
@@ -261,9 +274,13 @@ Memory is proportional to text content, not file size. Images and videos are str
 | `DocxMetadataParser` | SAX handler | `docProps` -> `DocxMetadata` |
 | `DocxMetadata` | record | title, author, keywords, etc. + `toYamlFrontMatter()` |
 | `DocxFootnoteParser` | SAX handler | footnotes/endnotes -> `Map<id, text>` |
+| `DocxThemeParser` | SAX handler | `theme1.xml` -> `Map<schemeColor, hexRGB>` |
 | `DocxToMarkdownHandler` | SAX handler | Main converter (2100+ LOC) |
 | `DocxMathConverter` | utility | OOXML math -> LaTeX via fmath |
 | `VmlToSvgConverter` | utility | VML/DrawingML -> SVG |
+| `SmartArtRenderer` | utility | SmartArt correlation + diagram rendering to SVG |
+| `PresetGeometryPath` | utility | OOXML preset geometry -> SVG path data |
+| `OoxmlSax` | utility | Shared SAX helpers (`stripPrefix`, `getWAttr`) |
 
 ---
 
@@ -279,23 +296,27 @@ Pattern: `docx.convert.<level>.<category>.<detail>`
 | `docx.convert.warn.image.missing` | WARNING | Image not found in archive |
 | `docx.convert.warn.table.nested` | WARNING | Nested table flattened |
 | `docx.convert.warn.math.failed` | WARNING | Math conversion failed |
-| `docx.convert.warn.element.unsupported` | WARNING | Unsupported element |
+| `docx.convert.warn.element.unsupported` | WARNING | Unsupported element (e.g. `c:chart`) |
 | `docx.convert.warn.numbering.missing` | WARNING | Numbering definitions missing |
-| `docx.convert.warn.track.changes` | WARNING | Track changes detected |
+| `docx.convert.warn.track.changes` | WARNING | Track changes detected (deletions dropped) |
 | `docx.convert.warn.superscript` | WARNING | Superscript/subscript note |
-| `docx.convert.warn.footnotes` | WARNING | Footnotes/endnotes skipped |
 | `docx.convert.warn.comments` | WARNING | Comments skipped |
-| `docx.convert.warn.smartart` | WARNING | SmartArt/chart skipped |
-| `docx.convert.warn.ole` | WARNING | Embedded object skipped |
-| `docx.convert.warn.merged.cells` | WARNING | Merged cells ignored |
-| `docx.convert.warn.url.rejected` | WARNING | Unsafe URL protocol |
+| `docx.convert.warn.smartart` | WARNING | SmartArt could not be rendered, skipped |
+| `docx.convert.warn.ole` | WARNING | Embedded OLE object skipped |
+| `docx.convert.warn.merged.cells` | WARNING | Merged cells flattened |
+| `docx.convert.warn.url.rejected` | WARNING | Unsafe URL protocol dropped |
 | `docx.convert.error.macro.detected` | ERROR | Macro detected |
 | `docx.convert.error.invalid.format` | ERROR | Not a valid DOCX |
 | `docx.convert.error.encrypted` | ERROR | Encrypted document |
 | `docx.convert.error.read.failed` | ERROR | Read failure |
-| `docx.convert.error.zip.bomb` | ERROR | Suspicious archive |
+| `docx.convert.error.zip.bomb` | ERROR | Too many entries / suspicious archive |
 | `docx.convert.error.zip.slip` | ERROR | Invalid entry path |
-| `docx.convert.info.metadata.partial` | INFO | Some metadata empty |
+
+> **Note:** every key above has a real emission point in the code. Two keys
+> documented in earlier versions were removed because the behaviour they
+> described does not occur: `docx.convert.warn.footnotes` (footnotes are
+> rendered as `[^N]`, not skipped) and `docx.convert.info.metadata.partial`
+> (no partial-metadata detection exists).
 
 ---
 
@@ -321,7 +342,7 @@ The service is registered via component-scan in `utilCorecontext.xml`. No additi
 
 ---
 
-## Package Structure (17 classes)
+## Package Structure (21 classes)
 
 ```
 Public API:
@@ -331,6 +352,7 @@ Public API:
 
 Internal (package-private):
   DocxZipExtractor                  — ZIP reading + security checks
+  DocxSecurityException             — typed rejection (Reason enum)
   DocxArchiveContent (record)       — byte[] for auxiliary XML parts
   DocxRelationshipParser            — .rels → Map<id, DocxRelTarget>
   DocxRelTarget (record)            — type + target
@@ -340,8 +362,11 @@ Internal (package-private):
   DocxMetadataParser                — docProps → DocxMetadata
   DocxMetadata (record)             — title, author, keywords, etc.
   DocxFootnoteParser                — footnotes/endnotes → Map<id, text>
-  DocxToMarkdownHandler             — Main SAX handler (~2000 LOC)
+  DocxThemeParser                   — theme1.xml → Map<schemeColor, hexRGB>
+  DocxToMarkdownHandler             — Main SAX handler (~2200 LOC)
   DocxMathConverter                 — OOXML math → LaTeX via fmath
   VmlToSvgConverter                 — VML/DrawingML shapes → SVG
-  SmartArtRenderer                  — SmartArt diagrams → SVG
+  SmartArtRenderer                  — SmartArt correlation + diagrams → SVG
+  PresetGeometryPath                — OOXML preset geometry → SVG path data
+  OoxmlSax                          — shared SAX helpers (stripPrefix, getWAttr)
 ```

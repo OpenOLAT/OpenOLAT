@@ -111,14 +111,105 @@ class SmartArtRenderer {
 			}
 
 			String svg = buildSvg(shapes, widthEmu, heightEmu, themeColors);
-			String filename = "smartart_" + System.nanoTime() + ".svg";
-			File svgFile = new File(mediaDir, filename);
+			// Guarantee a collision-free filename even if two diagrams are
+			// rendered within the same nanosecond tick.
+			File svgFile;
+			String filename;
+			do {
+				filename = "smartart_" + System.nanoTime() + ".svg";
+				svgFile = new File(mediaDir, filename);
+			} while (svgFile.exists());
 			Files.writeString(svgFile.toPath(), svg, StandardCharsets.UTF_8);
 			return filename;
 		} catch (Exception e) {
 			log.debug("SmartArt rendering failed: {}", e.getMessage());
 			return null;
 		}
+	}
+
+	/** Default SmartArt display size in EMU (used when no extent is known). */
+	private static final int DEFAULT_WIDTH_EMU = 5486400;
+	private static final int DEFAULT_HEIGHT_EMU = 3200400;
+
+	/**
+	 * Correlates SmartArt {@code diagramData} and {@code diagramDrawing}
+	 * relationships and pre-renders every diagram to an SVG file in
+	 * {@code mediaDir}.
+	 * <p>
+	 * In OOXML a SmartArt diagram is split across two parts that share a numeric
+	 * index: {@code diagrams/data1.xml} (referenced from the document via
+	 * {@code r:dm}) and {@code diagrams/drawing1.xml} (the actual shapes). This
+	 * method matches the two by index and renders the drawing.
+	 *
+	 * @param relationships the document relationship map
+	 * @param zipFile       the open DOCX ZIP file
+	 * @param mediaDir      directory to write SVG files to
+	 * @param themeColors   scheme-color map for fills (may be null)
+	 * @return map keyed by the {@code diagramData} relationship ID (matching
+	 *         {@code r:dm} in {@code dgm:relIds}) to the generated SVG filename
+	 */
+	static Map<String, String> renderAll(Map<String, DocxRelTarget> relationships,
+			ZipFile zipFile, File mediaDir, Map<String, String> themeColors) {
+		Map<String, String> smartArtSvgs = new HashMap<>();
+		if (relationships == null || relationships.isEmpty()) {
+			return smartArtSvgs;
+		}
+
+		// Index every diagramDrawing relationship by its trailing number.
+		Map<String, String> drawingByIndex = new HashMap<>();
+		for (Map.Entry<String, DocxRelTarget> rel : relationships.entrySet()) {
+			String type = rel.getValue().type();
+			if (type != null && type.contains("diagramDrawing")) {
+				String idx = extractDiagramIndex(rel.getValue().target());
+				if (idx != null) {
+					drawingByIndex.put(idx, rel.getKey());
+				}
+			}
+		}
+
+		// For each diagramData relationship, find the matching drawing and render.
+		for (Map.Entry<String, DocxRelTarget> rel : relationships.entrySet()) {
+			String type = rel.getValue().type();
+			if (type != null && type.contains("diagramData")) {
+				String idx = extractDiagramIndex(rel.getValue().target());
+				String drawingRelId = idx != null ? drawingByIndex.get(idx) : null;
+				if (drawingRelId != null) {
+					DocxRelTarget drawingRel = relationships.get(drawingRelId);
+					String svgFile = render(zipFile, drawingRel.target(),
+							mediaDir, DEFAULT_WIDTH_EMU, DEFAULT_HEIGHT_EMU, themeColors);
+					if (svgFile != null) {
+						// Key by diagramData rel ID — matches r:dm in dgm:relIds.
+						smartArtSvgs.put(rel.getKey(), svgFile);
+					}
+				}
+			}
+		}
+		return smartArtSvgs;
+	}
+
+	/**
+	 * Extracts the trailing number from a diagram target path.
+	 * E.g. {@code "diagrams/data1.xml"} -> {@code "1"},
+	 * {@code "diagrams/drawing2.xml"} -> {@code "2"}.
+	 */
+	private static String extractDiagramIndex(String target) {
+		if (target == null) {
+			return null;
+		}
+		int lastSlash = target.lastIndexOf('/');
+		String filename = lastSlash >= 0 ? target.substring(lastSlash + 1) : target;
+		if (filename.endsWith(".xml")) {
+			filename = filename.substring(0, filename.length() - 4);
+		}
+		StringBuilder digits = new StringBuilder();
+		for (int i = filename.length() - 1; i >= 0; i--) {
+			if (Character.isDigit(filename.charAt(i))) {
+				digits.insert(0, filename.charAt(i));
+			} else {
+				break;
+			}
+		}
+		return digits.isEmpty() ? null : digits.toString();
 	}
 
 	// --- Inner data classes ---
@@ -719,7 +810,7 @@ class SmartArtRenderer {
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attrs)
 				throws SAXException {
-			String name = stripPrefix(qName);
+			String name = OoxmlSax.stripPrefix(qName);
 			switch (name) {
 				case "sp" -> {
 					current = new ShapeInfo();
@@ -1078,7 +1169,7 @@ class SmartArtRenderer {
 
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
-			String name = stripPrefix(qName);
+			String name = OoxmlSax.stripPrefix(qName);
 			switch (name) {
 				case "sp" -> {
 					if (current != null && current.cx > 0 && current.cy > 0) {
@@ -1238,11 +1329,6 @@ class SmartArtRenderer {
 				case "accent6" -> "70AD47";
 				default -> "4472C4";
 			};
-		}
-
-		private static String stripPrefix(String qName) {
-			int idx = qName.indexOf(':');
-			return idx >= 0 ? qName.substring(idx + 1) : qName;
 		}
 
 		private static int intAttr(Attributes attrs, String name) {

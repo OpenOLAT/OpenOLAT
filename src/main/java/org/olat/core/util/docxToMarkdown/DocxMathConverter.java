@@ -21,8 +21,6 @@ package org.olat.core.util.docxToMarkdown;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
@@ -78,43 +76,6 @@ class DocxMathConverter {
 
 	private DocxMathConverter() {
 		// utility
-	}
-
-	/**
-	 * Pre-extract MathML from the original DOCX file using fmath.
-	 * Returns the full MathML string, or null if extraction fails.
-	 */
-	static String extractMathMLFromDocx(File docxFile) {
-		if (docxFile == null || !docxFile.exists()) {
-			return null;
-		}
-		try (InputStream in = new FileInputStream(docxFile)) {
-			String mathml = ConvertFromWordToMathML.getMathMLFromDocStream(in, "");
-			if (mathml != null && !mathml.isBlank()) {
-				log.debug("Pre-extracted MathML from DOCX ({} chars)", mathml.length());
-				return mathml;
-			}
-		} catch (Exception e) {
-			log.debug("fmath pre-extraction failed: {}", e.getMessage());
-		}
-		return null;
-	}
-
-	/**
-	 * Convert pre-extracted MathML to LaTeX.
-	 * @param mathml the MathML string from fmath
-	 * @return LaTeX without delimiters, or null
-	 */
-	static String convertMathMLToLatex(String mathml) {
-		if (mathml == null || mathml.isBlank()) return null;
-		try {
-			String latex = ConvertFromMathMLToLatex.convertToLatex(mathml);
-			if (latex == null || latex.isBlank()) return null;
-			return stripDelimiters(latex.trim());
-		} catch (Exception e) {
-			log.debug("MathML→LaTeX conversion failed: {}", e.getMessage());
-			return null;
-		}
 	}
 
 	/**

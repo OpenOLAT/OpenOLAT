@@ -19,6 +19,7 @@
  */
 package org.olat.core.util.docxToMarkdown;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -105,6 +106,69 @@ public class SmartArtRendererTest {
 			assertTrue("SVG must contain shape path", content.contains("<path") || content.contains("<rect"));
 			assertTrue("SVG must contain text", content.contains("Hello"));
 		}
+	}
+
+	@Test
+	public void renderAllCorrelatesDataAndDrawingByIndex() throws Exception {
+		// diagramData rel (rId5) and diagramDrawing rel (rId6) share index "1".
+		// renderAll must key the result by the diagramData rel ID (rId5).
+		String drawingXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+			+ "<dsp:drawing xmlns:dsp=\"http://schemas.microsoft.com/office/drawing/2008/diagram\""
+			+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">"
+			+ "<dsp:spTree>"
+			+ "<dsp:nvGrpSpPr><dsp:cNvPr id=\"0\" name=\"\"/><dsp:cNvGrpSpPr/></dsp:nvGrpSpPr>"
+			+ "<dsp:grpSpPr/>"
+			+ "<dsp:sp modelId=\"{1}\">"
+			+ "<dsp:nvSpPr><dsp:cNvPr id=\"0\" name=\"\"/><dsp:cNvSpPr/></dsp:nvSpPr>"
+			+ "<dsp:spPr>"
+			+ "<a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"500000\" cy=\"300000\"/></a:xfrm>"
+			+ "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>"
+			+ "<a:solidFill><a:schemeClr val=\"accent1\"/></a:solidFill>"
+			+ "</dsp:spPr>"
+			+ "<dsp:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:t>Node</a:t></a:r></a:p></dsp:txBody>"
+			+ "</dsp:sp>"
+			+ "</dsp:spTree></dsp:drawing>";
+
+		File docx = File.createTempFile("smartart_corr", ".docx", new File("target"));
+		docx.deleteOnExit();
+		try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(docx))) {
+			zos.putNextEntry(new ZipEntry("word/document.xml"));
+			zos.write("<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:body/></w:document>"
+				.getBytes(StandardCharsets.UTF_8));
+			zos.closeEntry();
+			zos.putNextEntry(new ZipEntry("word/diagrams/drawing1.xml"));
+			zos.write(drawingXml.getBytes(StandardCharsets.UTF_8));
+			zos.closeEntry();
+		}
+
+		File mediaDir = Files.createTempDirectory(java.nio.file.Path.of("target"), "smartart_corr_").toFile();
+		mediaDir.deleteOnExit();
+
+		java.util.Map<String, DocxRelTarget> rels = new java.util.HashMap<>();
+		rels.put("rId5", new DocxRelTarget(
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramData",
+			"diagrams/data1.xml"));
+		rels.put("rId6", new DocxRelTarget(
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramDrawing",
+			"diagrams/drawing1.xml"));
+
+		try (ZipFile zf = new ZipFile(docx)) {
+			java.util.Map<String, String> svgs =
+				SmartArtRenderer.renderAll(rels, zf, mediaDir, Collections.emptyMap());
+
+			assertEquals("one diagram expected", 1, svgs.size());
+			assertTrue("result must be keyed by the diagramData rel ID", svgs.containsKey("rId5"));
+			File svg = new File(mediaDir, svgs.get("rId5"));
+			assertTrue("rendered SVG must exist on disk", svg.exists());
+		}
+	}
+
+	@Test
+	public void renderAllReturnsEmptyForNoDiagrams() throws Exception {
+		File mediaDir = Files.createTempDirectory(java.nio.file.Path.of("target"), "smartart_none_").toFile();
+		mediaDir.deleteOnExit();
+		assertTrue("no relationships → empty map",
+			SmartArtRenderer.renderAll(Collections.emptyMap(), null, mediaDir, null).isEmpty());
 	}
 
 	@Test

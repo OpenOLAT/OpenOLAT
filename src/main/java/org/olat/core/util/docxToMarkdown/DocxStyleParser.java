@@ -75,20 +75,20 @@ class DocxStyleParser extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes)
 			throws SAXException {
-		String name = stripPrefix(qName);
+		String name = OoxmlSax.stripPrefix(qName);
 
 		if ("style".equals(name)) {
-			String type = getAttr(attributes, "type");
+			String type = OoxmlSax.getWAttr(attributes, "type");
 			// Collect both paragraph and character styles
 			if ("paragraph".equals(type) || "character".equals(type)) {
 				inRelevantStyle = true;
-				currentStyleId = getAttr(attributes, "styleId");
+				currentStyleId = OoxmlSax.getWAttr(attributes, "styleId");
 			} else {
 				inRelevantStyle = false;
 				currentStyleId = null;
 			}
 		} else if ("name".equals(name) && inRelevantStyle && currentStyleId != null) {
-			String val = getAttr(attributes, "val");
+			String val = OoxmlSax.getWAttr(attributes, "val");
 			if (val != null) {
 				styles.put(currentStyleId, normalizeName(val));
 			}
@@ -97,7 +97,7 @@ class DocxStyleParser extends DefaultHandler {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if ("style".equals(stripPrefix(qName))) {
+		if ("style".equals(OoxmlSax.stripPrefix(qName))) {
 			inRelevantStyle = false;
 			currentStyleId = null;
 		}
@@ -126,18 +126,5 @@ class DocxStyleParser extends DefaultHandler {
 			case "book title", "buchtitel" -> "BookTitle";
 			default -> rawName;
 		};
-	}
-
-	private static String stripPrefix(String qName) {
-		int idx = qName.indexOf(':');
-		return idx >= 0 ? qName.substring(idx + 1) : qName;
-	}
-
-	private static String getAttr(Attributes attributes, String name) {
-		String val = attributes.getValue("w:" + name);
-		if (val == null) {
-			val = attributes.getValue(name);
-		}
-		return val;
 	}
 }

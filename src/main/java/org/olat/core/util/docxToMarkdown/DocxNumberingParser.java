@@ -91,7 +91,7 @@ class DocxNumberingParser extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes)
 			throws SAXException {
-		String name = stripPrefix(qName);
+		String name = OoxmlSax.stripPrefix(qName);
 		switch (name) {
 			case "abstractNum":
 				currentAbstractNumId = getIntAttr(attributes, "abstractNumId", -1);
@@ -104,7 +104,7 @@ class DocxNumberingParser extends DefaultHandler {
 				break;
 			case "numFmt":
 				if (currentAbstractNumId >= 0 && currentIlvl >= 0) {
-					String val = getAttr(attributes, "val");
+					String val = OoxmlSax.getWAttr(attributes, "val");
 					if (val != null) {
 						boolean ordered = ORDERED_FORMATS.contains(val.toLowerCase());
 						Map<Integer, Boolean> levels = abstractNums.get(currentAbstractNumId);
@@ -132,7 +132,7 @@ class DocxNumberingParser extends DefaultHandler {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		String name = stripPrefix(qName);
+		String name = OoxmlSax.stripPrefix(qName);
 		switch (name) {
 			case "abstractNum":
 				currentAbstractNumId = -1;
@@ -149,21 +149,8 @@ class DocxNumberingParser extends DefaultHandler {
 		}
 	}
 
-	private static String stripPrefix(String qName) {
-		int idx = qName.indexOf(':');
-		return idx >= 0 ? qName.substring(idx + 1) : qName;
-	}
-
-	private static String getAttr(Attributes attributes, String name) {
-		String val = attributes.getValue("w:" + name);
-		if (val == null) {
-			val = attributes.getValue(name);
-		}
-		return val;
-	}
-
 	private static int getIntAttr(Attributes attributes, String name, int defaultVal) {
-		String val = getAttr(attributes, name);
+		String val = OoxmlSax.getWAttr(attributes, name);
 		if (val == null) return defaultVal;
 		try {
 			return Integer.parseInt(val);

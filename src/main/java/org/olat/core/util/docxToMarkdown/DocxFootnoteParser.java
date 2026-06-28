@@ -76,9 +76,9 @@ class DocxFootnoteParser extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes)
 			throws SAXException {
-		String name = stripPrefix(qName);
+		String name = OoxmlSax.stripPrefix(qName);
 		if ("footnote".equals(name) || "endnote".equals(name)) {
-			currentId = getAttr(attributes, "id");
+			currentId = OoxmlSax.getWAttr(attributes, "id");
 			currentText.setLength(0);
 			inNote = true;
 		}
@@ -93,7 +93,7 @@ class DocxFootnoteParser extends DefaultHandler {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		String name = stripPrefix(qName);
+		String name = OoxmlSax.stripPrefix(qName);
 		if (("footnote".equals(name) || "endnote".equals(name)) && inNote) {
 			inNote = false;
 			if (currentId != null && !"0".equals(currentId) && !"-1".equals(currentId)) {
@@ -104,18 +104,5 @@ class DocxFootnoteParser extends DefaultHandler {
 			}
 			currentId = null;
 		}
-	}
-
-	private static String stripPrefix(String qName) {
-		int idx = qName.indexOf(':');
-		return idx >= 0 ? qName.substring(idx + 1) : qName;
-	}
-
-	private static String getAttr(Attributes attributes, String name) {
-		String val = attributes.getValue("w:" + name);
-		if (val == null) {
-			val = attributes.getValue(name);
-		}
-		return val;
 	}
 }

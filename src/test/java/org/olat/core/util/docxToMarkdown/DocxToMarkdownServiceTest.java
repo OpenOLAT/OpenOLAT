@@ -242,6 +242,117 @@ public class DocxToMarkdownServiceTest {
 				result.markdown().isEmpty());
 	}
 
+	@Test
+	public void rejectVbaProjectMapsToMacroKey() throws Exception {
+		File f = File.createTempFile("test", ".docx", new File("target"));
+		f.deleteOnExit();
+		try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(f))) {
+			addEntry(zos, "word/document.xml",
+				"<?xml version=\"1.0\"?><w:document"
+					+ " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+					+ "<w:body><w:p><w:r><w:t>text</w:t></w:r></w:p></w:body></w:document>");
+			addEntry(zos, "word/vbaProject.bin", "fake binary macro data");
+		}
+
+		DocxToMarkdownResult result = service.convert(f);
+
+		assertTrue("macro rejection must map to the macro.detected key",
+			result.messages().stream().anyMatch(m -> m.level() == Level.ERROR
+				&& "docx.convert.error.macro.detected".equals(m.i18nKey())));
+	}
+
+	@Test
+	public void rejectTooManyEntriesMapsToZipBombKey() throws Exception {
+		File f = File.createTempFile("test", ".docx", new File("target"));
+		f.deleteOnExit();
+		try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(f))) {
+			addEntry(zos, "word/document.xml",
+				"<?xml version=\"1.0\"?><w:document"
+					+ " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+					+ "<w:body><w:p><w:r><w:t>text</w:t></w:r></w:p></w:body></w:document>");
+			for (int i = 0; i < 1100; i++) {
+				addEntry(zos, "word/media/image" + i + ".png", "x");
+			}
+		}
+
+		DocxToMarkdownResult result = service.convert(f);
+
+		assertTrue("too-many-entries must map to the zip.bomb key",
+			result.messages().stream().anyMatch(m -> m.level() == Level.ERROR
+				&& "docx.convert.error.zip.bomb".equals(m.i18nKey())));
+	}
+
+	@Test
+	public void rejectEncryptedDocumentMapsToEncryptedKey() throws Exception {
+		// An encrypted OOXML document is an OLE2 / CFB compound file, not a ZIP.
+		// Its first eight bytes are the well-known OLE2 magic signature.
+		File f = File.createTempFile("test", ".docx", new File("target"));
+		f.deleteOnExit();
+		byte[] ole2Magic = { (byte) 0xD0, (byte) 0xCF, 0x11, (byte) 0xE0,
+			(byte) 0xA1, (byte) 0xB1, 0x1A, (byte) 0xE1 };
+		try (FileOutputStream fos = new FileOutputStream(f)) {
+			fos.write(ole2Magic);
+			fos.write(new byte[64]);
+		}
+
+		DocxToMarkdownResult result = service.convert(f);
+
+		assertTrue("encrypted (OLE2) document must map to the encrypted key",
+			result.messages().stream().anyMatch(m -> m.level() == Level.ERROR
+				&& "docx.convert.error.encrypted".equals(m.i18nKey())));
+	}
+
+	@Test
+	public void rejectPathTraversalMapsToZipSlipKey() throws Exception {
+		// A ZIP entry whose name contains ".." is a zip-slip attempt. The
+		// extractor rejects it with reason ZIP_SLIP, which the service must map
+		// to the dedicated zip.slip message key.
+		File f = File.createTempFile("traversal", ".docx", new File("target"));
+		f.deleteOnExit();
+		try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(f))) {
+			addEntry(zos, "word/document.xml",
+				"<?xml version=\"1.0\"?><w:document"
+					+ " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+					+ "<w:body><w:p><w:r><w:t>text</w:t></w:r></w:p></w:body></w:document>");
+			addEntry(zos, "word/../../../etc/passwd", "root:x:0:0");
+		}
+
+		DocxToMarkdownResult result = service.convert(f);
+
+		assertTrue("path traversal must map to the zip.slip key",
+			result.messages().stream().anyMatch(m -> m.level() == Level.ERROR
+				&& "docx.convert.error.zip.slip".equals(m.i18nKey())));
+		assertTrue("markdown must be empty for a rejected file", result.markdown().isEmpty());
+	}
+
+	// -----------------------------------------------------------------------
+	// Math conversion end-to-end (full service pipeline incl. fmath)
+	// -----------------------------------------------------------------------
+
+	@Test
+	public void convertMathEquationEndToEnd() throws Exception {
+		// An OMML equation x = a + b must travel through the full pipeline
+		// (extraction → SAX handler → DocxMathConverter/fmath) and surface as a
+		// LaTeX display-math block in the markdown.
+		String body = "<w:p><m:oMathPara><m:oMath>"
+			+ "<m:r><m:t>x</m:t></m:r><m:r><m:t>=</m:t></m:r>"
+			+ "<m:r><m:t>a</m:t></m:r><m:r><m:t>+</m:t></m:r>"
+			+ "<m:r><m:t>b</m:t></m:r>"
+			+ "</m:oMath></m:oMathPara></w:p>";
+		File docx = createMinimalDocx(body);
+
+		DocxToMarkdownResult result = service.convert(docx);
+
+		assertNotNull(result);
+		String md = result.markdown();
+		assertTrue("markdown must contain a $$ display-math block for the equation",
+			md.contains("$$\nx=a+b\n$$"));
+		// A convertible equation must not raise the math-failed warning.
+		assertFalse("a convertible equation must not warn math.failed",
+			result.messages().stream().anyMatch(m ->
+				"docx.convert.warn.math.failed".equals(m.i18nKey())));
+	}
+
 	// -----------------------------------------------------------------------
 	// VFS convert method
 	// -----------------------------------------------------------------------

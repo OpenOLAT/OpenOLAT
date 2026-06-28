@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipFile;
@@ -106,6 +105,14 @@ public class DocxToMarkdownService {
 	public DocxToMarkdownResult convert(File docxFile) {
 		List<DocxConversionMessage> messages = new ArrayList<>();
 
+		// An encrypted / password-protected OOXML document is an OLE2 compound
+		// file, not a ZIP. Detect it by its magic bytes so we can report the
+		// specific "encrypted" reason instead of a generic invalid-format error.
+		if (isOle2File(docxFile)) {
+			messages.add(new DocxConversionMessage(Level.ERROR, "docx.convert.error.encrypted"));
+			return new DocxToMarkdownResult("", null, messages);
+		}
+
 		// Validate ZIP magic bytes
 		if (!isZipFile(docxFile)) {
 			messages.add(new DocxConversionMessage(Level.ERROR, "docx.convert.error.invalid.format"));
@@ -149,37 +156,11 @@ public class DocxToMarkdownService {
 			// Stage 5c: Parse theme colors for SmartArt rendering
 			Map<String, String> themeColors = DocxThemeParser.parse(content.themeXml());
 
-			// Stage 5d: Pre-render SmartArt diagrams to SVG
+			// Stage 5d: Correlate and pre-render SmartArt diagrams to SVG.
 			// The map is keyed by the diagramData rel ID (r:dm in dgm:relIds)
 			// so the handler can look up the correct SVG per diagram.
-			// Correlation: diagrams/data1.xml ↔ diagrams/drawing1.xml (same index).
-			Map<String, String> drawingByIndex = new HashMap<>();
-			for (Map.Entry<String, DocxRelTarget> rel : relationships.entrySet()) {
-				String type = rel.getValue().type();
-				if (type != null && type.contains("diagramDrawing")) {
-					String idx = extractDiagramIndex(rel.getValue().target());
-					if (idx != null) {
-						drawingByIndex.put(idx, rel.getKey());
-					}
-				}
-			}
-			Map<String, String> smartArtSvgs = new HashMap<>();
-			for (Map.Entry<String, DocxRelTarget> rel : relationships.entrySet()) {
-				String type = rel.getValue().type();
-				if (type != null && type.contains("diagramData")) {
-					String idx = extractDiagramIndex(rel.getValue().target());
-					String drawingRelId = idx != null ? drawingByIndex.get(idx) : null;
-					if (drawingRelId != null) {
-						DocxRelTarget drawingRel = relationships.get(drawingRelId);
-						String svgFile = SmartArtRenderer.render(zipFile, drawingRel.target(),
-								mediaDir, 5486400, 3200400, themeColors);
-						if (svgFile != null) {
-							// Key by diagramData rel ID — matches r:dm in dgm:relIds
-							smartArtSvgs.put(rel.getKey(), svgFile);
-						}
-					}
-				}
-			}
+			Map<String, String> smartArtSvgs = SmartArtRenderer.renderAll(
+					relationships, zipFile, mediaDir, themeColors);
 
 			// Stage 6: Convert document.xml to markdown
 			// Images are extracted to mediaDir and referenced relatively
@@ -211,6 +192,10 @@ public class DocxToMarkdownService {
 
 			return new DocxToMarkdownResult(markdown, tempDir, Collections.unmodifiableList(messages));
 
+		} catch (DocxSecurityException e) {
+			log.warn("DOCX rejected for security reason {}: {}", e.getReason(), docxFile.getName());
+			messages.add(new DocxConversionMessage(Level.ERROR, securityKey(e.getReason())));
+			return new DocxToMarkdownResult("", null, messages);
 		} catch (IOException e) {
 			log.error("Failed to read DOCX file: {}", docxFile.getName(), e);
 			messages.add(new DocxConversionMessage(Level.ERROR,
@@ -224,24 +209,14 @@ public class DocxToMarkdownService {
 		}
 	}
 
-	/**
-	 * Extract the trailing number from a diagram target path.
-	 * E.g., "diagrams/data1.xml" → "1", "diagrams/drawing2.xml" → "2".
-	 */
-	private static String extractDiagramIndex(String target) {
-		if (target == null) return null;
-		int lastSlash = target.lastIndexOf('/');
-		String filename = lastSlash >= 0 ? target.substring(lastSlash + 1) : target;
-		if (filename.endsWith(".xml")) filename = filename.substring(0, filename.length() - 4);
-		StringBuilder digits = new StringBuilder();
-		for (int i = filename.length() - 1; i >= 0; i--) {
-			if (Character.isDigit(filename.charAt(i))) {
-				digits.insert(0, filename.charAt(i));
-			} else {
-				break;
-			}
-		}
-		return digits.isEmpty() ? null : digits.toString();
+	/** Maps a security rejection reason to its dedicated i18n message key. */
+	private static String securityKey(DocxSecurityException.Reason reason) {
+		return switch (reason) {
+			case MACRO_DETECTED -> "docx.convert.error.macro.detected";
+			case ZIP_SLIP       -> "docx.convert.error.zip.slip";
+			case ZIP_BOMB       -> "docx.convert.error.zip.bomb";
+			case ENCRYPTED      -> "docx.convert.error.encrypted";
+		};
 	}
 
 	private static boolean isZipFile(File file) {
@@ -249,6 +224,32 @@ public class DocxToMarkdownService {
 			byte[] magic = new byte[2];
 			int read = fis.read(magic);
 			return read == 2 && magic[0] == 0x50 && magic[1] == 0x4B;
+		} catch (IOException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Detects the OLE2 / Compound File Binary signature
+	 * ({@code D0 CF 11 E0 A1 B1 1A E1}). Encrypted OOXML documents are stored
+	 * as OLE2 compound files rather than ZIP archives, so this signature is a
+	 * reliable indicator of a password-protected / encrypted document.
+	 */
+	private static boolean isOle2File(File file) {
+		byte[] expected = { (byte) 0xD0, (byte) 0xCF, 0x11, (byte) 0xE0,
+			(byte) 0xA1, (byte) 0xB1, 0x1A, (byte) 0xE1 };
+		try (var fis = new java.io.FileInputStream(file)) { //NOSONAR - intentional inline FQN
+			byte[] magic = new byte[8];
+			int read = fis.read(magic);
+			if (read != 8) {
+				return false;
+			}
+			for (int i = 0; i < 8; i++) {
+				if (magic[i] != expected[i]) {
+					return false;
+				}
+			}
+			return true;
 		} catch (IOException e) {
 			return false;
 		}
