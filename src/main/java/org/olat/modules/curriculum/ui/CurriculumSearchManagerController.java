@@ -241,7 +241,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
 		SelectionValues typesValues = new SelectionValues();
 		for(CurriculumElementType type:types) {
-			typesValues.add(SelectionValues.entry(type.getKey().toString(), type.getDisplayName()));
+			typesValues.add(SelectionValues.entry(type.getKey().toString(), StringHelper.escapeHtml(type.getDisplayName())));
 		}
 		FlexiTableMultiSelectionFilter typeFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
 				FILTER_TYPE, typesValues, true);
