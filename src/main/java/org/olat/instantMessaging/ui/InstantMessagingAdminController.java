@@ -30,12 +30,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.instantMessaging.model.Presence;
 
 /**
  *
@@ -58,6 +60,8 @@ public class InstantMessagingAdminController extends FormBasicController {
 	private MultipleSelectionElement imEnablePrivateEl;
 	private MultipleSelectionElement imEnableGroupPeersEl;
 	private MultipleSelectionElement imEnableOnlineStatusEl;
+	private SingleSelection imDefaultRosterStatusEl;
+	private MultipleSelectionElement imDefaultVisibleToOthersEl;
 	
 	private static String[] enabledKeys = new String[]{"on"};
 	
@@ -130,7 +134,23 @@ public class InstantMessagingAdminController extends FormBasicController {
 		imEnableOnlineStatusEl = uifactory.addCheckboxesHorizontal("im.module.enabled.onlineStatus", messageOptionsFlc, enabledKeys, enabledValues);
 		imEnableOnlineStatusEl.select(enabledKeys[0], imModule.isOnlineStatusEnabled());
 		imEnableOnlineStatusEl.addActionListener(FormEvent.ONCHANGE);
-		
+
+		String[] statusKeys = new String[] {
+			Presence.available.name(), Presence.dnd.name(), Presence.unavailable.name()
+		};
+		String[] statusValues = new String[] {
+			translate("presence.available"), translate("presence.dnd"), translate("presence.unavailable")
+		};
+		imDefaultRosterStatusEl = uifactory.addDropdownSingleselect("im.module.default.roster.status",
+				"im.module.default.roster.status", messageOptionsFlc, statusKeys, statusValues);
+		imDefaultRosterStatusEl.select(imModule.getDefaultRosterStatus(), true);
+		imDefaultRosterStatusEl.addActionListener(FormEvent.ONCHANGE);
+
+		imDefaultVisibleToOthersEl = uifactory.addCheckboxesHorizontal("im.module.default.visible.to.others",
+				messageOptionsFlc, enabledKeys, enabledValues);
+		imDefaultVisibleToOthersEl.select(enabledKeys[0], imModule.isDefaultVisibleToOthers());
+		imDefaultVisibleToOthersEl.addActionListener(FormEvent.ONCHANGE);
+
 		// update GUI dependencies
 		updateDependencies();
 	}
@@ -155,6 +175,8 @@ public class InstantMessagingAdminController extends FormBasicController {
 			imEnablePrivateEl.setEnabled(true);
 			imEnableGroupPeersEl.setEnabled(true);
 			imEnableOnlineStatusEl.setEnabled(true);
+			imDefaultRosterStatusEl.setEnabled(true);
+			imDefaultVisibleToOthersEl.setEnabled(true);
 		} else {
 			// everything is disabled
 			imEnableGroupEl.setEnabled(false);
@@ -166,6 +188,8 @@ public class InstantMessagingAdminController extends FormBasicController {
 			imEnablePrivateEl.setEnabled(false);
 			imEnableGroupPeersEl.setEnabled(false);
 			imEnableOnlineStatusEl.setEnabled(false);
+			imDefaultRosterStatusEl.setEnabled(false);
+			imDefaultVisibleToOthersEl.setEnabled(false);
 		}
 	}
 	
@@ -191,6 +215,10 @@ public class InstantMessagingAdminController extends FormBasicController {
 			imModule.setGroupPeersEnabled(imEnableGroupPeersEl.isSelected(0));
 		} else if(source == imEnableOnlineStatusEl) {
 			imModule.setOnlineStatusEnabled(imEnableOnlineStatusEl.isSelected(0));
+		} else if(source == imDefaultRosterStatusEl) {
+			imModule.setDefaultRosterStatus(imDefaultRosterStatusEl.getSelectedKey());
+		} else if(source == imDefaultVisibleToOthersEl) {
+			imModule.setDefaultVisibleToOthers(imDefaultVisibleToOthersEl.isSelected(0));
 		}
 		// update GUI dependencies
 		updateDependencies();

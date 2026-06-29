@@ -29,8 +29,8 @@ import jakarta.persistence.TypedQuery;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.model.ImPreferencesImpl;
-import org.olat.instantMessaging.model.Presence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +45,8 @@ public class InstantMessagePreferencesDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private InstantMessagingModule imModule;
 	
 	public ImPreferencesImpl createPreferences(Identity identity, String status, boolean visible) {
 		ImPreferencesImpl msg = new ImPreferencesImpl();
@@ -132,7 +134,7 @@ public class InstantMessagePreferencesDAO {
 				.getResultList();
 		
 		if(msgs.isEmpty()) {
-			return createPreferences(identity, Presence.available.name(), true);
+			return createPreferences(identity, imModule.getDefaultRosterStatus(), imModule.isDefaultVisibleToOthers());
 		}
 		return msgs.get(0);
 	}
@@ -144,10 +146,10 @@ public class InstantMessagePreferencesDAO {
 				.setParameter("status", status)
 				.executeUpdate();
 		if(updateRows == 0) {
-			createPreferences(identity, status, true);
+			createPreferences(identity, status, imModule.isDefaultVisibleToOthers());
 		}
 	}
-	
+
 	public void updatePreferences(Identity identity, boolean visible) {
 		int updateRows = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("updateIMPreferencesVisibilityByIdentity")
@@ -155,7 +157,7 @@ public class InstantMessagePreferencesDAO {
 				.setParameter("visible", visible)
 				.executeUpdate();
 		if(updateRows == 0) {
-			createPreferences(identity, Presence.available.name(), visible);
+			createPreferences(identity, imModule.getDefaultRosterStatus(), visible);
 		}
 	}
 	

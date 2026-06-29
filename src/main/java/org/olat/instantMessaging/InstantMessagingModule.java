@@ -57,6 +57,8 @@ public class InstantMessagingModule extends AbstractSpringModule implements Conf
 	private static final String CONFIG_PRIVATE_ENABLED = "im.enabled.private";
 	private static final String CONFIG_ONLINESTATUS_ENABLED = "im.enabled.onlinestatus";
 	private static final String CONFIG_GROUPPEERS_ENABLED = "im.enabled.grouppeers";
+	private static final String CONFIG_DEFAULT_ROSTER_STATUS = "im.default.roster.status";
+	private static final String CONFIG_DEFAULT_VISIBLE_TO_OTHERS = "im.default.visibleToOthers";
 
 	@Value("${instantMessaging.enable}")
 	private boolean enabled;
@@ -70,6 +72,10 @@ public class InstantMessagingModule extends AbstractSpringModule implements Conf
 	private boolean privateEnabled = true;
 	private boolean onlineStatusEnabled = true;
 	private boolean groupPeersEnabled = true;
+	@Value("${im.default.roster.status:available}")
+	private String defaultRosterStatus;
+	@Value("${im.default.visibleToOthers:true}")
+	private boolean defaultVisibleToOthers;
 	
 	@Autowired
 	public InstantMessagingModule(CoordinatorManager coordinatorManager) {
@@ -117,6 +123,14 @@ public class InstantMessagingModule extends AbstractSpringModule implements Conf
 		enabledObj = getStringPropertyValue(CONFIG_GROUPPEERS_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			groupPeersEnabled = "true".equals(enabledObj);
+		}
+		String defaultStatusObj = getStringPropertyValue(CONFIG_DEFAULT_ROSTER_STATUS, true);
+		if(StringHelper.containsNonWhitespace(defaultStatusObj)) {
+			defaultRosterStatus = defaultStatusObj;
+		}
+		String defaultVisibleObj = getStringPropertyValue(CONFIG_DEFAULT_VISIBLE_TO_OTHERS, true);
+		if(StringHelper.containsNonWhitespace(defaultVisibleObj)) {
+			defaultVisibleToOthers = "true".equals(defaultVisibleObj);
 		}
 	}
 
@@ -279,5 +293,21 @@ public class InstantMessagingModule extends AbstractSpringModule implements Conf
 
 	public void setGroupPeersEnabled(boolean enabled) {
 		setStringProperty(CONFIG_GROUPPEERS_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public String getDefaultRosterStatus() {
+		return defaultRosterStatus;
+	}
+
+	public void setDefaultRosterStatus(String status) {
+		setStringProperty(CONFIG_DEFAULT_ROSTER_STATUS, status, true);
+	}
+
+	public boolean isDefaultVisibleToOthers() {
+		return defaultVisibleToOthers;
+	}
+
+	public void setDefaultVisibleToOthers(boolean visible) {
+		setStringProperty(CONFIG_DEFAULT_VISIBLE_TO_OTHERS, Boolean.toString(visible), true);
 	}
 }
