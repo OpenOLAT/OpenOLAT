@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
@@ -113,7 +114,8 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 	private static final String FILTER_CURRICULUM = "Curriculum";
 	
 	private FlexiFiltersTab allTab;
-	
+
+	private FormLink bulkChangeTypeButton;
 	private FlexiTableElement tableEl;
 	private CurriculumElementSearchDataModel tableModel;
 	private FlexiTableExtendedFilter typeFilterEl;
@@ -124,6 +126,7 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 	private ReferencesController referencesCtrl;
 	private CurriculumDetailsController detailsCurriculumCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private ChangeCurriculumElementTypeController bulkChangeTypeCtrl;
 	private ConfirmDeleteCurriculumElementController confirmDeleteCtrl;
 	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
 	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
@@ -229,6 +232,12 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 		initFiltersPresets();
 		
 		tableEl.setSelectedFilterTab(ureq, allTab);
+		
+		if(secCallback.canEditCurriculumElements()) {
+			bulkChangeTypeButton = uifactory.addFormLink("type.bulk.change", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkChangeTypeButton);
+			tableEl.setMultiSelect(true);
+		}
 	}
 	
 	private void initFilters() {
@@ -263,7 +272,7 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
 		SelectionValues typesValues = new SelectionValues();
 		for(CurriculumElementType type:types) {
-			typesValues.add(SelectionValues.entry(type.getKey().toString(), type.getDisplayName()));
+			typesValues.add(SelectionValues.entry(type.getKey().toString(), StringHelper.escapeHtml(type.getDisplayName())));
 		}
 		FlexiTableMultiSelectionFilter typeFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
 				FILTER_TYPE, typesValues, true);
@@ -312,7 +321,7 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if( confirmDeleteCtrl == source) {
+		if( confirmDeleteCtrl == source || bulkChangeTypeCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				doSearch(tableEl.getQuickSearchString(), tableEl.getFilters());
 			}
@@ -354,11 +363,13 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 	private void cleanUp() {
 		removeAsListenerAndDispose(curriculumStructureCalloutCtrl);
 		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
+		removeAsListenerAndDispose(bulkChangeTypeCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(referencesCtrl);
 		removeAsListenerAndDispose(cmc);
 		curriculumStructureCalloutCtrl = null;
 		bulkDeleteConfirmationCtrl = null;
+		bulkChangeTypeCtrl = null;
 		toolsCalloutCtrl = null;
 		referencesCtrl = null;
 		cmc = null;
@@ -366,7 +377,9 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(bulkChangeTypeButton == source) {
+			doBulkChangeType(ureq);
+		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if(CMD_SELECT.equals(cmd)) {
@@ -588,6 +601,29 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 				curriculumStructureCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", settings);
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
+	}
+	
+	private void doBulkChangeType(UserRequest ureq) {
+		List<CurriculumElement> curriculumElements =  tableEl.getMultiSelectedIndex().stream()
+				.map(index  -> tableModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.map(CurriculumElementSearchRow::getCurriculumElement)
+				.filter(element -> secCallback.canEditCurriculumElement(element))
+				.filter(element -> !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type))
+				.toList();
+		
+		if(curriculumElements.isEmpty()) {
+			showWarning("curriculums.elements.bulk.change.type.empty.selection");
+		} else {
+			bulkChangeTypeCtrl = new ChangeCurriculumElementTypeController(ureq, getWindowControl(), curriculumElements);
+			listenTo(bulkChangeTypeCtrl);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					bulkChangeTypeCtrl.getInitialComponent(),
+					true, translate("type.bulk.change.title"), true);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doOpenTools(UserRequest ureq, CurriculumElementSearchRow row, FormLink link) {

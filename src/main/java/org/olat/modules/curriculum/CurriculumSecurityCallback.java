@@ -46,6 +46,11 @@ public interface CurriculumSecurityCallback {
 	
 	boolean canManagerCurriculumUsers();
 	
+	/**
+	 * @return true if can edit at least on element
+	 */
+	boolean canEditCurriculumElements();
+	
 	boolean canNewCurriculumElement(Curriculum curriculum);
 	
 	boolean canEditCurriculumElements(Curriculum curriculum);
