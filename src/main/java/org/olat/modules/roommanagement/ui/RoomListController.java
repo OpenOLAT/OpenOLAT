@@ -648,7 +648,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			wrapper.setPrivateEventsVisible(true);
 			String colorCss = StringHelper.containsNonWhitespace(building.getColorCss())
 					? building.getColorCss() : colorService.getDefaultColor();
-			wrapper.setCssClass("o_color_background o_color_border_darken " + colorCss);
+			wrapper.setCssClass("o_color_background_pastel o_color_border " + colorCss);
 			wrappers.add(wrapper);
 		}
 
