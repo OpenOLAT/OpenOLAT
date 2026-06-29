@@ -67,7 +67,7 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>7.0.8</org.springframework.version>
-		<org.hibernate.version>7.4.2.Final</org.hibernate.version>
+		<org.hibernate.version>7.4.3.Final</org.hibernate.version>
 		<org.hibernate.validator.version>9.1.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.9</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.2.2</apache.cxf>
@@ -1687,7 +1687,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>4.2.5</version>
+			<version>4.3.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2421,7 +2421,7 @@
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-embeddings</artifactId>
-			<version>${dev.langchain4j}-beta26</version>
+			<version>${dev.langchain4j}-beta27</version>
 		</dependency>
 		<!-- end AI API -->
 
