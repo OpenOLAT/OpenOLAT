@@ -322,7 +322,7 @@ public class InstantMessagingMainController extends BasicController implements G
 			imStatus = status;
 		}
 		if(imStatus == null) {
-			imStatus = Presence.available.name();
+			imStatus = imModule.getDefaultRosterStatus();
 			imService.updateStatus(getIdentity(), imStatus);
 		}
 		String cssClass = "o_icon o_icon_status_" + imStatus;
