@@ -387,9 +387,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	}
 
 	private static boolean bookingsOverlap(RoomBooking a, RoomBooking b) {
-		if (a.getStartDate() == null || a.getEndDate() == null) return false;
-		if (b.getStartDate() == null || b.getEndDate() == null) return false;
-		return a.getStartDate().before(b.getEndDate()) && a.getEndDate().after(b.getStartDate());
+		return RoomUIHelper.bookingsOverlap(a, b);
 	}
 
 	private Set<Long> getSelectedLongKeys(String filterId) {

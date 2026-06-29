@@ -21,6 +21,7 @@ package org.olat.modules.roommanagement.ui;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
@@ -42,6 +43,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.model.RoomRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +58,8 @@ public class RoomCalendarController extends FormBasicController {
 
 	@Autowired
 	private RoomManagementService roomManagementService;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private CalendarModule calendarModule;
 	@Autowired
@@ -74,13 +78,18 @@ public class RoomCalendarController extends FormBasicController {
 		Kalendar calendar = new Kalendar(calId, "Room");
 
 		List<RoomBooking> bookings = roomManagementService.getBookingsForRoom(new RoomRefImpl(room.getKey()), null, null);
+		Set<Long> bookingKeysWithWarnings = RoomUIHelper.computeBookingKeysWithWarnings(bookings, lectureService);
 		for (RoomBooking booking : bookings) {
 			if (booking.getStartDate() == null || booking.getEndDate() == null) continue;
 			String subject = resolveSubject(booking);
 			String eventId = CodeHelper.getGlobalForeverUniqueID();
 			ZonedDateTime zStart = DateUtils.toZonedDateTime(booking.getStartDate(), calendarModule.getDefaultZoneId());
 			ZonedDateTime zEnd = DateUtils.toZonedDateTime(booking.getEndDate(), calendarModule.getDefaultZoneId());
-			calendar.addEvent(new KalendarEvent(eventId, null, subject, zStart, zEnd));
+			KalendarEvent event = new KalendarEvent(eventId, null, subject, zStart, zEnd);
+			if (bookingKeysWithWarnings.contains(booking.getKey())) {
+				event.setComment("warning");
+			}
+			calendar.addEvent(event);
 		}
 
 		String displayName = StringHelper.containsNonWhitespace(room.getExternalRef())
@@ -91,7 +100,7 @@ public class RoomCalendarController extends FormBasicController {
 		Building building = room.getBuilding();
 		String colorCss = building != null && StringHelper.containsNonWhitespace(building.getColorCss())
 				? building.getColorCss() : colorService.getDefaultColor();
-		wrapper.setCssClass("o_color_background_pastel o_color_border " + colorCss);
+		wrapper.setCssClass("o_rm_cal_pastel o_color_border " + colorCss);
 
 		FullCalendarElement calendarEl = new FullCalendarElement(ureq, "roomCalendar", List.of(wrapper), getTranslator());
 		calendarEl.setView(FullCalendarViews.timeGridWeek);

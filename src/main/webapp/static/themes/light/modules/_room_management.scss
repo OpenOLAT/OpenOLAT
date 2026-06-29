@@ -338,61 +338,112 @@
 	}
 }
 
-.o_color_background_pastel {
+/*
+ * Styling for calendars in room management:
+ */
+.o_rm_cal_pastel {
 	
 	&.fc-timegrid-event {
-		border-radius: $border-radius-large;
-	}
+		border-radius: $border-radius-base;
 
-	div.fc-event-main {
-		color: $text-color;
-		padding: 4px;
+		div.fc-event-main {
+			color: $text-color;
+			padding: 4px 4px 3px 4px;
+		}
+	}
+	
+	&.fc-daygrid-event {
+		border-radius: $border-radius-small;
+
+		div.fc-event-main {
+			color: $text-color;
+			padding: 2px 2px 1px 2px;
+		}
 	}
 
 	&.o_color_lightgray {
 		background-color: mix(white, $o-color-light-gray, 75%);
+		
+		.fc-list-event-dot {
+			border-color: $o-color-light-gray;
+		}
 	}
 	&.o_color_yellow {
 		background-color: mix(white, $o-color-yellow, 75%);
+
+		.fc-list-event-dot {
+			border-color: $o-color-yellow;
+		}
 	}
 	&.o_color_orange {
 		background-color: mix(white, $o-color-orange, 75%);
+
+		.fc-list-event-dot {
+			border-color: $o-color-orange;
+		}
 	}
 	&.o_color_brown {
 		background-color: mix(white, $o-color-brown, 75%);
+
+		.fc-list-event-dot {
+			border-color: $o-color-brown;
+		}
 	}
 	&.o_color_red {
 		background-color: mix(white, $o-color-red, 75%);
+		
+		.fc-list-event-dot {
+			border-color: $o-color-red;
+		}
 	}
 	&.o_color_orchid {
 		background-color: mix(white, $o-color-orchid, 75%);
+
+		.fc-list-event-dot {
+			border-color: $o-color-orchid;
+		}
 	}
 	&.o_color_purple {
 		background-color: mix(white, $o-color-purple, 75%);
+
+		.fc-list-event-dot {
+			border-color: $o-color-purple;
+		}
 	}
 	&.o_color_lightblue {
 		background-color: mix(white, $o-color-light-blue, 75%);
+
+		.fc-list-event-dot {
+			border-color: $o-color-light-blue;
+		}
 	}
 	&.o_color_cobaltblue {
 		background-color: mix(white, $o-color-cobalt-blue, 75%);
+
+		.fc-list-event-dot {
+			border-color: $o-color-cobalt-blue;
+		}
 	}
 	&.o_color_darkblue {
 		background-color: mix(white, $o-color-dark-blue, 75%);
+
+		.fc-list-event-dot {
+			border-color: $o-color-dark-blue;
+		}
 	}
 	&.o_color_lightgreen {
 		background-color: mix(white, $o-color-light-green, 75%);
+
+		.fc-list-event-dot {
+			border-color: $o-color-light-green;
+		}
 	}
 	&.o_color_seagreen {
 		background-color: mix(white, $o-color-sea-green, 75%);
-	}
-	&.o_color_gold {
-		background-color: mix(white, $o-color-gold, 75%);
-	}
-	&.o_color_silver {
-		background-color: mix(white, $o-color-silver, 75%);
-	}
-	&.o_color_bronze {
-		background-color: mix(white, $o-color-bronze, 75%);
+
+		.fc-list-event-dot {
+			border-color: $o-color-sea-green;
+		}
 	}
 }
 

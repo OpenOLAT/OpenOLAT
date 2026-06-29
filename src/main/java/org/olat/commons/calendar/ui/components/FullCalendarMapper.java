@@ -190,7 +190,10 @@ public class FullCalendarMapper implements Mapper {
 		if(event.getLocation() != null) {
 			jsonEvent.put("location", event.getLocation());
 		}
-		
+		if("warning".equals(event.getComment())) {
+			jsonEvent.put("hasWarning", true);
+		}
+
 		return jsonEvent;
 	}
 	

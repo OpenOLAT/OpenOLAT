@@ -88,6 +88,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomRef;
 import org.olat.modules.roommanagement.RoomStatus;
@@ -131,6 +132,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 
 	@Autowired
 	private CalendarModule calendarModule;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private RoomManagementService roomManagementService;
 	@Autowired
@@ -612,6 +615,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		List<RoomBooking> visibleBookings = allBookings.stream()
 				.filter(b -> b.getRoom() != null && roomByKey.containsKey(b.getRoom().getKey()))
 				.toList();
+		Set<Long> bookingKeysWithWarnings = RoomUIHelper.computeBookingKeysWithWarnings(visibleBookings, lectureService);
 
 		// Group bookings by building key
 		Map<Long, List<RoomBooking>> bookingsByBuildingKey = new LinkedHashMap<>();
@@ -635,7 +639,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			String calId = "rooms.building." + buildingKey;
 			Kalendar calendar = new Kalendar(calId, "Room");
 			for (RoomBooking booking : buildingBookings) {
-				addCalendarEvent(calendar, booking, roomByKey);
+				addCalendarEvent(calendar, booking, roomByKey, bookingKeysWithWarnings);
 			}
 
 			String displayName = StringHelper.containsNonWhitespace(building.getExternalRef())
@@ -648,7 +652,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			wrapper.setPrivateEventsVisible(true);
 			String colorCss = StringHelper.containsNonWhitespace(building.getColorCss())
 					? building.getColorCss() : colorService.getDefaultColor();
-			wrapper.setCssClass("o_color_background_pastel o_color_border " + colorCss);
+			wrapper.setCssClass("o_rm_cal_pastel o_color_border " + colorCss);
 			wrappers.add(wrapper);
 		}
 
@@ -656,26 +660,31 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			String calId = "rooms.nobuilding";
 			Kalendar calendar = new Kalendar(calId, "Room");
 			for (RoomBooking booking : bookingsWithoutBuilding) {
-				addCalendarEvent(calendar, booking, roomByKey);
+				addCalendarEvent(calendar, booking, roomByKey, bookingKeysWithWarnings);
 			}
 			KalendarRenderWrapper wrapper = new KalendarRenderWrapper(calendar, "", calId);
 			wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 			wrapper.setPrivateEventsVisible(true);
-			wrapper.setCssClass("o_color_background o_color_border_darken " + colorService.getDefaultColor());
+			wrapper.setCssClass("o_rm_cal_pastel o_color_border " + colorService.getDefaultColor());
 			wrappers.add(wrapper);
 		}
 
 		calendarEl.setCalendars(wrappers);
 	}
 
-	private void addCalendarEvent(Kalendar calendar, RoomBooking booking, Map<Long, Room> roomByKey) {
+	private void addCalendarEvent(Kalendar calendar, RoomBooking booking, Map<Long, Room> roomByKey,
+			Set<Long> bookingKeysWithWarnings) {
 		if (booking.getStartDate() == null || booking.getEndDate() == null) return;
 		Room room = roomByKey.get(booking.getRoom().getKey());
 		String subject = resolveCalendarSubject(booking, room);
 		String eventId = CodeHelper.getGlobalForeverUniqueID();
 		ZonedDateTime zStart = DateUtils.toZonedDateTime(booking.getStartDate(), calendarModule.getDefaultZoneId());
 		ZonedDateTime zEnd = DateUtils.toZonedDateTime(booking.getEndDate(), calendarModule.getDefaultZoneId());
-		calendar.addEvent(new KalendarEvent(eventId, null, subject, zStart, zEnd));
+		KalendarEvent event = new KalendarEvent(eventId, null, subject, zStart, zEnd);
+		if (bookingKeysWithWarnings.contains(booking.getKey())) {
+			event.setComment("warning");
+		}
+		calendar.addEvent(event);
 	}
 
 	private String resolveCalendarSubject(RoomBooking booking, Room room) {
