@@ -118,7 +118,15 @@ public class FullCalendarElement extends FormItemImpl implements Disposable {
 	public void setDifferentiateLiveStreams(boolean differentiateLiveStreams) {
 		component.setDifferentiateLiveStreams(differentiateLiveStreams);
 	}
-	
+
+	public boolean isShowEventDuration() {
+		return component.isShowEventDuration();
+	}
+
+	public void setShowEventDuration(boolean showEventDuration) {
+		component.setShowEventDuration(showEventDuration);
+	}
+
 	public KalendarRenderWrapper getCalendar(String calendarID) {
 		return component.getCalendar(calendarID);
 	}

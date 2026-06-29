@@ -65,6 +65,7 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 	private boolean aggregatedFeedEnabled;
 	private boolean differentiateManagedEvents;
 	private boolean differentiateLiveStreams;
+	private boolean showEventDuration;
 	
 	private final MapperKey mapperKey;
 	private final FullCalendarElement calendarEl;
@@ -147,6 +148,14 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 
 	public void setDifferentiateLiveStreams(boolean differentiateLiveStreams) {
 		this.differentiateLiveStreams = differentiateLiveStreams;
+	}
+
+	public boolean isShowEventDuration() {
+		return showEventDuration;
+	}
+
+	public void setShowEventDuration(boolean showEventDuration) {
+		this.showEventDuration = showEventDuration;
 	}
 
 	public List<KalendarRenderWrapper> getAlwaysVisibleCalendars() {

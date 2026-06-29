@@ -168,8 +168,18 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("   ],\n")
 		  .append("   eventDidMount: function(info) {\n")
-		  .append("     info.el.setAttribute('id', 'o_cev_' + info.view.type + '_' + info.event.id + '-' + (++count));\n")
-		  .append("     if(info.view.type.lastIndexOf('list', 0) === 0) {\n")
+		  .append("     info.el.setAttribute('id', 'o_cev_' + info.view.type + '_' + info.event.id + '-' + (++count));\n");
+		if(fcC.isShowEventDuration()) {
+			sb.append("     var durationStr = '';\n")
+			  .append("     if(info.event.end && info.event.start) {\n")
+			  .append("       var dMins = Math.round((info.event.end - info.event.start) / 60000);\n")
+			  .append("       var dH = Math.floor(dMins / 60), dM = dMins % 60;\n")
+			  .append("       if(dH > 0 && dM > 0) { durationStr = dH + 'h ' + dM + 'm'; }\n")
+			  .append("       else if(dH > 0) { durationStr = dH + 'h'; }\n")
+			  .append("       else if(dM > 0) { durationStr = dM + 'm'; }\n")
+			  .append("     }\n");
+		}
+		sb.append("     if(info.view.type.lastIndexOf('list', 0) === 0) {\n")
 		  .append("       if(info.event.extendedProps.location !== 'undefined' && info.event.extendedProps.location != null && info.event.extendedProps.location.length > 0) {\n")
 		  .append("         jQuery(info.el).append('<td class=\"fc-list-event-location\"><span><i class=\"o_icon o_icon_home\"> </i> ' + o_escapeHtml(info.event.extendedProps.location) + '</span></td>');\n")
 		  .append("       } else {\n")
@@ -179,13 +189,25 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		  .append("       if(info.event.extendedProps.hasWarning) {\n")
 		  .append("         var timeEl = info.el.querySelector('.fc-list-event-time');\n")
 		  .append("         if(timeEl) { timeEl.insertAdjacentHTML('afterbegin', '<i class=\"o_icon o_icon_warn\"> </i>&nbsp;'); }\n")
-		  .append("       }\n")
-		  .append("     } else {\n")
+		  .append("       }\n");
+		if(fcC.isShowEventDuration()) {
+			sb.append("       if(durationStr) {\n")
+			  .append("         var dtEl = info.el.querySelector('.fc-list-event-time');\n")
+			  .append("         if(dtEl) dtEl.insertAdjacentText('beforeend', ', ' + durationStr);\n")
+			  .append("       }\n");
+		}
+		sb.append("     } else {\n")
 		  .append("       if(info.event.extendedProps.hasWarning) {\n")
 		  .append("         var timeEl = info.el.querySelector('.fc-event-time');\n")
 		  .append("         if(timeEl) { timeEl.insertAdjacentHTML('afterbegin', '<i class=\"o_icon o_icon_warn\"> </i>&nbsp;'); }\n")
-		  .append("       }\n")
-		  .append("     }\n")
+		  .append("       }\n");
+		if(fcC.isShowEventDuration()) {
+			sb.append("       if(durationStr) {\n")
+			  .append("         var dtEl = info.el.querySelector('.fc-event-time');\n")
+			  .append("         if(dtEl) dtEl.insertAdjacentText('beforeend', ', ' + durationStr);\n")
+			  .append("       }\n");
+		}
+		sb.append("     }\n")
 		  .append("   },\n")
 		  .append("   viewDidMount: function(info) {\n")
 		 .append("     jQuery('button.fc-print-button').attr('id','").append(printId).append("').attr('title','").append(translator.translate("print")).append("')\n")

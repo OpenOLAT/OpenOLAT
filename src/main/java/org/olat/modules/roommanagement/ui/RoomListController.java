@@ -188,6 +188,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		tableEl.setDetailsRenderer(detailsVC, this);
 
 		calendarEl = new FullCalendarElement(ureq, RoomCalendarRenderer.CALENDAR_ITEM_NAME, new ArrayList<>(), getTranslator());
+		calendarEl.setShowEventDuration(true);
 		formLayout.add(RoomCalendarRenderer.CALENDAR_ITEM_NAME, calendarEl);
 
 		initFilters();

@@ -104,6 +104,7 @@ public class RoomCalendarController extends FormBasicController {
 
 		FullCalendarElement calendarEl = new FullCalendarElement(ureq, "roomCalendar", List.of(wrapper), getTranslator());
 		calendarEl.setView(FullCalendarViews.timeGridWeek);
+		calendarEl.setShowEventDuration(true);
 		formLayout.add(calendarEl);
 	}
 
