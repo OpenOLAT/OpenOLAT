@@ -93,7 +93,7 @@
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.36</qtiworks.version>
 		<org.commonmark>0.29.0</org.commonmark>
-		<dev.langchain4j>1.16.3</dev.langchain4j>
+		<dev.langchain4j>1.17.0</dev.langchain4j>
 		
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
