@@ -174,6 +174,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 				"guidemo.form.color", form, colors);
 		colorPickerElement.addActionListener(FormEvent.ONCHANGE);
 		colorPickerElement.setNonSelectedText(getTranslator().translate("guidemo.cbdropdown.non.selected"));
+		colorPickerElement.setColor(colorService.getDefaultColor());
 	}
 
 	/**
