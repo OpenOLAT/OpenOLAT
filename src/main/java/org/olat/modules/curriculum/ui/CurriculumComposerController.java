@@ -113,7 +113,6 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
-import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -194,6 +193,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private FormLink bulkCreateToDoButton;
 	private FormLink bulkExportButton;
 	private FormLink bulkDeleteButton;
+	private FormLink bulkChangeTypeButton;
 	private DropdownItem newElementMenu;
 	private FormLink newGenericElementButton;
 	
@@ -207,6 +207,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private MoveCurriculumElementController moveElementCtrl;
 	private ConfirmDeleteCurriculumElementController confirmDeleteCtrl;
 	private CurriculumElementCalendarController calendarsCtrl;
+	private ChangeCurriculumElementTypeController bulkChangeTypeCtrl;
 	private CurriculumElementPreviewListController qualityPreviewCtrl;
 	private CurriculumElementLearningPathController learningPathController;
 	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
@@ -228,8 +229,6 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	@Autowired
 	private ACService acService;
-	@Autowired
-	private CurriculumElementToDoProvider toDoProvider;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
 	@Autowired
@@ -462,17 +461,20 @@ public class CurriculumComposerController extends FormBasicController implements
 		bulkCreateToDoButton.setVisible(false);
 		tableEl.addBatchButton(bulkCreateToDoButton);
 		tableEl.setMultiSelect(true);
+		
+		if(secCallback.canEditCurriculumElements(curriculum)) {
+			bulkChangeTypeButton = uifactory.addFormLink("type.bulk.change", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkChangeTypeButton);
+		}
 
 		if(rootElement == null && secCallback.canExportCurriculums()) {
 			bulkExportButton = uifactory.addFormLink("export", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkExportButton);
-			tableEl.setMultiSelect(true);
 		}
 		
 		if(secCallback.canNewCurriculumElement(curriculum) && config.isFlat()) {
 			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkDeleteButton);
-			tableEl.setMultiSelect(true);
 		}
 	}
 	
@@ -987,7 +989,7 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(newElementCtrl == source || newSubElementCtrl == source
+		if(newElementCtrl == source || newSubElementCtrl == source || bulkChangeTypeCtrl == source
 				|| moveElementCtrl == source || confirmDeleteCtrl == source
 				|| bulkDeleteConfirmationCtrl == source || bulkCreateToDoCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -1037,6 +1039,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		removeAsListenerAndDispose(curriculumStructureCalloutCtrl);
 		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
 		removeAsListenerAndDispose(bulkCreateToDoCtrl);
+		removeAsListenerAndDispose(bulkChangeTypeCtrl);
 		removeAsListenerAndDispose(copyElementCtrl);
 		removeAsListenerAndDispose(newSubElementCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
@@ -1048,6 +1051,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		curriculumStructureCalloutCtrl = null;
 		bulkDeleteConfirmationCtrl = null;
 		bulkCreateToDoCtrl = null;
+		bulkChangeTypeCtrl = null;
 		copyElementCtrl = null;
 		newSubElementCtrl = null;
 		toolsCalloutCtrl = null;
@@ -1109,6 +1113,8 @@ public class CurriculumComposerController extends FormBasicController implements
 			doConfirmBulkDelete(ureq);
 		} else if(bulkExportButton == source) {
 			doBulkExport(ureq);
+		} else if(bulkChangeTypeButton == source) {
+			doBulkChangeType(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
@@ -1498,6 +1504,29 @@ public class CurriculumComposerController extends FormBasicController implements
 				true, translate("todo.bulk.create.title"), true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doBulkChangeType(UserRequest ureq) {
+		List<CurriculumElement> curriculumElements =  tableEl.getMultiSelectedIndex().stream()
+				.map(index  -> tableModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.map(CurriculumElementRow::getCurriculumElement)
+				.filter(element -> secCallback.canEditCurriculumElement(element))
+				.filter(element -> !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type))
+				.toList();
+		
+		if(curriculumElements.isEmpty()) {
+			showWarning("curriculums.elements.bulk.change.type.empty.selection");
+		} else {
+			bulkChangeTypeCtrl = new ChangeCurriculumElementTypeController(ureq, getWindowControl(), curriculumElements);
+			listenTo(bulkChangeTypeCtrl);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					bulkChangeTypeCtrl.getInitialComponent(),
+					true, translate("type.bulk.change.title"), true);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 
 	private void doBulkExport(UserRequest ureq) {

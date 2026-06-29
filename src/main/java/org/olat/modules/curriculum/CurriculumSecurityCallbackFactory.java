@@ -126,6 +126,11 @@ public class CurriculumSecurityCallbackFactory {
 			return admin
 					|| (curriculumElement != null && ownedCurriculumKeys.contains(curriculumElement.getCurriculum().getKey()));
 		}
+		
+		@Override
+		public boolean canEditCurriculumElements() {
+			return admin || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
+		}
 
 		@Override
 		public boolean canEditCurriculumElements(Curriculum curriculum) {
