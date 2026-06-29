@@ -84,7 +84,11 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("<i class='o_icon o_icon-fw o_icon_caret o_color_picker_icon'></i>");
 
 		sb.append("<input type='hidden' id='").append(inputId).append("' name='").append(inputId)
-				.append("' value='").append(selectedColor != null ? selectedColor.id() : "").append("'>");
+				.append("' value='")
+				.append(selectedColor != null ? selectedColor.id() : "")
+				.append("' cssclass='")
+				.append(selectedColor != null ? selectedColor.cssClass() : "")
+				.append("'>");
 
 		sb.append("</button>");
 
@@ -108,7 +112,8 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("</div>"); // dropdown
 		sb.append("</div>"); // o_color_picker_wrapper
 
-		sb.append("<script>");
+		sb.append("<script>\n");
+		sb.append("\"use strict\";\n");
 		sb.append("function o_cp_set_color(colorId, text, buttonId, inputId, dropdownId, formDispatchFieldId, cssClass) {\n");
 		sb.append("  const hiddenInput = jQuery('#' + inputId);\n");
 		sb.append("  let oldColorId = hiddenInput.val();\n");
