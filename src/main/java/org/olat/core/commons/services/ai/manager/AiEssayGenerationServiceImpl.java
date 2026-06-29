@@ -131,7 +131,9 @@ public class AiEssayGenerationServiceImpl implements AiEssayGenerationService {
 					? "- Understand the key concepts in the provided source material."
 					: "- " + String.join("\n- ", learningObjectives);
 			String targetDifficultyStr = targetDifficulty == null
-					? ""
+					? "No target difficulty was selected: assign each generated question its own difficulty, "
+							+ "spread randomly across the full 1-5 range so the set mixes easy and hard. Set each "
+							+ "question's `difficulty` field accordingly and scale its key points and rubric to that level."
 					: "Target difficulty (1 = easiest, 5 = hardest, on a Bloom-aware scale): " + targetDifficulty
 					  + ". Each generated question's `difficulty` field should match this target as closely as possible.";
 			String languageName = language == null ? "English" : language.getDisplayLanguage(Locale.ENGLISH);

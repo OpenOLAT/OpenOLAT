@@ -98,6 +98,10 @@ final class AiEssayFeedbackViewFlattener {
 		int percent = s.estimatedScorePercent();
 		v.put("assessmentLabel", buildAssessmentLabel(percent, translator));
 		v.put("assessmentClass", assessmentClass(percent));
+		// Radial-progress score box (shown in both feedback views). Empty percent string
+		// when out of [0,100] so the template can hide the box with a non-empty check.
+		v.put("assessmentPercent", percent < 0 || percent > 100 ? "" : String.valueOf(percent));
+		v.put("assessmentRadialClass", radialClass(percent));
 
 		// Student-facing feedback block
 		GradingSuggestion.StudentFeedback fb = s.feedbackToStudent();
@@ -296,13 +300,14 @@ final class AiEssayFeedbackViewFlattener {
 	}
 
 	/**
-	 * Bucket boundaries (inclusive lower, inclusive upper):
+	 * Bucket boundaries (inclusive lower, inclusive upper). Thresholds are deliberately
+	 * forgiving for a formative practice setting (pass line at 40):
 	 * <ul>
-	 *   <li>85..100 → ai.essay.correction.assessment.verygood</li>
-	 *   <li>70..84  → ai.essay.correction.assessment.good</li>
-	 *   <li>50..69  → ai.essay.correction.assessment.mediocre</li>
-	 *   <li>25..49  → ai.essay.correction.assessment.insufficient</li>
-	 *   <li>0..24   → ai.essay.correction.assessment.wrong</li>
+	 *   <li>70..100 → ai.essay.correction.assessment.verygood</li>
+	 *   <li>55..69  → ai.essay.correction.assessment.good</li>
+	 *   <li>40..54  → ai.essay.correction.assessment.mediocre</li>
+	 *   <li>20..39  → ai.essay.correction.assessment.insufficient</li>
+	 *   <li>0..19   → ai.essay.correction.assessment.wrong</li>
 	 * </ul>
 	 * Returns {@code null} for values outside [0,100].
 	 */
@@ -310,16 +315,16 @@ final class AiEssayFeedbackViewFlattener {
 		if (percent < 0 || percent > 100) {
 			return null;
 		}
-		if (percent >= 85) {
+		if (percent >= 70) {
 			return "ai.essay.correction.assessment.verygood";
 		}
-		if (percent >= 70) {
+		if (percent >= 55) {
 			return "ai.essay.correction.assessment.good";
 		}
-		if (percent >= 50) {
+		if (percent >= 40) {
 			return "ai.essay.correction.assessment.mediocre";
 		}
-		if (percent >= 25) {
+		if (percent >= 20) {
 			return "ai.essay.correction.assessment.insufficient";
 		}
 		return "ai.essay.correction.assessment.wrong";
@@ -346,9 +351,22 @@ final class AiEssayFeedbackViewFlattener {
 	 */
 	static String assessmentClass(int percent) {
 		if (percent < 0 || percent > 100) return "";
-		if (percent >= 85) return "label-success";
-		if (percent >= 50) return "label-info";
-		if (percent >= 25) return "label-warning";
+		if (percent >= 70) return "label-success";
+		if (percent >= 40) return "label-info";
+		if (percent >= 20) return "label-warning";
 		return "label-danger";
+	}
+
+	/**
+	 * Colour variant for the radial-progress score box, by the same forgiving
+	 * thresholds as {@link #bucketKey(int)}: very good → green, pass → blue,
+	 * weak → yellow, wrong → red. Empty when out of [0,100].
+	 */
+	static String radialClass(int percent) {
+		if (percent < 0 || percent > 100) return "";
+		if (percent >= 70) return "radial-progress-success";
+		if (percent >= 40) return "radial-progress-info";
+		if (percent >= 20) return "radial-progress-warning";
+		return "radial-progress-danger";
 	}
 }

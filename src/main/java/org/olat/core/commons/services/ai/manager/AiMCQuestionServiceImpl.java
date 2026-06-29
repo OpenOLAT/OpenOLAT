@@ -104,7 +104,9 @@ public class AiMCQuestionServiceImpl implements AiMCQuestionService {
 					? "UNDERSTAND, APPLY"
 					: bloomLevels.stream().map(Enum::name).reduce((a, b) -> a + ", " + b).orElse("UNDERSTAND");
 			String targetDifficultyStr = targetDifficulty == null
-					? ""
+					? "No target difficulty was selected: vary the difficulty across the generated questions, "
+							+ "spread randomly across the full 1-5 range (1 = easiest, 5 = hardest), calibrating "
+							+ "distractor plausibility and recall depth per question."
 					: "Calibrate distractor plausibility and recall depth to a target difficulty of "
 					  + targetDifficulty + " on a 1-5 scale (1 = easiest, 5 = hardest).";
 			String objectives = learningObjectives == null || learningObjectives.isEmpty()

@@ -105,149 +105,150 @@
 							$r.escapeHtml($aiCorrectionFeedback.rejectionMessage)
 						</div>
 					#else
-						#if($aiCorrectionFeedback.annotatedParagraphs && !$aiCorrectionFeedback.annotatedParagraphs.isEmpty())
-							<div class="o_ai_feedback_view_toggle" role="toolbar" aria-label="$r.escapeHtml($r.translate('ai.essay.feedback.view.title'))">
-								<button type="button" class="btn btn-default btn-xs o_sel_ai_feedback_view"
-										data-target="summary">$r.escapeHtml($r.translate('ai.essay.feedback.view.summary'))</button>
-								<button type="button" class="btn btn-default btn-xs o_sel_ai_feedback_view active"
-										data-target="direct">$r.escapeHtml($r.translate('ai.essay.feedback.view.direct'))</button>
+						#set($hasOverall = ($aiCorrectionFeedback.overallAssessment && $aiCorrectionFeedback.overallAssessment != ""))
+						#if(($aiCorrectionFeedback.assessmentLabel && $aiCorrectionFeedback.assessmentLabel != "") || $hasOverall)
+						<div class="o_essay_ai_correction_assessment">
+							#if($aiCorrectionFeedback.assessmentPercent != "")
+							<span class="radial-progress radial-progress-sm $aiCorrectionFeedback.assessmentRadialClass" data-progress="$aiCorrectionFeedback.assessmentPercent">
+								<svg viewBox='0 0 32 32'><circle r='16' cx='16' cy='16' class='radial-bg'/><circle r='16' cx='16' cy='16' class='radial-bar'/></svg>
+								<span class="percentage"><span class="centeredWrapper"><span class="number"><span>$aiCorrectionFeedback.assessmentPercent%</span></span></span></span>
+							</span>
+							#end
+							<div class="o_essay_ai_correction_assessment_text">
+								#if($aiCorrectionFeedback.assessmentLabel && $aiCorrectionFeedback.assessmentLabel != "")
+								<div class="o_essay_ai_correction_assessment_label">$r.escapeHtml($aiCorrectionFeedback.assessmentLabel)</div>
+								#end
+								#if($hasOverall)
+								<p class="o_essay_ai_correction_overall_text">$r.escapeHtml($aiCorrectionFeedback.overallAssessment)</p>
+								#end
+								#if(($aiCorrectionFeedback.offTopicFlag && $aiCorrectionFeedback.offTopicFlag != "" && $aiCorrectionFeedback.offTopicFlag != "NONE") || ($aiCorrectionFeedback.confidence && $aiCorrectionFeedback.confidence != ""))
+								<div class="o_essay_ai_correction_assessment_meta">
+									#if($aiCorrectionFeedback.offTopicFlag && $aiCorrectionFeedback.offTopicFlag != "" && $aiCorrectionFeedback.offTopicFlag != "NONE")
+										<span class="label label-warning">$r.escapeHtml($aiCorrectionFeedback.offTopicFlag)</span>
+									#end
+									#if($aiCorrectionFeedback.confidence && $aiCorrectionFeedback.confidence != "")
+										<span class="label $aiCorrectionFeedback.confidenceClass">$r.translate('ai.essay.correction.confidence'): $r.escapeHtml($aiCorrectionFeedback.confidence)</span>
+									#end
+								</div>
+								#end
 							</div>
+						</div>
 						#end
-
+						
 						#if($aiCorrectionFeedback.annotatedParagraphs && !$aiCorrectionFeedback.annotatedParagraphs.isEmpty())
-						<div class="o_ai_feedback_view o_ai_feedback_view_direct">
+						<div class="o_ai_feedback_view_direct">
 							#foreach($para in $aiCorrectionFeedback.annotatedParagraphs)
-								<blockquote class="o_ai_essay_direct">
-									<p class="o_ai_para">
-										#foreach($span in $para.spans)
-											#if($span.cssClass == "")
-												$span.text
-											#else
-												<span class="$span.cssClass"#if($span.comment != "") title="$r.escapeHtml($span.comment)"#end>$span.text</span>
-											#end
-										#end
-									</p>
-								</blockquote>
-								#if($para.feedback != "")
-									<aside class="o_ai_paragraph_feedback">$para.feedback</aside>
-								#end
+							<blockquote class="o_ai_essay_direct">
+								<p class="o_ai_para">
+									#foreach($span in $para.spans)
+									#if($span.cssClass == "")
+										$span.text
+									#else
+										<span class="$span.cssClass"#if($span.comment != "") title="$r.escapeHtml($span.comment)"#end>$span.text</span>
+									#end
+									#end
+								</p>
+							</blockquote>
+							#if($para.feedback != "")
+								<aside class="o_ai_paragraph_feedback">$para.feedback</aside>
+							#end
 							#end
 						</div>
-						<div class="o_ai_feedback_view o_ai_feedback_view_summary" style="display:none;">
 						#end
-
-						#if($aiCorrectionFeedback.overallAssessment && $aiCorrectionFeedback.overallAssessment != "")
-							<div class="o_essay_ai_correction_overall"><h5>$r.translate('ai.essay.correction.overall')</h5><p>$r.escapeHtml($aiCorrectionFeedback.overallAssessment)</p></div>
-						#end
-
-						#set($fb = $aiCorrectionFeedback.feedbackToStudent)
-						#if($fb)
-							<div class="o_essay_ai_correction_feedback_student">
-								#if($fb.whatWentWell && $fb.whatWentWell != "")
-									<div class="o_essay_ai_correction_wentwell"><h5>$r.translate('ai.essay.correction.whatwentwell')</h5><p>$r.escapeHtml($fb.whatWentWell)</p></div>
-								#end
-								#if($fb.whatIsMissing && $fb.whatIsMissing != "")
-									<div class="o_essay_ai_correction_missing"><h5>$r.translate('ai.essay.correction.whatismissing')</h5><p>$r.escapeHtml($fb.whatIsMissing)</p></div>
-								#end
-								#if($fb.nextStep && $fb.nextStep != "")
-									<div class="o_essay_ai_correction_nextstep"><h5>$r.translate('ai.essay.correction.nextstep')</h5><p>$r.escapeHtml($fb.nextStep)</p></div>
-								#end
-							</div>
-						#end
-
-						#if($aiCorrectionFeedback.keyPointsHit && !$aiCorrectionFeedback.keyPointsHit.isEmpty())
-							<div class="o_essay_ai_correction_keypoints_hit">
-								<h5>$r.translate('ai.essay.correction.keypoints.hit')</h5>
-								<ul>
-								#foreach($kp in $aiCorrectionFeedback.keyPointsHit)
-									<li>#if($kp.evidence && $kp.evidence != "")$r.escapeHtml($kp.evidence)#end</li>
-								#end
-								</ul>
-							</div>
-						#end
-						#if($aiCorrectionFeedback.keyPointsMissed && !$aiCorrectionFeedback.keyPointsMissed.isEmpty())
-							<div class="o_essay_ai_correction_keypoints_missed">
-								<h5>$r.translate('ai.essay.correction.keypoints.missed')</h5>
-								<ul>
-								#foreach($kp in $aiCorrectionFeedback.keyPointsMissed)
-									<li>#if($kp.reason && $kp.reason != "")$r.escapeHtml($kp.reason)#end</li>
-								#end
-								</ul>
-							</div>
-						#end
-
-						#set($hasLanguageIssues = (($aiCorrectionFeedback.grammarIssues && !$aiCorrectionFeedback.grammarIssues.isEmpty()) || ($aiCorrectionFeedback.spellingIssues && !$aiCorrectionFeedback.spellingIssues.isEmpty())))
-						#if($hasLanguageIssues)
-							<div class="o_essay_ai_correction_language">
-								<h5>$r.translate('ai.essay.correction.language.title')</h5>
-								#if($aiCorrectionFeedback.grammarIssues && !$aiCorrectionFeedback.grammarIssues.isEmpty())
-									<div class="o_essay_ai_correction_grammar">
-										<h5>$r.translate('ai.essay.correction.grammar')</h5>
-										<ul>
-										#foreach($g in $aiCorrectionFeedback.grammarIssues)
-											<li>#if($g.span && $g.span != "")"<em>$r.escapeHtml($g.span)</em>" — #end$r.escapeHtml($g.note)</li>
-										#end
-										</ul>
-									</div>
-								#end
-								#if($aiCorrectionFeedback.spellingIssues && !$aiCorrectionFeedback.spellingIssues.isEmpty())
-									<div class="o_essay_ai_correction_spelling">
-										<h5>$r.translate('ai.essay.correction.spelling')</h5>
-										<ul>
-										#foreach($sp in $aiCorrectionFeedback.spellingIssues)
-											<li>$r.escapeHtml($sp.word) &rarr; <em>$r.escapeHtml($sp.suggestion)</em></li>
-										#end
-										</ul>
-									</div>
-								#end
-							</div>
-						#end
-
-						<div class="o_essay_ai_correction_badges">
-							#if($aiCorrectionFeedback.offTopicFlag && $aiCorrectionFeedback.offTopicFlag != "" && $aiCorrectionFeedback.offTopicFlag != "NONE")
-								<span class="label label-warning">$r.escapeHtml($aiCorrectionFeedback.offTopicFlag)</span>
-							#end
-							#if($aiCorrectionFeedback.confidence && $aiCorrectionFeedback.confidence != "")
-								<span class="label $aiCorrectionFeedback.confidenceClass">$r.translate('ai.essay.correction.confidence'): $r.escapeHtml($aiCorrectionFeedback.confidence)</span>
-							#end
-							#if($aiCorrectionFeedback.assessmentLabel && $aiCorrectionFeedback.assessmentLabel != "")
-								<span class="label $aiCorrectionFeedback.assessmentClass">$r.escapeHtml($aiCorrectionFeedback.assessmentLabel)</span>
-							#end
-						</div>
-
+						
 						#if($aiCorrectionFeedback.warnings && !$aiCorrectionFeedback.warnings.isEmpty())
-							<div class="o_essay_ai_correction_warnings">
-								#foreach($w in $aiCorrectionFeedback.warnings)
-									<div class="alert alert-info">$r.escapeHtml($w.message)</div>
-								#end
-							</div>
+						<div class="o_essay_ai_correction_warnings">
+							#foreach($w in $aiCorrectionFeedback.warnings)
+								<div class="alert alert-info">$r.escapeHtml($w.message)</div>
+							#end
+						</div>
 						#end
-
-						#if($aiCorrectionFeedback.annotatedParagraphs && !$aiCorrectionFeedback.annotatedParagraphs.isEmpty())
-						</div><!-- /.o_ai_feedback_view_summary -->
+						
+						#set($fb = $aiCorrectionFeedback.feedbackToStudent)
+						#set($hasWentWell = ($fb && $fb.whatWentWell && $fb.whatWentWell != ""))
+						#set($hasMissing = ($fb && $fb.whatIsMissing && $fb.whatIsMissing != ""))
+						#set($hasNextStep = ($fb && $fb.nextStep && $fb.nextStep != ""))
+						#set($hasHit = ($aiCorrectionFeedback.keyPointsHit && !$aiCorrectionFeedback.keyPointsHit.isEmpty()))
+						#set($hasMissed = ($aiCorrectionFeedback.keyPointsMissed && !$aiCorrectionFeedback.keyPointsMissed.isEmpty()))
+						#set($hasLanguageIssues = (($aiCorrectionFeedback.grammarIssues && !$aiCorrectionFeedback.grammarIssues.isEmpty()) || ($aiCorrectionFeedback.spellingIssues && !$aiCorrectionFeedback.spellingIssues.isEmpty())))
+						#if($hasWentWell || $hasMissing || $hasNextStep || $hasHit || $hasMissed || $hasLanguageIssues)
+						<div class="o_assistance_accordion o_essay_ai_correction_detailed">
+							<div class="o_items">
+								<div class="o_item">
+									<div class="o_expand_collapse">
+										<a href="#$r.getCId()_aa_detailed" role="button" onkeydown="triggerClick(event, true, true);" data-toggle="collapse" aria-controls="$r.getCId()_aa_detailed" aria-expanded="false" class="collapsed">
+											<span>$r.translate('ai.essay.feedback.detailed')
+												<i class="o_icon o_icon-2x o_icon-fw o_icon_details_expand" title="$r.translateInAttribute('details.expand')" aria-hidden='true'> </i>
+												<i class="o_icon o_icon-2x o_icon-fw o_icon_details_collaps" title="$r.translateInAttribute('details.collapse')" aria-hidden='true'> </i>
+											</span>
+										</a>
+									</div>
+									<div class="o_item_content collapse" id="$r.getCId()_aa_detailed" aria-expanded="false">
+										<div class="o_text_block">
+											#if($hasWentWell)
+											<div class="o_essay_ai_correction_wentwell"><h5>$r.translate('ai.essay.correction.whatwentwell')</h5><p>$r.escapeHtml($fb.whatWentWell)</p></div>
+											#end
+											#if($hasMissing)
+											<div class="o_essay_ai_correction_missing"><h5>$r.translate('ai.essay.correction.whatismissing')</h5><p>$r.escapeHtml($fb.whatIsMissing)</p></div>
+											#end
+											#if($hasNextStep)
+											<div class="o_essay_ai_correction_nextstep"><h5>$r.translate('ai.essay.correction.nextstep')</h5><p>$r.escapeHtml($fb.nextStep)</p></div>
+											#end
+											#if($hasHit)
+											<div class="o_essay_ai_correction_keypoints_hit">
+												<h5>$r.translate('ai.essay.correction.keypoints.hit')</h5>
+												<ul>
+												#foreach($kp in $aiCorrectionFeedback.keyPointsHit)
+													<li>#if($kp.evidence && $kp.evidence != "")$r.escapeHtml($kp.evidence)#end</li>
+												#end
+												</ul>
+											</div>
+											#end
+											#if($hasMissed)
+											<div class="o_essay_ai_correction_keypoints_missed">
+												<h5>$r.translate('ai.essay.correction.keypoints.missed')</h5>
+												<ul>
+												#foreach($kp in $aiCorrectionFeedback.keyPointsMissed)
+													<li>#if($kp.reason && $kp.reason != "")$r.escapeHtml($kp.reason)#end</li>
+												#end
+												</ul>
+											</div>
+											#end
+											#if($hasLanguageIssues)
+											<div class="o_essay_ai_correction_language">
+												<h5>$r.translate('ai.essay.correction.language.title')</h5>
+												#if($aiCorrectionFeedback.grammarIssues && !$aiCorrectionFeedback.grammarIssues.isEmpty())
+												<div class="o_essay_ai_correction_grammar">
+													<h5>$r.translate('ai.essay.correction.grammar')</h5>
+													<ul>
+													#foreach($g in $aiCorrectionFeedback.grammarIssues)
+														<li>#if($g.span && $g.span != "")"<em>$r.escapeHtml($g.span)</em>": #end$r.escapeHtml($g.note)</li>
+													#end
+													</ul>
+												</div>
+												#end
+												#if($aiCorrectionFeedback.spellingIssues && !$aiCorrectionFeedback.spellingIssues.isEmpty())
+												<div class="o_essay_ai_correction_spelling">
+													<h5>$r.translate('ai.essay.correction.spelling')</h5>
+													<ul>
+													#foreach($sp in $aiCorrectionFeedback.spellingIssues)
+														<li>$r.escapeHtml($sp.word) &rarr; <em>$r.escapeHtml($sp.suggestion)</em></li>
+													#end
+													</ul>
+												</div>
+												#end
+											</div>
+											#end
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 						#end
 					#end
 				</div>
 				</div>
 
-				#if($aiCorrectionFeedback && $aiCorrectionFeedback.annotatedParagraphs && !$aiCorrectionFeedback.annotatedParagraphs.isEmpty())
-				<script>
-				(function() {
-					var btns = document.querySelectorAll('.o_essay_ai_correction_box .o_sel_ai_feedback_view');
-					btns.forEach(function(btn) {
-						btn.addEventListener('click', function() {
-							var target = btn.getAttribute('data-target');
-							var box = btn.closest('.o_essay_ai_correction_box');
-							btns.forEach(function(b) { b.classList.remove('active'); });
-							btn.classList.add('active');
-							box.querySelectorAll('.o_ai_feedback_view').forEach(function(view) {
-								view.style.display = view.classList.contains('o_ai_feedback_view_' + target) ? '' : 'none';
-							});
-						});
-					});
-				})();
-				</script>
-				#end
 			#end
 		</div>
 	</div>

@@ -141,6 +141,20 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 			EssayGradingAiService service = builder.build();
 
 			String languageName = language == null ? "English" : language.getDisplayLanguage(Locale.ENGLISH);
+			Integer difficultyLevel = grading.getDifficulty();
+			String difficultyInstruction;
+			if (difficultyLevel != null && difficultyLevel <= 1) {
+				difficultyInstruction = "This is a QUIZ-MODE item (difficulty 1): the expected answer is very "
+						+ "short, a single sentence or even just a few correct keywords is a complete answer. Do "
+						+ "NOT expect an essay. Be especially generous and motivating; if the core idea or the "
+						+ "right keywords are present, score high (85-100) and celebrate what the student got right.";
+			} else if (difficultyLevel != null) {
+				difficultyInstruction = "Question difficulty on a 1-5 scale (1 = very easy / quiz, 5 = hardest): "
+						+ difficultyLevel + ". Calibrate your expectations to this level (easier questions need only "
+						+ "the core idea, harder questions expect fuller coverage) but stay generous and supportive.";
+			} else {
+				difficultyInstruction = "Assume a moderate difficulty and grade generously and supportively.";
+			}
 			GradingSuggestion suggestion = service.gradeEssayAnswer(
 					nullToEmpty(grading.getReferenceExcerpt()),
 					nullToEmpty(grading.getModelAnswer()),
@@ -148,7 +162,8 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 					nullToEmpty(grading.getRubricCriteriaJson()),
 					nullToEmpty(grading.getGradingHints()),
 					nullToEmpty(studentAnswer),
-					languageName);
+					languageName,
+					difficultyInstruction);
 			return new GradingRun(suggestion, loggingModel.getLogKey());
 		} catch (AiEssayGradingException e) {
 			throw e;

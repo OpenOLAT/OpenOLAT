@@ -225,7 +225,8 @@ public class MarkdownImportController extends FormBasicController {
 			aiDifficultyEl = uifactory.addDropdownSingleselect("ai.difficulty", "ai.difficulty.label",
 					formLayout, difficultyKeys, difficultyValues);
 			aiDifficultyEl.setHelpTextKey("ai.difficulty.help", null);
-			aiDifficultyEl.select("unspecified", true);
+			// Page generation defaults to quiz mode (difficulty 1): easy, short-answer questions.
+			aiDifficultyEl.select("1", true);
 
 			// Learning objectives — optional textarea
 			aiObjectivesEl = uifactory.addTextAreaElement("ai.objectives", "ai.objectives.label",
