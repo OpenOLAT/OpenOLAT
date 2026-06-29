@@ -135,7 +135,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.ai.essay.EssayAiGradingPojoTest.class,
 	org.olat.core.commons.services.ai.essay.EssayFormativeFeedbackServiceStaticsTest.class,
 	org.olat.core.commons.services.ai.essay.EssayItemDraftKeyPointTest.class,
-	org.olat.core.commons.services.ai.essay.EssayGenerationTaskTest.class,
+	org.olat.core.commons.services.ai.essay.QtiQuestionGenerationTaskTest.class,
 	org.olat.core.commons.services.ai.essay.FormativeFeedbackFactoryTest.class,
 	org.olat.core.commons.services.ai.essay.GenerationRequestFactoryTest.class,
 	org.olat.core.commons.services.ai.essay.GeneratedItemValidatorTest.class,

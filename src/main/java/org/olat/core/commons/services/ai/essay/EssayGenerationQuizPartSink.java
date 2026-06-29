@@ -34,7 +34,7 @@ import org.olat.core.commons.services.ai.model.MCQuestionData;
  * <p>
  * Implemented by the ceditor module as a Spring {@code @Service} and looked
  * up via {@code CoreSpringFactory} from
- * {@link EssayGenerationService#runTask(EssayGenerationTask)} when a
+ * {@link EssayGenerationService#runTask(QtiQuestionGenerationTask)} when a
  * {@link EssayGenerationService.GenerationRequest} carries both a
  * {@code pageKey} and a {@code quizPartKey}.
  * <p>

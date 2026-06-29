@@ -29,7 +29,7 @@ import org.olat.core.commons.services.ai.content.AiContentHardener;
  *
  * Static sanity checks for {@link EssayItemDraft} instances returned by the
  * generator. Drafts that fail validation are dropped by
- * {@link EssayGenerationService#runTask(EssayGenerationTask)} with the
+ * {@link EssayGenerationService#runTask(QtiQuestionGenerationTask)} with the
  * reasons written to the server log so the author sees exactly why a draft
  * was dropped.
  * <p>

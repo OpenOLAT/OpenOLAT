@@ -136,14 +136,20 @@ public class AiLoggingChatModel implements ChatModel {
 		AiUsageLogImpl log = new AiUsageLogImpl();
 
 		log.setAiFeature(aiFeature);
-		log.setUsageContextType(context.usageContextType());
-		log.setUsageContextId(context.usageContextId());
-		log.setIdentity(context.identity());
-		log.setResourceType(context.resourceType());
-		log.setResourceId(context.resourceId());
-		log.setResourceSubId(context.resourceSubId());
-		if (context.locale() != null) {
-			log.setLocale(context.locale().toString());
+		// Defensive: a caller may pass a null context. Degrade to a
+		// contextless row rather than throwing — losing the whole log entry
+		// (and derailing the call) is worse than a row without context. Same
+		// guard as AiUsageLogDAO.createErrorLog / createGuardLog.
+		if (context != null) {
+			log.setUsageContextType(context.usageContextType());
+			log.setUsageContextId(context.usageContextId());
+			log.setIdentity(context.identity());
+			log.setResourceType(context.resourceType());
+			log.setResourceId(context.resourceId());
+			log.setResourceSubId(context.resourceSubId());
+			if (context.locale() != null) {
+				log.setLocale(context.locale().toString());
+			}
 		}
 
 		long duration = System.currentTimeMillis() - startTime;

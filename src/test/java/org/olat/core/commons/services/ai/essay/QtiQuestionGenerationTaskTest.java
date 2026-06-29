@@ -33,17 +33,17 @@ import org.olat.core.util.xml.XStreamHelper;
 import com.thoughtworks.xstream.XStream;
 
 /**
- * Unit tests for {@link EssayGenerationTask} — the task is XStream-serialised
- * into {@code o_ex_task.e_task} by the generic task executor (same setup as
- * {@code PersistentTaskDAO}), so the full request payload must survive the
- * XML round-trip.
+ * Unit tests for {@link QtiQuestionGenerationTask} — the task is
+ * XStream-serialised into {@code o_ex_task.e_task} by the generic task
+ * executor (same setup as {@code PersistentTaskDAO}), so the full request
+ * payload must survive the XML round-trip.
  *
  * Pure Java — no Spring context required.
  *
  * Initial date: 2026-06-10<br>
  * @author Florian Gnägi, gnaegi, https://www.frentix.com
  */
-public class EssayGenerationTaskTest {
+public class QtiQuestionGenerationTaskTest {
 
 	private static XStream createTaskExecutorXStream() {
 		// Mirrors the XStream setup of PersistentTaskDAO
@@ -59,11 +59,11 @@ public class EssayGenerationTaskTest {
 				10L, 20L, 3, 5,
 				List.of(AiBloomLevel.ANALYSE, AiBloomLevel.EVALUATE), 4,
 				List.of("Compare A with B", "Evaluate trade-offs"));
-		EssayGenerationTask task = new EssayGenerationTask(request);
+		QtiQuestionGenerationTask task = new QtiQuestionGenerationTask(request);
 
 		XStream xstream = createTaskExecutorXStream();
 		String xml = xstream.toXML(task);
-		EssayGenerationTask restored = (EssayGenerationTask) xstream.fromXML(xml);
+		QtiQuestionGenerationTask restored = (QtiQuestionGenerationTask) xstream.fromXML(xml);
 
 		GenerationRequest rebuilt = restored.toGenerationRequest(null);
 		assertEquals(request.pageMarkdown(), rebuilt.pageMarkdown());
@@ -85,10 +85,10 @@ public class EssayGenerationTaskTest {
 		GenerationRequest request = GenerationRequest.forPool(
 				"Source text for the pool.", null, Locale.ENGLISH, null,
 				2, 0, 99L);
-		EssayGenerationTask task = new EssayGenerationTask(request);
+		QtiQuestionGenerationTask task = new QtiQuestionGenerationTask(request);
 
 		XStream xstream = createTaskExecutorXStream();
-		EssayGenerationTask restored = (EssayGenerationTask) xstream.fromXML(xstream.toXML(task));
+		QtiQuestionGenerationTask restored = (QtiQuestionGenerationTask) xstream.fromXML(xstream.toXML(task));
 
 		GenerationRequest rebuilt = restored.toGenerationRequest(null);
 		assertEquals(request.pageMarkdown(), rebuilt.pageMarkdown());
@@ -102,10 +102,10 @@ public class EssayGenerationTaskTest {
 	public void xstreamRoundTrip_minimalDrawerRequest() {
 		GenerationRequest request = GenerationRequest.of(
 				"Drawer source markdown.", 7L, null, null);
-		EssayGenerationTask task = new EssayGenerationTask(request);
+		QtiQuestionGenerationTask task = new QtiQuestionGenerationTask(request);
 
 		XStream xstream = createTaskExecutorXStream();
-		EssayGenerationTask restored = (EssayGenerationTask) xstream.fromXML(xstream.toXML(task));
+		QtiQuestionGenerationTask restored = (QtiQuestionGenerationTask) xstream.fromXML(xstream.toXML(task));
 
 		GenerationRequest rebuilt = restored.toGenerationRequest(null);
 		assertEquals(request.pageMarkdown(), rebuilt.pageMarkdown());

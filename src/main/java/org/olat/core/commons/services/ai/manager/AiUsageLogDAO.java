@@ -155,29 +155,6 @@ public class AiUsageLogDAO {
 		}
 	}
 
-	/**
-	 * Populate the essay-grading specific columns on an existing usage log
-	 * row. Called from {@code EssayFormativeFeedbackService} right after the
-	 * SPI call so the row persisted by {@code AiLoggingChatModel} carries
-	 * full provenance (grading row id, content hash, prompt template
-	 * version, tier, assessment-item session).
-	 */
-	public void updateEssayFields(Long key, String assessmentItemIdentifier, String contentHashAtCall,
-			String promptTemplateVersion,
-			org.olat.core.commons.services.ai.essay.AiGradingTier tier,
-			Long assessmentItemSessionKey) {
-		if (key == null) {
-			return;
-		}
-		AiUsageLogImpl log = dbInstance.getCurrentEntityManager().find(AiUsageLogImpl.class, key);
-		if (log == null) return;
-		if (assessmentItemIdentifier != null) log.setAssessmentItemIdentifier(assessmentItemIdentifier);
-		if (contentHashAtCall != null) log.setContentHashAtCall(contentHashAtCall);
-		if (promptTemplateVersion != null) log.setPromptTemplateVersion(promptTemplateVersion);
-		if (tier != null) log.setTier(tier);
-		if (assessmentItemSessionKey != null) log.setAssessmentItemSessionKey(assessmentItemSessionKey);
-	}
-
 	public AiUsageLogStats getStats(AiUsageLogSearchParams params) {
 		QueryBuilder query = new QueryBuilder();
 		query.append("select coalesce(sum(log.totalTokens), 0) from aiusagelog log");

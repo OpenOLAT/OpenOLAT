@@ -89,35 +89,6 @@ public class AiUsageLogDAOTest extends OlatTestCase {
 		Assert.assertEquals(Long.valueOf(10L), created.getCacheCreationInputTokens());
 	}
 
-	/**
-	 * Regression test: the five essay columns are attached AFTER the insert
-	 * via {@link AiUsageLogDAO#updateEssayFields} — the row is created by
-	 * {@code AiLoggingChatModel} which does not know these values. They were
-	 * once mapped {@code updatable = false}, which silently dropped every
-	 * value on commit and left the columns null in the database.
-	 */
-	@Test
-	public void updateEssayFields_persistedAfterInsert() {
-		AiUsageLogImpl log = new AiUsageLogImpl();
-		log.setAiFeature("essay-grading");
-		log.setUsageContextId(UUID.randomUUID().toString());
-		log.setStatus(AiUsageLogStatus.SUCCESS);
-		AiUsageLogImpl created = aiUsageLogDAO.create(log);
-		dbInstance.commitAndCloseSession();
-
-		aiUsageLogDAO.updateEssayFields(created.getKey(), "item-4711", "hash-abc",
-				"tmpl-v1", org.olat.core.commons.services.ai.essay.AiGradingTier.SHORT, 123L);
-		dbInstance.commitAndCloseSession();
-
-		AiUsageLogImpl reloaded = dbInstance.getCurrentEntityManager()
-				.find(AiUsageLogImpl.class, created.getKey());
-		Assert.assertEquals("item-4711", reloaded.getAssessmentItemIdentifier());
-		Assert.assertEquals("hash-abc", reloaded.getContentHashAtCall());
-		Assert.assertEquals("tmpl-v1", reloaded.getPromptTemplateVersion());
-		Assert.assertEquals(org.olat.core.commons.services.ai.essay.AiGradingTier.SHORT, reloaded.getTier());
-		Assert.assertEquals(Long.valueOf(123L), reloaded.getAssessmentItemSessionKey());
-	}
-
 	@Test
 	public void createLogEntry_nullIdentity() {
 		AiUsageLogImpl log = new AiUsageLogImpl();

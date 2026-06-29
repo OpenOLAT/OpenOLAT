@@ -33,18 +33,11 @@ create table o_ai_usage_log (
    a_req_num_messages bigint,
    a_req_text_length bigint,
    a_cache_creation_input_tokens bigint,
-   a_assessment_item_identifier varchar(64),
-   a_content_hash_at_call varchar(64),
-   a_prompt_template_version varchar(40),
-   a_tier varchar(16),
-   a_assessment_item_session_key bigint,
    primary key (id)
 );
 alter table o_ai_usage_log ENGINE = InnoDB;
 
 create index idx_ai_log_creation_idx on o_ai_usage_log (creationdate);
-create index idx_ai_usage_log_item_id on o_ai_usage_log (a_assessment_item_identifier);
-create index idx_ai_usage_log_item_session on o_ai_usage_log (a_assessment_item_session_key);
 
 -- Taxonomy matching embeddings
 create table o_tax_level_embedding (
@@ -222,6 +215,9 @@ create table o_ai_essay_correction (
   a_item_session_key   bigint,
   a_storage_path       varchar(1024),
   a_question_id        varchar(64),
+  a_content_hash_at_call varchar(64),
+  a_prompt_template_version varchar(40),
+  a_tier               varchar(16),
   a_student_answer     mediumtext not null,
   a_status             varchar(24) not null,
   a_feedback_json      mediumtext,

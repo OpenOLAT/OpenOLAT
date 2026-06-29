@@ -53,7 +53,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  *
  * Public entry point for AI-assisted question generation from page
- * content. Schedules a self-contained {@link EssayGenerationTask} on the
+ * content. Schedules a self-contained {@link QtiQuestionGenerationTask} on the
  * generic persisted task executor ({@code o_ex_task}). Despite "essay" in
  * the name the task can produce mixed essay + multiple-choice output for
  * the ceditor Markdown-import → QuizPart flow.
@@ -63,7 +63,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * carry all user-visible outcomes, and execution state lives on the
  * executor's task row (failed tasks stay visible in the task admin list).
  * <p>
- * The {@link #runTask(EssayGenerationTask)} method is the body of the
+ * The {@link #runTask(QtiQuestionGenerationTask)} method is the body of the
  * LongRunnable — it is exposed on the service (not the runnable) so the
  * runnable stays serialisable and Spring-managed services can be accessed
  * via {@code CoreSpringFactory}.
@@ -120,7 +120,7 @@ public class EssayGenerationService {
 	/**
 	 * Schedule the generation request for asynchronous execution on the
 	 * generic persisted task executor. The full request payload travels
-	 * inside the serialised {@link EssayGenerationTask}; there is nothing
+	 * inside the serialised {@link QtiQuestionGenerationTask}; there is nothing
 	 * to poll — the destination sink reports the outcome.
 	 */
 	public void submit(GenerationRequest request) {
@@ -138,17 +138,17 @@ public class EssayGenerationService {
 		RepositoryEntry entry = RepositoryManager.getInstance()
 				.lookupRepositoryEntry(request.repositoryEntryKey(), false);
 		OLATResource resource = entry == null ? null : entry.getOlatResource();
-		taskExecutorManager.execute(new EssayGenerationTask(request), request.requester(),
+		taskExecutorManager.execute(new QtiQuestionGenerationTask(request), request.requester(),
 				resource, null, null);
 	}
 
 	/**
-	 * Execute the task body. Called from {@link EssayGenerationTask#run()}
+	 * Execute the task body. Called from {@link QtiQuestionGenerationTask#run()}
 	 * but also reachable directly for synchronous execution in tests.
 	 * Throws on total failure so the task executor marks the task row
 	 * failed; partial successes are handed to the sink and count as done.
 	 */
-	public void runTask(EssayGenerationTask task) {
+	public void runTask(QtiQuestionGenerationTask task) {
 		if (task == null) return;
 		Identity requester = task.getRequesterKey() == null ? null
 				: baseSecurity.loadIdentityByKey(task.getRequesterKey());
@@ -180,6 +180,31 @@ public class EssayGenerationService {
 				throw new AiEssayGenerationException(reason);
 			}
 
+			// Destination-derived usage-context fields, shared by both
+			// generation legs so each provider call is logged against the same
+			// calling context (the feature — essay vs MC — is set separately
+			// inside each service). Without this the essay leg passed a null
+			// context and its log row was lost.
+			// A persisted task can carry a null destination when an unknown /
+			// blank value failed to deserialise (toGenerationRequest leaves it
+			// null and logs a warning); fail fast with a clear reason instead
+			// of letting the switch below throw a bare NPE.
+			if (request.destination() == null) {
+				throw new IllegalStateException(
+						"generation request has no destination — cannot determine usage context");
+			}
+			String genContextType = switch (request.destination()) {
+				case POOL -> "qpool-generate-questions";
+				case QUIZ_PART -> "ceditor-quizpart-generate-questions";
+				case DRAWER -> "ai-drawer-generate-questions";
+			};
+			String genResourceType = request.destination() == GenerationDestination.POOL
+					? "PoolQPool" : "RepositoryEntry";
+			long genResourceId = request.destination() == GenerationDestination.POOL
+					? (request.taxonomyLevelKey() == null ? 0L : request.taxonomyLevelKey())
+					: (request.repositoryEntryKey() == null ? 0L : request.repositoryEntryKey());
+			Locale genLocale = request.language() == null ? Locale.ENGLISH : request.language();
+
 			// ------------------------------------------------------------------
 			// Essay generation — the original feature. Failure here is not yet
 			// fatal for the QuizPart flow: we still try MC generation below so
@@ -194,18 +219,37 @@ public class EssayGenerationService {
 			} else if (!aiEssayGenerationService.isEnabled()) {
 				essayFailure = "essay generation is not configured or enabled";
 				log.warn("Essay generation disabled for requester {} — skipping essay part", requester.getKey());
+				// Visible trace: without this the not-configured case left no row
+				// at all, so the feature looked like it was never invoked (parity
+				// with EssayFormativeFeedbackService's GradingNotConfigured guard).
+				aiUsageLogDao.createGuardLog(AiFeature.EssayGeneration.getType(),
+						AiUsageContext.builder()
+								.usageContextType(genContextType)
+								.identity(request.requester())
+								.locale(genLocale)
+								.resourceType(genResourceType)
+								.resourceId(genResourceId)
+								.build(),
+						"GenerationNotConfigured", essayFailure);
 			} else {
 				try {
 					int essayCount = request.targetQuestionCount() > 0
 							? request.targetQuestionCount() : DEFAULT_QUESTION_COUNT;
+					AiUsageContext essayUsageContext = AiUsageContext.builder()
+							.usageContextType(genContextType)
+							.identity(request.requester())
+							.locale(genLocale)
+							.resourceType(genResourceType)
+							.resourceId(genResourceId)
+							.build();
 					List<EssayItemDraft> drafts = aiEssayGenerationService.generateEssayQuestions(
-							null,
+							essayUsageContext,
 							chunks,
 							safeList(request.learningObjectives()),
 							safeList(request.targetBloomLevels()),
 							request.targetDifficulty(),
 							essayCount,
-							request.language() == null ? Locale.ENGLISH : request.language());
+							genLocale);
 
 					String generatorSpiId = aiEssayGenerationService.getConfiguredSpiId();
 					String generatorModel = aiEssayGenerationService.getConfiguredModel();
@@ -250,26 +294,25 @@ public class EssayGenerationService {
 				if (aiMCQuestionService == null || !aiMCQuestionService.isEnabled()) {
 					mcFailure = "MC question generation is not configured or enabled";
 					log.info("MC question generation disabled for requester {} — skipping MC part", requester.getKey());
+					aiUsageLogDao.createGuardLog(AiFeature.MCQuestionGenerator.getType(),
+							AiUsageContext.builder()
+									.usageContextType(genContextType)
+									.identity(request.requester())
+									.locale(genLocale)
+									.resourceType(genResourceType)
+									.resourceId(genResourceId)
+									.build(),
+							"GenerationNotConfigured", mcFailure);
 				} else {
 					try {
 						int mcCount = request.mcQuestionCount() > 0
 								? request.mcQuestionCount() : DEFAULT_MC_QUESTION_COUNT;
-						String contextType = switch (request.destination()) {
-							case POOL -> "qpool-generate-questions";
-							case QUIZ_PART -> "ceditor-quizpart-generate-questions";
-							case DRAWER -> "ai-drawer-generate-questions";
-						};
-						String resourceType = request.destination() == GenerationDestination.POOL
-								? "PoolQPool" : "RepositoryEntry";
-						long resourceId = request.destination() == GenerationDestination.POOL
-								? (request.taxonomyLevelKey() == null ? 0L : request.taxonomyLevelKey())
-								: (request.repositoryEntryKey() == null ? 0L : request.repositoryEntryKey());
 						AiUsageContext usageContext = AiUsageContext.builder()
-								.usageContextType(contextType)
+								.usageContextType(genContextType)
 								.identity(request.requester())
-								.locale(request.language() == null ? Locale.ENGLISH : request.language())
-								.resourceType(resourceType)
-								.resourceId(resourceId)
+								.locale(genLocale)
+								.resourceType(genResourceType)
+								.resourceId(genResourceId)
 								.build();
 						AiMCQuestionsResponse mcResponse = aiMCQuestionService
 								.generateMCQuestionsResponse(usageContext, scrubbedMarkdown, mcCount,
@@ -563,6 +606,18 @@ public class EssayGenerationService {
 			java.util.regex.Pattern.compile("\\b([45]\\d{2})\\s+([A-Za-z][A-Za-z0-9 \\-]{2,40})");
 
 	/**
+	 * Keywords marking a provider rejection caused by the request exceeding
+	 * the model context window (input source material plus reserved output
+	 * too large). Covers the common OpenAI, Anthropic and generic phrasings.
+	 * Matched before the HTML check so a JSON error body with one of these
+	 * codes still maps to the precise hint.
+	 */
+	private static final java.util.regex.Pattern CONTEXT_LENGTH =
+			java.util.regex.Pattern.compile("(?is)context[ _]length|context window|prompt is too long|"
+					+ "maximum context|too many tokens|reduce the length of the messages|"
+					+ "input length exceeds");
+
+	/**
 	 * Turn a raw provider error body into a short human-readable message for
 	 * the progress JSON. If {@code raw} looks like an HTML page we extract the
 	 * status code (if any) and replace the body with a concise operator hint;
@@ -579,6 +634,10 @@ public class EssayGenerationService {
 			return "unknown";
 		}
 		String trimmed = raw.trim();
+		if (CONTEXT_LENGTH.matcher(trimmed).find()) {
+			return legLabel(leg) + " schlug fehl: Das Quellmaterial ist zu gross für das Kontextfenster "
+					+ "des gewählten Modells. Bitte die Auswahl reduzieren oder die Quelle aufteilen.";
+		}
 		if (HTML_BODY.matcher(trimmed).find()) {
 			String configKey = "mc".equals(leg)
 					? "ai.feature.mc.question.generator"
@@ -622,7 +681,7 @@ public class EssayGenerationService {
 	 * Generator request. {@code targetQuestionCount <= 0} means "do not
 	 * generate essay questions" (opt-out). For legacy callers that don't set
 	 * a count, {@link #DEFAULT_QUESTION_COUNT} is used as a fallback inside
-	 * {@link #runTask(EssayGenerationTask)} (value {@code -1} or unspecified paths).
+	 * {@link #runTask(QtiQuestionGenerationTask)} (value {@code -1} or unspecified paths).
 	 * <p>
 	 * {@code mcQuestionCount} behaves the same way for the MC generation leg
 	 * of the Markdown-import → QuizPart flow: {@code 0} means "skip MC",

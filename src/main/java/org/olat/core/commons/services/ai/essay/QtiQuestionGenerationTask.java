@@ -34,26 +34,27 @@ import org.olat.core.logging.Tracing;
 
 /**
  *
- * {@link LongRunnable} for an AI question-generation run, persisted by the
- * generic task executor in {@code o_ex_task}. The task is self-contained:
- * it carries the complete {@link GenerationRequest} payload as plain
- * serialisable fields (the requester only as identity key — the executor
- * row already stores the creator) and rebuilds the request at run time.
- * No companion job table is needed; failures are reflected on the
- * executor's task row, user-visible outcomes are written by the
- * destination sinks.
+ * {@link LongRunnable} for an AI QTI question-generation run, question-type
+ * agnostic: a single task generates both essay and multiple-choice items in
+ * one job. Persisted by the generic task executor in {@code o_ex_task}. The
+ * task is self-contained: it carries the complete {@link GenerationRequest}
+ * payload as plain serialisable fields (the requester only as identity key —
+ * the executor row already stores the creator) and rebuilds the request at
+ * run time. No companion job table is needed; failures are reflected on the
+ * executor's task row, user-visible outcomes are written by the destination
+ * sinks.
  *
  * Initial date: 2026-04-20<br>
  *
  * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
-public class EssayGenerationTask implements LongRunnable {
+public class QtiQuestionGenerationTask implements LongRunnable {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
 
-	private static final Logger log = Tracing.createLoggerFor(EssayGenerationTask.class);
+	private static final Logger log = Tracing.createLoggerFor(QtiQuestionGenerationTask.class);
 
 	private final String pageMarkdown;
 	private final Long repositoryEntryKey;
@@ -69,7 +70,7 @@ public class EssayGenerationTask implements LongRunnable {
 	private final String destination;
 	private final Long taxonomyLevelKey;
 
-	public EssayGenerationTask(GenerationRequest request) {
+	public QtiQuestionGenerationTask(GenerationRequest request) {
 		pageMarkdown = request.pageMarkdown();
 		repositoryEntryKey = request.repositoryEntryKey();
 		targetQuestionCount = request.targetQuestionCount();
@@ -148,10 +149,10 @@ public class EssayGenerationTask implements LongRunnable {
 			service.runTask(this);
 		} catch (Exception e) {
 			// Re-throw so the task executor marks the task record failed.
-			log.error("Essay generation task failed", e);
+			log.error("QTI question generation task failed", e);
 			throw e;
 		} finally {
-			log.info("Finished essay generation task in {} ms", System.currentTimeMillis() - startTime);
+			log.info("Finished QTI question generation task in {} ms", System.currentTimeMillis() - startTime);
 		}
 	}
 }

@@ -47,8 +47,15 @@ import org.olat.core.id.Persistable;
  * Result of a single AI essay correction run, tied to the learner's answer:
  * the answer text itself plus the QTI assessment item session it came from
  * (soft reference by key — item sessions are deleted on quiz reset, the
- * correction result is kept for audit, same as
- * {@code o_ai_usage_log.a_assessment_item_session_key}).
+ * correction result is kept for audit).
+ * <p>
+ * This row is also the usage context of the AI call: each
+ * {@code o_ai_usage_log} row written for this correction carries
+ * {@code usageContextType = ai-essay-correction} and
+ * {@code usageContextId = <this key>}. The grading-run provenance
+ * ({@link #contentHashAtCall}, {@link #promptTemplateVersion},
+ * {@link #tier}) lives here rather than on the log, which stays a generic
+ * cost ledger.
  * <p>
  * The row is created at learner submit time, the correction itself runs as
  * a generic persisted task ({@link EssayAiCorrectionTask} in
@@ -103,6 +110,22 @@ public class EssayAiCorrection implements CreateInfo, ModifiedInfo, Persistable 
 
 	@Column(name = "a_question_id", nullable = true, insertable = true, updatable = false, length = 64)
 	private String questionId;
+
+	// Grading-run provenance: which rubric/config content, which prompt
+	// template version and which length tier this correction was graded
+	// against. Written during grading (the row is inserted PENDING before
+	// these are known), hence updatable. These used to live on
+	// o_ai_usage_log; they belong to the correction, which is the context
+	// of the AI call (the log points back here via its usage context id).
+	@Column(name = "a_content_hash_at_call", nullable = true, insertable = true, updatable = true, length = 64)
+	private String contentHashAtCall;
+
+	@Column(name = "a_prompt_template_version", nullable = true, insertable = true, updatable = true, length = 40)
+	private String promptTemplateVersion;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "a_tier", nullable = true, insertable = true, updatable = true, length = 16)
+	private AiGradingTier tier;
 
 	@Lob
 	@Column(name = "a_student_answer", nullable = false, insertable = true, updatable = false)
@@ -181,6 +204,30 @@ public class EssayAiCorrection implements CreateInfo, ModifiedInfo, Persistable 
 
 	public void setQuestionId(String questionId) {
 		this.questionId = questionId;
+	}
+
+	public String getContentHashAtCall() {
+		return contentHashAtCall;
+	}
+
+	public void setContentHashAtCall(String contentHashAtCall) {
+		this.contentHashAtCall = contentHashAtCall;
+	}
+
+	public String getPromptTemplateVersion() {
+		return promptTemplateVersion;
+	}
+
+	public void setPromptTemplateVersion(String promptTemplateVersion) {
+		this.promptTemplateVersion = promptTemplateVersion;
+	}
+
+	public AiGradingTier getTier() {
+		return tier;
+	}
+
+	public void setTier(AiGradingTier tier) {
+		this.tier = tier;
 	}
 
 	public String getStudentAnswer() {

@@ -5199,11 +5199,6 @@ create table o_ai_usage_log (
    a_req_num_messages number(20),
    a_req_text_length number(20),
    a_cache_creation_input_tokens number(20),
-   a_assessment_item_identifier  varchar2(64 char),
-   a_content_hash_at_call        varchar2(64 char),
-   a_prompt_template_version     varchar2(40 char),
-   a_tier                        varchar2(16 char),
-   a_assessment_item_session_key number(20),
    primary key (id)
 );
 
@@ -5215,6 +5210,9 @@ create table o_ai_essay_correction (
   a_item_session_key   number(20),
   a_storage_path       varchar2(1024 char),
   a_question_id        varchar2(64 char),
+  a_content_hash_at_call varchar2(64 char),
+  a_prompt_template_version varchar2(40 char),
+  a_tier               varchar2(16 char),
   a_student_answer     clob not null,
   a_status             varchar2(24 char) not null,
   a_feedback_json      clob,
@@ -7763,8 +7761,6 @@ create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
 
 -- AI
 create index idx_ai_log_creation_idx on o_ai_usage_log (creationdate);
-create index idx_ai_usage_log_item_id on o_ai_usage_log (a_assessment_item_identifier);
-create index idx_ai_usage_log_item_session on o_ai_usage_log (a_assessment_item_session_key);
 alter table o_ai_essay_correction add constraint ai_essay_corr_ident_fk foreign key (fk_identity) references o_bs_identity (id);
 create index idx_ai_essay_corr_ident on o_ai_essay_correction (fk_identity);
 create index idx_ai_essay_corr_item_session on o_ai_essay_correction (a_item_session_key);

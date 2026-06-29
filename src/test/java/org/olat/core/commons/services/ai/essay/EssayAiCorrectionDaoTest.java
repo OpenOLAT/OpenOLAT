@@ -59,6 +59,32 @@ public class EssayAiCorrectionDaoTest extends OlatTestCase {
 		Assert.assertEquals(identity.getKey(), reloaded.getIdentity().getKey());
 	}
 
+	/**
+	 * The grading-run provenance (content hash, prompt template version,
+	 * tier) is written AFTER the PENDING row is created — the values are only
+	 * known once grading runs. Verify the update round-trips so the columns
+	 * are not silently dropped on commit.
+	 */
+	@Test
+	public void updateProvenance_persistedAfterCreate() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("ai-corr-prov");
+		EssayAiCorrection correction = correctionDao.create("path/quiz-prov", "q-prov",
+				identity, 4711L, "My answer text");
+		dbInstance.commitAndCloseSession();
+
+		EssayAiCorrection toUpdate = correctionDao.loadByKey(correction.getKey());
+		toUpdate.setContentHashAtCall("hash-abc");
+		toUpdate.setPromptTemplateVersion("tmpl-v1");
+		toUpdate.setTier(AiGradingTier.SHORT);
+		correctionDao.update(toUpdate);
+		dbInstance.commitAndCloseSession();
+
+		EssayAiCorrection reloaded = correctionDao.loadByKey(correction.getKey());
+		Assert.assertEquals("hash-abc", reloaded.getContentHashAtCall());
+		Assert.assertEquals("tmpl-v1", reloaded.getPromptTemplateVersion());
+		Assert.assertEquals(AiGradingTier.SHORT, reloaded.getTier());
+	}
+
 	@Test
 	public void deleteByIdentity() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("ai-corr-2");

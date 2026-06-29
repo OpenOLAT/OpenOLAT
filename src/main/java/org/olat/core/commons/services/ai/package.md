@@ -16,7 +16,7 @@ Key features:
 - Image preprocessing (scaling, base64 encoding) via `AiImageHelper`
 - LangChain4j for chat model abstraction, structured output extraction, and model catalog APIs
 - Singleton LangChain4j AiServices instances via `CachedChatModel`, rebuilt automatically when provider config changes
-- AI usage logging to `o_ai_usage_log` with token counts, timing, error, and essay-specific provenance
+- AI usage logging to `o_ai_usage_log` with token counts, timing and error (generic, no feature-specific columns)
 - Async persistent job execution via `TaskExecutorManager` + `o_ex_task` (cluster-aware crash recovery)
 
 ## Package Structure
@@ -49,7 +49,7 @@ Key features:
 | `AiImageDescriptionService` | Spring service interface for image description generation. |
 | `AiEssayGradingService` | Spring service interface for essay grading. Returns `GradingRun` (suggestion + usage-log key). |
 | `AiEssayGenerationService` | Spring service interface for essay question generation. Returns `List<EssayItemDraft>`. |
-| `AiUsageLog` | JPA interface for the `o_ai_usage_log` table. Holds context type, resource type/id, token counts, timing, status, error, and essay-specific provenance fields. |
+| `AiUsageLog` | JPA interface for the `o_ai_usage_log` table. Holds context type/id, resource type/id, token counts, timing, status and error. Generic ledger, no feature-specific columns. |
 | `AiUsageLogSearchParams` | Search parameter object for usage-log queries. |
 | `AiUsageLogStatus` | Enum: `SUCCESS`, `ERROR`. |
 | `AiImageHelper` | `@Service` that scales images to max 1024px and base64-encodes them for vision API calls. |
@@ -71,7 +71,7 @@ Key features:
 | `AiImageDescriptionServiceImpl` | Image description generation. Uses `ImageDescriptionAiService` (LangChain4j) via `CachedChatModel`. |
 | `AiEssayGradingServiceImpl` | Essay grading. Resolves provider via `AiModule`, wraps the `ChatModel` in `AiLoggingChatModel`, invokes the `EssayGradingAiService` LangChain4j proxy. |
 | `AiEssayGenerationServiceImpl` | Essay question generation. Same pattern; uses `EssayGenerationAiService`. |
-| `AiUsageLogDAO` | DAO for `o_ai_usage_log`. Writes and queries usage rows; exposes `updateEssayFields` to stamp provenance after the SPI call. Exposes `countByIdentityFeatureSince` for rate-limit checks. |
+| `AiUsageLogDAO` | DAO for `o_ai_usage_log`. Writes and queries usage rows; `createGuardLog` records non-LLM refusals. Exposes `countByIdentityFeatureSince` for rate-limit checks. Grading provenance lives on `o_ai_essay_correction`, not the log. |
 | `AiLoggingChatModel` | Decorator that wraps any `ChatModel` and writes an `AiUsageLog` row on each call. |
 | `CachedChatModel` | Immutable record caching a LangChain4j `AiServices` proxy keyed by (spiId, modelName). Rebuilt on config change. |
 | `LangChain4jHttpClientBuilder` | Adapts OpenOlat's `HttpClientService` to LangChain4j's `HttpClientBuilder`. |
@@ -168,7 +168,7 @@ Rejecting filters throw `EssayGradingPreFilterException` carrying a `RejectionRe
 
 ### 2.3 Tier-Based Prompt Routing
 
-`AiGradingTier.classify(wordCount)` maps the student answer length (CJK-aware word count) to `SHORT`, `MEDIUM`, or `LONG`. Each tier routes to a different `max_tokens` cap and a different prompt template version string. The selected tier and prompt template version are stamped on the `AiUsageLog` row via `AiUsageLogDAO.updateEssayFields()`, enabling retrospective analysis of grading quality per tier.
+`AiGradingTier.classify(wordCount)` maps the student answer length (CJK-aware word count) to `SHORT`, `MEDIUM`, or `LONG`. Each tier routes to a different `max_tokens` cap and a different prompt template version string. The selected tier and prompt template version are stamped on the `o_ai_essay_correction` row (via `EssayFormativeFeedbackService.recordProvenance`), enabling retrospective analysis of grading quality per tier.
 
 ### 2.4 File-Based Companion Pattern
 
@@ -196,7 +196,7 @@ The AI provider response is passed through OpenOlat's built-in XSS filter with a
 
 ### 2.9 Usage Logging with Destination-Aware Context
 
-Every provider call writes a row to `o_ai_usage_log`. The `usageContextType` field encodes both the feature and the calling context (e.g. `essay-grading`, `qpool-generate-questions`, `ceditor-quizpart-generate-questions`). The `resourceType` / `resourceId` pair identifies the resource: `RepositoryEntry` for course/page operations, `PoolQPool` for pool operations. Essay-specific provenance fields are written by a second update (`AiUsageLogDAO.updateEssayFields()`) after the SPI call completes.
+Every provider call writes a row to `o_ai_usage_log`. The `usageContextType` field encodes both the feature and the calling context (e.g. `ai-essay-correction`, `qpool-generate-questions`, `ceditor-quizpart-generate-questions`), and `usageContextId` points at the context entity that the call is about. For essay correction that entity is the `o_ai_essay_correction` row: `usageContextType = ai-essay-correction`, `usageContextId = <correction key>`, so all log rows of one correction (guard, grading, retry) share the same context id and the log stays a generic ledger with no feature-specific columns. The `resourceType` / `resourceId` pair identifies the resource: `RepositoryEntry` for course/page operations, `PoolQPool` for pool operations. The grading-run provenance (content hash, prompt template version, tier) lives on the `o_ai_essay_correction` row, not on the log; deleting a correction therefore drops its provenance while the cost ledger row survives (it keeps the now-stale context id, like any other soft reference).
 
 ---
 
@@ -418,7 +418,7 @@ Every provider call writes a row to `o_ai_usage_log` via `AiUsageLogDAO`. The ro
 - `usageContextType` — e.g. `essay-grading`, `qpool-generate-questions`, `ceditor-quizpart-generate-questions`
 - `resourceType` / `resourceId` — `RepositoryEntry` (course/page) or `PoolQPool` (pool)
 - Token counts, duration, status, error
-- Essay-specific provenance (assessment item identifier, content hash, prompt template version, tier, item session key) — written by `AiUsageLogDAO.updateEssayFields()` after the SPI call
+- The log carries no feature-specific columns; grading-run provenance (content hash, prompt template version, tier) lives on `o_ai_essay_correction`, linked from the log via `usageContextType=ai-essay-correction` + `usageContextId=<correction key>`
 
 ## 12. Admin UI
 

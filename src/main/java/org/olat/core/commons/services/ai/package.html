@@ -195,7 +195,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <li>Per-user, per-feature rate limiting enforced at the submit boundary</li>
   <li>LangChain4j for chat model abstraction, structured output extraction, and model catalog APIs</li>
   <li>Singleton LangChain4j AiServices instances via <code>CachedChatModel</code>, rebuilt on config change</li>
-  <li>AI usage logging to <code>o_ai_usage_log</code> with token counts, timing, error, and essay provenance</li>
+  <li>AI usage logging to <code>o_ai_usage_log</code> with token counts, timing and error (generic, no feature-specific columns)</li>
   <li>Async persistent job execution via <code>TaskExecutorManager</code> + <code>o_ex_task</code> (cluster-aware crash recovery)</li>
 </ul>
 
@@ -398,7 +398,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><td><code>AiImageDescriptionService</code></td><td>Spring service interface for image description generation.</td></tr>
   <tr><td><code>AiEssayGradingService</code></td><td>Spring service interface for essay grading. Returns <code>GradingRun</code> (suggestion + usage-log key).</td></tr>
   <tr><td><code>AiEssayGenerationService</code></td><td>Spring service interface for essay question generation. Returns <code>List&lt;EssayItemDraft&gt;</code>.</td></tr>
-  <tr><td><code>AiUsageLog</code></td><td>JPA interface for the <code>o_ai_usage_log</code> table. Holds context type, resource type/id, token counts, timing, status, error, and essay-specific provenance fields.</td></tr>
+  <tr><td><code>AiUsageLog</code></td><td>JPA interface for the <code>o_ai_usage_log</code> table. Holds context type/id, resource type/id, token counts, timing, status and error. Generic ledger, no feature-specific columns.</td></tr>
   <tr><td><code>AiUsageLogSearchParams</code></td><td>Search parameter object for usage-log queries.</td></tr>
   <tr><td><code>AiUsageLogStatus</code></td><td>Enum: <code>SUCCESS</code>, <code>ERROR</code>.</td></tr>
   <tr><td><code>AiImageHelper</code></td><td><code>@Service</code> that scales images to max 1024px and base64-encodes them for vision API calls.</td></tr>
@@ -420,7 +420,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><td><code>AiImageDescriptionServiceImpl</code></td><td>Image description generation. Uses <code>ImageDescriptionAiService</code> (LangChain4j) via <code>CachedChatModel</code>.</td></tr>
   <tr><td><code>AiEssayGradingServiceImpl</code></td><td>Essay grading. Resolves provider via <code>AiModule</code>, wraps the <code>ChatModel</code> in <code>AiLoggingChatModel</code>, invokes the <code>EssayGradingAiService</code> LangChain4j proxy.</td></tr>
   <tr><td><code>AiEssayGenerationServiceImpl</code></td><td>Essay question generation. Same pattern; uses <code>EssayGenerationAiService</code>.</td></tr>
-  <tr><td><code>AiUsageLogDAO</code></td><td>DAO for <code>o_ai_usage_log</code>. Writes and queries usage rows; exposes <code>updateEssayFields</code> to stamp provenance after the SPI call. Exposes <code>countByIdentityFeatureSince</code> for rate-limit checks.</td></tr>
+  <tr><td><code>AiUsageLogDAO</code></td><td>DAO for <code>o_ai_usage_log</code>. Writes and queries usage rows; <code>createGuardLog</code> records non-LLM refusals. Exposes <code>countByIdentityFeatureSince</code> for rate-limit checks. Grading provenance lives on <code>o_ai_essay_correction</code>, not the log.</td></tr>
   <tr><td><code>AiLoggingChatModel</code></td><td>Decorator that wraps any <code>ChatModel</code> and writes an <code>AiUsageLog</code> row on each call.</td></tr>
   <tr><td><code>CachedChatModel</code></td><td>Immutable record caching a LangChain4j <code>AiServices</code> proxy keyed by (spiId, modelName). Rebuilt on config change.</td></tr>
   <tr><td><code>LangChain4jHttpClientBuilder</code></td><td>Adapts OpenOlat's <code>HttpClientService</code> to LangChain4j's <code>HttpClientBuilder</code>.</td></tr>
@@ -727,7 +727,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 <p>Each rejecting filter throws <code>EssayGradingPreFilterException</code> carrying a <code>RejectionReason</code> (i18n key + developer detail). The controller catches this and shows a localised message to the student without logging a usage row.</p>
 
 <h3>3. Tier-Based Prompt Routing</h3>
-<p><code>AiGradingTier.classify(wordCount)</code> maps the student answer length (CJK-aware word count) to <code>SHORT</code>, <code>MEDIUM</code>, or <code>LONG</code>. Each tier routes to a different <code>max_tokens</code> cap and a different prompt template version string. The selected tier and prompt template version are stamped on the <code>AiUsageLog</code> row via <code>AiUsageLogDAO.updateEssayFields()</code>, enabling retrospective analysis of grading quality per tier.</p>
+<p><code>AiGradingTier.classify(wordCount)</code> maps the student answer length (CJK-aware word count) to <code>SHORT</code>, <code>MEDIUM</code>, or <code>LONG</code>. Each tier routes to a different <code>max_tokens</code> cap and a different prompt template version string. The selected tier and prompt template version are stamped on the <code>o_ai_essay_correction</code> row (via <code>EssayFormativeFeedbackService.recordProvenance</code>), enabling retrospective analysis of grading quality per tier.</p>
 
 <h3>4. File-Based Companion Pattern</h3>
 <p>AI grading configuration and source provenance are stored as JSON files next to the QTI assessment item XML, not in the database. <code>EssayAiGradingFileStore</code> writes <code>ai-grading.json</code> and <code>AiSourceCompanionFileStore</code> writes <code>ai-source.json</code>. Serialisation uses sorted map keys and ISO-8601 dates for stable hashing.</p>
@@ -747,7 +747,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 <p>The AI provider response contains free-text HTML generated by the model. Before storing or displaying this text, <code>EssayFormativeFeedbackService</code> passes it through OpenOlat's built-in XSS filter with a restricted tag whitelist. Only safe formatting tags (paragraphs, lists, inline emphasis) are allowed; all script, iframe, and event-handler attributes are stripped. This prevents stored XSS if a provider returns malicious content.</p>
 
 <h3>9. Usage Logging with Destination-Aware Context</h3>
-<p>Every provider call writes a row to <code>o_ai_usage_log</code>. The <code>usageContextType</code> field encodes both the feature and the calling context (e.g. <code>essay-grading</code>, <code>qpool-generate-questions</code>, <code>ceditor-quizpart-generate-questions</code>). The <code>resourceType</code> / <code>resourceId</code> pair identifies the resource: <code>RepositoryEntry</code> for course/page operations, <code>PoolQPool</code> for pool operations. Essay-specific provenance fields (assessment item identifier, content hash, prompt template version, tier, item session key) are written by a second update (<code>AiUsageLogDAO.updateEssayFields()</code>) after the SPI call completes, keeping the initial log write fast and the provenance write close to the result.</p>
+<p>Every provider call writes a row to <code>o_ai_usage_log</code>. The <code>usageContextType</code> field encodes both the feature and the calling context (e.g. <code>ai-essay-correction</code>, <code>qpool-generate-questions</code>, <code>ceditor-quizpart-generate-questions</code>), and <code>usageContextId</code> points at the context entity the call is about. For essay correction that entity is the <code>o_ai_essay_correction</code> row (<code>usageContextType = ai-essay-correction</code>, <code>usageContextId = &lt;correction key&gt;</code>), so all log rows of one correction (guard, grading, retry) share the same context id and the log stays a generic ledger with no feature-specific columns. The <code>resourceType</code> / <code>resourceId</code> pair identifies the resource: <code>RepositoryEntry</code> for course/page operations, <code>PoolQPool</code> for pool operations. The grading-run provenance (content hash, prompt template version, tier) lives on the <code>o_ai_essay_correction</code> row, not on the log. Because the link is a soft string reference, deleting a correction drops its provenance while the cost-ledger row survives with a now-stale context id; the log is never cascade-deleted.</p>
 
 <!-- ===== USAGE EXAMPLES ===== -->
 <h2 id="use-mc">Using the MC Question Generator</h2>
@@ -961,7 +961,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <li><code>usageContextType</code> — e.g. <code>essay-grading</code>, <code>qpool-generate-questions</code>, <code>ceditor-quizpart-generate-questions</code></li>
   <li><code>resourceType</code> / <code>resourceId</code> — <code>RepositoryEntry</code> (course/page) or <code>PoolQPool</code> (pool)</li>
   <li>Token counts, duration, status (<code>SUCCESS</code>/<code>ERROR</code>), error message</li>
-  <li>Essay-specific provenance: assessment item identifier, content hash, prompt template version, tier, item session key — written by <code>AiUsageLogDAO.updateEssayFields()</code> after the SPI call</li>
+  <li>No feature-specific columns; grading-run provenance (content hash, prompt template version, tier) lives on <code>o_ai_essay_correction</code>, linked from the log via <code>usageContextType=ai-essay-correction</code> + <code>usageContextId=&lt;correction key&gt;</code></li>
 </ul>
 
 <!-- ===== ADMIN UI ===== -->

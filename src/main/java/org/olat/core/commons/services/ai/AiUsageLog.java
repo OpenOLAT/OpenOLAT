@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.services.ai;
 
-import org.olat.core.commons.services.ai.essay.AiGradingTier;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 
@@ -158,27 +157,5 @@ public interface AiUsageLog extends CreateInfo {
 	public Long getCacheCreationInputTokens();
 
 	public void setCacheCreationInputTokens(Long cacheCreationInputTokens);
-
-	// Essay grading trace (nullable; set only on essay-grading calls).
-
-	public String getAssessmentItemIdentifier();
-
-	public void setAssessmentItemIdentifier(String assessmentItemIdentifier);
-
-	public String getContentHashAtCall();
-
-	public void setContentHashAtCall(String contentHashAtCall);
-
-	public String getPromptTemplateVersion();
-
-	public void setPromptTemplateVersion(String promptTemplateVersion);
-
-	public AiGradingTier getTier();
-
-	public void setTier(AiGradingTier tier);
-
-	public Long getAssessmentItemSessionKey();
-
-	public void setAssessmentItemSessionKey(Long assessmentItemSessionKey);
 
 }

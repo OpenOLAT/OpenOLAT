@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
  * Synchronous entry point for the formative-feedback flow. Loads the
  * persisted {@link EssayAiGrading}, runs the pre-filters, invokes the
  * grader SPI, sanitises the student-facing free-form text, and persists
- * the essay-specific provenance on the usage log row.
+ * the grading-run provenance on the {@link EssayAiCorrection} row.
  * <p>
  * The grading call runs inline on the calling thread (normally an
  * {@code aiInteractive} task-executor worker). The hard time bound is the
@@ -63,7 +63,7 @@ import org.springframework.stereotype.Service;
  *   <li>Router → {@link AiEssayGradingSPI}.</li>
  *   <li>SPI call via {@link AiEssayGradingServiceImpl}, bounded by the HTTP timeout.</li>
  *   <li>Free-form text sanitised via OpenOlat's XSS filter.</li>
- *   <li>Essay provenance written to the {@code AiUsageLog} row.</li>
+ *   <li>Grading-run provenance written to the {@code EssayAiCorrection} row.</li>
  * </ol>
  *
  * Initial date: 2026-04-20<br>
@@ -75,13 +75,20 @@ import org.springframework.stereotype.Service;
 public class EssayFormativeFeedbackService {
 	private static final Logger log = Tracing.createLoggerFor(EssayFormativeFeedbackService.class);
 
-	/** Usage-context type stamped on the {@code AiUsageLog} row. */
-	static final String USAGE_CONTEXT_TYPE = "essay-grading";
+	/**
+	 * Usage-context type stamped on the {@code AiUsageLog} row. The matching
+	 * {@code usageContextId} is the {@link EssayAiCorrection} key — the
+	 * correction is the context of the AI call, so the log points back to it
+	 * via this (type, id) pair instead of carrying essay-specific columns.
+	 */
+	static final String USAGE_CONTEXT_TYPE = "ai-essay-correction";
 
 	@Autowired
 	private AiEssayGradingService aiEssayGradingService;
 	@Autowired
 	private AiUsageLogDAO aiUsageLogDAO;
+	@Autowired
+	private EssayAiCorrectionDao correctionDao;
 
 	/**
 	 * Grade a student essay answer synchronously against a pre-loaded
@@ -89,9 +96,14 @@ public class EssayFormativeFeedbackService {
 	 * the caller via {@link EssayAiGradingFileStore#load(java.io.File)}).
 	 * <p>
 	 * {@code session} may be {@code null} when the call is triggered
-	 * outside an assessment run (preview, unit test).
+	 * outside an assessment run (preview, unit test). {@code correctionKey}
+	 * is the {@link EssayAiCorrection} this grading belongs to; it is used as
+	 * the usage-context id on the log row and as the target for the
+	 * grading-run provenance (content hash, prompt template version, tier).
+	 * It may be {@code null} for preview / unit-test calls that have no
+	 * persisted correction row.
 	 */
-	public FormativeFeedback grade(EssayAiGrading grading, String studentAnswer,
+	public FormativeFeedback grade(Long correctionKey, EssayAiGrading grading, String studentAnswer,
 			AssessmentItemSession session, Identity student, Locale locale) {
 		if (grading == null) {
 			throw new IllegalArgumentException("grading must not be null");
@@ -106,7 +118,7 @@ public class EssayFormativeFeedbackService {
 		// counts log rows for this identity + feature.
 		AiUsageContext.Builder usageContextBuilder = AiUsageContext.builder()
 				.usageContextType(USAGE_CONTEXT_TYPE)
-				.usageContextId(grading.getAssessmentItemIdentifier())
+				.usageContextId(correctionKey == null ? null : correctionKey.toString())
 				.identity(student)
 				.locale(effectiveLocale);
 		if (session != null) {
@@ -161,6 +173,11 @@ public class EssayFormativeFeedbackService {
 			throw new AiEssayGradingException("Essay grading is not configured or not enabled.");
 		}
 
+		// Grading-run provenance on the correction row (the context of the AI
+		// call). Written before the SPI call so it is recorded for every
+		// outcome — success, truncated response, timeout or error.
+		recordProvenance(correctionKey, grading, tier);
+
 		// 6. Service call, bounded by the HTTP client timeout of the SPI.
 		AiEssayGradingService.GradingRun run;
 		try {
@@ -171,21 +188,9 @@ public class EssayFormativeFeedbackService {
 			// to parse it. Surface this as a graceful rejection card instead of
 			// letting the raw Jackson stack trace bubble up to the job error.
 			log.info("Essay grading response truncated for tier {}: {}", tier, e.getMessage());
-			// Attach essay provenance to the (now FAILED) usage log row so the
-			// truncated-response case is just as analysable as a successful one.
-			if (e.getUsageLogKey() != null) {
-				try {
-					aiUsageLogDAO.updateEssayFields(e.getUsageLogKey(),
-							grading.getAssessmentItemIdentifier(),
-							grading.getContentHash(),
-							aiEssayGradingService.getPromptTemplateVersion(),
-							tier,
-							session == null ? null : session.getKey());
-				} catch (Exception ex) {
-					log.warn("Failed to attach essay provenance to truncated usage log {}: {}",
-							e.getUsageLogKey(), ex.getMessage());
-				}
-			}
+			// Provenance was already recorded on the correction row before the
+			// call, so the truncated-response case is just as analysable as a
+			// successful one.
 			return FormativeFeedback.rejected(new RejectionReason(
 					"ai.essay.error.response.truncated",
 					"AI response truncated (tier=" + tier + ")"));
@@ -199,21 +204,6 @@ public class EssayFormativeFeedbackService {
 
 		// 7. Sanitise free-form student feedback strings.
 		GradingSuggestion sanitised = sanitiseForStudent(run.suggestion());
-
-		// 8. Essay provenance on the usage log row.
-		if (run.usageLogKey() != null) {
-			try {
-				aiUsageLogDAO.updateEssayFields(run.usageLogKey(),
-						grading.getAssessmentItemIdentifier(),
-						grading.getContentHash(),
-						aiEssayGradingService.getPromptTemplateVersion(),
-						tier,
-						session == null ? null : session.getKey());
-			} catch (Exception e) {
-				log.warn("Failed to attach essay provenance to usage log {}: {}",
-						run.usageLogKey(), e.getMessage());
-			}
-		}
 
 		if (log.isDebugEnabled()) {
 			log.debug("Essay graded via spi={} model={} tier={}",
@@ -286,6 +276,32 @@ public class EssayFormativeFeedbackService {
 		aiUsageLogDAO.createGuardLog(AiFeature.EssayGrading.getType(), usageContext,
 				"PreFilterRejection",
 				messageKey == null ? detail : (detail == null ? messageKey : messageKey + ": " + detail));
+	}
+
+	/**
+	 * Persist the grading-run provenance (content hash, prompt template
+	 * version, tier) onto the {@link EssayAiCorrection} row. Best-effort: a
+	 * failure here must not abort the grading itself. No-op for preview /
+	 * unit-test calls that have no persisted correction ({@code correctionKey}
+	 * is {@code null}).
+	 */
+	private void recordProvenance(Long correctionKey, EssayAiGrading grading, AiGradingTier tier) {
+		if (correctionKey == null) {
+			return;
+		}
+		try {
+			EssayAiCorrection correction = correctionDao.loadByKey(correctionKey);
+			if (correction == null) {
+				return;
+			}
+			correction.setContentHashAtCall(grading.getContentHash());
+			correction.setPromptTemplateVersion(aiEssayGradingService.getPromptTemplateVersion());
+			correction.setTier(tier);
+			correctionDao.update(correction);
+		} catch (Exception e) {
+			log.warn("Failed to record essay grading provenance on correction {}: {}",
+					correctionKey, e.getMessage());
+		}
 	}
 
 	/**

@@ -161,21 +161,21 @@ public class EssayAiCorrectionService implements UserDataDeletable {
 			String questionId = correction.getQuestionId();
 			if (storagePath == null || questionId == null) {
 				String message = "no (storagePath, questionId) linked to correction";
-				logCorrectionGuard(identity, questionId, "GradingArtefactMissing", message);
+				logCorrectionGuard(identity, correctionKey, "GradingArtefactMissing", message);
 				markFailed(correctionKey, message);
 				return;
 			}
 			EssayAiGrading grading = loadGradingFromDisk(storagePath, questionId);
 			if (grading == null) {
 				String message = "ai-grading.json not found for question " + questionId;
-				logCorrectionGuard(identity, questionId, "GradingArtefactMissing", message);
+				logCorrectionGuard(identity, correctionKey, "GradingArtefactMissing", message);
 				markFailed(correctionKey, message);
 				return;
 			}
 			String studentAnswer = correction.getStudentAnswer();
 
-			FormativeFeedback feedback = essayFormativeFeedbackService.grade(grading, studentAnswer,
-					itemSession, identity, locale);
+			FormativeFeedback feedback = essayFormativeFeedbackService.grade(correctionKey, grading,
+					studentAnswer, itemSession, identity, locale);
 
 			EssayAiCorrection doneCorrection = correctionDao.loadByKey(correctionKey);
 			doneCorrection.setStatus(EssayAiCorrection.Status.DONE);
@@ -190,7 +190,7 @@ public class EssayAiCorrectionService implements UserDataDeletable {
 		} catch (EssayGradingIntegrityException integrity) {
 			log.warn("Essay AI correction {} refused — integrity hash mismatch: {}", correctionKey,
 					integrity.getMessage());
-			logCorrectionGuard(correction.getIdentity(), correction.getQuestionId(),
+			logCorrectionGuard(correction.getIdentity(), correctionKey,
 					"IntegrityFailure", integrity.getMessage());
 			markFailed(correctionKey, "integrity check failed: " + integrity.getMessage());
 		} catch (RuntimeException e) {
@@ -204,10 +204,10 @@ public class EssayAiCorrectionService implements UserDataDeletable {
 	 * integrity check failure) so the rate limiter and cost reports see the
 	 * attempt even when no LLM call ever happened.
 	 */
-	private void logCorrectionGuard(Identity owner, String questionId, String errorCode, String message) {
+	private void logCorrectionGuard(Identity owner, Long correctionKey, String errorCode, String message) {
 		AiUsageContext usageContext = AiUsageContext.builder()
 				.usageContextType(EssayFormativeFeedbackService.USAGE_CONTEXT_TYPE)
-				.usageContextId(questionId)
+				.usageContextId(correctionKey == null ? null : correctionKey.toString())
 				.identity(owner)
 				.build();
 		aiUsageLogDao.createGuardLog(AiFeature.EssayGrading.getType(), usageContext,
