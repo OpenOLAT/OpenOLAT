@@ -117,20 +117,23 @@ public class MediaServerModuleTest extends OlatTestCase {
 	@Test
 	public void isRestrictedDomain_customDomainSubdomain_notRestricted() {
 		mediaServerModule.updateCustomMediaServer(newMediaServer("frentix.com"));
-
+		waitMessageAreConsumed();
+		
 		Assert.assertFalse(mediaServerModule.isRestrictedDomain("https://foo.frentix.com"));
 	}
 
 	@Test
 	public void isRestrictedDomain_customDomainSuffixAttack_isRestricted() {
 		mediaServerModule.updateCustomMediaServer(newMediaServer("frentix.com"));
-
+		waitMessageAreConsumed();
+		
 		Assert.assertTrue(mediaServerModule.isRestrictedDomain("https://frentix.com.attacker.tld"));
 	}
 
 	@Test
 	public void isRestrictedDomain_customDomainExactMatch_notRestricted() {
 		mediaServerModule.updateCustomMediaServer(newMediaServer("frentix.com"));
+		waitMessageAreConsumed();
 
 		Assert.assertFalse(mediaServerModule.isRestrictedDomain("https://frentix.com"));
 	}
