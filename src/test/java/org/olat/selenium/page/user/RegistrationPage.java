@@ -101,6 +101,7 @@ public class RegistrationPage {
 	
 	public static String extractOtp(SmtpMessage message) {
 		String body = message.getBody();
+		body = body.replace("=", "");
 		int index = body.indexOf("'otp'>");
 		if(index >= 0) {
 			body = body.substring(index + 6);
