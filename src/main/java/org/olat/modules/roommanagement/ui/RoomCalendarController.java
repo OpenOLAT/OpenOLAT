@@ -91,7 +91,7 @@ public class RoomCalendarController extends FormBasicController {
 		Building building = room.getBuilding();
 		String colorCss = building != null && StringHelper.containsNonWhitespace(building.getColorCss())
 				? building.getColorCss() : colorService.getDefaultColor();
-		wrapper.setCssClass("o_color_background o_color_border_darken " + colorCss);
+		wrapper.setCssClass("o_color_background_pastel o_color_border " + colorCss);
 
 		FullCalendarElement calendarEl = new FullCalendarElement(ureq, "roomCalendar", List.of(wrapper), getTranslator());
 		calendarEl.setView(FullCalendarViews.timeGridWeek);
