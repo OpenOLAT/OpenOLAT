@@ -1097,6 +1097,7 @@ alter table o_cur_curriculum_element drop column c_auto_published;
 alter table o_cur_curriculum_element drop column c_auto_published_unit;
 alter table o_cur_curriculum_element drop column c_auto_closed;
 alter table o_cur_curriculum_element drop column c_auto_closed_unit;
+alter table o_cur_curriculum_element add c_automation_config clob;
 
 
 -- Safe Exam Browser

@@ -54,7 +54,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
  * Initial date: 2026-06-26<br>
  * @author uhensler, https://www.frentix.com
  */
-public class EditCurriculumElementTypeAutomationController extends FormBasicController {
+public class EditCurriculumAutomationController extends FormBasicController {
 
 	private SingleSelection dependingOnEl;
 	private FormLayoutContainer executionPeriodCont;
@@ -65,7 +65,7 @@ public class EditCurriculumElementTypeAutomationController extends FormBasicCont
 	private final CurriculumAutomationRule rule;
 	private final boolean implType;
 
-	public EditCurriculumElementTypeAutomationController(UserRequest ureq, WindowControl wControl,
+	public EditCurriculumAutomationController(UserRequest ureq, WindowControl wControl,
 			CurriculumAutomationRule rule, boolean implementationType) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(RepositoryEntryStatusEnum.class, getLocale(), getTranslator()));
@@ -277,8 +277,6 @@ public class EditCurriculumElementTypeAutomationController extends FormBasicCont
 	protected void formOK(UserRequest ureq) {
 		if (dependingOnEl != null) {
 			rule.setDependingOn(AutomationDependingOn.valueOf(dependingOnEl.getSelectedKey()));
-		} else {
-			rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		}
 
 		if (executionPeriodCont.isVisible()) {

@@ -4332,6 +4332,7 @@ create table o_cur_curriculum_element (
   c_show_lectures bool default true not null,
   c_show_certificate bool default false,
   c_show_creditpoints bool default false,
+  c_automation_config text,
   fk_group int8 not null,
   fk_resource int8,
   fk_parent int8,

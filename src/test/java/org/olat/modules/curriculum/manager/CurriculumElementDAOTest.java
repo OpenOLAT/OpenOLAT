@@ -42,6 +42,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumAutomationConfig;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -2120,6 +2121,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void loadAutomationCandidates_excludesDeletedFinishedCancelled() {
 		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), random(), false, null);
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType(random(), random(), random(), random());
+		type.setAutomationConfig(new CurriculumAutomationConfig());
+		curriculumElementTypeDao.update(type);
 
 		CurriculumElement active = curriculumElementDao.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, type, null, null, null, curriculum);
@@ -2139,6 +2142,75 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 				.map(CurriculumElement::getKey)
 				.contains(active.getKey(), preparation.getKey())
 				.doesNotContain(deleted.getKey(), finished.getKey(), cancelled.getKey());
+	}
+
+	@Test
+	public void loadAutomationCandidates_typeConfig() {
+		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), random(), false, null);
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType(random(), random(), random(), random());
+		type.setAutomationConfig(new CurriculumAutomationConfig());
+		curriculumElementTypeDao.update(type);
+
+		CurriculumElement element = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, type, null, null, null, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumElement> candidates = curriculumElementDao.loadAutomationCandidates();
+
+		assertThat(candidates)
+				.map(CurriculumElement::getKey)
+				.contains(element.getKey());
+	}
+
+	@Test
+	public void loadAutomationCandidates_elementConfig_noTypeConfig() {
+		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), random(), false, null);
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType(random(), random(), random(), random());
+
+		CurriculumElement element = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, type, null, null, null, curriculum);
+		element.setAutomationConfig(new CurriculumAutomationConfig());
+		curriculumElementDao.update(element);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumElement> candidates = curriculumElementDao.loadAutomationCandidates();
+
+		assertThat(candidates)
+				.map(CurriculumElement::getKey)
+				.contains(element.getKey());
+	}
+
+	@Test
+	public void loadAutomationCandidates_noConfig_notCandidate() {
+		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), random(), false, null);
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType(random(), random(), random(), random());
+
+		CurriculumElement element = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, type, null, null, null, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumElement> candidates = curriculumElementDao.loadAutomationCandidates();
+
+		assertThat(candidates)
+				.map(CurriculumElement::getKey)
+				.doesNotContain(element.getKey());
+	}
+
+	@Test
+	public void loadAutomationCandidates_elementConfig_noType() {
+		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), random(), false, null);
+
+		CurriculumElement element = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
+		element.setAutomationConfig(new CurriculumAutomationConfig());
+		curriculumElementDao.update(element);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumElement> candidates = curriculumElementDao.loadAutomationCandidates();
+
+		assertThat(candidates)
+				.map(CurriculumElement::getKey)
+				.contains(element.getKey());
 	}
 
 	private CurriculumElement createCurriculumElement(RepositoryEntryEducationalType educationalType) {

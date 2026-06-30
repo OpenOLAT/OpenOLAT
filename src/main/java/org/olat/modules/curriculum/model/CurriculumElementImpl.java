@@ -47,10 +47,12 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumAutomationConfig;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.manager.CurriculumAutomationConfigXStream;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
@@ -163,7 +165,12 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	
 	@Column(name="c_m_path_keys", nullable=true, insertable=true, updatable=true)
 	private String materializedPathKeys;
-	
+
+	@Column(name="c_automation_config")
+	private String automationConfigXml;
+	@Transient
+	private CurriculumAutomationConfig automationConfig;
+
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_group", nullable=false, insertable=true, updatable=false)
 	private Group group;
@@ -737,6 +744,20 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 
 	public void setTaxonomyLevels(Set<CurriculumElementToTaxonomyLevel> taxonomyLevels) {
 		this.taxonomyLevels = taxonomyLevels;
+	}
+
+	@Override
+	public CurriculumAutomationConfig getAutomationConfig() {
+		if (automationConfig == null && automationConfigXml != null) {
+			automationConfig = CurriculumAutomationConfigXStream.fromXML(automationConfigXml);
+		}
+		return automationConfig;
+	}
+
+	@Override
+	public void setAutomationConfig(CurriculumAutomationConfig config) {
+		this.automationConfig = config;
+		this.automationConfigXml = CurriculumAutomationConfigXStream.toXML(config);
 	}
 
 	@Override

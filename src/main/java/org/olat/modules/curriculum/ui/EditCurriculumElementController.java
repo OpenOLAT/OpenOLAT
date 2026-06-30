@@ -46,6 +46,7 @@ import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCall
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
@@ -68,13 +69,15 @@ public class EditCurriculumElementController extends BasicController {
 	private final Link metadataLink;
 	private final Link infosLink;
 	private final Link executionLink;
+	private Link automationLink;
 	private final Link optionsLink;
 	private final Link previewButton;
-	private final Link assessmentLink; 
-	
+	private final Link assessmentLink;
+
 	private EditCurriculumElementMetadataController metadataCtrl;
 	private EditCurriculumElementInfosController infoCtrl;
 	private EditCurriculumElementExecutionController executionCtrl;
+	private EditCurriculumElementAutomationController automationCtrl;
 	private EditCurriculumElementOptionsController optionsCtrl;
 	private CurriculumElementInfosController previewCtrl;
 	private EditCurriculumElementCertificationProgramController certificationProgramCtrl;
@@ -128,10 +131,13 @@ public class EditCurriculumElementController extends BasicController {
 		segmentButtonsCmp.addButton(infosLink, false);
 		executionLink = LinkFactory.createLink("curriculum.element.execution", getTranslator(), this);
 		segmentButtonsCmp.addButton(executionLink, false);
-
+		CurriculumElementType elementType = element != null ? element.getType() : null;
+		if (elementType != null && (elementType.isImplOnly() || !elementType.isAllowedAsRootElement())) {
+			automationLink = LinkFactory.createLink("curriculum.element.automation", getTranslator(), this);
+			segmentButtonsCmp.addButton(automationLink, false);
+		}
 		assessmentLink = LinkFactory.createLink("curriculum.element.assessment", getTranslator(), this);
 		segmentButtonsCmp.addButton(assessmentLink, false);
-		
 		optionsLink = LinkFactory.createLink("curriculum.element.options", getTranslator(), this);
 		segmentButtonsCmp.addButton(optionsLink, false);
 		
@@ -157,7 +163,13 @@ public class EditCurriculumElementController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == metadataCtrl) {
 			if (Event.DONE_EVENT == event) {
+				Long previousTypeKey = element.getType() != null ? element.getType().getKey() : null;
 				element = metadataCtrl.getCurriculumElement();
+				Long newTypeKey = element.getType() != null ? element.getType().getKey() : null;
+				if (!Objects.equals(previousTypeKey, newTypeKey) && element.getAutomationConfig() != null) {
+					element.setAutomationConfig(null);
+					element = curriculumService.updateCurriculumElement(getIdentity(), element);
+				}
 				exposeToVC();
 				updateUI();
 				fireEvent(ureq, event);
@@ -174,6 +186,12 @@ public class EditCurriculumElementController extends BasicController {
 				exposeToVC();
 				fireEvent(ureq, event);
 			}
+		} else if (source == automationCtrl) {
+			if (Event.DONE_EVENT == event) {
+				element = automationCtrl.getCurriculumElement();
+				exposeToVC();
+				fireEvent(ureq, event);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -186,6 +204,8 @@ public class EditCurriculumElementController extends BasicController {
 			doOpenInfos(ureq);
 		} else if (source == executionLink) {
 			doOpenExecution(ureq);
+		} else if (source == automationLink) {
+			doOpenAutomation(ureq);
 		} else if (source == optionsLink) {
 			doOpenOptions(ureq);
 		} else if (source == assessmentLink) {
@@ -266,6 +286,15 @@ public class EditCurriculumElementController extends BasicController {
 		segmentButtonsCmp.setSelectedButton(executionLink);
 	}
 	
+	private void doOpenAutomation(UserRequest ureq) {
+		removeAsListenerAndDispose(automationCtrl);
+
+		automationCtrl = new EditCurriculumElementAutomationController(ureq, getWindowControl(), element);
+		listenTo(automationCtrl);
+		mainVC.put("content", automationCtrl.getInitialComponent());
+		segmentButtonsCmp.setSelectedButton(automationLink);
+	}
+
 	private void doOpenAssessmentSettings(UserRequest ureq) {
 		removeAsListenerAndDispose(certificationProgramCtrl);
 		

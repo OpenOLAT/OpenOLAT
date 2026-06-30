@@ -4386,6 +4386,7 @@ create table o_cur_curriculum_element (
   c_show_lectures number default 1 not null,
   c_show_certificate number default 0,
   c_show_creditpoints number default 0,
+  c_automation_config clob,
   fk_group number(20) not null,
   fk_resource number(20),
   fk_parent number(20),

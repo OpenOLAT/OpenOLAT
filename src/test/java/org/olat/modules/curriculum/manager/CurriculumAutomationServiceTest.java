@@ -904,6 +904,68 @@ public class CurriculumAutomationServiceTest {
 	}
 
 	@Test
+	public void testProcessElement_elementConfigOverridesType() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
+
+		CurriculumAutomationRule elementRule = new CurriculumAutomationRule();
+		elementRule.setEnabled(true);
+		elementRule.setDependingOn(AutomationDependingOn.STATUS);
+		elementRule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		elementRule.setContext(AutomationContext.ELEMENT);
+		elementRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		elementRule.setTargetStatus(CurriculumElementStatus.finished);
+		CurriculumAutomationConfig elementConfig = new CurriculumAutomationConfig();
+		elementConfig.addRule(elementRule);
+		when(element.getAutomationConfig()).thenReturn(elementConfig);
+
+		CurriculumAutomationRule typeRule = new CurriculumAutomationRule();
+		typeRule.setEnabled(true);
+		typeRule.setDependingOn(AutomationDependingOn.STATUS);
+		typeRule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		typeRule.setContext(AutomationContext.ELEMENT);
+		typeRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		typeRule.setTargetStatus(CurriculumElementStatus.confirmed);
+		CurriculumAutomationConfig typeConfig = new CurriculumAutomationConfig();
+		typeConfig.addRule(typeRule);
+		CurriculumElementType elementType = mock(CurriculumElementType.class);
+		when(element.getType()).thenReturn(elementType);
+		when(elementType.getAutomationConfig()).thenReturn(typeConfig);
+
+		sut.execute();
+
+		verify(curriculumService).updateCurriculumElementStatus(eq(null), eq(element),
+				eq(CurriculumElementStatus.finished), eq(false), eq(null));
+		verify(curriculumService, never()).updateCurriculumElementStatus(eq(null), eq(element),
+				eq(CurriculumElementStatus.confirmed), eq(false), eq(null));
+	}
+
+	@Test
+	public void testProcessElement_elementConfig_typeNull() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(element.getType()).thenReturn(null);
+		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		rule.setEnabled(true);
+		rule.setDependingOn(AutomationDependingOn.STATUS);
+		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.finished);
+		CurriculumAutomationConfig config = new CurriculumAutomationConfig();
+		config.addRule(rule);
+		when(element.getAutomationConfig()).thenReturn(config);
+
+		sut.execute();
+
+		verify(curriculumService).updateCurriculumElementStatus(eq(null), eq(element),
+				eq(CurriculumElementStatus.finished), eq(false), eq(null));
+	}
+
+	@Test
 	public void testProcessElement_disabledRule_skips() {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);

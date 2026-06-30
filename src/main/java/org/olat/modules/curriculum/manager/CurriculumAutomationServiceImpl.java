@@ -83,7 +83,10 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 
 	private void processElement(CurriculumElement element, Date today) {
 		CurriculumElementType type = element.getType();
-		CurriculumAutomationConfig config = type != null ? type.getAutomationConfig() : null;
+		CurriculumAutomationConfig elementConfig = element.getAutomationConfig();
+		CurriculumAutomationConfig config = elementConfig != null && elementConfig.getRules() != null
+				? elementConfig
+				: (type != null ? type.getAutomationConfig() : null);
 		if (config == null || config.getRules() == null) {
 			return;
 		}

@@ -26,17 +26,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.date.OffsetDirection;
-import org.olat.core.gui.components.date.RelativeDateElement;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -46,40 +37,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
-import org.olat.modules.curriculum.AutomationContext;
-import org.olat.modules.curriculum.AutomationDependingOn;
-import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
-import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumAutomationService;
 import org.olat.modules.curriculum.CurriculumCalendars;
-import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
@@ -87,25 +52,22 @@ import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
-import org.olat.modules.curriculum.ui.component.AutomationContextCellRenderer;
-import org.olat.modules.curriculum.ui.component.AutomationTargetStatusCellRenderer;
 import org.olat.modules.curriculum.ui.component.CurriculumElementTypeComparator;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ *
  * Initial date: 11 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class EditCurriculumElementTypeController extends FormBasicController {
-	
+
 	private static final String LECTURES = "lectures";
 	private static final String CALENDAR = "calendar";
 	private static final String LEARNING_PROGRESS = "learningprogress";
 	public static final String FOR_USE_AS_IMPL = "implementation";
-	private static final String FOR_USE_AS_IMPL_OR_ELEM = "implementationOrElement";
+	public static final String FOR_USE_AS_IMPL_OR_ELEM = "implementationOrElement";
 	public static final String FOR_USE_AS_ELEM = "element";
 	private static final String SUB_ELEMENTS_YES = "subElementsYes";
 	private static final String SUB_ELEMENTS_NO = "subElementsNo";
@@ -113,13 +75,6 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private static final String CONTENT_SINGLE_COURSE = "singleCourse";
 	private static final String CONTENT_COURSE_BUNDLE = "courseBundle";
 
-	private static final String FILTER_CONTEXT = "Context";
-	private static final String FILTER_STATUS = "Status";
-	private static final String TAB_ALL = "All";
-	private static final String TAB_RELEVANT = "Relevant";
-	private static final String TAB_IMPLEMENTATION = "Implementation";
-	private static final String TAB_CONTENT = "Content";
-	
 	private TextElement cssClassEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
@@ -132,28 +87,17 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	private SpacerElement dividerEl;
 	private MultipleSelectionElement parentTypesEl;
 	private MultipleSelectionElement childTypesEl;
-	
-	private FormToggle automationEnabledEl;
-	private FlexiTableElement automationTable;
-	private AutomationRuleTableModel automationTableModel;
-	private FlexiFiltersTab relevantTab;
 
-	private CloseableModalController cmc;
-	private CloseableCalloutWindowController toolsCalloutCtrl;
-	private AutomationToolsController toolsCtrl;
-	private EditCurriculumElementTypeAutomationController editRuleCtrl;
-
-	private int automationRowCount = 0;
+	private CurriculumAutomationController automationCtrl;
 
 	private CurriculumElementType curriculumElementType;
 	private final String preselectedForUseAs;
-	private CurriculumAutomationConfig automationConfig;
 
 	@Autowired
 	private CurriculumAutomationService automationService;
 	@Autowired
 	private CurriculumService curriculumService;
-	
+
 	public EditCurriculumElementTypeController(UserRequest ureq, WindowControl wControl, CurriculumElementType curriculumElementType) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.curriculumElementType = curriculumElementType;
@@ -183,7 +127,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {
 			displayNameEl.setFocus(true);
 		}
-		
+
 		String identifier = curriculumElementType == null ? "" : curriculumElementType.getIdentifier();
 		identifierEl = uifactory.addTextElement("type.identifier", "type.identifier", 255, identifier, commonContainer);
 		identifierEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.identifier));
@@ -192,9 +136,9 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		String cssClass = curriculumElementType == null ? "" : curriculumElementType.getCssClass();
 		cssClassEl = uifactory.addTextElement("type.cssClass", "type.cssClass", 255, cssClass, commonContainer);
 		cssClassEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.cssClass));
-		
+
 		String description = curriculumElementType == null ? "" : curriculumElementType.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringData("type.description", "type.description", 
+		descriptionEl = uifactory.addRichTextElementForStringData("type.description", "type.description",
 				description, 10, -1, false, null, null,
 				commonContainer, ureq.getUserSession(), getWindowControl());
 		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
@@ -216,12 +160,12 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		featuresEnabledEl.select(CALENDAR, calendarsEnabled == CurriculumCalendars.enabled);
 		CurriculumLearningProgress learningProgressEnabled =  curriculumElementType == null ? null : curriculumElementType.getLearningProgress();
 		featuresEnabledEl.select(LEARNING_PROGRESS, learningProgressEnabled == CurriculumLearningProgress.enabled);
-		
+
 		FormLayoutContainer configurationContainer = FormLayoutContainer.createDefaultFormLayout("configuration", getTranslator());
 		configurationContainer.setRootForm(mainForm);
 		formLayout.add(configurationContainer);
 		configurationContainer.setFormTitle(translate("configuration"));
-		
+
 		String forUseAs = getForUseAs();
 		String forUseAsLabel = getForUseAsLabel(forUseAs);
 		uifactory.addStaticTextElement("type.for.use.as", "type.for.use.as", forUseAsLabel, configurationContainer);
@@ -235,9 +179,9 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				translate("yes"),
 				translate("table.type.subelements.yes.desc"),
 				"o_icon o_icon_sitemap", null, true));
-		subElementsEl = uifactory.addCardSingleSelectHorizontal("subelements", 
+		subElementsEl = uifactory.addCardSingleSelectHorizontal("subelements",
 				"table.type.header.type.subelements", configurationContainer, subElementsKV);
-		subElementsEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, 
+		subElementsEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType,
 				CurriculumElementTypeManagedFlag.composite));
 		subElementsEl.addActionListener(FormEvent.ONCHANGE);
 		if(curriculumElementType != null && !curriculumElementType.isSingleElement()) {
@@ -246,7 +190,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			subElementsEl.select(SUB_ELEMENTS_NO, true);
 		}
 
-		boolean contentManaged = CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, 
+		boolean contentManaged = CurriculumElementTypeManagedFlag.isManaged(curriculumElementType,
 				CurriculumElementTypeManagedFlag.maxEntryRelations);
 		String initialContent;
 		if(curriculumElementType != null && curriculumElementType.getMaxRepositoryEntryRelations() == -1) {
@@ -288,7 +232,6 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		contentSubelementsNoEl = uifactory.addCardSingleSelectHorizontal("type.content.single",
 				"table.type.header.type.content", configurationContainer, contentSubelementsNoKV);
 		contentSubelementsNoEl.setEnabled(!contentManaged);
-		// Override the illegal state "no subelements" and "no content":
 		contentSubelementsNoEl.select(CONTENT_NO_CONTENT.equals(initialContent) ? CONTENT_SINGLE_COURSE : initialContent, true);
 		contentSubelementsNoEl.addActionListener(FormEvent.ONCHANGE);
 
@@ -348,53 +291,26 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 
 		FormLayoutContainer automationCont = uifactory.addVerticalFormLayout("automation", null, formLayout);
 		automationCont.setFormTitle(translate("automation.title"));
-		boolean isImplOrElem = FOR_USE_AS_IMPL_OR_ELEM.equals(getForUseAs());
+		boolean isImplOrElem = FOR_USE_AS_IMPL_OR_ELEM.equals(forUseAs);
 		if (isImplOrElem) {
 			automationCont.setFormInfo(translate("automation.info.impl.or.elem"));
 		} else {
-			String automationInfoKey = FOR_USE_AS_ELEM.equals(getForUseAs()) ? "automation.info.element" : "automation.info";
+			String automationInfoKey = FOR_USE_AS_ELEM.equals(forUseAs) ? "automation.info.element" : "automation.info";
 			automationCont.setFormInfo(translate(automationInfoKey));
 		}
 
-		FormLayoutContainer automationEnableContainer = FormLayoutContainer.createDefaultFormLayout("automationEnableWrapper", getTranslator());
-		automationEnableContainer.setRootForm(mainForm);
-		automationCont.add(automationEnableContainer);
-		automationEnabledEl = uifactory.addToggleButton("automation.enable", "automation.enable", null, null, automationEnableContainer);
-		automationEnabledEl.addActionListener(FormEvent.ONCHANGE);
-		automationEnabledEl.setVisible(!isImplOrElem);
-
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.context,
-				new AutomationContextCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.automationType));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.targetStatus,
-				new AutomationTargetStatusCellRenderer(getTranslator(), true)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.condition));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.statusIs));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.rule));
-		columnsModel.addFlexiColumnModel(new ActionsColumnModel(AutomationCols.tools));
-
-		FormLayoutContainer automationTableCont = FormLayoutContainer.createBareBoneFormLayout("automationTableWrapper", getTranslator());
-		automationTableCont.setRootForm(mainForm);
-		automationCont.add(automationTableCont);
-
-		automationTableModel = new AutomationRuleTableModel(columnsModel, getTranslator());
-		automationTable = uifactory.addTableElement(getWindowControl(), "automationRules",
-				automationTableModel, getTranslator(), automationTableCont);
-		automationTable.setElementCssClass("o_block_large_bottom");
-		automationTable.setExportEnabled(true);
-
-		if (!isImplOrElem) {
-			automationConfig = curriculumElementType != null
-					? curriculumElementType.getAutomationConfig()
-					: defaultAutomationConfig();
-			automationEnabledEl.toggle(automationConfig != null);
-			initAutomationFilters();
-			initAutomationFilterTabs();
-			loadAutomationTable();
-			automationTable.setSelectedFilterTab(ureq, relevantTab);
-		}
-		automationTable.setVisible(!isImplOrElem && automationEnabledEl.isOn());
+		var initialConfig = isImplOrElem ? null
+				: (curriculumElementType != null ? curriculumElementType.getAutomationConfig() : defaultAutomationConfig());
+		AutomationFormConfig cfg = new AutomationFormConfig(
+				forUseAs,
+				true,
+				initialConfig != null,
+				initialConfig,
+				FOR_USE_AS_IMPL.equals(forUseAs),
+				this::defaultAutomationConfig);
+		automationCtrl = new CurriculumAutomationController(ureq, getWindowControl(), mainForm, cfg);
+		listenTo(automationCtrl);
+		automationCont.add(automationCtrl.getInitialFormItem());
 
 		FormLayoutContainer buttonWrapperContainer = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
 		buttonWrapperContainer.setRootForm(mainForm);
@@ -406,68 +322,6 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
-	private void initAutomationFilters() {
-		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
-
-		SelectionValues contextValues = new SelectionValues();
-		for (AutomationContext context : AutomationContext.values()) {
-			contextValues.add(SelectionValues.entry(context.name(), translate("automation.context." + context.name().toLowerCase())));
-		}
-		filters.add(new FlexiTableMultiSelectionFilter(translate("automation.filter.context"), FILTER_CONTEXT, contextValues, true));
-
-		SelectionValues statusValues = new SelectionValues();
-		for (CurriculumElementStatus status : CurriculumElementStatus.selectableAdmin()) {
-			statusValues.add(SelectionValues.entry(status.name(), translate("status." + status.name())));
-		}
-		Translator repoTranslator = Util.createPackageTranslator(RepositoryEntryStatusEnum.class, getLocale(), getTranslator());
-		for (RepositoryEntryStatusEnum status : RepositoryEntryStatusEnum.preparationToClosed()) {
-			statusValues.add(SelectionValues.entry(status.name(), repoTranslator.translate(status.i18nKey())));
-		}
-		filters.add(new FlexiTableMultiSelectionFilter(translate("automation.filter.status"), FILTER_STATUS, statusValues, true));
-
-		automationTable.setFilters(true, filters, true, false);
-	}
-
-	private void initAutomationFilterTabs() {
-		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tab(TAB_ALL, translate("automation.filter.all"), TabSelectionBehavior.nothing);
-		relevantTab = FlexiFiltersTabFactory.tab(TAB_RELEVANT, translate("automation.filter.relevant"), TabSelectionBehavior.nothing);
-		boolean isElemType = FOR_USE_AS_ELEM.equals(getForUseAs());
-		String implTabLabel = isElemType ? translate("automation.filter.element") : translate("automation.filter.implementation");
-		AutomationContext implTabContext = isElemType ? AutomationContext.ELEMENT : AutomationContext.IMPLEMENTATION;
-		FlexiFiltersTab implementationTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_IMPLEMENTATION,
-				implTabLabel, TabSelectionBehavior.nothing,
-				List.of(FlexiTableFilterValue.valueOf(FILTER_CONTEXT, implTabContext.name())));
-		FlexiFiltersTab contentTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TAB_CONTENT,
-				translate("automation.filter.content"), TabSelectionBehavior.nothing,
-				List.of(FlexiTableFilterValue.valueOf(FILTER_CONTEXT, AutomationContext.CONTENT.name())));
-		automationTable.setFilterTabs(true, List.of(allTab, relevantTab, implementationTab, contentTab));
-	}
-
-	private void loadAutomationTable() {
-		List<AutomationRuleRow> rows = new ArrayList<>();
-		if (automationConfig != null && automationConfig.getRules() != null) {
-			for (CurriculumAutomationRule rule : automationConfig.getRules()) {
-				rows.add(forgeAutomationRow(rule));
-			}
-		}
-		automationTableModel.setObjects(rows);
-		automationTable.reset(true, true, true);
-	}
-
-	private AutomationRuleRow forgeAutomationRow(CurriculumAutomationRule rule) {
-		AutomationRuleRow row = new AutomationRuleRow(rule);
-		FormToggle ruleEl = uifactory.addToggleButton("rule_" + (++automationRowCount), null,
-				translate("on"), translate("off"), null);
-		ruleEl.toggle(rule.isEnabled());
-		ruleEl.addActionListener(FormEvent.ONCHANGE);
-		ruleEl.setUserObject(row);
-		row.setRuleEnabledEl(ruleEl);
-		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
-		toolsLink.setUserObject(row);
-		row.setToolsLink(toolsLink);
-		return row;
-	}
-
 	private CurriculumAutomationConfig defaultAutomationConfig() {
 		boolean subYes = subElementsEl.isOneSelected() && SUB_ELEMENTS_YES.equals(subElementsEl.getSelectedKey());
 		SingleSelection contentEl = subYes ? contentSubelementsYesEl : contentSubelementsNoEl;
@@ -476,44 +330,6 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		return automationService.getDefaultConfig(FOR_USE_AS_IMPL.equals(getForUseAs()), maxRelations);
 	}
 
-	private void updateAutomationDefaults() {
-		if (curriculumElementType == null && automationEnabledEl.isOn()) {
-			automationConfig = defaultAutomationConfig();
-			loadAutomationTable();
-		}
-	}
-
-	private void doOpenAutomationTools(UserRequest ureq, AutomationRuleRow row, FormLink link) {
-		toolsCtrl = new AutomationToolsController(ureq, getWindowControl(), row);
-		listenTo(toolsCtrl);
-		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
-		listenTo(toolsCalloutCtrl);
-		toolsCalloutCtrl.activate();
-	}
-
-	private void doEditRule(UserRequest ureq, CurriculumAutomationRule rule) {
-		editRuleCtrl = new EditCurriculumElementTypeAutomationController(ureq, getWindowControl(), rule,
-				FOR_USE_AS_IMPL.equals(getForUseAs()));
-		listenTo(editRuleCtrl);
-		String title = translate("automation.rule.edit.title");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editRuleCtrl.getInitialComponent(),
-				true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(editRuleCtrl);
-		removeAsListenerAndDispose(toolsCtrl);
-		removeAsListenerAndDispose(toolsCalloutCtrl);
-		removeAsListenerAndDispose(cmc);
-		editRuleCtrl = null;
-		toolsCtrl = null;
-		toolsCalloutCtrl = null;
-		cmc = null;
-	}
-	
 	private String getForUseAs() {
 		if(preselectedForUseAs != null) {
 			return preselectedForUseAs;
@@ -529,7 +345,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			return FOR_USE_AS_IMPL_OR_ELEM;
 		}
 	}
-	
+
 	private String getForUseAsLabel(String value) {
 		if(FOR_USE_AS_IMPL.equals(value)) {
 			return translate("table.type.for.use.as.implementation");
@@ -546,9 +362,6 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		boolean subElementsYes = subElementsEl.isOneSelected() && SUB_ELEMENTS_YES.equals(subElementsEl.getSelectedKey());
 
 		if(!subElementsYes) {
-			// If subelements==no, copy the content state of the other element,
-			// but override the illegal state "subelements==no" and "no content". 
-			// Change the value to "single course" in that case.
 			String content = contentSubelementsYesEl.isOneSelected() ? contentSubelementsYesEl.getSelectedKey() : CONTENT_SINGLE_COURSE;
 			contentSubelementsNoEl.select(CONTENT_NO_CONTENT.equals(content) ? CONTENT_SINGLE_COURSE : content, true);
 		}
@@ -564,37 +377,20 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
+
 		displayNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
 			displayNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
-		
+
 		identifierEl.clearError();
 		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
 			identifierEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
-		
-		return allOk;
-	}
 
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (editRuleCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				loadAutomationTable();
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if (toolsCtrl == source || toolsCalloutCtrl == source) {
-			toolsCalloutCtrl.deactivate();
-			cleanUp();
-		} else if (cmc == source) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
+		return allOk;
 	}
 
 	@Override
@@ -604,34 +400,15 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				contentSubelementsYesEl.select(CONTENT_NO_CONTENT, true);
 			}
 			updateUI();
-			updateAutomationDefaults();
+			automationCtrl.recomputeDefaults();
 		} else if (contentSubelementsYesEl == source || contentSubelementsNoEl == source) {
-			updateAutomationDefaults();
-		} else if (automationEnabledEl == source) {
-			if (automationEnabledEl.isOn() && automationConfig == null) {
-				automationConfig = defaultAutomationConfig();
-				loadAutomationTable();
-			}
-			automationTable.setVisible(automationEnabledEl.isOn());
-		} else if (automationTable == source) {
-			if (event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
-				automationTableModel.filter(automationTable.getQuickSearchString(), automationTable.getFilters());
-				automationTable.reset(true, true, false);
-			}
-		} else if (source instanceof FormToggle tg && tg.getUserObject() instanceof AutomationRuleRow r) {
-			r.getRule().setEnabled(tg.isOn());
-		} else if (source instanceof FormLink link && "tools".equals(link.getCmd())
-				&& link.getUserObject() instanceof AutomationRuleRow r) {
-			doOpenAutomationTools(ureq, r, link);
+			automationCtrl.recomputeDefaults();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-		if (fiSrc instanceof FormLink || fiSrc == automationTable) {
-			return;
-		}
 		super.propagateDirtinessToContainer(fiSrc, fe);
 	}
 
@@ -711,7 +488,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		for(String selectedAllowedSubTypeKey:selectedAllowedSubTypeKeys) {
 			allowedSubTypes.add(curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(Long.valueOf(selectedAllowedSubTypeKey))));
 		}
-		curriculumElementType.setAutomationConfig(automationEnabledEl.isOn() ? automationConfig : null);
+		curriculumElementType.setAutomationConfig(automationCtrl.isAutomationEnabled() ? automationCtrl.getAutomationConfig() : null);
 		curriculumElementType = curriculumService.updateCurriculumElementType(curriculumElementType, allowedSubTypes);
 
 		fireEvent(ureq, Event.DONE_EVENT);
@@ -720,170 +497,5 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
-
-	private class AutomationRuleTableModel extends DefaultFlexiTableDataModel<AutomationRuleRow>
-			implements FilterableFlexiTableModel {
-
-		private static final AutomationCols[] COLS = AutomationCols.values();
-
-		private final Translator translator;
-		private List<AutomationRuleRow> backupRows = List.of();
-
-		public AutomationRuleTableModel(FlexiTableColumnModel columnsModel,
-				org.olat.core.gui.translator.Translator translator) {
-			super(columnsModel);
-			Translator withDate = Util.createPackageTranslator(RelativeDateElement.class,
-					translator.getLocale(), translator);
-			this.translator = Util.createPackageTranslator(RepositoryEntryStatusEnum.class,
-					translator.getLocale(), withDate);
-		}
-
-		@Override
-		public void setObjects(List<AutomationRuleRow> objects) {
-			backupRows = objects;
-			super.setObjects(objects);
-		}
-
-		@Override
-		public void filter(String searchString, List<FlexiTableFilter> filters) {
-			List<AutomationRuleRow> rows = backupRows;
-
-			FlexiTableFilter contextFilter = FlexiTableFilter.getFilter(filters, FILTER_CONTEXT);
-			if (contextFilter instanceof FlexiTableExtendedFilter extendedFilter) {
-				List<String> values = extendedFilter.getValues();
-				if (values != null && !values.isEmpty()) {
-					rows = rows.stream()
-							.filter(r -> values.contains(r.getContext().name()))
-							.toList();
-				}
-			}
-
-			FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, FILTER_STATUS);
-			if (statusFilter instanceof FlexiTableExtendedFilter extendedFilter) {
-				List<String> values = extendedFilter.getValues();
-				if (values != null && !values.isEmpty()) {
-					rows = rows.stream()
-							.filter(r -> {
-								Object ts = r.getTargetStatus();
-								if (ts instanceof CurriculumElementStatus ces) {
-									return values.contains(ces.name());
-								} else if (ts instanceof RepositoryEntryStatusEnum res) {
-									return values.contains(res.name());
-								} else if (ts instanceof String s) {
-									return values.contains(s);
-								}
-								return false;
-							})
-							.toList();
-				}
-			}
-
-			if (relevantTab != null && relevantTab.equals(automationTable.getSelectedFilterTab())) {
-				rows = rows.stream().filter(AutomationRuleRow::isEnabled).toList();
-			}
-
-			super.setObjects(rows);
-		}
-
-		@Override
-		public Object getValueAt(int row, int col) {
-			AutomationRuleRow ruleRow = getObject(row);
-			return switch (COLS[col]) {
-				case context -> ruleRow.getContext();
-				case automationType -> translator.translate("automation.type." + ruleRow.getAutomationType().name().toLowerCase());
-				case targetStatus -> ruleRow.getTargetStatus();
-				case condition -> conditionText(ruleRow.getRule());
-				case statusIs -> joinStatuses(ruleRow.getRule().getOnlyWhenStatus());
-				case rule -> ruleRow.getRuleEnabledEl();
-				case tools -> ruleRow.getToolsLink();
-			};
-		}
-
-		private String conditionText(CurriculumAutomationRule rule) {
-			if (rule.getDependingOn() == AutomationDependingOn.STATUS) {
-				return statusCondition(rule.getDependingOnStatus());
-			}
-			boolean after = rule.getDirection() == OffsetDirection.AFTER;
-			boolean endRef = CurriculumAutomationRule.REFERENCE_END.equals(rule.getReference())
-					|| (rule.getReference() == null && after);
-			String anchor = translator.translate(endRef
-					? "automation.condition.anchor.end" : "automation.condition.anchor.begin");
-			if (rule.getUnit() == null || rule.getUnit() == AutomationUnit.SAME_DAY) {
-				return translator.translate("relative.date.display.same.day", new String[] { anchor });
-			}
-			if (rule.getValue() == null) {
-				return "-";
-			}
-			String base = "relative.date.unit." + rule.getUnit().name().toLowerCase().replaceAll("s$", "");
-			String unit = translator.translate(rule.getValue() == 1 ? base : base + "s");
-			String key = after ? "relative.date.display.after" : "relative.date.display.before";
-			return translator.translate(key, new String[] { String.valueOf(rule.getValue()), unit, anchor });
-		}
-
-		private String statusCondition(Set<String> statuses) {
-			if (statuses == null || statuses.isEmpty()) {
-				return "-";
-			}
-			String sep = " " + translator.translate("automation.condition.status.or") + " ";
-			String joined = statuses.stream()
-					.map(s -> "\"" + CurriculumUIFactory.translateAutomationStatus(getTranslator(), s) + "\"")
-					.collect(Collectors.joining(sep));
-			return translator.translate("automation.condition.status", new String[] { joined });
-		}
-
-		private String joinStatuses(Set<String> statuses) {
-			if (statuses == null || statuses.isEmpty()) {
-				return "-";
-			}
-			return statuses.stream()
-					.map(s -> CurriculumUIFactory.translateAutomationStatus(getTranslator(), s))
-					.collect(Collectors.joining(", "));
-		}
-	}
-
-	private enum AutomationCols implements FlexiColumnDef {
-		context("automation.col.context"),
-		automationType("automation.col.automation"),
-		targetStatus("automation.col.target.status"),
-		condition("automation.col.condition"),
-		statusIs("automation.col.status.is"),
-		rule("automation.col.rule"),
-		tools("action");
-
-		private final String i18nKey;
-
-		AutomationCols(String i18nKey) {
-			this.i18nKey = i18nKey;
-		}
-
-		@Override
-		public String i18nHeaderKey() {
-			return i18nKey;
-		}
-	}
-
-	private class AutomationToolsController extends BasicController {
-
-		private final AutomationRuleRow row;
-		private final Link editLink;
-
-		public AutomationToolsController(UserRequest ureq, WindowControl wControl, AutomationRuleRow row) {
-			super(ureq, wControl);
-			this.row = row;
-			VelocityContainer mainVC = createVelocityContainer("tool_automation_rule");
-			editLink = LinkFactory.createLink("automation.rule.edit", "automation.rule.edit",
-					getTranslator(), mainVC, this, Link.LINK);
-			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
-			putInitialPanel(mainVC);
-		}
-
-		@Override
-		protected void event(UserRequest ureq, Component source, Event event) {
-			if (editLink == source) {
-				fireEvent(ureq, Event.CLOSE_EVENT);
-				doEditRule(ureq, row.getRule());
-			}
-		}
 	}
 }
