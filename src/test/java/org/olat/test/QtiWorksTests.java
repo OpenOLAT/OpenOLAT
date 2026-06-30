@@ -96,17 +96,6 @@ import org.junit.runners.Suite;
 	uk.ac.ed.ph.jqtiplus.value.UriValueTest.class,
 	uk.ac.ed.ph.jqtiplus.xmlutils.CustomUriSchemeTest.class,
 	
-	//qtiworks mathassess glue
-	uk.ac.ed.ph.qtiworks.mathassess.glue.maxima.CircularMaximaUpConversionTests.class,
-	uk.ac.ed.ph.qtiworks.mathassess.glue.maxima.MaximaDataBinderBadParsingTests.class,
-	uk.ac.ed.ph.qtiworks.mathassess.glue.maxima.MaximaDataBinderFromMaximaAndBackTests.class,
-	uk.ac.ed.ph.qtiworks.mathassess.glue.maxima.MaximaDataBinderTests.class,
-	uk.ac.ed.ph.qtiworks.mathassess.glue.maxima.MaximaDataBinderToMaximaAndBackTests.class,
-	uk.ac.ed.ph.qtiworks.mathassess.glue.maxima.QtiMaximaSessionExecuteStringCircularTests.class,
-	uk.ac.ed.ph.qtiworks.mathassess.glue.maxima.QtiMaximaSessionPassVariableTests.class,
-	uk.ac.ed.ph.qtiworks.mathassess.glue.maxima.QtiMaximaSessionQueryVariableTests.class,
-	uk.ac.ed.ph.qtiworks.mathassess.glue.maxima.QtiMaximaSessionTest.class,
-	
 	//qtiworks samples (some integration tests)
 	uk.ac.ed.ph.qtiworks.test.integration.QtiXmlReaderSampleTests.class,
 	uk.ac.ed.ph.qtiworks.test.integration.SerializationSampleTests.class,

@@ -91,7 +91,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.ims.qti21.QTI21Constants;
-import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.XmlUtilities;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
@@ -187,7 +186,6 @@ import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetManager;
-import uk.ac.ed.ph.qtiworks.mathassess.MathEntryInteraction;
 
 /**
  * 
@@ -1005,12 +1003,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		Context ctx = new VelocityContext();
 		ctx.put("interaction", interaction);
 
-		String page;
-		if(interaction instanceof MathEntryInteraction) {
-			page = velocity_root.concat("/mathEntryInteraction.html");
-		} else {
-			page = velocity_root.concat("/unsupportedCustomInteraction.html");
-		}
+		String page = velocity_root.concat("/unsupportedCustomInteraction.html");
 		renderVelocity(renderer, sb, interaction, ctx, page, resolvedAssessmentItem, itemSessionState, component, ubu, translator);
 	}
 	
@@ -1085,10 +1078,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				break;
 			}
 			case "mathEntryInteraction": {
-				if(!CoreSpringFactory.getImpl(QTI21Module.class).isMathAssessExtensionEnabled()) {
-					interactionName = "mathEntryInteractionNotEnabled";
-					break;
-				}
+				interactionName = "mathEntryInteractionNotEnabled";
+				break;
 			}
 			default: interactionName = interaction.getQtiClassName(); break;
 		}

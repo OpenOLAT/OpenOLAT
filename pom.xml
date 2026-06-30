@@ -91,7 +91,7 @@
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.5</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
-		<qtiworks.version>1.0.36</qtiworks.version>
+		<qtiworks.version>1.0.37</qtiworks.version>
 		<org.commonmark>0.29.0</org.commonmark>
 		<dev.langchain4j>1.17.0</dev.langchain4j>
 		
@@ -1880,23 +1880,6 @@
 		<dependency>
 			<groupId>org.openolat.qtiworks</groupId>
 			<artifactId>qtiworks-jqtiplus</artifactId>
-			<version>${qtiworks.version}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.openolat.qtiworks</groupId>
-			<artifactId>qtiworks-mathassess</artifactId>
-			<version>${qtiworks.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openolat.qtiworks</groupId>
-			<artifactId>qtiworks-mathassess-glue</artifactId>
-			<version>${qtiworks.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openolat.qtiworks</groupId>
-			<artifactId>qtiworks-mathassess-glue</artifactId>
 			<version>${qtiworks.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>

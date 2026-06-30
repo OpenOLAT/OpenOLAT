@@ -50,9 +50,6 @@
 				<entry key="/errors/">
 					<ref bean="errorsBean" />
 				</entry>
-				<entry key="/math/">
-					<ref bean="mathwebbean" />
-				</entry>
 				<entry key="/tiny/">
 					<ref bean="tinywebbean" />
 				</entry>
@@ -297,9 +294,6 @@
 	
 	<bean id="adminbean"
 		class="org.olat.admin.AdminModuleDispatcher" />
-		
-	<bean id="mathwebbean"
-		class="org.olat.ims.qti21.restapi.MathWebDispatcher" />
 		
 	<bean id="tinywebbean"
 		class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.TinyDispatcher" />

@@ -172,8 +172,6 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.ResponseData.ResponseDataType;
 import uk.ac.ed.ph.jqtiplus.value.BooleanValue;
 import uk.ac.ed.ph.jqtiplus.value.NumberValue;
-import uk.ac.ed.ph.jqtiplus.value.RecordValue;
-import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
 import uk.ac.ed.ph.jqtiplus.xmlutils.XmlFactories;
 import uk.ac.ed.ph.jqtiplus.xmlutils.XmlResourceNotFoundException;
@@ -182,9 +180,6 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltSerializationOptions;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetCache;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltStylesheetManager;
-import uk.ac.ed.ph.qtiworks.mathassess.GlueValueBinder;
-import uk.ac.ed.ph.qtiworks.mathassess.MathAssessConstants;
-import uk.ac.ed.ph.qtiworks.mathassess.MathAssessExtensionPackage;
 
 /**
  * 
@@ -254,12 +249,6 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	public void afterPropertiesSet() throws Exception {
     	final List<JqtiExtensionPackage<?>> extensionPackages = new ArrayList<>();
 
-        /* Enable MathAssess extensions if requested */
-        if (qtiModule.isMathAssessExtensionEnabled()) {
-            log.info("Enabling the MathAssess extensions");
-            extensionPackages.add(new MathAssessExtensionPackage(xsltStylesheetCache));
-            extensionPackages.add(new OpenOLATExtensionPackage(xsltStylesheetCache));
-        }
         jqtiExtensionManager = new JqtiExtensionManager(extensionPackages);
         xsltStylesheetManager = new XsltStylesheetManager(new ClassPathResourceLocator(), xsltStylesheetCache);
         
@@ -1371,20 +1360,6 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
     
     private String stringifyQtiValue(final Value value) {
-        if (qtiModule.isMathAssessExtensionEnabled() && GlueValueBinder.isMathsContentRecord(value)) {
-            /* This is a special MathAssess "Maths Content" variable. In this case, we'll record
-             * just the ASCIIMath input form or the Maxima form, if either are available.
-             */
-            final RecordValue mathsValue = (RecordValue) value;
-            final SingleValue asciiMathInput = mathsValue.get(MathAssessConstants.FIELD_CANDIDATE_INPUT_IDENTIFIER);
-            if (asciiMathInput!=null) {
-                return "ASCIIMath[" + asciiMathInput.toQtiString() + "]";
-            }
-            final SingleValue maximaForm = mathsValue.get(MathAssessConstants.FIELD_MAXIMA_IDENTIFIER);
-            if (maximaForm!=null) {
-                return "Maxima[" + maximaForm.toQtiString() + "]";
-            }
-        }
         /* Just convert to QTI string in the usual way */
         return value.toQtiString();
     }

@@ -52,8 +52,6 @@ public class QTI21Module extends AbstractSpringModule {
 	@Autowired
 	private QTI21AssessmentTestHandler assessmentHandler;
 	
-	@Value("${qti21.math.assessment.extension.enabled:false}")
-	private boolean mathAssessExtensionEnabled;
 	@Value("${qti21.digital.signature.enabled:false}")
 	private boolean digitalSignatureEnabled;
 	@Value("${qti21.digital.signature.certificate:}")
@@ -84,11 +82,6 @@ public class QTI21Module extends AbstractSpringModule {
 
 	@Override
 	protected void initFromChangedProperties() {
-		String mathExtensionObj = getStringPropertyValue("math.extension", true);
-		if(StringHelper.containsNonWhitespace(mathExtensionObj)) {
-			mathAssessExtensionEnabled = "enabled".equals(mathExtensionObj);
-		}
-		
 		String correctionWorkflowObj = getStringPropertyValue("qti21.correction.workflow", true);
 		if(StringHelper.containsNonWhitespace(correctionWorkflowObj)) {
 			correctionWorkflow = CorrectionWorkflow.valueOf(correctionWorkflowObj).name();
@@ -110,15 +103,6 @@ public class QTI21Module extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(digitalSignatureObj)) {
 			digitalSignatureCertificatePassword = digitalSignatureCertificatePasswordObj;
 		}
-	}
-
-	public boolean isMathAssessExtensionEnabled() {
-		return mathAssessExtensionEnabled;
-	}
-
-	public void setMathAssessExtensionEnabled(boolean enabled) {
-		mathAssessExtensionEnabled = enabled;
-		setStringProperty("math.extension", enabled ? "enabled" : "disabled", true);
 	}
 
 	public CorrectionWorkflow getCorrectionWorkflow() {

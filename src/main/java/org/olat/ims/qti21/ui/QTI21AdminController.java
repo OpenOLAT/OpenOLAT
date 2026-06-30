@@ -58,7 +58,6 @@ public class QTI21AdminController extends FormBasicController {
 	private static final String[] onValues = new String[]{ "" };
 	
 	private FormLink validationButton;
-	private MultipleSelectionElement mathExtensionEl;
 	private MultipleSelectionElement digitalSignatureEl;
 	private FileElement certificateEl;
 	private TextElement certificatePasswordEl;
@@ -70,23 +69,21 @@ public class QTI21AdminController extends FormBasicController {
 	private QTI21Module qti21Module;
 	
 	public QTI21AdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl);
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer signatureCont = FormLayoutContainer.createDefaultFormLayout("signature", getTranslator());
-		signatureCont.setFormTitle(translate("admin.signature.title"));
-		signatureCont.setFormContextHelp("manual_admin/administration/e-Assessment_Administration/#test");
-		signatureCont.setRootForm(mainForm);
-		formLayout.add(signatureCont);
-
-		validationButton = uifactory.addFormLink("validate.xml.signature", signatureCont, Link.BUTTON);
+	protected void initForm(FormItemContainer layoutForm, Controller listener, UserRequest ureq) {
+		setFormTitle("admin.signature.title");
+		setFormContextHelp("manual_admin/administration/e-Assessment_Administration/#test");
+		
+		validationButton = uifactory.addFormLink("validate.xml.signature", layoutForm, Link.BUTTON);
 		validationButton.setCustomEnabledLinkCSS("btn btn-default pull-right");
 		validationButton.getComponent().setSuppressDirtyFormWarning(true);
 		
-		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature", signatureCont,
+		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature", layoutForm,
 				onKeys, onValues);
 		if(qti21Module.isDigitalSignatureEnabled()) {
 			digitalSignatureEl.select(onKeys[0], true);
@@ -94,7 +91,7 @@ public class QTI21AdminController extends FormBasicController {
 		digitalSignatureEl.setExampleKey("digital.signature.text", null);
 		digitalSignatureEl.addActionListener(FormEvent.ONCHANGE);
 		
-		certificateEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "digital.signature.certificate", "digital.signature.certificate", signatureCont);
+		certificateEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "digital.signature.certificate", "digital.signature.certificate", layoutForm);
 		certificateEl.setExampleKey("digital.signature.certificate.example", null);
 		certificateEl.setHelpText(translate("digital.signature.certificate.hint"));
 		if(StringHelper.containsNonWhitespace(qti21Module.getDigitalSignatureCertificate())) {
@@ -105,24 +102,10 @@ public class QTI21AdminController extends FormBasicController {
 		String certificatePassword = qti21Module.getDigitalSignatureCertificatePassword();
 		String password = StringHelper.containsNonWhitespace(certificatePassword) ? PLACEHOLDER : "";
 		certificatePasswordEl = uifactory.addPasswordElement("digital.signature.certificate.password", "digital.signature.certificate.password",
-				256, password, signatureCont);
+				256, password, layoutForm);
 		certificatePasswordEl.setAutocomplete("new-password");
 		
-		FormLayoutContainer extensionsCont = FormLayoutContainer.createDefaultFormLayout("extensions", getTranslator());
-		extensionsCont.setFormTitle(translate("admin.extensions.title"));
-		extensionsCont.setRootForm(mainForm);
-		formLayout.add(extensionsCont);
-		
-		mathExtensionEl = uifactory.addCheckboxesHorizontal("math.extension", "math.extension", extensionsCont,
-				onKeys, onValues);
-		if(qti21Module.isMathAssessExtensionEnabled()) {
-			mathExtensionEl.select(onKeys[0], true);
-		}
-		mathExtensionEl.setExampleKey("math.extension.text", null);
-		mathExtensionEl.addActionListener(FormEvent.ONCHANGE);
-		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		extensionsCont.add(buttonsCont);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, layoutForm);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	
@@ -208,7 +191,6 @@ public class QTI21AdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		qti21Module.setMathAssessExtensionEnabled(mathExtensionEl.isSelected(0));
 		qti21Module.setDigitalSignatureEnabled(digitalSignatureEl.isSelected(0));
 		if(digitalSignatureEl.isSelected(0)) {
 			File uploadedCertificate = certificateEl.getUploadFile();

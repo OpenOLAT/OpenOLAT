@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.velocity.context.Context;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
@@ -37,7 +36,6 @@ import org.olat.core.gui.render.velocity.VelocityComponent;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 
 import uk.ac.ed.ph.jqtiplus.node.content.variable.FeedbackElement;
@@ -60,7 +58,6 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	
 	private Context context;
 	
-	private final boolean mathAssess;
 	private boolean hideFeedbacks = false;
 	private boolean correctionHelp = false;
 	private boolean correctionSolution = false;
@@ -78,7 +75,6 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 
 	public AssessmentObjectComponent(String name) {
 		super(name);
-		mathAssess = CoreSpringFactory.getImpl(QTI21Module.class).isMathAssessExtensionEnabled();
 	}
 	
 	public abstract AssessmentObjectFormItem getQtiItem();
@@ -253,10 +249,6 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	protected void loadJavascripts(ValidationResult vr) {
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
 		jsa.addRequiredStaticJsFile("assessment/rendering/javascript/QtiWorksRendering.js");
-		if(mathAssess) {
-			jsa.addRequiredStaticJsFile("assessment/rendering/javascript/AsciiMathInputController.js");
-			jsa.addRequiredStaticJsFile("assessment/rendering/javascript/UpConversionAjaxController.js");
-		}
 		
 		// drawing needs slider, slider need it too
 		// drag and drop used a lot...

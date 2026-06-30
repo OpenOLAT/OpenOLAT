@@ -19,10 +19,6 @@
  */
 package org.olat.ims.qti21.ui.components;
 
-
-import static uk.ac.ed.ph.qtiworks.mathassess.MathAssessConstants.FIELD_PMATHML_IDENTIFIER;
-import static uk.ac.ed.ph.qtiworks.mathassess.MathAssessConstants.MATHS_CONTENT_RECORD_VARIABLE_IDENTIFIER;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -135,7 +131,7 @@ public class AssessmentRenderFunctions {
 				final Identifier itemIdentifier = entry.getKey();
                 final SingleValue itemValue = entry.getValue();
                 if(itemValue.hasBaseType(BaseType.STRING)
-                		&& MATHS_CONTENT_RECORD_VARIABLE_IDENTIFIER.equals(itemIdentifier)) {
+                		&& QTI21Constants.MATHS_CONTENT_RECORD_VARIABLE_IDENTIFIER.equals(itemIdentifier)) {
                 	return true;
                 }
 			}
@@ -457,7 +453,7 @@ public class AssessmentRenderFunctions {
 			for(Map.Entry<Identifier, SingleValue> entry:recordValue.entrySet()) {
 				final Identifier itemIdentifier = entry.getKey();
                 final SingleValue itemValue = entry.getValue();
-                if(itemValue.hasBaseType(BaseType.STRING) && FIELD_PMATHML_IDENTIFIER.equals(itemIdentifier)) {
+                if(itemValue.hasBaseType(BaseType.STRING) && QTI21Constants.FIELD_PMATHML_IDENTIFIER.equals(itemIdentifier)) {
                 	return ((StringValue)itemValue).stringValue();
                 }
 			}

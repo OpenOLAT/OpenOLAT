@@ -218,7 +218,15 @@ public class QTI21Constants {
 	
 	public static final String WILDCARD_KEY = "oo-wildcard-oo";
 	
+	/**
+	 * Only for compatibility
+	 */
+    public static final Identifier FIELD_PMATHML_IDENTIFIER = Identifier.assumedLegal("PMathML");
 	
+    /**
+	 * Only for compatibility
+	 */
+    public static final Identifier MATHS_CONTENT_RECORD_VARIABLE_IDENTIFIER = Identifier.assumedLegal("MathsContentClass");
 	
 	public enum HotspotLayouts {
 		
