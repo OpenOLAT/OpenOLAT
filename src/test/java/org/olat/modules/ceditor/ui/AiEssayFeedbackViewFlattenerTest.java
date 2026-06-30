@@ -66,8 +66,8 @@ public class AiEssayFeedbackViewFlattenerTest {
 	}
 
 	@Test
-	public void bucketKey_24IsWrong() {
-		assertEquals("ai.essay.correction.assessment.wrong", AiEssayFeedbackViewFlattener.bucketKey(24));
+	public void bucketKey_18IsWrong() {
+		assertEquals("ai.essay.correction.assessment.wrong", AiEssayFeedbackViewFlattener.bucketKey(18));
 	}
 
 	@Test
@@ -76,28 +76,28 @@ public class AiEssayFeedbackViewFlattenerTest {
 	}
 
 	@Test
-	public void bucketKey_49IsInsufficient() {
-		assertEquals("ai.essay.correction.assessment.insufficient", AiEssayFeedbackViewFlattener.bucketKey(49));
+	public void bucketKey_39IsInsufficient() {
+		assertEquals("ai.essay.correction.assessment.insufficient", AiEssayFeedbackViewFlattener.bucketKey(39));
 	}
 
 	@Test
-	public void bucketKey_50IsMediocre() {
-		assertEquals("ai.essay.correction.assessment.mediocre", AiEssayFeedbackViewFlattener.bucketKey(50));
+	public void bucketKey_40IsMediocre() {
+		assertEquals("ai.essay.correction.assessment.mediocre", AiEssayFeedbackViewFlattener.bucketKey(40));
 	}
 
 	@Test
-	public void bucketKey_69IsMediocre() {
-		assertEquals("ai.essay.correction.assessment.mediocre", AiEssayFeedbackViewFlattener.bucketKey(69));
+	public void bucketKey_54IsMediocre() {
+		assertEquals("ai.essay.correction.assessment.mediocre", AiEssayFeedbackViewFlattener.bucketKey(54));
 	}
 
 	@Test
-	public void bucketKey_70IsGood() {
-		assertEquals("ai.essay.correction.assessment.good", AiEssayFeedbackViewFlattener.bucketKey(70));
+	public void bucketKey_68IsGood() {
+		assertEquals("ai.essay.correction.assessment.good", AiEssayFeedbackViewFlattener.bucketKey(68));
 	}
 
 	@Test
-	public void bucketKey_84IsGood() {
-		assertEquals("ai.essay.correction.assessment.good", AiEssayFeedbackViewFlattener.bucketKey(84));
+	public void bucketKey_84IsVeryGood() {
+		assertEquals("ai.essay.correction.assessment.verygood", AiEssayFeedbackViewFlattener.bucketKey(84));
 	}
 
 	@Test
@@ -128,8 +128,8 @@ public class AiEssayFeedbackViewFlattenerTest {
 	}
 
 	@Test
-	public void assessmentClass_24IsDanger() {
-		assertEquals("label-danger", AiEssayFeedbackViewFlattener.assessmentClass(24));
+	public void assessmentClass_24IsWarning() {
+		assertEquals("label-warning", AiEssayFeedbackViewFlattener.assessmentClass(24));
 	}
 
 	@Test
@@ -143,8 +143,8 @@ public class AiEssayFeedbackViewFlattenerTest {
 	}
 
 	@Test
-	public void assessmentClass_84IsInfo() {
-		assertEquals("label-info", AiEssayFeedbackViewFlattener.assessmentClass(84));
+	public void assessmentClass_84IsSucess() {
+		assertEquals("label-success", AiEssayFeedbackViewFlattener.assessmentClass(84));
 	}
 
 	@Test
