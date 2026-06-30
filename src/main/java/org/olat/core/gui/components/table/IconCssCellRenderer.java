@@ -95,6 +95,12 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			render(sb, val);
 		}
 	}
+	
+	public String render(Object val) {
+		StringOutput stringOutput = new StringOutput();
+		render(stringOutput, val);
+		return stringOutput.toString();
+	}
 
 	protected void render(StringOutput sb, Object val) {
 		sb.append("<div");

@@ -266,10 +266,12 @@ public interface CurriculumService {
 	
 	
 	public CurriculumElementType cloneCurriculumElementType(CurriculumElementTypeRef typeRef);
-	
+
 	public boolean deleteCurriculumElementType(CurriculumElementTypeRef typeRef);
-	
-	
+
+	public List<CurriculumElement> loadAutomationCandidates();
+
+
 	public CurriculumElement createCurriculumElement(String identifier, String displayName,
 			CurriculumElementStatus status, Date beginDate, Date endDate,
 			CurriculumElementRef parent, CurriculumElementType elementType, CurriculumCalendars calendars,
@@ -552,11 +554,19 @@ public interface CurriculumService {
 	
 	/**
 	 * Check if the curriculum element has at least one entry.
-	 * 
+	 *
 	 * @param element The curriculum element
 	 * @return true if the element has at least an entry.
 	 */
 	public boolean hasRepositoryEntries(CurriculumElementRef element);
+
+	/**
+	 * Count the repository entries held by the specified curriculum element.
+	 *
+	 * @param element The curriculum element
+	 * @return The number of repository entries
+	 */
+	public long countRepositoryEntries(CurriculumElementRef element);
 
 	/**
 	 * The all list of repository entries hold by the specified curriculum element.

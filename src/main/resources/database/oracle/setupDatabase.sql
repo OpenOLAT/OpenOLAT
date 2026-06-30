@@ -4330,6 +4330,7 @@ create table o_cur_element_type (
   c_impl_only number default 0 not null,
   c_status varchar2(32) default 'active' not null,
   c_css_class varchar(64),
+  c_automation_config clob,
   primary key (id)
 );
 

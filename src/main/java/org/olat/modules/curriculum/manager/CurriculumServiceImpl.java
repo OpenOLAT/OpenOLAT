@@ -479,7 +479,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		curriculumElementTypeDao.deleteCurriculumElementType(elementType);
 		return true;
 	}
-	
+
+	@Override
+	public List<CurriculumElement> loadAutomationCandidates() {
+		return curriculumElementDao.loadAutomationCandidates();
+	}
+
 	@Override
 	public List<Curriculum> getCurriculums(CurriculumSearchParameters params) {
 		return curriculumDao.search(params);
@@ -1693,6 +1698,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public boolean hasRepositoryEntries(CurriculumElementRef element) {
 		return curriculumRepositoryEntryRelationDao.hasRepositoryEntries(element);
+	}
+
+	@Override
+	public long countRepositoryEntries(CurriculumElementRef element) {
+		return curriculumRepositoryEntryRelationDao.countRepositoryEntries(element);
 	}
 
 	@Override

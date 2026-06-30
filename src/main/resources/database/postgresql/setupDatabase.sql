@@ -4276,6 +4276,7 @@ create table o_cur_element_type (
   c_impl_only bool default false not null,
   c_status varchar(32) default 'active' not null,
   c_css_class varchar(64),
+  c_automation_config text,
   primary key (id)
 );
 

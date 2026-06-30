@@ -22,7 +22,6 @@ package org.olat.course.assessment.ui.tool;
 import java.util.Locale;
 
 import org.olat.core.gui.components.table.IconCssCellRenderer;
-import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -46,12 +45,6 @@ public class AssessmentStatusCellRenderer extends IconCssCellRenderer {
 	public AssessmentStatusCellRenderer(Translator trans, boolean showNoStatus) {
 		this.trans = trans;
 		this.showNoStatus = showNoStatus;
-	}
-	
-	public String render(AssessmentEntryStatus status) {
-		StringOutput stringOutput = new StringOutput();
-		render(stringOutput, status);
-		return stringOutput.toString();
 	}
 
 	protected boolean isShowNoStatus(@SuppressWarnings("unused") Object val) {

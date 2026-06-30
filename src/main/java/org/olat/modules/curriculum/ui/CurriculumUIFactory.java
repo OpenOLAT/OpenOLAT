@@ -20,6 +20,9 @@
 package org.olat.modules.curriculum.ui;
 
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.core.gui.translator.Translator;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * 
@@ -59,6 +62,19 @@ public class CurriculumUIFactory {
 			case removed -> "o_membership_status_removed";
 			default -> null;
 		};
+	}
+
+	public static String translateAutomationStatus(Translator translator, String statusString) {
+		if (statusString == null) {
+			return null;
+		}
+		if (CurriculumElementStatus.isValueOf(statusString)) {
+			return translator.translate("status." + statusString);
+		}
+		if (RepositoryEntryStatusEnum.isValid(statusString)) {
+			return translator.translate(RepositoryEntryStatusEnum.valueOf(statusString).i18nKey());
+		}
+		return statusString;
 	}
 
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -28,6 +29,13 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.components.date.OffsetDirection;
+import org.olat.modules.curriculum.AutomationContext;
+import org.olat.modules.curriculum.AutomationDependingOn;
+import org.olat.modules.curriculum.AutomationType;
+import org.olat.modules.curriculum.AutomationUnit;
+import org.olat.modules.curriculum.CurriculumAutomationConfig;
+import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.model.CurriculumElementTypeImpl;
@@ -155,6 +163,47 @@ public class CurriculumElementTypeDAOTest extends OlatTestCase {
 				.collect(Collectors.toList());
 		Assert.assertTrue(allowedSubTypes.contains(subType1));
 		Assert.assertTrue(allowedSubTypes.contains(subType2));
+	}
+
+	@Test
+	public void testAutomationConfigPersistence() {
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("cur-el-automation-1", "Automation Type", null, null);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		rule.setContext(AutomationContext.IMPLEMENTATION);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus("confirmed");
+		rule.setEnabled(true);
+		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		rule.setValue(14);
+		rule.setUnit(AutomationUnit.DAYS);
+		rule.setDirection(OffsetDirection.BEFORE);
+		rule.setOnlyWhenStatus(new HashSet<>(Set.of("preparation")));
+
+		CurriculumAutomationConfig config = new CurriculumAutomationConfig();
+		config.addRule(rule);
+
+		type.setAutomationConfig(config);
+		type = curriculumElementTypeDao.update(type);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumElementType reloadedType = curriculumElementTypeDao.loadByKey(type.getKey());
+
+		Assertions.assertThat(reloadedType.getAutomationConfig()).isNotNull();
+		Assertions.assertThat(reloadedType.getAutomationConfig().getRules()).hasSize(1);
+		Assertions.assertThat(reloadedType.getAutomationConfig().getRules().get(0).getTargetStatus()).isEqualTo("confirmed");
+		Assertions.assertThat(reloadedType.getAutomationConfig().getRules().get(0).getValue()).isEqualTo(14);
+	}
+
+	@Test
+	public void testAutomationConfigNoSeeding() {
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("cur-el-automation-2", "Automation Type Seed", null, null);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumElementType reloadedType = curriculumElementTypeDao.loadByKey(type.getKey());
+
+		Assertions.assertThat(reloadedType.getAutomationConfig()).isNull();
 	}
 
 }

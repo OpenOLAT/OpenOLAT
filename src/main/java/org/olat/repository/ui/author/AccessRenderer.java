@@ -49,20 +49,26 @@ public class AccessRenderer implements FlexiCellRenderer, CustomCellRenderer {
 	private static final Logger log = Tracing.createLoggerFor(AccessRenderer.class);
 	
 	private final Translator translator;
+	private final boolean light;
 	
 	public AccessRenderer(Locale locale) {
+		this(locale, true);
+	}
+	
+	public AccessRenderer(Locale locale, boolean light) {
 		translator = Util.createPackageTranslator(RepositoryService.class, locale);
+		this.light = light;
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object val,
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans)  {
 		if(val instanceof RepositoryEntryLight re) {
-			render(sb, re.getEntryStatus());
+			render(sb, re.getEntryStatus(), light);
 		} else if(val instanceof RepositoryEntry re) {
-			render(sb, re.getEntryStatus());
+			render(sb, re.getEntryStatus(), light);
 		} else if(val instanceof RepositoryEntryStatusEnum entryStatus) {
-			render(sb, entryStatus);
+			render(sb, entryStatus, light);
 		}
 	}
 
@@ -74,16 +80,16 @@ public class AccessRenderer implements FlexiCellRenderer, CustomCellRenderer {
 	
 	public String renderEntryStatus(RepositoryEntry re) {
 		try(StringOutput sb = new StringOutput(32)) {
-			render(sb, re.getEntryStatus());
+			render(sb, re.getEntryStatus(), light);
 			return sb.toString();
 		} catch(IOException e) {
 			log.error("",e);
 			return "";
 		}
 	}
-
-	public void render(StringOutput sb, RepositoryEntryStatusEnum status) {
-		sb.append("<span class='o_labeled_light o_repo_status_").append(status.name())
+	
+	public void render(StringOutput sb, RepositoryEntryStatusEnum status, boolean light) {
+		sb.append("<span class='").append(light? "o_labeled_light": "o_labeled").append(" o_repo_status_").append(status.name())
 		  .append("' title=\"").append(StringHelper.escapeHtml(translator.translate("status." + status.name() + ".desc"))).append("\">")
 		  .append("<i class='o_icon o_icon-fw o_icon_repo_status_").append(status.name()).append("'> </i> <span>")
 		  .append(translator.translate("table.status.".concat(status.name())))

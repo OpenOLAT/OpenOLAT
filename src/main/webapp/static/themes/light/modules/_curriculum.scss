@@ -957,3 +957,9 @@ fieldset.o_validation_result {
 		@extend %o_labeled_light_grey;
 	}
 }
+
+.o_curriculum_automation_header {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 10px;
+}

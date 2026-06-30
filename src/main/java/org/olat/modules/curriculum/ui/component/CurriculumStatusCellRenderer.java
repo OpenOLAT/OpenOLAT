@@ -37,18 +37,24 @@ import org.olat.modules.curriculum.CurriculumStatus;
 public class CurriculumStatusCellRenderer implements FlexiCellRenderer {
 	
 	private final Translator translator;
+	private final String type;
 	
 	public CurriculumStatusCellRenderer(Translator translator) {
+		this(translator, true);
+	}
+	
+	public CurriculumStatusCellRenderer(Translator translator, boolean light) {
 		this.translator = translator;
+		this.type = light? "o_labeled_light": "o_labeled";
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof CurriculumStatus status) {
-			getStatus(target, "o_labeled_light", status, translator);
+			getStatus(target, type, status, translator);
 		} else if(cellValue instanceof CurriculumElementStatus status) {
-			getStatus(target, "o_labeled_light", status, translator);
+			getStatus(target, type, status, translator);
 		}
 	}
 	

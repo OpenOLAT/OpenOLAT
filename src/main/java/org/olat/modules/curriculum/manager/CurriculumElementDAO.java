@@ -1556,6 +1556,24 @@ public class CurriculumElementDAO {
 				.executeUpdate();
 	}
 	
+	public List<CurriculumElement> loadAutomationCandidates() {
+		String query = """
+				select el from curriculumelement as el
+				inner join fetch el.type as type
+				where el.status not in (:excludedStatuses)
+				and type.automationConfigXml is not null
+				""";
+		List<String> excluded = List.of(
+			CurriculumElementStatus.deleted.name(),
+			CurriculumElementStatus.finished.name(),
+			CurriculumElementStatus.cancelled.name()
+		);
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query, CurriculumElement.class)
+			.setParameter("excludedStatuses", excluded)
+			.getResultList();
+	}
+
 	private final boolean and(StringBuilder sb, boolean and) {
 		if(and) sb.append(" and ");
 		else sb.append(" where ");

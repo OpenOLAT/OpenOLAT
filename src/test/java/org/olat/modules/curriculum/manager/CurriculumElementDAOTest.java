@@ -2116,6 +2116,31 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals(curriculumElement2.getEducationalType().getKey(), educationalType2.getKey());
 	}
 	
+	@Test
+	public void loadAutomationCandidates_excludesDeletedFinishedCancelled() {
+		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), random(), false, null);
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType(random(), random(), random(), random());
+
+		CurriculumElement active = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, type, null, null, null, curriculum);
+		CurriculumElement preparation = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.preparation, null, null, null, type, null, null, null, curriculum);
+		CurriculumElement deleted = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.deleted, null, null, null, type, null, null, null, curriculum);
+		CurriculumElement finished = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.finished, null, null, null, type, null, null, null, curriculum);
+		CurriculumElement cancelled = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.cancelled, null, null, null, type, null, null, null, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumElement> candidates = curriculumElementDao.loadAutomationCandidates();
+
+		assertThat(candidates)
+				.map(CurriculumElement::getKey)
+				.contains(active.getKey(), preparation.getKey())
+				.doesNotContain(deleted.getKey(), finished.getKey(), cancelled.getKey());
+	}
+
 	private CurriculumElement createCurriculumElement(RepositoryEntryEducationalType educationalType) {
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false,
 				JunitTestHelper.getDefaultOrganisation());
