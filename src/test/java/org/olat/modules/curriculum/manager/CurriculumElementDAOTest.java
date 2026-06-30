@@ -41,7 +41,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -57,7 +56,6 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.TaughtBy;
 import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
 import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
-import org.olat.modules.curriculum.model.AutomationImpl;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -184,36 +182,6 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void updateCurriculumElementAutomation() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1b", "Curriculum for element", "Curriculum", false, null);
-		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1b", "1. Element",
-				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		Assert.assertNotNull(element);
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		element.setAutoInstantiation(AutomationImpl.valueOf(5, AutomationUnit.DAYS));
-		element.setAutoAccessForCoach(AutomationImpl.valueOf(6, AutomationUnit.WEEKS));
-		element.setAutoPublished(AutomationImpl.valueOf(7, AutomationUnit.MONTHS));
-		element.setAutoClosed(AutomationImpl.valueOf(8, AutomationUnit.YEARS));
-		element = curriculumElementDao.update(element);
-		dbInstance.commitAndCloseSession();
-		
-		CurriculumElement reloadedElement = curriculumElementDao.loadByKey(element.getKey());
-		Assert.assertNotNull(reloadedElement);
-		Assert.assertNotNull(reloadedElement.getAutoInstantiation());
-		Assert.assertEquals(5, reloadedElement.getAutoInstantiation().getValue().intValue());
-		Assert.assertEquals(AutomationUnit.DAYS, reloadedElement.getAutoInstantiation().getUnit());
-		Assert.assertEquals(6, reloadedElement.getAutoAccessForCoach().getValue().intValue());
-		Assert.assertEquals(AutomationUnit.WEEKS, reloadedElement.getAutoAccessForCoach().getUnit());
-		Assert.assertEquals(7, reloadedElement.getAutoPublished().getValue().intValue());
-		Assert.assertEquals(AutomationUnit.MONTHS, reloadedElement.getAutoPublished().getUnit());
-		Assert.assertEquals(8, reloadedElement.getAutoClosed().getValue().intValue());
-		Assert.assertEquals(AutomationUnit.YEARS, reloadedElement.getAutoClosed().getUnit());
-	}
-	
-	@Test
 	public void updateNumber() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1c", "Curriculum for numbered element", "Curriculum", false, null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1c", "1. Element",
@@ -250,8 +218,6 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertNotNull(copyElement.getEndDate());
 		Assert.assertEquals("New identifier copy", copyElement.getIdentifier());
 		Assert.assertEquals("New displayname copy", copyElement.getDisplayName());
-		
-		Assert.assertNull(copyElement.getAutoInstantiation());
 
 		Assert.assertEquals(curriculum, copyElement.getCurriculum());
 		Assert.assertEquals(type, copyElement.getType());
@@ -274,11 +240,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		element.setDescription("Very precise");
 		element.setExpenditureOfWork("1 week");
 		element.setTaughtBys(Set.of(TaughtBy.teachers));
-		element.setAutoInstantiation(AutomationImpl.valueOf(5, AutomationUnit.DAYS));
-		element.setAutoAccessForCoach(AutomationImpl.valueOf(4, AutomationUnit.WEEKS));
-		element.setAutoPublished(AutomationImpl.valueOf(3, AutomationUnit.MONTHS));
-		element.setAutoClosed(AutomationImpl.valueOf(2, AutomationUnit.YEARS));
-		
+
 		CurriculumElement copyElement = curriculumElementDao.copyCurriculumElement(element, "New identifier copy", "New displayname copy", new Date(), new Date(), null, curriculum);
 
 		//check
@@ -295,16 +257,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals("Team", copyElement.getCredits());
 		Assert.assertEquals("Very precise", copyElement.getDescription());
 		Assert.assertEquals("1 week", copyElement.getExpenditureOfWork());
-		
-		Assert.assertEquals(element.getAutoInstantiation().getValue(), copyElement.getAutoInstantiation().getValue());
-		Assert.assertEquals(element.getAutoInstantiation().getUnit(), copyElement.getAutoInstantiation().getUnit());
-		Assert.assertEquals(element.getAutoAccessForCoach().getValue(), copyElement.getAutoAccessForCoach().getValue());
-		Assert.assertEquals(element.getAutoAccessForCoach().getUnit(), copyElement.getAutoAccessForCoach().getUnit());
-		Assert.assertEquals(element.getAutoPublished().getValue(), copyElement.getAutoPublished().getValue());
-		Assert.assertEquals(element.getAutoPublished().getUnit(), copyElement.getAutoPublished().getUnit());
-		Assert.assertEquals(element.getAutoClosed().getValue(), copyElement.getAutoClosed().getValue());
-		Assert.assertEquals(element.getAutoClosed().getUnit(), copyElement.getAutoClosed().getUnit());
-		
+
 		Assert.assertEquals(curriculum, copyElement.getCurriculum());
 		Assert.assertEquals(type, copyElement.getType());
 		Assertions.assertThat(copyElement.getTaughtBys())

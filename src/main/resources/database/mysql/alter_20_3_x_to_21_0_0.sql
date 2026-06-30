@@ -1075,6 +1075,16 @@ create index idx_grad_assign_log_assign_idx on o_grad_assignment_log (fk_assigne
 alter table o_cur_element_type add column c_impl_only bool default false not null;
 alter table o_cur_element_type add column c_status varchar(32) default 'active' not null;
 
+-- Curriculum element automation
+alter table o_cur_curriculum_element drop column c_auto_instantiation;
+alter table o_cur_curriculum_element drop column c_auto_instantiation_unit;
+alter table o_cur_curriculum_element drop column c_auto_access_coach;
+alter table o_cur_curriculum_element drop column c_auto_access_coach_unit;
+alter table o_cur_curriculum_element drop column c_auto_published;
+alter table o_cur_curriculum_element drop column c_auto_published_unit;
+alter table o_cur_curriculum_element drop column c_auto_closed;
+alter table o_cur_curriculum_element drop column c_auto_closed_unit;
+
 
 -- Safe Exam Browser
 alter table o_as_seb_template add column a_type varchar(16) default 'OO_FORM' not null;

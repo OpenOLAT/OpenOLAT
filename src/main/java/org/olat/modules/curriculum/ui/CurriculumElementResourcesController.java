@@ -19,24 +19,17 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.Formatter;
-import org.olat.modules.curriculum.Automation;
-import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumAutomationService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -57,21 +50,17 @@ public class CurriculumElementResourcesController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	private CurriculumElement curriculumElement;
-	private final CurriculumElement implementationElement;
 	
 	private CurriculumElementTemplateListController templatesCtrl;
 	private final CurriculumElementResourceListController resourcesCtrl;
 	
 	@Autowired
 	private CurriculumService curriculumService;
-	@Autowired
-	private CurriculumAutomationService automationService;
-	
+
 	public CurriculumElementResourcesController(UserRequest ureq, WindowControl wControl,
 			Curriculum curriculum, CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.curriculumElement = curriculumElement;
-		this.implementationElement = curriculumService.getImplementationOf(curriculumElement);
 
 		mainVC = createVelocityContainer("resources");
 		
@@ -99,91 +88,6 @@ public class CurriculumElementResourcesController extends BasicController {
 		if(templatesCtrl != null) {
 			templatesCtrl.updateAddButtonAndEmptyMessages(linkedCourses);
 		}
-		updateAutomationInformations();
-	}
-	
-	private void updateAutomationInformations() {
-		if(implementationElement == null || !implementationElement.hasAutomation()) return;
-		
-		CurriculumElement beginElement = automationService.getBeginCurriculumElement(curriculumElement);
-		CurriculumElement endElement = automationService.getEndCurriculumElement(curriculumElement);
-		if(beginElement == null && endElement == null) return;
-
-		List<Infos> statusAutomation = new ArrayList<>(4);
-		if(beginElement != null) {
-			Date beginDate = beginElement.getBeginDate();
-			Infos instantiation = formatAutomationInformations(beginDate, beginElement,
-					"automation.infos.label.course.templates", implementationElement.getAutoInstantiation(), true);
-			updateAutomationInformations("instantiation", instantiation, new ArrayList<>());
-			
-			Infos accessforCoach = formatAutomationInformations(beginDate, beginElement,
-					"automation.access.for.coach.enabled", implementationElement.getAutoAccessForCoach(), true);
-			updateAutomationInformations("accessforCoach",  accessforCoach, statusAutomation);
-			Infos published = formatAutomationInformations(beginDate, beginElement,
-					"automation.published.enabled", implementationElement.getAutoPublished(), true);
-			updateAutomationInformations("published", published, statusAutomation);
-		}
-		
-		if(endElement != null) {
-			Date endDate = endElement.getEndDate();
-			Infos closed = formatAutomationInformations(endDate, endElement,
-					"automation.finished.enabled", implementationElement.getAutoClosed(), false);
-			updateAutomationInformations("finished", closed, statusAutomation);
-		}
-		
-		mainVC.contextPut("separatorLabel", Boolean.valueOf(statusAutomation.size() > 1));
-	}
-
-	private void updateAutomationInformations(String key, Infos infos, List<Infos> list) {
-		if(infos != null) {
-			mainVC.contextPut(key, infos);
-			list.add(infos);
-		}
-	}
-	
-	private Infos formatAutomationInformations(Date date, CurriculumElement dateElement, String status, Automation automation, boolean before) {
-		if(automation == null || automation.getUnit() == null) return null;
-		
-		String timeText = "";
-		Date effectiveDate = date;
-		AutomationUnit unit = automation.getUnit();
-		if(unit == AutomationUnit.SAME_DAY) {
-			timeText = translate("automation.infos.same.day");
-		} else if(automation.getValue() != null) {
-			int val = automation.getValue().intValue();
-			timeText = translate("automation.infos." + unit.name().toLowerCase() + "." + (val > 1 ? "plural" : "singular"),
-					Integer.toString(val));
-			effectiveDate = before ? automation.getDateBefore(date) : automation.getDateAfter(date);
-		}
-		
-		boolean sameElement = curriculumElement.equals(dateElement);
-
-		String i18n;
-		if(sameElement) {
-			i18n = before ? "automation.infos.before" : "automation.infos.after";
-		} else {
-			i18n = before ? "automation.infos.before.link" : "automation.infos.after.link";
-		}
-
-		String text = translate(i18n, timeText);
-		String dateFormatted = Formatter.getInstance(getLocale()).formatDateWithDay(effectiveDate);
-		String elementTitle = buildLinkTitle(dateElement);
-		
-		Link link = LinkFactory.createLink("link." + status, elementTitle, CMD_OPEN_ELEMENT, elementTitle, getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
-		link.setVisible(!sameElement);
-		link.setUserObject(dateElement);
-		return new Infos(translate(status), dateFormatted, text, link);
-	}
-	
-	private String buildLinkTitle(CurriculumElement dateElement) {
-		StringBuilder sb = new StringBuilder();
-		if(dateElement.getType() != null) {
-			sb.append(dateElement.getType().getDisplayName());
-		}
-		sb.append(" \"")
-		  .append(dateElement.getDisplayName())
-		  .append("\"");
-		return sb.toString();
 	}
 
 	@Override

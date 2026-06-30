@@ -48,7 +48,6 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.curriculum.Automation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -63,7 +62,6 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
 import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
-import org.olat.modules.curriculum.model.AutomationImpl;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -174,18 +172,8 @@ public class CurriculumElementDAO {
 			copy.setTaughtBys(elementToCopy.getTaughtBys());
 		}
 		copy.setTeaser(elementToCopy.getTeaser());
-		copy.setAutoInstantiation(copy(elementToCopy.getAutoInstantiation()));
-		copy.setAutoAccessForCoach(copy(elementToCopy.getAutoAccessForCoach()));
-		copy.setAutoPublished(copy(elementToCopy.getAutoPublished()));
-		copy.setAutoClosed(copy(elementToCopy.getAutoClosed()));
-		
+
 		return dbInstance.getCurrentEntityManager().merge(copy);
-	}
-	
-	private Automation copy(Automation automationToCopy) {
-		return automationToCopy == null
-				? null
-				: AutomationImpl.valueOf(automationToCopy.getValue(), automationToCopy.getUnit());
 	}
 	
 	public OLATResource createResource(CurriculumElement element) {
