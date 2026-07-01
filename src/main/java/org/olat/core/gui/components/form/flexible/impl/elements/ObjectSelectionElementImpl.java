@@ -72,6 +72,7 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	
 	private final boolean multiSelection;
 	private String noSelectionText;
+	private String popupCssClass;
 	private ObjectSelectionSource source;
 	private Set<String> selectedKeys;
 	private boolean dirty;
@@ -255,6 +256,11 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		this.source = source;
 		initDefaults();
 	}
+
+	@Override
+	public void setPopupCssClass(String cssClass) {
+		this.popupCssClass = cssClass;
+	}
 	
 	private void initDefaults() {
 		if (source == null) {
@@ -318,7 +324,7 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	}
 	
 	private void doOpenSelection(UserRequest ureq) {
-		selectionCtrl = new ObjectSelectionController(ureq, wControl, multiSelection, source, selectedKeys);
+		selectionCtrl = new ObjectSelectionController(ureq, wControl, multiSelection, source, selectedKeys, popupCssClass);
 		selectionCtrl.addControllerListener(this);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, selectionCtrl.getInitialComponent(),

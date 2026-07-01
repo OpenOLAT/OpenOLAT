@@ -76,15 +76,16 @@ public class ObjectSelectionController extends FormBasicController {
 	private final List<GroupBinding> bindings = new ArrayList<>();
 	private final boolean multiSelection;
 	private final ObjectSelectionSource source;
+	private final String popupCssClass;
 	private Set<String> selectedKeys;
 
 	public ObjectSelectionController(UserRequest ureq, WindowControl wControl, boolean multiSelection,
-			ObjectSelectionSource source, Set<String> selectedKeys) {
+			ObjectSelectionSource source, Set<String> selectedKeys, String popupCssClass) {
 		super(ureq, wControl, "object_selection");
 		this.multiSelection = multiSelection;
 		this.source = source;
+		this.popupCssClass = popupCssClass;
 		this.selectedKeys = new HashSet<>(selectedKeys);
-		
 		initForm(ureq);
 		onSelectionChanged();
 		doExpandSelection();
@@ -93,6 +94,7 @@ public class ObjectSelectionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		flc.contextPut("popupCssClass", StringHelper.containsNonWhitespace(popupCssClass) ? popupCssClass : "");
 		searchTermEl = uifactory.addTextElement("search.term", null, 100, "", formLayout);
 		searchTermEl.setDomReplacementWrapperRequired(false);
 		searchTermEl.setElementCssClass("o_search_term");

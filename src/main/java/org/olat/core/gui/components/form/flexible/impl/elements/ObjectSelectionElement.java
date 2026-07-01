@@ -47,9 +47,17 @@ public interface ObjectSelectionElement extends FormItem {
 	/**
 	 * Resets the element with a new source and reinitializes it with the default
 	 * values of the source.
-	 * 
+	 *
 	 * @param source
 	 */
 	public void setSource(ObjectSelectionSource source);
+
+	/**
+	 * Sets an extra CSS class added to the root element of the popup dialog.
+	 * Use this to scope custom styles to a specific element instance.
+	 *
+	 * @param cssClass a single CSS class name
+	 */
+	public void setPopupCssClass(String cssClass);
 
 }
