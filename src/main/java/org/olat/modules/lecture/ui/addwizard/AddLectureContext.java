@@ -54,6 +54,7 @@ public class AddLectureContext {
 	private TeamsMeeting teamsMeeting;
 	private BigBlueButtonMeeting bigBlueButtonMeeting;
 	private Set<Long> taxonomyLevelKeys;
+	private Set<Long> roomKeys;
 
 	public AddLectureContext(Curriculum curriculum, CurriculumElement rootElement,
 			CurriculumSecurityCallback secCallback) {
@@ -148,5 +149,13 @@ public class AddLectureContext {
 
 	public Set<Long> getTaxonomyLevelKeys() {
 		return taxonomyLevelKeys;
+	}
+
+	public Set<Long> getRoomKeys() {
+		return roomKeys;
+	}
+
+	public void setRoomKeys(Set<Long> roomKeys) {
+		this.roomKeys = roomKeys;
 	}
 }

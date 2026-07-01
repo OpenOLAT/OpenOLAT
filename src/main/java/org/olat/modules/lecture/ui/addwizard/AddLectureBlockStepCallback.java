@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui.addwizard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.Group;
 import org.olat.core.CoreSpringFactory;
@@ -39,6 +40,9 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.model.RoomRefImpl;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsService;
 import org.olat.repository.RepositoryEntry;
@@ -67,7 +71,9 @@ public class AddLectureBlockStepCallback implements StepRunnerCallback {
 	private CurriculumService curriculumService;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
-	
+	@Autowired(required = false)
+	private RoomManagementService roomManagementService;
+
 	public AddLectureBlockStepCallback(AddLectureContext addLectureCtxt) {
 		CoreSpringFactory.autowireObject(this);
 		this.addLectureCtxt = addLectureCtxt;
@@ -93,8 +99,9 @@ public class AddLectureBlockStepCallback implements StepRunnerCallback {
 		
 		updateOnlineMeetings(lectureBlock);
 		lectureBlock = lectureService.save(lectureBlock, selectedGroups);
-		
+
 		lectureService.updateTaxonomyLevels(lectureBlock, addLectureCtxt.getTaxonomyLevelKeys());
+		bookRooms(lectureBlock, ureq.getIdentity());
 
 		List<Identity> selectedTeachers = addLectureCtxt.getTeachers();
 		for(Identity teacher:selectedTeachers) {
@@ -112,6 +119,20 @@ public class AddLectureBlockStepCallback implements StepRunnerCallback {
 		return StepsMainRunController.DONE_MODIFIED;
 	}
 	
+	private void bookRooms(LectureBlock lectureBlock, Identity identity) {
+		if (roomManagementService == null) return;
+		Set<Long> roomKeys = addLectureCtxt.getRoomKeys();
+		if (roomKeys == null || roomKeys.isEmpty()) return;
+
+		for (Long roomKey : roomKeys) {
+			Room room = roomManagementService.getRoom(new RoomRefImpl(roomKey));
+			if (room != null) {
+				roomManagementService.bookRoom(room, lectureBlock,
+						lectureBlock.getStartDate(), lectureBlock.getEndDate(), 0, 0, identity);
+			}
+		}
+	}
+
 	private void updateOnlineMeetings(LectureBlock lectureBlock) {
 		BigBlueButtonMeeting bigBlueButtonMeeting = addLectureCtxt.getBigBlueButtonMeeting();
 		TeamsMeeting teamsMeeting = addLectureCtxt.getTeamsMeeting();

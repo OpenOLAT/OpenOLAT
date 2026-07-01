@@ -90,7 +90,7 @@ public class RoomDAO {
 	public List<Room> search(SearchRoomParameters params) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct r from rmroom r")
-		  .append(" inner join r.building bld");
+		  .append(" inner join fetch r.building bld");
 		appendSearchWhere(sb, params);
 		sb.append(" order by r.description asc");
 

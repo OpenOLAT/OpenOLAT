@@ -447,3 +447,30 @@
 	}
 }
 
+.o_rm_event_room_selector {
+	.o_object_selection_main {
+		div.checkbox {
+			label {
+				column-gap: 4px;
+				row-gap: 4px;
+			}
+			input {
+				margin-top: 22px;
+			}
+			&:hover,
+			&:focus-within {
+				.o_object_selection_image {
+					left: -6px;
+				}
+			}
+		}
+		.o_object_selection_image {
+			position: absolute;
+			top: -9px;
+			left: -14px;
+		}
+		.o_object_selection_subtitle {
+			margin-left: -6px;
+		}
+	}
+}

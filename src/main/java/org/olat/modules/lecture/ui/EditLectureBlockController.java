@@ -51,6 +51,10 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -60,6 +64,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -104,6 +109,7 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LocationHistory;
 import org.olat.modules.lecture.ui.addwizard.AddLectureContext;
+import org.olat.modules.roommanagement.model.RoomRefImpl;
 import org.olat.modules.lecture.ui.component.LocationDateComparator;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
@@ -163,7 +169,10 @@ public class EditLectureBlockController extends FormBasicController {
 	private CurriculumElement curriculumElement;
 	private BigBlueButtonMeeting bigBlueButtonMeeting;
 	private FormLink adoptButton;
-	
+	private ObjectSelectionElement roomsEl;
+	private Roles roles;
+	private int participantCount;
+
 	private List<MemberView> possibleTeachersList;
 
 	private final List<Identity> teachers;
@@ -210,6 +219,10 @@ public class EditLectureBlockController extends FormBasicController {
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired(required = false)
+	private RoomManagementModule roomManagementModule;
+	@Autowired(required = false)
+	private RoomManagementService roomManagementService;
 
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			LectureBlock lectureBlock, boolean readOnly) {
@@ -282,6 +295,7 @@ public class EditLectureBlockController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		roles = ureq.getUserSession().getRoles();
 		formLayout.setElementCssClass("o_sel_repo_edit_lecture_form");
 		
 		if(lectureBlock != null && StringHelper.containsNonWhitespace(lectureBlock.getManagedFlagsString())) {
@@ -355,7 +369,13 @@ public class EditLectureBlockController extends FormBasicController {
 		locationEl = uifactory.addTextElement("location", "lecture.location", 128, location, formLayout);
 		locationEl.setElementCssClass("o_sel_repo_lecture_location");
 		locationEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.location));
-	
+
+		// Rooms (CPL context only)
+		if (isRoomsEnabled()) {
+			dateEl.addActionListener(FormEvent.ONCHANGE);
+			initRoomsSection(formLayout);
+		}
+
 		// Online meeting
 		String onlineMeetingUrl = lectureBlock == null ? null : lectureBlock.getMeetingUrl();
 		SelectionValues meetingPK = new SelectionValues();
@@ -490,6 +510,63 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 	}
 	
+	private boolean isRoomsEnabled() {
+		return curriculumElement != null
+				&& roomManagementModule != null
+				&& roomManagementModule.isEnabled();
+	}
+
+	private void initRoomsSection(FormItemContainer formLayout) {
+		List<Room> preSelectedRooms = new ArrayList<>();
+		if (lectureBlock != null && lectureBlock.getKey() != null) {
+			roomManagementService.getBookings(lectureBlock).stream()
+					.map(RoomBooking::getRoom)
+					.forEach(preSelectedRooms::add);
+			participantCount = lectureService.getParticipants(lectureBlock).size();
+		}
+
+		Date start = lectureBlock == null ? null : lectureBlock.getStartDate();
+		Date end = lectureBlock == null ? null : lectureBlock.getEndDate();
+		RoomSelectionSource source = new RoomSelectionSource(getTranslator(), roomManagementService,
+				roles, start, end, lectureBlock, preSelectedRooms, participantCount);
+		roomsEl = uifactory.addObjectSelectionElement("rooms", "lecture.rooms", formLayout,
+				getWindowControl(), true, source);
+		roomsEl.setPopupCssClass("o_rm_event_room_selector");
+		roomsEl.setEnabled(!readOnly && !lectureManagementManaged);
+	}
+
+	private void updateRoomsSource() {
+		if (roomsEl == null) return;
+		Date start = dateEl.getDate();
+		Date end = dateEl.getSecondDate();
+		if (start == null || end == null) return;
+
+		RoomSelectionSource newSource = new RoomSelectionSource(getTranslator(), roomManagementService,
+				roles, start, end, lectureBlock, List.of(), participantCount);
+		roomsEl.setSource(newSource);
+	}
+
+	private void syncRoomBookings(LectureBlock lb, Set<Long> selectedRoomKeys) {
+		List<RoomBooking> existingBookings = roomManagementService.getBookings(lb);
+		Set<Long> existingRoomKeys = existingBookings.stream()
+				.map(b -> b.getRoom().getKey())
+				.collect(Collectors.toSet());
+
+		for (RoomBooking booking : existingBookings) {
+			if (!selectedRoomKeys.contains(booking.getRoom().getKey())) {
+				roomManagementService.deleteBooking(booking, getIdentity());
+			}
+		}
+		for (Long roomKey : selectedRoomKeys) {
+			if (!existingRoomKeys.contains(roomKey)) {
+				Room room = roomManagementService.getRoom(new RoomRefImpl(roomKey));
+				if (room != null) {
+					roomManagementService.bookRoom(room, lb, lb.getStartDate(), lb.getEndDate(), 0, 0, getIdentity());
+				}
+			}
+		}
+	}
+
 	private Collection<TaxonomyRef> getTaxonomyRefs() {
 		Set<TaxonomyRef> taxonomyRefs = new HashSet<>();
 		if (curriculumElement != null) {
@@ -743,7 +820,9 @@ public class EditLectureBlockController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(locationEl == source) {
+		if(dateEl == source) {
+			updateRoomsSource();
+		} else if(locationEl == source) {
 			// Do nothing
 		} else if(compulsoryEl == source) {
 			updateUI();
@@ -835,6 +914,10 @@ public class EditLectureBlockController extends FormBasicController {
 			addLectureCtxt.setTaxonomyLevelKeys(getSelectedTaxonomyLevelKeys());
 			addLectureCtxt.setTeachers(getSelectedTeachers());
 			addLectureCtxt.setLectureBlock(lectureBlock);
+			if (isRoomsEnabled() && roomsEl != null) {
+				addLectureCtxt.setRoomKeys(roomsEl.getSelectedKeys().stream()
+						.map(Long::valueOf).collect(Collectors.toSet()));
+			}
 			boolean enableOnlineMeeting = enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn();
 			addLectureCtxt.setWithBigBlueButtonMeeting(enableOnlineMeeting && BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey()));
 			addLectureCtxt.setWithTeamsMeeting(enableOnlineMeeting && TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()));
@@ -843,6 +926,10 @@ public class EditLectureBlockController extends FormBasicController {
 			updateRecording();
 			lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 			lectureService.updateTaxonomyLevels(lectureBlock, getSelectedTaxonomyLevelKeys());
+			if (isRoomsEnabled() && roomsEl != null) {
+				syncRoomBookings(lectureBlock, roomsEl.getSelectedKeys().stream()
+						.map(Long::valueOf).collect(Collectors.toSet()));
+			}
 			
 			synchronizeTeachers(audit);
 	
