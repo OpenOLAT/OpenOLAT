@@ -262,6 +262,34 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		allOk &= validateExpectedLengthEl();
+		
+		if(correctionsEl.getSelectedKeys().contains(OPTION_WILDCARD_KEY)) {
+			allOk &= validateWildGap(solutionEl);
+			for(AlternativeRow row:alternativeRows) {
+				allOk &= validateWildGap(row.getAlternativeEl());
+			}
+		}
+		
+		return allOk;
+	}
+	
+	private boolean validateWildGap(TextElement el) {
+		boolean allOk = true;
+		
+		el.clearError();
+		if(StringHelper.containsNonWhitespace(el.getValue())
+                && !StringHelper.containsNonWhitespace(el.getValue().replace("*", ""))) {
+			el.setErrorKey("error.too.wild");
+	        allOk &= false;
+		}
+		
+		return allOk;
+	}
+	
+	private boolean validateExpectedLengthEl() {
+		boolean allOk = true;
+		
 		expectedLengthEl.clearError();
 		if(StringHelper.containsNonWhitespace(expectedLengthEl.getValue())) {
 			if(StringHelper.isLong(expectedLengthEl.getValue())) {

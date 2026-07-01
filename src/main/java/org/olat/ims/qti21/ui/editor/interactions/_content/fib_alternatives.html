@@ -5,6 +5,7 @@
 			#if($r.isNotNull(${alternative.getAddButton()})) $r.render(${alternative.getAddButton()}) #end
 			#if($r.isNotNull(${alternative.getRemoveButton()})) $r.render(${alternative.getRemoveButton()}) #end
 		</div>
+		$r.render(${alternative.getAlternativeEl()},"error")
 	#end
 #end
 <div class="form-inline o_qti_gaptext_add_alternatives">$r.render("add.multi.alternatives")</div>
