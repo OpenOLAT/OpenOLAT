@@ -105,6 +105,7 @@ import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
+import org.olat.course.config.ExternalToolVisibility;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
 import org.olat.course.core.CourseNodeService;
 import org.olat.course.editor.EditorMainController;
@@ -665,6 +666,15 @@ public class CourseFactory {
 			try {
 				newCourse.load();
 				CourseConfig cc = courseConfigMgr.loadConfigFor(newCourse);
+				for (int n = 1; n <= CourseConfig.EXTERNAL_TOOL_COUNT; n++) {
+					cc.setExternalToolEnabled(n, false);
+					cc.setExternalToolName(n, null);
+					cc.setExternalToolUrl(n, null);
+					cc.setExternalToolIcon(n, null);
+					for (ExternalToolVisibility v : ExternalToolVisibility.values()) {
+						cc.setExternalToolVisible(n, v, null);
+					}
+				}
 				//newCourse is not in cache yet, so we cannot call setCourseConfig()
 				newCourse.setCourseConfig(cc);
 				loadedCourses.put(newCourse.getResourceableId(), newCourse);

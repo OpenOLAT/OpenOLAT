@@ -46,6 +46,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
@@ -113,6 +114,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
+import org.olat.course.config.ExternalToolVisibility;
 import org.olat.course.config.ui.CourseSettingsController;
 import org.olat.course.core.CourseElement;
 import org.olat.course.core.CourseElementSearchParams;
@@ -270,6 +272,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink, teamsLink, bigBlueButtonLink, zoomLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
+	private ExternalLink[] externalToolLinks;
 	private Link copyWithWizardLink;
 	private Link saveAsTemplateLink;
 	private Link instantiateAsCourseLink;
@@ -1329,12 +1332,32 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(chatLink);
 		}
 		
-		// add course search to toolbox 
+		// add course search to toolbox
 		boolean isSearchEnabled = !assessmentLock && disclaimerAccepted && searchModule.isSearchAllowed(roles);
 		if (isSearchEnabled) {
 			searchLink = LinkFactory.createToolLink("coursesearch", translate("command.coursesearch"), this, "o_icon_search");
 			searchLink.setVisible(cc.isCourseSearchEnabled());
 			toolbarPanel.addTool(searchLink);
+		}
+
+		externalToolLinks = new ExternalLink[CourseConfig.EXTERNAL_TOOL_COUNT];
+		if (!assessmentLock && disclaimerAccepted) {
+			for (int toolIndex = 1; toolIndex <= CourseConfig.EXTERNAL_TOOL_COUNT; toolIndex++) {
+				int i = toolIndex - 1;
+				if (!StringHelper.containsNonWhitespace(cc.getExternalToolName(toolIndex))
+						|| !StringHelper.isValidExternalHttpUrl(cc.getExternalToolUrl(toolIndex))) {
+					continue;
+				}
+				ExternalLink link = new ExternalLink("extTool" + toolIndex);
+				link.setName(cc.getExternalToolName(toolIndex));
+				link.setUrl(cc.getExternalToolUrl(toolIndex));
+				link.setTarget("_blank");
+				link.setIconLeftCSS("o_icon o_icon-fw " + cc.getExternalToolIcon(toolIndex));
+				boolean visible = ExternalToolVisibility.isVisible(cc, toolIndex, reSecurity, userCourseEnv);
+				link.setVisible(visible);
+				externalToolLinks[i] = link;
+				toolbarPanel.addTool(link);
+			}
 		}
 	}
 
@@ -3409,6 +3432,38 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
 					glossary.setVisible(cc.hasGlossary() && cc.isGlossaryEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
+			case externalTool: {
+				if (externalToolLinks != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+					UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
+					for (int toolIndex = 1; toolIndex <= CourseConfig.EXTERNAL_TOOL_COUNT; toolIndex++) {
+						int i = toolIndex - 1;
+						String name = courseConfig.getExternalToolName(toolIndex);
+						String url = courseConfig.getExternalToolUrl(toolIndex);
+						if (!StringHelper.containsNonWhitespace(name) || !StringHelper.isValidExternalHttpUrl(url)) {
+							if (externalToolLinks[i] != null) {
+								externalToolLinks[i].setVisible(false);
+							}
+							continue;
+						}
+						if (externalToolLinks[i] == null) {
+							ExternalLink link = new ExternalLink("extTool" + toolIndex);
+							link.setTarget("_blank");
+							externalToolLinks[i] = link;
+							toolbarPanel.addTool(link);
+						}
+						ExternalLink link = externalToolLinks[i];
+						link.setName(name);
+						link.setUrl(url);
+						link.setIconLeftCSS("o_icon o_icon-fw " + courseConfig.getExternalToolIcon(toolIndex));
+						link.setTooltip(name);
+						link.setVisible(ExternalToolVisibility.isVisible(courseConfig, toolIndex, reSecurity, userCourseEnv));
+					}
 					toolbarPanel.setDirty(true);
 				}
 				break;

@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
 
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -77,7 +78,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 24;
+	private static final transient int CURRENTVERSION = 25;
 
 	public static final transient String KEY_LOGLEVEL_ADMIN = "LOGLEVELADMIN";
 	public static final transient String KEY_LOGLEVEL_USER = "LOGLEVELUSER";
@@ -140,6 +141,13 @@ public class CourseConfig implements Serializable, Cloneable {
 	private static final transient String COACH_FOLDER_ENABLED = "COACH_FOLDER_ENABLED";
 	private static final transient String COACH_FOLDER_PATH = "COACH_FOLDER_PATH";
 	private static final transient String COACH_TODO_TASK_EDIT = "COACH_TODO_TASK_EDIT";
+
+	public static final transient int EXTERNAL_TOOL_COUNT = 3;
+	private static final transient String EXTERNAL_TOOL_PREFIX = "EXTERNAL_TOOL_";
+	private static final transient String EXTERNAL_TOOL_SUFFIX_ENABLED = "_ENABLED";
+	private static final transient String EXTERNAL_TOOL_SUFFIX_NAME = "_NAME";
+	private static final transient String EXTERNAL_TOOL_SUFFIX_URL = "_URL";
+	private static final transient String EXTERNAL_TOOL_SUFFIX_ICON = "_ICON";
 
 	/**
 	 * config file version from file
@@ -231,7 +239,12 @@ public class CourseConfig implements Serializable, Cloneable {
 
 		// Version 23
 		configuration.put(COACH_TODO_TASK_EDIT, Boolean.TRUE);
-		
+
+		// Version 25
+		for (int toolIndex = 1; toolIndex <= EXTERNAL_TOOL_COUNT; toolIndex++) {
+			configuration.put(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_ENABLED), Boolean.FALSE);
+		}
+
 		this.version = CURRENTVERSION;
 	}
 
@@ -451,6 +464,13 @@ public class CourseConfig implements Serializable, Cloneable {
 					configuration.put(COACH_TODO_TASK_EDIT, Boolean.TRUE);
 				}
 				this.version = 24;
+			}
+
+			if (version == 24) {
+				for (int toolIndex = 1; toolIndex <= EXTERNAL_TOOL_COUNT; toolIndex++) {
+					configuration.putIfAbsent(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_ENABLED), Boolean.FALSE);
+				}
+				this.version = 25;
 			}
 
 			/*
@@ -984,6 +1004,68 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(COACH_TODO_TASK_EDIT, Boolean.valueOf(coachToDoTaskEdit));
 	}
 
+	private static String externalToolKey(int toolIndex, String suffix) {
+		return EXTERNAL_TOOL_PREFIX + toolIndex + suffix;
+	}
+
+	public boolean isExternalToolEnabled(int toolIndex) {
+		Boolean b = (Boolean) configuration.get(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_ENABLED));
+		return b != null && b.booleanValue();
+	}
+
+	public void setExternalToolEnabled(int toolIndex, boolean enabled) {
+		configuration.put(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_ENABLED), Boolean.valueOf(enabled));
+	}
+
+	public String getExternalToolName(int toolIndex) {
+		return (String) configuration.getOrDefault(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_NAME), "");
+	}
+
+	public void setExternalToolName(int toolIndex, String name) {
+		if (StringHelper.containsNonWhitespace(name)) {
+			configuration.put(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_NAME), name);
+		} else {
+			configuration.remove(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_NAME));
+		}
+	}
+
+	public String getExternalToolUrl(int toolIndex) {
+		return (String) configuration.getOrDefault(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_URL), "");
+	}
+
+	public void setExternalToolUrl(int toolIndex, String url) {
+		if (StringHelper.containsNonWhitespace(url)) {
+			configuration.put(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_URL), url);
+		} else {
+			configuration.remove(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_URL));
+		}
+	}
+
+	public String getExternalToolIcon(int toolIndex) {
+		return (String) configuration.getOrDefault(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_ICON), "o_icon_link_extern");
+	}
+
+	public void setExternalToolIcon(int toolIndex, String iconCssClass) {
+		if (StringHelper.containsNonWhitespace(iconCssClass)) {
+			configuration.put(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_ICON), iconCssClass);
+		} else {
+			configuration.remove(externalToolKey(toolIndex, EXTERNAL_TOOL_SUFFIX_ICON));
+		}
+	}
+
+	public boolean isExternalToolVisible(int toolIndex, ExternalToolVisibility v) {
+		Boolean b = (Boolean) configuration.get(externalToolKey(toolIndex, v.suffix()));
+		return b != null ? b.booleanValue() : v.defaultVisible();
+	}
+
+	public void setExternalToolVisible(int toolIndex, ExternalToolVisibility v, Boolean visible) {
+		if (visible != null && visible.booleanValue() != v.defaultVisible()) {
+			configuration.put(externalToolKey(toolIndex, v.suffix()), visible);
+		} else {
+			configuration.remove(externalToolKey(toolIndex, v.suffix()));
+		}
+	}
+
 	@Override
 	public CourseConfig clone() {
 		CourseConfig clone = new CourseConfig();
@@ -1031,6 +1113,15 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setCoachFolderEnabled(isCoachFolderEnabled());
 		clone.setCoachFolderPath(getCoachFolderPath());
 		clone.setCoachToDoTaskEdit(isCoachToDoTaskEdit());
+		for (int toolIndex = 1; toolIndex <= EXTERNAL_TOOL_COUNT; toolIndex++) {
+			clone.setExternalToolEnabled(toolIndex, isExternalToolEnabled(toolIndex));
+			clone.setExternalToolName(toolIndex, getExternalToolName(toolIndex));
+			clone.setExternalToolUrl(toolIndex, getExternalToolUrl(toolIndex));
+			clone.setExternalToolIcon(toolIndex, getExternalToolIcon(toolIndex));
+			for (ExternalToolVisibility v : ExternalToolVisibility.values()) {
+				clone.setExternalToolVisible(toolIndex, v, isExternalToolVisible(toolIndex, v));
+			}
+		}
 		ImageSource teaserImageSource = getTeaserImageSource();
 		if (teaserImageSource != null) {
 			ImageSource clonedTeaserImageSource = (ImageSource)XStreamHelper.xstreamClone(teaserImageSource);

@@ -29,6 +29,8 @@ package org.olat.core.util;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
@@ -52,6 +54,7 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.commons.text.translate.AggregateTranslator;
 import org.apache.commons.text.translate.CharSequenceTranslator;
 import org.apache.commons.text.translate.EntityArrays;
@@ -79,7 +82,12 @@ import com.thoughtworks.xstream.core.util.Base64Encoder;
 public class StringHelper {
 	
 	private static final Logger log = Tracing.createLoggerFor(StringHelper.class);
-	
+
+	private static final UrlValidator HTTP_URL_VALIDATOR =
+			new UrlValidator(new String[] { "http", "https" }, UrlValidator.ALLOW_LOCAL_URLS);
+	private static final UrlValidator EXTERNAL_HTTP_URL_VALIDATOR =
+			new UrlValidator(new String[] { "http", "https" });
+
 	public static final Supplier<String> NULL = () -> null;
 	public static final Supplier<String> EMPTY = () -> "";
 
@@ -830,5 +838,31 @@ public class StringHelper {
 			currentIndex = foundIndex + token.length();
 		}
 		return true;
+	}
+
+	// Security note: uses ALLOW_LOCAL_URLS — accepts http://127.0.0.1/, RFC-1918 addresses,
+	// and the userinfo segment (e.g. https://trusted.example@10.0.0.1). Safe only for
+	// server-controlled redirect targets (see DispatcherModule). For any URL that is
+	// configured or supplied by users, use isValidExternalHttpUrl() instead.
+	public static boolean isValidHttpUrl(String url) {
+		return containsNonWhitespace(url) && HTTP_URL_VALIDATOR.isValid(url.trim());
+	}
+
+	public static boolean isValidExternalHttpUrl(String url) {
+		if (!containsNonWhitespace(url)) {
+			return false;
+		}
+		String trimmed = url.trim();
+		try {
+			// Rejects the userinfo bypass from OO-9533: https://trusted.example@10.0.0.1 — the
+			// prefix looks like a trusted host but the connection goes to the host after the @.
+			// UrlValidator alone accepts userinfo, so this guard is required.
+			if (new URI(trimmed).getUserInfo() != null) {
+				return false;
+			}
+		} catch (URISyntaxException e) {
+			return false;
+		}
+		return EXTERNAL_HTTP_URL_VALIDATOR.isValid(trimmed);
 	}
 }

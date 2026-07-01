@@ -36,11 +36,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.i18n.I18nManager;
@@ -67,8 +67,6 @@ public class DispatcherModule {
 	/** default encoding */
 	private static final String UTF8_ENCODING = "utf-8";
 	
-	private static final UrlValidator redirectValidator = new UrlValidator(new String[] { "http", "https" }, UrlValidator.ALLOW_LOCAL_URLS);
-
 	/**
 	 * set by spring
 	 */
@@ -169,8 +167,9 @@ public class DispatcherModule {
 	 */
 	public static final boolean redirectSecureTo(HttpServletResponse response, String url) {
 		try {
-			if(redirectValidator.isValid(url)) {
-				response.sendRedirect(url);
+			String trimmedUrl = url.trim();
+		if(StringHelper.isValidHttpUrl(trimmedUrl)) {
+				response.sendRedirect(trimmedUrl);
 				return true;
 			}
 			sendNotFound(response);

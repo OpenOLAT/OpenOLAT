@@ -181,9 +181,13 @@ public class LearningResourceLoggingAction extends BaseLoggingAction {
 			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.completionType).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_COMPLETION_TYPE_DURATION = 
 			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.completionType).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
-	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_COMPLETION_TYPE_NONE = 
+	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_COMPLETION_TYPE_NONE =
 			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.remove, ActionObject.completionType).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
-	
+	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_EXTERNAL_TOOL_ENABLED =
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.tools).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_EXTERNAL_TOOL_DISABLED =
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.remove, ActionObject.tools).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+
 	// lecture block
 	public static final ILoggingAction LECTURE_BLOCK_CREATED = 
 			new LearningResourceLoggingAction(ActionType.admin, CrudAction.create, ActionVerb.add, ActionObject.lectures).setTypeList(

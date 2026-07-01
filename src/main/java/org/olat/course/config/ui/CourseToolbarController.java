@@ -21,6 +21,7 @@ package org.olat.course.config.ui;
 
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.olat.commons.calendar.CalendarManager;
@@ -37,15 +38,18 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.IconSelectorElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -69,6 +73,7 @@ import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
+import org.olat.course.config.ExternalToolVisibility;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodes.bc.BCCourseNodeConfigController;
 import org.olat.course.nodes.bc.BCCourseNodeEditChooseFolderForm;
@@ -107,7 +112,6 @@ public class CourseToolbarController extends FormBasicController {
 	private static final String DOC_LOCATION_CUSTOM = "custom";
 	private static final String DOC_LOCATION_COURSE_FOLDER = "course.folder";
 	private static final String[] DOC_LOCATION_KEYS = {DOC_LOCATION_CUSTOM, DOC_LOCATION_COURSE_FOLDER};
-	
 	private SelectionElement toolbarEl;
 	private StaticTextElement explainEl;
 	private SelectionElement searchEl;
@@ -136,6 +140,12 @@ public class CourseToolbarController extends FormBasicController {
 	private MultipleSelectionElement bigBlueButtonModeratorStartsMeetingEl;
 	private MultipleSelectionElement zoomEl;
 	private SingleSelection zoomProfileEl;
+	private SelectionElement[] externalToolEls;
+	private FormLayoutContainer[] externalToolConts;
+	private TextElement[] externalToolNameEls;
+	private TextElement[] externalToolUrlEls;
+	private IconSelectorElement[] externalToolIconEls;
+	private MultipleSelectionElement[] externalToolVisibilityEls;
 
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController blogSearchCtrl;
@@ -418,6 +428,59 @@ public class CourseToolbarController extends FormBasicController {
 			canHideToolbar &= false;
 		}
 
+		SelectionValues visibilitySV = new SelectionValues();
+		for (ExternalToolVisibility v : ExternalToolVisibility.values()) {
+			visibilitySV.add(SelectionValues.entry(v.name(), translate("external.tool.visibility." + v.name())));
+		}
+		externalToolEls = new SelectionElement[CourseConfig.EXTERNAL_TOOL_COUNT];
+		externalToolConts = new FormLayoutContainer[CourseConfig.EXTERNAL_TOOL_COUNT];
+		externalToolNameEls = new TextElement[CourseConfig.EXTERNAL_TOOL_COUNT];
+		externalToolUrlEls = new TextElement[CourseConfig.EXTERNAL_TOOL_COUNT];
+		externalToolIconEls = new IconSelectorElement[CourseConfig.EXTERNAL_TOOL_COUNT];
+		externalToolVisibilityEls = new MultipleSelectionElement[CourseConfig.EXTERNAL_TOOL_COUNT];
+		for (int i = 0; i < CourseConfig.EXTERNAL_TOOL_COUNT; i++) {
+			int toolIndex = i + 1;
+			boolean toolEnabled = courseConfig.isExternalToolEnabled(toolIndex);
+			externalToolEls[i] = uifactory.addCheckboxesHorizontal("externalToolIsOn" + toolIndex,
+					"chkbx.external_tool" + toolIndex + ".onoff", formLayout, onKeys, onValues);
+			externalToolEls[i].select(onKeys[0], toolEnabled);
+			externalToolEls[i].addActionListener(FormEvent.ONCHANGE);
+			externalToolEls[i].setEnabled(editable);
+
+			FormLayoutContainer cont = FormLayoutContainer.createDefaultFormLayout("externalToolCont" + toolIndex, getTranslator());
+			cont.setRootForm(mainForm);
+			formLayout.add(cont);
+			externalToolConts[i] = cont;
+
+			externalToolNameEls[i] = uifactory.addTextElement("externalToolName" + toolIndex, "external.tool.name", 64,
+					courseConfig.getExternalToolName(toolIndex), cont);
+			externalToolNameEls[i].setMandatory(true);
+			externalToolNameEls[i].setEnabled(editable);
+
+			externalToolUrlEls[i] = uifactory.addTextElement("externalToolUrl" + toolIndex, "external.tool.url", 2000,
+					courseConfig.getExternalToolUrl(toolIndex), cont);
+			externalToolUrlEls[i].setMandatory(true);
+			externalToolUrlEls[i].setEnabled(editable);
+
+			externalToolIconEls[i] = uifactory.addIconSelectorElement("externalToolIcon" + toolIndex, "external.tool.icon",
+					cont, ExternalToolIcon.getIcons(getTranslator()));
+			ExternalToolIcon savedIcon = ExternalToolIcon.forCssClass(courseConfig.getExternalToolIcon(toolIndex));
+			if (savedIcon != null) {
+				externalToolIconEls[i].setIcon(savedIcon.name());
+			}
+			externalToolIconEls[i].setMandatory(true);
+			externalToolIconEls[i].setEnabled(editable);
+
+			externalToolVisibilityEls[i] = uifactory.addCheckboxesHorizontal("externalToolVis" + toolIndex,
+					"external.tool.visibility", cont, visibilitySV.keys(), visibilitySV.values());
+			externalToolVisibilityEls[i].setEnabled(editable);
+			for (ExternalToolVisibility v : ExternalToolVisibility.values()) {
+				if (courseConfig.isExternalToolVisible(toolIndex, v)) {
+					externalToolVisibilityEls[i].select(v.name(), true);
+				}
+			}
+		}
+
 		toolbarEl.setEnabled(editable && canHideToolbar);
 		
 		if(!readOnly) {
@@ -483,6 +546,11 @@ public class CourseToolbarController extends FormBasicController {
 			wikiSelectLink.setVisible(wikiEntryEditable);
 			wikiSelectLink.setI18nKey("wiki.select.button", new String[] { translate(wikiSelected? "wiki.replace": "wiki.select")});
 		}
+
+		for (int i = 0; i < CourseConfig.EXTERNAL_TOOL_COUNT; i++) {
+			boolean toolEnabled = externalToolEls[i].isSelected(0);
+			externalToolConts[i].setVisible(toolEnabled);
+		}
 	}
 
 	@Override
@@ -510,11 +578,22 @@ public class CourseToolbarController extends FormBasicController {
 			updateToolbar();
 		} else if (zoomEl == source) {
 			updateZoomUI();
+		} else {
+			for (int i = 0; i < CourseConfig.EXTERNAL_TOOL_COUNT; i++) {
+				if (source == externalToolEls[i]) {
+					updateUI();
+					break;
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
 	private boolean isAnyToolSelected() {
+		boolean anyExternal = false;
+		for (SelectionElement el : externalToolEls) {
+			anyExternal |= el.isSelected(0);
+		}
 		return searchEl.isSelected(0)
 				|| (calendarEl != null && calendarEl.isSelected(0))
 				|| participantListEl.isSelected(0)
@@ -527,7 +606,8 @@ public class CourseToolbarController extends FormBasicController {
 				|| forumEl.isSelected(0)
 				|| documentsEl.isSelected(0)
 				|| chatEl.isSelected(0)
-				|| glossaryEl.isSelected(0);
+				|| glossaryEl.isSelected(0)
+				|| anyExternal;
 	}
 
 	private void updateToolbar() {
@@ -556,6 +636,10 @@ public class CourseToolbarController extends FormBasicController {
 		updateDocumentsUI();
 		chatEl.setVisible(enabled);
 		glossaryEl.setVisible(enabled);
+		for (int i = 0; i < CourseConfig.EXTERNAL_TOOL_COUNT; i++) {
+			externalToolEls[i].setVisible(enabled);
+			externalToolConts[i].setVisible(enabled && externalToolEls[i].isSelected(0));
+		}
 	}
 
 	private void updateZoomUI() {
@@ -654,7 +738,32 @@ public class CourseToolbarController extends FormBasicController {
 			wikiCont.setErrorKey("error.no.wiki.selected");
 			allOk &= false;
 		}
-		
+
+		boolean toolbarEnabled = toolbarEl.isSelected(0);
+		for (int i = 0; i < CourseConfig.EXTERNAL_TOOL_COUNT; i++) {
+			externalToolNameEls[i].clearError();
+			externalToolUrlEls[i].clearError();
+			externalToolIconEls[i].clearError();
+			if (toolbarEnabled && externalToolEls[i].isSelected(0)) {
+				if (!StringHelper.containsNonWhitespace(externalToolNameEls[i].getValue())) {
+					externalToolNameEls[i].setErrorKey("external.tool.error.name.mandatory");
+					allOk &= false;
+				}
+				String urlVal = externalToolUrlEls[i].getValue();
+				if (!StringHelper.containsNonWhitespace(urlVal)) {
+					externalToolUrlEls[i].setErrorKey("external.tool.error.url.mandatory");
+					allOk &= false;
+				} else if (!StringHelper.isValidExternalHttpUrl(urlVal)) {
+					externalToolUrlEls[i].setErrorKey("external.tool.error.url.invalid");
+					allOk &= false;
+				}
+				if (externalToolIconEls[i].getIcon() == null) {
+					externalToolIconEls[i].setErrorKey("external.tool.error.icon.mandatory");
+					allOk &= false;
+				}
+			}
+		}
+
 		allOk = validateDocumentPath();
 		
 		return allOk;
@@ -788,7 +897,50 @@ public class CourseToolbarController extends FormBasicController {
 		boolean enableGlossary = glossaryEl != null && glossaryEl.isSelected(0);
 		boolean updateGlossary = courseConfig.isGlossaryEnabled() != enableGlossary;
 		courseConfig.setGlossaryIsEnabled(enableGlossary && toolbarEnabled);
-		
+
+		boolean[] updateExternalTool = new boolean[CourseConfig.EXTERNAL_TOOL_COUNT];
+		boolean[] enableExternalTool = new boolean[CourseConfig.EXTERNAL_TOOL_COUNT];
+		boolean[] wasEnabledExternalTool = new boolean[CourseConfig.EXTERNAL_TOOL_COUNT];
+		for (int i = 0; i < CourseConfig.EXTERNAL_TOOL_COUNT; i++) {
+			int toolIndex = i + 1;
+			wasEnabledExternalTool[i] = courseConfig.isExternalToolEnabled(toolIndex);
+			enableExternalTool[i] = externalToolEls[i].isSelected(0) && toolbarEnabled;
+			courseConfig.setExternalToolEnabled(toolIndex, enableExternalTool[i]);
+			if (enableExternalTool[i]) {
+				String newName = externalToolNameEls[i].getValue();
+				String newUrl = externalToolUrlEls[i].getValue();
+				IconSelectorElement.Icon icon = externalToolIconEls[i].getIcon();
+				String newIcon = icon != null ? icon.iconCssClass() : null;
+				boolean changed = !wasEnabledExternalTool[i]
+						|| !Objects.equals(courseConfig.getExternalToolName(toolIndex), newName)
+						|| !Objects.equals(courseConfig.getExternalToolUrl(toolIndex), newUrl)
+						|| !Objects.equals(courseConfig.getExternalToolIcon(toolIndex), newIcon);
+				if (!changed) {
+					for (ExternalToolVisibility v : ExternalToolVisibility.values()) {
+						if (courseConfig.isExternalToolVisible(toolIndex, v) != externalToolVisibilityEls[i].getSelectedKeys().contains(v.name())) {
+							changed = true;
+							break;
+						}
+					}
+				}
+				updateExternalTool[i] = changed;
+				courseConfig.setExternalToolName(toolIndex, newName);
+				courseConfig.setExternalToolUrl(toolIndex, newUrl);
+				courseConfig.setExternalToolIcon(toolIndex, newIcon);
+				for (ExternalToolVisibility v : ExternalToolVisibility.values()) {
+					courseConfig.setExternalToolVisible(toolIndex, v, externalToolVisibilityEls[i].getSelectedKeys().contains(v.name()));
+				}
+			} else {
+				updateExternalTool[i] = wasEnabledExternalTool[i];
+				courseConfig.setExternalToolName(toolIndex, null);
+				courseConfig.setExternalToolUrl(toolIndex, null);
+				courseConfig.setExternalToolIcon(toolIndex, null);
+				for (ExternalToolVisibility v : ExternalToolVisibility.values()) {
+					courseConfig.setExternalToolVisible(toolIndex, v, null);
+				}
+			}
+		}
+
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		
@@ -933,7 +1085,20 @@ public class CourseToolbarController extends FormBasicController {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.glossary, course.getResourceableId()), course);
 		}
-		
+
+		for (int i = 0; i < CourseConfig.EXTERNAL_TOOL_COUNT; i++) {
+			if (updateExternalTool[i]) {
+				if (wasEnabledExternalTool[i] != enableExternalTool[i]) {
+					ILoggingAction loggingAction = enableExternalTool[i]
+							? LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EXTERNAL_TOOL_ENABLED
+							: LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EXTERNAL_TOOL_DISABLED;
+					ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+				}
+				CoordinatorManager.getInstance().getCoordinator().getEventBus()
+					.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.externalTool, course.getResourceableId()), course);
+			}
+		}
+
 		fireEvent(ureq, new ReloadSettingsEvent(false, false, true, false));
 	}
 

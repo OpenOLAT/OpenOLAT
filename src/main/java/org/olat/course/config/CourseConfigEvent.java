@@ -74,6 +74,7 @@ public class CourseConfigEvent extends MultiUserEvent {
 		completionType,
 		teams,
 		bigbluebutton,
-		zoom
+		zoom,
+		externalTool
 	}
 }
