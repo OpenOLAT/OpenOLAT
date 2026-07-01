@@ -1113,3 +1113,18 @@ alter table o_as_mode_course add a_safeexambrowser_allow_exit number default 0;
 
 alter table o_as_inspection_configuration add a_safeexambrowser_exit_password varchar(255);
 alter table o_as_inspection_configuration add a_safeexambrowser_allow_exit number default 0;
+
+
+-- Certification program
+alter table o_cer_program add fk_print_template number(20);
+alter table o_cer_program add c_print_template_enabled number default 0 not null;
+
+alter table o_cer_program add constraint cer_progr_to_prtemplate_idx foreign key (fk_print_template) references o_cer_template (id);
+create index idx_cer_progr_to_prtemplate_idx on o_cer_program(fk_print_template);
+
+alter table o_cer_certificate add c_print_path varchar(1024);
+alter table o_cer_certificate add fk_print_metadata number(20);
+
+alter table o_cer_certificate add constraint certificate_printdata_idx foreign key (fk_print_metadata) references o_vfs_metadata(id);
+create index idx_certificate_printdata_idx on o_cer_certificate (fk_print_metadata);
+

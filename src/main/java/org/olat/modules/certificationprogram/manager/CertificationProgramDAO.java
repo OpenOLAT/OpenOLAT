@@ -34,6 +34,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.DateUtils;
+import org.olat.course.certificate.CertificateTemplate;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramRef;
@@ -98,6 +99,7 @@ public class CertificationProgramDAO {
 				inner join fetch program.resource as rsrc
 				left join fetch program.creditPointSystem as system
 				left join fetch program.template as template
+				left join fetch program.printTemplate as printTemplate
 				where program.key=:programKey""";
 		
 		List<CertificationProgram> programs = dbInstance.getCurrentEntityManager().createQuery(query, CertificationProgram.class)
@@ -117,7 +119,8 @@ public class CertificationProgramDAO {
 				inner join fetch program.group as bGroup
 				inner join fetch program.resource as rsrc
 				left join fetch program.creditPointSystem as system
-				left join fetch program.template as template""";
+				left join fetch program.template as template
+				left join fetch program.printTemplate as printTemplate""";
 		
 		return dbInstance.getCurrentEntityManager().createQuery(query, CertificationProgram.class)
 			.getResultList();
@@ -130,6 +133,7 @@ public class CertificationProgramDAO {
 				inner join fetch program.resource as rsrc
 				left join fetch program.creditPointSystem as system
 				left join fetch program.template as template
+				left join fetch program.printTemplate as printTemplate
 				where exists (select rel.key from certificationprogramtoorganisation as rel
 					where rel.certificationProgram.key=program.key and rel.organisation.key in (:organisationKey)
 				) and (exists (select ownerMember.key from bgroupmember as ownerMember
@@ -404,5 +408,20 @@ public class CertificationProgramDAO {
 				.setParameter("programStatus", CertificationProgramStatusEnum.active)
 				.setParameter("programKey", program.getKey())
 				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP);
+	}
+	
+	public boolean isTemplateInUse(CertificateTemplate template) {
+		String query = """
+				select program.key from certificationprogram as program
+				where program.template.key=:templateKey or program.printTemplate.key=:templateKey""";
+
+		List<Long> configurations = dbInstance.getCurrentEntityManager()
+			.createQuery(query, Long.class)
+			.setParameter("templateKey", template.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return configurations != null && !configurations.isEmpty()
+				&& configurations.get(0) != null && configurations.get(0).longValue() > 0;
 	}
 }

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.olat.admin.user.UserTableDataModel;
@@ -57,18 +58,24 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.ui.CertificateMediaResource;
+import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberWithInfos;
 import org.olat.modules.certificationprogram.ui.CertificationProgramMembersTableModel.CertificationProgramMembersCols;
+import org.olat.modules.certificationprogram.ui.component.CertificatesMediaResource;
 import org.olat.modules.certificationprogram.ui.component.CertificationProgramMemberWithInfosCreationComparator;
 import org.olat.modules.certificationprogram.ui.component.CertificationStatusCellRenderer;
 import org.olat.modules.certificationprogram.ui.component.NextRecertificationInDays;
@@ -115,6 +122,8 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 	protected BaseSecurity securityManager;
 	@Autowired
 	protected BaseSecurityModule securityModule;
+	@Autowired
+	protected CertificatesManager certificatesManager;
 	@Autowired
 	protected CertificationProgramService certificationProgramService;
 	
@@ -359,5 +368,47 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 		
 		toolbarPanel.pushController(translate("contact.title"), contactCtrl);
 	}
-
+	
+	protected void doDownloadCertificate(UserRequest ureq, CertificationProgramMemberRow row, boolean print) {
+		Long certificateKey = row.getCertificateKey();
+		if(certificateKey != null) {
+			Certificate certificate = certificatesManager.getCertificateById(certificateKey);
+			VFSLeaf certificateLeaf = print
+					? certificatesManager.getPrintCertificateLeaf(certificate)
+					: certificatesManager.getCertificateLeaf(certificate);
+			if(certificateLeaf != null) {
+				String name = DownloadCertificateCellRenderer.getName(certificate, print);
+				MediaResource certificateResource = new CertificateMediaResource(name, certificateLeaf, false);
+				ureq.getDispatchResult().setResultingMediaResource(certificateResource);
+			}
+		}
+	}
+	
+	protected void doDownloadAllCertificates(UserRequest ureq, boolean print) {
+		List<Certificate> selectedRows = tableModel.getObjects().stream()
+			.filter(Objects::nonNull)
+			.map(CertificationProgramMemberRow::getCertificate)
+			.filter(Objects::nonNull)
+			.toList();
+		
+		if(!selectedRows.isEmpty()) {
+			CertificatesMediaResource certificatesResources = new CertificatesMediaResource(selectedRows, print);
+			ureq.getDispatchResult().setResultingMediaResource(certificatesResources);
+		}
+	}
+	
+	protected void doBulkDownloadCertificates(UserRequest ureq, boolean print) {
+		List<Certificate> selectedRows = tableEl.getMultiSelectedIndex().stream()
+			.filter(Objects::nonNull)
+			.map(index -> tableModel.getObject(index.intValue()))
+			.filter(Objects::nonNull)
+			.map(CertificationProgramMemberRow::getCertificate)
+			.filter(Objects::nonNull)
+			.toList();
+		
+		if(!selectedRows.isEmpty()) {
+			CertificatesMediaResource certificatesResources = new CertificatesMediaResource(selectedRows, print);
+			ureq.getDispatchResult().setResultingMediaResource(certificatesResources);
+		}
+	}
 }

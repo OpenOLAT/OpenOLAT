@@ -1995,6 +1995,7 @@ create table o_cer_certificate (
    c_recertification_win_date date,
    c_recertification_paused number default 0 not null,
    c_path varchar2(1024 char),
+   c_print_path varchar(1024),
    c_last number default 1 not null,
    c_revocation_date date,
    c_removal_date date,
@@ -2003,6 +2004,7 @@ create table o_cer_certificate (
    fk_olatresource number(20),
    fk_identity number(20) not null,
    fk_metadata number(20),
+   fk_print_metadata number(20),
    fk_certification_program number(20),
    fk_uploaded_by number(20),
    primary key (id)
@@ -2051,9 +2053,11 @@ create table o_cer_program (
    c_cer_custom_1 varchar(4000),
    c_cer_custom_2 varchar(4000),
    c_cer_custom_3 varchar(4000),
+   c_print_template_enabled number default 0 not null,
    fk_credit_point_system number(20),
    fk_group number(20) not null,
    fk_template number(20),
+   fk_print_template number(20),
    fk_resource number(20),
    primary key (id)
 );
@@ -7204,6 +7208,8 @@ alter table o_cer_certificate add constraint cer_to_resource_idx foreign key (fk
 create index cer_resource_idx on o_cer_certificate (fk_olatresource);
 alter table o_cer_certificate add constraint certificate_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
 create index idx_certificate_metadata_idx on o_cer_certificate (fk_metadata);
+alter table o_cer_certificate add constraint certificate_printdata_idx foreign key (fk_print_metadata) references o_vfs_metadata(id);
+create index idx_certificate_printdata_idx on o_cer_certificate (fk_print_metadata);
 create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource_id);
 create index cer_uuid_idx on o_cer_certificate (c_uuid);
 
@@ -7245,6 +7251,8 @@ create index idx_rel_cpo_to_org_idx on o_cp_system_to_organisation (fk_organisat
 
 alter table o_cer_program add constraint cer_progr_to_template_idx foreign key (fk_template) references o_cer_template (id);
 create index idx_cer_progr_to_template_idx on o_cer_program(fk_template);
+alter table o_cer_program add constraint cer_progr_to_prtemplate_idx foreign key (fk_print_template) references o_cer_template (id);
+create index idx_cer_progr_to_prtemplate_idx on o_cer_program(fk_print_template);
 
 alter table o_cer_program add constraint cer_progr_to_resource_idx foreign key (fk_resource) references o_olatresource (resource_id);
 create index idx_cer_progr_to_resource_idx on o_cer_program (fk_resource);

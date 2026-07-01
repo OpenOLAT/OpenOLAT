@@ -1,5 +1,13 @@
-#if($r.available("add.member"))
+#if($r.available("add.member") || $r.available("all.export.certificates"))
 <div class="o_button_group o_button_group_right">
+	#if($r.available("all.export.certificates"))
+	<div class="btn-group o_spacer_right">
+		$r.render("all.export.certificates")
+		#if($r.available("export.certificates.dropdown"))
+			$r.render("export.certificates.dropdown")
+		#end
+	</div>
+	#end
 	$r.render("add.member")
 </div>
 #end

@@ -92,6 +92,9 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 
 	@Column(name="c_path", nullable=true, insertable=true, updatable=true)
 	private String path;
+	@Column(name="c_print_path", nullable=true, insertable=true, updatable=true)
+	private String printPath;
+	
 	@Column(name="c_last", nullable=false, insertable=true, updatable=true)
 	private boolean last;
 	@Temporal(TemporalType.TIMESTAMP)
@@ -115,6 +118,10 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_metadata", nullable=true, insertable=true, updatable=true)
 	private VFSMetadata metadata;
+	
+	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_print_metadata", nullable=true, insertable=true, updatable=true)
+	private VFSMetadata printMetadata;
 	
 	@Override
 	public Long getKey() {
@@ -266,6 +273,15 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 	}
 	
 	@Override
+	public String getPrintPath() {
+		return printPath;
+	}
+
+	public void setPrintPath(String printPath) {
+		this.printPath = printPath;
+	}
+
+	@Override
 	public Identity getIdentity() {
 		return identity;
 	}
@@ -283,12 +299,22 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 		this.uploadedBy = uploadedBy;
 	}
 
+	@Override
 	public VFSMetadata getMetadata() {
 		return metadata;
 	}
 
 	public void setMetadata(VFSMetadata metadata) {
 		this.metadata = metadata;
+	}
+	
+	@Override
+	public VFSMetadata getPrintMetadata() {
+		return printMetadata;
+	}
+
+	public void setPrintMetadata(VFSMetadata printMetadata) {
+		this.printMetadata = printMetadata;
 	}
 
 	@Override

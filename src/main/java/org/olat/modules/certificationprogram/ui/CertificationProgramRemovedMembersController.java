@@ -151,6 +151,8 @@ public class CertificationProgramRemovedMembersController extends AbstractCertif
 	private class ToolsController extends BasicController {
 
 		private final Link contactLink;
+		private Link downloadLink;
+		private Link downloadPrintLink;
 		
 		private final CertificationProgramMemberRow row;
 		
@@ -163,6 +165,17 @@ public class CertificationProgramRemovedMembersController extends AbstractCertif
 			contactLink = LinkFactory.createLink("contact", "contact", getTranslator(), mainVC, this, Link.LINK);
 			contactLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 			
+			if(row.getCertificateMetadata() != null) {
+				downloadLink = LinkFactory.createLink("export.certificate", "export", getTranslator(), mainVC, this, Link.LINK);
+				downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
+				downloadLink.setTarget("_blank");
+			}
+			if(row.getCertificatePrintMetadata() != null) {
+				downloadPrintLink = LinkFactory.createLink("export.print.certificate", "export.print", getTranslator(), mainVC, this, Link.LINK);
+				downloadPrintLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
+				downloadPrintLink.setTarget("_blank");
+			}
+			
 			putInitialPanel(mainVC);
 		}
 
@@ -171,6 +184,10 @@ public class CertificationProgramRemovedMembersController extends AbstractCertif
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			if(contactLink == source) {
 				doOpenContact(ureq, row);
+			} else if(downloadLink == source) {
+				doDownloadCertificate(ureq, row, false);
+			} else if(downloadPrintLink == source) {
+				doDownloadCertificate(ureq, row, true);
 			}
 		}
 	}

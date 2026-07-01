@@ -143,7 +143,9 @@ public class RepositoryEntryCertificateConfigurationDAO {
 	}
 	
 	public boolean isTemplateInUse(CertificateTemplate template) {
-		String query = "select config.key from certificateentryconfig config where config.template.key=:templateKey";
+		String query = """
+				select config.key from certificateentryconfig config
+				where config.template.key=:templateKey""";
 
 		List<Long> configurations = dbInstance.getCurrentEntityManager()
 			.createQuery(query, Long.class)

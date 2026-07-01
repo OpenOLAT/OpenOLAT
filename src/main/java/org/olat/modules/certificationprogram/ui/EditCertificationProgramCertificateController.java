@@ -19,40 +19,34 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
-import java.io.File;
-import java.io.InputStream;
+import java.util.List;
 import java.util.Objects;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.StreamedMediaResource;
-import org.olat.core.gui.media.ZippedDirectoryMediaResource;
-import org.olat.core.util.vfs.JavaIOItem;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.PreviewCertificate;
-import org.olat.course.certificate.ui.CertificateChooserController;
 import org.olat.course.certificate.ui.PreviewMediaResource;
+import org.olat.course.certificate.ui.UploadCertificateTemplateController;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramLogAction;
 import org.olat.modules.certificationprogram.CertificationProgramService;
@@ -67,21 +61,38 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditCertificationProgramCertificateController extends FormBasicController {
 	
+	private static final String DEFAULT_KEY = "def";
+	private static final String SYSTEM_KEY = "system";
+	private static final String CUSTOM_KEY = "custom";
+	
 	private TextElement certificationCustom1El;
 	private TextElement certificationCustom2El;
 	private TextElement certificationCustom3El;
+
+	private FormLink uploadTemplateLink;
+	private SingleSelection templateTypeEl;
+	private SingleSelection systemTemplatesEl;
+	private TextElement templateFileEl;
+	private Link previewTemplateLink;
 	private FormLayoutContainer templateCont;
 	
-	private FormLink selectTemplateLink;
-	private Link previewTemplateLink;
+	private FormToggle withPrintTemplateEl;
+	private FormLink uploadPrintTemplateLink;
+	private SingleSelection printTemplateTypeEl;
+	private SingleSelection systemPrintTemplatesEl;
+	private TextElement templatePrintFileEl;
+	private Link previewPrintTemplateLink;
+	private FormLayoutContainer printTemplateCont;
 
-	private final String mapperUrl;
 	private final boolean editable;
-	private CertificateTemplate selectedTemplate;
+	private CertificateTemplate uploadedTemplate;
+	private CertificateTemplate uploadedPrintTemplate;
 	private CertificationProgram certificationProgram;
+	private final List<CertificateTemplate> templates;
 	
 	private CloseableModalController cmc;
-	private CertificateChooserController certificateChooserCtrl;
+	private UploadCertificateTemplateController certificateUploadCtrl;
+	private UploadCertificateTemplateController printCertificateUploadCtrl;
 
 	@Autowired
 	private DB dbInstance;
@@ -95,7 +106,8 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		super(ureq, wControl);
 		editable = secCallback.canEditCertificationProgram();
 		this.certificationProgram = certificationProgram;
-		mapperUrl = registerMapper(ureq, new TemplateMapper());
+
+		templates = certificatesManager.getTemplates();
 		
 		initForm(ureq);
 		updateUI();
@@ -107,6 +119,13 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("certification.program.certificate");
+		
+		initTemplateForm(formLayout);
+		initPrintTemplateForm(formLayout);
+		
+		uifactory.addSpacerElement("variables-spacer", formLayout, false);
+		
 		certificationCustom1El = uifactory.addTextElement("certificate.custom1", 1000, certificationProgram.getCertificateCustom1(), formLayout);
 		certificationCustom1El.setEnabled(editable);
 		certificationCustom2El = uifactory.addTextElement("certificate.custom2", 2000, certificationProgram.getCertificateCustom2(), formLayout);
@@ -114,53 +133,207 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		certificationCustom3El = uifactory.addTextElement("certificate.custom3", 3000, certificationProgram.getCertificateCustom3(), formLayout);
 		certificationCustom3El.setEnabled(editable);
 		
-		String templatePage = velocity_root + "/select_certificate.html";
-		templateCont = uifactory.addCustomFormLayout("template.cont", null, templatePage, formLayout);
-		templateCont.contextPut("mapperUrl", mapperUrl);
-		templateCont.setLabel("certificate.pdf.template", null);
-		
-		if(editable) {
-			selectTemplateLink = uifactory.addFormLink("select", templateCont, Link.BUTTON);
-		}
-		selectedTemplate = certificationProgram.getTemplate();
-		if(selectedTemplate != null) {
-			templateCont.contextPut("templateName", selectedTemplate.getName());
-		} else {
-			templateCont.contextPut("templateName", translate("default.template"));
-		}
-		
-		previewTemplateLink = LinkFactory.createButton("preview", templateCont.getFormItemComponent(), this);
-		previewTemplateLink.setTarget("preview");
-		
 		if(editable) {
 			FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 			uifactory.addFormSubmitButton("save", buttonsCont);
 		}
 	}
 	
-	private void updateUI() {
-		if(selectedTemplate == null) {
-			templateCont.contextPut("templateName", translate("default.template"));
-			previewTemplateLink.setEnabled(false);
+	private void initTemplateForm(FormItemContainer formLayout) {
+		String templatePage = velocity_root + "/select_certificate.html";
+		templateCont = uifactory.addCustomFormLayout("template.cont", null, templatePage, formLayout);
+		templateCont.setLabel("certificate.pdf.template", null);
+		
+		CertificateTemplate template = certificationProgram.getTemplate();
+		
+		SelectionValues templateTypesPK = new SelectionValues();
+		templateTypesPK.add(SelectionValues.entry(SYSTEM_KEY, translate("select.system.template")));
+		templateTypesPK.add(SelectionValues.entry(CUSTOM_KEY, translate("select.custom.template")));
+		templateTypeEl = uifactory.addButtonGroupSingleSelectHorizontal("template.type", templateCont, templateTypesPK);
+		templateTypeEl.addActionListener(FormEvent.ONCHANGE);
+		templateTypeEl.setElementCssClass("o_button_group_vertical");
+		templateTypeEl.setEnabled(editable);
+		if(template != null && !template.isPublicTemplate()) {
+			templateTypeEl.select(CUSTOM_KEY, true);
 		} else {
-			templateCont.contextPut("templateName", selectedTemplate.getName());
-			previewTemplateLink.setEnabled(true);
+			templateTypeEl.select(SYSTEM_KEY, true);
 		}
+
+		String templateName = template == null || template.isPublicTemplate()
+				? null
+				: template.getName();
+		templateFileEl = uifactory.addTextElement("template.file", 128, templateName, templateCont);
+		templateFileEl.setDomReplacementWrapperRequired(false);
+		templateFileEl.setEnabled(false);
+		templateFileEl.setVisible(false);
+		
+		SelectionValues templatesPK = new SelectionValues();
+		templatesPK.add(SelectionValues.entry(DEFAULT_KEY, "Default"));
+		for(CertificateTemplate t:templates) {
+			templatesPK.add(SelectionValues.entry(t.getKey().toString(), t.getName()));
+		}
+		systemTemplatesEl = uifactory.addDropdownSingleselect("public.templates", templateCont, templatesPK.keys(), templatesPK.values(), null);
+		systemTemplatesEl.setDomReplacementWrapperRequired(false);
+		if(template == null) {
+			systemTemplatesEl.select(DEFAULT_KEY, true);	
+		} else if(template != null && template.isPublicTemplate()) {
+			systemTemplatesEl.select(template.getKey().toString(), true);
+		} else {
+			systemTemplatesEl.setVisible(false);
+			templateFileEl.setVisible(true);
+		}
+		
+		uploadTemplateLink = uifactory.addFormLink("upload", "upload", null, templateCont, Link.BUTTON);
+		uploadTemplateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
+		uploadTemplateLink.setElementCssClass("input-group-addon");
+		uploadTemplateLink.setDomReplacementWrapperRequired(false);
+		
+		previewTemplateLink = LinkFactory.createButton("preview", templateCont.getFormItemComponent(), this);
+		previewTemplateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
+		previewTemplateLink.setElementCssClass("input-group-addon o_certificate_preview_button");
+		previewTemplateLink.setTarget("preview");
+	}
+	
+	private void initPrintTemplateForm(FormItemContainer formLayout) {
+		withPrintTemplateEl = uifactory.addToggleButton("certificate.print.template.enable", "certificate.print.template.enable", translate("on"), translate("off"), formLayout);
+		withPrintTemplateEl.toggle(certificationProgram.isPrintTemplateEnabled());
+		
+		String templatePage = velocity_root + "/select_print_certificate.html";
+		printTemplateCont = uifactory.addCustomFormLayout("print.template.cont", null, templatePage, formLayout);
+		printTemplateCont.setLabel("certificate.pdf.print.template", null);
+		
+		CertificateTemplate printTemplate = certificationProgram.getPrintTemplate();
+		
+		SelectionValues templateTypesPK = new SelectionValues();
+		templateTypesPK.add(SelectionValues.entry(SYSTEM_KEY, translate("select.system.template")));
+		templateTypesPK.add(SelectionValues.entry(CUSTOM_KEY, translate("select.custom.template")));
+		printTemplateTypeEl = uifactory.addButtonGroupSingleSelectHorizontal("print.template.type", printTemplateCont, templateTypesPK);
+		printTemplateTypeEl.addActionListener(FormEvent.ONCHANGE);
+		printTemplateTypeEl.setElementCssClass("o_button_group_vertical");
+		printTemplateTypeEl.setEnabled(editable);
+		if(printTemplate != null && !printTemplate.isPublicTemplate()) {
+			printTemplateTypeEl.select(CUSTOM_KEY, true);
+		} else {
+			printTemplateTypeEl.select(SYSTEM_KEY, true);
+		}
+	
+		String templateName = printTemplate == null || printTemplate.isPublicTemplate()
+				? null
+				: printTemplate.getName();
+		templatePrintFileEl = uifactory.addTextElement("print.template.file", null, 128, templateName, printTemplateCont);
+		templatePrintFileEl.setDomReplacementWrapperRequired(false);
+		templatePrintFileEl.setElementCssClass("input");
+		templatePrintFileEl.setEnabled(false);
+		templatePrintFileEl.setVisible(false);
+		
+		SelectionValues templatesPK = new SelectionValues();
+		templatesPK.add(SelectionValues.entry(DEFAULT_KEY, "Default"));
+		for(CertificateTemplate t:templates) {
+			templatesPK.add(SelectionValues.entry(t.getKey().toString(), t.getName()));
+		}
+		systemPrintTemplatesEl = uifactory.addDropdownSingleselect("print.public.templates", "public.templates", printTemplateCont, templatesPK.keys(), templatesPK.values(), null);
+		systemPrintTemplatesEl.setDomReplacementWrapperRequired(false);
+		systemPrintTemplatesEl.setElementCssClass("input");
+		if(printTemplate == null) {
+			systemPrintTemplatesEl.select(DEFAULT_KEY, true);	
+		} else if(printTemplate != null && printTemplate.isPublicTemplate()) {
+			systemPrintTemplatesEl.select(printTemplate.getKey().toString(), true);
+		} else {
+			systemPrintTemplatesEl.setVisible(false);
+			templatePrintFileEl.setVisible(true);
+		}
+		
+		uploadPrintTemplateLink = uifactory.addFormLink("print.upload", "upload", null, printTemplateCont, Link.BUTTON);
+		uploadPrintTemplateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
+		uploadPrintTemplateLink.setElementCssClass("input-group-addon");
+		uploadPrintTemplateLink.setDomReplacementWrapperRequired(false);
+		
+		previewPrintTemplateLink = LinkFactory.createButton("print.preview", "preview", printTemplateCont.getFormItemComponent(), this);
+		previewPrintTemplateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
+		previewPrintTemplateLink.setElementCssClass("input-group-addon o_certificate_preview_button");
+		previewPrintTemplateLink.setTarget("preview");
+	}
+	
+	private void updateUI() {
+		boolean systemTemplate = templateTypeEl.isOneSelected() && SYSTEM_KEY.equals(templateTypeEl.getSelectedKey());
+		systemTemplatesEl.setVisible(systemTemplate);
+		templateFileEl.setVisible(!systemTemplate);	
+		uploadTemplateLink.setVisible(!systemTemplate);
+		
+		CertificateTemplate selectedtemplate = getSelectedTemplate();
+		previewTemplateLink.setEnabled(systemTemplate || selectedtemplate != null);
+		
+		boolean printEnabled = withPrintTemplateEl.isOn();
+		uploadPrintTemplateLink.setVisible(printEnabled);
+		printTemplateTypeEl.setVisible(printEnabled);
+		systemPrintTemplatesEl.setVisible(printEnabled);
+		templatePrintFileEl.setVisible(printEnabled);
+		previewPrintTemplateLink.setVisible(printEnabled);
+		printTemplateCont.setVisible(printEnabled);
+		
+		if(printEnabled) {
+			boolean systemPrintTemplate = printTemplateTypeEl.isOneSelected() && SYSTEM_KEY.equals(printTemplateTypeEl.getSelectedKey());
+			systemPrintTemplatesEl.setVisible(systemPrintTemplate);
+			templatePrintFileEl.setVisible(!systemPrintTemplate);
+			uploadPrintTemplateLink.setVisible(!systemPrintTemplate);	
+			
+			CertificateTemplate selectedPrintTemplate = getSelectedPrintTemplate();
+			previewPrintTemplateLink.setEnabled(systemPrintTemplate || selectedPrintTemplate != null);
+		}
+	}
+	
+	private CertificateTemplate getSelectedTemplate() {
+		return getSelected(templateTypeEl, systemTemplatesEl, certificationProgram.getTemplate(), uploadedTemplate);
+	}
+	
+	private CertificateTemplate getSelectedPrintTemplate() {
+		return getSelected(printTemplateTypeEl, systemPrintTemplatesEl,  certificationProgram.getPrintTemplate(), uploadedPrintTemplate);
+	}
+	
+	private CertificateTemplate getSelected(SingleSelection typeEl, SingleSelection systemEl, CertificateTemplate current, CertificateTemplate uploaded) {
+		if(typeEl.isOneSelected() && SYSTEM_KEY.equals(typeEl.getSelectedKey())) {
+			String selectedKey = systemEl.isOneSelected()
+					? systemEl.getSelectedKey()
+					: DEFAULT_KEY;
+			if(DEFAULT_KEY.equals(selectedKey)) {
+				return null;
+			}
+			return templates.stream()
+					.filter(template -> selectedKey.equals(template.getKey().toString()))
+					.findFirst().orElse(null);
+		} else if(typeEl.isOneSelected() && CUSTOM_KEY.equals(typeEl.getSelectedKey())) {
+			if(uploaded != null) {
+				return uploaded;
+			}
+			if(current != null && !current.isPublicTemplate()) {
+				return current;
+			}	
+		}
+		return null;
 	}
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == previewTemplateLink) {
 			doPreviewTemplate(ureq);
-		} 
+		} else if(source == previewPrintTemplateLink) {
+			doPreviewPrintTemplate(ureq);
+		}
 		super.event(ureq, source, event);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == certificateChooserCtrl) {
+		if(source == certificateUploadCtrl) {
 			if(event == Event.DONE_EVENT) {
-				doSetTemplate(certificateChooserCtrl.getSelectedTemplate());
+				doSetTemplate(certificateUploadCtrl.getTemplate());
+				updateUI();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == printCertificateUploadCtrl) {
+			if(event == Event.DONE_EVENT) {
+				doSetPrintTemplate(printCertificateUploadCtrl.getTemplate());
 				updateUI();
 			}
 			cmc.deactivate();
@@ -172,18 +345,63 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(certificateChooserCtrl);
+		removeAsListenerAndDispose(printCertificateUploadCtrl);
+		removeAsListenerAndDispose(certificateUploadCtrl);
 		removeAsListenerAndDispose(cmc);
-		certificateChooserCtrl = null;
+		printCertificateUploadCtrl = null;
+		certificateUploadCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(selectTemplateLink == source) {
-			doSelectTemplate(ureq);
+		if(withPrintTemplateEl == source || templateTypeEl == source || printTemplateTypeEl == source) {
+			updateUI();
+		} else if(uploadTemplateLink == source) {
+			doUploadTemplate(ureq);
+		} else if(uploadPrintTemplateLink == source) {
+			doUploadPrintTemplate(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		CertificateTemplate selectedTemplate = getSelectedTemplate();
+		allOk &= validateFormLogic(templateCont, templateTypeEl, systemTemplatesEl,  selectedTemplate);
+
+		printTemplateCont.clearError();
+		if(withPrintTemplateEl.isOn()) {
+			CertificateTemplate selectedPrintTemplate = getSelectedPrintTemplate();
+			allOk &= validateFormLogic(printTemplateCont, printTemplateTypeEl, systemPrintTemplatesEl,  selectedPrintTemplate);
+		}
+
+		return allOk;
+	}
+	
+	private boolean validateFormLogic(FormLayoutContainer container, SingleSelection typeEl,
+			SingleSelection systemTemplateEl, CertificateTemplate selectedTemplate) {
+		boolean allOk = true;
+		
+		container.clearError();
+		if(typeEl.isOneSelected()) {
+			if(CUSTOM_KEY.equals(typeEl.getSelectedKey())) {
+				if(selectedTemplate == null) {
+					container.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				}
+			} else if(!systemTemplateEl.isOneSelected()) {
+				container.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+		} else {
+			container.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
+		return allOk;
 	}
 
 	@Override
@@ -195,7 +413,18 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		certificationProgram.setCertificateCustom1(certificationCustom1El.getValue());
 		certificationProgram.setCertificateCustom2(certificationCustom2El.getValue());
 		certificationProgram.setCertificateCustom3(certificationCustom3El.getValue());
+
+		CertificateTemplate selectedTemplate = getSelectedTemplate();
 		certificationProgram.setTemplate(selectedTemplate);
+		
+		boolean withPrint = withPrintTemplateEl.isOn();
+		certificationProgram.setPrintTemplateEnabled(withPrint);
+		if(withPrint) {
+			CertificateTemplate selectedPrintTemplate = getSelectedPrintTemplate();
+			certificationProgram.setPrintTemplate(selectedPrintTemplate);
+		} else {
+			certificationProgram.setPrintTemplate(null);
+		}
 		
 		certificationProgram = certificationProgramService.updateCertificationProgram(certificationProgram);
 		dbInstance.commitAndCloseSession();
@@ -209,55 +438,54 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void doSelectTemplate(UserRequest ureq) {
-		certificateChooserCtrl = new CertificateChooserController(ureq, getWindowControl(), selectedTemplate);
-		listenTo(certificateChooserCtrl);
+	private void doUploadTemplate(UserRequest ureq) {
+		certificateUploadCtrl = new UploadCertificateTemplateController(ureq, getWindowControl(), false);
+		listenTo(certificateUploadCtrl);
 		
 		String title = translate("choose.certificate.template.title");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), certificateChooserCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), certificateUploadCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();	
+	}
+	
+	private void doUploadPrintTemplate(UserRequest ureq) {
+		printCertificateUploadCtrl = new UploadCertificateTemplateController(ureq, getWindowControl(), false);
+		listenTo(printCertificateUploadCtrl);
+		
+		String title = translate("choose.certificate.template.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), printCertificateUploadCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
 	}
 	
 	private void doSetTemplate(CertificateTemplate template) {
-		this.selectedTemplate = template;
-		if(selectedTemplate == null) {
-			templateCont.contextPut("templateName", translate("default.template"));
-			previewTemplateLink.setEnabled(false);
-		} else {
-			templateCont.contextPut("templateName", template.getName());
-			previewTemplateLink.setEnabled(true);
-		}
+		this.uploadedTemplate = template;
+		previewTemplateLink.setEnabled(true);
+		templateFileEl.setValue(template.getName());
+	}
+	
+	private void doSetPrintTemplate(CertificateTemplate template) {
+		this.uploadedPrintTemplate = template;
+		previewPrintTemplateLink.setEnabled(true);
+		templatePrintFileEl.setValue(template.getName());
 	}
 	
 	private void doPreviewTemplate(UserRequest ureq) {
-		selectedTemplate = certificatesManager.getTemplateById(selectedTemplate.getKey());
+		CertificateTemplate selectedTemplate = getSelectedTemplate();
+		doPreviewTemplate(ureq, selectedTemplate);
+	}
+	
+	private void doPreviewPrintTemplate(UserRequest ureq) {
+		CertificateTemplate selectedPrintTemplate = getSelectedPrintTemplate();
+		doPreviewTemplate(ureq, selectedPrintTemplate);
+	}
+
+	private void doPreviewTemplate(UserRequest ureq, CertificateTemplate template) {
 		String custom1 = certificationCustom1El.getValue();
 		String custom2 = certificationCustom2El.getValue();
 		String custom3 = certificationCustom3El.getValue();
-		PreviewCertificate preview = certificatesManager.previewCertificate(selectedTemplate, certificationProgram, getLocale(), custom1, custom2, custom3);
+		PreviewCertificate preview = certificatesManager.previewCertificate(template, certificationProgram, getLocale(), custom1, custom2, custom3);
 		MediaResource resource = new PreviewMediaResource(preview);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
-	
-	public class TemplateMapper implements Mapper {
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			MediaResource resource;
-			if(selectedTemplate != null) {
-				VFSLeaf templateLeaf = certificatesManager.getTemplateLeaf(selectedTemplate);
-				if(templateLeaf.getName().equals("index.html") && templateLeaf instanceof JavaIOItem indexFile) {
-					File templateDir = indexFile.getBasefile().getParentFile();
-					resource = new ZippedDirectoryMediaResource(selectedTemplate.getName(), templateDir);
-				} else {
-					resource = new VFSMediaResource(templateLeaf); 
-				}
-			} else {
-				InputStream stream = certificatesManager.getDefaultTemplate();
-				resource = new StreamedMediaResource(stream, "Certificate_template.pdf", "application/pdf");
-			}
-			return resource;
-		}
-	}
-	
 }

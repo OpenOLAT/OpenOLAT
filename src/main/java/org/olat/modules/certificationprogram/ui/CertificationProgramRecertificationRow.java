@@ -21,6 +21,8 @@ package org.olat.modules.certificationprogram.ui;
 
 import java.util.Date;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.certificate.Certificate;
 import org.olat.modules.certificationprogram.ui.component.NextRecertificationInDays;
 
@@ -36,11 +38,14 @@ public class CertificationProgramRecertificationRow {
 	private final CertificationStatus certificationStatus;
 	private final NextRecertificationInDays nextRecertification;
 	
-	public CertificationProgramRecertificationRow(Certificate certificate,
-			NextRecertificationInDays nextRecertification, CertificationStatus certificationStatus) {
+	private final FormLink toolsLink;
+	
+	public CertificationProgramRecertificationRow(Certificate certificate, NextRecertificationInDays nextRecertification,
+			CertificationStatus certificationStatus, FormLink toolsLink) {
 		this.certificate = certificate;
 		this.certificationStatus = certificationStatus;
 		this.nextRecertification = nextRecertification;
+		this.toolsLink = toolsLink;
 	}
 	
 	public Long getCertificateKey() {
@@ -53,6 +58,14 @@ public class CertificationProgramRecertificationRow {
 	
 	public Date getCertificationDate() {
 		return certificate.getCreationDate();
+	}
+	
+	public VFSMetadata getCertificateMetadata() {
+		return certificate.getMetadata();
+	}
+	
+	public VFSMetadata getCertificatePrintMetadata() {
+		return certificate.getPrintMetadata();
 	}
 	
 	public Date getNextRecertificationDate() {
@@ -77,6 +90,10 @@ public class CertificationProgramRecertificationRow {
 	
 	public Certificate getCertificate() {
 		return certificate;
+	}
+	
+	public FormLink getToolsLink() {
+		return toolsLink;
 	}
 
 }

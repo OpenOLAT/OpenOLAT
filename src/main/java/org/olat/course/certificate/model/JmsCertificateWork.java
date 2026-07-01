@@ -36,6 +36,8 @@ public class JmsCertificateWork implements Serializable {
 	private Boolean passed;
 	private Double completion;
 	private Long templateKey;
+	private Long printTemplateKey;
+	private boolean printTemplate;
 	private Long certificateKey;
 	private Long doerKey;
 	private String grade;
@@ -45,14 +47,16 @@ public class JmsCertificateWork implements Serializable {
 		//
 	}
 	
-	public JmsCertificateWork(Long certificateKey, Long templateKey, Float score, Float maxScore, Boolean passed,
-			Double completion, CertificateConfig config, Long doerKey) {
+	public JmsCertificateWork(Long certificateKey, Long templateKey, boolean printTemplate, Long printTemplateKey,
+			Float score, Float maxScore, Boolean passed, Double completion, CertificateConfig config, Long doerKey) {
 		this.score = score;
 		this.maxScore = maxScore;
 		this.passed = passed;
 		this.completion = completion;
 		this.config = config;
 		this.templateKey = templateKey;
+		this.printTemplate = printTemplate;
+		this.printTemplateKey = printTemplateKey;
 		this.certificateKey = certificateKey;
 		this.doerKey = doerKey;
 	}
@@ -103,6 +107,22 @@ public class JmsCertificateWork implements Serializable {
 
 	public void setTemplateKey(Long templateKey) {
 		this.templateKey = templateKey;
+	}
+
+	public boolean isPrintTemplate() {
+		return printTemplate;
+	}
+
+	public void setPrintTemplate(boolean printTemplate) {
+		this.printTemplate = printTemplate;
+	}
+
+	public Long getPrintTemplateKey() {
+		return printTemplateKey;
+	}
+
+	public void setPrintTemplateKey(Long printTemplateKey) {
+		this.printTemplateKey = printTemplateKey;
 	}
 
 	public Long getCertificateKey() {

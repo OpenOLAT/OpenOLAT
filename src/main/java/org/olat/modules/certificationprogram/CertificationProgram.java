@@ -119,6 +119,14 @@ public interface CertificationProgram extends CertificationProgramRef, OLATResou
 
 	void setTemplate(CertificateTemplate template);
 	
+	boolean isPrintTemplateEnabled();
+
+	void setPrintTemplateEnabled(boolean enabled);
+	
+	CertificateTemplate getPrintTemplate();
+
+	void setPrintTemplate(CertificateTemplate template);
+	
 	
 	Group getGroup();
 	

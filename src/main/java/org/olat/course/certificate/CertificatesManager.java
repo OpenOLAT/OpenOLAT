@@ -141,6 +141,8 @@ public interface CertificatesManager {
 	
 	public VFSLeaf getCertificateLeaf(CertificateLight certificate);
 	
+	public VFSLeaf getPrintCertificateLeaf(Certificate certificate);
+	
 	/**
 	 * Return the last certificates of the user.
 	 * @param identity

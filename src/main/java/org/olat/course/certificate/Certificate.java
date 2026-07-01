@@ -61,6 +61,11 @@ public interface Certificate extends CreateInfo {
 	
 	String getPath();
 	
+	/**
+	 * @return Path to the special print version of the certificate if available
+	 */
+	String getPrintPath();
+	
 	String getCourseTitle();
 	
 	Long getArchivedResourceKey();
@@ -74,5 +79,7 @@ public interface Certificate extends CreateInfo {
 	Identity getUploadedBy();
 	
 	VFSMetadata getMetadata();
+	
+	VFSMetadata getPrintMetadata();
 
 }

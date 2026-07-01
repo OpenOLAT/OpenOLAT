@@ -72,7 +72,7 @@ implements SortableFlexiTableDataModel<CertificationProgramRecertificationRow> {
 			case nextRecertificationDays -> recertificationRow.getNextRecertification();
 			case recertificationDeadline -> recertificationRow.getRecertificationWindowDate();
 			case revocationDate -> recertificationRow.getRevocationDate();
-			case tools -> Boolean.TRUE;
+			case tools -> recertificationRow.getToolsLink();
 			default -> "ERROR";
 		};
 	}

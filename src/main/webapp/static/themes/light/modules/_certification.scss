@@ -246,3 +246,23 @@
 	}
 }
 
+.o_certificate_selector {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	column-gap: 5px;
+	
+	.form-group {
+		margin-bottom: 0px;
+	}
+	
+	.input-group > select {
+		border-top-right-radius: 0 !important;
+		border-bottom-right-radius: 0 !important;
+	}
+	
+	.input-group > .o_certificate_preview_button {
+		border-top-right-radius: $btn-border-radius-base;
+		border-bottom-right-radius: $btn-border-radius-base;
+	}
+}
+

@@ -124,10 +124,17 @@ public class CertificationProgramImpl implements CertificationProgram, Persistab
 	private String certificateCustom2;
 	@Column(name="c_cer_custom_3", nullable=true, insertable=true, updatable=true)
 	private String certificateCustom3;
+
+	@Column(name="c_print_template_enabled", nullable=true, insertable=true, updatable=true)
+	private boolean printTemplateEnabled;
 	
 	@ManyToOne(targetEntity=CertificateTemplateImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_template", nullable=true, insertable=true, updatable=true, unique=false)
 	private CertificateTemplate template;
+	
+	@ManyToOne(targetEntity=CertificateTemplateImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_print_template", nullable=true, insertable=true, updatable=true, unique=false)
+	private CertificateTemplate printTemplate;
 	
 	@ManyToOne(targetEntity=CreditPointSystemImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_credit_point_system", nullable=true, insertable=true, updatable=true)
@@ -383,6 +390,16 @@ public class CertificationProgramImpl implements CertificationProgram, Persistab
 	public void setCertificateCustom3(String certificateCustom3) {
 		this.certificateCustom3 = certificateCustom3;
 	}
+	
+	@Override
+	public boolean isPrintTemplateEnabled() {
+		return printTemplateEnabled;
+	}
+
+	@Override
+	public void setPrintTemplateEnabled(boolean enabled) {
+		this.printTemplateEnabled = enabled;
+	}
 
 	@Override
 	public CertificateTemplate getTemplate() {
@@ -392,6 +409,16 @@ public class CertificationProgramImpl implements CertificationProgram, Persistab
 	@Override
 	public void setTemplate(CertificateTemplate template) {
 		this.template = template;
+	}
+
+	@Override
+	public CertificateTemplate getPrintTemplate() {
+		return printTemplate;
+	}
+
+	@Override
+	public void setPrintTemplate(CertificateTemplate template) {
+		this.printTemplate = template;
 	}
 
 	@Override

@@ -157,7 +157,7 @@ public class CertificatesListAdminController extends FormBasicController {
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(cmc);
 		
-		uploadCtrl = new UploadCertificateTemplateController(ureq, getWindowControl());
+		uploadCtrl = new UploadCertificateTemplateController(ureq, getWindowControl(), true);
 		listenTo(uploadCtrl);
 		
 		String title = translate("upload.title");

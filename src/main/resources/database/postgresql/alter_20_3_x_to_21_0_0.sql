@@ -1107,3 +1107,17 @@ alter table o_as_mode_course add column a_safeexambrowser_allow_exit bool;
 
 alter table o_as_inspection_configuration add column a_safeexambrowser_exit_password varchar(255);
 alter table o_as_inspection_configuration add column a_safeexambrowser_allow_exit bool;
+
+
+-- Certification program
+alter table o_cer_program add column fk_print_template int8;
+alter table o_cer_program add column c_print_template_enabled bool default false not null;
+
+alter table o_cer_program add constraint cer_progr_to_prtemplate_idx foreign key (fk_print_template) references o_cer_template (id);
+create index idx_cer_progr_to_prtemplate_idx on o_cer_program(fk_print_template);
+
+alter table o_cer_certificate add column c_print_path varchar(1024);
+alter table o_cer_certificate add column fk_print_metadata int8;
+alter table o_cer_certificate add constraint certificate_printdata_idx foreign key (fk_print_metadata) references o_vfs_metadata(id);
+create index idx_certificate_printdata_idx on o_cer_certificate (fk_print_metadata);
+

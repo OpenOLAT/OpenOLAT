@@ -235,7 +235,9 @@ public class CertificationProgramToCurriculumElementDAO {
 		QueryBuilder query = new QueryBuilder();
 		query.append("select cert from certificate as cert")
 		     .append(" inner join fetch cert.identity as ident")
-		     .append(" inner join fetch ident.user as identUser");
+		     .append(" inner join fetch ident.user as identUser")
+		     .append(" left join fetch cert.metadata as metadata")
+		     .append(" left join fetch cert.printMetadata as printMetadata");
 		appendQueryCertificates(query, searchParams);
 		
 		if(searchParams.getOrderBy() != null) {

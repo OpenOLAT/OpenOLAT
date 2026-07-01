@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.course.certificate.Certificate;
 import org.olat.modules.certificationprogram.ui.component.NextRecertificationInDays;
@@ -59,6 +60,16 @@ public class CertificationProgramMemberRow extends UserPropertiesRow {
 		this.nextRecertification = nextRecertification;
 	}
 	
+	public Certificate getCertificate() {
+		return certificate;
+	}
+	
+	public Long getCertificateKey() {
+		return certificate == null 
+				? null
+				: certificate.getKey();
+	}
+	
 	public CertificationStatus getCertificateStatus() {
 		return certificateStatus;
 	}
@@ -82,6 +93,18 @@ public class CertificationProgramMemberRow extends UserPropertiesRow {
 	public Date getRevocationDate() {
 		return certificate != null && certificateStatus == CertificationStatus.REVOKED
 				? certificate.getRevocationDate()
+				: null;
+	}
+	
+	public VFSMetadata getCertificateMetadata() {
+		return certificate != null
+				? certificate.getMetadata()
+				: null;
+	}
+	
+	public VFSMetadata getCertificatePrintMetadata() {
+		return certificate != null
+				? certificate.getPrintMetadata()
 				: null;
 	}
 	

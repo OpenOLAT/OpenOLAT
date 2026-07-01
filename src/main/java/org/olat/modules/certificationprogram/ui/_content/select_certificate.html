@@ -1,11 +1,13 @@
-<div class="o_form_element form-inline">
-#if($templateName)
-	<span class="form-control-static">
-		<a href="$mapperUrl/$templateName" target="_blank">$templateName</a>
-	</span>
-#end
-	#if($r.visible("select"))
-	<div class="o_form_element form-group">$r.render("select")</div>
-	#end
-	<div class="o_form_element form-group">$r.render("preview")</div>
+<div class="o_certificate_selector">
+	$r.render("template.type")
+	<div class="form-group">
+		<div class="input-group">
+			#if($r.visible("template.file"))
+				$r.render("template.file")
+			#end
+			$r.render("public.templates")
+			$r.render("upload")
+			$r.render("preview")
+		</div>
+	</div>
 </div>

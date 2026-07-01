@@ -58,7 +58,7 @@ public class CertificateChooserController extends UploadCertificateTemplateContr
 	private CertificateTemplate selectedTemplate;
 	
 	public CertificateChooserController(UserRequest ureq, WindowControl wControl, CertificateTemplate template) {
-		super(ureq, wControl);
+		super(ureq, wControl, true);
 		
 		this.selectedTemplate = template;
 		if(selectedTemplate != null) {

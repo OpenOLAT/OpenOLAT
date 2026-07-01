@@ -1,0 +1,8 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("export.certificate"))
+		<li>$r.render("export.certificate")</li>
+	#end
+	#if($r.available("export.print.certificate"))
+		<li>$r.render("export.print.certificate")</li>
+	#end
+</ul>

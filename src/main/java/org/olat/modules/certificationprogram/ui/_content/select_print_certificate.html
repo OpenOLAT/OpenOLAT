@@ -1,0 +1,13 @@
+<div class="o_certificate_selector">
+	$r.render("print.template.type")
+	<div class="form-group">
+		<div class="input-group">
+			#if($r.visible("print.template.file"))
+				$r.render("print.template.file")
+			#end
+			$r.render("print.public.templates")
+			$r.render("print.upload")
+			$r.render("print.preview")
+		</div>
+	</div>
+</div>

@@ -25,11 +25,15 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
@@ -37,10 +41,20 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.ui.CertificateMediaResource;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.certificationprogram.CertificationProgram;
@@ -73,10 +87,16 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 	private CertificationProgramEfficiencyStatementTableModel assessmentEntriesTableModel;
 	
 	private Object userObject;
+	private final String toolsCmd;
 	private final Identity assessedIdentity;
 	private final CertificationProgram certificationProgram;
 	private final NextRecertificationInDays nextRecertification;
+	
+	private ToolsController toolsCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
 
+	@Autowired
+	private CertificatesManager certificatesManager;
 	@Autowired
 	private UserPortraitService userPortraitService;
 	@Autowired
@@ -89,6 +109,7 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 		this.assessedIdentity = assessedIdentity;
 		this.nextRecertification = nextRecertification;
 		this.certificationProgram = certificationProgram;
+		toolsCmd = "tools_cert_" + assessedIdentity.getKey(); 
 		
 		initForm(ureq);
 		loadCertificatesModel(ureq);
@@ -178,7 +199,9 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 				? NextRecertificationInDays.valueOf(certificate, referenceDate)
 				: null;
 		CertificationStatus status = CertificationStatus.evaluate(certificate, referenceDate);
-		CertificationProgramRecertificationRow row = new CertificationProgramRecertificationRow(certificate, certificateNextRecertification, status);
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), toolsCmd);
+		CertificationProgramRecertificationRow row = new CertificationProgramRecertificationRow(certificate, certificateNextRecertification, status, toolsLink);
+		toolsLink.setUserObject(row);
 		return row;
 	}
 	
@@ -219,9 +242,85 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 		CertificationProgramEfficiencyStatementRow row = new CertificationProgramEfficiencyStatementRow(assessmentEntry);
 		return row;
 	}
-	
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source instanceof FormLink link && toolsCmd.equals(link.getCmd())
+				&& link.getUserObject() instanceof CertificationProgramRecertificationRow selectedRow) {
+			doOpenTools(ureq, selectedRow, link.getFormDispatchId());
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doOpenTools(UserRequest ureq, CertificationProgramRecertificationRow row, String targetId) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+	
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), targetId, "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
+	}
+	
+	
+	private void doDownloadCertificate(UserRequest ureq, CertificationProgramRecertificationRow row, boolean print) {
+		Long certificateKey = row.getCertificateKey();
+		if(certificateKey != null) {
+			Certificate certificate = certificatesManager.getCertificateById(certificateKey);
+			VFSLeaf certificateLeaf = print
+					? certificatesManager.getPrintCertificateLeaf(certificate)
+					: certificatesManager.getCertificateLeaf(certificate);
+			if(certificateLeaf != null) {
+				String name = DownloadCertificateCellRenderer.getName(certificate, certificate.getIdentity(), print);
+				MediaResource certificateResource = new CertificateMediaResource(name, certificateLeaf, false);
+				ureq.getDispatchResult().setResultingMediaResource(certificateResource);
+			}
+		}
+	}
+	
+	private class ToolsController extends BasicController {
+
+		private Link downloadLink;
+		private Link downloadPrintLink;
+		
+		private final CertificationProgramRecertificationRow row;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, CertificationProgramRecertificationRow row) {
+			super(ureq, wControl);
+			this.row = row;
+			
+			VelocityContainer mainVC = createVelocityContainer("tool_member_details");
+			
+			if(row.getCertificateMetadata() != null) {
+				downloadLink = LinkFactory.createLink("export.certificate", "export", getTranslator(), mainVC, this, Link.LINK);
+				downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
+				downloadLink.setTarget("_blank");
+			}
+			if(row.getCertificatePrintMetadata() != null) {
+				downloadPrintLink = LinkFactory.createLink("export.print.certificate", "export.print", getTranslator(), mainVC, this, Link.LINK);
+				downloadPrintLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
+				downloadPrintLink.setTarget("_blank");
+			}
+
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
+			if(downloadLink == source) {
+				doDownloadCertificate(ureq, row, false);
+			} else if(downloadPrintLink == source) {
+				doDownloadCertificate(ureq, row, true);
+			}
+		}
 	}
 }

@@ -19,10 +19,13 @@
  */
 package org.olat.modules.certificationprogram.manager;
 
+import java.io.File;
 import java.math.BigDecimal;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.time.DateUtils;
@@ -39,8 +42,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateStatus;
+import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesDAO;
+import org.olat.course.certificate.manager.RepositoryEntryCertificateConfigurationDAOTest;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
@@ -511,6 +516,50 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 		// Not manager
 		List<CertificationProgram> noPrograms = certificationProgramDao.loadCertificationPrograms(notManager);
 		Assert.assertTrue(noPrograms.isEmpty());
+	}
+	
+	@Test
+	public void isTemplateInUse() throws URISyntaxException {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-0");
+		URL templateUrl = RepositoryEntryCertificateConfigurationDAOTest.class.getResource("template.pdf");
+		Assert.assertNotNull(templateUrl);
+		File templateFile = new File(templateUrl.toURI());
+		
+		String certificateName = UUID.randomUUID().toString();
+		CertificateTemplate template1 = certificatesManager.addTemplate(certificateName + "_1.pdf", templateFile, null, null, true, identity);
+		CertificateTemplate template2 = certificatesManager.addTemplate(certificateName + "_2.pdf", templateFile, null, null, true, identity);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-template-8", "Program to with template");
+		program.setTemplate(template1);
+		certificationProgramDao.updateCertificationProgram(program);
+		dbInstance.commitAndCloseSession();
+		
+		boolean inUse = certificationProgramDao.isTemplateInUse(template1);
+		Assert.assertTrue(inUse);
+		boolean notInUse = certificationProgramDao.isTemplateInUse(template2);
+		Assert.assertFalse(notInUse);
+	}
+	
+	@Test
+	public void isTemplateInUsePrintOnly() throws URISyntaxException {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-0");
+		URL templateUrl = RepositoryEntryCertificateConfigurationDAOTest.class.getResource("template.pdf");
+		Assert.assertNotNull(templateUrl);
+		File templateFile = new File(templateUrl.toURI());
+		
+		String certificateName = UUID.randomUUID().toString();
+		CertificateTemplate template1 = certificatesManager.addTemplate(certificateName + "_1.pdf", templateFile, null, null, true, identity);
+		CertificateTemplate template2 = certificatesManager.addTemplate(certificateName + "_2.pdf", templateFile, null, null, true, identity);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-template-9", "Program to with template");
+		program.setPrintTemplate(template1);
+		certificationProgramDao.updateCertificationProgram(program);
+		dbInstance.commitAndCloseSession();
+		
+		boolean inUse = certificationProgramDao.isTemplateInUse(template1);
+		Assert.assertTrue(inUse);
+		boolean notInUse = certificationProgramDao.isTemplateInUse(template2);
+		Assert.assertFalse(notInUse);
 	}
 	
 	private Certificate generateCertificate(Identity participant, CertificationProgram program, Date now, int nextRecertification, int window) {

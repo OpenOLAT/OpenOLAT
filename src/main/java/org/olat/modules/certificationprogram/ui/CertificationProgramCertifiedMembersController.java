@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -56,6 +58,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.course.certificate.Certificate;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters.Type;
@@ -87,6 +90,10 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	private FlexiFiltersTab creditPointsTab;
 	
 	private FormLink addMemberButton;
+	private FormLink downloadAllCertificatesButton;
+	private FormLink bulkDownloadCertificatesButton;
+	private FormLink downloadAllPrintCertificatesButton;
+	private FormLink bulkDownloadPrintCertificatesButton;
 	
 	private ToolsController	toolsCtrl;
 	private CloseableModalController cmc;
@@ -110,9 +117,32 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
 			addMemberButton.setIconLeftCSS("o_icon o_icon_add_member");
 		}
+		
 		super.initForm(formLayout, listener, ureq);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-certified-members-v1");
+		tableEl.setMultiSelect(true);
+		
+		bulkDownloadCertificatesButton = uifactory.addFormLink("bulk.export.certificates", "export.certificates", null, formLayout, Link.BUTTON);
+		tableEl.addBatchButton(bulkDownloadCertificatesButton);
+		downloadAllCertificatesButton = uifactory.addFormLink("all.export.certificates", "export.certificates", null, formLayout, Link.BUTTON);
+		downloadAllCertificatesButton.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
+		
+		if(certificationProgram.isPrintTemplateEnabled()) {
+			bulkDownloadPrintCertificatesButton = uifactory.addFormLink("bulk.export.print.certificates", "export.print.certificates", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkDownloadPrintCertificatesButton);
+			
+			DropdownItem downloadDropdown = uifactory.addDropdownMenu("export.certificates.dropdown", null, null, formLayout, getTranslator());
+			downloadDropdown.setOrientation(DropdownOrientation.right);
+			downloadDropdown.setElementCssClass("o_sel_add_more");
+			downloadDropdown.setEmbbeded(true);
+			downloadDropdown.setButton(true);
+			
+			downloadAllPrintCertificatesButton = uifactory.addFormLink("all.export.print.certificates", "export.print.certificates", null, formLayout, Link.LINK);
+			downloadAllPrintCertificatesButton.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
+			downloadDropdown.addElement(downloadAllPrintCertificatesButton);
+			
+		}
 	}
 
 	@Override
@@ -282,6 +312,14 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addMemberButton == source) {
 			doAddMember(ureq);
+		} else if(bulkDownloadCertificatesButton == source) {
+			doBulkDownloadCertificates(ureq, false);
+		} else if(bulkDownloadPrintCertificatesButton == source) {
+			doBulkDownloadCertificates(ureq, true);
+		} else if(downloadAllCertificatesButton == source) {
+			doDownloadAllCertificates(ureq, false);
+		} else if(downloadAllPrintCertificatesButton == source) {
+			doDownloadAllCertificates(ureq, true);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -357,6 +395,8 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 
 		private Link renewLink;
 		private Link revokeLink;
+		private Link downloadLink;
+		private Link downloadPrintLink;
 		private final Link contactLink;
 		
 		private final CertificationProgramMemberRow row;
@@ -382,6 +422,20 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 					revokeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_certification_status_revoked");
 				}
 			}
+			
+			if(row.getCertificateKey() != null) {
+				Certificate certificate = certificatesManager.getCertificateById(row.getCertificateKey());
+				if(certificate.getMetadata() != null) {
+					downloadLink = LinkFactory.createLink("export.certificate", "export", getTranslator(), mainVC, this, Link.LINK);
+					downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
+					downloadLink.setTarget("_blank");
+				}
+				if(certificate.getPrintMetadata() != null) {
+					downloadPrintLink = LinkFactory.createLink("export.print.certificate", "export.print", getTranslator(), mainVC, this, Link.LINK);
+					downloadPrintLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
+					downloadPrintLink.setTarget("_blank");
+				}
+			}
 
 			putInitialPanel(mainVC);
 		}
@@ -395,6 +449,10 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 				doConfirmRenew(ureq, row);
 			} else if(revokeLink == source) {
 				doConfirmRevoke(ureq, row);
+			} else if(downloadLink == source) {
+				doDownloadCertificate(ureq, row, false);
+			} else if(downloadPrintLink == source) {
+				doDownloadCertificate(ureq, row, true);
 			}
 		}
 	}

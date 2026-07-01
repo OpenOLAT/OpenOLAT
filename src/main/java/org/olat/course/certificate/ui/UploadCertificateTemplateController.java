@@ -63,14 +63,19 @@ public class UploadCertificateTemplateController extends FormBasicController {
 	protected static final String[] orientationKeys = new String[]{ "portrait", "landscape" };
 	
 	protected FileElement fileEl;
-	protected SingleSelection orientationEl, formatEl;
+	protected SingleSelection formatEl;
+	protected SingleSelection orientationEl;
+	
+	private boolean publicTemplate;
+	private CertificateTemplate template;
 	private CertificateTemplate templateToUpdate;
 	
 	@Autowired
 	private CertificatesManager certificatesManager;
 	
-	public UploadCertificateTemplateController(UserRequest ureq, WindowControl wControl) {
+	public UploadCertificateTemplateController(UserRequest ureq, WindowControl wControl, boolean publicTemplate) {
 		super(ureq, wControl);
+		this.publicTemplate = publicTemplate;
 		
 		initForm(ureq);
 	}
@@ -79,6 +84,10 @@ public class UploadCertificateTemplateController extends FormBasicController {
 		super(ureq, wControl);
 		this.templateToUpdate = template;
 		initForm(ureq);
+	}
+	
+	public CertificateTemplate getTemplate() {
+		return template;
 	}
 
 	@Override
@@ -122,13 +131,13 @@ public class UploadCertificateTemplateController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		File template = fileEl.getUploadFile();
-		if(template != null) {
+		File templateFile = fileEl.getUploadFile();
+		if(templateFile != null) {
 			String name = fileEl.getUploadFileName();
 			if(templateToUpdate == null) {
-				certificatesManager.addTemplate(name, template, getFormat(), getOrientation(), true, getIdentity());
+				template = certificatesManager.addTemplate(name, templateFile, getFormat(), getOrientation(), publicTemplate, getIdentity());
 			} else {
-				certificatesManager.updateTemplate(templateToUpdate, name, template, getFormat(), getOrientation(), getIdentity());
+				template = certificatesManager.updateTemplate(templateToUpdate, name, templateFile, getFormat(), getOrientation(), getIdentity());
 			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);

@@ -157,6 +157,7 @@ import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfigurationStatus;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
+import org.olat.modules.certificationprogram.manager.CertificationProgramDAO;
 import org.olat.modules.certificationprogram.manager.CertificationProgramLogDAO;
 import org.olat.modules.certificationprogram.manager.CertificationProgramMailConfigurationDAO;
 import org.olat.modules.certificationprogram.manager.CertificationProgramMailing;
@@ -239,6 +240,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private CreditPointService creditPointService;
+	@Autowired
+	private CertificationProgramDAO certificationProgramDao;
 	@Autowired
 	private CertificationProgramLogDAO certificationProgramLogDao;
 	@Autowired
@@ -436,6 +439,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return cerItem instanceof VFSLeaf cerLeaf ? cerLeaf : null;
 	}
 	
+	@Override
+	public VFSLeaf getPrintCertificateLeaf(Certificate certificate) {
+		VFSContainer cerContainer = getCertificateRootContainer();
+		VFSItem cerItem = null;
+		if(StringHelper.containsNonWhitespace(certificate.getPrintPath())) {
+			cerItem = cerContainer.resolve(certificate.getPrintPath());
+		}
+		return cerItem instanceof VFSLeaf cerLeaf ? cerLeaf : null;
+	}
+
 	@Override
 	public VFSLeaf getCertificateLeaf(CertificateLight certificate) {
 		VFSContainer cerContainer = getCertificateRootContainer();
@@ -971,6 +984,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				log.error("", e);
 			}
 		}
+		
 		CertificateImpl relaodedCertificate = dbInstance.getCurrentEntityManager()
 				.getReference(CertificateImpl.class, certificate.getKey());
 		dbInstance.getCurrentEntityManager().remove(relaodedCertificate);
@@ -1224,7 +1238,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	@Override
 	public Certificate generateCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
 			CertificateTemplate template, CertificateConfig config) {
-		Certificate certificate = persistCertificate(certificateInfos, entry, template, null, config);
+		Certificate certificate = persistCertificate(certificateInfos, entry, template, false, null, null, config);
 		markPublisherNews(null, entry.getOlatResource());
 		return certificate;
 	}
@@ -1235,7 +1249,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		CertificateTemplate template = certificationProgram != null
 				? certificationProgram.getTemplate()
 				: null;
-		Certificate certificate = persistCertificate(infos, entry, template, certificationProgram, config);
+		boolean printTemplateEnabled = certificationProgram != null && certificationProgram.isPrintTemplateEnabled();
+		CertificateTemplate printTemplate = certificationProgram != null
+				? certificationProgram.getPrintTemplate()
+				: null;
+		
+		Certificate certificate = persistCertificate(infos, entry, template, printTemplateEnabled, printTemplate, certificationProgram, config);
 		OLATResource resource = certificationProgram != null
 				? certificationProgram.getResource()
 				: entry.getOlatResource();
@@ -1246,7 +1265,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	private Certificate persistCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
-			CertificateTemplate template, CertificationProgram certificationProgram, CertificateConfig config) {
+			CertificateTemplate template, boolean printTemplateEnabled, CertificateTemplate printTemplate,
+			CertificationProgram certificationProgram, CertificateConfig config) {
 		OLATResource resource = certificationProgram != null
 				? certificationProgram.getResource()
 				: entry.getOlatResource();
@@ -1288,9 +1308,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		log.info(Tracing.M_AUDIT, "Certificate generated for {} in {}", identity, resource);
 		
 		//send message
-		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getMaxScore(),
-				certificateInfos.getPassed(), certificateInfos.getProgress(), certificateInfos.getGrade(), config,
-				certificateInfos.getDoerKey());
+		sendJmsCertificateFile(certificate, template, printTemplateEnabled, printTemplate, certificateInfos.getScore(),
+				certificateInfos.getMaxScore(), certificateInfos.getPassed(), certificateInfos.getProgress(),
+				certificateInfos.getGrade(), config, certificateInfos.getDoerKey());
 
 		return certificate;
 	}
@@ -1299,13 +1319,17 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return velocityEngine;
 	}
 	
-	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, Float score,
-			Float maxScore, Boolean passed, Double completion, String grade, CertificateConfig config, Long doerKey) {
+	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, boolean printTemplateEnabled, CertificateTemplate printTemplate,
+			Float score, Float maxScore, Boolean passed, Double completion, String grade, CertificateConfig config, Long doerKey) {
 		
 		JmsCertificateWork workUnit = new JmsCertificateWork();
 		workUnit.setCertificateKey(certificate.getKey());
 		if(template != null) {
 			workUnit.setTemplateKey(template.getKey());
+		}
+		workUnit.setPrintTemplate(printTemplateEnabled);
+		if(printTemplate != null) {
+			workUnit.setPrintTemplateKey(printTemplate.getKey());
 		}
 		workUnit.setScore(score);
 		workUnit.setMaxScore(maxScore);
@@ -1346,6 +1370,13 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		if(workUnit.getTemplateKey() != null) {
 			template = getTemplateById(workUnit.getTemplateKey());
 		}
+		
+		CertificateTemplate printTemplate = null;
+		boolean printTemplateEnabled = workUnit.isPrintTemplate();
+		if(workUnit.getPrintTemplateKey() != null) {
+			printTemplate = getTemplateById(workUnit.getPrintTemplateKey());
+		}
+		
 		OLATResource resource = certificate.getOlatResource();
 		CertificationProgram certificationProgram = certificate.getCertificationProgram();
 		
@@ -1392,6 +1423,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				: entry.getDisplayname();
 		
 		File certificateFile;
+		File certificatePrintFile = null;
+		
 		// File name with user name
 		StringBuilder sb = new StringBuilder();
 		sb.append(identity.getUser().getProperty(UserConstants.LASTNAME, locale)).append("_")
@@ -1419,6 +1452,23 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			log.error("Cannot produce a certificate from an HTML template without a PDF generator");
 			certificateFile = null;
 		}
+		
+		// Print template
+		
+		if(printTemplateEnabled) {
+			String printFilename = FileUtils.normalizeFilename(sb.toString()) + "_print.pdf";
+			if(printTemplate == null || printTemplate.getPath().toLowerCase().endsWith("pdf")) {
+				CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, score, maxScore, passed,
+						completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1, custom2,
+						custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this);
+				certificatePrintFile = worker.fill(printTemplate, dirFile, printFilename);
+			} else if(pdfModule.isEnabled()) {
+				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, certificationProgram, entry, score, maxScore,
+						passed, completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1,
+						custom2, custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this, pdfService);
+				certificatePrintFile = worker.fill(printTemplate, dirFile, printFilename);
+			}
+		}
 
 		if(certificateFile != null) {
 			VFSMetadata metadata = vfsRepositoryService.getMetadataFor(certificateFile);
@@ -1427,6 +1477,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			certificate.setStatus(CertificateStatus.ok);
 		} else {
 			certificate.setStatus(CertificateStatus.error);
+		}
+		
+		if(certificatePrintFile != null) {
+			VFSMetadata metadata = vfsRepositoryService.getMetadataFor(certificatePrintFile);
+			certificate.setPrintMetadata(metadata);
+			certificate.setPrintPath(dir + certificatePrintFile.getName());
 		}
 		
 		if(dateFirstCertification != null) {
@@ -1447,6 +1503,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		CertificateEvent event = new CertificateEvent(identity.getKey(), certificate.getKey(), resource.getKey());
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, ORES_CERTIFICATE_EVENT);
 	}
+	
 	
 	private MailerResult sendCertificate(Identity to, CertificationProgram certificationProgram, RepositoryEntry entry,
 			CertificateImpl certificate, Identity actor, File certificateFile, CertificateConfig config) {
@@ -1630,7 +1687,36 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	private void addWatermark(Certificate certificate) {
-		VFSLeaf vfsFile = getCertificateLeaf(certificate);
+		VFSLeaf certificateFile = getCertificateLeaf(certificate);
+		VFSItem revokedCertificateItem = addWatermark(certificateFile);
+		VFSLeaf printCertificateFile = getPrintCertificateLeaf(certificate);
+		VFSItem printRevokedCertificateItem = addWatermark(printCertificateFile);
+
+		if(revokedCertificateItem instanceof VFSLeaf revokedLeaf) {
+			String path = revokedLeaf.getRelPath();
+			// Ugly hack to make the path relative to /certificates/users/
+			path = path.replace("/certificates/users/", "");
+			
+			CertificateImpl certificateImpl = (CertificateImpl)certificate;
+			certificateImpl.setPath(path);
+			certificateImpl.setMetadata(revokedLeaf.getMetaInfo());
+			if(printRevokedCertificateItem != null) {
+				String printPath = printRevokedCertificateItem.getRelPath();
+				printPath = printPath.replace("/certificates/users/", "");
+				certificateImpl.setPrintPath(printPath);
+				certificateImpl.setPrintMetadata(printRevokedCertificateItem.getMetaInfo());
+			}
+
+			certificate = certificatesDao.updateCertificate(certificate);
+			certificateFile.deleteSilently();
+			if(printCertificateFile != null) {
+				printCertificateFile.deleteSilently();
+			}
+			dbInstance.commit();
+		}
+	}
+
+	private VFSItem addWatermark(VFSLeaf vfsFile) {
 		if(vfsFile instanceof LocalFileImpl localImpl) {
 			File file = localImpl.getBasefile();
 			VFSContainer container = localImpl.getParentContainer();
@@ -1650,18 +1736,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	        } catch(Exception e) {
 	        	log.error("", e);
 	        }
-			VFSItem item = container.resolve(name);
-			if(item instanceof VFSLeaf revokedLeaf) {
-				String path = revokedLeaf.getRelPath();
-				// Ugly hack to make the path relative to /certificates/users/
-				path = path.replace("/certificates/users/", "");
-				((CertificateImpl)certificate).setPath(path);
-				((CertificateImpl)certificate).setMetadata(revokedLeaf.getMetaInfo());
-				certificate = certificatesDao.updateCertificate(certificate);
-				localImpl.deleteSilently();
-				dbInstance.commit();
-			}
+			return container.resolve(name);
 		}
+		return null;
 	}   
 
 	private static void addWatermarkText(PDDocument doc, PDPage page, PDFont font)
@@ -1713,7 +1790,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	
 	@Override
 	public boolean isTemplateInUse(CertificateTemplate template) {
-		return certificateConfigurationDao.isTemplateInUse(template);
+		return certificateConfigurationDao.isTemplateInUse(template)
+				|| certificationProgramDao.isTemplateInUse(template);
 	}
 
 	@Override
