@@ -312,6 +312,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
 		gradeAutoEl = uifactory.addCardSingleSelectHorizontal("node.grade.auto", gradeCont, autoSV.keys(), autoSV.values(), autoSV.descriptions(), autoSV.icons());
 		gradeAutoEl.select(gradeAutoEl.getKey(0), true);
+		gradeAutoEl.setEnabled(false);
 		
 		gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
 		gradeScaleCont = FormLayoutContainer.createInputGroupLayout("gradeScaleCont", getTranslator(), null, null);

@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.InfoPanelItem;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -106,6 +107,7 @@ public class CourseScoreController extends FormBasicController {
 	private FormToggle gradeEnableEl;
 	private TextElement gradeScaleEl;
 	private FormLayoutContainer gradeScaleCont;
+	private SingleSelection gradeAutoEl;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement gradePassedEl;
 	private FormToggle passedEnableEl;
@@ -264,11 +266,19 @@ public class CourseScoreController extends FormBasicController {
 			gradeScaleCont.setLabel("grade.scale", null);
 			gradeScaleCont.setRootForm(mainForm);
 			settingsCont.add(gradeScaleCont);
+			
+			SelectionValues autoSV = new SelectionValues();
+			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
+			gradeAutoEl = uifactory.addCardSingleSelectHorizontal("node.grade.auto", gradeScaleCont, autoSV.keys(), autoSV.values(), autoSV.descriptions(), autoSV.icons());
+			gradeAutoEl.select(gradeAutoEl.getKey(0), true);
+			gradeAutoEl.setEnabled(false);
+			
 			gradeScaleEl = uifactory.addTextElement("grade.scale.display", null, 255, "", gradeScaleCont);
 			gradeScaleEl.setDomReplacementWrapperRequired(false);
 			gradeScaleEl.setElementCssClass("o_omit_margin");
 			gradeScaleEl.setAriaLabel(translate("grade.scale"));
 			gradeScaleEl.setEnabled(false);
+			
 			gradeScaleEditLink = uifactory.addFormLink("rightAddOn", "grade.scale.edit", "grade.scale.edit", null, gradeScaleCont, Link.BUTTON);
 			gradeScaleEditLink.setElementCssClass("input-group-addon");
 			gradeScaleEditLink.setEnabled(editable);
