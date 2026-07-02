@@ -513,6 +513,10 @@ public class RepositoryModule extends AbstractSpringModule {
 			setStringProperty(FINISHED_ACCESS_DEFAULT_OPTION, option.name(), true);
 		}
 	}
+	
+	public boolean isLifecycleAutoCloseEnabled() {
+		return StringHelper.containsNonWhitespace(getLifecycleAutoClose());
+	}
 
 	public String getLifecycleAutoClose() {
 		return "-".equals(lifecycleAutoClose) ? null : lifecycleAutoClose;
@@ -527,6 +531,10 @@ public class RepositoryModule extends AbstractSpringModule {
 		setStringProperty(LIFECYCLE_AUTO_CLOSE, this.lifecycleAutoClose, true);
 	}
 
+	public boolean isLifecycleAutoDeleteEnabled() {
+		return StringHelper.containsNonWhitespace(getLifecycleAutoDelete());
+	}
+	
 	public String getLifecycleAutoDelete() {
 		return "-".equals(lifecycleAutoDelete) ? null : lifecycleAutoDelete;
 	}
@@ -538,6 +546,10 @@ public class RepositoryModule extends AbstractSpringModule {
 	public void setLifecycleAutoDelete(String lifecycleAutoDelete) {
 		this.lifecycleAutoDelete = StringHelper.containsNonWhitespace(lifecycleAutoDelete) ? lifecycleAutoDelete : "-";
 		setStringProperty(LIFECYCLE_AUTO_DELETE, this.lifecycleAutoDelete, true);
+	}
+
+	public boolean isLifecycleAutoDefinitivelyDeleteEnabled() {
+		return StringHelper.containsNonWhitespace(getLifecycleAutoDefinitivelyDelete());
 	}
 	
 	public String getLifecycleAutoDefinitivelyDelete() {

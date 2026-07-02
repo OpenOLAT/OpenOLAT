@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui;
 
+import java.util.TimerTask;
+
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -30,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -37,6 +41,10 @@ import org.olat.repository.RepositoryEntryLifeCycleValue;
 import org.olat.repository.RepositoryEntryLifeCycleValue.RepositoryEntryLifeCycleUnit;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.UnableToInterruptJobException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -68,7 +76,11 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 	private FormLayoutContainer definitivelyDeleteRuleCont;
 	
 	@Autowired
+	private Scheduler scheduler;
+	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired
+	private TaskExecutorManager taskExecutorManager;
 	
 	public RepositoryLifecycleAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -261,6 +273,9 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		boolean interrupted = interruptJob();
+		getLogger().info(Tracing.M_AUDIT, "Change repository automatic lifecycle configuration");
+		
 		String autoClose = getStringValue(toCloseEl, closeValueEl, closeUnitEl);
 		repositoryModule.setLifecycleAutoClose(autoClose);
 		String autoDelete = getStringValue(toDeleteEl, deleteValueEl, deleteUnitEl);
@@ -269,6 +284,25 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		repositoryModule.setLifecycleAutoDefinitivelyDelete(autoDefinitivelyDelete);
 		boolean notification = notificationEl.isAtLeastSelected(1);
 		repositoryModule.setLifecycleNotificationByCloseDeleteEnabled(notification);
+		
+		if(interrupted) {
+			// Restart the job only if it was interrupted, if not running, wait until the next thick
+			// Wait until events are propagated
+			taskExecutorManager.schedule(new ResumeJob(), 2000);
+		}
+	}
+	
+	private boolean interruptJob() {
+		try {
+			JobKey jobKey = JobKey.jobKey("automaticLifecycleJob");
+			if(scheduler.interrupt(jobKey)) {
+				getLogger().info(Tracing.M_AUDIT, "Interrupt repository automatic lifecycle job");
+				return true;
+			}
+		} catch (UnableToInterruptJobException e) {
+			getLogger().error("", e);
+		}
+		return false;
 	}
 	
 	private String getStringValue(MultipleSelectionElement enableEl, TextElement textEl, SingleSelection unitEl) {
@@ -287,5 +321,22 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 			}
 		}
 		return null;
+	}
+	
+	private class ResumeJob extends TimerTask {
+		@Override
+		public void run() {
+			try {
+				final JobKey jobKey = JobKey.jobKey("automaticLifecycleJob");
+				boolean isRunning = scheduler.getCurrentlyExecutingJobs().stream()
+						.anyMatch(job -> jobKey.equals(job.getJobDetail().getKey()));
+				if(!isRunning) {
+					scheduler.triggerJob(jobKey);
+					getLogger().info(Tracing.M_AUDIT, "Resume repository automatic lifecycle job");
+				}
+			} catch (SchedulerException e) {
+				getLogger().error("", e);
+			}
+		}
 	}
 }

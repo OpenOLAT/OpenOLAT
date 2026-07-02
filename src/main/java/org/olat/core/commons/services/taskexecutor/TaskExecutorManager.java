@@ -141,8 +141,8 @@ public interface TaskExecutorManager extends Executor {
 	 * is acceptable because the tasks are serialized and the task is
 	 * hold in memory. 
 	 * 
-	 * @param task
-	 * @param delay
+	 * @param task task to be scheduled.
+	 * @param delay delay in milliseconds before task is to be executed.
 	 */
 	public void schedule(TimerTask task, long delay);
 

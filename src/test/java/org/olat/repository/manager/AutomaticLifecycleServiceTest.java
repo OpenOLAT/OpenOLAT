@@ -114,7 +114,10 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 		RepositoryEntry entryInUse = createRepositoryEntry("In use 1", RepositoryEntryStatusEnum.published, -20, 60);	
 		dbInstance.commitAndCloseSession();
 
-		automaticLifecycleService.manage();
+		UnitState state = new UnitState();
+		automaticLifecycleService.close(state);
+		automaticLifecycleService.delete(state);
+		automaticLifecycleService.definitivelyDelete(state);
 		
 		// check the entry to close
 		RepositoryEntry reloadEntryToClose = repositoryManager.lookupRepositoryEntry(entryToClose.getKey());
@@ -138,7 +141,10 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 		RepositoryEntry entryInUse = createRepositoryEntry("In use 2", RepositoryEntryStatusEnum.published, -30, 60);	
 		dbInstance.commitAndCloseSession();
 
-		automaticLifecycleService.manage();
+		UnitState state = new UnitState();
+		automaticLifecycleService.close(state);
+		automaticLifecycleService.delete(state);
+		automaticLifecycleService.definitivelyDelete(state);
 		
 		// check the entries to delete
 		RepositoryEntry reloadEntryToClose1 = repositoryManager.lookupRepositoryEntry(entryToClose1.getKey());
@@ -166,7 +172,10 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 		RepositoryEntry entryInUse = createRepositoryEntry("In use 2", RepositoryEntryStatusEnum.published, -30, 60);	
 		dbInstance.commitAndCloseSession();
 
-		automaticLifecycleService.manage();
+		UnitState state = new UnitState();
+		automaticLifecycleService.close(state);
+		automaticLifecycleService.delete(state);
+		automaticLifecycleService.definitivelyDelete(state);
 		
 		// check the entries to delete
 		RepositoryEntry reloadEntryToDelete1 = repositoryManager.lookupRepositoryEntry(entryToDelete.getKey());
@@ -193,7 +202,10 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 		referenceManager.addReference(entryInUse.getOlatResource(), entryToDelete.getOlatResource(), "");
 		dbInstance.commitAndCloseSession();
 
-		automaticLifecycleService.manage();
+		UnitState state = new UnitState();
+		automaticLifecycleService.close(state);
+		automaticLifecycleService.delete(state);
+		automaticLifecycleService.definitivelyDelete(state);
 		
 		// check the entry cannot be delete
 		RepositoryEntry reloadEntryToDelete1 = repositoryManager.lookupRepositoryEntry(entryToDelete.getKey());
@@ -243,7 +255,10 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 		template = repositoryManager.setRuntimeType(template, RepositoryEntryRuntimeType.template);
 		dbInstance.commitAndCloseSession();
 
-		automaticLifecycleService.manage();
+		UnitState state = new UnitState();
+		automaticLifecycleService.close(state);
+		automaticLifecycleService.delete(state);
+		automaticLifecycleService.definitivelyDelete(state);
 
 		RepositoryEntry reloaded = repositoryManager.lookupRepositoryEntry(template.getKey());
 		Assert.assertNotNull(reloaded);
@@ -282,5 +297,13 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 		entry = repositoryManager.setDescriptionAndName(entry, displayName, "Fake course to close", null, null, null, null, null, null, cycle);
 		dbInstance.commitAndCloseSession();
 		return entry;
+	}
+	
+	private static class UnitState implements AutomaticLifecycleJobState {
+
+		@Override
+		public boolean isInterrupted() {
+			return false;
+		}
 	}
 }
