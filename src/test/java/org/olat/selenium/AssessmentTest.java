@@ -448,7 +448,7 @@ public class AssessmentTest extends Deployments {
 		courseRuntime
 			.assessmentConfiguration()
 			.createAssessmentMode()
-			.editAssessment(assessmentName, begin, end, 0, true)
+			.editAssessment(assessmentName, begin, end, 0, 0, true)
 			.create()
 			.assertOnEditAssessmentMode(assessmentName)
 			.clickToolbarBack()
@@ -604,7 +604,7 @@ public class AssessmentTest extends Deployments {
 		courseRuntime
 			.assessmentConfiguration()
 			.createAssessmentMode()
-			.editAssessment(assessmentName, begin, end, 1, true)
+			.editAssessment(assessmentName, begin, end, 0, 1, true)
 			.create()
 			.assertOnEditAssessmentMode(assessmentName)
 			.clickToolbarBack()
@@ -756,7 +756,7 @@ public class AssessmentTest extends Deployments {
 		courseRuntime
 			.assessmentConfiguration()
 			.createAssessmentMode()
-			.editAssessment(assessmentOneName, begin, end, 0, true)
+			.editAssessment(assessmentOneName, begin, end, 0, 0, true)
 			.create()
 			.assertOnEditAssessmentMode(assessmentOneName)
 			.editRestrictions(testNodeOneTitle)
@@ -801,7 +801,7 @@ public class AssessmentTest extends Deployments {
 		courseRuntime
 			.assessmentConfiguration()
 			.createAssessmentMode()
-			.editAssessment(assessmentSecondName, beginAgain, endAgain, 0, true)
+			.editAssessment(assessmentSecondName, beginAgain, endAgain, 0, 0, true)
 			.create()
 			.assertOnEditAssessmentMode(assessmentSecondName)
 			.editRestrictions(testNodeTwoTitle)
