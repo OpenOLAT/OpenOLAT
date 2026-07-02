@@ -19,22 +19,28 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.text.Collator;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
+import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
+import org.olat.modules.todo.ui.ToDoTaskFilter;
 import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,6 +54,7 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 	
 	private Collection<String> subPaths;
 	private ToDoTaskSecurityCallback securityCallback;
+	private final SelectionValues contextOriginIds;
 
 	@Autowired
 	private CurriculumService curriculumService;
@@ -65,6 +72,16 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 			subPaths = List.of("-1");
 		}
 		securityCallback = new CurriculumManagerToDoSecurityCallback(secCallback, elementKeys, curriculumService);
+
+		Collator collator = Collator.getInstance(getLocale());
+		contextOriginIds = new SelectionValues();
+		toDoService.getToDoTasks(createSearchParams()).stream()
+				.filter(task -> task.getOriginId() != null && StringHelper.containsNonWhitespace(task.getOriginTitle()))
+				.collect(Collectors.toMap(ToDoTask::getOriginId, ToDoTask::getOriginTitle, (t1, t2) -> t1))
+				.entrySet().stream()
+				.sorted((e1, e2) -> collator.compare(e1.getValue(), e2.getValue()))
+				.forEach(e -> contextOriginIds.add(SelectionValues.entry(e.getKey().toString(),
+						StringHelper.escapeHtml(e.getValue()))));
 
 		initForm(ureq);
 
@@ -119,6 +136,19 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 		ToDoTaskSearchParams tagSearchParams = new ToDoTaskSearchParams();
 		tagSearchParams.setTypes(List.of(CurriculumElementToDoProvider.TYPE));
 		return toDoService.getTagInfos(tagSearchParams, null);
+	}
+
+	@Override
+	protected SelectionValues getFilterOriginIds() {
+		return contextOriginIds;
+	}
+
+	@Override
+	protected String getFilterLabel(ToDoTaskFilter filter) {
+		if (filter == ToDoTaskFilter.originId) {
+			return translate("curriculum.title");
+		}
+		return super.getFilterLabel(filter);
 	}
 
 	@Override

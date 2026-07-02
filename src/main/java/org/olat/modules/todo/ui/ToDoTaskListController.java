@@ -211,6 +211,23 @@ public abstract class ToDoTaskListController extends FormBasicController
 	protected List<String> getFilterContextTypes() {
 		return List.of();
 	}
+
+	protected SelectionValues getFilterOriginIds() {
+		return new SelectionValues();
+	}
+
+	protected String getFilterLabel(ToDoTaskFilter filter) {
+		return switch (filter) {
+			case my -> translate("filter.my");
+			case priority -> translate("task.priority");
+			case due -> translate("filter.due");
+			case creationDate -> translate("filter.created");
+			case status -> translate("task.status");
+			case contextType -> translate("task.context.type");
+			case originId -> translate("task.context");
+			case tag -> translate("tags");
+		};
+	}
 	
 	protected abstract List<TagInfo> getFilterTags();
 
@@ -383,7 +400,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		if (isFilterMyEnabled()) {
 			SelectionValues myValues = new SelectionValues();
 			myValues.add(SelectionValues.entry(FILTER_KEY_MY, translate("filter.my.value")));
-			filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.my"), ToDoTaskFilter.my.name(), myValues, true));
+			filters.add(new FlexiTableOneClickSelectionFilter(getFilterLabel(ToDoTaskFilter.my), ToDoTaskFilter.my.name(), myValues, true));
 		}
 		
 		SelectionValues priorityValues = new SelectionValues();
@@ -391,7 +408,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		addPrioritySVEntry(priorityValues, ToDoPriority.high);
 		addPrioritySVEntry(priorityValues, ToDoPriority.medium);
 		addPrioritySVEntry(priorityValues, ToDoPriority.low);
-		filters.add(new FlexiTableMultiSelectionFilter(translate("task.priority"), ToDoTaskFilter.priority.name(), priorityValues, true));
+		filters.add(new FlexiTableMultiSelectionFilter(getFilterLabel(ToDoTaskFilter.priority), ToDoTaskFilter.priority.name(), priorityValues, true));
 		
 		SelectionValues dueValues = new SelectionValues();
 		dueValues.add(SelectionValues.entry(ToDoDueFilter.overdue.name(), translate("filter.due.overdue")));
@@ -401,20 +418,20 @@ public abstract class ToDoTaskListController extends FormBasicController
 		dueValues.add(SelectionValues.entry(ToDoDueFilter.next2Weeks.name(), translate("filter.due.next.2.weeks")));
 		dueValues.add(SelectionValues.entry(ToDoDueFilter.future.name(), translate("filter.due.future")));
 		dueValues.add(SelectionValues.entry(ToDoDueFilter.noDueDate.name(), translate("filter.due.anytime")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.due"), ToDoTaskFilter.due.name(), dueValues, true));
+		filters.add(new FlexiTableMultiSelectionFilter(getFilterLabel(ToDoTaskFilter.due), ToDoTaskFilter.due.name(), dueValues, true));
 
 		SelectionValues creationDateValues = new SelectionValues();
 		creationDateValues.add(SelectionValues.entry(ToDoCreationDateFilter.today.name(), translate("today")));
 		creationDateValues.add(SelectionValues.entry(ToDoCreationDateFilter.last7Days.name(), translate("filter.created.last.7.days")));
 		creationDateValues.add(SelectionValues.entry(ToDoCreationDateFilter.last4Weeks.name(), translate("filter.created.last.4.weeks")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.created"), ToDoTaskFilter.creationDate.name(), creationDateValues, true));
+		filters.add(new FlexiTableSingleSelectionFilter(getFilterLabel(ToDoTaskFilter.creationDate), ToDoTaskFilter.creationDate.name(), creationDateValues, true));
 
 		SelectionValues statusValues = new SelectionValues();
 		addStatusSVEntry(statusValues, ToDoStatus.open);
 		addStatusSVEntry(statusValues, ToDoStatus.inProgress);
 		addStatusSVEntry(statusValues, ToDoStatus.done);
 		addStatusSVEntry(statusValues, ToDoStatus.deleted);
-		filters.add(new FlexiTableMultiSelectionFilter(translate("task.status"), ToDoTaskFilter.status.name(), statusValues, true));
+		filters.add(new FlexiTableMultiSelectionFilter(getFilterLabel(ToDoTaskFilter.status), ToDoTaskFilter.status.name(), statusValues, true));
 		
 		List<String> filterContextTypes = getFilterContextTypes();
 		if (!filterContextTypes.isEmpty()) {
@@ -424,13 +441,19 @@ public abstract class ToDoTaskListController extends FormBasicController
 					.sorted((f1, f2) -> Integer.compare(f1.getFilterSortOrder(), f2.getFilterSortOrder()))
 					.forEach(contextFilter -> typeValues.add(SelectionValues.entry(contextFilter.getType(), contextFilter.getDisplayName(getLocale()))));
 			if (typeValues.size() > 0) {
-				filters.add(new FlexiTableMultiSelectionFilter(translate("task.context.type"), ToDoTaskFilter.contextType.name(), typeValues, true));
+				filters.add(new FlexiTableMultiSelectionFilter(getFilterLabel(ToDoTaskFilter.contextType), ToDoTaskFilter.contextType.name(), typeValues, true));
 			}
 		}
-		
+
+		SelectionValues filterOriginIds = getFilterOriginIds();
+		if (filterOriginIds.size() > 0) {
+			filters.add(new FlexiTableMultiSelectionFilter(getFilterLabel(ToDoTaskFilter.originId),
+					ToDoTaskFilter.originId.name(), filterOriginIds, true));
+		}
+
 		List<TagInfo> tagInfos = getFilterTags();
 		if (!tagInfos.isEmpty()) {
-			filters.add(new FlexiTableTagFilter(translate("tags"), ToDoTaskFilter.tag.name(), tagInfos, true));
+			filters.add(new FlexiTableTagFilter(getFilterLabel(ToDoTaskFilter.tag), ToDoTaskFilter.tag.name(), tagInfos, true));
 		}
 		
 		tableEl.setFilters(true, filters, true, false);
@@ -701,6 +724,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 					searchParams.setTypes(getTypes());
 				}
 				// Do not set the types to null. Probably they are restricted by the list subclass.
+			}
+			if (ToDoTaskFilter.originId.name() == filter.getFilter()) {
+				List<String> originIds = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (originIds != null && !originIds.isEmpty()) {
+					searchParams.setOriginIds(originIds.stream().map(Long::valueOf).toList());
+				}
+				// Do not reset. The origin is restricted by the list subclass.
 			}
 			if (ToDoTaskFilter.due.name() == filter.getFilter()) {
 				List<String> dueRanges = ((FlexiTableMultiSelectionFilter)filter).getValues();
