@@ -20,8 +20,13 @@
 package org.olat.course.certificate.manager;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +34,7 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+import org.apache.velocity.VelocityContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -112,6 +118,19 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertTrue(template.isPublicTemplate());
 	}
 	
+	@Test
+	public void defaultHtmlTemplate() throws IOException {
+		try(InputStream in = certificatesManager.getDefaultHtmlTemplate()) {
+			Assert.assertNotNull(in);
+
+			StringWriter writer = new StringWriter();
+			boolean rendered = ((CertificatesManagerImpl)certificatesManager).getVelocityEngine()
+					.evaluate(new VelocityContext(), writer, "defaultHtmlTemplate", new InputStreamReader(in, StandardCharsets.UTF_8));
+			Assert.assertTrue(rendered);
+			Assert.assertTrue(writer.toString().contains("<html"));
+		}
+	}
+
 	@Test
 	public void createCertificate() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);

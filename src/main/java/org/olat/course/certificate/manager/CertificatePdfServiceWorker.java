@@ -45,20 +45,27 @@ import org.apache.velocity.VelocityContext;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.ui.CertificateChooserController;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.owasp.html.HtmlPolicyBuilder;
+import org.owasp.html.PolicyFactory;
 
 /**
  * Worker which use the PDF service in OpenOLAT
@@ -125,8 +132,15 @@ public class CertificatePdfServiceWorker {
 	}
 
 	public File fill(CertificateTemplate template, File destinationDir, String filename) {
+		File tempTemplateDir = null;
+		File templateFile;
+		if(template != null) {
+			templateFile = certificatesManager.getTemplateFile(template);
+		} else {
+			templateFile = copyDefaultTemplate();
+			tempTemplateDir = templateFile.getParentFile();
+		}
 		File certificateFile = new File(destinationDir, filename);
-		File templateFile = certificatesManager.getTemplateFile(template);
 		File htmlCertificateFile = copyAndEnrichTemplate(templateFile);
 		File qrCodeScriptFile = new File(htmlCertificateFile.getParent(), "qrcode.min.js");
 		if(!qrCodeScriptFile.exists()) {
@@ -149,9 +163,24 @@ public class CertificatePdfServiceWorker {
 		} catch (IOException e) {
 			log.error("", e);
 		}
+		if(tempTemplateDir != null) {
+			FileUtils.deleteDirsAndFiles(tempTemplateDir, true, true);
+		}
 		return certificateFile;
 	}
 	
+	private File copyDefaultTemplate() {
+		File templateDir = new File(WebappHelper.getTmpDir(), "certificate_" + UUID.randomUUID());
+		templateDir.mkdirs();
+		File indexHtml = new File(templateDir, "index.html");
+		try(InputStream in = certificatesManager.getDefaultHtmlTemplate()) {
+			Files.copy(in, indexHtml.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} catch(IOException e) {
+			log.error("Cannot copy the default HTML certificate template", e);
+		}
+		return indexHtml;
+	}
+
 	private File copyAndEnrichTemplate(File templateFile) {
 		boolean result = false;
 		File htmlCertificate = new File(templateFile.getParent(), "c" + UUID.randomUUID() + ".html");
@@ -222,8 +251,26 @@ public class CertificatePdfServiceWorker {
 		fillCertificationInfos(context);
 		fillAssessmentInfos(context);
 		fillMetaInfos(context);
-		context.put("formatter", new DateFormatter());
+		fillLabels(context);
+		context.put("formatter", new CertificateFormatter());
 		return context;
+	}
+
+	private void fillLabels(VelocityContext context) {
+		Translator translator = Util.createPackageTranslator(CertificateChooserController.class, locale);
+		context.put("labelEyebrow", translator.translate("certificate.default.eyebrow"));
+		context.put("labelTitle", translator.translate("certificate.default.title"));
+		context.put("labelAwardedTo", translator.translate("certificate.default.awarded.to"));
+		context.put("labelBornOn", translator.translate("certificate.default.born.on"));
+		context.put("labelForCompleting", translator.translate("certificate.default.for.completing"));
+		context.put("labelIssuedOn", translator.translate("certificate.default.issued.on"));
+		context.put("labelReference", translator.translate("certificate.default.reference"));
+		context.put("labelWorkload", translator.translate("certificate.default.workload"));
+		context.put("labelDescription", translator.translate("certificate.default.description"));
+		context.put("labelObjectives", translator.translate("certificate.default.objectives"));
+		context.put("labelRequirements", translator.translate("certificate.default.requirements"));
+		context.put("labelFirstCertified", translator.translate("certificate.default.first.certified"));
+		context.put("labelVerification", translator.translate("certificate.default.verification"));
 	}
 	
 	private void fillUserProperties(VelocityContext context) {
@@ -375,7 +422,24 @@ public class CertificatePdfServiceWorker {
 		context.put("certificateVerificationUrl", certificateURL);
 	}
 	
-	public static class DateFormatter {
+	public static class CertificateFormatter {
+
+		private static final PolicyFactory NO_TAGS_POLICY = new HtmlPolicyBuilder().toFactory();
+		private static final PolicyFactory LIST_TAGS_POLICY = new HtmlPolicyBuilder().allowElements("ul", "ol", "li", "p", "br").toFactory();
+
+		public String filterHtml(String str) {
+			if(str == null) {
+				return "";
+			}
+			return NO_TAGS_POLICY.sanitize(str);
+		}
+
+		public String filterHtmlKeepLists(String str) {
+			if(str == null) {
+				return "";
+			}
+			return LIST_TAGS_POLICY.sanitize(str);
+		}
 
 		public String formatDate(Date date, String language) {
 			return formatDateInternal(date, language, 0, 0, 0, false);

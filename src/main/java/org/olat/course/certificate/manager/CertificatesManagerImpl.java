@@ -1200,15 +1200,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		  .append(UUID.randomUUID()).append("/preview.pdf");
 		String certUrl = sb.toString();
 		
-		if(template == null) {
-			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, 2.0f, 10.0f, true, 0.4,
-					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
-			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
-		} else if(template.getPath().toLowerCase().endsWith("pdf")) {
+		boolean pdfTemplate = template != null && template.getPath().toLowerCase().endsWith("pdf");
+		if((template == null && !pdfModule.isEnabled()) || pdfTemplate) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, 2.0f, 10.0f, true, 0.4,
 					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
-		} else if (pdfModule.isEnabled()) {
+		} else if(pdfModule.isEnabled()) {
 			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, certificationProgram, entry, 2.0f, 10.0f, true,
 					0.4, new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager,
 					this, pdfService);
@@ -1438,7 +1435,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		  .append(certificate.getUuid()).append("/certificate.pdf");
 		String certUrl = sb.toString();
 		
-		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
+		boolean pdfTemplate = template != null && template.getPath().toLowerCase().endsWith("pdf");
+		if((template == null && !pdfModule.isEnabled()) || pdfTemplate) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, score, maxScore, passed,
 					completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1, custom2,
 					custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this);
@@ -1457,7 +1455,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		if(printTemplateEnabled) {
 			String printFilename = FileUtils.normalizeFilename(sb.toString()) + "_print.pdf";
-			if(printTemplate == null || printTemplate.getPath().toLowerCase().endsWith("pdf")) {
+			boolean pdfPrintTemplate = printTemplate != null && printTemplate.getPath().toLowerCase().endsWith("pdf");
+			if((printTemplate == null && !pdfModule.isEnabled()) || pdfPrintTemplate) {
 				CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, score, maxScore, passed,
 						completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1, custom2,
 						custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this);
@@ -1939,6 +1938,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return CertificatesManager.class.getResourceAsStream("template.pdf");
 	}
 	
+	@Override
+	public InputStream getDefaultHtmlTemplate() {
+		return CertificatesManager.class.getResourceAsStream("default-html/index.html");
+	}
+
 	public File getCertificateTemplatesRoot() {
 		Path path = Paths.get(folderModule.getCanonicalRoot(), "certificates", "templates");
 		File root = path.toFile();

@@ -232,13 +232,12 @@ public class CertificatesOptionsController extends FormBasicController {
 		
 		templateCont.setVisible(enabled);
 		selectTemplateLink.setEnabled(enabled && editable);
-		if(!enabled || selectedTemplate == null) {
+		if(selectedTemplate == null) {
 			templateCont.contextPut("templateName", translate("default.template"));
-			previewTemplateLink.setEnabled(false);
 		} else {
 			templateCont.contextPut("templateName", selectedTemplate.getName());
-			previewTemplateLink.setEnabled(true);
 		}
+		previewTemplateLink.setEnabled(enabled);
 		
 		certificationCustom1El.setVisible(enabled);
 		certificationCustom2El.setVisible(enabled);
@@ -360,7 +359,9 @@ public class CertificatesOptionsController extends FormBasicController {
 	}
 	
 	private void doPreviewTemplate(UserRequest ureq) {
-		selectedTemplate = certificatesManager.getTemplateById(selectedTemplate.getKey());
+		if(selectedTemplate != null) {
+			selectedTemplate = certificatesManager.getTemplateById(selectedTemplate.getKey());
+		}
 		String custom1 = certificationCustom1El.getValue();
 		String custom2 = certificationCustom2El.getValue();
 		String custom3 = certificationCustom3El.getValue();
@@ -373,11 +374,10 @@ public class CertificatesOptionsController extends FormBasicController {
 		this.selectedTemplate = template;
 		if(selectedTemplate == null) {
 			templateCont.contextPut("templateName", translate("default.template"));
-			previewTemplateLink.setEnabled(false);
 		} else {
 			templateCont.contextPut("templateName", template.getName());
-			previewTemplateLink.setEnabled(true);
 		}
+		previewTemplateLink.setEnabled(true);
 	}
 	
 	private void doSelectTemplate(UserRequest ureq) {

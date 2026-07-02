@@ -99,9 +99,9 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 			} else if(origUri.contains("close-window")) {
 				response.setStatus(HttpServletResponse.SC_OK);
 			} else if(delivery.getDirectory() != null) {
-				renderHTMLContent(delivery, response);
-			}  else if(delivery.getHTMLContent() != null) {
 				renderFile(delivery, filename, response);
+			}  else if(delivery.getHTMLContent() != null) {
+				renderHTMLContent(delivery, response);
 			} else if(delivery.getControllerCreator() != null) {
 				renderController(delivery, request, response);
 			} else {

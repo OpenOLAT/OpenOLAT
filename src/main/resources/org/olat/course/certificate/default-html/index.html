@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    html,
+    body {
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* single page — crop anything that overflows */
+    body {
+      font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      font-size: 11pt;
+      color: #1a1a1a;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      box-sizing: border-box;
+      position: relative;
+      width: 210mm;
+      height: 297mm;
+      overflow: hidden;
+    }
+
+    .bg-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 210mm;
+      height: 297mm;
+      z-index: 0;
+    }
+
+    /* ---------- Hero (over the teal diagonal) ---------- */
+    .hero {
+      position: absolute;
+      z-index: 2;
+      top: 12mm;
+      left: 24mm;
+      right: 24mm;
+      color: #ffffff;
+    }
+
+    .hero .eyebrow {
+      font-size: 10.5pt;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      opacity: 0.9;
+      margin: 0 0 3.5mm 0;
+    }
+
+    .hero h1 {
+      font-size: 46pt;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      line-height: 0.95;
+      white-space: nowrap;
+      margin: 0;
+    }
+
+    /* ---------- Recipient / details (white area) ---------- */
+    .body {
+      position: absolute;
+      z-index: 2;
+      top: 66mm;
+      left: 24mm;
+      right: 24mm;
+    }
+
+    /* ---------- Recipient (centered focal moment) ---------- */
+    .recipient { text-align: center; }
+
+    .intro {
+      font-size: 9pt;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #209d9e;
+      margin: 0 0 2.5mm 0;
+    }
+
+    .participant-name {
+      font-size: 26pt;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #0e5152;
+      margin: 0;
+    }
+
+    .birth {
+      color: #5a6b6b;
+      font-size: 10pt;
+      margin: 1.5mm 0 0 0;
+    }
+
+    /* ---------- Award plaque ---------- */
+    .award {
+      background: #f1f9f8;
+      border: 0.3mm solid #d5e8e6;
+      border-radius: 3mm;
+      padding: 5mm 10mm;
+      text-align: center;
+      margin: 6mm 0 0 0;
+    }
+
+    .lead {
+      font-size: 9pt;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #5a6b6b;
+      margin: 0 0 2mm 0;
+    }
+
+    .course-title {
+      font-size: 16pt;
+      font-weight: 700;
+      color: #0e5152;
+      line-height: 1.15;
+      text-wrap: balance;
+      margin: 0;
+    }
+
+    .credits {
+      display: inline-block;
+      font-size: 10pt;
+      font-weight: 700;
+      color: #ffffff;
+      background: #209d9e;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      padding: 1.8mm 5.5mm;
+      border-radius: 10mm;
+      margin: 3mm 0 0 0;
+    }
+
+    /* ---------- Meta strip (hairline stat cards) ---------- */
+    .meta {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 3.5mm;
+      margin: 5mm 0;
+    }
+
+    .meta-cell {
+      min-width: 38mm;
+      border: 0.3mm solid #d5e8e6;
+      border-top: 1.2mm solid #2bc4a8;
+      border-radius: 2mm;
+      padding: 3mm 5mm;
+      text-align: center;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .meta-cell .k {
+      font-size: 7.5pt;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #209d9e;
+      margin: 0 0 1mm 0;
+    }
+
+    .meta-cell .v {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #0e5152;
+      margin: 0;
+    }
+
+    /* ---------- Detail cards ---------- */
+    .section {
+      background: #ffffff;
+      border: 0.3mm solid #e0ecea;
+      border-left: 1.5mm solid #2bc4a8;
+      border-radius: 2mm;
+      padding: 3.5mm 6mm;
+      margin: 0 0 3mm 0;
+      font-size: 10pt;
+      line-height: 1.5;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .section h3 {
+      font-size: 9pt;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #209d9e;
+      margin: 0 0 1.5mm 0;
+    }
+
+    .section .rt p { margin: 0 0 2mm 0; }
+    .section .rt p:last-child { margin-bottom: 0; }
+    .section .rt ul { margin: 1mm 0; padding-left: 6mm; }
+
+    /* ---------- Footer ---------- */
+    .footer {
+      position: absolute;
+      z-index: 2;
+      left: 24mm;
+      right: 24mm;
+      bottom: 16mm;
+      color: #6a7b7b;
+      font-size: 8.5pt;
+      line-height: 1.5;
+    }
+
+    .footer .issuer { margin: 0 0 1mm 0; }
+    .footer .first-cert { margin: 0 0 1mm 0; }
+    .footer .verify a { color: #209d9e; text-decoration: none; word-wrap: break-word; }
+
+    /* ---------- QR seal (centered in the white circle) ---------- */
+    .o_qrcode {
+      position: absolute;
+      z-index: 3;
+      /* seal center = 183mm,27mm (viewBox mm); QR fills inside inner hairline */
+      width: 19mm;
+      height: 19mm;
+      top: 17.5mm;
+      left: 173.5mm;
+    }
+
+    .o_qrcode img,
+    .o_qrcode canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    p:empty { display: none; }
+  </style>
+</head>
+
+<body>
+
+  <svg class="bg-svg" xmlns="http://www.w3.org/2000/svg"
+       viewBox="0 0 210 297" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0"   stop-color="#0e5152"/>
+        <stop offset="0.65" stop-color="#209d9e"/>
+        <stop offset="1"   stop-color="#2bc4a8"/>
+      </linearGradient>
+      <clipPath id="page">
+        <rect x="0" y="0" width="210" height="297"/>
+      </clipPath>
+    </defs>
+
+    <g clip-path="url(#page)">
+      <!-- slanted teal hero -->
+      <polygon points="0,0 210,0 210,56 0,42" fill="url(#teal)"/>
+
+      <!-- radiating arcs from the bottom-right corner -->
+      <circle cx="210" cy="300" r="70"  fill="none" stroke="#209d9e" stroke-width="0.5" opacity="0.14"/>
+      <circle cx="210" cy="300" r="95"  fill="none" stroke="#209d9e" stroke-width="0.5" opacity="0.12"/>
+      <circle cx="210" cy="300" r="120" fill="none" stroke="#2bc4a8" stroke-width="0.5" opacity="0.10"/>
+      <circle cx="210" cy="300" r="145" fill="none" stroke="#2bc4a8" stroke-width="0.5" opacity="0.08"/>
+
+      <!-- verification seal straddling the diagonal (only if a QR link exists) -->
+      #if ($certificateVerificationUrl && $certificateVerificationUrl != "" && $certificateVerificationUrl != '$certificateVerificationUrl' && $certificateVerificationUrl != 'certificateVerificationUrl')
+      <circle cx="183" cy="27" r="17"   fill="#ffffff"/>
+      <circle cx="183" cy="27" r="17"   fill="none" stroke="#0e5152" stroke-width="1.4"/>
+      <circle cx="183" cy="27" r="15.5" fill="none" stroke="#2bc4a8" stroke-width="0.5"/>
+      #end
+    </g>
+  </svg>
+
+  #if ($certificateVerificationUrl && $certificateVerificationUrl != "" && $certificateVerificationUrl != '$certificateVerificationUrl' && $certificateVerificationUrl != 'certificateVerificationUrl')
+  <div class="o_qrcode">$certificateVerificationUrl</div>
+  #end
+
+  <div class="hero">
+    <div class="eyebrow">$labelEyebrow</div>
+    <h1>$labelTitle</h1>
+  </div>
+
+  <div class="body">
+
+    <div class="recipient">
+      <p class="intro">$labelAwardedTo</p>
+
+      <p class="participant-name">$firstName $lastName</p>
+
+      #if ($birthDay && $birthDay != "" && $birthDay != '$birthDay' && $birthDay != 'birthDay')
+      <p class="birth">$labelBornOn $birthDay</p>
+      #end
+    </div>
+
+    #if (($title && $title != "" && $title != '$title' && $title != 'title') || ($credits && $credits != "" && $credits != '$credits' && $credits != 'credits'))
+    <div class="award">
+      #if ($title && $title != "" && $title != '$title' && $title != 'title')
+      <p class="lead">$labelForCompleting</p>
+      <p class="course-title">$formatter.filterHtml($title)</p>
+      #end
+      #if ($credits && $credits != "" && $credits != '$credits' && $credits != 'credits')
+      <p class="credits">$formatter.filterHtml($credits)</p>
+      #end
+    </div>
+    #end
+
+    <div class="meta">
+      #if ($dateCertificationLong && $dateCertificationLong != "" && $dateCertificationLong != '$dateCertificationLong' && $dateCertificationLong != 'dateCertificationLong')
+      <div class="meta-cell"><p class="k">$labelIssuedOn</p><p class="v">$dateCertificationLong</p></div>
+      #elseif ($dateCertification && $dateCertification != "" && $dateCertification != '$dateCertification' && $dateCertification != 'dateCertification')
+      <div class="meta-cell"><p class="k">$labelIssuedOn</p><p class="v">$dateCertification</p></div>
+      #end
+
+      #if ($externalReference && $externalReference != "" && $externalReference != '$externalReference' && $externalReference != 'externalReference')
+      <div class="meta-cell"><p class="k">$labelReference</p><p class="v">$externalReference</p></div>
+      #end
+
+      #if ($expenditureOfWork && $expenditureOfWork != "" && $expenditureOfWork != '$expenditureOfWork' && $expenditureOfWork != 'expenditureOfWork')
+      <div class="meta-cell"><p class="k">$labelWorkload</p><p class="v">$formatter.filterHtml($expenditureOfWork)</p></div>
+      #end
+    </div>
+
+    #if ($description && $description != "" && $description != '$description' && $description != 'description')
+    <div class="section">
+      <h3>$labelDescription</h3>
+      <div class="rt">$formatter.filterHtmlKeepLists($description)</div>
+    </div>
+    #end
+
+    #if ($objectives && $objectives != "" && $objectives != '$objectives' && $objectives != 'objectives')
+    <div class="section">
+      <h3>$labelObjectives</h3>
+      <div class="rt">$formatter.filterHtmlKeepLists($objectives)</div>
+    </div>
+    #end
+
+    #if ($requirements && $requirements != "" && $requirements != '$requirements' && $requirements != 'requirements')
+    <div class="section">
+      <h3>$labelRequirements</h3>
+      <div class="rt">$formatter.filterHtmlKeepLists($requirements)</div>
+    </div>
+    #end
+
+  </div>
+
+  <div class="footer">
+    #if ($dateFirstCertification && $dateFirstCertification != "" && $dateFirstCertification != '$dateFirstCertification' && $dateFirstCertification != 'dateFirstCertification' && $dateFirstCertification != $dateCertification)
+    <p class="first-cert">$labelFirstCertified $dateFirstCertification</p>
+    #end
+
+    #if ($certificateVerificationUrl && $certificateVerificationUrl != "" && $certificateVerificationUrl != '$certificateVerificationUrl' && $certificateVerificationUrl != 'certificateVerificationUrl')
+    <p class="verify">$labelVerification <a href="$certificateVerificationUrl">$certificateVerificationUrl</a></p>
+    #end
+  </div>
+
+</body>
+
+</html>

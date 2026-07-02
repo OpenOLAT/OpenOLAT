@@ -130,6 +130,8 @@ public interface CertificatesManager {
 	
 	public InputStream getDefaultTemplate();
 	
+	public InputStream getDefaultHtmlTemplate();
+
 	//certificate
 	public Certificate getCertificateById(Long key);
 	
