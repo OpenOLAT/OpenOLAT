@@ -834,19 +834,21 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			Double score = entryForScore == null
 					? null
 					: entryForScore.getScore(inlineChoice.getIdentifier());
-			scoreAndAnswers.add(new ScoreAndAnswer(alternative, score));
-		}
-		
-		if(scoreAndAnswers.size() > 1) {
-			Collections.sort(scoreAndAnswers, new ScoreAndAnswerComparator());
-		}
-		
-		sb.append("<span class='o_qti_gaptext_alternatives' title='").append(translator.translate("correction.alternatives")).append("'>");
-		
-		boolean first = true;
-		for(ScoreAndAnswer scoreAndAnswer:scoreAndAnswers) {
-			Double score = scoreAndAnswer.score();
 			if(score == null || score.doubleValue() > 0.0d) {
+				scoreAndAnswers.add(new ScoreAndAnswer(alternative, score));
+			}
+		}
+		
+		if(!scoreAndAnswers.isEmpty()) {
+			if(scoreAndAnswers.size() > 1) {
+				Collections.sort(scoreAndAnswers, new ScoreAndAnswerComparator());
+			}
+			
+			sb.append("<span class='o_qti_gaptext_alternatives' title='").append(translator.translate("correction.alternatives")).append("'>");
+			
+			boolean first = true;
+			for(ScoreAndAnswer scoreAndAnswer:scoreAndAnswers) {
+				Double score = scoreAndAnswer.score();
 				if(first) {
 					first = false;
 				} else {
@@ -859,9 +861,9 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 					sb.append(" ").append(val);
 				}
 			}
+	
+			sb.append("</span>");
 		}
-
-		sb.append("</span>");
 		return sb.toString();
 	}
 	
