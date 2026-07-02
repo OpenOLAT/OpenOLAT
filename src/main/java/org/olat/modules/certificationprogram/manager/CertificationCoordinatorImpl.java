@@ -309,26 +309,73 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	}
 	
 	@Override
+	public Certificate revokeCertificate(CertificationProgram certificationProgram, Certificate certificate, Identity actor) {
+		if(certificate != null) {
+			if(certificate.isLast()) {
+				certificate = revokeLastCertificate(certificationProgram, certificate, certificate.getIdentity(), actor);
+			} else {
+				CertificationStatus currentStatus = CertificationStatus.evaluate(certificate, new Date());
+				certificatesManager.revokeCertificate(certificate);
+		
+				log.info("Certificate revoked {} for {} and program {} by {}", certificate, certificate.getIdentity(), certificationProgram, actor);
+				certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.revoke_certificate,
+						currentStatus.name(), null, CertificationStatus.REVOKED.name(), null, null, null, actor);
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public Certificate revokeRecertification(CertificationProgram certificationProgram, Identity identity, Identity actor) {
 		Certificate certificate = certificatesDao.getLastCertificate(identity, certificationProgram);
 		if(certificate != null) {
-			CertificationStatus currentStatus = CertificationStatus.evaluate(certificate, new Date());
-			certificatesManager.revokeCertificate(certificate);
-
-			log.info("Certificate revoked {} for {} and program {} by {}", certificate, identity, certificationProgram, actor);
-			activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REVOKED, RequestMode.COACH, actor);
-			sendMail(identity, certificationProgram, certificate, null, CertificationProgramMailType.certificate_revoked, actor);
-			
-			certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.revoke_certificate,
-					currentStatus.name(), null, CertificationStatus.REVOKED.name(), null, null, null, actor);
-			
-			String membershipStatusBefore = CertificationStatus.VALID.equals(currentStatus) ? "certified" : currentStatus.name();
-			certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.remove_membership,
-					membershipStatusBefore, null, "removed", null, null, null, actor);
+			certificate = revokeLastCertificate(certificationProgram, certificate, identity, actor);
 		}
 		return certificate;
 	}
 	
+	private Certificate revokeLastCertificate(CertificationProgram certificationProgram, Certificate certificate, Identity identity, Identity actor) {
+		CertificationStatus currentStatus = CertificationStatus.evaluate(certificate, new Date());
+		certificatesManager.revokeCertificate(certificate);
+
+		log.info("Certificate revoked {} for {} and program {} by {}", certificate, identity, certificationProgram, actor);
+		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REVOKED, RequestMode.COACH, actor);
+		sendMail(identity, certificationProgram, certificate, null, CertificationProgramMailType.certificate_revoked, actor);
+		
+		certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.revoke_certificate,
+				currentStatus.name(), null, CertificationStatus.REVOKED.name(), null, null, null, actor);
+		
+		String membershipStatusBefore = CertificationStatus.VALID.equals(currentStatus) ? "certified" : currentStatus.name();
+		certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.remove_membership,
+				membershipStatusBefore, null, "removed", null, null, null, actor);
+		return certificate;
+	}
+
+	@Override
+	public Certificate deleteCertificate(CertificationProgram certificationProgram, Certificate certificate, Identity actor) {
+		if(certificate != null) {
+			Identity identity = certificate.getIdentity();
+			CertificationStatus currentStatus = CertificationStatus.evaluate(certificate, new Date());
+			certificatesManager.deleteCertificate(certificate);
+			log.info("Certificate deleted {} for {} and program {} by {}", certificate, identity, certificationProgram, actor);
+			
+			if(certificate.isLast()) {
+				activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_DELETED, RequestMode.COACH, actor);
+				
+				certificationProgramLogDao.createLog(null, certificationProgram, CertificationProgramLogAction.delete_certificate,
+						currentStatus.name(), null, "DELETED", null, null, null, actor);
+				
+				String membershipStatusBefore = CertificationStatus.VALID.equals(currentStatus) ? "certified" : currentStatus.name();
+				certificationProgramLogDao.createLog(null, certificationProgram, CertificationProgramLogAction.remove_membership,
+						membershipStatusBefore, null, "removed", null, null, null, actor);
+			} else {
+				certificationProgramLogDao.createLog(null, certificationProgram, CertificationProgramLogAction.delete_certificate,
+						currentStatus.name(), null, "DELETED", null, null, null, actor);
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public void sendExpiredNotifications(Date referenceDate) {
 		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao

@@ -111,6 +111,7 @@ public enum OlatResourceableType implements ILoggingResourceableType {
 	assessmentMode,
 	assessmentInspection,
 	
+	certificate,
 	certificationProgram,
 	
 	/** recruiting **/

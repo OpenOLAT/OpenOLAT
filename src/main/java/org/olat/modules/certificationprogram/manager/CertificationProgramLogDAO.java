@@ -159,4 +159,11 @@ public class CertificationProgramLogDAO {
 		}
 		return query.getResultList();
 	}
+	
+	public int removeFromLog(Certificate certificate) {
+		String query = "update certificationprogramlog set certificate=null where certificate.key=:certificateKey";
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("certificateKey", certificate.getKey())
+				.executeUpdate();
+	}
 }

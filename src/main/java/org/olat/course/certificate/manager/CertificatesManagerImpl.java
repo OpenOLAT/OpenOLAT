@@ -976,22 +976,28 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	
 	@Override
 	public void deleteCertificate(Certificate certificate) {
-		File certificateFile = getCertificateFile(certificate);
-		if(certificateFile != null && certificateFile.exists()) {
-			try {
-				FileUtils.deleteDirsAndFiles(certificateFile.getParentFile().toPath());
-			} catch (IOException e) {
-				log.error("", e);
-			}
+		VFSLeaf certificateFile = getCertificateLeaf(certificate);
+		VFSLeaf printCertificateFile = getPrintCertificateLeaf(certificate);
+
+		CertificateImpl reloadedCertificate = dbInstance.getCurrentEntityManager()
+				.getReference(CertificateImpl.class, certificate.getKey());
+		Identity identity = reloadedCertificate.getIdentity();
+		OLATResource resource = reloadedCertificate.getOlatResource();
+		
+		certificationProgramLogDao.removeFromLog(reloadedCertificate);
+		dbInstance.getCurrentEntityManager().remove(reloadedCertificate);
+		dbInstance.commit();
+		
+		if(certificateFile != null) {
+			certificateFile.deleteSilently();
+		}
+		if(printCertificateFile != null) {
+			printCertificateFile.deleteSilently();
 		}
 		
-		CertificateImpl relaodedCertificate = dbInstance.getCurrentEntityManager()
-				.getReference(CertificateImpl.class, certificate.getKey());
-		dbInstance.getCurrentEntityManager().remove(relaodedCertificate);
-		
 		//reorder the last flag
-		List<Certificate> certificates = getCertificates(relaodedCertificate.getIdentity(), relaodedCertificate.getOlatResource());
-		certificates.remove(relaodedCertificate);
+		List<Certificate> certificates = getCertificates(identity, resource);
+		certificates.remove(reloadedCertificate);
 		if(!certificates.isEmpty()) {
 			boolean hasLast = false;
 			for(Certificate cer:certificates) {

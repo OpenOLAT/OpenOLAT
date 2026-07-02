@@ -52,7 +52,10 @@ public class CertificationLoggingAction extends BaseLoggingAction {
 	public static final ILoggingAction CERTIFICATE_REMOVED = 
 			new CertificationLoggingAction(ActionType.statistic, CrudAction.delete, ActionVerb.remove, ActionObject.certificate).setTypeList(
 					new ResourceableTypeList().addMandatory(OlatResourceableType.certificationProgram).addMandatory(StringResourceableType.targetIdentity));
-
+	public static final ILoggingAction CERTIFICATE_DELETED = 
+			new CertificationLoggingAction(ActionType.statistic, CrudAction.delete, ActionVerb.remove, ActionObject.certificate).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.certificationProgram).addMandatory(OlatResourceableType.certificate)
+						.addMandatory(StringResourceableType.targetIdentity));
 	
 	/**
 	 * This static constructor's only use is to set the javaFieldIdForDebug

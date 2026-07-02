@@ -59,6 +59,8 @@ import org.olat.modules.certificationprogram.restapi.CertificationProgramMemberV
 import org.olat.modules.certificationprogram.restapi.CertificationProgramMemberVOes;
 import org.olat.modules.certificationprogram.restapi.CertificationProgramVO;
 import org.olat.modules.certificationprogram.restapi.CertificationProgramVOes;
+import org.olat.modules.certificationprogram.ui.CertificationIdentityStatus;
+import org.olat.modules.certificationprogram.ui.CertificationStatus;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
@@ -365,9 +367,18 @@ public class CertificationProgramsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 
-		Certificate revoked = certificatesManager.getCertificateById(certificate.getKey());
-		Assert.assertNotNull(revoked);
-		Assert.assertEquals(CertificateStatus.revoked, revoked.getStatus());
+		Certificate reloadCertificate = certificatesManager.getCertificateById(certificate.getKey());
+		Assert.assertNotNull(reloadCertificate);
+		Assert.assertFalse(reloadCertificate.isLast());
+		Assert.assertNotNull(reloadCertificate.getRevocationDate());
+		Assert.assertEquals(CertificateStatus.revoked, reloadCertificate.getStatus());
+		
+		// Check UI status
+		Date now = new Date();
+		CertificationStatus status = CertificationStatus.evaluate(reloadCertificate, now);
+		Assert.assertEquals(CertificationStatus.REVOKED, status);
+		CertificationIdentityStatus identityStatus = CertificationIdentityStatus.evaluate(reloadCertificate, now);
+		Assert.assertEquals(CertificationIdentityStatus.REMOVED, identityStatus);
 
 		conn.shutdown();
 	}
@@ -406,7 +417,7 @@ public class CertificationProgramsWebServiceTest extends OlatRestTestCase {
 
 		Certificate deleted = certificatesManager.getCertificateById(certificate.getKey());
 		Assert.assertNull(deleted);
-
+	
 		conn.shutdown();
 	}
 

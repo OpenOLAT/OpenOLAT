@@ -50,8 +50,30 @@ public interface CertificationCoordinator {
 	
 	Certificate generateCertificate(Identity identity, CertificationProgram certificationProgram, Date issuedDate, RequestMode requestMode,
 			CertificationProgramMailType notificationType, CertificationProgramLogAction logAction, Identity actor);
+
+	/**
+	 * Revoke a specific certificate. If it's the last one for the certification program,
+	 * method acts as the method below.
+	 * 
+	 * @param program The certification request
+	 * @param certificate The certificate to specifically revoked
+	 * @param doer  Which user are acting
+	 * @return The updated certificate
+	 */
+	Certificate revokeCertificate(CertificationProgram program, Certificate certificate, Identity doer);
 	
-	Certificate revokeRecertification(CertificationProgram program, Identity identity, Identity doer);
+	/**
+	 * Revoke the last certificate of the specific certification program and user.
+	 * 
+	 * @param certificationProgram The certification request
+	 * @param identity The user which certificate will be revoked
+	 * @param doer  Which user are acting
+	 * @return The updated certificate
+	 */
+	Certificate revokeRecertification(CertificationProgram certificationProgram, Identity identity, Identity doer);
+	
+
+	Certificate deleteCertificate(CertificationProgram program, Certificate certificate, Identity doer);
 	
 	/**
 	 * Send the notifications for certificates which the next recertification date are in the past.

@@ -1,3 +1,4 @@
+
 /**
  * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
@@ -51,6 +52,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesDAO;
+import org.olat.modules.certificationprogram.CertificationCoordinator;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
@@ -89,6 +91,8 @@ public class CertificationProgramCertificatesWebService {
 	private CreditPointService creditPointService;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private CertificationCoordinator certificationCoordinator;
 	@Autowired
 	private CertificationProgramService certificationProgramService;
 
@@ -298,11 +302,12 @@ public class CertificationProgramCertificatesWebService {
 				|| !program.getKey().equals(certificate.getCertificationProgram().getKey())) {
 			return Response.status(Status.CONFLICT).build();
 		}
-		
+
+		Identity actor = getIdentity(request);
 		if(deletePermanently != null && deletePermanently.booleanValue()) {
-			certificatesManager.deleteCertificate(certificate);
+			certificationCoordinator.deleteCertificate(program, certificate, actor);
 		} else {
-			certificatesManager.revokeCertificate(certificate);
+			certificationCoordinator.revokeCertificate(program, certificate, actor);
 		}
 		return Response.ok().build();
 	}
