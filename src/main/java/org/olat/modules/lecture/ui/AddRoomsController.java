@@ -20,11 +20,14 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,8 +56,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.table.LabelCellRenderer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -63,14 +66,19 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.model.Reference;
 import org.olat.modules.lecture.ui.AddRoomsRow.RoomAvailability;
+import org.olat.modules.lecture.ui.component.ReferenceRenderer;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -141,7 +149,14 @@ public class AddRoomsController extends FormBasicController {
 				new RoomAvailabilityCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AddRoomsDataModel.AddRoomsCols.occupiedBy,
 				new OccupiedByCellRenderer()));
-
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
+				AddRoomsDataModel.AddRoomsCols.element, new ReferenceRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
+				AddRoomsDataModel.AddRoomsCols.course, new ReferenceRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AddRoomsDataModel.AddRoomsCols.earlierSlot,
+				new TimeSlotCellRenderer(startDate, true, getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AddRoomsDataModel.AddRoomsCols.laterSlot,
+				new TimeSlotCellRenderer(endDate, false, getLocale())));
 		tableModel = new AddRoomsDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "rooms.table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCssDelegate(new PreSelectedRowsCssDelegate());
@@ -212,6 +227,9 @@ public class AddRoomsController extends FormBasicController {
 			}
 		}
 
+		// Load all bookings for the same day to compute earlier/later free slots
+		Map<Long, List<RoomBooking>> dayBookingsByRoom = loadDayBookingsByRoom();
+
 		SearchRoomParameters params = new SearchRoomParameters();
 		params.setStatus(List.of(RoomStatus.active));
 		List<Room> rooms = roomManagementService.searchRooms(params, roles);
@@ -220,8 +238,67 @@ public class AddRoomsController extends FormBasicController {
 		for (Room room : rooms) {
 			boolean myEvent = preSelectedRoomKeys.contains(room.getKey());
 			RoomBooking occupiedBy = occupiedByOther.get(room.getKey());
-			allRows.add(new AddRoomsRow(room, occupiedBy, myEvent, participantCount));
+			AddRoomsRow rowObj = new AddRoomsRow(room, occupiedBy, myEvent, participantCount);
+
+			if (occupiedBy != null) {
+				LectureBlock lb = occupiedBy.getLectureBlock();
+				if (lb != null) {
+					CurriculumElement ce = lb.getCurriculumElement();
+					if (ce != null) {
+						rowObj.setElementReference(new Reference(ce.getKey(), ce.getDisplayName(), ce.getIdentifier()));
+					}
+					RepositoryEntry entry = lb.getEntry();
+					if (entry != null) {
+						rowObj.setCourseReference(new Reference(entry.getKey(), entry.getDisplayname(), entry.getExternalRef()));
+					}
+				}
+			}
+
+			List<RoomBooking> roomDayBookings = dayBookingsByRoom.getOrDefault(room.getKey(), List.of());
+			computeAdjacentSlots(rowObj, roomDayBookings);
+
+			allRows.add(rowObj);
 		}
+	}
+
+	private Map<Long, List<RoomBooking>> loadDayBookingsByRoom() {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(startDate);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date dayStart = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 23);
+		cal.set(Calendar.MINUTE, 59);
+		cal.set(Calendar.SECOND, 59);
+		Date dayEnd = cal.getTime();
+
+		List<RoomBooking> dayBookings = roomManagementService.getBookings(dayStart, dayEnd);
+		Map<Long, List<RoomBooking>> byRoom = new HashMap<>();
+		for (RoomBooking booking : dayBookings) {
+			boolean isOwnEvent = lectureBlock != null && lectureBlock.getKey() != null
+					&& booking.getLectureBlock() != null
+					&& booking.getLectureBlock().getKey().equals(lectureBlock.getKey());
+			if (!isOwnEvent) {
+				byRoom.computeIfAbsent(booking.getRoom().getKey(), k -> new ArrayList<>()).add(booking);
+			}
+		}
+		return byRoom;
+	}
+
+	private void computeAdjacentSlots(AddRoomsRow row, List<RoomBooking> roomBookings) {
+		// Earlier slot: end of the latest booking that ends at or before startDate
+		roomBookings.stream()
+				.filter(b -> b.getEndDate() != null && !b.getEndDate().after(startDate))
+				.max(Comparator.comparing(RoomBooking::getEndDate))
+				.ifPresent(b -> row.setEarlierSlotFrom(b.getEndDate()));
+
+		// Later slot: start of the earliest booking that starts at or after endDate
+		roomBookings.stream()
+				.filter(b -> b.getStartDate() != null && !b.getStartDate().before(endDate))
+				.min(Comparator.comparing(RoomBooking::getStartDate))
+				.ifPresent(b -> row.setLaterSlotTo(b.getStartDate()));
 	}
 
 	private void applyFilters() {
@@ -390,4 +467,39 @@ public class AddRoomsController extends FormBasicController {
 			return "";
 		}
 	}
+
+	private static class TimeSlotCellRenderer implements FlexiCellRenderer {
+
+		private final Date boundaryDate;
+		private final boolean isBefore;
+		private final Formatter formatter;
+
+		TimeSlotCellRenderer(Date boundaryDate, boolean isBefore, Locale locale) {
+			this.boundaryDate = boundaryDate;
+			this.isBefore = isBefore;
+			this.formatter = Formatter.getInstance(locale);
+		}
+
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue,
+				int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if (!(cellValue instanceof AddRoomsRow roomRow)) return;
+			if (isBefore) {
+				Date from = roomRow.getEarlierSlotFrom();
+				if (from != null) {
+					target.appendHtmlEscaped(formatter.formatTime(from))
+							.append(" – ")
+							.appendHtmlEscaped(formatter.formatTime(boundaryDate));
+				}
+			} else {
+				Date to = roomRow.getLaterSlotTo();
+				if (to != null) {
+					target.appendHtmlEscaped(formatter.formatTime(boundaryDate))
+							.append(" – ")
+							.appendHtmlEscaped(formatter.formatTime(to));
+				}
+			}
+		}
+	}
+
 }

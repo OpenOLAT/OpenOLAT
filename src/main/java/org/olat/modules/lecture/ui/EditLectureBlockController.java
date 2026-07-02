@@ -511,7 +511,9 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 	
 	private boolean isRoomsEnabled() {
-		return curriculumElement != null
+		boolean inCplContext = curriculumElement != null
+				|| (lectureBlock != null && lectureBlock.getCurriculumElement() != null);
+		return inCplContext
 				&& roomManagementModule != null
 				&& roomManagementModule.isEnabled();
 	}

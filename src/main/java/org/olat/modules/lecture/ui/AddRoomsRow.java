@@ -19,6 +19,9 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.Date;
+
+import org.olat.modules.lecture.model.Reference;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 
@@ -36,6 +39,11 @@ public class AddRoomsRow {
 	private final RoomBooking occupiedBy;
 	private final boolean myEvent;
 	private final boolean seatWarning;
+
+	private Reference elementReference;
+	private Reference courseReference;
+	private Date earlierSlotFrom;
+	private Date laterSlotTo;
 
 	public AddRoomsRow(Room room, RoomBooking occupiedBy, boolean myEvent, int participantCount) {
 		this.room = room;
@@ -78,4 +86,37 @@ public class AddRoomsRow {
 	public boolean isSeatWarning() {
 		return seatWarning;
 	}
+
+	public Reference getElementReference() {
+		return elementReference;
+	}
+
+	public void setElementReference(Reference elementReference) {
+		this.elementReference = elementReference;
+	}
+
+	public Reference getCourseReference() {
+		return courseReference;
+	}
+
+	public void setCourseReference(Reference courseReference) {
+		this.courseReference = courseReference;
+	}
+
+	public Date getEarlierSlotFrom() {
+		return earlierSlotFrom;
+	}
+
+	public void setEarlierSlotFrom(Date earlierSlotFrom) {
+		this.earlierSlotFrom = earlierSlotFrom;
+	}
+
+	public Date getLaterSlotTo() {
+		return laterSlotTo;
+	}
+
+	public void setLaterSlotTo(Date laterSlotTo) {
+		this.laterSlotTo = laterSlotTo;
+	}
+
 }
