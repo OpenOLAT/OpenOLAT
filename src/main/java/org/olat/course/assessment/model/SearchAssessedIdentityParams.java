@@ -64,6 +64,7 @@ public class SearchAssessedIdentityParams {
 	private List<Passed> passed;
 	private Boolean passedOverridden;
 	private Boolean userVisibility;
+	private Boolean entryRoot;
 	private Collection<ParticipantType> participantTypes;
 	private Collection<AssessmentObligation> assessmentObligations;
 	
@@ -183,7 +184,15 @@ public class SearchAssessedIdentityParams {
 	public void setUserVisibility(Boolean userVisibility) {
 		this.userVisibility = userVisibility;
 	}
-	
+
+	public Boolean getEntryRoot() {
+		return entryRoot;
+	}
+
+	public void setEntryRoot(Boolean entryRoot) {
+		this.entryRoot = entryRoot;
+	}
+
 	public Collection<AssessmentObligation> getAssessmentObligations() {
 		return assessmentObligations;
 	}

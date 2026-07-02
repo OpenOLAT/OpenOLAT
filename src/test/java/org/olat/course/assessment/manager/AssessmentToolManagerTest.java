@@ -793,7 +793,41 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
 		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae3);
 	}
-	
+
+	@Test
+	public void getAssessmentEntries_filter_entryRoot() {
+		// Course and users
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-er").getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		String subIdent = random();
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		// Assessment data: ae1=entryRoot TRUE, ae2=entryRoot FALSE, ae3=entryRoot null
+		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, Boolean.TRUE, null);
+		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, Boolean.FALSE, null);
+		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, null);
+		dbInstance.commitAndCloseSession();
+
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
+		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
+		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3);
+
+		params.setEntryRoot(Boolean.TRUE);
+		assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
+		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1);
+
+		params.setEntryRoot(Boolean.FALSE);
+		assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
+		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae2, ae3);
+	}
+
 	@Test
 	public void getAssessmentEntries_filter_scoreNull() {
 		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-5").getIdentity();

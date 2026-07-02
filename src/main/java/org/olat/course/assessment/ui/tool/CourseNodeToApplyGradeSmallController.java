@@ -93,6 +93,7 @@ public class CourseNodeToApplyGradeSmallController extends CourseNodeToReviewAbs
 		params.setParticipantTypes(participants);
 		params.setScoreNull(Boolean.FALSE);
 		params.setGradeNull(Boolean.TRUE);
+		params.setEntryRoot(Boolean.FALSE);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		return assessmentToolManager.getAssessmentEntries(getIdentity(), params, null);
 	}
