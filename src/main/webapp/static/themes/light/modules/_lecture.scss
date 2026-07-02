@@ -166,6 +166,14 @@
 	margin-top: 1em;
 }
 
+tr.o_rm_room_preselected {
+	td.o_multiselect input[type="checkbox"] {
+		pointer-events: none;
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+}
+
 .o_button_group>.o_lecture_badge {
 	display: inline-block;
 	margin-left: 7px;

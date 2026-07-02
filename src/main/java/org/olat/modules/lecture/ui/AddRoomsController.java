@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,10 +41,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionBrowserEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -141,6 +144,7 @@ public class AddRoomsController extends FormBasicController {
 
 		tableModel = new AddRoomsDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "rooms.table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl.setCssDelegate(new PreSelectedRowsCssDelegate());
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(false);
 		tableEl.setSearchEnabled(true);
@@ -281,23 +285,43 @@ public class AddRoomsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		selectedRooms.clear();
-		List<AddRoomsRow> currentRows = tableModel.getObjects();
-		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
-		List<String> selectedKeys = new ArrayList<>();
-		for (Integer idx : selectedIndexes) {
-			if (idx < currentRows.size()) {
-				Room room = currentRows.get(idx).getRoom();
-				selectedRooms.add(room);
-				selectedKeys.add(room.getKey().toString());
+		// Pre-selected rooms are read-only — always included regardless of checkbox state
+		Map<Long, Room> resultRooms = new LinkedHashMap<>();
+		for (AddRoomsRow row : allRows) {
+			if (preSelectedRoomKeys.contains(row.getKey())) {
+				resultRooms.put(row.getKey(), row.getRoom());
 			}
 		}
+		// Add any additional rooms the user selected
+		List<AddRoomsRow> currentRows = tableModel.getObjects();
+		for (Integer idx : tableEl.getMultiSelectedIndex()) {
+			if (idx < currentRows.size()) {
+				Room room = currentRows.get(idx).getRoom();
+				resultRooms.putIfAbsent(room.getKey(), room);
+			}
+		}
+		selectedRooms.clear();
+		selectedRooms.addAll(resultRooms.values());
+		List<String> selectedKeys = resultRooms.keySet().stream()
+				.map(Object::toString)
+				.collect(Collectors.toList());
 		fireEvent(ureq, new ObjectSelectionBrowserEvent(selectedKeys));
 	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	private class PreSelectedRowsCssDelegate extends DefaultFlexiTableCssDelegate {
+		@Override
+		public String getRowCssClass(FlexiTableRendererType type, int pos) {
+			List<AddRoomsRow> rows = tableModel.getObjects();
+			if (pos >= 0 && pos < rows.size() && preSelectedRoomKeys.contains(rows.get(pos).getKey())) {
+				return "o_rm_room_preselected";
+			}
+			return null;
+		}
 	}
 
 	private static class SeatsCellRenderer implements FlexiCellRenderer {
