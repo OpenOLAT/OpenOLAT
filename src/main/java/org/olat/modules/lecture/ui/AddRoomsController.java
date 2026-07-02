@@ -187,6 +187,7 @@ public class AddRoomsController extends FormBasicController {
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.external, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		tableEl.setExternalRenderer(new RoomCalendarRenderer(), "o_icon_calendar o_icon-lg");
+		tableEl.getExternalTypeButton().setTitle(translate("add.rooms.view.calendar"));
 
 		calendarEl = new FullCalendarElement(ureq, RoomCalendarRenderer.CALENDAR_ITEM_NAME, new ArrayList<>(), getTranslator());
 		calendarEl.setShowEventDuration(true);

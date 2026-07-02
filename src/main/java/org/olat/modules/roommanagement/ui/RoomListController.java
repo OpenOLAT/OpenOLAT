@@ -183,6 +183,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.external, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		tableEl.setExternalRenderer(new RoomCalendarRenderer(), "o_icon_calendar o_icon-lg");
+		tableEl.getExternalTypeButton().setTitle(translate("room.view.calendar"));
 
 		VelocityContainer detailsVC = createVelocityContainer("room_details");
 		tableEl.setDetailsRenderer(detailsVC, this);
