@@ -42,7 +42,7 @@ import org.olat.core.gui.translator.Translator;
  */
 public class RoomCalendarRenderer extends AbstractFlexiTableRenderer {
 
-	static final String CALENDAR_ITEM_NAME = "roomCalendar";
+	public static final String CALENDAR_ITEM_NAME = "roomCalendar";
 
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
