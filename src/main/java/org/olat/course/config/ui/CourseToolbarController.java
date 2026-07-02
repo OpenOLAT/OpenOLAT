@@ -473,12 +473,14 @@ public class CourseToolbarController extends FormBasicController {
 
 			externalToolVisibilityEls[i] = uifactory.addCheckboxesHorizontal("externalToolVis" + toolIndex,
 					"external.tool.visibility", cont, visibilitySV.keys(), visibilitySV.values());
+			externalToolVisibilityEls[i].addActionListener(FormEvent.ONCHANGE);
 			externalToolVisibilityEls[i].setEnabled(editable);
 			for (ExternalToolVisibility v : ExternalToolVisibility.values()) {
 				if (courseConfig.isExternalToolVisible(toolIndex, v)) {
 					externalToolVisibilityEls[i].select(v.name(), true);
 				}
 			}
+			updateExternalToolVisibilityWarning(i);
 		}
 
 		toolbarEl.setEnabled(editable && canHideToolbar);
@@ -553,6 +555,15 @@ public class CourseToolbarController extends FormBasicController {
 		}
 	}
 
+	private void updateExternalToolVisibilityWarning(int i) {
+		boolean toolEnabled = externalToolEls[i].isSelected(0);
+		if (toolEnabled && !externalToolVisibilityEls[i].isAtLeastSelected(1)) {
+			externalToolVisibilityEls[i].setWarningKey("external.tool.warning.no.visibility");
+		} else {
+			externalToolVisibilityEls[i].clearWarning();
+		}
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == blogEl) {
@@ -582,6 +593,10 @@ public class CourseToolbarController extends FormBasicController {
 			for (int i = 0; i < CourseConfig.EXTERNAL_TOOL_COUNT; i++) {
 				if (source == externalToolEls[i]) {
 					updateUI();
+					updateExternalToolVisibilityWarning(i);
+					break;
+				} else if (source == externalToolVisibilityEls[i]) {
+					updateExternalToolVisibilityWarning(i);
 					break;
 				}
 			}
