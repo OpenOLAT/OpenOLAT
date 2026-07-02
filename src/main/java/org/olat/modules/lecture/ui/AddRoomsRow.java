@@ -35,11 +35,13 @@ public class AddRoomsRow {
 	private final Room room;
 	private final RoomBooking occupiedBy;
 	private final boolean myEvent;
+	private final boolean seatWarning;
 
-	public AddRoomsRow(Room room, RoomBooking occupiedBy, boolean myEvent) {
+	public AddRoomsRow(Room room, RoomBooking occupiedBy, boolean myEvent, int participantCount) {
 		this.room = room;
 		this.occupiedBy = occupiedBy;
 		this.myEvent = myEvent;
+		this.seatWarning = room.getSeats() != null && participantCount > 0 && room.getSeats() < participantCount;
 	}
 
 	public Room getRoom() {
@@ -71,5 +73,9 @@ public class AddRoomsRow {
 
 	public RoomBooking getOccupiedBy() {
 		return occupiedBy;
+	}
+
+	public boolean isSeatWarning() {
+		return seatWarning;
 	}
 }

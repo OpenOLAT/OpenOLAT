@@ -235,7 +235,7 @@ public class RoomSelectionSource implements ObjectSelectionSource {
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 		return (UserRequest lureq, WindowControl lwControl) ->
-				new AddRoomsController(lureq, lwControl, startDate, endDate, preSelected, lectureBlock);
+				new AddRoomsController(lureq, lwControl, startDate, endDate, preSelected, lectureBlock, participantCount);
 	}
 
 	@Override

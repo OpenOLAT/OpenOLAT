@@ -33,7 +33,8 @@ public class AddRoomsDataModel extends DefaultFlexiTableDataModel<AddRoomsRow> {
 		reference("add.rooms.col.reference"),
 		description("add.rooms.col.description"),
 		seats("add.rooms.col.seats"),
-		availability("add.rooms.col.availability");
+		availability("add.rooms.col.availability"),
+		occupiedBy("add.rooms.col.occupied.by");
 
 		private final String i18nKey;
 
@@ -67,8 +68,9 @@ public class AddRoomsDataModel extends DefaultFlexiTableDataModel<AddRoomsRow> {
 		return switch (AddRoomsCols.values()[col]) {
 			case reference -> roomRow.getReference();
 			case description -> roomRow.getDescription();
-			case seats -> roomRow.getSeats();
+			case seats -> roomRow;
 			case availability -> roomRow.getAvailability();
+			case occupiedBy -> roomRow.getOccupiedBy();
 		};
 	}
 }
