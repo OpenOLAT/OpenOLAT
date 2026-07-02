@@ -46,6 +46,7 @@ import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.RoomModuleLog;
 import org.olat.modules.roommanagement.RoomModuleLogAction;
 import org.olat.modules.roommanagement.model.RoomModuleLogSearchParameters;
@@ -313,6 +314,83 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
+	}
+
+	@Test
+	public void putRoom_inactiveRoom_byKey_returns409()
+	throws IOException, URISyntaxException, UnsupportedEncodingException {
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
+		LectureBlock block = createLectureBlock(entry);
+		Building building = roomManagementService.createBuilding("BldInactiveKey_" + UUID.randomUUID(), admin.getIdentity());
+		Room room = roomManagementService.createRoom(building, "RoomInactiveKey_" + UUID.randomUUID(), admin.getIdentity());
+		room.setStatus(RoomStatus.inactive);
+		room = roomManagementService.updateRoom(room, admin.getIdentity());
+		dbInstance.commitAndCloseSession();
+
+		RoomBookingVO bookingVO = new RoomBookingVO();
+		bookingVO.setRoomKey(room.getKey());
+
+		RestConnection conn = new RestConnection(admin);
+		URI uri = buildRoomUri(entry, block);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, bookingVO);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
+		Map<?, ?> body = conn.parse(response, Map.class);
+		Assert.assertEquals("room.inactive", body.get("code"));
+	}
+
+	@Test
+	public void putRoom_inactiveRoom_byExternalId_returns409()
+	throws IOException, URISyntaxException, UnsupportedEncodingException {
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
+		LectureBlock block = createLectureBlock(entry);
+		Building building = roomManagementService.createBuilding("BldInactiveExtId_" + UUID.randomUUID(), admin.getIdentity());
+		Room room = roomManagementService.createRoom(building, "RoomInactiveExtId_" + UUID.randomUUID(), admin.getIdentity());
+		room.setExternalId("inactive-ext-" + UUID.randomUUID());
+		room.setStatus(RoomStatus.inactive);
+		room = roomManagementService.updateRoom(room, admin.getIdentity());
+		dbInstance.commitAndCloseSession();
+
+		RoomBookingVO bookingVO = new RoomBookingVO();
+		bookingVO.setExternalId(room.getExternalId());
+
+		RestConnection conn = new RestConnection(admin);
+		URI uri = buildRoomUri(entry, block);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, bookingVO);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
+		Map<?, ?> body = conn.parse(response, Map.class);
+		Assert.assertEquals("room.inactive", body.get("code"));
+	}
+
+	@Test
+	public void putRoom_inactiveRoom_byExternalRef_returns409()
+	throws IOException, URISyntaxException, UnsupportedEncodingException {
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
+		LectureBlock block = createLectureBlock(entry);
+		Building building = roomManagementService.createBuilding("BldInactiveExtRef_" + UUID.randomUUID(), admin.getIdentity());
+		Room room = roomManagementService.createRoom(building, "RoomInactiveExtRef_" + UUID.randomUUID(), admin.getIdentity());
+		room.setExternalRef("inactive-ref-" + UUID.randomUUID());
+		room.setStatus(RoomStatus.inactive);
+		room = roomManagementService.updateRoom(room, admin.getIdentity());
+		dbInstance.commitAndCloseSession();
+
+		RoomBookingVO bookingVO = new RoomBookingVO();
+		bookingVO.setExternalRef(room.getExternalRef());
+
+		RestConnection conn = new RestConnection(admin);
+		URI uri = buildRoomUri(entry, block);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, bookingVO);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
+		Map<?, ?> body = conn.parse(response, Map.class);
+		Assert.assertEquals("room.inactive", body.get("code"));
 	}
 
 	@Test

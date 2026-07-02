@@ -586,6 +586,9 @@ public class LectureBlockWebService {
 	@ApiResponse(responseCode = "400", description = "No room identifier supplied")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The room was not found")
+	@ApiResponse(responseCode = "409", description = "The room is inactive and cannot be booked",
+			content = @Content(mediaType = "application/json",
+				schema = @Schema(type = "object", example = "{\"code\":\"room.inactive\"}")))
 	@ApiResponse(responseCode = "422", description = "The externalRef is ambiguous (multiple rooms match)",
 			content = @Content(mediaType = "application/json",
 				schema = @Schema(type = "object", example = "{\"code\":\"room.ambiguousExternalRef\",\"matches\":2}")))
@@ -634,6 +637,11 @@ public class LectureBlockWebService {
 			room = byRef.get(0);
 		} else {
 			return Response.status(Status.BAD_REQUEST).build();
+		}
+
+		if (room.getStatus() != RoomStatus.active) {
+			String body = "{\"code\":\"room.inactive\"}";
+			return Response.status(Status.CONFLICT).entity(body).type(MediaType.APPLICATION_JSON).build();
 		}
 
 		Date startDate = vo.getStartDate() != null ? vo.getStartDate() : lectureBlock.getStartDate();
