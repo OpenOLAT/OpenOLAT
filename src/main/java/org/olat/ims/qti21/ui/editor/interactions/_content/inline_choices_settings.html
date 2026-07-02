@@ -19,6 +19,13 @@
 		</div>
 	</div>
 	#end
+	#if($r.isNotEmpty($errorMsg))
+	<div class="form-group clearfix">
+		<div class=" col-sm-offset-3 col-sm-9 form-inline">
+			<div class="o_error">$r.escapeHtml($errorMsg)</div>
+		</div>
+	</div>
+	#end
 	<div class="form-group clearfix">
 		<div class="col-sm-offset-3 col-sm-9 form-inline">
 			$r.render("add.answer")

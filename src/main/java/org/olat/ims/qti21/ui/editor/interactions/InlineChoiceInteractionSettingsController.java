@@ -63,7 +63,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 	private FormLink addAnswerButton;
 	private SingleSelection shuffleEl;
 	private FormLayoutContainer choicesCont;
-	private List<InlineChoiceWrapper> choiceWrappers = new ArrayList<>();
+	private final List<InlineChoiceWrapper> choiceWrappers = new ArrayList<>();
 	
 	private int counter = 0;
 	private final boolean readOnly;
@@ -139,7 +139,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("transfert", buttonsCont);
+		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
@@ -231,6 +231,21 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		String correctResponseId = ureq.getParameter("correct");
+		if(!StringHelper.containsNonWhitespace(correctResponseId)) {
+			choicesCont.contextPut("errorMsg", translate("error.missing.inlinechoice.missing.correct.alt"));
+			allOk &= false;
+		} else {
+			choicesCont.contextRemove("errorMsg");
+		}
+		
+		return allOk;
 	}
 
 	@Override
