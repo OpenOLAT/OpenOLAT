@@ -334,6 +334,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			externalTypeButton.setElementCssClass("o_sel_external");
 			externalTypeButton.setActive(FlexiTableRendererType.external == rendererType);
 			externalTypeButton.setTitle(translator.translate("aria.view.other"));
+			components.put("rTypeExternal", externalTypeButton);
 			
 			verticalTimeLineTypeButton = new FormLinkImpl(dispatchId + "_vtimelineRTypeButton", "rVTimeLineRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
 			verticalTimeLineTypeButton.setTranslator(translator);
