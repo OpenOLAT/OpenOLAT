@@ -248,15 +248,15 @@ public class BuildingListController extends FormBasicController implements Flexi
 		BuildingRow row = new BuildingRow(building);
 
 		String refText = StringHelper.containsNonWhitespace(building.getExternalRef())
-				? building.getExternalRef() : "-";
+				? StringHelper.escapeHtml(building.getExternalRef()) : "-";
 		FormLink referenceLink = uifactory.addFormLink(
 				"ref_" + building.getKey(), "select", refText, null, null, Link.LINK | Link.NONTRANSLATED);
 		referenceLink.setUserObject(row);
 		row.setReferenceLink(referenceLink);
 
 		if (StringHelper.containsNonWhitespace(building.getAddress())) {
-			FormLink addressLink = uifactory.addFormLink("addr_" + building.getKey(), "address", 
-					building.getAddress(), null, null, Link.LINK | Link.NONTRANSLATED);
+			FormLink addressLink = uifactory.addFormLink("addr_" + building.getKey(), "address",
+					StringHelper.escapeHtml(building.getAddress()), null, null, Link.LINK | Link.NONTRANSLATED);
 			addressLink.setIconLeftCSS("o_icon o_icon_location");
 			addressLink.setUserObject(row);
 			row.setAddressLink(addressLink);

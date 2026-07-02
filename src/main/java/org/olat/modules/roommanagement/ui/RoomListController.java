@@ -389,7 +389,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		RoomRow row = new RoomRow(room);
 
 		String refText = StringHelper.containsNonWhitespace(room.getExternalRef())
-				? room.getExternalRef() : "-";
+				? StringHelper.escapeHtml(room.getExternalRef()) : "-";
 		FormLink referenceLink = uifactory.addFormLink(
 				"ref_" + room.getKey(), "select", refText, null, null, Link.LINK | Link.NONTRANSLATED);
 		referenceLink.setUserObject(row);
@@ -402,8 +402,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			if (!StringHelper.containsNonWhitespace(buildingRef)) {
 				buildingRef = "-";
 			}
-			FormLink buildingLink = uifactory.addFormLink("bld_" + room.getKey(), "building", buildingRef, 
-					null, null, Link.LINK | Link.NONTRANSLATED);
+			FormLink buildingLink = uifactory.addFormLink("bld_" + room.getKey(), "building",
+					StringHelper.escapeHtml(buildingRef), null, null, Link.LINK | Link.NONTRANSLATED);
 			buildingLink.setUserObject(building);
 			row.setBuildingLink(buildingLink);
 		}
