@@ -1436,17 +1436,28 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	private void doConfirmBulkDelete(UserRequest ureq) {
 		if (guardModalController(bulkDeleteConfirmationCtrl)) return;
-		
+
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		if (selectedIndex == null || selectedIndex.isEmpty()) {
 			return;
 		}
-		
-		String message = translate("task.bulk.delete.message", Integer.toString(selectedIndex.size()));
+
+		long deletableCount = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.filter(ToDoTaskRow::canDelete)
+				.count();
+		if (deletableCount == 0) {
+			showWarning("task.bulk.delete.none");
+			return;
+		}
+
+		String count = Long.toString(deletableCount);
+		String message = translate("task.bulk.delete.text", count);
 		bulkDeleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message,
-				translate("task.bulk.delete.confirm"), translate("task.bulk.delete.button"), ButtonType.danger);
+				translate("task.bulk.delete.check", count), translate("delete"), ButtonType.danger);
 		listenTo(bulkDeleteConfirmationCtrl);
-		
+
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
 				true, translate("task.bulk.delete.title"), true);
 		listenTo(cmc);
