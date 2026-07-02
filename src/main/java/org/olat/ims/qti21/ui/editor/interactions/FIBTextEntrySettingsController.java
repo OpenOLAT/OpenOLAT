@@ -67,6 +67,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	private TextElement expectedLengthEl;
 	private FormToggle alternativesEl;
 	private FormLayoutContainer previewEl;
+	private FormLink addAlternativeButton;
 	private FormLink addMultipleAlternativesButton;
 	private MultipleSelectionElement correctionsEl;
 	private FormLayoutContainer alternativesCont;
@@ -114,8 +115,11 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		alternativesCont = uifactory.addCustomFormLayout("alternatives.list", null, alternativesPage, formLayout);
 		alternativesCont.contextPut("alternatives", alternativeRows);
 		
-		addMultipleAlternativesButton = uifactory.addFormLink("add.multi.alternatives", "add.multi", "fib.add.multiple.alternatives", null, alternativesCont, Link.LINK);
-		addMultipleAlternativesButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		addAlternativeButton = uifactory.addFormLink("add.alternative", "add.alternative", null, null, alternativesCont, Link.BUTTON);
+		addAlternativeButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		addAlternativeButton.setVisible(!restrictedEdit && !readOnly);
+		
+		addMultipleAlternativesButton = uifactory.addFormLink("add.multi.alternatives", "add.multi", "fib.add.multiple.alternatives", null, alternativesCont, Link.BUTTON);
 		addMultipleAlternativesButton.setVisible(!restrictedEdit && !readOnly);
 		addMultipleAlternativesButton.setGhost(true);
 
@@ -341,6 +345,8 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 				doEnableAlternatives();
 			}
 			updateUI();
+		} else if(source == addAlternativeButton) {
+			doAddAlternative();
 		} else if(source == addMultipleAlternativesButton) {
 			doOpenAddVariants(ureq, addMultipleAlternativesButton);
 		} else if(source instanceof FormLink) {
@@ -395,6 +401,10 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	}
 	
 	private void doEnableAlternatives() {
+		doAddAlternative();
+	}
+	
+	private void doAddAlternative() {
 		TextEntryAlternative alternative = new TextEntryAlternative();
 		if(interaction.getScore() != null) {
 			alternative.setScore(interaction.getScore().doubleValue());

@@ -60,6 +60,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 	
 	private static final String SHUFFLE_KEY = "shuffle";
 	
+	private FormLink addAnswerButton;
 	private SingleSelection shuffleEl;
 	private FormLayoutContainer choicesCont;
 	private List<InlineChoiceWrapper> choiceWrappers = new ArrayList<>();
@@ -115,6 +116,10 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		
 		choicesCont.contextPut("correctAnswer", inlineChoiceBlock.getCorrectResponseId());
 		choicesCont.contextPut("choices", choiceWrappers);
+		
+		addAnswerButton = uifactory.addFormLink("add.answer", "add.answer", null, null, choicesCont, Link.BUTTON);
+		addAnswerButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		addAnswerButton.setVisible(!restrictedEdit && !readOnly);
 		
 		FormLayoutContainer displayCont = uifactory.addDefaultFormLayout("display-options", null, formLayout);
 		displayCont.setFormTitle(translate("fib.display.title"));
@@ -201,6 +206,9 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		
 		if(shuffleEl == source) {
 			updateUI();
+		} else if(addAnswerButton == source) {
+			doAddChoice();
+			updateUI();
 		} else if(source instanceof FormLink link) {
 			if("add".equals(link.getCmd()) && link.getUserObject() instanceof InlineChoiceWrapper wrapper) {
 				doAddChoice(wrapper);
@@ -257,6 +265,13 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 			texts.add(new TextRun(inlineChoice, text));
 			inlineChoiceBlock.addInlineChoice(inlineChoice);
 		}
+	}
+
+	private void doAddChoice() {
+		InlineChoiceWrapper lastChoice = choiceWrappers.isEmpty()
+				? null
+				: choiceWrappers.get(choiceWrappers.size() - 1);
+		doAddChoice(lastChoice);
 	}
 	
 	private void doAddChoice(InlineChoiceWrapper wrapper) {
