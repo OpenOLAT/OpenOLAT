@@ -53,7 +53,7 @@ public class ProjectPage {
 		WebElement openOlatOrgEl = browser.findElement(openOlatOrgBy);
 		OOGraphene.check(openOlatOrgEl, Boolean.TRUE);
 
-		By updateBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//span[contains(@class,'o_expand_button_text')][text()[contains(.,'(1)')]]");
+		By updateBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection_main']//span[contains(@class,'o_expand_button_text')][text()[contains(.,'(1)')]]");
 		OOGraphene.waitElement(updateBy, browser);
 		
 		OOGraphene.click(organisationLocation, browser);
