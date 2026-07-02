@@ -49,6 +49,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
@@ -332,9 +333,9 @@ public class CertificationProgramsWebServiceTest extends OlatRestTestCase {
 
 		conn.shutdown();
 	}
-
+	
 	@Test
-	public void deleteCertificate() throws IOException, URISyntaxException {
+	public void revokeCertificate() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
@@ -358,6 +359,45 @@ public class CertificationProgramsWebServiceTest extends OlatRestTestCase {
 				.path(program.getKey().toString())
 				.path("certificates")
 				.path(certificate.getKey().toString())
+				.build();
+		HttpDelete deleteMethod = conn.createDelete(uri, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(deleteMethod);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
+		Certificate revoked = certificatesManager.getCertificateById(certificate.getKey());
+		Assert.assertNotNull(revoked);
+		Assert.assertEquals(CertificateStatus.revoked, revoked.getStatus());
+
+		conn.shutdown();
+	}
+
+	@Test
+	public void deleteCertificate() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+
+		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-prog-delete-2");
+		CertificationProgram program = certificationProgramService.createCertificationProgram(
+				"rest-prog-delete-2", "REST Delete Program", null);
+		certificationProgramService.updateCertificationProgram(program, List.of(defaultOrganisation));
+		dbInstance.commitAndCloseSession();
+
+		URL certificateUrl = CertificationProgramsWebServiceTest.class.getResource("certificate.pdf");
+		Assert.assertNotNull(certificateUrl);
+		File certificateFile = new File(certificateUrl.toURI());
+
+		Certificate certificate = certificatesManager.uploadCertificate(participant, new Date(),
+				null, null, program, program.getResource(), null, certificateFile, JunitTestHelper.getDefaultAdministrator());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(certificate);
+
+		URI uri = UriBuilder.fromUri(getContextURI())
+				.path("certificationprograms")
+				.path(program.getKey().toString())
+				.path("certificates")
+				.path(certificate.getKey().toString())
+				.queryParam("deletePermanently", "true")
 				.build();
 		HttpDelete deleteMethod = conn.createDelete(uri, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(deleteMethod);

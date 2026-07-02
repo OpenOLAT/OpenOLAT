@@ -62,6 +62,7 @@ import org.olat.restapi.support.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.StringToClassMapItem;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -282,7 +283,8 @@ public class CertificationProgramCertificatesWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The certificate cannot be found")
 	@ApiResponse(responseCode = "409", description = "The certificate does not belong to this program")
-	public Response deleteCertificate(@PathParam("certificateKey") Long certificateKey,
+	public Response revokeCertificate(@PathParam("certificateKey") Long certificateKey,
+			@QueryParam("deletePermanently") @Parameter(description = "Delete the certificate definitively instead of simply revoking it") Boolean deletePermanently,
 			@Context HttpServletRequest request) {
 		if(!canManage(request)) {
 			return Response.status(Status.FORBIDDEN).build();
@@ -296,8 +298,12 @@ public class CertificationProgramCertificatesWebService {
 				|| !program.getKey().equals(certificate.getCertificationProgram().getKey())) {
 			return Response.status(Status.CONFLICT).build();
 		}
-
-		certificatesManager.deleteCertificate(certificate);
+		
+		if(deletePermanently != null && deletePermanently.booleanValue()) {
+			certificatesManager.deleteCertificate(certificate);
+		} else {
+			certificatesManager.revokeCertificate(certificate);
+		}
 		return Response.ok().build();
 	}
 
