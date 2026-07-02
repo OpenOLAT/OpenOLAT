@@ -104,8 +104,7 @@ public class SafeExamBrowserTemplateUploadController extends FormBasicController
 
 		FormLayoutContainer buttonsWrapperCont = uifactory.addDefaultFormLayout("buttonscont", null, formLayout);
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, buttonsWrapperCont);
-		String i18nKey = sebTemplate != null ? "save" : "upload";
-		uifactory.addFormSubmitButton(i18nKey, buttonsCont);
+		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		
 		FormLayoutContainer rawConfigurationCont = uifactory.addDefaultFormLayout("rawconfigurationcont", null, formLayout);
@@ -141,6 +140,7 @@ public class SafeExamBrowserTemplateUploadController extends FormBasicController
 		
 		if(sebTemplate == null) {
 			uploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "seb.template.file", "seb.template.file", templateLayout);
+			uploadEl.addActionListener(FormEvent.ONCHANGE);
 			uploadEl.setMultiFileUpload(false);
 			if(sebTemplate != null && StringHelper.containsNonWhitespace(sebTemplate.getSafeExamBrowserConfigFilename())) {
 				uploadEl.setInitialFile(new File(sebTemplate.getSafeExamBrowserConfigFilename()));
@@ -288,8 +288,10 @@ public class SafeExamBrowserTemplateUploadController extends FormBasicController
 			updateStatus(ACTIVE_STATUS_KEY);
 		} else if(source == inactiveLink) {
 			updateStatus(INACTIVE_STATUS_KEY);
-		} else if(source == allowToExitEl) {
+		} else if(allowToExitEl == source) {
 			updateUI();
+		} else if(uploadEl == source) {
+			doUpdateRawConfiguration();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -346,5 +348,16 @@ public class SafeExamBrowserTemplateUploadController extends FormBasicController
 				uploadCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void doUpdateRawConfiguration() {
+		File uploadedFile = uploadEl.getUploadFile();
+		if(uploadedFile != null && validateFile(uploadedFile)) {
+			String plistConfiguration = FileUtils.load(uploadedFile, "UTF-8");
+			rawConfigurationCtrl.loadConfiguration(plistConfiguration);
+		} else {
+			rawConfigurationCtrl.resetConfiguration();
+			uploadEl.setErrorKey("error.safe.exam.config.format");
+		}
 	}
 }

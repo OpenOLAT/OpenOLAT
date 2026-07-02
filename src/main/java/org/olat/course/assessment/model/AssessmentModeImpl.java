@@ -705,8 +705,7 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof AssessmentModeImpl) {
-			AssessmentModeImpl mode = (AssessmentModeImpl)obj;
+		if(obj instanceof AssessmentModeImpl mode) {
 			return getKey() != null && getKey().equals(mode.getKey());	
 		}
 		return false;

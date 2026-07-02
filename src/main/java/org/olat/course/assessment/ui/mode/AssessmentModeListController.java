@@ -270,7 +270,7 @@ public class AssessmentModeListController extends FormBasicController implements
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				loadModel();
 				fireEvent(ureq, new AssessmentModeStatusEvent());
-				doEdit(ureq, newAssessmentModeCtrl.getAssessmentMode());
+				doEdit(ureq, newAssessmentModeCtrl.getAssessmentMode(), newAssessmentModeCtrl.getAssessmentModeToCopy());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -352,7 +352,7 @@ public class AssessmentModeListController extends FormBasicController implements
 				String cmd = se.getCommand();
 				AssessmentMode row = model.getObject(se.getIndex());
 				if("edit".equals(cmd)) {
-					doEdit(ureq, row);
+					doEdit(ureq, row, null);
 				} else if("copy".equals(cmd)) {
 					doOpenTools(ureq, row);
 				} else if("start".equals(cmd)) {
@@ -418,7 +418,7 @@ public class AssessmentModeListController extends FormBasicController implements
 
 	private void doAdd(UserRequest ureq) {
 		removeAsListenerAndDispose(newAssessmentModeCtrl);
-		newAssessmentModeCtrl = new NewAssessmentModeController(ureq, getWindowControl(), entry);
+		newAssessmentModeCtrl = new NewAssessmentModeController(ureq, getWindowControl(), entry, null);
 		listenTo(newAssessmentModeCtrl);
 		
 		String title = translate("create.assessment.mode");
@@ -461,13 +461,45 @@ public class AssessmentModeListController extends FormBasicController implements
 		loadModel();
 		tableEl.deselectAll();
 	}
-
+	
 	private void doCopy(UserRequest ureq, AssessmentMode mode) {
+		removeAsListenerAndDispose(newAssessmentModeCtrl);
 		AssessmentMode modeToCopy = assessmentModeMgr.getAssessmentModeById(mode.getKey());
-		AssessmentMode newMode = assessmentModeMgr.createAssessmentMode(modeToCopy);
-		newMode.setName(translate("copy.name", modeToCopy.getName()));
+		newAssessmentModeCtrl = new NewAssessmentModeController(ureq, getWindowControl(), entry, modeToCopy);
+		listenTo(newAssessmentModeCtrl);
+		
+		String title = translate("create.assessment.mode");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newAssessmentModeCtrl.getInitialComponent(),
+				true, title, true);
+		cmc.activate();
+		listenTo(cmc);
+	}
 
-		AssessmentModeEditController modeEditCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry, newMode);
+	private void doEdit(UserRequest ureq, AssessmentMode mode, AssessmentMode modeToCopy) {
+		removeAsListenerAndDispose(editCtrl);
+
+		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
+		if(reloadedMode == null) {
+			showWarning("warning.assessment.mode.already.deleted");
+			loadModel();
+			return;
+		} else if(reloadedMode.getLectureBlock() != null) {
+			editCtrl = new AssessmentModeForLectureEditController(ureq, getWindowControl(), entry, mode);
+		} else {
+			AssessmentModeEditController modeEditCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry, mode);
+			if(modeToCopy != null) {
+				prepareFromOriginal(modeEditCtrl, modeToCopy);
+			}
+			editCtrl = modeEditCtrl;
+		}
+		listenTo(editCtrl);
+
+		String title = translate("form.mode.title", mode.getName());
+		toolbarPanel.pushController(title, editCtrl);
+	}
+	
+	private void prepareFromOriginal(AssessmentModeEditController modeEditCtrl, AssessmentMode modeToCopy) {
+		modeToCopy = assessmentModeMgr.getAssessmentModeById(modeToCopy.getKey());
 		Set<AssessmentModeToGroup> assessmentModeToGroups = modeToCopy.getGroups();
 		if(assessmentModeToGroups != null) {
 			Set<BusinessGroup> businessGroups = assessmentModeToGroups.stream()
@@ -491,30 +523,6 @@ public class AssessmentModeListController extends FormBasicController implements
 					.collect(Collectors.toSet());
 			modeEditCtrl.setCurriculumElements(curriculumElements);
 		}
-
-		listenTo(modeEditCtrl);
-		toolbarPanel.pushController(newMode.getName(), modeEditCtrl);
-
-		editCtrl = modeEditCtrl;
-	}
-
-	private void doEdit(UserRequest ureq, AssessmentMode mode) {
-		removeAsListenerAndDispose(editCtrl);
-
-		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
-		if(reloadedMode == null) {
-			showWarning("warning.assessment.mode.already.deleted");
-			loadModel();
-			return;
-		} else if(reloadedMode.getLectureBlock() != null) {
-			editCtrl = new AssessmentModeForLectureEditController(ureq, getWindowControl(), entry, mode);
-		} else {
-			editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry, mode);
-		}
-		listenTo(editCtrl);
-
-		String title = translate("form.mode.title", mode.getName());
-		toolbarPanel.pushController(title, editCtrl);
 	}
 
 	private void doConfirmStart(UserRequest ureq, AssessmentMode mode) {
@@ -609,7 +617,7 @@ public class AssessmentModeListController extends FormBasicController implements
 				doCopy(ureq, assessmentMode);
 			} else if (source == editLink) {
 				close();
-				doEdit(ureq, assessmentMode);
+				doEdit(ureq, assessmentMode, null);
 			} else if (source == deleteLink) {
 				close();
 				doConfirmDelete(ureq, List.of(assessmentMode));

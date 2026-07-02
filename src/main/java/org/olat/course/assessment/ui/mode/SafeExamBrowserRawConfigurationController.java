@@ -68,6 +68,11 @@ public class SafeExamBrowserRawConfigurationController extends FormBasicControll
 		tableEl.setSortEnabled(false);
 	}
 	
+	protected void resetConfiguration() {
+		tableModel.setObjects(new ArrayList<>());
+		tableEl.reset(true, true, true);
+	}
+	
 	protected void loadConfiguration(String plist) {
 		List<SafeExamBrowserConfigurationKeyValueRow> rows = new ArrayList<>();
 		
