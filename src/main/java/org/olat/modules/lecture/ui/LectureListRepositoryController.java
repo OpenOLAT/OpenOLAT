@@ -175,6 +175,7 @@ import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCell
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
 import org.olat.modules.lecture.ui.component.LocationCellRenderer;
+import org.olat.modules.lecture.ui.component.RoomsCellRenderer;
 import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.component.ReferenceRenderer;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
@@ -183,6 +184,10 @@ import org.olat.modules.lecture.ui.export.LectureBlockExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockSignaturePDFExport;
 import org.olat.modules.lecture.ui.teacher.ManageTeachersController;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyModule;
@@ -338,6 +343,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
+	@Autowired
+	private RoomManagementService roomManagementService;
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
@@ -554,6 +563,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(config.withLocation() != Visibility.NO) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withLocation() == Visibility.SHOW, BlockCols.location,
 					new LocationCellRenderer(getTranslator())));
+		}
+		if(roomManagementModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.rooms,
+					new RoomsCellRenderer()));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teachers,
 				new IdentityCoachesCellRenderer(userManager)));
@@ -967,6 +980,19 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				canStart = row;
 			}
 		}
+		if(roomManagementModule.isEnabled() && !rows.isEmpty()) {
+			List<Long> lbKeys = rows.stream().map(LectureBlockRow::getKey).collect(Collectors.toList());
+			List<RoomBooking> bookings = roomManagementService.getBookings(lbKeys);
+			Map<Long, List<Room>> roomsByBlock = new HashMap<>();
+			for(RoomBooking booking : bookings) {
+				roomsByBlock.computeIfAbsent(booking.getLectureBlock().getKey(), k -> new ArrayList<>())
+						.add(booking.getRoom());
+			}
+			for(LectureBlockRow row : rows) {
+				row.setRooms(roomsByBlock.getOrDefault(row.getKey(), List.of()));
+			}
+		}
+
 		tableModel.setObjects(rows);
 		tableEl.reset(!replaceOnly, !replaceOnly, true);
 

@@ -118,6 +118,16 @@ public class RoomBookingDAO {
 				.getResultList();
 	}
 
+	public List<RoomBooking> getBookingsForLectureBlocks(List<Long> lectureBlockKeys) {
+		if (lectureBlockKeys == null || lectureBlockKeys.isEmpty()) {
+			return new ArrayList<>();
+		}
+		return dbInstance.getCurrentEntityManager()
+				.createQuery("select b from rmroombooking b left join fetch b.room where b.lectureBlock.key in :lbKeys order by b.startDate asc", RoomBooking.class)
+				.setParameter("lbKeys", lectureBlockKeys)
+				.getResultList();
+	}
+
 	/**
 	 * Finds all bookings for a given room that have a hard overlap with the specified start and end dates. 
 	 * A hard overlap is defined as the new booking's time interval intersecting with the time intervals 

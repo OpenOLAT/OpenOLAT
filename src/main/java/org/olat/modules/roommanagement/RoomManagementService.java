@@ -81,6 +81,8 @@ public interface RoomManagementService {
 
 	List<RoomBooking> getBookings(LectureBlockRef lb);
 
+	List<RoomBooking> getBookings(List<Long> lectureBlockKeys);
+
 	List<RoomBooking> getBookingsForRoom(RoomRef room, Date from, Date to);
 
 	CollisionReport findCollisions(RoomRef room, Date start, Date end,

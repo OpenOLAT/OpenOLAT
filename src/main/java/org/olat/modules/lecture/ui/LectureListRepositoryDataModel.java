@@ -120,6 +120,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case title ->  row.getTitle();
 			case compulsory -> row.getLectureBlock().isCompulsory();
 			case location -> row;
+			case rooms -> row.getRooms();
 			case lecturesNumber -> row.getLectureBlock().getPlannedLecturesNumber();
 			case curriculumElement -> row.getCurriculumElement();
 			case entry -> row.getEntry();
@@ -171,6 +172,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		id("table.header.id"),
 		title("lecture.title"),
 		location("lecture.location"),
+		rooms("lecture.rooms"),
 		date("lecture.date"),
 		startTime("table.header.start.time"),
 		endTime("table.header.end.time"),
