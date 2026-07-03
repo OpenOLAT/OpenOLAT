@@ -1,15 +1,26 @@
 <div id="o_lecture_block_${lectureBlockKey}" class="o_lecture_details">
-	<div class="o_header_with_buttons">
-		<h3><span><span>$r.escapeHtml($title)</span>#if($r.isNotEmpty($externalRef))<small>$r.escapeHtml($externalRef)</small>#end</span></h3>
-		<div class="o_button_group o_button_group_right">
-			<div class="o_lecture_badge"><span>$r.translate("lecture.block.status"):</span> $lectureBlockStatusBadge</div>
-			#if($r.isNotEmpty($rollCallStatusBadge))
-				<div class="o_lecture_badge"><span>$r.translate("rollcall.absence.status"):</span> $rollCallStatusBadge</div>
-			#end
-			#if($r.available("edit")) $r.render("edit") #end
+	<div class="o_flex_header">
+		<div class="o_lecture_title">
+			<h3>$r.escapeHtml($title)</h3>
+			#if($r.isNotEmpty($externalRef))<h3><small> · $r.escapeHtml($externalRef)</small></h3>#end
 		</div>
+		<div class="o_lecture_status">
+			$lectureBlockStatusBadge
+			#if($r.isNotEmpty($rollCallStatusBadge)) $rollCallStatusBadge #end
+		</div>
+		#if($r.available("edit"))
+		<div class="o_button_group">
+			$r.render("edit")
+		</div>
+		#end
 	</div>
-	
+
+	#if($r.available("lecture.subjects"))
+	<div class="o_lecture_subjects">
+		$r.render("lecture.subjects")
+	</div>
+	#end
+
 	<div class="o_metadata_horizontal">
 		$r.render("lecture.date","vertical")
 		$r.render("lecture.time","vertical")
@@ -21,8 +32,9 @@
 		#end
 		$r.render("lecture.participants","vertical")
 		$r.render("lecture.compulsory","vertical")
-	
-		#if($r.available("open.online.meeting"))
+	</div>
+	<div class="o_metadata_horizontal">
+	    #if($r.available("open.online.meeting"))
 			<div>$r.render("open.online.meeting", "vertical")</div>
 		#elseif($r.available("open.external.meeting"))
 			<div>
@@ -37,17 +49,7 @@
 				<div class="form-group clearfix">$r.render("open.external.recording", "nolayout")</div>
 			</div>
 		#end
-		
-		#if($r.available("edit")) 
-			<div class="o_actions">$r.render("edit")</div>
-		#end
 	</div>
-
-	#if($r.available("lecture.subjects"))
-	<div class="o_lecture_subjects">
-		$r.render("lecture.subjects", "vertical")
-	</div>
-	#end
 
 	<div class="o_lecture_resources">
 		<label class="o_lecture_teachers">$r.translate("contact.teachers.list.name")</label>

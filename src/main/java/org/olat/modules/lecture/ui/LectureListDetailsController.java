@@ -113,7 +113,7 @@ public class LectureListDetailsController extends FormBasicController {
 	
 	private FormLink editButton;
 	private FormLink openEntryLink;
-	private FormItem openOnlineMeetingButton;
+	private FormLink openOnlineMeetingButton;
 	
 	private FlexiTableElement tableEl;
 	private StaticTextElement participantsEl;
@@ -193,20 +193,23 @@ public class LectureListDetailsController extends FormBasicController {
 		
 		LectureBlock lectureBlock = row.getLectureBlock();
 		if(lectureBlock.getTeamsMeeting() != null || lectureBlock.getBBBMeeting() != null) {
-			openOnlineMeetingButton = uifactory.addFormLink("open.online.meeting", "open.online.meeting", "online.room", formLayout, Link.BUTTON);
+			openOnlineMeetingButton = uifactory.addFormLink("open.online.meeting", "open.online.meeting", "online.meeting", formLayout, Link.BUTTON);
 			openOnlineMeetingButton.setFormLayout("vertical");
+			openOnlineMeetingButton.setIconLeftCSS("o_icon o_icon-fw o_icon_display");
 		} else if(StringHelper.containsNonWhitespace(lectureBlock.getMeetingUrl())) {
 			ExternalLinkItem button = uifactory.addExternalLink("open.external.meeting", "open.external.meeting", lectureBlock.getMeetingUrl(), "_blank", formLayout);
 			button.setName(translate("open.online.meeting"));
-			button.setLabel("online.room", null);
-			button.setCssClass("btn btn-default");
+			button.setLabel("online.meeting", null);
+			button.setCssClass("btn btn-primary");
+			button.setIconLeftCSS("o_icon o_icon-fw o_icon_display");
 		}
 		
 		if(StringHelper.containsNonWhitespace(lectureBlock.getRecordingUrl())) {
 			ExternalLinkItem button = uifactory.addExternalLink("open.external.recording", "open.external.recording", lectureBlock.getRecordingUrl(), "_blank", formLayout);
-			button.setName(translate("open.online.recording"));
-			button.setLabel("online.recording", null);
+			button.setName(translate("open.meeting.recording"));
+			button.setLabel("meeting.recording", null);
 			button.setCssClass("btn btn-default");
+			button.setIconLeftCSS("o_icon o_icon-fw o_icon_video");
 		}
 		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
@@ -216,10 +219,10 @@ public class LectureListDetailsController extends FormBasicController {
 				layoutCont.contextPut("externalRef", lectureBlock.getExternalRef());
 			}
 			
-			String badge = LectureBlockStatusCellRenderer.getStatusLabel(lectureBlock, row.isNextScheduled(), getTranslator());
+			String badge = LectureBlockStatusCellRenderer.getStatusLabelSolidWithIcon(lectureBlock, row.isNextScheduled(), getTranslator());
 			layoutCont.contextPut("lectureBlockStatusBadge", badge);
 			if(config.withRollCall() != Visibility.NO) {
-				String rollCallBadge = LectureBlockRollCallBasicStatusCellRenderer.getStatusLabel(lectureBlock, getTranslator());
+				String rollCallBadge = LectureBlockRollCallBasicStatusCellRenderer.getStatusLabelSolidWithIcon(lectureBlock, getTranslator());
 				layoutCont.contextPut("rollCallStatusBadge", rollCallBadge);
 			}
 			

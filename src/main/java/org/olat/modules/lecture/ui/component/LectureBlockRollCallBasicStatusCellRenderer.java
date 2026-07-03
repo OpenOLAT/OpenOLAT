@@ -63,6 +63,22 @@ public class LectureBlockRollCallBasicStatusCellRenderer implements FlexiCellRen
 		getStatus(sb, "o_labeled_light", block.getRollCallStatus(), trans);
 		return sb.toString();
 	}
+
+	public static final String getStatusLabelSolidWithIcon(LectureBlock block, Translator trans) {
+		LectureRollCallStatus status = block.getRollCallStatus();
+		String statusName = status.name();
+		String iconCss = switch (status) {
+			case open -> "o_icon_lecture_rollcall_open";
+			case closed -> "o_icon_lecture_rollcall_closed";
+			case reopen -> "o_icon_lecture_rollcall_reopen";
+			case autoclosed -> "o_icon_lecture_rollcall_autoclosed";
+		};
+		
+		return "<span class=\"o_labeled o_lecture_rollcall_status_" + statusName 
+				+ "\" title=\"" + trans.translate(statusName) + "\">" 
+				+ "<i class=\"o_icon " + iconCss + " o_icon-fw\"> </i> " 
+				+ trans.translate(statusName) + "</span>";
+	}
 	
 	public static final String getStatusString(LectureBlock block, Translator trans) {
 		LectureRollCallStatus rollCallStatus = block.getRollCallStatus();

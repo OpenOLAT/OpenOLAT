@@ -176,6 +176,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_disadvantage_compensation { @include o-add-icon('universal-access');}
 .o_icon_dispensation_authorized { @include o-add-icon('check-circle', false); color: $brand-success }
 .o_icon_dispensation_unauthorized { @include o-add-icon('exclamation-triangle'); color: $brand-warning }
+.o_icon_display { @include o-add-icon('display');}
 .o_icon_download { @include o-add-icon('download');}
 .o_icon_duplicate { @include o-add-icon('clone');}
 .o_icon_edit { @include o-add-icon('edit');}
@@ -283,6 +284,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_legal_folder { @include o-add-icon('section');}
 .o_icon_learning_path { @include o-add-icon('map-signs');}
 .o_icon_lecture { @include o-add-icon('book');}
+.o_icon_lecture_rollcall_autoclosed { @include o-add-icon('clock');}
+.o_icon_lecture_rollcall_closed { @include o-add-icon('circle-check');}
+.o_icon_lecture_rollcall_open { @include o-add-icon('circle-dot');}
+.o_icon_lecture_rollcall_reopen { @include o-add-icon('clock-rotate-left');}
 .o_icon_left { @include o-add-icon('arrow-circle-left');}
 .o_icon_levels { @include o-add-icon('sitemap');}
 .o_icon_line { @include o-add-icon('check');}
