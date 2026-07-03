@@ -386,11 +386,16 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		searchParams.setReferenceEntry(referenceEntry);
 		searchParams.setClosedFromDate(from);
 		searchParams.setClosedToDate(to);
-		
+
 		List<GradingAssignmentLog> assignmentsLogs = gradingService.getGradingAssignmentsLogs(searchParams);
+		Set<GraderToAssignementKey> graderToAssignementKeys = new HashSet<>();
 		for(GradingAssignmentLog assignmentLog:assignmentsLogs) {
-			if(!assignmentsKeys.contains(assignmentLog.getGradingAssignmentKey()) || assignmentLog.isDeleted() ) {
+			GraderToAssignementKey graderToAssignementKey
+				= new GraderToAssignementKey(assignmentLog.getGrader().getKey(), assignmentLog.getGradingAssignmentKey());
+			if(!assignmentsKeys.contains(assignmentLog.getGradingAssignmentKey())
+					|| (assignmentLog.isDeleted() && !graderToAssignementKeys.contains(graderToAssignementKey))) {
 				createAssignmentsLogData(assignmentLog, sheet, workbook);
+				graderToAssignementKeys.add(graderToAssignementKey);
 			}
 		}
 	}
@@ -436,5 +441,26 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		row.addCell(pos++, CalendarUtils.convertSecondsToMinutes(assignmentLog.getMetadataTime()), null);
 		row.addCell(pos++, CalendarUtils.convertSecondsToMinutes(assignmentLog.getTime()), null);
 		row.addCell(pos++, assignmentLog.getClosingDate(), workbook.getStyles().getDateStyle());
+	}
+	
+	private record GraderToAssignementKey(Long graderKey, Long gradingAssignmentKey) {
+
+		@Override
+		public int hashCode() {
+			return (graderKey() == null ? 811012 : graderKey().hashCode())
+					+ (gradingAssignmentKey() == null ? -23457 : gradingAssignmentKey().hashCode());
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if(obj instanceof GraderToAssignementKey key) {
+				return graderKey() != null && graderKey().equals(key.graderKey())
+						&& gradingAssignmentKey() != null && gradingAssignmentKey().equals(key.gradingAssignmentKey());
+			}
+			return false;
+		}
 	}
 }

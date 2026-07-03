@@ -152,6 +152,8 @@ public class GradingAssignmentLogDAO {
 			  .append(" or ")
 			  .append("(alog.closingDate is null and alog.creationDate<=:closedToDate))");
 		}
+
+		sb.append(" order by alog.creationDate desc");
 		
 		TypedQuery<GradingAssignmentLog> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), GradingAssignmentLog.class);
