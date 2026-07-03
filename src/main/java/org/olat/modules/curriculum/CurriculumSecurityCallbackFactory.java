@@ -259,5 +259,10 @@ public class CurriculumSecurityCallbackFactory {
 		public boolean canManageToDos(CurriculumElement element) {
 			return canEditCurriculumElement(element);
 		}
+
+		@Override
+		public boolean canViewRooms() {
+			return admin || principal || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
+		}
 	}
 }

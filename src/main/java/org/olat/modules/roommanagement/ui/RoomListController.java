@@ -128,6 +128,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private FlexiFiltersTab tabDeleted;
 
 	private final Roles roles;
+	private final boolean readOnly;
 	private final BreadcrumbedStackedPanel stackPanel;
 
 	@Autowired
@@ -140,10 +141,15 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private ColorService colorService;
 
 	public RoomListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel) {
+		this(ureq, wControl, stackPanel, false);
+	}
+
+	public RoomListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, boolean readOnly) {
 		super(ureq, wControl, "rooms_admin");
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale(), getTranslator()));
 		roles = ureq.getUserSession().getRoles();
 		this.stackPanel = stackPanel;
+		this.readOnly = readOnly;
 		initForm(ureq);
 		loadModel();
 	}
@@ -152,6 +158,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		createRoomButton = uifactory.addFormLink("create", formLayout, Link.BUTTON);
 		createRoomButton.setIconLeftCSS("o_icon o_icon_add");
+		createRoomButton.setVisible(!readOnly);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
@@ -170,7 +177,9 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		DefaultFlexiColumnModel calendarIconCol = new DefaultFlexiColumnModel(RoomCols.calendarIcon);
 		calendarIconCol.setIconHeader(RoomCols.calendarIcon.iconHeader());
 		columnsModel.addFlexiColumnModel(calendarIconCol);
-		columnsModel.addFlexiColumnModel(new ActionsColumnModel(RoomCols.tools));
+		if (!readOnly) {
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(RoomCols.tools));
+		}
 
 		dataModel = new RoomListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "rooms", dataModel, 20, false,

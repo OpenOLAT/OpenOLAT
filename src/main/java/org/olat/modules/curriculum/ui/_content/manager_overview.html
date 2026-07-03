@@ -40,11 +40,16 @@ $r.render("searchField")
 	</fieldset>
 	#end
 
-	#if($r.visible("certification.programs"))
+	#if($r.visible("certification.programs") || $r.visible("curriculum.rooms"))
 	<fieldset>
 		<legend>$r.translate("curriculum.tools.title")</legend>
 		<ul class="o_mega_buttons">
-			<li>$r.render("certification.programs")</li>
+			#if($r.visible("certification.programs"))
+				<li>$r.render("certification.programs")</li>
+			#end
+			#if($r.visible("curriculum.rooms"))
+				<li>$r.render("curriculum.rooms")</li>
+			#end
 		</ul>
 	</fieldset>
 	#end

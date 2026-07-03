@@ -99,4 +99,6 @@ public interface CurriculumSecurityCallback {
 
 	boolean canManageToDos(CurriculumElement element);
 
+	boolean canViewRooms();
+
 }

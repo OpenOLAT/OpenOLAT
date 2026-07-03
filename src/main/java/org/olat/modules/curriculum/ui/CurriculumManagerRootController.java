@@ -69,6 +69,8 @@ import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.olat.modules.roommanagement.ui.CplRoomManagementController;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +86,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private final Link importButton;
 	private final Link todosLink;
 	private final Link reportsLink;
+	private final Link roomsLink;
 	private final Link curriculumsLink;
 	private final Link lecturesBlocksLink;
 	private final Link implementationsLink;
@@ -103,6 +106,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private CurriculumSearchManagerController searchCtrl;
 	private CurriculumComposerController implementationsCtrl;
 	private CurriculumListManagerController curriculumListCtrl;
+	private CplRoomManagementController roomManagementCtrl;
 	private final CurriculumSearchHeaderController searchFieldCtrl;
 	private CurriculumLectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	private CurriculumManagerToDoTasksWidgetController toDoTasksWidgetCtrl;
@@ -117,6 +121,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private CurriculumService curriculumService;
 	@Autowired
 	private CertificationModule certificationProgramModule;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
 	
 	public CurriculumManagerRootController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback,
@@ -173,7 +179,12 @@ public class CurriculumManagerRootController extends BasicController implements 
 		certificationProgramsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_certificate");
 		certificationProgramsLink.setElementCssClass("btn btn-default o_button_mega o_sel_certification_programs");
 		certificationProgramsLink.setVisible(certificationProgramModule.isEnabled() && certificationSecCallback.canViewCertificationPrograms());
-		
+
+		roomsLink = LinkFactory.createLink("curriculum.rooms", "rooms", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		roomsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_room_management");
+		roomsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_rooms");
+		roomsLink.setVisible(roomManagementModule.isEnabled() && secCallback.canViewRooms());
+
 		initDashboard(ureq);
 		putInitialPanel(mainVC);
 	}
@@ -243,6 +254,9 @@ public class CurriculumManagerRootController extends BasicController implements 
 		} else if("Certification".equalsIgnoreCase(type) && certificationProgramsLink.isVisible()) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenCertificationPrograms(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("RoomManagement".equalsIgnoreCase(type) && roomsLink.isVisible()) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenRoomManagement(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
 	}
 
@@ -286,6 +300,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 		} else if(source == certificationProgramsLink) {
 			List<ContextEntry> active = BusinessControlFactory.getInstance().createCEListFromString("[Active:0]");
 			doOpenCertificationPrograms(ureq).activate(ureq, active, null);
+		} else if(source == roomsLink) {
+			doOpenRoomManagement(ureq);
 		} else if(source == importButton) {
 			doImportCurriculums(ureq);
 		}
@@ -410,6 +426,17 @@ public class CurriculumManagerRootController extends BasicController implements 
 		return certificationProgramListCtrl;
 	}
 	
+	private CplRoomManagementController doOpenRoomManagement(UserRequest ureq) {
+		toolbarPanel.popUpToRootController(ureq);
+		removeAsListenerAndDispose(roomManagementCtrl);
+
+		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("RoomManagement", 0L), null);
+		roomManagementCtrl = new CplRoomManagementController(ureq, subControl);
+		listenTo(roomManagementCtrl);
+		toolbarPanel.pushController(translate("curriculum.rooms"), roomManagementCtrl);
+		return roomManagementCtrl;
+	}
+
 	private void doImportCurriculums(UserRequest ureq) {
 		removeAsListenerAndDispose(importCurriculumsCtrl);
 
