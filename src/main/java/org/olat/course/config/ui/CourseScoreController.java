@@ -260,18 +260,18 @@ public class CourseScoreController extends FormBasicController {
 			} else {
 				gradeEnableEl.toggleOff();
 			}
-
+			
+			SelectionValues autoSV = new SelectionValues();
+			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
+			gradeAutoEl = uifactory.addCardSingleSelectHorizontal("node.grade.auto", settingsCont, autoSV.keys(), autoSV.values(), autoSV.descriptions(), autoSV.icons());
+			gradeAutoEl.select(gradeAutoEl.getKey(0), true);
+			gradeAutoEl.setEnabled(false);
+			
 			gradeScale = gradeService.getGradeScale(courseEntry, rootNodeIdent);
 			gradeScaleCont = FormLayoutContainer.createInputGroupLayout("gradeScaleCont", getTranslator(), null, null);
 			gradeScaleCont.setLabel("grade.scale", null);
 			gradeScaleCont.setRootForm(mainForm);
 			settingsCont.add(gradeScaleCont);
-			
-			SelectionValues autoSV = new SelectionValues();
-			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
-			gradeAutoEl = uifactory.addCardSingleSelectHorizontal("node.grade.auto", gradeScaleCont, autoSV.keys(), autoSV.values(), autoSV.descriptions(), autoSV.icons());
-			gradeAutoEl.select(gradeAutoEl.getKey(0), true);
-			gradeAutoEl.setEnabled(false);
 			
 			gradeScaleEl = uifactory.addTextElement("grade.scale.display", null, 255, "", gradeScaleCont);
 			gradeScaleEl.setDomReplacementWrapperRequired(false);
@@ -437,6 +437,11 @@ public class CourseScoreController extends FormBasicController {
 		}
 
 		boolean gradeEnabled = gradeEnableEl != null && gradeEnableEl.isOn();
+		
+		if (gradeAutoEl != null) {
+			gradeAutoEl.setVisible(gradeEnabled);
+		}
+		
 		if (gradeScaleCont != null) {
 			String gradeScaleText = gradeScale == null
 					? translate("node.grade.scale.not.available")
