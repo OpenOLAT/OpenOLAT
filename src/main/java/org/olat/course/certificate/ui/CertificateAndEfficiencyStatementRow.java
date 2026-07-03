@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
-import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer.CompletionPassed;
@@ -44,6 +43,9 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 	private Float score = 0f;
 	private Float scoreMax;
 	private String grade;
+	private String gradeSystemIdent;
+	private String performanceClassIdent;
+	private String reference;
 	private Boolean passed;
 	private Date lastModified;
 	private String displayName;
@@ -63,7 +65,6 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 	
 	private boolean hasChildren;
 	private boolean isCurriculumElement;
-	private boolean holdsScore = true;
 	private boolean isStatement = false;
 	private boolean hasStatementChildren = false;
 	
@@ -87,22 +88,20 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 
 	public String getScore() {
 		String returnScore = "";
-		
-		if (holdsScore) {
-			if (score != null) {
-				returnScore += AssessmentHelper.getRoundedScore(score).toString();
-			}
-			
-			if (scoreMax != null) {
-				if (score == null) {
-					returnScore += "0";
-				}
-				
-				returnScore += " / ";
-				returnScore += AssessmentHelper.getRoundedScore(scoreMax).toString();
-			}
+
+		if (score != null) {
+			returnScore += AssessmentHelper.getRoundedScore(score).toString();
 		}
-		
+
+		if (scoreMax != null) {
+			if (score == null) {
+				returnScore += "0";
+			}
+
+			returnScore += " / ";
+			returnScore += AssessmentHelper.getRoundedScore(scoreMax).toString();
+		}
+
 		return returnScore;
 	}
 
@@ -111,20 +110,20 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 	}
 	
 	public void addToScore(Float maxScore, Float scoreToAdd, Long statementKey) {
-		if (holdsScore && !addedToScoresIds.contains(statementKey)) {
+		if (!addedToScoresIds.contains(statementKey)) {
 			if (scoreMax == null) {
 				scoreMax = maxScore;
 			} else if (maxScore != null) {
 				scoreMax += maxScore;
 			}
-			
+
 			if (scoreToAdd != null) {
 				this.score += scoreToAdd;
 			}
-			
+
 			addedToScoresIds.add(statementKey);
 		}
-		
+
 		if (parent != null) {
 			parent.addToScore(maxScore, scoreToAdd, statementKey);
 		}
@@ -136,6 +135,30 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 
 	public void setGrade(String grade) {
 		this.grade = grade;
+	}
+
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
+	}
+
+	public void setGradeSystemIdent(String gradeSystemIdent) {
+		this.gradeSystemIdent = gradeSystemIdent;
+	}
+
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
+	public void setPerformanceClassIdent(String performanceClassIdent) {
+		this.performanceClassIdent = performanceClassIdent;
+	}
+
+	public String getReference() {
+		return reference;
+	}
+
+	public void setReference(String reference) {
+		this.reference = reference;
 	}
 
 	@Override
@@ -224,10 +247,6 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 		return taxonomyLevel != null;
 	}
 	
-	public void setHoldsScore(boolean holdsScore) {
-		this.holdsScore = holdsScore;
-	}
-	
 	public Curriculum getCurriculum() {
 		return curriculum;
 	}
@@ -286,18 +305,6 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 	
 	public void setIsCurriculumElement(boolean isCurriculumElement) {
 		this.isCurriculumElement = isCurriculumElement;
-	}
-	
-	public String getCurriculumElementIdentifier() {
-		String ident = "";
-		
-		if (isCurriculumElement) {
-			if (curriculumElement != null && StringHelper.containsNonWhitespace(curriculumElement.getIdentifier())) {
-				ident = curriculumElement.getIdentifier();
-			}
-		}
-		
-		return ident;
 	}
 	
 	public FormLink getToolsLink() {

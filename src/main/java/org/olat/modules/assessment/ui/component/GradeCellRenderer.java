@@ -29,6 +29,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementRow;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.grade.ui.GradeUIFactory;
@@ -59,6 +60,9 @@ public class GradeCellRenderer extends PassedDependentRenderer implements FlexiC
 		} else if (cellValue instanceof EfficiencyStatementEntry) {
 			EfficiencyStatementEntry assessmentRow = (EfficiencyStatementEntry)cellValue;
 			appendGrade(target, assessmentRow.getPerformanceClassIdent(), assessmentRow.getGrade(), assessmentRow.getPassed(), assessmentRow.getGradeSystemIdent());
+		} else if (cellValue instanceof CertificateAndEfficiencyStatementRow) {
+			CertificateAndEfficiencyStatementRow statementRow = (CertificateAndEfficiencyStatementRow)cellValue;
+			appendGrade(target, statementRow.getPerformanceClassIdent(), statementRow.getGrade(), statementRow.getPassed(), statementRow.getGradeSystemIdent());
 		}
 	}
 

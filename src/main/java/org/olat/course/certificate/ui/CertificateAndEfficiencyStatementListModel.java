@@ -81,12 +81,12 @@ public class CertificateAndEfficiencyStatementListModel
 		switch (COLS[col]) {
 			case displayName:
 				return getDisplayName(statement);
-			case curriculumElIdent:
-				return statement.getCurriculumElementIdentifier();
+			case reference:
+				return statement.getReference();
 			case score:
 				return statement.getScore();
 			case grade:
-				return statement.getGrade();
+				return statement;
 			case passed:
 				return statement.getPassed();
 			case completion:
@@ -160,9 +160,9 @@ public class CertificateAndEfficiencyStatementListModel
 	public enum Cols implements FlexiSortableColumnDef {
 
 		displayName("table.header.title", true),
-		curriculumElIdent("table.header.curriculum.element", true),
+		reference("table.header.externalref", true),
 		score("table.header.score", true),
-		grade("grade.system.labels.fallback", true),
+		grade("grade.system.label.fallback", true),
 		passed("table.header.passed", true), 
 		completion("table.header.learning.progress", true),
 		lastModified("table.header.lastScoreDate", true), 

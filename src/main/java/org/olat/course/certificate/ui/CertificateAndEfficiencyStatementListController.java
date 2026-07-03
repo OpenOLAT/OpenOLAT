@@ -90,6 +90,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.Cols;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ui.component.GradeCellRenderer;
 import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -98,6 +99,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
@@ -174,6 +176,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
 	private BaseSecurityManager baseSecurityManager;
 	@Autowired
 	private CurriculumService curriculumService;
@@ -201,9 +205,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		this.assessedIdentity = assessedIdentity;
 		this.linkToCoachingTool = linkToCoachingTool;
 		this.canLaunchCourse = canLaunchCourse;
-
-		// Show heading
-		flc.contextPut("showHeading", true);
 		
 		initForm(ureq);
 		activateFilterAndLoadModel(null);
@@ -214,16 +215,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse, boolean showHeading) {
 		this(ureq, wControl, assessedIdentity, linkToCoachingTool, canModify, canLaunchCourse);
-
-		// Set visibility of heading
-		flc.contextPut("showHeading", showHeading);
-	}
-	
-	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean withFieldSet) {
-		this(ureq, wControl, assessedIdentity, false, false, true);
-		
-		// Show different header in user management
-		flc.contextPut("withFieldSet", withFieldSet);
 	}
 	
 	@Override
@@ -301,10 +292,13 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName, treeRenderer));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.curriculumElIdent));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.reference));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.completion,
 				new CompletionCellRenderer(getTranslator())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));
+		if (gradeModule.isEnabled()) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.grade, new GradeCellRenderer(getLocale())));
+		}
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed,
 				new CertificateAndEfficiencyPassedCellRenderer(getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified));
@@ -335,6 +329,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.withMessageI18nKey("table.statements.empty")
 				.withIconCss("o_icon_statement")
 				.build());
+		tableEl.setAndLoadPersistedPreferences(ureq, "cert.efficiency.statement.list-v1");
 	}
 	
 	private void loadModel() {
@@ -519,14 +514,18 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableEl.reset(true, true, true);
 	}
 	
-	private void forgeStatementRows(CurriculumElementRepositoryEntryViews element, 
-			CertificateAndEfficiencyStatementRow parentRow, 
-			Map<Long, UserEfficiencyStatementLight> olatResourceKeyToStatement, 
+	private void forgeStatementRows(CurriculumElementRepositoryEntryViews element,
+			CertificateAndEfficiencyStatementRow parentRow,
+			Map<Long, UserEfficiencyStatementLight> olatResourceKeyToStatement,
 			Map<Long, CertificateLight> olatResourceKeyToCertificate,
 			List<RepositoryEntryMyView> courseEntryKeyToDisplayName,
 			List<CertificateAndEfficiencyStatementRow> tableRows) {
 		Set<UserEfficiencyStatementLight> efficiencyStatements = new HashSet<>();
-		
+
+		Map<Long, String> resourceKeyToReference = element.getEntries().stream()
+				.filter(e -> StringHelper.containsNonWhitespace(e.getExternalRef()))
+				.collect(Collectors.toMap(e -> e.getOlatResource().getKey(), RepositoryEntryMyView::getExternalRef));
+
 		for (RepositoryEntryMyView repoEl : element.getEntries()) {
 			UserEfficiencyStatementLight efficiencyStatement = olatResourceKeyToStatement.get(repoEl.getOlatResource().getKey());
 			
@@ -552,9 +551,12 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				statementRow.setLastUserModified(efficiencyStatement.getLastUserModified());
 				statementRow.setCourseRepoKey(efficiencyStatement.getCourseRepoKey());
 				statementRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getResourceKey()));
-				
+				statementRow.setReference(resourceKeyToReference.get(efficiencyStatement.getResourceKey()));
+				statementRow.setGrade(efficiencyStatement.getGrade());
+				statementRow.setGradeSystemIdent(efficiencyStatement.getGradeSystemIdent());
+				statementRow.setPerformanceClassIdent(efficiencyStatement.getPerformanceClassIdent());
 				statementRow.setStatement(true);
-				
+
 				tableRows.add(statementRow);
 			}
 		} else if (efficiencyStatements.size() == 1) {
@@ -566,7 +568,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				parentRow.setLastUserModified(efficiencyStatement.getLastUserModified());
 				parentRow.setCourseRepoKey(efficiencyStatement.getCourseRepoKey());
 				parentRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getResourceKey()));
-				
+				parentRow.setReference(resourceKeyToReference.get(efficiencyStatement.getResourceKey()));
+				parentRow.setGrade(efficiencyStatement.getGrade());
+				parentRow.setGradeSystemIdent(efficiencyStatement.getGradeSystemIdent());
+				parentRow.setPerformanceClassIdent(efficiencyStatement.getPerformanceClassIdent());
 				parentRow.setStatement(true);
 			}
 		}
@@ -588,7 +593,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		statement.setDisplayName(curriculumElement.getDisplayName());
 		statement.setCurriculumElement(curriculumElement);
 		statement.setCurriculum(curriculumElement.getCurriculum());
-		
+		if (StringHelper.containsNonWhitespace(curriculumElement.getIdentifier())) {
+			statement.setReference(curriculumElement.getIdentifier());
+		}
 		return statement;
 	}
 	
@@ -604,9 +611,12 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.map(UserEfficiencyStatementLight::getCourseRepoKey)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
-		Map<Long, String> courseEntryKeyToDisplayName = repositoryManager.lookupRepositoryEntries(courseEntryKeys)
-				.stream()
+		List<RepositoryEntry> courseEntries = repositoryManager.lookupRepositoryEntries(courseEntryKeys);
+		Map<Long, String> courseEntryKeyToDisplayName = courseEntries.stream()
 				.collect(Collectors.toMap(RepositoryEntry::getKey, RepositoryEntry::getDisplayname));
+		Map<Long, String> courseEntryKeyToReference = courseEntries.stream()
+				.filter(e -> StringHelper.containsNonWhitespace(e.getExternalRef()))
+				.collect(Collectors.toMap(RepositoryEntry::getKey, RepositoryEntry::getExternalRef));
 		Map<Long, Double> courseEntryKeysToCompletion = assessmentService
 				.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
 				.filter(ae -> ae.getCompletion() != null)
@@ -624,9 +634,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			wrapper.setPassed(efficiencyStatement.getPassed());
 			Float flatScore = efficiencyStatement.getWeightedScore() != null ? efficiencyStatement.getWeightedScore() : efficiencyStatement.getScore();
 			wrapper.setScore(flatScore);
-			wrapper.setGrade(GradeUIFactory.translatePerformanceClass(getTranslator(),
-					efficiencyStatement.getPerformanceClassIdent(), efficiencyStatement.getGrade(),
-					efficiencyStatement.getGradeSystemIdent()));
+			wrapper.setReference(courseEntryKeyToReference.get(efficiencyStatement.getCourseRepoKey()));
+			wrapper.setGrade(efficiencyStatement.getGrade());
+			wrapper.setGradeSystemIdent(efficiencyStatement.getGradeSystemIdent());
+			wrapper.setPerformanceClassIdent(efficiencyStatement.getPerformanceClassIdent());
 			wrapper.setEfficiencyStatementKey(efficiencyStatement.getKey());
 			wrapper.setResourceKey(efficiencyStatement.getResourceKey());
 			wrapper.setLastModified(efficiencyStatement.getLastModified());
