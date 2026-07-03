@@ -1,1 +1,26 @@
-$r.render("configurationTable")
+<fieldset>
+	<legend><h4 onclick="jQuery('#collapse_configuration_${r.getCId()}').collapse('toggle')" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
+		<i id="collapse_configuration_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($configurationOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $off_title
+	</h4></legend>
+	<div id="collapse_configuration_${r.getCId()}" class="collapse #if($configurationOpen) in #end">
+		#if($off_info)
+		<div class="clearfix">
+			<div class="o_hint">$off_info#if($r.isNotNull($off_info_help_url)) $r.contextHelpAdditionalInfo($off_info_help_url)#end</div>
+		</div>
+		#end
+		$r.render("configurationTable")
+	</div>
+<script>
+"use strict";
+jQuery(function() {
+	jQuery('#collapse_configuration_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_configuration_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.openFfXHREvent(false, false, true), "configurationOpen","false");
+	})
+	jQuery('#collapse_configuration_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_configuration_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.openFfXHREvent(false, false, true), "configurationOpen","true");
+	})
+});
+</script>
+</fieldset>

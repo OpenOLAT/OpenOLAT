@@ -23,14 +23,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.PList;
@@ -45,6 +48,8 @@ import org.w3c.dom.Node;
  *
  */
 public class SafeExamBrowserRawConfigurationController extends FormBasicController {
+
+	private Boolean configurationOpen = Boolean.FALSE;
 	
 	private FlexiTableElement tableEl;
 	private SafeExamBrowserRawConfigurationTableModel tableModel;
@@ -54,10 +59,14 @@ public class SafeExamBrowserRawConfigurationController extends FormBasicControll
 		
 		initForm(ureq);
 	}
+	
+	@Override
+	public void setFormTitle(String i18nKey) {
+		super.setFormTitle(i18nKey);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(KeyValueCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(KeyValueCols.value));
@@ -66,6 +75,10 @@ public class SafeExamBrowserRawConfigurationController extends FormBasicControll
 		tableEl = uifactory.addTableElement(getWindowControl(), "configurationTable", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setSortEnabled(false);
+		
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("configurationOpen", configurationOpen);
+		}
 	}
 	
 	protected void resetConfiguration() {
@@ -149,6 +162,18 @@ public class SafeExamBrowserRawConfigurationController extends FormBasicControll
 		}
 
 		return dict.isEmpty() ? "" : dict.toString();
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if ("ONCLICK".equals(event.getCommand())) {
+			String configurationOpenVal = ureq.getParameter("configurationOpen");
+			if (StringHelper.containsNonWhitespace(configurationOpenVal)) {
+				configurationOpen = Boolean.valueOf(configurationOpenVal);
+				flc.contextPut("configurationOpen", configurationOpen);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
