@@ -31,6 +31,7 @@
 			$r.render("lecture.location","vertical")
 		#end
 		$r.render("lecture.participants","vertical")
+		#if($r.available("lecture.absences"))$r.render("lecture.absences","vertical")#end
 		$r.render("lecture.compulsory","vertical")
 	</div>
 	<div class="o_metadata_horizontal">
@@ -109,15 +110,17 @@
 	</div>
 	#end
 	
-	$r.render("participantsGroupTable")
-	#if($r.available("lecture.preparation"))
-	<div class="o_lecture_descs">
-		$r.render("lecture.preparation","vertical")
-	</div>
-	#end
 	#if($r.available("lecture.desc"))
 	<div class="o_lecture_descs">
 		$r.render("lecture.desc","vertical")
 	</div>
 	#end
+
+	#if($r.available("lecture.preparation"))
+	<div class="o_lecture_descs">
+		$r.render("lecture.preparation","vertical")
+	</div>
+	#end
+
+	$r.render("participantsGroupTable")
 </div>

@@ -81,7 +81,9 @@ import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LectureBlockBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockRow;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureListDetailsParticipantsGroupDataModel.GroupCols;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.component.IconDecoratorCellRenderer;
@@ -239,7 +241,7 @@ public class LectureListDetailsController extends FormBasicController {
 			}
 			initFormSubjects(formLayout);
 			initFormTeachers(layoutCont, ureq);
-			initFormMetadata(formLayout);
+			initFormMetadata(formLayout, lectureBlock);
 			initFormParticipantsGroupTable(formLayout);
 			initRooms(layoutCont, lectureBlock);
 		}
@@ -362,7 +364,7 @@ public class LectureListDetailsController extends FormBasicController {
 		formLayout.contextPut("profilesIds", profilesIds);
 	}
 	
-	private void initFormMetadata(FormItemContainer formLayout) {	
+	private void initFormMetadata(FormItemContainer formLayout, LectureBlock lectureBlock) {	
 		Formatter formatter = Formatter.getInstance(getLocale());
 		Date startDate = row.getLectureBlock().getStartDate();
 		uifactory.addStaticTextElement("lecture.date", "lecture.date", formatter.formatDateWithDay(startDate), formLayout);
@@ -401,6 +403,15 @@ public class LectureListDetailsController extends FormBasicController {
 		
 		String compulsory  = row.getLectureBlock().isCompulsory() ? translate("yes") : translate("no");
 		uifactory.addStaticTextElement("lecture.compulsory", "lecture.compulsory", compulsory, formLayout);
+
+		LecturesBlockSearchParameters statsParams = new LecturesBlockSearchParameters();
+		statsParams.setLectureBlocks(List.of(lectureBlock));
+		List<LectureBlockBlockStatistics> statsList = lectureService.getLectureBlocksStatistics(statsParams);
+		if (!statsList.isEmpty()) {
+			int openAbsences = statsList.get(0).getNumOfAbsenceUnauthorized();
+			uifactory.addStaticTextElement("lecture.absences", "lecture.absences",
+					openAbsences + " " + translate("open"), formLayout);
+		}
 	}
 	
 	private void loadGroupsModel() {
