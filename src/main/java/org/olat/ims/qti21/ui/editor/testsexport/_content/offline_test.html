@@ -164,8 +164,8 @@
 		<div class="panel-heading">
 			<h4 class="panel-title">
 				<i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
-				<small>			
-				#if ($itemResult.hasMaxScore())
+				<small>
+				#if ($itemResult.hasMaxScore() && $r.isTrue($exportContext.maxScore))
 		    		#if ($itemResult.maxScore == "-1.0")
 		  				$r.translate("question.progress.noMaxScore")
 		    		#else
