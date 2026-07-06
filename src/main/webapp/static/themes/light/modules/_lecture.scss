@@ -237,6 +237,19 @@ tr.o_rm_room_preselected {
 	}
 }
 
+.o_lectures_list {
+	.o_scrollable {
+		container-type: inline-size;
+		container-name: o-lecture-list-container;
+	}
+}
+
+@container o-lecture-list-container {
+	.o_lecture_details {
+		max-width: max(calc(100cqi - 2 * 30px), $screen-sm); // align details width with container width (except for narrow screens)
+	}
+}
+
 .o_lecture_resources {
 	display: grid;
 	grid-template-columns: calc(33% - 10px) calc(33% - 10px) calc(34% - 20px);
@@ -244,8 +257,29 @@ tr.o_rm_room_preselected {
 	row-gap: 10px;
 	justify-items: stretch;
 	
-	label {
-		grid-column: 1 / -1;
+	&.o_lecture_teachers {
+		grid-template-columns: 1fr 1fr 1fr 1fr;
+		column-gap: 0;
+
+		label {
+			grid-column: 1 / -1;
+		}
+	}
+	
+	&.o_lecture_course_room {
+		grid-template-columns: calc(50% - 10px) calc(50% - 10px);
+		
+		.o_lecture_resource, .o_empty_panel {
+			height: 126px;
+		}
+	}
+	
+	&.o_lecture_rooms {
+		grid-template-columns: calc(50% - 10px) calc(50% - 10px);
+		
+		label {
+			grid-column: 1 / -1;
+		}
 	}
 	
 	.o_lecture_resource, .o_empty_panel, .o_user_info_profile {
@@ -253,34 +287,39 @@ tr.o_rm_room_preselected {
 	}
 	
 	.o_user_info_profile {
+		border: none;
 		background-color: #fff;
 		width: 100%;
 	}
 	
 	.o_empty_panel {
-		border: $o-user-info-border;
+		border: 1px solid $panel-default-border;
 	}
 	
-	label.o_lecture_course {
-		margin-top: 15px;
+	label {
+		&.o_lecture_course, &.o_lecture_room {
+			margin-top: 15px;
+		}
 	}
 	
 	.o_lecture_course_card {
 		display: grid;
-		grid-template-columns: 112px 1fr auto;
+		grid-template-columns: 150px 1fr auto;
 		gap: 10px;
-		padding: 5px;
-		border: $o-curriculum-widget-card-border;
-		border-radius: $o-curriculum-widget-card-border-radius;
+		padding: 12px;
+		border: 1px solid $panel-default-border;
+		border-radius: $border-radius-base;
 		background-color: #fff;
 		
 		.o_thumbnail, .o_visual_not_available {
-			width: 112px;
-			height: 75px;
+			width: 150px;
+			height: 100px;
+			border-radius: $border-radius-base;
+			overflow: hidden;
 			
 			img {
-				max-width: 112px;
-				max-height: 112px;
+				max-width: 150px;
+				max-height: 100px;
 			}
 		}
 		
@@ -292,8 +331,8 @@ tr.o_rm_room_preselected {
 		}
 		
 		.o_thumbnail_file_img {
-			width: 112px;
-			height: 75px;
+			width: 150px;
+			height: 100px;
 		
 			display: flex;
 			justify-content: center;
@@ -318,6 +357,32 @@ tr.o_rm_room_preselected {
 				order: 2;
 			}
 		}
+	}
+}
+
+@container o-lecture-details (max-width: 1120px) {
+	.o_lecture_resources.o_lecture_teachers {
+		grid-template-columns: 1fr 1fr 1fr;
+	}
+}
+
+@container o-lecture-details (max-width: 840px) {
+	.o_lecture_resources.o_lecture_teachers {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.o_lecture_resources.o_lecture_course_room {
+		grid-template-columns: 1fr;
+	}
+	
+	.o_lecture_resources.o_lecture_rooms {
+		grid-template-columns: 1fr;
+	}
+}
+
+@container o-lecture-details (max-width: 560px) {
+	.o_lecture_resources.o_lecture_teachers {
+		grid-template-columns: 1fr;
 	}
 }
 

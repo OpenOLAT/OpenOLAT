@@ -51,15 +51,19 @@
 		#end
 	</div>
 
-	<div class="o_lecture_resources">
+	<div class="o_lecture_resources o_lecture_teachers">
 		<label class="o_lecture_teachers">$r.translate("contact.teachers.list.name")</label>
 		#if($r.isNotEmpty($profilesIds))
 			#foreach($profileId in $profilesIds)
-				<div class="o_lecture_resource">$r.render($profileId)</div>
+				<div class="o_lecture_resource o_lecture_teacher">$r.render($profileId)</div>
 			#end
 		#end
+	</div>
+	
+	<div class="o_lecture_resources o_lecture_course_room">
 		#if($r.available("course.empty") || $r.available("entry.open"))
-			<label class="o_lecture_course">$r.translate("referenced.courses")</label>
+		<div class="o_lecture_label_and_resource">
+			<label class="o_lecture_course">$r.translate("lecture.course")</label>
 			<div class="o_lecture_resource">	
 			#if($r.visible("course.empty"))
 				$r.render("course.empty")
@@ -85,8 +89,25 @@
 				</div>
 			#end
 			</div>
+		</div>
+		#end
+		
+		#if($roomCardIds.size() == 1)
+		<div class="o_lecture_label_and_resource">
+			<label class="o_lecture_room">$r.translate("lecture.room")</label>
+			$r.render($roomCardIds[0])
+		</div>
 		#end
 	</div>
+	
+	#if($roomCardIds.size() > 1)
+	<div class="o_lecture_resources o_lecture_rooms">
+		<label class="o_lecture_room">$r.translate("lecture.rooms")</label>
+		#foreach($roomCardId in $roomCardIds)
+		$r.render($roomCardId)
+		#end
+	</div>
+	#end
 	
 	$r.render("participantsGroupTable")
 	#if($r.available("lecture.preparation"))

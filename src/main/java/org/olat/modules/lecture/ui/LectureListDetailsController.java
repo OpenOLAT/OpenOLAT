@@ -65,6 +65,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.member.component.DefaultElementCellRenderer;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -89,6 +90,10 @@ import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCell
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.ui.RoomUIHelper;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.RepositoryEntry;
@@ -153,11 +158,14 @@ public class LectureListDetailsController extends FormBasicController {
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired
+	private RoomManagementService roomManagementService;
 	
 	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row, Form rootForm,
 			LectureListRepositoryConfig config, boolean lectureManagementManaged, boolean inRepoEntry, boolean taxonomyEnabled,
 			LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "lecture_details_view", rootForm);
+		setTranslator(Util.createPackageTranslator(RoomUIHelper.class, ureq.getLocale(), getTranslator()));
 		this.row = row;
 		this.config = config;
 		this.secCallback = secCallback;
@@ -233,6 +241,7 @@ public class LectureListDetailsController extends FormBasicController {
 			initFormTeachers(layoutCont, ureq);
 			initFormMetadata(formLayout);
 			initFormParticipantsGroupTable(formLayout);
+			initRooms(layoutCont, lectureBlock);
 		}
 	}
 	
@@ -279,6 +288,23 @@ public class LectureListDetailsController extends FormBasicController {
 				formLayout.contextPut("entryExternalRef", repositoryEntry.getExternalRef());
 			}
 		}
+	}
+	
+	private void initRooms(FormLayoutContainer formLayout, LectureBlock lb) {
+		List<RoomBooking> bookings = roomManagementService.getBookings(lb);
+
+		List<String> roomCardIds = new ArrayList<>();
+
+		for (RoomBooking booking : bookings) {
+			Room room = booking.getRoom();
+			if (room == null) continue;
+
+			String cardId = RoomUIHelper.forgeRoomCard(formLayout, room, Util.getPackageVelocityRoot(RoomUIHelper.class), 
+					getTranslator());
+			roomCardIds.add(cardId);
+		}
+
+		formLayout.contextPut("roomCardIds", roomCardIds);
 	}
 	
 	private String getRepositoryEntryPath() {

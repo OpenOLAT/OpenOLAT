@@ -46,9 +46,9 @@ import org.olat.modules.roommanagement.RoomStatus;
  * Initial date: 19 Jun 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-class RoomUIHelper {
+public class RoomUIHelper {
 
-	static String forgeRoomCard(FormItemContainer formLayout, Room room, String velocityRoot, Translator translator) {
+	public static String forgeRoomCard(FormItemContainer formLayout, Room room, String velocityRoot, Translator translator) {
 		String cardId = "roomCard_" + room.getKey();
 		FormLayoutContainer cardCont = FormLayoutContainer.createCustomFormLayout(
 				cardId, translator, velocityRoot + "/room_card.html");
