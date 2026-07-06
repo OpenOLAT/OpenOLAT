@@ -1270,6 +1270,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_todo_priority_medium { @include o-add-icon('circle'); color: $brand-success;}
 .o_icon_todo_priority_low { @include o-add-icon('angle-double-down'); color: $brand-primary;}
 .o_icon_todo_date_range { @include o-add-icon('long-arrow-right');}
+.o_icon_todo_start { @include o-add-icon('circle-play');}
 
 /* Topic broker */
 .o_icon_topicbroker { @include o-add-icon('clipboard-list');}

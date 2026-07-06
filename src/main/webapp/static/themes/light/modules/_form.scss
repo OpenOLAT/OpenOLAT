@@ -1098,8 +1098,16 @@ legend.control-label {
 		.o_icon_toggle_check_off { @include o-add-icon('check');}
 	}
 	
+	&.o_toggle_off {
+		border-color: $brand-primary;
+		color: $brand-primary;
+	}
+
 	&:is(.o_table_flexi *) {
-		font-size: 15px;
+		height: 20px;
+		width: 20px;
+		border-radius: 20px;
+		font-size: 13px;
 	}
 }
 

@@ -64,7 +64,7 @@ import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.modules.todo.ui.ToDoDueCellRenderer;
 import org.olat.modules.todo.ui.ToDoDueDateCellRenderer;
 import org.olat.modules.todo.ui.ToDoPriorityCellRenderer;
-import org.olat.modules.todo.ui.ToDoStatusCellRenderer;
+import org.olat.modules.todo.ui.ToDoTaskStatusRenderer;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.modules.todo.ui.ToDoUIFactory.Due;
 import org.olat.user.PortraitSize;
@@ -125,7 +125,7 @@ public class CopyElementDetailsToDosController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyToDoCols.due,
 				new ToDoDueCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyToDoCols.status,
-				new ToDoStatusCellRenderer(getTranslator())));
+				new ToDoTaskStatusRenderer(getTranslator(), true)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyToDoCols.assigned));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyToDoCols.delegated));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyToDoCols.tags,

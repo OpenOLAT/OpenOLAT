@@ -87,12 +87,6 @@
 	@extend %o_todo_task_details_part;
 	
 	.o_todo_task_content {
-		display: grid;
-		grid-template-columns: 4fr 1fr;
-		gap: 30px;
-	}
-	.o_todo_content_left,
-	.o_todo_content_right {
 		@extend %o_todo_task_details_part;
 	}
 	
@@ -105,16 +99,32 @@
 			margin-right: auto;
 		}
 	}
+
+	.o_todo_title {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		column-gap: 20px;
+		.o_todo_title_labels {
+			display: flex;
+			gap: 8px;
+		}
+	}
 	
-	.o_todo_task_4_cols {
+
+	.o_todo_date_attributes {
 		display: grid;
-		grid-template-columns: 1fr 1fr 1fr 1fr;
-		gap: 10px;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		column-gap: 10px;
+		row-gap: 4px;
+		.o_todo_due_progress {
+			grid-column: 1 / -1;
+		}
+		&.o_todo_dates_1 .o_todo_due_progress { grid-column: 1 / span 1; }
+		&.o_todo_dates_2 .o_todo_due_progress { grid-column: 1 / span 2; }
+		&.o_todo_dates_3 .o_todo_due_progress { grid-column: 1 / span 3; }
 	}
-	
-	.o_todo_task_members_left {
-		display: none;
-	}
+
 	
 	.o_todo_start_date_wrapper {
 		display: flex;
@@ -123,27 +133,31 @@
 		}
 	}
 	
-	.o_todo_due_progress {
-		margin-top: -$o-todo-details-row-gap - 5px;;
-	}
+
 	
-	@container (max-width: 840px) {
-		.o_todo_task_content {
+
+	.o_todo_members {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 20px;
+		&.o_todo_members_1 {
 			grid-template-columns: 1fr;
 		}
-		.o_todo_content_right {
-			display: none;
-		}
-		.o_todo_task_members_left {
+		.o_todo_member_cards {
 			display: grid;
-			>div {
-				grid-column: span 2;
-			}
+			grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+			gap: 10px 20px;
 		}
 	}
 	@container (max-width: 640px) {
-		.o_todo_task_4_cols {
-			grid-template-columns: 1fr 1fr;
+		.o_todo_date_attributes {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			.o_todo_due_progress {
+				grid-column: 1 / -1;
+			}
+		}
+		.o_todo_members {
+			grid-template-columns: 1fr;
 		}
 	}
 }
@@ -164,4 +178,31 @@
 		color: $o-folder-label-new-bg-color;
 		margin-left: 5px;
 	}
+	&.o_todo_status_open        { @extend %o_labeled_light_blue; }
+	&.o_todo_status_in_progress { @extend %o_labeled_light_yellow; }
+	&.o_todo_status_done        { @extend %o_labeled_light_green; }
+	&.o_todo_status_deleted     { @extend %o_labeled_light_grey; }
+	&.o_todo_priority_urgent    { @extend %o_labeled_light_red; }
+	&.o_todo_priority_high      { @extend %o_labeled_light_orange; }
+	&.o_todo_priority_medium    { @extend %o_labeled_light_yellow; }
+	&.o_todo_priority_low       { @extend %o_labeled_light_blue; }
+}
+
+.o_labeled {
+	&.o_todo_status_open        { @extend %o_labeled_blue; }
+	&.o_todo_status_in_progress { @extend %o_labeled_yellow; }
+	&.o_todo_status_done        { @extend %o_labeled_green; }
+	&.o_todo_status_deleted     { @extend %o_labeled_grey; }
+	&.o_todo_priority_urgent    { @extend %o_labeled_red; }
+	&.o_todo_priority_high      { @extend %o_labeled_orange; }
+	&.o_todo_priority_medium    { @extend %o_labeled_yellow; }
+	&.o_todo_priority_low       { @extend %o_labeled_blue; }
+}
+
+// Override icon's own semantic color so it matches the label text color.
+.o_labeled[class*="o_todo_status_"] .o_icon,
+.o_labeled[class*="o_todo_priority_"] .o_icon,
+.o_labeled_light[class*="o_todo_status_"] .o_icon,
+.o_labeled_light[class*="o_todo_priority_"] .o_icon {
+	color: inherit;
 }

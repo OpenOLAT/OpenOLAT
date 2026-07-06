@@ -70,7 +70,7 @@ public class ToDoUIFactory {
 	
 	public final static String getIconCss(ToDoStatus status) {
 		if (status == null) return null;
-		
+
 		return switch (status) {
 		case open -> "o_icon_todo_status_open";
 		case inProgress -> "o_icon_todo_status_in_progress";
@@ -79,7 +79,31 @@ public class ToDoUIFactory {
 		default -> null;
 		};
 	}
+
+	public final static String getStatusLabelCssClass(ToDoStatus status) {
+		if (status == null) return null;
+
+		return switch (status) {
+		case open -> "o_todo_status_open";
+		case inProgress -> "o_todo_status_in_progress";
+		case done -> "o_todo_status_done";
+		case deleted -> "o_todo_status_deleted";
+		default -> null;
+		};
+	}
 	
+	public final static String getPriorityLabelCssClass(ToDoPriority priority) {
+		if (priority == null) return null;
+
+		return switch (priority) {
+		case urgent -> "o_todo_priority_urgent";
+		case high -> "o_todo_priority_high";
+		case medium -> "o_todo_priority_medium";
+		case low -> "o_todo_priority_low";
+		default -> null;
+		};
+	}
+
 	public static String getDisplayName(Translator translator, ToDoPriority priority) {
 		if (priority == null) return null;
 		

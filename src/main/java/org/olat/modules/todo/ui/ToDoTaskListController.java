@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -172,6 +173,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private ConfirmationController bulkDeleteConfirmationCtrl;
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private final Map<Long, FormBasicController> detailCtrls = new HashMap<>(3);
 
 	private final String createType;
 	private final Long createOriginId;
@@ -308,7 +310,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		addColumn(columnsModel, ToDoTaskCols.dueDate, new ToDoDueDateCellRenderer());
 		addColumn(columnsModel, ToDoTaskCols.due, new ToDoDueCellRenderer());
 		addColumn(columnsModel, ToDoTaskCols.doneDate);
-		addColumn(columnsModel, ToDoTaskCols.status, new ToDoStatusCellRenderer(getTranslator()));
+		addColumn(columnsModel, ToDoTaskCols.status, new ToDoTaskStatusRenderer(getTranslator(), true));
 		addColumn(columnsModel, ToDoTaskCols.contextType);
 		addColumn(columnsModel, ToDoTaskCols.contextTitle);
 		addColumn(columnsModel, ToDoTaskCols.contextSubTitle);
@@ -1138,7 +1140,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (event instanceof ToDoTaskEditEvent editEvent) {
+		if (event instanceof ToDoTaskStatusChangeEvent statusEvent) {
+			ToDoTaskRow row = dataModel.getObjectByKey(statusEvent.getToDoTask().getKey());
+			if (row != null) {
+				doSetStatus(ureq, row, statusEvent.getStatus());
+			}
+		} else if (event instanceof ToDoTaskEditEvent editEvent) {
 			doEditToDoTask(ureq, editEvent.getToDoTask());
 		} else if (source == toDoTaskEditWizardCtrl) {
 			if (event == Event.CANCELLED_EVENT) {
@@ -1351,10 +1358,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 		if (toToTaskDetailCtrl == null) {
 			return;
 		}
+		removeAsListenerAndDispose(detailCtrls.remove(row.getKey()));
 		listenTo(toToTaskDetailCtrl);
+		detailCtrls.put(row.getKey(), toToTaskDetailCtrl);
 		// Add as form item to catch the edit event...
 		flc.add(toToTaskDetailCtrl.getInitialFormItem());
-		
+
 		// ... and add the component to the details container.
 		String detailsComponentName = "details_" + counter++;
 		row.setDetailsComponentName(detailsComponentName);
@@ -1368,6 +1377,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			doShowDetails(ureq, row);
 		} else {
 			tableEl.collapseDetails(index);
+			removeAsListenerAndDispose(detailCtrls.remove(row.getKey()));
 		}
 		updateDetailsItemUI(row);
 	}

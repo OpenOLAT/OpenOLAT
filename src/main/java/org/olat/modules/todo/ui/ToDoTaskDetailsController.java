@@ -21,6 +21,7 @@ package org.olat.modules.todo.ui;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -50,12 +51,11 @@ import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoUIFactory.Due;
-import org.olat.user.PortraitSize;
+import org.olat.user.PortraitUser;
+import org.olat.user.UserInfoProfileConfig;
+import org.olat.user.UserInfoProfileController;
 import org.olat.user.UserManager;
-import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
-import org.olat.user.UsersPortraitsComponent;
-import org.olat.user.UsersPortraitsComponent.PortraitLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,6 +66,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ToDoTaskDetailsController extends FormBasicController {
 	
+	private FormLink startLink;
+	private FormLink doneLink;
 	private FormLink editLink;
 	
 	private final ToDoTaskSecurityCallback secCallback;
@@ -101,10 +103,8 @@ public class ToDoTaskDetailsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		flc.contextPut("title", ToDoUIFactory.getDisplayName(getTranslator(), toDoTask));
 		flc.contextPut("description", ToDoUIFactory.getDetailsDescription(toDoTask));
-		flc.contextPut("priorityIconCss", ToDoUIFactory.getIconCss(toDoTask.getPriority()));
-		flc.contextPut("priority", ToDoUIFactory.getDisplayName(getTranslator(), toDoTask.getPriority()));
-		flc.contextPut("statusIconCss", ToDoUIFactory.getIconCss(toDoTask.getStatus()));
-		flc.contextPut("status", ToDoUIFactory.getDisplayName(getTranslator(), toDoTask.getStatus()));
+		flc.contextPut("statusLabel", new ToDoTaskStatusRenderer(getTranslator(), false).render(getTranslator(), toDoTask.getStatus()));
+		flc.contextPut("priorityLabel", new ToDoTaskPriorityRenderer(getTranslator(), false).render(getTranslator(), toDoTask.getPriority()));
 		
 		String modifiedDate = Formatter.getInstance(getLocale()).formatDateRelative(toDoTask.getContentModifiedDate());
 		String modifiedBy;
@@ -114,48 +114,49 @@ public class ToDoTaskDetailsController extends FormBasicController {
 			modifiedBy = toDoService.getProvider(toDoTask.getType()).getModifiedBy(getLocale(), toDoTask);
 		}
 		String modified = translate("date.by", modifiedDate, modifiedBy);
-		flc.contextPut("modified", modified);
+		flc.contextPut("modified", translate("last.updated", modified));
 		
-		UsersPortraitsComponent assigneesCmp = UserPortraitFactory.createUsersPortraits(ureq, "assignees", flc.getFormItemComponent());
-		assigneesCmp.setAriaLabel(translate("task.assigned"));
-		assigneesCmp.setLPortraitLayout(PortraitLayout.verticalPortraitsDisplayName);
-		assigneesCmp.setSize(PortraitSize.small);
-		assigneesCmp.setUsers(userPortraitService.createPortraitUsers(getLocale(), List.copyOf(assignees)));
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
+		List<String> assigneeProfiles = forgeProfiles(ureq, profileConfig, assignees, "assignee");
+		flc.contextPut("assigneeProfiles", assigneeProfiles);
+		List<String> delegateeProfiles = forgeProfiles(ureq, profileConfig, delegatees, "delegatee");
+		flc.contextPut("delegateeProfiles", delegateeProfiles);
+		int memberColCount = (assigneeProfiles.isEmpty() ? 0 : 1) + (delegateeProfiles.isEmpty() ? 0 : 1);
+		flc.contextPut("memberColCount", Integer.valueOf(memberColCount));
 		
-		if (!delegatees.isEmpty()) {
-			UsersPortraitsComponent delegateesCmp = UserPortraitFactory.createUsersPortraits(ureq, "delegatees", flc.getFormItemComponent());
-			delegateesCmp.setAriaLabel(translate("task.delegated"));
-			delegateesCmp.setLPortraitLayout(PortraitLayout.verticalPortraitsDisplayName);
-			delegateesCmp.setSize(PortraitSize.small);
-			delegateesCmp.setUsers(userPortraitService.createPortraitUsers(getLocale(), List.copyOf(delegatees)));
+		boolean hasStartDate = toDoTask.getStartDate() != null;
+		boolean hasDueDate = toDoTask.getDueDate() != null;
+		if (hasStartDate) {
+			flc.contextPut("startDate", ToDoUIFactory.getDateOrAnytime(getTranslator(), toDoTask.getStartDate()));
 		}
-		
-		flc.contextPut("startDate", ToDoUIFactory.getDateOrAnytime(getTranslator(), toDoTask.getStartDate()));
-		flc.contextPut("dueDate", ToDoUIFactory.getDateOrAnytime(getTranslator(), toDoTask.getDueDate()));
-		Due due = ToDoUIFactory.getDue(getTranslator(), DateUtils.toLocalDate(toDoTask.getDueDate()), LocalDate.now(),
-				toDoTask.getStatus());
-		String dueName =  ToDoStatus.STATUS_OVERDUE.contains(toDoTask.getStatus())? due.name(): translate("task.success");
-		flc.contextPut("due", dueName);
+		if (hasDueDate) {
+			flc.contextPut("dueDate", ToDoUIFactory.getDateOrAnytime(getTranslator(), toDoTask.getDueDate()));
+			Due due = ToDoUIFactory.getDue(getTranslator(), DateUtils.toLocalDate(toDoTask.getDueDate()), LocalDate.now(), toDoTask.getStatus());
+			String dueName = ToDoStatus.STATUS_OVERDUE.contains(toDoTask.getStatus()) ? due.name() : translate("task.success");
+			flc.contextPut("due", dueName);
+		}
 		ToDoExpenditureOfWork expenditureOfWork = toDoService.getExpenditureOfWork(toDoTask.getExpenditureOfWork());
-		String expenditureOfWorkStr = ToDoUIFactory.formatLong(getTranslator(), expenditureOfWork);
-		flc.contextPut("expenditureOfWork", expenditureOfWorkStr);
-		
-		ProgressBar progressBar = new ProgressBar("date.progress");
-		flc.put("date.progress", progressBar);
-		progressBar.setLabelAlignment(LabelAlignment.none);
-		progressBar.setRenderSize(RenderSize.small);
-		progressBar.setWidthInPercent(true);
-		if (toDoTask.getDueDate() != null) {
+		if (expenditureOfWork != null) {
+			flc.contextPut("expenditureOfWork", ToDoUIFactory.formatLong(getTranslator(), expenditureOfWork));
+		}
+		int dateColCount = (hasStartDate ? 1 : 0) + (hasDueDate ? 2 : 0) + (expenditureOfWork != null ? 1 : 0);
+		flc.contextPut("dateColCount", Integer.valueOf(dateColCount));
+		boolean showDateRange = hasStartDate && hasDueDate;
+		flc.contextPut("showDateRange", Boolean.valueOf(showDateRange));
+
+		if (showDateRange) {
+			ProgressBar progressBar = new ProgressBar("date.progress");
+			flc.put("date.progress", progressBar);
+			progressBar.setLabelAlignment(LabelAlignment.none);
+			progressBar.setRenderSize(RenderSize.small);
+			progressBar.setWidthInPercent(true);
 			if (ChronoUnit.DAYS.between(LocalDate.now(), DateUtils.toLocalDate(toDoTask.getDueDate())) < 0) {
 				progressBar.setBarColor(BarColor.danger);
 				progressBar.setMax(100);
 				progressBar.setActual(100);
-			} else if (toDoTask.getStartDate() != null) {
+			} else {
 				progressBar.setMax(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getStartDate()), DateUtils.toLocalDate(toDoTask.getDueDate())));
 				progressBar.setActual(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getStartDate()), LocalDate.now()));
-			} else {
-				progressBar.setMax(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getCreationDate()), DateUtils.toLocalDate(toDoTask.getDueDate())));
-				progressBar.setActual(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getCreationDate()), LocalDate.now()));
 			}
 		}
 		
@@ -164,18 +165,50 @@ public class ToDoTaskDetailsController extends FormBasicController {
 		
 		boolean isCreator = creator != null && creator.getKey().equals(getIdentity().getKey());
 		if (secCallback.canEdit(toDoTask, isCreator, assignees.contains(getIdentity()), delegatees.contains(getIdentity()))) {
+			if (toDoTask.getStatus() == ToDoStatus.open) {
+				String startName = "task.start" + toDoTask.getKey();
+				flc.contextPut("startName", startName);
+				startLink = uifactory.addFormLink(startName, "start", "task.start", null, flc, Link.BUTTON_SMALL);
+				startLink.setIconLeftCSS("o_icon o_icon-lg o_icon_todo_start");
+				startLink.setTitle("task.start");
+				startLink.setGhost(true);
+			}
+			if (toDoTask.getStatus() == ToDoStatus.open || toDoTask.getStatus() == ToDoStatus.inProgress) {
+				String doneName = "task.mark.done" + toDoTask.getKey();
+				flc.contextPut("doneName", doneName);
+				doneLink = uifactory.addFormLink(doneName, "done", "task.mark.done", null, flc, Link.BUTTON_SMALL);
+				doneLink.setIconLeftCSS("o_icon o_icon-lg o_icon_check");
+				doneLink.setTitle("task.mark.done");
+			}
 			String name = "task.edit" + toDoTask.getKey();
 			flc.contextPut("editName", name);
-			editLink = uifactory.addFormLink(name, "task.edit", null, flc, Link.BUTTON);
-			editLink.setElementCssClass("o_todo_task_edit_button");
+			editLink = uifactory.addFormLink(name, "edit", null, flc, Link.BUTTON_SMALL);
 			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
 		}
+	}
+
+	private List<String> forgeProfiles(UserRequest ureq, UserInfoProfileConfig profileConfig, Set<Identity> identities, String prefix) {
+		List<String> names = new ArrayList<>(identities.size());
+		int count = 0;
+		for (Identity identity : identities) {
+			PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+			UserInfoProfileController profileCtrl = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, portraitUser);
+			listenTo(profileCtrl);
+			String name = prefix + "_" + toDoTask.getKey() + "_" + count++;
+			flc.put(name, profileCtrl.getInitialComponent());
+			names.add(name);
+		}
+		return names;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == editLink) {
 			fireEvent(ureq, new ToDoTaskEditEvent(toDoTask));
+		} else if (source == startLink) {
+			fireEvent(ureq, new ToDoTaskStatusChangeEvent(toDoTask, ToDoStatus.inProgress));
+		} else if (source == doneLink) {
+			fireEvent(ureq, new ToDoTaskStatusChangeEvent(toDoTask, ToDoStatus.done));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
