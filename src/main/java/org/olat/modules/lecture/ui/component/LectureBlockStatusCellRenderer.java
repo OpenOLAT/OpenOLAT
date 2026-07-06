@@ -67,6 +67,14 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 	}
 	
 	public static String getStatusLabelSolidWithIcon(LectureBlock block, boolean nextScheduled, Translator trans) {
+		return getStatusLabelWithIcon(block,nextScheduled, trans, "o_labeled");
+	}
+
+	public static String getStatusLabelWithIcon(LectureBlock block, boolean nextScheduled, Translator trans) {
+		return getStatusLabelWithIcon(block, nextScheduled, trans, "o_labeled_light");
+	}
+	
+	private static String getStatusLabelWithIcon(LectureBlock block, boolean nextScheduled, Translator trans, String cssClass) {
 		LectureBlockVirtualStatus vStatus = calculateStatus(block);
 		if (vStatus == null) return "";
 		String statusName = (nextScheduled && vStatus != LectureBlockVirtualStatus.RUNNING) ? "next" : vStatus.name().toLowerCase();
@@ -76,7 +84,7 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 			case DONE -> "o_icon_circle_check";
 			case CANCELLED -> "o_icon_cancelled";
 		};
-		return "<span class=\"o_labeled o_lecture_status_" + statusName
+		return "<span class=\"" + cssClass + " o_lecture_status_" + statusName
 				+ "\" title=\"" + trans.translate(statusName) + "\">"
 				+ "<i class=\"o_icon " + iconCss + " o_icon-fw\"> </i> "
 				+ trans.translate(statusName) + "</span>";

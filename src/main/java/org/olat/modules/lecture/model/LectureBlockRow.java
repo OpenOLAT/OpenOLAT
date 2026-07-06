@@ -167,12 +167,12 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	}
 	
 	public String getLectureBlockStatusBadge() {
-		return LectureBlockStatusCellRenderer.getStatusLabel(lectureBlock, isNextScheduled(), translator);
+		return LectureBlockStatusCellRenderer.getStatusLabelWithIcon(lectureBlock, isNextScheduled(), translator);
 	}
 	
 	public String getRollCallStatusBadge() {
 		return rollCallEnabled
-				? LectureBlockRollCallBasicStatusCellRenderer.getStatusLabel(lectureBlock, translator)
+				? LectureBlockRollCallBasicStatusCellRenderer.getStatusLabelWithIcon(lectureBlock, translator)
 				: "";
 	}
 	

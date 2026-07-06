@@ -65,6 +65,10 @@ public class LectureBlockRollCallBasicStatusCellRenderer implements FlexiCellRen
 	}
 
 	public static final String getStatusLabelSolidWithIcon(LectureBlock block, Translator trans) {
+		return getStatusLabelWithIcon(block, trans, "o_labeled");
+	}
+
+	public static final String getStatusLabelWithIcon(LectureBlock block, Translator trans, String cssClass) {
 		LectureRollCallStatus status = block.getRollCallStatus();
 		String statusName = status.name();
 		String iconCss = switch (status) {
@@ -74,10 +78,14 @@ public class LectureBlockRollCallBasicStatusCellRenderer implements FlexiCellRen
 			case autoclosed -> "o_icon_lecture_rollcall_autoclosed";
 		};
 		
-		return "<span class=\"o_labeled o_lecture_rollcall_status_" + statusName 
+		return "<span class=\"" + cssClass + " o_lecture_rollcall_status_" + statusName 
 				+ "\" title=\"" + trans.translate(statusName) + "\">" 
 				+ "<i class=\"o_icon " + iconCss + " o_icon-fw\"> </i> " 
 				+ trans.translate(statusName) + "</span>";
+	}
+
+	public static final String getStatusLabelWithIcon(LectureBlock block, Translator trans) {
+		return getStatusLabelWithIcon(block, trans, "o_labeled_light");
 	}
 	
 	public static final String getStatusString(LectureBlock block, Translator trans) {
