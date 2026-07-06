@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.ai.essay.AiOverloadedException;
 import org.olat.core.commons.services.ai.essay.AiRateLimitExceededException;
 import org.olat.core.commons.services.ai.essay.EssayAiGrading;
 import org.olat.core.commons.services.ai.essay.EssayAiGradingFileStore;
@@ -111,6 +112,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private static final int MAX_AI_GEN_POLL_ATTEMPTS = 90;
 	private Link aiGenerationPollLink;
 	private int aiGenerationPollAttempts = 0;
+	private boolean aiGenerationPollTimedOut = false;
 	/** Threshold (inclusive) above which an AI-graded essay counts as
 	 *  passed in the final quiz summary. Aligned with the assessment-bucket
 	 *  boundaries (50 = "mittelmässig" and above). */
@@ -231,14 +233,25 @@ public class QuizRunController extends BasicController implements PageRunElement
 			aiState = "failed";
 			displayTitle = rawTitle.substring(EssayGenerationQuizPartSinkImpl.FAILED_TITLE_MARKER.length()).trim();
 		}
+		if ("generating".equals(aiState) && aiGenerationPollTimedOut) {
+			// Client-side poll cap reached: render the stalled hint without the
+			// poll link so the JS interval self-clears. The job may still finish
+			// server-side; reloading the page resumes polling.
+			aiState = "stalled";
+		}
+		boolean aiBusy = "generating".equals(aiState) || "stalled".equals(aiState);
+		// A failed generation leaves the quiz without questions — starting it
+		// would be a silent no-op, so hide the button in that state.
+		boolean failedEmpty = "failed".equals(aiState)
+				&& quizPart.getSettings().getQuestions().isEmpty();
 		mainVC.contextPut("aiState", aiState);
 		mainVC.contextPut("title", displayTitle);
 		mainVC.contextPut("description", substituteVariables(quizPart.getSettings().getDescription()));
 		startButton = LinkFactory.createButton("quiz.start", mainVC, this);
 		startButton.setIconLeftCSS("o_icon o_icon-fw o_icon_play");
 		startButton.setPrimary(true);
-		startButton.setEnabled(!editable && !"generating".equals(aiState));
-		startButton.setVisible(!"generating".equals(aiState));
+		startButton.setEnabled(!editable && !aiBusy && !failedEmpty);
+		startButton.setVisible(!aiBusy && !failedEmpty);
 		startButton.setTitle("quiz.start");
 		startButton.setAriaLabel("quiz.start");
 		mainVC.put("quiz.start", startButton);
@@ -412,12 +425,14 @@ public class QuizRunController extends BasicController implements PageRunElement
 		String rawTitle = quizPart.getSettings().getTitle();
 		boolean stillGenerating = rawTitle != null
 				&& rawTitle.startsWith(EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER);
-		if (aiGenerationPollAttempts >= MAX_AI_GEN_POLL_ATTEMPTS && stillGenerating) {
-			QuizSettings settings = quizPart.getSettings();
-			settings.setTitle(EssayGenerationQuizPartSinkImpl.FAILED_TITLE_MARKER + " timeout");
-			stillGenerating = false;
-		}
-		if (stillGenerating) {
+		if (stillGenerating && aiGenerationPollAttempts >= MAX_AI_GEN_POLL_ATTEMPTS) {
+			// Client-side cap: stop polling but don't fake a failure — the job
+			// may legitimately still be running on the batch queue. The stalled
+			// state renders without the poll link, so the JS interval clears.
+			aiGenerationPollTimedOut = true;
+			updateUI(ureq);
+			mainVC.setDirty(true);
+		} else if (stillGenerating) {
 			// Suppress repaint — interval keeps firing on its own schedule.
 			mainVC.setDirty(false);
 		} else {
@@ -587,6 +602,10 @@ public class QuizRunController extends BasicController implements PageRunElement
 			aiCorrectionError = null;
 			logInfo("AI correction " + aiCorrectionKey
 					+ " submitted for assessmentItemIdentifier=" + currentQuizQuestion.getId());
+		} catch (AiOverloadedException ol) {
+			logInfo("Essay AI correction refused (overload): " + ol.getMessage());
+			aiCorrectionError = translate("ai.essay.correction.overloaded");
+			aiCorrectionVisible = false;
 		} catch (AiRateLimitExceededException rl) {
 			logInfo("Essay AI correction throttled: " + rl.getMessage());
 			aiCorrectionError = translate("ai.essay.feedback.error.ratelimit");

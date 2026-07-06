@@ -305,6 +305,13 @@ public class MarkdownImportController extends FormBasicController {
 					allOk = false;
 				}
 			}
+			// Require at least one question across the two legs (same rule
+			// as the question pool import dialog).
+			if (allOk && aiMcCountEl != null && aiEssayCountEl != null
+					&& totalAiQuestionCount(aiMcCountEl.getValue(), aiEssayCountEl.getValue()) <= 0) {
+				aiMcCountEl.setErrorKey("import.ai.generate.count.error.zero");
+				allOk = false;
+			}
 		}
 
 		return allOk;
@@ -321,6 +328,22 @@ public class MarkdownImportController extends FormBasicController {
 			return v >= MIN_AI_COUNT && v <= MAX_AI_COUNT;
 		} catch (NumberFormatException e) {
 			return false;
+		}
+	}
+
+	/** Sum of the two requested AI question counts; blank or unparsable legs count as zero. */
+	static int totalAiQuestionCount(String mcRaw, String essayRaw) {
+		return parseCountOrZero(mcRaw) + parseCountOrZero(essayRaw);
+	}
+
+	private static int parseCountOrZero(String raw) {
+		if (!StringHelper.containsNonWhitespace(raw)) {
+			return 0;
+		}
+		try {
+			return Integer.parseInt(raw.trim());
+		} catch (NumberFormatException e) {
+			return 0;
 		}
 	}
 

@@ -221,6 +221,27 @@ public class EssayFormativeFeedbackServiceStaticsTest {
 	// ---------------------------------------------------------------- sanitiseAnnotatedParagraphs — XSS
 
 	@Test
+	public void sanitiseAnnotatedParagraphs_apostrophesStayReadableInSpanTextAndComment() {
+		// Span text and comment are plain text by contract and are escaped at
+		// render time. The XSS filter entity-encodes apostrophes — without
+		// decoding, the learner reads literal &#39; in their own answer.
+		AnnotatedSpan span = new AnnotatedSpan("don't panic", MarkKind.CORRECT,
+				"well said, don't change it");
+		AnnotatedParagraph para = new AnnotatedParagraph(List.of(span), "ok");
+		List<AnnotatedParagraph> result = EssayFormativeFeedbackService.sanitiseAnnotatedParagraphs(List.of(para));
+		assertEquals("don't panic", result.get(0).spans().get(0).text());
+		assertEquals("well said, don't change it", result.get(0).spans().get(0).comment());
+	}
+
+	@Test
+	public void sanitiseAnnotatedParagraphs_filterEntitiesDecodedInSpanText() {
+		AnnotatedSpan span = new AnnotatedSpan("A & B = \"C\" + 'D'", MarkKind.NEUTRAL, null);
+		AnnotatedParagraph para = new AnnotatedParagraph(List.of(span), "");
+		List<AnnotatedParagraph> result = EssayFormativeFeedbackService.sanitiseAnnotatedParagraphs(List.of(para));
+		assertEquals("A & B = \"C\" + 'D'", result.get(0).spans().get(0).text());
+	}
+
+	@Test
 	public void sanitiseAnnotatedParagraphs_scriptTagStrippedFromSpanText() {
 		AnnotatedSpan span = new AnnotatedSpan(
 				"<script>alert('xss')</script>correct text", MarkKind.CORRECT, null);

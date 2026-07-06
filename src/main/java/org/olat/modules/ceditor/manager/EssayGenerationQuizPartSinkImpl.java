@@ -206,13 +206,35 @@ public class EssayGenerationQuizPartSinkImpl implements EssayGenerationQuizPartS
 			QuizPart quizPart = loadQuizPart(quizPartKey);
 			if (quizPart == null) return;
 			QuizSettings settings = quizPart.getSettings();
-			settings.setTitle(FAILED_TITLE_MARKER + " " + (reason == null ? "unknown" : reason));
+			settings.setTitle(failedTitle(settings.getTitle()));
 			quizPart.setSettings(settings);
 			pageService.updatePart(quizPart);
 			dbInstance.commit();
+			log.warn("AI question generation failed for QuizPart {} (page {}): {}",
+					quizPartKey, pageKey, reason);
 		} catch (Exception e) {
 			log.error("Marking QuizPart {} as failed raised an error", quizPartKey, e);
 		}
+	}
+
+	/**
+	 * Compose the persisted title for a failed generation: the failed marker
+	 * plus the original base title. The failure reason is deliberately NOT
+	 * part of the title — it is operator information (raw provider errors,
+	 * server config hints) and the title is rendered to learners. The run and
+	 * editor views translate the failed state from the marker alone.
+	 */
+	static String failedTitle(String currentTitle) {
+		String baseTitle = currentTitle;
+		if (baseTitle != null && baseTitle.startsWith(GENERATING_TITLE_MARKER)) {
+			baseTitle = baseTitle.substring(GENERATING_TITLE_MARKER.length()).trim();
+		} else if (baseTitle != null && baseTitle.startsWith(FAILED_TITLE_MARKER)) {
+			baseTitle = baseTitle.substring(FAILED_TITLE_MARKER.length()).trim();
+		}
+		if (baseTitle == null || baseTitle.isBlank()) {
+			return FAILED_TITLE_MARKER;
+		}
+		return FAILED_TITLE_MARKER + " " + baseTitle;
 	}
 
 	private QuizPart loadQuizPart(Long quizPartKey) {

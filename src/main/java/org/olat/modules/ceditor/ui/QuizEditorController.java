@@ -100,6 +100,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 	private static final int MAX_AI_GEN_POLL_ATTEMPTS = 90;
 	private FormLink aiGenerationPollLink;
 	private int aiGenerationPollAttempts = 0;
+	private boolean aiGenerationPollTimedOut = false;
 
 	private HeaderCommandsController commandsController;
 	private CloseableCalloutWindowController ccwc;
@@ -349,6 +350,12 @@ public class QuizEditorController extends FormBasicController implements PageEle
 			aiState = "failed";
 			displayTitle = rawTitle.substring(EssayGenerationQuizPartSinkImpl.FAILED_TITLE_MARKER.length()).trim();
 		}
+		if ("generating".equals(aiState) && aiGenerationPollTimedOut) {
+			// Client-side poll cap reached: render the stalled hint without the
+			// poll script so the timer is not re-armed. The job may still finish
+			// server-side; reopening the editor resumes polling.
+			aiState = "stalled";
+		}
 		flc.contextPut("aiState", aiState);
 		flc.contextPut("title", displayTitle);
 		flc.contextPut("aiGenerationWaitingLabel", translate("ai.generation.editor.waiting"));
@@ -369,7 +376,8 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		} else {
 			flc.contextPut("aiGenerationPollDelayMs", Integer.valueOf(0));
 		}
-		addQuestionButton.setEnabled(canAddQuestions() && !"generating".equals(aiState));
+		addQuestionButton.setEnabled(canAddQuestions()
+				&& !"generating".equals(aiState) && !"stalled".equals(aiState));
 	}
 
 	/** Poll tick — invoked by the hidden link clicked from a JS setTimeout
@@ -382,12 +390,10 @@ public class QuizEditorController extends FormBasicController implements PageEle
 			quizPart = fresh;
 		}
 		if (aiGenerationPollAttempts >= MAX_AI_GEN_POLL_ATTEMPTS) {
-			// Give up — the user can manually reload the page editor.
-			QuizSettings settings = quizPart.getSettings();
-			String title = settings.getTitle();
-			if (title != null && title.startsWith(EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER)) {
-				settings.setTitle(EssayGenerationQuizPartSinkImpl.FAILED_TITLE_MARKER + " timeout");
-			}
+			// Client-side cap: stop re-arming the poll timer but don't fake a
+			// failure — the job may still finish on the batch queue. Reopening
+			// the editor resumes polling.
+			aiGenerationPollTimedOut = true;
 		}
 		loadModel();
 		updateUI();

@@ -195,15 +195,11 @@ final class AiEssayFeedbackViewFlattener {
 				Map<String, Object> paraMap = new LinkedHashMap<>();
 				paraMap.put("feedback", nullToEmpty(ap.paragraphFeedback()));
 				List<Map<String, String>> spanMaps = new ArrayList<>();
-				// Decide once per paragraph whether the user's input was HTML.
-				// Per-span detection is unreliable because a tag can straddle
-				// the boundary between two annotated spans.
-				boolean paragraphIsHtml = isParagraphHtml(ap);
 				if (ap.spans() != null) {
 					for (AnnotatedSpan span : ap.spans()) {
 						if (span == null) continue;
 						Map<String, String> sm = new LinkedHashMap<>();
-						sm.put("text", renderSpanText(span.text(), paragraphIsHtml));
+						sm.put("text", renderSpanText(span.text()));
 						String kindStr = span.kind() == null ? MarkKind.NEUTRAL.name().toLowerCase()
 								: span.kind().name().toLowerCase();
 						sm.put("kind", kindStr);
@@ -239,38 +235,19 @@ final class AiEssayFeedbackViewFlattener {
 		return s == null ? "" : s;
 	}
 
-	/**
-	 * Returns {@code true} when the paragraph's concatenated span text
-	 * contains HTML markup. The check runs on the full paragraph (not on
-	 * each span) so a tag that straddles a span boundary is still detected.
-	 */
-	static boolean isParagraphHtml(AnnotatedParagraph ap) {
-		if (ap == null || ap.spans() == null) {
-			return false;
-		}
-		StringBuilder joined = new StringBuilder();
-		for (AnnotatedSpan span : ap.spans()) {
-			if (span == null) continue;
-			String t = span.text();
-			if (t != null) joined.append(t);
-		}
-		return StringHelper.isHtml(joined.toString());
-	}
 
 	/**
 	 * Produce the value pushed to the Velocity template under {@code "text"},
-	 * already-rendered HTML so the template can emit it raw. For HTML input
-	 * the original markup is preserved verbatim. For plain text the value is
-	 * HTML-escaped and {@code \n}/{@code \t} are converted to {@code <br>}
-	 * and four {@code &nbsp;} so the direct view reproduces the line breaks
-	 * and tabs the learner typed in the essay editor.
+	 * already-rendered HTML so the template can emit it raw. Span text is
+	 * plain text by the sanitisation contract and is ALWAYS HTML-escaped
+	 * here — never emitted verbatim, even if it looks like markup (the
+	 * learner may type tag-like text). {@code \n}/{@code \t} are converted
+	 * to {@code <br>} and four {@code &nbsp;} so the direct view reproduces
+	 * the line breaks and tabs the learner typed in the essay editor.
 	 */
-	static String renderSpanText(String text, boolean isHtml) {
+	static String renderSpanText(String text) {
 		if (text == null || text.isEmpty()) {
 			return "";
-		}
-		if (isHtml) {
-			return text;
 		}
 		String escaped = StringHelper.escapeHtml(text);
 		return escaped

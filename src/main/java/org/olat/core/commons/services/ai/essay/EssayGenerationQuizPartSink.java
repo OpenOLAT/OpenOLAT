@@ -85,6 +85,10 @@ public interface EssayGenerationQuizPartSink {
 	 * Mark the placeholder QuizPart as failed (e.g. render an error state).
 	 * Called when the generation job itself fails after the placeholder
 	 * has been created. Must not throw.
+	 *
+	 * @param reason operator-facing failure detail; implementations log it
+	 *               server-side but must never persist it into learner-visible
+	 *               fields (the UI renders a translated failed state instead)
 	 */
 	void markGenerationFailed(Long pageKey, Long quizPartKey, String reason);
 }

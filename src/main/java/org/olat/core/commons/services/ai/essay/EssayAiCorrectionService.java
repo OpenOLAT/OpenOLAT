@@ -28,6 +28,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.manager.AiTaskExecutorService;
 import org.olat.core.commons.services.ai.manager.AiUsageLogDAO;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -67,6 +68,13 @@ public class EssayAiCorrectionService implements UserDataDeletable {
 	private static final Logger log = Tracing.createLoggerFor(EssayAiCorrectionService.class);
 
 	private static final int ERROR_MESSAGE_MAX = 2000;
+	/**
+	 * Refuse new corrections once the interactive queue backlog exceeds this
+	 * multiple of the pool size. With the ~35s per-correction time bound and
+	 * the ~36s UI polling window, a task behind more than two full pool
+	 * rounds cannot deliver a result the learner will still see.
+	 */
+	private static final int OVERLOAD_QUEUE_FACTOR = 2;
 
 	@Autowired
 	private DB dbInstance;
@@ -84,6 +92,8 @@ public class EssayAiCorrectionService implements UserDataDeletable {
 	private AiModule aiModule;
 	@Autowired
 	private AiUsageLogDAO aiUsageLogDao;
+	@Autowired
+	private AiTaskExecutorService aiTaskExecutorService;
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
@@ -110,6 +120,7 @@ public class EssayAiCorrectionService implements UserDataDeletable {
 		if (identity == null) {
 			throw new IllegalArgumentException("identity must not be null");
 		}
+		assertQueueNotOverloaded(identity);
 		assertWithinRateLimit(identity);
 		EssayAiCorrection correction = correctionDao.create(storagePath, questionId, identity,
 				assessmentItemSessionKey, studentAnswer);
@@ -343,6 +354,28 @@ public class EssayAiCorrectionService implements UserDataDeletable {
 	 * therefore also count toward the budget; this is intentional (a tight
 	 * loop of failures is exactly what we want to throttle).
 	 */
+	/**
+	 * Fail fast before touching the database when the interactive AI queue
+	 * is too deep for this correction to start within the learner's polling
+	 * window. Runs before the rate-limit check so an overload refusal writes
+	 * no guard row against the learner's budget — high load is not their
+	 * fault.
+	 */
+	private void assertQueueNotOverloaded(Identity caller) {
+		AiTaskExecutorService.AiTaskQueueStats stats = aiTaskExecutorService.getInteractiveStats();
+		if (isQueueOverloaded(stats.waiting(), stats.poolSize())) {
+			log.info("Essay AI correction refused for identity {} — interactive queue overloaded (waiting={}, poolSize={})",
+					caller.getKey(), stats.waiting(), stats.poolSize());
+			throw new AiOverloadedException("AI interactive queue overloaded: waiting="
+					+ stats.waiting() + ", poolSize=" + stats.poolSize());
+		}
+	}
+
+	/** True when the backlog exceeds {@link #OVERLOAD_QUEUE_FACTOR} full pool rounds. */
+	static boolean isQueueOverloaded(int waiting, int poolSize) {
+		return waiting > OVERLOAD_QUEUE_FACTOR * poolSize;
+	}
+
 	private void assertWithinRateLimit(Identity caller) {
 		if (caller == null || caller.getKey() == null) {
 			return;

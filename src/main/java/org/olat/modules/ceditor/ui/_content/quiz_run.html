@@ -14,6 +14,10 @@
 					#parse("/org/olat/core/commons/services/ai/ui/_content/ai_pulse_icon.html")
 					#set( $aiPulseExtraClass = "" )
 				</div>
+			#elseif($aiState == "stalled")
+				<div class="o_ai_generation_stalled o_muted" role="status">$r.translate("ai.generation.stalled")</div>
+			#elseif($aiState == "failed")
+				<div class="o_ai_generation_failed o_warning" role="status">$r.translate("ai.generation.failed.run")</div>
 			#end
 			<div class="o_quiz_title">$r.escapeHtml($title)</div>
 			<div class="o_quiz_description">$r.escapeHtml($description)</div>
@@ -119,7 +123,10 @@
 								<div class="o_essay_ai_correction_assessment_label">$r.escapeHtml($aiCorrectionFeedback.assessmentLabel)</div>
 								#end
 								#if($hasOverall)
-								<p class="o_essay_ai_correction_overall_text">$r.escapeHtml($aiCorrectionFeedback.overallAssessment)</p>
+								## sanitised to safe HTML (em/strong/p/br whitelist) by
+							## EssayFormativeFeedbackService.sanitiseForStudent — render raw,
+							## escaping again would show the filter's entities literally
+							<p class="o_essay_ai_correction_overall_text">$aiCorrectionFeedback.overallAssessment</p>
 								#end
 								#if(($aiCorrectionFeedback.offTopicFlag && $aiCorrectionFeedback.offTopicFlag != "" && $aiCorrectionFeedback.offTopicFlag != "NONE") || ($aiCorrectionFeedback.confidence && $aiCorrectionFeedback.confidence != ""))
 								<div class="o_essay_ai_correction_assessment_meta">
@@ -186,13 +193,14 @@
 									<div class="o_item_content collapse" id="$r.getCId()_aa_detailed" aria-expanded="false">
 										<div class="o_text_block">
 											#if($hasWentWell)
-											<div class="o_essay_ai_correction_wentwell"><h5>$r.translate('ai.essay.correction.whatwentwell')</h5><p>$r.escapeHtml($fb.whatWentWell)</p></div>
+											## $fb.* fields are sanitised to safe HTML — render raw (see overallAssessment note)
+										<div class="o_essay_ai_correction_wentwell"><h5>$r.translate('ai.essay.correction.whatwentwell')</h5><p>$fb.whatWentWell</p></div>
 											#end
 											#if($hasMissing)
-											<div class="o_essay_ai_correction_missing"><h5>$r.translate('ai.essay.correction.whatismissing')</h5><p>$r.escapeHtml($fb.whatIsMissing)</p></div>
+											<div class="o_essay_ai_correction_missing"><h5>$r.translate('ai.essay.correction.whatismissing')</h5><p>$fb.whatIsMissing</p></div>
 											#end
 											#if($hasNextStep)
-											<div class="o_essay_ai_correction_nextstep"><h5>$r.translate('ai.essay.correction.nextstep')</h5><p>$r.escapeHtml($fb.nextStep)</p></div>
+											<div class="o_essay_ai_correction_nextstep"><h5>$r.translate('ai.essay.correction.nextstep')</h5><p>$fb.nextStep</p></div>
 											#end
 											#if($hasHit)
 											<div class="o_essay_ai_correction_keypoints_hit">

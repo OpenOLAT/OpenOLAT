@@ -35,6 +35,7 @@ import org.olat.core.commons.services.ai.manager.AiUsageLogDAO;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -451,7 +452,13 @@ public class EssayFormativeFeedbackService {
 		String xssClean = FilterFactory.getXSSFilter().filter(in);
 		if (xssClean == null) return "";
 		// Strip every tag (including allowed ones — these fields must be plain text)
-		return xssClean.replaceAll("(?is)<[^>]*>", "");
+		String noTags = xssClean.replaceAll("(?is)<[^>]*>", "");
+		// The XSS filter entity-encodes special characters (' " & + = …).
+		// These fields are plain text and get HTML-escaped again at render
+		// time — without decoding, the learner reads literal &#39; in the
+		// output. Decoding is safe ONLY because every consumer escapes:
+		// the flattener escapes span text, the template escapes the comment.
+		return StringHelper.unescapeHtml(noTags);
 	}
 
 	/**

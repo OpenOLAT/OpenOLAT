@@ -23,7 +23,14 @@
 			}, delay);
 		})();
 		</script>
+	#elseif($aiState == "stalled")
+		<div class="o_ai_generation_stalled o_muted" role="status" style="text-align:center; padding:1.5rem;">
+			$r.translate("ai.generation.stalled")
+		</div>
 	#else
+		#if($aiState == "failed")
+			<div class="o_ai_generation_failed o_warning" role="status">$r.translate("ai.generation.failed.editor")</div>
+		#end
 	<div class="o_quiz_questions">
 		$r.render("quiz.questions")
 	</div>

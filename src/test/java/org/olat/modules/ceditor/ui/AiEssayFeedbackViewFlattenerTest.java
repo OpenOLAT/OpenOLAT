@@ -413,86 +413,49 @@ public class AiEssayFeedbackViewFlattenerTest {
 		assertEquals("The student wrote this entire paragraph.", spans.get(0).get("text"));
 	}
 
-	// ---------------------------------------------------------------- renderSpanText / isParagraphHtml
+	// ---------------------------------------------------------------- renderSpanText
 
 	@Test
 	public void renderSpanText_nullReturnsEmpty() {
-		assertEquals("", AiEssayFeedbackViewFlattener.renderSpanText(null, false));
-		assertEquals("", AiEssayFeedbackViewFlattener.renderSpanText(null, true));
+		assertEquals("", AiEssayFeedbackViewFlattener.renderSpanText(null));
 	}
 
 	@Test
 	public void renderSpanText_emptyReturnsEmpty() {
-		assertEquals("", AiEssayFeedbackViewFlattener.renderSpanText("", false));
+		assertEquals("", AiEssayFeedbackViewFlattener.renderSpanText(""));
 	}
 
 	@Test
-	public void renderSpanText_plainTextConvertsNewlinesToBr() {
-		assertEquals("Line 1<br>Line 2", AiEssayFeedbackViewFlattener.renderSpanText("Line 1\nLine 2", false));
+	public void renderSpanText_convertsNewlinesToBr() {
+		assertEquals("Line 1<br>Line 2", AiEssayFeedbackViewFlattener.renderSpanText("Line 1\nLine 2"));
 	}
 
 	@Test
-	public void renderSpanText_plainTextConvertsTabsToFourNbsp() {
+	public void renderSpanText_convertsTabsToFourNbsp() {
 		assertEquals("Col1&nbsp;&nbsp;&nbsp;&nbsp;Col2",
-				AiEssayFeedbackViewFlattener.renderSpanText("Col1\tCol2", false));
+				AiEssayFeedbackViewFlattener.renderSpanText("Col1\tCol2"));
 	}
 
 	@Test
-	public void renderSpanText_plainTextNormalizesCrlfAndCr() {
-		assertEquals("a<br>b<br>c", AiEssayFeedbackViewFlattener.renderSpanText("a\r\nb\rc", false));
+	public void renderSpanText_normalizesCrlfAndCr() {
+		assertEquals("a<br>b<br>c", AiEssayFeedbackViewFlattener.renderSpanText("a\r\nb\rc"));
 	}
 
 	@Test
-	public void renderSpanText_plainTextEscapesHtmlChars() {
-		// HTML chars in plain text input must be escaped so they render as text,
+	public void renderSpanText_escapesHtmlChars() {
+		// HTML chars in span text must be escaped so they render as text,
 		// not be interpreted as markup by the browser.
 		assertEquals("&lt;b&gt;not bold&lt;/b&gt;",
-				AiEssayFeedbackViewFlattener.renderSpanText("<b>not bold</b>", false));
+				AiEssayFeedbackViewFlattener.renderSpanText("<b>not bold</b>"));
 	}
 
 	@Test
-	public void renderSpanText_htmlIsPassedThroughVerbatim() {
-		assertEquals("<b>bold</b> text",
-				AiEssayFeedbackViewFlattener.renderSpanText("<b>bold</b> text", true));
-	}
-
-	@Test
-	public void renderSpanText_htmlNewlinesAreNotConverted() {
-		// HTML input is trusted as-is — author already controls line breaks via <br> / <p>.
-		assertEquals("a\nb", AiEssayFeedbackViewFlattener.renderSpanText("a\nb", true));
-	}
-
-	@Test
-	public void isParagraphHtml_nullParagraph() {
-		assertFalse(AiEssayFeedbackViewFlattener.isParagraphHtml(null));
-	}
-
-	@Test
-	public void isParagraphHtml_plainTextSpans() {
-		AnnotatedParagraph ap = new AnnotatedParagraph(
-				List.of(new AnnotatedSpan("Hello\nworld", MarkKind.NEUTRAL, null)),
-				"");
-		assertFalse(AiEssayFeedbackViewFlattener.isParagraphHtml(ap));
-	}
-
-	@Test
-	public void isParagraphHtml_htmlSpans() {
-		AnnotatedParagraph ap = new AnnotatedParagraph(
-				List.of(new AnnotatedSpan("<p>Hello world</p>", MarkKind.NEUTRAL, null)),
-				"");
-		assertTrue(AiEssayFeedbackViewFlattener.isParagraphHtml(ap));
-	}
-
-	@Test
-	public void isParagraphHtml_tagAcrossSpanBoundary() {
-		// A tag straddling the boundary between two spans must still be detected
-		// as HTML — that is the reason detection runs on the concatenated paragraph.
-		AnnotatedParagraph ap = new AnnotatedParagraph(
-				List.of(
-						new AnnotatedSpan("Hello <stro", MarkKind.NEUTRAL, null),
-						new AnnotatedSpan("ng>world</strong>", MarkKind.NEUTRAL, null)),
-				"");
-		assertTrue(AiEssayFeedbackViewFlattener.isParagraphHtml(ap));
+	public void renderSpanText_htmlLookingTextIsEscapedNotEmittedVerbatim() {
+		// Span text is plain text by the sanitisation contract. After entity
+		// decoding, learner-typed text can look like markup — it must always
+		// be escaped, never emitted verbatim (XSS).
+		assertEquals("&lt;b&gt;bold&lt;/b&gt; text",
+				AiEssayFeedbackViewFlattener.renderSpanText("<b>bold</b> text"));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -515,7 +478,10 @@ public class AiEssayFeedbackViewFlattenerTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void flatten_htmlSpansAreNotEscapedAndNotConverted() {
+	public void flatten_htmlLookingSpansAreEscaped() {
+		// Span text is plain text by the sanitisation contract; tag-like text
+		// (possible after entity decoding of learner input) must be escaped,
+		// never emitted verbatim into the template.
 		AnnotatedParagraph ap = new AnnotatedParagraph(
 				List.of(new AnnotatedSpan("<p>Hello <b>world</b></p>", MarkKind.NEUTRAL, null)),
 				"");
@@ -528,7 +494,7 @@ public class AiEssayFeedbackViewFlattenerTest {
 		Map<String, Object> v = AiEssayFeedbackViewFlattener.flatten(fb, null);
 		List<Map<String, Object>> paras = (List<Map<String, Object>>) v.get("annotatedParagraphs");
 		List<Map<String, String>> spans = (List<Map<String, String>>) paras.get(0).get("spans");
-		assertEquals("<p>Hello <b>world</b></p>", spans.get(0).get("text"));
+		assertEquals("&lt;p&gt;Hello &lt;b&gt;world&lt;/b&gt;&lt;/p&gt;", spans.get(0).get("text"));
 	}
 
 	// ---------------------------------------------------------------- helpers
