@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
@@ -42,6 +43,7 @@ import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
 import org.olat.modules.certificationprogram.CertificationRoles;
 import org.olat.modules.certificationprogram.RecertificationMode;
 import org.olat.modules.certificationprogram.model.CertificationProgramActiveMemberStatistics;
+import org.olat.modules.certificationprogram.model.CertificationProgramCounterImpl;
 import org.olat.modules.certificationprogram.model.CertificationProgramImpl;
 import org.olat.modules.certificationprogram.model.CertificationProgramWithStatistics;
 import org.olat.repository.RepositoryEntryRef;
@@ -106,6 +108,29 @@ public class CertificationProgramDAO {
 			.setParameter("programKey", key)
 			.getResultList();
 		return programs == null || programs.isEmpty() ? null : programs.get(0);
+	}
+	
+	public long updateSerialNumberCounter(CertificationProgram certificationProgram) {
+		String query = "select counter from certificationcounter as counter where counter.key=:programKey";
+		CertificationProgramCounterImpl counter = dbInstance.getCurrentEntityManager()
+			.createQuery(query, CertificationProgramCounterImpl.class)
+			.setParameter("programKey", certificationProgram.getKey())
+			.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+			.getSingleResultOrNull();
+		if(counter != null) {
+			long currentCounter = counter.getSerialNumberCounter();
+			long nextValue;
+			if(currentCounter < counter.getSerialNumberStartNumber()) {
+				nextValue = counter.getSerialNumberStartNumber();
+			} else {
+				nextValue = currentCounter + 1;
+			}
+			counter.setSerialNumberCounter(nextValue); 
+			dbInstance.getCurrentEntityManager().merge(counter);
+			dbInstance.commit();
+			return nextValue;
+		}
+		return -1;
 	}
 	
 	public CertificationProgram updateCertificationProgram(CertificationProgram certificationProgram) {

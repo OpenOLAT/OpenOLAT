@@ -63,6 +63,20 @@ public interface RepositoryEntryCertificateConfiguration extends CreateInfo, Mod
 
 	public void setCertificateCustom3(String certificateCustom3);
 	
+	boolean isSerialNumberEnabled();
+	
+	void setSerialNumberEnabled(boolean enabled);
+	
+	String getSerialNumberFormat();
+
+	void setSerialNumberFormat(String format);
+	
+	long getSerialNumberStartNumber();
+
+	void setSerialNumberStartNumber(long startNumber);
+	
+	long getSerialNumberCounter();
+	
 	
 	public boolean isValidityEnabled();
 	

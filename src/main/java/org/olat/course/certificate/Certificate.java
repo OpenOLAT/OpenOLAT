@@ -45,6 +45,8 @@ public interface Certificate extends CreateInfo {
 	
 	String getExternalId();
 	
+	String getSerialNumber();
+	
 	CertificateManagedFlag[] getManagedFlags();
 	
 	Date getNextRecertificationDate();

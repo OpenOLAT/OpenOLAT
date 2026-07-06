@@ -75,7 +75,7 @@ public class CertificationProgramRemovedMembersController extends AbstractCertif
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-removed-members-v1.1");
+		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-removed-members-v1.2");
 	}
 
 	@Override

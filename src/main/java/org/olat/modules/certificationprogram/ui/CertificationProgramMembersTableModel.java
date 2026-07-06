@@ -221,6 +221,7 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 				case id -> row.getIdentityKey();
 				case identityStatus -> row.getIdentityStatus();
 				case certificateStatus -> row.getCertificateStatus();
+				case certificateSerialNumber -> row.getCertificateSerialNumber();
 				case recertificationCount -> row.getRecertificationCount() > 0
 					? Long.valueOf(row.getRecertificationCount())
 					: null;
@@ -247,6 +248,7 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 		id("table.header.id"),
 		identityStatus("table.header.status"),
 		certificateStatus("table.header.certificate"),
+		certificateSerialNumber("table.header.certificate.serial.number"),
 		recertificationCount("table.header.recertification.count"),
 		validUntil("table.header.valid.until"),
 		revocationDate("table.header.revocation.date"),

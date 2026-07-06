@@ -49,6 +49,7 @@ public class CertificateVO {
 	private String courseTitle;
 	private Long courseResourceKey;
 	private Long certificationProgramKey;
+	private String serialNumber;
 	private Date nextCertificationDate;
 	@Schema(accessMode = AccessMode.READ_ONLY, description = "The count is increment automatically")
 	private Long recertificationCount;
@@ -80,6 +81,7 @@ public class CertificateVO {
 			}
 		}
 		vo.setUuid(certificate.getUuid());
+		vo.setSerialNumber(certificate.getSerialNumber());
 		vo.setExternalId(certificate.getExternalId());
 		vo.setManagedFlags(CertificateManagedFlag.toString(certificate.getManagedFlags()));
 		vo.setUser(user);
@@ -124,6 +126,14 @@ public class CertificateVO {
 
 	public void setRecertificationWindowDate(Date recertificationWindowDate) {
 		this.recertificationWindowDate = recertificationWindowDate;
+	}
+
+	public String getSerialNumber() {
+		return serialNumber;
+	}
+
+	public void setSerialNumber(String serialNumber) {
+		this.serialNumber = serialNumber;
 	}
 
 	public Long getIdentityKey() {

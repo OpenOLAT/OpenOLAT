@@ -19,6 +19,7 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -42,8 +44,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.render.DomWrapperElement;
+import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.SerialNumberFormat;
 import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.course.certificate.ui.PreviewMediaResource;
 import org.olat.course.certificate.ui.UploadCertificateTemplateController;
@@ -83,6 +88,13 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 	private TextElement templatePrintFileEl;
 	private Link previewPrintTemplateLink;
 	private FormLayoutContainer printTemplateCont;
+
+	private FormToggle serialNumberEl;
+	private TextElement nextValueEl;
+	private TextElement serialNumberStartEl;
+	private TextElement serialNumberFormatEl;
+	private StaticTextElement serialNumberFormatInfosEl;
+	private FormLayoutContainer serialCont;
 
 	private final boolean editable;
 	private CertificateTemplate uploadedTemplate;
@@ -132,6 +144,8 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		certificationCustom2El.setEnabled(editable);
 		certificationCustom3El = uifactory.addTextElement("certificate.custom3", 3000, certificationProgram.getCertificateCustom3(), formLayout);
 		certificationCustom3El.setEnabled(editable);
+		
+		initSerialNumber(formLayout);
 		
 		if(editable) {
 			FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
@@ -254,6 +268,38 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		previewPrintTemplateLink.setTarget("preview");
 	}
 	
+	private void initSerialNumber(FormItemContainer formLayout) {
+		serialCont = uifactory.addDefaultFormLayout("serial", null, formLayout);
+		serialCont.setFormTitle(translate("serial.number.title"));
+		serialCont.setFormInfo(translate("serial.number.descr"));
+		serialCont.setFormLayout("nolayout");
+		
+		serialNumberEl = uifactory.addToggleButton("serial.number.enabled", "serial.number.enabled", translate("on"), translate("off"), serialCont);
+		serialNumberEl.toggle(certificationProgram.isSerialNumberEnabled());
+		
+		String text = "<div class='o_info_with_icon'>" + translate("serial.number.format.infos", new String[] { "${counter}", "${counter:N}", "${year}, ${month}, ${day}"}) + "</span>";
+		serialNumberFormatInfosEl = uifactory.addStaticTextElement("format.infos", null, text, serialCont);
+		serialNumberFormatInfosEl.setDomWrapperElement(DomWrapperElement.div);
+		
+		String format = certificationProgram.getSerialNumberFormat();
+		serialNumberFormatEl = uifactory.addTextElement("serial.number.format", "serial.number.format", 255, format, serialCont);
+		serialNumberFormatEl.setExampleKey("serial.number.format.hint", new String[] { "${year}", "${counter:5}"});
+		serialNumberFormatEl.setMandatory(true);
+
+		long startNumber = certificationProgram.getSerialNumberStartNumber();
+		long currentCounter = certificationProgram.getSerialNumberCounter();
+		serialNumberStartEl = uifactory.addTextElement("serial.number.counter", "serial.number.counter", 255, Long.toString(startNumber), serialCont);
+		serialNumberStartEl.setExampleKey("serial.number.counter.hint", new String[] { Long.toString(currentCounter) });
+		serialNumberStartEl.setElementCssClass("form-inline");
+		serialNumberStartEl.setDisplaySize(8);
+		serialNumberStartEl.setMaxLength(8);
+		serialNumberStartEl.setMandatory(true);
+		
+		nextValueEl = uifactory.addTextElement("serial.number.next", "serial.number.next", 255, "", serialCont);
+		nextValueEl.setElementCssClass("o_certificate_next_value");
+		nextValueEl.setEnabled(false);
+	}
+	
 	private void updateUI() {
 		boolean systemTemplate = templateTypeEl.isOneSelected() && SYSTEM_KEY.equals(templateTypeEl.getSelectedKey());
 		systemTemplatesEl.setVisible(systemTemplate);
@@ -280,6 +326,29 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 			CertificateTemplate selectedPrintTemplate = getSelectedPrintTemplate();
 			previewPrintTemplateLink.setEnabled(systemPrintTemplate || selectedPrintTemplate != null);
 		}
+		
+		boolean serialNumberEnabled = serialNumberEl.isOn();
+		serialNumberFormatEl.setVisible(serialNumberEnabled);
+		serialNumberStartEl.setVisible(serialNumberEnabled);
+		nextValueEl.setVisible(serialNumberEnabled);
+		serialNumberFormatInfosEl.setVisible(serialNumberEnabled);
+		
+		updateNextValue();
+	}
+	
+	private void updateNextValue() {
+		long currentCounter = certificationProgram.getSerialNumberCounter();
+		if(certificationProgram.getSerialNumberStartNumber() > currentCounter) {
+			currentCounter = certificationProgram.getSerialNumberStartNumber();
+		} else {
+			currentCounter++;
+		}
+		String format = serialNumberFormatEl.getValue();
+		String nextValue = SerialNumberFormat.parse(format).generate(currentCounter, LocalDate.now());
+		nextValueEl.setValue(nextValue);
+
+		serialNumberStartEl.setExampleKey("serial.number.counter.hint",
+				new String[] { Long.toString(certificationProgram.getSerialNumberCounter()) });
 	}
 	
 	private CertificateTemplate getSelectedTemplate() {
@@ -355,7 +424,8 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(withPrintTemplateEl == source || templateTypeEl == source || printTemplateTypeEl == source) {
+		if(withPrintTemplateEl == source || templateTypeEl == source || printTemplateTypeEl == source
+				|| serialNumberEl == source) {
 			updateUI();
 		} else if(uploadTemplateLink == source) {
 			doUploadTemplate(ureq);
@@ -376,6 +446,26 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		if(withPrintTemplateEl.isOn()) {
 			CertificateTemplate selectedPrintTemplate = getSelectedPrintTemplate();
 			allOk &= validateFormLogic(printTemplateCont, printTemplateTypeEl, systemPrintTemplatesEl,  selectedPrintTemplate);
+		}
+		
+		if(serialNumberEl.isOn()) {
+			serialNumberFormatEl.clearError();
+			if(!StringHelper.containsNonWhitespace(serialNumberFormatEl.getValue())) {
+				serialNumberFormatEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else if(!SerialNumberFormat.parse(serialNumberFormatEl.getValue()).hasCounter()) {
+				serialNumberFormatEl.setErrorKey("error.counter.mandatory");
+				allOk &= false;
+			}
+			
+			serialNumberStartEl.clearError();
+			if(!StringHelper.containsNonWhitespace(serialNumberStartEl.getValue())) {
+				serialNumberFormatEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else if(!StringHelper.isLong(serialNumberStartEl.getValue())) {
+				serialNumberStartEl.setErrorKey("form.error.nointeger");
+				allOk &= false;
+			}
 		}
 
 		return allOk;
@@ -426,6 +516,15 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 			certificationProgram.setPrintTemplate(null);
 		}
 		
+		if(serialNumberEl.isOn()) {
+			certificationProgram.setSerialNumberEnabled(true);
+			certificationProgram.setSerialNumberFormat(serialNumberFormatEl.getValue());
+			certificationProgram.setSerialNumberStartNumber(Long.valueOf(serialNumberStartEl.getValue()));
+		} else {
+			certificationProgram.setSerialNumberEnabled(false);
+			certificationProgram.setSerialNumberFormat(null);
+		}
+		
 		certificationProgram = certificationProgramService.updateCertificationProgram(certificationProgram);
 		dbInstance.commitAndCloseSession();
 		
@@ -436,6 +535,10 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		
+		if(serialNumberEl.isOn()) {
+			updateNextValue();
+		}
 	}
 	
 	private void doUploadTemplate(UserRequest ureq) {
@@ -484,7 +587,16 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 		String custom1 = certificationCustom1El.getValue();
 		String custom2 = certificationCustom2El.getValue();
 		String custom3 = certificationCustom3El.getValue();
-		PreviewCertificate preview = certificatesManager.previewCertificate(template, certificationProgram, getLocale(), custom1, custom2, custom3);
+		String serialNumber = null;
+		if(serialNumberEl.isOn()
+				&& StringHelper.containsNonWhitespace(serialNumberFormatEl.getValue())
+				&& StringHelper.isLong(serialNumberStartEl.getValue())) {
+			SerialNumberFormat serialNumberFormat = SerialNumberFormat.parse(serialNumberFormatEl.getValue());
+			serialNumber = serialNumberFormat.generate(Long.valueOf(serialNumberStartEl.getValue()), LocalDate.now());
+		}
+		
+		PreviewCertificate preview = certificatesManager.previewCertificate(template, certificationProgram, getLocale(),
+				custom1, custom2, custom3, serialNumber);
 		MediaResource resource = new PreviewMediaResource(preview);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}

@@ -87,6 +87,9 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 	@Column(name="c_managed_flags", nullable=true, insertable=true, updatable=true)
 	private String managedFlagsString;
 	
+	@Column(name="c_serial_number", nullable=true, insertable=true, updatable=false)
+	private String serialNumber;
+	
 	@Column(name="c_next_recertification", nullable=true, insertable=true, updatable=true)
 	private Date nextRecertificationDate;
 
@@ -261,6 +264,15 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 	@Override
 	public void setNextRecertificationDate(Date nextRecertificationDate) {
 		this.nextRecertificationDate = nextRecertificationDate;
+	}
+	
+	@Override
+	public String getSerialNumber() {
+		return serialNumber;
+	}
+
+	public void setSerialNumber(String serialNumber) {
+		this.serialNumber = serialNumber;
 	}
 
 	@Override

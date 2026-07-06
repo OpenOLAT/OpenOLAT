@@ -165,6 +165,9 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 				new CertificationStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CertificationProgramMembersCols.certificateStatus,
 				new CertificationStatusCellRenderer(getTranslator())));
+		if(certificationProgram.isSerialNumberEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CertificationProgramMembersCols.certificateSerialNumber));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificationProgramMembersCols.recertificationCount));
 		if(certificationProgram.isValidityEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificationProgramMembersCols.validUntil,

@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -135,6 +136,7 @@ import org.olat.course.certificate.CertificatesModule;
 import org.olat.course.certificate.CertificationTimeUnit;
 import org.olat.course.certificate.EmailStatus;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
+import org.olat.course.certificate.SerialNumberFormat;
 import org.olat.course.certificate.model.AbstractCertificate;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateIdentityConfig;
@@ -1052,6 +1054,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			String externalId, CertificateManagedFlag[] managedFlags,
 			CertificationProgram program, OLATResource resource,
 			Date nextRecertificationDate, File certificateFile, Identity doer) {
+		
+		RepositoryEntry entry = program == null && resource != null
+				? repositoryService.loadByResourceKey(resource.getKey())
+				: null;
+		String serialNumber = getSerialNumber(entry, program);
+		
 		CertificateImpl certificate = new CertificateImpl();
 		if(creationDate != null) {
 			certificate.setCreationDate(creationDate);
@@ -1072,15 +1080,13 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			certificate.setRecertificationWindowDate(windowDate);
 			long counter = certificatesDao.certificationCount(identity, program);
 			certificate.setRecertificationCount(Long.valueOf(counter + 1L));
-		} else {
-			RepositoryEntry entry = repositoryService.loadByResourceKey(resource.getKey());
-			if(entry != null) {
-				certificate.setCourseTitle(entry.getDisplayname());
-			}
+		} else if(entry != null) {
+			certificate.setCourseTitle(entry.getDisplayname());
 		}
 		
 		certificate.setIdentity(identity);
 		certificate.setUuid(UUID.randomUUID().toString());
+		certificate.setSerialNumber(serialNumber);
 		certificate.setExternalId(externalId);
 		certificate.setManagedFlagsString(CertificateManagedFlag.toString(managedFlags));
 		certificate.setLast(true);
@@ -1121,8 +1127,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	
 	@Override
 	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate,
-			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle, Long resourceKey,
-			Date nextRecertificationDate, File certificateFile, Identity doer) {
+			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle,
+			Long resourceKey, String serialNumber, Date nextRecertificationDate,
+			
+			File certificateFile, Identity doer) {
 		CertificateStandalone certificate = new CertificateStandalone();
 		certificate.setArchivedResourceKey(resourceKey);
 		if(creationDate != null) {
@@ -1135,6 +1143,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setNextRecertificationDate(nextRecertificationDate);
 		certificate.setIdentity(identity);
 		certificate.setUuid(UUID.randomUUID().toString());
+		certificate.setSerialNumber(serialNumber);
 		certificate.setExternalId(externalId);
 		certificate.setManagedFlagsString(CertificateManagedFlag.toString(managedFlags));
 		certificate.setLast(true);
@@ -1183,18 +1192,18 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1,
-			String custom2, String custom3) {
-		return previewCertificate(template, entry, null, locale, custom1, custom2, custom3);
+			String custom2, String custom3, String serialNumber) {
+		return previewCertificate(template, entry, null, locale, custom1, custom2, custom3, serialNumber);
 	}
 	
 	@Override
 	public PreviewCertificate previewCertificate(CertificateTemplate template, CertificationProgram certificationProgram, Locale locale, String custom1,
-			String custom2, String custom3) {
-		return previewCertificate(template, null, certificationProgram, locale, custom1, custom2, custom3);
+			String custom2, String custom3, String serialNumber) {
+		return previewCertificate(template, null, certificationProgram, locale, custom1, custom2, custom3, serialNumber);
 	}
 	
-	private PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, CertificationProgram certificationProgram, Locale locale, String custom1,
-			String custom2, String custom3) {
+	private PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, CertificationProgram certificationProgram, Locale locale,
+			String custom1, String custom2, String custom3, String serialNumber) {
 		Identity identity = getPreviewIdentity();
 		
 		File certificateFile;
@@ -1209,16 +1218,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		boolean pdfTemplate = template != null && template.getPath().toLowerCase().endsWith("pdf");
 		if((template == null && !pdfModule.isEnabled()) || pdfTemplate) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, 2.0f, 10.0f, true, 0.4,
-					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
+					new Date(), new Date(), new Date(), custom1, custom2, custom3, serialNumber, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else if(pdfModule.isEnabled()) {
 			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, certificationProgram, entry, 2.0f, 10.0f, true,
-					0.4, new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager,
+					0.4, new Date(), new Date(), new Date(), custom1, custom2, custom3, serialNumber, "", new BigDecimal(4), "", certUrl, locale, userManager,
 					this, pdfService);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, 2.0f, 10.0f, true, 0.4,
-					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
+					new Date(), new Date(), new Date(), custom1, custom2, custom3, serialNumber, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		}
 		return new PreviewCertificate(certificateFile, dirFile);
@@ -1275,6 +1284,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				: entry.getOlatResource();
 		Identity identity = certificateInfos.getAssessedIdentity();
 		
+		String serialNumber = getSerialNumber(entry, certificationProgram);
+		
 		CertificateImpl certificate = new CertificateImpl();
 		certificate.setOlatResource(resource);
 		certificate.setArchivedResourceKey(resource.getKey());
@@ -1290,6 +1301,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setLast(true);
 		certificate.setStatus(CertificateStatus.pending);
 		certificate.setRecertificationPaused(false);
+		
+		certificate.setSerialNumber(serialNumber);
 		
 		Date nextCertificationDate;
 		if(certificationProgram != null) {
@@ -1316,6 +1329,27 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				certificateInfos.getGrade(), config, certificateInfos.getDoerKey());
 
 		return certificate;
+	}
+	
+	private String getSerialNumber(RepositoryEntry entry, CertificationProgram certificationProgram) {
+		if(certificationProgram != null) {
+			if(certificationProgram.isSerialNumberEnabled()) {
+				long counter = certificationProgramDao.updateSerialNumberCounter(certificationProgram);
+				if(counter >= 0) {		
+					String format = certificationProgram.getSerialNumberFormat();
+					return SerialNumberFormat.parse(format).generate(counter, LocalDate.now());
+				}
+			}
+		}
+		if(entry != null) {
+			RepositoryEntryCertificateConfiguration config = certificateConfigurationDao.getConfiguration(entry);
+			if(config != null && config.isSerialNumberEnabled()) {
+				long counter = config.getSerialNumberCounter();
+				String format = config.getSerialNumberFormat();
+				return SerialNumberFormat.parse(format).generate(counter, LocalDate.now());
+			}
+		}
+		return null;
 	}
 	
 	protected VelocityEngine getVelocityEngine() {
@@ -1421,6 +1455,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String custom1 = workUnit.getConfig().getCustom1();
 		String custom2 = workUnit.getConfig().getCustom2();
 		String custom3 = workUnit.getConfig().getCustom3();
+		String serialNumber = certificate.getSerialNumber();
 		String name = entry == null
 				? certificationProgram.getDisplayName()
 				: entry.getDisplayname();
@@ -1432,8 +1467,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		StringBuilder sb = new StringBuilder();
 		sb.append(identity.getUser().getProperty(UserConstants.LASTNAME, locale)).append("_")
 		  .append(identity.getUser().getProperty(UserConstants.FIRSTNAME, locale)).append("_")
-		  .append(name).append("_")
-		  .append(Formatter.formatShortDateFilesystem(dateCertification));
+		  .append(name).append("_");
+		if(StringHelper.containsNonWhitespace(serialNumber)) {
+			sb.append(serialNumber).append("_");
+		}
+		sb.append(Formatter.formatShortDateFilesystem(dateCertification));
 		String filename = FileUtils.normalizeFilename(sb.toString()) + ".pdf";
 		// External URL to certificate as short as possible for QR-Code
 		sb = new StringBuilder();
@@ -1445,12 +1483,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		if((template == null && !pdfModule.isEnabled()) || pdfTemplate) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, score, maxScore, passed,
 					completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1, custom2,
-					custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this);
+					custom3, serialNumber, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
 		} else if(pdfModule.isEnabled()) {
 			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, certificationProgram, entry, score, maxScore,
 					passed, completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1,
-					custom2, custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this, pdfService);
+					custom2, custom3, serialNumber, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this, pdfService);
 			certificateFile = worker.fill(template, dirFile, filename);
 		} else {
 			log.error("Cannot produce a certificate from an HTML template without a PDF generator");
@@ -1465,12 +1503,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			if((printTemplate == null && !pdfModule.isEnabled()) || pdfPrintTemplate) {
 				CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, score, maxScore, passed,
 						completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1, custom2,
-						custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this);
+						custom3, serialNumber, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this);
 				certificatePrintFile = worker.fill(printTemplate, dirFile, printFilename);
 			} else if(pdfModule.isEnabled()) {
 				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, certificationProgram, entry, score, maxScore,
 						passed, completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1,
-						custom2, custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this, pdfService);
+						custom2, custom3, serialNumber, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this, pdfService);
 				certificatePrintFile = worker.fill(printTemplate, dirFile, printFilename);
 			}
 		}

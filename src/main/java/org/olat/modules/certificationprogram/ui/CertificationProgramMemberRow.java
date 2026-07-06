@@ -108,6 +108,12 @@ public class CertificationProgramMemberRow extends UserPropertiesRow {
 				: null;
 	}
 	
+	public String getCertificateSerialNumber() {
+		return certificate != null
+				? certificate.getSerialNumber()
+				: null;
+	}
+	
 	public NextRecertificationInDays getNextRecertification() {
 		return nextRecertification;
 	}

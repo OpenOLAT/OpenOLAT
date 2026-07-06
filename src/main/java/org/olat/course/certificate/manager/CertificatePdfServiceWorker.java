@@ -95,6 +95,7 @@ public class CertificatePdfServiceWorker {
 	private final String custom1;
 	private final String custom2;
 	private final String custom3;
+	private final String serialNumber;
 	private final String grade;
 	private final BigDecimal gradeCutValue;
 	private final String gradeLabel;
@@ -106,7 +107,7 @@ public class CertificatePdfServiceWorker {
 
 	public CertificatePdfServiceWorker(Identity identity, CertificationProgram certificationProgram, RepositoryEntry entry, Float score, Float maxScore, Boolean passed,
 									   Double completion, Date dateCertification, Date dateFirstCertification, Date dateCertificateValidUntil, String custom1,
-									   String custom2, String custom3, String grade, BigDecimal gradeCutValue, String gradeLabel,
+									   String custom2, String custom3, String serialNumber, String grade, BigDecimal gradeCutValue, String gradeLabel,
 									   String certificateURL, Locale locale, UserManager userManager, CertificatesManagerImpl certificatesManager, PdfService pdfService) {
 		this.certificationProgram = certificationProgram;
 		this.entry = entry;
@@ -117,6 +118,7 @@ public class CertificatePdfServiceWorker {
 		this.custom1 = custom1;
 		this.custom2 = custom2;
 		this.custom3 = custom3;
+		this.serialNumber = serialNumber;
 		this.grade = grade;
 		this.gradeCutValue = gradeCutValue;
 		this.gradeLabel = gradeLabel;
@@ -419,6 +421,7 @@ public class CertificatePdfServiceWorker {
 		context.put("custom1", custom1);
 		context.put("custom2", custom2);
 		context.put("custom3", custom3);
+		context.put("certificateSerialNumber", serialNumber);
 		context.put("certificateVerificationUrl", certificateURL);
 	}
 	

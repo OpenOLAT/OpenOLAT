@@ -140,9 +140,9 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		File certificateFile = new File(certificateUrl.toURI());
 		CertificateManagedFlag[] managedFlags = { CertificateManagedFlag.delete }; 
 		Certificate managedCertificate = certificatesManager
-				.uploadStandaloneCertificate(identity, new Date(), "DM-234", managedFlags, "My floating course", -1l, null, certificateFile, identity);
+				.uploadStandaloneCertificate(identity, new Date(), "DM-234", managedFlags, "My floating course", -1l, null, null, certificateFile, identity);
 		Certificate certificate = certificatesManager
-				.uploadStandaloneCertificate(identity, new Date(), null, null, "My floating course", -1l, null, certificateFile, identity);
+				.uploadStandaloneCertificate(identity, new Date(), null, null, "My floating course", -1l, null, null, certificateFile, identity);
 		dbInstance.commitAndCloseSession();
 		
 		// Get managed
@@ -197,7 +197,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		File certificateFile = new File(certificateUrl.toURI());
 		String externalId = UUID.randomUUID().toString();
 		Certificate managedCertificate = certificatesManager
-				.uploadStandaloneCertificate(identity, new Date(), externalId, null, "My floating course", -1l, null, certificateFile, identity);
+				.uploadStandaloneCertificate(identity, new Date(), externalId, null, "My floating course", -1l, null, null, certificateFile, identity);
 		dbInstance.commitAndCloseSession();
 		
 		// Get managed
@@ -275,7 +275,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		Date nextCertificationDate = cal.getTime();
 		
 		Certificate certificate = certificatesManager
-				.uploadStandaloneCertificate(identity, new Date(), "DM-234", managedFlags, "My floating course", -1l, nextCertificationDate, certificateFile, identity);
+				.uploadStandaloneCertificate(identity, new Date(), "DM-234", managedFlags, "My floating course", -1l, null, nextCertificationDate, certificateFile, identity);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		
@@ -365,7 +365,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		File certificateFile = new File(certificateUrl.toURI());
 		CertificateManagedFlag[] managedFlags = { CertificateManagedFlag.delete }; 
 		Certificate certificate = certificatesManager
-				.uploadStandaloneCertificate(identity, new Date(), "DM-234", managedFlags, "My floating course", -1l, null, certificateFile, identity);
+				.uploadStandaloneCertificate(identity, new Date(), "DM-234", managedFlags, "My floating course", -1l, null, null, certificateFile, identity);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		

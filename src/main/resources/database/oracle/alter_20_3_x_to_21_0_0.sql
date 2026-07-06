@@ -1128,3 +1128,16 @@ alter table o_cer_certificate add fk_print_metadata number(20);
 alter table o_cer_certificate add constraint certificate_printdata_idx foreign key (fk_print_metadata) references o_vfs_metadata(id);
 create index idx_certificate_printdata_idx on o_cer_certificate (fk_print_metadata);
 
+alter table o_cer_program add c_sn_enabled number default 0 not null;
+alter table o_cer_program add c_sn_format varchar(255);
+alter table o_cer_program add c_sn_start_number number(20) default 1 not null;
+alter table o_cer_program add c_sn_counter number(20) default 1 not null;
+
+alter table o_cer_entry_config add c_sn_enabled number default 0 not null;
+alter table o_cer_entry_config add c_sn_format varchar(255);
+alter table o_cer_entry_config add c_sn_start_number number(20) default 1 not null;
+alter table o_cer_entry_config add c_sn_counter number(20) default 1 not null;
+
+alter table o_cer_certificate add c_serial_number varchar(255);
+
+

@@ -120,7 +120,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		
 		super.initForm(formLayout, listener, ureq);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-certified-members-v1");
+		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-certified-members-v1.1");
 		tableEl.setMultiSelect(true);
 		
 		bulkDownloadCertificatesButton = uifactory.addFormLink("bulk.export.certificates", "export.certificates", null, formLayout, Link.BUTTON);

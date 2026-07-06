@@ -127,6 +127,19 @@ public interface CertificationProgram extends CertificationProgramRef, OLATResou
 
 	void setPrintTemplate(CertificateTemplate template);
 	
+	boolean isSerialNumberEnabled();
+	
+	void setSerialNumberEnabled(boolean enabled);
+	
+	String getSerialNumberFormat();
+
+	void setSerialNumberFormat(String format);
+	
+	long getSerialNumberStartNumber();
+
+	void setSerialNumberStartNumber(long startNumber);
+	
+	long getSerialNumberCounter();
 	
 	Group getGroup();
 	

@@ -22,12 +22,15 @@ package org.olat.course.certificate.manager;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.LockModeType;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.CertificateTemplateImpl;
 import org.olat.course.certificate.model.RepositoryEntryCertificateConfigurationImpl;
+import org.olat.course.certificate.model.RepositoryEntryCertificateCounterImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +116,29 @@ public class RepositoryEntryCertificateConfigurationDAO {
 			.setMaxResults(1)
 			.getResultList();
 		return configurations == null || configurations.isEmpty() ? null : configurations.get(0);
+	}
+	
+	public long updateSerialNumberCounter(RepositoryEntryCertificateConfiguration configuration) {
+		String query = "select counter from certificateentrycounter as counter where counter.key=:configurationKey";
+		RepositoryEntryCertificateCounterImpl counter = dbInstance.getCurrentEntityManager()
+			.createQuery(query, RepositoryEntryCertificateCounterImpl.class)
+			.setParameter("configurationKey", configuration.getKey())
+			.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+			.getSingleResultOrNull();
+		if(counter != null) {
+			long currentCounter = counter.getSerialNumberCounter();
+			long nextValue;
+			if(currentCounter < counter.getSerialNumberStartNumber()) {
+				nextValue = counter.getSerialNumberStartNumber();
+			} else {
+				nextValue = currentCounter + 1;
+			}
+			counter.setSerialNumberCounter(nextValue); 
+			dbInstance.getCurrentEntityManager().merge(counter);
+			dbInstance.commit();
+			return nextValue;
+		}
+		return -1;
 	}
 	
 	public RepositoryEntryCertificateConfiguration updateConfiguration(RepositoryEntryCertificateConfiguration configuration) {

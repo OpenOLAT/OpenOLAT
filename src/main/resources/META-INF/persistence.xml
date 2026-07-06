@@ -122,6 +122,7 @@
 		<class>org.olat.course.certificate.model.CertificateLightImpl</class>
 		<class>org.olat.course.certificate.model.CertificateTemplateImpl</class>
 		<class>org.olat.course.certificate.model.RepositoryEntryCertificateConfigurationImpl</class>
+		<class>org.olat.course.certificate.model.RepositoryEntryCertificateCounterImpl</class>
 		<class>org.olat.course.statistic.daily.DailyStat</class>
 		<class>org.olat.course.statistic.dayofweek.DayOfWeekStat</class>
 		<class>org.olat.course.statistic.hourofday.HourOfDayStat</class>
@@ -241,6 +242,7 @@
 		<class>org.olat.modules.cemedia.model.MediaToPagePartImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaToTaxonomyLevelImpl</class>
 		<class>org.olat.modules.certificationprogram.model.CertificationProgramImpl</class>
+		<class>org.olat.modules.certificationprogram.model.CertificationProgramCounterImpl</class>
 		<class>org.olat.modules.certificationprogram.model.CertificationProgramToOrganisationImpl</class>
 		<class>org.olat.modules.certificationprogram.model.CertificationProgramToCurriculumElementImpl</class>
 		<class>org.olat.modules.certificationprogram.model.CertificationProgramMailConfigurationImpl</class>

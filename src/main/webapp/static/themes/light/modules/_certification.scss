@@ -246,6 +246,10 @@
 	}
 }
 
+.o_certificate_next_value span > input.o_disabled {
+	background-color: #e7eeee;
+}
+
 .o_certificate_selector {
 	display: grid;
 	grid-template-columns: auto 1fr;

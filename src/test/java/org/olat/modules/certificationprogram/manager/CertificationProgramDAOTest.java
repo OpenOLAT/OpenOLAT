@@ -200,6 +200,27 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void updateSerialNumberCounter() {
+		String programIdentifier = "C0 - 1n";
+		String programName = "OpenOlat counter 1n";
+		CertificationProgram program = certificationProgramDao.createCertificationProgram(programIdentifier, programName);
+		program.setSerialNumberEnabled(true);
+		program.setSerialNumberFormat("REF-{counter:5}");
+		program.setSerialNumberStartNumber(10);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		dbInstance.commitAndCloseSession();
+		
+		long firstValue = certificationProgramDao.updateSerialNumberCounter(program);
+		dbInstance.commitAndCloseSession();
+		
+		long secondValue = certificationProgramDao.updateSerialNumberCounter(program);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertEquals(10l, firstValue);
+		Assert.assertEquals(11l, secondValue);
+	}
+	
+	@Test
 	public void isCertificationProgram() {
 		Identity actor = JunitTestHelper.getDefaultActor();
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-program-1", "Curriculum for element", "Curriculum", false, null);

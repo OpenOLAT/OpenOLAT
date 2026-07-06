@@ -390,6 +390,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.catalog.ui.CatalogCurriculumElementSingleCourseHeaderConfigTest.class,
 	org.olat.modules.catalog.ui.CatalogCurriculumElementStructuredHeaderConfigTest.class,
 	org.olat.modules.catalog.ui.CatalogRepositoryEntryHeaderConfigTest.class,
+	org.olat.course.certificate.SerialNumberFormatTest.class,
 	org.olat.modules.certificationprogram.manager.CertificationProgramDAOTest.class,
 	org.olat.modules.certificationprogram.manager.CertificationProgramToCurriculumElementDAOTest.class,
 	org.olat.modules.certificationprogram.manager.CertificationProgramToOrganisationDAOTest.class,

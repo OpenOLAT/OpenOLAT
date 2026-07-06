@@ -194,4 +194,22 @@ public class RepositoryEntryCertificateConfigurationDAOTest extends OlatTestCase
 		boolean notInUse = repositoryEntryCertificateConfigurationDao.isTemplateInUse(template2);
 		Assert.assertFalse(notInUse);
 	}
+	
+	@Test
+	public void updateSerialNumberCounter() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();	
+		RepositoryEntryCertificateConfiguration config = repositoryEntryCertificateConfigurationDao.createConfiguration(entry);
+		config.setSerialNumberEnabled(true);
+		config.setSerialNumberStartNumber(25);
+		config.setSerialNumberFormat("V-{counter:5}");
+		dbInstance.commitAndCloseSession();
+		
+		long firstValue = repositoryEntryCertificateConfigurationDao.updateSerialNumberCounter(config);
+		Assert.assertEquals(25, firstValue);
+		dbInstance.commitAndCloseSession();
+		
+		long secondValue = repositoryEntryCertificateConfigurationDao.updateSerialNumberCounter(config);
+		Assert.assertEquals(26, secondValue);
+		dbInstance.commitAndCloseSession();
+	}
 }

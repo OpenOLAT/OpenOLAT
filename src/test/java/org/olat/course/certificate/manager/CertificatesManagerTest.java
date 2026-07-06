@@ -392,7 +392,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		
 		Certificate certificate = certificatesManager
 				.uploadStandaloneCertificate(identity, creationDate, "OO-23647826", null,
-						courseTitle, resourceKey, nextCertificationDate, certificateFile, actor);
+						courseTitle, resourceKey, "UNIT-2026-23647826", nextCertificationDate, certificateFile, actor);
 		Assert.assertNotNull(certificate);
 		Assert.assertNotNull(certificate.getKey());
 		Assert.assertNotNull(certificate.getUuid());
@@ -400,6 +400,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertEquals(identity, certificate.getIdentity());
 		Assert.assertEquals(nextCertificationDate, certificate.getNextRecertificationDate());
 		Assert.assertEquals("OO-23647826", certificate.getExternalId());
+		Assert.assertEquals("UNIT-2026-23647826", certificate.getSerialNumber());
 		Assert.assertEquals(actor, certificate.getUploadedBy());
 		
 		dbInstance.commitAndCloseSession();

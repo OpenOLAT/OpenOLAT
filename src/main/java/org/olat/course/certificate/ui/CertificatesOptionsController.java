@@ -1,3 +1,4 @@
+
 /**
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
@@ -21,6 +22,7 @@ package org.olat.course.certificate.ui;
 
 import java.io.File;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 
@@ -37,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -50,6 +53,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StreamedMediaResource;
 import org.olat.core.gui.media.ZippedDirectoryMediaResource;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -61,6 +65,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.CertificationTimeUnit;
 import org.olat.course.certificate.PDFCertificatesOptions;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
+import org.olat.course.certificate.SerialNumberFormat;
 import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.course.run.RunMainController;
 import org.olat.repository.RepositoryEntry;
@@ -87,6 +92,13 @@ public class CertificatesOptionsController extends FormBasicController {
 	private FormLayoutContainer validityCont;
 	private FormLink selectTemplateLink;
 	private Link previewTemplateLink;
+	
+	private TextElement serialNumberStartEl;
+	private FormToggle serialNumberEl;
+	private TextElement nextValueEl;
+	private TextElement serialNumberFormatEl;
+	private StaticTextElement serialNumberFormatInfosEl;
+	private FormLayoutContainer serialCont;
 
 	private final boolean editable;
 	private final RepositoryEntry entry;
@@ -111,8 +123,8 @@ public class CertificatesOptionsController extends FormBasicController {
 	};
 	
 	private final String mapperUrl;
-
-
+	private final boolean managedEff;
+	
 	@Autowired
 	private CertificatesManager certificatesManager;
 	
@@ -125,8 +137,10 @@ public class CertificatesOptionsController extends FormBasicController {
 		certificateConfig = certificatesManager.getConfiguration(entry);
 		
 		mapperUrl = registerMapper(ureq, new TemplateMapper());
+		managedEff = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
 		
 		initForm(ureq);
+		updateUI();
 	}
 	
 	@Override
@@ -136,7 +150,7 @@ public class CertificatesOptionsController extends FormBasicController {
 		
 		boolean managedEff = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
 		
-		enabledEl = uifactory.addToggleButton("enabled", "issue.certificate", null, null, formLayout);
+		enabledEl = uifactory.addToggleButton("enabled", "issue.certificate", translate("on"), translate("off"), formLayout);
 		enabledEl.addActionListener(FormEvent.ONCLICK);
 		enabledEl.setEnabled(editable && !managedEff);
 		if (certificateConfig.isAutomaticCertificationEnabled() || certificateConfig.isManualCertificationEnabled()) {
@@ -145,6 +159,18 @@ public class CertificatesOptionsController extends FormBasicController {
 			enabledEl.toggleOff();
 		}
 		
+		initTemplateForm(formLayout);
+		initSerialNumber(formLayout);
+		
+		if(editable) {
+			FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			buttonCont.setRootForm(mainForm);
+			formLayout.add(buttonCont);
+			uifactory.addFormSubmitButton("save", buttonCont);
+		}
+	}
+	
+	private void initTemplateForm(FormItemContainer formLayout) {	
 		String[] pdfCertificatesOptionsValues = new String[] {
 				translate("pdf.certificates.auto"),
 				translate("pdf.certificates.manual")
@@ -214,15 +240,36 @@ public class CertificatesOptionsController extends FormBasicController {
 		} else {
 			validityTimelapseUnitEl.select(CertificationTimeUnit.month.name(), true);
 		}
-
-		if(editable) {
-			FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			buttonCont.setRootForm(mainForm);
-			formLayout.add(buttonCont);
-			uifactory.addFormSubmitButton("save", buttonCont);
-		}
+	}
+	
+	private void initSerialNumber(FormItemContainer formLayout) {
+		serialCont = uifactory.addDefaultFormLayout("serial", null, formLayout);
+		serialCont.setFormTitle(translate("serial.number.title"));
+		serialCont.setFormInfo(translate("serial.number.descr"));
+		serialCont.setFormLayout("nolayout");
 		
-		updateUI();
+		serialNumberEl = uifactory.addToggleButton("serial.number.enabled", "serial.number.enabled", translate("on"), translate("off"), serialCont);
+		serialNumberEl.toggle(certificateConfig.isSerialNumberEnabled());
+		
+		String text = "<div class='o_info_with_icon'>" + translate("serial.number.format.infos", new String[] { "${counter}", "${counter:N}", "${year}, ${month}, ${day}"}) + "</span>";
+		serialNumberFormatInfosEl = uifactory.addStaticTextElement("format.infos", null, text, serialCont);
+		serialNumberFormatInfosEl.setDomWrapperElement(DomWrapperElement.div);
+		
+		String format = certificateConfig.getSerialNumberFormat();
+		serialNumberFormatEl = uifactory.addTextElement("serial.number.format", "serial.number.format", 255, format, serialCont);
+		serialNumberFormatEl.setExampleKey("serial.number.format.hint", new String[] { "${year}", "${counter:5}"});
+
+		long startNumber = certificateConfig.getSerialNumberStartNumber();
+		long currentCounter = certificateConfig.getSerialNumberCounter();
+		serialNumberStartEl = uifactory.addTextElement("serial.number.counter", "serial.number.counter", 255, Long.toString(startNumber), serialCont);
+		serialNumberStartEl.setExampleKey("serial.number.counter.hint", new String[] { Long.toString(currentCounter) });
+		serialNumberStartEl.setElementCssClass("form-inline");
+		serialNumberStartEl.setDisplaySize(8);
+		serialNumberStartEl.setMaxLength(8);
+		
+		nextValueEl = uifactory.addTextElement("serial.number.next", "serial.number.next", 255, "", serialCont);
+		nextValueEl.setElementCssClass("o_certificate_next_value");
+		nextValueEl.setEnabled(false);
 	}
 	
 	private void updateUI() {
@@ -249,6 +296,31 @@ public class CertificatesOptionsController extends FormBasicController {
 		validityCont.setVisible(enableRecertification);
 		validityTimelapseEl.setEnabled(enableRecertification && editable);
 		validityTimelapseUnitEl.setEnabled(enableRecertification && editable);
+		
+		serialCont.setVisible(enabled);
+		
+		boolean serialNumberEnabled = serialNumberEl.isOn() && enabled;
+		serialNumberFormatEl.setVisible(serialNumberEnabled);
+		serialNumberStartEl.setVisible(serialNumberEnabled);
+		nextValueEl.setVisible(serialNumberEnabled);
+		serialNumberFormatInfosEl.setVisible(serialNumberEnabled);
+		
+		updateNextValue();
+	}
+	
+	private void updateNextValue() {
+		long currentCounter = certificateConfig.getSerialNumberCounter();
+		if(certificateConfig.getSerialNumberStartNumber() > currentCounter) {
+			currentCounter = certificateConfig.getSerialNumberStartNumber();
+		} else {
+			currentCounter++;
+		}
+		String format = serialNumberFormatEl.getValue();
+		String nextValue = SerialNumberFormat.parse(format).generate(currentCounter, LocalDate.now());
+		nextValueEl.setValue(nextValue);
+		
+		serialNumberStartEl.setExampleKey("serial.number.counter.hint",
+				new String[] { Long.toString(certificateConfig.getSerialNumberCounter()) });
 	}
 
 	@Override
@@ -281,7 +353,7 @@ public class CertificatesOptionsController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == enabledEl) {
+		if (source == enabledEl || serialNumberEl == source) {
 			updateUI();
 		} else if (source == selectTemplateLink) {
 			doSelectTemplate(ureq);
@@ -314,6 +386,26 @@ public class CertificatesOptionsController extends FormBasicController {
 				validityCont.setErrorKey("form.mandatory.hover");
 				allOk &= false;
 			} else if(!validateTimelapse(ureq, validityTimelapseEl, validityCont)) {
+				allOk &= false;
+			}
+		}
+		
+		if(serialNumberEl.isOn()) {
+			serialNumberFormatEl.clearError();
+			if(!StringHelper.containsNonWhitespace(serialNumberFormatEl.getValue())) {
+				serialNumberFormatEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else if(!SerialNumberFormat.parse(serialNumberFormatEl.getValue()).hasCounter()) {
+				serialNumberFormatEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+			
+			serialNumberStartEl.clearError();
+			if(!StringHelper.containsNonWhitespace(serialNumberStartEl.getValue())) {
+				serialNumberFormatEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else if(!StringHelper.isLong(serialNumberStartEl.getValue())) {
+				serialNumberStartEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		}
@@ -365,7 +457,18 @@ public class CertificatesOptionsController extends FormBasicController {
 		String custom1 = certificationCustom1El.getValue();
 		String custom2 = certificationCustom2El.getValue();
 		String custom3 = certificationCustom3El.getValue();
-		PreviewCertificate preview = certificatesManager.previewCertificate(selectedTemplate, entry, getLocale(), custom1, custom2, custom3);
+		String serialNumber = null;
+		/*
+		if(serialNumberEl.isOn()
+				&& StringHelper.containsNonWhitespace(serialNumberFormatEl.getValue())
+				&& StringHelper.isLong(counterEl.getValue())) {
+			SerialNumberFormat serialNumberFormat = SerialNumberFormat.parse(serialNumberFormatEl.getValue());
+			serialNumber = serialNumberFormat.generate(Long.valueOf(counterEl.getValue()), LocalDate.now());
+		}
+		*/
+		PreviewCertificate preview = certificatesManager.previewCertificate(selectedTemplate, entry, getLocale(),
+				custom1, custom2, custom3, serialNumber);
+		
 		MediaResource resource = new PreviewMediaResource(preview);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
@@ -438,9 +541,22 @@ public class CertificatesOptionsController extends FormBasicController {
 			certificateConfig.setManualCertificationEnabled(false);
 		}
 		
+		if(serialNumberEl.isOn() && enabledEl.isOn()) {
+			certificateConfig.setSerialNumberEnabled(true);
+			certificateConfig.setSerialNumberFormat(serialNumberFormatEl.getValue());
+			certificateConfig.setSerialNumberStartNumber(Long.valueOf(serialNumberStartEl.getValue()));
+		} else {
+			certificateConfig.setSerialNumberEnabled(false);
+			certificateConfig.setSerialNumberFormat(null);
+		}
+		
 		certificateConfig = certificatesManager.updateConfiguration(certificateConfig);
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		
+		if(serialNumberEl.isOn()) {
+			updateNextValue();
+		}
 	}
 	
 	public class TemplateMapper implements Mapper {

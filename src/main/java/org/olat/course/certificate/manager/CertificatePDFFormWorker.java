@@ -80,6 +80,7 @@ public class CertificatePDFFormWorker {
 	private final String custom1;
 	private final String custom2;
 	private final String custom3;
+	private final String serialNumber;
 	private final String grade;
 	private final BigDecimal gradeCutValue;
 	private final String gradeLabel;
@@ -91,7 +92,7 @@ public class CertificatePDFFormWorker {
 
 	public CertificatePDFFormWorker(Identity identity, CertificationProgram certificationProgram, RepositoryEntry entry, Float score, Float maxScore, Boolean passed,
 									Double completion, Date dateCertification, Date dateFirstCertification, Date dateCertificateValidUntil, String custom1,
-									String custom2, String custom3, String grade, BigDecimal gradeCutValue, String gradeLabel, String certificateURL,
+									String custom2, String custom3, String serialNumber, String grade, BigDecimal gradeCutValue, String gradeLabel, String certificateURL,
 									Locale locale, UserManager userManager, CertificatesManagerImpl certificatesManager) {
 		this.certificationProgram = certificationProgram;
 		this.entry = entry;
@@ -102,6 +103,7 @@ public class CertificatePDFFormWorker {
 		this.custom1 = custom1;
 		this.custom2 = custom2;
 		this.custom3 = custom3;
+		this.serialNumber = serialNumber;
 		this.grade = grade;
 		this.gradeCutValue = gradeCutValue;
 		this.gradeLabel = gradeLabel;
@@ -315,6 +317,7 @@ public class CertificatePDFFormWorker {
 		fillField("custom1", custom1, acroForm);
 		fillField("custom2", custom2, acroForm);
 		fillField("custom3", custom3, acroForm);
+		fillField("certificateSerialNumber", serialNumber, acroForm);
 		fillField("certificateVerificationUrl", certificateURL, acroForm);
 	}
 

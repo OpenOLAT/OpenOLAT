@@ -81,6 +81,15 @@ public class RepositoryEntryCertificateConfigurationImpl implements Persistable,
 	private String certificateCustom2;
 	@Column(name="c_cer_custom_3", nullable=true, insertable=true, updatable=true)
 	private String certificateCustom3;
+	
+	@Column(name="c_sn_enabled", nullable=false, insertable=true, updatable=true)
+	private boolean serialNumberEnabled;
+	@Column(name="c_sn_format", nullable=true, insertable=true, updatable=true)
+	private String serialNumberFormat;
+	@Column(name="c_sn_start_number", nullable=false, insertable=true, updatable=true)
+	private long serialNumberStartNumber;
+	@Column(name="c_sn_counter", nullable=false, insertable=true, updatable=false)
+	private long serialNumberCounter;
 
 	@Column(name="c_validity_enabled", nullable=true, insertable=true, updatable=true)
 	private boolean validityEnabled;
@@ -187,6 +196,45 @@ public class RepositoryEntryCertificateConfigurationImpl implements Persistable,
 	@Override
 	public void setCertificateCustom3(String certificateCustom3) {
 		this.certificateCustom3 = certificateCustom3;
+	}
+	
+	@Override
+	public boolean isSerialNumberEnabled() {
+		return serialNumberEnabled;
+	}
+
+	@Override
+	public void setSerialNumberEnabled(boolean serialNumberEnabled) {
+		this.serialNumberEnabled = serialNumberEnabled;
+	}
+
+	@Override
+	public String getSerialNumberFormat() {
+		return serialNumberFormat;
+	}
+
+	@Override
+	public void setSerialNumberFormat(String serialNumberFormat) {
+		this.serialNumberFormat = serialNumberFormat;
+	}
+
+	@Override
+	public long getSerialNumberStartNumber() {
+		return serialNumberStartNumber;
+	}
+
+	@Override
+	public void setSerialNumberStartNumber(long startNumber) {
+		this.serialNumberStartNumber = startNumber;
+	}
+
+	@Override
+	public long getSerialNumberCounter() {
+		return serialNumberCounter;
+	}
+
+	public void setSerialNumberCounter(long serialNumberCounter) {
+		this.serialNumberCounter = serialNumberCounter;
 	}
 
 	@Override

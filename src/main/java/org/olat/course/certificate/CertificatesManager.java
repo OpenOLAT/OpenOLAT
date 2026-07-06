@@ -262,10 +262,10 @@ public interface CertificatesManager {
 	public Date getDateWindowRecertification(Date nextCertificationDate, CertificationProgram certificateProgram);
 	
 	public PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale,
-			String custom1, String custom2, String custom3);
+			String custom1, String custom2, String custom3, String serialNumber);
 	
 	public PreviewCertificate previewCertificate(CertificateTemplate template, CertificationProgram certificationProgram, Locale locale,
-			String custom1, String custom2, String custom3);
+			String custom1, String custom2, String custom3, String serialNumber);
 
 	/**
 	 * 
@@ -286,8 +286,9 @@ public interface CertificatesManager {
 			Date nextRecertificationDate, File certificateFile, Identity doer);
 	
 	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate,
-			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle, Long resourceKey,
-			Date nextRecertificationDate, File certificateFile, Identity doer);
+			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle,
+			Long resourceKey, String serialNumber, Date nextRecertificationDate,
+			File certificateFile, Identity doer);
 	
 	public void generateCertificates(List<CertificateInfos> infos, RepositoryEntry entry, CertificateTemplate template, CertificateConfig config);
 

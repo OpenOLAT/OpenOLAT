@@ -318,6 +318,7 @@ public class UserCertificationWebService {
 			String nextRecertificationDateStr = partsReader.getValue("nextRecertificationDate");
 			String archivedResource = partsReader.getValue("archivedResourceKey");
 			String externalId = partsReader.getValue("externalId");
+			String serialNumber = partsReader.getValue("serialNumber");
 			CertificateManagedFlag[] managedFlags = CertificateManagedFlag.toEnum(partsReader.getValue("managedFlags"));
 			Long archivedResourceKey = null;
 			if(StringHelper.isLong(archivedResource)) {
@@ -345,7 +346,7 @@ public class UserCertificationWebService {
 			}
 			Identity actor = getIdentity(request);
 			certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate,
-					externalId, managedFlags, courseTitle, archivedResourceKey,
+					externalId, managedFlags, courseTitle, archivedResourceKey, serialNumber,
 					nextRecertificationDate, tmpFile, actor);
 			return Response.ok().build();
 		} catch (Throwable e) {
@@ -414,6 +415,9 @@ public class UserCertificationWebService {
 		
 		if(certificateVo.getNextCertificationDate() != null) {
 			certificate.setNextRecertificationDate(certificateVo.getNextCertificationDate());
+		}
+		if(certificateVo.getSerialNumber() != null) {
+			((CertificateImpl)certificate).setSerialNumber(certificateVo.getSerialNumber());
 		}
 		
 		if(certificate instanceof CertificateImpl impl) {
