@@ -159,15 +159,17 @@ body .modal-body {
 }
 
 /* Input-group addons styled as buttons get the button border */
-.input-group-addon.btn,
-.input-group-addon.btn-default {
+.btn.input-group-addon,
+a.input-group-addon {
 	border-color: $btn-default-border;
 }
 /* Dividing border between btn-addon and form-control matches button border */
-.input-group:has(> .input-group-addon.btn:last-child) .form-control {
+.input-group:has(> .btn.input-group-addon:last-child) .form-control,
+.input-group:has(> a.input-group-addon:last-child) .form-control {
 	border-right-color: $btn-default-border;
 }
-.input-group:has(> .input-group-addon.btn:first-child) .form-control {
+.input-group:has(> .btn.input-group-addon:first-child) .form-control,
+.input-group:has(> a.input-group-addon:first-child) .form-control {
 	border-left-color: $btn-default-border;
 }
 
