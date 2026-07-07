@@ -1026,7 +1026,7 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		if(guardModalController(addAttributeCtrl)) return;
 		
 		PositionAttributeDefinition newDefinition = recruitingService
-				.createAttributeDefinition(position, tab, type, null, null, false, null, null);
+				.createAttributeDefinition(position, tab, type, null, null, null, false, null, null);
 		addAttributeCtrl = getEditAdditionalAttributeController(ureq, newDefinition, defaultConfiguration);
 		listenTo(addAttributeCtrl);
 		

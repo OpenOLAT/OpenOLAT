@@ -1114,6 +1114,9 @@ public class ApplicationAttributesDelegate {
 					|| type == PositionAttributeDefinitionTypeEnum.number || type == PositionAttributeDefinitionTypeEnum.percentage
 					|| type == PositionAttributeDefinitionTypeEnum.date)) {
 				String label = definition.getLabel(locale, true);
+				if(!StringHelper.containsNonWhitespace(label)) {
+					label = "???";
+				}
 				DefaultFlexiColumnModel column = new DefaultFlexiColumnModel(false, "custom.attribute." + i, COLS_OFFSET + i, action, true, "custom-attr-" + i);
 				
 				if(type == PositionAttributeDefinitionTypeEnum.question) {

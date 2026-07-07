@@ -481,19 +481,19 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 
 	@Override
 	public PositionAttributeDefinition createAttributeDefinition(Position position, PositionApplicationAttributeTabEnum tab,
-			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, boolean mandatory,
+			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, String labelFr, boolean mandatory,
 			String placeholder, String placeholderDe) {
-		return positionDao.createAttributeDefinition(position, tab, attributeType, label, labelDe, mandatory, placeholder, placeholderDe);
+		return positionDao.createAttributeDefinition(position, tab, attributeType, label, labelDe, labelFr, mandatory, placeholder, placeholderDe);
 	}
 
 	@Override
 	public PositionAndAttributeDefinition createAttributeDefinitionAndPersist(Position position, PositionApplicationAttributeTabEnum tab,
-			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, boolean mandatory,
+			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, String labelFr, boolean mandatory,
 			String placeholder, String placeholderDe) {
 		Position reloadedPosition = positionDao.loadPositionByKey(position.getKey());
 		
 		PositionAttributeDefinition newDefinition = positionDao.createAttributeDefinitionAndPersist(position, tab, attributeType,
-				label, labelDe, mandatory, placeholder, placeholderDe);
+				label, labelDe, labelFr, mandatory, placeholder, placeholderDe);
 
 		boolean added = false;
 		List<PositionAttributeDefinition> definitions = reloadedPosition.getAttributesDefinitions();

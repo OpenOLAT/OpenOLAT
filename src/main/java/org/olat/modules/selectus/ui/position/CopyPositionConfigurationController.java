@@ -522,7 +522,7 @@ public class CopyPositionConfigurationController extends FormBasicController {
 			PositionAttributeDefinition attr = recruitingService.createAttributeDefinition(position,
 					attributeDefinition.getTabEnum(), attributeDefinition.getTypeEnum(),
 					attributeDefinition.getLabel(Locale.ENGLISH), attributeDefinition.getLabel(Locale.GERMAN),
-					attributeDefinition.isMandatory(), 
+					attributeDefinition.getLabel(Locale.FRENCH), attributeDefinition.isMandatory(), 
 					attributeDefinition.getPlaceholder(Locale.ENGLISH), attributeDefinition.getPlaceholder(Locale.GERMAN));
 			attr.setAttributeConfiguration(attributeDefinition.getAttributeConfiguration());
 			recruitingService.persistAttributeDefinition(attr);
