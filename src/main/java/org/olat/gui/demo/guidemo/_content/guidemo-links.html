@@ -1,40 +1,46 @@
-<h4>Links</h4>
+<h2>Links</h2>
 $r.render("sourceview")
 <p>All available links & buttons in OpenOlat</p>
-<hr>
 <p>$r.render("closeIcon")</p>
-Buttons:<br />
-<p>$r.render("button.xsmall") (CSS classes <b>btn bt-default</b> and <b>xsmall</b>)</p>
-<p>$r.render("button.small") (CSS classes <b>btn bt-default</b> and <b>small</b>)</p>
-<p>$r.render("button") (CSS class <b>btn bt-default</b>)</p>
-<p>$r.render("button.dirty") (CSS class <b>o_button_dirty</b>)</p>
-<p>$r.render("button.preferred") (CSS class <b>btn bt-primary</b>)</p>
-<p>$r.render("button.primary.light") (CSS class <b>o_button_primary_light</b>)</p>
-<p>$r.render("button.disabled") (CSS classes <b>btn bt-default</b> and <b>o_disabled</b>)</p>
-<p>$r.render("button.long.trans")</p>
-<p>$r.render("button.ghost")</p>
-<p>$r.render("button.ghost.disabled")</p>
-<p>$r.render("sonne")</p>
-<hr>
-Form Buttons:<br />
+<h3>Buttons</h3>
+<div style="display:grid;gap:10px;grid-template-columns: max-content max-content;">
+	<div>$r.render("button.xsmall")</div>
+	<div>$r.render("button.xsmall.disabled")</div>
+	<div>$r.render("button.small")</div>
+	<div>$r.render("button.small.disabled")</div>
+	<div>$r.render("button")</div>
+	<div>$r.render("button.disabled")</div>
+	<div>$r.render("button.ghost")</div>
+	<div>$r.render("button.ghost.disabled")</div>
+	<div>$r.render("button.primary.light")</div>
+	<div>$r.render("button.primary.light.disabled")</div>
+	<div>$r.render("button.primary")</div>
+	<div>$r.render("button.primary.disabled")</div>
+</div>
+<div class="o_block_large">
+	<p>$r.render("button.dirty")</p>
+	<p>$r.render("button.long.trans")</p>
+	<p>$r.render("button.icon")</p>
+	<p><div class="btn-group">
+		$r.render("button.group.left")$r.render("button.group.middle")$r.render("button.group.right")
+	</div></p>
+</div>
+<h3>Toggles</h3>
 <p>$r.render("formbuttonctr")</p>
-<hr>
-Links:<br>
+<h3>Links</h3>
 <p>$r.render("link")</p>
 <p>$r.render("backLink") (CSS class <b>o_icon o_icon_back</b>)</p>
 <p>$r.render("link.ext") (CSS class <b>o_icon o_icon_link_extern</b>)</p>
 <p>$r.render("link.mail") (CSS class <b>o_icon o_icon_mail</b>)</p>
 <p>$r.render("link.pos") (Give the position)</p>
 <p>$r.render("link.tooltip") (Tooltip)</p>
-<hr>
-Up and down:<br>
+<h3>Up and down</h3>
 #foreach($upDown in $upDowns)
 <p>$r.render($upDown.component) $upDown.text</p>
 #end
 <br>
 <br>
-<hr>
-Text Component:<br />
+<h3>Text Component</h3>
 <ul class="list-unstyled">
 <li>$r.render("text.simple")</li>
 <li>$r.render("text.simple.counter")</li>
@@ -62,7 +68,6 @@ Text Component:<br />
 <li>$r.render("text.div.advice") $r.contextHelpAdditionalInfo("")</li>
 </ul>
 <br>
-<hr>
 <fieldset>
 $r.render("ajaxtest")
 </fieldset>

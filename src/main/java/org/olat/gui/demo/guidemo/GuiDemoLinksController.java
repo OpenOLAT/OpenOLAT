@@ -64,7 +64,7 @@ public class GuiDemoLinksController extends BasicController {
 	private Link buttonSmall;
 	private Link button;
 	private Link buttonDirty;
-	private Link buttonPreferred;
+	private Link buttonPrimary;
 	
 	private Link link;
 	private ExternalLink linkExtern;
@@ -87,6 +87,8 @@ public class GuiDemoLinksController extends BasicController {
 		super(ureq,wControl);		
 		mainVC = createVelocityContainer("guidemo-links");
 		buttonXSmall = LinkFactory.createButtonXSmall("button.xsmall", mainVC, this);
+		Link buttonXSmallDisabled = LinkFactory.createButtonXSmall("button.xsmall.disabled", mainVC, this);
+		buttonXSmallDisabled.setEnabled(false);
 		// to test correctness of ajax mode with invisble components
 		pFirstInvisible = new Panel("firstinvisble");
 		// for demo only
@@ -96,17 +98,26 @@ public class GuiDemoLinksController extends BasicController {
 		mainVC.put("ajaxtest", pFirstInvisible);
 		
 		buttonSmall = LinkFactory.createButtonSmall("button.small", mainVC, this);
+		Link buttonSmallDisabled = LinkFactory.createButtonSmall("button.small.disabled", mainVC, this);
+		buttonSmallDisabled.setEnabled(false);
+		
 		button = LinkFactory.createButton("button", mainVC, this);
-		buttonDirty = LinkFactory.createButton("button.dirty", mainVC, this);
-		buttonDirty.setCustomEnabledLinkCSS("btn btn-default o_button_dirty");
-		buttonPreferred = LinkFactory.createButton("button.preferred", mainVC, this);
-		buttonPreferred.setCustomEnabledLinkCSS("btn btn-primary");
+		Link buttonDisabled = LinkFactory.createButton("button.disabled", mainVC, this);
+		buttonDisabled.setEnabled(false);
+		
+		buttonPrimary = LinkFactory.createButton("button.primary", mainVC, this);
+		buttonPrimary.setPrimary(true);
+		
+		Link buttonPrimaryDisabled = LinkFactory.createButton("button.primary.disabled", mainVC, this);
+		buttonPrimaryDisabled.setPrimary(true);
+		buttonPrimaryDisabled.setEnabled(false);
 		
 		Link buttonPrimatyLight = LinkFactory.createButton("button.primary.light", mainVC, this);
 		buttonPrimatyLight.setElementCssClass("o_button_primary_light");
 		
-		Link buttonDisabled = LinkFactory.createCustomLink("button.disabled", "button.disabled", "button.disabled", Link.BUTTON, mainVC, this);
-		buttonDisabled.setEnabled(false);
+		Link buttonPrimatyLightDisabled = LinkFactory.createButton("button.primary.light.disabled", mainVC, this);
+		buttonPrimatyLightDisabled.setElementCssClass("o_button_primary_light");
+		buttonPrimatyLightDisabled.setEnabled(false);
 		
 		Link buttonGhost = LinkFactory.createButton("button.ghost", mainVC, this);
 		buttonGhost.setGhost(true);
@@ -114,11 +125,19 @@ public class GuiDemoLinksController extends BasicController {
 		buttonGhostDisabled.setGhost(true);
 		buttonGhostDisabled.setEnabled(false);
 		
-		iconButton = LinkFactory.createCustomLink("sonne", "cmd.sonne", "", Link.NONTRANSLATED, mainVC, this);
-		iconButton.setCustomEnabledLinkCSS("demoext_bild");
-		iconButton.setCustomDisabledLinkCSS("demoext_bild");
+		iconButton = LinkFactory.createButton("button.icon", mainVC, this);
+		iconButton.setIconLeftCSS("o_icon o_icon-lg o_icon_pencil");
+		
+		buttonDirty = LinkFactory.createButton("button.dirty", mainVC, this);
+		buttonDirty.setCustomEnabledLinkCSS("btn btn-default o_button_dirty");
 		
 		buttonLongTrans = LinkFactory.createButton("button.long.trans", mainVC, this);
+		
+		Link buttonGroupLeft = LinkFactory.createButton("button.group.left", mainVC, this);
+		buttonGroupLeft.setIconLeftCSS("o_icon o_icon-fw o_icon_previous");
+		LinkFactory.createButton("button.group.middle", mainVC, this);
+		Link buttonGroupRight = LinkFactory.createButton("button.group.right", mainVC, this);
+		buttonGroupRight.setIconRightCSS("o_icon o_icon-fw o_icon_next");
 		
 		buttonCloseIcon = LinkFactory.createIconClose("This is the hovertext!", mainVC, this);
 		

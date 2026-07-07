@@ -73,6 +73,10 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 	private static final String[] options = new String[] { "A", "B", "C" };
 	// For yes and no we'll use i18n keys and translate the values
 	private static final String[] yesOrNoKeys = new String[] { "advanced_form.yes", "advanced_form.no" };
+	
+	private TextElement buttonAddOnTextEl;
+	private FormLink buttonAddOnLink;
+	private int buttonAddonCounter= 0;
 
 	private RichTextElement richTextElement;
 	private FormLayoutContainer subLayout;
@@ -278,6 +282,18 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		cs2.setElementCssClass("");
 		SingleSelection cs3 = uifactory.addCardSingleSelectHorizontal("guidemo.form.card3", form, yesOrNoKeys, yesOrNoOptions, descs, icons);
 		cs3.setElementCssClass("o_radio_cards_lg");
+		
+		FormLayoutContainer gradeScaleCont = FormLayoutContainer.createInputGroupLayout("groupCont", getTranslator(), null, null);
+		gradeScaleCont.setLabel("guidemo.button.addon", null);
+		gradeScaleCont.setRootForm(mainForm);
+		form.add(gradeScaleCont);
+		String buttonAddOnText = translate("guidemo.button.addon.text", String.valueOf(buttonAddonCounter));
+		buttonAddOnTextEl = uifactory.addTextElement("button.addon", null, 255, buttonAddOnText, gradeScaleCont);
+		buttonAddOnTextEl.setEnabled(false);
+		buttonAddOnTextEl.setDomReplacementWrapperRequired(false);
+		buttonAddOnLink = uifactory.addFormLink("rightAddOn", "buttonAddOnLink", "guidemo.button.addon.add", null, gradeScaleCont, Link.BUTTON);
+		buttonAddOnLink.setElementCssClass("input-group-addon");
+		buttonAddOnLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 	}
 	
 	private void updateSubLayoutVisibility() {
@@ -304,6 +320,8 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 				String selection = verticalRadioButtons.getSelectedKey();
 				showInfo("advanced_form.your_selection_is", selection);
 			}
+		} else if (source == buttonAddOnLink) {
+			buttonAddOnTextEl.setValue(translate("guidemo.button.addon.text", String.valueOf(++buttonAddonCounter)));
 		} else if (source == richTextElement) {
 			getWindowControl().setInfo("Wow, you just changed the html editor area. The new content is now: " + richTextElement.getValue());
 		} else if (source == file2) {
