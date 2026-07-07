@@ -274,7 +274,7 @@ public class PositionEditRefereesController extends FormBasicController implemen
 	private String getRefereeSubject() {
 		String refereeSubject = position.getRefereeRecommandationMailSubject();
 		if(!StringHelper.containsNonWhitespace(refereeSubject)) {
-			refereeSubject = translate("reference.recommendation.mail.subject");
+			refereeSubject = translate("reference.recommendation.mail.subject", ReferenceHelper.getMailVariables());
 		}
 		return refereeSubject;
 	}
@@ -282,7 +282,7 @@ public class PositionEditRefereesController extends FormBasicController implemen
 	private String getRefereeTemplate() {
 		String refereeTemplate = position.getRefereeRecommandationMailTemplate();
 		if(!StringHelper.containsNonWhitespace(refereeTemplate)) {
-			refereeTemplate = translate("reference.recommendation.mail.body");
+			refereeTemplate = translate("reference.recommendation.mail.body", ReferenceHelper.getMailVariables());
 		}
 		return refereeTemplate;
 	}

@@ -225,7 +225,7 @@ public class PositionEditExpertsController extends FormBasicController implement
 	private String getExpertSubject() {
 		String expertSubject = position.getExpertRecommandationMailSubject();
 		if(!StringHelper.containsNonWhitespace(expertSubject)) {
-			expertSubject = translate("reference.expert.mail.subject");
+			expertSubject = translate("reference.expert.mail.subject", ReferenceHelper.getMailVariables());
 		}
 		return expertSubject;
 	}
@@ -233,7 +233,7 @@ public class PositionEditExpertsController extends FormBasicController implement
 	private String getExpertTemplate() {
 		String expertTemplate = position.getExpertRecommandationMailTemplate();
 		if(!StringHelper.containsNonWhitespace(expertTemplate)) {
-			expertTemplate = translate("reference.expert.mail.body");
+			expertTemplate = translate("reference.expert.mail.body", ReferenceHelper.getMailVariables());
 		}
 		return expertTemplate;
 	}

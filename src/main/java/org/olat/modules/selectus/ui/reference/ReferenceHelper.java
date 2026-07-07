@@ -20,6 +20,15 @@
 package org.olat.modules.selectus.ui.reference;
 
 import static org.olat.modules.selectus.manager.ApplicationMailTemplate.DEFAULT_TEMPLATE;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.APPLICATION_DEAR_TITLE_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.APPLICATION_FIRST_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.APPLICATION_LAST_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.HEAD_FIRST_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.HEAD_LAST_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.POSITION_MAIL;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.POSITION_TITLE;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.REFEREE_DEAR_TITLE_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.REFEREE_TITLE_LAST_NAME;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -376,6 +385,23 @@ public class ReferenceHelper {
 				applicationTitleFullname,		// 9
 				applicationFirstName,			// 10
 				applicationLastName				// 11
+		};
+	}
+	
+	public static final String[] getMailVariables() {
+		return new String[]{
+				"$" + POSITION_TITLE, 				// 0
+				"$" + POSITION_MAIL,				// 1
+				"$" + HEAD_LAST_NAME,				// 2
+				"$" + HEAD_FIRST_NAME,				// 3
+				"$" + "refereeUrl",					// 4
+				"$" + REFEREE_DEAR_TITLE_NAME,		// 5
+				"$" + REFEREE_TITLE_LAST_NAME,		// 6
+				"$" + APPLICATION_DEAR_TITLE_NAME,	// 7
+				"$" + "applicantTitleLastname",		// 8
+				"$" + "applicantTitleFullName",		// 9
+				"$" + APPLICATION_FIRST_NAME,		// 10
+				"$" + APPLICATION_LAST_NAME			// 11
 		};
 	}
 	

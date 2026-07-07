@@ -172,7 +172,7 @@ public class PositionEditComparativeAssessmentExpertsController extends FormBasi
 	private String getComparativeAssessmentExpertSubject() {
 		String subject = position.getComparativeAssessmentExpertMailSubject();
 		if(!StringHelper.containsNonWhitespace(subject)) {
-			subject = translate("reference.comparative.expert.mail.subject");
+			subject = translate("reference.comparative.expert.mail.subject", ReferenceHelper.getMailVariables());
 		}
 		return subject;
 	}
@@ -180,7 +180,7 @@ public class PositionEditComparativeAssessmentExpertsController extends FormBasi
 	private String getComparativeAssessmentExpertTemplate() {
 		String template = position.getComparativeAssessmentExpertMailTemplate();
 		if(!StringHelper.containsNonWhitespace(template)) {
-			template = translate("reference.comparative.expert.mail.body");
+			template = translate("reference.comparative.expert.mail.body", ReferenceHelper.getMailVariables());
 		}
 		return template;
 	}
