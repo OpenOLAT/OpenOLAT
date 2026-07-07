@@ -56,7 +56,9 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
-	private AutomaticLifecycleService automaticLifecycleService;
+	private RepositoryEntryDAO repositoryEntryDao;
+	@Autowired
+	private AutomaticLifecycleServiceImpl automaticLifecycleService;
 	@Autowired
 	private RepositoryEntryLifecycleDAO repositoryEntryLifecycleDao;
 
@@ -77,8 +79,23 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getRepositoryEntriesToClose() {
+		RepositoryEntry entry = createRepositoryEntry("To close 2", RepositoryEntryStatusEnum.published, -190, -60);	
+		
+		List<RepositoryEntry> entriesToClose2 = automaticLifecycleService
+				.getRepositoryEntries(DateUtils.addDays(new Date(), -200), RepositoryEntryStatusEnum.preparationToPublished());
+		Assert.assertNotNull(entriesToClose2);
+		Assert.assertFalse(entriesToClose2.contains(entry));
+		
+		List<RepositoryEntry> entriesToClose50 = automaticLifecycleService
+				.getRepositoryEntriesToClose(DateUtils.addDays(new Date(), -50));
+		Assert.assertNotNull(entriesToClose50);
+		Assert.assertTrue(entriesToClose50.contains(entry));
+	}
+	
+	@Test
 	public void getDeletedRepositoryEntries() {
-		RepositoryEntry entry = createRepositoryEntry("To close 1", RepositoryEntryStatusEnum.trash, -120, -60);
+		RepositoryEntry entry = createRepositoryEntry("To delete def. 1", RepositoryEntryStatusEnum.trash, -120, -60);
 		entry.setDeletionDate(DateUtils.addDays(new Date(), -80));
 		entry = dbInstance.getCurrentEntityManager().merge(entry);
 		dbInstance.commitAndCloseSession();
@@ -95,13 +112,51 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getDeletedRepositoryEntriesnegativeTest() {
+	public void getRepositoryEntriesToDefinitivelyDelete() {
+		RepositoryEntry entry = createRepositoryEntry("To delete def. 2", RepositoryEntryStatusEnum.trash, -160, -60);
+		entry.setDeletionDate(DateUtils.addDays(new Date(), -80));
+		entry = dbInstance.getCurrentEntityManager().merge(entry);
+		dbInstance.commitAndCloseSession();
+		
+		List<RepositoryEntry> deletedEntries = automaticLifecycleService
+				.getRepositoryEntriesInTrash(DateUtils.addDays(new Date(), -200));
+		Assert.assertNotNull(deletedEntries);
+		Assert.assertFalse(deletedEntries.contains(entry));
+		
+		List<RepositoryEntry> deletedEntries70 = automaticLifecycleService
+				.getRepositoryEntriesToDefinitivelyDelete(DateUtils.addDays(new Date(), -70));
+		Assert.assertNotNull(deletedEntries70);
+		Assert.assertTrue(deletedEntries70.contains(entry));
+	}
+	
+	@Test
+	public void getDeletedRepositoryEntriesNegativeTest() {
 		RepositoryEntry entry = createTrashedRepositoryEntry("To close 1", RepositoryEntryStatusEnum.published, -120, -60, -80);
 
 		List<RepositoryEntry> deletedEntries = automaticLifecycleService
 				.getRepositoryEntriesInTrash(DateUtils.addDays(new Date(), -20));
 		Assert.assertNotNull(deletedEntries);
 		Assert.assertFalse(deletedEntries.contains(entry));
+	}
+	
+	@Test
+	public void getDeletedRepositoryEntriesNegativeTestManaged() {
+		boolean manageRepositories = repositoryModule.isManagedRepositoryEntries();
+		repositoryModule.setManagedRepositoryEntries(true);
+		waitMessageAreConsumed();
+		
+		RepositoryEntry entry = createRepositoryEntry("To not close", RepositoryEntryStatusEnum.published, -210, -60);
+		entry.setManagedFlagsString("close");
+		entry = repositoryEntryDao.updateAndCommit(entry);
+		dbInstance.commitAndCloseSession();
+		
+		List<RepositoryEntry> toCloseEntries = automaticLifecycleService
+				.getRepositoryEntriesToClose(DateUtils.addDays(new Date(), -50));
+		Assert.assertNotNull(toCloseEntries);
+		Assert.assertFalse(toCloseEntries.contains(entry));
+		
+		repositoryModule.setManagedRepositoryEntries(manageRepositories);
+		waitMessageAreConsumed();
 	}
 	
 	@Test

@@ -32,7 +32,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -61,6 +63,8 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 			RepositoryEntryLifeCycleUnit.month.name(), RepositoryEntryLifeCycleUnit.year.name()
 		};
 	
+	private static final JobKey LIFECYCLE_KJOB_KEY = JobKey.jobKey("automaticLifecycleJob");
+	
 	private MultipleSelectionElement notificationEl;
 	private MultipleSelectionElement toCloseEl;
 	private MultipleSelectionElement toDeleteEl;
@@ -74,6 +78,9 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 	private FormLayoutContainer closeRuleCont;
 	private FormLayoutContainer deleteRuleCont;
 	private FormLayoutContainer definitivelyDeleteRuleCont;
+	
+	private CloseableModalController cmc;
+	private ConfirmChangeLifecycleController confirmCtrl;
 	
 	@Autowired
 	private Scheduler scheduler;
@@ -261,6 +268,28 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == confirmCtrl) {
+			if(event == Event.DONE_EVENT) {
+				doCommitChanges();
+				doStartJob();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == cmc) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmCtrl);
+		removeAsListenerAndDispose(cmc);
+		confirmCtrl = null;
+		cmc = null;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(toCloseEl == source) {
 			closeRuleCont.setVisible(toCloseEl.isAtLeastSelected(1));
@@ -273,6 +302,31 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String autoClose = getStringValue(toCloseEl, closeValueEl, closeUnitEl);
+		String autoDelete = getStringValue(toDeleteEl, deleteValueEl, deleteUnitEl);
+		String autoDefinitivelyDelete = getStringValue(toDefinitivelyDeleteEl, definitivelyDeleteValueEl, definitivelyDeleteUnitEl);
+		if(StringHelper.containsNonWhitespace(autoClose) || StringHelper.containsNonWhitespace(autoDelete) || StringHelper.containsNonWhitespace(autoDefinitivelyDelete)) {
+			doConfirmCommitChanges(ureq, autoClose, autoDelete, autoDefinitivelyDelete);
+		} else {
+			doCommitChanges();
+		}
+	}
+
+	private void doConfirmCommitChanges(UserRequest ureq, String autoClose, String autoDelete, String autoDefinitivelyDelete) {
+		confirmCtrl = new ConfirmChangeLifecycleController(ureq, getWindowControl(),
+				translate("confirmation.lifecycle"),
+				translate("confirmation.lifecycle.conf"),
+				translate("confirmation.lifecycle.save"),
+				translate("cancel"), autoClose, autoDelete, autoDefinitivelyDelete);
+		listenTo(confirmCtrl);
+		
+		String title = translate("confirmation.lifecycle.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCommitChanges() {
 		boolean interrupted = interruptJob();
 		getLogger().info(Tracing.M_AUDIT, "Change repository automatic lifecycle configuration");
 		
@@ -294,8 +348,7 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 	
 	private boolean interruptJob() {
 		try {
-			JobKey jobKey = JobKey.jobKey("automaticLifecycleJob");
-			if(scheduler.interrupt(jobKey)) {
+			if(scheduler.interrupt(LIFECYCLE_KJOB_KEY)) {
 				getLogger().info(Tracing.M_AUDIT, "Interrupt repository automatic lifecycle job");
 				return true;
 			}
@@ -323,15 +376,33 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		return null;
 	}
 	
+	/**
+	 * Method will stop a running before starting a new one.
+	 */
+	private void doStartJob() {
+		try {
+			boolean isRunning = scheduler.getCurrentlyExecutingJobs().stream()
+					.anyMatch(job -> LIFECYCLE_KJOB_KEY.equals(job.getJobDetail().getKey()));
+			if(isRunning) {
+				interruptJob();
+				taskExecutorManager.schedule(new ResumeJob(), 2000);
+			} else {
+				scheduler.triggerJob(LIFECYCLE_KJOB_KEY);
+				getLogger().info(Tracing.M_AUDIT, "Start repository automatic lifecycle job");
+			}
+		} catch (SchedulerException e) {
+			getLogger().error("", e);
+		}
+	}
+	
 	private class ResumeJob extends TimerTask {
 		@Override
 		public void run() {
 			try {
-				final JobKey jobKey = JobKey.jobKey("automaticLifecycleJob");
 				boolean isRunning = scheduler.getCurrentlyExecutingJobs().stream()
-						.anyMatch(job -> jobKey.equals(job.getJobDetail().getKey()));
+						.anyMatch(job -> LIFECYCLE_KJOB_KEY.equals(job.getJobDetail().getKey()));
 				if(!isRunning) {
-					scheduler.triggerJob(jobKey);
+					scheduler.triggerJob(LIFECYCLE_KJOB_KEY);
 					getLogger().info(Tracing.M_AUDIT, "Resume repository automatic lifecycle job");
 				}
 			} catch (SchedulerException e) {
