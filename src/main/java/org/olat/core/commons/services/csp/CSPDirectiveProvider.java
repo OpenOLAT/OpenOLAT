@@ -53,5 +53,12 @@ public interface CSPDirectiveProvider {
 	public default Collection<String> getFormAction() {
 		return List.of();
 	}
+	
+	public default Collection<String> getObjectSrc() {
+		return List.of();
+	}
 
+	public default Collection<String> getWorkerSrc() {
+		return List.of();
+	}
 }

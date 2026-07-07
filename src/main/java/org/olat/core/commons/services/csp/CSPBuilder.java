@@ -93,10 +93,10 @@ public class CSPBuilder {
 				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getMediaSrcUrls));
 		objectSrc = new Directive("object-src", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_OBJECT_SRC,
 				securityModule.getContentSecurityPolicyObjectSrc(),
-				null);
+				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getObjectSrc));
 		workerSrc = new Directive("worker-src", CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_WORKER_SRC,
 				securityModule.getContentSecurityPolicyWorkerSrc(),
-				null);
+				getProvidedUrls(directiveProviders, CSPDirectiveProvider::getWorkerSrc));
 		
 		directives = List.of(defaultSrc, formAction, scriptSrc, styleSrc, imgSrc, imgSrc, fontSrc, connectSrc, frameSrc,
 				frameAncestors, mediaSrc, objectSrc, workerSrc);

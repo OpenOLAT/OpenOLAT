@@ -37,34 +37,46 @@ public class ContentDeliveryDirectiveProvider implements CSPDirectiveProvider {
 
 	@Override
 	public Collection<String> getScriptSrcUrls() {
-		return null;
+		return getUrls();
+	}
+	
+	public Collection<String> getStyleSrcUrls() {
+		return getUrls();
 	}
 
 	@Override
 	public Collection<String> getImgSrcUrls() {
-		return null;
+		return getUrls();
 	}
 
 	@Override
 	public Collection<String> getFontSrcUrls() {
-		return null;
+		return getUrls();
 	}
 
 	@Override
 	public Collection<String> getConnectSrcUrls() {
-		return null;
+		return getUrls();
 	}
 
 	@Override
 	public Collection<String> getFrameSrcUrls() {
-		if(Settings.isContentDomainNameEnabled()) {
-			return List.of(Settings.createContentServerURI());
-		}
-		return null;
+		return getUrls();
 	}
 
 	@Override
 	public Collection<String> getMediaSrcUrls() {
+		return getUrls();
+	}
+
+	public  Collection<String> getWorkerSrc() {
+		return getUrls();
+	}
+
+	private Collection<String> getUrls() {
+		if(Settings.isContentDomainNameEnabled()) {
+			return List.of(Settings.createContentServerURI());
+		}
 		return null;
 	}
 }
