@@ -29,8 +29,6 @@ import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.ai.AiImageDescriptionService;
-import org.olat.core.commons.services.ai.AiImageHelper;
 import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
@@ -40,12 +38,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -65,6 +65,7 @@ import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.handler.ImageHandler;
+import org.olat.modules.cemedia.manager.MediaAiMetadataService;
 import org.olat.modules.cemedia.ui.medias.AbstractCollectMediaController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -92,6 +93,8 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	private RichTextElement descriptionEl;
 	private ObjectSelectionElement taxonomyLevelEl;
 	private TaxonomyLevelSelectionSource taxonomyLevelSource;
+	private FormLink generateAiLink;
+	private boolean aiMetadataGenerated = false;
 
 	private final String businessPath;
 	private AddElementInfos userObject;
@@ -101,13 +104,11 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private AiImageDescriptionService imageDescriptionService;
-	@Autowired
-	private AiImageHelper aiImageHelper;
-	@Autowired
 	private MediaModule mediaModule;
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private MediaAiMetadataService mediaAiMetadataService;
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
@@ -162,6 +163,12 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		buttonsCont.setElementCssClass("o_sel_buttons");
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		if (mediaAiMetadataService.isEnabled()) {
+			generateAiLink = uifactory.addFormLink("ai.generate.metadata", buttonsCont, Link.BUTTON);
+			generateAiLink.setIconLeftCSS("o_icon o_icon-fw o_icon_ai");
+			generateAiLink.setElementCssClass("o_button_ghost");
+			updateAiButtonVisibility();
+		}
 	}
 		
 	private void initMediaForm(FormItemContainer formLayout) {
@@ -226,8 +233,10 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	}
 
 	private void processMediaForm() {
+		boolean created = false;
 		if (mediaReference == null) {
 			createMediaReference();
+			created = mediaReference != null;
 		}
 
 		saveLicense();
@@ -237,6 +246,15 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		relationsCtrl.saveRelations(mediaReference);
 
 		dbInstance.commit();
+
+		// Enrich freshly created image medias with AI metadata in a background
+		// task — the user never waits on the AI provider. Missing metadata is
+		// filled in once the task has run. Skipped when the user already
+		// generated the metadata manually via the AI button in this form.
+		if (created && !aiMetadataGenerated && mediaAiMetadataService.submit(mediaReference, getIdentity(),
+				getLocale(), "mc-upload-image", "MediaCenter", 0L, null, false)) {
+			showInfo("ai.metadata.background");
+		}
 	}
 
 	private void createMediaReference() {
@@ -296,7 +314,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		}
 		altTextEl.setVisible(handler != null && ImageHandler.IMAGE_TYPE.equals(handler.getType()));
 		updateUILicense();
-		doAutoGenerateAiMetadata(uploadedFile, fileEl != null ? fileEl.getUploadFileName() : selectedLeaf.getName());
+		updateAiButtonVisibility();
 	}
 
 	@Override
@@ -313,11 +331,136 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 			}
 			altTextEl.setVisible(handler != null && ImageHandler.IMAGE_TYPE.equals(handler.getType()));
 			updateUILicense();
-			doAutoGenerateAiMetadata(fileEl.getUploadFile(), fileEl.getUploadFileName());
+			updateAiButtonVisibility();
+		} else if (generateAiLink == source) {
+			doGenerateAiMetadata();
 		} else {
 			updateUILicense();
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	/**
+	 * Manual, synchronous AI metadata generation triggered by the form
+	 * button. Overwrites the form fields (title, description, alt text,
+	 * tags, taxonomy) with the generated metadata — nothing is persisted
+	 * until the user confirms via save; cancel discards everything. When
+	 * used, the automatic background enrichment on save is skipped.
+	 */
+	private void doGenerateAiMetadata() {
+		File imageFile = null;
+		String filename = null;
+		if (fileEl != null && fileEl.getUploadFile() != null) {
+			imageFile = fileEl.getUploadFile();
+			filename = fileEl.getUploadFileName();
+		} else if (selectedLeaf != null && selectedLeaf.getRelPath() != null) {
+			imageFile = VFSManager.olatRootFile(selectedLeaf.getRelPath());
+			filename = selectedLeaf.getName();
+		}
+		if (imageFile == null || filename == null) {
+			showWarning("ai.generate.no.image");
+			return;
+		}
+
+		AiImageDescriptionResponse response = mediaAiMetadataService.generateNow(imageFile, filename,
+				getIdentity(), getLocale(), "mc-upload-image");
+		if (response == null) {
+			showWarning("ai.generate.error");
+			return;
+		}
+		if (!response.isSuccess()) {
+			showWarning("ai.generate.failed", new String[] { StringHelper.escapeHtml(response.getError()) });
+			return;
+		}
+		ImageDescriptionData data = response.getDescription();
+		if (data == null) {
+			showWarning("ai.generate.error");
+			return;
+		}
+
+		// Overwrite the form fields with the generated metadata. The user
+		// explicitly asked for AI metadata and reviews the result before
+		// saving, so existing entries are replaced (unlike the background
+		// task, which only fills empty fields).
+		if (StringHelper.containsNonWhitespace(data.getTitle())) {
+			titleEl.setValue(data.getTitle());
+		}
+		if (StringHelper.containsNonWhitespace(data.getDescription())) {
+			descriptionEl.setValue(data.getDescription());
+		}
+		if (altTextEl.isVisible() && StringHelper.containsNonWhitespace(data.getAltText())) {
+			altTextEl.setValue(data.getAltText());
+		}
+
+		// Replace the tag selection with the AI-generated tags (lowercase, deduplicated)
+		Set<String> newTags = new LinkedHashSet<>();
+		if (StringHelper.containsNonWhitespace(data.getOrientation())) {
+			newTags.add(data.getOrientation().toLowerCase());
+		}
+		for (String tag : data.getColorTags()) {
+			newTags.add(tag.toLowerCase());
+		}
+		for (String tag : data.getCategoryTags()) {
+			newTags.add(tag.toLowerCase());
+		}
+		for (String tag : data.getKeywords()) {
+			newTags.add(tag.toLowerCase());
+		}
+		if (!newTags.isEmpty()) {
+			tagsEl.setSelectedTags(List.of());
+			tagsEl.addNewDisplayNames(newTags);
+		}
+
+		// Map AI subject to taxonomy level
+		if (StringHelper.containsNonWhitespace(data.getSubject())) {
+			AiUsageContext usageContext = AiUsageContext.builder()
+					.usageContextType("mc-upload-image")
+					.identity(getIdentity())
+					.locale(getLocale())
+					.resourceType("MediaCenter")
+					.resourceId(0L)
+					.build();
+			mapSubjectToTaxonomy(data.getSubject(), usageContext);
+		}
+
+		aiMetadataGenerated = true;
+		setFormWarning("ai.generate.metadata.done");
+	}
+
+	private void mapSubjectToTaxonomy(String subject, AiUsageContext context) {
+		if (taxonomyLevelEl == null || taxonomyLevelSource == null) {
+			return;
+		}
+		List<TaxonomyLevelRef> matches = TaxonomyMatchingHelper.matchTaxonomyLevels(
+				context, subject, mediaModule.getTaxonomyRefs(), taxonomyService,
+				taxonomyMatchingService, aiModule, getLocale());
+		if (!matches.isEmpty()) {
+			taxonomyLevelEl.unselectAll();
+			taxonomyLevelEl.select(matches.get(0).getKey().toString());
+			return;
+		}
+		String subjectLower = subject.trim().toLowerCase();
+		for (var group : taxonomyLevelSource.getOptionGroups(getLocale())) {
+			for (var option : group.getOptions()) {
+				String title = option.getTitle();
+				if (title != null && subjectLower.equals(title.trim().toLowerCase())) {
+					taxonomyLevelEl.unselectAll();
+					taxonomyLevelEl.select(option.getKey());
+					return;
+				}
+			}
+		}
+	}
+
+	private void updateAiButtonVisibility() {
+		if (generateAiLink == null) return;
+		String filename = null;
+		if (fileEl != null && fileEl.getUploadFile() != null) {
+			filename = fileEl.getUploadFileName();
+		} else if (selectedLeaf != null) {
+			filename = selectedLeaf.getName();
+		}
+		generateAiLink.setVisible(filename != null && mediaAiMetadataService.isSupportedImage(filename));
 	}
 	
 	@Override
@@ -350,109 +493,6 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 			}
 		}
 		return handler;
-	}
-
-	private void doAutoGenerateAiMetadata(File imageFile, String filename) {
-		if (imageFile == null || filename == null) return;
-		if (!imageDescriptionService.isEnabled()) return;
-
-		// Only for supported raster images
-		String suffix = getSuffix(filename);
-		if (suffix == null) return;
-		String mimeType = aiImageHelper.getMimeType(suffix);
-		if (mimeType == null) return;
-
-		String base64 = aiImageHelper.prepareImageBase64(imageFile, suffix);
-		if (base64 == null) return;
-
-		AiUsageContext usageContext = AiUsageContext.builder()
-				.usageContextType("mc-upload-image")
-				.identity(getIdentity())
-				.locale(getLocale())
-				.resourceType("MediaCenter")
-				.resourceId(0L)
-				.build();
-		AiImageDescriptionResponse response = imageDescriptionService.generateImageDescription(usageContext, base64, mimeType, getLocale());
-		if (!response.isSuccess() || response.getDescription() == null) return;
-
-		ImageDescriptionData data = response.getDescription();
-
-		// Populate title if empty or filename-style
-		if (data.getTitle() != null) {
-			String currentTitle = titleEl.getValue();
-			if (!StringHelper.containsNonWhitespace(currentTitle) || isFilenameLike(currentTitle)) {
-				titleEl.setValue(data.getTitle());
-			}
-		}
-		if (StringHelper.containsNonWhitespace(data.getDescription())
-				&& !StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
-			descriptionEl.setValue(data.getDescription());
-		}
-		if (altTextEl.isVisible()
-				&& (altTextEl.getValue() == null || altTextEl.getValue().isBlank())
-				&& data.getAltText() != null) {
-			altTextEl.setValue(data.getAltText());
-		}
-
-		// Add tags
-		Set<String> newTags = new LinkedHashSet<>();
-		if (StringHelper.containsNonWhitespace(data.getOrientation())) {
-			newTags.add(data.getOrientation().toLowerCase());
-		}
-		for (String tag : data.getColorTags()) {
-			newTags.add(tag.toLowerCase());
-		}
-		for (String tag : data.getCategoryTags()) {
-			newTags.add(tag.toLowerCase());
-		}
-		for (String tag : data.getKeywords()) {
-			newTags.add(tag.toLowerCase());
-		}
-		tagsEl.addNewDisplayNames(newTags);
-
-		// Map AI subject to taxonomy level
-		if (StringHelper.containsNonWhitespace(data.getSubject())) {
-			mapSubjectToTaxonomy(data.getSubject(), usageContext);
-		}
-
-		setFormWarning("ai.generate.metadata.done");
-	}
-
-	private void mapSubjectToTaxonomy(String subject, AiUsageContext context) {
-		if (taxonomyLevelEl == null || taxonomyLevelSource == null) {
-			return;
-		}
-		List<TaxonomyLevelRef> matches = TaxonomyMatchingHelper.matchTaxonomyLevels(
-				context, subject, mediaModule.getTaxonomyRefs(), taxonomyService,
-				taxonomyMatchingService, aiModule, getLocale());
-		if (!matches.isEmpty()) {
-			taxonomyLevelEl.select(matches.get(0).getKey().toString());
-			return;
-		}
-		String subjectLower = subject.trim().toLowerCase();
-		for (var group : taxonomyLevelSource.getOptionGroups(getLocale())) {
-			for (var option : group.getOptions()) {
-				String title = option.getTitle();
-				if (title != null && subjectLower.equals(title.trim().toLowerCase())) {
-					taxonomyLevelEl.select(option.getKey());
-					return;
-				}
-			}
-		}
-	}
-
-	private String getSuffix(String filename) {
-		if (filename == null) return null;
-		int dotPos = filename.lastIndexOf('.');
-		if (dotPos >= 0 && dotPos < filename.length() - 1) {
-			return filename.substring(dotPos + 1);
-		}
-		return null;
-	}
-
-	private boolean isFilenameLike(String title) {
-		if (title == null) return false;
-		return title.matches("(?i).*\\.(jpe?g|png|gif|webp|svg|bmp|tiff?)$");
 	}
 
 	@Override

@@ -1536,6 +1536,13 @@ class DocxToMarkdownHandler extends DefaultHandler {
 	 * image-attributes extension: ![alt](url){width=280 height=186}
 	 */
 	private String buildImageMarkdown(String alt, String url) {
+		// A CommonMark image label must not contain blank lines. Word alt
+		// texts (wp:docPr descr attribute) may carry line and paragraph
+		// breaks (e.g. the auto-generated description plus the AI
+		// disclaimer on a second line) — with a raw line break the parser
+		// rejects the whole image and the syntax leaks into the page as
+		// plain text. Collapse all whitespace runs to a single space.
+		alt = alt == null ? "" : alt.replaceAll("\\s+", " ").trim();
 		if (currentDrawingWidthPx > 0) {
 			StringBuilder attrs = new StringBuilder("{width=");
 			attrs.append(currentDrawingWidthPx);

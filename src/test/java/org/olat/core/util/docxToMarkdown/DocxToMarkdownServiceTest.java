@@ -162,6 +162,51 @@ public class DocxToMarkdownServiceTest {
 	}
 
 	@Test
+	public void multiLineAltTextMustNotBreakImageSyntax() throws Exception {
+		// Word stores auto-generated alt texts with paragraph breaks in the
+		// wp:docPr descr attribute (encoded as &#10; character references,
+		// which SAX preserves — unlike literal newlines, which are
+		// normalised to spaces). A blank line inside a CommonMark image
+		// label makes the parser reject the image: the raw ![...](...)
+		// syntax then leaks into the page as text and no media is created.
+		String documentXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+			+ "<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
+			+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""
+			+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
+			+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+			+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
+			+ "<w:body><w:p><w:r><w:drawing><wp:inline>"
+			+ "<wp:extent cx=\"914400\" cy=\"914400\"/>"
+			+ "<wp:docPr id=\"1\" name=\"img\" descr=\"Ein Bild mit Text.&#10;&#10;KI-generierte Inhalte.\"/>"
+			+ "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
+			+ "<pic:pic><pic:blipFill><a:blip r:embed=\"rId4\"/></pic:blipFill></pic:pic>"
+			+ "</a:graphicData></a:graphic>"
+			+ "</wp:inline></w:drawing></w:r></w:p></w:body></w:document>";
+		String relsXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+			+ "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+			+ "<Relationship Id=\"rId4\""
+			+ " Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\""
+			+ " Target=\"media/image1.png\"/>"
+			+ "</Relationships>";
+
+		File f = File.createTempFile("test", ".docx", new File("target"));
+		f.deleteOnExit();
+		try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(f))) {
+			addEntry(zos, "word/document.xml", documentXml);
+			addEntry(zos, "word/_rels/document.xml.rels", relsXml);
+			addEntry(zos, "word/media/image1.png", "fake png bytes");
+		}
+
+		DocxToMarkdownResult result = service.convert(f);
+
+		String md = result.markdown();
+		// The hyphen is markdown-escaped by the handler; the essential part
+		// is that the paragraph break became a single space.
+		assertTrue("alt text must be collapsed to a single line inside the image label, got: " + md,
+				md.contains("![Ein Bild mit Text. KI\\-generierte Inhalte.](media/image1.png)"));
+	}
+
+	@Test
 	public void noMessagesForCleanDocument() throws Exception {
 		String body = "<w:p><w:r><w:t>Clean content</w:t></w:r></w:p>";
 		File docx = createMinimalDocx(body);

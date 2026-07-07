@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
-import org.olat.core.commons.services.ai.AiImageDescriptionService;
-import org.olat.core.commons.services.ai.AiImageHelper;
 import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
@@ -66,6 +64,7 @@ import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.ImageHandler;
+import org.olat.modules.cemedia.manager.MediaAiMetadataService;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaRelationsController;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
@@ -99,6 +98,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 	private FormLink generateAiLink;
 
 	private UploadMedia uploadMedia;
+	private boolean aiMetadataGenerated = false;
 	
 	private final Quota quota;
 	private final String businessPath;
@@ -108,15 +108,13 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 	private MediaRelationsController relationsCtrl;
 	
 	@Autowired
-	private AiImageDescriptionService imageDescriptionService;
-	@Autowired
-	private AiImageHelper aiImageHelper;
-	@Autowired
 	private ImageHandler fileHandler;
 	@Autowired
 	private MediaModule mediaModule;
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private MediaAiMetadataService mediaAiMetadataService;
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
@@ -192,7 +190,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		}
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		if (imageDescriptionService.isEnabled()) {
+		if (mediaAiMetadataService.isEnabled()) {
 			generateAiLink = uifactory.addFormLink("ai.generate.metadata", buttonsCont, Link.BUTTON);
 			generateAiLink.setIconLeftCSS("o_icon o_icon-fw o_icon_ai");
 			generateAiLink.setElementCssClass("o_button_ghost");
@@ -312,6 +310,15 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		super.formInnerEvent(ureq, source, event);
 	}
 
+	/**
+	 * Manual, synchronous AI metadata generation triggered by the form
+	 * button. Overwrites the form fields (title, description, alt text,
+	 * tags, taxonomy) with the generated metadata — nothing is persisted
+	 * until the user confirms via save; cancel discards everything. This
+	 * deliberate wait is the counterpart to the automatic background
+	 * enrichment on save (which is skipped when the metadata has already
+	 * been generated here).
+	 */
 	private void doGenerateAiMetadata() {
 		// Get the image file
 		File imageFile = null;
@@ -343,27 +350,12 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 			return;
 		}
 
-		// Get MIME type and prepare image
-		String mimeType = aiImageHelper.getMimeType(suffix);
-		if (mimeType == null) {
+		AiImageDescriptionResponse response = mediaAiMetadataService.generateNow(imageFile, filename,
+				getIdentity(), getLocale(), "mc-collect-image");
+		if (response == null) {
 			showWarning("ai.generate.error");
 			return;
 		}
-
-		String base64 = aiImageHelper.prepareImageBase64(imageFile, suffix);
-		if (base64 == null) {
-			showWarning("ai.generate.error");
-			return;
-		}
-
-		AiUsageContext usageContext = AiUsageContext.builder()
-				.usageContextType("mc-collect-image")
-				.identity(getIdentity())
-				.locale(getLocale())
-				.resourceType("MediaCenter")
-				.resourceId(0L)
-				.build();
-		AiImageDescriptionResponse response = imageDescriptionService.generateImageDescription(usageContext, base64, mimeType, getLocale());
 		if (!response.isSuccess()) {
 			showWarning("ai.generate.failed", new String[] { StringHelper.escapeHtml(response.getError()) });
 			return;
@@ -375,23 +367,25 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 			return;
 		}
 
-		// Populate title when empty or filename-style (contains a dot extension like "IMG_1234.jpg")
-		if (data.getTitle() != null) {
-			String currentTitle = titleEl.getValue();
-			if (!StringHelper.containsNonWhitespace(currentTitle) || isFilenameLike(currentTitle)) {
-				titleEl.setValue(data.getTitle());
-			}
+		// Overwrite the form fields with the generated metadata. The user
+		// explicitly asked for AI metadata and reviews the result before
+		// saving, so existing entries are replaced (unlike the background
+		// task, which only fills empty fields).
+		if (StringHelper.containsNonWhitespace(data.getTitle())) {
+			titleEl.setValue(data.getTitle());
 		}
-		if (StringHelper.containsNonWhitespace(data.getDescription())
-				&& !StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
+		if (StringHelper.containsNonWhitespace(data.getDescription())) {
 			descriptionEl.setValue(data.getDescription());
 		}
-		if ((altTextEl.getValue() == null || altTextEl.getValue().isBlank()) && data.getAltText() != null) {
+		if (StringHelper.containsNonWhitespace(data.getAltText())) {
 			altTextEl.setValue(data.getAltText());
 		}
 
-		// Add AI-generated tags directly to the tag selection (lowercase, deduplicated)
+		// Replace the tag selection with the AI-generated tags (lowercase, deduplicated)
 		Set<String> newTags = new LinkedHashSet<>();
+		if (StringHelper.containsNonWhitespace(data.getOrientation())) {
+			newTags.add(data.getOrientation().toLowerCase());
+		}
 		for (String tag : data.getColorTags()) {
 			newTags.add(tag.toLowerCase());
 		}
@@ -401,13 +395,24 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		for (String tag : data.getKeywords()) {
 			newTags.add(tag.toLowerCase());
 		}
-		tagsEl.addNewDisplayNames(newTags);
+		if (!newTags.isEmpty()) {
+			tagsEl.setSelectedTags(List.of());
+			tagsEl.addNewDisplayNames(newTags);
+		}
 
 		// Map AI subject to taxonomy level
 		if (StringHelper.containsNonWhitespace(data.getSubject())) {
+			AiUsageContext usageContext = AiUsageContext.builder()
+					.usageContextType("mc-collect-image")
+					.identity(getIdentity())
+					.locale(getLocale())
+					.resourceType("MediaCenter")
+					.resourceId(0L)
+					.build();
 			mapSubjectToTaxonomy(data.getSubject(), usageContext);
 		}
 
+		aiMetadataGenerated = true;
 		setFormWarning("ai.generate.metadata.done");
 		markDirty();
 	}
@@ -421,6 +426,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 				taxonomyMatchingService, aiModule, getLocale());
 		if (!matches.isEmpty()) {
 			String key = matches.get(0).getKey().toString();
+			taxonomyLevelEl.unselectAll();
 			taxonomyLevelEl.select(key);
 			return;
 		}
@@ -429,6 +435,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 			for (var option : group.getOptions()) {
 				String title = option.getTitle();
 				if (title != null && subjectLower.equals(title.trim().toLowerCase())) {
+					taxonomyLevelEl.unselectAll();
 					taxonomyLevelEl.select(option.getKey());
 					return;
 				}
@@ -439,7 +446,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 	private void updateAiButtonVisibility() {
 		if (generateAiLink == null) return;
 		String filename = getCurrentFilename();
-		boolean supported = filename != null && isSupportedRasterImage(filename);
+		boolean supported = filename != null && mediaAiMetadataService.isSupportedImage(filename);
 		generateAiLink.setVisible(supported);
 	}
 
@@ -454,22 +461,6 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		return null;
 	}
 
-	private boolean isSupportedRasterImage(String filename) {
-		if (filename == null) return false;
-		String suffix = getSuffix(filename);
-		if (suffix == null) return false;
-		return switch (suffix.toLowerCase()) {
-			case "jpg", "jpeg", "png", "gif", "webp" -> true;
-			default -> false;
-		};
-	}
-
-	private boolean isFilenameLike(String title) {
-		if (title == null) return false;
-		// Filename-style: contains a dot followed by a common image extension
-		return title.matches("(?i).*\\.(jpe?g|png|gif|webp|svg|bmp|tiff?)$");
-	}
-
 	private String getSuffix(String filename) {
 		if (filename == null) return null;
 		int dotPos = filename.lastIndexOf('.');
@@ -481,6 +472,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		boolean created = false;
 		if(mediaReference == null) {
 			String title = titleEl.getValue();
 			String altText = altTextEl.getValue();
@@ -496,6 +488,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 			}
 			mediaReference = fileHandler.createMedia(title, description, altText, uploadedFile, uploadedFilename, businessPath,
 					getIdentity(), MediaLog.Action.UPLOAD);
+			created = mediaReference != null;
 		} else {
 			mediaReference.setTitle(titleEl.getValue());
 			mediaReference.setAltText(altTextEl.getValue());
@@ -515,7 +508,16 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		if(relationsCtrl != null) {
 			relationsCtrl.saveRelations(mediaReference);
 		}
-		
+
+		// Enrich freshly created image medias with AI metadata in a background
+		// task — the user never waits on the AI provider. Missing metadata is
+		// filled in once the task has run. Skipped when the user already
+		// generated the metadata manually via the AI button in this form.
+		if (created && !aiMetadataGenerated && mediaAiMetadataService.submit(mediaReference, getIdentity(),
+				getLocale(), "mc-collect-image", "MediaCenter", 0L, null, false)) {
+			showInfo("ai.metadata.background");
+		}
+
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

@@ -439,6 +439,12 @@ public class MarkdownImportController extends FormBasicController {
 			}
 		}
 
+		if (result.aiMetadataJobs() > 0) {
+			// Image metadata is enriched by asynchronous background tasks —
+			// tell the user why the imported images have no AI metadata yet.
+			showInfo("import.ai.metadata.background");
+		}
+
 		fireEvent(ureq, new MarkdownImportDoneEvent(result.warnings()));
 	}
 

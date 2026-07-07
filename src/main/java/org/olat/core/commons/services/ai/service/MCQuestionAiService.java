@@ -42,7 +42,8 @@ public interface MCQuestionAiService {
 			You are an expert assessment designer. You create challenging multiple choice questions \
 			that test genuine understanding, not just surface recall. \
 			You always verify that correct answers are factually accurate and that wrong answers are \
-			genuinely incorrect. Wrong answers must be plausible distractors.""")
+			genuinely incorrect. Wrong answers must be plausible distractors."""
+			+ AiPromptRules.OUTPUT_STYLE_RULES)
 	@UserMessage("""
 			Create {{number}} different multiple choice questions with {{correct}} correct \
 			and {{wrong}} wrong answers each.

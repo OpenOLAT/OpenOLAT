@@ -40,7 +40,8 @@ import dev.langchain4j.service.SystemMessage;
  */
 public interface ImageDescriptionAiService {
 
-	@SystemMessage("You are an expert metadata curator for a digital asset library. You generate precise, consistent, and complete structured metadata for images.")
+	@SystemMessage("You are an expert metadata curator for a digital asset library. You generate precise, consistent, and complete structured metadata for images."
+			+ AiPromptRules.OUTPUT_STYLE_RULES)
 	ImageDescriptionData describeImage(List<Content> contents);
 
 	static List<Content> buildContents(Locale locale, String imageBase64, String mimeType) {

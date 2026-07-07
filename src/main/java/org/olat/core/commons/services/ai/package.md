@@ -9,7 +9,7 @@ Key features:
 - Multi-provider support (OpenAI, Anthropic Claude, generic OpenAI-compatible servers — vLLM, Ollama, LiteLLM, etc.)
 - Per-feature provider + model configuration via `AiModule`
 - AI-powered MC question generation from text input
-- AI-powered image description generation (title, alt text, tags, keywords) with vision models
+- AI-powered image description generation (title, alt text, tags, keywords) with vision models; media metadata enrichment runs asynchronously via `MediaAiMetadataService` (in `org.olat.modules.cemedia.manager`), one persisted task per image
 - AI-powered essay question generation from Markdown source (page editor, question pool, legacy drawer)
 - AI-powered formative essay grading with structured feedback and XSS-sanitised student output
 - Per-user, per-feature rate limiting enforced at the submit boundary
@@ -80,6 +80,7 @@ Key features:
 
 | Class | Responsibility |
 |-------|---------------|
+| `AiPromptRules` | Shared compile-time prompt fragments. `OUTPUT_STYLE_RULES` (no em/en dashes; Swiss German: ss instead of ß, real umlauts instead of ae/oe/ue) is appended to every generative `@SystemMessage`. |
 | `MCQuestionAiService` | LangChain4j `AiServices` interface. Defines the MC question prompt via `@SystemMessage`/`@UserMessage`. Returns `List<MCQuestionData>`. |
 | `ImageDescriptionAiService` | LangChain4j `AiServices` interface. Defines the image description prompt via `@SystemMessage`. Returns `ImageDescriptionData`. |
 | `EssayGradingAiService` | LangChain4j `AiServices` interface for essay grading. Returns a structured `GradingSuggestion`. |
@@ -222,20 +223,34 @@ if (response.isSuccess()) {
 
 ## 4. Using the Image Description Generator
 
+The synchronous API is `AiImageDescriptionService.generateImageDescription(...)`. It is used directly only where the caller genuinely waits for the result: the admin feature test and the explicit "Generate metadata with AI" buttons in `CollectImageMediaController` and `MediaUploadController` (via `MediaAiMetadataService.generateNow(...)`), which overwrite the open form so the user can review before saving. All automatic enrichment flows (Markdown/Word import in the content editor, media center upload, collect-image save) go through the **asynchronous** `MediaAiMetadataService` in `org.olat.modules.cemedia.manager` instead — the user never waits on a provider round-trip:
+
+```java
+@Autowired
+private MediaAiMetadataService mediaAiMetadataService;
+
+// After the media has been created and committed:
+boolean scheduled = mediaAiMetadataService.submit(media, requester, locale,
+        "my-usage-context-type", resourceType, resourceId, resourceSubId);
+if (scheduled) {
+    showInfo("ai.metadata.background");
+}
+```
+
+`submit()` is a no-op returning `false` when the feature is disabled or the media is not a supported raster image. It schedules one `MediaAiMetadataGenerationTask` (`LongRunnable`, `Queue.aiBatch`, persisted in `o_ex_task`, cluster-aware crash recovery) per media. The task re-resolves the image from the media storage, calls the vision model plus the optional taxonomy matching, and applies the result defensively: title only when empty or filename-like, description/alt text only when empty, tags and taxonomy only when none are assigned — a user editing the media before the task runs is never overwritten.
+
+Direct synchronous use for testing:
+
 ```java
 @Autowired
 private AiImageDescriptionService aiImageDescriptionService;
 @Autowired
 private AiImageHelper aiImageHelper;
 
-if (aiImageDescriptionService.isEnabled()) {
-    showAiButton();
-}
-
 String base64 = aiImageHelper.prepareImageBase64(imageFile, "jpg");
 String mimeType = aiImageHelper.getMimeType("jpg");
 if (base64 != null && mimeType != null) {
-    AiImageDescriptionResponse response = aiImageDescriptionService.generateImageDescription(base64, mimeType, locale);
+    AiImageDescriptionResponse response = aiImageDescriptionService.generateImageDescription(usageContext, base64, mimeType, locale);
     if (response.isSuccess()) {
         ImageDescriptionData data = response.getDescription();
         // data.getTitle(), data.getDescription(), data.getAltText()
@@ -366,7 +381,7 @@ public class MyAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySPI 
 
 ## 8. Adding a New AI Feature
 
-1. Define a LangChain4j AiService interface in `service/` with `@SystemMessage`/`@UserMessage` prompt templates and a structured return type
+1. Define a LangChain4j AiService interface in `service/` with `@SystemMessage`/`@UserMessage` prompt templates and a structured return type; append `AiPromptRules.OUTPUT_STYLE_RULES` to the `@SystemMessage` (house typography rules: no em/en dashes, Swiss German spelling)
 2. Define a structured output model in `model/` with LangChain4j `@Description` annotations
 3. Define a response wrapper in `model/` extending `AiResponse` (synchronous features) or a `record` return type (async/streaming features)
 4. Define a Spring service interface in the root package (follow `AiMCQuestionService` or `AiEssayGradingService` as a template)

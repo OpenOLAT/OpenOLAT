@@ -46,7 +46,8 @@ public interface EssayGenerationAiService {
 			answerable in a sentence or a few keywords; you are encouraging, not adversarial. \
 			For each item you also produce the grading metadata (reference excerpt, model answer, \
 			key points, rubric criteria) that a downstream grader will use to evaluate student \
-			answers objectively.""")
+			answers objectively."""
+			+ AiPromptRules.OUTPUT_STYLE_RULES)
 	@UserMessage("""
 			Generate {{number}} different essay questions from the source material below.
 

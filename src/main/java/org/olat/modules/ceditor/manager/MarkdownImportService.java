@@ -119,7 +119,7 @@ public class MarkdownImportService {
 			String subIdent, File basePath, Locale locale, String targetContainerId, int targetColumn,
 			String referenceElementId, PageElementTarget target) {
 		if (markdown == null || markdown.isBlank()) {
-			return new MarkdownImportResult(List.of(), null);
+			return new MarkdownImportResult(List.of(), null, 0);
 		}
 
 		// 1a. Pre-process math blocks FIRST so $$...$$ content is replaced with
@@ -191,7 +191,7 @@ public class MarkdownImportService {
 			}
 		}
 
-		return new MarkdownImportResult(visitor.getWarnings(), effectiveContainer);
+		return new MarkdownImportResult(visitor.getWarnings(), effectiveContainer, visitor.getAiMetadataJobCount());
 	}
 
 	/**
