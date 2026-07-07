@@ -30,9 +30,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.filter.FilterFactory;
-import org.olat.modules.roommanagement.Building;
 
 /**
  * Initial date: 1 Jun 2026<br>
@@ -41,7 +38,6 @@ import org.olat.modules.roommanagement.Building;
 public class BuildingListDataModel extends DefaultFlexiTableDataModel<BuildingRow>
 		implements SortableFlexiTableDataModel<BuildingRow> {
 
-	private static final int MAX_ADDITIONAL_INFORMATION_LENGTH = 250;
 	private static final BuildingCols[] COLS = BuildingCols.values();
 	private final Locale locale;
 
@@ -90,17 +86,10 @@ public class BuildingListDataModel extends DefaultFlexiTableDataModel<BuildingRo
 			case address -> row.getAddressLink();
 			case infoUrl -> row.getInfoUrlLink();
 			case orgRestriction -> row.getOrganisations();
-			case additionalInfo -> getBuildingInfo(row.getBuilding());
+			case additionalInfo -> RoomUIHelper.truncateColumnInfoText(row.getBuilding().getInfo());
 			case rooms -> row.getRoomsLink() != null ? row.getRoomsLink() : String.valueOf(row.getRoomCount());
 			case tools -> row.getToolsLink();
 		};
-	}
-
-	private String getBuildingInfo(Building building) {
-		String info = building.getInfo();
-		info = FilterFactory.getHtmlTagsFilter().filter(info);
-		info = Formatter.truncate(info, MAX_ADDITIONAL_INFORMATION_LENGTH);
-		return info;
 	}
 
 	public enum BuildingCols implements FlexiSortableColumnDef {
