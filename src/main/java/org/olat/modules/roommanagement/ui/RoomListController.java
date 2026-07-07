@@ -175,6 +175,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.occupancyRate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.nextEvent));
 		DefaultFlexiColumnModel calendarIconCol = new DefaultFlexiColumnModel(RoomCols.calendarIcon);
+		calendarIconCol.setHeaderTooltip(translate("room.calendar.title"));
 		calendarIconCol.setIconHeader(RoomCols.calendarIcon.iconHeader());
 		columnsModel.addFlexiColumnModel(calendarIconCol);
 		if (!readOnly) {
@@ -317,7 +318,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
-		tabAll = FlexiFiltersTabFactory.tabWithImplicitFilters(
+		tabAll = FlexiFiltersTabFactory.tabWithFilters(
 				TAB_ID_ALL,
 				translate("room.filter.all"),
 				TabSelectionBehavior.reloadData,
@@ -422,6 +423,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 				null, null, Link.LINK | Link.NONTRANSLATED);
 		calendarIconLink.setIconLeftCSS("o_icon o_icon_calendar");
 		calendarIconLink.setUserObject(row);
+		calendarIconLink.setTitle(translate("room.calendar.title"));
 		row.setCalendarIconLink(calendarIconLink);
 
 		// Calculate occupancy rate for current month
