@@ -36,6 +36,7 @@ import org.olat.core.gui.components.htmlheader.jscss.CustomCSSDelegate;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
+import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
@@ -425,6 +426,9 @@ public class IFrameDeliveryMapper implements Mapper {
 			if(useContentDomain) {
 				sb.append("o_info = new Object();\n");
 				sb.append("o_info.uriprefix='/auth/';\n");
+				StringOutput baseUri = new StringOutput(100);
+				Renderer.renderStaticURI(baseUri, "");
+				sb.append("o_info.o_baseURI='").append(baseUri.toString()).append("';\n");
 				sb.append("o_info.edusharing_enabled=").append(edusharingModule.isEnabled()).append(";\n");
 			}
 			if(iframeResizer) {
