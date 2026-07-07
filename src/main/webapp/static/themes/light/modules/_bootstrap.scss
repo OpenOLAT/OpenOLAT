@@ -158,6 +158,25 @@ body .modal-body {
 	color: $btn-primary-color !important;
 }
 
+/* Input-group addons styled as buttons get the button border */
+.input-group-addon.btn,
+.input-group-addon.btn-default {
+	border-color: $btn-default-border;
+}
+/* Dividing border between btn-addon and form-control matches button border */
+.input-group:has(> .input-group-addon.btn:last-child) .form-control {
+	border-right-color: $btn-default-border;
+}
+.input-group:has(> .input-group-addon.btn:first-child) .form-control {
+	border-left-color: $btn-default-border;
+}
+
+
+/* Dropdown toggles look like form fields, not standalone buttons */
+.btn-default.dropdown-toggle {
+	border-color: $input-border;
+}
+
 /* Primary button: subtle shadow for prominence */
 .btn-primary {
 	box-shadow: 0 1px 2px rgba($btn-primary-bg, 0.3);

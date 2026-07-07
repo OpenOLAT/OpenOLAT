@@ -39,18 +39,20 @@ $modal-content-border-color		: #e4e7ec !default;
 /* bootstrap default is very white, use just a little bit more than just white */
 $btn-default-color				: #344054 !default;
 $btn-default-bg					: #fff !default;
-$btn-default-border				: #d0d5dd !default;
+$btn-default-border				: #6c757d !default;
+$btn-default-hover-border		: #667085 !default;
+$btn-default-disabled-color		: #1B293C !default;
 $dropdown-bg					: #fff !default;
 $panel-bg						: #fff !default;
 $pagination-bg					: #fff !default;
 $pagination-active-color 		: #fff !default;
 $list-group-bg					: #fff !default;
 
-$input-bg						: #fff !default; 
-$input-border					: $btn-default-border !default;
+$input-bg						: #fff !default;
+$input-border					: #d0d5dd !default;
 $input-bg-disabled				: #f9fafb !default;
 $input-group-addon-bg			: #f2f4f7 !default;
-$input-group-addon-border-color	: $btn-default-border !default;
+$input-group-addon-border-color	: $input-border !default;
 
 /* pagination is must a special button, same style */
 $pagination-color				: $btn-default-color !default;
@@ -413,7 +415,7 @@ $o-toolbar-nav-link-color			: $o-toolbar-link-color !default;
 $o-toolbar-nav-link-hover-color		: $o-toolbar-link-hover-color !default; 
 $o-toolbar-nav-link-disabled-color	: $o-toolbar-link-disabled-color !default; 
 $o-toolbar-nav-bg-color				: $gray-lighter !default;
-$o-toolbar-nav-border-color			: $btn-default-border !default; 
+$o-toolbar-nav-border-color			: $input-border !default;
 $o-toolbar-nav-border-radius		: 4px !default; 
 $o-toolbar-nav-size-icon-md 		: ceil($font-size-base * 1.5) !default;
 $o-toolbar-nav-size-icon-sm 		: ceil($font-size-base * 1.25) !default;
@@ -432,7 +434,7 @@ $o-radio-card-border-color-checked	: darken($input-border-focus,20%) !default;
 $o-radio-card-bg-checked			: lighten($input-border-focus,30%) !default;
 $o-radio-card-label-color-checked	: darken($input-border-focus,20%) !default;
 
-$o-radio-card-border-color-hover	: darken($btn-default-border, 6%) !default;
+$o-radio-card-border-color-hover	: darken($input-border, 6%) !default;
 $o-radio-card-bg-hover				: darken($btn-default-bg, 5%) !default;
 $o-radio-card-label-color-hover		: $btn-default-color !default;
 
@@ -520,12 +522,12 @@ $o-button-dirty-bg				: $btn-warning-bg !default;
 $o-button-dirty-color			: o-a11y-color($btn-warning-color, $o-button-dirty-bg) !default;
 $o-button-dirty-border			: darken($o-button-dirty-bg	, 5%) !default;
 /* Ghost button */
-$o-button-ghost-color					: $link-color !default;
+$o-button-ghost-color					: $btn-primary-bg !default;
 $o-button-ghost-background-color			: transparent !default;
 $o-button-ghost-border-color				: transparent !default;
-$o-button-ghost-hover-color				: $link-color !default;
-$o-button-ghost-hover-background-color	: rgba($link-color, 0.1) !default;
-$o-button-ghost-hover-border-color		: $link-color !default;
+$o-button-ghost-hover-color				: $btn-primary-bg !default;
+$o-button-ghost-hover-background-color	: transparent !default;
+$o-button-ghost-hover-border-color		: $btn-primary-bg !default;
 $o-button-mega-height					: 55px !default;
 $o-button-mega-bg-color					: #fff !default;
 $o-button-mega-hover-bg-color			: #e6e6e6 !default;
@@ -533,9 +535,9 @@ $o-button-mega-icon-width				: 26px !default;
 $o-button-primary-light-bg					: #fff !default;
 $o-button-primary-light-color				: o-a11y-color($btn-primary-bg, $o-button-primary-light-bg) !default;
 $o-button-primary-light-border				: $o-button-primary-light-color !default;
-$o-button-primary-light-hover-bg			: $btn-primary-bg !default;
-$o-button-primary-light-hover-color			: o-a11y-color($o-button-primary-light-color, $o-button-primary-light-hover-bg) !default;
-$o-button-primary-light-hover-border		: $o-button-primary-light-hover-bg !default;
+$o-button-primary-light-hover-bg			: $o-button-primary-light-color !default;
+$o-button-primary-light-hover-color			: $o-button-primary-light-bg !default;
+$o-button-primary-light-hover-border		: $btn-default-hover-border !default;
 
 /* Bento layout */
 $o-bento-cols							: 8 !default;
@@ -580,7 +582,7 @@ $o-coursesite-rowelem-space-sm		: 8px 	!default;
 $o-coursesite-rowelem-width-xs 		: 75px !default;
 $o-coursesite-rowelem-height-xs 	: 50px !default;
 $o-coursesite-rowelem-space-xs		: 0px 	!default;
-$o-coursesite-rowelem-border 		: $btn-default-border !default; 
+$o-coursesite-rowelem-border 		: $input-border !default;
 $o-coursesite-rowelem-border-radius : $border-radius-base !default;
 $o-coursesite-rowelem-bg			: #fff !default;
 $o-coursesite-rowelem-hover-bg			: rgba($gray-light, 0.01) !default;
@@ -1639,7 +1641,7 @@ $o-tag-background-color								: $brand-primary !default;
 $o-tag-font-color									: #fff;
 $o-tag-selected-background-color					: $o-button-dirty-bg;
 $o-tag-selected-border-color						: $o-button-dirty-border;
-$o-tag-selection-border-color						: $btn-default-border !default;
+$o-tag-selection-border-color						: $input-border !default;
 $o-tag-selection-background-color					: $btn-default-bg !default;
 $o-tag-selection-font-color							: $btn-default-color !default;
 $o-tag-selection-selected-border-color				: $btn-primary-border !default;

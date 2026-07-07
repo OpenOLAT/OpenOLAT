@@ -1782,6 +1782,7 @@ a.o_labeled_light {
  	width: 100%;
  	min-height: 34px;
  	display: flex;
+	border-color: $input-border;
 	span:not(i.o_icon) {
  		text-overflow: ellipsis;
 		overflow: hidden;
