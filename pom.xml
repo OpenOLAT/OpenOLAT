@@ -83,7 +83,7 @@
 		<jackson.annotations.version>2.22</jackson.annotations.version>
 		<swagger.ui.version>5.32.8</swagger.ui.version>
 		<com.mysql.version>9.7.0</com.mysql.version>
-		<org.postgresql.version>42.7.12</org.postgresql.version>
+		<org.postgresql.version>42.7.13</org.postgresql.version>
 		<org.infinispan.version>16.2.1</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.45.0</version.selenium>
