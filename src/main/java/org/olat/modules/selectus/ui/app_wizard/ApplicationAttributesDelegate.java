@@ -616,7 +616,8 @@ public class ApplicationAttributesDelegate {
 
 		for(Option option:options) {
 			String opt = option.getValue(locale, true);
-			keyValues.add(SelectionValues.entry(opt, opt));
+			String key = opt.replaceAll("'", "_").replaceAll("\"", "_");
+			keyValues.add(SelectionValues.entry(key, opt));
 		}
 		
 		if(configuration.isOther()) {
@@ -825,6 +826,7 @@ public class ApplicationAttributesDelegate {
 			} else if(element instanceof SingleSelection) {
 				String val;
 				SingleSelection selectElement = (SingleSelection)element;
+				//SelectConfiguration configuration = definition.getConfiguration(SelectConfiguration.class);
 				if(selectElement.isOneSelected()) {
 					String selectVal = selectElement.getSelectedKey();
 					if(SELECT_CHOOSE.equals(selectVal) || SELECT_NOTHING.equals(selectVal)) {
@@ -832,7 +834,7 @@ public class ApplicationAttributesDelegate {
 					} else if(SELECT_OTHER.equals(selectVal) && valueWithDefinition.getSecondaryItem() instanceof TextElement) {
 						val = ((TextElement)valueWithDefinition.getSecondaryItem()).getValue();
 					} else {
-						val = selectVal;
+						val = selectElement.getSelectedValue();
 					}
 				} else {
 					val = null;
