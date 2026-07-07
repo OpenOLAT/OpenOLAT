@@ -1456,20 +1456,20 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String custom2 = workUnit.getConfig().getCustom2();
 		String custom3 = workUnit.getConfig().getCustom3();
 		String serialNumber = certificate.getSerialNumber();
-		String name = entry == null
-				? certificationProgram.getDisplayName()
-				: entry.getDisplayname();
-		
+
 		File certificateFile;
 		File certificatePrintFile = null;
-		
 		// File name with user name
 		StringBuilder sb = new StringBuilder();
 		sb.append(identity.getUser().getProperty(UserConstants.LASTNAME, locale)).append("_")
-		  .append(identity.getUser().getProperty(UserConstants.FIRSTNAME, locale)).append("_")
-		  .append(name).append("_");
+		  .append(identity.getUser().getProperty(UserConstants.FIRSTNAME, locale)).append("_");
 		if(StringHelper.containsNonWhitespace(serialNumber)) {
 			sb.append(serialNumber).append("_");
+		} else {
+			String name = entry == null
+					? certificationProgram.getDisplayName()
+					: entry.getDisplayname();
+			sb.append(name).append("_");
 		}
 		sb.append(Formatter.formatShortDateFilesystem(dateCertification));
 		String filename = FileUtils.normalizeFilename(sb.toString()) + ".pdf";

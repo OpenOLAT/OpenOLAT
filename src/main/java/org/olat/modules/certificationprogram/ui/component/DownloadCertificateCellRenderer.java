@@ -86,7 +86,9 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 		String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(identity);
 		String date = Formatter.formatShortDateFilesystem(certificate.getCreationDate());
 		sb.append(fullName).append("_");
-		if(certificate.getCertificationProgram() != null) {
+		if(StringHelper.containsNonWhitespace(certificate.getSerialNumber())) {
+			sb.append(certificate.getSerialNumber());
+		} else if(certificate.getCertificationProgram() != null) {
 			sb.append(certificate.getCertificationProgram().getDisplayName());
 		} else {
 			sb.append(certificate.getCourseTitle());

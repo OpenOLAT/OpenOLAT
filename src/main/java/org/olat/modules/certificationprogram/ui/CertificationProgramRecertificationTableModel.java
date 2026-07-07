@@ -68,6 +68,7 @@ implements SortableFlexiTableDataModel<CertificationProgramRecertificationRow> {
 			case issuedOn -> recertificationRow.getCertificationDate();
 			case status -> recertificationRow.getCertificationStatus();
 			case certificate -> recertificationRow.getCertificate();
+			case certificateSerialNumber -> recertificationRow.getSerialNumber();
 			case validUntil -> recertificationRow.getNextRecertificationDate();
 			case nextRecertificationDays -> recertificationRow.getNextRecertification();
 			case recertificationDeadline -> recertificationRow.getRecertificationWindowDate();
@@ -81,6 +82,7 @@ implements SortableFlexiTableDataModel<CertificationProgramRecertificationRow> {
 		key("table.header.id"),
 		recertificationCount("table.header.recertification.count"),
 		certificate("table.header.certificate"),
+		certificateSerialNumber("table.header.certificate.serial.number"),
 		issuedOn("table.header.issued.on"),
 		status("table.header.status"),
 		validUntil("table.header.valid.until"),

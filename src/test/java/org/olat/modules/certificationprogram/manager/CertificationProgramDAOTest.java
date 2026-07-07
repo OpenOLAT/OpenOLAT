@@ -201,8 +201,8 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 	
 	@Test
 	public void updateSerialNumberCounter() {
-		String programIdentifier = "C0 - 1n";
-		String programName = "OpenOlat counter 1n";
+		String programIdentifier = "C0 - 10n";
+		String programName = "OpenOlat counter 10n";
 		CertificationProgram program = certificationProgramDao.createCertificationProgram(programIdentifier, programName);
 		program.setSerialNumberEnabled(true);
 		program.setSerialNumberFormat("REF-{counter:5}");
@@ -218,6 +218,30 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 		
 		Assert.assertEquals(10l, firstValue);
 		Assert.assertEquals(11l, secondValue);
+	}
+	
+	/**
+	 * Make sure the first value is 1
+	 */
+	@Test
+	public void firstSerialNumberC() {
+		String programIdentifier = "C1 - 1";
+		String programName = "OpenOlat counter 1";
+		CertificationProgram program = certificationProgramDao.createCertificationProgram(programIdentifier, programName);
+		program.setSerialNumberEnabled(true);
+		program.setSerialNumberFormat("REF-{counter:5}");
+		program.setSerialNumberStartNumber(1);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		dbInstance.commitAndCloseSession();
+		
+		long firstValue = certificationProgramDao.updateSerialNumberCounter(program);
+		dbInstance.commitAndCloseSession();
+		
+		long secondValue = certificationProgramDao.updateSerialNumberCounter(program);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertEquals(1l, firstValue);
+		Assert.assertEquals(2l, secondValue);
 	}
 	
 	@Test

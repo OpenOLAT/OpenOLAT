@@ -1131,12 +1131,12 @@ create index idx_certificate_printdata_idx on o_cer_certificate (fk_print_metada
 alter table o_cer_program add c_sn_enabled number default 0 not null;
 alter table o_cer_program add c_sn_format varchar(255);
 alter table o_cer_program add c_sn_start_number number(20) default 1 not null;
-alter table o_cer_program add c_sn_counter number(20) default 1 not null;
+alter table o_cer_program add c_sn_counter number(20) default 0 not null;
 
 alter table o_cer_entry_config add c_sn_enabled number default 0 not null;
 alter table o_cer_entry_config add c_sn_format varchar(255);
 alter table o_cer_entry_config add c_sn_start_number number(20) default 1 not null;
-alter table o_cer_entry_config add c_sn_counter number(20) default 1 not null;
+alter table o_cer_entry_config add c_sn_counter number(20) default 0 not null;
 
 alter table o_cer_certificate add c_serial_number varchar(255);
 

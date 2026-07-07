@@ -80,6 +80,7 @@ public class CertificationProgramDAO {
 		program.setRecertificationEnabled(false);
 		program.setOrganisations(new HashSet<>());
 		program.setGroup(groupDao.createGroup());
+		program.setSerialNumberCounter(0l);
 		dbInstance.getCurrentEntityManager().persist(program);
 		
 		createResource(program);

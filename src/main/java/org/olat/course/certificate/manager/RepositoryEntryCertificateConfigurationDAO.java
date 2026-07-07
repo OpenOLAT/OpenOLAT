@@ -53,6 +53,7 @@ public class RepositoryEntryCertificateConfigurationDAO {
 		config.setCreationDate(new Date());
 		config.setLastModified(config.getCreationDate());
 		config.setEntry(entry);
+		config.setSerialNumberCounter(0l);
 		dbInstance.getCurrentEntityManager().persist(config);
 		return config;
 	}
@@ -100,6 +101,13 @@ public class RepositoryEntryCertificateConfigurationDAO {
 		config.setRecertificationEnabled(sourceConfig.isRecertificationEnabled());
 		config.setRecertificationLeadTimeEnabled(sourceConfig.isRecertificationLeadTimeEnabled());
 		config.setRecertificationLeadTimeInDays(sourceConfig.getRecertificationLeadTimeInDays());
+		
+		config.setSerialNumberEnabled(sourceConfig.isSerialNumberEnabled());
+		if(sourceConfig.isSerialNumberEnabled()) {
+			config.setSerialNumberFormat(sourceConfig.getSerialNumberFormat());
+			config.setSerialNumberStartNumber(sourceConfig.getSerialNumberStartNumber());
+		}
+		((RepositoryEntryCertificateConfigurationImpl)config).setSerialNumberCounter(0l);
 		return config;
 	}
 	

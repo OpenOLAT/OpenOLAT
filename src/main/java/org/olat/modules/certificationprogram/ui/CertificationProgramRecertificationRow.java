@@ -88,6 +88,10 @@ public class CertificationProgramRecertificationRow {
 		return certificationStatus;
 	}
 	
+	public String getSerialNumber() {
+		return certificate.getSerialNumber();
+	}
+	
 	public Certificate getCertificate() {
 		return certificate;
 	}
