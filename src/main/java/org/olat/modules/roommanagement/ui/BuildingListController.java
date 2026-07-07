@@ -193,7 +193,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 	private void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
-		tabAll = FlexiFiltersTabFactory.tabWithImplicitFilters(
+		tabAll = FlexiFiltersTabFactory.tabWithFilters(
 				TAB_ID_ALL,
 				translate("building.filter.all"),
 				TabSelectionBehavior.reloadData,

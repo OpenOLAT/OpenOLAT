@@ -19,6 +19,8 @@
  */
 package org.olat.modules.roommanagement.ui;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -50,8 +52,27 @@ public class BuildingListDataModel extends DefaultFlexiTableDataModel<BuildingRo
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<BuildingRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
-		super.setObjects(rows);
+		if (orderBy != null && BuildingCols.rooms.sortKey().equals(orderBy.getKey())) {
+			List<BuildingRow> nonZero = new ArrayList<>();
+			List<BuildingRow> zero = new ArrayList<>();
+			for (BuildingRow row : getObjects()) {
+				if (row.getRoomCount() > 0) {
+					nonZero.add(row);
+				} else {
+					zero.add(row);
+				}
+			}
+			Comparator<BuildingRow> byCount = Comparator.comparingInt(BuildingRow::getRoomCount);
+			if (!orderBy.isAsc()) {
+				byCount = byCount.reversed();
+			}
+			nonZero.sort(byCount);
+			nonZero.addAll(zero);
+			super.setObjects(nonZero);
+		} else {
+			List<BuildingRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 
 	@Override
