@@ -90,6 +90,7 @@ public class SafeExamBrowserTemplateUploadController extends FormBasicController
 		this.sebTemplate = sebTemplate;
 		
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -123,6 +124,7 @@ public class SafeExamBrowserTemplateUploadController extends FormBasicController
 		statusDropdown.setElementCssClass("o_seb_template_status");
 		statusDropdown.setEmbbeded(true);
 		statusDropdown.setLabeled(true, true);
+		statusDropdown.setEnabled(sebTemplate == null || !sebTemplate.isDefault());
 		boolean active = sebTemplate == null || sebTemplate.isActive();
 		updateStatus(active ? ACTIVE_STATUS_KEY : INACTIVE_STATUS_KEY);
 		
@@ -176,7 +178,7 @@ public class SafeExamBrowserTemplateUploadController extends FormBasicController
 
 		String hint = sebTemplate != null ? sebTemplate.getSafeExamBrowserHint() : "";
 		safeExamBrowserHintEl = uifactory.addRichTextElementForStringData("safeexamhint", "mode.safeexambrowser.hint",
-				hint, 4, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+				hint, 8, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		safeExamBrowserHintEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		
 		allowToExitEl = uifactory.addToggleButton("mode.safeexambrowser.allow.toexit", "mode.safeexambrowser.allow.toexit", translate("on"), translate("off"), formLayout);
