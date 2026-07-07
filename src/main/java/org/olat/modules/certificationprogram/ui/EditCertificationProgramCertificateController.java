@@ -453,14 +453,13 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 			if(!StringHelper.containsNonWhitespace(serialNumberFormatEl.getValue())) {
 				serialNumberFormatEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
-			} else if(!SerialNumberFormat.parse(serialNumberFormatEl.getValue()).hasCounter()) {
-				serialNumberFormatEl.setErrorKey("error.counter.mandatory");
+			} else if(!validateFormat()) {
 				allOk &= false;
 			}
 			
 			serialNumberStartEl.clearError();
 			if(!StringHelper.containsNonWhitespace(serialNumberStartEl.getValue())) {
-				serialNumberFormatEl.setErrorKey("form.legende.mandatory");
+				serialNumberStartEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(!StringHelper.isLong(serialNumberStartEl.getValue())) {
 				serialNumberStartEl.setErrorKey("form.error.nointeger");
@@ -468,6 +467,28 @@ public class EditCertificationProgramCertificateController extends FormBasicCont
 			}
 		}
 
+		return allOk;
+	}
+	
+	private boolean validateFormat() {
+		boolean allOk = true;
+		
+		try {
+			if(!SerialNumberFormat.parse(serialNumberFormatEl.getValue()).hasCounter()) {
+				serialNumberFormatEl.setErrorKey("error.counter.mandatory");
+				allOk &= false;
+			} else if(SerialNumberFormat.parse(serialNumberFormatEl.getValue()).maxPad() > 16) {
+				serialNumberFormatEl.setErrorKey("error.counter.number.format");
+				allOk &= false;
+			}
+		} catch (NumberFormatException e) {
+			serialNumberFormatEl.setErrorKey("error.counter.number.format");
+			allOk &= false;
+		} catch (Exception e) {
+			serialNumberFormatEl.setErrorKey("error.counter");
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 	

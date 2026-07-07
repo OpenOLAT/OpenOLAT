@@ -27,6 +27,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.Tracing;
@@ -35,6 +36,7 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSAllItemsFilter;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -51,6 +53,8 @@ public class CertificatesMediaResource implements MediaResource {
 	private final boolean print;
 	private final List<Certificate> certificates;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private CertificatesManager certificatesManager;
 
@@ -104,6 +108,10 @@ public class CertificatesMediaResource implements MediaResource {
 		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			for(Certificate certificate:certificates) {
+				if(certificate.getStatus() == CertificateStatus.pending) {
+					certificate = certificatesManager.getCertificateById(certificate.getKey());
+					dbInstance.commit();
+				}
 				VFSLeaf certificateFile = print
 						? certificatesManager.getPrintCertificateLeaf(certificate)
 						: certificatesManager.getCertificateLeaf(certificate);
@@ -111,7 +119,7 @@ public class CertificatesMediaResource implements MediaResource {
 					ZipUtil.addToZip(certificateFile, "", zout, VFSAllItemsFilter.ACCEPT_ALL, false);
 				}
 			}
-			
+			dbInstance.commitAndCloseSession();
 		} catch(Exception e) {
 			log.error("", e);
 		}

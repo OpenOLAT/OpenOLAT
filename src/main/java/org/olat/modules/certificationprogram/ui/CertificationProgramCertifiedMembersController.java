@@ -122,6 +122,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-certified-members-v1.1");
 		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 		
 		bulkDownloadCertificatesButton = uifactory.addFormLink("bulk.export.certificates", "export.certificates", null, formLayout, Link.BUTTON);
 		tableEl.addBatchButton(bulkDownloadCertificatesButton);
@@ -141,7 +142,6 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 			downloadAllPrintCertificatesButton = uifactory.addFormLink("all.export.print.certificates", "export.print.certificates", null, formLayout, Link.LINK);
 			downloadAllPrintCertificatesButton.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
 			downloadDropdown.addElement(downloadAllPrintCertificatesButton);
-			
 		}
 	}
 

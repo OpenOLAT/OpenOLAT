@@ -56,7 +56,7 @@ public class RepositoryEntryCertificateCounterImpl implements Persistable {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
-	@Column(name="c_sn_start_number", nullable=false, insertable=true, updatable=false)
+	@Column(name="c_sn_start_number", nullable=false, insertable=false, updatable=false)
 	private long serialNumberStartNumber;
 	@Column(name="c_sn_counter", nullable=false, insertable=true, updatable=true)
 	private long serialNumberCounter;
