@@ -1759,10 +1759,11 @@ a.o_labeled_light {
  	max-width: 100%;
  	width: 100%;
  	display: flex;
+	border-color: $input-border;
 	span:not(.o_ms_carret) {
  		text-overflow: ellipsis;
 		overflow: hidden;
-		white-space: nowrap; 
+		white-space: nowrap;
 	}
 	.o_ms_carret {
 		margin: auto 0 auto auto;
