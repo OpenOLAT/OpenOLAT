@@ -89,6 +89,7 @@ import org.olat.modules.selectus.model.references.ReferenceImpl;
 import org.olat.modules.selectus.ui.PositionApplicationsController;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMailTemplate;
+import org.olat.modules.selectus.ui.mail.PositionMailTemplateRow.Type;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -402,6 +403,19 @@ public class ReferenceHelper {
 				"$" + "applicantTitleFullName",		// 9
 				"$" + APPLICATION_FIRST_NAME,		// 10
 				"$" + APPLICATION_LAST_NAME			// 11
+		};
+	}
+	
+	public static final String[] getConfirmationSubmissionMailVariables(Type type) {
+		String tfn = "refereeTitleFullname";
+		if(type == Type.confirmationSubmissionExpert || type == Type.confirmationSubmissionComparativeExpert) {
+			tfn = "expertTitleFullName";
+		}
+		return new String[]{
+				"$" + tfn,		// 0
+				"$" + "applicantFullname",			// 1
+				"$" + "applicantList",				// 2
+				"$" + POSITION_TITLE,				// 3
 		};
 	}
 	

@@ -176,7 +176,8 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 			subject = position.getRefereeConfirmationSubmissionMailSubject();
 			if(!StringHelper.containsNonWhitespace(subject)) {
 				subject = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
-						.translate("referee.submission.notification.subject", ReferenceHelper.getMailVariables());
+						.translate("referee.submission.notification.subject", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionReferee));
 			}
 		} else if(templateRow.getType() == Type.expert) {
 			subject = position.getExpertRecommandationMailSubject();
@@ -188,7 +189,8 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 			subject = position.getExpertConfirmationSubmissionMailSubject();
 			if(!StringHelper.containsNonWhitespace(subject)) {
 				subject = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
-						.translate("expert.submission.notification.subject", ReferenceHelper.getMailVariables());
+						.translate("expert.submission.notification.subject", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionExpert));
 			}
 		} else if(templateRow.getType() == Type.comparativeExpert) {
 			subject = position.getComparativeAssessmentExpertMailSubject();
@@ -200,7 +202,8 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 			subject = position.getComparativeAssessmentExpertConfirmationSubmissionMailSubject();
 			if(!StringHelper.containsNonWhitespace(subject)) {
 				subject = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
-						.translate("comparative.expert.submission.notification.subject", ReferenceHelper.getMailVariables());
+						.translate("comparative.expert.submission.notification.subject", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionComparativeExpert));
 			}
 		} else if(templateRow.getType() == Type.committeeReminder) {
 			subject = position.getCommitteeReminderMailSubject();
@@ -228,7 +231,8 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 			body = position.getRefereeConfirmationSubmissionMailTemplate();
 			if(!StringHelper.containsNonWhitespace(body)) {
 				body = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
-						.translate("referee.submission.notification.body", ReferenceHelper.getMailVariables());
+						.translate("referee.submission.notification.body", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionReferee));
 			}
 		} else if(templateRow.getType() == Type.expert) {
 			body = position.getExpertRecommandationMailTemplate();
@@ -240,7 +244,8 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 			body = position.getExpertConfirmationSubmissionMailTemplate();
 			if(!StringHelper.containsNonWhitespace(body)) {
 				body = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
-						.translate("expert.submission.notification.body", ReferenceHelper.getMailVariables());
+						.translate("expert.submission.notification.body", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionExpert));
 			}
 		} else if(templateRow.getType() == Type.comparativeExpert) {
 			body = position.getComparativeAssessmentExpertMailTemplate();
@@ -252,7 +257,8 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 			body = position.getComparativeAssessmentExpertConfirmationSubmissionMailTemplate();
 			if(!StringHelper.containsNonWhitespace(body)) {
 				body = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
-						.translate("comparative.expert.submission.notification.body", ReferenceHelper.getMailVariables());
+						.translate("comparative.expert.submission.notification.body", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionComparativeExpert));
 			}
 		} else if(templateRow.getType() == Type.committeeReminder) {
 			body = position.getCommitteeReminderMailTemplate();
