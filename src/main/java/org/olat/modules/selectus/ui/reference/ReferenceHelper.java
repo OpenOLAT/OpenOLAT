@@ -394,12 +394,15 @@ public class ReferenceHelper {
 		MailAttachment letter = null;
 		
 		if(referenceType == ReferenceType.expert) {
+			subject = position.getExpertRecommandationMailSubject();
 			body = position.getExpertRecommandationMailTemplate();
 			letter = mailService.toAttachment(position.getExpertRecommandationMailLetter(), application, translator.getLocale());
 		} else if(referenceType == ReferenceType.recommendation) {
+			subject = position.getRefereeRecommandationMailSubject();
 			body = position.getRefereeRecommandationMailTemplate();
 			letter = mailService.toAttachment(position.getRefereeRecommandationMailLetter(), application, translator.getLocale());
 		} else if(referenceType == ReferenceType.comparativeAssessmentExpert) {
+			subject = position.getComparativeAssessmentExpertMailSubject();
 			body = position.getComparativeAssessmentExpertMailTemplate();
 			letter = mailService.toAttachment(position.getComparativeAssessmentExpertMailLetter(), application, translator.getLocale());
 		}
@@ -413,13 +416,15 @@ public class ReferenceHelper {
 				body = translator.translate("reference.comparative.expert.mail.body");
 			}
 		}
-		
-		if(referenceType == ReferenceType.expert) {
-			subject = translator.translate("reference.expert.mail.subject", args);
-		} else if(referenceType == ReferenceType.recommendation) {
-			subject = translator.translate("reference.recommendation.mail.subject", args);
-		} else if(referenceType == ReferenceType.comparativeAssessmentExpert) {
-			subject = translator.translate("reference.comparative.expert.mail.subject", args);
+
+		if(!RecruitingHelper.containsTemplate(subject)) {
+			if(referenceType == ReferenceType.expert) {
+				subject = translator.translate("reference.expert.mail.subject", args);
+			} else if(referenceType == ReferenceType.recommendation) {
+				subject = translator.translate("reference.recommendation.mail.subject", args);
+			} else if(referenceType == ReferenceType.comparativeAssessmentExpert) {
+				subject = translator.translate("reference.comparative.expert.mail.subject", args);
+			}
 		}
 
 		return new SubjectAndBody(subject, body, letter);

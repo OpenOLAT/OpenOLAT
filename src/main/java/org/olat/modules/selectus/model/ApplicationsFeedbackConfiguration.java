@@ -44,6 +44,10 @@ public interface ApplicationsFeedbackConfiguration extends CreateInfo, ModifiedI
 	Date getDeadline();
 
 	void setDeadline(Date deadline);
+	
+	String getMailSubject();
+
+	void setMailSubject(String mailSubject);
 
 	String getMailTemplate();
 

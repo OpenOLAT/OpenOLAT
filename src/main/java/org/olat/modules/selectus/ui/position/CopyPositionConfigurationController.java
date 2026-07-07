@@ -426,6 +426,7 @@ public class CopyPositionConfigurationController extends FormBasicController {
 				copy.setExpertsDocs(config.isExpertsDocs());
 				copy.setRefereesDocs(config.isRefereesDocs());
 				copy.setExpertsComparativeAssessmentDocs(config.isExpertsComparativeAssessmentDocs());
+				copy.setMailSubject(config.getMailSubject());
 				copy.setMailTemplate(config.getMailTemplate());
 				copy.setFields(copyProfileVisibilityFields(config.getFields(), originalToCopyAttributesKeys));
 				feedbackService.updateApplicationsFeedbackConfiguration(copy);
@@ -553,7 +554,8 @@ public class CopyPositionConfigurationController extends FormBasicController {
 		position.setMessageToCommitte(positionToCopy.getMessageToCommitte());
 		
 		position.setHomepage(positionToCopy.getHomepage());
-		
+
+		position.setCommitteeReminderMailSubject(positionToCopy.getCommitteeReminderMailSubject());
 		position.setCommitteeReminderMailTemplate(positionToCopy.getCommitteeReminderMailTemplate());
 		position.setCommitteeReminderMailLetter(positionToCopy.getCommitteeReminderMailLetter());
 		
@@ -657,6 +659,7 @@ public class CopyPositionConfigurationController extends FormBasicController {
 		if(refereeSubmissionDeadline != null) {
 			position.setRefereeRecommendationEnabled(true);
 			position.setRefereeRecommandationDeadline(refereeSubmissionDeadline);
+			position.setRefereeRecommandationMailSubject(positionToCopy.getRefereeRecommandationMailSubject());
 			position.setRefereeRecommandationMailTemplate(positionToCopy.getRefereeRecommandationMailTemplate());
 			position.setRefereeRecommandationMailLetter(positionToCopy.getRefereeRecommandationMailLetter());
 			position.setRefereeRecommandationSendMailType(positionToCopy.getRefereeRecommandationSendMailType());
@@ -678,6 +681,7 @@ public class CopyPositionConfigurationController extends FormBasicController {
 		if(expertSubmissionDeadline != null) {
 			position.setExpertRecommendationEnabled(true);
 			position.setExpertRecommandationDeadline(expertSubmissionDeadline);
+			position.setExpertRecommandationMailSubject(positionToCopy.getExpertRecommandationMailSubject());
 			position.setExpertRecommandationMailTemplate(positionToCopy.getExpertRecommandationMailTemplate());
 			position.setExpertRecommandationMailLetter(positionToCopy.getExpertRecommandationMailLetter());
 			position.setExpertRecommendationDocuments(positionToCopy.getExpertRecommendationDocuments());
@@ -687,6 +691,7 @@ public class CopyPositionConfigurationController extends FormBasicController {
 		if(comparativeExpertSubmissionDeadline != null) {
 			position.setComparativeAssessmentExpertEnabled(true);
 			position.setComparativeAssessmentExpertDeadline(comparativeExpertSubmissionDeadline);
+			position.setComparativeAssessmentExpertMailSubject(positionToCopy.getComparativeAssessmentExpertMailSubject());
 			position.setComparativeAssessmentExpertMailTemplate(positionToCopy.getComparativeAssessmentExpertMailTemplate());
 			position.setComparativeAssessmentExpertMailLetter(positionToCopy.getComparativeAssessmentExpertMailLetter());
 			position.setComparativeAssessmentExpertDocuments(positionToCopy.getComparativeAssessmentExpertDocuments());

@@ -101,6 +101,7 @@ public class PositionEditRefereesController extends FormBasicController implemen
 	private DateChooser applicantDeadlineEl;
 	private TextElement minReferenceEl;
 	private TextElement maxReferenceEl;
+	private TextElement recommendationMailSubjectEl;
 	private RichTextElement recommendationMailTemplateEl;
 	private SingleSelection sendRefereeMailEl;
 	
@@ -202,6 +203,9 @@ public class PositionEditRefereesController extends FormBasicController implemen
 			sendRefereeMailEl.select(type.name(), true);
 		}
 
+		String subject = getRefereeSubject();
+		recommendationMailSubjectEl = uifactory.addTextElement("edit.subject.referee", "edit.subject.referee", "reference.subject", 255, subject, formLayout);
+		
 		String refereeTemplate = getRefereeTemplate();
 		recommendationMailTemplateEl = uifactory.addRichTextElementForStringData("edit.template.referee", "reference.mail", refereeTemplate, 18, 60,
 				false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
@@ -242,6 +246,7 @@ public class PositionEditRefereesController extends FormBasicController implemen
 		minReferenceEl.setVisible(referenceEnabled);
 		maxReferenceEl.setVisible(referenceEnabled);
 		sendRefereeMailEl.setVisible(referenceEnabled);
+		recommendationMailSubjectEl.setVisible(referenceEnabled);
 		recommendationMailTemplateEl.setVisible(referenceEnabled);
 		previewLink.setVisible(referenceEnabled);
 		variablesButton.setVisible(referenceEnabled);
@@ -262,6 +267,16 @@ public class PositionEditRefereesController extends FormBasicController implemen
 		this.position = updatedPosition;
 		String template = getRefereeTemplate();
 		recommendationMailTemplateEl.setValue(template);
+		String subject = getRefereeSubject();
+		recommendationMailSubjectEl.setValue(subject);
+	}
+	
+	private String getRefereeSubject() {
+		String refereeSubject = position.getRefereeRecommandationMailSubject();
+		if(!StringHelper.containsNonWhitespace(refereeSubject)) {
+			refereeSubject = translate("reference.recommendation.mail.subject");
+		}
+		return refereeSubject;
 	}
 	
 	private String getRefereeTemplate() {
@@ -338,6 +353,11 @@ public class PositionEditRefereesController extends FormBasicController implemen
 		recommendationMailTemplateEl.clearError();
 		if(StringHelper.containsNonWhitespace(recommendationMailTemplateEl.getValue())) {
 			allOk &= checkTemplate(recommendationMailTemplateEl);
+		}
+		
+		recommendationMailSubjectEl.clearError();
+		if(StringHelper.containsNonWhitespace(recommendationMailSubjectEl.getValue())) {
+			allOk &= checkTemplate(recommendationMailSubjectEl);
 		}
 		
 		return allOk;
@@ -453,6 +473,7 @@ public class PositionEditRefereesController extends FormBasicController implemen
 			position.setRefereeRecommandationDeadline(refereeDeadlineEl.getDate());
 			position.setMinReferees(getLong(minReferenceEl));
 			position.setMaxReferees(getLong(maxReferenceEl));
+			position.setRefereeRecommandationMailSubject(recommendationMailSubjectEl.getValue());
 			position.setRefereeRecommandationMailTemplate(recommendationMailTemplateEl.getValue());
 			if(sendRefereeMailEl.isOneSelected()) {
 				position.setRefereeRecommandationSendMailType(ReferenceSendMailType.valueOf(sendRefereeMailEl.getSelectedKey()));
@@ -472,6 +493,7 @@ public class PositionEditRefereesController extends FormBasicController implemen
 			position.setMinReferees(null);
 			position.setMaxReferees(null);
 			position.setRefereeRecommandationSendMailType(null);
+			position.setRefereeRecommandationMailSubject(null);
 			position.setRefereeRecommandationMailTemplate(null);
 		}
 
@@ -539,8 +561,7 @@ public class PositionEditRefereesController extends FormBasicController implemen
 		}
 		Application app = ReferenceHelper.generateDummyApplication(position);
 		
-		String[] args = ReferenceHelper.generateMailArguments(headOfCommittee, position, app, reference, salutationGenerator, getTranslator());
-		String subject = translate("reference.recommendation.mail.subject", args);
+		String subject = recommendationMailSubjectEl.getValue();
 		String body = recommendationMailTemplateEl.getValue();
 		MailAttachment letter = mailService.toAttachment(position.getRefereeRecommandationMailLetter(), app, getLocale());
 		mailPreviewCtrl = new PreviewEmailController(ureq, getWindowControl(), subject, body, letter,

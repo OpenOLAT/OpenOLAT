@@ -150,6 +150,10 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 
 	public void setCommitteeReminderSentDate(Date committeeReminderSentDate);
 	
+	public String getCommitteeReminderMailSubject();
+
+	public void setCommitteeReminderMailSubject(String subject);
+	
 	public String getCommitteeReminderMailTemplate();
 
 	public void setCommitteeReminderMailTemplate(String template);
@@ -390,10 +394,14 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 	public Date getExpertRecommandationDeadline();
 
 	public void setExpertRecommandationDeadline(Date expertRecommandationDeadline);
+	
+	public String getExpertRecommandationMailSubject();
+
+	public void setExpertRecommandationMailSubject(String subject);
 
 	public String getExpertRecommandationMailTemplate();
 
-	public void setExpertRecommandationMailTemplate(String expertRecommandationMailTemplate);
+	public void setExpertRecommandationMailTemplate(String template);
 	
 	public String getExpertRecommandationMailLetter();
 
@@ -440,6 +448,10 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 	public Date getComparativeAssessmentExpertDeadline();
 
 	public void setComparativeAssessmentExpertDeadline(Date deadline);
+	
+	public String getComparativeAssessmentExpertMailSubject();
+
+	public void setComparativeAssessmentExpertMailSubject(String subject);
 
 	public String getComparativeAssessmentExpertMailTemplate();
 
@@ -470,9 +482,13 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 
 	public void setMaxReferees(Long maxReferees);
 	
+	public String getRefereeRecommandationMailSubject();
+
+	public void setRefereeRecommandationMailSubject(String subject);
+
 	public String getRefereeRecommandationMailTemplate();
 
-	public void setRefereeRecommandationMailTemplate(String refereeRecommandationMailTemplate);
+	public void setRefereeRecommandationMailTemplate(String template);
 
 	public ReferenceSendMailType getRefereeRecommandationSendMailType();
 

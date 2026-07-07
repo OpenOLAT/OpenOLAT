@@ -94,6 +94,7 @@ public class PositionEditExpertsController extends FormBasicController implement
 	private SingleSelection expertDeadlineMonthElement;
 	private TextElement expertDeadlineYearElement;
 	private FormLayoutContainer expertDeadlineContainer;
+	private TextElement expertMailSubjectEl;
 	private RichTextElement expertMailTemplateEl;
 	
 	private Position position;
@@ -177,6 +178,9 @@ public class PositionEditExpertsController extends FormBasicController implement
 		expertDeadlineYearElement.setMandatory(true);
 		expertDeadlineYearElement.setEnabled(!readOnly);
 		
+		String subject = getExpertSubject();
+		expertMailSubjectEl = uifactory.addTextElement("edit.subject.experts", "edit.subject.experts", "reference.subject", 255, subject, formLayout);
+		
 		String expertTemplate = getExpertTemplate();
 		expertMailTemplateEl = uifactory.addRichTextElementForStringData("edit.template.experts", "reference.mail", expertTemplate, 18, 60,
 				false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
@@ -212,9 +216,18 @@ public class PositionEditExpertsController extends FormBasicController implement
 	private void updateGUI() {
 		boolean expertEnabled = staffCanAddExpertsEl.isAtLeastSelected(1);
 		expertDeadlineContainer.setVisible(expertEnabled);
+		expertMailSubjectEl.setVisible(expertEnabled);
 		expertMailTemplateEl.setVisible(expertEnabled);
 		variablesButton.setVisible(expertEnabled);
 		previewLink.setVisible(expertEnabled);
+	}
+	
+	private String getExpertSubject() {
+		String expertSubject = position.getExpertRecommandationMailSubject();
+		if(!StringHelper.containsNonWhitespace(expertSubject)) {
+			expertSubject = translate("reference.expert.mail.subject");
+		}
+		return expertSubject;
 	}
 	
 	private String getExpertTemplate() {
@@ -235,6 +248,8 @@ public class PositionEditExpertsController extends FormBasicController implement
 		this.position = updatedPosition;
 		String template = getExpertTemplate();
 		expertMailTemplateEl.setValue(template);
+		String subject = getExpertSubject();
+		expertMailSubjectEl.setValue(subject);
 	}
 	
 	private Date getExpertDeadline() {
@@ -283,6 +298,12 @@ public class PositionEditExpertsController extends FormBasicController implement
 		if(StringHelper.containsNonWhitespace(expertMailTemplateEl.getValue())) {
 			allOk &= checkTemplate(expertMailTemplateEl);
 		}
+		
+		expertMailSubjectEl.clearError();
+		if(StringHelper.containsNonWhitespace(expertMailSubjectEl.getValue())) {
+			allOk &= checkTemplate(expertMailSubjectEl);
+		}
+		
 		return allOk;
 	}
 	
@@ -377,9 +398,11 @@ public class PositionEditExpertsController extends FormBasicController implement
 		position.setExpertRecommendationEnabled(expertEnabled);
 		if(expertEnabled) {
 			position.setExpertRecommandationDeadline(getExpertDeadline());
+			position.setExpertRecommandationMailSubject(expertMailSubjectEl.getValue());
 			position.setExpertRecommandationMailTemplate(expertMailTemplateEl.getValue());
 		} else {
 			position.setExpertRecommandationDeadline(null);
+			position.setExpertRecommandationMailSubject(null);
 			position.setExpertRecommandationMailTemplate(null);
 		}
 
@@ -447,8 +470,7 @@ public class PositionEditExpertsController extends FormBasicController implement
 		}
 		Application app = ReferenceHelper.generateDummyApplication(position);
 		
-		String[] args = ReferenceHelper.generateMailArguments(headOfCommittee, position, app, reference, salutationGenerator, getTranslator());
-		String subject = translate("reference.expert.mail.subject", args);
+		String subject = expertMailSubjectEl.getValue();
 		String body = expertMailTemplateEl.getValue();
 		String letterConfiguration = position.getExpertRecommandationMailLetter();
 		MailAttachment letter = mailService.toAttachment(letterConfiguration, app, getLocale());
