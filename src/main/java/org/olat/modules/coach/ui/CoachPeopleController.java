@@ -57,7 +57,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.CoachingSecurity;
@@ -133,10 +132,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 		// Relations user to user
 		userRelationRoles = listAvailableRoles(identityRelationsService.getRelationsAsSource(ureq.getIdentity()));
 		for (RelationRole relationRole : userRelationRoles) {
-			String name = RelationRolesAndRightsUIFactory.getTranslatedRoleDescription(relationRole, getLocale());
-			if(!StringHelper.containsNonWhitespace(name)) {
-				name = RelationRolesAndRightsUIFactory.getTranslatedRole(relationRole, getLocale());
-			}
+			String name = RelationRolesAndRightsUIFactory.getTranslatedRole(relationRole, getLocale());
 			String scopeName = translate("relation.as", name);
 			scopes.add(ScopeFactory.createScope(RELATION_PREFIX_SCOPE + relationRole.getRole(), scopeName, null, "o_icon o_icon_right_left"));
 		}
