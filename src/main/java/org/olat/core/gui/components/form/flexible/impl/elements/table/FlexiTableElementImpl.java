@@ -1403,7 +1403,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			setRendererType(FlexiTableRendererType.verticalTimeLine);
 			saveCustomSettings(ureq);
 			getRootForm().fireFormEvent(ureq, new FlexiTableRenderEvent(FlexiTableRenderEvent.CHANGE_RENDER_TYPE, this,
-					FlexiTableRendererType.custom, FormEvent.ONCLICK));
+					FlexiTableRendererType.verticalTimeLine, FormEvent.ONCLICK));
 		}
 		
 		else if(getFormDispatchId().equals(dispatchuri) && doSelect(ureq)) {
