@@ -664,6 +664,8 @@ public class CopyPositionConfigurationController extends FormBasicController {
 			position.setRefereeRecommandationMailLetter(positionToCopy.getRefereeRecommandationMailLetter());
 			position.setRefereeRecommandationSendMailType(positionToCopy.getRefereeRecommandationSendMailType());
 			position.setRefereeRecommendationDocuments(positionToCopy.getRefereeRecommendationDocuments());
+			position.setRefereeConfirmationSubmissionMailSubject(positionToCopy.getRefereeConfirmationSubmissionMailSubject());
+			position.setRefereeConfirmationSubmissionMailTemplate(positionToCopy.getRefereeConfirmationSubmissionMailTemplate());
 			position.setMinReferees(positionToCopy.getMinReferees());
 			position.setMaxReferees(positionToCopy.getMaxReferees());
 		}
@@ -685,6 +687,8 @@ public class CopyPositionConfigurationController extends FormBasicController {
 			position.setExpertRecommandationMailTemplate(positionToCopy.getExpertRecommandationMailTemplate());
 			position.setExpertRecommandationMailLetter(positionToCopy.getExpertRecommandationMailLetter());
 			position.setExpertRecommendationDocuments(positionToCopy.getExpertRecommendationDocuments());
+			position.setExpertConfirmationSubmissionMailSubject(positionToCopy.getExpertConfirmationSubmissionMailSubject());
+			position.setExpertConfirmationSubmissionMailTemplate(positionToCopy.getExpertConfirmationSubmissionMailTemplate());
 		}
 		
 		Date comparativeExpertSubmissionDeadline = getDate(comparativeExpertSubmissionDeadlineEl);
@@ -695,6 +699,8 @@ public class CopyPositionConfigurationController extends FormBasicController {
 			position.setComparativeAssessmentExpertMailTemplate(positionToCopy.getComparativeAssessmentExpertMailTemplate());
 			position.setComparativeAssessmentExpertMailLetter(positionToCopy.getComparativeAssessmentExpertMailLetter());
 			position.setComparativeAssessmentExpertDocuments(positionToCopy.getComparativeAssessmentExpertDocuments());
+			position.setComparativeAssessmentExpertConfirmationSubmissionMailSubject(positionToCopy.getComparativeAssessmentExpertConfirmationSubmissionMailSubject());
+			position.setComparativeAssessmentExpertConfirmationSubmissionMailTemplate(positionToCopy.getComparativeAssessmentExpertConfirmationSubmissionMailTemplate());
 		}
 
 		Date publicFeedbackDeadline = getDate(publicFeedbackDeadlineEl);

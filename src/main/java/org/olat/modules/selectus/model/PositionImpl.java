@@ -274,6 +274,11 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	private String expertRecommendationDocs;
 	@Column(name="rec_expert_fields", nullable=true, insertable=true, updatable=true)
 	private String expertRecommendationFieldsString;
+	
+	@Column(name="confsub_expert_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String expertConfirmationSubmissionMailSubject;
+	@Column(name="confsub_expert_mail_template", nullable=true, insertable=true, updatable=true)
+	private String expertConfirmationSubmissionMailTemplate;
 
 	@Column(name="rec_referee_enable", nullable=true, insertable=true, updatable=true)
 	private boolean refereeRecommendationEnabled = false;
@@ -304,6 +309,11 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@Column(name="rec_referee_mail_type", nullable=true, insertable=true, updatable=true)
 	private String recommandationSendMailType;
 	
+	@Column(name="confsub_referee_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String refereeConfirmationSubmissionMailSubject;
+	@Column(name="confsub_referee_mail_template", nullable=true, insertable=true, updatable=true)
+	private String refereeConfirmationSubmissionMailTemplate;
+	
 	@Column(name="rec_comp_expert_enable", nullable=true, insertable=true, updatable=true)
 	private boolean comparativeAssessmentExpertEnabled = false;
 	@Temporal(TemporalType.TIMESTAMP)
@@ -319,6 +329,11 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	private String comparativeAssessmentExpertMailLetter;
 	@Column(name="rec_comp_expert_fields", nullable=true, insertable=true, updatable=true)
 	private String comparativeAssessmentExpertFieldsString;
+	
+	@Column(name="confs_comp_expert_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String comparativeAssessmentExpertConfirmationSubmissionMailSubject;
+	@Column(name="confs_comp_expert_mail_template", nullable=true, insertable=true, updatable=true)
+	private String comparativeAssessmentExpertConfirmationSubmissionMailTemplate;
 	
 	@Column(name="rec_public_feedback_enable", nullable=true, insertable=true, updatable=true)
 	private boolean publicFeedbackEnabled = false;
@@ -1834,6 +1849,26 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 
 	@Override
+	public String getExpertConfirmationSubmissionMailSubject() {
+		return expertConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public void setExpertConfirmationSubmissionMailSubject(String expertConfirmationSubmissionMailSubject) {
+		this.expertConfirmationSubmissionMailSubject = expertConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public String getExpertConfirmationSubmissionMailTemplate() {
+		return expertConfirmationSubmissionMailTemplate;
+	}
+
+	@Override
+	public void setExpertConfirmationSubmissionMailTemplate(String expertConfirmationSubmissionMailTemplate) {
+		this.expertConfirmationSubmissionMailTemplate = expertConfirmationSubmissionMailTemplate;
+	}
+
+	@Override
 	public boolean isRefereeRecommendationEnabled() {
 		return refereeRecommendationEnabled;
 	}
@@ -1972,6 +2007,26 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 		this.refereeRecommandationMailLetter = configuration;
 	}
 
+	@Override
+	public String getRefereeConfirmationSubmissionMailSubject() {
+		return refereeConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public void setRefereeConfirmationSubmissionMailSubject(String refereeConfirmationSubmissionMailSubject) {
+		this.refereeConfirmationSubmissionMailSubject = refereeConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public String getRefereeConfirmationSubmissionMailTemplate() {
+		return refereeConfirmationSubmissionMailTemplate;
+	}
+
+	@Override
+	public void setRefereeConfirmationSubmissionMailTemplate(String refereeConfirmationSubmissionMailTemplate) {
+		this.refereeConfirmationSubmissionMailTemplate = refereeConfirmationSubmissionMailTemplate;
+	}
+
 	public String getRecommandationSendMailType() {
 		return recommandationSendMailType;
 	}
@@ -2100,6 +2155,28 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 			return null;
 		} 
 		return String.join(",", fields);
+	}
+
+	@Override
+	public String getComparativeAssessmentExpertConfirmationSubmissionMailSubject() {
+		return comparativeAssessmentExpertConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public void setComparativeAssessmentExpertConfirmationSubmissionMailSubject(
+			String comparativeAssessmentExpertConfirmationSubmissionMailSubject) {
+		this.comparativeAssessmentExpertConfirmationSubmissionMailSubject = comparativeAssessmentExpertConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public String getComparativeAssessmentExpertConfirmationSubmissionMailTemplate() {
+		return comparativeAssessmentExpertConfirmationSubmissionMailTemplate;
+	}
+
+	@Override
+	public void setComparativeAssessmentExpertConfirmationSubmissionMailTemplate(
+			String comparativeAssessmentExpertConfirmationSubmissionMailTemplate) {
+		this.comparativeAssessmentExpertConfirmationSubmissionMailTemplate = comparativeAssessmentExpertConfirmationSubmissionMailTemplate;
 	}
 
 	@Override

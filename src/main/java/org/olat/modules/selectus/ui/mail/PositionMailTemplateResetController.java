@@ -153,12 +153,21 @@ public class PositionMailTemplateResetController extends FormBasicController {
 		} else if(type == Type.expert) {
 			position.setExpertRecommandationMailTemplate(null);
 			position.setExpertRecommandationMailLetter(null);
+		}  else if(type == Type.confirmationSubmissionExpert) {
+			position.setExpertConfirmationSubmissionMailSubject(null);
+			position.setExpertConfirmationSubmissionMailTemplate(null);
 		} else if(type == Type.comparativeExpert) {
 			position.setComparativeAssessmentExpertMailTemplate(null);
 			position.setComparativeAssessmentExpertMailLetter(null);
+		} else if(type == Type.confirmationSubmissionComparativeExpert) {
+			position.setComparativeAssessmentExpertConfirmationSubmissionMailSubject(null);
+			position.setComparativeAssessmentExpertConfirmationSubmissionMailTemplate(null);
 		} else if(type == Type.referee) {
 			position.setRefereeRecommandationMailTemplate(null);
 			position.setRefereeRecommandationMailLetter(null);
+		} else if(type == Type.confirmationSubmissionReferee) {
+			position.setRefereeConfirmationSubmissionMailSubject(null);
+			position.setRefereeConfirmationSubmissionMailTemplate(null);
 		} else if(templateRow.getType() == Type.feedback) {
 			String body = FeedbackHelper.getDefaultTemplateBodyHtml(position, salutationGenerator, getLocale());
 			templateRow.getFeedbackConfiguration().setMailTemplate(body);

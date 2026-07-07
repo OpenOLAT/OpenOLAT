@@ -414,6 +414,14 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 	Set<String> getExpertRecommendationFields();
 
 	void setExpertRecommendationFields(Collection<String> fields);
+	
+	public String getExpertConfirmationSubmissionMailSubject();
+
+	public void setExpertConfirmationSubmissionMailSubject(String subject);
+
+	public String getExpertConfirmationSubmissionMailTemplate();
+
+	public void setExpertConfirmationSubmissionMailTemplate(String template);
 
 	public boolean isRefereeRecommendationEnabled();
 
@@ -469,6 +477,14 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 
 	void setComparativeAssessmentExpertFields(Collection<String> fields);
 	
+	String getComparativeAssessmentExpertConfirmationSubmissionMailSubject();
+
+	void setComparativeAssessmentExpertConfirmationSubmissionMailSubject(String subject);
+
+	String getComparativeAssessmentExpertConfirmationSubmissionMailTemplate();
+
+	void setComparativeAssessmentExpertConfirmationSubmissionMailTemplate(String template);
+	
 
 	public Long getMinReferees();
 	
@@ -497,6 +513,14 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 	public String getRefereeRecommandationMailLetter();
 
 	public void setRefereeRecommandationMailLetter(String configuration);
+	
+	public String getRefereeConfirmationSubmissionMailSubject();
+
+	public void setRefereeConfirmationSubmissionMailSubject(String subject);
+
+	public String getRefereeConfirmationSubmissionMailTemplate();
+
+	public void setRefereeConfirmationSubmissionMailTemplate(String template);
 	
 	
 	public boolean isPublicFeedbackEnabled();
