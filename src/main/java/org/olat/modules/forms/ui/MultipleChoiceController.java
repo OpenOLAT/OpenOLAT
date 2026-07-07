@@ -72,6 +72,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	private MultipleChoice multipleChoice;
 	private List<EvaluationFormResponse> multipleChoiceResponses;
 	private boolean validationEnabled = true;
+	private boolean readOnly = false;
 	private RulesEngine rulesEngine;
 	private Map<ChoiceSelectedCondition, Rule> selectedConditionToRule;
 	
@@ -136,6 +137,10 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 		otherEl.setPlaceholderKey("multiple.choice.others.placeholder", null);
 		otherEl.setAriaLabel(translate("multiple.choice.others.placeholder"));
 		showHideOthers();
+		if (readOnly) {
+			multipleChoiceEl.setEnabled(false);
+			otherEl.setEnabled(false);
+		}
 
 		setBlockLayoutClass(multipleChoice.getLayoutSettings());
 	}
@@ -222,6 +227,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 
 	@Override
 	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
 		multipleChoiceEl.setEnabled(!readOnly);
 		otherEl.setEnabled(!readOnly);
 	}
@@ -285,6 +291,10 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	}
 	
 	private void fireChoiceSelectedCondition() {
+		if (selectedConditionToRule == null) {
+			return;
+		}
+		
 		for (Map.Entry<ChoiceSelectedCondition, Rule> conditionToRule: selectedConditionToRule.entrySet()) {
 			boolean fulfilled = multipleChoiceEl.isAtLeastSelected(1)
 					&& multipleChoiceEl.getSelectedKeys().contains(conditionToRule.getKey().getChoiceId());
