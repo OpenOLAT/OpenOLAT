@@ -36,13 +36,22 @@
 	align-items: start;
 }
 
-.o_building_detail_left {
+@media (max-width: $screen-md) {
+	.o_building_detail_body {
+		grid-template-columns: 1fr;
+	}
+}
+
+.o_building_detail_metadata {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 12px 24px;
 	align-content: start;
 }
 
+.o_building_detail_map {
+	max-width: 400px;
+}
 .o_building_room_status_icon {
 	display: inline-block; 
 	font-size: 7px; 

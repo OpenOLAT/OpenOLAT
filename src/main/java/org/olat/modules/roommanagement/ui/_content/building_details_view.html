@@ -27,7 +27,7 @@
 	</div>
 	
 	<div class="o_building_detail_body">
-		<div class="o_building_detail_left">
+		<div class="o_building_detail_metadata">
 			#if($address)
 			<div class="o_building_detail_section">
 				<div class="o_building_detail_section_label">$r.translate("building.col.address")</div>
@@ -68,7 +68,7 @@
 					</div>
 					$r.translate("building.detail.rooms.inactive", $inactiveRoomCount)
 					#else
-					$r.translate("building.detail.none")
+					$r.translate("building.detail.rooms", 0)
 					#end
 				</div>
 			</div>
@@ -79,7 +79,7 @@
 			</div>
 			#end
 		</div>
-		<div class="o_building_detail_right">
+		<div class="o_building_detail_map">
 			$r.render("buildingDetailMap")
 		</div>
 	</div>
