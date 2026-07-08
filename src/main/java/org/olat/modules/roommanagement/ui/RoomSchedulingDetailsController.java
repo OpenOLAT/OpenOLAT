@@ -42,7 +42,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionE
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
@@ -82,6 +84,8 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 
 	private FormLink openInCoursePlannerLink;
 	private FormLink openEntryLink;
+	private CloseableModalController cmc;
+	private RoomDetailViewController roomDetailViewCtrl;
 
 	private final RoomSchedulingRow row;
 	private final UserInfoProfileConfig profileConfig;
@@ -255,11 +259,22 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 			Room room = booking.getRoom();
 			if (room == null) continue;
 
-			String cardId = RoomUIHelper.forgeRoomCard(formLayout, room, velocity_root, getTranslator());
+			String cardId = RoomUIHelper.forgeRoomCard(formLayout, uifactory, room, velocity_root, getTranslator());
 			roomCardIds.add(cardId);
 		}
 
 		formLayout.contextPut("roomCardIds", roomCardIds);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == cmc) {
+			removeAsListenerAndDispose(cmc);
+			cmc = null;
+			removeAsListenerAndDispose(roomDetailViewCtrl);
+			roomDetailViewCtrl = null;
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -268,8 +283,21 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 			NewControllerFactory.getInstance().launch(EVENTS_BUSINESS_PATH, ureq, getWindowControl());
 		} else if (source == openEntryLink) {
 			doOpenRepositoryEntry(ureq);
+		} else if (source instanceof FormLink link && link.getUserObject() instanceof Room room) {
+			doOpenDetails(ureq, room);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doOpenDetails(UserRequest ureq, Room room) {
+		removeAsListenerAndDispose(roomDetailViewCtrl);
+		removeAsListenerAndDispose(cmc);
+		roomDetailViewCtrl = new RoomDetailViewController(ureq, getWindowControl(), room);
+		listenTo(roomDetailViewCtrl);
+		String title = room.getExternalRef() != null ? room.getExternalRef() : "";
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), roomDetailViewCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doOpenRepositoryEntry(UserRequest ureq) {

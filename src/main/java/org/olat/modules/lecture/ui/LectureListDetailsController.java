@@ -61,6 +61,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
@@ -95,6 +96,7 @@ import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.ui.RoomDetailViewController;
 import org.olat.modules.roommanagement.ui.RoomUIHelper;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
@@ -141,6 +143,8 @@ public class LectureListDetailsController extends FormBasicController {
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private CloseableModalController cmc;
+	private RoomDetailViewController roomDetailViewCtrl;
 
 	@Autowired
 	private DB dbInstance;
@@ -312,7 +316,7 @@ public class LectureListDetailsController extends FormBasicController {
 			Room room = booking.getRoom();
 			if (room == null) continue;
 
-			String cardId = RoomUIHelper.forgeRoomCard(formLayout, room, Util.getPackageVelocityRoot(RoomUIHelper.class), 
+			String cardId = RoomUIHelper.forgeRoomCard(formLayout, uifactory, room, Util.getPackageVelocityRoot(RoomUIHelper.class),
 					getTranslator());
 			roomCardIds.add(cardId);
 		}
@@ -504,6 +508,11 @@ public class LectureListDetailsController extends FormBasicController {
 					cleanUp();
 				}
 			}
+		} else if (source == cmc) {
+			removeAsListenerAndDispose(cmc);
+			cmc = null;
+			removeAsListenerAndDispose(roomDetailViewCtrl);
+			roomDetailViewCtrl = null;
 		}
 		super.event(ureq, source, event);
 	}
@@ -534,9 +543,22 @@ public class LectureListDetailsController extends FormBasicController {
 				doOpenTools(ureq, groupRow, link);
 			} else if("open".equals(cmd) && link.getUserObject() instanceof LectureBlockParticipantGroupRow groupRow) {
 				doOpen(ureq, groupRow);
+			} else if("openDetails".equals(cmd) && link.getUserObject() instanceof Room room) {
+				doOpenDetails(ureq, room);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doOpenDetails(UserRequest ureq, Room room) {
+		removeAsListenerAndDispose(roomDetailViewCtrl);
+		removeAsListenerAndDispose(cmc);
+		roomDetailViewCtrl = new RoomDetailViewController(ureq, getWindowControl(), room);
+		listenTo(roomDetailViewCtrl);
+		String title = room.getExternalRef() != null ? room.getExternalRef() : "";
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), roomDetailViewCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doOpenTools(UserRequest ureq, LectureBlockParticipantGroupRow groupRow, FormLink link) {

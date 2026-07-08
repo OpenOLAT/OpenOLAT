@@ -52,7 +52,6 @@ public class RoomDetailsController extends FormBasicController {
 
 	private FormLink editLink;
 	private FormLink calendarLink;
-	private FormLink detailsLink;
 
 	private CloseableModalController cmc;
 	private RoomDetailViewController roomDetailViewCtrl;
@@ -94,10 +93,6 @@ public class RoomDetailsController extends FormBasicController {
 			editLink = uifactory.addFormLink("edit", formLayout, Link.BUTTON);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
-
-		detailsLink = uifactory.addFormLink("room.detail.open.details", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_circle_info");
-		detailsLink.setTitle(translate("room.detail.open.details"));
 
 		// Seats
 		formLayout.contextPut("seats", room.getSeats());
@@ -168,7 +163,7 @@ public class RoomDetailsController extends FormBasicController {
 		}
 
 		// Card
-		String cardId = RoomUIHelper.forgeRoomCard(formLayout, room, velocity_root, getTranslator());
+		String cardId = RoomUIHelper.forgeRoomCard(formLayout, uifactory, room, velocity_root, getTranslator());
 		formLayout.contextPut("roomCardId", cardId);
 	}
 
@@ -178,7 +173,7 @@ public class RoomDetailsController extends FormBasicController {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == calendarLink) {
 			fireEvent(ureq, new Event("viewCalendar"));
-		} else if (source == detailsLink) {
+		} else if (source instanceof FormLink link && link.getUserObject() instanceof Room) {
 			doOpenDetails(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);

@@ -244,7 +244,7 @@
 
 .o_room_card {
 	display: grid;
-	grid-template-columns: auto 1fr;
+	grid-template-columns: auto 1fr auto;
 	gap: 16px;
 	align-items: start;
 	padding: 12px;
@@ -272,6 +272,10 @@
 
 .o_room_card_building_name {
 	flex-grow: 1;
+}
+
+.o_room_card_details_btn {
+	line-height: 100px;
 }
 
 .o_rm_details {

@@ -36,4 +36,9 @@
 		</div>
 		#end
 	</div>
+	#if($roomDetailsLinkId)
+	<div class="o_room_card_details_btn">
+		$r.render($roomDetailsLinkId)
+	</div>
+	#end
 </div>

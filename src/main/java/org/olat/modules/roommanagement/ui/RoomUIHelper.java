@@ -31,8 +31,11 @@ import java.util.stream.Collectors;
 
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -52,11 +55,20 @@ public class RoomUIHelper {
 
 	private static final int MAX_COLUMN_INFO_TEXT_LENGTH = 250;
 
-	public static String forgeRoomCard(FormItemContainer formLayout, Room room, String velocityRoot, Translator translator) {
+	public static String forgeRoomCard(FormItemContainer formLayout, FormUIFactory uifactory, Room room, 
+									   String velocityRoot, Translator translator) {
 		String cardId = "roomCard_" + room.getKey();
 		FormLayoutContainer cardCont = FormLayoutContainer.createCustomFormLayout(
 				cardId, translator, velocityRoot + "/room_card.html");
 		formLayout.add(cardCont);
+
+		String detailsLinkId = "roomDetailsLink_" + room.getKey();
+		FormLink detailsLink = uifactory.addFormLink(detailsLinkId, "openDetails", "", null, 
+				cardCont, Link.BUTTON | Link.NONTRANSLATED);
+		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_circle_info");
+		detailsLink.setTitle(translator.translate("room.detail.open.details"));
+		detailsLink.setUserObject(room);
+		cardCont.contextPut("roomDetailsLinkId", detailsLinkId);
 
 		if (StringHelper.containsNonWhitespace(room.getExternalRef())) {
 			cardCont.contextPut("reference", room.getExternalRef());
