@@ -118,9 +118,11 @@ public class RoomDAO {
 	}
 
 	private void appendSearchWhere(QueryBuilder sb, SearchRoomParameters params) {
-		// Always filter out deleted rooms and their deleted buildings
-		sb.and().append("r.status <> :deletedStatus")
-		  .and().append("bld.status <> :deletedStatus");
+		boolean includesDeleted = params.getStatus() != null && params.getStatus().contains(RoomStatus.deleted);
+		if (!includesDeleted) {
+			sb.and().append("r.status <> :deletedStatus")
+			  .and().append("bld.status <> :deletedStatus");
+		}
 
 		if (params.getStatus() != null && !params.getStatus().isEmpty()) {
 			sb.and().append("r.status in (:statusList)");
@@ -166,7 +168,10 @@ public class RoomDAO {
 	}
 
 	private void applySearchParameters(TypedQuery<?> query, SearchRoomParameters params) {
-		query.setParameter("deletedStatus", RoomStatus.deleted.name());
+		boolean includesDeleted = params.getStatus() != null && params.getStatus().contains(RoomStatus.deleted);
+		if (!includesDeleted) {
+			query.setParameter("deletedStatus", RoomStatus.deleted.name());
+		}
 		if (params.getStatus() != null && !params.getStatus().isEmpty()) {
 			List<String> statusNames = params.getStatus().stream().map(RoomStatus::name).collect(Collectors.toList());
 			query.setParameter("statusList", statusNames);

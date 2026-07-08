@@ -843,8 +843,15 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void doConfirmDelete(UserRequest ureq, RoomRow row) {
+		List<RoomBooking> bookings = roomManagementService.getBookingsForRoom(
+				new RoomRefImpl(row.getRoom().getKey()), new Date(), null);
+		if (!bookings.isEmpty()) {
+			showError("room.error.has.active.bookings");
+			return;
+		}
 		String title = translate("room.confirm.delete.title");
-		String text = translate("room.confirm.delete");
+		String ref = StringHelper.containsNonWhitespace(row.getRoom().getExternalRef()) ? row.getRoom().getExternalRef() : "";
+		String text = translate("room.confirm.delete", StringHelper.escapeHtml(ref));
 		List<String> buttons = List.of(translate("delete"), translate("cancel"));
 		confirmDeleteDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), title, text, buttons);
 		confirmDeleteDialog.setDanger(0);
