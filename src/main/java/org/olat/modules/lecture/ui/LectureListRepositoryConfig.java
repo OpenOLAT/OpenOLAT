@@ -51,6 +51,7 @@ public class LectureListRepositoryConfig {
 	private Visibility withOnlineRecording = Visibility.SHOW;
 	private Visibility withEdit = Visibility.SHOW;
 	
+	private boolean detailsTimelineMode = false;
 	private boolean withDetailsParticipantsGroups = true;
 	private boolean withDetailsRepositoryEntry = true;
 	private boolean withDetailsExam = true;
@@ -257,6 +258,14 @@ public class LectureListRepositoryConfig {
 	public LectureListRepositoryConfig withEdit(Visibility edit) {
 		this.withEdit = edit;
 		return this;
+	}
+
+	public boolean isDetailsTimelineMode() {
+		return detailsTimelineMode;
+	}
+
+	public void setDetailsTimelineMode(boolean detailsTimelineMode) {
+		this.detailsTimelineMode = detailsTimelineMode;
 	}
 
 	public boolean withDetailsParticipantsGroups() {

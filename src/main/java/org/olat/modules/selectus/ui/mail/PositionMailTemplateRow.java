@@ -134,13 +134,14 @@ public class PositionMailTemplateRow {
 		referee,
 		expert,
 		comparativeExpert,
+		confirmationSubmissionReferee,
+		confirmationSubmissionExpert,
+		confirmationSubmissionComparativeExpert,
 		feedback,
 		committeeReminder,
 		confirmationApplication,
 		confirmationApplicationWithRefereeManagement,
 		confirmationApplicationDuplicate,
 		custom
-		
 	}
-
 }

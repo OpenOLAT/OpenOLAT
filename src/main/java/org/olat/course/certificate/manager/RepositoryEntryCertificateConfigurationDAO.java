@@ -54,6 +54,7 @@ public class RepositoryEntryCertificateConfigurationDAO {
 		config.setLastModified(config.getCreationDate());
 		config.setEntry(entry);
 		config.setSerialNumberCounter(0l);
+		config.setSerialNumberStartNumber(1l);
 		dbInstance.getCurrentEntityManager().persist(config);
 		return config;
 	}

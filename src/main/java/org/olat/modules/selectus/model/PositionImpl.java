@@ -182,6 +182,8 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="committeeremindersent", nullable=true, insertable=true, updatable=true)
 	private Date committeeReminderSentDate;
+	@Column(name="committee_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String committeeReminderMailSubject;
 	@Column(name="committee_mail_template", nullable=true, insertable=true, updatable=true)
 	private String committeeReminderMailTemplate;
 	@Column(name="committee_mail_letter", nullable=true, insertable=true, updatable=true)
@@ -262,6 +264,8 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="rec_expert_deadline", nullable=true, insertable=true, updatable=true)
 	private Date expertRecommandationDeadline;
+	@Column(name="rec_expert_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String expertRecommandationMailSubject;
 	@Column(name="rec_expert_mail_template", nullable=true, insertable=true, updatable=true)
 	private String expertRecommandationMailTemplate;
 	@Column(name="rec_expert_mail_letter", nullable=true, insertable=true, updatable=true)
@@ -270,6 +274,11 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	private String expertRecommendationDocs;
 	@Column(name="rec_expert_fields", nullable=true, insertable=true, updatable=true)
 	private String expertRecommendationFieldsString;
+	
+	@Column(name="confsub_expert_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String expertConfirmationSubmissionMailSubject;
+	@Column(name="confsub_expert_mail_template", nullable=true, insertable=true, updatable=true)
+	private String expertConfirmationSubmissionMailTemplate;
 
 	@Column(name="rec_referee_enable", nullable=true, insertable=true, updatable=true)
 	private boolean refereeRecommendationEnabled = false;
@@ -291,6 +300,8 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	private Long minReferees;
 	@Column(name="rec_referee_max", nullable=true, insertable=true, updatable=true)
 	private Long maxReferees;
+	@Column(name="rec_referee_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String refereeRecommandationMailSubject;
 	@Column(name="rec_referee_mail_template", nullable=true, insertable=true, updatable=true)
 	private String refereeRecommandationMailTemplate;
 	@Column(name="rec_referee_mail_letter", nullable=true, insertable=true, updatable=true)
@@ -298,11 +309,18 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@Column(name="rec_referee_mail_type", nullable=true, insertable=true, updatable=true)
 	private String recommandationSendMailType;
 	
+	@Column(name="confsub_referee_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String refereeConfirmationSubmissionMailSubject;
+	@Column(name="confsub_referee_mail_template", nullable=true, insertable=true, updatable=true)
+	private String refereeConfirmationSubmissionMailTemplate;
+	
 	@Column(name="rec_comp_expert_enable", nullable=true, insertable=true, updatable=true)
 	private boolean comparativeAssessmentExpertEnabled = false;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="rec_comp_expert_deadline", nullable=true, insertable=true, updatable=true)
 	private Date comparativeAssessmentExpertDeadline;
+	@Column(name="rec_comp_expert_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String comparativeAssessmentExpertMailSubject;
 	@Column(name="rec_comp_expert_mail_template", nullable=true, insertable=true, updatable=true)
 	private String comparativeAssessmentExpertMailTemplate;
 	@Column(name="rec_comp_expert_docs", nullable=true, insertable=true, updatable=true)
@@ -311,6 +329,11 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	private String comparativeAssessmentExpertMailLetter;
 	@Column(name="rec_comp_expert_fields", nullable=true, insertable=true, updatable=true)
 	private String comparativeAssessmentExpertFieldsString;
+	
+	@Column(name="confs_comp_expert_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String comparativeAssessmentExpertConfirmationSubmissionMailSubject;
+	@Column(name="confs_comp_expert_mail_template", nullable=true, insertable=true, updatable=true)
+	private String comparativeAssessmentExpertConfirmationSubmissionMailTemplate;
 	
 	@Column(name="rec_public_feedback_enable", nullable=true, insertable=true, updatable=true)
 	private boolean publicFeedbackEnabled = false;
@@ -1071,6 +1094,16 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 
 	@Override
+	public String getCommitteeReminderMailSubject() {
+		return committeeReminderMailSubject;
+	}
+
+	@Override
+	public void setCommitteeReminderMailSubject(String committeeReminderMailSubject) {
+		this.committeeReminderMailSubject = committeeReminderMailSubject;
+	}
+
+	@Override
 	public String getCommitteeReminderMailTemplate() {
 		return committeeReminderMailTemplate;
 	}
@@ -1750,6 +1783,16 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 
 	@Override
+	public String getExpertRecommandationMailSubject() {
+		return expertRecommandationMailSubject;
+	}
+
+	@Override
+	public void setExpertRecommandationMailSubject(String expertRecommandationMailSubject) {
+		this.expertRecommandationMailSubject = expertRecommandationMailSubject;
+	}
+
+	@Override
 	public String getExpertRecommandationMailTemplate() {
 		return expertRecommandationMailTemplate;
 	}
@@ -1803,6 +1846,26 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@Override
 	public void setExpertRecommendationFields(Collection<String> fields) {
 		setExpertRecommendationFieldsString(toFieldsString(fields));
+	}
+
+	@Override
+	public String getExpertConfirmationSubmissionMailSubject() {
+		return expertConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public void setExpertConfirmationSubmissionMailSubject(String expertConfirmationSubmissionMailSubject) {
+		this.expertConfirmationSubmissionMailSubject = expertConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public String getExpertConfirmationSubmissionMailTemplate() {
+		return expertConfirmationSubmissionMailTemplate;
+	}
+
+	@Override
+	public void setExpertConfirmationSubmissionMailTemplate(String expertConfirmationSubmissionMailTemplate) {
+		this.expertConfirmationSubmissionMailTemplate = expertConfirmationSubmissionMailTemplate;
 	}
 
 	@Override
@@ -1915,6 +1978,16 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 
 	@Override
+	public String getRefereeRecommandationMailSubject() {
+		return refereeRecommandationMailSubject;
+	}
+
+	@Override
+	public void setRefereeRecommandationMailSubject(String refereeRecommandationMailSubject) {
+		this.refereeRecommandationMailSubject = refereeRecommandationMailSubject;
+	}
+
+	@Override
 	public String getRefereeRecommandationMailTemplate() {
 		return refereeRecommandationMailTemplate;
 	}
@@ -1932,6 +2005,26 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@Override
 	public void setRefereeRecommandationMailLetter(String configuration) {
 		this.refereeRecommandationMailLetter = configuration;
+	}
+
+	@Override
+	public String getRefereeConfirmationSubmissionMailSubject() {
+		return refereeConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public void setRefereeConfirmationSubmissionMailSubject(String refereeConfirmationSubmissionMailSubject) {
+		this.refereeConfirmationSubmissionMailSubject = refereeConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public String getRefereeConfirmationSubmissionMailTemplate() {
+		return refereeConfirmationSubmissionMailTemplate;
+	}
+
+	@Override
+	public void setRefereeConfirmationSubmissionMailTemplate(String refereeConfirmationSubmissionMailTemplate) {
+		this.refereeConfirmationSubmissionMailTemplate = refereeConfirmationSubmissionMailTemplate;
 	}
 
 	public String getRecommandationSendMailType() {
@@ -1976,6 +2069,16 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@Override
 	public void setComparativeAssessmentExpertDeadline(Date deadline) {
 		comparativeAssessmentExpertDeadline = deadline;
+	}
+
+	@Override
+	public String getComparativeAssessmentExpertMailSubject() {
+		return comparativeAssessmentExpertMailSubject;
+	}
+
+	@Override
+	public void setComparativeAssessmentExpertMailSubject(String comparativeAssessmentExpertMailSubject) {
+		this.comparativeAssessmentExpertMailSubject = comparativeAssessmentExpertMailSubject;
 	}
 
 	@Override
@@ -2052,6 +2155,28 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 			return null;
 		} 
 		return String.join(",", fields);
+	}
+
+	@Override
+	public String getComparativeAssessmentExpertConfirmationSubmissionMailSubject() {
+		return comparativeAssessmentExpertConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public void setComparativeAssessmentExpertConfirmationSubmissionMailSubject(
+			String comparativeAssessmentExpertConfirmationSubmissionMailSubject) {
+		this.comparativeAssessmentExpertConfirmationSubmissionMailSubject = comparativeAssessmentExpertConfirmationSubmissionMailSubject;
+	}
+
+	@Override
+	public String getComparativeAssessmentExpertConfirmationSubmissionMailTemplate() {
+		return comparativeAssessmentExpertConfirmationSubmissionMailTemplate;
+	}
+
+	@Override
+	public void setComparativeAssessmentExpertConfirmationSubmissionMailTemplate(
+			String comparativeAssessmentExpertConfirmationSubmissionMailTemplate) {
+		this.comparativeAssessmentExpertConfirmationSubmissionMailTemplate = comparativeAssessmentExpertConfirmationSubmissionMailTemplate;
 	}
 
 	@Override

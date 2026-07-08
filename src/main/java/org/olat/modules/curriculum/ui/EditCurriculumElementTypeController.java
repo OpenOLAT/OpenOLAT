@@ -307,7 +307,8 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 				initialConfig != null,
 				initialConfig,
 				FOR_USE_AS_IMPL.equals(forUseAs),
-				this::defaultAutomationConfig);
+				this::defaultAutomationConfig,
+				null);
 		automationCtrl = new CurriculumAutomationController(ureq, getWindowControl(), mainForm, cfg);
 		listenTo(automationCtrl);
 		automationCont.add(automationCtrl.getInitialFormItem());

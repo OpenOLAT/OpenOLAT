@@ -160,13 +160,13 @@ public class ApplicationDAOTest extends OlatTestCase {
 		
 		PositionAttributeDefinition attrDef = positionDao.createAttributeDefinitionAndPersist(position,
 				PositionApplicationAttributeTabEnum.academicalBackground, PositionAttributeDefinitionTypeEnum.question,
-				"Custom", null, true, null, null);
+				"Custom", null, null, true, null, null);
 		List<PositionAttributeDefinition> definitions = position.getAttributesDefinitions();
 		definitions.add(attrDef);
 		
 		PositionAttributeDefinition attrDef2 = positionDao.createAttributeDefinitionAndPersist(position,
 				PositionApplicationAttributeTabEnum.academicalBackground, PositionAttributeDefinitionTypeEnum.question,
-				"Custom 2", null, false, null, null);
+				"Custom 2", null, null, false, null, null);
 		definitions.add(attrDef2);
 		position = positionDao.savePosition(position);
 		dbInstance.commitAndCloseSession();

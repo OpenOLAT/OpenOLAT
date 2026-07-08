@@ -70,7 +70,8 @@ public class PositionMailAndLettersEditController extends BasicController {
 			tabPane.addTab(translate("tab.email"), editTemplateCtrl);
 			mainVC.put("cmp", editTemplateCtrl.getInitialComponent());
 		} else if(type == Type.committeeReminder || type == Type.feedback
-				|| type == Type.expert || type == Type.referee || type == Type.comparativeExpert) {
+				|| type == Type.expert || type == Type.referee || type == Type.comparativeExpert
+				|| type == Type.confirmationSubmissionExpert || type == Type.confirmationSubmissionReferee || type == Type.confirmationSubmissionComparativeExpert) {
 			editPositionTemplateCtrl = new MailTemplateSingleLanguageEditController(ureq, getWindowControl(), position, row);
 			listenTo(editPositionTemplateCtrl);
 			tabPane.addTab(translate("tab.email"), editPositionTemplateCtrl);

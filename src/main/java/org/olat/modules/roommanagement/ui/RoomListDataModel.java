@@ -62,8 +62,8 @@ public class RoomListDataModel extends DefaultFlexiTableDataModel<RoomRow>
 			case description -> row.getRoom().getDescription();
 			case status -> row.getRoom().getStatus();
 			case seats -> row.getRoom().getSeats();
-			case additionalInfo -> row.getRoom().getRoomInfo();
-			case adminInfo -> row.getRoom().getAdminInfo();
+			case additionalInfo -> RoomUIHelper.truncateColumnInfoText(row.getRoom().getRoomInfo());
+			case adminInfo -> RoomUIHelper.truncateColumnInfoText(row.getRoom().getAdminInfo());
 			case building -> row;
 			case occupancyRate -> {
 				int pct = row.getOccupancyRatePercent();
@@ -71,6 +71,7 @@ public class RoomListDataModel extends DefaultFlexiTableDataModel<RoomRow>
 			}
 			case nextEvent -> row.getNextEvent();
 			case calendarIcon -> row.getCalendarIconLink();
+			case detailsIcon -> row.getDetailsIconLink();
 			case tools -> row.getToolsLink();
 		};
 	}
@@ -94,6 +95,17 @@ public class RoomListDataModel extends DefaultFlexiTableDataModel<RoomRow>
 			@Override
 			public String iconHeader() {
 				return "o_icon o_icon_calendar";
+			}
+
+			@Override
+			public boolean sortable() {
+				return false;
+			}
+		},
+		detailsIcon("room.col.details") {
+			@Override
+			public String iconHeader() {
+				return "o_icon o_icon_lightbulb";
 			}
 
 			@Override

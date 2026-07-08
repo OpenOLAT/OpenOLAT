@@ -197,11 +197,11 @@ public interface RecruitingService {
 			List<PositionAttributeDefinition> globalAttributes, Locale locale, PositionStatus... status);
 
 	public PositionAttributeDefinition createAttributeDefinition(Position position, PositionApplicationAttributeTabEnum tab,
-			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, boolean mandatory,
+			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, String labelFr, boolean mandatory,
 			String placeholder, String placeholderDe);
 	
 	public PositionAndAttributeDefinition createAttributeDefinitionAndPersist(Position position, PositionApplicationAttributeTabEnum tab,
-			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, boolean mandatory,
+			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, String labelFr, boolean mandatory,
 			String placeholder, String placeholderDe);
 	
 	public PositionAttributeDefinition updateAttributeDefinition(PositionAttributeDefinition attributeDefinition);

@@ -19,22 +19,30 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.date.RelativeDateElement;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
+import org.olat.modules.curriculum.AutomationType;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumAutomationConfig;
+import org.olat.modules.curriculum.CurriculumAutomationRule;
+import org.olat.modules.curriculum.CurriculumAutomationService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
-import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.ui.event.CurriculumElementEvent;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -45,8 +53,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementResourcesController extends BasicController {
 	
-	private static final String CMD_OPEN_ELEMENT = "oelement";
-	
 	private final VelocityContainer mainVC;
 	
 	private CurriculumElement curriculumElement;
@@ -55,8 +61,8 @@ public class CurriculumElementResourcesController extends BasicController {
 	private final CurriculumElementResourceListController resourcesCtrl;
 	
 	@Autowired
-	private CurriculumService curriculumService;
-
+	private CurriculumAutomationService automationService;
+	
 	public CurriculumElementResourcesController(UserRequest ureq, WindowControl wControl,
 			Curriculum curriculum, CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
@@ -74,6 +80,7 @@ public class CurriculumElementResourcesController extends BasicController {
 			listenTo(templatesCtrl);
 			mainVC.put("templates", templatesCtrl.getInitialComponent());
 		}
+		loadAutomationInformations();
 		putInitialPanel(mainVC);
 	}
 	
@@ -88,14 +95,41 @@ public class CurriculumElementResourcesController extends BasicController {
 		if(templatesCtrl != null) {
 			templatesCtrl.updateAddButtonAndEmptyMessages(linkedCourses);
 		}
+		loadAutomationInformations();
 	}
-
+	
+	private void loadAutomationInformations() {
+		CurriculumAutomationConfig automationConfig = curriculumElement.getAutomationConfig();
+		if(automationConfig == null || automationConfig.getRules() == null) {
+			CurriculumElementType type = curriculumElement.getType();
+			automationConfig = type == null ? null : type.getAutomationConfig();
+		}
+		
+		List<Infos> automationInfos = new ArrayList<>();
+		if(automationConfig != null && automationConfig.getRules() != null) {
+			Translator translator = Util.createPackageTranslator(RepositoryEntryStatusEnum.class, getLocale(),
+					Util.createPackageTranslator(RelativeDateElement.class, getLocale(), getTranslator()));
+			Formatter formatter = Formatter.getInstance(getLocale());
+			for(CurriculumAutomationRule rule : automationConfig.getRules()) {
+				if(!rule.isEnabled()) {
+					continue;
+				}
+				String title = rule.getAutomationType() == AutomationType.INSTANTIATION
+						? translate("automation.type.instantiation")
+						: Objects.requireNonNullElse(
+								CurriculumUIFactory.translateAutomationStatus(translator, rule.getTargetStatus()), "-");
+				String date = Objects.requireNonNullElse(
+						formatter.formatDateWithDay(automationService.computeTriggerDate(curriculumElement, rule)), "-");
+				String text = CurriculumUIFactory.translateAutomationCondition(translator, rule);
+				automationInfos.add(new Infos(title, date, text));
+			}
+		}
+		mainVC.contextPut("automationInfos", automationInfos);
+	}
+	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source instanceof Link link && CMD_OPEN_ELEMENT.equals(link.getCommand())
-				&& link.getUserObject() instanceof CurriculumElement element) {
-			fireEvent(ureq, new CurriculumElementEvent(element, List.of()));
-		}
+		//
 	}
 	
 	
@@ -108,7 +142,7 @@ public class CurriculumElementResourcesController extends BasicController {
 		}
 	}
 	
-	public record Infos(String title, String date, String text, Link link) {
+	public record Infos(String title, String date, String text) {
 		//
 	}
 }

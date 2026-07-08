@@ -20,6 +20,15 @@
 package org.olat.modules.selectus.ui.reference;
 
 import static org.olat.modules.selectus.manager.ApplicationMailTemplate.DEFAULT_TEMPLATE;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.APPLICATION_DEAR_TITLE_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.APPLICATION_FIRST_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.APPLICATION_LAST_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.HEAD_FIRST_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.HEAD_LAST_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.POSITION_MAIL;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.POSITION_TITLE;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.REFEREE_DEAR_TITLE_NAME;
+import static org.olat.modules.selectus.ui.RecruitingMailTemplate.REFEREE_TITLE_LAST_NAME;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -80,6 +89,7 @@ import org.olat.modules.selectus.model.references.ReferenceImpl;
 import org.olat.modules.selectus.ui.PositionApplicationsController;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMailTemplate;
+import org.olat.modules.selectus.ui.mail.PositionMailTemplateRow.Type;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -379,6 +389,36 @@ public class ReferenceHelper {
 		};
 	}
 	
+	public static final String[] getMailVariables() {
+		return new String[]{
+				"$" + POSITION_TITLE, 				// 0
+				"$" + POSITION_MAIL,				// 1
+				"$" + HEAD_LAST_NAME,				// 2
+				"$" + HEAD_FIRST_NAME,				// 3
+				"$" + "refereeUrl",					// 4
+				"$" + REFEREE_DEAR_TITLE_NAME,		// 5
+				"$" + REFEREE_TITLE_LAST_NAME,		// 6
+				"$" + APPLICATION_DEAR_TITLE_NAME,	// 7
+				"$" + "applicantTitleLastname",		// 8
+				"$" + "applicantTitleFullName",		// 9
+				"$" + APPLICATION_FIRST_NAME,		// 10
+				"$" + APPLICATION_LAST_NAME			// 11
+		};
+	}
+	
+	public static final String[] getConfirmationSubmissionMailVariables(Type type) {
+		String tfn = "refereeTitleFullname";
+		if(type == Type.confirmationSubmissionExpert || type == Type.confirmationSubmissionComparativeExpert) {
+			tfn = "expertTitleFullName";
+		}
+		return new String[]{
+				"$" + tfn,		// 0
+				"$" + "applicantFullname",			// 1
+				"$" + "applicantList",				// 2
+				"$" + POSITION_TITLE,				// 3
+		};
+	}
+	
 	public static SubjectAndBody referenceTemplateBase(Identity headOfCommittee, Position position, Application application, Reference reference,
 			ReferenceType referenceType, SalutationGenerator salutationGenerator, Translator translator) {
 
@@ -394,12 +434,15 @@ public class ReferenceHelper {
 		MailAttachment letter = null;
 		
 		if(referenceType == ReferenceType.expert) {
+			subject = position.getExpertRecommandationMailSubject();
 			body = position.getExpertRecommandationMailTemplate();
 			letter = mailService.toAttachment(position.getExpertRecommandationMailLetter(), application, translator.getLocale());
 		} else if(referenceType == ReferenceType.recommendation) {
+			subject = position.getRefereeRecommandationMailSubject();
 			body = position.getRefereeRecommandationMailTemplate();
 			letter = mailService.toAttachment(position.getRefereeRecommandationMailLetter(), application, translator.getLocale());
 		} else if(referenceType == ReferenceType.comparativeAssessmentExpert) {
+			subject = position.getComparativeAssessmentExpertMailSubject();
 			body = position.getComparativeAssessmentExpertMailTemplate();
 			letter = mailService.toAttachment(position.getComparativeAssessmentExpertMailLetter(), application, translator.getLocale());
 		}
@@ -413,13 +456,15 @@ public class ReferenceHelper {
 				body = translator.translate("reference.comparative.expert.mail.body");
 			}
 		}
-		
-		if(referenceType == ReferenceType.expert) {
-			subject = translator.translate("reference.expert.mail.subject", args);
-		} else if(referenceType == ReferenceType.recommendation) {
-			subject = translator.translate("reference.recommendation.mail.subject", args);
-		} else if(referenceType == ReferenceType.comparativeAssessmentExpert) {
-			subject = translator.translate("reference.comparative.expert.mail.subject", args);
+
+		if(!RecruitingHelper.containsTemplate(subject)) {
+			if(referenceType == ReferenceType.expert) {
+				subject = translator.translate("reference.expert.mail.subject", args);
+			} else if(referenceType == ReferenceType.recommendation) {
+				subject = translator.translate("reference.recommendation.mail.subject", args);
+			} else if(referenceType == ReferenceType.comparativeAssessmentExpert) {
+				subject = translator.translate("reference.comparative.expert.mail.subject", args);
+			}
 		}
 
 		return new SubjectAndBody(subject, body, letter);

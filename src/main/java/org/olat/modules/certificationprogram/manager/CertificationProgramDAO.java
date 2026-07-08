@@ -81,6 +81,7 @@ public class CertificationProgramDAO {
 		program.setOrganisations(new HashSet<>());
 		program.setGroup(groupDao.createGroup());
 		program.setSerialNumberCounter(0l);
+		program.setSerialNumberStartNumber(1l);
 		dbInstance.getCurrentEntityManager().persist(program);
 		
 		createResource(program);

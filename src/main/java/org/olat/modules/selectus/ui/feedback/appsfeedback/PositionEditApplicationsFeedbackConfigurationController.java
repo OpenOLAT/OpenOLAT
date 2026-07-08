@@ -92,6 +92,7 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 	private SingleSelection feedbackDeadlineMonthElement;
 	private TextElement feedbackDeadlineYearElement;
 	private FormLayoutContainer feedbackDeadlineContainer;
+	private TextElement feedbackMailSubjectEl;
 	private RichTextElement feedbackMailTemplateEl;
 	
 	private Position position;
@@ -142,6 +143,9 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 			configuration = feedbackService.getApplicationsFeedbackConfiguration(configuration);
 			if(StringHelper.containsNonWhitespace(configuration.getMailTemplate())) {
 				feedbackMailTemplateEl.setValue(getBodyTemplate());
+			}
+			if(StringHelper.containsNonWhitespace(configuration.getMailSubject())) {
+				feedbackMailSubjectEl.setValue(configuration.getMailSubject());
 			}
 		}
 	}
@@ -194,6 +198,9 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 		feedbackDeadlineYearElement.setDisplaySize(4);
 		feedbackDeadlineYearElement.setMandatory(true);
 		
+		String subject = getSubjectTemplate();
+		feedbackMailSubjectEl = uifactory.addTextElement("edit.subject.referee", "edit.subject.referee", "reference.subject", 255, subject, formLayout);
+		
 		String bodyTemplate = getBodyTemplate();
 		feedbackMailTemplateEl = uifactory.addRichTextElementForStringData("edit.template.referee", "reference.mail", bodyTemplate, 18, 60,
 				false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
@@ -220,6 +227,14 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
+	private String getSubjectTemplate() {
+		String subjectTemplate = configuration.getMailSubject();
+		if(!StringHelper.containsNonWhitespace(subjectTemplate)) {
+			subjectTemplate = FeedbackHelper.getDefaultTemplateSubject(position, salutationGenerator, getLocale());
+		}
+		return subjectTemplate;
+	}
+	
 	private String getBodyTemplate() {
 		String bodyTemplate = configuration.getMailTemplate();
 		if(!StringHelper.containsNonWhitespace(bodyTemplate)) {
@@ -234,6 +249,7 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 	private void updateGUI() {
 		boolean enabled = enableFeedbackEl.isAtLeastSelected(1);
 		feedbackDeadlineContainer.setVisible(enabled);
+		feedbackMailSubjectEl.setVisible(enabled);
 		feedbackMailTemplateEl.setVisible(enabled);
 		previewLink.setVisible(enabled);
 		variablesButton.setVisible(enabled);
@@ -282,6 +298,11 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 		feedbackMailTemplateEl.clearError();
 		if(StringHelper.containsNonWhitespace(feedbackMailTemplateEl.getValue())) {
 			allOk &= checkTemplate(feedbackMailTemplateEl);
+		}
+		
+		feedbackMailSubjectEl.clearError();
+		if(StringHelper.containsNonWhitespace(feedbackMailSubjectEl.getValue())) {
+			allOk &= checkTemplate(feedbackMailSubjectEl);
 		}
 
 		return allOk;
@@ -381,6 +402,7 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 		configuration.setEnabled(enableFeedbackEl.isAtLeastSelected(1));
 		
 		configuration.setDeadline(getFeedbackDeadline());
+		configuration.setMailSubject(feedbackMailSubjectEl.getValue());
 		configuration.setMailTemplate(feedbackMailTemplateEl.getValue());
 		
 		configuration = feedbackService.updateApplicationsFeedbackConfiguration(configuration);
@@ -420,8 +442,7 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 		List<Application> apps = Collections.singletonList(app);
 		Identity member = FeedbackHelper.generateDummyMember();
 		
-		String[] args = FeedbackHelper.generateMailArguments(headOfCommittee, position, app, configuration, member, salutationGenerator, getTranslator());
-		String subject = translate("apps.feedback.mail.subject", args);
+		String subject = feedbackMailSubjectEl.getValue();
 		String body = feedbackMailTemplateEl.getValue();
 		MailAttachment letter = null;
 		if(configuration != null && StringHelper.containsNonWhitespace(configuration.getMailLetter())) {

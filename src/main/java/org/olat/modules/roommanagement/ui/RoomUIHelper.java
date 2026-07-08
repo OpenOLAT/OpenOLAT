@@ -34,7 +34,9 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.roommanagement.Building;
@@ -47,6 +49,8 @@ import org.olat.modules.roommanagement.RoomStatus;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class RoomUIHelper {
+
+	private static final int MAX_COLUMN_INFO_TEXT_LENGTH = 250;
 
 	public static String forgeRoomCard(FormItemContainer formLayout, Room room, String velocityRoot, Translator translator) {
 		String cardId = "roomCard_" + room.getKey();
@@ -180,5 +184,12 @@ public class RoomUIHelper {
 		if (a.getStartDate() == null || a.getEndDate() == null) return false;
 		if (b.getStartDate() == null || b.getEndDate() == null) return false;
 		return a.getStartDate().before(b.getEndDate()) && a.getEndDate().after(b.getStartDate());
+	}
+	
+	static String truncateColumnInfoText(String text) {
+		if (!StringHelper.containsNonWhitespace(text)) return "";
+		String processedText = FilterFactory.getHtmlTagsFilter().filter(text);
+		processedText = Formatter.truncate(processedText, MAX_COLUMN_INFO_TEXT_LENGTH);
+		return processedText;
 	}
 }

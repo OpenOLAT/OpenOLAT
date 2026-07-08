@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -87,16 +88,15 @@ public class PositionConfirmDeleteAnonymousController extends FormBasicControlle
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_confirm_delete_position_anonymous");
 		
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			String shortTitle = position.getMLShortTitle(getLocale());
 			
 			String text;
 			if(globalAttributes) {
-				text = translate("confirm.delete.anonymous", new String[]{ shortTitle });
+				text = translate("confirm.delete.anonymous", new String[]{ StringHelper.escapeHtml(shortTitle) });
 				layoutCont.contextPut("messageAdd", translate("confirm.delete.anonymous.2"));
 			} else {
-				text = translate("confirm.delete.anonymous.wo.attributes", new String[]{ shortTitle });
+				text = translate("confirm.delete.anonymous.wo.attributes", new String[]{ StringHelper.escapeHtml(shortTitle) });
 			}
 			layoutCont.contextPut("message", text);
 		}

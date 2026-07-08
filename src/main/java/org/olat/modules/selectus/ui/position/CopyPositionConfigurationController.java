@@ -426,6 +426,7 @@ public class CopyPositionConfigurationController extends FormBasicController {
 				copy.setExpertsDocs(config.isExpertsDocs());
 				copy.setRefereesDocs(config.isRefereesDocs());
 				copy.setExpertsComparativeAssessmentDocs(config.isExpertsComparativeAssessmentDocs());
+				copy.setMailSubject(config.getMailSubject());
 				copy.setMailTemplate(config.getMailTemplate());
 				copy.setFields(copyProfileVisibilityFields(config.getFields(), originalToCopyAttributesKeys));
 				feedbackService.updateApplicationsFeedbackConfiguration(copy);
@@ -521,7 +522,7 @@ public class CopyPositionConfigurationController extends FormBasicController {
 			PositionAttributeDefinition attr = recruitingService.createAttributeDefinition(position,
 					attributeDefinition.getTabEnum(), attributeDefinition.getTypeEnum(),
 					attributeDefinition.getLabel(Locale.ENGLISH), attributeDefinition.getLabel(Locale.GERMAN),
-					attributeDefinition.isMandatory(), 
+					attributeDefinition.getLabel(Locale.FRENCH), attributeDefinition.isMandatory(), 
 					attributeDefinition.getPlaceholder(Locale.ENGLISH), attributeDefinition.getPlaceholder(Locale.GERMAN));
 			attr.setAttributeConfiguration(attributeDefinition.getAttributeConfiguration());
 			recruitingService.persistAttributeDefinition(attr);
@@ -553,7 +554,8 @@ public class CopyPositionConfigurationController extends FormBasicController {
 		position.setMessageToCommitte(positionToCopy.getMessageToCommitte());
 		
 		position.setHomepage(positionToCopy.getHomepage());
-		
+
+		position.setCommitteeReminderMailSubject(positionToCopy.getCommitteeReminderMailSubject());
 		position.setCommitteeReminderMailTemplate(positionToCopy.getCommitteeReminderMailTemplate());
 		position.setCommitteeReminderMailLetter(positionToCopy.getCommitteeReminderMailLetter());
 		
@@ -657,10 +659,13 @@ public class CopyPositionConfigurationController extends FormBasicController {
 		if(refereeSubmissionDeadline != null) {
 			position.setRefereeRecommendationEnabled(true);
 			position.setRefereeRecommandationDeadline(refereeSubmissionDeadline);
+			position.setRefereeRecommandationMailSubject(positionToCopy.getRefereeRecommandationMailSubject());
 			position.setRefereeRecommandationMailTemplate(positionToCopy.getRefereeRecommandationMailTemplate());
 			position.setRefereeRecommandationMailLetter(positionToCopy.getRefereeRecommandationMailLetter());
 			position.setRefereeRecommandationSendMailType(positionToCopy.getRefereeRecommandationSendMailType());
 			position.setRefereeRecommendationDocuments(positionToCopy.getRefereeRecommendationDocuments());
+			position.setRefereeConfirmationSubmissionMailSubject(positionToCopy.getRefereeConfirmationSubmissionMailSubject());
+			position.setRefereeConfirmationSubmissionMailTemplate(positionToCopy.getRefereeConfirmationSubmissionMailTemplate());
 			position.setMinReferees(positionToCopy.getMinReferees());
 			position.setMaxReferees(positionToCopy.getMaxReferees());
 		}
@@ -678,18 +683,24 @@ public class CopyPositionConfigurationController extends FormBasicController {
 		if(expertSubmissionDeadline != null) {
 			position.setExpertRecommendationEnabled(true);
 			position.setExpertRecommandationDeadline(expertSubmissionDeadline);
+			position.setExpertRecommandationMailSubject(positionToCopy.getExpertRecommandationMailSubject());
 			position.setExpertRecommandationMailTemplate(positionToCopy.getExpertRecommandationMailTemplate());
 			position.setExpertRecommandationMailLetter(positionToCopy.getExpertRecommandationMailLetter());
 			position.setExpertRecommendationDocuments(positionToCopy.getExpertRecommendationDocuments());
+			position.setExpertConfirmationSubmissionMailSubject(positionToCopy.getExpertConfirmationSubmissionMailSubject());
+			position.setExpertConfirmationSubmissionMailTemplate(positionToCopy.getExpertConfirmationSubmissionMailTemplate());
 		}
 		
 		Date comparativeExpertSubmissionDeadline = getDate(comparativeExpertSubmissionDeadlineEl);
 		if(comparativeExpertSubmissionDeadline != null) {
 			position.setComparativeAssessmentExpertEnabled(true);
 			position.setComparativeAssessmentExpertDeadline(comparativeExpertSubmissionDeadline);
+			position.setComparativeAssessmentExpertMailSubject(positionToCopy.getComparativeAssessmentExpertMailSubject());
 			position.setComparativeAssessmentExpertMailTemplate(positionToCopy.getComparativeAssessmentExpertMailTemplate());
 			position.setComparativeAssessmentExpertMailLetter(positionToCopy.getComparativeAssessmentExpertMailLetter());
 			position.setComparativeAssessmentExpertDocuments(positionToCopy.getComparativeAssessmentExpertDocuments());
+			position.setComparativeAssessmentExpertConfirmationSubmissionMailSubject(positionToCopy.getComparativeAssessmentExpertConfirmationSubmissionMailSubject());
+			position.setComparativeAssessmentExpertConfirmationSubmissionMailTemplate(positionToCopy.getComparativeAssessmentExpertConfirmationSubmissionMailTemplate());
 		}
 
 		Date publicFeedbackDeadline = getDate(publicFeedbackDeadlineEl);

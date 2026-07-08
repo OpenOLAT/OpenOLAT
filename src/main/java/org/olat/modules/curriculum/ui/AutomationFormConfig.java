@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import java.util.function.Supplier;
 
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
+import org.olat.modules.curriculum.CurriculumElement;
 
 /**
  * Initial date: 2026-06-30<br>
@@ -33,5 +34,6 @@ public record AutomationFormConfig(
 		boolean initialEnabled,
 		CurriculumAutomationConfig initialConfig,
 		boolean implType,
-		Supplier<CurriculumAutomationConfig> defaultConfigSupplier
+		Supplier<CurriculumAutomationConfig> defaultConfigSupplier,
+		CurriculumElement automationElement
 ) {}

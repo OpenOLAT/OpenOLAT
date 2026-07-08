@@ -66,6 +66,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -1505,6 +1506,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				} else {
 					doCloseLectureBlockDetails(row);
 				}
+			} else if(event instanceof FlexiTableRenderEvent renderEvent) {
+				doHandleRenderEvent(renderEvent);
 			}
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
@@ -1522,6 +1525,15 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	private void doHandleRenderEvent(FlexiTableRenderEvent renderEvent) {
+		config.setDetailsTimelineMode(FlexiTableRendererType.verticalTimeLine.equals(renderEvent.getRendererType()));
+		for (LectureBlockRow row : tableModel.getObjects()) {
+			if (row.getDetailsController() != null) {
+				row.getDetailsController().updateConfigForRendererType(config);
+			}
+		}
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(addLectureCtrl == source || deleteLectureBlocksCtrl == source
@@ -1994,6 +2006,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			flc.remove(row.getDetailsController().getInitialFormItem());
 		}
 
+		config.setDetailsTimelineMode(FlexiTableRendererType.verticalTimeLine.equals(tableEl.getRendererType()));
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row,
 				mainForm, config, lectureManagementManaged, entry != null, taxonomyEnabled, secCallback);
 		listenTo(detailsCtrl);

@@ -140,15 +140,15 @@ public class PositionDAO {
 	}
 	
 	public PositionAttributeDefinition createAttributeDefinitionAndPersist(Position position, PositionApplicationAttributeTabEnum tab,
-			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, boolean mandatory,
+			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, String labelFr, boolean mandatory,
 			String placeholder, String placeholderDe) {
-		PositionAttributeDefinition definition = createAttributeDefinition(position, tab, attributeType, label, labelDe, mandatory, placeholder, placeholderDe);
+		PositionAttributeDefinition definition = createAttributeDefinition(position, tab, attributeType, label, labelDe, labelFr, mandatory, placeholder, placeholderDe);
 		dbInstance.getCurrentEntityManager().persist(definition);
 		return definition;
 	}
 	
 	public PositionAttributeDefinition createAttributeDefinition(Position position, PositionApplicationAttributeTabEnum tab,
-			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, boolean mandatory,
+			PositionAttributeDefinitionTypeEnum attributeType, String label, String labelDe, String labelFr, boolean mandatory,
 			String placeholder, String placeholderDe) {
 		PositionAttributeDefinitionImpl attr = new PositionAttributeDefinitionImpl();
 		attr.setCreationDate(new Date());
@@ -156,6 +156,7 @@ public class PositionDAO {
 		attr.setOrderPosition(Integer.valueOf(0));
 		attr.setLabel(label);
 		attr.setLabelDe(labelDe);
+		attr.setLabelFr(labelFr);
 		attr.setMandatory(mandatory);
 		attr.setPlaceholder(placeholder);
 		attr.setPlaceholderDe(placeholderDe);

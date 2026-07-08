@@ -42,10 +42,10 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.TimeElement;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -863,11 +863,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 
 			if (gradeSystem != null) {
-				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
-				applyGradeAllButton = uifactory.addFormLink("apply.grade.all", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
+				applyGradeAllButton = uifactory.addFormLink("apply.grade.all", "grade.apply", null, formLayout, Link.BUTTON);
 				applyGradeAllButton.setElementCssClass("o_sel_assessment_apply_grade");
 				applyGradeAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
-				applyGradeAllButton.setI18nKey(translate("grade.apply.label", gradeSystemLabel));
 				applyGradeAllButton.setVisible(!readOnly);
 
 				gradeScaleDropdown = uifactory.addDropdownMenu("tool.grade.scale.more", null, formLayout, getTranslator());
@@ -1806,14 +1804,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 		for (Integer i : selections) {
 			rows.add(usersTableModel.getObject(i.intValue()));
 		}
-		doConfirmApplyGrade(ureq, rows, bulkApplyGradeButton.getI18nKey());
+		doConfirmApplyGrade(ureq, rows, bulkApplyGradeButton.getI18nKey(), "warning.bulk.apply.grade");
 	}
 
 	private void doConfirmApplyGradeAll(UserRequest ureq) {
-		doConfirmApplyGrade(ureq, usersTableModel.getObjects(), applyGradeAllButton.getI18nKey());
+		doConfirmApplyGrade(ureq, usersTableModel.getObjects(), applyGradeAllButton.getI18nKey(), "warning.apply.grade.all");
 	}
 
-	private void doConfirmApplyGrade(UserRequest ureq, List<AssessedIdentityElementRow> rows, String title) {
+	private void doConfirmApplyGrade(UserRequest ureq, List<AssessedIdentityElementRow> rows, String title, String warningI18nKey) {
 		List<Long> identityKeys = new ArrayList<>(rows.size());
 		for (AssessedIdentityElementRow row : rows) {
 			if (row != null && row.getScore() != null && !StringHelper.containsNonWhitespace(row.getGrade())) {
@@ -1822,7 +1820,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 
 		if (identityKeys.isEmpty()) {
-			showWarning("warning.bulk.apply.grade");
+			showWarning(warningI18nKey);
 			return;
 		}
 

@@ -184,6 +184,7 @@ public class GradeScaleEditController extends FormBasicController {
 		}
 		if (gradeSystem == null) {
 			loadGradeSystem(gradeSystemSV.keys()[0]);
+			markDirty();
 		}
 		
 		if (minMaxFromScale) {

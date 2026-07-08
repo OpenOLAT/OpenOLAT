@@ -88,6 +88,7 @@ public class PositionEditComparativeAssessmentExpertsController extends FormBasi
 	private FormLink previewLink;
 	private Link variablesButton;
 	private DateChooser deadlineEl;
+	private TextElement mailSubjectEl;
 	private RichTextElement mailTemplateEl;
 	private MultipleSelectionElement staffCanAddComparativeExpertsEl;
 	
@@ -135,6 +136,9 @@ public class PositionEditComparativeAssessmentExpertsController extends FormBasi
 		deadlineEl = uifactory.addDateChooser("edit.expert.deadline", "edit.expert.deadline", deadline, formLayout);
 		deadlineEl.setMandatory(true);
 		
+		String subject = getComparativeAssessmentExpertSubject();
+		mailSubjectEl = uifactory.addTextElement("edit.subject.experts", "edit.subject.experts", "reference.subject", 255, subject, formLayout);
+
 		String expertTemplate = getComparativeAssessmentExpertTemplate();
 		mailTemplateEl = uifactory.addRichTextElementForStringData("edit.template.experts", "reference.mail", expertTemplate, 18, 60,
 				false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
@@ -165,10 +169,18 @@ public class PositionEditComparativeAssessmentExpertsController extends FormBasi
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
+	private String getComparativeAssessmentExpertSubject() {
+		String subject = position.getComparativeAssessmentExpertMailSubject();
+		if(!StringHelper.containsNonWhitespace(subject)) {
+			subject = translate("reference.comparative.expert.mail.subject", ReferenceHelper.getMailVariables());
+		}
+		return subject;
+	}
+	
 	private String getComparativeAssessmentExpertTemplate() {
 		String template = position.getComparativeAssessmentExpertMailTemplate();
 		if(!StringHelper.containsNonWhitespace(template)) {
-			template = translate("reference.comparative.expert.mail.body");
+			template = translate("reference.comparative.expert.mail.body", ReferenceHelper.getMailVariables());
 		}
 		return template;
 	}
@@ -200,6 +212,11 @@ public class PositionEditComparativeAssessmentExpertsController extends FormBasi
 		mailTemplateEl.clearError();
 		if(StringHelper.containsNonWhitespace(mailTemplateEl.getValue())) {
 			allOk &= checkTemplate(mailTemplateEl);
+		}
+		
+		mailSubjectEl.clearError();
+		if(StringHelper.containsNonWhitespace(mailSubjectEl.getValue())) {
+			allOk &= checkTemplate(mailSubjectEl);
 		}
 		return allOk;
 	}
@@ -276,6 +293,7 @@ public class PositionEditComparativeAssessmentExpertsController extends FormBasi
 	private void updateGUI() {
 		boolean expertEnabled = staffCanAddComparativeExpertsEl.isAtLeastSelected(1);
 		deadlineEl.setVisible(expertEnabled);
+		mailSubjectEl.setVisible(expertEnabled);
 		mailTemplateEl.setVisible(expertEnabled);
 		variablesButton.setVisible(expertEnabled);
 		previewLink.setVisible(expertEnabled);
@@ -299,9 +317,11 @@ public class PositionEditComparativeAssessmentExpertsController extends FormBasi
 		position.setComparativeAssessmentExpertEnabled(enabled);
 		if(enabled) {
 			position.setComparativeAssessmentExpertDeadline(deadlineEl.getDate());
+			position.setComparativeAssessmentExpertMailSubject(mailSubjectEl.getValue());
 			position.setComparativeAssessmentExpertMailTemplate(mailTemplateEl.getValue());
 		} else {
 			position.setComparativeAssessmentExpertDeadline(null);
+			position.setComparativeAssessmentExpertMailSubject(null);
 			position.setComparativeAssessmentExpertMailTemplate(null);
 		}
 
@@ -356,8 +376,7 @@ public class PositionEditComparativeAssessmentExpertsController extends FormBasi
 		List<Application> appList = new ArrayList<>();
 		appList.add(app);
 		
-		String[] args = ReferenceHelper.generateMailArguments(headOfCommittee, position, app, reference, salutationGenerator, getTranslator());
-		String subject = translate("reference.expert.mail.subject", args);
+		String subject = mailSubjectEl.getValue();
 		String body = mailTemplateEl.getValue();
 		
 		mailPreviewCtrl = new PreviewEmailController(ureq, getWindowControl(), subject, body, null,

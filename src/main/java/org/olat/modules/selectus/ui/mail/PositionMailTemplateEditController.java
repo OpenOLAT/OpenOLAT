@@ -269,6 +269,7 @@ public class PositionMailTemplateEditController extends FormBasicController {
 		if(variablesButton == source) {
 			doOpenVariables(ureq);
 		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

@@ -380,26 +380,57 @@ implements PositionEditableController, FlexiTableCssDelegate {
 					position.getCommitteeReminderDate() != null, false));
 		}
 		if(recruitingModule.isReferenceEnabled()) {
+			// Expert
 			if(acceptedTypes.contains(Type.expert)) {
 				rows.add(new PositionMailTemplateRow(null, translate("type.expert"),
 						Type.expert, translate("recipient.expert"),
-						isCustomizedI18nKey(position.getExpertRecommandationMailTemplate(), "reference.expert.mail.body",
-								position.getExpertRecommandationMailLetter()),
+						(isCustomizedI18nKey(position.getExpertRecommandationMailTemplate(), "reference.expert.mail.body",
+								position.getExpertRecommandationMailLetter())
+							|| isCustomizedI18nKey(position.getExpertRecommandationMailSubject(), "reference.expert.mail.subject", null)),
 						position.isExpertRecommendationEnabled(), false));
 			}
+			if(acceptedTypes.contains(Type.confirmationSubmissionExpert)) {
+				rows.add(new PositionMailTemplateRow(null, translate("type.submission.expert"),
+						Type.confirmationSubmissionExpert, translate("recipient.expert"),
+						(isCustomizedI18nKey(position.getExpertConfirmationSubmissionMailTemplate(), "expert.submission.notification.body",
+								null)
+							|| isCustomizedI18nKey(position.getExpertConfirmationSubmissionMailSubject(), "expert.submission.notification.subject", null)),
+						position.isExpertRecommendationEnabled(), false));
+			}
+			
+			// Comparative expert
 			if(acceptedTypes.contains(Type.comparativeExpert) && recruitingModule.isComparativeAssessmentExpertsEnabled()) {
 				rows.add(new PositionMailTemplateRow(null, translate("type.comparative.expert"),
 						Type.comparativeExpert, translate("recipient.expert"),
-						isCustomizedI18nKey(position.getExpertRecommandationMailTemplate(), "reference.comparative.expert.mail.body",
-								position.getComparativeAssessmentExpertMailLetter()),
+						(isCustomizedI18nKey(position.getComparativeAssessmentExpertMailTemplate(), "reference.comparative.expert.mail.body",
+								position.getComparativeAssessmentExpertMailLetter())
+							|| isCustomizedI18nKey(position.getComparativeAssessmentExpertMailSubject(), "reference.comparative.expert.mail.subject", null)),
 						position.isComparativeAssessmentExpertEnabled(), false));
 			}
+			if(acceptedTypes.contains(Type.confirmationSubmissionComparativeExpert) && recruitingModule.isComparativeAssessmentExpertsEnabled()) {
+				rows.add(new PositionMailTemplateRow(null, translate("type.submission.comparative.expert"),
+						Type.confirmationSubmissionComparativeExpert, translate("recipient.expert"),
+						(isCustomizedI18nKey(position.getComparativeAssessmentExpertConfirmationSubmissionMailTemplate(), "comparative.expert.submission.notification.body",
+								null)
+							|| isCustomizedI18nKey(position.getComparativeAssessmentExpertConfirmationSubmissionMailSubject(), "comparative.expert.submission.notification.subject", null)),
+				 		position.isComparativeAssessmentExpertEnabled(), false));
+			}
 			
+			// Referee
 			if(acceptedTypes.contains(Type.referee)) {
 				rows.add(new PositionMailTemplateRow(null, translate("type.referee"),
 						Type.referee, translate("recipient.referee"),
-						isCustomizedI18nKey(position.getRefereeRecommandationMailTemplate(), "reference.recommendation.mail.body",
-								position.getRefereeRecommandationMailLetter()),
+						(isCustomizedI18nKey(position.getRefereeRecommandationMailTemplate(), "reference.recommendation.mail.body",
+								position.getRefereeRecommandationMailLetter())
+							|| isCustomizedI18nKey(position.getRefereeRecommandationMailSubject(), "reference.recommendation.mail.subject", null)),
+						position.isRefereeRecommendationEnabled(), false));
+			}
+			if(acceptedTypes.contains(Type.confirmationSubmissionReferee)) {
+				rows.add(new PositionMailTemplateRow(null, translate("type.submission.referee"),
+						Type.confirmationSubmissionReferee, translate("recipient.referee"),
+						(isCustomizedI18nKey(position.getRefereeConfirmationSubmissionMailTemplate(), "referee.submission.notification.body",
+								null)
+							|| isCustomizedI18nKey(position.getRefereeConfirmationSubmissionMailSubject(), "referee.submission.notification.subject", null)),
 						position.isRefereeRecommendationEnabled(), false));
 			}
 		}

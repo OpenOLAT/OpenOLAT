@@ -19,8 +19,16 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.core.gui.components.date.OffsetDirection;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.curriculum.AutomationDependingOn;
+import org.olat.modules.curriculum.AutomationUnit;
+import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.repository.RepositoryEntryStatusEnum;
 
@@ -75,6 +83,39 @@ public class CurriculumUIFactory {
 			return translator.translate(RepositoryEntryStatusEnum.valueOf(statusString).i18nKey());
 		}
 		return statusString;
+	}
+
+	public static String translateAutomationCondition(Translator translator, CurriculumAutomationRule rule) {
+		if (rule.getDependingOn() == AutomationDependingOn.STATUS) {
+			return translateAutomationStatusCondition(translator, rule.getDependingOnStatus());
+		}
+		boolean after = rule.getDirection() == OffsetDirection.AFTER;
+		boolean endRef = CurriculumAutomationRule.REFERENCE_END.equals(rule.getReference())
+				|| (rule.getReference() == null && after);
+		String anchor = translator.translate(endRef
+				? "automation.condition.anchor.end" : "automation.condition.anchor.begin");
+		if (rule.getUnit() == null || rule.getUnit() == AutomationUnit.SAME_DAY) {
+			return translator.translate("relative.date.display.same.day", new String[] { anchor });
+		}
+		if (rule.getValue() == null) {
+			return "-";
+		}
+		String base = "relative.date.unit." + rule.getUnit().name().toLowerCase().replaceAll("s$", "");
+		String unit = translator.translate(rule.getValue() == 1 ? base : base + "s");
+		String key = after ? "relative.date.display.after" : "relative.date.display.before";
+		return translator.translate(key, new String[] { String.valueOf(rule.getValue()), unit, anchor });
+	}
+
+	private static String translateAutomationStatusCondition(Translator translator, Set<String> statuses) {
+		if (statuses == null || statuses.isEmpty()) {
+			return "-";
+		}
+		String sep = " " + translator.translate("automation.condition.status.or") + " ";
+		String joined = Arrays.stream(CurriculumElementStatus.values())
+				.filter(s -> statuses.contains(s.name()))
+				.map(s -> "\"" + translateAutomationStatus(translator, s.name()) + "\"")
+				.collect(Collectors.joining(sep));
+		return translator.translate("automation.condition.status", new String[] { joined });
 	}
 
 }

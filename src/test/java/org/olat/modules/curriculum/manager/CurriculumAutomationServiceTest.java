@@ -744,6 +744,86 @@ public class CurriculumAutomationServiceTest {
 	}
 
 	@Test
+	public void testComputeTriggerDate_finishedRule_referenceEnd_returnsEndOfDay() {
+		Date endDate = new Date(0);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getEndDate()).thenReturn(endDate);
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		rule.setReference(CurriculumAutomationRule.REFERENCE_END);
+		rule.setDirection(OffsetDirection.AFTER);
+		rule.setUnit(AutomationUnit.SAME_DAY);
+		rule.setTargetStatus(CurriculumElementStatus.finished);
+
+		Date result = sut.computeTriggerDate(element, rule);
+
+		assertThat(result).isEqualTo(DateUtils.getEndOfDay(endDate));
+	}
+
+	@Test
+	public void testComputeTriggerDate_nonFinishedRule_referenceEnd_stillReturnsStartOfDay() {
+		Date endDate = new Date(0);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getEndDate()).thenReturn(endDate);
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		rule.setReference(CurriculumAutomationRule.REFERENCE_END);
+		rule.setDirection(OffsetDirection.AFTER);
+		rule.setUnit(AutomationUnit.SAME_DAY);
+		rule.setTargetStatus(CurriculumElementStatus.active);
+
+		Date result = sut.computeTriggerDate(element, rule);
+
+		assertThat(result).isEqualTo(DateUtils.getStartOfDay(endDate));
+	}
+
+	@Test
+	public void testProcessRule_finishedRule_referenceEnd_onExactEndDay_doesNotFire() {
+		Date today = DateUtils.getStartOfDay(new Date());
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getEndDate()).thenReturn(today);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.confirmed);
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		rule.setEnabled(true);
+		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		rule.setReference(CurriculumAutomationRule.REFERENCE_END);
+		rule.setDirection(OffsetDirection.AFTER);
+		rule.setUnit(AutomationUnit.SAME_DAY);
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.finished);
+
+		sut.processRule(element, rule, today);
+
+		verify(curriculumService, never()).updateCurriculumElementStatus(any(), any(), any(), anyBoolean(), any());
+	}
+
+	@Test
+	public void testProcessRule_finishedRule_referenceEnd_dayAfterEndDate_fires() {
+		Date endDate = DateUtils.addDays(new Date(), -1);
+		Date today = DateUtils.getStartOfDay(new Date());
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getEndDate()).thenReturn(endDate);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.confirmed);
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		rule.setEnabled(true);
+		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		rule.setReference(CurriculumAutomationRule.REFERENCE_END);
+		rule.setDirection(OffsetDirection.AFTER);
+		rule.setUnit(AutomationUnit.SAME_DAY);
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.finished);
+
+		sut.processRule(element, rule, today);
+
+		verify(curriculumService).updateCurriculumElementStatus(eq(null), eq(element),
+				eq(CurriculumElementStatus.finished), eq(false), eq(null));
+	}
+
+	@Test
 	public void testProcessRule_executionPeriodOnExactDay_fires() {
 		Date today = DateUtils.getStartOfDay(new Date());
 		CurriculumElement element = mock(CurriculumElement.class);

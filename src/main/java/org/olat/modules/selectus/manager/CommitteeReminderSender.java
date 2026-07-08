@@ -144,7 +144,10 @@ public class CommitteeReminderSender {
 				ratingDeadlineDe							// 8
 			};
 			
-			String subject = translator.translate("reminder.committee.member.subject", args);
+			String subject = position.getCommitteeReminderMailSubject();
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = translator.translate("reminder.committee.member.subject", args);
+			}
 			String body = position.getCommitteeReminderMailTemplate();
 			if(!StringHelper.containsNonWhitespace(body)) {
 				body = translator.translate("reminder.committee.member.body", args);
@@ -167,6 +170,12 @@ public class CommitteeReminderSender {
 		Translator translator = Util.createPackageTranslator(RecruitingHelper.class, locale);
 		String[] args = generateVariablesArguments();
 		return translator.translate("reminder.committee.member.body", args);
+	}
+	
+	public static String getMailTemplateSubject(Locale locale) {
+		Translator translator = Util.createPackageTranslator(RecruitingHelper.class, locale);
+		String[] args = generateVariablesArguments();
+		return translator.translate("reminder.committee.member.subject", args);
 	}
 	
 	public static String[] generateVariablesArguments() {

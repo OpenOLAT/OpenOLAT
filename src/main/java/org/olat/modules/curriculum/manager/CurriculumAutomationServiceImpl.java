@@ -137,20 +137,26 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 		return element;
 	}
 
-	Date computeTriggerDate(CurriculumElement element, CurriculumAutomationRule rule) {
+	@Override
+	public Date computeTriggerDate(CurriculumElement element, CurriculumAutomationRule rule) {
 		Date referenceDate;
 		String ref = rule.getReference();
+		boolean referenceEnd;
 		if (ref != null) {
-			referenceDate = CurriculumAutomationRule.REFERENCE_END.equals(ref) ? getEndDate(element) : getBeginDate(element);
+			referenceEnd = CurriculumAutomationRule.REFERENCE_END.equals(ref);
+			referenceDate = referenceEnd ? getEndDate(element) : getBeginDate(element);
 		} else if (rule.getDirection() == OffsetDirection.AFTER) {
+			referenceEnd = true;
 			referenceDate = getEndDate(element);
 		} else {
+			referenceEnd = false;
 			referenceDate = getBeginDate(element);
 		}
 		if (referenceDate == null) {
 			return null;
 		}
-		referenceDate = DateUtils.getStartOfDay(referenceDate);
+		boolean finishAtEndOfDay = referenceEnd && CurriculumElementStatus.finished.name().equals(rule.getTargetStatus());
+		referenceDate = finishAtEndOfDay ? DateUtils.getEndOfDay(referenceDate) : DateUtils.getStartOfDay(referenceDate);
 		AutomationUnit unit = rule.getUnit();
 		if (unit == null || unit == AutomationUnit.SAME_DAY) {
 			return referenceDate;

@@ -632,16 +632,36 @@ public class ReferenceTabbedController extends BasicController {
 		String subject;
 		String[] messageArgs = getMessageArgs(locale);
 		if(reference.getReferenceType() == ReferenceType.recommendation) {
-			subject = appTranslator.translate("referee.submission.notification.subject", messageArgs);
-			body = appTranslator.translate("referee.submission.notification.body", messageArgs);
+			subject = position.getRefereeConfirmationSubmissionMailSubject();
+			body = position.getRefereeConfirmationSubmissionMailTemplate();
 		} else if(reference.getReferenceType() == ReferenceType.expert) {
-			subject = appTranslator.translate("expert.submission.notification.subject", messageArgs);
-			body = appTranslator.translate("expert.submission.notification.body", messageArgs);
+			subject = position.getExpertConfirmationSubmissionMailSubject();
+			body = position.getExpertConfirmationSubmissionMailTemplate();
 		} else if(reference.getReferenceType() == ReferenceType.comparativeAssessmentExpert) {
-			subject = appTranslator.translate("comparative.expert.submission.notification.subject", messageArgs);
-			body = appTranslator.translate("comparative.expert.submission.notification.body", messageArgs);
+			subject = position.getComparativeAssessmentExpertConfirmationSubmissionMailSubject();
+			body = position.getComparativeAssessmentExpertConfirmationSubmissionMailTemplate();
 		} else {
 			return;
+		}
+		
+		if(!RecruitingHelper.containsTemplate(subject)) {
+			if(reference.getReferenceType() == ReferenceType.recommendation) {
+				subject = appTranslator.translate("referee.submission.notification.subject", messageArgs);
+			} else if(reference.getReferenceType() == ReferenceType.expert) {
+				subject = appTranslator.translate("expert.submission.notification.subject", messageArgs);
+			} else if(reference.getReferenceType() == ReferenceType.comparativeAssessmentExpert) {
+				subject = appTranslator.translate("comparative.expert.submission.notification.subject", messageArgs);
+			}
+		}
+		
+		if(!RecruitingHelper.containsTemplate(body)) {
+			if(reference.getReferenceType() == ReferenceType.recommendation) {
+				body = appTranslator.translate("referee.submission.notification.body", messageArgs);
+			} else if(reference.getReferenceType() == ReferenceType.expert) {
+				body = appTranslator.translate("expert.submission.notification.body", messageArgs);
+			} else if(reference.getReferenceType() == ReferenceType.comparativeAssessmentExpert) {
+				body = appTranslator.translate("comparative.expert.submission.notification.body", messageArgs);
+			}
 		}
 
 		ApplicationMailTemplate template = new RecruitingMailTemplate(null, null, null, subject, body, null,

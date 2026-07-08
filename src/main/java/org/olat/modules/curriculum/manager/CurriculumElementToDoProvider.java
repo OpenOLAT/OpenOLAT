@@ -361,11 +361,9 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		}
 
 		private static ExecutionPeriodRelativeDateContext buildContext(Locale locale, CurriculumElement element) {
-			Date begin = element != null ? element.getBeginDate() : null;
-			Date end = element != null ? element.getEndDate() : null;
 			Translator t = Util.createPackageTranslator(CurriculumUIFactory.class, locale,
 					Util.createPackageTranslator(ToDoUIFactory.class, locale));
-			return new ExecutionPeriodRelativeDateContext(t, begin, end);
+			return ExecutionPeriodRelativeDateContext.of(t, element);
 		}
 
 		@Override
@@ -422,7 +420,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		CurriculumElementsBulkDatePicker(Locale locale) {
 			Translator t = Util.createPackageTranslator(CurriculumUIFactory.class, locale,
 					Util.createPackageTranslator(ToDoUIFactory.class, locale));
-			this.context = new ExecutionPeriodRelativeDateContext(t, null, null);
+			this.context = ExecutionPeriodRelativeDateContext.noExecutionPeriod(t);
 		}
 
 		@Override

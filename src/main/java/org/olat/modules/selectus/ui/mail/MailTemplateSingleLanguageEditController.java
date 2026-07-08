@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -86,6 +87,7 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 	private FormLink previewLink;
 	private Link variablesButton;
 	private RichTextElement bodyEl;
+	private TextElement subjectEl;
 	
 	private Position position;
 	private Identity headOfCommittee;
@@ -124,6 +126,12 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String subject = getSubject();
+		subjectEl = uifactory.addTextElement("subject", "edit.subject", 255, subject, formLayout);
+		subjectEl.setMandatory(true);
+		subjectEl.setMaxLength(255);
+		subjectEl.setElementCssClass("o_sel_template_subject");
+		
 		String description = getBody();
 		bodyEl = uifactory.addRichTextElementForStringData("body_", "edit.body", description, 20, 60,
 				false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
@@ -155,6 +163,61 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
+	
+	private String getSubject() {
+		String subject = null;
+		if(templateRow.getType() == Type.referee) {
+			subject = position.getRefereeRecommandationMailSubject();
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
+						.translate("reference.recommendation.mail.subject", ReferenceHelper.getMailVariables());
+			}
+		} else if(templateRow.getType() == Type.confirmationSubmissionReferee) {
+			subject = position.getRefereeConfirmationSubmissionMailSubject();
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
+						.translate("referee.submission.notification.subject", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionReferee));
+			}
+		} else if(templateRow.getType() == Type.expert) {
+			subject = position.getExpertRecommandationMailSubject();
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
+						.translate("reference.expert.mail.subject", ReferenceHelper.getMailVariables());
+			}
+		} else if(templateRow.getType() == Type.confirmationSubmissionExpert) {
+			subject = position.getExpertConfirmationSubmissionMailSubject();
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
+						.translate("expert.submission.notification.subject", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionExpert));
+			}
+		} else if(templateRow.getType() == Type.comparativeExpert) {
+			subject = position.getComparativeAssessmentExpertMailSubject();
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
+						.translate("reference.comparative.expert.mail.subject", ReferenceHelper.getMailVariables());
+			}
+		} else if(templateRow.getType() == Type.confirmationSubmissionComparativeExpert) {
+			subject = position.getComparativeAssessmentExpertConfirmationSubmissionMailSubject();
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
+						.translate("comparative.expert.submission.notification.subject", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionComparativeExpert));
+			}
+		} else if(templateRow.getType() == Type.committeeReminder) {
+			subject = position.getCommitteeReminderMailSubject();
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = CommitteeReminderSender.getMailTemplateSubject(getLocale());
+			}
+		} else if(templateRow.getType() == Type.feedback) {
+			subject = templateRow.getFeedbackConfiguration().getMailSubject();
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = FeedbackHelper.getDefaultTemplateSubject(position, salutationGenerator, getLocale());
+			}
+		} 
+		return subject;
+	}
 
 	private String getBody() {
 		String body = null;
@@ -162,19 +225,40 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 			body = position.getRefereeRecommandationMailTemplate();
 			if(!StringHelper.containsNonWhitespace(body)) {
 				body = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
-						.translate("reference.recommendation.mail.body");
+						.translate("reference.recommendation.mail.body", ReferenceHelper.getMailVariables());
+			}
+		} else if(templateRow.getType() == Type.confirmationSubmissionReferee) {
+			body = position.getRefereeConfirmationSubmissionMailTemplate();
+			if(!StringHelper.containsNonWhitespace(body)) {
+				body = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
+						.translate("referee.submission.notification.body", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionReferee));
 			}
 		} else if(templateRow.getType() == Type.expert) {
 			body = position.getExpertRecommandationMailTemplate();
 			if(!StringHelper.containsNonWhitespace(body)) {
 				body = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
-						.translate("reference.expert.mail.body");
+						.translate("reference.expert.mail.body", ReferenceHelper.getMailVariables());
+			}
+		} else if(templateRow.getType() == Type.confirmationSubmissionExpert) {
+			body = position.getExpertConfirmationSubmissionMailTemplate();
+			if(!StringHelper.containsNonWhitespace(body)) {
+				body = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
+						.translate("expert.submission.notification.body", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionExpert));
 			}
 		} else if(templateRow.getType() == Type.comparativeExpert) {
 			body = position.getComparativeAssessmentExpertMailTemplate();
 			if(!StringHelper.containsNonWhitespace(body)) {
 				body = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
-						.translate("reference.comparative.expert.mail.body");
+						.translate("reference.comparative.expert.mail.body", ReferenceHelper.getMailVariables());
+			}
+		} else if(templateRow.getType() == Type.confirmationSubmissionComparativeExpert) {
+			body = position.getComparativeAssessmentExpertConfirmationSubmissionMailTemplate();
+			if(!StringHelper.containsNonWhitespace(body)) {
+				body = Util.createPackageTranslator(RecruitingHelper.class, getLocale())
+						.translate("comparative.expert.submission.notification.body", ReferenceHelper
+								.getConfirmationSubmissionMailVariables(Type.confirmationSubmissionComparativeExpert));
 			}
 		} else if(templateRow.getType() == Type.committeeReminder) {
 			body = position.getCommitteeReminderMailTemplate();
@@ -208,6 +292,7 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
+		allOk &= RecruitingHelper.validateTextElement(subjectEl, 32000, true, new OWASPAntiSamyXSSFilter());
 		allOk &= RecruitingHelper.validateRichTextElement(bodyEl, 32000, true, new OWASPAntiSamyXSSFilter());
 		return allOk;
 	}
@@ -262,19 +347,37 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 		String before = auditService.toAuditXml(position);
 		
 		String body = bodyEl.getValue();
+		String subject = subjectEl.getValue();
 		if(templateRow.getType() == Type.referee) {
+			position.setRefereeRecommandationMailSubject(subject);
 			position.setRefereeRecommandationMailTemplate(body);
 			position = recruitingService.savePosition(position);
+		} else if(templateRow.getType() == Type.confirmationSubmissionReferee) {
+			position.setRefereeConfirmationSubmissionMailSubject(subject);
+			position.setRefereeConfirmationSubmissionMailTemplate(body);
+			position = recruitingService.savePosition(position);
 		} else if(templateRow.getType() == Type.expert) {
+			position.setExpertRecommandationMailSubject(subject);
 			position.setExpertRecommandationMailTemplate(body);
 			position = recruitingService.savePosition(position);
+		} else if(templateRow.getType() == Type.confirmationSubmissionExpert) {
+			position.setExpertConfirmationSubmissionMailSubject(subject);
+			position.setExpertConfirmationSubmissionMailTemplate(body);
+			position = recruitingService.savePosition(position);
 		} else if(templateRow.getType() == Type.comparativeExpert) {
+			position.setComparativeAssessmentExpertMailSubject(subject);
 			position.setComparativeAssessmentExpertMailTemplate(body);
 			position = recruitingService.savePosition(position);
+		} else if(templateRow.getType() == Type.confirmationSubmissionComparativeExpert) {
+			position.setComparativeAssessmentExpertConfirmationSubmissionMailSubject(subject);
+			position.setComparativeAssessmentExpertConfirmationSubmissionMailTemplate(body);
+			position = recruitingService.savePosition(position);
 		} else if(templateRow.getType() == Type.committeeReminder) {
+			position.setCommitteeReminderMailSubject(subject);
 			position.setCommitteeReminderMailTemplate(body);
 			position = recruitingService.savePosition(position);
 		} else if(templateRow.getType() == Type.feedback) {
+			templateRow.getFeedbackConfiguration().setMailSubject(subject);
 			templateRow.getFeedbackConfiguration().setMailTemplate(body);
 			feedbackService.updateApplicationsFeedbackConfiguration(templateRow.getFeedbackConfiguration());
 		} 
@@ -357,7 +460,7 @@ public class MailTemplateSingleLanguageEditController extends FormBasicControlle
 		Application app = ReferenceHelper.generateDummyApplication(position);
 		ApplicationsFeedbackConfiguration feedbackConfig = templateRow.getFeedbackConfiguration();
 		
-		String subject = "";
+		String subject = subjectEl.getValue();
 		String body = bodyEl.getValue();
 		
 		String rawLetterConfiguration = null;

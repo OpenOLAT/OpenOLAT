@@ -69,4 +69,6 @@ public interface RelativeDateContext {
 	 */
 	Date resolveDate(RelativeDateSelection selection);
 
+	boolean isResolvedDateVisible();
+
 }

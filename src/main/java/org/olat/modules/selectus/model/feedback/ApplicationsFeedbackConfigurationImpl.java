@@ -84,6 +84,8 @@ public class ApplicationsFeedbackConfigurationImpl implements ApplicationsFeedba
 	
 	@Column(name="r_deadline", nullable=true, insertable=true, updatable=true)
 	private Date deadline;
+	@Column(name="r_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String mailSubject;
 	@Column(name="r_mail_template", nullable=true, insertable=true, updatable=true)
 	private String mailTemplate;
 	@Column(name="r_mail_letter", nullable=true, insertable=true, updatable=true)
@@ -160,6 +162,16 @@ public class ApplicationsFeedbackConfigurationImpl implements ApplicationsFeedba
 	@Override
 	public void setDeadline(Date deadline) {
 		this.deadline = deadline;
+	}
+	
+	@Override
+	public String getMailSubject() {
+		return mailSubject;
+	}
+
+	@Override
+	public void setMailSubject(String mailSubject) {
+		this.mailSubject = mailSubject;
 	}
 
 	@Override

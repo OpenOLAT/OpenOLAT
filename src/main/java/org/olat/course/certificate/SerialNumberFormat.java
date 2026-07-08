@@ -56,12 +56,14 @@ public class SerialNumberFormat {
 			.compile("\\$\\{\\s*(counter|year|month|day)\\s*(?::\\s*(\\d+))?\\s*\\}");
 
 	private final String format;
+	private final int maxPad;
 	private final boolean hasCounter;
 	private final List<Token> tokens;
 
-	private SerialNumberFormat(String format, List<Token> tokens, boolean hasCounter) {
+	private SerialNumberFormat(String format, List<Token> tokens, int maxPad, boolean hasCounter) {
 		this.format = format;
 		this.tokens = tokens;
+		this.maxPad = maxPad;
 		this.hasCounter = hasCounter;
 	}
 
@@ -74,6 +76,7 @@ public class SerialNumberFormat {
 	public static SerialNumberFormat parse(String format) {
 		List<Token> tokens = new ArrayList<>();
 		boolean hasCounter = false;
+		int maxPad = 1;
 		if (format != null && !format.isEmpty()) {
 			Matcher matcher = TOKEN.matcher(format);
 			int pos = 0;
@@ -82,6 +85,9 @@ public class SerialNumberFormat {
 					tokens.add(literal(format.substring(pos, matcher.start())));
 				}
 				int pad = matcher.group(2) == null ? 0 : Integer.parseInt(matcher.group(2));
+				if(pad > maxPad) {
+					maxPad = pad;
+				}
 				switch (matcher.group(1)) {
 					case "counter" -> {
 						tokens.add((sb, counter, date) -> sb.append(zeroPad(Long.toString(counter), pad)));
@@ -98,7 +104,7 @@ public class SerialNumberFormat {
 				tokens.add(literal(format.substring(pos)));
 			}
 		}
-		return new SerialNumberFormat(format == null ? "" : format, tokens, hasCounter);
+		return new SerialNumberFormat(format == null ? "" : format, tokens, maxPad, hasCounter);
 	}
 
 	/**
@@ -113,6 +119,10 @@ public class SerialNumberFormat {
 	 */
 	public boolean hasCounter() {
 		return hasCounter;
+	}
+	
+	public int maxPad() {
+		return maxPad;
 	}
 
 	/**

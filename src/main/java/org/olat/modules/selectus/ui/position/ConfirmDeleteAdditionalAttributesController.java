@@ -29,6 +29,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.olat.modules.selectus.RecruitingService;
@@ -67,11 +68,12 @@ public class ConfirmDeleteAdditionalAttributesController extends FormBasicContro
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		long usage = attributeDefinition.getKey() == null ? 0 : recruitingService.getAttributeUsage(position, attributeDefinition);
 		if(usage == 0) {
-			String msg = translate("confirm.delete.attr.text", new String[] { attributeDefinition.getLabel(getLocale(), true) });
+			String msg = translate("confirm.delete.attr.text", new String[] {
+					StringHelper.escapeHtml(attributeDefinition.getLabel(getLocale(), true)) });
 			formLayout.contextPut("msg", msg);
 		} else {
 			String warningMsg = translate("confirm.delete.attr.used.text", new String[] {
-					attributeDefinition.getLabel(getLocale(), true), Long.toString(usage) });
+					StringHelper.escapeHtml(attributeDefinition.getLabel(getLocale(), true)), Long.toString(usage) });
 			formLayout.contextPut("warningMsg", warningMsg);
 		}
 		

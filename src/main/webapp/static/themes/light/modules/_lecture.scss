@@ -602,6 +602,12 @@ tr.o_rm_room_preselected {
 	}
 }
 
+.o_metadata_horizontal {
+	.o_button_group.o_button_in_metadata {
+		flex-grow: 1;
+		text-align: right;
+	}
+}
 
 .o_lecture_subjects_edit {
 	display: flex;

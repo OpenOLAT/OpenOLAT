@@ -161,6 +161,12 @@ public class FeedbackHelper {
 		return email;
 	}
 	
+	public static String getDefaultTemplateSubject(Position position, SalutationGenerator salutationGenerator, Locale locale) {
+		Translator translator = Util.createPackageTranslator(PositionController.class, locale);
+		String[] args = generateMailArguments(null, position, null, null, null, salutationGenerator, translator);
+		return translator.translate("apps.feedback.mail.subject", args);
+	}
+	
 	public static String getDefaultTemplateBody(Position position, SalutationGenerator salutationGenerator, Locale locale) {
 		Translator translator = Util.createPackageTranslator(PositionController.class, locale);
 		String[] args = generateMailArguments(null, position, null, null, null, salutationGenerator, translator);
@@ -183,8 +189,11 @@ public class FeedbackHelper {
 				? (Application)applicationList.get(0) : null;
 		String[] args = generateMailArguments(headOfCommittee, position, application, feedbackConfig, member, salutationGenerator, translator);
 
+		String subject = feedbackConfig.getMailSubject();
+		if(!RecruitingHelper.containsTemplate(subject)) {
+			subject = translator.translate("apps.feedback.mail.subject", args); 
+		}
 		String body = feedbackConfig.getMailTemplate();
-		String subject = translator.translate("apps.feedback.mail.subject", args); 
 		if(!RecruitingHelper.containsTemplate(body)) {
 			body = translator.translate("apps.feedback.mail.body", args);
 		}

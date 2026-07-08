@@ -135,7 +135,7 @@ public class LectureListDetailsController extends FormBasicController {
 	private final RepositoryEntry repositoryEntry;
 	private final boolean lectureManagementManaged;
 	private final boolean taxonomyEnabled;
-	private final LectureListRepositoryConfig config;
+	private LectureListRepositoryConfig config;
 	private RepositoryEntryImageMapper mapperThumbnail;
 	private final LecturesSecurityCallback secCallback;
 	
@@ -223,6 +223,7 @@ public class LectureListDetailsController extends FormBasicController {
 		}
 		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			initDetailsForTimelineMode();
 			layoutCont.contextPut("lectureBlockKey", lectureBlock.getKey());
 			layoutCont.contextPut("title", lectureBlock.getTitle());
 			if(config.withDetailsExternalRef()) {
@@ -246,7 +247,17 @@ public class LectureListDetailsController extends FormBasicController {
 			initRooms(layoutCont, lectureBlock);
 		}
 	}
+
+	private void initDetailsForTimelineMode() {
+		flc.contextPut("withTitleLine", !config.isDetailsTimelineMode());
+		flc.contextPut("withEditButtonInMetadata", config.isDetailsTimelineMode());
+	}
 	
+	public void updateConfigForRendererType(LectureListRepositoryConfig config) {
+		this.config = config;
+		initDetailsForTimelineMode();
+	}
+
 	private void initFormParticipantsGroupTable(FormItemContainer formLayout) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.title));

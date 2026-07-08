@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
@@ -99,7 +100,7 @@ public class PositionConfirmDeleteController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			String shortTitle = position.getMLShortTitle(getLocale());
-			String text = translate("confirm.delete", new String[]{ shortTitle });
+			String text = translate("confirm.delete", new String[]{ StringHelper.escapeHtml(shortTitle) });
 			layoutCont.contextPut("message", text);
 			
 			if(withAnonymous) {

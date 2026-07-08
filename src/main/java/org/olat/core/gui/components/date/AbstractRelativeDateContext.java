@@ -97,7 +97,10 @@ public abstract class AbstractRelativeDateContext implements RelativeDateContext
 
 		String prefix;
 		String iconCss;
-		if (resolved != null) {
+		if (!isResolvedDateVisible()) {
+			prefix = "";
+			iconCss = null;
+		} else if (resolved != null) {
 			prefix = Formatter.getInstance(translator.getLocale()).formatDate(resolved) + " – ";
 			iconCss = null;
 		} else {

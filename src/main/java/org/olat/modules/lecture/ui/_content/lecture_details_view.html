@@ -1,4 +1,5 @@
 <div id="o_lecture_block_${lectureBlockKey}" class="o_lecture_details">
+	#if($withTitleLine)
 	<div class="o_flex_header">
 		<div class="o_lecture_title">
 			<h3>$r.escapeHtml($title)</h3>
@@ -14,6 +15,7 @@
 		</div>
 		#end
 	</div>
+	#end
 
 	#if($r.available("lecture.subjects"))
 	<div class="o_lecture_subjects">
@@ -33,6 +35,15 @@
 		$r.render("lecture.participants","vertical")
 		#if($r.available("lecture.absences"))$r.render("lecture.absences","vertical")#end
 		$r.render("lecture.compulsory","vertical")
+
+		#if($withEditButtonInMetadata)
+			#if($r.available("edit"))
+			<div class="o_button_group o_button_in_metadata">
+				$r.render("edit")
+			</div>
+			#end
+		#end
+
 	</div>
 	<div class="o_metadata_horizontal">
 	    #if($r.available("open.online.meeting"))
