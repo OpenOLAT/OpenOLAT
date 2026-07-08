@@ -488,3 +488,11 @@
 		}
 	}
 }
+
+.o_table_filters_wrapper .o_table_filters_row > ul.o_table_filters .o_table_filter.o_filter_active {
+	.o_building_filter, .o_room_filter {
+		&.text-muted {
+			color: #fff;
+		}	
+	}
+}

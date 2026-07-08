@@ -225,6 +225,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void initFilters() {
+		tableEl.setFilters(true, buildFilters(List.of(RoomStatus.active)), false, false);
+	}
+
+	private List<FlexiTableExtendedFilter> buildFilters(List<RoomStatus> tabStatuses) {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 
 		SelectionValues statusValues = new SelectionValues();
@@ -234,15 +238,31 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		filters.add(new FlexiTableMultiSelectionFilter(translate("room.filter.status"),
 				FILTER_STATUS, statusValues, true));
 
-		initBuildingFilter(filters);
-		initRoomFilter(filters);
+		initBuildingFilter(filters, tabStatuses);
+		initRoomFilter(filters, tabStatuses);
 
-		tableEl.setFilters(true, filters, false, false);
+		return filters;
 	}
 
-	private void initBuildingFilter(List<FlexiTableExtendedFilter> filters) {
+	private void reinitBuildingAndRoomFilters() {
+		tableEl.setFilters(true, buildFilters(getTabStatuses()), false, false);
+	}
+
+	private List<RoomStatus> getTabStatuses() {
+		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
+		if (tabDeleted != null && tabDeleted.equals(selectedTab)) {
+			return List.of(RoomStatus.deleted);
+		} else if (tabAll != null && tabAll.equals(selectedTab)) {
+			return List.of(RoomStatus.active, RoomStatus.inactive);
+		}
+		return List.of(RoomStatus.active);
+	}
+
+	private void initBuildingFilter(List<FlexiTableExtendedFilter> filters, List<RoomStatus> tabStatuses) {
 		SelectionValues buildingValues = new SelectionValues();
-		List<Building> buildings = roomManagementService.searchBuildings(new SearchBuildingParameters(), roles);
+		SearchBuildingParameters buildingParams = new SearchBuildingParameters();
+		buildingParams.setStatus(tabStatuses);
+		List<Building> buildings = roomManagementService.searchBuildings(buildingParams, roles);
 		buildings.sort(Comparator.comparing(b -> {
 			String sortLabel = StringHelper.containsNonWhitespace(b.getExternalRef()) ? b.getExternalRef() : b.getDescription();
 			return sortLabel != null ? sortLabel.toLowerCase() : "";
@@ -260,7 +280,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 				html.append("<span>").append(StringHelper.escapeHtml(ref)).append("</span>");
 			}
 			if (hasDesc) {
-				html.append("<span class=\"text-muted\"> &middot; ").append(StringHelper.escapeHtml(desc)).append("</span>");
+				html.append("<span class=\"o_building_filter text-muted\"> &middot; ").append(StringHelper.escapeHtml(desc)).append("</span>");
 			}
 			if (b.getStatus() != null) {
 				String statusName = b.getStatus().name();
@@ -280,9 +300,11 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		}
 	}
 
-	private void initRoomFilter(List<FlexiTableExtendedFilter> filters) {
+	private void initRoomFilter(List<FlexiTableExtendedFilter> filters, List<RoomStatus> tabStatuses) {
 		SelectionValues roomValues = new SelectionValues();
-		List<Room> rooms = roomManagementService.searchRooms(new SearchRoomParameters(), roles);
+		SearchRoomParameters roomParams = new SearchRoomParameters();
+		roomParams.setStatus(tabStatuses);
+		List<Room> rooms = roomManagementService.searchRooms(roomParams, roles);
 		rooms.sort(Comparator.comparing(r -> {
 			String sortLabel = StringHelper.containsNonWhitespace(r.getExternalRef()) ? r.getExternalRef() : r.getDescription();
 			return sortLabel != null ? sortLabel.toLowerCase() : "";
@@ -300,7 +322,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 				html.append("<span>").append(StringHelper.escapeHtml(ref)).append("</span>");
 			}
 			if (hasDesc) {
-				html.append("<span class=\"text-muted\"> &middot; ").append(StringHelper.escapeHtml(desc)).append("</span>");
+				html.append("<span class=\"o_room_filter text-muted\"> &middot; ").append(StringHelper.escapeHtml(desc)).append("</span>");
 			}
 			if (r.getStatus() != null) {
 				String statusName = r.getStatus().name();
@@ -368,6 +390,11 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	
 	private List<Room> loadRooms() {
 		SearchRoomParameters params = new SearchRoomParameters();
+
+		String searchString = tableEl.getQuickSearchString();
+		if (StringHelper.containsNonWhitespace(searchString)) {
+			params.setSearchString(searchString);
+		}
 
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		if (filters != null) {
@@ -545,7 +572,14 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 				} else {
 					loadCalendar();
 				}
-			} else if (event instanceof FlexiTableFilterTabEvent || event instanceof FlexiTableSearchEvent) {
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				reinitBuildingAndRoomFilters();
+				if (tableEl.getRendererType() == FlexiTableRendererType.classic) {
+					loadModel();
+				} else {
+					loadCalendar();
+				}
+			} else if (event instanceof FlexiTableSearchEvent) {
 				if (tableEl.getRendererType() == FlexiTableRendererType.classic) {
 					loadModel();
 				} else {
