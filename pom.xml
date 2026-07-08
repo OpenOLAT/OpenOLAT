@@ -79,7 +79,7 @@
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.4.2.Final</io.undertow>
 		<io.undertow.ee>2.0.1.Final</io.undertow.ee>
-		<jackson.version>2.22.0</jackson.version>
+		<jackson.version>2.22.1</jackson.version>
 		<jackson.annotations.version>2.22</jackson.annotations.version>
 		<swagger.ui.version>5.32.8</swagger.ui.version>
 		<com.mysql.version>9.7.0</com.mysql.version>
