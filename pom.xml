@@ -78,7 +78,7 @@
 		<org.bouncycastle>1.84</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.3.25.Final</io.undertow>
-		<jackson.version>2.22.0</jackson.version>
+		<jackson.version>2.22.1</jackson.version>
 		<jackson.annotations.version>2.22</jackson.annotations.version>
 		<swagger.ui.version>5.32.8</swagger.ui.version>
 		<com.mysql.version>9.7.0</com.mysql.version>
