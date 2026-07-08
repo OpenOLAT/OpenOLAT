@@ -260,6 +260,10 @@ public class EssayGenerationQuizPartSinkImpl implements EssayGenerationQuizPartS
 	private QuizQuestion createEssayQuestion(QuizPart quizPart, EssayItemDraft draft, Locale locale,
 			EssayAiGrading grading) {
 		try {
+			AiModule aiModule = CoreSpringFactory.getImpl(AiModule.class);
+			String spiId = aiModule == null ? null : aiModule.getEssayGenerationSpiId();
+			String model = aiModule == null ? null : aiModule.getEssayGenerationModel();
+
 			File questionsDir = contentEditorFileStorage.getFile(quizPart.getStoragePath());
 			String questionId = IdentifierGenerator.newAsString(QTI21QuestionType.essay.getPrefix());
 			File questionDir = new File(questionsDir, questionId);
@@ -282,6 +286,12 @@ public class EssayGenerationQuizPartSinkImpl implements EssayGenerationQuizPartS
 				item.setTitle(title);
 			}
 			qtiService.persistAssessmentObject(questionFile, item);
+			
+			// Record AI provenance in the companion file (the QTI XML keeps the
+			// default OpenOlat toolName so the standard editor recognises it).
+			if (StringHelper.containsNonWhitespace(spiId)) {
+				aiSourceCompanionFileStore.save(questionDir, new AiSourceCompanion(spiId, model, null));
+			}
 
 			// Persist the per-question AI grading metadata next to the QTI XML.
 			// The directory name (= questionId) becomes the
