@@ -71,6 +71,7 @@ public class RoomListDataModel extends DefaultFlexiTableDataModel<RoomRow>
 			}
 			case nextEvent -> row.getNextEvent();
 			case calendarIcon -> row.getCalendarIconLink();
+			case detailsIcon -> row.getDetailsIconLink();
 			case tools -> row.getToolsLink();
 		};
 	}
@@ -94,6 +95,17 @@ public class RoomListDataModel extends DefaultFlexiTableDataModel<RoomRow>
 			@Override
 			public String iconHeader() {
 				return "o_icon o_icon_calendar";
+			}
+
+			@Override
+			public boolean sortable() {
+				return false;
+			}
+		},
+		detailsIcon("room.col.details") {
+			@Override
+			public String iconHeader() {
+				return "o_icon o_icon_lightbulb";
 			}
 
 			@Override

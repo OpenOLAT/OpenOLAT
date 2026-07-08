@@ -178,6 +178,11 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		calendarIconCol.setHeaderTooltip(translate("room.calendar.title"));
 		calendarIconCol.setIconHeader(RoomCols.calendarIcon.iconHeader());
 		columnsModel.addFlexiColumnModel(calendarIconCol);
+
+		DefaultFlexiColumnModel detailsIconCol = new DefaultFlexiColumnModel(RoomCols.detailsIcon);
+		detailsIconCol.setHeaderTooltip(translate("room.detail.open.details"));
+		detailsIconCol.setIconHeader(RoomCols.detailsIcon.iconHeader());
+		columnsModel.addFlexiColumnModel(detailsIconCol);
 		if (!readOnly) {
 			columnsModel.addFlexiColumnModel(new ActionsColumnModel(RoomCols.tools));
 		}
@@ -419,12 +424,19 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			row.setBuildingLink(buildingLink);
 		}
 
-		FormLink calendarIconLink = uifactory.addFormLink("cal_" + room.getKey(), "calendar", "", 
+		FormLink calendarIconLink = uifactory.addFormLink("cal_" + room.getKey(), "calendar", "",
 				null, null, Link.LINK | Link.NONTRANSLATED);
 		calendarIconLink.setIconLeftCSS("o_icon o_icon_calendar");
 		calendarIconLink.setUserObject(row);
 		calendarIconLink.setTitle(translate("room.calendar.title"));
 		row.setCalendarIconLink(calendarIconLink);
+
+		FormLink detailsIconLink = uifactory.addFormLink("det_" + room.getKey(), "details", "",
+				null, null, Link.LINK | Link.NONTRANSLATED);
+		detailsIconLink.setIconLeftCSS("o_icon o_icon_lightbulb");
+		detailsIconLink.setUserObject(row);
+		detailsIconLink.setTitle(translate("room.detail.open.details"));
+		row.setDetailsIconLink(detailsIconLink);
 
 		// Calculate occupancy rate for current month
 		Calendar cal = Calendar.getInstance();
@@ -556,6 +568,17 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 					}
 				} else if ("calendar".equals(cmd)) {
 					doOpenRoomCalendar(ureq, row);
+				} else if ("details".equals(cmd)) {
+					int rowIndex = dataModel.getObjects().indexOf(row);
+					if (rowIndex >= 0) {
+						if (tableEl.isDetailsExpended(rowIndex)) {
+							doCloseDetails(row);
+							tableEl.collapseDetails(rowIndex);
+						} else {
+							doOpenDetails(ureq, row, rowIndex);
+							tableEl.expandDetails(rowIndex);
+						}
+					}
 				} else if ("tools".equals(cmd)) {
 					doOpenTools(ureq, row, link);
 				}
