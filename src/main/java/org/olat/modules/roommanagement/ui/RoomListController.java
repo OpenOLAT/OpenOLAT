@@ -817,7 +817,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 
 	private void doConfirmDeactivate(UserRequest ureq, RoomRow row) {
 		String title = translate("room.confirm.deactivate.title");
-		String text = translate("room.confirm.deactivate");
+		String ref = StringHelper.containsNonWhitespace(row.getRoom().getExternalRef()) ? row.getRoom().getExternalRef() : "";
+		String text = translate("room.confirm.deactivate", StringHelper.escapeHtml(ref));
 		List<String> buttons = List.of(translate("room.tools.deactivate"), translate("cancel"));
 		confirmDeactivateDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), title, text, buttons);
 		listenTo(confirmDeactivateDialog);
