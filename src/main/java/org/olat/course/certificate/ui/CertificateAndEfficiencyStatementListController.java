@@ -212,10 +212,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
-
-	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse, boolean showHeading) {
-		this(ureq, wControl, assessedIdentity, linkToCoachingTool, canModify, canLaunchCourse);
-	}
 	
 	@Override
 	protected void doDispose() {
@@ -292,7 +288,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName, treeRenderer));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.reference));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.reference));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.completion,
 				new CompletionCellRenderer(getTranslator())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));
