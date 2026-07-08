@@ -25,7 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
 import org.commonmark.Extension;
 import org.commonmark.ext.autolink.AutolinkExtension;
 import org.commonmark.ext.footnotes.FootnotesExtension;
@@ -43,6 +45,7 @@ import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.modules.ceditor.ContentEditorXStream;
@@ -69,6 +72,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class MarkdownImportService {
 
+	private static final Logger log = Tracing.createLoggerFor(MarkdownImportService.class);
+
+	// Mirror the fence patterns of the CommonMark YamlFrontMatterExtension
+	// (YamlFrontMatterBlockParser.REGEX_BEGIN / REGEX_END)
+	private static final Pattern FRONT_MATTER_BEGIN = Pattern.compile("^-{3}(\\s.*)?");
+	private static final Pattern FRONT_MATTER_END = Pattern.compile("^(-{3}|\\.{3})(\\s.*)?");
+
 	/**
 	 * Shared CommonMark extension list used by both the Parser and HtmlRenderer.
 	 */
@@ -84,6 +94,56 @@ public class MarkdownImportService {
 			HighlightExtension.create()
 		));
 		return extensions;
+	}
+
+	/**
+	 * Build the CommonMark parser for the given markdown. The YAML front matter
+	 * extension consumes lines until a closing fence and silently swallows the
+	 * whole document when the fence is never closed. In that case the parser is
+	 * built without the extension, so the opening fence parses as a thematic
+	 * break and the content is imported as regular markdown (OO-9402).
+	 *
+	 * @param markdown The preprocessed markdown that will be parsed
+	 * @return a parser, without the front matter extension if the fence is unclosed
+	 */
+	static Parser buildParser(String markdown) {
+		return buildParser(hasUnclosedFrontMatter(markdown));
+	}
+
+	private static Parser buildParser(boolean unclosedFrontMatter) {
+		List<Extension> extensions = markdownExtensions();
+		if (unclosedFrontMatter) {
+			extensions.removeIf(YamlFrontMatterExtension.class::isInstance);
+		}
+		return Parser.builder()
+			.extensions(extensions)
+			.build();
+	}
+
+	/**
+	 * Detect a YAML front matter opening fence that is never closed. Mirrors the
+	 * fence handling of the CommonMark YamlFrontMatterExtension: the opening
+	 * fence must be the first content line of the document (leading blank lines
+	 * are allowed), the closing fence is a line starting with --- or ...
+	 *
+	 * @param markdown The markdown to check
+	 * @return true if an opening fence exists but no closing fence follows
+	 */
+	static boolean hasUnclosedFrontMatter(String markdown) {
+		String[] lines = markdown.split("\n", -1);
+		int first = 0;
+		while (first < lines.length && lines[first].isBlank()) {
+			first++;
+		}
+		if (first == lines.length || !FRONT_MATTER_BEGIN.matcher(lines[first]).matches()) {
+			return false;
+		}
+		for (int i = first + 1; i < lines.length; i++) {
+			if (FRONT_MATTER_END.matcher(lines[i]).matches()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Autowired
@@ -133,11 +193,14 @@ public class MarkdownImportService {
 		String withAdmonitions =
 			MarkdownMkDocsAdmonitionPreprocessor.preprocess(preprocessed.text());
 
-		// 2. Parse with CommonMark + GFM Tables
-		Parser parser = Parser.builder()
-			.extensions(markdownExtensions())
-			.build();
-		Node document = parser.parse(withAdmonitions);
+		// 2. Parse with CommonMark + GFM Tables. An unclosed YAML front matter
+		// fence would swallow the whole document, so parse without the front
+		// matter extension in that case and keep the content as plain markdown.
+		boolean unclosedFrontMatter = hasUnclosedFrontMatter(withAdmonitions);
+		if (unclosedFrontMatter) {
+			log.info("Unclosed YAML front matter fence in markdown import, importing fence and metadata as plain text");
+		}
+		Node document = buildParser(unclosedFrontMatter).parse(withAdmonitions);
 
 		// Extract image dimensions from ImageAttributes nodes BEFORE the visitor
 		// processes the tree (the HtmlRenderer strips ImageAttributes during rendering)
@@ -191,7 +254,11 @@ public class MarkdownImportService {
 			}
 		}
 
-		return new MarkdownImportResult(visitor.getWarnings(), effectiveContainer, visitor.getAiMetadataJobCount());
+		List<String> warnings = new ArrayList<>(visitor.getWarnings());
+		if (unclosedFrontMatter) {
+			warnings.add(0, "import.markdown.warn.frontmatter.unclosed");
+		}
+		return new MarkdownImportResult(warnings, effectiveContainer, visitor.getAiMetadataJobCount());
 	}
 
 	/**

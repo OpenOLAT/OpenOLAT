@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.commonmark.node.Node;
-import org.commonmark.parser.Parser;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PagePart;
@@ -52,15 +50,6 @@ import org.olat.modules.ceditor.model.jpa.TitlePart;
  */
 public class MarkdownPagePartVisitorTest {
 
-	private Parser parser;
-
-	@Before
-	public void setUp() {
-		parser = Parser.builder()
-			.extensions(MarkdownImportService.markdownExtensions())
-			.build();
-	}
-
 	private List<PagePart> convert(String markdown) {
 		return convert(markdown, Map.of());
 	}
@@ -76,7 +65,7 @@ public class MarkdownPagePartVisitorTest {
 	private VisitorResult convertWithWarnings(String markdown, Map<String, String> mathBlocks) {
 		// Mirror the service's preprocessing so !!! MkDocs admonitions are handled
 		String preprocessed = MarkdownMkDocsAdmonitionPreprocessor.preprocess(markdown);
-		Node document = parser.parse(preprocessed);
+		Node document = MarkdownImportService.buildParser(preprocessed).parse(preprocessed);
 		MarkdownPagePartVisitor visitor = new MarkdownPagePartVisitor(null, null, null, null, null, null, null, mathBlocks, null);
 		document.accept(visitor);
 		return new VisitorResult(visitor.getParts(), visitor.getWarnings());
@@ -256,6 +245,57 @@ public class MarkdownPagePartVisitorTest {
 		ParagraphPart para = (ParagraphPart) parts.get(0);
 		assertThat(para.getContent()).contains("Hello world");
 		assertThat(para.getContent()).doesNotContain("title");
+	}
+
+	@Test
+	public void testYamlFrontMatterClosedWithDots() {
+		List<PagePart> parts = convert("---\ntitle: My Page\n...\n\nHello world");
+
+		assertThat(parts).hasSize(1);
+		assertThat(parts.get(0)).isInstanceOf(ParagraphPart.class);
+		assertThat(((ParagraphPart) parts.get(0)).getContent()).contains("Hello world");
+	}
+
+	@Test
+	public void testYamlFrontMatterUnclosedFenceKeepsContent() {
+		// OO-9402 reopen: an opening fence without a closing fence must not
+		// swallow the document. Content of the tester's example file.
+		String markdown = "---\n"
+				+ "title: \"Fehlender schliessender Zaun\"\n"
+				+ "author: \"Test\"\n"
+				+ "\n"
+				+ "# Achtung: die YAML-Klammer oben wird NIE mit --- geschlossen\n"
+				+ "\n"
+				+ "Ein Absatz mit Inhalt, der auf jeden Fall erhalten bleiben soll.\n";
+
+		List<PagePart> parts = convert(markdown);
+
+		// Fence parses as thematic break, metadata lines as text, content preserved
+		assertThat(parts).hasSize(4);
+		assertThat(parts.get(0)).isInstanceOf(SpacerPart.class);
+		assertThat(parts.get(1)).isInstanceOf(ParagraphPart.class);
+		assertThat(((ParagraphPart) parts.get(1)).getContent()).contains("Fehlender schliessender Zaun");
+		assertThat(parts.get(2)).isInstanceOf(TitlePart.class);
+		assertThat(parts.get(3)).isInstanceOf(ParagraphPart.class);
+		assertThat(((ParagraphPart) parts.get(3)).getContent()).contains("erhalten bleiben soll");
+	}
+
+	@Test
+	public void testHasUnclosedFrontMatterDetection() {
+		// unclosed fence at document start
+		assertThat(MarkdownImportService.hasUnclosedFrontMatter("---\ntitle: x\nBody text")).isTrue();
+		// leading blank lines still count as document start
+		assertThat(MarkdownImportService.hasUnclosedFrontMatter("\n\n---\ntitle: x")).isTrue();
+		// single fence line only
+		assertThat(MarkdownImportService.hasUnclosedFrontMatter("---")).isTrue();
+		// properly closed with ---
+		assertThat(MarkdownImportService.hasUnclosedFrontMatter("---\ntitle: x\n---\nBody")).isFalse();
+		// properly closed with ... (alternative YAML end fence)
+		assertThat(MarkdownImportService.hasUnclosedFrontMatter("---\ntitle: x\n...\nBody")).isFalse();
+		// no front matter at all
+		assertThat(MarkdownImportService.hasUnclosedFrontMatter("# Title\n\nBody")).isFalse();
+		// fence not on first content line is not front matter
+		assertThat(MarkdownImportService.hasUnclosedFrontMatter("Text\n---\nMore")).isFalse();
 	}
 
 	@Test
