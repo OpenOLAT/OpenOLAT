@@ -481,7 +481,11 @@ public class CurriculumAutomationController extends FormBasicController {
 		}
 
 		private String plannedExecutionText(AutomationRuleRow row) {
-			return Objects.requireNonNullElse(formatter.formatDate(row.getPlannedExecution()), "-");
+			String plannedExecution = Objects.requireNonNullElse(formatter.formatDate(row.getPlannedExecution()), "-");
+			if (!row.isEnabled()) {
+				plannedExecution = "(" + plannedExecution + ")";
+			}
+			return plannedExecution;
 		}
 	}
 
