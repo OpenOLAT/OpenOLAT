@@ -144,7 +144,7 @@ public class ProjectController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(heading)) {
 			StaticTextElement headingEl = uifactory.addStaticTextElement("project-data", "wizard.edit_project.legend", "", formLayout);
 			headingEl.setElementCssClass("o_static_heading");
-			headingEl.setLabel(StringHelper.escapeHtml(heading), null, false);
+			headingEl.setLabel(heading, null, false);
 		}
 		
 		initProject(formLayout);

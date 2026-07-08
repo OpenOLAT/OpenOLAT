@@ -279,7 +279,7 @@ public class EditPersonController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(heading)) {
 			StaticTextElement headingEl = uifactory.addStaticTextElement("personal-data", "wizard.edit_person.title", "", formLayout);
 			headingEl.setElementCssClass("o_static_heading");
-			headingEl.setLabel(StringHelper.escapeHtml(heading), null, false);
+			headingEl.setLabel(heading, null, false);
 		}
 
 		titleEl = uifactory.addDropdownSingleselect("title", "edit.application.title", formLayout, titleKeys, titleValues, null);

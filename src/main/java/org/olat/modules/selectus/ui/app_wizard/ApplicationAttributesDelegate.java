@@ -291,9 +291,9 @@ public class ApplicationAttributesDelegate {
 			Locale locale) {
 		PositionAttributeDefinition definition = valueWithDefinition.getDefinition();
 		StaticTextElement element = uifactory.addStaticTextElement(elementId(definition), "custom.attribute", "", formLayout);
-		String label = StringHelper.escapeHtml(definition.getLabel(locale, true));
+		String label = definition.getLabel(locale, true);
 		element.setElementCssClass("o_static_heading");
-		element.setLabel(label, null, false);
+		element.setLabel(StringHelper.escapeHtml(label), null, false);
 		valueWithDefinition.setPrimaryItem(element);
 		return element;
 	}
@@ -352,7 +352,7 @@ public class ApplicationAttributesDelegate {
 		element.setPlaceholderText(placeholder);
 		element.setUserObject(valueWithDefinition);
 		String label = definition.getLabel(locale, true);
-		element.setLabel(label, null, false);
+		element.setLabel(StringHelper.escapeHtml(label), null, false);
 		element.setEnabled(editable);
 		valueWithDefinition.setPrimaryItem(element);
 		return element;
@@ -448,7 +448,7 @@ public class ApplicationAttributesDelegate {
 		element.setMandatory(definition.isMandatory() && !admin);
 		element.setUserObject(valueWithDefinition);
 		String label = definition.getLabel(locale, true);
-		element.setLabel(label, null, false);
+		element.setLabel(StringHelper.escapeHtml(label), null, false);
 		element.setEnabled(editable);
 		valueWithDefinition.setPrimaryItem(element);
 		
@@ -479,7 +479,7 @@ public class ApplicationAttributesDelegate {
 		element.setPlaceholderText(placeholder);
 		element.setUserObject(valueWithDefinition);
 		String label = definition.getLabel(locale, true);
-		element.setLabel(label, null, false);
+		element.setLabel(StringHelper.escapeHtml(label), null, false);
 		element.setEnabled(editable);
 		valueWithDefinition.setPrimaryItem(element);
 		
@@ -652,7 +652,7 @@ public class ApplicationAttributesDelegate {
 		element.setAllowNoSelection(true);
 		element.setUserObject(valueWithDefinition);
 		String label = definition.getLabel(locale, true);
-		element.setLabel(label, null, false);
+		element.setLabel(StringHelper.escapeHtml(label), null, false);
 		element.setEnabled(editable);
 		valueWithDefinition.setPrimaryItem(element);
 		
@@ -958,7 +958,7 @@ public class ApplicationAttributesDelegate {
 				String content = getContent(definition, value, locale, true);
 				StaticTextElement element = uifactory.addStaticTextElement("add_details_" + definition.getKey(), "custom.attribute",
 						content, currentContainer);
-				element.setLabel(definition.getLabel(locale, true), null, false);
+				element.setLabel(StringHelper.escapeHtml(definition.getLabel(locale, true)), null, false);
 				if(lineSeparator) {
 					element.setElementCssClass("o_line_separator");
 				}
@@ -972,7 +972,7 @@ public class ApplicationAttributesDelegate {
 				currentContainer = FormLayoutContainer.createTableCondensedLayout(containerId, formLayout.getTranslator());
 				currentContainer.setRootForm(mainForm);
 				formLayout.add(currentContainer);
-				currentContainer.setFormTitle(title);
+				currentContainer.setFormTitle(StringHelper.escapeHtml(title));
 				containers.add(currentContainer);
 				lastElement = null;
 				lineSeparator = false;

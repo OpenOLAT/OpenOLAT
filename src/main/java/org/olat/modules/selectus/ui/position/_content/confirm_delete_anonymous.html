@@ -1,9 +1,9 @@
 <fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
 	<div class="dialog">
 		<div class="o_warning">
-			<p>$message</p>
+			<p>$r.xssScan($message)</p>
 			#if($r.isNotEmpty($messageAdd))
-			<p>$messageAdd</p>
+			<p>$r.xssScan($messageAdd)</p>
 			#end
 		</div>
 	</div>

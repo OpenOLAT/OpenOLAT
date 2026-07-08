@@ -1,7 +1,7 @@
 #if($r.isNotEmpty($msg))
-	<div>$msg</div>
+	<div>$r.xssScan($msg)</div>
 #else
-	<div class="o_error" role="alert">$warningMsg</div>
+	<div class="o_error" role="alert">$r.xssScan($warningMsg)</div>
 #end
 <div class="o_button_group">
 	$r.render("delete")
