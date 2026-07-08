@@ -127,10 +127,9 @@ public class EditCurriculumAutomationController extends FormBasicController {
 				? "automation.relative.date.implementation"
 				: "automation.relative.date.element";
 		executionPeriodCont.setLabel(relativeDateLabelKey, null);
-		ExecutionPeriodRelativeDateContext relativeDateContext = new ExecutionPeriodRelativeDateContext(
-				getTranslator(),
-				element != null ? element.getBeginDate() : null,
-				element != null ? element.getEndDate() : null);
+		ExecutionPeriodRelativeDateContext relativeDateContext = element != null
+				? ExecutionPeriodRelativeDateContext.of(getTranslator(), element)
+				: ExecutionPeriodRelativeDateContext.noExecutionPeriod(getTranslator());
 		relativeDateEl = uifactory.addRelativeDateElement("automation.relative.date", null,
 				executionPeriodCont, getWindowControl(), relativeDateContext);
 		relativeDateEl.setAriaLabel(translate(relativeDateLabelKey));

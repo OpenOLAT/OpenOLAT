@@ -124,7 +124,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		this.confirmationByManagerSupported = confirmationByManagerSupported;
 		this.catalogInfo = catalogInfo;
 		this.edit = edit;
-		this.relDateContext = new ExecutionPeriodRelativeDateContext(getTranslator(), catalogInfo.getStartDate(), catalogInfo.getEndDate());
+		this.relDateContext = ExecutionPeriodRelativeDateContext.of(getTranslator(), catalogInfo.getStartDate(), catalogInfo.getEndDate());
 	}
 	
 	@Override

@@ -166,8 +166,9 @@ public class RelativeDatePickerController extends FormBasicController {
 		boolean hasOffset = offsetToggleEl.isOn();
 		offsetRowCont.setVisible(hasOffset);
 		unitEl.setVisible(hasOffset);
-		calculatedEl.setVisible(hasOffset);
-		if (hasOffset) {
+		boolean showCalculated = hasOffset && context.isResolvedDateVisible();
+		calculatedEl.setVisible(showCalculated);
+		if (showCalculated) {
 			updateCalculatedDate();
 		}
 	}

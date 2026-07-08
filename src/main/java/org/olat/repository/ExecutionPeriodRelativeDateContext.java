@@ -26,6 +26,8 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 
 /**
  * {@link org.olat.core.gui.components.date.RelativeDateContext} for dates
@@ -46,19 +48,39 @@ public class ExecutionPeriodRelativeDateContext extends AbstractRelativeDateCont
 
 	private final Date beginDate;
 	private final Date endDate;
+	private final boolean showResolvedDate;
 
-	/**
-	 * @param callerTranslator translator from the calling controller or component;
-	 *                         its locale is used for formatting and its package
-	 *                         chain is used as fallback for caller-specific unit
-	 *                         keys (e.g. {@code offer.unit.days})
-	 * @param beginDate        begin of the execution period; {@code null} if not set
-	 * @param endDate          end of the execution period; {@code null} if not set
-	 */
-	public ExecutionPeriodRelativeDateContext(Translator callerTranslator, Date beginDate, Date endDate) {
+	private ExecutionPeriodRelativeDateContext(Translator callerTranslator, Date beginDate, Date endDate, boolean showResolvedDate) {
 		super(Util.createPackageTranslator(ExecutionPeriodRelativeDateContext.class, callerTranslator.getLocale(), callerTranslator));
 		this.beginDate = beginDate;
 		this.endDate = endDate;
+		this.showResolvedDate = showResolvedDate;
+	}
+
+	public static ExecutionPeriodRelativeDateContext of(Translator callerTranslator, RepositoryEntry entry) {
+		RepositoryEntryLifecycle lifecycle = entry != null ? entry.getLifecycle() : null;
+		return of(callerTranslator,
+				lifecycle != null ? lifecycle.getValidFrom() : null,
+				lifecycle != null ? lifecycle.getValidTo() : null);
+	}
+
+	public static ExecutionPeriodRelativeDateContext of(Translator callerTranslator, CurriculumElement element) {
+		return of(callerTranslator,
+				element != null ? element.getBeginDate() : null,
+				element != null ? element.getEndDate() : null);
+	}
+
+	public static ExecutionPeriodRelativeDateContext of(Translator callerTranslator, Date beginDate, Date endDate) {
+		return new ExecutionPeriodRelativeDateContext(callerTranslator, beginDate, endDate, true);
+	}
+
+	public static ExecutionPeriodRelativeDateContext noExecutionPeriod(Translator callerTranslator) {
+		return new ExecutionPeriodRelativeDateContext(callerTranslator, null, null, false);
+	}
+
+	@Override
+	public boolean isResolvedDateVisible() {
+		return showResolvedDate;
 	}
 
 	@Override
@@ -81,17 +103,22 @@ public class ExecutionPeriodRelativeDateContext extends AbstractRelativeDateCont
 
 	@Override
 	public SelectionValues getReferenceSelectionValues() {
-		Formatter fmt = Formatter.getInstance(getTranslator().getLocale());
-		String noDateIcon = getTranslator().translate("relative.date.no.date.with.icon");
 		SelectionValues sv = new SelectionValues();
-		sv.add(SelectionValues.entry(BEGIN,
-				beginDate != null
-						? getTranslator().translate("relative.date.exec.period.begin.with.date", fmt.formatDate(beginDate))
-						: getTranslator().translate("relative.date.exec.period.begin.no.date", noDateIcon)));
-		sv.add(SelectionValues.entry(END,
-				endDate != null
-						? getTranslator().translate("relative.date.exec.period.end.with.date", fmt.formatDate(endDate))
-						: getTranslator().translate("relative.date.exec.period.end.no.date", noDateIcon)));
+		if (!showResolvedDate) {
+			sv.add(SelectionValues.entry(BEGIN, getTranslator().translate("relative.date.exec.period.begin.plain")));
+			sv.add(SelectionValues.entry(END, getTranslator().translate("relative.date.exec.period.end.plain")));
+		} else {
+			Formatter fmt = Formatter.getInstance(getTranslator().getLocale());
+			String noDateIcon = getTranslator().translate("relative.date.no.date.with.icon");
+			sv.add(SelectionValues.entry(BEGIN,
+					beginDate != null
+							? getTranslator().translate("relative.date.exec.period.begin.with.date", fmt.formatDate(beginDate))
+							: getTranslator().translate("relative.date.exec.period.begin.no.date", noDateIcon)));
+			sv.add(SelectionValues.entry(END,
+					endDate != null
+							? getTranslator().translate("relative.date.exec.period.end.with.date", fmt.formatDate(endDate))
+							: getTranslator().translate("relative.date.exec.period.end.no.date", noDateIcon)));
+		}
 		return sv;
 	}
 
