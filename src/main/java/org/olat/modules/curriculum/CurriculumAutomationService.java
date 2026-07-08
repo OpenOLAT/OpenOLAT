@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum;
 
+import java.util.Date;
+
 /**
  * Initial date: 2026-06-26<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
@@ -28,5 +30,7 @@ public interface CurriculumAutomationService {
 	public void execute();
 
 	public CurriculumAutomationConfig getDefaultConfig(boolean implOnly, int maxRepositoryEntryRelations);
+
+	public Date computeTriggerDate(CurriculumElement element, CurriculumAutomationRule rule);
 
 }

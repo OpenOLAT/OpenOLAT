@@ -42,6 +42,7 @@ import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.AutomationContext;
 import org.olat.modules.curriculum.AutomationDependingOn;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -64,12 +65,14 @@ public class EditCurriculumAutomationController extends FormBasicController {
 
 	private final CurriculumAutomationRule rule;
 	private final boolean implType;
+	private final CurriculumElement element;
 
 	public EditCurriculumAutomationController(UserRequest ureq, WindowControl wControl,
-			CurriculumAutomationRule rule, boolean implementationType) {
+			CurriculumAutomationRule rule, boolean implementationType, CurriculumElement element) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(RepositoryEntryStatusEnum.class, getLocale(), getTranslator()));
 		this.rule = rule;
+		this.element = element;
 		AutomationContext context = rule.getContext();
 		this.implType = context == AutomationContext.IMPLEMENTATION
 				|| (context == AutomationContext.CONTENT && implementationType);
@@ -124,8 +127,10 @@ public class EditCurriculumAutomationController extends FormBasicController {
 				? "automation.relative.date.implementation"
 				: "automation.relative.date.element";
 		executionPeriodCont.setLabel(relativeDateLabelKey, null);
-		ExecutionPeriodRelativeDateContext relativeDateContext =
-				new ExecutionPeriodRelativeDateContext(getTranslator(), null, null);
+		ExecutionPeriodRelativeDateContext relativeDateContext = new ExecutionPeriodRelativeDateContext(
+				getTranslator(),
+				element != null ? element.getBeginDate() : null,
+				element != null ? element.getEndDate() : null);
 		relativeDateEl = uifactory.addRelativeDateElement("automation.relative.date", null,
 				executionPeriodCont, getWindowControl(), relativeDateContext);
 		relativeDateEl.setAriaLabel(translate(relativeDateLabelKey));

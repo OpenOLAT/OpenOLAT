@@ -137,7 +137,8 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 		return element;
 	}
 
-	Date computeTriggerDate(CurriculumElement element, CurriculumAutomationRule rule) {
+	@Override
+	public Date computeTriggerDate(CurriculumElement element, CurriculumAutomationRule rule) {
 		Date referenceDate;
 		String ref = rule.getReference();
 		if (ref != null) {

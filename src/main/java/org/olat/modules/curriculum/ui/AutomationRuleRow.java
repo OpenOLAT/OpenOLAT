@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.olat.core.gui.components.date.OffsetDirection;
@@ -37,6 +38,7 @@ import org.olat.modules.curriculum.CurriculumAutomationRule;
 public class AutomationRuleRow {
 
 	private final CurriculumAutomationRule rule;
+	private Date plannedExecution;
 	private FormToggle ruleEnabledEl;
 	private FormLink toolsLink;
 
@@ -86,6 +88,14 @@ public class AutomationRuleRow {
 
 	public Set<String> getOnlyWhenStatus() {
 		return rule.getOnlyWhenStatus();
+	}
+
+	public Date getPlannedExecution() {
+		return plannedExecution;
+	}
+
+	public void setPlannedExecution(Date plannedExecution) {
+		this.plannedExecution = plannedExecution;
 	}
 
 	public FormToggle getRuleEnabledEl() {

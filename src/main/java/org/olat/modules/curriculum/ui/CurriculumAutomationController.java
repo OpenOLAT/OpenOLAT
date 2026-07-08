@@ -20,7 +20,9 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -63,16 +65,21 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.AutomationContext;
 import org.olat.modules.curriculum.AutomationDependingOn;
 import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
+import org.olat.modules.curriculum.CurriculumAutomationService;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.component.AutomationContextCellRenderer;
 import org.olat.modules.curriculum.ui.component.AutomationTargetStatusCellRenderer;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Reusable form controller for the automation rules table. Intended to be embedded as a
@@ -106,6 +113,11 @@ public class CurriculumAutomationController extends FormBasicController {
 
 	private CurriculumAutomationConfig automationConfig;
 	private final AutomationFormConfig formConfig;
+
+	@Autowired
+	private CurriculumAutomationService automationService;
+	@Autowired
+	private CurriculumService curriculumService;
 
 	public CurriculumAutomationController(UserRequest ureq, WindowControl wControl,
 			Form rootForm, AutomationFormConfig formConfig) {
@@ -181,6 +193,9 @@ public class CurriculumAutomationController extends FormBasicController {
 				new AutomationTargetStatusCellRenderer(getTranslator(), true)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.condition));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.statusIs));
+		if (formConfig.automationElement() != null) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.plannedExecution));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.rule));
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(AutomationCols.tools));
 
@@ -253,6 +268,9 @@ public class CurriculumAutomationController extends FormBasicController {
 
 	private AutomationRuleRow forgeAutomationRow(CurriculumAutomationRule rule) {
 		AutomationRuleRow row = new AutomationRuleRow(rule);
+		if (formConfig.automationElement() != null && rule.getDependingOn() != AutomationDependingOn.STATUS) {
+			row.setPlannedExecution(automationService.computeTriggerDate(formConfig.automationElement(), rule));
+		}
 		FormToggle ruleEl = uifactory.addToggleButton("rule_" + (++automationRowCount), null,
 				translate("on"), translate("off"), null);
 		ruleEl.toggle(rule.isEnabled());
@@ -286,7 +304,11 @@ public class CurriculumAutomationController extends FormBasicController {
 	}
 
 	private void doEditRule(UserRequest ureq, CurriculumAutomationRule rule) {
-		editRuleCtrl = new EditCurriculumAutomationController(ureq, getWindowControl(), rule, formConfig.implType());
+		CurriculumElement element = formConfig.automationElement();
+		if (element != null) {
+			element = curriculumService.getCurriculumElement(element);
+		}
+		editRuleCtrl = new EditCurriculumAutomationController(ureq, getWindowControl(), rule, formConfig.implType(), element);
 		listenTo(editRuleCtrl);
 		String title = translate("automation.rule.edit.title");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editRuleCtrl.getInitialComponent(),
@@ -341,6 +363,7 @@ public class CurriculumAutomationController extends FormBasicController {
 			}
 		} else if (source instanceof FormToggle tg && tg.getUserObject() instanceof AutomationRuleRow r) {
 			r.getRule().setEnabled(tg.isOn());
+			automationTable.reset(false, false, false);
 			fireEvent(ureq, FormEvent.CHANGED_EVENT);
 		} else if (source instanceof FormLink link && "tools".equals(link.getCmd())
 				&& link.getUserObject() instanceof AutomationRuleRow r) {
@@ -367,6 +390,7 @@ public class CurriculumAutomationController extends FormBasicController {
 		private static final AutomationCols[] COLS = AutomationCols.values();
 
 		private final Translator translator;
+		private final Formatter formatter;
 		private List<AutomationRuleRow> backupRows = List.of();
 
 		public AutomationRuleTableModel(FlexiTableColumnModel columnsModel, Translator translator) {
@@ -375,6 +399,7 @@ public class CurriculumAutomationController extends FormBasicController {
 					translator.getLocale(), translator);
 			this.translator = Util.createPackageTranslator(RepositoryEntryStatusEnum.class,
 					translator.getLocale(), withDate);
+			this.formatter = Formatter.getInstance(getLocale());
 		}
 
 		public List<AutomationRuleRow> getBackupRows() {
@@ -437,6 +462,7 @@ public class CurriculumAutomationController extends FormBasicController {
 				case targetStatus -> ruleRow.getTargetStatus();
 				case condition -> conditionText(ruleRow.getRule());
 				case statusIs -> joinStatuses(ruleRow.getRule().getOnlyWhenStatus());
+				case plannedExecution -> plannedExecutionText(ruleRow);
 				case rule -> ruleRow.getRuleEnabledEl();
 				case tools -> ruleRow.getToolsLink();
 			};
@@ -468,8 +494,9 @@ public class CurriculumAutomationController extends FormBasicController {
 				return "-";
 			}
 			String sep = " " + translator.translate("automation.condition.status.or") + " ";
-			String joined = statuses.stream()
-					.map(s -> "\"" + CurriculumUIFactory.translateAutomationStatus(getTranslator(), s) + "\"")
+			String joined = Arrays.stream(CurriculumElementStatus.values())
+					.filter(s -> statuses.contains(s.name()))
+					.map(s -> "\"" + CurriculumUIFactory.translateAutomationStatus(getTranslator(), s.name()) + "\"")
 					.collect(Collectors.joining(sep));
 			return translator.translate("automation.condition.status", new String[] { joined });
 		}
@@ -478,9 +505,14 @@ public class CurriculumAutomationController extends FormBasicController {
 			if (statuses == null || statuses.isEmpty()) {
 				return "-";
 			}
-			return statuses.stream()
-					.map(s -> CurriculumUIFactory.translateAutomationStatus(getTranslator(), s))
+			return Arrays.stream(CurriculumElementStatus.values())
+					.filter(s -> statuses.contains(s.name()))
+					.map(s -> CurriculumUIFactory.translateAutomationStatus(getTranslator(), s.name()))
 					.collect(Collectors.joining(", "));
+		}
+
+		private String plannedExecutionText(AutomationRuleRow row) {
+			return Objects.requireNonNullElse(formatter.formatDate(row.getPlannedExecution()), "-");
 		}
 	}
 
@@ -490,6 +522,7 @@ public class CurriculumAutomationController extends FormBasicController {
 		targetStatus("automation.col.target.status"),
 		condition("automation.col.condition"),
 		statusIs("automation.col.status.is"),
+		plannedExecution("automation.col.planned.execution"),
 		rule("automation.col.rule"),
 		tools("action");
 

@@ -96,7 +96,8 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 				true,
 				initialConfig,
 				true,
-				null);
+				null,
+				element);
 		automationCtrl = new CurriculumAutomationController(ureq, getWindowControl(), mainForm, cfg);
 		listenTo(automationCtrl);
 		formLayout.add(automationCtrl.getInitialFormItem());
