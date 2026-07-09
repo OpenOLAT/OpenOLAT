@@ -303,6 +303,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private final boolean lectureManagementManaged;
 	private final boolean authorizedAbsenceEnabled;
 	private final boolean taxonomyEnabled;
+	private Translator taxonomyTranslator;
 	private final CurriculumElement curriculumElement;
 	private final LecturesSecurityCallback secCallback;
 	private final LectureListRepositoryConfig config;
@@ -364,6 +365,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		taxonomyEnabled = taxonomyModule.isEnabled() && !curriculumModule.getTaxonomyRefs().isEmpty();
+		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
 		
 		initForm(ureq);
 		updateUI();
@@ -385,6 +387,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		taxonomyEnabled = taxonomyModule.isEnabled() && !curriculumModule.getTaxonomyRefs().isEmpty();
+		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
 		
 		initForm(ureq);
 		updateUI();
@@ -407,6 +410,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		taxonomyEnabled = taxonomyModule.isEnabled() && !curriculumModule.getTaxonomyRefs().isEmpty();
+		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
 		
 		initForm(ureq);
 		updateUI();
@@ -429,6 +433,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		taxonomyEnabled = taxonomyModule.isEnabled() && !curriculumModule.getTaxonomyRefs().isEmpty();
+		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
 		
 		initForm(ureq);
 		updateUI();
@@ -1082,8 +1087,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			for (TaxonomyLevel taxonomyLevel : row.getSubjects()) {
 				taxonomyLevel.getIdentifier(); // fetch taxonomy levels now to avoid reloading them later
 			}
+			row.setSubjectsLabel(TaxonomyUIFactory.getTags(taxonomyTranslator, row.getSubjects()));
 		} else {
 			row.setSubjects(List.of());
+			row.setSubjectsLabel("");
 		}
 		
 		if(config.withOnlineMeeting() != Visibility.NO) {

@@ -600,6 +600,12 @@ tr.o_rm_room_preselected {
 			padding-top: 0;
 		}
 	}
+	
+	&.o_lecture_timeline_details {
+		.o_lecture_subjects {
+			margin-top: 0;
+		}
+	}
 }
 
 .o_metadata_horizontal {
@@ -676,6 +682,12 @@ tr.o_rm_room_preselected {
 		.o_metadata_horizontal {
 			flex-direction: column;
 		}
+	}
+}
+
+.o_lectures_list {
+	.o_vertical_timeline_item_details {
+		background-color: #fff;
 	}
 }
 

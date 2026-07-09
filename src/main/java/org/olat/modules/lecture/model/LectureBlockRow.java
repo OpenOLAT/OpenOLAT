@@ -83,6 +83,7 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	private final ZonedDateTime date;
 	private final Translator translator;
 	private List<TaxonomyLevel> subjects;
+	private String subjectsLabel;
 	private List<Room> rooms;
 
 	public LectureBlockRow(LectureBlock lectureBlock, ZonedDateTime date,
@@ -393,6 +394,14 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 
 	public void setSubjects(List<TaxonomyLevel> subjects) {
 		this.subjects = subjects;
+	}
+
+	public String getSubjectsLabel() {
+		return subjectsLabel;
+	}
+
+	public void setSubjectsLabel(String subjectsLabel) {
+		this.subjectsLabel = subjectsLabel;
 	}
 
 	public List<Room> getRooms() {

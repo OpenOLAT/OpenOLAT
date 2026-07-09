@@ -28,7 +28,11 @@
 			#end
 		</div>
 	</div>
-	
+
+	#if($r.isNotEmpty($row.subjectsLabel))
+	<div class="o_lecture_subjects">$row.subjectsLabel</div>
+	#end
+
 	<div class="o_two_col_metadata o_block">
 		<div>
 			<span>$r.formatTimeShort($row.startDate) - $r.formatTimeShort($row.endDate)
