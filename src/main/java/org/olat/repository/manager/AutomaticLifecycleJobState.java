@@ -28,5 +28,11 @@ package org.olat.repository.manager;
 public interface AutomaticLifecycleJobState {
 	
 	boolean isInterrupted();
+	
+	void updateClosedCourse(int num, int total);
+	
+	void updateDeletedCourse(int num, int total);
+	
+	void updateDefinitivelyDeletedCourse(int num, int total);
 
 }

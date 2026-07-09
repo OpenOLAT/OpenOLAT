@@ -689,7 +689,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_repo_status_published { @include o-add-icon('check');}
 .o_icon_repo_status_closed { @include o-add-icon('ban');}
 .o_icon_repo_status_trash { @include o-add-icon('trash-can', false);}
-.o_icon_repo_status_deleted { @include o-add-icon('trash-can', false);}
+.o_icon_repo_status_deleted { @include o-add-icon('circle-xmark', true);}
 
 /* Business group icon */
 .o_icon_businessgroup_status_active { @include o-add-icon('check');}

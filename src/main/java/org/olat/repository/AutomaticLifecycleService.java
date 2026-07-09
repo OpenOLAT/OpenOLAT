@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.repository.manager.AutomaticLifecycleJobState;
+import org.olat.repository.model.AutomaticLifecycleInfos;
 
 /**
  * 
@@ -43,5 +44,7 @@ public interface AutomaticLifecycleService {
 	List<RepositoryEntry> getRepositoryEntriesToDelete(Date date);
 	
 	List<RepositoryEntry> getRepositoryEntriesToDefinitivelyDelete(Date date);
+	
+	AutomaticLifecycleInfos getLifecycleInfos(Date date);
 
 }

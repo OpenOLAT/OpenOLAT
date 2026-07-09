@@ -48,6 +48,7 @@ import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.AutomaticLifecycleInfos;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,9 +82,10 @@ public class AutomaticLifecycleServiceImpl implements AutomaticLifecycleService 
 	public void close(AutomaticLifecycleJobState state) {
 		String autoClose = repositoryModule.getLifecycleAutoClose();
 		if(StringHelper.containsNonWhitespace(autoClose)) {
+			int count = 0;
 			RepositoryEntryLifeCycleValue autoCloseVal = RepositoryEntryLifeCycleValue.parse(autoClose);
 			Date markerDate = autoCloseVal.limitDate(new Date());
-			List<RepositoryEntry> entriesToClose = this.getRepositoryEntriesToClose(markerDate);
+			List<RepositoryEntry> entriesToClose = getRepositoryEntriesToClose(markerDate);
 			for(RepositoryEntry entry:entriesToClose) {
 				if(state.isInterrupted() || !repositoryModule.isLifecycleAutoCloseEnabled()) {
 					break;
@@ -93,6 +95,7 @@ public class AutomaticLifecycleServiceImpl implements AutomaticLifecycleService 
 					log.info(Tracing.M_AUDIT, "Automatic closing {}: {} [{}]", entry.getResourceableTypeName(), entry.getDisplayname(), entry.getKey());
 					repositoryService.closeRepositoryEntry(entry, null, false);
 					dbInstance.commit();
+					state.updateClosedCourse(++count, entriesToClose.size());
 				} catch (Exception e) {
 					log.error("",  e);
 					dbInstance.commitAndCloseSession();
@@ -105,6 +108,7 @@ public class AutomaticLifecycleServiceImpl implements AutomaticLifecycleService 
 	public void delete(AutomaticLifecycleJobState state) {
 		String autoDelete = repositoryModule.getLifecycleAutoDelete();
 		if(StringHelper.containsNonWhitespace(autoDelete)) {
+			int count = 0;
 			RepositoryEntryLifeCycleValue autoDeleteVal = RepositoryEntryLifeCycleValue.parse(autoDelete);
 			Date markerDate = autoDeleteVal.limitDate(new Date());
 			List<RepositoryEntry> entriesToDelete = getRepositoryEntriesToDelete(markerDate);
@@ -117,6 +121,7 @@ public class AutomaticLifecycleServiceImpl implements AutomaticLifecycleService 
 					log.info(Tracing.M_AUDIT, "Automatic deleting (soft) {}: {} [{}]", entry.getResourceableTypeName(), entry.getDisplayname(), entry.getKey() );
 					repositoryService.deleteSoftly(entry, null, false, false);
 					dbInstance.commit();
+					state.updateDeletedCourse(++count, entriesToDelete.size());
 				} catch (Exception e) {
 					log.error("",  e);
 					dbInstance.commitAndCloseSession();
@@ -129,6 +134,7 @@ public class AutomaticLifecycleServiceImpl implements AutomaticLifecycleService 
 	public void definitivelyDelete(AutomaticLifecycleJobState state) {
 		String autoDefinitivelyDelete = repositoryModule.getLifecycleAutoDefinitivelyDelete();
 		if(StringHelper.containsNonWhitespace(autoDefinitivelyDelete)) {
+			int count = 0;
 			RepositoryEntryLifeCycleValue autoDefinitivelyDeleteVal = RepositoryEntryLifeCycleValue.parse(autoDefinitivelyDelete);
 			Date markerDate = autoDefinitivelyDeleteVal.limitDate(new Date());
 			List<RepositoryEntry> entriesToDelete = getRepositoryEntriesToDefinitivelyDelete(markerDate);
@@ -139,6 +145,7 @@ public class AutomaticLifecycleServiceImpl implements AutomaticLifecycleService 
 				
 				try {
 					definitivelyDelete(entry);
+					state.updateDefinitivelyDeletedCourse(++count, entriesToDelete.size());
 				} catch (Exception e) {
 					log.error("",  e);
 					dbInstance.commitAndCloseSession();
@@ -188,6 +195,40 @@ public class AutomaticLifecycleServiceImpl implements AutomaticLifecycleService 
 		return administrator;
 	}
 	
+	@Override
+	public AutomaticLifecycleInfos getLifecycleInfos(Date date) {
+		List<RepositoryEntry> toClose;
+		String autoClose = repositoryModule.getLifecycleAutoClose();
+		if(StringHelper.containsNonWhitespace(autoClose)) {
+			RepositoryEntryLifeCycleValue autoCloseVal = RepositoryEntryLifeCycleValue.parse(autoClose);
+			Date markerDate = autoCloseVal.limitDate(new Date());
+			toClose = getRepositoryEntriesToClose(markerDate);
+		} else {
+			toClose = List.of();
+		}
+		
+		List<RepositoryEntry> toDelete;
+		String autoDelete = repositoryModule.getLifecycleAutoDelete();
+		if(StringHelper.containsNonWhitespace(autoDelete)) {
+			RepositoryEntryLifeCycleValue autoDeleteVal = RepositoryEntryLifeCycleValue.parse(autoDelete);
+			Date markerDate = autoDeleteVal.limitDate(new Date());
+			toDelete = getRepositoryEntriesToDelete(markerDate);
+		} else {
+			toDelete = List.of();
+		}
+		
+		List<RepositoryEntry> toDefinitivelyDelete;
+		String autoDefinitivelyDelete = repositoryModule.getLifecycleAutoDefinitivelyDelete();
+		if(StringHelper.containsNonWhitespace(autoDefinitivelyDelete)) {
+			RepositoryEntryLifeCycleValue autoDefinitivelyDeleteVal = RepositoryEntryLifeCycleValue.parse(autoDefinitivelyDelete);
+			Date markerDate = autoDefinitivelyDeleteVal.limitDate(new Date());
+			toDefinitivelyDelete = getRepositoryEntriesToDefinitivelyDelete(markerDate);
+		} else {
+			toDefinitivelyDelete = List.of();
+		}
+		return new AutomaticLifecycleInfos(0, toClose.size(), 0, toDelete.size(), 0, toDefinitivelyDelete.size());
+	}
+
 	@Override
 	public List<RepositoryEntry> getRepositoryEntriesToClose(Date date) {
 		List<RepositoryEntry> entriesToClose = getRepositoryEntries(date, RepositoryEntryStatusEnum.preparationToPublished());

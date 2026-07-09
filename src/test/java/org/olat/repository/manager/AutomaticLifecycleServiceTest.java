@@ -360,5 +360,20 @@ public class AutomaticLifecycleServiceTest extends OlatTestCase {
 		public boolean isInterrupted() {
 			return false;
 		}
+
+		@Override
+		public void updateClosedCourse(int num, int total) {
+			//
+		}
+
+		@Override
+		public void updateDeletedCourse(int num, int total) {
+			//
+		}
+
+		@Override
+		public void updateDefinitivelyDeletedCourse(int num, int total) {
+			//
+		}
 	}
 }

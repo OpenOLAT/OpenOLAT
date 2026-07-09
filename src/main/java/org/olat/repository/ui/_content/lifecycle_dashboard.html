@@ -1,0 +1,26 @@
+<fieldset class="o_form form-horizontal">
+	<legend>$r.translate("configuration.lifecycle.title")</legend>
+	<div class="o_info_with_icon clearfix">
+		<h4>$r.translate("configuration.overview.title")</h4>
+		<div class="form-group clearfix">
+			<label class="control-label col-sm-3" for="o_lc_sub_process">$r.translate("configuration.sub.processes")</label>
+			<div class="col-sm-9 o_form_cell" id="o_lc_sub_process"><div class="form-control-static">$r.escapeHtml($subProcess)</div></div>
+		</div>
+		<div class="form-group clearfix">
+			<label class="control-label col-sm-3" for="o_lc_execution_time">$r.translate("configuration.execution.time")</label>
+			<div class="col-sm-9 o_form_cell" id="o_lc_execution_time"><div class="form-control-static">$r.escapeHtml($executionItem)</div></div>
+		</div>
+		#if($r.isNotEmpty($nextFire))
+		<div class="form-group clearfix">
+			<label class="control-label col-sm-3" for="o_lc_next_fire">$r.translate("configuration.next.fire")</label>
+			<div class="col-sm-9 o_form_cell" id="o_lc_next_fire"><div class="form-control-static">$r.escapeHtml($nextFire)</div></div>
+		</div>
+		#end
+		#if($r.isNotEmpty($lastFire))
+		<div class="form-group clearfix">
+			<label class="control-label col-sm-3" for="o_lc_last_fire">$r.translate("configuration.last.fire")</label>
+			<div class="col-sm-9 o_form_cell" id="o_lc_last_fire"><div class="form-control-static">$r.escapeHtml($lastFire)</div></div>
+		</div>
+		#end
+	</div>
+</fieldset>
