@@ -152,6 +152,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		//draggable
 		if(ftE.getColumnIndexForDragAndDropLabel() > 0) {
 			sb.append("<script>")
+			  .append("\"use strict\";")
 			  .append("jQuery(function() {\n")
 			  .append(" jQuery('.o_table_flexi table tr').draggable({\n")
 	          .append("  containment: '#o_main',\n")
@@ -159,7 +160,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	          .append("  cursorAt: {left: 0, top: 0},\n")
 	          .append("  accept: function(event,ui){ return true; },\n")
 	          .append("  helper: function(event,ui,zt) {\n")
-	          .append("    var helperText = jQuery(this).children('.o_dnd_label').text();\n")
+	          .append("    let helperText = jQuery(this).children('.o_dnd_label').text();\n")
+	          .append("    helperText = helperText.replaceAll('<','&lt;').replaceAll('>','&gt;');\n")
 	          .append("    return jQuery(\"<div class='ui-widget-header o_table_drag'>\" + helperText + \"</div>\").appendTo('body').css('zIndex',5).show();\n")
 	          .append("  }\n")
 	          .append("});\n")
