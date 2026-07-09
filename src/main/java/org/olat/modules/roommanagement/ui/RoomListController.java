@@ -255,7 +255,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		if (tabDeleted != null && tabDeleted.equals(selectedTab)) {
 			return List.of(RoomStatus.deleted);
 		} else if (tabAll != null && tabAll.equals(selectedTab)) {
-			return List.of(RoomStatus.active, RoomStatus.inactive);
+			return List.of(RoomStatus.active, RoomStatus.inactive, RoomStatus.deleted);
 		}
 		return List.of(RoomStatus.active);
 	}
@@ -347,12 +347,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
-		tabAll = FlexiFiltersTabFactory.tabWithFilters(
+		tabAll = FlexiFiltersTabFactory.tab(
 				TAB_ID_ALL,
 				translate("room.filter.all"),
-				TabSelectionBehavior.reloadData,
-				List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-						List.of(RoomStatus.active.name(), RoomStatus.inactive.name()))));
+				TabSelectionBehavior.reloadData);
 		tabs.add(tabAll);
 
 		tabRelevant = FlexiFiltersTabFactory.tabWithImplicitFilters(
@@ -400,18 +398,26 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			params.setSearchString(searchString);
 		}
 
-		List<FlexiTableFilter> filters = tableEl.getFilters();
-		if (filters != null) {
-			for (FlexiTableFilter filter : filters) {
-				if (FILTER_STATUS.equals(filter.getFilter())
-						&& filter instanceof FlexiTableMultiSelectionFilter multiFilter) {
-					List<String> values = multiFilter.getValues();
-					if (values != null && !values.isEmpty()) {
-						params.setStatus(values.stream().map(RoomStatus::valueOf).collect(Collectors.toList()));
+		List<RoomStatus> statuses = getTabStatuses();
+		if (tabAll != null && tabAll.equals(tableEl.getSelectedFilterTab())) {
+			List<FlexiTableFilter> filters = tableEl.getFilters();
+			if (filters != null) {
+				for (FlexiTableFilter filter : filters) {
+					if (FILTER_STATUS.equals(filter.getFilter())
+							&& filter instanceof FlexiTableMultiSelectionFilter multiFilter) {
+						List<String> values = multiFilter.getValues();
+						if (values != null && !values.isEmpty()) {
+							List<RoomStatus> selected = values.stream().map(RoomStatus::valueOf).collect(Collectors.toList());
+							List<RoomStatus> narrowed = statuses.stream().filter(selected::contains).collect(Collectors.toList());
+							if (!narrowed.isEmpty()) {
+								statuses = narrowed;
+							}
+						}
 					}
 				}
 			}
 		}
+		params.setStatus(statuses);
 
 		if (readOnly) {
 			List<RoomStatus> status = params.getStatus();
