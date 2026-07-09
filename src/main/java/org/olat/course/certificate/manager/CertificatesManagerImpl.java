@@ -1069,8 +1069,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			certificate.setLastModified(certificate.getCreationDate());
 		}
 		certificate.setOlatResource(resource);
-		certificate.setArchivedResourceKey(resource.getKey());
-
+		if(resource != null) {
+			certificate.setArchivedResourceKey(resource.getKey());
+		}
+		
 		if(program != null) {
 			certificate.setCertificationProgram(program);
 			if(nextRecertificationDate == null) {
@@ -1460,24 +1462,25 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		File certificateFile;
 		File certificatePrintFile = null;
 		// File name with user name
-		StringBuilder sb = new StringBuilder();
-		sb.append(identity.getUser().getProperty(UserConstants.LASTNAME, locale)).append("_")
+		StringBuilder filenameBuilder = new StringBuilder();
+		filenameBuilder.append(identity.getUser().getProperty(UserConstants.LASTNAME, locale)).append("_")
 		  .append(identity.getUser().getProperty(UserConstants.FIRSTNAME, locale)).append("_");
 		if(StringHelper.containsNonWhitespace(serialNumber)) {
-			sb.append(serialNumber).append("_");
+			filenameBuilder.append(serialNumber).append("_");
 		} else {
 			String name = entry == null
 					? certificationProgram.getDisplayName()
 					: entry.getDisplayname();
-			sb.append(name).append("_");
+			filenameBuilder.append(name).append("_");
 		}
-		sb.append(Formatter.formatShortDateFilesystem(dateCertification));
-		String filename = FileUtils.normalizeFilename(sb.toString()) + ".pdf";
+		filenameBuilder.append(Formatter.formatShortDateFilesystem(dateCertification));
+		String filename = FileUtils.normalizeFilename(filenameBuilder.toString()) + ".pdf";
+		
 		// External URL to certificate as short as possible for QR-Code
-		sb = new StringBuilder();
-		sb.append(Settings.getServerContextPathURI()).append("/certificate/")
+		StringBuilder urlBuilder = new StringBuilder();
+		urlBuilder.append(Settings.getServerContextPathURI()).append("/certificate/")
 		  .append(certificate.getUuid()).append("/certificate.pdf");
-		String certUrl = sb.toString();
+		String certUrl = urlBuilder.toString();
 		
 		boolean pdfTemplate = template != null && template.getPath().toLowerCase().endsWith("pdf");
 		if((template == null && !pdfModule.isEnabled()) || pdfTemplate) {
@@ -1498,7 +1501,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		// Print template
 		
 		if(printTemplateEnabled) {
-			String printFilename = FileUtils.normalizeFilename(sb.toString()) + "_print.pdf";
+			String printFilename = FileUtils.normalizeFilename(filenameBuilder.toString()) + "_print.pdf";
 			boolean pdfPrintTemplate = printTemplate != null && printTemplate.getPath().toLowerCase().endsWith("pdf");
 			if((printTemplate == null && !pdfModule.isEnabled()) || pdfPrintTemplate) {
 				CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, score, maxScore, passed,

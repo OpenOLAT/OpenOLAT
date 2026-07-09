@@ -19,12 +19,15 @@
  */
 package org.olat.modules.certificationprogram.ui.component;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
@@ -32,12 +35,12 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ZipUtil;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.VFSAllItemsFilter;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -112,16 +115,28 @@ public class CertificatesMediaResource implements MediaResource {
 					certificate = certificatesManager.getCertificateById(certificate.getKey());
 					dbInstance.commit();
 				}
-				VFSLeaf certificateFile = print
-						? certificatesManager.getPrintCertificateLeaf(certificate)
-						: certificatesManager.getCertificateLeaf(certificate);
-				if(certificateFile != null) {
-					ZipUtil.addToZip(certificateFile, "", zout, VFSAllItemsFilter.ACCEPT_ALL, false);
-				}
+				appendCertificate(certificate, zout);
 			}
 			dbInstance.commitAndCloseSession();
 		} catch(Exception e) {
 			log.error("", e);
+		}
+	}
+	
+	private void appendCertificate(Certificate certificate, ZipOutputStream zout)
+	throws IOException {
+		VFSLeaf certificateFile = print
+				? certificatesManager.getPrintCertificateLeaf(certificate)
+				: certificatesManager.getCertificateLeaf(certificate);
+		if(certificateFile != null) {
+			String name = DownloadCertificateCellRenderer.getName(certificate, print);
+			zout.putNextEntry(new ZipEntry(name));
+			try(InputStream in = certificateFile.getInputStream()) {
+				IOUtils.copy(in, new ShieldOutputStream(zout));
+			} catch (IOException e) {
+				log.error("", e);
+			}
+			zout.closeEntry();
 		}
 	}
 }
