@@ -201,27 +201,27 @@ public class AutomaticLifecycleServiceImpl implements AutomaticLifecycleService 
 		String autoClose = repositoryModule.getLifecycleAutoClose();
 		if(StringHelper.containsNonWhitespace(autoClose)) {
 			RepositoryEntryLifeCycleValue autoCloseVal = RepositoryEntryLifeCycleValue.parse(autoClose);
-			Date markerDate = autoCloseVal.limitDate(new Date());
+			Date markerDate = autoCloseVal.limitDate(date);
 			toClose = getRepositoryEntriesToClose(markerDate);
 		} else {
 			toClose = List.of();
 		}
-		
+
 		List<RepositoryEntry> toDelete;
 		String autoDelete = repositoryModule.getLifecycleAutoDelete();
 		if(StringHelper.containsNonWhitespace(autoDelete)) {
 			RepositoryEntryLifeCycleValue autoDeleteVal = RepositoryEntryLifeCycleValue.parse(autoDelete);
-			Date markerDate = autoDeleteVal.limitDate(new Date());
+			Date markerDate = autoDeleteVal.limitDate(date);
 			toDelete = getRepositoryEntriesToDelete(markerDate);
 		} else {
 			toDelete = List.of();
 		}
-		
+
 		List<RepositoryEntry> toDefinitivelyDelete;
 		String autoDefinitivelyDelete = repositoryModule.getLifecycleAutoDefinitivelyDelete();
 		if(StringHelper.containsNonWhitespace(autoDefinitivelyDelete)) {
 			RepositoryEntryLifeCycleValue autoDefinitivelyDeleteVal = RepositoryEntryLifeCycleValue.parse(autoDefinitivelyDelete);
-			Date markerDate = autoDefinitivelyDeleteVal.limitDate(new Date());
+			Date markerDate = autoDefinitivelyDeleteVal.limitDate(date);
 			toDefinitivelyDelete = getRepositoryEntriesToDefinitivelyDelete(markerDate);
 		} else {
 			toDefinitivelyDelete = List.of();

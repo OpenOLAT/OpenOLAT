@@ -1,0 +1,21 @@
+<fieldset class="o_block">
+	<legend onclick="jQuery('#collapse_forecast_${r.getCId()}').collapse('toggle')" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
+		<i id="collapse_forecast_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($previewOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("forecast.title")
+	</legend>
+	<div id="collapse_forecast_${r.getCId()}" class="collapse #if($previewOpen) in #end">
+		$r.render("table")
+	</div>
+<script>
+"use strict";
+jQuery(function() {
+	jQuery('#collapse_forecast_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_forecast_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.openFfXHREvent(false, false, true), "previewOpen","false");
+	})
+	jQuery('#collapse_forecast_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_forecast_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.openFfXHREvent(false, false, true), "previewOpen","true");
+	})
+});
+</script>
+</fieldset>

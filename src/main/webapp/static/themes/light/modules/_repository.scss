@@ -1014,3 +1014,18 @@ form { .o_form { .o_radio_cards_wrapper {
 		}
 	}
 }
+
+.o_lifecycle_status {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+}
+
+.o_labeled {
+	&.o_lifecycle_scheduled {
+		@extend %o_labeled_grey;
+	}
+	&.o_lifecycle_running {
+		@extend %o_labeled_yellow;
+	}
+}

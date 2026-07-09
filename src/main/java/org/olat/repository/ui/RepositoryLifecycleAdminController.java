@@ -20,6 +20,7 @@
 package org.olat.repository.ui;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -27,8 +28,11 @@ import java.util.TimerTask;
 
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -37,6 +41,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
@@ -50,9 +57,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.repository.AutomaticLifecycleService;
 import org.olat.repository.RepositoryEntryLifeCycleValue;
 import org.olat.repository.RepositoryEntryLifeCycleValue.RepositoryEntryLifeCycleUnit;
@@ -60,6 +69,7 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.AutomaticLifecycleJob;
 import org.olat.repository.model.AutomaticLifecycleInfos;
+import org.olat.repository.ui.LifecyclePreviewTableModel.ForecastCols;
 import org.quartz.CronTrigger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobKey;
@@ -76,7 +86,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryLifecycleAdminController extends FormBasicController {
+public class RepositoryLifecycleAdminController extends FormBasicController implements GenericEventListener {
 	
 	private String[] onKeys = new String[]{ "on" };
 	private static final String[] unitKeys = new String[]{
@@ -100,8 +110,12 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 	private FormLayoutContainer closeRuleCont;
 	private FormLayoutContainer deleteRuleCont;
 	private FormLayoutContainer processRunCont;
+	private FormLayoutContainer previewCont;
 	private FormLayoutContainer configurationOverviewCont;
 	private FormLayoutContainer definitivelyDeleteRuleCont;
+
+	private FlexiTableElement previewTableEl;
+	private LifecyclePreviewTableModel previewModel;
 	
 	private WidgetGroup widgetGroup;
 	private FigureWidget closeWidget;
@@ -115,6 +129,7 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 	private ConfirmChangeLifecycleController confirmCtrl;
 	
 	private Date nextFire;
+	private Boolean previewOpen;
 	private AutomaticLifecycleInfos nextFireInfos;
 	
 	@Autowired
@@ -135,13 +150,23 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 
 		initForm(ureq);
 		updateDashboard();
+		loadModel();
+		
+		getWindowControl().getWindowBackOffice().addCycleListener(this);
+	}
+	
+	@Override
+	public synchronized void doDispose() {
+		getWindowControl().getWindowBackOffice().removeCycleListener(this);
+		super.doDispose();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initConfigurationOverviewForm(formLayout);
 		initProcessRunForm(formLayout);
-		
+		initPreviewForm(formLayout);
+
 		FormLayoutContainer lifecycleCont = uifactory.addDefaultFormLayout("leave", null, formLayout);
 		lifecycleCont.setFormTitle(translate("repository.admin.lifecycle.title"));
 
@@ -239,7 +264,25 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		widget.setAdditionalCssClass("o_widget_progress");
 		return progressBar;
 	}
-	
+
+	private void initPreviewForm(FormItemContainer formLayout) {
+		String page = velocity_root + "/lifecycle_preview.html";
+		previewCont = uifactory.addCustomFormLayout("forecast", null, page, formLayout);
+		previewCont.setFormLayout("nolayout");
+
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForecastCols.period));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForecastCols.toClose));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForecastCols.toDelete));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForecastCols.toDefinitivelyDelete));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForecastCols.total));
+
+		previewModel = new LifecyclePreviewTableModel(columnsModel);
+		previewTableEl = uifactory.addTableElement(getWindowControl(), "table", previewModel, getTranslator(), previewCont);
+		previewTableEl.setCustomizeColumns(false);
+		previewTableEl.setNumOfRowsEnabled(false);
+	}
+
 	private void initCloseForm(String id, String page, String[] unitValues, FormLayoutContainer lifecycleCont) {
 		RepositoryEntryLifeCycleValue autoCloseValue = repositoryModule.getLifecycleAutoCloseValue();
 		String[] toCloseValues = new String[] { translate("change.to.close.text") };
@@ -336,6 +379,8 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		} else {
 			stopButton.setElementCssClass("");
 		}
+		processRunCont.contextPut("running", Boolean.valueOf(running));
+		processRunCont.setDirty(true);
 		
 		AutomaticLifecycleInfos infos = getLifecycleInfos();
 		String autoClose = getStringValue(toCloseEl, closeValueEl, closeUnitEl);
@@ -400,7 +445,28 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 			progressBar.setMax(0.0f);
 		}
 	}
-	
+
+	/**
+	 * Recompute the forecast of the courses affected by the automatic lifecycle
+	 * process within the upcoming time buckets. Only the currently enabled steps
+	 * are counted, so the numbers reflect the saved configuration.
+	 */
+	private void loadModel() {
+		Date now = new Date();
+		List<LifecyclePreviewRow> rows = new ArrayList<>(4);
+		rows.add(forgeRow(translate("forecast.today"), now));
+		rows.add(forgeRow(translate("forecast.tomorrow"), DateUtils.addDays(now, 1)));
+		rows.add(forgeRow(translate("forecast.next.days", "7"), DateUtils.addDays(now, 7)));
+		rows.add(forgeRow(translate("forecast.next.days", "30"), DateUtils.addDays(now, 30)));
+		previewModel.setObjects(rows);
+		previewTableEl.reset(true, true, true);
+	}
+
+	private LifecyclePreviewRow forgeRow(String period, Date reference) {
+		AutomaticLifecycleInfos infos = lifecycleService.getLifecycleInfos(reference);
+		return new LifecyclePreviewRow(period, infos.getTotalToClose(), infos.getTotalToDelete(), infos.getTotalToDefinitivelyDelete());
+	}
+
 	private JobInfos getJobDetails() {
 		Date nextExecution = null;
 		Date previousExecution = null;
@@ -474,6 +540,13 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		
 		return allOk;
 	}
+	
+	@Override
+	public void event(Event event) {
+		if (event == Window.BEFORE_INLINE_RENDERING) {
+			updateDashboard();
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -495,6 +568,18 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		removeAsListenerAndDispose(cmc);
 		confirmCtrl = null;
 		cmc = null;
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if ("ONCLICK".equals(event.getCommand())) {
+			String openVal = ureq.getParameter("previewOpen");
+			if (StringHelper.containsNonWhitespace(openVal)) {
+				previewOpen = Boolean.valueOf(openVal);
+				previewCont.contextPut("previewOpen", previewOpen);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -557,6 +642,7 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		}
 		nextFireInfos = lifecycleService.getLifecycleInfos(nextFire);
 		updateDashboard();
+		loadModel();
 	}
 	
 	private String getStringValue(MultipleSelectionElement enableEl, TextElement textEl, SingleSelection unitEl) {
@@ -675,8 +761,6 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 		
 		@Override
 		public boolean isDirty() {
-			updateDashboard();
-			widgetGroup.setDirty(true);
 			return true;
 		}
 	}

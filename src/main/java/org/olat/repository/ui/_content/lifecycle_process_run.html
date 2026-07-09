@@ -1,7 +1,12 @@
 <fieldset>
-	<legend>$r.translate("process.run.title")</legend>
-	
+	<legend class="o_lifecycle_status">
+		<span>$r.translate("process.run.title")</span>
+		#if($r.isTrue($running))
+			<span class="o_labeled o_lifecycle_running"><i class="o_icon o_icon-fw o_icon_process_running o_icon-spin"> </i> $r.translate("process.running")</span>
+		#else
+			<span class="o_labeled o_lifecycle_scheduled"><i class="o_icon o_icon-fw o_icon_process_scheduled"> </i> $r.translate("process.scheduled")</span>
+		#end
+	</legend>
 	$r.render("widgets")
-
 	<div class="o_button_group">$r.render("stop.automatic.lifecycle.job")</div>
 </fieldset>

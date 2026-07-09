@@ -401,6 +401,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_principal { @include o-add-icon('eye');}
 .o_icon_print { @include o-add-icon('print');}
 .o_icon_private { @include o-add-icon('print');}
+.o_icon_process_scheduled { @include o-add-icon('hourglass-half');}
+.o_icon_process_running { @include o-add-icon('spinner');}
 .o_icon_profile { @include o-add-icon('user-circle');}
 .o_icon_progress { @include o-add-icon('arrow-up-right-dots');}
 .o_icon_progress_success { @include o-add-icon('check'); color: #e5efe5}
