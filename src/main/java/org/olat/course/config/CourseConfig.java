@@ -142,7 +142,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	private static final transient String COACH_FOLDER_PATH = "COACH_FOLDER_PATH";
 	private static final transient String COACH_TODO_TASK_EDIT = "COACH_TODO_TASK_EDIT";
 
-	public static final transient int EXTERNAL_TOOL_COUNT = 3;
+	public static final transient int EXTERNAL_TOOL_COUNT = 4;
 	private static final transient String EXTERNAL_TOOL_PREFIX = "EXTERNAL_TOOL_";
 	private static final transient String EXTERNAL_TOOL_SUFFIX_ENABLED = "_ENABLED";
 	private static final transient String EXTERNAL_TOOL_SUFFIX_NAME = "_NAME";

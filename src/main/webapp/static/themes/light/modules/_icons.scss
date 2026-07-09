@@ -223,7 +223,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_globe { @include o-add-icon('globe');}
 .o_icon_grade { @include o-add-icon('star');}
 .o_icon_grade_scale { @include o-add-icon('calculator');}
-.o_icon_graduate { @include o-add-icon('graduation-cap');}
+.o_icon_graduate { @include o-add-icon('user-graduate');}
 .o_icon_group, .o_BusinessGroup_icon { @include o-add-icon('users');}
 .o_icon_disclaimer {@include o-add-icon('handshake', false);}
 .o_icon_hand_point_up { @include o-add-icon('hand-point-up');}

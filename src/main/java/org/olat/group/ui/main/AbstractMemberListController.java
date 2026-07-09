@@ -1295,7 +1295,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			links.add("-");
 			
 			if(row.getMembership().isBusinessGroupWaiting() && !secCallback.isReadonly()) {
-				addLink("table.header.graduate", TABLE_ACTION_GRADUATE, "o_icon o_icon-fw o_icon_graduate", links);
+				addLink("table.header.graduate", TABLE_ACTION_GRADUATE, "o_icon o_icon-fw o_icon_add_member", links);
 			}
 
 			if((!globallyManaged || overrideManaged) && secCallback.canRemoveMembers()) {
