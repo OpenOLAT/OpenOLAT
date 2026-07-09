@@ -179,7 +179,7 @@ public class MarkdownImportService {
 			String subIdent, File basePath, Locale locale, String targetContainerId, int targetColumn,
 			String referenceElementId, PageElementTarget target) {
 		if (markdown == null || markdown.isBlank()) {
-			return new MarkdownImportResult(List.of(), null, 0);
+			return new MarkdownImportResult(List.of(), null, 0, -1, 0);
 		}
 
 		// 1a. Pre-process math blocks FIRST so $$...$$ content is replaced with
@@ -216,11 +216,14 @@ public class MarkdownImportService {
 		// 4. Persist parts in container
 		List<PagePart> parts = visitor.getParts();
 		ContainerPart effectiveContainer = null;
+		int effectiveColumn = 0;
+		int followUpInsertIndex = -1;
 		if (!parts.isEmpty()) {
 			// Resolve target container BEFORE appending parts (appending changes the last element)
+			List<PagePart> existingParts = page == null ? List.of() : pageService.getPageParts(page);
 			int[] resolvedColumn = new int[]{ 0 };
 			int[] insertIndex = new int[]{ -1 };
-			ContainerPart resolvedContainer = resolveTargetContainer(page, targetContainerId, targetColumn,
+			ContainerPart resolvedContainer = resolveTargetContainer(existingParts, targetContainerId, targetColumn,
 					referenceElementId, target, resolvedColumn, insertIndex);
 
 			List<String> elementIds = new ArrayList<>();
@@ -231,12 +234,13 @@ public class MarkdownImportService {
 
 			if (resolvedContainer != null) {
 				ContainerSettings containerSettings = resolvedContainer.getContainerSettings();
-				ContainerColumn column = containerSettings.getColumn(resolvedColumn[0]);
-				if (column == null) {
-					column = containerSettings.getColumn(0);
-				}
+				effectiveColumn = effectiveColumnIndex(containerSettings, resolvedColumn[0]);
+				ContainerColumn column = containerSettings.getColumn(effectiveColumn);
 				if (insertIndex[0] >= 0 && insertIndex[0] <= column.getElementIds().size()) {
 					column.getElementIds().addAll(insertIndex[0], elementIds);
+					// A follow-up part (AI quiz placeholder) belongs directly
+					// after the imported parts, not at the end of the column.
+					followUpInsertIndex = insertIndex[0] + elementIds.size();
 				} else {
 					column.getElementIds().addAll(elementIds);
 				}
@@ -250,7 +254,15 @@ public class MarkdownImportService {
 
 				ContainerPart containerPart = new ContainerPart();
 				containerPart.setLayoutOptions(ContentEditorXStream.toXml(containerSettings));
-				effectiveContainer = pageService.appendNewPagePart(page, containerPart);
+				// Position the new wrapping container at the reference element
+				// (import triggered above/below a part that is not embedded in
+				// any layout container); append at the page end otherwise.
+				int pageIdx = pageInsertIndex(existingParts, referenceElementId, target);
+				if (pageIdx >= 0) {
+					effectiveContainer = pageService.appendNewPagePartAt(page, containerPart, pageIdx);
+				} else {
+					effectiveContainer = pageService.appendNewPagePart(page, containerPart);
+				}
 			}
 		}
 
@@ -258,35 +270,65 @@ public class MarkdownImportService {
 		if (unclosedFrontMatter) {
 			warnings.add(0, "import.markdown.warn.frontmatter.unclosed");
 		}
-		return new MarkdownImportResult(warnings, effectiveContainer, visitor.getAiMetadataJobCount());
+		return new MarkdownImportResult(warnings, effectiveContainer, effectiveColumn, followUpInsertIndex,
+				visitor.getAiMetadataJobCount());
 	}
 
 	/**
 	 * Append a new {@link PagePart} to the given page and register it inside
-	 * the first column of the provided container. Uses the same pattern as
+	 * the given column of the provided container. Uses the same pattern as
 	 * {@link #convertAndPersist}: persist the part on the page, then add its
 	 * element id to the container column and persist the updated container.
 	 *
-	 * @param page      the page the container belongs to
-	 * @param container the container that should embed the new part (must not be null)
-	 * @param part      the part to append
+	 * @param page        the page the container belongs to
+	 * @param container   the container that should embed the new part (must not be null)
+	 * @param column      the column index within the container; falls back to the
+	 *                    first column when out of range
+	 * @param insertIndex the position within the column, -1 or out of range to
+	 *                    append at the end of the column
+	 * @param part        the part to append
 	 * @return the managed part returned by the PageService
 	 */
-	public <U extends PagePart> U appendNewPartToContainer(Page page, ContainerPart container, U part) {
+	public <U extends PagePart> U appendNewPartToContainer(Page page, ContainerPart container, int column,
+			int insertIndex, U part) {
 		U persisted = pageService.appendNewPagePart(page, part);
 		ContainerSettings settings = container.getContainerSettings();
-		ContainerColumn column = settings.getColumn(0);
-		column.getElementIds().add(persisted.getId());
+		ContainerColumn targetColumn = settings.getColumn(effectiveColumnIndex(settings, column));
+		addElementId(targetColumn.getElementIds(), persisted.getId(), insertIndex);
 		container.setLayoutOptions(ContentEditorXStream.toXml(settings));
 		pageService.updatePart(container);
 		return persisted;
 	}
 
 	/**
-	 * Resolve the target container with a single DB query.
+	 * Insert an element id at the given position of a column's element id
+	 * list; append at the end when the index is negative or out of range.
+	 */
+	static void addElementId(List<String> elementIds, String elementId, int insertIndex) {
+		if (insertIndex >= 0 && insertIndex <= elementIds.size()) {
+			elementIds.add(insertIndex, elementId);
+		} else {
+			elementIds.add(elementId);
+		}
+	}
+
+	/**
+	 * Clamp a requested column index to one that exists in the given layout:
+	 * the requested index if the layout has such a column, the first column
+	 * otherwise (negative or out-of-range indexes).
+	 */
+	static int effectiveColumnIndex(ContainerSettings settings, int requestedColumn) {
+		if (requestedColumn > 0 && settings.getColumn(requestedColumn) != null) {
+			return requestedColumn;
+		}
+		return 0;
+	}
+
+	/**
+	 * Resolve the target container from the page's existing parts.
 	 * Priority: explicit container ID → before/after reference element → last empty container.
 	 *
-	 * @param page               The page to search
+	 * @param existingParts      The page's parts, loaded before any new parts are appended
 	 * @param containerId        Optional explicit container ID (may be null)
 	 * @param requestedColumn    Requested column index
 	 * @param referenceElementId Optional element ID for before/after positioning
@@ -295,10 +337,8 @@ public class MarkdownImportService {
 	 * @param outInsertIndex     Single-element array; receives the insert position within the column (-1 = append)
 	 * @return The resolved container, or null if a new one must be created
 	 */
-	private ContainerPart resolveTargetContainer(Page page, String containerId, int requestedColumn,
+	static ContainerPart resolveTargetContainer(List<PagePart> existingParts, String containerId, int requestedColumn,
 			String referenceElementId, PageElementTarget target, int[] outColumn, int[] outInsertIndex) {
-		if (page == null) return null;
-		List<PagePart> existingParts = pageService.getPageParts(page);
 		if (existingParts == null || existingParts.isEmpty()) return null;
 
 		// 1. Explicit target container from "add content" dialog (within)
@@ -312,13 +352,16 @@ public class MarkdownImportService {
 			}
 		}
 
-		// 2. Before/after a reference element: find its container and position
+		// 2. Before/after a reference element: find its container and position.
+		// Iterate over the layout's real block count (getNumOfBlocks), NOT the
+		// persisted numOfColumns field — updateType() leaves that field stale
+		// when the author switches a layout in the inspector (OO-9497).
 		if (referenceElementId != null && (target == PageElementTarget.above || target == PageElementTarget.below)) {
 			for (PagePart part : existingParts) {
 				if (part instanceof ContainerPart container) {
 					ContainerSettings settings = container.getContainerSettings();
 					if (settings == null) continue;
-					for (int col = 0; col < settings.getNumOfColumns(); col++) {
+					for (int col = 0; col < settings.getNumOfBlocks(); col++) {
 						ContainerColumn column = settings.getColumn(col);
 						if (column == null) continue;
 						int idx = column.getElementIds().indexOf(referenceElementId);
@@ -344,6 +387,28 @@ public class MarkdownImportService {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Page-level insert position for a NEW container when the import was
+	 * triggered above/below a reference part that is not embedded in any
+	 * layout container: the reference part's index (above) or the index
+	 * after it (below) in the page's part list.
+	 *
+	 * @return the insert index, or -1 to append at the end (no reference,
+	 *         reference not found, or target is not above/below)
+	 */
+	static int pageInsertIndex(List<PagePart> existingParts, String referenceElementId, PageElementTarget target) {
+		if (existingParts == null || referenceElementId == null
+				|| (target != PageElementTarget.above && target != PageElementTarget.below)) {
+			return -1;
+		}
+		for (int i = 0; i < existingParts.size(); i++) {
+			if (referenceElementId.equals(existingParts.get(i).getId())) {
+				return (target == PageElementTarget.below) ? i + 1 : i;
+			}
+		}
+		return -1;
 	}
 
 	/**

@@ -268,6 +268,10 @@ public class QuizRunController extends BasicController implements PageRunElement
 						Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS, mainVC, this);
 				aiGenerationPollLink.setCustomDisplayText("");
 				aiGenerationPollLink.setElementCssClass("o_ai_generation_poll");
+				// The link is "clicked" by a JS timer, not the user — it must
+				// never trigger the unsaved-form-data warning of a form the
+				// user has open at the same time (e.g. the import dialog).
+				aiGenerationPollLink.setSuppressDirtyFormWarning(true);
 			}
 			mainVC.contextPut("aiGenerationPollDelayMs", Integer.valueOf(AI_GEN_POLL_DELAY_MS));
 		} else {
@@ -311,6 +315,8 @@ public class QuizRunController extends BasicController implements PageRunElement
 						Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS, mainVC, this);
 				aiCorrectionPollLink.setCustomDisplayText("");
 				aiCorrectionPollLink.setElementCssClass("o_essay_ai_correction_poll");
+				// Timer-driven link — must not trigger the dirty-form warning.
+				aiCorrectionPollLink.setSuppressDirtyFormWarning(true);
 			}
 			mainVC.contextPut("aiCorrectionPollDelayMs", Integer.valueOf(2000));
 		} else {

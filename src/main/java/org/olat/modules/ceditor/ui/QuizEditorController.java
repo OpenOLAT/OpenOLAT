@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -365,6 +366,11 @@ public class QuizEditorController extends FormBasicController implements PageEle
 						"ai.generation.poll", "ai.generation.poll", "", "",
 						flc, Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 				aiGenerationPollLink.setElementCssClass("o_ai_generation_poll");
+				// Timer-driven link — must not trigger the dirty-form warning
+				// while the author has unsaved edits in the surrounding form.
+				if (aiGenerationPollLink instanceof FormLinkImpl formLinkImpl) {
+					formLinkImpl.getComponent().setSuppressDirtyFormWarning(true);
+				}
 			}
 			// First poll fires fast so any state that changed while the editor
 			// was hidden (e.g. AI finished during page-editor pre-render) is

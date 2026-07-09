@@ -432,7 +432,7 @@ public class MarkdownImportController extends FormBasicController {
 		// QTI essay items asynchronously.
 		if (isAiGenerationRequested() && isAiQuestionGenerationAvailable()) {
 			try {
-				submitAiQuestionGeneration(markdown, result.container());
+				submitAiQuestionGeneration(markdown, result);
 			} catch (Exception e) {
 				logError("Failed to submit AI essay generation job for page " + page.getKey(), e);
 				// Fall through: import itself succeeded.
@@ -469,13 +469,15 @@ public class MarkdownImportController extends FormBasicController {
 		}
 	}
 
-	private void submitAiQuestionGeneration(String markdown, ContainerPart importContainer) {
+	private void submitAiQuestionGeneration(String markdown, MarkdownImportResult importResult) {
 		if (!StringHelper.containsNonWhitespace(markdown)) return;
 
-		// Append the placeholder QuizPart inside the same container the import
-		// service used for the imported parts (so the placeholder renders as
-		// the last element of that block). If no container is available (e.g.
+		// Insert the placeholder QuizPart inside the same container, column
+		// and position the import service used for the imported parts (so the
+		// placeholder renders directly after the imported block, even when the
+		// import was inserted mid-column). If no container is available (e.g.
 		// the markdown produced no parts), fall back to a page-level append.
+		ContainerPart importContainer = importResult.container();
 		QuizPart placeholder = new QuizPart();
 		QuizSettings settings = placeholder.getSettings();
 		settings.setTitle(EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER + " "
@@ -483,7 +485,8 @@ public class MarkdownImportController extends FormBasicController {
 		settings.setDescription(translate("import.ai.generate.placeholder.description"));
 		placeholder.setSettings(settings);
 		if (importContainer != null) {
-			placeholder = markdownImportService.appendNewPartToContainer(page, importContainer, placeholder);
+			placeholder = markdownImportService.appendNewPartToContainer(page, importContainer,
+					importResult.column(), importResult.insertIndex(), placeholder);
 		} else {
 			placeholder = (QuizPart) pageService.appendNewPagePart(page, placeholder);
 		}

@@ -29,6 +29,11 @@ import org.olat.modules.ceditor.model.jpa.ContainerPart;
  * @param warnings        Warning i18n keys with tab-separated arguments for partial conversion issues
  * @param container       The ContainerPart that wraps the imported parts (newly created or pre-existing);
  *                        {@code null} if the markdown produced no parts.
+ * @param column          The column index within {@code container} the imported parts were placed in;
+ *                        0 unless the import targeted a specific column of a multi-column layout.
+ * @param insertIndex     The position within the column at which a follow-up part (e.g. the AI quiz
+ *                        placeholder) should be inserted so it lands directly after the imported parts;
+ *                        -1 when the imported parts were appended at the end of the column.
  * @param aiMetadataJobs  Number of asynchronous AI metadata generation tasks scheduled for imported images
  *
  * Initial date: 2026-03-11<br>
@@ -37,6 +42,8 @@ import org.olat.modules.ceditor.model.jpa.ContainerPart;
 public record MarkdownImportResult(
 	List<String> warnings,
 	ContainerPart container,
+	int column,
+	int insertIndex,
 	int aiMetadataJobs
 ) {
 	public boolean hasWarnings() {
