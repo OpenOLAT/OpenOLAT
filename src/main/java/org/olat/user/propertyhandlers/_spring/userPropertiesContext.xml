@@ -2457,7 +2457,7 @@
 
 				<entry key="org.olat.modules.coach.reports.AbstractReportConfiguration">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-						<property name="description" value="Coaching report report" />
+						<property name="description" value="Coaching report" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyUserNickName" />
