@@ -306,7 +306,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		final String currentDate  = Formatter.getInstance(locale).formatDateAndTime(new Date());
 		final String firstnameProjectManager = StringHelper.escapeHtml(changer.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		final String lastnameProjectManager  = StringHelper.escapeHtml(changer.getUser().getProperty(UserConstants.LASTNAME, null));
-		final String usernameProjectManager  = changer.getName();
+		final String usernameProjectManager  = changer.getUser().getNickName();
 		
 		return new MailTemplate(subject, body, null) {
 			
@@ -325,7 +325,4 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 			}
 		};
 	}
-
-	
-
 }
