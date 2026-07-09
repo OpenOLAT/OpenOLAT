@@ -39,8 +39,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
@@ -145,7 +147,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.infoUrl));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.orgRestriction,
 				new OrgRestrictionCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BuildingCols.additionalInfo));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BuildingCols.additionalInfo, new AdditionalInfoCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.rooms));
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(BuildingCols.tools));
 
@@ -287,6 +289,13 @@ public class BuildingListController extends FormBasicController implements Flexi
 
 		row.setOrganisations(roomManagementService.getOrganisations(building));
 
+		if (RoomUIHelper.isColumnInfoTextTruncated(building.getInfo())) {
+			FormLink additionalInfoLink = uifactory.addFormLink(
+					"ail_" + building.getKey(), TOGGLE_DETAILS_CMD, "…", null, null, Link.LINK | Link.NONTRANSLATED);
+			additionalInfoLink.setUserObject(row);
+			row.setAdditionalInfoLink(additionalInfoLink);
+		}
+
 		if (building.getStatus() != RoomStatus.deleted) {
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
@@ -386,7 +395,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if (link.getUserObject() instanceof BuildingRow row) {
-				if ("select".equals(cmd)) {
+				if ("select".equals(cmd) || TOGGLE_DETAILS_CMD.equals(cmd)) {
 					int rowIndex = dataModel.getObjects().indexOf(row);
 					if (rowIndex >= 0) {
 						if (row.isDetailsControllerAvailable()) {
@@ -724,7 +733,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 		}
 	}
 
-	private static final class ColorCellRenderer implements org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer {
+	private static final class ColorCellRenderer implements FlexiCellRenderer {
 		@Override
 		public void render(Renderer renderer, StringOutput target, Object cellValue,
 				int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
@@ -736,7 +745,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 		}
 	}
 
-	private static final class OrgRestrictionCellRenderer implements org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer {
+	private static final class OrgRestrictionCellRenderer implements FlexiCellRenderer {
 		@Override
 		public void render(Renderer renderer, StringOutput target, Object cellValue,
 				int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
@@ -752,6 +761,34 @@ public class BuildingListController extends FormBasicController implements Flexi
 			}
 			if (orgs.size() > 2) {
 				target.append(" +").append(orgs.size() - 2);
+			}
+		}
+	}
+
+	private static final class AdditionalInfoCellRenderer implements FlexiCellRenderer {
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue,
+				int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if (!(cellValue instanceof BuildingRow buildingRow)) return;
+			FormLink link = buildingRow.getAdditionalInfoLink();
+			if (link == null || renderer == null) {
+				String text = RoomUIHelper.truncateColumnInfoText(buildingRow.getBuilding().getInfo());
+				if (StringHelper.containsNonWhitespace(text)) {
+					target.append(StringHelper.escapeHtml(text));
+				}
+			} else {
+				String text = RoomUIHelper.truncateColumnInfoTextNoEllipsis(buildingRow.getBuilding().getInfo());
+				if (StringHelper.containsNonWhitespace(text)) {
+					target.append(StringHelper.escapeHtml(text));
+				}
+				FlexiTableElementImpl ftE = source.getFormItem();
+				if (ftE.getRootForm() != link.getRootForm()) {
+					link.setRootForm(ftE.getRootForm());
+				}
+				ftE.addFormItem(link);
+				org.olat.core.gui.components.Component cmp = link.getComponent();
+				cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, null, null);
+				cmp.setDirty(false);
 			}
 		}
 	}

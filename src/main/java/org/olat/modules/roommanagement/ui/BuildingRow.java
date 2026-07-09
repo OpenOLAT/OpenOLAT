@@ -34,6 +34,7 @@ public class BuildingRow {
 	private final Building building;
 	private FormLink referenceLink;
 	private FormLink addressLink;
+	private FormLink additionalInfoLink;
 	private FormLink infoUrlLink;
 	private FormLink roomsLink;
 	private FormLink toolsLink;
@@ -79,6 +80,14 @@ public class BuildingRow {
 
 	public String getDetailsControllerName() {
 		return detailsController != null ? detailsController.getInitialFormItem().getName() : null;
+	}
+
+	public FormLink getAdditionalInfoLink() {
+		return additionalInfoLink;
+	}
+
+	public void setAdditionalInfoLink(FormLink additionalInfoLink) {
+		this.additionalInfoLink = additionalInfoLink;
 	}
 
 	public FormLink getInfoUrlLink() {

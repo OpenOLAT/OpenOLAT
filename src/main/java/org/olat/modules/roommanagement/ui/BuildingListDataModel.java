@@ -86,7 +86,7 @@ public class BuildingListDataModel extends DefaultFlexiTableDataModel<BuildingRo
 			case address -> row.getAddressLink();
 			case infoUrl -> row.getInfoUrlLink();
 			case orgRestriction -> row.getOrganisations();
-			case additionalInfo -> RoomUIHelper.truncateColumnInfoText(row.getBuilding().getInfo());
+			case additionalInfo -> row;
 			case rooms -> row.getRoomsLink() != null ? row.getRoomsLink() : String.valueOf(row.getRoomCount());
 			case tools -> row.getToolsLink();
 		};

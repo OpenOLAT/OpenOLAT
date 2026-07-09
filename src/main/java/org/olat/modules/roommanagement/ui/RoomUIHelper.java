@@ -204,4 +204,18 @@ public class RoomUIHelper {
 		processedText = Formatter.truncate(processedText, MAX_COLUMN_INFO_TEXT_LENGTH);
 		return processedText;
 	}
+
+	static boolean isColumnInfoTextTruncated(String text) {
+		if (!StringHelper.containsNonWhitespace(text)) return false;
+		return FilterFactory.getHtmlTagsFilter().filter(text).length() > MAX_COLUMN_INFO_TEXT_LENGTH;
+	}
+
+	static String truncateColumnInfoTextNoEllipsis(String text) {
+		if (!StringHelper.containsNonWhitespace(text)) return "";
+		String processedText = FilterFactory.getHtmlTagsFilter().filter(text);
+		if (processedText.length() > MAX_COLUMN_INFO_TEXT_LENGTH && MAX_COLUMN_INFO_TEXT_LENGTH > 3) {
+			return processedText.substring(0, MAX_COLUMN_INFO_TEXT_LENGTH - 3);
+		}
+		return processedText;
+	}
 }
