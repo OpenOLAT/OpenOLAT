@@ -776,7 +776,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if (entries == null || entries.isEmpty()) return;
+		if (entries == null || entries.isEmpty()) {
+			loadModel();
+			return;
+		}
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if ("Room".equalsIgnoreCase(type)) {
 			Long roomKey = entries.get(0).getOLATResourceable().getResourceableId();

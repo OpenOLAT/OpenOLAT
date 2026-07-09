@@ -137,6 +137,7 @@ public class CplRoomManagementController extends BasicController implements Acti
 			roomsPanel.pushController(translate("admin.rooms"), roomListCtrl);
 		} else {
 			addToHistory(ureq, roomListCtrl);
+			roomListCtrl.activate(ureq, List.of(), null);
 		}
 		mainVC.put("segmentCmp", roomsPanel);
 	}

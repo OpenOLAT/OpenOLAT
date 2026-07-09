@@ -176,6 +176,7 @@ public class RoomManagementAdminController extends BasicController implements Ac
 			roomsPanel.pushController(translate("admin.rooms"), roomListCtrl);
 		} else {
 			addToHistory(ureq, roomListCtrl);
+			roomListCtrl.activate(ureq, List.of(), null);
 		}
 		mainVC.put("segmentCmp", roomsPanel);
 	}
