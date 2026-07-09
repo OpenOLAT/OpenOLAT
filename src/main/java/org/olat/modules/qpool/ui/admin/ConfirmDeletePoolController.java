@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.practice.PracticeResource;
 import org.olat.course.nodes.practice.PracticeService;
@@ -63,7 +64,7 @@ public class ConfirmDeletePoolController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("message", translate("delete.pool.confirm", pool.getName()));
+			layoutCont.contextPut("message", translate("delete.pool.confirm", StringHelper.escapeHtml(pool.getName())));
 			
 			List<PracticeResource> resources = practiceService.getResources(pool);
 			if(resources.size() == 1) {
