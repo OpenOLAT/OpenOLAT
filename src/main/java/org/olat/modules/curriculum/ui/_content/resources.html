@@ -1,6 +1,9 @@
 #if($automationInfos && !$automationInfos.isEmpty())
 <div class="o_info_with_icon clearfix">
 	<h4>$r.translate("automation.overview")</h4>
+	#if($automationConfigReachable)
+	<div class="o_block">$r.translate("automation.content.info.before") $r.render("automation.content.link")$r.translate("automation.content.info.after")</div>
+	#end
 	<div class="o_automation">
 	#foreach($info in $automationInfos)
 		<div><strong>${info.title()}</strong></div><p>${info.date()} (${info.text()})</p>

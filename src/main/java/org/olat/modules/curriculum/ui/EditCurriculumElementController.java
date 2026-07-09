@@ -19,11 +19,9 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import java.text.Collator;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -38,20 +36,22 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.modules.certificationprogram.CertificationModule;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumAutomationConfig;
+import org.olat.modules.curriculum.CurriculumAutomationRule;
+import org.olat.modules.curriculum.CurriculumAutomationService;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.repository.RepositoryService;
-import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,7 +60,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class EditCurriculumElementController extends BasicController {
+public class EditCurriculumElementController extends BasicController implements Activateable2 {
+	
+	public static final String CONTEXT_AUTOMATION = "Automation";
 	
 	private final TooledStackedPanel toolbarPanel;
 	private final VelocityContainer mainVC;
@@ -99,13 +101,13 @@ public class EditCurriculumElementController extends BasicController {
 	private CertificationModule certificationProgramModule;
 	@Autowired
 	private CertificationProgramService certificationProgramService;
+	@Autowired
+	private CurriculumAutomationService automationService;
 	
 	public EditCurriculumElementController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumElement element, CurriculumElement parentElement, Curriculum curriculum,
 			CurriculumSecurityCallback secCallback, CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.toolbarPanel = toolbarPanel;
 		if (element != null) {
 			this.element = curriculumService.getCurriculumElement(element);
@@ -197,6 +199,17 @@ public class EditCurriculumElementController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) {
+			return;
+		}
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(CONTEXT_AUTOMATION.equalsIgnoreCase(type) && automationLink != null) {
+			doOpenAutomation(ureq);
+		}
+	}
+	
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == metadataLink) {
 			doOpenMetadata(ureq);
@@ -228,32 +241,30 @@ public class EditCurriculumElementController extends BasicController {
 			mainVC.contextPut("key", element.getKey());
 		}
 		mainVC.contextPut("externalId", element.getExternalId());
-		if (element.getEducationalType() != null) {
-			mainVC.contextPut("educationalTypeCss", element.getEducationalType().getCssClass());
-			mainVC.contextPut("educationalTypeI18nKey", RepositoyUIFactory.getI18nKey(element.getEducationalType()));
-		} else {
-			mainVC.contextRemove("educationalTypeCss");
-			mainVC.contextRemove("educationalTypeI18nKey");
-		}
 		
-		Set<CurriculumElementToTaxonomyLevel> ce2taxonomyLevels = element.getTaxonomyLevels();
-		if (ce2taxonomyLevels != null && !ce2taxonomyLevels.isEmpty()) {
-			Collator collator = Collator.getInstance(getLocale());
-			List<String> displayNames = ce2taxonomyLevels.stream()
-					.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
-					.map(level -> TaxonomyUIFactory.translateDisplayName(getTranslator(), level))
-					.filter(Objects::nonNull)
-					.toList();
-			mainVC.contextPut("taxonomyLevelsEllipsis", displayNames.size() > 3);
-			String taxonomyLevelTags = displayNames.stream()
-					.sorted((l1, l2) -> collator.compare(l1, l2))
-					.limit(3)
-					.map(TaxonomyUIFactory::getTag)
-					.collect(Collectors.joining());
-			mainVC.contextPut("taxonomyLevelTags", taxonomyLevelTags);
+		CurriculumAutomationConfig automationConfig = element.getAutomationConfig();
+		if (automationConfig == null || automationConfig.getRules() == null) {
+			CurriculumElementType type = element.getType();
+			automationConfig = type == null ? null : type.getAutomationConfig();
+		}
+		boolean hasActiveAutomation = false;
+		Date nextExecution = null;
+		if (automationConfig != null && automationConfig.getRules() != null) {
+			for (CurriculumAutomationRule rule : automationConfig.getRules()) {
+				if (rule.isEnabled()) {
+					hasActiveAutomation = true;
+					Date triggerDate = automationService.computeTriggerDate(element, rule);
+					if (triggerDate != null && (nextExecution == null || triggerDate.before(nextExecution))) {
+						nextExecution = triggerDate;
+					}
+				}
+			}
+		}
+		if (hasActiveAutomation) {
+			String date = nextExecution == null ? "-" : Formatter.getInstance(getLocale()).formatDate(nextExecution);
+			mainVC.contextPut("automationNextExecution", translate("curriculum.element.automation.next.execution", date));
 		} else {
-			mainVC.contextRemove("taxonomyLevels");
-			mainVC.contextRemove("taxonomyLevelsEllipsis");
+			mainVC.contextRemove("automationNextExecution");
 		}
 		
 		mainVC.contextPut("participants", CurriculumHelper.getParticipantRange(getTranslator(), element, true));

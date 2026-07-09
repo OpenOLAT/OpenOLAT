@@ -700,6 +700,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			tabPane.setSelectedPane(ureq, offersTab);
 		} else if(CONTEXT_METADATA.equalsIgnoreCase(type) && metadataTab > 0) {
 			tabPane.setSelectedPane(ureq, metadataTab);
+			if(editMetadataCtrl != null && entries.size() > 1) {
+				editMetadataCtrl.activate(ureq, entries.subList(1, entries.size()), entries.get(0).getTransientState());
+			}
 		} else if(CONTEXT_ABSENCES.equalsIgnoreCase(type) && absencesTab > 0) {
 			tabPane.setSelectedPane(ureq, absencesTab);
 		} else if(CONTEXT_ELEMENT.equalsIgnoreCase(type) || "CurriculumElement".equalsIgnoreCase(type)) {

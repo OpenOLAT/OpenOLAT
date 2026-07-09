@@ -26,14 +26,19 @@ import java.util.Objects;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.RelativeDateElement;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.AutomationContext;
 import org.olat.modules.curriculum.AutomationType;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
@@ -42,6 +47,7 @@ import org.olat.modules.curriculum.CurriculumAutomationService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,6 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CurriculumElementResourcesController extends BasicController {
 	
 	private final VelocityContainer mainVC;
+	private final Link automationConfigLink;
 	
 	private CurriculumElement curriculumElement;
 	
@@ -69,6 +76,8 @@ public class CurriculumElementResourcesController extends BasicController {
 		this.curriculumElement = curriculumElement;
 
 		mainVC = createVelocityContainer("resources");
+		automationConfigLink = LinkFactory.createLink("automation.content.link", "open.automation.config",
+				getTranslator(), mainVC, this, Link.LINK);
 		
 		resourcesCtrl = new CurriculumElementResourceListController(ureq, wControl, curriculum, curriculumElement, secCallback);
 		listenTo(resourcesCtrl);
@@ -80,6 +89,8 @@ public class CurriculumElementResourcesController extends BasicController {
 			listenTo(templatesCtrl);
 			mainVC.put("templates", templatesCtrl.getInitialComponent());
 		}
+		mainVC.contextPut("automationConfigReachable", type != null
+				&& (type.isImplOnly() || !type.isAllowedAsRootElement()));
 		loadAutomationInformations();
 		putInitialPanel(mainVC);
 	}
@@ -111,17 +122,16 @@ public class CurriculumElementResourcesController extends BasicController {
 					Util.createPackageTranslator(RelativeDateElement.class, getLocale(), getTranslator()));
 			Formatter formatter = Formatter.getInstance(getLocale());
 			for(CurriculumAutomationRule rule : automationConfig.getRules()) {
-				if(!rule.isEnabled()) {
-					continue;
+				if(rule.isEnabled() && rule.getContext() == AutomationContext.CONTENT) {
+					String title = rule.getAutomationType() == AutomationType.INSTANTIATION
+							? translate("automation.type.instantiation")
+							: Objects.requireNonNullElse(
+									CurriculumUIFactory.translateAutomationStatus(translator, rule.getTargetStatus()), "-");
+					String date = Objects.requireNonNullElse(
+							formatter.formatDateWithDay(automationService.computeTriggerDate(curriculumElement, rule)), "-");
+					String text = CurriculumUIFactory.translateAutomationCondition(translator, rule);
+					automationInfos.add(new Infos(title, date, text));
 				}
-				String title = rule.getAutomationType() == AutomationType.INSTANTIATION
-						? translate("automation.type.instantiation")
-						: Objects.requireNonNullElse(
-								CurriculumUIFactory.translateAutomationStatus(translator, rule.getTargetStatus()), "-");
-				String date = Objects.requireNonNullElse(
-						formatter.formatDateWithDay(automationService.computeTriggerDate(curriculumElement, rule)), "-");
-				String text = CurriculumUIFactory.translateAutomationCondition(translator, rule);
-				automationInfos.add(new Infos(title, date, text));
 			}
 		}
 		mainVC.contextPut("automationInfos", automationInfos);
@@ -129,7 +139,12 @@ public class CurriculumElementResourcesController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(source == automationConfigLink) {
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(
+					"[" + CurriculumListManagerController.CONTEXT_METADATA + ":0]"
+					+ "[" + EditCurriculumElementController.CONTEXT_AUTOMATION + ":0]");
+			fireEvent(ureq, new ActivateEvent(entries));
+		}
 	}
 	
 	

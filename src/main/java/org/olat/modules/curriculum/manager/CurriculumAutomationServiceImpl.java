@@ -42,6 +42,10 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.TriggerKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,6 +66,8 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private Scheduler scheduler;
 
 	@Override
 	public CurriculumAutomationConfig getDefaultConfig(boolean implOnly, int maxRepositoryEntryRelations) {
@@ -135,6 +141,19 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 			applyContentStatusChange(element, rule);
 		}
 		return element;
+	}
+
+	@Override
+	public Date getNextExecutionTime() {
+		try {
+			Trigger trigger = scheduler.getTrigger(TriggerKey.triggerKey("curriculumAutomationTrigger"));
+			if (trigger != null) {
+				return trigger.getNextFireTime();
+			}
+		} catch (SchedulerException e) {
+			log.error("", e);
+		}
+		return null;
 	}
 
 	@Override

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Date;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -30,6 +32,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
 import org.olat.modules.curriculum.CurriculumAutomationService;
@@ -76,7 +79,12 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		FormLayoutContainer wrapperCont = FormLayoutContainer.createDefaultFormLayout("automationWrapper", getTranslator());
 		wrapperCont.setRootForm(mainForm);
 		wrapperCont.setFormTitle(translate("curriculum.element.automation"));
-		wrapperCont.setFormInfo(translate("automation.config.inherited.info"));
+		Date nextExecution = automationService.getNextExecutionTime();
+		String time = nextExecution != null
+				? Formatter.getInstance(getLocale()).formatTimeShort(nextExecution)
+				: "-";
+		wrapperCont.setFormInfo(translate("automation.config.inherited.info")
+				+ " " + translate("automation.config.run.time.info", time));
 		formLayout.add(wrapperCont);
 
 		CurriculumElementType type = element != null ? element.getType() : null;
