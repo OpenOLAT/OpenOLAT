@@ -234,7 +234,9 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(RoomStatus.active.name(), translate("building.status.active")));
 		statusValues.add(SelectionValues.entry(RoomStatus.inactive.name(), translate("building.status.inactive")));
-		statusValues.add(SelectionValues.entry(RoomStatus.deleted.name(), translate("building.status.deleted")));
+		if (!readOnly) {
+			statusValues.add(SelectionValues.entry(RoomStatus.deleted.name(), translate("building.status.deleted")));
+		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("room.filter.status"),
 				FILTER_STATUS, statusValues, true));
 
@@ -360,12 +362,14 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 				List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, RoomStatus.active.name())));
 		tabs.add(tabRelevant);
 
-		tabDeleted = FlexiFiltersTabFactory.tabWithImplicitFilters(
-				TAB_ID_DELETED,
-				translate("room.filter.deleted"),
-				TabSelectionBehavior.reloadData,
-				List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, RoomStatus.deleted.name())));
-		tabs.add(tabDeleted);
+		if (!readOnly) {
+			tabDeleted = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					TAB_ID_DELETED,
+					translate("room.filter.deleted"),
+					TabSelectionBehavior.reloadData,
+					List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, RoomStatus.deleted.name())));
+			tabs.add(tabDeleted);
+		}
 
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, tabRelevant);
@@ -406,6 +410,18 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 						params.setStatus(values.stream().map(RoomStatus::valueOf).collect(Collectors.toList()));
 					}
 				}
+			}
+		}
+
+		if (readOnly) {
+			List<RoomStatus> status = params.getStatus();
+			if (status == null || status.isEmpty()) {
+				params.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
+			} else {
+				List<RoomStatus> noDeleted = status.stream()
+						.filter(s -> s != RoomStatus.deleted)
+						.collect(Collectors.toList());
+				params.setStatus(noDeleted.isEmpty() ? List.of(RoomStatus.active, RoomStatus.inactive) : noDeleted);
 			}
 		}
 
