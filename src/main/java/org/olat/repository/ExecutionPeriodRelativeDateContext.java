@@ -93,6 +93,15 @@ public class ExecutionPeriodRelativeDateContext extends AbstractRelativeDateCont
 	}
 
 	@Override
+	protected String anchorPlainLabel(String anchorId) {
+		return switch (anchorId) {
+			case BEGIN -> getTranslator().translate("relative.date.exec.period.begin.plain");
+			case END -> getTranslator().translate("relative.date.exec.period.end.plain");
+			default -> anchorId;
+		};
+	}
+
+	@Override
 	protected Date anchorDate(String anchorId) {
 		return switch (anchorId) {
 			case BEGIN -> beginDate;

@@ -67,6 +67,13 @@ public abstract class AbstractRelativeDateContext implements RelativeDateContext
 	protected abstract String anchorRefLabel(String anchorId);
 
 	/**
+	 * The anchor label in capitalized nominative form, used standalone (not
+	 * embedded in a sentence frame), e.g.
+	 * {@code "Beginn des Durchführungszeitraums"}.
+	 */
+	protected abstract String anchorPlainLabel(String anchorId);
+
+	/**
 	 * The anchor's absolute date; {@code null} when not available.
 	 */
 	protected abstract Date anchorDate(String anchorId);
@@ -108,11 +115,11 @@ public abstract class AbstractRelativeDateContext implements RelativeDateContext
 			iconCss = "o_icon o_icon_warn";
 		}
 
-		String anchorLabel = anchorRefLabel(anchorId);
 		String rule;
 		if ("SAME_DAY".equals(direction)) {
-			rule = translator.translate("relative.date.display.same.day", anchorLabel);
+			rule = translator.translate("relative.date.display.same.day", anchorPlainLabel(anchorId));
 		} else {
+			String anchorLabel = anchorRefLabel(anchorId);
 			String unitLabel = unitKey != null ? translator.translate(toUnitI18nKey(unitKey, value)) : "";
 			String valueStr = value != null ? String.valueOf(value) : "";
 			String key = "BEFORE".equals(direction) ? "relative.date.display.before" : "relative.date.display.after";

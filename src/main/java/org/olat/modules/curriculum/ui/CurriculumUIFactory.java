@@ -92,14 +92,16 @@ public class CurriculumUIFactory {
 		boolean after = rule.getDirection() == OffsetDirection.AFTER;
 		boolean endRef = CurriculumAutomationRule.REFERENCE_END.equals(rule.getReference())
 				|| (rule.getReference() == null && after);
-		String anchor = translator.translate(endRef
-				? "automation.condition.anchor.end" : "automation.condition.anchor.begin");
 		if (rule.getUnit() == null || rule.getUnit() == AutomationUnit.SAME_DAY) {
-			return translator.translate("relative.date.display.same.day", new String[] { anchor });
+			String plainAnchor = translator.translate(endRef
+					? "automation.condition.anchor.end.plain" : "automation.condition.anchor.begin.plain");
+			return translator.translate("relative.date.display.same.day", new String[] { plainAnchor });
 		}
 		if (rule.getValue() == null) {
 			return "-";
 		}
+		String anchor = translator.translate(endRef
+				? "automation.condition.anchor.end" : "automation.condition.anchor.begin");
 		String base = "relative.date.unit." + rule.getUnit().name().toLowerCase().replaceAll("s$", "");
 		String unit = translator.translate(rule.getValue() == 1 ? base : base + "s");
 		String key = after ? "relative.date.display.after" : "relative.date.display.before";
