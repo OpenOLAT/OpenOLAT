@@ -835,7 +835,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				bulkApplyGradeButton.setElementCssClass("o_sel_assessment_apply_grade");
 				bulkApplyGradeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
 				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
-				bulkApplyGradeButton.setI18nKey(translate("grade.apply.label", gradeSystemLabel));
+				bulkApplyGradeButton.setI18nKey(translate("grade.apply.grade", gradeSystemLabel));
 				bulkApplyGradeButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 				tableEl.addBatchButton(bulkApplyGradeButton);
 			}
@@ -863,9 +863,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 
 			if (gradeSystem != null) {
-				applyGradeAllButton = uifactory.addFormLink("apply.grade.all", "grade.apply", null, formLayout, Link.BUTTON);
+				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
+				applyGradeAllButton = uifactory.addFormLink("apply.grade.all", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 				applyGradeAllButton.setElementCssClass("o_sel_assessment_apply_grade");
 				applyGradeAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
+				applyGradeAllButton.setI18nKey(translate("grade.apply.grade", gradeSystemLabel));
 				applyGradeAllButton.setVisible(!readOnly);
 
 				gradeScaleDropdown = uifactory.addDropdownMenu("tool.grade.scale.more", null, formLayout, getTranslator());

@@ -245,7 +245,7 @@ public class GroupAssessmentController extends FormBasicController {
 		if(withGrade && !withAutoGrade) {
 			groupApplyGradeEl = uifactory.addCheckboxesVertical("grade.apply", null, groupGradingCont, onKeys, onValues, 1);
 			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeSystem(courseEntry, gtaNode.getIdent()));
-			groupApplyGradeEl.setLabel(translate("grade.apply.label", gradeSystemLabel), null, false);
+			groupApplyGradeEl.setLabel(translate("grade.apply.grade", gradeSystemLabel), null, false);
 		}
 		
 		if(withPassed && cutValue == null && !withGrade) {
@@ -315,7 +315,7 @@ public class GroupAssessmentController extends FormBasicController {
 		if (withGrade && !withAutoGrade) {
 			DefaultFlexiColumnModel applyColumn = new DefaultFlexiColumnModel(Cols.applyGradeEl.i18nKey(), Cols.applyGradeEl.ordinal());
 			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeSystem(courseEntry, gtaNode.getIdent()));
-			applyColumn.setHeaderLabel(translate("grade.apply.label", gradeSystemLabel));
+			applyColumn.setHeaderLabel(translate("grade.apply.grade", gradeSystemLabel));
 			columnsModel.addFlexiColumnModel(applyColumn);
 		}
 		

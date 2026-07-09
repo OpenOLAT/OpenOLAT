@@ -532,7 +532,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 				} else {
 					text = translate("grade.apply.text", grade, gradeSystemLabel);
 				}
-				String title = translate("grade.apply.label", gradeSystemLabel);
+				String title = translate("grade.apply.grade", gradeSystemLabel);
 				applyGradeCtrl = activateYesNoDialog(ureq, title, text, applyGradeCtrl);
 				applyGradeCtrl.setUserObject(row);
 			}

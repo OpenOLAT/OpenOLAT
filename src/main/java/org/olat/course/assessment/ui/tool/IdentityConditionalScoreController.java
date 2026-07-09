@@ -110,7 +110,7 @@ public class IdentityConditionalScoreController extends BasicController {
 			gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemident);
 			if (gradeSystem != null) {
 				gradeApplyLink = LinkFactory.createCustomLink("grade.apply.button", "grade", "", Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
-				gradeApplyLink.setCustomDisplayText(translate("grade.apply.label", gradeSystemLabel));
+				gradeApplyLink.setCustomDisplayText(translate("grade.apply.grade", gradeSystemLabel));
 				gradeApplyLink.setIconLeftCSS("o_icon o_icon_grade");
 				gradeApplyLink.setElementCssClass("a_button_bottom");
 			}
@@ -203,7 +203,7 @@ public class IdentityConditionalScoreController extends BasicController {
 			} else {
 				text = translate("grade.apply.text", grade, gradeSystemLabel);
 			}
-			String title = translate("grade.apply.label", gradeSystemLabel);
+			String title = translate("grade.apply.grade", gradeSystemLabel);
 			applyGradeCtrl = activateYesNoDialog(ureq, title, text, applyGradeCtrl);
 		}
 	}

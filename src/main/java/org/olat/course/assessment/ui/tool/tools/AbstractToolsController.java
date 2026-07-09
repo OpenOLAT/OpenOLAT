@@ -198,7 +198,7 @@ public abstract class AbstractToolsController extends BasicController {
 				applyGradeLink = LinkFactory.createLink("tool.grade.apply", "tool.grade.apply", getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
 				applyGradeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
 				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
-				applyGradeLink.setCustomDisplayText(translate("grade.apply.label", gradeSystemLabel));
+				applyGradeLink.setCustomDisplayText(translate("grade.apply.grade", gradeSystemLabel));
 				mainVC.put("tool.grade.apply", applyGradeLink);
 				links.add("tool.grade.apply");
 			}
@@ -384,7 +384,7 @@ public abstract class AbstractToolsController extends BasicController {
 			} else {
 				text = translate("grade.apply.text", grade, gradeSystemLabel);
 			}
-			String title = translate("grade.apply.label", gradeSystemLabel);
+			String title = translate("grade.apply.grade", gradeSystemLabel);
 			applyGradeCtrl = activateYesNoDialog(ureq, title, text, applyGradeCtrl);
 		}
 	}
