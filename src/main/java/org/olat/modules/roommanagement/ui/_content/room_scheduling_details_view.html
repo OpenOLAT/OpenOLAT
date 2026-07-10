@@ -100,4 +100,16 @@
 		#end
 	</div>
 	#end
+
+	#if($r.available("lecture.desc"))
+	<div class="o_lecture_descs">
+		$r.render("lecture.desc","vertical")
+	</div>
+	#end
+
+	#if($r.available("lecture.preparation"))
+	<div class="o_lecture_descs">
+		$r.render("lecture.preparation","vertical")
+	</div>
+	#end
 </div>

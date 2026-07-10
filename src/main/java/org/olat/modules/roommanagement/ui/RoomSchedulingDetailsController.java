@@ -202,6 +202,18 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 					openAbsences + " " + translate("open"), formLayout);
 		}
 
+		String description = lb.getDescription();
+		if (StringHelper.containsNonWhitespace(description)) {
+			description = Formatter.escWithBR(StringHelper.xssScan(description)).toString();
+			uifactory.addStaticTextElement("lecture.desc", "lecture.descr", description, formLayout);
+		}
+
+		String preparation = lb.getPreparation();
+		if (StringHelper.containsNonWhitespace(preparation)) {
+			preparation = Formatter.escWithBR(StringHelper.xssScan(preparation)).toString();
+			uifactory.addStaticTextElement("lecture.preparation", "lecture.preparation", preparation, formLayout);
+		}
+
 		String compulsory = lb.isCompulsory() ? translate("yes") : translate("no");
 		uifactory.addStaticTextElement("lecture.compulsory", "lecture.compulsory", compulsory, formLayout);
 	}
