@@ -167,14 +167,15 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		
 		String contentSecurityPolicy = (iframeSettings != null && iframeSettings.getContentSecurityPolicy() != null)
 				? iframeSettings.getContentSecurityPolicy() : null;
+		String courseDBId = iframeSettings != null ? iframeSettings.getCourseDBId() : null;
 
 		//Delivers content files via local mapper to enable session based browser caching for at least this instance
 		if(iframeSettings.isPersistMapper()) {
 			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking, iframeSettings.isIframeResizer(),
-					iFrameId, themeBaseUri, contentSecurityPolicy);
+					iFrameId, themeBaseUri, contentSecurityPolicy, courseDBId);
 		} else {
 			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, iframeSettings.isIframeResizer(),
-					iFrameId, themeBaseUri, contentSecurityPolicy);
+					iFrameId, themeBaseUri, contentSecurityPolicy, courseDBId);
 		}
 		contentMapper.setStrictSanitize(iframeSettings != null && iframeSettings.isStrictSanitize());
 		contentMapper.setDeliveryOptions(deliveryOptions);

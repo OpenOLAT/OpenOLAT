@@ -125,7 +125,13 @@ public class RestApiLoginFilter implements Filter {
 				ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(httpRequest);
 
 				UserSession uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(httpRequest);
-				if(isApiDocIndex(httpRequest)) {
+				if(uress != null && uress.isContentDelivery()) {
+					if(uress.isAuthenticated() && this.isCourseDBIndex(httpRequest)) {
+						followSession(httpRequest, httpResponse, chain);
+					} else {
+						httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+					}
+				} else if(isApiDocIndex(httpRequest)) {
 					sendSwaggerUI(httpResponse);
 				} else if(uress != null && uress.isAuthenticated()) {
 					if(restModule.getApiAccess() == ApiAccess.all
@@ -500,6 +506,24 @@ public class RestApiLoginFilter implements Filter {
 	private boolean isApiDocIndex(HttpServletRequest request) {
 		String index = WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT + "/api-docs/";
 		return index.equalsIgnoreCase(request.getRequestURI());
+	}
+	
+	private boolean isCourseDBIndex(HttpServletRequest request) {
+		try {
+			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);
+			String index = context + "/repo/courses/";
+			String requestUri = request.getRequestURI();
+			if(requestUri.startsWith(index)) {
+				String path = requestUri.substring(index.length(), requestUri.length());
+				String[] subPathArray = path.split("/");
+				if(subPathArray.length > 2 && StringHelper.isLong(subPathArray[0]) && "db".equals(subPathArray[1])) {
+					return true;
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return false;
 	}
 
 	private String getLoginUrl() {

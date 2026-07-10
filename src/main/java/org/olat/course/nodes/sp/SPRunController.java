@@ -186,6 +186,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ICourse.class, courseEnv.getCourseResourceableId());
 		IFrameSettings iframeSettings = IFrameSettings.secure();
 		iframeSettings.setRandomizeMapper(courseEnv.isPreview());
+		iframeSettings.setCourseDBId(courseEnv.getCourseResourceableId().toString());
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName,
 				allowRelativeLinks, null, ores, deliveryOptions, iframeSettings, repoKey);

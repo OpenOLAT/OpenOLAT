@@ -33,7 +33,7 @@ public class IFrameSettings {
 	private boolean persistMapper = false;
 	private boolean randomizeMapper = false;
 	private boolean iframeResizer = true;
-	
+	private String courseDBId;
 	
 	public IFrameSettings() {
 		//
@@ -115,5 +115,13 @@ public class IFrameSettings {
 
 	public void setIframeResizer(boolean iframeResizer) {
 		this.iframeResizer = iframeResizer;
+	}
+
+	public String getCourseDBId() {
+		return courseDBId;
+	}
+
+	public void setCourseDBId(String courseDBId) {
+		this.courseDBId = courseDBId;
 	}
 }

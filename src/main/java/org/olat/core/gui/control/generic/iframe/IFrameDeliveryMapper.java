@@ -93,6 +93,7 @@ public class IFrameDeliveryMapper implements Mapper {
 	private transient boolean checkForInlineEvent;
 	private transient long suppressEndlessReload;
 	
+	private String courseDBId;
 	private String contentSecurityPolicy;
 	private boolean strictSanitize = false;
 	private boolean iframeResizer = true;
@@ -103,10 +104,12 @@ public class IFrameDeliveryMapper implements Mapper {
 	}
 	
 	public IFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking,
-			boolean iframeResizer, String frameId, String themeBaseUri, String contentSecurityPolicy) {
+			boolean iframeResizer, String frameId, String themeBaseUri, String contentSecurityPolicy,
+			String courseDBId) {
 		
 		this.rootDir = rootDir;
 		
+		this.courseDBId = courseDBId;
 		this.rawContent = rawContent;
 		this.iframeResizer = iframeResizer;
 		this.enableTextmarking = enableTextmarking;
@@ -426,6 +429,9 @@ public class IFrameDeliveryMapper implements Mapper {
 			if(useContentDomain) {
 				sb.append("o_info = new Object();\n");
 				sb.append("o_info.uriprefix='/auth/';\n");
+				if(StringHelper.containsNonWhitespace(courseDBId)) {
+					sb.append("o_info.course_id='").append(courseDBId).append("';\n");
+				}
 				StringOutput baseUri = new StringOutput(100);
 				Renderer.renderStaticURI(baseUri, "");
 				sb.append("o_info.o_baseURI='").append(baseUri.toString()).append("';\n");
