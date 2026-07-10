@@ -1561,7 +1561,10 @@ public class CurriculumElementDAO {
 				select el from curriculumelement as el
 				left join fetch el.type as type
 				where el.status not in (:excludedStatuses)
-				and (el.automationConfigXml is not null or type.automationConfigXml is not null)
+				and (exists (select config.key from curriculumautomationconfig config
+						where config.curriculumElement.key=el.key)
+					or exists (select config.key from curriculumautomationconfig config
+						where config.elementType.key=type.key))
 				""";
 		List<String> excluded = List.of(
 			CurriculumElementStatus.deleted.name(),

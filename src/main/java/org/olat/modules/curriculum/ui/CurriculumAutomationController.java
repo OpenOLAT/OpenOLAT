@@ -109,7 +109,7 @@ public class CurriculumAutomationController extends FormBasicController {
 
 	private int automationRowCount = 0;
 
-	private CurriculumAutomationConfig automationConfig;
+	private List<CurriculumAutomationConfig> automationConfig;
 	private final AutomationFormConfig formConfig;
 
 	@Autowired
@@ -132,11 +132,11 @@ public class CurriculumAutomationController extends FormBasicController {
 		return true;
 	}
 
-	public CurriculumAutomationConfig getAutomationConfig() {
+	public List<CurriculumAutomationConfig> getAutomationConfig() {
 		return automationConfig;
 	}
 
-	public void setAutomationConfig(CurriculumAutomationConfig config, boolean enabled) {
+	public void setAutomationConfig(List<CurriculumAutomationConfig> config, boolean enabled) {
 		this.automationConfig = config;
 		if (automationEnabledEl.isVisible()) {
 			automationEnabledEl.toggle(enabled);
@@ -255,23 +255,24 @@ public class CurriculumAutomationController extends FormBasicController {
 
 	private void loadAutomationTable() {
 		List<AutomationRuleRow> rows = new ArrayList<>();
-		if (automationConfig != null && automationConfig.getRules() != null) {
-			for (CurriculumAutomationRule rule : automationConfig.getRules()) {
-				rows.add(forgeAutomationRow(rule));
+		if (automationConfig != null) {
+			for (CurriculumAutomationConfig config : automationConfig) {
+				rows.add(forgeAutomationRow(config));
 			}
 		}
 		automationTableModel.setObjects(rows);
 		automationTable.reset(true, true, true);
 	}
 
-	private AutomationRuleRow forgeAutomationRow(CurriculumAutomationRule rule) {
-		AutomationRuleRow row = new AutomationRuleRow(rule);
+	private AutomationRuleRow forgeAutomationRow(CurriculumAutomationConfig config) {
+		AutomationRuleRow row = new AutomationRuleRow(config);
+		CurriculumAutomationRule rule = config.getRule();
 		if (formConfig.automationElement() != null && rule.getDependingOn() != AutomationDependingOn.STATUS) {
 			row.setPlannedExecution(automationService.computeTriggerDate(formConfig.automationElement(), rule));
 		}
 		FormToggle ruleEl = uifactory.addToggleButton("rule_" + (++automationRowCount), null,
 				translate("on"), translate("off"), null);
-		ruleEl.toggle(rule.isEnabled());
+		ruleEl.toggle(config.isEnabled());
 		ruleEl.addActionListener(FormEvent.ONCHANGE);
 		ruleEl.setUserObject(row);
 		row.setRuleEnabledEl(ruleEl);
@@ -360,7 +361,7 @@ public class CurriculumAutomationController extends FormBasicController {
 				automationTable.reset(true, true, false);
 			}
 		} else if (source instanceof FormToggle tg && tg.getUserObject() instanceof AutomationRuleRow r) {
-			r.getRule().setEnabled(tg.isOn());
+			r.getConfig().setEnabled(tg.isOn());
 			automationTable.reset(false, false, false);
 			fireEvent(ureq, FormEvent.CHANGED_EVENT);
 		} else if (source instanceof FormLink link && "tools".equals(link.getCmd())

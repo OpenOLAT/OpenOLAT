@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.components.date.OffsetDirection;
@@ -30,6 +32,8 @@ import org.olat.modules.curriculum.CurriculumAutomationConfig;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.model.CurriculumAutomationConfigImpl;
+import org.olat.modules.curriculum.model.CurriculumAutomationRuleImpl;
 import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
@@ -41,122 +45,127 @@ public class CurriculumAutomationStandardRules {
 	private CurriculumAutomationStandardRules() {
 	}
 
-	public static CurriculumAutomationConfig createStandardConfig(CurriculumElementType type) {
+	public static List<CurriculumAutomationConfig> createStandardConfig(CurriculumElementType type) {
 		return createStandardConfig(type.isImplOnly(), type.getMaxRepositoryEntryRelations());
 	}
 
-	public static CurriculumAutomationConfig createStandardConfig(boolean implOnly, int maxRepositoryEntryRelations) {
-		CurriculumAutomationConfig config = new CurriculumAutomationConfig();
+	public static List<CurriculumAutomationConfig> createStandardConfig(boolean implOnly, int maxRepositoryEntryRelations) {
+		List<CurriculumAutomationRule> rules = createStandardRules(implOnly, maxRepositoryEntryRelations);
+
+		List<CurriculumAutomationConfig> configs = new ArrayList<>();
+		for (CurriculumAutomationRule rule : rules) {
+			CurriculumAutomationConfigImpl config = new CurriculumAutomationConfigImpl();
+			config.setRule(rule);
+			config.setEnabled(true);
+			configs.add(config);
+		}
+		return configs;
+	}
+
+	private static List<CurriculumAutomationRule> createStandardRules(boolean implOnly, int maxRepositoryEntryRelations) {
+		List<CurriculumAutomationRule> rules = new ArrayList<>();
 
 		if (implOnly) {
-			addImplementationRules(config);
+			addImplementationRules(rules);
 		} else {
-			addElementRules(config);
+			addElementRules(rules);
 		}
 
 		if (maxRepositoryEntryRelations != 0) {
-			addContentRulesForImplementation(config, implOnly);
+			addContentRulesForImplementation(rules, implOnly);
 		}
 
-		return config;
+		return rules;
 	}
 
-	private static void addImplementationRules(CurriculumAutomationConfig config) {
-		CurriculumAutomationRule confirmedRule = new CurriculumAutomationRule();
+	private static void addImplementationRules(List<CurriculumAutomationRule> rules) {
+		CurriculumAutomationRule confirmedRule = new CurriculumAutomationRuleImpl();
 		confirmedRule.setContext(AutomationContext.IMPLEMENTATION);
 		confirmedRule.setAutomationType(AutomationType.STATUS_CHANGE);
 		confirmedRule.setTargetStatus(CurriculumElementStatus.confirmed);
-		confirmedRule.setEnabled(true);
 		confirmedRule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		confirmedRule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
 		confirmedRule.setValue(7);
 		confirmedRule.setUnit(AutomationUnit.DAYS);
 		confirmedRule.setDirection(OffsetDirection.BEFORE);
 		confirmedRule.setOnlyWhenStatus(Set.of("preparation", "provisional"));
-		config.addRule(confirmedRule);
+		rules.add(confirmedRule);
 
-		CurriculumAutomationRule finishedRule = new CurriculumAutomationRule();
+		CurriculumAutomationRule finishedRule = new CurriculumAutomationRuleImpl();
 		finishedRule.setContext(AutomationContext.IMPLEMENTATION);
 		finishedRule.setAutomationType(AutomationType.STATUS_CHANGE);
 		finishedRule.setTargetStatus(CurriculumElementStatus.finished);
-		finishedRule.setEnabled(true);
 		finishedRule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		finishedRule.setReference(CurriculumAutomationRule.REFERENCE_END);
 		finishedRule.setValue(null);
 		finishedRule.setUnit(AutomationUnit.SAME_DAY);
 		finishedRule.setDirection(OffsetDirection.AFTER);
 		finishedRule.setOnlyWhenStatus(Set.of("confirmed"));
-		config.addRule(finishedRule);
+		rules.add(finishedRule);
 	}
 
-	private static void addElementRules(CurriculumAutomationConfig config) {
-		CurriculumAutomationRule activeRule = new CurriculumAutomationRule();
+	private static void addElementRules(List<CurriculumAutomationRule> rules) {
+		CurriculumAutomationRule activeRule = new CurriculumAutomationRuleImpl();
 		activeRule.setContext(AutomationContext.ELEMENT);
 		activeRule.setAutomationType(AutomationType.STATUS_CHANGE);
 		activeRule.setTargetStatus(CurriculumElementStatus.active);
-		activeRule.setEnabled(true);
 		activeRule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		activeRule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
 		activeRule.setValue(null);
 		activeRule.setUnit(AutomationUnit.SAME_DAY);
 		activeRule.setDirection(OffsetDirection.BEFORE);
 		activeRule.setOnlyWhenStatus(Set.of("preparation"));
-		config.addRule(activeRule);
+		rules.add(activeRule);
 
-		CurriculumAutomationRule finishedRule = new CurriculumAutomationRule();
+		CurriculumAutomationRule finishedRule = new CurriculumAutomationRuleImpl();
 		finishedRule.setContext(AutomationContext.ELEMENT);
 		finishedRule.setAutomationType(AutomationType.STATUS_CHANGE);
 		finishedRule.setTargetStatus(CurriculumElementStatus.finished);
-		finishedRule.setEnabled(true);
 		finishedRule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		finishedRule.setReference(CurriculumAutomationRule.REFERENCE_END);
 		finishedRule.setValue(null);
 		finishedRule.setUnit(AutomationUnit.SAME_DAY);
 		finishedRule.setDirection(OffsetDirection.AFTER);
 		finishedRule.setOnlyWhenStatus(Set.of("active"));
-		config.addRule(finishedRule);
+		rules.add(finishedRule);
 	}
 
-	private static void addContentRulesForImplementation(CurriculumAutomationConfig config, boolean implOnly) {
+	private static void addContentRulesForImplementation(List<CurriculumAutomationRule> rules, boolean implOnly) {
 		String triggerStatus = implOnly ? "confirmed" : "active";
 
-		CurriculumAutomationRule instantiationRule = new CurriculumAutomationRule();
+		CurriculumAutomationRule instantiationRule = new CurriculumAutomationRuleImpl();
 		instantiationRule.setContext(AutomationContext.CONTENT);
 		instantiationRule.setAutomationType(AutomationType.INSTANTIATION);
-		instantiationRule.setEnabled(true);
 		instantiationRule.setDependingOn(AutomationDependingOn.STATUS);
 		instantiationRule.setDependingOnStatus(Set.of(triggerStatus));
-		config.addRule(instantiationRule);
+		rules.add(instantiationRule);
 
-		CurriculumAutomationRule accessRule = new CurriculumAutomationRule();
+		CurriculumAutomationRule accessRule = new CurriculumAutomationRuleImpl();
 		accessRule.setContext(AutomationContext.CONTENT);
 		accessRule.setAutomationType(AutomationType.STATUS_CHANGE);
 		accessRule.setTargetStatus(RepositoryEntryStatusEnum.coachpublished);
-		accessRule.setEnabled(true);
 		accessRule.setDependingOn(AutomationDependingOn.STATUS);
 		accessRule.setDependingOnStatus(Set.of(triggerStatus));
-		config.addRule(accessRule);
+		rules.add(accessRule);
 
-		CurriculumAutomationRule publishedRule = new CurriculumAutomationRule();
+		CurriculumAutomationRule publishedRule = new CurriculumAutomationRuleImpl();
 		publishedRule.setContext(AutomationContext.CONTENT);
 		publishedRule.setAutomationType(AutomationType.STATUS_CHANGE);
 		publishedRule.setTargetStatus(RepositoryEntryStatusEnum.published);
-		publishedRule.setEnabled(true);
 		publishedRule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		publishedRule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
 		publishedRule.setValue(null);
 		publishedRule.setUnit(AutomationUnit.SAME_DAY);
 		publishedRule.setDirection(OffsetDirection.BEFORE);
 		publishedRule.setOnlyWhenStatus(Set.of(triggerStatus));
-		config.addRule(publishedRule);
+		rules.add(publishedRule);
 
-		CurriculumAutomationRule contentFinishedRule = new CurriculumAutomationRule();
+		CurriculumAutomationRule contentFinishedRule = new CurriculumAutomationRuleImpl();
 		contentFinishedRule.setContext(AutomationContext.CONTENT);
 		contentFinishedRule.setAutomationType(AutomationType.STATUS_CHANGE);
 		contentFinishedRule.setTargetStatus(RepositoryEntryStatusEnum.closed);
-		contentFinishedRule.setEnabled(true);
 		contentFinishedRule.setDependingOn(AutomationDependingOn.STATUS);
 		contentFinishedRule.setDependingOnStatus(Set.of("cancelled", "finished"));
-		config.addRule(contentFinishedRule);
+		rules.add(contentFinishedRule);
 	}
 }

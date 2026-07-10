@@ -110,28 +110,27 @@ public class CurriculumElementResourcesController extends BasicController {
 	}
 	
 	private void loadAutomationInformations() {
-		CurriculumAutomationConfig automationConfig = curriculumElement.getAutomationConfig();
-		if(automationConfig == null || automationConfig.getRules() == null) {
+		List<CurriculumAutomationConfig> automationConfigs = automationService.getConfigs(curriculumElement);
+		if(automationConfigs.isEmpty()) {
 			CurriculumElementType type = curriculumElement.getType();
-			automationConfig = type == null ? null : type.getAutomationConfig();
+			automationConfigs = type == null ? List.of() : automationService.getConfigs(type);
 		}
-		
+
 		List<Infos> automationInfos = new ArrayList<>();
-		if(automationConfig != null && automationConfig.getRules() != null) {
-			Translator translator = Util.createPackageTranslator(RepositoryEntryStatusEnum.class, getLocale(),
-					Util.createPackageTranslator(RelativeDateElement.class, getLocale(), getTranslator()));
-			Formatter formatter = Formatter.getInstance(getLocale());
-			for(CurriculumAutomationRule rule : automationConfig.getRules()) {
-				if(rule.isEnabled() && rule.getContext() == AutomationContext.CONTENT) {
-					String title = rule.getAutomationType() == AutomationType.INSTANTIATION
-							? translate("automation.type.instantiation")
-							: Objects.requireNonNullElse(
-									CurriculumUIFactory.translateAutomationStatus(translator, rule.getTargetStatus()), "-");
-					String date = Objects.requireNonNullElse(
-							formatter.formatDateWithDay(automationService.computeTriggerDate(curriculumElement, rule)), "-");
-					String text = CurriculumUIFactory.translateAutomationCondition(translator, rule);
-					automationInfos.add(new Infos(title, date, text));
-				}
+		Translator translator = Util.createPackageTranslator(RepositoryEntryStatusEnum.class, getLocale(),
+				Util.createPackageTranslator(RelativeDateElement.class, getLocale(), getTranslator()));
+		Formatter formatter = Formatter.getInstance(getLocale());
+		for(CurriculumAutomationConfig config : automationConfigs) {
+			CurriculumAutomationRule rule = config.getRule();
+			if(config.isEnabled() && rule.getContext() == AutomationContext.CONTENT) {
+				String title = rule.getAutomationType() == AutomationType.INSTANTIATION
+						? translate("automation.type.instantiation")
+						: Objects.requireNonNullElse(
+								CurriculumUIFactory.translateAutomationStatus(translator, rule.getTargetStatus()), "-");
+				String date = Objects.requireNonNullElse(
+						formatter.formatDateWithDay(automationService.computeTriggerDate(curriculumElement, rule)), "-");
+				String text = CurriculumUIFactory.translateAutomationCondition(translator, rule);
+				automationInfos.add(new Infos(title, date, text));
 			}
 		}
 		mainVC.contextPut("automationInfos", automationInfos);

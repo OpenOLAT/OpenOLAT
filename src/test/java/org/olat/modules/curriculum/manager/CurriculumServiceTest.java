@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
@@ -38,7 +39,12 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.modules.curriculum.AutomationContext;
+import org.olat.modules.curriculum.AutomationDependingOn;
+import org.olat.modules.curriculum.AutomationType;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumAutomationRule;
+import org.olat.modules.curriculum.CurriculumAutomationService;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -50,6 +56,8 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumService.AddRepositoryEntry;
 import org.olat.modules.curriculum.CurriculumStatus;
+import org.olat.modules.curriculum.model.CurriculumAutomationConfigImpl;
+import org.olat.modules.curriculum.model.CurriculumAutomationRuleImpl;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
@@ -105,6 +113,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 	private QualityTestHelper qualityTestHelper;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CurriculumAutomationService curriculumAutomationService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -169,6 +179,61 @@ public class CurriculumServiceTest extends OlatTestCase {
 			.containsExactly(lectureBlock);
 	}
 	
+	@Test
+	public void updateCurriculumElementStatusTriggersStatusRuleAutomationImmediately() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-STATUS-AUTO-1", "Curriculum status auto 1", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-status-auto-1", "Element status auto 1",
+				CurriculumElementStatus.confirmed, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.STATUS);
+		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.cancelled);
+		CurriculumAutomationConfigImpl config = new CurriculumAutomationConfigImpl();
+		config.setRule(rule);
+		config.setEnabled(true);
+		curriculumAutomationService.updateConfigs(element, List.of(config));
+		dbInstance.commitAndCloseSession();
+
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-status-auto-doer-1");
+		curriculumService.updateCurriculumElementStatus(doer, element, CurriculumElementStatus.active, false, null);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumElement reloaded = curriculumService.getCurriculumElement(element);
+		Assertions.assertThat(reloaded.getElementStatus()).isEqualTo(CurriculumElementStatus.cancelled);
+	}
+
+	@Test
+	public void updateCurriculumElementStatusWithoutDoerDoesNotTriggerAutomation() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-STATUS-AUTO-2", "Curriculum status auto 2", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-status-auto-2", "Element status auto 2",
+				CurriculumElementStatus.confirmed, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.STATUS);
+		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.cancelled);
+		CurriculumAutomationConfigImpl config = new CurriculumAutomationConfigImpl();
+		config.setRule(rule);
+		config.setEnabled(true);
+		curriculumAutomationService.updateConfigs(element, List.of(config));
+		dbInstance.commitAndCloseSession();
+
+		curriculumService.updateCurriculumElementStatus(null, element, CurriculumElementStatus.active, false, null);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumElement reloaded = curriculumService.getCurriculumElement(element);
+		Assertions.assertThat(reloaded.getElementStatus()).isEqualTo(CurriculumElementStatus.active);
+	}
+
 	@Test
 	public void getCurriculumElements() {
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-2", "Curriculum 2", "Curriculum", false, null);

@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -57,6 +58,8 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 	private CurriculumAutomationController automationCtrl;
 
 	private CurriculumElement element;
+	private List<CurriculumAutomationConfig> elementConfigs;
+	private List<CurriculumAutomationConfig> typeConfigs;
 
 	@Autowired
 	private CurriculumAutomationService automationService;
@@ -88,16 +91,18 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		formLayout.add(wrapperCont);
 
 		CurriculumElementType type = element != null ? element.getType() : null;
+		typeConfigs = type != null ? automationService.getConfigs(type) : null;
 		SelectionValues configSV = new SelectionValues();
 		String adoptLabel = buildAdoptLabel(type);
 		configSV.add(SelectionValues.entry(CONFIG_ADOPT, adoptLabel));
 		configSV.add(SelectionValues.entry(CONFIG_OVERRIDE, translate("automation.config.override")));
 		configEl = uifactory.addRadiosHorizontal("automation.config", wrapperCont, configSV.keys(), configSV.values());
 		configEl.addActionListener(FormEvent.ONCHANGE);
-		boolean hasOverride = element != null && element.getAutomationConfig() != null;
+		elementConfigs = element != null ? automationService.getConfigs(element) : null;
+		boolean hasOverride = hasRules(elementConfigs);
 		configEl.select(hasOverride ? CONFIG_OVERRIDE : CONFIG_ADOPT, true);
 
-		CurriculumAutomationConfig initialConfig = resolveInitialConfig(hasOverride, type);
+		List<CurriculumAutomationConfig> initialConfig = resolveInitialConfig(hasOverride);
 		AutomationFormConfig cfg = new AutomationFormConfig(
 				resolveForUseAs(type),
 				false,
@@ -126,30 +131,28 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		}
 		
 		return translate("option.adopt", sb.toString(),
-				type.getAutomationConfig() != null ? translate("on"): translate("off"));
+				hasRules(typeConfigs) ? translate("on"): translate("off"));
 	}
 
-	private CurriculumAutomationConfig resolveInitialConfig(boolean hasOverride, CurriculumElementType type) {
+	private List<CurriculumAutomationConfig> resolveInitialConfig(boolean hasOverride) {
 		if (hasOverride) {
-			return element.getAutomationConfig();
+			return elementConfigs;
 		}
-		return type != null ? type.getAutomationConfig() : null;
+		return typeConfigs;
 	}
 
 	private void updateAutomationMode(boolean override) {
 		if (override) {
-			CurriculumAutomationConfig config = element != null ? element.getAutomationConfig() : null;
+			List<CurriculumAutomationConfig> config = elementConfigs;
 			if (!hasRules(config)) {
-				config = element != null && element.getType() != null ? element.getType().getAutomationConfig() : null;
+				config = typeConfigs;
 			}
 			if (!hasRules(config)) {
 				config = defaultAutomationConfig();
 			}
 			automationCtrl.setAutomationConfig(config, true);
 		} else {
-			CurriculumAutomationConfig typeConfig = element != null && element.getType() != null
-					? element.getType().getAutomationConfig() : null;
-			automationCtrl.setAutomationConfig(typeConfig, true);
+			automationCtrl.setAutomationConfig(typeConfigs, true);
 		}
 		automationCtrl.setReadOnly(!override);
 	}
@@ -164,11 +167,11 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		return EditCurriculumElementTypeController.FOR_USE_AS_IMPL_OR_ELEM;
 	}
 
-	private boolean hasRules(CurriculumAutomationConfig config) {
-		return config != null && config.getRules() != null && !config.getRules().isEmpty();
+	private boolean hasRules(List<CurriculumAutomationConfig> config) {
+		return config != null && !config.isEmpty();
 	}
 
-	private CurriculumAutomationConfig defaultAutomationConfig() {
+	private List<CurriculumAutomationConfig> defaultAutomationConfig() {
 		int maxRelations = element != null && element.getType() != null
 				? element.getType().getMaxRepositoryEntryRelations() : -1;
 		return automationService.getDefaultConfig(true, maxRelations);
@@ -200,12 +203,8 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 	private void doSave(UserRequest ureq) {
 		boolean override = CONFIG_OVERRIDE.equals(configEl.getSelectedKey());
 		element = curriculumService.getCurriculumElement(element);
-		if (override) {
-			element.setAutomationConfig(automationCtrl.getAutomationConfig());
-		} else {
-			element.setAutomationConfig(null);
-		}
-		element = curriculumService.updateCurriculumElement(getIdentity(), element);
+		List<CurriculumAutomationConfig> configs = override ? automationCtrl.getAutomationConfig() : List.of();
+		elementConfigs = automationService.updateConfigs(element, configs);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

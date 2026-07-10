@@ -19,32 +19,11 @@
  */
 package org.olat.modules.curriculum;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
 /**
- * Initial date: 2026-06-26<br>
+ * Initial date: 2026-07-10<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public interface CurriculumAutomationService {
-
-	public void execute();
-
-	public void processStatusChange(Collection<CurriculumElement> elements);
-
-	public List<CurriculumAutomationConfig> getDefaultConfig(boolean implOnly, int maxRepositoryEntryRelations);
-
-	public List<CurriculumAutomationConfig> getConfigs(CurriculumElementType type);
-
-	public List<CurriculumAutomationConfig> getConfigs(CurriculumElement element);
-
-	public List<CurriculumAutomationConfig> updateConfigs(CurriculumElementType type, List<CurriculumAutomationConfig> configs);
-
-	public List<CurriculumAutomationConfig> updateConfigs(CurriculumElement element, List<CurriculumAutomationConfig> configs);
-
-	public Date computeTriggerDate(CurriculumElement element, CurriculumAutomationRule rule);
-
-	public Date getNextExecutionTime();
-
+public enum AutomationExecutionResult {
+	CHANGED,
+	UNCHANGED
 }

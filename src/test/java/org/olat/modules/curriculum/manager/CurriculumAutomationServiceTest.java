@@ -24,18 +24,24 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -44,6 +50,7 @@ import org.olat.core.gui.components.date.OffsetDirection;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.curriculum.AutomationContext;
 import org.olat.modules.curriculum.AutomationDependingOn;
+import org.olat.modules.curriculum.AutomationExecutionResult;
 import org.olat.modules.curriculum.AutomationType;
 import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
@@ -52,6 +59,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumAutomationRuleImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -71,6 +79,10 @@ public class CurriculumAutomationServiceTest {
 	private RepositoryManager repositoryManager;
 	@Mock
 	private RepositoryService repositoryService;
+	@Mock
+	private CurriculumAutomationConfigDAO automationConfigDao;
+	@Mock
+	private CurriculumAutomationExecutionDAO automationExecutionDao;
 
 	@InjectMocks
 	private CurriculumAutomationServiceImpl sut;
@@ -87,8 +99,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getBeginDate()).thenReturn(beginDate);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setValue(5);
@@ -111,8 +122,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getBeginDate()).thenReturn(beginDate);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setValue(5);
@@ -132,8 +142,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.ELEMENT);
@@ -152,8 +161,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.confirmed);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.ELEMENT);
@@ -173,8 +181,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getBeginDate()).thenReturn(beginDate);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.confirmed);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setValue(5);
@@ -195,8 +202,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.finished);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.finished.name()));
 		rule.setContext(AutomationContext.ELEMENT);
@@ -215,8 +221,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 		when(curriculumService.hasRepositoryEntries(element)).thenReturn(true);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.CONTENT);
@@ -234,7 +239,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getBeginDate()).thenReturn(beginDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setValue(7);
 		rule.setUnit(AutomationUnit.DAYS);
@@ -252,7 +257,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getBeginDate()).thenReturn(null);
 		when(element.getEndDate()).thenReturn(endDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDirection(OffsetDirection.AFTER);
 		rule.setValue(3);
 		rule.setUnit(AutomationUnit.DAYS);
@@ -269,7 +274,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getBeginDate()).thenReturn(null);
 		when(curriculumService.getCurriculumElementParentLine(element)).thenReturn(List.of());
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setValue(3);
 		rule.setUnit(AutomationUnit.DAYS);
@@ -285,7 +290,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getBeginDate()).thenReturn(beginDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setUnit(AutomationUnit.SAME_DAY);
 
@@ -300,7 +305,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getBeginDate()).thenReturn(beginDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setUnit(AutomationUnit.DAYS);
 		rule.setValue(null);
@@ -316,7 +321,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getBeginDate()).thenReturn(beginDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setValue(2);
 		rule.setUnit(AutomationUnit.WEEKS);
@@ -332,7 +337,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getBeginDate()).thenReturn(beginDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setValue(1);
 		rule.setUnit(AutomationUnit.MONTHS);
@@ -351,7 +356,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getEndDate()).thenReturn(endDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDirection(OffsetDirection.AFTER);
 		rule.setValue(1);
 		rule.setUnit(AutomationUnit.YEARS);
@@ -373,7 +378,7 @@ public class CurriculumAutomationServiceTest {
 		when(parent.getBeginDate()).thenReturn(parentBeginDate);
 		when(curriculumService.getCurriculumElementParentLine(element)).thenReturn(List.of(parent));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setUnit(AutomationUnit.SAME_DAY);
 
@@ -391,7 +396,7 @@ public class CurriculumAutomationServiceTest {
 		when(parent.getEndDate()).thenReturn(parentEndDate);
 		when(curriculumService.getCurriculumElementParentLine(element)).thenReturn(List.of(parent));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDirection(OffsetDirection.AFTER);
 		rule.setUnit(AutomationUnit.SAME_DAY);
 
@@ -405,8 +410,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.confirmed);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.confirmed.name()));
 		rule.setContext(AutomationContext.IMPLEMENTATION);
@@ -424,8 +428,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of());
 		rule.setContext(AutomationContext.ELEMENT);
@@ -443,8 +446,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getBeginDate()).thenReturn(null);
 		when(curriculumService.getCurriculumElementParentLine(element)).thenReturn(List.of());
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setValue(5);
@@ -463,8 +465,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.ELEMENT);
@@ -487,8 +488,7 @@ public class CurriculumAutomationServiceTest {
 		RepositoryEntry template = mock(RepositoryEntry.class);
 		when(curriculumService.getRepositoryTemplates(element)).thenReturn(List.of(template));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.CONTENT);
@@ -511,8 +511,7 @@ public class CurriculumAutomationServiceTest {
 		RepositoryEntry template2 = mock(RepositoryEntry.class);
 		when(curriculumService.getRepositoryTemplates(element)).thenReturn(List.of(template1, template2));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.CONTENT);
@@ -533,8 +532,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getType()).thenReturn(type);
 		when(curriculumService.countRepositoryEntries(element)).thenReturn(1L);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.CONTENT);
@@ -557,8 +555,7 @@ public class CurriculumAutomationServiceTest {
 		RepositoryEntry template2 = mock(RepositoryEntry.class);
 		when(curriculumService.getRepositoryTemplates(element)).thenReturn(List.of(template1, template2));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.CONTENT);
@@ -582,8 +579,7 @@ public class CurriculumAutomationServiceTest {
 		RepositoryEntry template2 = mock(RepositoryEntry.class);
 		when(curriculumService.getRepositoryTemplates(element)).thenReturn(List.of(template1, template2));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.CONTENT);
@@ -600,8 +596,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.CONTENT);
@@ -622,8 +617,7 @@ public class CurriculumAutomationServiceTest {
 		when(entry.getEntryStatus()).thenReturn(RepositoryEntryStatusEnum.published);
 		when(curriculumService.getRepositoryEntries(element)).thenReturn(List.of(entry));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.CONTENT);
@@ -644,8 +638,7 @@ public class CurriculumAutomationServiceTest {
 		when(entry.getEntryStatus()).thenReturn(RepositoryEntryStatusEnum.published);
 		when(curriculumService.getRepositoryEntries(element)).thenReturn(List.of(entry));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.CONTENT);
@@ -666,8 +659,7 @@ public class CurriculumAutomationServiceTest {
 		when(entry.getEntryStatus()).thenReturn(RepositoryEntryStatusEnum.preparation);
 		when(curriculumService.getRepositoryEntries(element)).thenReturn(List.of(entry));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.CONTENT);
@@ -677,6 +669,27 @@ public class CurriculumAutomationServiceTest {
 		sut.processRule(element, rule, DateUtils.getStartOfDay(new Date()));
 
 		verify(repositoryManager).setStatus(eq(entry), eq(RepositoryEntryStatusEnum.published));
+		verify(repositoryService, never()).closeRepositoryEntry(any(), any(), anyBoolean());
+	}
+
+	@Test
+	public void testContentStatusChange_lowerTargetStatus_skipsChange() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		RepositoryEntry entry = mock(RepositoryEntry.class);
+		when(entry.getEntryStatus()).thenReturn(RepositoryEntryStatusEnum.published);
+		when(curriculumService.getRepositoryEntries(element)).thenReturn(List.of(entry));
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.STATUS);
+		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		rule.setContext(AutomationContext.CONTENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(RepositoryEntryStatusEnum.coachpublished);
+
+		sut.processRule(element, rule, DateUtils.getStartOfDay(new Date()));
+
+		verify(repositoryManager, never()).setStatus(any(), any());
 		verify(repositoryService, never()).closeRepositoryEntry(any(), any(), anyBoolean());
 	}
 
@@ -697,7 +710,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getBeginDate()).thenReturn(beginDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
 		rule.setDirection(OffsetDirection.AFTER);
 		rule.setValue(3);
@@ -714,7 +727,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getEndDate()).thenReturn(endDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setReference(CurriculumAutomationRule.REFERENCE_END);
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setValue(5);
@@ -733,7 +746,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getBeginDate()).thenReturn(beginDate);
 		when(element.getEndDate()).thenReturn(endDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setReference(CurriculumAutomationRule.REFERENCE_END);
 		rule.setDirection(OffsetDirection.AFTER);
 		rule.setUnit(AutomationUnit.SAME_DAY);
@@ -749,7 +762,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getEndDate()).thenReturn(endDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setReference(CurriculumAutomationRule.REFERENCE_END);
 		rule.setDirection(OffsetDirection.AFTER);
 		rule.setUnit(AutomationUnit.SAME_DAY);
@@ -766,7 +779,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getEndDate()).thenReturn(endDate);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setReference(CurriculumAutomationRule.REFERENCE_END);
 		rule.setDirection(OffsetDirection.AFTER);
 		rule.setUnit(AutomationUnit.SAME_DAY);
@@ -784,8 +797,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getEndDate()).thenReturn(today);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.confirmed);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		rule.setReference(CurriculumAutomationRule.REFERENCE_END);
 		rule.setDirection(OffsetDirection.AFTER);
@@ -807,8 +819,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getEndDate()).thenReturn(endDate);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.confirmed);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		rule.setReference(CurriculumAutomationRule.REFERENCE_END);
 		rule.setDirection(OffsetDirection.AFTER);
@@ -830,8 +841,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getBeginDate()).thenReturn(today);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		rule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
 		rule.setDirection(OffsetDirection.BEFORE);
@@ -853,8 +863,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getBeginDate()).thenReturn(beginDate);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		rule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
 		rule.setDirection(OffsetDirection.BEFORE);
@@ -876,8 +885,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.IMPLEMENTATION);
@@ -896,8 +904,7 @@ public class CurriculumAutomationServiceTest {
 		when(curriculumService.hasRepositoryEntries(element)).thenReturn(false);
 		when(curriculumService.getRepositoryTemplates(element)).thenReturn(List.of());
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.CONTENT);
@@ -920,7 +927,7 @@ public class CurriculumAutomationServiceTest {
 		when(parent.getBeginDate()).thenReturn(parentDate);
 		when(curriculumService.getCurriculumElementParentLine(element)).thenReturn(List.of(grandParent, parent));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
 		rule.setDirection(OffsetDirection.BEFORE);
 		rule.setUnit(AutomationUnit.SAME_DAY);
@@ -942,7 +949,7 @@ public class CurriculumAutomationServiceTest {
 		when(parent.getEndDate()).thenReturn(parentDate);
 		when(curriculumService.getCurriculumElementParentLine(element)).thenReturn(List.of(grandParent, parent));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setReference(CurriculumAutomationRule.REFERENCE_END);
 		rule.setDirection(OffsetDirection.AFTER);
 		rule.setUnit(AutomationUnit.SAME_DAY);
@@ -960,8 +967,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
 		rule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
 		rule.setDirection(OffsetDirection.BEFORE);
@@ -970,11 +976,12 @@ public class CurriculumAutomationServiceTest {
 		rule.setContext(AutomationContext.ELEMENT);
 		rule.setAutomationType(AutomationType.STATUS_CHANGE);
 		rule.setTargetStatus(CurriculumElementStatus.finished);
-		CurriculumAutomationConfig config = new CurriculumAutomationConfig();
-		config.addRule(rule);
+		CurriculumAutomationConfig config = mockConfig(rule, true);
 		CurriculumElementType elementType = mock(CurriculumElementType.class);
 		when(element.getType()).thenReturn(elementType);
-		when(elementType.getAutomationConfig()).thenReturn(config);
+		when(config.getElementType()).thenReturn(elementType);
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
+		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
 
 		sut.execute();
 
@@ -989,29 +996,27 @@ public class CurriculumAutomationServiceTest {
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
 
-		CurriculumAutomationRule elementRule = new CurriculumAutomationRule();
-		elementRule.setEnabled(true);
+		CurriculumAutomationRule elementRule = new CurriculumAutomationRuleImpl();
 		elementRule.setDependingOn(AutomationDependingOn.STATUS);
 		elementRule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		elementRule.setContext(AutomationContext.ELEMENT);
 		elementRule.setAutomationType(AutomationType.STATUS_CHANGE);
 		elementRule.setTargetStatus(CurriculumElementStatus.finished);
-		CurriculumAutomationConfig elementConfig = new CurriculumAutomationConfig();
-		elementConfig.addRule(elementRule);
-		when(element.getAutomationConfig()).thenReturn(elementConfig);
+		CurriculumAutomationConfig elementConfig = mockConfig(elementRule, true);
+		when(elementConfig.getCurriculumElement()).thenReturn(element);
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of(elementConfig));
 
-		CurriculumAutomationRule typeRule = new CurriculumAutomationRule();
-		typeRule.setEnabled(true);
+		CurriculumAutomationRule typeRule = new CurriculumAutomationRuleImpl();
 		typeRule.setDependingOn(AutomationDependingOn.STATUS);
 		typeRule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		typeRule.setContext(AutomationContext.ELEMENT);
 		typeRule.setAutomationType(AutomationType.STATUS_CHANGE);
 		typeRule.setTargetStatus(CurriculumElementStatus.confirmed);
-		CurriculumAutomationConfig typeConfig = new CurriculumAutomationConfig();
-		typeConfig.addRule(typeRule);
+		CurriculumAutomationConfig typeConfig = mockConfig(typeRule, true);
 		CurriculumElementType elementType = mock(CurriculumElementType.class);
 		when(element.getType()).thenReturn(elementType);
-		when(elementType.getAutomationConfig()).thenReturn(typeConfig);
+		when(typeConfig.getElementType()).thenReturn(elementType);
+		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(typeConfig));
 
 		sut.execute();
 
@@ -1028,16 +1033,15 @@ public class CurriculumAutomationServiceTest {
 		when(element.getType()).thenReturn(null);
 		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(true);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.ELEMENT);
 		rule.setAutomationType(AutomationType.STATUS_CHANGE);
 		rule.setTargetStatus(CurriculumElementStatus.finished);
-		CurriculumAutomationConfig config = new CurriculumAutomationConfig();
-		config.addRule(rule);
-		when(element.getAutomationConfig()).thenReturn(config);
+		CurriculumAutomationConfig config = mockConfig(rule, true);
+		when(config.getCurriculumElement()).thenReturn(element);
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of(config));
 
 		sut.execute();
 
@@ -1051,22 +1055,468 @@ public class CurriculumAutomationServiceTest {
 		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
 		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
 
-		CurriculumAutomationRule rule = new CurriculumAutomationRule();
-		rule.setEnabled(false);
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
 		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
 		rule.setContext(AutomationContext.ELEMENT);
 		rule.setAutomationType(AutomationType.STATUS_CHANGE);
 		rule.setTargetStatus(CurriculumElementStatus.finished);
-		CurriculumAutomationConfig config = new CurriculumAutomationConfig();
-		config.addRule(rule);
+		CurriculumAutomationConfig config = mockConfig(rule, false);
 		CurriculumElementType elementType = mock(CurriculumElementType.class);
 		when(element.getType()).thenReturn(elementType);
-		when(elementType.getAutomationConfig()).thenReturn(config);
+		when(config.getElementType()).thenReturn(elementType);
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
+		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
 
 		sut.execute();
 
 		verify(curriculumService, never()).updateCurriculumElementStatus(any(), any(), any(), anyBoolean(), any());
+	}
+
+	@Test
+	public void testExecute_firstRun_createsExecutionAndFires() {
+		Date beginDate = DateUtils.addDays(new Date(), -10);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getBeginDate()).thenReturn(beginDate);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		rule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
+		rule.setDirection(OffsetDirection.BEFORE);
+		rule.setValue(5);
+		rule.setUnit(AutomationUnit.DAYS);
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.finished);
+		CurriculumAutomationConfig config = mockConfig(rule, true);
+		CurriculumElementType elementType = mock(CurriculumElementType.class);
+		when(element.getType()).thenReturn(elementType);
+		when(config.getElementType()).thenReturn(elementType);
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
+		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(curriculumService.getCurriculumElement(element)).thenReturn(element);
+
+		sut.execute();
+
+		verify(curriculumService).updateCurriculumElementStatus(eq(null), eq(element),
+				eq(CurriculumElementStatus.finished), eq(false), eq(null));
+		verify(automationExecutionDao, times(1)).createExecution(eq(element), eq(elementType), eq(rule), any());
+	}
+
+	@Test
+	public void testExecute_ruleAlreadyExecuted_skips() {
+		Date beginDate = DateUtils.addDays(new Date(), -10);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getKey()).thenReturn(1L);
+		when(element.getBeginDate()).thenReturn(beginDate);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		rule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
+		rule.setDirection(OffsetDirection.BEFORE);
+		rule.setValue(5);
+		rule.setUnit(AutomationUnit.DAYS);
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.finished);
+		CurriculumAutomationConfig config = mockConfig(rule, true);
+		CurriculumElementType elementType = mock(CurriculumElementType.class);
+		when(element.getType()).thenReturn(elementType);
+		when(config.getElementType()).thenReturn(elementType);
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
+		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
+
+		Map<Long, Set<String>> executedByElement = new HashMap<>();
+		executedByElement.put(1L, new HashSet<>(Set.of("ELEMENT::STATUS_CHANGE::finished")));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(executedByElement);
+
+		sut.execute();
+
+		verify(curriculumService, never()).updateCurriculumElementStatus(any(), any(), any(), anyBoolean(), any());
+		verify(automationExecutionDao, never()).createExecution(any(), any(), any(), any());
+	}
+
+	@Test
+	public void testExecute_alreadyExecutedForOneElement_stillFiresForOther() {
+		Date beginDate = DateUtils.addDays(new Date(), -10);
+		CurriculumElement elementA = mock(CurriculumElement.class);
+		when(elementA.getKey()).thenReturn(1L);
+		when(elementA.getBeginDate()).thenReturn(beginDate);
+		when(elementA.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		CurriculumElement elementB = mock(CurriculumElement.class);
+		when(elementB.getKey()).thenReturn(2L);
+		when(elementB.getBeginDate()).thenReturn(beginDate);
+		when(elementB.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(elementA, elementB));
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		rule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
+		rule.setDirection(OffsetDirection.BEFORE);
+		rule.setValue(5);
+		rule.setUnit(AutomationUnit.DAYS);
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.finished);
+		CurriculumAutomationConfig config = mockConfig(rule, true);
+		CurriculumElementType elementType = mock(CurriculumElementType.class);
+		when(elementA.getType()).thenReturn(elementType);
+		when(elementB.getType()).thenReturn(elementType);
+		when(config.getElementType()).thenReturn(elementType);
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(elementA, elementB))).thenReturn(List.of());
+		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
+		when(curriculumService.getCurriculumElement(elementB)).thenReturn(elementB);
+
+		Map<Long, Set<String>> executedByElement = new HashMap<>();
+		executedByElement.put(1L, new HashSet<>(Set.of("ELEMENT::STATUS_CHANGE::finished")));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(elementA, elementB))).thenReturn(executedByElement);
+
+		sut.execute();
+
+		verify(curriculumService, never()).updateCurriculumElementStatus(eq(null), eq(elementA),
+				eq(CurriculumElementStatus.finished), eq(false), eq(null));
+		verify(automationExecutionDao, never()).createExecution(eq(elementA), any(), any(), any());
+		verify(curriculumService, times(1)).updateCurriculumElementStatus(eq(null), eq(elementB),
+				eq(CurriculumElementStatus.finished), eq(false), eq(null));
+		verify(automationExecutionDao, times(1)).createExecution(eq(elementB), eq(elementType), eq(rule), any());
+	}
+
+	@Test
+	public void testElementStatusChange_lowerTargetStatus_skipsChange() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.STATUS);
+		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.confirmed);
+
+		Date today = DateUtils.getStartOfDay(new Date());
+		sut.processRule(element, rule, today);
+
+		verify(curriculumService, never()).updateCurriculumElementStatus(any(), any(), any(), anyBoolean(), any());
+	}
+
+	@Test
+	public void testElementStatusChange_higherTargetStatus_changes() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.confirmed);
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.STATUS);
+		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.confirmed.name()));
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.active);
+
+		Date today = DateUtils.getStartOfDay(new Date());
+		sut.processRule(element, rule, today);
+
+		verify(curriculumService).updateCurriculumElementStatus(eq(null), eq(element),
+				eq(CurriculumElementStatus.active), eq(false), eq(null));
+	}
+
+	@Test
+	public void testExecute_downgradePrevented_createsUnchangedExecution() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.STATUS);
+		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.confirmed);
+		CurriculumAutomationConfig config = mockConfig(rule, true);
+		CurriculumElementType elementType = mock(CurriculumElementType.class);
+		when(element.getType()).thenReturn(elementType);
+		when(config.getElementType()).thenReturn(elementType);
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
+		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+
+		sut.execute();
+
+		verify(curriculumService, never()).updateCurriculumElementStatus(any(), any(), any(), anyBoolean(), any());
+		verify(automationExecutionDao, times(1)).createExecution(eq(element), eq(elementType), eq(rule),
+				eq(AutomationExecutionResult.UNCHANGED));
+	}
+
+	@Test
+	public void testExecute_processesRulesInOrder_elementThenInstantiationThenContentStatus() {
+		CurriculumElementType elementType = mock(CurriculumElementType.class);
+		when(elementType.getMaxRepositoryEntryRelations()).thenReturn(-1);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(element.getType()).thenReturn(elementType);
+		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
+
+		CurriculumElement updatedElement = mock(CurriculumElement.class);
+		when(updatedElement.getElementStatus()).thenReturn(CurriculumElementStatus.finished);
+		when(updatedElement.getType()).thenReturn(elementType);
+		when(curriculumService.getCurriculumElement(element)).thenReturn(updatedElement);
+
+		CurriculumAutomationRule elementStatusRule = new CurriculumAutomationRuleImpl();
+		elementStatusRule.setDependingOn(AutomationDependingOn.STATUS);
+		elementStatusRule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		elementStatusRule.setContext(AutomationContext.ELEMENT);
+		elementStatusRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		elementStatusRule.setTargetStatus(CurriculumElementStatus.finished);
+		CurriculumAutomationConfig elementStatusConfig = mockConfig(elementStatusRule, true);
+		when(elementStatusConfig.getElementType()).thenReturn(elementType);
+
+		CurriculumAutomationRule instantiationRule = new CurriculumAutomationRuleImpl();
+		instantiationRule.setDependingOn(AutomationDependingOn.STATUS);
+		instantiationRule.setDependingOnStatus(Set.of(CurriculumElementStatus.finished.name()));
+		instantiationRule.setContext(AutomationContext.CONTENT);
+		instantiationRule.setAutomationType(AutomationType.INSTANTIATION);
+		CurriculumAutomationConfig instantiationConfig = mockConfig(instantiationRule, true);
+		when(instantiationConfig.getElementType()).thenReturn(elementType);
+		RepositoryEntry template = mock(RepositoryEntry.class);
+		when(curriculumService.getRepositoryTemplates(updatedElement)).thenReturn(List.of(template));
+
+		CurriculumAutomationRule contentStatusRule = new CurriculumAutomationRuleImpl();
+		contentStatusRule.setDependingOn(AutomationDependingOn.STATUS);
+		contentStatusRule.setDependingOnStatus(Set.of(CurriculumElementStatus.finished.name()));
+		contentStatusRule.setContext(AutomationContext.CONTENT);
+		contentStatusRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		contentStatusRule.setTargetStatus(RepositoryEntryStatusEnum.published);
+		CurriculumAutomationConfig contentStatusConfig = mockConfig(contentStatusRule, true);
+		when(contentStatusConfig.getElementType()).thenReturn(elementType);
+		RepositoryEntry entry = mock(RepositoryEntry.class);
+		when(entry.getEntryStatus()).thenReturn(RepositoryEntryStatusEnum.preparation);
+		when(curriculumService.getRepositoryEntries(updatedElement)).thenReturn(List.of(entry));
+
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
+		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType)))
+				.thenReturn(List.of(contentStatusConfig, instantiationConfig, elementStatusConfig));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+
+		sut.execute();
+
+		InOrder inOrder = inOrder(curriculumService, repositoryManager);
+		inOrder.verify(curriculumService).updateCurriculumElementStatus(eq(null), eq(element),
+				eq(CurriculumElementStatus.finished), eq(false), eq(null));
+		inOrder.verify(curriculumService).instantiateTemplate(any(), any(), any(), any(), any(), any(), any());
+		inOrder.verify(repositoryManager).setStatus(any(), eq(RepositoryEntryStatusEnum.published));
+	}
+
+	@Test
+	public void testExecute_contentRuleSeesUpdatedElementStatus() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.confirmed);
+		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
+
+		CurriculumElement updatedElement = mock(CurriculumElement.class);
+		when(updatedElement.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(curriculumService.getCurriculumElement(element)).thenReturn(updatedElement);
+
+		CurriculumAutomationRule elementStatusRule = new CurriculumAutomationRuleImpl();
+		elementStatusRule.setDependingOn(AutomationDependingOn.STATUS);
+		elementStatusRule.setDependingOnStatus(Set.of(CurriculumElementStatus.confirmed.name()));
+		elementStatusRule.setContext(AutomationContext.ELEMENT);
+		elementStatusRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		elementStatusRule.setTargetStatus(CurriculumElementStatus.active);
+		CurriculumAutomationConfig elementStatusConfig = mockConfig(elementStatusRule, true);
+		when(elementStatusConfig.getCurriculumElement()).thenReturn(element);
+
+		CurriculumAutomationRule contentStatusRule = new CurriculumAutomationRuleImpl();
+		contentStatusRule.setDependingOn(AutomationDependingOn.STATUS);
+		contentStatusRule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		contentStatusRule.setContext(AutomationContext.CONTENT);
+		contentStatusRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		contentStatusRule.setTargetStatus(RepositoryEntryStatusEnum.published);
+		CurriculumAutomationConfig contentStatusConfig = mockConfig(contentStatusRule, true);
+		when(contentStatusConfig.getCurriculumElement()).thenReturn(element);
+		RepositoryEntry entry = mock(RepositoryEntry.class);
+		when(entry.getEntryStatus()).thenReturn(RepositoryEntryStatusEnum.preparation);
+		when(curriculumService.getRepositoryEntries(updatedElement)).thenReturn(List.of(entry));
+
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element)))
+				.thenReturn(List.of(contentStatusConfig, elementStatusConfig));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+
+		sut.execute();
+
+		verify(repositoryManager).setStatus(eq(entry), eq(RepositoryEntryStatusEnum.published));
+	}
+
+	@Test
+	public void testProcessStatusChange_statusRuleFires_executionPeriodRuleSkipped() {
+		Date beginDate = DateUtils.addDays(new Date(), -10);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getKey()).thenReturn(1L);
+		when(element.getBeginDate()).thenReturn(beginDate);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(curriculumService.getCurriculumElement(element)).thenReturn(element);
+
+		CurriculumAutomationRule statusRule = new CurriculumAutomationRuleImpl();
+		statusRule.setDependingOn(AutomationDependingOn.STATUS);
+		statusRule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		statusRule.setContext(AutomationContext.ELEMENT);
+		statusRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		statusRule.setTargetStatus(CurriculumElementStatus.cancelled);
+		CurriculumAutomationConfig statusConfig = mockConfig(statusRule, true);
+
+		CurriculumAutomationRule executionPeriodRule = new CurriculumAutomationRuleImpl();
+		executionPeriodRule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		executionPeriodRule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
+		executionPeriodRule.setDirection(OffsetDirection.BEFORE);
+		executionPeriodRule.setValue(5);
+		executionPeriodRule.setUnit(AutomationUnit.DAYS);
+		executionPeriodRule.setContext(AutomationContext.ELEMENT);
+		executionPeriodRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		executionPeriodRule.setTargetStatus(CurriculumElementStatus.finished);
+		CurriculumAutomationConfig executionPeriodConfig = mockConfig(executionPeriodRule, true);
+		when(statusConfig.getCurriculumElement()).thenReturn(element);
+		when(executionPeriodConfig.getCurriculumElement()).thenReturn(element);
+
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element)))
+				.thenReturn(List.of(statusConfig, executionPeriodConfig));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+
+		sut.processStatusChange(List.of(element));
+
+		verify(curriculumService).updateCurriculumElementStatus(eq(null), eq(element),
+				eq(CurriculumElementStatus.cancelled), eq(false), eq(null));
+		verify(curriculumService, never()).updateCurriculumElementStatus(eq(null), eq(element),
+				eq(CurriculumElementStatus.finished), eq(false), eq(null));
+	}
+
+	@Test
+	public void testProcessStatusChange_alreadyExecuted_skips() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getKey()).thenReturn(1L);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(curriculumService.getCurriculumElement(element)).thenReturn(element);
+
+		CurriculumAutomationRule statusRule = new CurriculumAutomationRuleImpl();
+		statusRule.setDependingOn(AutomationDependingOn.STATUS);
+		statusRule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		statusRule.setContext(AutomationContext.ELEMENT);
+		statusRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		statusRule.setTargetStatus(CurriculumElementStatus.cancelled);
+		CurriculumAutomationConfig statusConfig = mockConfig(statusRule, true);
+		when(statusConfig.getCurriculumElement()).thenReturn(element);
+
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of(statusConfig));
+		Map<Long, Set<String>> executedByElement = new HashMap<>();
+		executedByElement.put(1L, new HashSet<>(Set.of("ELEMENT::STATUS_CHANGE::cancelled")));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(executedByElement);
+
+		sut.processStatusChange(List.of(element));
+
+		verify(curriculumService, never()).updateCurriculumElementStatus(any(), any(), any(), anyBoolean(), any());
+	}
+
+	@Test
+	public void testProcessStatusChange_emptyElements_noop() {
+		sut.processStatusChange(List.of());
+
+		verify(automationConfigDao, never()).getConfigsByCurriculumElements(any());
+	}
+
+	@Test
+	public void testContentInstantiation_noTemplates_writesUnchanged() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getKey()).thenReturn(1L);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
+		when(curriculumService.getCurriculumElement(element)).thenReturn(element);
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.STATUS);
+		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		rule.setContext(AutomationContext.CONTENT);
+		rule.setAutomationType(AutomationType.INSTANTIATION);
+		CurriculumAutomationConfig config = mockConfig(rule, true);
+		CurriculumElementType elementType = mock(CurriculumElementType.class);
+		when(elementType.getMaxRepositoryEntryRelations()).thenReturn(-1);
+		when(element.getType()).thenReturn(elementType);
+		when(config.getElementType()).thenReturn(elementType);
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
+		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+
+		sut.execute();
+
+		verify(curriculumService, never()).instantiateTemplate(any(), any(), any(), any(), any(), any(), any());
+		verify(automationExecutionDao, times(1)).createExecution(eq(element), eq(elementType), eq(rule),
+				eq(AutomationExecutionResult.UNCHANGED));
+	}
+
+	@Test
+	public void testContentInstantiation_alreadyReferenced_writesUnchanged() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getKey()).thenReturn(1L);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
+		when(curriculumService.getCurriculumElement(element)).thenReturn(element);
+		when(curriculumService.countRepositoryEntries(element)).thenReturn(1L);
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.STATUS);
+		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		rule.setContext(AutomationContext.CONTENT);
+		rule.setAutomationType(AutomationType.INSTANTIATION);
+		CurriculumAutomationConfig config = mockConfig(rule, true);
+		CurriculumElementType elementType = mock(CurriculumElementType.class);
+		when(elementType.getMaxRepositoryEntryRelations()).thenReturn(-1);
+		when(element.getType()).thenReturn(elementType);
+		when(config.getElementType()).thenReturn(elementType);
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
+		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+
+		sut.execute();
+
+		verify(curriculumService, never()).instantiateTemplate(any(), any(), any(), any(), any(), any(), any());
+		verify(automationExecutionDao, times(1)).createExecution(eq(element), eq(elementType), eq(rule),
+				eq(AutomationExecutionResult.UNCHANGED));
+	}
+
+	@Test
+	public void testContentStatusChange_noEntries_writesUnchanged() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getKey()).thenReturn(1L);
+		when(element.getElementStatus()).thenReturn(CurriculumElementStatus.active);
+		when(curriculumService.loadAutomationCandidates()).thenReturn(List.of(element));
+		when(curriculumService.getCurriculumElement(element)).thenReturn(element);
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.STATUS);
+		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		rule.setContext(AutomationContext.CONTENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(RepositoryEntryStatusEnum.published);
+		CurriculumAutomationConfig config = mockConfig(rule, true);
+		CurriculumElementType elementType = mock(CurriculumElementType.class);
+		when(element.getType()).thenReturn(elementType);
+		when(config.getElementType()).thenReturn(elementType);
+		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
+		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+
+		sut.execute();
+
+		verify(repositoryManager, never()).setStatus(any(), any());
+		verify(automationExecutionDao, times(1)).createExecution(eq(element), eq(elementType), eq(rule),
+				eq(AutomationExecutionResult.UNCHANGED));
+	}
+
+	private CurriculumAutomationConfig mockConfig(CurriculumAutomationRule rule, boolean enabled) {
+		CurriculumAutomationConfig config = mock(CurriculumAutomationConfig.class);
+		when(config.getRule()).thenReturn(rule);
+		when(config.isEnabled()).thenReturn(enabled);
+		return config;
 	}
 
 }

@@ -19,132 +19,70 @@
  */
 package org.olat.modules.curriculum;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.olat.core.gui.components.date.OffsetDirection;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Persistable;
 import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
- * Initial date: 2026-06-26<br>
+ * Initial date: 2026-07-10<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public class CurriculumAutomationRule {
+public interface CurriculumAutomationRule extends Persistable, CreateInfo {
 
 	public static final String REFERENCE_BEGIN = "BEGIN";
 	public static final String REFERENCE_END = "END";
 
-	private AutomationContext context;
-	private AutomationType automationType;
-	private String targetStatus;
-	private boolean enabled;
-	private AutomationDependingOn dependingOn;
-	private String reference;
-	private Integer value;
-	private AutomationUnit unit;
-	private OffsetDirection direction;
-	private Set<String> dependingOnStatus;
-	private Set<String> onlyWhenStatus;
+	public AutomationContext getContext();
 
-	public CurriculumAutomationRule() {
+	public void setContext(AutomationContext context);
+
+	public AutomationType getAutomationType();
+
+	public void setAutomationType(AutomationType automationType);
+
+	public String getTargetStatus();
+
+	public void setTargetStatus(String targetStatus);
+
+	public default void setTargetStatus(CurriculumElementStatus status) {
+		setTargetStatus(status.name());
 	}
 
-	public AutomationContext getContext() {
-		return context;
+	public default void setTargetStatus(RepositoryEntryStatusEnum status) {
+		setTargetStatus(status.name());
 	}
 
-	public void setContext(AutomationContext context) {
-		this.context = context;
-	}
+	public AutomationDependingOn getDependingOn();
 
-	public AutomationType getAutomationType() {
-		return automationType;
-	}
+	public void setDependingOn(AutomationDependingOn dependingOn);
 
-	public void setAutomationType(AutomationType automationType) {
-		this.automationType = automationType;
-	}
+	public String getReference();
 
-	public String getTargetStatus() {
-		return targetStatus;
-	}
+	public void setReference(String reference);
 
-	public void setTargetStatus(String targetStatus) {
-		this.targetStatus = targetStatus;
-	}
+	public Integer getValue();
 
-	public void setTargetStatus(CurriculumElementStatus status) {
-		this.targetStatus = status.name();
-	}
+	public void setValue(Integer value);
 
-	public void setTargetStatus(RepositoryEntryStatusEnum status) {
-		this.targetStatus = status.name();
-	}
+	public AutomationUnit getUnit();
 
-	public boolean isEnabled() {
-		return enabled;
-	}
+	public void setUnit(AutomationUnit unit);
 
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
+	public OffsetDirection getDirection();
 
-	public AutomationDependingOn getDependingOn() {
-		return dependingOn;
-	}
+	public void setDirection(OffsetDirection direction);
 
-	public void setDependingOn(AutomationDependingOn dependingOn) {
-		this.dependingOn = dependingOn;
-	}
+	public Set<String> getDependingOnStatus();
 
-	public String getReference() {
-		return reference;
-	}
+	public void setDependingOnStatus(Set<String> dependingOnStatus);
 
-	public void setReference(String reference) {
-		this.reference = reference;
-	}
+	public Set<String> getOnlyWhenStatus();
 
-	public Integer getValue() {
-		return value;
-	}
+	public void setOnlyWhenStatus(Set<String> onlyWhenStatus);
 
-	public void setValue(Integer value) {
-		this.value = value;
-	}
-
-	public AutomationUnit getUnit() {
-		return unit;
-	}
-
-	public void setUnit(AutomationUnit unit) {
-		this.unit = unit;
-	}
-
-	public OffsetDirection getDirection() {
-		return direction;
-	}
-
-	public void setDirection(OffsetDirection direction) {
-		this.direction = direction;
-	}
-
-	public Set<String> getDependingOnStatus() {
-		return dependingOnStatus;
-	}
-
-	public void setDependingOnStatus(Set<String> dependingOnStatus) {
-		this.dependingOnStatus = dependingOnStatus != null ? new HashSet<>(dependingOnStatus) : null;
-	}
-
-	public Set<String> getOnlyWhenStatus() {
-		return onlyWhenStatus;
-	}
-
-	public void setOnlyWhenStatus(Set<String> onlyWhenStatus) {
-		this.onlyWhenStatus = onlyWhenStatus != null ? new HashSet<>(onlyWhenStatus) : null;
-	}
-	
 	public static Object toStatusEnum(String statusString) {
 		if (statusString == null) {
 			return null;

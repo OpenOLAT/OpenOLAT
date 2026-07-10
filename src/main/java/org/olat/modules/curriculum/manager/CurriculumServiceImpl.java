@@ -89,6 +89,7 @@ import org.olat.modules.coach.manager.CoachingDAO;
 import org.olat.modules.creditpoint.CurriculumElementCreditPointConfiguration;
 import org.olat.modules.creditpoint.manager.CurriculumElementCreditPointConfigurationDAO;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumAutomationService;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -199,6 +200,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CoachingDAO coachingDao;
 	@Autowired
 	private CurriculumDAO curriculumDao;
+	@Autowired
+	private CurriculumAutomationService curriculumAutomationService;
 	@Autowired
 	private CurriculumStorage curriculumStorage;
 	@Autowired
@@ -941,6 +944,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		element = updateCurriculumElement(doer, element);
 		auditLogChangeStatus(currentStatus, newStatus, element, doer);
 		
+		List<CurriculumElement> changedElements = new ArrayList<>();
+		changedElements.add(element);
+		
 		if (updateChildren) {
 			// Confirmed is only allowed for implementations. Sub-element equivalent is active
 			CurriculumElementStatus newChildStatus = newStatus == CurriculumElementStatus.confirmed
@@ -955,6 +961,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					((CurriculumElementImpl)childElement).setElementStatus(newChildStatus);
 					childElement = updateCurriculumElement(doer, childElement);
 					auditLogChangeStatus(currentChildStatus, newChildStatus, childElement, doer);
+					changedElements.add(childElement);
 				});
 		}
 		
@@ -966,6 +973,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			sendStatusChangeNotificationsEmail(doer, identities, mailing, element);
 		}
 		
+		// doer is null only for automation-/cron-driven changes; skip to avoid re-entering automation
+		if (doer != null) {
+			curriculumAutomationService.processStatusChange(changedElements);
+		}
+
 		return element;
 	}
 	

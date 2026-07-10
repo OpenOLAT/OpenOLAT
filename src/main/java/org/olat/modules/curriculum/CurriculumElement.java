@@ -179,10 +179,6 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	public CurriculumElement getImplementation();
 	
 	public String getNumberImpl();
-	
-	public CurriculumAutomationConfig getAutomationConfig();
-
-	public void setAutomationConfig(CurriculumAutomationConfig config);
 
 	public CurriculumElementType getType();
 

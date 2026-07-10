@@ -19,32 +19,29 @@
  */
 package org.olat.modules.curriculum;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Persistable;
 
 /**
- * Initial date: 2026-06-26<br>
+ * One persisted automation rule row, owned by exactly one of a curriculum element type
+ * or a curriculum element (element overrides type).
+ *
+ * Initial date: 2026-07-10<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public class CurriculumAutomationConfig {
+public interface CurriculumAutomationConfig extends Persistable, CreateInfo, ModifiedInfo {
 
-	private List<CurriculumAutomationRule> rules;
+	public CurriculumElementType getElementType();
 
-	public CurriculumAutomationConfig() {
-	}
+	public CurriculumElement getCurriculumElement();
 
-	public List<CurriculumAutomationRule> getRules() {
-		return rules;
-	}
+	public boolean isEnabled();
 
-	public void setRules(List<CurriculumAutomationRule> rules) {
-		this.rules = rules;
-	}
+	public void setEnabled(boolean enabled);
 
-	public void addRule(CurriculumAutomationRule rule) {
-		if (rules == null) {
-			rules = new ArrayList<>();
-		}
-		rules.add(rule);
-	}
+	public CurriculumAutomationRule getRule();
+
+	public void setRule(CurriculumAutomationRule rule);
+
 }

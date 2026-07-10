@@ -1085,7 +1085,6 @@ create index idx_grad_assign_log_assign_idx on o_grad_assignment_log (fk_assigne
 -- Curriculum element type
 alter table o_cur_element_type add column c_impl_only bool default false not null;
 alter table o_cur_element_type add column c_status varchar(32) default 'active' not null;
-alter table o_cur_element_type add column c_automation_config mediumtext;
 
 -- Curriculum element automation
 alter table o_cur_curriculum_element drop column c_auto_instantiation;
@@ -1096,7 +1095,56 @@ alter table o_cur_curriculum_element drop column c_auto_published;
 alter table o_cur_curriculum_element drop column c_auto_published_unit;
 alter table o_cur_curriculum_element drop column c_auto_closed;
 alter table o_cur_curriculum_element drop column c_auto_closed_unit;
-alter table o_cur_curriculum_element add column c_automation_config mediumtext;
+
+create table o_cur_automation_config (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  c_enabled bool not null,
+  fk_rule bigint,
+  fk_element_type bigint,
+  fk_curriculum_element bigint,
+  primary key (id)
+);
+alter table o_cur_automation_config ENGINE = InnoDB;
+
+create table o_cur_automation_rule (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  c_context varchar(32),
+  c_automation_type varchar(32),
+  c_target_status varchar(32),
+  c_depending_on varchar(32),
+  c_reference varchar(16),
+  c_value integer,
+  c_unit varchar(32),
+  c_direction varchar(16),
+  c_depending_on_status varchar(1024),
+  c_only_when_status varchar(1024),
+  primary key (id)
+);
+alter table o_cur_automation_rule ENGINE = InnoDB;
+
+create table o_cur_automation_execution (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  c_execution_date datetime not null,
+  c_result varchar(32) not null,
+  fk_rule bigint,
+  fk_element_type bigint,
+  fk_curriculum_element bigint not null,
+  primary key (id)
+);
+alter table o_cur_automation_execution ENGINE = InnoDB;
+
+alter table o_cur_automation_config add constraint cur_auto_cfg_type_idx foreign key (fk_element_type) references o_cur_element_type (id);
+create index idx_cur_auto_cfg_type_idx on o_cur_automation_config (fk_element_type);
+alter table o_cur_automation_config add constraint cur_auto_cfg_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
+create index idx_cur_auto_cfg_el_idx on o_cur_automation_config (fk_curriculum_element);
+alter table o_cur_automation_config add constraint cur_auto_cfg_rule_idx foreign key (fk_rule) references o_cur_automation_rule (id);
+
+alter table o_cur_automation_execution add constraint cur_auto_exec_rule_idx foreign key (fk_rule) references o_cur_automation_rule (id);
+create index idx_cur_auto_exec_el_idx on o_cur_automation_execution (fk_curriculum_element);
 
 
 -- Safe Exam Browser

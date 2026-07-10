@@ -42,7 +42,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumAutomationConfig;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -57,6 +56,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.TaughtBy;
 import org.olat.modules.curriculum.model.AccessibleCurriculumObjectKeys;
 import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
+import org.olat.modules.curriculum.model.CurriculumAutomationRuleImpl;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -90,6 +90,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
 	private CurriculumElementTypeDAO curriculumElementTypeDao;
+	@Autowired
+	private CurriculumAutomationConfigDAO curriculumAutomationConfigDao;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -2121,8 +2123,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void loadAutomationCandidates_excludesDeletedFinishedCancelled() {
 		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), random(), false, null);
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType(random(), random(), random(), random());
-		type.setAutomationConfig(new CurriculumAutomationConfig());
-		curriculumElementTypeDao.update(type);
+		curriculumAutomationConfigDao.createConfig(type, null, new CurriculumAutomationRuleImpl(), true);
 
 		CurriculumElement active = curriculumElementDao.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, type, null, null, null, curriculum);
@@ -2148,8 +2149,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void loadAutomationCandidates_typeConfig() {
 		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), random(), false, null);
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType(random(), random(), random(), random());
-		type.setAutomationConfig(new CurriculumAutomationConfig());
-		curriculumElementTypeDao.update(type);
+		curriculumAutomationConfigDao.createConfig(type, null, new CurriculumAutomationRuleImpl(), true);
 
 		CurriculumElement element = curriculumElementDao.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, type, null, null, null, curriculum);
@@ -2169,8 +2169,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 
 		CurriculumElement element = curriculumElementDao.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, type, null, null, null, curriculum);
-		element.setAutomationConfig(new CurriculumAutomationConfig());
-		curriculumElementDao.update(element);
+		curriculumAutomationConfigDao.createConfig(null, element, new CurriculumAutomationRuleImpl(), true);
 		dbInstance.commitAndCloseSession();
 
 		List<CurriculumElement> candidates = curriculumElementDao.loadAutomationCandidates();
@@ -2202,8 +2201,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 
 		CurriculumElement element = curriculumElementDao.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
-		element.setAutomationConfig(new CurriculumAutomationConfig());
-		curriculumElementDao.update(element);
+		curriculumAutomationConfigDao.createConfig(null, element, new CurriculumAutomationRuleImpl(), true);
 		dbInstance.commitAndCloseSession();
 
 		List<CurriculumElement> candidates = curriculumElementDao.loadAutomationCandidates();

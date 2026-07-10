@@ -299,8 +299,8 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			automationCont.setFormInfo(translate(automationInfoKey));
 		}
 
-		var initialConfig = isImplOrElem ? null
-				: (curriculumElementType != null ? curriculumElementType.getAutomationConfig() : defaultAutomationConfig());
+		List<CurriculumAutomationConfig> initialConfig = isImplOrElem ? null
+				: (curriculumElementType != null ? nullIfEmpty(automationService.getConfigs(curriculumElementType)) : defaultAutomationConfig());
 		AutomationFormConfig cfg = new AutomationFormConfig(
 				forUseAs,
 				true,
@@ -323,7 +323,11 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
-	private CurriculumAutomationConfig defaultAutomationConfig() {
+	private List<CurriculumAutomationConfig> nullIfEmpty(List<CurriculumAutomationConfig> configs) {
+		return configs == null || configs.isEmpty() ? null : configs;
+	}
+
+	private List<CurriculumAutomationConfig> defaultAutomationConfig() {
 		boolean subYes = subElementsEl.isOneSelected() && SUB_ELEMENTS_YES.equals(subElementsEl.getSelectedKey());
 		SingleSelection contentEl = subYes ? contentSubelementsYesEl : contentSubelementsNoEl;
 		String content = contentEl.isOneSelected() ? contentEl.getSelectedKey() : CONTENT_SINGLE_COURSE;
@@ -489,8 +493,9 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		for(String selectedAllowedSubTypeKey:selectedAllowedSubTypeKeys) {
 			allowedSubTypes.add(curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(Long.valueOf(selectedAllowedSubTypeKey))));
 		}
-		curriculumElementType.setAutomationConfig(automationCtrl.isAutomationEnabled() ? automationCtrl.getAutomationConfig() : null);
 		curriculumElementType = curriculumService.updateCurriculumElementType(curriculumElementType, allowedSubTypes);
+		automationService.updateConfigs(curriculumElementType,
+				automationCtrl.isAutomationEnabled() ? automationCtrl.getAutomationConfig() : null);
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

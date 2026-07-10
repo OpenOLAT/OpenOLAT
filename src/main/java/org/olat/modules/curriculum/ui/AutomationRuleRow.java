@@ -29,6 +29,7 @@ import org.olat.modules.curriculum.AutomationContext;
 import org.olat.modules.curriculum.AutomationDependingOn;
 import org.olat.modules.curriculum.AutomationType;
 import org.olat.modules.curriculum.AutomationUnit;
+import org.olat.modules.curriculum.CurriculumAutomationConfig;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
 
 /**
@@ -37,13 +38,19 @@ import org.olat.modules.curriculum.CurriculumAutomationRule;
  */
 public class AutomationRuleRow {
 
+	private final CurriculumAutomationConfig config;
 	private final CurriculumAutomationRule rule;
 	private Date plannedExecution;
 	private FormToggle ruleEnabledEl;
 	private FormLink toolsLink;
 
-	public AutomationRuleRow(CurriculumAutomationRule rule) {
-		this.rule = rule;
+	public AutomationRuleRow(CurriculumAutomationConfig config) {
+		this.config = config;
+		this.rule = config.getRule();
+	}
+
+	public CurriculumAutomationConfig getConfig() {
+		return config;
 	}
 
 	public CurriculumAutomationRule getRule() {
@@ -63,7 +70,7 @@ public class AutomationRuleRow {
 	}
 
 	public boolean isEnabled() {
-		return rule.isEnabled();
+		return config.isEnabled();
 	}
 
 	public AutomationDependingOn getDependingOn() {

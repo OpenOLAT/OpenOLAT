@@ -250,13 +250,6 @@ public class EditCurriculumAutomationController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		onlyWhenStatusEl.clearError();
-		if (onlyWhenStatusEl.isVisible() && onlyWhenStatusEl.isEnabled()
-				&& !onlyWhenStatusEl.isAtLeastSelected(1)) {
-			onlyWhenStatusEl.setErrorKey("form.legende.mandatory");
-			allOk = false;
-		}
-
 		if (dependingOnStatusEl != null) {
 			dependingOnStatusEl.clearError();
 			if (dependingOnStatusEl.isVisible() && dependingOnStatusEl.isEnabled()
@@ -304,7 +297,11 @@ public class EditCurriculumAutomationController extends FormBasicController {
 		}
 
 		if (onlyWhenStatusEl.isVisible()) {
-			rule.setOnlyWhenStatus(new HashSet<>(onlyWhenStatusEl.getSelectedKeys()));
+			Set<String> onlyWhenStatus = new HashSet<>(onlyWhenStatusEl.getSelectedKeys());
+			if (onlyWhenStatus.isEmpty()) {
+				onlyWhenStatus = new HashSet<>(onlyWhenStatusEl.getKeys());
+			}
+			rule.setOnlyWhenStatus(onlyWhenStatus);
 		} else {
 			rule.setOnlyWhenStatus(null);
 		}

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
@@ -32,8 +33,8 @@ public record AutomationFormConfig(
 		String forUseAs,
 		boolean showEnableToggle,
 		boolean initialEnabled,
-		CurriculumAutomationConfig initialConfig,
+		List<CurriculumAutomationConfig> initialConfig,
 		boolean implType,
-		Supplier<CurriculumAutomationConfig> defaultConfigSupplier,
+		Supplier<List<CurriculumAutomationConfig>> defaultConfigSupplier,
 		CurriculumElement automationElement
 ) {}

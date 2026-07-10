@@ -4346,7 +4346,44 @@ create table o_cur_element_type (
   c_impl_only number default 0 not null,
   c_status varchar2(32) default 'active' not null,
   c_css_class varchar(64),
-  c_automation_config clob,
+  primary key (id)
+);
+
+create table o_cur_automation_config (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  c_enabled number(1) not null,
+  fk_rule number(20),
+  fk_element_type number(20),
+  fk_curriculum_element number(20),
+  primary key (id)
+);
+
+create table o_cur_automation_rule (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  c_context varchar2(32),
+  c_automation_type varchar2(32),
+  c_target_status varchar2(32),
+  c_depending_on varchar2(32),
+  c_reference varchar2(16),
+  c_value number(20),
+  c_unit varchar2(32),
+  c_direction varchar2(16),
+  c_depending_on_status varchar2(1024),
+  c_only_when_status varchar2(1024),
+  primary key (id)
+);
+
+create table o_cur_automation_execution (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  c_execution_date date not null,
+  c_result varchar2(32) not null,
+  fk_rule number(20),
+  fk_element_type number(20),
+  fk_curriculum_element number(20) not null,
   primary key (id)
 );
 
@@ -4402,7 +4439,6 @@ create table o_cur_curriculum_element (
   c_show_lectures number default 1 not null,
   c_show_certificate number default 0,
   c_show_creditpoints number default 0,
-  c_automation_config clob,
   fk_group number(20) not null,
   fk_resource number(20),
   fk_parent number(20),
@@ -7518,6 +7554,17 @@ alter table o_cur_audit_log add constraint cur_audit_log_cur_idx foreign key (fk
 create index idx_cur_audit_log_cur_idx on o_cur_audit_log (fk_curriculum);
 alter table o_cur_audit_log add constraint cur_audit_log_cur_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
 create index idx_cur_audit_log_cur_el_idx on o_cur_audit_log (fk_curriculum_element);
+
+alter table o_cur_automation_config add constraint cur_auto_cfg_type_idx foreign key (fk_element_type) references o_cur_element_type (id);
+create index idx_cur_auto_cfg_type_idx on o_cur_automation_config (fk_element_type);
+alter table o_cur_automation_config add constraint cur_auto_cfg_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
+create index idx_cur_auto_cfg_el_idx on o_cur_automation_config (fk_curriculum_element);
+alter table o_cur_automation_config add constraint cur_auto_cfg_rule_idx foreign key (fk_rule) references o_cur_automation_rule (id);
+create index idx_cur_auto_cfg_rule_idx on o_cur_automation_config (fk_rule);
+
+alter table o_cur_automation_execution add constraint cur_auto_exec_rule_idx foreign key (fk_rule) references o_cur_automation_rule (id);
+create index idx_cur_auto_exec_rule_idx on o_cur_automation_execution (fk_rule);
+create index idx_cur_auto_exec_el_idx on o_cur_automation_execution (fk_curriculum_element);
 
 -- edu-sharing
 create index idx_es_usage_ident_idx on o_es_usage (e_identifier);

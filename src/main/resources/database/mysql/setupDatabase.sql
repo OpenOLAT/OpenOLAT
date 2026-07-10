@@ -4275,7 +4275,6 @@ create table o_cur_element_type (
   c_impl_only bool default false not null,
   c_status varchar(32) default 'active' not null,
   c_css_class varchar(64),
-  c_automation_config text,
   primary key (id)
 );
 
@@ -4331,7 +4330,6 @@ create table o_cur_curriculum_element (
   c_show_lectures boolean default true not null,
   c_show_certificate boolean default false,
   c_show_creditpoints boolean default false,
-  c_automation_config mediumtext,
   fk_group bigint not null,
   fk_resource bigint,
   fk_parent bigint,
@@ -4368,6 +4366,44 @@ create table o_cur_audit_log (
   fk_identity bigint,
   fk_curriculum bigint,
   fk_curriculum_element bigint,
+  primary key (id)
+);
+
+create table o_cur_automation_config (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  c_enabled bool not null,
+  fk_rule bigint,
+  fk_element_type bigint,
+  fk_curriculum_element bigint,
+  primary key (id)
+);
+
+create table o_cur_automation_rule (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  c_context varchar(32),
+  c_automation_type varchar(32),
+  c_target_status varchar(32),
+  c_depending_on varchar(32),
+  c_reference varchar(16),
+  c_value integer,
+  c_unit varchar(32),
+  c_direction varchar(16),
+  c_depending_on_status varchar(1024),
+  c_only_when_status varchar(1024),
+  primary key (id)
+);
+
+create table o_cur_automation_execution (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  c_execution_date datetime not null,
+  c_result varchar(32) not null,
+  fk_rule bigint,
+  fk_element_type bigint,
+  fk_curriculum_element bigint not null,
   primary key (id)
 );
 
@@ -6288,6 +6324,9 @@ alter table o_org_type_to_type ENGINE = InnoDB;
 alter table o_org_role_to_right ENGINE = InnoDB;
 alter table o_re_to_organisation ENGINE = InnoDB;
 alter table o_cur_element_type ENGINE = InnoDB;
+alter table o_cur_automation_config ENGINE = InnoDB;
+alter table o_cur_automation_rule ENGINE = InnoDB;
+alter table o_cur_automation_execution ENGINE = InnoDB;
 alter table o_cur_curriculum ENGINE = InnoDB;
 alter table o_cur_curriculum_element ENGINE = InnoDB;
 alter table o_cur_element_type_to_type ENGINE = InnoDB;
@@ -7368,6 +7407,13 @@ alter table o_cur_element_to_tax_level add constraint cur_el_to_tax_level_idx fo
 alter table o_cur_audit_log add constraint cur_audit_log_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_cur_audit_log add constraint cur_audit_log_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
 alter table o_cur_audit_log add constraint cur_audit_log_cur_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
+
+alter table o_cur_automation_config add constraint cur_auto_cfg_type_idx foreign key (fk_element_type) references o_cur_element_type (id);
+alter table o_cur_automation_config add constraint cur_auto_cfg_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
+alter table o_cur_automation_config add constraint cur_auto_cfg_rule_idx foreign key (fk_rule) references o_cur_automation_rule (id);
+
+alter table o_cur_automation_execution add constraint cur_auto_exec_rule_idx foreign key (fk_rule) references o_cur_automation_rule (id);
+create index idx_cur_auto_exec_el_idx on o_cur_automation_execution (fk_curriculum_element);
 
 -- edu-sharing
 create index idx_es_usage_ident_idx on o_es_usage (e_identifier);

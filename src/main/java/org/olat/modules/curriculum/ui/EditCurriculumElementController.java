@@ -46,7 +46,6 @@ import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
-import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumAutomationService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -168,9 +167,8 @@ public class EditCurriculumElementController extends BasicController implements 
 				Long previousTypeKey = element.getType() != null ? element.getType().getKey() : null;
 				element = metadataCtrl.getCurriculumElement();
 				Long newTypeKey = element.getType() != null ? element.getType().getKey() : null;
-				if (!Objects.equals(previousTypeKey, newTypeKey) && element.getAutomationConfig() != null) {
-					element.setAutomationConfig(null);
-					element = curriculumService.updateCurriculumElement(getIdentity(), element);
+				if (!Objects.equals(previousTypeKey, newTypeKey) && !automationService.getConfigs(element).isEmpty()) {
+					automationService.updateConfigs(element, List.of());
 				}
 				exposeToVC();
 				updateUI();
@@ -242,21 +240,19 @@ public class EditCurriculumElementController extends BasicController implements 
 		}
 		mainVC.contextPut("externalId", element.getExternalId());
 		
-		CurriculumAutomationConfig automationConfig = element.getAutomationConfig();
-		if (automationConfig == null || automationConfig.getRules() == null) {
+		List<CurriculumAutomationConfig> automationConfig = automationService.getConfigs(element);
+		if (automationConfig.isEmpty()) {
 			CurriculumElementType type = element.getType();
-			automationConfig = type == null ? null : type.getAutomationConfig();
+			automationConfig = type == null ? List.of() : automationService.getConfigs(type);
 		}
 		boolean hasActiveAutomation = false;
 		Date nextExecution = null;
-		if (automationConfig != null && automationConfig.getRules() != null) {
-			for (CurriculumAutomationRule rule : automationConfig.getRules()) {
-				if (rule.isEnabled()) {
-					hasActiveAutomation = true;
-					Date triggerDate = automationService.computeTriggerDate(element, rule);
-					if (triggerDate != null && (nextExecution == null || triggerDate.before(nextExecution))) {
-						nextExecution = triggerDate;
-					}
+		for (CurriculumAutomationConfig config : automationConfig) {
+			if (config.isEnabled()) {
+				hasActiveAutomation = true;
+				Date triggerDate = automationService.computeTriggerDate(element, config.getRule());
+				if (triggerDate != null && (nextExecution == null || triggerDate.before(nextExecution))) {
+					nextExecution = triggerDate;
 				}
 			}
 		}

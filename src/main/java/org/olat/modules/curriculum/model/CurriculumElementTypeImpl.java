@@ -40,7 +40,6 @@ import jakarta.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.curriculum.CurriculumAutomationConfig;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
@@ -48,7 +47,6 @@ import org.olat.modules.curriculum.CurriculumElementTypeStatus;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
-import org.olat.modules.curriculum.manager.CurriculumAutomationConfigXStream;
 
 /**
  * 
@@ -106,10 +104,6 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	@Column(name="c_status", nullable=true, insertable=true, updatable=true)
 	@Enumerated(EnumType.STRING)
 	private CurriculumElementTypeStatus status;
-
-	@Column(name="c_automation_config")
-	private String automationConfigXml;
-	private transient CurriculumAutomationConfig automationConfig;
 
 	@OneToMany(targetEntity=CurriculumElementTypeToTypeImpl.class, fetch=FetchType.LAZY,
 			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
@@ -329,20 +323,6 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	@Override
 	public void setManagedFlags(CurriculumElementTypeManagedFlag[] flags) {
 		managedFlagsString = CurriculumElementTypeManagedFlag.toString(flags);
-	}
-
-	@Override
-	public CurriculumAutomationConfig getAutomationConfig() {
-		if (automationConfig == null && automationConfigXml != null) {
-			automationConfig = CurriculumAutomationConfigXStream.fromXML(automationConfigXml);
-		}
-		return automationConfig;
-	}
-
-	@Override
-	public void setAutomationConfig(CurriculumAutomationConfig config) {
-		this.automationConfig = config;
-		this.automationConfigXml = CurriculumAutomationConfigXStream.toXML(config);
 	}
 
 	@Override

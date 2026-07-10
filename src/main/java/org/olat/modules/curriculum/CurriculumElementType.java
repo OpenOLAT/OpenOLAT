@@ -99,8 +99,4 @@ public interface CurriculumElementType extends CurriculumElementTypeRef, CreateI
 	
 	public Set<CurriculumElementTypeToType> getAllowedSubTypes();
 
-	public CurriculumAutomationConfig getAutomationConfig();
-
-	public void setAutomationConfig(CurriculumAutomationConfig config);
-
 }

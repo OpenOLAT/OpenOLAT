@@ -261,6 +261,9 @@
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeToTypeImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementToTaxonomyLevelImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumAuditLogImpl</class>
+		<class>org.olat.modules.curriculum.model.CurriculumAutomationConfigImpl</class>
+		<class>org.olat.modules.curriculum.model.CurriculumAutomationRuleImpl</class>
+		<class>org.olat.modules.curriculum.model.CurriculumAutomationExecutionImpl</class>
 		<class>org.olat.modules.edusharing.model.EdusharingUsageImpl</class>
 		<class>org.olat.modules.fo.model.ForumImpl</class>
 		<class>org.olat.modules.fo.model.MessageImpl</class>
