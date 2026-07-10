@@ -190,7 +190,8 @@ public class CurriculumAutomationController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.targetStatus,
 				new AutomationTargetStatusCellRenderer(getTranslator(), true)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.condition));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.statusIs));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(statusIsHeaderKey(),
+				AutomationCols.statusIs.ordinal()));
 		if (formConfig.automationElement() != null) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.plannedExecution));
 		}
@@ -214,6 +215,11 @@ public class CurriculumAutomationController extends FormBasicController {
 			automationTable.setSelectedFilterTab(ureq, relevantTab);
 		}
 		updateTableVisibility();
+	}
+
+	private String statusIsHeaderKey() {
+		boolean isImplType = EditCurriculumElementTypeController.FOR_USE_AS_IMPL.equals(formConfig.forUseAs());
+		return isImplType ? "automation.col.status.is.implementation" : "automation.col.status.is.element";
 	}
 
 	private void initAutomationFilters() {
@@ -495,7 +501,7 @@ public class CurriculumAutomationController extends FormBasicController {
 		automationType("automation.col.automation"),
 		targetStatus("automation.col.target.status"),
 		condition("automation.col.condition"),
-		statusIs("automation.col.status.is"),
+		statusIs("automation.col.status.is.element"),
 		plannedExecution("automation.col.planned.execution"),
 		rule("automation.col.rule"),
 		tools("action");

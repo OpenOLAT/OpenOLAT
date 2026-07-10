@@ -42,9 +42,9 @@ import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.AutomationContext;
 import org.olat.modules.curriculum.AutomationDependingOn;
-import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.ui.component.AutomationContextCellRenderer;
 import org.olat.modules.curriculum.ui.component.AutomationTargetStatusCellRenderer;
@@ -118,8 +118,11 @@ public class EditCurriculumAutomationController extends FormBasicController {
 		}
 
 		SelectionValues onlyWhenStatusSV = buildOnlyWhenStatusSV();
+		String statusIsLabelKey = implType
+				? "automation.col.status.is.implementation"
+				: "automation.col.status.is.element";
 		onlyWhenStatusEl = uifactory.addCheckboxesButtonGroup("automation.only.when.status",
-				"automation.col.status.is", configCont, onlyWhenStatusSV);
+				statusIsLabelKey, configCont, onlyWhenStatusSV);
 		initCheckboxSelection(onlyWhenStatusEl, onlyWhenStatusSV, rule.getOnlyWhenStatus());
 
 		executionPeriodCont = uifactory.addInlineFormLayout("executionPeriod", null, configCont);
@@ -206,16 +209,15 @@ public class EditCurriculumAutomationController extends FormBasicController {
 	private SelectionValues buildDependingOnStatusSV() {
 		SelectionValues sv = new SelectionValues();
 		String targetStatus = rule.getTargetStatus();
+		if (implType) {
+			addStatus(sv, CurriculumElementStatus.provisional);
+			addStatus(sv, CurriculumElementStatus.confirmed);
+		} else {
+			addStatus(sv, CurriculumElementStatus.active);
+		}
 		if (RepositoryEntryStatusEnum.closed.name().equals(targetStatus)) {
 			addStatus(sv, CurriculumElementStatus.cancelled);
 			addStatus(sv, CurriculumElementStatus.finished);
-		} else {
-			if (implType) {
-				addStatus(sv, CurriculumElementStatus.provisional);
-				addStatus(sv, CurriculumElementStatus.confirmed);
-			} else {
-				addStatus(sv, CurriculumElementStatus.active);
-			}
 		}
 		return sv;
 	}

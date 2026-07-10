@@ -817,6 +817,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				if (structureCtrl != null) {
 					structureCtrl.loadModel();
 				}
+				if (resourcesCtrl != null) {
+					resourcesCtrl.loadModel();
+				}
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
