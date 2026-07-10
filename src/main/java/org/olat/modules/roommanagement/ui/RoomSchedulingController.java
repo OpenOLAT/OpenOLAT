@@ -348,7 +348,41 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 					.collect(Collectors.toList());
 		}
 
+		String searchString = tableEl.getQuickSearchString();
+		if (StringHelper.containsNonWhitespace(searchString)) {
+			String searchLower = searchString.toLowerCase();
+			bookings = bookings.stream()
+					.filter(b -> matchesSearch(b, searchLower))
+					.collect(Collectors.toList());
+		}
+
 		return bookings;
+	}
+
+	/**
+	 * Quick search matches only the Event, Element and Course columns, per spec.
+	 */
+	private boolean matchesSearch(RoomBooking booking, String searchLower) {
+		LectureBlock lb = booking.getLectureBlock();
+		if (lb == null) return false;
+
+		if (containsIgnoreCase(lb.getTitle(), searchLower) || containsIgnoreCase(lb.getExternalRef(), searchLower)) {
+			return true;
+		}
+
+		CurriculumElement element = lb.getCurriculumElement();
+		if (element != null && (containsIgnoreCase(element.getDisplayName(), searchLower)
+				|| containsIgnoreCase(element.getIdentifier(), searchLower))) {
+			return true;
+		}
+
+		var entry = lb.getEntry();
+		return entry != null && (containsIgnoreCase(entry.getDisplayname(), searchLower)
+				|| containsIgnoreCase(entry.getExternalRef(), searchLower));
+	}
+
+	private boolean containsIgnoreCase(String value, String searchLower) {
+		return StringHelper.containsNonWhitespace(value) && value.toLowerCase().contains(searchLower);
 	}
 
 	private void loadModel() {
