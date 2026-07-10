@@ -1,6 +1,9 @@
 <h2><i class="o_icon o_icon_room_management"> </i> $r.translate("admin.menu.title")</h2>
 <div class="clearfix">
-	$r.render("segments")<br>
+	#if($enabled)
+	$r.render("segments")
+	#end
+	<br>
 	#if($r.available("segmentCmp"))
 		$r.render("segmentCmp")
 	#end

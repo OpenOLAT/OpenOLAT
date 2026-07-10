@@ -39,6 +39,8 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 28 May 2026<br>
@@ -64,9 +66,14 @@ public class RoomManagementAdminController extends BasicController implements Ac
 	private RoomListController roomListCtrl;
 	private BuildingListController buildingListCtrl;
 
+	@Autowired
+	private RoomManagementModule roomManagementModule;
+	
 	public RoomManagementAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("admin");
+		mainVC.contextPut("enabled", roomManagementModule.isEnabled());
+
 		putInitialPanel(mainVC);
 
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -122,6 +129,8 @@ public class RoomManagementAdminController extends BasicController implements Ac
 			doOpenRooms(ureq);
 			segmentView.select(roomsLink);
 			roomListCtrl.selectRoom(ureq, openRoomEvent.getRoomKey());
+		} else if (event == Event.CHANGED_EVENT && source == settingsCtrl) {
+			mainVC.contextPut("enabled", roomManagementModule.isEnabled());
 		}
 		super.event(ureq, source, event);
 	}
