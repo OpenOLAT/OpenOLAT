@@ -62,8 +62,8 @@ public class RoomListDataModel extends DefaultFlexiTableDataModel<RoomRow>
 			case description -> row.getRoom().getDescription();
 			case status -> row.getRoom().getStatus();
 			case seats -> row.getRoom().getSeats();
-			case additionalInfo -> RoomUIHelper.truncateColumnInfoText(row.getRoom().getRoomInfo());
-			case adminInfo -> RoomUIHelper.truncateColumnInfoText(row.getRoom().getAdminInfo());
+			case additionalInfo -> row;
+			case adminInfo -> row;
 			case building -> row;
 			case occupancyRate -> {
 				int pct = row.getOccupancyRatePercent();

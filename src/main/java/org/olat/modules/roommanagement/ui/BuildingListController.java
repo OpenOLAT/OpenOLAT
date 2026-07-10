@@ -42,7 +42,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsTog
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
@@ -147,7 +146,10 @@ public class BuildingListController extends FormBasicController implements Flexi
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.infoUrl));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.orgRestriction,
 				new OrgRestrictionCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BuildingCols.additionalInfo, new AdditionalInfoCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BuildingCols.additionalInfo,
+				new TruncatedInfoCellRenderer(
+						cellValue -> ((BuildingRow) cellValue).getBuilding().getInfo(),
+						cellValue -> ((BuildingRow) cellValue).getAdditionalInfoLink())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BuildingCols.rooms));
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(BuildingCols.tools));
 
@@ -763,31 +765,4 @@ public class BuildingListController extends FormBasicController implements Flexi
 		}
 	}
 
-	private static final class AdditionalInfoCellRenderer implements FlexiCellRenderer {
-		@Override
-		public void render(Renderer renderer, StringOutput target, Object cellValue,
-				int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-			if (!(cellValue instanceof BuildingRow buildingRow)) return;
-			FormLink link = buildingRow.getAdditionalInfoLink();
-			if (link == null || renderer == null) {
-				String text = RoomUIHelper.truncateColumnInfoText(buildingRow.getBuilding().getInfo());
-				if (StringHelper.containsNonWhitespace(text)) {
-					target.append(StringHelper.escapeHtml(text));
-				}
-			} else {
-				String text = RoomUIHelper.truncateColumnInfoTextNoEllipsis(buildingRow.getBuilding().getInfo());
-				if (StringHelper.containsNonWhitespace(text)) {
-					target.append(StringHelper.escapeHtml(text));
-				}
-				FlexiTableElementImpl ftE = source.getFormItem();
-				if (ftE.getRootForm() != link.getRootForm()) {
-					link.setRootForm(ftE.getRootForm());
-				}
-				ftE.addFormItem(link);
-				org.olat.core.gui.components.Component cmp = link.getComponent();
-				cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, null, null);
-				cmp.setDirty(false);
-			}
-		}
-	}
 }

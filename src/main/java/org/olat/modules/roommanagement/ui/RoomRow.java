@@ -33,6 +33,8 @@ public class RoomRow {
 	private FormLink buildingLink;   // getUserObject() == Building
 	private FormLink calendarIconLink;
 	private FormLink detailsIconLink;
+	private FormLink additionalInfoLink;
+	private FormLink adminInfoLink;
 	private int occupancyRatePercent = -1;  // -1 = N/A
 	private String nextEvent;
 	private FormLink toolsLink;
@@ -76,6 +78,22 @@ public class RoomRow {
 
 	public void setDetailsIconLink(FormLink detailsIconLink) {
 		this.detailsIconLink = detailsIconLink;
+	}
+
+	public FormLink getAdditionalInfoLink() {
+		return additionalInfoLink;
+	}
+
+	public void setAdditionalInfoLink(FormLink additionalInfoLink) {
+		this.additionalInfoLink = additionalInfoLink;
+	}
+
+	public FormLink getAdminInfoLink() {
+		return adminInfoLink;
+	}
+
+	public void setAdminInfoLink(FormLink adminInfoLink) {
+		this.adminInfoLink = adminInfoLink;
 	}
 
 	public int getOccupancyRatePercent() {

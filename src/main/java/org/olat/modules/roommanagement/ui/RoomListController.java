@@ -169,8 +169,14 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.description));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.status, new RoomStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.seats));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RoomCols.additionalInfo));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RoomCols.adminInfo));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RoomCols.additionalInfo,
+				new TruncatedInfoCellRenderer(
+						cellValue -> ((RoomRow) cellValue).getRoom().getRoomInfo(),
+						cellValue -> ((RoomRow) cellValue).getAdditionalInfoLink())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RoomCols.adminInfo,
+				new TruncatedInfoCellRenderer(
+						cellValue -> ((RoomRow) cellValue).getRoom().getAdminInfo(),
+						cellValue -> ((RoomRow) cellValue).getAdminInfoLink())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.building, new BuildingCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.occupancyRate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoomCols.nextEvent));
@@ -486,6 +492,19 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		detailsIconLink.setUserObject(row);
 		detailsIconLink.setTitle(translate("room.detail.open.details"));
 		row.setDetailsIconLink(detailsIconLink);
+
+		if (RoomUIHelper.isColumnInfoTextTruncated(room.getRoomInfo())) {
+			FormLink additionalInfoLink = uifactory.addFormLink("ail_" + room.getKey(), "details",
+					"…", null, null, Link.LINK | Link.NONTRANSLATED);
+			additionalInfoLink.setUserObject(row);
+			row.setAdditionalInfoLink(additionalInfoLink);
+		}
+		if (RoomUIHelper.isColumnInfoTextTruncated(room.getAdminInfo())) {
+			FormLink adminInfoLink = uifactory.addFormLink("adml_" + room.getKey(), "details",
+					"…", null, null, Link.LINK | Link.NONTRANSLATED);
+			adminInfoLink.setUserObject(row);
+			row.setAdminInfoLink(adminInfoLink);
+		}
 
 		// Calculate occupancy rate for current month
 		Calendar cal = Calendar.getInstance();
