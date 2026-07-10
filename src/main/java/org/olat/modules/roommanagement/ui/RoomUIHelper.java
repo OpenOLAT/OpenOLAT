@@ -59,6 +59,14 @@ public class RoomUIHelper {
 	private static final int MAX_COLUMN_INFO_TEXT_LENGTH = 250;
 
 	/**
+	 * Business path to the given lecture block in the curriculum admin "Events" list,
+	 * opening and expanding its row detail view there.
+	 */
+	public static String getEventsBusinessPath(LectureBlock lb) {
+		return "[CurriculumAdmin:0][Events:0][LectureBlock:" + lb.getKey() + "]";
+	}
+
+	/**
 	 * Result of {@link #forgeRoomCard}, giving the caller the exact "open details"
 	 * link instance so it can identify its own click by reference instead of by
 	 * generic type/user object matching (several room cards can share one form).

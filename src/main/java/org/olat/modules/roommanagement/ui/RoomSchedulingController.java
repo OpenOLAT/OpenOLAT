@@ -130,7 +130,6 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	private static final String TAB_ID_UPCOMING = "upcoming";
 	private static final String TAB_ID_WITH_WARNINGS = "withWarnings";
 	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
-	private static final String EVENTS_BUSINESS_PATH = "[CurriculumAdmin:0][Events:0][All:0]";
 
 	private FormDateScopeSelection scopeEl;
 	private FlexiTableElement tableEl;
@@ -593,7 +592,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			}
 			FormLink eventLink = uifactory.addFormLink("event_" + booking.getKey(), "openEvent",
 					eventText, null, null, Link.LINK | Link.NONTRANSLATED);
-			eventLink.setUrl(BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(EVENTS_BUSINESS_PATH));
+			eventLink.setUrl(BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(RoomUIHelper.getEventsBusinessPath(lb)));
 			eventLink.setUserObject(row);
 			row.setEventLink(eventLink);
 		}
@@ -654,7 +653,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		} else if (source instanceof FormLink link && "selectRoom".equals(link.getCmd())) {
 			doOpenRoom(ureq, link);
 		} else if (source instanceof FormLink link && "openEvent".equals(link.getCmd())) {
-			doOpenEvent(ureq);
+			doOpenEvent(ureq, link);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -709,8 +708,13 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		}
 	}
 
-	private void doOpenEvent(UserRequest ureq) {
-		NewControllerFactory.getInstance().launch(EVENTS_BUSINESS_PATH, ureq, getWindowControl());
+	private void doOpenEvent(UserRequest ureq, FormLink link) {
+		if (link.getUserObject() instanceof RoomSchedulingRow row) {
+			LectureBlock lb = row.getBooking().getLectureBlock();
+			if (lb != null) {
+				NewControllerFactory.getInstance().launch(RoomUIHelper.getEventsBusinessPath(lb), ureq, getWindowControl());
+			}
+		}
 	}
 
 	private void doOpenElement(UserRequest ureq, RoomSchedulingRow row) {

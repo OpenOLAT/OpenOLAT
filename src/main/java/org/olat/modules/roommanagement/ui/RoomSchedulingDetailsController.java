@@ -81,8 +81,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RoomSchedulingDetailsController extends FormBasicController {
 
-	private static final String EVENTS_BUSINESS_PATH = "[CurriculumAdmin:0][Events:0][All:0]";
-
 	private FormLink openInCoursePlannerLink;
 	private FormLink openEntryLink;
 	private CloseableModalController cmc;
@@ -145,7 +143,7 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 				"room.scheduling.details.open.in.course.planner", null, formLayout, Link.BUTTON);
 		openInCoursePlannerLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
 		openInCoursePlannerLink.setUrl(BusinessControlFactory.getInstance()
-				.getRelativeURLFromBusinessPathString(EVENTS_BUSINESS_PATH));
+				.getRelativeURLFromBusinessPathString(RoomUIHelper.getEventsBusinessPath(lb)));
 
 		initSubjects(formLayout, lb);
 		initMetadata(formLayout, lb);
@@ -295,7 +293,8 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == openInCoursePlannerLink) {
-			NewControllerFactory.getInstance().launch(EVENTS_BUSINESS_PATH, ureq, getWindowControl());
+			LectureBlock lb = row.getBooking().getLectureBlock();
+			NewControllerFactory.getInstance().launch(RoomUIHelper.getEventsBusinessPath(lb), ureq, getWindowControl());
 		} else if (source == openEntryLink) {
 			doOpenRepositoryEntry(ureq);
 		} else if (source instanceof FormLink link && roomCardLinks.contains(link) && link.getUserObject() instanceof Room room) {
