@@ -272,10 +272,12 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		SearchBuildingParameters buildingParams = new SearchBuildingParameters();
 		buildingParams.setStatus(tabStatuses);
 		List<Building> buildings = roomManagementService.searchBuildings(buildingParams, roles);
-		buildings.sort(Comparator.comparing(b -> {
-			String sortLabel = StringHelper.containsNonWhitespace(b.getExternalRef()) ? b.getExternalRef() : b.getDescription();
-			return sortLabel != null ? sortLabel.toLowerCase() : "";
-		}));
+		buildings.sort(Comparator
+				.<Building>comparingInt(b -> b.getStatus() == null ? Integer.MAX_VALUE : b.getStatus().ordinal())
+				.thenComparing(b -> {
+					String sortLabel = StringHelper.containsNonWhitespace(b.getExternalRef()) ? b.getExternalRef() : b.getDescription();
+					return sortLabel != null ? sortLabel.toLowerCase() : "";
+				}));
 		for (Building b : buildings) {
 			String ref = b.getExternalRef();
 			String desc = b.getDescription();
@@ -314,10 +316,12 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		SearchRoomParameters roomParams = new SearchRoomParameters();
 		roomParams.setStatus(tabStatuses);
 		List<Room> rooms = roomManagementService.searchRooms(roomParams, roles);
-		rooms.sort(Comparator.comparing(r -> {
-			String sortLabel = StringHelper.containsNonWhitespace(r.getExternalRef()) ? r.getExternalRef() : r.getDescription();
-			return sortLabel != null ? sortLabel.toLowerCase() : "";
-		}));
+		rooms.sort(Comparator
+				.<Room>comparingInt(r -> r.getStatus() == null ? Integer.MAX_VALUE : r.getStatus().ordinal())
+				.thenComparing(r -> {
+					String sortLabel = StringHelper.containsNonWhitespace(r.getExternalRef()) ? r.getExternalRef() : r.getDescription();
+					return sortLabel != null ? sortLabel.toLowerCase() : "";
+				}));
 		for (Room r : rooms) {
 			String ref = r.getExternalRef();
 			String desc = r.getDescription();
