@@ -95,6 +95,7 @@ import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.model.CollisionReport;
 import org.olat.modules.roommanagement.ui.RoomDetailViewController;
@@ -166,6 +167,8 @@ public class LectureListDetailsController extends FormBasicController {
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
 	@Autowired
 	private RoomManagementService roomManagementService;
 	
@@ -310,9 +313,13 @@ public class LectureListDetailsController extends FormBasicController {
 	}
 	
 	private void initRooms(FormLayoutContainer formLayout, LectureBlock lb) {
-		List<RoomBooking> bookings = roomManagementService.getBookings(lb);
-
 		List<String> roomCardIds = new ArrayList<>();
+		if (!roomManagementModule.isEnabled()) {
+			formLayout.contextPut("roomCardIds", roomCardIds);
+			return;
+		}
+
+		List<RoomBooking> bookings = roomManagementService.getBookings(lb);
 
 		for (RoomBooking booking : bookings) {
 			Room room = booking.getRoom();
