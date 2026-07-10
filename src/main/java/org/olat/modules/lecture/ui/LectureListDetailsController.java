@@ -145,6 +145,7 @@ public class LectureListDetailsController extends FormBasicController {
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CloseableModalController cmc;
 	private RoomDetailViewController roomDetailViewCtrl;
+	private final Set<FormLink> roomCardLinks = new HashSet<>();
 
 	@Autowired
 	private DB dbInstance;
@@ -319,6 +320,7 @@ public class LectureListDetailsController extends FormBasicController {
 			RoomUIHelper.RoomCardResult cardResult = RoomUIHelper.forgeRoomCard(formLayout, uifactory, room, Util.getPackageVelocityRoot(RoomUIHelper.class),
 					getTranslator());
 			roomCardIds.add(cardResult.cardId());
+			roomCardLinks.add(cardResult.detailsLink());
 		}
 
 		formLayout.contextPut("roomCardIds", roomCardIds);
@@ -543,7 +545,7 @@ public class LectureListDetailsController extends FormBasicController {
 				doOpenTools(ureq, groupRow, link);
 			} else if("open".equals(cmd) && link.getUserObject() instanceof LectureBlockParticipantGroupRow groupRow) {
 				doOpen(ureq, groupRow);
-			} else if("openDetails".equals(cmd) && link.getUserObject() instanceof Room room) {
+			} else if("openDetails".equals(cmd) && roomCardLinks.contains(link) && link.getUserObject() instanceof Room room) {
 				doOpenDetails(ureq, room);
 			}
 		}

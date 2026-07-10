@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
@@ -86,6 +87,7 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 	private FormLink openEntryLink;
 	private CloseableModalController cmc;
 	private RoomDetailViewController roomDetailViewCtrl;
+	private final Set<FormLink> roomCardLinks = new HashSet<>();
 
 	private final RoomSchedulingRow row;
 	private final UserInfoProfileConfig profileConfig;
@@ -273,6 +275,7 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 
 			RoomUIHelper.RoomCardResult cardResult = RoomUIHelper.forgeRoomCard(formLayout, uifactory, room, velocity_root, getTranslator());
 			roomCardIds.add(cardResult.cardId());
+			roomCardLinks.add(cardResult.detailsLink());
 		}
 
 		formLayout.contextPut("roomCardIds", roomCardIds);
@@ -295,7 +298,7 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 			NewControllerFactory.getInstance().launch(EVENTS_BUSINESS_PATH, ureq, getWindowControl());
 		} else if (source == openEntryLink) {
 			doOpenRepositoryEntry(ureq);
-		} else if (source instanceof FormLink link && link.getUserObject() instanceof Room room) {
+		} else if (source instanceof FormLink link && roomCardLinks.contains(link) && link.getUserObject() instanceof Room room) {
 			doOpenDetails(ureq, room);
 		}
 		super.formInnerEvent(ureq, source, event);
