@@ -19,15 +19,24 @@
  */
 package org.olat.modules.roommanagement.ui;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
+import org.olat.commons.calendar.model.Kalendar;
+import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.ui.components.FullCalendarElement;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -51,6 +60,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
@@ -78,6 +89,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -122,6 +134,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	private FormDateScopeSelection scopeEl;
 	private FlexiTableElement tableEl;
 	private RoomSchedulingDataModel dataModel;
+	private FullCalendarElement calendarEl;
 
 	private CloseableCalloutWindowController calloutCtrl;
 
@@ -133,15 +146,20 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	private final Roles roles;
 
 	@Autowired
-	private RoomManagementService roomManagementService;
+	private CalendarModule calendarModule;
+	@Autowired
+	private ColorService colorService;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private RoomManagementService roomManagementService;
 
 	public RoomSchedulingController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "room_scheduling");
 		setTranslator(Util.createPackageTranslator(LectureListRepositoryController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 
 		roles = ureq.getUserSession().getRoles();
 		initForm(ureq);
@@ -188,6 +206,14 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 				false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "room-management-scheduling");
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.external, FlexiTableRendererType.classic);
+		tableEl.setRendererType(FlexiTableRendererType.classic);
+		tableEl.setExternalRenderer(new RoomCalendarRenderer(), "o_icon_calendar o_icon-lg");
+		tableEl.getExternalTypeButton().setTitle(translate("room.view.calendar"));
+
+		calendarEl = new FullCalendarElement(ureq, RoomCalendarRenderer.CALENDAR_ITEM_NAME, new ArrayList<>(), getTranslator());
+		calendarEl.setShowEventDuration(true);
+		formLayout.add(RoomCalendarRenderer.CALENDAR_ITEM_NAME, calendarEl);
 
 		VelocityContainer detailsVC = createVelocityContainer("room_scheduling_details");
 		tableEl.setDetailsRenderer(detailsVC, this);
@@ -264,7 +290,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		tableEl.setSelectedFilterTab(ureq, tabAll);
 	}
 
-	private void loadModel() {
+	private List<RoomBooking> loadFilteredBookings() {
 		DateRange dateRange = scopeEl.isSelected() ? scopeEl.getSelectedDateRange() : null;
 		Date from = dateRange != null ? dateRange.getFrom() : null;
 		Date to = dateRange != null ? dateRange.getTo() : null;
@@ -303,6 +329,13 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 					.collect(Collectors.toList());
 		}
 
+		return bookings;
+	}
+
+	private void loadModel() {
+		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
+		List<RoomBooking> bookings = loadFilteredBookings();
+
 		List<RoomSchedulingRow> rows = new ArrayList<>(bookings.size());
 		for (RoomBooking booking : bookings) {
 			rows.add(forgeRow(booking));
@@ -317,6 +350,100 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+
+	private void loadCalendar() {
+		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
+		List<RoomBooking> bookings = loadFilteredBookings();
+
+		Set<Long> warningKeys = RoomUIHelper.computeBookingKeysWithWarnings(bookings, lectureService);
+
+		boolean withWarningsFilterActive = tableEl.getFilters() != null && tableEl.getFilters().stream()
+				.anyMatch(f -> FILTER_WITH_WARNINGS.equals(f.getFilter()) && f.isSelected());
+		if (selectedTab == tabWithWarnings || withWarningsFilterActive) {
+			bookings = bookings.stream()
+					.filter(b -> warningKeys.contains(b.getKey()))
+					.collect(Collectors.toList());
+		}
+
+		Map<Long, Building> buildingByKey = new LinkedHashMap<>();
+		Map<Long, List<RoomBooking>> bookingsByBuildingKey = new LinkedHashMap<>();
+		List<RoomBooking> bookingsWithoutBuilding = new ArrayList<>();
+
+		for (RoomBooking booking : bookings) {
+			Room room = booking.getRoom();
+			if (room != null && room.getBuilding() != null) {
+				Building building = room.getBuilding();
+				buildingByKey.put(building.getKey(), building);
+				bookingsByBuildingKey.computeIfAbsent(building.getKey(), k -> new ArrayList<>()).add(booking);
+			} else {
+				bookingsWithoutBuilding.add(booking);
+			}
+		}
+
+		List<KalendarRenderWrapper> wrappers = new ArrayList<>();
+
+		for (Map.Entry<Long, Building> entry : buildingByKey.entrySet()) {
+			Building building = entry.getValue();
+			String calId = "scheduling.building." + building.getKey();
+			Kalendar calendar = new Kalendar(calId, "Room");
+			for (RoomBooking booking : bookingsByBuildingKey.getOrDefault(building.getKey(), List.of())) {
+				addCalendarEvent(calendar, booking, warningKeys);
+			}
+			String displayName = StringHelper.containsNonWhitespace(building.getExternalRef())
+					? building.getExternalRef() : building.getDescription();
+			if (!StringHelper.containsNonWhitespace(displayName)) {
+				displayName = calId;
+			}
+			KalendarRenderWrapper wrapper = new KalendarRenderWrapper(calendar, displayName, calId);
+			wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+			wrapper.setPrivateEventsVisible(true);
+			String colorCss = StringHelper.containsNonWhitespace(building.getColorCss())
+					? building.getColorCss() : colorService.getDefaultColor();
+			wrapper.setCssClass("o_rm_cal_pastel o_color_border " + colorCss);
+			wrappers.add(wrapper);
+		}
+
+		if (!bookingsWithoutBuilding.isEmpty()) {
+			String calId = "scheduling.nobuilding";
+			Kalendar calendar = new Kalendar(calId, "Room");
+			for (RoomBooking booking : bookingsWithoutBuilding) {
+				addCalendarEvent(calendar, booking, warningKeys);
+			}
+			KalendarRenderWrapper wrapper = new KalendarRenderWrapper(calendar, "", calId);
+			wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+			wrapper.setPrivateEventsVisible(true);
+			wrapper.setCssClass("o_rm_cal_pastel o_color_border " + colorService.getDefaultColor());
+			wrappers.add(wrapper);
+		}
+
+		calendarEl.setCalendars(wrappers);
+	}
+
+	private void addCalendarEvent(Kalendar calendar, RoomBooking booking, Set<Long> warningKeys) {
+		if (booking.getStartDate() == null || booking.getEndDate() == null) return;
+		Room room = booking.getRoom();
+		String roomRef = room != null && StringHelper.containsNonWhitespace(room.getExternalRef())
+				? room.getExternalRef() : (room != null ? room.getDescription() : null);
+		String blockTitle = booking.getLectureBlock() != null ? booking.getLectureBlock().getTitle() : null;
+		String subject;
+		if (StringHelper.containsNonWhitespace(roomRef) && StringHelper.containsNonWhitespace(blockTitle)) {
+			subject = roomRef + " · " + blockTitle;
+		} else if (StringHelper.containsNonWhitespace(roomRef)) {
+			subject = roomRef;
+		} else if (StringHelper.containsNonWhitespace(blockTitle)) {
+			subject = blockTitle;
+		} else {
+			subject = "";
+		}
+		String eventId = CodeHelper.getGlobalForeverUniqueID();
+		ZonedDateTime zStart = DateUtils.toZonedDateTime(booking.getStartDate(), calendarModule.getDefaultZoneId());
+		ZonedDateTime zEnd = DateUtils.toZonedDateTime(booking.getEndDate(), calendarModule.getDefaultZoneId());
+		KalendarEvent event = new KalendarEvent(eventId, null, subject, zStart, zEnd);
+		if (warningKeys.contains(booking.getKey())) {
+			event.setComment("warning");
+		}
+		calendar.addEvent(event);
 	}
 
 	private void computeWarnings(List<RoomSchedulingRow> rows) {
@@ -457,10 +584,25 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == scopeEl) {
-			loadModel();
-		} else if (source == tableEl) {
-			if (event instanceof FlexiTableFilterTabEvent || event instanceof FlexiTableSearchEvent) {
+			if (tableEl.getRendererType() == FlexiTableRendererType.classic) {
 				loadModel();
+			} else {
+				loadCalendar();
+			}
+		} else if (source == tableEl) {
+			if (event instanceof FlexiTableRenderEvent renderEvent
+					&& FlexiTableRenderEvent.CHANGE_RENDER_TYPE.equals(renderEvent.getCommand())) {
+				if (renderEvent.getRendererType() == FlexiTableRendererType.classic) {
+					loadModel();
+				} else {
+					loadCalendar();
+				}
+			} else if (event instanceof FlexiTableFilterTabEvent || event instanceof FlexiTableSearchEvent) {
+				if (tableEl.getRendererType() == FlexiTableRendererType.classic) {
+					loadModel();
+				} else {
+					loadCalendar();
+				}
 			} else if (event instanceof DetailsToggleEvent toggleEvent) {
 				RoomSchedulingRow row = dataModel.getObject(toggleEvent.getRowIndex());
 				if (toggleEvent.isVisible()) {
