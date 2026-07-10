@@ -233,6 +233,7 @@ public abstract class AbstractItemListController extends FormBasicController
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 				new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon o_icon-fw o_icon_ai"), null));
 		columnsModel.addFlexiColumnModel(unsupervisedColumn);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.aiSupervisedBy));
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new QuestionStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.statusLastModified));	

@@ -154,6 +154,8 @@ public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable,
 	private String aiModel;
 	@Column(name="q_ai_unsupervised_generated", nullable=true, insertable=true, updatable=true)
 	private Boolean aiUnsupervisedGenerated;
+	@Column(name="q_ai_supervised_by", nullable=true, insertable=true, updatable=true)
+	private String aiSupervisedBy;
 	
 	@Column(name="q_format", nullable=false, insertable=true, updatable=true)
 	private String format;
@@ -565,6 +567,15 @@ public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable,
 
 	public void setAiUnsupervisedGenerated(Boolean aiUnsupervisedGenerated) {
 		this.aiUnsupervisedGenerated = aiUnsupervisedGenerated;
+	}
+
+	@Override
+	public String getAiSupervisedBy() {
+		return aiSupervisedBy;
+	}
+
+	public void setAiSupervisedBy(String aiSupervisedBy) {
+		this.aiSupervisedBy = aiSupervisedBy;
 	}
 
 	@Override

@@ -490,6 +490,7 @@ public class QTI21ImportProcessor {
 		if(metadata.isUnsupervisedAiGenerated()) {
 			poolItem.setAiUnsupervisedGenerated(Boolean.TRUE);
 		}
+		poolItem.setAiSupervisedBy(metadata.getAiSupervisedBy());
 	}
 
 	private void createLicense(QuestionItemImpl poolItem, AssessmentItemMetadata metadata) {

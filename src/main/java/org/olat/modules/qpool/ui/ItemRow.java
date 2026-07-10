@@ -240,6 +240,11 @@ public class ItemRow implements QuestionItemView {
 	}
 
 	@Override
+	public String getAiSupervisedBy() {
+		return delegate.getAiSupervisedBy();
+	}
+
+	@Override
 	public Date getCreationDate() {
 		return delegate.getCreationDate();
 	}

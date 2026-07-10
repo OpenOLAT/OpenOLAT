@@ -403,6 +403,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			metadata.setAiProvider(AI_GENERATOR_TOOL_PREFIX + "QTI21.Generator." + aiSource.getSpi());
 			metadata.setAiModel(aiSource.getModel());
 			metadata.setUnsupervisedAiGenerated(aiUnsupervisedGenerated);
+			metadata.setAiSupervisedBy(aiSource.getSupervisedBy());
 		}
 		if (aiGrading != null && StringHelper.containsNonWhitespace(aiGrading.getGeneratorSpi())) {
 			metadata.setAiProvider(AI_GENERATOR_TOOL_PREFIX + "QTI21.Generator." + aiGrading.getGeneratorSpi());

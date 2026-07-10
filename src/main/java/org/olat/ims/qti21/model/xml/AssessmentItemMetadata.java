@@ -58,6 +58,7 @@ public class AssessmentItemMetadata {
 	private String aiProvider;
 	private String aiModel;
 	private boolean unsupervisedAiGenerated;
+	private String aiSupervisedBy;
 
 	private boolean hasError;
 	
@@ -264,6 +265,14 @@ public class AssessmentItemMetadata {
 		this.unsupervisedAiGenerated = unsupervisedGenerated;
 	}
 
+	public String getAiSupervisedBy() {
+		return aiSupervisedBy;
+	}
+
+	public void setAiSupervisedBy(String aiSupervisedBy) {
+		this.aiSupervisedBy = aiSupervisedBy;
+	}
+
 	public void toBuilder(ManifestMetadataBuilder metadata, Locale locale) {
 		if(getQuestionType() != null) {
 			metadata.setOpenOLATMetadataQuestionType(getQuestionType().getPrefix());
@@ -327,6 +336,7 @@ public class AssessmentItemMetadata {
 		if(unsupervisedAiGenerated) {
 			metadata.setOpenOLATMetadataAiUnsupervisedGenerated(unsupervisedAiGenerated);
 		}
+		metadata.setOpenOLATMetadataAiSupervisedBy(aiSupervisedBy);
 	}
 	
 	public void fromBuilder(ManifestMetadataBuilder metadata) {
@@ -398,6 +408,10 @@ public class AssessmentItemMetadata {
 			if(openolatMetadata.isAiUnsupervisedGeneration() != null && openolatMetadata.isAiUnsupervisedGeneration().booleanValue()) {
 				unsupervisedAiGenerated = openolatMetadata.isAiUnsupervisedGeneration().booleanValue();
 			}
+			if(openolatMetadata.getAiSupervisedBy() != null) {
+				aiSupervisedBy = openolatMetadata.getAiSupervisedBy();
+			}
+			
 		}
 	}
 }

@@ -612,7 +612,8 @@ public class QItemQueriesDAO {
 						"lastModified", "educationalContext", "difficulty", "stdevDifficulty",
 						"differentiation", "numOfAnswerAlternatives", "usage", "educationalLearningTime",
 						"type", "format", "itemVersion", "status", "statusLastModified", "license",
-						"editable", "correctionTime", "language", "maxScore", "aiProvider", "aiModel":
+						"editable", "correctionTime", "language", "maxScore",
+						"aiProvider", "aiModel", "aiSupervisedBy":
 					sb.append(itemDbRef).append(".").append(sortKey);
 					appendAsc(sb, asc);
 					sb.append(" nulls last");

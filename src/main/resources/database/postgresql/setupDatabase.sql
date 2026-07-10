@@ -3207,6 +3207,7 @@ create table o_qp_item (
    q_editor_version varchar(256),
    q_format varchar(32) not null,
    q_ai_unsupervised_generated bool default null,
+   q_ai_supervised_by varchar(255) default null,
    q_ai_provider varchar(255) default null,
    q_ai_model varchar(255) default null,
    q_max_score decimal default null,

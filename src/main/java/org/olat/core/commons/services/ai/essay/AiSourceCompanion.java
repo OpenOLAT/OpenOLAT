@@ -47,6 +47,7 @@ public class AiSourceCompanion {
 	private String model;
 	private String generatedAt;
 	private boolean unsupervisedGenerated;
+	private String supervisedBy;
 	
 
 	public AiSourceCompanion() {
@@ -90,5 +91,13 @@ public class AiSourceCompanion {
 
 	public void setUnsupervisedGenerated(boolean unsupervisedGenerated) {
 		this.unsupervisedGenerated = unsupervisedGenerated;
+	}
+
+	public String getSupervisedBy() {
+		return supervisedBy;
+	}
+
+	public void setSupervisedBy(String supervisedBy) {
+		this.supervisedBy = supervisedBy;
 	}
 }

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import org.olat.core.commons.services.ai.essay.AiSourceCompanion;
+import org.olat.core.commons.services.ai.essay.AiSourceCompanionFileStore;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -26,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorSettings;
@@ -33,8 +36,9 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.modules.ceditor.manager.ContentEditorQti;
 import org.olat.modules.ceditor.model.QuizQuestion;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
-
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
@@ -50,9 +54,13 @@ public class EditQuestionController extends BasicController {
 	private AssessmentItemEditorController itemEditorCtrl;
 
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private ContentEditorQti contentEditorQti;
+	@Autowired
+	private AiSourceCompanionFileStore aiSourceCompanionFileStore;
 
 	public EditQuestionController(UserRequest ureq, WindowControl wControl, QuizPart quiz, QuizQuestion quizQuestion) {
 		super(ureq, wControl);
@@ -97,6 +105,16 @@ public class EditQuestionController extends BasicController {
 		AssessmentItem assessmentItem = itemEditorCtrl.getAssessmentItem();
 		quizQuestion.setTitle(assessmentItem.getTitle());
 		fireEvent(ureq, Event.DONE_EVENT);
+		
+		// Remove the unsupervised generated flag
+		ContentEditorQti.QuizQuestionStorageInfo storageInfo = contentEditorQti.getStorageInfo(quiz, quizQuestion);
+		AiSourceCompanion aiSource = aiSourceCompanionFileStore.load(storageInfo.questionDirectory());
+		if(aiSource != null && !StringHelper.containsNonWhitespace(aiSource.getSupervisedBy())) {
+			String displayName = userManager.getUserDisplayName(getIdentity());
+			aiSource.setSupervisedBy(displayName);
+			aiSource.setUnsupervisedGenerated(false);
+			aiSourceCompanionFileStore.save(storageInfo.questionDirectory(), aiSource);
+		}
 	}
 
 	public QuizQuestion getQuizQuestion() {

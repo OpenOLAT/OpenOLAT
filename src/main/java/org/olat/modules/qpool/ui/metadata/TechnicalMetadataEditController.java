@@ -58,6 +58,7 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 	private StaticTextElement aiProviderEl;
 	private StaticTextElement aiModelEl;
 	private StaticTextElement aiUnsupervisedGeneratedEl;
+	private StaticTextElement aiSupervisedByEl;
 	private StaticTextElement lastModifiedEl;
 	private StaticTextElement statusLastModifiedEl;	
 	private TextElement versionEl;
@@ -94,6 +95,8 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 		aiModelEl = uifactory.addStaticTextElement("ai.model", "", formLayout);
 		
 		aiUnsupervisedGeneratedEl = uifactory.addStaticTextElement("ai.unsupervised.generated", "", formLayout);
+		
+		aiSupervisedByEl = uifactory.addStaticTextElement("ai.supervised.by", "", formLayout);
 
 		formatEl = uifactory.addStaticTextElement("technical.format", "", formLayout);
 		
@@ -138,6 +141,9 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 				: null;
 		aiUnsupervisedGeneratedEl.setValue(unsupervised);
 		aiUnsupervisedGeneratedEl.setVisible(item.getAiUnsupervisedGenerated() != null && item.getAiUnsupervisedGenerated().booleanValue());
+		
+		aiSupervisedByEl.setValue(item.getAiSupervisedBy());
+		aiSupervisedByEl.setVisible(StringHelper.containsNonWhitespace(item.getAiSupervisedBy()));
 		
 		String format = item.getFormat() == null ? "" : item.getFormat();
 		formatEl.setValue(format);

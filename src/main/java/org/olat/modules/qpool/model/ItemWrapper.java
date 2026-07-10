@@ -69,6 +69,7 @@ public class ItemWrapper implements QuestionItemView {
 	private String aiProvider;
 	private String aiModel;
 	private Boolean aiUnsupervisedGenerated;
+	private String aiSupervisedBy;
 	
 	private String itemVersion;
 	private String status;
@@ -216,6 +217,11 @@ public class ItemWrapper implements QuestionItemView {
 	}
 
 	@Override
+	public String getAiSupervisedBy() {
+		return aiSupervisedBy;
+	}
+
+	@Override
 	public String getLanguage() {
 		return language;
 	}
@@ -333,8 +339,7 @@ public class ItemWrapper implements QuestionItemView {
 		if (this == obj) {
 			return true;
 		}
-		if (obj instanceof ItemWrapper) {
-			ItemWrapper row = (ItemWrapper) obj;
+		if (obj instanceof ItemWrapper row) {
 			return key.equals(row.key);
 		}
 		return false;
@@ -390,6 +395,7 @@ public class ItemWrapper implements QuestionItemView {
 			itemWrapper.aiProvider = item.getAiProvider();
 			itemWrapper.aiModel = item.getAiModel();
 			itemWrapper.aiUnsupervisedGenerated = item.getAiUnsupervisedGenerated();
+			itemWrapper.aiSupervisedBy = item.getAiSupervisedBy();
 			
 			itemWrapper.itemType = item.getItemType();
 			itemWrapper.difficulty = item.getDifficulty();

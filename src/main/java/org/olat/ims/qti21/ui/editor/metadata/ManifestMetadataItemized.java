@@ -257,6 +257,11 @@ public class ManifestMetadataItemized implements QuestionItem, QuestionItemEdita
 	public Boolean getAiUnsupervisedGenerated() {
 		return metadataBuilder.getOpenOLATMetadataAiUnsupervisedGenerated();
 	}
+	
+	@Override
+	public String getAiSupervisedBy() {
+		return metadataBuilder.getOpenOLATMetadataAiSupervisedBy();
+	}
 
 	@Override
 	public QuestionStatus getQuestionStatus() {

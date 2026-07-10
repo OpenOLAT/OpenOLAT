@@ -122,6 +122,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case aiProvider: return item.getAiProvider();
 			case aiModel: return item.getAiModel();
 			case aiUnsupervisedGenerated: return item.getAiUnsupervisedGenerated();
+			case aiSupervisedBy: return item.getAiSupervisedBy();
 			default: return "-";
 		}
 	}
@@ -166,8 +167,8 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		maxScore("max.score"),
 		aiProvider("ai.provider"),
 		aiModel("ai.model"),
-		aiUnsupervisedGenerated("ai.unsupervised.generated")
-		;
+		aiUnsupervisedGenerated("ai.unsupervised.generated"),
+		aiSupervisedBy("ai.supervised.by");
 		
 		private final String i18nKey;
 	

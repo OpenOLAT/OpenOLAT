@@ -1203,3 +1203,6 @@ alter table o_cer_certificate add c_serial_number varchar(255);
 alter table o_qp_item add q_ai_unsupervised_generated number default null;
 alter table o_qp_item add q_ai_provider varchar(255) default null;
 alter table o_qp_item add q_ai_model varchar(255) default null;
+alter table o_qp_item add q_ai_supervised_by varchar(255) default null;
+
+

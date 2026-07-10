@@ -98,4 +98,6 @@ public interface QuestionItemShort extends OLATResourceable, CreateInfo, Modifie
 
 	Boolean getAiUnsupervisedGenerated();
 	
+	String getAiSupervisedBy();
+	
 }

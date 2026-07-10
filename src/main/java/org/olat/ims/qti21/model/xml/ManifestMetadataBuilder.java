@@ -800,6 +800,15 @@ public class ManifestMetadataBuilder {
 		getOpenOLATMetadata(true).setAiUnsupervisedGeneration(unsupervised);
 	}
 	
+	public String getOpenOLATMetadataAiSupervisedBy() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getAiSupervisedBy();
+	}
+	
+	public void setOpenOLATMetadataAiSupervisedBy(String supervisedBy) {
+		getOpenOLATMetadata(true).setAiSupervisedBy(supervisedBy);
+	}
+	
 	/**
 	 * Return the qti metadata if it exists or if specified, create
 	 * one and append it to the metadata of the resource.
@@ -845,12 +854,6 @@ public class ManifestMetadataBuilder {
 		qtiMetadata.setToolName(toolName);
 		qtiMetadata.setToolVendor(toolVendor);
 		qtiMetadata.setToolVersion(toolVersion);
-	}
-	
-	public void setOpenOlatMetadataAi(String aiProvider, String aiModel, Boolean unsupervised) {
-		setOpenOLATMetadataAiProvider(aiProvider);
-		setOpenOLATMetadataAiModel(aiModel);
-		setOpenOLATMetadataAiUnsupervisedGenerated(unsupervised);
 	}
 	
 	public void setQtiMetadataInteractionTypes(List<String> interactions) {
@@ -1005,6 +1008,7 @@ public class ManifestMetadataBuilder {
 		setOpenOLATMetadataAiModel(item.getAiModel());
 		if(item.getAiUnsupervisedGenerated() != null && item.getAiUnsupervisedGenerated().booleanValue()) {
 			setOpenOLATMetadataAiUnsupervisedGenerated(item.getAiUnsupervisedGenerated());
-		}	
+		}
+		setOpenOLATMetadataAiSupervisedBy(item.getAiSupervisedBy());
 	}
 }
