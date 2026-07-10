@@ -180,7 +180,9 @@ public class FullCalendarMapper implements Mapper {
 		}
 		if(event.getEnd() != null) {
 			if(allDay) {
-				ZonedDateTime calEnd = event.getEnd();
+				// fullcalendar.js all day are exclusive
+				ZonedDateTime calEnd = event.getEnd()
+						.plusDays(1);
 				jsonEvent.put("end", formatDate(calEnd));
 			} else {
 				ZonedDateTime calEnd = event.getEnd().withZoneSameInstant(defaultZoneId);
