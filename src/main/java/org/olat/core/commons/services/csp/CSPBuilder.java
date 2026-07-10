@@ -114,15 +114,17 @@ public class CSPBuilder {
 	}
 	
 	private static String normalizeUrl(String urlString) {
-		try {
-			URL url = new URL(urlString);
-			String protocol = url.getProtocol();
-			String host = url.getHost();
-			return new StringBuilder().append(protocol).append("://").append(host).toString();
-		} catch (MalformedURLException e) {
-			log.error("", e);
+		if(StringHelper.containsNonWhitespace(urlString) && urlString.indexOf('*') < 0) {
+			try {
+				URL url = new URL(urlString);
+				String protocol = url.getProtocol();
+				String host = url.getHost();
+				return new StringBuilder().append(protocol).append("://").append(host).toString();
+			} catch (MalformedURLException e) {
+				log.error("", e);
+			}
 		}
-		return null;
+		return urlString;
 	}
 	
 	public Directive upgradeInsecureRequests() {
