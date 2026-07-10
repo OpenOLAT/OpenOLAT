@@ -485,6 +485,11 @@ public class QTI21ImportProcessor {
 		poolItem.setAssessmentType(metadata.getAssessmentType());
 		poolItem.setAdditionalInformations(metadata.getAdditionalInformations());
 		poolItem.setCorrectionTime(metadata.getCorrectionTime());
+		poolItem.setAiProvider(metadata.getAiProvider());
+		poolItem.setAiModel(metadata.getAiModel());
+		if(metadata.isUnsupervisedAiGenerated()) {
+			poolItem.setAiUnsupervisedGenerated(Boolean.TRUE);
+		}
 	}
 
 	private void createLicense(QuestionItemImpl poolItem, AssessmentItemMetadata metadata) {

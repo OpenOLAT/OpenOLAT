@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.ai.AiMCQuestionService;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -179,8 +178,6 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private boolean itemCollectionDirty = false;
 
-	@Autowired
-	private AiMCQuestionService mcQuestionService;
 	@Autowired
 	private DB dbInstance;
 	@Autowired

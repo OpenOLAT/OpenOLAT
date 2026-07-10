@@ -335,6 +335,19 @@ public class QItemQueriesDAO {
 		if (StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.and().append(" item.format=:format");
 		}
+		
+		if(StringHelper.containsNonWhitespace(params.getAiProvider())) {
+			sb.and();
+			PersistenceHelper.appendFuzzyLike(sb, "item.aiProvider", "aiProvider", dbInstance.getDbVendor());
+		}
+		if(StringHelper.containsNonWhitespace(params.getAiModel())) {
+			sb.and();
+			PersistenceHelper.appendFuzzyLike(sb, "item.aiModel", "aiModel", dbInstance.getDbVendor());
+		}
+		if (params.getAiUnsupervisedGenerated() != null && params.getAiUnsupervisedGenerated().booleanValue()) {
+			sb.and().append(" item.aiUnsupervisedGenerated=true");
+		}
+		
 		if (params.getMaxScoreFrom() != null) {
 			sb.and().append(" item.maxScore>=:maxScoreFrom");
 		}
@@ -504,6 +517,16 @@ public class QItemQueriesDAO {
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			query.setParameter("format", params.getFormat());
 		}
+		
+		if(StringHelper.containsNonWhitespace(params.getAiProvider())) {
+			String fuzzySearch = PersistenceHelper.makeFuzzyQueryString(params.getAiProvider());
+			query.setParameter("aiProvider", fuzzySearch);
+		}
+		if(StringHelper.containsNonWhitespace(params.getAiModel())) {
+			String fuzzySearch = PersistenceHelper.makeFuzzyQueryString(params.getAiModel());
+			query.setParameter("aiModel", fuzzySearch);
+		}
+		
 		if(params.getMaxScoreFrom() != null) {
 			query.setParameter("maxScoreFrom", params.getMaxScoreFrom());
 		}
@@ -580,17 +603,22 @@ public class QItemQueriesDAO {
 					appendAsc(sb, asc);
 					sb.append(" nulls last");
 					break;
+				case "aiUnsupervisedGenerated":
+					sb.append(itemDbRef).append(".aiUnsupervisedGenerated");
+					appendAsc(sb, asc);
+					sb.append(" nulls last");
+					break;
 				case "key", "identifier", "masterIdentifier", "title", "topic", "creationDate",
 						"lastModified", "educationalContext", "difficulty", "stdevDifficulty",
 						"differentiation", "numOfAnswerAlternatives", "usage", "educationalLearningTime",
 						"type", "format", "itemVersion", "status", "statusLastModified", "license",
-						"editable", "correctionTime", "language", "maxScore":
+						"editable", "correctionTime", "language", "maxScore", "aiProvider", "aiModel":
 					sb.append(itemDbRef).append(".").append(sortKey);
 					appendAsc(sb, asc);
 					sb.append(" nulls last");
 					break;
 				default:
-					sb.append(" order by item.key asc ");
+					sb.append(" item.key asc ");
 					break;
 			}
 		} else {

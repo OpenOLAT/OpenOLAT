@@ -147,6 +147,14 @@ public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable,
 	@Column(name="q_editor_version", nullable=true, insertable=true, updatable=true)
 	private String editorVersion;
 	
+	// ai
+	@Column(name="q_ai_provider", nullable=true, insertable=true, updatable=true)
+	private String aiProvider;
+	@Column(name="q_ai_model", nullable=true, insertable=true, updatable=true)
+	private String aiModel;
+	@Column(name="q_ai_unsupervised_generated", nullable=true, insertable=true, updatable=true)
+	private Boolean aiUnsupervisedGenerated;
+	
 	@Column(name="q_format", nullable=false, insertable=true, updatable=true)
 	private String format;
 	@Column(name="q_max_score", nullable=true, insertable=true, updatable=true)
@@ -530,6 +538,33 @@ public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable,
 
 	public void setItemVersion(String itemVersion) {
 		this.itemVersion = itemVersion;
+	}
+
+	@Override
+	public String getAiProvider() {
+		return aiProvider;
+	}
+
+	public void setAiProvider(String aiProvider) {
+		this.aiProvider = aiProvider;
+	}
+
+	@Override
+	public String getAiModel() {
+		return aiModel;
+	}
+
+	public void setAiModel(String aiModel) {
+		this.aiModel = aiModel;
+	}
+
+	@Override
+	public Boolean getAiUnsupervisedGenerated() {
+		return aiUnsupervisedGenerated;
+	}
+
+	public void setAiUnsupervisedGenerated(Boolean aiUnsupervisedGenerated) {
+		this.aiUnsupervisedGenerated = aiUnsupervisedGenerated;
 	}
 
 	@Override

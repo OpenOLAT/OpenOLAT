@@ -41,6 +41,7 @@ import org.olat.core.commons.services.ai.model.MCQuestionData;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -178,13 +179,12 @@ public class EssayGenerationPoolSinkImpl implements EssayGenerationPoolSink {
 			}
 			AssessmentItemAndMetadata metaItem = new AssessmentItemAndMetadata(built.builder());
 			applyMcMetadata(metaItem, data, taxonomyLevel);
-			QuestionItem item = importAndStamp(owner, metaItem, locale, taxonomyLevel, /* grading */ null,
-					/* questionDir */ null);
+			QuestionItem item = importAndStamp(owner, metaItem, locale, taxonomyLevel);
 			// Write the AI provenance companion next to the imported QTI XML so
 			// the pool round-trip preserves "AI-generated" semantics without
 			// hijacking the QTI toolName attribute.
 			if (item != null && StringHelper.containsNonWhitespace(spiId)) {
-				saveSourceCompanionNextToItem(item, spiId, model);
+				saveSourceCompanionNextToItem(item, spiId, model, true);
 			}
 			return item;
 		} catch (Exception e) {
@@ -197,7 +197,7 @@ public class EssayGenerationPoolSinkImpl implements EssayGenerationPoolSink {
 	 * Resolve the on-disk directory of the freshly imported pool item and
 	 * write the AI source companion next to the QTI XML.
 	 */
-	private void saveSourceCompanionNextToItem(QuestionItem item, String spiId, String model) {
+	private void saveSourceCompanionNextToItem(QuestionItem item, String spiId, String model, boolean unsupervised) {
 		try {
 			QPoolFileStorage storage = CoreSpringFactory.getImpl(QPoolFileStorage.class);
 			File itemDir = storage.getDirectory(((QuestionItemImpl) item).getDirectory());
@@ -206,7 +206,7 @@ public class EssayGenerationPoolSinkImpl implements EssayGenerationPoolSink {
 						item.getKey());
 				return;
 			}
-			aiSourceCompanionFileStore.save(itemDir, new AiSourceCompanion(spiId, model, null));
+			aiSourceCompanionFileStore.save(itemDir, new AiSourceCompanion(spiId, model, null, unsupervised));
 		} catch (Exception e) {
 			log.warn("Could not persist ai-source.json for pool item {}: {}",
 					item == null ? null : item.getKey(), e.getMessage(), e);
@@ -225,8 +225,7 @@ public class EssayGenerationPoolSinkImpl implements EssayGenerationPoolSink {
 			// importExcelItem persists the QTI XML into the pool's storage dir
 			// and registers the QuestionItem. We then need to re-locate that
 			// directory so the ai-grading.json can be written next to it.
-			QuestionItem item = importAndStamp(owner, metaItem, locale, taxonomyLevel, grading,
-					/* questionDirHook */ null);
+			QuestionItem item = importAndStamp(owner, metaItem, locale, taxonomyLevel);
 			if (item != null && grading != null) {
 				saveGradingNextToItem(item, grading, built.item());
 			}
@@ -246,7 +245,7 @@ public class EssayGenerationPoolSinkImpl implements EssayGenerationPoolSink {
 	 * import paths.
 	 */
 	private QuestionItem importAndStamp(Identity owner, AssessmentItemAndMetadata metaItem, Locale locale,
-			TaxonomyLevel taxonomyLevel, EssayAiGrading grading, File questionDirHook) {
+			TaxonomyLevel taxonomyLevel) {
 		QTI21QPoolServiceProvider spi = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);
 		QuestionItem importedItem = spi.importExcelItem(owner, metaItem, locale);
 		if (importedItem == null) return null;
@@ -314,9 +313,12 @@ public class EssayGenerationPoolSinkImpl implements EssayGenerationPoolSink {
 			metaItem.setTaxonomyPath(taxonomyLevel.getMaterializedPathIdentifiers());
 		}
 		if (aiModule != null && StringHelper.containsNonWhitespace(aiModule.getMCGeneratorSpiId())) {
-			metaItem.setEditor(AiQtiItemFactory.TOOL_PREFIX + aiModule.getMCGeneratorSpiId());
-			metaItem.setEditorVersion(aiModule.getMCGeneratorModel());
+			metaItem.setAiProvider(AiQtiItemFactory.TOOL_PREFIX + aiModule.getMCGeneratorSpiId());
+			metaItem.setAiModel(aiModule.getMCGeneratorModel());
+			metaItem.setUnsupervisedAiGenerated(true);
 		}
+		metaItem.setEditor("OpenOLAT");
+		metaItem.setEditorVersion(Settings.getVersion());
 	}
 
 	private void applyEssayMetadata(AssessmentItemAndMetadata metaItem, EssayItemDraft draft,
@@ -328,8 +330,11 @@ public class EssayGenerationPoolSinkImpl implements EssayGenerationPoolSink {
 			metaItem.setTaxonomyPath(taxonomyLevel.getMaterializedPathIdentifiers());
 		}
 		if (grading != null && StringHelper.containsNonWhitespace(grading.getGeneratorSpi())) {
-			metaItem.setEditor(AiQtiItemFactory.TOOL_PREFIX + grading.getGeneratorSpi());
-			metaItem.setEditorVersion(grading.getGeneratorModel());
+			metaItem.setAiProvider(AiQtiItemFactory.TOOL_PREFIX + grading.getGeneratorSpi());
+			metaItem.setAiModel(grading.getGeneratorModel());
+			metaItem.setUnsupervisedAiGenerated(true);
 		}
+		metaItem.setEditor("OpenOLAT");
+		metaItem.setEditorVersion(Settings.getVersion());
 	}
 }

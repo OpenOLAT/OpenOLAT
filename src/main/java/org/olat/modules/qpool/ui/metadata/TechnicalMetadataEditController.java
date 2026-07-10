@@ -55,6 +55,9 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 	private StaticTextElement editorEl;
 	private StaticTextElement formatEl;
 	private StaticTextElement editorVersionEl;
+	private StaticTextElement aiProviderEl;
+	private StaticTextElement aiModelEl;
+	private StaticTextElement aiUnsupervisedGeneratedEl;
 	private StaticTextElement lastModifiedEl;
 	private StaticTextElement statusLastModifiedEl;	
 	private TextElement versionEl;
@@ -85,6 +88,12 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 		editorEl = uifactory.addStaticTextElement("technical.editor", "", formLayout);
 
 		editorVersionEl = uifactory.addStaticTextElement("technical.editorVersion", "", formLayout);
+		
+		aiProviderEl = uifactory.addStaticTextElement("ai.provider", "", formLayout);
+		
+		aiModelEl = uifactory.addStaticTextElement("ai.model", "", formLayout);
+		
+		aiUnsupervisedGeneratedEl = uifactory.addStaticTextElement("ai.unsupervised.generated", "", formLayout);
 
 		formatEl = uifactory.addStaticTextElement("technical.format", "", formLayout);
 		
@@ -119,6 +128,16 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 		
 		String editorVersion = item.getEditorVersion() == null ? "" : item.getEditorVersion();
 		editorVersionEl.setValue(editorVersion);
+		
+		aiProviderEl.setValue(item.getAiProvider());
+		aiProviderEl.setVisible(StringHelper.containsNonWhitespace(item.getAiProvider()));		
+		aiModelEl.setValue(item.getAiModel());
+		aiModelEl.setVisible(StringHelper.containsNonWhitespace(item.getAiModel()));
+		String unsupervised = item.getAiUnsupervisedGenerated() != null && item.getAiUnsupervisedGenerated().booleanValue()
+				? "<i class='o_icon o_icon_ai'> </i>"
+				: null;
+		aiUnsupervisedGeneratedEl.setValue(unsupervised);
+		aiUnsupervisedGeneratedEl.setVisible(item.getAiUnsupervisedGenerated() != null && item.getAiUnsupervisedGenerated().booleanValue());
 		
 		String format = item.getFormat() == null ? "" : item.getFormat();
 		formatEl.setValue(format);

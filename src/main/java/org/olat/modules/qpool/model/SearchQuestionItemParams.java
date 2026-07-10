@@ -67,6 +67,10 @@ public class SearchQuestionItemParams implements Cloneable {
 	private List<QItemType> itemTypes;
 	private List<QItemType> excludedItemTypes;
 	
+	private String aiProvider;
+	private String aiModel;
+	private Boolean aiUnsupervisedGenerated;
+	
 	private Double maxScoreFrom;
 	private Double maxScoreTo;
 	
@@ -204,6 +208,30 @@ public class SearchQuestionItemParams implements Cloneable {
 
 	public void setFormat(String format) {
 		this.format = format;
+	}
+
+	public String getAiProvider() {
+		return aiProvider;
+	}
+
+	public void setAiProvider(String aiProvider) {
+		this.aiProvider = aiProvider;
+	}
+
+	public String getAiModel() {
+		return aiModel;
+	}
+
+	public void setAiModel(String aiModel) {
+		this.aiModel = aiModel;
+	}
+
+	public Boolean getAiUnsupervisedGenerated() {
+		return aiUnsupervisedGenerated;
+	}
+
+	public void setAiUnsupervisedGenerated(Boolean aiUnsupervisedGenerated) {
+		this.aiUnsupervisedGenerated = aiUnsupervisedGenerated;
 	}
 
 	public Double getMaxScoreFrom() {

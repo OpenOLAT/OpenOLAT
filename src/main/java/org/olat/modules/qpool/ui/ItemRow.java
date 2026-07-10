@@ -223,6 +223,21 @@ public class ItemRow implements QuestionItemView {
 	public Integer getCorrectionTime() {
 		return delegate.getCorrectionTime();
 	}
+	
+	@Override
+	public String getAiProvider() {
+		return delegate.getAiProvider();
+	}
+
+	@Override
+	public String getAiModel() {
+		return delegate.getAiModel();
+	}
+
+	@Override
+	public Boolean getAiUnsupervisedGenerated() {
+		return delegate.getAiUnsupervisedGenerated();
+	}
 
 	@Override
 	public Date getCreationDate() {

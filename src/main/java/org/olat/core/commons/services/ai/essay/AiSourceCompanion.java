@@ -46,15 +46,18 @@ public class AiSourceCompanion {
 	private String spi;
 	private String model;
 	private String generatedAt;
+	private boolean unsupervisedGenerated;
+	
 
 	public AiSourceCompanion() {
 		// Jackson
 	}
 
-	public AiSourceCompanion(String spi, String model, String generatedAt) {
+	public AiSourceCompanion(String spi, String model, String generatedAt, boolean unsupervisedGenerated) {
 		this.spi = spi;
 		this.model = model;
 		this.generatedAt = generatedAt;
+		this.unsupervisedGenerated = unsupervisedGenerated;
 	}
 
 	public String getSpi() {
@@ -79,5 +82,13 @@ public class AiSourceCompanion {
 
 	public void setGeneratedAt(String generatedAt) {
 		this.generatedAt = generatedAt;
+	}
+
+	public boolean isUnsupervisedGenerated() {
+		return unsupervisedGenerated;
+	}
+
+	public void setUnsupervisedGenerated(boolean unsupervisedGenerated) {
+		this.unsupervisedGenerated = unsupervisedGenerated;
 	}
 }

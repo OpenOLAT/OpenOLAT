@@ -119,6 +119,9 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case mark: return item.getMarkLink();
 			case license: return item.getLicense();
 			case language: return item.getLanguage();
+			case aiProvider: return item.getAiProvider();
+			case aiModel: return item.getAiModel();
+			case aiUnsupervisedGenerated: return item.getAiUnsupervisedGenerated();
 			default: return "-";
 		}
 	}
@@ -160,7 +163,10 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		mark("mark"),
 		correctionTime("question.correctionTime"),
 		language("general.language"),
-		maxScore("max.score")
+		maxScore("max.score"),
+		aiProvider("ai.provider"),
+		aiModel("ai.model"),
+		aiUnsupervisedGenerated("ai.unsupervised.generated")
 		;
 		
 		private final String i18nKey;

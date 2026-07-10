@@ -54,6 +54,10 @@ public class AssessmentItemMetadata {
 	private BigDecimal differentiation;
 	private BigDecimal stdevDifficulty;
 	private Integer correctionTime;
+	
+	private String aiProvider;
+	private String aiModel;
+	private boolean unsupervisedAiGenerated;
 
 	private boolean hasError;
 	
@@ -236,6 +240,30 @@ public class AssessmentItemMetadata {
 		this.correctionTime = correctionTime;
 	}
 
+	public String getAiProvider() {
+		return aiProvider;
+	}
+
+	public void setAiProvider(String aiProvider) {
+		this.aiProvider = aiProvider;
+	}
+
+	public String getAiModel() {
+		return aiModel;
+	}
+
+	public void setAiModel(String aiModel) {
+		this.aiModel = aiModel;
+	}
+
+	public boolean isUnsupervisedAiGenerated() {
+		return unsupervisedAiGenerated;
+	}
+
+	public void setUnsupervisedAiGenerated(boolean unsupervisedGenerated) {
+		this.unsupervisedAiGenerated = unsupervisedGenerated;
+	}
+
 	public void toBuilder(ManifestMetadataBuilder metadata, Locale locale) {
 		if(getQuestionType() != null) {
 			metadata.setOpenOLATMetadataQuestionType(getQuestionType().getPrefix());
@@ -274,7 +302,7 @@ public class AssessmentItemMetadata {
 		if(StringHelper.containsNonWhitespace(editor) || StringHelper.containsNonWhitespace(editorVersion)) {
 			metadata.setQtiMetadataTool(editor, null, editorVersion);
 		}
-
+	
 		//openolat metadata
 		if(differentiation != null) {
 			metadata.setOpenOLATMetadataDiscriminationIndex(differentiation.doubleValue());
@@ -293,6 +321,12 @@ public class AssessmentItemMetadata {
 		metadata.setOpenOLATMetadataAssessmentType(assessmentType);
 		metadata.setOpenOLATMetadataAdditionalInformations(additionalInformations);
 		metadata.setOpenOLATMetadataCorrectionTime(correctionTime);
+
+		metadata.setOpenOLATMetadataAiProvider(aiProvider);
+		metadata.setOpenOLATMetadataAiModel(aiModel);
+		if(unsupervisedAiGenerated) {
+			metadata.setOpenOLATMetadataAiUnsupervisedGenerated(unsupervisedAiGenerated);
+		}
 	}
 	
 	public void fromBuilder(ManifestMetadataBuilder metadata) {
@@ -353,6 +387,16 @@ public class AssessmentItemMetadata {
 			}
 			if(openolatMetadata.getCorrectionTime() != null) {
 				correctionTime = openolatMetadata.getCorrectionTime();
+			}
+			
+			if(openolatMetadata.getAiProvider() != null) {
+				aiProvider = openolatMetadata.getAiProvider();
+			}
+			if(openolatMetadata.getAiModel() != null) {
+				aiModel = openolatMetadata.getAiModel();
+			}
+			if(openolatMetadata.isAiUnsupervisedGeneration() != null && openolatMetadata.isAiUnsupervisedGeneration().booleanValue()) {
+				unsupervisedAiGenerated = openolatMetadata.isAiUnsupervisedGeneration().booleanValue();
 			}
 		}
 	}

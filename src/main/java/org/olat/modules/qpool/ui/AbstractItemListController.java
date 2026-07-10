@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.ai.AiMCQuestionService;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ResourceLicense;
@@ -65,6 +66,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -130,6 +132,8 @@ public abstract class AbstractItemListController extends FormBasicController
 	private LicenseService licenseService;
 	@Autowired
 	private LicenseModule licenseModule;
+	@Autowired
+	protected AiMCQuestionService mcQuestionService;
 	@Autowired
 	private QuestionPoolLicenseHandler licenseHandler;
 	@Autowired
@@ -222,6 +226,14 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.numberOfRatings));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.maxScore, decimalRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.itemVersion));
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.aiProvider));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.aiModel));
+		DefaultFlexiColumnModel unsupervisedColumn = new DefaultFlexiColumnModel(false, Cols.aiUnsupervisedGenerated.i18nHeaderKey(), Cols.aiUnsupervisedGenerated.ordinal(),
+				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+				new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon o_icon-fw o_icon_ai"), null));
+		columnsModel.addFlexiColumnModel(unsupervisedColumn);
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new QuestionStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.statusLastModified));	
 		if (licenseModule.isEnabled(licenseHandler)) {
@@ -281,6 +293,13 @@ public abstract class AbstractItemListController extends FormBasicController
 		filters.add(new FlexiTableTextFilter(translate("general.coverage"), AbstractItemsSource.FILTER_COVERAGE, false));
 		filters.add(new FlexiTableTextFilter(translate("general.additional.informations"), AbstractItemsSource.FILTER_ADD_INFOS, false));
 		filters.add(new FlexiTableTextFilter(translate("general.language"), AbstractItemsSource.FILTER_LANGUAGE, false));
+		
+		if(mcQuestionService.isEnabled()) {
+			SelectionValues unsupervisedValues = new SelectionValues();
+			unsupervisedValues.add(SelectionValues.entry(AbstractItemsSource.FILTER_AI_UNSUPERVISED_GENERATED, translate("ai.unsupervised.generated")));
+			filters.add(new FlexiTableOneClickSelectionFilter(translate("ai.unsupervised.generated"),
+					AbstractItemsSource.FILTER_AI_UNSUPERVISED_GENERATED, unsupervisedValues, true));
+		}
 
 		if (securityCallback.canUseTaxonomy()) {
 			if(searchSettings.getTaxonomyLevel() != null) {

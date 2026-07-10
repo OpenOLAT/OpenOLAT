@@ -62,6 +62,8 @@ public abstract class AbstractItemsSource implements QuestionItemsSource {
 	public static final String FILTER_TAXONOMYLEVEL_FIELD = "taxonomy.level.field";
 	public static final String FILTER_TAXONOMYLEVEL_PATH = "taxonomy.level.path";
 	
+	public static final String FILTER_AI_UNSUPERVISED_GENERATED = "aiUnsupervisedGenerated";
+	
 	public static final String FILTER_EDU_CONTEXT = "edu.context";
 	public static final String FILTER_TYPE = "type";
 	public static final String FILTER_ASSESSMENT_TYPE = "assessment.type";
@@ -117,6 +119,10 @@ public abstract class AbstractItemsSource implements QuestionItemsSource {
 		String taxonomyLevelPath = getTextFilterValue(filters, FILTER_TAXONOMYLEVEL_PATH);
 		params.setLikeTaxonomyLevelPath(taxonomyLevelPath);
 		
+		if(isFilterSelected(filters, FILTER_AI_UNSUPERVISED_GENERATED)) {
+			params.setAiUnsupervisedGenerated(Boolean.TRUE);
+		}
+		
 		NumericalRange maxScoreRange = getNumericalRangeFilterValue(filters, FILTER_MAX_SCORE);
 		if(maxScoreRange != null) {
 			params.setMaxScoreFrom(maxScoreRange.getStart());
@@ -134,6 +140,15 @@ public abstract class AbstractItemsSource implements QuestionItemsSource {
 			return extendedFilter.getValue();
 		}
 		return null;
+	}
+	
+	private boolean isFilterSelected(List<FlexiTableFilter> filters, String id) {
+		FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, id);
+		if (filter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			return filterValues != null && filterValues.contains(id);
+		}
+		return false;
 	}
 	
 	private List<String> getTextFilterValues(List<FlexiTableFilter> filters, String filterId) {

@@ -242,6 +242,21 @@ public class ManifestMetadataItemized implements QuestionItem, QuestionItemEdita
 	public void setUsage(int numOfUsage) {
 		metadataBuilder.setOpenOLATMetadataUsage(Integer.valueOf(numOfUsage));
 	}
+	
+	@Override
+	public String getAiProvider() {
+		return metadataBuilder.getOpenOLATMetadataAiProvider();
+	}
+
+	@Override
+	public String getAiModel() {
+		return metadataBuilder.getOpenOLATMetadataAiModel();
+	}
+
+	@Override
+	public Boolean getAiUnsupervisedGenerated() {
+		return metadataBuilder.getOpenOLATMetadataAiUnsupervisedGenerated();
+	}
 
 	@Override
 	public QuestionStatus getQuestionStatus() {
@@ -385,7 +400,7 @@ public class ManifestMetadataItemized implements QuestionItem, QuestionItemEdita
 
 	@Override
 	public String getEditor() {
-		return metadataBuilder.getQtiMetadaToolVendor();
+		return metadataBuilder.getQtiMetadataToolName();
 	}
 
 	@Override

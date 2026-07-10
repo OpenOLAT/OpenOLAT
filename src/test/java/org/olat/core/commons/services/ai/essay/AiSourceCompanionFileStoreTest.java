@@ -55,7 +55,7 @@ public class AiSourceCompanionFileStoreTest {
 	@Test
 	public void save_nullDirIsNoOp() {
 		// Must not throw
-		store.save(null, new AiSourceCompanion("spi1", "model1", null));
+		store.save(null, new AiSourceCompanion("spi1", "model1", null, true));
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class AiSourceCompanionFileStoreTest {
 	@Test
 	public void save_thenLoad_roundTrip() throws Exception {
 		File dir = tmp.newFolder();
-		AiSourceCompanion companion = new AiSourceCompanion("anthropic", "claude-3-5", "2026-04-20T10:00:00Z");
+		AiSourceCompanion companion = new AiSourceCompanion("anthropic", "claude-3-5", "2026-04-20T10:00:00Z", true);
 		store.save(dir, companion);
 
 		assertTrue(store.exists(dir));
@@ -88,6 +88,7 @@ public class AiSourceCompanionFileStoreTest {
 		assertEquals("anthropic", loaded.getSpi());
 		assertEquals("claude-3-5", loaded.getModel());
 		assertEquals("2026-04-20T10:00:00Z", loaded.getGeneratedAt());
+		assertTrue(loaded.isUnsupervisedGenerated());
 	}
 
 	@Test
@@ -99,7 +100,7 @@ public class AiSourceCompanionFileStoreTest {
 	@Test
 	public void save_stampsGeneratedAtWhenBlank() throws Exception {
 		File dir = tmp.newFolder();
-		AiSourceCompanion companion = new AiSourceCompanion("openai", "gpt-4o", null);
+		AiSourceCompanion companion = new AiSourceCompanion("openai", "gpt-4o", null, false);
 		store.save(dir, companion);
 		AiSourceCompanion loaded = store.load(dir);
 		assertNotNull(loaded.getGeneratedAt());
@@ -109,7 +110,7 @@ public class AiSourceCompanionFileStoreTest {
 	@Test
 	public void save_doesNotOverwriteExistingGeneratedAt() throws Exception {
 		File dir = tmp.newFolder();
-		AiSourceCompanion companion = new AiSourceCompanion("openai", "gpt-4o", "2025-01-01T00:00:00Z");
+		AiSourceCompanion companion = new AiSourceCompanion("openai", "gpt-4o", "2025-01-01T00:00:00Z", false);
 		store.save(dir, companion);
 		AiSourceCompanion loaded = store.load(dir);
 		assertEquals("2025-01-01T00:00:00Z", loaded.getGeneratedAt());

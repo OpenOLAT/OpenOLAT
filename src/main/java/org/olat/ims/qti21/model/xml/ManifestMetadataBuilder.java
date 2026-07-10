@@ -773,6 +773,33 @@ public class ManifestMetadataBuilder {
 		getOpenOLATMetadata(true).setCorrectionTime(timeInMinute);
 	}
 	
+	public String getOpenOLATMetadataAiProvider() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getAiProvider();
+	}
+	
+	public void setOpenOLATMetadataAiProvider(String provider) {
+		getOpenOLATMetadata(true).setAiProvider(provider);
+	}
+	
+	public String getOpenOLATMetadataAiModel() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getAiModel();
+	}
+	
+	public void setOpenOLATMetadataAiModel(String model) {
+		getOpenOLATMetadata(true).setAiModel(model);
+	}
+	
+	public Boolean getOpenOLATMetadataAiUnsupervisedGenerated() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? Boolean.FALSE : ooMetadata.isAiUnsupervisedGeneration();
+	}
+	
+	public void setOpenOLATMetadataAiUnsupervisedGenerated(Boolean unsupervised) {
+		getOpenOLATMetadata(true).setAiUnsupervisedGeneration(unsupervised);
+	}
+	
 	/**
 	 * Return the qti metadata if it exists or if specified, create
 	 * one and append it to the metadata of the resource.
@@ -818,6 +845,12 @@ public class ManifestMetadataBuilder {
 		qtiMetadata.setToolName(toolName);
 		qtiMetadata.setToolVendor(toolVendor);
 		qtiMetadata.setToolVersion(toolVersion);
+	}
+	
+	public void setOpenOlatMetadataAi(String aiProvider, String aiModel, Boolean unsupervised) {
+		setOpenOLATMetadataAiProvider(aiProvider);
+		setOpenOLATMetadataAiModel(aiModel);
+		setOpenOLATMetadataAiUnsupervisedGenerated(unsupervised);
 	}
 	
 	public void setQtiMetadataInteractionTypes(List<String> interactions) {
@@ -935,8 +968,12 @@ public class ManifestMetadataBuilder {
 			setClassificationTaxonomy(item.getTaxonomicPath(), lang);
 		}
 		
-		// QTI 2.1
-		setQtiMetadataTool(item.getEditor(), null, item.getEditorVersion());
+		// QTI
+		if(StringHelper.containsNonWhitespace(item.getEditor())) {
+			setQtiMetadataTool(item.getEditor(), null, item.getEditorVersion());
+		} else if(StringHelper.containsNonWhitespace(assessmentItem.getToolName())) {
+			setQtiMetadataTool(assessmentItem.getToolName(), null, assessmentItem.getToolVersion());
+		}
 		
 		if(assessmentItem != null) {
 			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
@@ -963,5 +1000,11 @@ public class ManifestMetadataBuilder {
 		setOpenOLATMetadataTopic(item.getTopic());
 		setOpenOLATMetadataAdditionalInformations(item.getAdditionalInformations());
 		setOpenOLATMetadataCorrectionTime(item.getCorrectionTime());
+		
+		setOpenOLATMetadataAiProvider(item.getAiProvider());
+		setOpenOLATMetadataAiModel(item.getAiModel());
+		if(item.getAiUnsupervisedGenerated() != null && item.getAiUnsupervisedGenerated().booleanValue()) {
+			setOpenOLATMetadataAiUnsupervisedGenerated(item.getAiUnsupervisedGenerated());
+		}	
 	}
 }

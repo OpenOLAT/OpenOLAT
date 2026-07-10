@@ -1907,7 +1907,7 @@
 		<dependency>
 			<groupId>org.openolat.imscp</groupId>
 			<artifactId>manifest</artifactId>
-			<version>3.0.0</version>
+			<version>3.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.rometools</groupId>

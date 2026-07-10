@@ -290,7 +290,7 @@ public class EssayGenerationQuizPartSinkImpl implements EssayGenerationQuizPartS
 			// Record AI provenance in the companion file (the QTI XML keeps the
 			// default OpenOlat toolName so the standard editor recognises it).
 			if (StringHelper.containsNonWhitespace(spiId)) {
-				aiSourceCompanionFileStore.save(questionDir, new AiSourceCompanion(spiId, model, null));
+				aiSourceCompanionFileStore.save(questionDir, new AiSourceCompanion(spiId, model, null, true));
 			}
 
 			// Persist the per-question AI grading metadata next to the QTI XML.
@@ -355,7 +355,7 @@ public class EssayGenerationQuizPartSinkImpl implements EssayGenerationQuizPartS
 			// Record AI provenance in the companion file (the QTI XML keeps the
 			// default OpenOlat toolName so the standard editor recognises it).
 			if (StringHelper.containsNonWhitespace(spiId)) {
-				aiSourceCompanionFileStore.save(questionDir, new AiSourceCompanion(spiId, model, null));
+				aiSourceCompanionFileStore.save(questionDir, new AiSourceCompanion(spiId, model, null, true));
 			}
 
 			QuizQuestion quizQuestion = new QuizQuestion();

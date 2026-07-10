@@ -66,6 +66,10 @@ public class ItemWrapper implements QuestionItemView {
 	private int numOfAnswerAlternatives;
 	private int usage;
 	
+	private String aiProvider;
+	private String aiModel;
+	private Boolean aiUnsupervisedGenerated;
+	
 	private String itemVersion;
 	private String status;
 	private Date statusLastModified;
@@ -194,6 +198,21 @@ public class ItemWrapper implements QuestionItemView {
 	@Override
 	public String getAdditionalInformations() {
 		return additionalInformations;
+	}
+	
+	@Override
+	public String getAiProvider() {
+		return aiProvider;
+	}
+
+	@Override
+	public String getAiModel() {
+		return aiModel;
+	}
+
+	@Override
+	public Boolean getAiUnsupervisedGenerated() {
+		return aiUnsupervisedGenerated;
 	}
 
 	@Override
@@ -367,6 +386,10 @@ public class ItemWrapper implements QuestionItemView {
 			itemWrapper.educationalLearningTime = item.getEducationalLearningTime();
 			
 			itemWrapper.correctionTime = item.getCorrectionTime();
+			
+			itemWrapper.aiProvider = item.getAiProvider();
+			itemWrapper.aiModel = item.getAiModel();
+			itemWrapper.aiUnsupervisedGenerated = item.getAiUnsupervisedGenerated();
 			
 			itemWrapper.itemType = item.getItemType();
 			itemWrapper.difficulty = item.getDifficulty();

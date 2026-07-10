@@ -91,4 +91,11 @@ public interface QuestionItemShort extends OLATResourceable, CreateInfo, Modifie
 	//management
 	public Integer getCorrectionTime();
 	
+	// ai
+	String getAiProvider();
+
+	String getAiModel();
+
+	Boolean getAiUnsupervisedGenerated();
+	
 }

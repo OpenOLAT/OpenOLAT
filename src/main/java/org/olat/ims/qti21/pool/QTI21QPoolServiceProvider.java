@@ -381,32 +381,34 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 		String editor = null;
 		String editorVersion = null;
+		if (StringHelper.containsNonWhitespace(assessmentItem.getToolName())) {
+			editor = assessmentItem.getToolName();
+		}
+		if (StringHelper.containsNonWhitespace(assessmentItem.getToolVersion())) {
+			editorVersion = assessmentItem.getToolVersion();
+		}
+		
 		// Prefer the on-disk AI provenance companions over the QTI toolName.
 		// The AI essay / MC generators leave the QTI toolName at the default
 		// "OpenOLAT" value (so the standard editor recognises the item) and
 		// instead persist their provenance in companion files next to the
 		// item XML. Order: ai-grading.json (essay, richer payload) wins over
 		// ai-source.json (MC + fallback).
+		boolean aiUnsupervisedGenerated = false;
 		File materialDirRoot = itemFile.getParentFile();
 		EssayAiGrading aiGrading = essayAiGradingFileStore.load(materialDirRoot);
-		if (aiGrading != null && StringHelper.containsNonWhitespace(aiGrading.getGeneratorSpi())) {
-			editor = AI_GENERATOR_TOOL_PREFIX + "QTI12.Generator." + aiGrading.getGeneratorSpi();
-			editorVersion = aiGrading.getGeneratorModel();
-		} else {
-			AiSourceCompanion aiSource = aiSourceCompanionFileStore.load(materialDirRoot);
-			if (aiSource != null && StringHelper.containsNonWhitespace(aiSource.getSpi())) {
-				editor = AI_GENERATOR_TOOL_PREFIX + "QTI12.Generator." + aiSource.getSpi();
-				editorVersion = aiSource.getModel();
-			} else {
-				if (StringHelper.containsNonWhitespace(assessmentItem.getToolName())) {
-					editor = assessmentItem.getToolName();
-				}
-				if (StringHelper.containsNonWhitespace(assessmentItem.getToolVersion())) {
-					editorVersion = assessmentItem.getToolVersion();
-				}
-			}
+		AiSourceCompanion aiSource = aiSourceCompanionFileStore.load(materialDirRoot);
+		if (aiSource != null && StringHelper.containsNonWhitespace(aiSource.getSpi())) {
+			aiUnsupervisedGenerated = aiSource.isUnsupervisedGenerated();
+			metadata.setAiProvider(AI_GENERATOR_TOOL_PREFIX + "QTI21.Generator." + aiSource.getSpi());
+			metadata.setAiModel(aiSource.getModel());
+			metadata.setUnsupervisedAiGenerated(aiUnsupervisedGenerated);
 		}
-
+		if (aiGrading != null && StringHelper.containsNonWhitespace(aiGrading.getGeneratorSpi())) {
+			metadata.setAiProvider(AI_GENERATOR_TOOL_PREFIX + "QTI21.Generator." + aiGrading.getGeneratorSpi());
+			metadata.setAiModel(aiGrading.getGeneratorModel());
+		}
+		
 		String originalItemFilename = itemFile.getName();
 		QuestionItemImpl qitem = processor.processItem(assessmentItem, null, originalItemFilename,
 				editor, editorVersion, metadata);
@@ -420,6 +422,8 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		ResourceType resource = manifest.appendAssessmentItem(UUID.randomUUID().toString(), originalItemFilename);
 		ManifestMetadataBuilder exportedMetadataBuilder = manifest.getMetadataBuilder(resource, true);
 		exportedMetadataBuilder.setMetadata(clonedMetadataBuilder.getMetadata());
+		
+		exportedMetadataBuilder.setOpenOLATMetadataAdditionalInformations(originalItemFilename);
 		manifest.write(new File(itemStorage, "imsmanifest.xml"));
 		
 		//process material
@@ -460,9 +464,9 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		// formal review process is disabled (otherwise the pool's own review
 		// workflow drives the status).
 		if (StringHelper.containsNonWhitespace(editor)
-				&& editor.startsWith(AI_GENERATOR_TOOL_PREFIX)
+				&& aiUnsupervisedGenerated
 				&& !qpoolModule.isReviewProcessEnabled()) {
-			qitem.setQuestionStatus(QuestionStatus.review);
+			qitem.setQuestionStatus(QuestionStatus.aiDraft);
 			qpoolService.updateItem(qitem);
 		}
 

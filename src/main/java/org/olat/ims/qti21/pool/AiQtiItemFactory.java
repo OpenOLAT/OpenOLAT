@@ -74,7 +74,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public class AiQtiItemFactory {
 
 	/** Tool name prefix mirroring {@code NewAiItemController}'s legacy stamp. */
-	public static final String TOOL_PREFIX = "OpenOlat.AI.QTI12.Generator.";
+	public static final String TOOL_PREFIX = "OpenOlat.AI.QTI21.Generator.";
 
 	/** Maximum length of a derived title before it is truncated with an ellipsis. */
 	private static final int MAX_TITLE_LEN = 120;
