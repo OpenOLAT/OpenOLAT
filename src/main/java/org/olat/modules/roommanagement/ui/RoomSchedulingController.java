@@ -59,6 +59,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
@@ -118,7 +119,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial date: 12 Jun 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RoomSchedulingController extends FormBasicController implements FlexiTableComponentDelegate {
+public class RoomSchedulingController extends FormBasicController implements FlexiTableComponentDelegate, FlexiTableCssDelegate {
 
 	private static final String FILTER_WITH_WARNINGS = "withWarnings";
 	private static final String FILTER_WITH_WARNINGS_ON = "on";
@@ -210,6 +211,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		tableEl.setExternalRenderer(new RoomCalendarRenderer(), "o_icon_calendar o_icon-lg");
 		tableEl.getExternalTypeButton().setTitle(translate("room.view.calendar"));
+		tableEl.setCssDelegate(this);
 
 		calendarEl = new FullCalendarElement(ureq, RoomCalendarRenderer.CALENDAR_ITEM_NAME, new ArrayList<>(), getTranslator());
 		calendarEl.setShowEventDuration(true);
@@ -234,6 +236,22 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			components.add(schedulingRow.getDetailsController().getInitialFormItem().getComponent());
 		}
 		return components;
+	}
+
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		RoomSchedulingRow row = dataModel.getObject(pos);
+		return row != null && !row.getWarnings().isEmpty() ? "warning" : null;
 	}
 
 	private void initFilters() {
