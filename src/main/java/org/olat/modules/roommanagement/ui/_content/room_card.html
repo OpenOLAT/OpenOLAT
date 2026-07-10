@@ -41,4 +41,9 @@
 		$r.render($roomDetailsLinkId)
 	</div>
 	#end
+	#if($warningText)
+	<div class="o_room_card_warning">
+		<i class="o_icon o_icon_warn"></i>&nbsp;$r.escapeHtml($warningText)
+	</div>
+	#end
 </div>

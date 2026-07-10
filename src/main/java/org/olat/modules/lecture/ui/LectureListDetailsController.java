@@ -96,6 +96,7 @@ import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.model.CollisionReport;
 import org.olat.modules.roommanagement.ui.RoomDetailViewController;
 import org.olat.modules.roommanagement.ui.RoomUIHelper;
 import org.olat.modules.taxonomy.TaxonomyRef;
@@ -317,8 +318,19 @@ public class LectureListDetailsController extends FormBasicController {
 			Room room = booking.getRoom();
 			if (room == null) continue;
 
+			String warningText = null;
+			if (booking.getStartDate() != null && booking.getEndDate() != null) {
+				CollisionReport collisions = roomManagementService.findCollisions(room,
+						booking.getStartDate(), booking.getEndDate(), 0, 0, booking);
+				if (!collisions.getHard().isEmpty()) {
+					String ref = StringHelper.containsNonWhitespace(room.getExternalRef())
+							? room.getExternalRef() : room.getDescription();
+					warningText = translate("room.scheduling.warning.double.booked", ref);
+				}
+			}
+
 			RoomUIHelper.RoomCardResult cardResult = RoomUIHelper.forgeRoomCard(formLayout, uifactory, room, Util.getPackageVelocityRoot(RoomUIHelper.class),
-					getTranslator());
+					getTranslator(), warningText);
 			roomCardIds.add(cardResult.cardId());
 			roomCardLinks.add(cardResult.detailsLink());
 		}

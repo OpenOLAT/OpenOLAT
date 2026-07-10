@@ -62,12 +62,21 @@ public class RoomUIHelper {
 	 */
 	public record RoomCardResult(String cardId, FormLink detailsLink) {}
 
-	public static RoomCardResult forgeRoomCard(FormItemContainer formLayout, FormUIFactory uifactory, Room room, 
+	public static RoomCardResult forgeRoomCard(FormItemContainer formLayout, FormUIFactory uifactory, Room room,
 											   String velocityRoot, Translator translator) {
+		return forgeRoomCard(formLayout, uifactory, room, velocityRoot, translator, null);
+	}
+
+	public static RoomCardResult forgeRoomCard(FormItemContainer formLayout, FormUIFactory uifactory, Room room,
+											   String velocityRoot, Translator translator, String warningText) {
 		String cardId = "roomCard_" + room.getKey();
 		FormLayoutContainer cardCont = FormLayoutContainer.createCustomFormLayout(
 				cardId, translator, velocityRoot + "/room_card.html");
 		formLayout.add(cardCont);
+
+		if (StringHelper.containsNonWhitespace(warningText)) {
+			cardCont.contextPut("warningText", warningText);
+		}
 
 		String detailsLinkId = "roomDetailsLink_" + room.getKey();
 		FormLink detailsLink = uifactory.addFormLink(detailsLinkId, "openDetails", "", null, 
