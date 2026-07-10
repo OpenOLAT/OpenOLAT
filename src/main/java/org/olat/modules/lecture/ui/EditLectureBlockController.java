@@ -534,13 +534,20 @@ public class EditLectureBlockController extends FormBasicController {
 		roomsEl = uifactory.addObjectSelectionElement("rooms", "lecture.rooms", formLayout,
 				getWindowControl(), true, source);
 		roomsEl.setPopupCssClass("o_rm_event_room_selector");
-		roomsEl.setEnabled(!readOnly && !lectureManagementManaged);
+		updateRoomsEnabledState(start, end);
+	}
+
+	private void updateRoomsEnabledState(Date start, Date end) {
+		boolean enabled = !readOnly && !lectureManagementManaged && start != null && end != null;
+		roomsEl.setEnabled(enabled);
+		roomsEl.setHelpTextKey(enabled ? null : "lecture.rooms.help.date.required", null);
 	}
 
 	private void updateRoomsSource() {
 		if (roomsEl == null) return;
 		Date start = dateEl.getDate();
 		Date end = dateEl.getSecondDate();
+		updateRoomsEnabledState(start, end);
 		if (start == null || end == null) return;
 
 		RoomSelectionSource newSource = new RoomSelectionSource(getTranslator(), roomManagementService,
