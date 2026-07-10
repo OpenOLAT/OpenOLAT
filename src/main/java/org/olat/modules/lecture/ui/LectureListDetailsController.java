@@ -61,7 +61,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
@@ -145,7 +145,7 @@ public class LectureListDetailsController extends FormBasicController {
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-	private CloseableModalController cmc;
+	private LightboxController lightboxCtrl;
 	private RoomDetailViewController roomDetailViewCtrl;
 	private final Set<FormLink> roomCardLinks = new HashSet<>();
 
@@ -529,9 +529,9 @@ public class LectureListDetailsController extends FormBasicController {
 					cleanUp();
 				}
 			}
-		} else if (source == cmc) {
-			removeAsListenerAndDispose(cmc);
-			cmc = null;
+		} else if (source == lightboxCtrl) {
+			removeAsListenerAndDispose(lightboxCtrl);
+			lightboxCtrl = null;
 			removeAsListenerAndDispose(roomDetailViewCtrl);
 			roomDetailViewCtrl = null;
 		}
@@ -573,13 +573,12 @@ public class LectureListDetailsController extends FormBasicController {
 
 	private void doOpenDetails(UserRequest ureq, Room room) {
 		removeAsListenerAndDispose(roomDetailViewCtrl);
-		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(lightboxCtrl);
 		roomDetailViewCtrl = new RoomDetailViewController(ureq, getWindowControl(), room);
 		listenTo(roomDetailViewCtrl);
-		String title = room.getExternalRef() != null ? room.getExternalRef() : "";
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), roomDetailViewCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
+		lightboxCtrl = new LightboxController(ureq, getWindowControl(), roomDetailViewCtrl);
+		listenTo(lightboxCtrl);
+		lightboxCtrl.activate();
 	}
 	
 	private void doOpenTools(UserRequest ureq, LectureBlockParticipantGroupRow groupRow, FormLink link) {
