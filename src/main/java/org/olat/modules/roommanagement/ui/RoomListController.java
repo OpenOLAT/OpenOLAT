@@ -651,10 +651,12 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 					int rowIndex = dataModel.getObjects().indexOf(row);
 					if (rowIndex >= 0) {
 						if (tableEl.isDetailsExpended(rowIndex)) {
+							expandedRow.getDetailsController().closeLightbox();
 							doCloseDetails(row);
 							tableEl.collapseDetails(rowIndex);
 						} else {
 							doOpenDetails(ureq, row, rowIndex);
+							expandedRow.getDetailsController().openLightbox(ureq);
 							tableEl.expandDetails(rowIndex);
 						}
 					}
