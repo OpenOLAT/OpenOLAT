@@ -330,6 +330,16 @@
 	}
 }
 
+.basicLightbox {
+	.o_rm_detail {
+		width: 85vw;
+		max-width: 850px;
+		padding: 4rem;
+		background-color: white;
+		border-radius: $border-radius-large;
+	}
+}
+
 .o_rm_detail {
 	.o_building_map_container {
 		margin-top: 16px;	

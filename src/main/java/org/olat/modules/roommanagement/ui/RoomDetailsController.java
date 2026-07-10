@@ -34,7 +34,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
@@ -54,7 +54,7 @@ public class RoomDetailsController extends FormBasicController {
 	private FormLink calendarLink;
 	private FormLink cardDetailsLink;
 
-	private CloseableModalController cmc;
+	private LightboxController lightboxCtrl;
 	private RoomDetailViewController roomDetailViewCtrl;
 	private final Room room;
 
@@ -183,9 +183,9 @@ public class RoomDetailsController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == cmc) {
-			removeAsListenerAndDispose(cmc);
-			cmc = null;
+		if (source == lightboxCtrl) {
+			removeAsListenerAndDispose(lightboxCtrl);
+			lightboxCtrl = null;
 			removeAsListenerAndDispose(roomDetailViewCtrl);
 			roomDetailViewCtrl = null;
 		}
@@ -198,26 +198,25 @@ public class RoomDetailsController extends FormBasicController {
 	}
 
 	public void openLightbox(UserRequest ureq) {
-		doOpenDetails(ureq);  	
+		doOpenDetails(ureq);
 	}
-	
+
 	public void closeLightbox() {
-		removeAsListenerAndDispose(cmc);
-		cmc = null;
+		removeAsListenerAndDispose(lightboxCtrl);
+		lightboxCtrl = null;
 		removeAsListenerAndDispose(roomDetailViewCtrl);
 		roomDetailViewCtrl = null;
 	}
-	
+
 	private void doOpenDetails(UserRequest ureq) {
 		removeAsListenerAndDispose(roomDetailViewCtrl);
-		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(lightboxCtrl);
 
 		roomDetailViewCtrl = new RoomDetailViewController(ureq, getWindowControl(), room);
 		listenTo(roomDetailViewCtrl);
 
-		String title = StringHelper.containsNonWhitespace(room.getExternalRef()) ? room.getExternalRef() : "";
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), roomDetailViewCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
+		lightboxCtrl = new LightboxController(ureq, getWindowControl(), roomDetailViewCtrl);
+		listenTo(lightboxCtrl);
+		lightboxCtrl.activate();
 	}
 }
