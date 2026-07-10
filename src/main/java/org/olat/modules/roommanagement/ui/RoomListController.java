@@ -22,7 +22,6 @@ package org.olat.modules.roommanagement.ui;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -268,43 +267,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void initBuildingFilter(List<FlexiTableExtendedFilter> filters, List<RoomStatus> tabStatuses) {
-		SelectionValues buildingValues = new SelectionValues();
 		SearchBuildingParameters buildingParams = new SearchBuildingParameters();
 		buildingParams.setStatus(tabStatuses);
 		List<Building> buildings = roomManagementService.searchBuildings(buildingParams, roles);
-		buildings.sort(Comparator
-				.<Building>comparingInt(b -> b.getStatus() == null ? Integer.MAX_VALUE : b.getStatus().ordinal())
-				.thenComparing(b -> {
-					String sortLabel = StringHelper.containsNonWhitespace(b.getExternalRef()) ? b.getExternalRef() : b.getDescription();
-					return sortLabel != null ? sortLabel.toLowerCase() : "";
-				}));
-		for (Building b : buildings) {
-			String ref = b.getExternalRef();
-			String desc = b.getDescription();
-			boolean hasRef = StringHelper.containsNonWhitespace(ref);
-			boolean hasDesc = StringHelper.containsNonWhitespace(desc);
-			if (!hasRef && !hasDesc) {
-				continue;
-			}
-			StringBuilder html = new StringBuilder();
-			if (hasRef) {
-				html.append("<span>").append(StringHelper.escapeHtml(ref)).append("</span>");
-			}
-			if (hasDesc) {
-				html.append("<span class=\"o_building_filter text-muted\"> &middot; ").append(StringHelper.escapeHtml(desc)).append("</span>");
-			}
-			if (b.getStatus() != null) {
-				String statusName = b.getStatus().name();
-				String statusLabel = translate("building.status." + statusName);
-				html.append("&nbsp;|&nbsp;");
-				html.append("<div class=\"o_building_room_status_icon\">");
-				html.append("<i class=\"o_icon o_icon_circle_color o_building_room_status_").append(StringHelper.escapeHtml(statusName)).append("\"> </i>");
-				html.append("</div>");
-				html.append("&nbsp;");
-				html.append("<span>").append(StringHelper.escapeHtml(statusLabel)).append("</span>");
-			}
-			buildingValues.add(SelectionValues.entry(b.getKey().toString(), html.toString()));
-		}
+		SelectionValues buildingValues = RoomUIHelper.buildBuildingFilterValues(buildings, getTranslator());
 		if (!buildingValues.isEmpty()) {
 			filters.add(new FlexiTableMultiSelectionFilter(translate("room.filter.buildings"),
 					FILTER_BUILDINGS, buildingValues, true));
@@ -312,43 +278,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void initRoomFilter(List<FlexiTableExtendedFilter> filters, List<RoomStatus> tabStatuses) {
-		SelectionValues roomValues = new SelectionValues();
 		SearchRoomParameters roomParams = new SearchRoomParameters();
 		roomParams.setStatus(tabStatuses);
 		List<Room> rooms = roomManagementService.searchRooms(roomParams, roles);
-		rooms.sort(Comparator
-				.<Room>comparingInt(r -> r.getStatus() == null ? Integer.MAX_VALUE : r.getStatus().ordinal())
-				.thenComparing(r -> {
-					String sortLabel = StringHelper.containsNonWhitespace(r.getExternalRef()) ? r.getExternalRef() : r.getDescription();
-					return sortLabel != null ? sortLabel.toLowerCase() : "";
-				}));
-		for (Room r : rooms) {
-			String ref = r.getExternalRef();
-			String desc = r.getDescription();
-			boolean hasRef = StringHelper.containsNonWhitespace(ref);
-			boolean hasDesc = StringHelper.containsNonWhitespace(desc);
-			if (!hasRef && !hasDesc) {
-				continue;
-			}
-			StringBuilder html = new StringBuilder();
-			if (hasRef) {
-				html.append("<span>").append(StringHelper.escapeHtml(ref)).append("</span>");
-			}
-			if (hasDesc) {
-				html.append("<span class=\"o_room_filter text-muted\"> &middot; ").append(StringHelper.escapeHtml(desc)).append("</span>");
-			}
-			if (r.getStatus() != null) {
-				String statusName = r.getStatus().name();
-				String statusLabel = translate("building.status." + statusName);
-				html.append("&nbsp;|&nbsp;");
-				html.append("<div class=\"o_building_room_status_icon\">");
-				html.append("<i class=\"o_icon o_icon_circle_color o_building_room_status_").append(StringHelper.escapeHtml(statusName)).append("\"> </i>");
-				html.append("</div>");
-				html.append("&nbsp;");
-				html.append("<span>").append(StringHelper.escapeHtml(statusLabel)).append("</span>");
-			}
-			roomValues.add(SelectionValues.entry(r.getKey().toString(), html.toString()));
-		}
+		SelectionValues roomValues = RoomUIHelper.buildRoomFilterValues(rooms, getTranslator());
 		if (!roomValues.isEmpty()) {
 			filters.add(new FlexiTableMultiSelectionFilter(translate("room.filter.rooms"),
 					FILTER_ROOMS, roomValues, true));

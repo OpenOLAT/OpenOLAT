@@ -21,6 +21,8 @@ package org.olat.modules.roommanagement.ui;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -133,6 +136,85 @@ public class RoomUIHelper {
 		}
 
 		return new RoomCardResult(cardId, detailsLink);
+	}
+
+	/**
+	 * Building filter options for a "Buildings" selection filter: sorted by status
+	 * (active, inactive, deleted, in that order) then alphabetically by reference/description,
+	 * each option labeled with reference, description and a status icon/label.
+	 */
+	public static SelectionValues buildBuildingFilterValues(List<Building> buildings, Translator translator) {
+		List<Building> sorted = new ArrayList<>(buildings);
+		sorted.sort(Comparator
+				.<Building>comparingInt(b -> b.getStatus() == null ? Integer.MAX_VALUE : b.getStatus().ordinal())
+				.thenComparing(b -> {
+					String sortLabel = StringHelper.containsNonWhitespace(b.getExternalRef()) ? b.getExternalRef() : b.getDescription();
+					return sortLabel != null ? sortLabel.toLowerCase() : "";
+				}));
+
+		SelectionValues buildingValues = new SelectionValues();
+		for (Building b : sorted) {
+			String html = buildFilterOptionHtml(b.getExternalRef(), b.getDescription(), b.getStatus(),
+					"o_building_filter", translator);
+			if (html != null) {
+				buildingValues.add(SelectionValues.entry(b.getKey().toString(), html));
+			}
+		}
+		return buildingValues;
+	}
+
+	/**
+	 * Room filter options for a "Rooms" selection filter: sorted by status
+	 * (active, inactive, deleted, in that order) then alphabetically by reference/description,
+	 * each option labeled with reference, description and a status icon/label.
+	 */
+	public static SelectionValues buildRoomFilterValues(List<Room> rooms, Translator translator) {
+		List<Room> sorted = new ArrayList<>(rooms);
+		sorted.sort(Comparator
+				.<Room>comparingInt(r -> r.getStatus() == null ? Integer.MAX_VALUE : r.getStatus().ordinal())
+				.thenComparing(r -> {
+					String sortLabel = StringHelper.containsNonWhitespace(r.getExternalRef()) ? r.getExternalRef() : r.getDescription();
+					return sortLabel != null ? sortLabel.toLowerCase() : "";
+				}));
+
+		SelectionValues roomValues = new SelectionValues();
+		for (Room r : sorted) {
+			String html = buildFilterOptionHtml(r.getExternalRef(), r.getDescription(), r.getStatus(),
+					"o_room_filter", translator);
+			if (html != null) {
+				roomValues.add(SelectionValues.entry(r.getKey().toString(), html));
+			}
+		}
+		return roomValues;
+	}
+
+	private static String buildFilterOptionHtml(String ref, String desc, RoomStatus status, String descCssClass,
+												 Translator translator) {
+		boolean hasRef = StringHelper.containsNonWhitespace(ref);
+		boolean hasDesc = StringHelper.containsNonWhitespace(desc);
+		if (!hasRef && !hasDesc) {
+			return null;
+		}
+
+		StringBuilder html = new StringBuilder();
+		if (hasRef) {
+			html.append("<span>").append(StringHelper.escapeHtml(ref)).append("</span>");
+		}
+		if (hasDesc) {
+			html.append("<span class=\"").append(descCssClass).append(" text-muted\"> &middot; ")
+					.append(StringHelper.escapeHtml(desc)).append("</span>");
+		}
+		if (status != null) {
+			String statusName = status.name();
+			String statusLabel = translator.translate("building.status." + statusName);
+			html.append("&nbsp;|&nbsp;");
+			html.append("<div class=\"o_building_room_status_icon\">");
+			html.append("<i class=\"o_icon o_icon_circle_color o_building_room_status_").append(StringHelper.escapeHtml(statusName)).append("\"> </i>");
+			html.append("</div>");
+			html.append("&nbsp;");
+			html.append("<span>").append(StringHelper.escapeHtml(statusLabel)).append("</span>");
+		}
+		return html.toString();
 	}
 
 	static String formatNextEvent(RoomBooking booking, Locale locale) {

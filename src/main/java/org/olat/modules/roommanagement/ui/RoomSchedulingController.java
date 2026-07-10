@@ -244,31 +244,33 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		filters.add(new FlexiTableOneClickSelectionFilter(translate("room.scheduling.filter.with.warnings"),
 				FILTER_WITH_WARNINGS, warningsValues, true));
 
-		SelectionValues buildingValues = new SelectionValues();
-		roomManagementService.searchBuildings(new SearchBuildingParameters(), roles).forEach(b -> {
-			String label = StringHelper.containsNonWhitespace(b.getExternalRef()) ? b.getExternalRef() : b.getDescription();
-			if (StringHelper.containsNonWhitespace(label)) {
-				buildingValues.add(SelectionValues.entry(b.getKey().toString(), label));
-			}
-		});
+		List<RoomStatus> filterStatuses = List.of(RoomStatus.active, RoomStatus.inactive);
+		initBuildingFilter(filters, filterStatuses);
+		initRoomFilter(filters, filterStatuses);
+
+		tableEl.setFilters(true, filters, false, false);
+	}
+
+	private void initBuildingFilter(List<FlexiTableExtendedFilter> filters, List<RoomStatus> statuses) {
+		SearchBuildingParameters buildingParams = new SearchBuildingParameters();
+		buildingParams.setStatus(statuses);
+		List<Building> buildings = roomManagementService.searchBuildings(buildingParams, roles);
+		SelectionValues buildingValues = RoomUIHelper.buildBuildingFilterValues(buildings, getTranslator());
 		if (!buildingValues.isEmpty()) {
 			filters.add(new FlexiTableMultiSelectionFilter(translate("room.scheduling.filter.buildings"),
 					FILTER_BUILDINGS, buildingValues, true));
 		}
+	}
 
-		SelectionValues roomValues = new SelectionValues();
-		roomManagementService.searchRooms(new SearchRoomParameters(), roles).forEach(r -> {
-			String label = StringHelper.containsNonWhitespace(r.getExternalRef()) ? r.getExternalRef() : r.getDescription();
-			if (StringHelper.containsNonWhitespace(label)) {
-				roomValues.add(SelectionValues.entry(r.getKey().toString(), label));
-			}
-		});
+	private void initRoomFilter(List<FlexiTableExtendedFilter> filters, List<RoomStatus> statuses) {
+		SearchRoomParameters roomParams = new SearchRoomParameters();
+		roomParams.setStatus(statuses);
+		List<Room> rooms = roomManagementService.searchRooms(roomParams, roles);
+		SelectionValues roomValues = RoomUIHelper.buildRoomFilterValues(rooms, getTranslator());
 		if (!roomValues.isEmpty()) {
 			filters.add(new FlexiTableMultiSelectionFilter(translate("room.scheduling.filter.rooms"),
 					FILTER_ROOMS, roomValues, true));
 		}
-
-		tableEl.setFilters(true, filters, false, false);
 	}
 
 	private void initFilterTabs(UserRequest ureq) {
