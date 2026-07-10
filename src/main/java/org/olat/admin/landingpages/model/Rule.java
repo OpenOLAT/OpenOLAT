@@ -19,13 +19,10 @@
  */
 package org.olat.admin.landingpages.model;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.modules.coach.CoachingService;
@@ -35,12 +32,10 @@ import org.olat.repository.RepositoryService;
 /**
  * 
  * Initial date: 15.05.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class Rule {
-	
-	private static final Logger log = Tracing.createLoggerFor(Rule.class);
 	
 	private String role;
 	private String userAttributeKey;
@@ -89,13 +84,11 @@ public class Rule {
 		//match the role?
 		if(!"none".equals(role) && StringHelper.containsNonWhitespace(role)) {
 			RoleToRule roleToRule = RoleToRule.valueOfConfiguration(role);
-			if(OrganisationRoles.isValue(role)) {
+			if(roleToRule == null) {
+				match &= false;
+			} else if(roleToRule.role() != null) {
 				Roles roles = userSession.getRoles();
-				if(roleToRule != null) {
-					match &= roles.hasRole(roleToRule.role());
-				} else {
-					log.warn("Landing page rule with an unkown role: {}", role);
-				}
+				match &= roles.hasRole(roleToRule.role());
 			} else if(GroupRoles.owner.name().equals(roleToRule.roleName()) || GroupRoles.coach.name().equals(roleToRule.roleName())) {
 				match &= CoreSpringFactory.getImpl(RepositoryService.class)
 						.hasRoleExpanded(userSession.getIdentity(), roleToRule.roleName());
