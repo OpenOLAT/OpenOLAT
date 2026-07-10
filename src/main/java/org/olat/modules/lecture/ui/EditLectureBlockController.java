@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
@@ -62,6 +63,7 @@ import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -831,6 +833,12 @@ public class EditLectureBlockController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(dateEl == source) {
 			updateRoomsSource();
+			// dateEl is excluded from propagateDirtinessToContainer() above, which normally
+			// also re-focuses the last focused element after a container redraw. Since
+			// updateRoomsSource() redraws the rooms element, restore focus explicitly here,
+			// otherwise keyboard focus is lost (e.g. tabbing gets stuck on the date field).
+			Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);
+			getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 		} else if(locationEl == source) {
 			// Do nothing
 		} else if(compulsoryEl == source) {
