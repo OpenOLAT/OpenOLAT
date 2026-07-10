@@ -330,25 +330,8 @@
 	}
 }
 .o_rm_scheduling_details {
-	.o_lecture_subjects {
-		margin-top: -12px;
-		margin-bottom: 12px;
-
-		form-control-static {
-			padding-top: 0;
-		}
-	}
-	
 	.o_warning_with_icon {
 		margin-top: 10px;
-	}
-	
-	.o_rm_scheduling_rooms_label {
-		margin-top: 15px;
-	}
-	
-	.o_lecture_resources {
-		grid-template-columns: calc(50% - 10px) calc(50% - 10px);
 	}
 }
 

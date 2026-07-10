@@ -1,10 +1,10 @@
-<div class="o_rm_details o_rm_scheduling_details">
+<div class="o_rm_details o_rm_scheduling_details o_lecture_details">
 	<div class="o_flex_header">
-		<div class="o_rm_title">
+		<div class="o_lecture_title">
 			<h3>$r.escapeHtml($title)</h3>
 			#if($r.isNotEmpty($externalRef))<h3><small> · $r.escapeHtml($externalRef)</small></h3>#end
 		</div>
-		<div class="o_rm_status">
+		<div class="o_lecture_status">
 			$lectureBlockStatusBadge
 		</div>
 		<div class="o_button_group">
@@ -17,6 +17,7 @@
 		$r.render("lecture.subjects")
 	</div>
 	#end
+
 	#if(!$warnings.isEmpty())
 	<div class="o_warning_with_icon">
 		#foreach($warning in $warnings)
@@ -24,50 +25,79 @@
 		#end
 	</div>
 	#end
+
 	<div class="o_metadata_horizontal">
-		#if($r.available("lecture.date"))$r.render("lecture.date","vertical")#end
-		#if($r.available("lecture.time"))$r.render("lecture.time","vertical")#end
-		#if($r.available("lecture.location"))$r.render("lecture.location","vertical")#end
+		#if($r.available("lecture.date"))
+			$r.render("lecture.date","vertical")
+		#end
+		#if($r.available("lecture.time"))
+			$r.render("lecture.time","vertical")
+		#end
+		#if($r.available("lecture.location"))
+			$r.render("lecture.location","vertical")
+		#end
 		$r.render("lecture.participants","vertical")
-		#if($r.available("lecture.absences"))$r.render("lecture.absences","vertical")#end
+		#if($r.available("lecture.absences"))
+			$r.render("lecture.absences","vertical")
+		#end
 		$r.render("lecture.compulsory","vertical")
 	</div>
-	<div class="o_lecture_resources">
+
+	<div class="o_lecture_resources o_lecture_teachers">
 		<label class="o_lecture_teachers">$r.translate("contact.teachers.list.name")</label>
 		#if($r.isNotEmpty($profilesIds))
 			#foreach($profileId in $profilesIds)
-				<div class="o_lecture_resource">$r.render($profileId)</div>
+				<div class="o_lecture_resource o_lecture_teacher">$r.render($profileId)</div>
 			#end
 		#end
-		#if($r.available("entry.open"))
-			<label class="o_lecture_course">$r.translate("referenced.courses")</label>
+	</div>
+	
+	<div class="o_lecture_resources o_lecture_course_room">
+		#if($r.available("course.empty") || $r.available("entry.open"))
+		<div class="o_lecture_label_and_resource">
+			<label class="o_lecture_course">$r.translate("lecture.course")</label>
 			<div class="o_lecture_resource">
-				<div class="o_lecture_course_card">
-					<div class="o_thumbnail">
-						<div class="o_thumbnail_file_img">
-							<a href="$entryUrl" title="$r.escapeHtml($entryDisplayName)">
-							#if($r.isNotEmpty($thumbnailUrl))
-								<img src="${thumbnailUrl}" alt="$r.translate("rentry.pic.alt")">
-							#else
-								<div class="o_visual_not_available"></div>
+				#if($r.visible("course.empty"))
+					$r.render("course.empty")
+				#elseif($r.available("entry.open"))
+					<div class="o_lecture_course_card">
+						<div class="o_thumbnail">
+							<div class="o_thumbnail_file_img">
+								<a href="$entryUrl" title="$r.escapeHtml($entryDisplayName)">
+								#if($r.isNotEmpty($thumbnailUrl))
+									<img src="${thumbnailUrl}" alt="$r.translate("rentry.pic.alt")">
+								#else
+									<div class="o_visual_not_available"></div>
+								#end
+								</a>
+							</div>
+						</div>
+						<div class="o_card_meta">
+							<h4 class="o_card_title">$r.render("entry.open")</h4>
+							#if($r.isNotEmpty(${entryExternalRef}))
+								<small>$r.escapeHtml(${entryExternalRef})</small>
 							#end
-							</a>
 						</div>
 					</div>
-					<div class="o_card_meta">
-						<h4 class="o_card_title">$r.render("entry.open")</h4>
-						#if($r.isNotEmpty(${entryExternalRef}))
-							<small>$r.escapeHtml(${entryExternalRef})</small>
-						#end
-					</div>
-				</div>
+				#end
 			</div>
+		</div>
 		#end
-		#if($r.isNotEmpty($roomCardIds))
-		<label class="o_rm_scheduling_rooms_label">$r.translate("room.scheduling.details.rooms")</label>
-		  #foreach($roomCardId in $roomCardIds)
-		    $r.render($roomCardId)
-		  #end
+
+		#if($roomCardIds.size() == 1)
+		<div class="o_lecture_label_and_resource">
+			<label class="o_lecture_room">$r.translate("lecture.room")</label>
+			$r.render($roomCardIds[0])
+		</div>
 		#end
 	</div>
+
+	#if($roomCardIds.size() > 1)
+	<div class="o_lecture_resources o_lecture_rooms">
+		<label class="o_lecture_room">$r.translate("lecture.rooms")</label>
+		#foreach($roomCardId in $roomCardIds)
+			$r.render($roomCardId)
+		#end
+	</div>
+	#end
 </div>
