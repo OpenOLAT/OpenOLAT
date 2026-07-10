@@ -316,9 +316,9 @@ public class LectureListDetailsController extends FormBasicController {
 			Room room = booking.getRoom();
 			if (room == null) continue;
 
-			String cardId = RoomUIHelper.forgeRoomCard(formLayout, uifactory, room, Util.getPackageVelocityRoot(RoomUIHelper.class),
+			RoomUIHelper.RoomCardResult cardResult = RoomUIHelper.forgeRoomCard(formLayout, uifactory, room, Util.getPackageVelocityRoot(RoomUIHelper.class),
 					getTranslator());
-			roomCardIds.add(cardId);
+			roomCardIds.add(cardResult.cardId());
 		}
 
 		formLayout.contextPut("roomCardIds", roomCardIds);

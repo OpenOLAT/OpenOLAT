@@ -55,8 +55,15 @@ public class RoomUIHelper {
 
 	private static final int MAX_COLUMN_INFO_TEXT_LENGTH = 250;
 
-	public static String forgeRoomCard(FormItemContainer formLayout, FormUIFactory uifactory, Room room, 
-									   String velocityRoot, Translator translator) {
+	/**
+	 * Result of {@link #forgeRoomCard}, giving the caller the exact "open details"
+	 * link instance so it can identify its own click by reference instead of by
+	 * generic type/user object matching (several room cards can share one form).
+	 */
+	public record RoomCardResult(String cardId, FormLink detailsLink) {}
+
+	public static RoomCardResult forgeRoomCard(FormItemContainer formLayout, FormUIFactory uifactory, Room room, 
+											   String velocityRoot, Translator translator) {
 		String cardId = "roomCard_" + room.getKey();
 		FormLayoutContainer cardCont = FormLayoutContainer.createCustomFormLayout(
 				cardId, translator, velocityRoot + "/room_card.html");
@@ -116,7 +123,7 @@ public class RoomUIHelper {
 			}
 		}
 
-		return cardId;
+		return new RoomCardResult(cardId, detailsLink);
 	}
 
 	static String formatNextEvent(RoomBooking booking, Locale locale) {

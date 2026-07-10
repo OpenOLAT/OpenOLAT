@@ -271,8 +271,8 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 			Room room = booking.getRoom();
 			if (room == null) continue;
 
-			String cardId = RoomUIHelper.forgeRoomCard(formLayout, uifactory, room, velocity_root, getTranslator());
-			roomCardIds.add(cardId);
+			RoomUIHelper.RoomCardResult cardResult = RoomUIHelper.forgeRoomCard(formLayout, uifactory, room, velocity_root, getTranslator());
+			roomCardIds.add(cardResult.cardId());
 		}
 
 		formLayout.contextPut("roomCardIds", roomCardIds);

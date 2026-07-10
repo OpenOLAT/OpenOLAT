@@ -122,6 +122,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private FlexiTableElement tableEl;
 	private RoomListDataModel dataModel;
 	private FullCalendarElement calendarEl;
+	private RoomRow expandedRow;
 
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRelevant;
@@ -387,6 +388,9 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void loadModel() {
+		if (expandedRow != null) {
+			doCloseDetails(expandedRow);
+		}
 		List<Room> rooms = loadRooms();
 		List<RoomRow> rows = new ArrayList<>(rooms.size());
 		for (Room room : rooms) {
@@ -665,12 +669,16 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void doOpenDetails(UserRequest ureq, RoomRow row, @SuppressWarnings("unused") int rowIndex) {
+		if (expandedRow != null && expandedRow != row) {
+			doCloseDetails(expandedRow);
+		}
 		doCloseDetails(row);
 		Room room = roomManagementService.getRoom(new RoomRefImpl(row.getRoom().getKey()));
 		if (room == null) return;
 		RoomDetailsController detailsCtrl = new RoomDetailsController(ureq, getWindowControl(), room, mainForm);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
+		expandedRow = row;
 		flc.add(detailsCtrl.getInitialFormItem());
 	}
 
@@ -699,6 +707,9 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		removeAsListenerAndDispose(detailsCtrl);
 		flc.remove(detailsCtrl.getInitialFormItem());
 		row.setDetailsController(null);
+		if (row == expandedRow) {
+			expandedRow = null;
+		}
 	}
 
 	private void loadCalendar() {
