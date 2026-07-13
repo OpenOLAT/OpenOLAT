@@ -29,5 +29,9 @@
 	"overrides": {
 		"serialize-javascript": "^7.0.3",
 		"uuid": ">=14.0.0"
+	},
+	"allowScripts": {
+		"core-js@3.29.1": true,
+		"fsevents@2.3.3": true
 	}
 }
