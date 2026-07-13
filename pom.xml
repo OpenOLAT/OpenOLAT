@@ -71,11 +71,11 @@
 		<org.hibernate.validator.version>9.1.2.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.9</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.2.2</apache.cxf>
-		<apache.pdfbox>3.0.7</apache.pdfbox>
+		<apache.pdfbox>3.0.8</apache.pdfbox>
 		<apache.poi>5.5.1</apache.poi>
 		<apache.log4j>2.26.1</apache.log4j>
 		<org.slf4j>2.0.18</org.slf4j>
-		<org.bouncycastle>1.84</org.bouncycastle>
+		<org.bouncycastle>1.85</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.4.2.Final</io.undertow>
 		<io.undertow.ee>2.0.1.Final</io.undertow.ee>
@@ -86,7 +86,7 @@
 		<org.postgresql.version>42.7.13</org.postgresql.version>
 		<org.infinispan.version>16.2.1</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.45.0</version.selenium>
+		<version.selenium>4.46.0</version.selenium>
 		<activemq.artemis.version>2.55.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.5</jakarta.xml.bind-api>
