@@ -84,7 +84,7 @@
 		</div>
 		#end
 
-		#if($roomCardIds.size() == 1)
+		#if($r.isNotNull($roomCardIds) && $roomCardIds.size() == 1)
 		<div class="o_lecture_label_and_resource">
 			<label class="o_lecture_room">$r.translate("lecture.room")</label>
 			$r.render($roomCardIds[0])
@@ -92,7 +92,7 @@
 		#end
 	</div>
 
-	#if($roomCardIds.size() > 1)
+	#if($r.isNotNull($roomCardIds) &&  $roomCardIds.size() > 1)
 	<div class="o_lecture_resources o_lecture_rooms">
 		<label class="o_lecture_room">$r.translate("lecture.rooms")</label>
 		#foreach($roomCardId in $roomCardIds)
