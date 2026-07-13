@@ -76,6 +76,7 @@ public class OOGraphene {
 	public static final By wizardNextBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_next')]");
 	public static final By wizardFinishBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_finish') and not(contains(@class,'o_disabled'))]");
 	
+	public static final String DEL = "\u0008";
 	
 	public static FluentWait<WebDriver> wait(WebDriver browser) {
 		return wait(browser, timeout);

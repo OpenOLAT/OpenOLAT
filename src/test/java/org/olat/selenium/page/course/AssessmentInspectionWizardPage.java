@@ -63,7 +63,7 @@ public class AssessmentInspectionWizardPage {
 	public AssessmentInspectionWizardPage configuration(int startHour, int startMinute) {
 		String firstDateMsXpath = "//fieldset[contains(@class,'o_sel_assessment_inspection_configuration')]//div[contains(@class,'o_date_ms')][contains(@class,'o_first_ms')]/input[@type='text']";
 		By startHourBy = By.xpath(firstDateMsXpath + "[1]");
-		OOGraphene.clearAndSendKeys(startHourBy, Integer.toString(startHour), browser);
+		OOGraphene.clearAndSendKeys(startHourBy, OOGraphene.DEL + OOGraphene.DEL + Integer.toString(startHour), browser);
 		By startMinuteBy = By.xpath(firstDateMsXpath + "[2]");
 		OOGraphene.clearAndSendKeys(startMinuteBy, Integer.toString(startMinute), browser);
 
