@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.AiEssayGradingService;
 import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 import org.olat.core.commons.services.ai.essay.AiRateLimitExceededException;
 import org.olat.core.commons.services.ai.essay.EssayGenerationService;
@@ -69,7 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *       heuristic ({@link #suggestedEssayCount(int)} /
  *       {@link #suggestedMcCount(int)}) but can be overridden by the
  *       user. Essay counts are only offered when
- *       {@code aiModule.isEssayGradingEnabled()} is true.</li>
+ *       {@code aiEssayGradingService.isEnabled()} is true.</li>
  *   <li>On submit the backend kicks off an async {@link EssayGenerationService}
  *       job, the dialog closes immediately with an info message; the
  *       generated items appear in the pool list once the job completes.</li>
@@ -120,7 +120,7 @@ public class NewAiQuestionsImportController extends FormBasicController {
 	@Autowired
 	private EssayGenerationService essayGenerationService;
 	@Autowired
-	private AiModule aiModule;
+	private AiEssayGradingService aiEssayGradingService;
 
 	public NewAiQuestionsImportController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, null);
@@ -173,7 +173,7 @@ public class NewAiQuestionsImportController extends FormBasicController {
 		aiMcCountEl.setHelpTextKey("ai.questions.count.help", null);
 
 		// Essay count — only shown when essay grading is configured
-		if (aiModule != null && aiModule.isEssayGradingEnabled()) {
+		if (aiEssayGradingService.isEnabled()) {
 			aiEssayCountEl = uifactory.addIntegerElement("ai.questions.count.essay",
 					"ai.questions.count.essay", 0, formLayout);
 			aiEssayCountEl.setDisplaySize(3);

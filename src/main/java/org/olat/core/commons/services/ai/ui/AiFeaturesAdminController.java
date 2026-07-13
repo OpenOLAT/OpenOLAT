@@ -570,40 +570,44 @@ public class AiFeaturesAdminController extends FormBasicController {
 		if (mcEnabledEl.isOn()) {
 			String mcSpiId = getSelectedSpiId(mcGeneratorSpiEl);
 			String mcModel = extractModelValue(mcGeneratorModelEl);
+			aiModule.setMCQuestionGeneratorEnabled(true);
 			aiModule.setMCQuestionGeneratorConfig(mcSpiId, mcModel);
 			logAudit("MC question generator configured: provider=" + mcSpiId + ", model=" + mcModel);
 		} else {
-			aiModule.setMCQuestionGeneratorConfig("", "");
+			aiModule.setMCQuestionGeneratorEnabled(false);
 			logAudit("MC question generator disabled");
 		}
 
 		if (imgDescEnabledEl.isOn()) {
 			String imgDescSpiId = getSelectedSpiId(imgDescSpiEl);
 			String imgDescModel = extractModelValue(imgDescModelEl);
+			aiModule.setImageDescriptionGeneratorEnabled(true);
 			aiModule.setImageDescriptionGeneratorConfig(imgDescSpiId, imgDescModel);
 			logAudit("Image description generator configured: provider=" + imgDescSpiId + ", model=" + imgDescModel);
 		} else {
-			aiModule.setImageDescriptionGeneratorConfig("", "");
+			aiModule.setImageDescriptionGeneratorEnabled(false);
 			logAudit("Image description generator disabled");
 		}
 
 		if (essayGenEnabledEl.isOn()) {
 			String essayGenSpiId = getSelectedSpiId(essayGenSpiEl);
 			String essayGenModel = extractModelValue(essayGenModelEl);
+			aiModule.setEssayGenerationEnabled(true);
 			aiModule.setEssayGenerationConfig(essayGenSpiId, essayGenModel);
 			logAudit("Essay question generator configured: provider=" + essayGenSpiId + ", model=" + essayGenModel);
 		} else {
-			aiModule.setEssayGenerationConfig("", "");
+			aiModule.setEssayGenerationEnabled(false);
 			logAudit("Essay question generator disabled");
 		}
 
 		if (essayGradingEnabledEl.isOn()) {
 			String essayGradingSpiId = getSelectedSpiId(essayGradingSpiEl);
 			String essayGradingModel = extractModelValue(essayGradingModelEl);
+			aiModule.setEssayGradingEnabled(true);
 			aiModule.setEssayGradingConfig(essayGradingSpiId, essayGradingModel);
 			logAudit("Essay grading configured: provider=" + essayGradingSpiId + ", model=" + essayGradingModel);
 		} else {
-			aiModule.setEssayGradingConfig("", "");
+			aiModule.setEssayGradingEnabled(false);
 			logAudit("Essay grading disabled");
 		}
 

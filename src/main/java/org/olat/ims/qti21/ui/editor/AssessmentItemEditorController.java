@@ -22,7 +22,7 @@ package org.olat.ims.qti21.ui.editor;
 import java.io.File;
 import java.util.List;
 
-import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.AiEssayGradingService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -132,7 +132,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
-	private AiModule aiModule;
+	private AiEssayGradingService aiEssayGradingService;
 
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl,
 										  ResolvedAssessmentItem resolvedAssessmentItem,
@@ -551,7 +551,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		// we have an item file on disk (which gives us the question directory
 		// for ai-grading.json). Hidden in the QTI test composer (testEntry != null);
 		// the AI grading metadata is edited from the question pool / ceditor only.
-		if (aiModule != null && aiModule.isEssayGradingEnabled() && itemFile != null && testEntry == null) {
+		if (aiEssayGradingService.isEnabled() && itemFile != null && testEntry == null) {
 			aiGradingEditor = new EssayAiGradingEditorController(ureq, getWindowControl(),
 					essayItemBuilder, itemFile.getParentFile(), readOnly);
 			listenTo(aiGradingEditor);

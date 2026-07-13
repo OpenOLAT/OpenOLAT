@@ -83,7 +83,7 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 
 	@Override
 	public boolean isEnabled() {
-		return aiModule.isEssayGradingEnabled();
+		return aiModule.isEssayGradingEnabled() && aiModule.isEssayGradingConfigured();
 	}
 
 	@Override

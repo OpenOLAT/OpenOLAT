@@ -22,7 +22,7 @@ package org.olat.modules.ceditor.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.AiEssayGradingService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -53,7 +53,7 @@ public class NewQuestionItemCalloutController extends BasicController {
 	@Autowired
 	private ContentEditorQti contentEditorQti;
 	@Autowired
-	private AiModule aiModule;
+	private AiEssayGradingService aiEssayGradingService;
 
 	public NewQuestionItemCalloutController(UserRequest ureq, WindowControl wControl, QuizPart quizPart) {
 		super(ureq, wControl);
@@ -70,7 +70,7 @@ public class NewQuestionItemCalloutController extends BasicController {
 		// Essay items only get an automatic grading path when the AI essay
 		// grading is configured. Without it they would have no scoring path
 		// in this in-page quiz, so we hide the option entirely.
-		if (aiModule != null && aiModule.isEssayGradingEnabled()) {
+		if (aiEssayGradingService.isEnabled()) {
 			addLink("quiz.question.essay", QTI21QuestionType.essay, links);
 		}
 

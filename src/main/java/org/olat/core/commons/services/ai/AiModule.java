@@ -46,12 +46,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class AiModule extends AbstractSpringModule {
 	// Feature config property keys
+	private static final String AI_MC_GENERATOR_ENABLED = "ai.feature.mc-question-generator.enabled";
 	private static final String AI_MC_GENERATOR_SPI = "ai.feature.mc-question-generator.spi";
 	private static final String AI_MC_GENERATOR_MODEL = "ai.feature.mc-question-generator.model";
+	private static final String AI_IMG_DESC_ENABLED = "ai.feature.image-description-generator.enabled";
 	private static final String AI_IMG_DESC_SPI = "ai.feature.image-description-generator.spi";
 	private static final String AI_IMG_DESC_MODEL = "ai.feature.image-description-generator.model";
+	private static final String AI_ESSAY_GENERATION_ENABLED = "ai.feature.essay-generation.enabled";
 	private static final String AI_ESSAY_GENERATION_SPI = "ai.feature.essay-generation.spi";
 	private static final String AI_ESSAY_GENERATION_MODEL = "ai.feature.essay-generation.model";
+	private static final String AI_ESSAY_GRADING_ENABLED = "ai.feature.essay-grading.enabled";
 	private static final String AI_ESSAY_GRADING_SPI = "ai.feature.essay-grading.spi";
 	private static final String AI_ESSAY_GRADING_MODEL = "ai.feature.essay-grading.model";
 	private static final String AI_TASK_POOL_INTERACTIVE_SIZE = "ai.task.pool.interactive.size";
@@ -87,18 +91,26 @@ public class AiModule extends AbstractSpringModule {
 	// olat.properties / olat.local.properties and act as presets: they are used
 	// as long as no value has been saved in the admin UI. Presets are applied
 	// regardless of whether the feature or the referenced provider is enabled.
+	@Value("${ai.feature.mc-question-generator.enabled:false}")
+	private boolean mcGeneratorEnabled;
 	@Value("${ai.feature.mc-question-generator.spi:}")
 	private String mcGeneratorSpiId;
 	@Value("${ai.feature.mc-question-generator.model:}")
 	private String mcGeneratorModel;
+	@Value("${ai.feature.image-description-generator.enabled:false}")
+	private boolean imgDescEnabled;
 	@Value("${ai.feature.image-description-generator.spi:}")
 	private String imgDescSpiId;
 	@Value("${ai.feature.image-description-generator.model:}")
 	private String imgDescModel;
+	@Value("${ai.feature.essay-generation.enabled:false}")
+	private boolean essayGenerationEnabled;
 	@Value("${ai.feature.essay-generation.spi:}")
 	private String essayGenerationSpiId;
 	@Value("${ai.feature.essay-generation.model:}")
 	private String essayGenerationModel;
+	@Value("${ai.feature.essay-grading.enabled:false}")
+	private boolean essayGradingEnabled;
 	@Value("${ai.feature.essay-grading.spi:}")
 	private String essayGradingSpiId;
 	@Value("${ai.feature.essay-grading.model:}")
@@ -132,12 +144,16 @@ public class AiModule extends AbstractSpringModule {
 	 * Internal helper to read the config from the module and init the module settings
 	 */
 	private void updateProperties() {
+		mcGeneratorEnabled = "true".equalsIgnoreCase(getStringPropertyValue(AI_MC_GENERATOR_ENABLED, Boolean.toString(mcGeneratorEnabled)));
 		mcGeneratorSpiId = getStringPropertyValue(AI_MC_GENERATOR_SPI, mcGeneratorSpiId);
 		mcGeneratorModel = getStringPropertyValue(AI_MC_GENERATOR_MODEL, mcGeneratorModel);
+		imgDescEnabled = "true".equalsIgnoreCase(getStringPropertyValue(AI_IMG_DESC_ENABLED, Boolean.toString(imgDescEnabled)));
 		imgDescSpiId = getStringPropertyValue(AI_IMG_DESC_SPI, imgDescSpiId);
 		imgDescModel = getStringPropertyValue(AI_IMG_DESC_MODEL, imgDescModel);
+		essayGenerationEnabled = "true".equalsIgnoreCase(getStringPropertyValue(AI_ESSAY_GENERATION_ENABLED, Boolean.toString(essayGenerationEnabled)));
 		essayGenerationSpiId = getStringPropertyValue(AI_ESSAY_GENERATION_SPI, essayGenerationSpiId);
 		essayGenerationModel = getStringPropertyValue(AI_ESSAY_GENERATION_MODEL, essayGenerationModel);
+		essayGradingEnabled = "true".equalsIgnoreCase(getStringPropertyValue(AI_ESSAY_GRADING_ENABLED, Boolean.toString(essayGradingEnabled)));
 		essayGradingSpiId = getStringPropertyValue(AI_ESSAY_GRADING_SPI, essayGradingSpiId);
 		essayGradingModel = getStringPropertyValue(AI_ESSAY_GRADING_MODEL, essayGradingModel);
 		aiTaskPoolInteractiveSize = getIntPropertyValue(AI_TASK_POOL_INTERACTIVE_SIZE,
@@ -195,10 +211,23 @@ public class AiModule extends AbstractSpringModule {
 	}
 
 	/**
-	 * @return true: the MC question generator feature is configured and available
+	 * @return true: the MC question generator feature is switched on by the admin,
+	 *         regardless of whether the provider/model config is complete
 	 */
 	public boolean isMCQuestionGeneratorEnabled() {
+		return mcGeneratorEnabled;
+	}
+
+	/**
+	 * @return true: the MC question generator's provider and model are configured and available
+	 */
+	public boolean isMCQuestionGeneratorConfigured() {
 		return resolveProvider(mcGeneratorSpiId) != null && StringHelper.containsNonWhitespace(mcGeneratorModel);
+	}
+
+	public void setMCQuestionGeneratorEnabled(boolean enabled) {
+		this.mcGeneratorEnabled = enabled;
+		setStringProperty(AI_MC_GENERATOR_ENABLED, Boolean.toString(enabled), true);
 	}
 
 	/**
@@ -222,10 +251,23 @@ public class AiModule extends AbstractSpringModule {
 	}
 
 	/**
-	 * @return true: the image description generator feature is configured and available
+	 * @return true: the image description generator feature is switched on by the admin,
+	 *         regardless of whether the provider/model config is complete
 	 */
 	public boolean isImageDescriptionGeneratorEnabled() {
+		return imgDescEnabled;
+	}
+
+	/**
+	 * @return true: the image description generator's provider and model are configured and available
+	 */
+	public boolean isImageDescriptionGeneratorConfigured() {
 		return resolveProvider(imgDescSpiId) != null && StringHelper.containsNonWhitespace(imgDescModel);
+	}
+
+	public void setImageDescriptionGeneratorEnabled(boolean enabled) {
+		this.imgDescEnabled = enabled;
+		setStringProperty(AI_IMG_DESC_ENABLED, Boolean.toString(enabled), true);
 	}
 
 	public void setImageDescriptionGeneratorConfig(String spiId, String model) {
@@ -355,21 +397,45 @@ public class AiModule extends AbstractSpringModule {
 	// ---------------------------------------------------------------------
 
 	/**
-	 * @return true: the essay-question generator feature is configured and the
-	 *         backing SPI is enabled
+	 * @return true: the essay-question generator feature is switched on by the admin,
+	 *         regardless of whether the provider/model config is complete
 	 */
 	public boolean isEssayGenerationEnabled() {
+		return essayGenerationEnabled;
+	}
+
+	/**
+	 * @return true: the essay-question generator's provider and model are configured and available
+	 */
+	public boolean isEssayGenerationConfigured() {
 		return resolveProvider(essayGenerationSpiId) != null
 				&& StringHelper.containsNonWhitespace(essayGenerationModel);
 	}
 
+	public void setEssayGenerationEnabled(boolean enabled) {
+		this.essayGenerationEnabled = enabled;
+		setStringProperty(AI_ESSAY_GENERATION_ENABLED, Boolean.toString(enabled), true);
+	}
+
 	/**
-	 * @return true: the essay grading (formative feedback) feature is
-	 *         configured and the backing SPI is enabled
+	 * @return true: the essay grading feature is switched on by the admin,
+	 *         regardless of whether the provider/model config is complete
 	 */
 	public boolean isEssayGradingEnabled() {
+		return essayGradingEnabled;
+	}
+
+	/**
+	 * @return true: the essay grading feature's provider and model are configured and available
+	 */
+	public boolean isEssayGradingConfigured() {
 		return resolveProvider(essayGradingSpiId) != null
 				&& StringHelper.containsNonWhitespace(essayGradingModel);
+	}
+
+	public void setEssayGradingEnabled(boolean enabled) {
+		this.essayGradingEnabled = enabled;
+		setStringProperty(AI_ESSAY_GRADING_ENABLED, Boolean.toString(enabled), true);
 	}
 
 	public String getEssayGenerationSpiId() {

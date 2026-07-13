@@ -62,7 +62,7 @@ public class AiMCQuestionServiceImpl implements AiMCQuestionService {
 
 	@Override
 	public boolean isEnabled() {
-		return aiModule.isMCQuestionGeneratorEnabled();
+		return aiModule.isMCQuestionGeneratorEnabled() && aiModule.isMCQuestionGeneratorConfigured();
 	}
 
 	@Override

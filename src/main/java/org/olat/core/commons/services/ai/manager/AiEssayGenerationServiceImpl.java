@@ -79,7 +79,7 @@ public class AiEssayGenerationServiceImpl implements AiEssayGenerationService {
 
 	@Override
 	public boolean isEnabled() {
-		return aiModule.isEssayGenerationEnabled();
+		return aiModule.isEssayGenerationEnabled() && aiModule.isEssayGenerationConfigured();
 	}
 
 	@Override

@@ -58,7 +58,7 @@ public class AiImageDescriptionServiceImpl implements AiImageDescriptionService 
 
 	@Override
 	public boolean isEnabled() {
-		return aiModule.isImageDescriptionGeneratorEnabled();
+		return aiModule.isImageDescriptionGeneratorEnabled() && aiModule.isImageDescriptionGeneratorConfigured();
 	}
 
 	@Override

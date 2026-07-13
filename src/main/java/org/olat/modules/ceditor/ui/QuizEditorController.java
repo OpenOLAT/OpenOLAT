@@ -118,7 +118,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private org.olat.core.commons.services.ai.AiModule aiModule;
+	private org.olat.core.commons.services.ai.AiEssayGradingService aiEssayGradingService;
 
 	public QuizEditorController(UserRequest ureq, WindowControl wControl,
 								QuizPart quizPart, PageElementStore<QuizElement> store) {
@@ -451,7 +451,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		// Essay items are only allowed in the pool import when AI essay
 		// grading is configured — otherwise the imported essay would have
 		// no automatic correction path inside the page-quiz runtime.
-		boolean essayAllowed = aiModule != null && aiModule.isEssayGradingEnabled();
+		boolean essayAllowed = aiEssayGradingService.isEnabled();
 		List<QItemType> itemTypes = questionPoolService.getAllItemTypes();
 		List<QItemType> excludedItemTypes = new ArrayList<>();
 		for (QItemType qItemType : itemTypes) {
