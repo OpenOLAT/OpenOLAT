@@ -49,6 +49,7 @@ jQuery(function() {
 			el.showModal();
 		}
 		var targetEl = jQuery('#$guimsgtarget,#o_c$guimsgtarget');
+		o_scrollToElementIfInvisible(targetEl.get(0));
 		var targetOffset = targetEl.offset();
 		if(targetOffset) {
 			var callout = jQuery(el);

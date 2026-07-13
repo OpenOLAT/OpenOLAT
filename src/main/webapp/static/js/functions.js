@@ -980,6 +980,7 @@ function o_ainvoke(r) {
 		o_info.pendingFocusReturn = null;
 		if (retEl) {
 			retEl.focus({ preventScroll: true });
+			o_scrollToElementIfInvisible(retEl);
 		}
 	}
 /* minimalistic debugger / profiler
@@ -2857,6 +2858,24 @@ function showMessageBox(type, title, message, buttonCallback) {
 			dialog.remove();
 		});
 		return dialog;
+	}
+}
+
+function o_scrollToElementIfInvisible(el) {
+	if(el == null) {
+		return;
+	}
+	const rect = el.getBoundingClientRect();
+	let viewTop = 0;
+	let viewBottom = window.innerHeight;
+	const container = el.closest('.modal-content');
+	if(container != null) {
+		const containerRect = container.getBoundingClientRect();
+		viewTop = Math.max(viewTop, containerRect.top);
+		viewBottom = Math.min(viewBottom, containerRect.bottom);
+	}
+	if(rect.top < viewTop || rect.bottom > viewBottom) {
+		el.scrollIntoView({block: 'center'});
 	}
 }
 
