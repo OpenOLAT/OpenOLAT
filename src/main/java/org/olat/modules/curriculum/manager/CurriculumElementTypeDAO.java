@@ -19,11 +19,13 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumElementTypeStatus;
@@ -101,6 +103,27 @@ public class CurriculumElementTypeDAO {
 				.setMaxResults(1)
 				.getResultList();
 		return types == null || types.isEmpty() ? null : types.get(0);
+	}
+	
+	/**
+	 * Load the type of the direct children of the specified element.
+	 * 
+	 * @param curriculumElement The parent element
+	 * @return List of types (deduplicated) from the children of the above specified parent element
+	 */
+	public List<CurriculumElementType> getChildrenTypes(CurriculumElementRef curriculumElement) {
+		String sb = """
+				select elType from curriculumelement el
+				inner join el.type elType
+				where el.parent.key=:elementKey""";
+		List<CurriculumElementType> types = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElementType.class)
+				.setParameter("elementKey", curriculumElement.getKey())
+				.getResultList();
+		if(types.size() > 1) {
+			types = new ArrayList<>(new HashSet<>(types));
+		}
+		return types;
 	}
 	
 	public List<CurriculumElementType> loadByExternalId(String externalId) {

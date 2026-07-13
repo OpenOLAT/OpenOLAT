@@ -417,16 +417,39 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(element != null && !allowedTypes.isEmpty()) {
 			long numOfSubElements = curriculumElementDao.countChildren(element);
 			long numOfEntryRelations = curriculumRepositoryEntryRelationDao.countRepositoryEntries(element);
+			List<CurriculumElementType> subElementsTypes = List.of();
+			if(numOfSubElements > 0) {
+				subElementsTypes = curriculumElementTypeDao.getChildrenTypes(element);
+			}
 			
 			for(Iterator<CurriculumElementType> typeIterator=allowedTypes.iterator(); typeIterator.hasNext(); ) {
 				CurriculumElementType type = typeIterator.next();
+				int maxRepositoryEntryRelations = type.getMaxRepositoryEntryRelations();
+
 				if((type.isSingleElement() && numOfSubElements > 0)
-						|| (type.getMaxRepositoryEntryRelations() >= 0 && numOfEntryRelations > type.getMaxRepositoryEntryRelations())) {
+						|| (maxRepositoryEntryRelations >= 0 && numOfEntryRelations > maxRepositoryEntryRelations)
+						|| !allowedBySubElementTypes(type, subElementsTypes)) {
 					typeIterator.remove();
 				}
 			}
 		}
 		return allowedTypes;
+	}
+	
+	private boolean allowedBySubElementTypes(CurriculumElementType type, List<CurriculumElementType> subElementsTypes) {
+		if(DEFAULT_CURRICULUM_ELEMENT_TYPE.equals(type.getIdentifier())) {
+			return true;
+		}
+		if(!subElementsTypes.isEmpty()) {
+			List<CurriculumElementType> allowedSubTypes = type.getAllowedSubTypes().stream()
+					.map(CurriculumElementTypeToType::getAllowedSubType)
+					.toList();
+			if(allowedSubTypes.isEmpty()
+					|| !allowedSubTypes.containsAll(subElementsTypes)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

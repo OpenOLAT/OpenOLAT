@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -28,8 +29,14 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.model.CurriculumElementTypeImpl;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +51,10 @@ public class CurriculumElementTypeDAOTest extends OlatTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private CurriculumDAO curriculumDao;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
 	private CurriculumElementTypeDAO curriculumElementTypeDao;
 	@Autowired
@@ -101,6 +112,40 @@ public class CurriculumElementTypeDAOTest extends OlatTestCase {
 
 		List<CurriculumElementType> types = curriculumElementTypeDao.loadByExternalId(externalId);
 		Assertions.assertThat(types)
+			.isNotNull()
+			.hasSize(1)
+			.containsExactly(type);
+	}
+	
+	@Test
+	public void loadByCurriculumElement() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-type-1", "Curriculum for element with type", "Curriculum", false, null);
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-type-1", "Type for type", "Single element", "AC-234");
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-with-1", "1. Element with type",
+				CurriculumElementStatus.active, new Date(), new Date(), null, type, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElementType elementType = curriculumElementTypeDao.loadByCurriculumElement(element.getKey());
+		Assert.assertNotNull(elementType);
+		Assert.assertEquals(type, elementType);
+	}
+
+	@Test
+	public void getChildrenTypes() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-type-2", "Curriculum for child element with type", "Curriculum", false, null);
+		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-wo-1", "1. Element without type",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-type-2", "Type for type", "First children", "AC-234");
+		CurriculumElement childElement = curriculumElementDao.createCurriculumElement("Element-with-2", "1.1 Element",
+				CurriculumElementStatus.active, null, null, parentElement, type, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		Assert.assertNotNull(childElement);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElementType> childrenTypes = curriculumElementTypeDao.getChildrenTypes(parentElement);
+		Assertions.assertThat(childrenTypes)
 			.isNotNull()
 			.hasSize(1)
 			.containsExactly(type);
