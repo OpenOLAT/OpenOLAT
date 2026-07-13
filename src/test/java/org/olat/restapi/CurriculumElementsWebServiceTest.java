@@ -362,9 +362,6 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		CurriculumElementType type = curriculumService.createCurriculumElementType("TYPE-2", "Type 2", "", "");
-		type.setImplOnly(true);
-		type.setAllowedAsRootElement(true);
-		type = curriculumService.updateCurriculumElementType(type);
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumElementVO vo = new CurriculumElementVO();

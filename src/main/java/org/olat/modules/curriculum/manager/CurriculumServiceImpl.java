@@ -415,7 +415,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		
 		if(element != null && !allowedTypes.isEmpty()) {
-			boolean legacyType = legacyType(element.getType());
+			boolean legacyType = element.getType() == null || legacyType(element.getType());
 			long numOfSubElements = curriculumElementDao.countChildren(element);
 			long numOfEntryRelations = curriculumRepositoryEntryRelationDao.countRepositoryEntries(element);
 			List<CurriculumElementType> subElementsTypes = List.of();
