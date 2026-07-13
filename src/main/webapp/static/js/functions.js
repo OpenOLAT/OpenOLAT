@@ -23,6 +23,7 @@ o_info.xhrCurrentUpload = null;
 // Stack of trigger elements to return focus to when dialogs close
 o_info.focusReturnStack = [];
 o_info.pendingFocusReturn = null;
+o_info.pendingDialogFocus = false;
 
 /**
  * The BLoader object can be used to :
@@ -554,9 +555,20 @@ function o_aexecute(command, parameters) {
 			if (pushId) {
 				o_info.focusReturnStack.push(pushId);
 			}
+			o_info.pendingDialogFocus = true;
 			break;
 		case "popdialogfocus":
 			o_info.pendingFocusReturn = o_info.focusReturnStack.pop() || null;
+			break;
+		case "setattribute":
+			var attrEl = document.getElementById(parameters["elementId"]);
+			if (attrEl) {
+				if (parameters["value"]) {
+					attrEl.setAttribute(parameters["name"], parameters["value"]);
+				} else {
+					attrEl.removeAttribute(parameters["name"]);
+				}
+			}
 			break;
 		default:
 			console.log("Unkown command", command, parameters);
@@ -981,6 +993,16 @@ function o_ainvoke(r) {
 		if (retEl) {
 			retEl.focus({ preventScroll: true });
 			o_scrollToElementIfInvisible(retEl);
+		}
+	}
+	if (o_info.pendingDialogFocus) {
+		o_info.pendingDialogFocus = false;
+		var openDialogs = document.querySelectorAll('dialog[open]');
+		var topDialog = openDialogs[openDialogs.length - 1];
+		if (topDialog) {
+			if (!topDialog.contains(document.activeElement)) {
+				o_waitForVisibleThenFocusDialog(topDialog, 0);
+			}
 		}
 	}
 /* minimalistic debugger / profiler
@@ -2108,7 +2130,7 @@ function o_onXHRSuccess (data, textStatus, jqXHR) {
 		let businessPath = data['businessPath'];
 		let documentTitle = data['documentTitle'];
 		let historyPointId = data['historyPointId'];
-		if(businessPath) {
+		if(businessPath && businessPath !== o_info.businessPath) {
 			o_pushState(historyPointId, documentTitle, businessPath);
 		}
 	} catch(e) {
@@ -2642,7 +2664,33 @@ function o_ffRegisterSubmit(formId, submElmId){
 	jQuery('#'+formId).data('FlexiSubmit', submElmId);
 }	
 
+function o_waitForVisibleThenFocusDialog(topDialog, attempt) {
+	if (topDialog.offsetParent === null && attempt < 20) {
+		requestAnimationFrame(function() {
+			o_waitForVisibleThenFocusDialog(topDialog, attempt + 1);
+		});
+		return;
+	}
+	if (!topDialog.contains(document.activeElement)) {
+		var candidates = topDialog.querySelectorAll('a[href], button, input, select, textarea, [tabindex]');
+		var focused = false;
+		for (var di = 0; di < candidates.length && !focused; di++) {
+			candidates[di].focus({ preventScroll: true });
+			focused = document.activeElement === candidates[di];
+		}
+		if (!focused) {
+			if (!topDialog.hasAttribute('tabindex')) {
+				topDialog.setAttribute('tabindex', '-1');
+			}
+			topDialog.focus({ preventScroll: true });
+		}
+	}
+}
+
 function o_ffSetFocusArray(focusArray) {
+	if(document.activeElement && document.activeElement.closest('dialog[open]')) {
+		return;
+	}
 	if(focusArray) {
 		for(let i=0;i<focusArray.length; i++) {
 			const f = focusArray[i];
@@ -2684,6 +2732,9 @@ function o_ffSetFocus(type, formId, formItemId) {
 					if(document.activeElement == null
 						|| el.getAttribute('id') !== document.activeElement.getAttribute('id')) {
 						setTimeout(function() {
+							if (document.activeElement && document.activeElement.closest('dialog[open]')) {
+								return;
+							}
 							el.focus();
 						}, 0);
 					}

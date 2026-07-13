@@ -1,7 +1,7 @@
-<dialog id="callout_$r.getCId()" class="popover in bottom #if($r.isTrue($wider))o_wide_popover #end style="z-index:$zindexarea;">
+<dialog id="callout_$r.getCId()" aria-modal="true" #if($r.isNotEmpty($title))aria-labelledby="callout_title_$r.getCId()" #elseif($r.isNotEmpty($ariaLabel))aria-label="$r.escapeForHtmlAttribute($ariaLabel)" #end class="popover in bottom #if($r.isTrue($wider))o_wide_popover #end" style="z-index:$zindexarea;">
 	#if($arrow && ($orientation == "bottom" || $orientation == "bottomOrTop"))<div class="arrow"></div>#end
 	#if($r.isNotEmpty($title))
-		<div class="popover-title">$r.escapeHtml($title)</div>
+		<div class="popover-title" id="callout_title_$r.getCId()">$r.escapeHtml($title)</div>
 	#end
 	<div class="popover-content">$r.render("cont")</div>
 	#if($arrow && ($orientation == "bottom" || $orientation == "bottomOrTop"))<div class="arrow"></div>#end

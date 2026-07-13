@@ -32,6 +32,7 @@ public class CalloutSettings {
 	private final boolean topModal;
 	private final String title;
 	private final CalloutOrientation orientation;
+	private String ariaLabel;
 	
 	public CalloutSettings() {
 		this(true, CalloutOrientation.bottom, false, null, false);
@@ -75,6 +76,14 @@ public class CalloutSettings {
 	
 	public String getTitle() {
 		return title;
+	}
+
+	public String getAriaLabel() {
+		return ariaLabel;
+	}
+
+	public void setAriaLabel(String ariaLabel) {
+		this.ariaLabel = ariaLabel;
 	}
 
 	public CalloutOrientation getOrientation() {

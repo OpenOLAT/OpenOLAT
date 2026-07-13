@@ -196,6 +196,15 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			if(link.getAriaRole() != null) {
 				sb.append(" role=\"").appendHtmlEscaped(link.getAriaRole()).append("\"");
 			}
+			if(link.getAriaHasPopup() != null) {
+				sb.append(" aria-haspopup=\"").appendHtmlAttributeEscaped(link.getAriaHasPopup()).append("\"");
+			}
+			if(link.getAriaExpanded() != null) {
+				sb.append(" aria-expanded=\"").append(link.getAriaExpanded().booleanValue()).append("\"");
+			}
+			if(link.getAriaControls() != null) {
+				sb.append(" aria-controls=\"").appendHtmlAttributeEscaped(link.getAriaControls()).append("\"");
+			}
 			sb.append(">");
 			
 			// LEFT CSS icon

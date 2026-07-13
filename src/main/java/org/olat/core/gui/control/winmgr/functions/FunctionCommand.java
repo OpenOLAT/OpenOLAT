@@ -56,6 +56,7 @@ public class FunctionCommand extends Command {
 		
 		PUSH_DIALOG_FOCUS("pushdialogfocus"),
 		POP_DIALOG_FOCUS("popdialogfocus"),
+		SET_ATTRIBUTE("setattribute"),
 
 		FLEXITABLE_UPDATE_CHECKALL("tableupdatecheckkallmenu"),
 		RELOAD_WINDOW("reloadWindow"),
@@ -263,5 +264,13 @@ public class FunctionCommand extends Command {
 
 	public static FunctionCommand popDialogFocus() {
 		return valueOf(Functions.POP_DIALOG_FOCUS, null);
+	}
+
+	public static FunctionCommand setAttribute(String elementId, String name, String value) {
+		JSONObject parameters = new JSONObject();
+		parameters.put("elementId", elementId);
+		parameters.put("name", name);
+		parameters.put("value", value);
+		return valueOf(Functions.SET_ATTRIBUTE, parameters);
 	}
 }

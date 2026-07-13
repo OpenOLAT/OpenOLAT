@@ -37,6 +37,7 @@ import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -66,6 +67,7 @@ public class CloseableCalloutWindowController extends BasicController implements
 	private VelocityContainer calloutVC;
 	private CloseableModalController cmc;
 	private boolean focusPushed = false;
+	private Link targetLink;
 
 	/**
 	 * Constructor for a closable callout window controller. After calling the
@@ -155,6 +157,8 @@ public class CloseableCalloutWindowController extends BasicController implements
 			WindowControl wControl, Component calloutWindowContent,
 			Link targetLink, String title, boolean closable, String cssClasses) {
 		this(ureq, wControl, calloutWindowContent, "o_c" + targetLink.getDispatchID(), title, closable, cssClasses);
+		this.targetLink = targetLink;
+		fallbackAriaLabel(targetLink);
 	}
 
 	/**
@@ -179,15 +183,17 @@ public class CloseableCalloutWindowController extends BasicController implements
 			FormLink targetFormLink, String title, boolean closable, String cssClasses) {
 		this(ureq, wControl, calloutWindowContent, "o_fi"
 				+ targetFormLink.getComponent().getDispatchID(), title, closable, cssClasses);
+		this.targetLink = targetFormLink.getComponent();
+		fallbackAriaLabel(targetLink);
 	}
-	
+
 	/**
 	 * Constructor for a closable callout window controller. After calling the
 	 * constructor, the callout window will be visible immediately, there is no
 	 * need to activate the window. In contrast to the modal dialogs you have to
 	 * render the content of this controller your self with the
 	 * getInitialComponent() method.
-	 * 
+	 *
 	 * @param ureq
 	 * 				The user request
 	 * @param wControl
@@ -205,8 +211,18 @@ public class CloseableCalloutWindowController extends BasicController implements
 			FormLink targetFormLink, String title, boolean closable, String cssClasses, CalloutSettings settings) {
 		this(ureq, wControl, calloutWindowContent, "o_fi"
 				+ targetFormLink.getComponent().getDispatchID(), title, closable, cssClasses, settings);
+		this.targetLink = targetFormLink.getComponent();
 	}
-	
+
+	private void fallbackAriaLabel(Link trigger) {
+		if (!StringHelper.containsNonWhitespace(settings.getTitle())) {
+			String label = StringHelper.containsNonWhitespace(trigger.getTitle()) ? trigger.getTitle() : trigger.getAriaLabel();
+			if (StringHelper.containsNonWhitespace(label)) {
+				settings.setAriaLabel(label);
+			}
+		}
+	}
+
 	@Override
 	public boolean isCloseable() {
 		return true;
@@ -285,6 +301,11 @@ public class CloseableCalloutWindowController extends BasicController implements
 				getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.popDialogFocus());
 				focusPushed = false;
 			}
+			if (targetLink != null) {
+				targetLink.setAriaExpandedSilently(Boolean.FALSE);
+				getWindowControl().getWindowBackOffice().sendCommandTo(
+						FunctionCommand.setAttribute(targetLink.getElementId(), "aria-expanded", "false"));
+			}
 			getWindowControl().removeModalDialog(calloutVC);
 		}
         super.doDispose();
@@ -327,6 +348,11 @@ public class CloseableCalloutWindowController extends BasicController implements
 				getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.pushDialogFocus(getDOMTarget()));
 				focusPushed = true;
 			}
+			if (targetLink != null) {
+				targetLink.setAriaExpandedSilently(Boolean.TRUE);
+				getWindowControl().getWindowBackOffice().sendCommandTo(
+						FunctionCommand.setAttribute(targetLink.getElementId(), "aria-expanded", "true"));
+			}
 			// push to modal stack
 			getWindowControl().pushAsCallout(calloutVC, getDOMTarget(), settings);
 		}
@@ -344,6 +370,11 @@ public class CloseableCalloutWindowController extends BasicController implements
 			if (focusPushed) {
 				getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.popDialogFocus());
 				focusPushed = false;
+			}
+			if (targetLink != null) {
+				targetLink.setAriaExpandedSilently(Boolean.FALSE);
+				getWindowControl().getWindowBackOffice().sendCommandTo(
+						FunctionCommand.setAttribute(targetLink.getElementId(), "aria-expanded", "false"));
 			}
 			// Remove component from stack
 			getWindowControl().pop();

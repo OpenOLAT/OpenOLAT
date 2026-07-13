@@ -270,6 +270,26 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	}
 
 	@Override
+	public void setAriaHasPopup(String ariaHasPopup) {
+		component.setAriaHasPopup(ariaHasPopup);
+	}
+
+	@Override
+	public void setAriaExpanded(Boolean ariaExpanded) {
+		component.setAriaExpanded(ariaExpanded);
+	}
+
+	@Override
+	public void setAriaControls(String ariaControls) {
+		component.setAriaControls(ariaControls);
+	}
+
+	@Override
+	public void setAriaDialogOpener() {
+		component.setAriaDialogOpener();
+	}
+
+	@Override
 	public void setCustomEnabledLinkCSS(String customEnabledLinkCSS) {
 		component.setCustomEnabledLinkCSS(customEnabledLinkCSS);
 	}

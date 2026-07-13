@@ -213,6 +213,8 @@ public class GuiStackNiceImpl implements GuiStack {
 			inset.contextPut("orientation", settings.getOrientation().name());
 			if(StringHelper.containsNonWhitespace(settings.getTitle())) {
 				inset.contextPut("title", settings.getTitle());
+			} else if(StringHelper.containsNonWhitespace(settings.getAriaLabel())) {
+				inset.contextPut("ariaLabel", settings.getAriaLabel());
 			}
 		} else {
 			inset.contextPut("arrow", Boolean.TRUE);

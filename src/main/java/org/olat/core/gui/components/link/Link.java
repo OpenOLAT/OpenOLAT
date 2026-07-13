@@ -98,6 +98,9 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	private String title;
 	private String ariaLabel;
 	private String ariaRole;
+	private String ariaHasPopup;
+	private Boolean ariaExpanded;
+	private String ariaControls;
 	private final String elementId;
 	private String textReasonForDisabling;
 	private String customDisplayText;
@@ -379,7 +382,19 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	public String getAriaRole() {
 		return ariaRole;
 	}
-	
+
+	public String getAriaHasPopup() {
+		return ariaHasPopup;
+	}
+
+	public Boolean getAriaExpanded() {
+		return ariaExpanded;
+	}
+
+	public String getAriaControls() {
+		return ariaControls;
+	}
+
 	@Override
 	public FormLink getFormItem() {
 		return flexiLink;
@@ -463,11 +478,36 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 		this.ariaRole = ariaRole;
 	}
 
+	public void setAriaHasPopup(String ariaHasPopup) {
+		this.ariaHasPopup = ariaHasPopup;
+		setDirty(true);
+	}
+
+	public void setAriaExpanded(Boolean ariaExpanded) {
+		this.ariaExpanded = ariaExpanded;
+		setDirty(true);
+	}
+
+	public void setAriaExpandedSilently(Boolean ariaExpanded) {
+		this.ariaExpanded = ariaExpanded;
+	}
+
+	public void setAriaControls(String ariaControls) {
+		this.ariaControls = ariaControls;
+		setDirty(true);
+	}
+
+	public void setAriaDialogOpener() {
+		setAriaRole(ARIA_ROLE_BUTTON);
+		setAriaHasPopup("dialog");
+		setAriaExpanded(Boolean.FALSE);
+	}
+
 	/**
 	 * Only used in olat flexi form stuff
 	 * @return returns the custom setted element id
 	 */
-	protected String getElementId() {
+	public String getElementId() {
 		return elementId;
 	}
 

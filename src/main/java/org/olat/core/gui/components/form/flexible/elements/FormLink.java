@@ -111,6 +111,14 @@ public interface FormLink extends FormItem {
 	 */
 	public void setAriaRole(String role);
 
+	public void setAriaHasPopup(String ariaHasPopup);
+
+	public void setAriaExpanded(Boolean ariaExpanded);
+
+	public void setAriaControls(String ariaControls);
+
+	public void setAriaDialogOpener();
+
 	public void setDomReplacementWrapperRequired(boolean required);
 	
 	/**
