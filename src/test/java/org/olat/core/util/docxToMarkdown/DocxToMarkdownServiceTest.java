@@ -437,5 +437,7 @@ public class DocxToMarkdownServiceTest {
 
 		assertNotNull(result);
 		assertTrue("VFS conversion must produce markdown", result.markdown().contains("VFS test"));
+		
+		FileUtils.deleteDirsAndFiles(result.basePath().toPath());
 	}
 }

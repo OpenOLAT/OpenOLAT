@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.docxToMarkdown.DocxConversionMessage.Level;
 import org.olat.core.util.xml.XMLFactories;
 import org.springframework.stereotype.Service;
@@ -195,17 +196,30 @@ public class DocxToMarkdownService {
 		} catch (DocxSecurityException e) {
 			log.warn("DOCX rejected for security reason {}: {}", e.getReason(), docxFile.getName());
 			messages.add(new DocxConversionMessage(Level.ERROR, securityKey(e.getReason())));
+			cleanUpTempDir(tempDir);
 			return new DocxToMarkdownResult("", null, messages);
 		} catch (IOException e) {
 			log.error("Failed to read DOCX file: {}", docxFile.getName(), e);
 			messages.add(new DocxConversionMessage(Level.ERROR,
 				"docx.convert.error.read.failed", new String[]{ e.getMessage() }));
+			cleanUpTempDir(tempDir);
 			return new DocxToMarkdownResult("", null, messages);
 		} catch (Exception e) {
 			log.error("DOCX conversion failed: {}", docxFile.getName(), e);
 			messages.add(new DocxConversionMessage(Level.ERROR,
 				"docx.convert.error.read.failed", new String[]{ e.getMessage() }));
+			cleanUpTempDir(tempDir);
 			return new DocxToMarkdownResult("", null, messages);
+		}
+	}
+	
+	private void cleanUpTempDir(File dir) {
+		try {
+			if(dir != null && dir.exists()) {
+				FileUtils.deleteDirsAndFiles(dir.toPath());
+			}
+		} catch (IOException e) {
+			log.error("", e);
 		}
 	}
 
