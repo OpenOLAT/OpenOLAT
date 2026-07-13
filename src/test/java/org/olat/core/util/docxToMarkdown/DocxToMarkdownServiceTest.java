@@ -31,6 +31,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.docxToMarkdown.DocxConversionMessage.Level;
 
 /**
@@ -100,6 +101,8 @@ public class DocxToMarkdownServiceTest {
 		assertNotNull("markdown must not be null", result.markdown());
 		assertTrue("markdown must contain the paragraph text",
 				result.markdown().contains("Hello world"));
+
+		FileUtils.deleteDirsAndFiles(result.basePath().toPath());
 	}
 
 	@Test
@@ -128,6 +131,8 @@ public class DocxToMarkdownServiceTest {
 		assertTrue("YAML must contain the title", md.contains("title:"));
 		assertTrue("YAML must contain the extracted title value",
 				md.contains("Test Document"));
+
+		FileUtils.deleteDirsAndFiles(result.basePath().toPath());
 	}
 
 	@Test
@@ -153,12 +158,15 @@ public class DocxToMarkdownServiceTest {
 			null, null, stylesXml, null, null);
 
 		DocxToMarkdownResult result = service.convert(docx);
+		System.out.println(result.basePath());
 
 		assertNotNull(result);
 		assertTrue("markdown must contain an H1 heading marker",
 				result.markdown().contains("# "));
 		assertTrue("markdown must contain the heading text",
 				result.markdown().contains("Chapter One"));
+		
+		FileUtils.deleteDirsAndFiles(result.basePath().toPath());
 	}
 
 	@Test
@@ -204,6 +212,8 @@ public class DocxToMarkdownServiceTest {
 		// is that the paragraph break became a single space.
 		assertTrue("alt text must be collapsed to a single line inside the image label, got: " + md,
 				md.contains("![Ein Bild mit Text. KI\\-generierte Inhalte.](media/image1.png)"));
+
+		FileUtils.deleteDirsAndFiles(result.basePath().toPath());
 	}
 
 	@Test
@@ -219,6 +229,8 @@ public class DocxToMarkdownServiceTest {
 				.anyMatch(m -> m.level() == Level.ERROR || m.level() == Level.WARNING);
 		assertFalse("a clean document must not produce error or warning messages",
 				hasErrorOrWarning);
+
+		FileUtils.deleteDirsAndFiles(result.basePath().toPath());
 	}
 
 	// -----------------------------------------------------------------------
@@ -243,6 +255,8 @@ public class DocxToMarkdownServiceTest {
 		assertNotNull(result);
 		assertTrue("content must be converted regardless of file extension",
 				result.markdown().contains("Works"));
+
+		FileUtils.deleteDirsAndFiles(result.basePath().toPath());
 	}
 
 	@Test
@@ -396,6 +410,8 @@ public class DocxToMarkdownServiceTest {
 		assertFalse("a convertible equation must not warn math.failed",
 			result.messages().stream().anyMatch(m ->
 				"docx.convert.warn.math.failed".equals(m.i18nKey())));
+		
+		FileUtils.deleteDirsAndFiles(result.basePath().toPath());
 	}
 
 	// -----------------------------------------------------------------------

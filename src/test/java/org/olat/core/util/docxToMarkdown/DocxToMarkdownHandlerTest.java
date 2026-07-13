@@ -25,12 +25,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Map;
 import java.util.zip.ZipFile;
 
 import org.junit.Test;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.xml.XMLFactories;
 import org.xml.sax.InputSource;
 
@@ -247,7 +250,6 @@ public class DocxToMarkdownHandlerTest {
 		byte[] pngB = pngBytes((byte) 0xBB);
 
 		java.io.File docx = java.io.File.createTempFile("collide", ".docx", new java.io.File("target"));
-		docx.deleteOnExit();
 		try (java.util.zip.ZipOutputStream zos =
 				new java.util.zip.ZipOutputStream(new java.io.FileOutputStream(docx))) {
 			zos.putNextEntry(new java.util.zip.ZipEntry("word/media/image1.png"));
@@ -258,9 +260,8 @@ public class DocxToMarkdownHandlerTest {
 			zos.closeEntry();
 		}
 
-		java.io.File mediaDir = java.nio.file.Files.createTempDirectory("collide_media_").toFile();
-		mediaDir.deleteOnExit();
-
+		File mediaDir = java.nio.file.Files.createTempDirectory("collide_media_").toFile();
+		
 		Map<String, DocxRelTarget> rels = Map.of(
 				"rId1", new DocxRelTarget("image", "media/image1.png"),
 				"rId2", new DocxRelTarget("image", "media/sub/image1.png"));
@@ -305,6 +306,9 @@ public class DocxToMarkdownHandlerTest {
 			refs.add(m.group(1));
 		}
 		assertEquals("two distinct media references expected", 2, refs.size());
+		
+		Files.delete(docx.toPath());
+		FileUtils.deleteDirsAndFiles(mediaDir.toPath());
 	}
 
 	/** Minimal valid PNG (8-byte signature + one filler byte). */
@@ -1071,7 +1075,7 @@ public class DocxToMarkdownHandlerTest {
 		byte[] videoData = "fake-mp4-bytes".getBytes(StandardCharsets.UTF_8);
 
 		java.io.File docx = java.io.File.createTempFile("video", ".docx", new java.io.File("target"));
-		docx.deleteOnExit();
+
 		try (java.util.zip.ZipOutputStream zos =
 				new java.util.zip.ZipOutputStream(new java.io.FileOutputStream(docx))) {
 			zos.putNextEntry(new java.util.zip.ZipEntry("word/media/clip.mp4"));
@@ -1080,8 +1084,7 @@ public class DocxToMarkdownHandlerTest {
 		}
 
 		java.io.File mediaDir = java.nio.file.Files.createTempDirectory("video_media_").toFile();
-		mediaDir.deleteOnExit();
-
+		
 		Map<String, DocxRelTarget> rels = Map.of(
 				"rId7", new DocxRelTarget("video", "media/clip.mp4"));
 
@@ -1106,6 +1109,9 @@ public class DocxToMarkdownHandlerTest {
 		assertEquals("clip.mp4", written[0].getName());
 		assertTrue("markdown must contain the video link",
 				md.contains("[Video: clip.mp4](media/clip.mp4)"));
+		
+		Files.delete(docx.toPath());
+		FileUtils.deleteDirsAndFiles(mediaDir.toPath());
 	}
 
 	// -----------------------------------------------------------------------
@@ -1152,7 +1158,7 @@ public class DocxToMarkdownHandlerTest {
 	 */
 	@Test
 	public void vmlShapeIsConvertedToSvgAndReferenced() throws Exception {
-		java.io.File mediaDir = java.nio.file.Files.createTempDirectory("vml_media_").toFile();
+		File mediaDir = java.nio.file.Files.createTempDirectory("vml_media_").toFile();
 		mediaDir.deleteOnExit();
 
 		String body =
@@ -1166,7 +1172,7 @@ public class DocxToMarkdownHandlerTest {
 				Collections.emptyMap(), Collections.emptyMap());
 		String md = handler.getMarkdown();
 
-		java.io.File[] written = mediaDir.listFiles();
+		File[] written = mediaDir.listFiles();
 		assertNotNull(written);
 		assertEquals("VML shape must produce exactly one SVG file", 1, written.length);
 		assertTrue("written file must be an SVG", written[0].getName().endsWith(".svg"));
@@ -1174,6 +1180,8 @@ public class DocxToMarkdownHandlerTest {
 				java.nio.file.Files.readString(written[0].toPath()).contains("<svg"));
 		assertTrue("markdown must reference the generated SVG as an image",
 				md.contains("](media/" + written[0].getName() + ")"));
+		
+		FileUtils.deleteDirsAndFiles(mediaDir.toPath());
 	}
 
 	/**
