@@ -50,6 +50,7 @@ public class MediaServerModuleTest extends OlatTestCase {
 
 		mediaServerModule.setMediaServerMode(MediaServerMode.configure);
 		mediaServerModule.setMediaServerEnabled(MediaServerModule.YOUTUBE_KEY, true);
+		waitMessageAreConsumed();
 	}
 
 	@After
@@ -62,6 +63,7 @@ public class MediaServerModuleTest extends OlatTestCase {
 		}
 		mediaServerModule.setMediaServerMode(originalMode);
 		mediaServerModule.setMediaServerEnabled(MediaServerModule.YOUTUBE_KEY, originalYouTubeEnabled);
+		waitMessageAreConsumed();
 	}
 
 	@Test
