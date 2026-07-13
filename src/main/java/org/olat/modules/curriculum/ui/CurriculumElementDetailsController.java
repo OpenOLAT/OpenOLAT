@@ -820,6 +820,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				if (resourcesCtrl != null) {
 					resourcesCtrl.loadModel();
 				}
+				if (editMetadataCtrl != null) {
+					editMetadataCtrl.reload(ureq);
+				}
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();

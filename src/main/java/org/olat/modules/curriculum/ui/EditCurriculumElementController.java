@@ -256,6 +256,13 @@ public class EditCurriculumElementController extends BasicController implements 
 		
 		mainVC.contextPut("participants", CurriculumHelper.getParticipantRange(getTranslator(), element, true));
 	}
+	
+	public void reload(UserRequest ureq) {
+		element = curriculumService.getCurriculumElement(element);
+		if (automationCtrl != null && segmentButtonsCmp.getSelectedButton() == automationLink) {
+			doOpenAutomation(ureq);
+		}
+	}
 
 	private void doOpenMetadata(UserRequest ureq) {
 		removeAsListenerAndDispose(metadataCtrl);

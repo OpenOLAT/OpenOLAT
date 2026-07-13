@@ -33,10 +33,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -54,6 +51,7 @@ import org.olat.modules.curriculum.AutomationExecutionResult;
 import org.olat.modules.curriculum.AutomationType;
 import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
+import org.olat.modules.curriculum.CurriculumAutomationExecution;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -1096,7 +1094,7 @@ public class CurriculumAutomationServiceTest {
 		when(config.getElementType()).thenReturn(elementType);
 		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
 		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 		when(curriculumService.getCurriculumElement(element)).thenReturn(element);
 
 		sut.execute();
@@ -1131,9 +1129,8 @@ public class CurriculumAutomationServiceTest {
 		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
 		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
 
-		Map<Long, Set<String>> executedByElement = new HashMap<>();
-		executedByElement.put(1L, new HashSet<>(Set.of("ELEMENT::STATUS_CHANGE::finished")));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(executedByElement);
+		CurriculumAutomationExecution execution = mockExecution(1L, "ELEMENT::STATUS_CHANGE::finished");
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of(execution));
 
 		sut.execute();
 
@@ -1172,9 +1169,8 @@ public class CurriculumAutomationServiceTest {
 		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
 		when(curriculumService.getCurriculumElement(elementB)).thenReturn(elementB);
 
-		Map<Long, Set<String>> executedByElement = new HashMap<>();
-		executedByElement.put(1L, new HashSet<>(Set.of("ELEMENT::STATUS_CHANGE::finished")));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(elementA, elementB))).thenReturn(executedByElement);
+		CurriculumAutomationExecution execution = mockExecution(1L, "ELEMENT::STATUS_CHANGE::finished");
+		when(automationExecutionDao.getExecutions(List.of(elementA, elementB))).thenReturn(List.of(execution));
 
 		sut.execute();
 
@@ -1241,7 +1237,7 @@ public class CurriculumAutomationServiceTest {
 		when(config.getElementType()).thenReturn(elementType);
 		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
 		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 
 		sut.execute();
 
@@ -1298,7 +1294,7 @@ public class CurriculumAutomationServiceTest {
 		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
 		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType)))
 				.thenReturn(List.of(contentStatusConfig, instantiationConfig, elementStatusConfig));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 
 		sut.execute();
 
@@ -1342,7 +1338,7 @@ public class CurriculumAutomationServiceTest {
 
 		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element)))
 				.thenReturn(List.of(contentStatusConfig, elementStatusConfig));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 
 		sut.execute();
 
@@ -1381,7 +1377,7 @@ public class CurriculumAutomationServiceTest {
 
 		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element)))
 				.thenReturn(List.of(statusConfig, executionPeriodConfig));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 
 		sut.processStatusChange(List.of(element));
 
@@ -1408,9 +1404,8 @@ public class CurriculumAutomationServiceTest {
 		when(statusConfig.getCurriculumElement()).thenReturn(element);
 
 		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of(statusConfig));
-		Map<Long, Set<String>> executedByElement = new HashMap<>();
-		executedByElement.put(1L, new HashSet<>(Set.of("ELEMENT::STATUS_CHANGE::cancelled")));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(executedByElement);
+		CurriculumAutomationExecution execution = mockExecution(1L, "ELEMENT::STATUS_CHANGE::cancelled");
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of(execution));
 
 		sut.processStatusChange(List.of(element));
 
@@ -1444,7 +1439,7 @@ public class CurriculumAutomationServiceTest {
 		when(config.getElementType()).thenReturn(elementType);
 		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
 		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 
 		sut.execute();
 
@@ -1474,7 +1469,7 @@ public class CurriculumAutomationServiceTest {
 		when(config.getElementType()).thenReturn(elementType);
 		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
 		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 
 		sut.execute();
 
@@ -1503,7 +1498,7 @@ public class CurriculumAutomationServiceTest {
 		when(config.getElementType()).thenReturn(elementType);
 		when(automationConfigDao.getConfigsByCurriculumElements(List.of(element))).thenReturn(List.of());
 		when(automationConfigDao.getConfigsByElementTypes(Set.of(elementType))).thenReturn(List.of(config));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 
 		sut.execute();
 
@@ -1518,7 +1513,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getKey()).thenReturn(1L);
 		when(element.getBeginDate()).thenReturn(beginDate);
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 
 		CurriculumAutomationRule ruleA = automationBeforeDaysRule(7, CurriculumElementStatus.active);
 		CurriculumAutomationRule ruleB = automationBeforeDaysRule(3, CurriculumElementStatus.finished);
@@ -1536,7 +1531,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getKey()).thenReturn(1L);
 		when(element.getBeginDate()).thenReturn(beginDate);
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 
 		CurriculumAutomationRule disabledRule = automationBeforeDaysRule(10, CurriculumElementStatus.active);
 		CurriculumAutomationRule enabledRule = automationBeforeDaysRule(3, CurriculumElementStatus.finished);
@@ -1559,9 +1554,8 @@ public class CurriculumAutomationServiceTest {
 		CurriculumAutomationRule pendingRule = automationBeforeDaysRule(5, CurriculumElementStatus.finished);
 		List<CurriculumAutomationConfig> configs = List.of(mockConfig(executedRule, true), mockConfig(pendingRule, true));
 
-		Map<Long, Set<String>> executedByElement = new HashMap<>();
-		executedByElement.put(1L, new HashSet<>(Set.of("ELEMENT::STATUS_CHANGE::active")));
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(executedByElement);
+		CurriculumAutomationExecution execution = mockExecution(1L, "ELEMENT::STATUS_CHANGE::active");
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of(execution));
 
 		Date result = sut.getNextAutomationExecution(element, configs);
 
@@ -1576,7 +1570,7 @@ public class CurriculumAutomationServiceTest {
 		when(element.getBeginDate()).thenReturn(null);
 		when(element.getEndDate()).thenReturn(null);
 		when(curriculumService.getCurriculumElementParentLine(element)).thenReturn(List.of());
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 
 		CurriculumAutomationRule rule = automationBeforeDaysRule(3, CurriculumElementStatus.active);
 		List<CurriculumAutomationConfig> configs = List.of(mockConfig(rule, true));
@@ -1591,7 +1585,7 @@ public class CurriculumAutomationServiceTest {
 		CurriculumElement element = mock(CurriculumElement.class);
 		when(element.getKey()).thenReturn(1L);
 		when(element.getBeginDate()).thenReturn(beginDate);
-		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+		when(automationExecutionDao.getExecutions(List.of(element))).thenReturn(List.of());
 
 		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
 		rule.setDependingOn(AutomationDependingOn.STATUS);
@@ -1622,6 +1616,18 @@ public class CurriculumAutomationServiceTest {
 		when(config.getRule()).thenReturn(rule);
 		when(config.isEnabled()).thenReturn(enabled);
 		return config;
+	}
+
+	private CurriculumAutomationExecution mockExecution(Long elementKey, String identifier) {
+		String[] parts = identifier.split("::", -1);
+		CurriculumAutomationRule rule = mock(CurriculumAutomationRule.class);
+		when(rule.getContext()).thenReturn(AutomationContext.valueOf(parts[0]));
+		when(rule.getAutomationType()).thenReturn(AutomationType.valueOf(parts[1]));
+		when(rule.getTargetStatus()).thenReturn(parts[2].isEmpty() ? null : parts[2]);
+		CurriculumAutomationExecution execution = mock(CurriculumAutomationExecution.class);
+		when(execution.getCurriculumElementKey()).thenReturn(elementKey);
+		when(execution.getRule()).thenReturn(rule);
+		return execution;
 	}
 
 }

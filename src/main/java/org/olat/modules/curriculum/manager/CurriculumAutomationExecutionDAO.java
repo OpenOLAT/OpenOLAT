@@ -19,17 +19,15 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.curriculum.AutomationExecutionResult;
+import org.olat.modules.curriculum.CurriculumAutomationExecution;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -66,29 +64,20 @@ public class CurriculumAutomationExecutionDAO {
 		return execution;
 	}
 
-	public Map<Long, Set<String>> getExecutedRuleIdentifiers(Collection<CurriculumElement> elements) {
+	public List<CurriculumAutomationExecution> getExecutions(Collection<CurriculumElement> elements) {
 		if (elements == null || elements.isEmpty()) {
-			return new HashMap<>();
+			return new ArrayList<>(0);
 		}
 
 		String query = """
-				select exec.curriculumElementKey, rule.context, rule.automationType, rule.targetStatus
-				from curriculumautomationexecution exec
-				inner join curriculumautomationrule rule on exec.rule.key=rule.key
+				select exec from curriculumautomationexecution exec
+				inner join fetch exec.rule rule
 				where exec.curriculumElementKey in :keys""";
 
 		List<Long> keys = elements.stream().map(CurriculumElement::getKey).collect(Collectors.toList());
-		List<Object[]> rows = dbInstance.getCurrentEntityManager()
-				.createQuery(query, Object[].class)
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, CurriculumAutomationExecution.class)
 				.setParameter("keys", keys)
 				.getResultList();
-
-		Map<Long, Set<String>> executedByElement = new HashMap<>();
-		for (Object[] row : rows) {
-			Long elementKey = (Long) row[0];
-			String identifier = row[1] + "::" + row[2] + "::" + (row[3] == null ? "" : row[3]);
-			executedByElement.computeIfAbsent(elementKey, key -> new HashSet<>()).add(identifier);
-		}
-		return executedByElement;
 	}
 }

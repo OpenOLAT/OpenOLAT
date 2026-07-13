@@ -41,6 +41,7 @@ public class AutomationRuleRow {
 	private final CurriculumAutomationConfig config;
 	private final CurriculumAutomationRule rule;
 	private Date plannedExecution;
+	private Date executionDate;
 	private FormToggle ruleEnabledEl;
 	private FormLink toolsLink;
 
@@ -103,6 +104,14 @@ public class AutomationRuleRow {
 
 	public void setPlannedExecution(Date plannedExecution) {
 		this.plannedExecution = plannedExecution;
+	}
+
+	public Date getExecutionDate() {
+		return executionDate;
+	}
+
+	public void setExecutionDate(Date executionDate) {
+		this.executionDate = executionDate;
 	}
 
 	public FormToggle getRuleEnabledEl() {

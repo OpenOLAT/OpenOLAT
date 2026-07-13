@@ -22,6 +22,7 @@ package org.olat.modules.curriculum;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Initial date: 2026-06-26<br>
@@ -46,6 +47,8 @@ public interface CurriculumAutomationService {
 	public Date computeTriggerDate(CurriculumElement element, CurriculumAutomationRule rule);
 
 	public Date getNextAutomationExecution(CurriculumElement element, List<CurriculumAutomationConfig> configs);
+
+	public Map<CurriculumAutomationConfig, Date> getExecutionDates(CurriculumElement element, List<CurriculumAutomationConfig> configs);
 
 	public Date getNextExecutionTime();
 

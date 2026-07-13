@@ -43,6 +43,7 @@ import org.olat.modules.curriculum.AutomationExecutionResult;
 import org.olat.modules.curriculum.AutomationType;
 import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
+import org.olat.modules.curriculum.CurriculumAutomationExecution;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumAutomationService;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -137,7 +138,7 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 				.collect(Collectors.groupingBy(config -> config.getCurriculumElement().getKey()));
 		Map<Long, List<CurriculumAutomationConfig>> configsByTypeKey = automationConfigDao.getConfigsByElementTypes(types).stream()
 				.collect(Collectors.groupingBy(config -> config.getElementType().getKey()));
-		Map<Long, Set<String>> executedByElement = automationExecutionDao.getExecutedRuleIdentifiers(candidates);
+		Map<Long, Set<String>> executedByElement = getExecutedRuleIdentifiers(candidates);
 		if (executedByElement == null) {
 			executedByElement = new HashMap<>();
 		}
@@ -171,7 +172,7 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 				.collect(Collectors.groupingBy(config -> config.getCurriculumElement().getKey()));
 		Map<Long, List<CurriculumAutomationConfig>> configsByTypeKey = automationConfigDao.getConfigsByElementTypes(types).stream()
 				.collect(Collectors.groupingBy(config -> config.getElementType().getKey()));
-		Map<Long, Set<String>> executedByElement = automationExecutionDao.getExecutedRuleIdentifiers(elementList);
+		Map<Long, Set<String>> executedByElement = getExecutedRuleIdentifiers(elementList);
 		if (executedByElement == null) {
 			executedByElement = new HashMap<>();
 		}
@@ -220,6 +221,12 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 
 	private String ruleIdentifier(CurriculumAutomationRule rule) {
 		return rule.getContext() + "::" + rule.getAutomationType() + "::" + (rule.getTargetStatus() == null ? "" : rule.getTargetStatus());
+	}
+
+	private Map<Long, Set<String>> getExecutedRuleIdentifiers(Collection<CurriculumElement> elements) {
+		return automationExecutionDao.getExecutions(elements).stream()
+				.collect(Collectors.groupingBy(CurriculumAutomationExecution::getCurriculumElementKey,
+						Collectors.mapping(execution -> ruleIdentifier(execution.getRule()), Collectors.toSet())));
 	}
 
 	private int ruleOrder(CurriculumAutomationRule rule) {
@@ -296,7 +303,7 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 
 	@Override
 	public Date getNextAutomationExecution(CurriculumElement element, List<CurriculumAutomationConfig> configs) {
-		Set<String> executedIdentifiers = automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))
+		Set<String> executedIdentifiers = getExecutedRuleIdentifiers(List.of(element))
 				.getOrDefault(element.getKey(), Set.of());
 		return configs.stream()
 				.filter(CurriculumAutomationConfig::isEnabled)
@@ -306,6 +313,17 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 				.filter(Objects::nonNull)
 				.min(Comparator.naturalOrder())
 				.orElse(null);
+	}
+
+	@Override
+	public Map<CurriculumAutomationConfig, Date> getExecutionDates(CurriculumElement element, List<CurriculumAutomationConfig> configs) {
+		Map<String, Date> latestDateByIdentifier = automationExecutionDao.getExecutions(List.of(element)).stream()
+				.collect(Collectors.toMap(execution -> ruleIdentifier(execution.getRule()),
+						CurriculumAutomationExecution::getExecutionDate,
+						(first, second) -> first.after(second) ? first : second));
+		return configs.stream()
+				.filter(config -> latestDateByIdentifier.containsKey(ruleIdentifier(config.getRule())))
+				.collect(Collectors.toMap(config -> config, config -> latestDateByIdentifier.get(ruleIdentifier(config.getRule()))));
 	}
 
 	@Override

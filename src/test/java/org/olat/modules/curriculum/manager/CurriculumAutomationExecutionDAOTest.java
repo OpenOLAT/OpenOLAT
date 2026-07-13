@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
@@ -115,7 +114,7 @@ public class CurriculumAutomationExecutionDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void getExecutedRuleIdentifiers_groupsByElement() {
+	public void getExecutions_multipleElements_returnsRowsForEachElement() {
 		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), random(), false, null);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
@@ -136,21 +135,49 @@ public class CurriculumAutomationExecutionDAOTest extends OlatTestCase {
 		curriculumAutomationExecutionDao.createExecution(element2, null, rule2, AutomationExecutionResult.CHANGED);
 		dbInstance.commitAndCloseSession();
 
-		Map<Long, Set<String>> executedByElement = curriculumAutomationExecutionDao.getExecutedRuleIdentifiers(List.of(element1, element2));
+		List<CurriculumAutomationExecution> executions = curriculumAutomationExecutionDao.getExecutions(List.of(element1, element2));
 
-		assertThat(executedByElement).containsOnlyKeys(element1.getKey(), element2.getKey());
-		assertThat(executedByElement.get(element1.getKey())).containsExactly("ELEMENT::STATUS_CHANGE::confirmed");
-		assertThat(executedByElement.get(element2.getKey())).containsExactly("CONTENT::INSTANTIATION::");
+		assertThat(executions).hasSize(2);
+		assertThat(executions).extracting(CurriculumAutomationExecution::getCurriculumElementKey)
+				.containsExactlyInAnyOrder(element1.getKey(), element2.getKey());
+		// getRule() must be accessible here (proves the inner join fetch initialized the lazy proxy)
+		assertThat(executions).extracting(execution -> execution.getRule().getContext())
+				.containsExactlyInAnyOrder(AutomationContext.ELEMENT, AutomationContext.CONTENT);
 	}
 
 	@Test
-	public void getExecutedRuleIdentifiers_emptyCollection_returnsEmptyMap() {
-		assertThat(curriculumAutomationExecutionDao.getExecutedRuleIdentifiers(List.of())).isEmpty();
+	public void getExecutions_emptyCollection_returnsEmptyList() {
+		assertThat(curriculumAutomationExecutionDao.getExecutions(List.of())).isEmpty();
 	}
 
 	@Test
-	public void getExecutedRuleIdentifiers_nullCollection_returnsEmptyMap() {
-		assertThat(curriculumAutomationExecutionDao.getExecutedRuleIdentifiers(null)).isEmpty();
+	public void getExecutions_nullCollection_returnsEmptyList() {
+		assertThat(curriculumAutomationExecutionDao.getExecutions(null)).isEmpty();
+	}
+
+	@Test
+	public void getExecutions_singleElement_returnsAllExecutions() {
+		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), random(), false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumAutomationRule rule1 = createRule();
+		rule1.setContext(AutomationContext.ELEMENT);
+		curriculumAutomationExecutionDao.createExecution(element, null, rule1, AutomationExecutionResult.CHANGED);
+		dbInstance.commitAndCloseSession();
+
+		CurriculumAutomationRule rule2 = createRule();
+		rule2.setContext(AutomationContext.CONTENT);
+		curriculumAutomationExecutionDao.createExecution(element, null, rule2, AutomationExecutionResult.UNCHANGED);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumAutomationExecution> executions = curriculumAutomationExecutionDao.getExecutions(List.of(element));
+
+		assertThat(executions).hasSize(2);
+		// getRule() must be accessible here (proves the inner join fetch initialized the lazy proxy)
+		assertThat(executions).extracting(execution -> execution.getRule().getContext())
+				.containsExactlyInAnyOrder(AutomationContext.ELEMENT, AutomationContext.CONTENT);
 	}
 
 	private CurriculumAutomationRule createRule() {

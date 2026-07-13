@@ -21,7 +21,9 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -194,6 +196,7 @@ public class CurriculumAutomationController extends FormBasicController {
 				AutomationCols.statusIs.ordinal()));
 		if (formConfig.automationElement() != null) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.plannedExecution));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.executionDate));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.rule));
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(AutomationCols.tools));
@@ -262,20 +265,24 @@ public class CurriculumAutomationController extends FormBasicController {
 	private void loadAutomationTable() {
 		List<AutomationRuleRow> rows = new ArrayList<>();
 		if (automationConfig != null) {
+			Map<CurriculumAutomationConfig, Date> executionDates = formConfig.automationElement() != null
+					? automationService.getExecutionDates(formConfig.automationElement(), automationConfig)
+					: Map.of();
 			for (CurriculumAutomationConfig config : automationConfig) {
-				rows.add(forgeAutomationRow(config));
+				rows.add(forgeAutomationRow(config, executionDates.get(config)));
 			}
 		}
 		automationTableModel.setObjects(rows);
 		automationTable.reset(true, true, true);
 	}
 
-	private AutomationRuleRow forgeAutomationRow(CurriculumAutomationConfig config) {
+	private AutomationRuleRow forgeAutomationRow(CurriculumAutomationConfig config, Date executionDate) {
 		AutomationRuleRow row = new AutomationRuleRow(config);
 		CurriculumAutomationRule rule = config.getRule();
 		if (formConfig.automationElement() != null && rule.getDependingOn() != AutomationDependingOn.STATUS) {
 			row.setPlannedExecution(automationService.computeTriggerDate(formConfig.automationElement(), rule));
 		}
+		row.setExecutionDate(executionDate);
 		FormToggle ruleEl = uifactory.addToggleButton("rule_" + (++automationRowCount), null,
 				translate("on"), translate("off"), null);
 		ruleEl.toggle(config.isEnabled());
@@ -468,6 +475,7 @@ public class CurriculumAutomationController extends FormBasicController {
 				case condition -> conditionText(ruleRow.getRule());
 				case statusIs -> joinStatuses(ruleRow.getRule().getOnlyWhenStatus());
 				case plannedExecution -> plannedExecutionText(ruleRow);
+				case executionDate -> ruleRow.getExecutionDate();
 				case rule -> ruleRow.getRuleEnabledEl();
 				case tools -> ruleRow.getToolsLink();
 			};
@@ -503,6 +511,7 @@ public class CurriculumAutomationController extends FormBasicController {
 		condition("automation.col.condition"),
 		statusIs("automation.col.status.is.element"),
 		plannedExecution("automation.col.planned.execution"),
+		executionDate("automation.col.execution.date"),
 		rule("automation.col.rule"),
 		tools("action.more");
 
