@@ -415,6 +415,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		
 		if(element != null && !allowedTypes.isEmpty()) {
+			boolean legacyType = legacyType(element.getType());
 			long numOfSubElements = curriculumElementDao.countChildren(element);
 			long numOfEntryRelations = curriculumRepositoryEntryRelationDao.countRepositoryEntries(element);
 			List<CurriculumElementType> subElementsTypes = List.of();
@@ -428,12 +429,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 				if((type.isSingleElement() && numOfSubElements > 0)
 						|| (maxRepositoryEntryRelations >= 0 && numOfEntryRelations > maxRepositoryEntryRelations)
-						|| !allowedBySubElementTypes(type, subElementsTypes)) {
+						|| !allowedBySubElementTypes(type, subElementsTypes)
+						|| (!legacyType && legacyType(type))) {
 					typeIterator.remove();
 				}
 			}
 		}
 		return allowedTypes;
+	}
+	
+	private boolean legacyType(CurriculumElementType type) {
+		return type != null && type.isAllowedAsRootElement() && !type.isImplOnly() ;
 	}
 	
 	private boolean allowedBySubElementTypes(CurriculumElementType type, List<CurriculumElementType> subElementsTypes) {
