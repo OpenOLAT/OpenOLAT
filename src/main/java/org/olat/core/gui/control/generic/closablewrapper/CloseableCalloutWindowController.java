@@ -65,6 +65,7 @@ public class CloseableCalloutWindowController extends BasicController implements
 	private final CalloutSettings settings;
 	private VelocityContainer calloutVC;
 	private CloseableModalController cmc;
+	private boolean focusPushed = false;
 
 	/**
 	 * Constructor for a closable callout window controller. After calling the
@@ -280,6 +281,10 @@ public class CloseableCalloutWindowController extends BasicController implements
 			cmc = null;
 		}
 		if(calloutVC != null) {
+			if (focusPushed) {
+				getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.popDialogFocus());
+				focusPushed = false;
+			}
 			getWindowControl().removeModalDialog(calloutVC);
 		}
         super.doDispose();
@@ -318,6 +323,10 @@ public class CloseableCalloutWindowController extends BasicController implements
 			// delegate if in non-ajax mode
 			cmc.activate();
 		} else {
+			if (!focusPushed) {
+				getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.pushDialogFocus(getDOMTarget()));
+				focusPushed = true;
+			}
 			// push to modal stack
 			getWindowControl().pushAsCallout(calloutVC, getDOMTarget(), settings);
 		}
@@ -332,6 +341,10 @@ public class CloseableCalloutWindowController extends BasicController implements
 			// Delegate if in non-ajax mode to modal window
 			cmc.deactivate();
 		} else {
+			if (focusPushed) {
+				getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.popDialogFocus());
+				focusPushed = false;
+			}
 			// Remove component from stack
 			getWindowControl().pop();
 		}

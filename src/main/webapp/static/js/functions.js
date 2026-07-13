@@ -20,6 +20,9 @@ o_info.drakes = [];
 o_info.extraFormData = {};
 // Reference to the current XHR upload request, used to abort uploads via cancel button
 o_info.xhrCurrentUpload = null;
+// Stack of trigger elements to return focus to when dialogs close
+o_info.focusReturnStack = [];
+o_info.pendingFocusReturn = null;
 
 /**
  * The BLoader object can be used to :
@@ -544,6 +547,17 @@ function o_aexecute(command, parameters) {
 		case "scrollincontainer":
 			o_scrollInContainer(parameters["elemId"], parameters["containerCss"], parameters["behavior"])
 			break;
+		case "pushdialogfocus":
+			var pushId = parameters && parameters["triggerId"]
+				? parameters["triggerId"]
+				: (document.activeElement && document.activeElement.id ? document.activeElement.id : null);
+			if (pushId) {
+				o_info.focusReturnStack.push(pushId);
+			}
+			break;
+		case "popdialogfocus":
+			o_info.pendingFocusReturn = o_info.focusReturnStack.pop() || null;
+			break;
 		default:
 			console.log("Unkown command", command, parameters);
 	}
@@ -961,7 +975,14 @@ function o_ainvoke(r) {
 	} else if(focusArray.length > 0) {
  		o_ffSetFocusArray(focusArray);
 	}
-/* minimalistic debugger / profiler	
+	if (o_info.pendingFocusReturn !== null) {
+		var retEl = document.getElementById(o_info.pendingFocusReturn);
+		o_info.pendingFocusReturn = null;
+		if (retEl) {
+			retEl.focus({ preventScroll: true });
+		}
+	}
+/* minimalistic debugger / profiler
 	BDebugger.logDOMCount();
 	BDebugger.logGlobalObjCount();
 	BDebugger.logGlobalOLATObjects();

@@ -54,6 +54,9 @@ public class FunctionCommand extends Command {
 		SET_BODY_DATA_RESOURCE("setbodydataresource"),
 		SET_COURSE_DATA_ATTRIBUTES("setcoursedataattributes"),
 		
+		PUSH_DIALOG_FOCUS("pushdialogfocus"),
+		POP_DIALOG_FOCUS("popdialogfocus"),
+
 		FLEXITABLE_UPDATE_CHECKALL("tableupdatecheckkallmenu"),
 		RELOAD_WINDOW("reloadWindow"),
 		PRINT("print"),
@@ -249,5 +252,16 @@ public class FunctionCommand extends Command {
 		parameters.put("elementId", elementId);
 		parameters.put("show", show);
 		return valueOf(Functions.SHOW_TOOLTIP, parameters);
+	}
+
+	public static FunctionCommand pushDialogFocus(String triggerId) {
+		if (triggerId != null) {
+			return valueOf(Functions.PUSH_DIALOG_FOCUS, "triggerId", triggerId);
+		}
+		return valueOf(Functions.PUSH_DIALOG_FOCUS, null);
+	}
+
+	public static FunctionCommand popDialogFocus() {
+		return valueOf(Functions.POP_DIALOG_FOCUS, null);
 	}
 }
