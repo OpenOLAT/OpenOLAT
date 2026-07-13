@@ -405,7 +405,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				if(parentType != null) {
 					Set<CurriculumElementTypeToType> typeToTypes = parentType.getAllowedSubTypes();
 					for(CurriculumElementTypeToType typeToType:typeToTypes) {
-						if(typeToType != null) {
+						if(typeToType != null && !allowedTypes.contains(typeToType.getAllowedSubType())) {
 							allowedTypes.add(typeToType.getAllowedSubType());
 						}
 					}

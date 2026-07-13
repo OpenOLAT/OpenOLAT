@@ -118,6 +118,7 @@ import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
+import org.olat.modules.curriculum.ui.component.CurriculumElementTypeComparator;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
 import org.olat.modules.curriculum.ui.component.MinMaxParticipantsCellRenderer;
 import org.olat.modules.curriculum.ui.component.ParticipantsAvailabilityNumRenderer;
@@ -321,9 +322,14 @@ public class CurriculumComposerController extends FormBasicController implements
 				allowedTypes = curriculumService.getAllowedCurriculumElementType(rootElement, null);
 			}
 			
+			if(allowedTypes.size() > 1) {
+				Collections.sort(allowedTypes, new CurriculumElementTypeComparator(getLocale()));
+			}
+			
 			for(CurriculumElementType allowedType:allowedTypes) {
 				if(allowedType.getStatus() == CurriculumElementTypeStatus.inactive) continue;
 				if(rootElement != null && allowedType.isImplOnly()) continue;
+				
 				String link = translate("add.curriculum.element.typed", StringHelper.escapeHtml(allowedType.getDisplayName()));
 				newGenericElementButton = uifactory.addFormLink("add.curriculum.element." + allowedType.getKey(),
 						CMD_ADD_ELEMENT, link, null, formLayout, Link.LINK | Link.NONTRANSLATED);

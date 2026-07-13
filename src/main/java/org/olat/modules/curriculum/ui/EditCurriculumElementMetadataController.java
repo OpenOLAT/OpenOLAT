@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,6 +55,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.curriculum.ui.component.CurriculumElementTypeComparator;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
@@ -290,6 +292,8 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 			if(defaultType != null) {
 				types.add(defaultType);
 			}
+		} else if(types.size() > 1) {
+			Collections.sort(types, new CurriculumElementTypeComparator(getLocale()));
 		}
 		if(element != null && element.getType() != null && !types.contains(element.getType())) {
 			types.add(element.getType());
