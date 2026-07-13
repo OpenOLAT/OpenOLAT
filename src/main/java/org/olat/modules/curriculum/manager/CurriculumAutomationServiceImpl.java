@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -291,6 +292,20 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 			log.error("", e);
 		}
 		return null;
+	}
+
+	@Override
+	public Date getNextAutomationExecution(CurriculumElement element, List<CurriculumAutomationConfig> configs) {
+		Set<String> executedIdentifiers = automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))
+				.getOrDefault(element.getKey(), Set.of());
+		return configs.stream()
+				.filter(CurriculumAutomationConfig::isEnabled)
+				.filter(config -> config.getRule().getDependingOn() != AutomationDependingOn.STATUS)
+				.filter(config -> !executedIdentifiers.contains(ruleIdentifier(config.getRule())))
+				.map(config -> computeTriggerDate(element, config.getRule()))
+				.filter(Objects::nonNull)
+				.min(Comparator.naturalOrder())
+				.orElse(null);
 	}
 
 	@Override

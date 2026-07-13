@@ -26,16 +26,6 @@
 					</div>
 				</div>
 			#end
-			#if($r.isNotEmpty($automationNextExecution))
-				<div class="o_curriculum_metadata_header_automation">
-					<div>
-						<strong>$r.translate("curriculum.element.automation")</strong>
-					</div>
-					<div>
-						$r.escapeHtml($automationNextExecution)
-					</div>
-				</div>
-			#end
 			#if($r.isNotEmpty($participants))
 				<div class="o_curriculum_metadata_header_participants">
 					<div>
@@ -43,6 +33,16 @@
 					</div>
 					<div>
 						$participants
+					</div>
+				</div>
+			#end
+			#if($r.isNotEmpty($automationNextExecution))
+				<div class="o_curriculum_metadata_header_automation">
+					<div>
+						<strong>$r.translate("curriculum.element.automation")</strong>
+					</div>
+					<div>
+						$r.escapeHtml($automationNextExecution)
 					</div>
 				</div>
 			#end

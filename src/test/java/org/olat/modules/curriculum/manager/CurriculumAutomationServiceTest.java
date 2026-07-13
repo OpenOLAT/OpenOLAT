@@ -1512,6 +1512,111 @@ public class CurriculumAutomationServiceTest {
 				eq(AutomationExecutionResult.UNCHANGED));
 	}
 
+	@Test
+	public void testGetNextAutomationExecution_earliestOfEnabled() {
+		Date beginDate = new Date(0);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getKey()).thenReturn(1L);
+		when(element.getBeginDate()).thenReturn(beginDate);
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+
+		CurriculumAutomationRule ruleA = automationBeforeDaysRule(7, CurriculumElementStatus.active);
+		CurriculumAutomationRule ruleB = automationBeforeDaysRule(3, CurriculumElementStatus.finished);
+		List<CurriculumAutomationConfig> configs = List.of(mockConfig(ruleA, true), mockConfig(ruleB, true));
+
+		Date result = sut.getNextAutomationExecution(element, configs);
+
+		Date expected = DateUtils.addDays(DateUtils.getStartOfDay(beginDate), -7);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testGetNextAutomationExecution_disabledExcluded() {
+		Date beginDate = new Date(0);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getKey()).thenReturn(1L);
+		when(element.getBeginDate()).thenReturn(beginDate);
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+
+		CurriculumAutomationRule disabledRule = automationBeforeDaysRule(10, CurriculumElementStatus.active);
+		CurriculumAutomationRule enabledRule = automationBeforeDaysRule(3, CurriculumElementStatus.finished);
+		List<CurriculumAutomationConfig> configs = List.of(mockConfig(disabledRule, false), mockConfig(enabledRule, true));
+
+		Date result = sut.getNextAutomationExecution(element, configs);
+
+		Date expected = DateUtils.addDays(DateUtils.getStartOfDay(beginDate), -3);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testGetNextAutomationExecution_executedExcluded() {
+		Date beginDate = new Date(0);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getKey()).thenReturn(1L);
+		when(element.getBeginDate()).thenReturn(beginDate);
+
+		CurriculumAutomationRule executedRule = automationBeforeDaysRule(3, CurriculumElementStatus.active);
+		CurriculumAutomationRule pendingRule = automationBeforeDaysRule(5, CurriculumElementStatus.finished);
+		List<CurriculumAutomationConfig> configs = List.of(mockConfig(executedRule, true), mockConfig(pendingRule, true));
+
+		Map<Long, Set<String>> executedByElement = new HashMap<>();
+		executedByElement.put(1L, new HashSet<>(Set.of("ELEMENT::STATUS_CHANGE::active")));
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(executedByElement);
+
+		Date result = sut.getNextAutomationExecution(element, configs);
+
+		Date expected = DateUtils.addDays(DateUtils.getStartOfDay(beginDate), -5);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testGetNextAutomationExecution_noneReturnsNull() {
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getKey()).thenReturn(1L);
+		when(element.getBeginDate()).thenReturn(null);
+		when(element.getEndDate()).thenReturn(null);
+		when(curriculumService.getCurriculumElementParentLine(element)).thenReturn(List.of());
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+
+		CurriculumAutomationRule rule = automationBeforeDaysRule(3, CurriculumElementStatus.active);
+		List<CurriculumAutomationConfig> configs = List.of(mockConfig(rule, true));
+
+		assertThat(sut.getNextAutomationExecution(element, configs)).isNull();
+		assertThat(sut.getNextAutomationExecution(element, List.of())).isNull();
+	}
+
+	@Test
+	public void testGetNextAutomationExecution_statusRuleExcluded() {
+		Date beginDate = new Date(0);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getKey()).thenReturn(1L);
+		when(element.getBeginDate()).thenReturn(beginDate);
+		when(automationExecutionDao.getExecutedRuleIdentifiers(List.of(element))).thenReturn(new HashMap<>());
+
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.STATUS);
+		rule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name(), CurriculumElementStatus.finished.name()));
+		rule.setContext(AutomationContext.CONTENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(CurriculumElementStatus.finished);
+		List<CurriculumAutomationConfig> configs = List.of(mockConfig(rule, true));
+
+		assertThat(sut.getNextAutomationExecution(element, configs)).isNull();
+	}
+
+	private CurriculumAutomationRule automationBeforeDaysRule(int days, CurriculumElementStatus targetStatus) {
+		CurriculumAutomationRule rule = new CurriculumAutomationRuleImpl();
+		rule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		rule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
+		rule.setDirection(OffsetDirection.BEFORE);
+		rule.setValue(days);
+		rule.setUnit(AutomationUnit.DAYS);
+		rule.setContext(AutomationContext.ELEMENT);
+		rule.setAutomationType(AutomationType.STATUS_CHANGE);
+		rule.setTargetStatus(targetStatus);
+		return rule;
+	}
+
 	private CurriculumAutomationConfig mockConfig(CurriculumAutomationRule rule, boolean enabled) {
 		CurriculumAutomationConfig config = mock(CurriculumAutomationConfig.class);
 		when(config.getRule()).thenReturn(rule);

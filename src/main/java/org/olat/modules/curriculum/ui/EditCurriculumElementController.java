@@ -245,18 +245,9 @@ public class EditCurriculumElementController extends BasicController implements 
 			CurriculumElementType type = element.getType();
 			automationConfig = type == null ? List.of() : automationService.getConfigs(type);
 		}
-		boolean hasActiveAutomation = false;
-		Date nextExecution = null;
-		for (CurriculumAutomationConfig config : automationConfig) {
-			if (config.isEnabled()) {
-				hasActiveAutomation = true;
-				Date triggerDate = automationService.computeTriggerDate(element, config.getRule());
-				if (triggerDate != null && (nextExecution == null || triggerDate.before(nextExecution))) {
-					nextExecution = triggerDate;
-				}
-			}
-		}
+		boolean hasActiveAutomation = automationConfig.stream().anyMatch(CurriculumAutomationConfig::isEnabled);
 		if (hasActiveAutomation) {
+			Date nextExecution = automationService.getNextAutomationExecution(element, automationConfig);
 			String date = nextExecution == null ? "-" : Formatter.getInstance(getLocale()).formatDate(nextExecution);
 			mainVC.contextPut("automationNextExecution", translate("curriculum.element.automation.next.execution", date));
 		} else {

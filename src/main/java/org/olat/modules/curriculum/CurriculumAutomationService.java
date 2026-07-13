@@ -45,6 +45,8 @@ public interface CurriculumAutomationService {
 
 	public Date computeTriggerDate(CurriculumElement element, CurriculumAutomationRule rule);
 
+	public Date getNextAutomationExecution(CurriculumElement element, List<CurriculumAutomationConfig> configs);
+
 	public Date getNextExecutionTime();
 
 }

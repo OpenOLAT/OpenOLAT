@@ -65,6 +65,7 @@ public class CurriculumAutomationConfigDAO {
 	public List<CurriculumAutomationConfig> getConfigs(CurriculumElementType type) {
 		String query = """
 				select config from curriculumautomationconfig config
+				left join fetch config.rule rule
 				where config.elementType.key=:typeKey
 				order by config.key""";
 
@@ -77,6 +78,7 @@ public class CurriculumAutomationConfigDAO {
 	public List<CurriculumAutomationConfig> getConfigs(CurriculumElement element) {
 		String query = """
 				select config from curriculumautomationconfig config
+				left join fetch config.rule rule
 				where config.curriculumElement.key=:elementKey
 				order by config.key""";
 

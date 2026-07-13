@@ -126,7 +126,7 @@ public class CertificateDetailsController extends BasicController {
 		dropdown.setEmbbeded(true);
 		dropdown.setCaretPosition(CaretPosition.none);
 		dropdown.setIconCSS("o_icon o_icon_actions");
-		dropdown.setAriaLabel(translate("actions.more"));
+		dropdown.setAriaLabel(translate("action.more"));
 		dropdown.setOrientation(DropdownOrientation.right);
 		mainVC.put(dropdown.getComponentName(), dropdown);
 		

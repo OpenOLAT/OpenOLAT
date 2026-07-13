@@ -504,7 +504,7 @@ public class CurriculumAutomationController extends FormBasicController {
 		statusIs("automation.col.status.is.element"),
 		plannedExecution("automation.col.planned.execution"),
 		rule("automation.col.rule"),
-		tools("action");
+		tools("action.more");
 
 		private final String i18nKey;
 
