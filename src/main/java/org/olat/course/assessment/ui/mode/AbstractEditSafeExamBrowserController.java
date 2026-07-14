@@ -45,6 +45,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.SafeExamBrowserEnabled;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
 import org.olat.course.assessment.SafeExamBrowserTemplateSearchParams;
@@ -113,6 +114,8 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	protected SafeExamBrowserRawConfigurationController rawConfigurationCtrl;
 	
 	@Autowired
+	private AssessmentModule assessmentModule;
+	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	
 	public AbstractEditSafeExamBrowserController(UserRequest ureq, WindowControl wControl,
@@ -136,7 +139,11 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		SafeExamBrowserConfiguration sebConfig = configuration.getSafeExamBrowserConfiguration();
 		if(sebConfig == null) {
 			SafeExamBrowserTemplate defaultTemplate = assessmentModeMgr.getDefaultSafeExamBrowserTemplate();
-			sebConfig = defaultTemplate.getSafeExamBrowserConfiguration();
+			if(defaultTemplate.getType() == SafeExamBrowserTemplateType.OO_FORM) {
+				sebConfig = defaultTemplate.getSafeExamBrowserConfiguration();
+			} else {
+				sebConfig = assessmentModule.getSafeExamBrowserConfigurationDefaultConfiguration();
+			}
 			defaultSafeExamBrowserHint = defaultTemplate.getSafeExamBrowserHint();
 		} else {
 			defaultSafeExamBrowserHint = assessmentModeMgr.getDefaultSafeExamBrowserTemplate().getSafeExamBrowserHint();
@@ -519,12 +526,19 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 			}
 			String configPListKey = selectedTemplate.getSafeExamBrowserConfigPListKey();
 			safeExamBrowserConfigKeyEl.setValue(configPListKey != null ? configPListKey : "");
+			
 		} else if(selectedTemplate.getType() == SafeExamBrowserTemplateType.SEB_FILE) {
 			String configPList = selectedTemplate.getSafeExamBrowserConfigPList();
 			String configPListKey = SafeExamBrowserConfigurationSerializer
 					.calculateKey(configPList, allowToExitEl.isOn(), passwordToQuitEl.getValue());
 			safeExamBrowserConfigKeyEl.setValue(configPListKey != null ? configPListKey : "");
 			rawConfigurationCtrl.loadConfiguration(selectedTemplate.getSafeExamBrowserConfigPList());
+			
+			downloadConfigEl.select(trueFalseKey(selectedTemplate.getSafeExamBrowserConfigDownload()
+					&& selectedTemplate.getSafeExamBrowserConfigDownload().booleanValue()), true);
+			allowToExitEl.toggle(selectedTemplate.getSafeExamBrowserConfigAllowExit() != null
+					&& selectedTemplate.getSafeExamBrowserConfigAllowExit().booleanValue());
+			passwordToQuitEl.setValue(selectedTemplate.getSafeExamBrowserConfigExitPassword());
 		}
 		
 		String templateHint = selectedTemplate.getSafeExamBrowserHint();
