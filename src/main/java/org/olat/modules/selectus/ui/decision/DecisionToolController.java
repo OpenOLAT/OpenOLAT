@@ -631,8 +631,8 @@ public class DecisionToolController extends FormBasicController implements Flexi
 	}
 	
 	private void processRubricChanges(DecisionRubricEvent event) {
-		DecisionRubric rubric = event.getRubric();
-		if(dataModel.replaceRubric(rubric)) {
+		DecisionRubric rubric = recruitingFrontendManager.getDecisionRubricByKey(event.getRubricKey());
+		if(rubric != null && dataModel.replaceRubric(rubric)) {
 			tableEl.getComponent().setDirty(true);
 		}
 	}

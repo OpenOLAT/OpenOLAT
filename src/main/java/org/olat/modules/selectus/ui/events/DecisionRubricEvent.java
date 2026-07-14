@@ -35,11 +35,11 @@ public class DecisionRubricEvent extends MultiUserEvent {
 	public static final String RUBRIC_CHANGED = "rubric-changed";
 	
 	private Long identitySenderKey;
-	private DecisionRubric rubric;
+	private Long rubricKey;
 	
 	public DecisionRubricEvent(DecisionRubric rubric, Long identitySenderKey) {
 		super(RUBRIC_CHANGED);
-		this.rubric = rubric;
+		this.rubricKey = rubric.getKey();
 		this.identitySenderKey = identitySenderKey;
 	}
 
@@ -47,7 +47,7 @@ public class DecisionRubricEvent extends MultiUserEvent {
 		return identitySenderKey;
 	}
 	
-	public DecisionRubric getRubric() {
-		return rubric;
+	public Long getRubricKey() {
+		return rubricKey;
 	}
 }

@@ -1797,6 +1797,11 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 		dbInstance.commit();
 		return decisionRubricDao.loadDecisionRubric(savedDecision.getKey());
 	}
+	
+	@Override
+	public DecisionRubric getDecisionRubricByKey(Long key) {
+		return decisionRubricDao.loadDecisionRubric(key);
+	}
 
 	@Override
 	public List<DecisionRubric> getDecisionRubric(Position position) {

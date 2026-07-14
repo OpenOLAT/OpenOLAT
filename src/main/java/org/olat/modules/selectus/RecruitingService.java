@@ -631,6 +631,8 @@ public interface RecruitingService {
 	public DecisionRubric createDecisionRubric(DecisionRubricDefinition definition, ApplicationLight app);
 
 	public DecisionRubric saveDecisionRubric(DecisionRubric decision);
+	
+	public DecisionRubric getDecisionRubricByKey(Long key);
 
 	public List<DecisionRubric> getDecisionRubric(Position position);
 
