@@ -454,7 +454,6 @@ public class RepositoryLifecycleAdminController extends FormBasicController impl
 	private void loadModel() {
 		Date now = new Date();
 		List<LifecyclePreviewRow> rows = new ArrayList<>(4);
-		rows.add(forgeRow(translate("forecast.today"), now));
 		rows.add(forgeRow(translate("forecast.tomorrow"), DateUtils.addDays(now, 1)));
 		rows.add(forgeRow(translate("forecast.next.days", "7"), DateUtils.addDays(now, 7)));
 		rows.add(forgeRow(translate("forecast.next.days", "30"), DateUtils.addDays(now, 30)));
