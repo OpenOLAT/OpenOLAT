@@ -99,12 +99,6 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	}
 	
 	@Override
-	protected void reorderFilterTabs(List<FlexiFiltersTab> tabs) {
-		tabs.remove(tabAll);
-		tabs.add(tabs.size()-1, tabAll);
-	}
-	
-	@Override
 	protected FlexiFiltersTab getDefaultFilterTab() {
 		return tabMy;
 	}

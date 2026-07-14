@@ -31,7 +31,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -186,12 +185,6 @@ public class CurriculumElementToDoListController extends ToDoTaskListController 
 	@Override
 	protected boolean isFilterTabUnassignedEnabled() {
 		return true;
-	}
-	
-	@Override
-	protected void reorderFilterTabs(List<FlexiFiltersTab> tabs) {
-		tabs.remove(tabAll);
-		tabs.add(0, tabAll);
 	}
 
 	@Override

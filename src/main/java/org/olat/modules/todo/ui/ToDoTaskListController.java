@@ -475,21 +475,22 @@ public abstract class ToDoTaskListController extends FormBasicController
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
 		List<String> statusActive = List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name(), ToDoStatus.done.name());
-		tabMy = FlexiFiltersTabFactory.tabWithFilters(
-				TAB_ID_MY,
-				translate("tab.my.tasks"),
-				TabSelectionBehavior.reloadData,
-				List.of(
-						FlexiTableFilterValue.valueOf(ToDoTaskFilter.my, List.of(FILTER_KEY_MY)),
-						FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name()))));
-		tabs.add(tabMy);
-		
 		tabAll = FlexiFiltersTabFactory.tabWithFilters(
 				TAB_ID_ALL,
 				translate("tab.all"),
 				TabSelectionBehavior.reloadData,
 				List.of(FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, statusActive)));
 		tabs.add(tabAll);
+		
+		tabMy = FlexiFiltersTabFactory.tabWithImplicitAndDefaultFilters(
+				TAB_ID_MY,
+				translate("tab.my.tasks"),
+				TabSelectionBehavior.reloadData,
+				List.of(
+						FlexiTableFilterValue.valueOf(ToDoTaskFilter.my, List.of(FILTER_KEY_MY))),
+				List.of(
+						FlexiTableFilterValue.valueOf(ToDoTaskFilter.status, List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name()))));
+		tabs.add(tabMy);
 		
 		tabOpen = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_OPEN,

@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -131,12 +130,6 @@ public class CurriculumToDoListController extends ToDoTaskListController {
 	@Override
 	protected boolean isFilterTabUnassignedEnabled() {
 		return true;
-	}
-
-	@Override
-	protected void reorderFilterTabs(List<FlexiFiltersTab> tabs) {
-		tabs.remove(tabAll);
-		tabs.add(0, tabAll);
 	}
 
 	@Override
