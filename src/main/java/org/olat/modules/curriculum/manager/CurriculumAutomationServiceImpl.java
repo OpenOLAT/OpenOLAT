@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.manager;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -69,6 +70,8 @@ import org.springframework.stereotype.Service;
 public class CurriculumAutomationServiceImpl implements CurriculumAutomationService {
 
 	private static final Logger log = Tracing.createLoggerFor(CurriculumAutomationServiceImpl.class);
+	private static final Comparator<CurriculumAutomationConfig> RULE_ORDER_COMPARATOR =
+			Comparator.comparingInt(config -> ruleOrder(config.getRule()));
 
 	@Autowired
 	private DB dbInstance;
@@ -92,12 +95,16 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 
 	@Override
 	public List<CurriculumAutomationConfig> getConfigs(CurriculumElementType type) {
-		return automationConfigDao.getConfigs(type);
+		List<CurriculumAutomationConfig> configs = automationConfigDao.getConfigs(type);
+		Collections.sort(configs, RULE_ORDER_COMPARATOR);
+		return configs;
 	}
 
 	@Override
 	public List<CurriculumAutomationConfig> getConfigs(CurriculumElement element) {
-		return automationConfigDao.getConfigs(element);
+		List<CurriculumAutomationConfig> configs = automationConfigDao.getConfigs(element);
+		Collections.sort(configs, RULE_ORDER_COMPARATOR);
+		return configs;
 	}
 
 	@Override
@@ -194,9 +201,8 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 				: (type != null ? configsByTypeKey.getOrDefault(type.getKey(), List.of()) : List.of());
 		CurriculumElementType originType = fromType ? type : null;
 		Set<String> executedIdentifiers = executedByElement.computeIfAbsent(element.getKey(), key -> new HashSet<>());
-		List<CurriculumAutomationConfig> orderedConfigs = configs.stream()
-				.sorted(Comparator.comparingInt(config -> ruleOrder(config.getRule())))
-				.toList();
+		List<CurriculumAutomationConfig> orderedConfigs = new ArrayList<>(configs);
+		Collections.sort(orderedConfigs, RULE_ORDER_COMPARATOR);
 
 		for (CurriculumAutomationConfig config : orderedConfigs) {
 			if (!config.isEnabled()) {
@@ -229,20 +235,26 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 						Collectors.mapping(execution -> ruleIdentifier(execution.getRule()), Collectors.toSet())));
 	}
 
-	private int ruleOrder(CurriculumAutomationRule rule) {
+	private static int ruleOrder(CurriculumAutomationRule rule) {
 		AutomationContext ctx = rule.getContext();
 		AutomationType type = rule.getAutomationType();
+		int base;
 		if ((ctx == AutomationContext.IMPLEMENTATION || ctx == AutomationContext.ELEMENT)
 				&& type == AutomationType.STATUS_CHANGE) {
-			return 1;
+			base = 10;
+		} else if (ctx == AutomationContext.CONTENT && type == AutomationType.INSTANTIATION) {
+			base = 20;
+		} else if (ctx == AutomationContext.CONTENT && type == AutomationType.STATUS_CHANGE) {
+			base = 30;
+		} else {
+			base = 40;
 		}
-		if (ctx == AutomationContext.CONTENT && type == AutomationType.INSTANTIATION) {
-			return 2;
-		}
-		if (ctx == AutomationContext.CONTENT && type == AutomationType.STATUS_CHANGE) {
-			return 3;
-		}
-		return 4;
+		return base + statusOrdinal(rule);
+	}
+
+	private static int statusOrdinal(CurriculumAutomationRule rule) {
+		Object status = CurriculumAutomationRule.toStatusEnum(rule.getTargetStatus());
+		return status instanceof Enum<?> statusEnum ? statusEnum.ordinal() : 0;
 	}
 
 	private record RuleOutcome(CurriculumElement element, AutomationExecutionResult result) {
@@ -324,6 +336,40 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 		return configs.stream()
 				.filter(config -> latestDateByIdentifier.containsKey(ruleIdentifier(config.getRule())))
 				.collect(Collectors.toMap(config -> config, config -> latestDateByIdentifier.get(ruleIdentifier(config.getRule()))));
+	}
+
+	@Override
+	public Map<CurriculumAutomationConfig, Date> getPlannedExecutionDates(CurriculumElement element,
+			List<CurriculumAutomationConfig> configs) {
+		Map<CurriculumAutomationConfig, Date> dates = new HashMap<>();
+		for (CurriculumAutomationConfig config : configs) {
+			CurriculumAutomationRule rule = config.getRule();
+			Date date = rule.getDependingOn() == AutomationDependingOn.STATUS
+					? inheritedDate(element, rule, configs)
+					: computeTriggerDate(element, rule);
+			if (date != null) {
+				dates.put(config, date);
+			}
+		}
+		return dates;
+	}
+
+	private Date inheritedDate(CurriculumElement element, CurriculumAutomationRule rule,
+			List<CurriculumAutomationConfig> configs) {
+		Set<String> dependsOn = rule.getDependingOnStatus();
+		if (dependsOn == null || dependsOn.isEmpty()) {
+			return null;
+		}
+		return configs.stream()
+				.filter(CurriculumAutomationConfig::isEnabled)
+				.map(CurriculumAutomationConfig::getRule)
+				.filter(driver -> driver.getAutomationType() == AutomationType.STATUS_CHANGE)
+				.filter(driver -> driver.getDependingOn() == AutomationDependingOn.EXECUTION_PERIOD)
+				.filter(driver -> dependsOn.contains(driver.getTargetStatus()))
+				.map(driver -> computeTriggerDate(element, driver))
+				.filter(Objects::nonNull)
+				.min(Comparator.naturalOrder())
+				.orElse(null);
 	}
 
 	@Override

@@ -20,7 +20,9 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
@@ -120,6 +122,7 @@ public class CurriculumElementResourcesController extends BasicController {
 		Translator translator = Util.createPackageTranslator(RepositoryEntryStatusEnum.class, getLocale(),
 				Util.createPackageTranslator(RelativeDateElement.class, getLocale(), getTranslator()));
 		Formatter formatter = Formatter.getInstance(getLocale());
+		Map<CurriculumAutomationConfig, Date> plannedDates = automationService.getPlannedExecutionDates(curriculumElement, automationConfigs);
 		for(CurriculumAutomationConfig config : automationConfigs) {
 			CurriculumAutomationRule rule = config.getRule();
 			if(config.isEnabled() && rule.getContext() == AutomationContext.CONTENT) {
@@ -127,8 +130,7 @@ public class CurriculumElementResourcesController extends BasicController {
 						? translate("automation.type.instantiation")
 						: Objects.requireNonNullElse(
 								CurriculumUIFactory.translateAutomationStatus(translator, rule.getTargetStatus()), "-");
-				String date = Objects.requireNonNullElse(
-						formatter.formatDateWithDay(automationService.computeTriggerDate(curriculumElement, rule)), "-");
+				String date = Objects.requireNonNullElse(formatter.formatDate(plannedDates.get(config)), "-");
 				String text = CurriculumUIFactory.translateAutomationCondition(translator, rule);
 				automationInfos.add(new Infos(title, date, text));
 			}

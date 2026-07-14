@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -69,7 +68,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.AutomationContext;
-import org.olat.modules.curriculum.AutomationDependingOn;
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumAutomationService;
@@ -78,6 +76,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.component.AutomationContextCellRenderer;
 import org.olat.modules.curriculum.ui.component.AutomationTargetStatusCellRenderer;
+import org.olat.modules.curriculum.ui.component.PlannedExecutionCellRenderer;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -195,7 +194,8 @@ public class CurriculumAutomationController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(statusIsHeaderKey(),
 				AutomationCols.statusIs.ordinal()));
 		if (formConfig.automationElement() != null) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.plannedExecution));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.plannedExecution,
+					new PlannedExecutionCellRenderer(Formatter.getInstance(getLocale()))));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.executionDate));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AutomationCols.rule));
@@ -268,20 +268,20 @@ public class CurriculumAutomationController extends FormBasicController {
 			Map<CurriculumAutomationConfig, Date> executionDates = formConfig.automationElement() != null
 					? automationService.getExecutionDates(formConfig.automationElement(), automationConfig)
 					: Map.of();
+			Map<CurriculumAutomationConfig, Date> plannedDates = formConfig.automationElement() != null
+					? automationService.getPlannedExecutionDates(formConfig.automationElement(), automationConfig)
+					: Map.of();
 			for (CurriculumAutomationConfig config : automationConfig) {
-				rows.add(forgeAutomationRow(config, executionDates.get(config)));
+				rows.add(forgeAutomationRow(config, plannedDates.get(config), executionDates.get(config)));
 			}
 		}
 		automationTableModel.setObjects(rows);
 		automationTable.reset(true, true, true);
 	}
 
-	private AutomationRuleRow forgeAutomationRow(CurriculumAutomationConfig config, Date executionDate) {
+	private AutomationRuleRow forgeAutomationRow(CurriculumAutomationConfig config, Date plannedExecution, Date executionDate) {
 		AutomationRuleRow row = new AutomationRuleRow(config);
-		CurriculumAutomationRule rule = config.getRule();
-		if (formConfig.automationElement() != null && rule.getDependingOn() != AutomationDependingOn.STATUS) {
-			row.setPlannedExecution(automationService.computeTriggerDate(formConfig.automationElement(), rule));
-		}
+		row.setPlannedExecution(plannedExecution);
 		row.setExecutionDate(executionDate);
 		FormToggle ruleEl = uifactory.addToggleButton("rule_" + (++automationRowCount), null,
 				translate("on"), translate("off"), null);
@@ -375,7 +375,7 @@ public class CurriculumAutomationController extends FormBasicController {
 			}
 		} else if (source instanceof FormToggle tg && tg.getUserObject() instanceof AutomationRuleRow r) {
 			r.getConfig().setEnabled(tg.isOn());
-			automationTable.reset(false, false, false);
+			loadAutomationTable();
 			fireEvent(ureq, FormEvent.CHANGED_EVENT);
 		} else if (source instanceof FormLink link && "tools".equals(link.getCmd())
 				&& link.getUserObject() instanceof AutomationRuleRow r) {
@@ -402,7 +402,6 @@ public class CurriculumAutomationController extends FormBasicController {
 		private static final AutomationCols[] COLS = AutomationCols.values();
 
 		private final Translator translator;
-		private final Formatter formatter;
 		private List<AutomationRuleRow> backupRows = List.of();
 
 		public AutomationRuleTableModel(FlexiTableColumnModel columnsModel, Translator translator) {
@@ -411,7 +410,6 @@ public class CurriculumAutomationController extends FormBasicController {
 					translator.getLocale(), translator);
 			this.translator = Util.createPackageTranslator(RepositoryEntryStatusEnum.class,
 					translator.getLocale(), withDate);
-			this.formatter = Formatter.getInstance(getLocale());
 		}
 
 		public List<AutomationRuleRow> getBackupRows() {
@@ -474,7 +472,7 @@ public class CurriculumAutomationController extends FormBasicController {
 				case targetStatus -> ruleRow.getTargetStatus();
 				case condition -> conditionText(ruleRow.getRule());
 				case statusIs -> joinStatuses(ruleRow.getRule().getOnlyWhenStatus());
-				case plannedExecution -> plannedExecutionText(ruleRow);
+				case plannedExecution -> ruleRow;
 				case executionDate -> ruleRow.getExecutionDate();
 				case rule -> ruleRow.getRuleEnabledEl();
 				case tools -> ruleRow.getToolsLink();
@@ -495,13 +493,6 @@ public class CurriculumAutomationController extends FormBasicController {
 					.collect(Collectors.joining(", "));
 		}
 
-		private String plannedExecutionText(AutomationRuleRow row) {
-			String plannedExecution = Objects.requireNonNullElse(formatter.formatDate(row.getPlannedExecution()), "-");
-			if (!row.isEnabled()) {
-				plannedExecution = "(" + plannedExecution + ")";
-			}
-			return plannedExecution;
-		}
 	}
 
 	private enum AutomationCols implements FlexiColumnDef {

@@ -66,8 +66,7 @@ public class CurriculumAutomationConfigDAO {
 		String query = """
 				select config from curriculumautomationconfig config
 				left join fetch config.rule rule
-				where config.elementType.key=:typeKey
-				order by config.key""";
+				where config.elementType.key=:typeKey""";
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, CurriculumAutomationConfig.class)
@@ -79,8 +78,7 @@ public class CurriculumAutomationConfigDAO {
 		String query = """
 				select config from curriculumautomationconfig config
 				left join fetch config.rule rule
-				where config.curriculumElement.key=:elementKey
-				order by config.key""";
+				where config.curriculumElement.key=:elementKey""";
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, CurriculumAutomationConfig.class)
@@ -94,8 +92,7 @@ public class CurriculumAutomationConfigDAO {
 		String query = """
 				select config from curriculumautomationconfig config
 				left join fetch config.rule rule
-				where config.elementType.key in :keys
-				order by config.key""";
+				where config.elementType.key in :keys""";
 
 		List<Long> keys = types.stream().map(CurriculumElementType::getKey).collect(Collectors.toList());
 		return dbInstance.getCurrentEntityManager()
@@ -110,8 +107,7 @@ public class CurriculumAutomationConfigDAO {
 		String query = """
 				select config from curriculumautomationconfig config
 				left join fetch config.rule rule
-				where config.curriculumElement.key in :keys
-				order by config.key""";
+				where config.curriculumElement.key in :keys""";
 
 		List<Long> keys = elements.stream().map(CurriculumElement::getKey).collect(Collectors.toList());
 		return dbInstance.getCurrentEntityManager()

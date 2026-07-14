@@ -50,6 +50,8 @@ public interface CurriculumAutomationService {
 
 	public Map<CurriculumAutomationConfig, Date> getExecutionDates(CurriculumElement element, List<CurriculumAutomationConfig> configs);
 
+	public Map<CurriculumAutomationConfig, Date> getPlannedExecutionDates(CurriculumElement element, List<CurriculumAutomationConfig> configs);
+
 	public Date getNextExecutionTime();
 
 }

@@ -31,9 +31,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -1596,6 +1598,209 @@ public class CurriculumAutomationServiceTest {
 		List<CurriculumAutomationConfig> configs = List.of(mockConfig(rule, true));
 
 		assertThat(sut.getNextAutomationExecution(element, configs)).isNull();
+	}
+
+	@Test
+	public void testGetPlannedExecutionDates_statusRuleInheritsDriverDate() {
+		Date beginDate = new Date(0);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getBeginDate()).thenReturn(beginDate);
+
+		CurriculumAutomationRule driverRule = new CurriculumAutomationRuleImpl();
+		driverRule.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		driverRule.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
+		driverRule.setDirection(OffsetDirection.BEFORE);
+		driverRule.setValue(7);
+		driverRule.setUnit(AutomationUnit.DAYS);
+		driverRule.setContext(AutomationContext.IMPLEMENTATION);
+		driverRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		driverRule.setTargetStatus(CurriculumElementStatus.confirmed);
+		CurriculumAutomationConfig driverConfig = mockConfig(driverRule, true);
+
+		CurriculumAutomationRule dependentRule = new CurriculumAutomationRuleImpl();
+		dependentRule.setDependingOn(AutomationDependingOn.STATUS);
+		dependentRule.setDependingOnStatus(Set.of(CurriculumElementStatus.confirmed.name()));
+		dependentRule.setContext(AutomationContext.CONTENT);
+		dependentRule.setAutomationType(AutomationType.INSTANTIATION);
+		CurriculumAutomationConfig dependentConfig = mockConfig(dependentRule, true);
+
+		List<CurriculumAutomationConfig> configs = List.of(driverConfig, dependentConfig);
+		Map<CurriculumAutomationConfig, Date> dates = sut.getPlannedExecutionDates(element, configs);
+
+		Date expected = DateUtils.addDays(DateUtils.getStartOfDay(beginDate), -7);
+		assertThat(dates.get(driverConfig)).isEqualTo(expected);
+		assertThat(dates.get(dependentConfig)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testGetPlannedExecutionDates_earliestOfMultipleDrivers() {
+		Date beginDate = new Date(0);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getBeginDate()).thenReturn(beginDate);
+		when(element.getEndDate()).thenReturn(beginDate);
+
+		CurriculumAutomationRule cancelledDriver = new CurriculumAutomationRuleImpl();
+		cancelledDriver.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		cancelledDriver.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
+		cancelledDriver.setDirection(OffsetDirection.BEFORE);
+		cancelledDriver.setValue(3);
+		cancelledDriver.setUnit(AutomationUnit.DAYS);
+		cancelledDriver.setContext(AutomationContext.IMPLEMENTATION);
+		cancelledDriver.setAutomationType(AutomationType.STATUS_CHANGE);
+		cancelledDriver.setTargetStatus(CurriculumElementStatus.cancelled);
+		CurriculumAutomationConfig cancelledConfig = mockConfig(cancelledDriver, true);
+
+		CurriculumAutomationRule finishedDriver = new CurriculumAutomationRuleImpl();
+		finishedDriver.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		finishedDriver.setReference(CurriculumAutomationRule.REFERENCE_END);
+		finishedDriver.setDirection(OffsetDirection.AFTER);
+		finishedDriver.setUnit(AutomationUnit.SAME_DAY);
+		finishedDriver.setContext(AutomationContext.IMPLEMENTATION);
+		finishedDriver.setAutomationType(AutomationType.STATUS_CHANGE);
+		finishedDriver.setTargetStatus(CurriculumElementStatus.finished);
+		CurriculumAutomationConfig finishedConfig = mockConfig(finishedDriver, true);
+
+		CurriculumAutomationRule dependentRule = new CurriculumAutomationRuleImpl();
+		dependentRule.setDependingOn(AutomationDependingOn.STATUS);
+		dependentRule.setDependingOnStatus(Set.of(CurriculumElementStatus.cancelled.name(), CurriculumElementStatus.finished.name()));
+		dependentRule.setContext(AutomationContext.CONTENT);
+		dependentRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		dependentRule.setTargetStatus(RepositoryEntryStatusEnum.closed);
+		CurriculumAutomationConfig dependentConfig = mockConfig(dependentRule, true);
+
+		List<CurriculumAutomationConfig> configs = List.of(cancelledConfig, finishedConfig, dependentConfig);
+		Map<CurriculumAutomationConfig, Date> dates = sut.getPlannedExecutionDates(element, configs);
+
+		Date expected = DateUtils.addDays(DateUtils.getStartOfDay(beginDate), -3);
+		assertThat(dates.get(dependentConfig)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testGetPlannedExecutionDates_statusRuleNoDriver_absent() {
+		CurriculumElement element = mock(CurriculumElement.class);
+
+		CurriculumAutomationRule dependentRule = new CurriculumAutomationRuleImpl();
+		dependentRule.setDependingOn(AutomationDependingOn.STATUS);
+		dependentRule.setDependingOnStatus(Set.of(CurriculumElementStatus.active.name()));
+		dependentRule.setContext(AutomationContext.CONTENT);
+		dependentRule.setAutomationType(AutomationType.INSTANTIATION);
+		CurriculumAutomationConfig dependentConfig = mockConfig(dependentRule, true);
+
+		List<CurriculumAutomationConfig> configs = List.of(dependentConfig);
+		Map<CurriculumAutomationConfig, Date> dates = sut.getPlannedExecutionDates(element, configs);
+
+		assertThat(dates).doesNotContainKey(dependentConfig);
+	}
+
+	@Test
+	public void testGetPlannedExecutionDates_disabledDriverIgnored() {
+		Date beginDate = new Date(0);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getBeginDate()).thenReturn(beginDate);
+
+		CurriculumAutomationRule disabledDriver = new CurriculumAutomationRuleImpl();
+		disabledDriver.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		disabledDriver.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
+		disabledDriver.setDirection(OffsetDirection.BEFORE);
+		disabledDriver.setValue(3);
+		disabledDriver.setUnit(AutomationUnit.DAYS);
+		disabledDriver.setContext(AutomationContext.IMPLEMENTATION);
+		disabledDriver.setAutomationType(AutomationType.STATUS_CHANGE);
+		disabledDriver.setTargetStatus(CurriculumElementStatus.finished);
+		CurriculumAutomationConfig disabledDriverConfig = mockConfig(disabledDriver, false);
+
+		CurriculumAutomationRule dependentRule = new CurriculumAutomationRuleImpl();
+		dependentRule.setDependingOn(AutomationDependingOn.STATUS);
+		dependentRule.setDependingOnStatus(Set.of(CurriculumElementStatus.cancelled.name(), CurriculumElementStatus.finished.name()));
+		dependentRule.setContext(AutomationContext.CONTENT);
+		dependentRule.setAutomationType(AutomationType.STATUS_CHANGE);
+		dependentRule.setTargetStatus(RepositoryEntryStatusEnum.closed);
+		CurriculumAutomationConfig dependentConfig = mockConfig(dependentRule, true);
+
+		List<CurriculumAutomationConfig> configs = List.of(disabledDriverConfig, dependentConfig);
+		Map<CurriculumAutomationConfig, Date> dates = sut.getPlannedExecutionDates(element, configs);
+
+		assertThat(dates).doesNotContainKey(dependentConfig);
+
+		CurriculumAutomationRule enabledDriver = new CurriculumAutomationRuleImpl();
+		enabledDriver.setDependingOn(AutomationDependingOn.EXECUTION_PERIOD);
+		enabledDriver.setReference(CurriculumAutomationRule.REFERENCE_BEGIN);
+		enabledDriver.setDirection(OffsetDirection.BEFORE);
+		enabledDriver.setValue(3);
+		enabledDriver.setUnit(AutomationUnit.DAYS);
+		enabledDriver.setContext(AutomationContext.IMPLEMENTATION);
+		enabledDriver.setAutomationType(AutomationType.STATUS_CHANGE);
+		enabledDriver.setTargetStatus(CurriculumElementStatus.finished);
+		CurriculumAutomationConfig enabledDriverConfig = mockConfig(enabledDriver, true);
+
+		Map<CurriculumAutomationConfig, Date> datesWithEnabledDriver = sut.getPlannedExecutionDates(element,
+				List.of(enabledDriverConfig, dependentConfig));
+
+		Date expected = DateUtils.addDays(DateUtils.getStartOfDay(beginDate), -3);
+		assertThat(datesWithEnabledDriver.get(dependentConfig)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testGetPlannedExecutionDates_executionPeriodRule_usesComputeTriggerDate() {
+		Date beginDate = new Date(0);
+		CurriculumElement element = mock(CurriculumElement.class);
+		when(element.getBeginDate()).thenReturn(beginDate);
+
+		CurriculumAutomationRule rule = automationBeforeDaysRule(7, CurriculumElementStatus.confirmed);
+		CurriculumAutomationConfig config = mockConfig(rule, true);
+
+		Map<CurriculumAutomationConfig, Date> dates = sut.getPlannedExecutionDates(element, List.of(config));
+
+		assertThat(dates.get(config)).isEqualTo(sut.computeTriggerDate(element, rule));
+	}
+
+	@Test
+	public void testGetConfigs_byType_ordinalOrder() {
+		CurriculumAutomationRule implConfirmed = new CurriculumAutomationRuleImpl();
+		implConfirmed.setContext(AutomationContext.IMPLEMENTATION);
+		implConfirmed.setAutomationType(AutomationType.STATUS_CHANGE);
+		implConfirmed.setTargetStatus(CurriculumElementStatus.confirmed);
+
+		CurriculumAutomationRule implFinished = new CurriculumAutomationRuleImpl();
+		implFinished.setContext(AutomationContext.IMPLEMENTATION);
+		implFinished.setAutomationType(AutomationType.STATUS_CHANGE);
+		implFinished.setTargetStatus(CurriculumElementStatus.finished);
+
+		CurriculumAutomationRule contentInstantiation = new CurriculumAutomationRuleImpl();
+		contentInstantiation.setContext(AutomationContext.CONTENT);
+		contentInstantiation.setAutomationType(AutomationType.INSTANTIATION);
+
+		CurriculumAutomationRule contentCoachpublished = new CurriculumAutomationRuleImpl();
+		contentCoachpublished.setContext(AutomationContext.CONTENT);
+		contentCoachpublished.setAutomationType(AutomationType.STATUS_CHANGE);
+		contentCoachpublished.setTargetStatus(RepositoryEntryStatusEnum.coachpublished);
+
+		CurriculumAutomationRule contentPublished = new CurriculumAutomationRuleImpl();
+		contentPublished.setContext(AutomationContext.CONTENT);
+		contentPublished.setAutomationType(AutomationType.STATUS_CHANGE);
+		contentPublished.setTargetStatus(RepositoryEntryStatusEnum.published);
+
+		CurriculumAutomationRule contentClosed = new CurriculumAutomationRuleImpl();
+		contentClosed.setContext(AutomationContext.CONTENT);
+		contentClosed.setAutomationType(AutomationType.STATUS_CHANGE);
+		contentClosed.setTargetStatus(RepositoryEntryStatusEnum.closed);
+
+		CurriculumAutomationConfig implConfirmedConfig = mockConfig(implConfirmed, true);
+		CurriculumAutomationConfig implFinishedConfig = mockConfig(implFinished, true);
+		CurriculumAutomationConfig contentInstantiationConfig = mockConfig(contentInstantiation, true);
+		CurriculumAutomationConfig contentCoachpublishedConfig = mockConfig(contentCoachpublished, true);
+		CurriculumAutomationConfig contentPublishedConfig = mockConfig(contentPublished, true);
+		CurriculumAutomationConfig contentClosedConfig = mockConfig(contentClosed, true);
+
+		List<CurriculumAutomationConfig> shuffled = new ArrayList<>(List.of(contentPublishedConfig, implFinishedConfig,
+				contentClosedConfig, contentInstantiationConfig, implConfirmedConfig, contentCoachpublishedConfig));
+		CurriculumElementType type = mock(CurriculumElementType.class);
+		when(automationConfigDao.getConfigs(type)).thenReturn(shuffled);
+
+		List<CurriculumAutomationConfig> ordered = sut.getConfigs(type);
+
+		assertThat(ordered).containsExactly(implConfirmedConfig, implFinishedConfig, contentInstantiationConfig,
+				contentCoachpublishedConfig, contentPublishedConfig, contentClosedConfig);
 	}
 
 	private CurriculumAutomationRule automationBeforeDaysRule(int days, CurriculumElementStatus targetStatus) {
