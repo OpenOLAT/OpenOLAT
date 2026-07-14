@@ -44,13 +44,13 @@ public class ObjectSelectionComponentRenderer extends DefaultComponentRenderer {
 		ObjectSelectionComponent cmp = (ObjectSelectionComponent) source;
 		Component expandButton = cmp.getComponent(ObjectSelectionElementImpl.EXPAND_COMP_NAME);
 
-		boolean showBrowse = cmp.isBrowserButtonVisible() && cmp.isEnabled();
+		boolean showBrowse = cmp.isBrowserButtonVisible();
 
 		if (!showBrowse) {
 			renderer.render(expandButton, sb, null);
 			return;
 		}
-
+		
 		sb.append("<div class=\"o_object_selection_display\">");
 
 		renderer.render(expandButton, sb, null);
@@ -60,12 +60,16 @@ public class ObjectSelectionComponentRenderer extends DefaultComponentRenderer {
 
 		sb.append("<button type=\"button\"");
 		sb.append(" id=\"").append(browseButtonId).append("\"");
-		sb.append(" class=\"btn btn-default o_selection_browse_button\"");
+		sb.append(" class=\"btn btn-default o_selection_browse_button")
+		  .append(" o_disabled disabled", !cmp.isEnabled()).append("\"");
 		if (StringHelper.containsNonWhitespace(cmp.getBrowserButtonTitle())) {
 			sb.append(" title=\"").appendHtmlEscaped(cmp.getBrowserButtonTitle()).append("\"");
 		}
 		if (StringHelper.containsNonWhitespace(cmp.getBrowserButtonAriaLabel())) {
 			sb.append(" aria-label=\"").appendHtmlEscaped(cmp.getBrowserButtonAriaLabel()).append("\"");
+		}
+		if(!cmp.isEnabled()) {
+			sb.append(" disabled=\"disabled\"");
 		}
 		sb.append(" onfocus=\"o_info.lastFormFocusEl='").append(browseButtonId).append("';\"");
 		sb.append(" onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\"");

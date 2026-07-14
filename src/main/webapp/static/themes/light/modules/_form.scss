@@ -1459,7 +1459,8 @@ dialog {
 
 /* Selection Display Element */
 .o_expand_button {
-	&.o_selection_display {
+	&.o_selection_display,
+	&.o_expand_button_disabled_text {
 		display: flex;
 		gap: 5px;
 		border-color: $input-border;

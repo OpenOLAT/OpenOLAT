@@ -540,7 +540,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private void updateRoomsEnabledState(Date start, Date end) {
 		boolean enabled = !readOnly && !lectureManagementManaged && start != null && end != null;
 		roomsEl.setEnabled(enabled);
-		roomsEl.setHelpTextKey(enabled ? null : "lecture.rooms.help.date.required", null);
+		roomsEl.setExampleKey(enabled ? null : "lecture.rooms.help.date.required", null);
 	}
 
 	private void updateRoomsSource() {
