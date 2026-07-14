@@ -45,17 +45,12 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
-import org.olat.modules.roommanagement.Room;
-import org.olat.modules.roommanagement.RoomBooking;
-import org.olat.modules.roommanagement.RoomManagementModule;
-import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -63,7 +58,6 @@ import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
-import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -111,8 +105,12 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LocationHistory;
 import org.olat.modules.lecture.ui.addwizard.AddLectureContext;
-import org.olat.modules.roommanagement.model.RoomRefImpl;
 import org.olat.modules.lecture.ui.component.LocationDateComparator;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.model.RoomRefImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
@@ -833,12 +831,13 @@ public class EditLectureBlockController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(dateEl == source) {
 			updateRoomsSource();
+			dateEl.getComponent().setDirty(false);
 			// dateEl is excluded from propagateDirtinessToContainer() above, which normally
 			// also re-focuses the last focused element after a container redraw. Since
 			// updateRoomsSource() redraws the rooms element, restore focus explicitly here,
 			// otherwise keyboard focus is lost (e.g. tabbing gets stuck on the date field).
-			Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);
-			getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
+			// Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);
+			// getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 		} else if(locationEl == source) {
 			// Do nothing
 		} else if(compulsoryEl == source) {

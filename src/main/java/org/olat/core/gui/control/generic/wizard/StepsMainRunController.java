@@ -204,6 +204,17 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	protected void formOK(UserRequest ureq) {
 	// unused
 	}
+	
+	/**
+	 * The method doesn't propagate onblur events to prevent redraw of the
+	 * whole wizard after a tab key use to move from field to field.
+	 */
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(!"ONBLUR".equals(event.getCommand())) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
