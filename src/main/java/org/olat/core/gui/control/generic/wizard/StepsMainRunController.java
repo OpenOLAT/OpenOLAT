@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -438,6 +439,8 @@ public class StepsMainRunController extends FormBasicController implements Gener
 				updateTitleItems();
 				updateButtons();
 			} else if (event == StepsEvent.RELOAD) {
+				fireEvent(ureq, event);
+			} else if(event instanceof LanguageChangedEvent) {
 				fireEvent(ureq, event);
 			}
 		}
