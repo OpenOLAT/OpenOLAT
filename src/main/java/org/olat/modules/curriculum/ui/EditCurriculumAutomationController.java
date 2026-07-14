@@ -202,6 +202,10 @@ public class EditCurriculumAutomationController extends FormBasicController {
 				addStatus(sv, CurriculumElementStatus.preparation);
 				addStatus(sv, CurriculumElementStatus.active);
 			}
+			if (RepositoryEntryStatusEnum.closed.name().equals(targetStatus)) {
+				addStatus(sv, CurriculumElementStatus.cancelled);
+				addStatus(sv, CurriculumElementStatus.finished);
+			}
 		}
 		return sv;
 	}
