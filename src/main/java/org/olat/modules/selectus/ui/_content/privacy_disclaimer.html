@@ -5,6 +5,9 @@
 	<p>$r.translate("disclaimer.privacy.text", $i18nArguments)</p>
 	<div class="form-group clearfix o_sel_privacy_disclaimer_accept">
 		$r.render("accept")
+		#if($f.hasError("accept"))
+			$r.render("accept","error")
+		#end
 	</div>
 	<div class="o_sel_privacy_disclaimer_buttons o_button_group o_button_group_left">
 		$r.render("dcl.accept")

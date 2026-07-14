@@ -79,8 +79,7 @@ public class PrivacyDisclaimerController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("showLegend", Boolean.TRUE);
 			
 			String[] i18nArguments = new String[] {
@@ -102,8 +101,9 @@ public class PrivacyDisclaimerController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		acceptCheckbox.clearError();
 		if(!acceptCheckbox.isAtLeastSelected(1)) {
-			showError("sr.error.disclaimer.checkbox");
+			acceptCheckbox.setErrorKey("sr.error.disclaimer.checkbox");
 			allOk &= false;
 		}
 		
