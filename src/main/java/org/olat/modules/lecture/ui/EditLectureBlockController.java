@@ -372,7 +372,7 @@ public class EditLectureBlockController extends FormBasicController {
 
 		// Rooms (CPL context only)
 		if (isRoomsEnabled()) {
-			dateEl.addActionListener(FormEvent.ONCHANGE);
+			dateEl.addActionListener(FormEvent.ONBLUR);
 			initRoomsSection(formLayout);
 		}
 
