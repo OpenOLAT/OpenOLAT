@@ -32,8 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiEmbeddingSPI;
@@ -44,8 +42,12 @@ import org.olat.core.commons.services.ai.manager.AiUsageLogDAO;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.taskexecutor.TaskRunnable;
+import org.olat.core.gui.control.Event;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.event.FrameworkStartedEvent;
+import org.olat.core.util.event.FrameworkStartupEventChannel;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -79,7 +81,7 @@ import dev.langchain4j.model.output.Response;
  * @author uhensler, https://www.frentix.com
  */
 @Service
-public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
+public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService, GenericEventListener {
 
 	private static final Logger log = Tracing.createLoggerFor(TaxonomyMatchingServiceImpl.class);
 
@@ -109,8 +111,22 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService {
 	private final AtomicInteger indexGeneration = new AtomicInteger(0);
 	private volatile boolean reindexPending = false;
 
-	@PostConstruct
-	public void init() {
+	public TaxonomyMatchingServiceImpl() {
+		FrameworkStartupEventChannel.registerForStartupEvent(this);
+	}
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof FrameworkStartedEvent) {
+			try {
+				init();
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
+	}
+
+	private void init() {
 		int reset = indexStateDao.resetInWorkToScheduled();
 		if (reset > 0) {
 			log.info("TaxonomyMatchingServiceImpl boot: reset {} stuck indexing rows to scheduled", reset);
