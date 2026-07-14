@@ -163,6 +163,22 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 	public void setCommitteeReminderMailLetter(String configuration);
 	
 	
+	public String getApplicationConfirmationMailSubject();
+	
+	public String getApplicationConfirmationMailSubject(Locale locale);
+	
+	public void setApplicationConfirmationMailSubject(String template);
+	
+	public void setApplicationConfirmationMailSubject(String template, Locale locale);
+
+	public String getApplicationConfirmationMailSubjectDe();
+	
+	public void setApplicationConfirmationMailSubjectDe(String template);
+
+	public String getApplicationConfirmationMailSubjectFr();
+	
+	public void setApplicationConfirmationMailSubjectFr(String template);
+	
 	public String getApplicationConfirmationMailTemplate();
 	
 	public String getApplicationConfirmationMailTemplate(Locale locale);
@@ -184,6 +200,22 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 	public void setApplicationConfirmationMailLetter(String letterConfiguration);
 	
 	
+	public String getApplicationConfirmationWithRefereeManagementMailSubject();
+	
+	public String getApplicationConfirmationWithRefereeManagementMailSubject(Locale locale);
+	
+	public void setApplicationConfirmationWithRefereeManagementMailSubject(String template);
+	
+	public void setApplicationConfirmationWithRefereeManagementMailSubject(String template, Locale locale);
+
+	public String getApplicationConfirmationWithRefereeManagementMailSubjectDe();
+	
+	public void setApplicationConfirmationWithRefereeManagementMailSubjectDe(String template);
+	
+	public String getApplicationConfirmationWithRefereeManagementMailSubjectFr();
+	
+	public void setApplicationConfirmationWithRefereeManagementMailSubjectFr(String template);
+	
 	public String getApplicationConfirmationWithRefereeManagementMailTemplate();
 	
 	public String getApplicationConfirmationWithRefereeManagementMailTemplate(Locale locale);
@@ -204,6 +236,23 @@ public interface Position extends PositionRef, OLATResourceable, PositionCommonF
 	
 	public void setApplicationConfirmationWithRefereeManagementMailLetter(String letterConfiguration);
 	
+	
+	
+	public String getApplicationConfirmationDuplicateMailSubject(Locale locale);
+	
+	public void setApplicationConfirmationDuplicateMailSubject(String template, Locale locale);
+	
+	public String getApplicationConfirmationDuplicateMailSubject();
+
+	public void setApplicationConfirmationDuplicateMailSubject(String template);
+	
+	public String getApplicationConfirmationDuplicateMailSubjectDe();
+	
+	public void setApplicationConfirmationDuplicateMailSubjectDe(String template);
+
+	public String getApplicationConfirmationDuplicateMailSubjectFr();
+	
+	public void setApplicationConfirmationDuplicateMailSubjectFr(String template);
 	
 	public String getApplicationConfirmationDuplicateMailTemplate(Locale locale);
 	

@@ -264,10 +264,24 @@ public class PositionMLHelper {
 		return title;
 	}
 	
+	public static String getApplicationConfirmationMailSubject(Position position, Locale locale) {
+		String textEn = position.getApplicationConfirmationMailSubject();
+		String textDe = position.getApplicationConfirmationMailSubjectDe();
+		String textFr = position.getApplicationConfirmationMailSubjectFr();
+		return RecruitingHelper.mlStringLenient(textEn, textDe, textFr, locale);
+	}
+	
 	public static String getApplicationConfirmationMailTemplate(Position position, Locale locale) {
 		String textEn = position.getApplicationConfirmationMailTemplate();
 		String textDe = position.getApplicationConfirmationMailTemplateDe();
 		String textFr = position.getApplicationConfirmationMailTemplateFr();
+		return RecruitingHelper.mlStringLenient(textEn, textDe, textFr, locale);
+	}
+	
+	public static String getApplicationConfirmationWithRefereeManagementMailSubject(Position position, Locale locale) {
+		String textEn = position.getApplicationConfirmationWithRefereeManagementMailSubject();
+		String textDe = position.getApplicationConfirmationWithRefereeManagementMailSubjectDe();
+		String textFr = position.getApplicationConfirmationWithRefereeManagementMailSubjectFr();
 		return RecruitingHelper.mlStringLenient(textEn, textDe, textFr, locale);
 	}
 	
@@ -278,12 +292,17 @@ public class PositionMLHelper {
 		return RecruitingHelper.mlStringLenient(textEn, textDe, textFr, locale);
 	}
 	
+	public static String getApplicationDuplicateConfirmationMailSubject(Position position, Locale locale) {
+		String textEn = position.getApplicationConfirmationDuplicateMailSubject();
+		String textDe = position.getApplicationConfirmationDuplicateMailSubjectDe();
+		String textFr = position.getApplicationConfirmationDuplicateMailSubjectFr();
+		return RecruitingHelper.mlStringLenient(textEn, textDe, textFr, locale);
+	}
+	
 	public static String getApplicationDuplicateConfirmationMailTemplate(Position position, Locale locale) {
 		String textEn = position.getApplicationConfirmationDuplicateMailTemplate();
 		String textDe = position.getApplicationConfirmationDuplicateMailTemplateDe();
 		String textFr = position.getApplicationConfirmationDuplicateMailTemplateFr();
 		return RecruitingHelper.mlStringLenient(textEn, textDe, textFr, locale);
 	}
-	
-
 }

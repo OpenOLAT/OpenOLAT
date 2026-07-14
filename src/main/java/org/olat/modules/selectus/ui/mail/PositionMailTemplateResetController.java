@@ -133,36 +133,49 @@ public class PositionMailTemplateResetController extends FormBasicController {
 		boolean update = true;
 		Type type = templateRow.getType();
 		if(type == Type.committeeReminder) {
+			position.setCommitteeReminderMailSubject(null);
 			position.setCommitteeReminderMailTemplate(null);
 			position.setCommitteeReminderMailLetter(null);
 		} else if(type == Type.confirmationApplication) {
+			position.setApplicationConfirmationMailSubject(null);
+			position.setApplicationConfirmationMailSubjectDe(null);
+			position.setApplicationConfirmationMailSubjectFr(null);
 			position.setApplicationConfirmationMailTemplate(null);
 			position.setApplicationConfirmationMailTemplateDe(null);
 			position.setApplicationConfirmationMailTemplateFr(null);
 			position.setApplicationConfirmationMailLetter(null);
 		} else if(type == Type.confirmationApplicationWithRefereeManagement) {
+			position.setApplicationConfirmationWithRefereeManagementMailSubject(null);
+			position.setApplicationConfirmationWithRefereeManagementMailSubjectDe(null);
+			position.setApplicationConfirmationWithRefereeManagementMailSubjectFr(null);
 			position.setApplicationConfirmationWithRefereeManagementMailTemplate(null);
 			position.setApplicationConfirmationWithRefereeManagementMailTemplateDe(null);
 			position.setApplicationConfirmationWithRefereeManagementMailTemplateFr(null);
 			position.setApplicationConfirmationWithRefereeManagementMailLetter(null);
 		} else if(type == Type.confirmationApplicationDuplicate) {
+			position.setApplicationConfirmationDuplicateMailSubject(null);
+			position.setApplicationConfirmationDuplicateMailSubjectDe(null);
+			position.setApplicationConfirmationDuplicateMailSubjectFr(null);
 			position.setApplicationConfirmationDuplicateMailTemplate(null);
 			position.setApplicationConfirmationDuplicateMailTemplateDe(null);
 			position.setApplicationConfirmationDuplicateMailTemplateFr(null);
 			position.setApplicationConfirmationDuplicateMailLetter(null);
 		} else if(type == Type.expert) {
+			position.setExpertRecommandationMailSubject(null);
 			position.setExpertRecommandationMailTemplate(null);
 			position.setExpertRecommandationMailLetter(null);
 		}  else if(type == Type.confirmationSubmissionExpert) {
 			position.setExpertConfirmationSubmissionMailSubject(null);
 			position.setExpertConfirmationSubmissionMailTemplate(null);
 		} else if(type == Type.comparativeExpert) {
+			position.setComparativeAssessmentExpertMailSubject(null);
 			position.setComparativeAssessmentExpertMailTemplate(null);
 			position.setComparativeAssessmentExpertMailLetter(null);
 		} else if(type == Type.confirmationSubmissionComparativeExpert) {
 			position.setComparativeAssessmentExpertConfirmationSubmissionMailSubject(null);
 			position.setComparativeAssessmentExpertConfirmationSubmissionMailTemplate(null);
 		} else if(type == Type.referee) {
+			position.setRefereeRecommandationMailSubject(null);
 			position.setRefereeRecommandationMailTemplate(null);
 			position.setRefereeRecommandationMailLetter(null);
 		} else if(type == Type.confirmationSubmissionReferee) {
@@ -170,6 +183,7 @@ public class PositionMailTemplateResetController extends FormBasicController {
 			position.setRefereeConfirmationSubmissionMailTemplate(null);
 		} else if(templateRow.getType() == Type.feedback) {
 			String body = FeedbackHelper.getDefaultTemplateBodyHtml(position, salutationGenerator, getLocale());
+			templateRow.getFeedbackConfiguration().setMailSubject(null);
 			templateRow.getFeedbackConfiguration().setMailTemplate(body);
 			templateRow.getFeedbackConfiguration().setMailLetter(null);
 			feedbackService.updateApplicationsFeedbackConfiguration(templateRow.getFeedbackConfiguration());

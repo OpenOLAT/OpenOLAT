@@ -50,7 +50,6 @@ public class PositionMailAndLettersEditController extends BasicController {
 	private PositionLetterEditController letterEditCtrl;
 	private PositionMailTemplateEditController editTemplateCtrl;
 	private MailTemplateSingleLanguageEditController editPositionTemplateCtrl;
-	private MailTemplateMultiLanguageEditController editPositionMLTemplateCtrl;
 	
 	@Autowired
 	private RecruitingModule recruitingModule;
@@ -77,10 +76,10 @@ public class PositionMailAndLettersEditController extends BasicController {
 			tabPane.addTab(translate("tab.email"), editPositionTemplateCtrl);
 			mainVC.put("cmp", editPositionTemplateCtrl.getInitialComponent());
 		} else if(type == Type.confirmationApplication || type == Type.confirmationApplicationWithRefereeManagement || type == Type.confirmationApplicationDuplicate) {
-			editPositionMLTemplateCtrl = new MailTemplateMultiLanguageEditController(ureq, getWindowControl(), position, row);
-			listenTo(editPositionMLTemplateCtrl);
-			tabPane.addTab(translate("tab.email"), editPositionMLTemplateCtrl);
-			mainVC.put("cmp", editPositionMLTemplateCtrl.getInitialComponent());
+			editTemplateCtrl = new PositionMailTemplateEditController(ureq, getWindowControl(), position, row);
+			listenTo(editTemplateCtrl);
+			tabPane.addTab(translate("tab.email"), editTemplateCtrl);
+			mainVC.put("cmp", editTemplateCtrl.getInitialComponent());
 		}
 		
 		if(recruitingModule.isMailLetterEnabled() && withLetter) {
@@ -112,8 +111,6 @@ public class PositionMailAndLettersEditController extends BasicController {
 				position = editTemplateCtrl.getPosition();
 			} else if(source == editPositionTemplateCtrl) {
 				position = editPositionTemplateCtrl.getPosition();
-			} else if(source == editPositionMLTemplateCtrl) {
-				position = editPositionMLTemplateCtrl.getPosition();
 			}
 			fireEvent(ureq, event);
 		} else if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -133,8 +130,6 @@ public class PositionMailAndLettersEditController extends BasicController {
 			editTemplateCtrl.doOpenVariables(ureq);
 		} else if(editPositionTemplateCtrl != null) {
 			editPositionTemplateCtrl.doOpenVariables(ureq);
-		} else if(editPositionMLTemplateCtrl != null) {
-			editPositionMLTemplateCtrl.doOpenVariables(ureq);
 		}
 	}
 }

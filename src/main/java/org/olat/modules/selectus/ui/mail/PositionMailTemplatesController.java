@@ -93,7 +93,6 @@ implements PositionEditableController, FlexiTableCssDelegate {
 	private PositionMailTemplateDeleteController confirmDeleteCtrl;
 	private PositionMailAndLettersEditController addTemplateCtrl;
 	private MailTemplateSingleLanguageEditController editPositionTemplateCtrl;
-	private MailTemplateMultiLanguageEditController editPositionMLTemplateCtrl;
 	private PositionMailAndLettersEditController mailAndLetterEditCtrl;
 	
 	@Autowired
@@ -207,15 +206,12 @@ implements PositionEditableController, FlexiTableCssDelegate {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmResetCtrl == source || addTemplateCtrl == source
-				|| editPositionMLTemplateCtrl == source || editPositionTemplateCtrl == source
-				|| mailAndLetterEditCtrl == source) {
+				|| editPositionTemplateCtrl == source || mailAndLetterEditCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT || event instanceof NewPositionSavedEvent) {
 				if(confirmResetCtrl == source) {
 					position = confirmResetCtrl.getPosition();
 				} else if(addTemplateCtrl == source) {
 					position = addTemplateCtrl.getPosition();
-				} else if(editPositionMLTemplateCtrl == source) {
-					position = editPositionMLTemplateCtrl.getPosition();
 				} else if(editPositionTemplateCtrl == source) {
 					position = editPositionTemplateCtrl.getPosition();
 				} else if(mailAndLetterEditCtrl == source) {
@@ -252,7 +248,6 @@ implements PositionEditableController, FlexiTableCssDelegate {
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(editPositionMLTemplateCtrl);
 		removeAsListenerAndDispose(editPositionTemplateCtrl);
 		removeAsListenerAndDispose(mailAndLetterEditCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
@@ -260,7 +255,6 @@ implements PositionEditableController, FlexiTableCssDelegate {
 		removeAsListenerAndDispose(editTemplateCtrl);
 		removeAsListenerAndDispose(addTemplateCtrl);
 		removeControllerListener(cmc);
-		editPositionMLTemplateCtrl = null;
 		editPositionTemplateCtrl = null;
 		mailAndLetterEditCtrl = null;
 		confirmDeleteCtrl = null;
@@ -355,39 +349,43 @@ implements PositionEditableController, FlexiTableCssDelegate {
 		List<PositionMailTemplateRow> rows = new ArrayList<>();
 		if(acceptedTypes.contains(Type.confirmationApplication)) {
 			String i18nKey = recruitingModule.isReferenceApplicantManagement() ? "type.confirmationApplicationWithoutMgmt" : "type.confirmationApplication";
-			rows.add(new PositionMailTemplateRow(null, translate(i18nKey),
-					Type.confirmationApplication, translate("recipient.applicant"),
-					isCustomized(position.getApplicationConfirmationMailTemplate(), position.getApplicationConfirmationMailTemplateDe(), position.getApplicationConfirmationMailTemplateFr(), position.getApplicationConfirmationMailLetter()),
-					!position.isApplicantRefereeManagementEnabled(), false));
+ 			rows.add(new PositionMailTemplateRow(null, translate(i18nKey),
+ 					Type.confirmationApplication, translate("recipient.applicant"),
+					(isCustomized(position.getApplicationConfirmationMailTemplate(), position.getApplicationConfirmationMailTemplateDe(), position.getApplicationConfirmationMailTemplateFr(), position.getApplicationConfirmationMailLetter())
+							|| isCustomized(position.getApplicationConfirmationMailSubject(), position.getApplicationConfirmationMailSubjectDe(), position.getApplicationConfirmationMailSubjectFr(), null)),
+ 					!position.isApplicantRefereeManagementEnabled(), false));
 		}
 		if(recruitingModule.isReferenceApplicantManagement() && acceptedTypes.contains(Type.confirmationApplicationWithRefereeManagement)) {
-			rows.add(new PositionMailTemplateRow(null, translate("type.confirmationApplicationMgmt"),
-					Type.confirmationApplicationWithRefereeManagement, translate("recipient.applicant"),
-					isCustomized(position.getApplicationConfirmationWithRefereeManagementMailTemplate(), position.getApplicationConfirmationWithRefereeManagementMailTemplateDe(), position.getApplicationConfirmationWithRefereeManagementMailTemplateFr(), position.getApplicationConfirmationWithRefereeManagementMailLetter()),
-					position.isApplicantRefereeManagementEnabled(), false));
+ 			rows.add(new PositionMailTemplateRow(null, translate("type.confirmationApplicationMgmt"),
+ 					Type.confirmationApplicationWithRefereeManagement, translate("recipient.applicant"),
+					(isCustomized(position.getApplicationConfirmationWithRefereeManagementMailTemplate(), position.getApplicationConfirmationWithRefereeManagementMailTemplateDe(), position.getApplicationConfirmationWithRefereeManagementMailTemplateFr(), position.getApplicationConfirmationWithRefereeManagementMailLetter())
+							|| isCustomized(position.getApplicationConfirmationWithRefereeManagementMailSubject(), position.getApplicationConfirmationWithRefereeManagementMailSubjectDe(), position.getApplicationConfirmationWithRefereeManagementMailSubjectFr(), null)),
+ 					position.isApplicantRefereeManagementEnabled(), false));
 		}
 		if(!recruitingModule.isApplicationDuplicateEmailsAllowed(position) && acceptedTypes.contains(Type.confirmationApplicationDuplicate)) {
-			rows.add(new PositionMailTemplateRow(null, translate("type.confirmationApplicationDuplicate"),
-					Type.confirmationApplicationDuplicate, translate("recipient.applicant"),
-					isCustomized(position.getApplicationConfirmationDuplicateMailTemplate(), position.getApplicationConfirmationDuplicateMailTemplateDe(), position.getApplicationConfirmationDuplicateMailTemplateFr(), position.getApplicationConfirmationDuplicateMailLetter()),
-					true, false));
+ 			rows.add(new PositionMailTemplateRow(null, translate("type.confirmationApplicationDuplicate"),
+ 					Type.confirmationApplicationDuplicate, translate("recipient.applicant"),
+					(isCustomized(position.getApplicationConfirmationDuplicateMailTemplate(), position.getApplicationConfirmationDuplicateMailTemplateDe(), position.getApplicationConfirmationDuplicateMailTemplateFr(), position.getApplicationConfirmationDuplicateMailLetter())
+							|| isCustomized(position.getApplicationConfirmationDuplicateMailSubject(), position.getApplicationConfirmationDuplicateMailSubjectDe(), position.getApplicationConfirmationDuplicateMailSubjectFr(), null)),
+ 					true, false));
 		}
 
 		if(acceptedTypes.contains(Type.committeeReminder)) {
-			rows.add(new PositionMailTemplateRow(null, translate("type.committeeReminder"),
-					Type.committeeReminder,  translate("recipient.committee.member.not.rated"),
-					isCustomized(position.getCommitteeReminderMailTemplate(), null, null, position.getCommitteeReminderMailLetter()),
-					position.getCommitteeReminderDate() != null, false));
+ 			rows.add(new PositionMailTemplateRow(null, translate("type.committeeReminder"),
+ 					Type.committeeReminder,  translate("recipient.committee.member.not.rated"),
+					(isCustomized(position.getCommitteeReminderMailTemplate(), null, null, position.getCommitteeReminderMailLetter())
+							|| isCustomized(position.getCommitteeReminderMailSubject(), null, null, null)),
+ 					position.getCommitteeReminderDate() != null, false));
 		}
 		if(recruitingModule.isReferenceEnabled()) {
 			// Expert
 			if(acceptedTypes.contains(Type.expert)) {
-				rows.add(new PositionMailTemplateRow(null, translate("type.expert"),
-						Type.expert, translate("recipient.expert"),
+ 				rows.add(new PositionMailTemplateRow(null, translate("type.expert"),
+ 						Type.expert, translate("recipient.expert"),
 						(isCustomizedI18nKey(position.getExpertRecommandationMailTemplate(), "reference.expert.mail.body",
 								position.getExpertRecommandationMailLetter())
 							|| isCustomizedI18nKey(position.getExpertRecommandationMailSubject(), "reference.expert.mail.subject", null)),
-						position.isExpertRecommendationEnabled(), false));
+ 						position.isExpertRecommendationEnabled(), false));
 			}
 			if(acceptedTypes.contains(Type.confirmationSubmissionExpert)) {
 				rows.add(new PositionMailTemplateRow(null, translate("type.submission.expert"),
@@ -400,12 +398,12 @@ implements PositionEditableController, FlexiTableCssDelegate {
 			
 			// Comparative expert
 			if(acceptedTypes.contains(Type.comparativeExpert) && recruitingModule.isComparativeAssessmentExpertsEnabled()) {
-				rows.add(new PositionMailTemplateRow(null, translate("type.comparative.expert"),
-						Type.comparativeExpert, translate("recipient.expert"),
-						(isCustomizedI18nKey(position.getComparativeAssessmentExpertMailTemplate(), "reference.comparative.expert.mail.body",
+ 				rows.add(new PositionMailTemplateRow(null, translate("type.comparative.expert"),
+ 						Type.comparativeExpert, translate("recipient.expert"),
+						(isCustomizedI18nKey(position.getExpertRecommandationMailTemplate(), "reference.comparative.expert.mail.body",
 								position.getComparativeAssessmentExpertMailLetter())
-							|| isCustomizedI18nKey(position.getComparativeAssessmentExpertMailSubject(), "reference.comparative.expert.mail.subject", null)),
-						position.isComparativeAssessmentExpertEnabled(), false));
+							|| isCustomizedI18nKey(position.getExpertRecommandationMailSubject(), "reference.comparative.expert.mail.subject", null)),
+ 						position.isComparativeAssessmentExpertEnabled(), false));
 			}
 			if(acceptedTypes.contains(Type.confirmationSubmissionComparativeExpert) && recruitingModule.isComparativeAssessmentExpertsEnabled()) {
 				rows.add(new PositionMailTemplateRow(null, translate("type.submission.comparative.expert"),
@@ -418,12 +416,12 @@ implements PositionEditableController, FlexiTableCssDelegate {
 			
 			// Referee
 			if(acceptedTypes.contains(Type.referee)) {
-				rows.add(new PositionMailTemplateRow(null, translate("type.referee"),
-						Type.referee, translate("recipient.referee"),
+ 				rows.add(new PositionMailTemplateRow(null, translate("type.referee"),
+ 						Type.referee, translate("recipient.referee"),
 						(isCustomizedI18nKey(position.getRefereeRecommandationMailTemplate(), "reference.recommendation.mail.body",
 								position.getRefereeRecommandationMailLetter())
 							|| isCustomizedI18nKey(position.getRefereeRecommandationMailSubject(), "reference.recommendation.mail.subject", null)),
-						position.isRefereeRecommendationEnabled(), false));
+ 						position.isRefereeRecommendationEnabled(), false));
 			}
 			if(acceptedTypes.contains(Type.confirmationSubmissionReferee)) {
 				rows.add(new PositionMailTemplateRow(null, translate("type.submission.referee"),
@@ -443,10 +441,11 @@ implements PositionEditableController, FlexiTableCssDelegate {
 				if(configurations.size() == 1) {
 					name = translate("type.feedback");
 				}
-				rows.add(new PositionMailTemplateRow(name, configuration,
-						translate("recipient.faculty.member"),
-						isCustomizedFeedback(configuration.getMailTemplate(), configuration.getMailLetter()),
-						configuration.isEnabled()));
+ 				rows.add(new PositionMailTemplateRow(name, configuration,
+ 						translate("recipient.faculty.member"),
+						(isCustomizedFeedback(configuration.getMailTemplate(), configuration.getMailLetter())
+								|| isCustomizedFeedback(configuration.getMailSubject(), null)),
+ 						configuration.isEnabled()));
 			}
 		}
 		

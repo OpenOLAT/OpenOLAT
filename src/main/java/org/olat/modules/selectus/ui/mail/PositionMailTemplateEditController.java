@@ -47,12 +47,14 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
+import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
@@ -60,8 +62,11 @@ import org.olat.modules.selectus.SalutationGenerator;
 import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionMailTemplate;
+import org.olat.modules.selectus.model.RecruitingAuditLog.Action;
+import org.olat.modules.selectus.model.RecruitingAuditLog.ActionTarget;
 import org.olat.modules.selectus.model.SubjectAndBody;
 import org.olat.modules.selectus.model.mail.MailAttachment;
+import org.olat.modules.selectus.ui.ApplyToApplicationMainController;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.events.NewPositionSavedEvent;
 import org.olat.modules.selectus.ui.mail.PositionMailTemplateRow.Type;
@@ -101,11 +106,23 @@ public class PositionMailTemplateEditController extends FormBasicController {
 	@Autowired
 	private MailService mailService;
 	@Autowired
+	private AuditService auditService;
+	@Autowired
 	private RecruitingModule recruitingModule;
 	@Autowired
 	private RecruitingService recruitingService;
 	@Autowired @Qualifier("salutationGenerator")
 	private SalutationGenerator salutationGenerator;
+	
+	public PositionMailTemplateEditController(UserRequest ureq, WindowControl wControl,
+			Position position, PositionMailTemplateRow templateRow) {
+		super(ureq, wControl, LAYOUT_DEFAULT_2_10);
+		this.type = templateRow.getType();
+		this.position = position;
+		this.templateRow = templateRow;
+		positionLanguages = recruitingModule.getPositionLocales(position);
+		initForm(ureq);
+	}
 	
 	public PositionMailTemplateEditController(UserRequest ureq, WindowControl wControl,
 			Position position, PositionMailTemplateRow templateRow, Type type, String name) {
@@ -135,6 +152,9 @@ public class PositionMailTemplateEditController extends FormBasicController {
 		nameEl = uifactory.addTextElement("template.name", "template.name", 255, name, formLayout);
 		nameEl.setMandatory(true);
 		nameEl.setEnabled(templateRow == null || !templateRow.isSystemTemplate());
+		nameEl.setVisible(type != Type.confirmationApplication
+				&& type != Type.confirmationApplicationWithRefereeManagement
+				&& type != Type.confirmationApplicationDuplicate);
 		
 		UserSession usess = ureq.getUserSession();
 		
@@ -167,7 +187,7 @@ public class PositionMailTemplateEditController extends FormBasicController {
 	private void initSubjectForm(FormItemContainer formLayout, Locale templateLocale) {
 		String lang = templateLocale.getLanguage();
 		String subject = getSubject(templateLocale);
-		TextElement subjectEl = uifactory.addTextElement("subject_" + lang, "edit.subject", 256, subject, formLayout);
+		TextElement subjectEl = uifactory.addTextElement("subject_" + lang, "edit.subject", 255, subject, formLayout);
 		subjectEl.setMandatory(true);
 		subjectEl.setUserObject(templateLocale);
 		if(positionLanguages.size() > 1) {
@@ -211,29 +231,57 @@ public class PositionMailTemplateEditController extends FormBasicController {
 	}
 	
 	private String getSubject(Locale templateLocale) {
-		if(templateRow != null && templateRow.getMailTemplate() != null
+		String subject = null;
+		if(templateRow != null && templateRow.getType() == Type.confirmationApplication) {
+			subject = position.getApplicationConfirmationMailSubject(templateLocale);
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = ApplyToApplicationMainController.getDefaultMailSubject(templateLocale);
+			}
+		} else if(templateRow != null && templateRow.getType() == Type.confirmationApplicationWithRefereeManagement) {
+			subject = position.getApplicationConfirmationWithRefereeManagementMailSubject(templateLocale);
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = ApplyToApplicationMainController.getDefaultMailSubject(templateLocale);
+			}
+		} else if(templateRow != null &&templateRow.getType() == Type.confirmationApplicationDuplicate) {
+			subject = position.getApplicationConfirmationDuplicateMailSubject(templateLocale);
+			if(!StringHelper.containsNonWhitespace(subject)) {
+				subject = ApplyToApplicationMainController.getDefaultMailSubjectDuplicate(templateLocale);
+			}
+		} else if(templateRow != null && templateRow.getMailTemplate() != null
 				&& StringHelper.containsNonWhitespace(templateRow.getMailTemplate().getSubject(templateLocale))) {
-			return templateRow.getMailTemplate().getSubject(templateLocale);	
-		}
-		
-		if(templateRow != null && templateRow.isSystemTemplate()) {
+			subject = templateRow.getMailTemplate().getSubject(templateLocale);	
+		} else if(templateRow != null && templateRow.isSystemTemplate()) {
 			SubjectAndBody subjectAndBody = mailService.rejectionTemplate(position, templateRow.getId(), getHeadOfCommittee(), templateLocale);
-			return toHtml(subjectAndBody.getSubject());
+			subject = subjectAndBody.getSubject();
 		}
-		return null;
+		return subject;
 	}
 	
 	private String getBody(Locale templateLocale) {
-		if(templateRow != null && templateRow.getMailTemplate() != null
+		String body = null;
+		if(templateRow != null && templateRow.getType() == Type.confirmationApplication) {
+			body = position.getApplicationConfirmationMailTemplate(templateLocale);
+			if(!StringHelper.containsNonWhitespace(body)) {
+				body = ApplyToApplicationMainController.getDefaultMailTemplate(templateLocale, false);
+			}
+		} else if(templateRow != null && templateRow.getType() == Type.confirmationApplicationWithRefereeManagement) {
+			body = position.getApplicationConfirmationWithRefereeManagementMailTemplate(templateLocale);
+			if(!StringHelper.containsNonWhitespace(body)) {
+				body = ApplyToApplicationMainController.getDefaultMailTemplate(templateLocale, true);
+			}
+		} else if(templateRow != null &&templateRow.getType() == Type.confirmationApplicationDuplicate) {
+			body = position.getApplicationConfirmationDuplicateMailTemplate(templateLocale);
+			if(!StringHelper.containsNonWhitespace(body)) {
+				body = ApplyToApplicationMainController.getDefaultMailTemplateDuplicate(templateLocale);
+			}
+		} else if(templateRow != null && templateRow.getMailTemplate() != null
 				&& StringHelper.containsNonWhitespace(templateRow.getMailTemplate().getBody(templateLocale))) {
-			return templateRow.getMailTemplate().getBody(templateLocale);	
-		}
-		
-		if(templateRow != null && templateRow.isSystemTemplate()) {
+			body = templateRow.getMailTemplate().getBody(templateLocale);	
+		} else if(templateRow != null && templateRow.isSystemTemplate()) {
 			SubjectAndBody subjectAndBody = mailService.rejectionTemplate(position, templateRow.getId(), getHeadOfCommittee(), templateLocale);
-			return toHtml(subjectAndBody.getBody());
+			body = toHtml(subjectAndBody.getBody());
 		}
-		return null;
+		return body;
 	}
 	
 	private String toHtml(String text) {
@@ -308,6 +356,60 @@ public class PositionMailTemplateEditController extends FormBasicController {
 			position = recruitingService.savePosition(position);
 		}
 		
+		if(type == Type.confirmationApplication
+				|| type == Type.confirmationApplicationWithRefereeManagement
+				|| type == Type.confirmationApplicationDuplicate) {
+			doSaveConfirmation();
+		} else {
+			doSaveTemplate();
+		}
+		
+		fireEvent(ureq, doneEvent);
+	}
+	
+	private void doSaveConfirmation() {
+		String before = auditService.toAuditXml(position);
+		
+		for(TextElement subjectEl:subjectLanguagesEl) {
+			Locale positionLocale = (Locale)subjectEl.getUserObject();
+			if(templateRow.getType() == Type.confirmationApplication) {
+				position.setApplicationConfirmationMailSubject(subjectEl.getValue(), positionLocale);
+				position = recruitingService.savePosition(position);
+			} else if(templateRow.getType() == Type.confirmationApplicationWithRefereeManagement) {
+				position.setApplicationConfirmationWithRefereeManagementMailSubject(subjectEl.getValue(), positionLocale);
+				position = recruitingService.savePosition(position);
+			} else if(templateRow.getType() == Type.confirmationApplicationDuplicate) {
+				position.setApplicationConfirmationDuplicateMailSubject(subjectEl.getValue(), positionLocale);
+				position = recruitingService.savePosition(position);
+			}
+		}
+		
+		for(TextElement bodyEl:bodyLanguagesEl) {
+			Locale positionLocale = (Locale)bodyEl.getUserObject();
+			if(templateRow.getType() == Type.confirmationApplication) {
+				position.setApplicationConfirmationMailTemplate(bodyEl.getValue(), positionLocale);
+				position = recruitingService.savePosition(position);
+			} else if(templateRow.getType() == Type.confirmationApplicationWithRefereeManagement) {
+				position.setApplicationConfirmationWithRefereeManagementMailTemplate(bodyEl.getValue(), positionLocale);
+				position = recruitingService.savePosition(position);
+			} else if(templateRow.getType() == Type.confirmationApplicationDuplicate) {
+				position.setApplicationConfirmationDuplicateMailTemplate(bodyEl.getValue(), positionLocale);
+				position = recruitingService.savePosition(position);
+			}
+		}
+		
+		getLogger().info(Tracing.M_AUDIT, "Update position: {}", position.toStringFull());
+		
+		String after = auditService.toAuditXml(position);
+		if(!before.equals(after)) {
+			String messageI18n = "audit.log.position.change.configuration";
+			String[] messageArgs = new String[] { position.getMLTitle(recruitingModule.getPositionDefaultLocale()) };
+			auditService.auditPositionLog(Action.changeConfiguration, ActionTarget.position, before, after,
+					messageI18n, messageArgs, getTranslator(), position, getIdentity());
+		}
+	}
+	
+	private void doSaveTemplate() {
 		PositionMailTemplate template = null;
 		if(templateRow == null || templateRow.getMailTemplate() == null) {
 			String id = (templateRow != null && templateRow.isSystemTemplate()) ? templateRow.getId() : Long.toString(CodeHelper.getForeverUniqueID());
@@ -329,7 +431,6 @@ public class PositionMailTemplateEditController extends FormBasicController {
 			templateRow.setMailTemplate(updatedTemplate);
 		}
 		dbInstance.commit();
-		fireEvent(ureq, doneEvent);
 	}
 
 	@Override

@@ -340,30 +340,48 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	@Column(name="rec_public_feedback_deadline", nullable=true, insertable=true, updatable=true)
 	private Date publicFeedbackDeadline;
 	
+	@Column(name="conf_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String applicationConfirmationMailSubject;
 	@Column(name="conf_mail_template", nullable=true, insertable=true, updatable=true)
 	private String applicationConfirmationMailTemplate;
+	@Column(name="conf_mail_subject_de", nullable=true, insertable=true, updatable=true)
+	private String applicationConfirmationMailSubjectDe;
 	@Column(name="conf_mail_template_de", nullable=true, insertable=true, updatable=true)
 	private String applicationConfirmationMailTemplateDe;
+	@Column(name="conf_mail_subject_fr", nullable=true, insertable=true, updatable=true)
+	private String applicationConfirmationMailSubjectFr;
 	@Column(name="conf_mail_template_fr", nullable=true, insertable=true, updatable=true)
 	private String applicationConfirmationMailTemplateFr;
 	
 	@Column(name="conf_mail_letter", nullable=true, insertable=true, updatable=true)
 	private String applicationConfirmationMailLetter;
 	
+	@Column(name="conf_mail_subject_mgmt", nullable=true, insertable=true, updatable=true)
+	private String applicationConfirmationWithRefereeManagementMailSubject;
 	@Column(name="conf_mail_template_mgmt", nullable=true, insertable=true, updatable=true)
 	private String applicationConfirmationWithRefereeManagementMailTemplate;
+	@Column(name="conf_mail_subject_mgmt_de", nullable=true, insertable=true, updatable=true)
+	private String applicationConfirmationWithRefereeManagementMailSubjectDe;
 	@Column(name="conf_mail_template_mgmt_de", nullable=true, insertable=true, updatable=true)
 	private String applicationConfirmationWithRefereeManagementMailTemplateDe;
+	@Column(name="conf_mail_subject_mgmt_fr", nullable=true, insertable=true, updatable=true)
+	private String applicationConfirmationWithRefereeManagementMailSubjectFr;
 	@Column(name="conf_mail_template_mgmt_fr", nullable=true, insertable=true, updatable=true)
 	private String applicationConfirmationWithRefereeManagementMailTemplateFr;
 	
 	@Column(name="conf_mail_letter_mgmt", nullable=true, insertable=true, updatable=true)
 	private String applicationConfirmationWithRefereeManagementMailLetter;
 	
+	@Column(name="confdup_mail_subject", nullable=true, insertable=true, updatable=true)
+	private String applicationConfirmationDuplicateMailSubject;
 	@Column(name="confdup_mail_template", nullable=true, insertable=true, updatable=true)
 	private String applicationConfirmationDuplicateMailTemplate;
+	@Column(name="confdup_mail_subject_de", nullable=true, insertable=true, updatable=true)
+	private String applicationConfirmationDuplicateMailSubjectDe;
 	@Column(name="confdup_mail_template_de", nullable=true, insertable=true, updatable=true)
 	private String applicationConfirmationDuplicateMailTemplateDe;
+	@Column(name="confdup_mail_subject_fr", nullable=true, insertable=true, updatable=true)
+	private String applicationConfirmationDuplicateMailSubjectFr;
 	@Column(name="confdup_mail_template_fr", nullable=true, insertable=true, updatable=true)
 	private String applicationConfirmationDuplicateMailTemplateFr;
 	@Column(name="confdup_mail_letter", nullable=true, insertable=true, updatable=true)
@@ -887,6 +905,28 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 	
 	@Override
+	public String getApplicationConfirmationMailSubject(Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			return getApplicationConfirmationMailSubjectDe();
+		}
+		if(locale != null && locale.getLanguage().equals("fr")) {
+			return getApplicationConfirmationMailSubjectFr();
+		}
+		return getApplicationConfirmationMailSubject();
+	}
+
+	@Override
+	public void setApplicationConfirmationMailSubject(String template, Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			setApplicationConfirmationMailSubjectDe(template);
+		} else if(locale != null && locale.getLanguage().equals("fr")) {
+			setApplicationConfirmationMailSubjectFr(template);
+		} else {
+			setApplicationConfirmationMailSubject(template);
+		}
+	}
+	
+	@Override
 	public String getApplicationConfirmationMailTemplate(Locale locale) {
 		if(locale != null && locale.getLanguage().equals("de")) {
 			return getApplicationConfirmationMailTemplateDe();
@@ -909,13 +949,33 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 
 	@Override
+	public String getApplicationConfirmationMailSubject() {
+		return applicationConfirmationMailSubject;
+	}
+
+	@Override
+	public void setApplicationConfirmationMailSubject(String subject) {
+		this.applicationConfirmationMailSubject = subject;
+	}
+
+	@Override
 	public String getApplicationConfirmationMailTemplate() {
 		return applicationConfirmationMailTemplate;
 	}
 
 	@Override
-	public void setApplicationConfirmationMailTemplate(String applicationConfirmationMailTemplate) {
-		this.applicationConfirmationMailTemplate = applicationConfirmationMailTemplate;
+	public void setApplicationConfirmationMailTemplate(String template) {
+		this.applicationConfirmationMailTemplate = template;
+	}
+
+	@Override
+	public String getApplicationConfirmationMailSubjectDe() {
+		return applicationConfirmationMailSubjectDe;
+	}
+
+	@Override
+	public void setApplicationConfirmationMailSubjectDe(String subject) {
+		this.applicationConfirmationMailSubjectDe = subject;
 	}
 
 	@Override
@@ -924,8 +984,18 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 
 	@Override
-	public void setApplicationConfirmationMailTemplateDe(String applicationConfirmationMailTemplateDe) {
-		this.applicationConfirmationMailTemplateDe = applicationConfirmationMailTemplateDe;
+	public void setApplicationConfirmationMailTemplateDe(String template) {
+		this.applicationConfirmationMailTemplateDe = template;
+	}
+
+	@Override
+	public String getApplicationConfirmationMailSubjectFr() {
+		return applicationConfirmationMailSubjectFr;
+	}
+
+	@Override
+	public void setApplicationConfirmationMailSubjectFr(String subject) {
+		this.applicationConfirmationMailSubjectFr = subject;
 	}
 
 	@Override
@@ -934,8 +1004,8 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 
 	@Override
-	public void setApplicationConfirmationMailTemplateFr(String applicationConfirmationMailTemplateFr) {
-		this.applicationConfirmationMailTemplateFr = applicationConfirmationMailTemplateFr;
+	public void setApplicationConfirmationMailTemplateFr(String template) {
+		this.applicationConfirmationMailTemplateFr = template;
 	}
 
 	@Override
@@ -949,6 +1019,16 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 
 	@Override
+	public String getApplicationConfirmationWithRefereeManagementMailSubject() {
+		return applicationConfirmationWithRefereeManagementMailSubject;
+	}
+
+	@Override
+	public void setApplicationConfirmationWithRefereeManagementMailSubject(String subject) {
+		this.applicationConfirmationWithRefereeManagementMailSubject = subject;
+	}
+
+	@Override
 	public String getApplicationConfirmationWithRefereeManagementMailTemplate() {
 		return applicationConfirmationWithRefereeManagementMailTemplate;
 	}
@@ -959,6 +1039,16 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 	
 	@Override
+	public String getApplicationConfirmationWithRefereeManagementMailSubjectDe() {
+		return applicationConfirmationWithRefereeManagementMailSubjectDe;
+	}
+
+	@Override
+	public void setApplicationConfirmationWithRefereeManagementMailSubjectDe(String subject) {
+		this.applicationConfirmationWithRefereeManagementMailSubjectDe = subject;
+	}
+
+	@Override
 	public String getApplicationConfirmationWithRefereeManagementMailTemplateDe() {
 		return applicationConfirmationWithRefereeManagementMailTemplateDe;
 	}
@@ -967,6 +1057,16 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	public void setApplicationConfirmationWithRefereeManagementMailTemplateDe(String template) {
 		applicationConfirmationWithRefereeManagementMailTemplateDe = template;
 	}
+	
+	@Override
+	public String getApplicationConfirmationWithRefereeManagementMailSubjectFr() {
+		return applicationConfirmationWithRefereeManagementMailSubjectFr;
+	}
+
+	@Override
+	public void setApplicationConfirmationWithRefereeManagementMailSubjectFr(String subject) {
+		this.applicationConfirmationWithRefereeManagementMailSubjectFr = subject;
+	}
 
 	@Override
 	public String getApplicationConfirmationWithRefereeManagementMailTemplateFr() {
@@ -974,9 +1074,30 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 
 	@Override
-	public void setApplicationConfirmationWithRefereeManagementMailTemplateFr(
-			String applicationConfirmationWithRefereeManagementMailTemplateFr) {
-		this.applicationConfirmationWithRefereeManagementMailTemplateFr = applicationConfirmationWithRefereeManagementMailTemplateFr;
+	public void setApplicationConfirmationWithRefereeManagementMailTemplateFr(String template) {
+		this.applicationConfirmationWithRefereeManagementMailTemplateFr = template;
+	}
+	
+	@Override
+	public String getApplicationConfirmationWithRefereeManagementMailSubject(Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			return getApplicationConfirmationWithRefereeManagementMailSubjectDe();
+		}
+		if(locale != null && locale.getLanguage().equals("fr")) {
+			return getApplicationConfirmationWithRefereeManagementMailSubjectFr();
+		}
+		return getApplicationConfirmationWithRefereeManagementMailSubject();
+	}
+	
+	@Override
+	public void setApplicationConfirmationWithRefereeManagementMailSubject(String template, Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			setApplicationConfirmationWithRefereeManagementMailSubjectDe(template);
+		} else if(locale != null && locale.getLanguage().equals("fr")) {
+			setApplicationConfirmationWithRefereeManagementMailSubjectFr(template);
+		} else {
+			setApplicationConfirmationWithRefereeManagementMailSubject(template);
+		}
 	}
 
 	@Override
@@ -1010,6 +1131,28 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	public void setApplicationConfirmationWithRefereeManagementMailLetter(String letter) {
 		applicationConfirmationWithRefereeManagementMailLetter = letter;
 	}
+	
+	@Override
+	public String getApplicationConfirmationDuplicateMailSubject(Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			return getApplicationConfirmationDuplicateMailSubjectDe();
+		}
+		if(locale != null && locale.getLanguage().equals("fr")) {
+			return getApplicationConfirmationDuplicateMailSubjectFr();
+		}
+		return getApplicationConfirmationDuplicateMailSubject();
+	}
+
+	@Override
+	public void setApplicationConfirmationDuplicateMailSubject(String subject, Locale locale) {
+		if(locale != null && locale.getLanguage().equals("de")) {
+			setApplicationConfirmationDuplicateMailSubjectDe(subject);
+		} else if(locale != null && locale.getLanguage().equals("fr")) {
+			setApplicationConfirmationDuplicateMailSubjectFr(subject);
+		} else {
+			setApplicationConfirmationDuplicateMailSubject(subject);
+		}
+	}
 
 	@Override
 	public String getApplicationConfirmationDuplicateMailTemplate(Locale locale) {
@@ -1034,13 +1177,33 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 
 	@Override
+	public String getApplicationConfirmationDuplicateMailSubject() {
+		return applicationConfirmationDuplicateMailSubject;
+	}
+
+	@Override
+	public void setApplicationConfirmationDuplicateMailSubject(String subject) {
+		this.applicationConfirmationDuplicateMailSubject = subject;
+	}
+
+	@Override
 	public String getApplicationConfirmationDuplicateMailTemplate() {
 		return applicationConfirmationDuplicateMailTemplate;
 	}
 
 	@Override
-	public void setApplicationConfirmationDuplicateMailTemplate(String applicationConfirmationDuplicateMailTemplate) {
-		this.applicationConfirmationDuplicateMailTemplate = applicationConfirmationDuplicateMailTemplate;
+	public void setApplicationConfirmationDuplicateMailTemplate(String template) {
+		this.applicationConfirmationDuplicateMailTemplate = template;
+	}
+
+	@Override
+	public String getApplicationConfirmationDuplicateMailSubjectDe() {
+		return applicationConfirmationDuplicateMailSubjectDe;
+	}
+
+	@Override
+	public void setApplicationConfirmationDuplicateMailSubjectDe(String subject) {
+		this.applicationConfirmationDuplicateMailSubjectDe = subject;
 	}
 
 	@Override
@@ -1049,18 +1212,28 @@ public class PositionImpl implements Position, CreateInfo, Persistable {
 	}
 
 	@Override
-	public void setApplicationConfirmationDuplicateMailTemplateDe(String applicationConfirmationDuplicateMailTemplateDe) {
-		this.applicationConfirmationDuplicateMailTemplateDe = applicationConfirmationDuplicateMailTemplateDe;
+	public void setApplicationConfirmationDuplicateMailTemplateDe(String template) {
+		this.applicationConfirmationDuplicateMailTemplateDe = template;
 	}
 	
+	@Override
+	public String getApplicationConfirmationDuplicateMailSubjectFr() {
+		return applicationConfirmationDuplicateMailSubjectFr;
+	}
+
+	@Override
+	public void setApplicationConfirmationDuplicateMailSubjectFr(String subject) {
+		this.applicationConfirmationDuplicateMailSubjectFr = subject;
+	}
+
 	@Override
 	public String getApplicationConfirmationDuplicateMailTemplateFr() {
 		return applicationConfirmationDuplicateMailTemplateFr;
 	}
 
 	@Override
-	public void setApplicationConfirmationDuplicateMailTemplateFr(String applicationConfirmationDuplicateMailTemplateFr) {
-		this.applicationConfirmationDuplicateMailTemplateFr = applicationConfirmationDuplicateMailTemplateFr;
+	public void setApplicationConfirmationDuplicateMailTemplateFr(String template) {
+		this.applicationConfirmationDuplicateMailTemplateFr = template;
 	}
 
 	@Override

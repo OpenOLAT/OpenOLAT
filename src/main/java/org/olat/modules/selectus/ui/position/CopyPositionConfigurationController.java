@@ -169,7 +169,7 @@ public class CopyPositionConfigurationController extends FormBasicController {
 		boolean focus = false;
 		for(Locale locale:positionLanguages) {
 			String lang = locale.getLanguage();
-			TextElement posTitleEl = uifactory.addTextElement("position_title_" + lang, "edit.position_title", 256, "", formLayout);
+			TextElement posTitleEl = uifactory.addTextElement("position_title_" + lang, "edit.position_title", 255, "", formLayout);
 			posTitleEl.setMandatory(true);
 			posTitleEl.setUserObject(locale);
 			if(!focus) {
@@ -187,7 +187,7 @@ public class CopyPositionConfigurationController extends FormBasicController {
 
 		for(Locale locale:positionLanguages) {
 			String lang = locale.getLanguage();
-			TextElement shortTitleEl = uifactory.addTextElement("short_title_" + lang, "edit.short_title", 256, "", formLayout);
+			TextElement shortTitleEl = uifactory.addTextElement("short_title_" + lang, "edit.short_title", 255, "", formLayout);
 			shortTitleEl.setMandatory(true);
 			shortTitleEl.setUserObject(locale);
 			if(positionLanguages.length > 1) {

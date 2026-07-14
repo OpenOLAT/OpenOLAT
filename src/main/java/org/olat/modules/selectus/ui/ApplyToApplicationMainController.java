@@ -477,10 +477,22 @@ public class ApplyToApplicationMainController extends BasicController implements
 		return translator.translate("apply_application.email", args);
 	}
 	
+	public static String getDefaultMailSubject(Locale locale) {
+		Translator translator = Util.createPackageTranslator(ApplyToApplicationMainController.class, locale);
+		String[] args = generateVariablesArguments();
+		return translator.translate("apply_application.email.subject", args);
+	}
+	
 	public static String getDefaultMailTemplateDuplicate(Locale locale) {
 		Translator translator = Util.createPackageTranslator(ApplyToApplicationMainController.class, locale);
 		String[] args = generateVariablesArguments();
 		return translator.translate("apply_application.email.duplicate", args);
+	}
+	
+	public static String getDefaultMailSubjectDuplicate(Locale locale) {
+		Translator translator = Util.createPackageTranslator(ApplyToApplicationMainController.class, locale);
+		String[] args = generateVariablesArguments();
+		return translator.translate("apply_application.email.duplicate.subject", args);
 	}
 	
 	protected class FinishedCallback implements StepRunnerCallback {
@@ -589,22 +601,28 @@ public class ApplyToApplicationMainController extends BasicController implements
 					saveReferences(referees, savedApp, headOfCommittee);
 				}
 				
-				String subject = getTranslator().translate("apply_application.email.subject", posTitle);
 				
 				String body;
+				String subject;
 				MailAttachment letter;
 				if(referenceApplicantManagement) {
+					subject = PositionMLHelper.getApplicationConfirmationWithRefereeManagementMailSubject(position, getLocale());
 					body = PositionMLHelper.getApplicationConfirmationWithRefereeManagementMailTemplate(position, getLocale());
 					if(!StringHelper.containsNonWhitespace(body)) {
 						body = getTranslator().translate("apply_application.email.referee.mgmt", bodyArgs);
 					}
 					letter = mailService.toAttachment(position.getApplicationConfirmationWithRefereeManagementMailLetter(), savedApp, getLocale());
 				} else {
+					subject = PositionMLHelper.getApplicationConfirmationMailSubject(position, getLocale());
 					body = PositionMLHelper.getApplicationConfirmationMailTemplate(position, getLocale());
 					if(!StringHelper.containsNonWhitespace(body)) {
 						body = getTranslator().translate("apply_application.email", bodyArgs);
 					}
 					letter = mailService.toAttachment(position.getApplicationConfirmationMailLetter(), savedApp, getLocale());
+				}
+				
+				if(!StringHelper.containsNonWhitespace(subject)) {
+					subject = getTranslator().translate("apply_application.email.subject", posTitle);
 				}
 
 				ApplicationMailTemplate template = new RecruitingMailTemplate(null, null, null, subject, body, letter,
@@ -617,7 +635,10 @@ public class ApplyToApplicationMainController extends BasicController implements
 				String[] messageArgs = new String[] { salutationGenerator.getTitleFullname(savedApp, getLocale()), savedApp.getId().toString() };
 				auditService.auditApplicationLog(Action.add, ActionTarget.application, null, after, messageI18n, messageArgs, getTranslator(), position, savedApp, null);
 			} else {
-				String subject = translate("apply_application.email.duplicate.subject", new String[]{ posTitle });
+				String subject = PositionMLHelper.getApplicationDuplicateConfirmationMailSubject(position, getLocale());
+				if(!StringHelper.containsNonWhitespace(subject)) {
+					subject = translate("apply_application.email.duplicate.subject", new String[]{ posTitle });
+				}
 				String body = PositionMLHelper.getApplicationDuplicateConfirmationMailTemplate(position, getLocale());
 				if(!StringHelper.containsNonWhitespace(body)) {
 					body = getTranslator().translate("apply_application.email.duplicate", bodyArgs);
