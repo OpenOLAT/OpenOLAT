@@ -251,6 +251,9 @@ public class PositionDAO {
 		  .append(" left join fetch position.attributesDefinitions appAttributesDefs")
 		  .append(" left join fetch position.attributes positionGlobalAttributes")
 		  .append(" left join fetch positionGlobalAttributes.definition positionGlobalAttributesDefs")
+		  .append(" left join fetch position.document1 doc1")
+		  .append(" left join fetch position.document2 doc2")
+		  .append(" left join fetch position.document3 doc3")
 		  .append(" where position.key=:key and position.valid=true");
 		
 		List<Position> positions = dbInstance.getCurrentEntityManager()
