@@ -115,7 +115,6 @@ public class InspectionConfigurationController extends StepFormBasicController {
 		inspectionPeriodEl.setDateChooserTimeEnabled(true);
 		inspectionPeriodEl.setSeparator("to.separator");
 		inspectionPeriodEl.setMandatory(true);
-		inspectionPeriodEl.addActionListener(FormEvent.ONCHANGE);
 		if(context.getEditedInspection() != null) {
 			inspectionPeriodEl.setDate(context.getEditedInspection().getFromDate());
 			inspectionPeriodEl.setSecondDate(context.getEditedInspection().getToDate());
