@@ -146,7 +146,6 @@
 		.o_todo_member_cards {
 			display: grid;
 			grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-			gap: 10px 20px;
 		}
 	}
 	@container (max-width: 640px) {
