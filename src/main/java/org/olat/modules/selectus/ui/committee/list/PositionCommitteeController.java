@@ -135,7 +135,7 @@ public class PositionCommitteeController extends FormBasicController implements 
 	private final RecruitingPositionSecurityCallback secCallback;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
-	private static final String COLUMN_PREFS = "committeeListv6";
+	private static final String COLUMN_PREFS = "committeeListv7";
 
 	@Autowired
 	private UserManager userManager;
@@ -186,6 +186,9 @@ public class PositionCommitteeController extends FormBasicController implements 
 						|| userPropertyHandler.getName().equals(UserConstants.LASTNAME)
 						|| userPropertyHandler.getName().equals(UserConstants.TITLE)
 						|| userPropertyHandler.getName().equals(UserConstants.INSTITUTIONALNAME)) {
+					if(userPropertyHandler != null) {
+						colIndex++;
+					}
 					continue;
 				}
 				

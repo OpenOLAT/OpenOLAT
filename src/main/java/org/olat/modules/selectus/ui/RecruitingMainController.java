@@ -21,7 +21,9 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -33,6 +35,7 @@ import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.model.AcceptPolicyEnum;
 import org.olat.modules.selectus.model.Application;
 import org.olat.modules.selectus.model.ApplicationRef;
+import org.olat.modules.selectus.model.CommitteeMembershipsStats;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionRole;
 import org.olat.modules.selectus.model.PositionStatus;
@@ -274,8 +277,19 @@ public class RecruitingMainController extends BasicController implements Activat
 		removeAsListenerAndDispose(reportAttributesController);
 		
 		PositionRole positionRole = selectusService.getRole(position, getIdentity());
+		
+		// Reduce the roles to the ones of the position's organisation
+		Roles roles = ureq.getUserSession().getRoles();
+		Organisation organisation = position.getOrganisation();
+		RolesByOrganisation rolesOfPosition = roles.getRoles(organisation);
+		if(rolesOfPosition == null) {
+			roles = roles.isGuestOnly() ? Roles.guestRoles() : Roles.userRoles();
+		} else {
+			roles = Roles.valueOf(List.of(rolesOfPosition), false);
+		}
+		RecruitingSecurityCallback reduceSecCallback = new RecruitingSecurityCallbackImpl(roles, CommitteeMembershipsStats.empty());
 		RecruitingPositionSecurityCallback positionSecCallback
-			= new RecruitingPositionSecurityCallbackImpl(secCallback, position, getIdentity(), ureq.getUserSession().getRoles(), positionRole);
+			= new RecruitingPositionSecurityCallbackImpl(reduceSecCallback, position, getIdentity(), roles, positionRole);
 		
 		OLATResourceable positionRes = OresHelper.createOLATResourceableInstance(Position.class, position.getKey());
 		WindowControl swControl = addToHistory(ureq, positionRes, null);

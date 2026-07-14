@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
@@ -68,7 +69,8 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 		recruitingModule = CoreSpringFactory.getImpl(RecruitingModule.class);
 
 		olatAdmin = roles.isAdministrator();
-		selectusManager = roles.isSelectusManager() || position.getKey() == null;
+		selectusManager = (position.getOrganisation() != null && roles.hasRole(position.getOrganisation(), OrganisationRoles.selectusmanager))
+				|| position.getKey() == null;
 	}
 	
 	@Override
@@ -368,7 +370,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canEditPosition() {
-		return selectusManager || recruitingSecCallback.canEditPosition()
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionStatus())
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionProfile())
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionApplicationsSettings())
@@ -380,7 +382,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canDeletePosition() {
-		return selectusManager || recruitingSecCallback.canEditPosition();
+		return selectusManager;
 	}
 
 	@Override
