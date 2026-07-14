@@ -792,6 +792,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qitem_convert { @include o-add-icon('exchange');}
 .o_icon_qitem_copy { @include o-add-icon('copy');}
 .o_icon_qitem_delete { @include o-add-icon('trash-can', false);}
+.o_icon_qitem_aiDraft { @include o-add-icon('wand-magic-sparkles');}
 .o_icon_qitem_draft { @include o-add-icon('pencil');}
 .o_icon_qitem_endOfLife { @include o-add-icon('trash');}
 .o_icon_qitem_finalVersion { @include o-add-icon('check');}

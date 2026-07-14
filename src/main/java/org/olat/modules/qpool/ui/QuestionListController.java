@@ -957,7 +957,7 @@ public class QuestionListController extends AbstractItemListController implement
 				List<AssessmentItemAndMetadata> items = importPackage.getItems();
 				List<QuestionItem> importItems = new ArrayList<>();
 				for(AssessmentItemAndMetadata item:items) {
-					QuestionItem importedItem = spi.importExcelItem(getIdentity(), item, getLocale());
+					QuestionItem importedItem = spi.importExcelItem(getIdentity(), item, QuestionStatus.draft, getLocale());
 					if(importedItem != null) {
 						importItems.add(importedItem);
 					}

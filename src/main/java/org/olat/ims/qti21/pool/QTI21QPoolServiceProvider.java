@@ -322,7 +322,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		itemMetadata.setQuestionType(type);
 		
 		QTI21ImportProcessor processor = new QTI21ImportProcessor(identity, locale);
-		QuestionItemImpl qitem = processor.processItem(assessmentItem, "", null, "OpenOLAT", Settings.getVersion(), itemMetadata);
+		QuestionItemImpl qitem = processor.processItem(assessmentItem, QuestionStatus.draft, "", null, "OpenOLAT", Settings.getVersion(), itemMetadata);
 
 		VFSContainer baseDir = qpoolFileStorage.getContainer(qitem.getDirectory());
 		VFSLeaf leaf = baseDir.createChildLeaf(qitem.getRootFilename());
@@ -336,7 +336,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		return qitem;
 	}
 	
-	public QuestionItemImpl importExcelItem(Identity owner, AssessmentItemAndMetadata itemAndMetadata, Locale defaultLocale) {
+	public QuestionItemImpl importExcelItem(Identity owner, AssessmentItemAndMetadata itemAndMetadata, QuestionStatus status, Locale defaultLocale) {
 		QTI21ImportProcessor processor =  new QTI21ImportProcessor(owner, defaultLocale);
 		
 		String editor = itemAndMetadata.getEditor();
@@ -344,7 +344,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		AssessmentItemBuilder itemBuilder = itemAndMetadata.getItemBuilder();
 		itemBuilder.build();
 		AssessmentItem assessmentItem = itemBuilder.getAssessmentItem();
-		QuestionItemImpl qitem = processor.processItem(assessmentItem, null, null,
+		QuestionItemImpl qitem = processor.processItem(assessmentItem, status, null, null,
 				editor, editorVersion, itemAndMetadata);
 
 		String originalItemFilename = qitem.getRootFilename();
@@ -396,6 +396,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		// ai-source.json (MC + fallback).
 		boolean aiUnsupervisedGenerated = false;
 		File materialDirRoot = itemFile.getParentFile();
+		QuestionStatus status = QuestionStatus.draft;
 		EssayAiGrading aiGrading = essayAiGradingFileStore.load(materialDirRoot);
 		AiSourceCompanion aiSource = aiSourceCompanionFileStore.load(materialDirRoot);
 		if (aiSource != null && StringHelper.containsNonWhitespace(aiSource.getSpi())) {
@@ -404,6 +405,9 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			metadata.setAiModel(aiSource.getModel());
 			metadata.setUnsupervisedAiGenerated(aiUnsupervisedGenerated);
 			metadata.setAiSupervisedBy(aiSource.getSupervisedBy());
+			if(aiUnsupervisedGenerated) {
+				status = QuestionStatus.aiDraft;
+			}
 		}
 		if (aiGrading != null && StringHelper.containsNonWhitespace(aiGrading.getGeneratorSpi())) {
 			metadata.setAiProvider(AI_GENERATOR_TOOL_PREFIX + "QTI21.Generator." + aiGrading.getGeneratorSpi());
@@ -411,7 +415,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		}
 		
 		String originalItemFilename = itemFile.getName();
-		QuestionItemImpl qitem = processor.processItem(assessmentItem, null, originalItemFilename,
+		QuestionItemImpl qitem = processor.processItem(assessmentItem, status, null, originalItemFilename,
 				editor, editorVersion, metadata);
 		
 		//storage

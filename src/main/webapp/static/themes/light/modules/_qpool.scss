@@ -16,6 +16,11 @@ a.o_qpool_status {
 /* Status */
 .o_labeled,
 .o_toolbar .o_tools_container a.o_labeled {
+	&.o_qpool_status_ai_draft {
+	    background-color: 	$o-qpool-ai-draft-color;
+	    border-color: 		$o-qpool-ai-draft-color;
+	    color: 				$o-qpool-status-color-bright;
+	}
 	&.o_qpool_status_draft {
 	    background-color: 	$o-qpool-draft-color;
 	    border-color: 		$o-qpool-draft-color;
@@ -41,6 +46,9 @@ a.o_qpool_status {
 	}
 }
 .o_toolbar .o_tools_container a.o_labeled:hover {
+	&.o_qpool_status_ai_draft {
+	    background-color: 	darken($o-qpool-ai-draft-color,10%);
+	}
 	&.o_qpool_status_draft {
 	    background-color: 	darken($o-qpool-draft-color,10%);
 	}

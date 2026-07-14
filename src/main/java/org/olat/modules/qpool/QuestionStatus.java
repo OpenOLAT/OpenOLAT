@@ -26,8 +26,8 @@ package org.olat.modules.qpool;
  *
  */
 public enum QuestionStatus {
-	draft,
 	aiDraft,
+	draft,
 	review,
 	finalVersion,
 	revised,

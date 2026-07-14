@@ -247,7 +247,7 @@ public class EssayGenerationPoolSinkImpl implements EssayGenerationPoolSink {
 	private QuestionItem importAndStamp(Identity owner, AssessmentItemAndMetadata metaItem, Locale locale,
 			TaxonomyLevel taxonomyLevel) {
 		QTI21QPoolServiceProvider spi = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);
-		QuestionItem importedItem = spi.importExcelItem(owner, metaItem, locale);
+		QuestionItem importedItem = spi.importExcelItem(owner, metaItem, QuestionStatus.aiDraft, locale);
 		if (importedItem == null) return null;
 
 		QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(owner,

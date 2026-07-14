@@ -73,7 +73,7 @@ public class QuestionItemDAO {
 	private QPoolFileStorage qpoolFileStorage;
 	
 	
-	public QuestionItemImpl create(String title, String format, String dir, String rootFilename) {
+	public QuestionItemImpl create(String title, String format, QuestionStatus status, String dir, String rootFilename) {
 		QuestionItemImpl item = new QuestionItemImpl();
 		
 		Date now = new Date();
@@ -82,7 +82,7 @@ public class QuestionItemDAO {
 		item.setCreationDate(now);
 		item.setLastModified(now);
 		item.setTitle(title);
-		item.setStatus(QuestionStatus.draft.name());
+		item.setStatus(status == null ? QuestionStatus.draft.name() : status.name());
 		item.setQuestionStatusLastModified(now);
 		item.setUsage(0);
 		item.setNumOfAnswerAlternatives(0);
@@ -98,7 +98,7 @@ public class QuestionItemDAO {
 
 	public QuestionItemImpl createAndPersist(Identity owner, String title, String format, String language,
 			TaxonomyLevel taxonLevel, String dir, String rootFilename, QItemType type) {
-		QuestionItemImpl item = create(title, format, dir, rootFilename);
+		QuestionItemImpl item = create(title, format, QuestionStatus.draft, dir, rootFilename);
 		if(type != null) {
 			item.setType(type);
 		}
@@ -127,7 +127,7 @@ public class QuestionItemDAO {
 	 */
 	public QuestionItemImpl copy(QuestionItemImpl original) {
 		String title = "(Copy) " + original.getTitle();
-		QuestionItemImpl copy = create(title, original.getFormat(), null, original.getRootFilename());
+		QuestionItemImpl copy = create(title, original.getFormat(), QuestionStatus.draft, null, original.getRootFilename());
 		
 		//general
 		copy.setMasterIdentifier(original.getIdentifier());

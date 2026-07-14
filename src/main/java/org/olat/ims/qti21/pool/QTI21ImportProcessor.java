@@ -69,6 +69,7 @@ import org.olat.ims.qti21.repository.handlers.QTI21IMSManifestExplorerVisitor;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
@@ -335,14 +336,15 @@ public class QTI21ImportProcessor {
 		}
 	}
 	
-	protected QuestionItemImpl processItem(AssessmentItem assessmentItem, String comment, String originalItemFilename,
+	protected QuestionItemImpl processItem(AssessmentItem assessmentItem, QuestionStatus status, String comment, String originalItemFilename,
 			String editor, String editorVersion, AssessmentItemMetadata metadata) {
 		String dir = qpoolFileStorage.generateDir();
-		return processItem(assessmentItem, comment, originalItemFilename, editor, editorVersion, dir, metadata);
+		return processItem(assessmentItem, status, comment, originalItemFilename, editor, editorVersion, dir, metadata);
 	}
 
-	protected QuestionItemImpl processItem(AssessmentItem assessmentItem, String comment, String originalItemFilename,
-			String editor, String editorVersion, String dir, AssessmentItemMetadata metadata) {
+	protected QuestionItemImpl processItem(AssessmentItem assessmentItem, QuestionStatus status,
+			String comment, String originalItemFilename, String editor, String editorVersion,
+			String dir, AssessmentItemMetadata metadata) {
 		//filename
 		String filename;
 		String ident = assessmentItem.getIdentifier();
@@ -363,7 +365,7 @@ public class QTI21ImportProcessor {
 			title = ident;
 		}
 
-		QuestionItemImpl poolItem = questionItemDao.create(title, QTI21Constants.QTI_21_FORMAT, dir, filename);
+		QuestionItemImpl poolItem = questionItemDao.create(title, QTI21Constants.QTI_21_FORMAT, status, dir, filename);
 		//description
 		poolItem.setDescription(comment);
 		//language from default

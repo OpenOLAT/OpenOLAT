@@ -19,12 +19,15 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.services.ai.essay.AiSourceCompanion;
+import org.olat.core.commons.services.ai.essay.AiSourceCompanionFileStore;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
@@ -90,6 +93,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	
 	private static final String GUIPREF_KEY_SHOW_METADATAS = "show.metadatas";
 
+	private Link statusAiDraftLink;
 	private Link statusDraftLink;
 	private Link statusReviewLink;
 	private Link statusFinalLink;
@@ -143,6 +147,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private QPoolService qpoolService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private AiSourceCompanionFileStore aiSourceCompanionFileStore;
 	
 	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QPoolSecurityCallback qPoolSecurityCallback, QuestionItem item,
@@ -297,8 +303,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 				|| (qItemSecurityCallback.canSetFinal() && !QuestionStatus.finalVersion.equals(actualStatus))
 				|| (qItemSecurityCallback.canSetEndOfLife() && !QuestionStatus.endOfLife.equals(actualStatus));
 	}
+	
 	private Dropdown buildStatusDrowdown() {
 		QuestionStatus actualStatus = metadatasCtrl.getItem().getQuestionStatus();
+		Boolean unsupervised = metadatasCtrl.getItem().getAiUnsupervisedGenerated();
 
 		Dropdown statusDropdown = new Dropdown("process.states", "lifecycle.status", false, getTranslator());
 		statusDropdown.setLabeled(true, true);
@@ -306,9 +314,15 @@ public class QuestionItemDetailsController extends BasicController implements To
 		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_qitem_" + actualStatus.name());
 		statusDropdown.setInnerText(translate("lifecycle.status." + actualStatus.name()));
 		statusDropdown.setInnerCSS("o_labeled o_qpool_status_" + actualStatus.name());
-
-		
 		statusDropdown.setOrientation(DropdownOrientation.normal);
+		
+		if(unsupervised != null) {
+			statusAiDraftLink = LinkFactory.createToolLink("lifecycle.status.draft", translate("lifecycle.status.draft"), this);
+			statusAiDraftLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_aiDraft");
+			statusAiDraftLink.setElementCssClass("o_labeled o_qpool_status_ai_draft");
+			statusAiDraftLink.setVisible(qItemSecurityCallback.canSetDraft() && !QuestionStatus.aiDraft.equals(actualStatus));
+			statusDropdown.addComponent(statusAiDraftLink);
+		}
 	
 		statusDraftLink = LinkFactory.createToolLink("lifecycle.status.draft", translate("lifecycle.status.draft"), this);
 		statusDraftLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_draft");
@@ -440,7 +454,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == statusDraftLink) {
+		if (source == statusAiDraftLink) {
+			doStatusAiDraft(ureq, metadatasCtrl.getItem());
+		} else if (source == statusDraftLink) {
 			doStatusDraft(ureq, metadatasCtrl.getItem());
 		} else if (source == statusRevisedLink) {
 			doStatusRevised(ureq, metadatasCtrl.getItem());
@@ -625,6 +641,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 		setCommentsController(ureq);
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_STATUS_CHANGED, item.getKey()));
 	}
+	
+	private void doStatusAiDraft(UserRequest ureq, QuestionItem item) {
+		doChangeQuestionStatus(ureq, item, QuestionStatus.aiDraft);
+	}
 
 	private void doStatusDraft(UserRequest ureq, QuestionItem item) {
 		doChangeQuestionStatus(ureq, item, QuestionStatus.draft);
@@ -653,19 +673,40 @@ public class QuestionItemDetailsController extends BasicController implements To
 	}
 	
 	private void doChangeQuestionStatus(UserRequest ureq, QuestionItem item, QuestionStatus newStatus) {
-		if(!newStatus.equals(item.getQuestionStatus()) && item instanceof QuestionItemImpl) {
-			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+		if(!newStatus.equals(item.getQuestionStatus()) && item instanceof QuestionItemImpl itemImpl) {
+			QuestionStatus currentStatus = item.getQuestionStatus();
 			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
 					Action.STATUS_CHANGED);
 			builder.withBefore(itemImpl);
 			builder.withMessage("New status: " + newStatus);
 			itemImpl.setQuestionStatus(newStatus);
+			if(currentStatus == QuestionStatus.aiDraft) {
+				itemImpl.setAiUnsupervisedGenerated(Boolean.FALSE);
+				itemImpl.setAiSupervisedBy(userManager.getUserDisplayName(getIdentity()));
+			}
 			qpoolService.updateItem(itemImpl);
 			builder.withAfter(item);
 			qpoolService.persist(builder.create());
 			fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_STATUS_CHANGED, item.getKey()));
+			
+			if(currentStatus == QuestionStatus.aiDraft) {
+				updateCompanionFile(item);
+			}
 		}
 		reloadData(ureq);
+	}
+	
+	private void updateCompanionFile(QuestionItem item) {
+		File resourceDirectory = qpoolService.getRootDirectory(item);
+		if(resourceDirectory != null && resourceDirectory.exists()) {
+			AiSourceCompanion aiSource = aiSourceCompanionFileStore.load(resourceDirectory);
+			if(aiSource != null) {
+				String displayName = userManager.getUserDisplayName(getIdentity());
+				aiSource.setSupervisedBy(displayName);
+				aiSource.setUnsupervisedGenerated(false);
+				aiSourceCompanionFileStore.save(resourceDirectory, aiSource);
+			}
+		}
 	}
 
 	private void reloadData(UserRequest ureq) {
