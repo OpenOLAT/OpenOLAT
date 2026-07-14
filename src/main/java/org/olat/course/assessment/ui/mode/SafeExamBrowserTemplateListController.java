@@ -326,7 +326,11 @@ public class SafeExamBrowserTemplateListController extends FormBasicController {
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if (editLink == source) {
 				close();
-				doEdit(ureq, row.getTemplate());
+				if(row.getType() == SafeExamBrowserTemplateType.OO_FORM) {
+					doEdit(ureq, row.getTemplate());
+				} else {
+					doEditSEBFile(ureq, row.getTemplate());
+				}
 			} else if (setDefaultLink == source) {
 				close();
 				doSetDefault(row.getTemplate());
