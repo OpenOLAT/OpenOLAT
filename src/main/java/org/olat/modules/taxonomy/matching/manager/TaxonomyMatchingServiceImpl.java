@@ -20,6 +20,7 @@
 package org.olat.modules.taxonomy.matching.manager;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -132,7 +133,19 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService, Gen
 			log.info("TaxonomyMatchingServiceImpl boot: reset {} stuck indexing rows to scheduled", reset);
 		}
 		dbInstance.commitAndCloseSession();
-		startIndexing();
+		if (needsInitialReindex()) {
+			log.info("TaxonomyMatchingServiceImpl boot: index state empty, triggering initial full reindex");
+			scheduleFullReindex();
+		} else {
+			startIndexing();
+		}
+	}
+
+	private boolean needsInitialReindex() {
+		if (!aiModule.isTaxonomyMatchingEnabled()) {
+			return false;
+		}
+		return indexStateDao.countByStatuses(EnumSet.allOf(TaxonomyLevelIndexState.IndexStatus.class)) == 0;
 	}
 
 	@Override
