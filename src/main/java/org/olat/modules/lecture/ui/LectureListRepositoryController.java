@@ -1281,6 +1281,16 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			searchParams.setTaxonomyLevels(taxonomyLevels);
 		}
 		
+		FlexiTableFilter rFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_ROLL_CALL_STATUS);
+		if (rFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				for(String filterValue:filterValues) {
+					searchParams.addRollCallStatus(LectureRollCallStatus.valueOf(filterValue));
+				}
+			}
+		}
+		
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
 		Date now = ureq.getRequestTimestamp();
 		if(selectedTab == relevantTab) {
