@@ -105,7 +105,7 @@ public class DataProtectionStepController extends StepFormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		acceptTermsEl.clearError();
-		if(!acceptTermsEl.isMultiselect() || !acceptTermsEl.isSelected(0)) {
+		if(!acceptTermsEl.isAtLeastSelected(1)) {
 			acceptTermsEl.setErrorKey("apply_application.acceptTerms.error");
 			allOk = false;
 		}

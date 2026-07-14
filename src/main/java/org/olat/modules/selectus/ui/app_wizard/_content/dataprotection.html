@@ -3,8 +3,8 @@
 	<p>$r.translate("disclaimer.privacy.text", $i18nArguments)</p>
 	<div class="o_clearfix o_sel_accept_terms">
 		$r.render("acceptTerms")
-		#if($f.hasError("acceptTerms") && $r.available("acceptTerms_ERROR"))
-			$r.render("acceptTerms_ERROR")
+		#if($f.hasError("acceptTerms"))
+			$r.render("acceptTerms","error")
 		#end
 	</div>
 </fieldset>
