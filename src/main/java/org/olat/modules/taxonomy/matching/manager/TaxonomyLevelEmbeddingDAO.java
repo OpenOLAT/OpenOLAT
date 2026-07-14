@@ -218,6 +218,25 @@ public class TaxonomyLevelEmbeddingDAO {
 	}
 
 	/**
+	 * @return true if the {@code vector} type (pgvector extension) is resolvable
+	 *         on the current search_path, i.e. the {@code t_vector} column DDL
+	 *         would succeed. Always false on a non-PostgreSQL database.
+	 */
+	public boolean isPgVectorAvailable() {
+		if (!"postgresql".equals(dbInstance.getDbVendor())) {
+			return false;
+		}
+		try {
+			Object result = dbInstance.getCurrentEntityManager()
+					.createNativeQuery("select to_regtype('vector') is not null")
+					.getSingleResult();
+			return Boolean.TRUE.equals(result);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	/**
 	 * Ensures the {@code t_vector} column and (optionally) the HNSW index exist with
 	 * the correct type for the given embedding dimension.
 	 *

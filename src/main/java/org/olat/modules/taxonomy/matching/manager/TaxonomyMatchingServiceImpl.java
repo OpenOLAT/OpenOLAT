@@ -107,6 +107,7 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService, Gen
 
 	private volatile String pgVectorEnsuredKey;
 	private volatile PgVectorType pgVectorType;
+	private volatile boolean pgVectorAvailable;
 
 	private final AtomicBoolean indexerRunning = new AtomicBoolean(false);
 	private final AtomicInteger indexGeneration = new AtomicInteger(0);
@@ -323,7 +324,7 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService, Gen
 		ensurePgVector(model, true);
 		dbInstance.commitAndCloseSession();
 
-		if ("postgresql".equals(dbInstance.getDbVendor()) && pgVectorType == null) {
+		if ("postgresql".equals(dbInstance.getDbVendor()) && pgVectorAvailable && pgVectorType == null) {
 			log.warn("Taxonomy embedding full reindex aborted: could not resolve pgvector column type for model '{}' — existing embeddings preserved",
 					matchingModule.getModel());
 			return;
@@ -347,7 +348,7 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService, Gen
 
 	public void indexLevelInternal(TaxonomyLevel level, EmbeddingModel model, Map<Long, TaxonomyLevel> levelMap,
 			String usageContextType, String usageContextId, PgVectorType vectorType) {
-		if ("postgresql".equals(dbInstance.getDbVendor()) && vectorType == null) {
+		if ("postgresql".equals(dbInstance.getDbVendor()) && pgVectorAvailable && vectorType == null) {
 			log.warn("Skipping index of taxonomy level {}: pgvector column type not resolved", level.getKey());
 			return;
 		}
@@ -383,6 +384,15 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService, Gen
 		if (Objects.equals(key, pgVectorEnsuredKey)) {
 			return;
 		}
+		if (!embeddingDao.isPgVectorAvailable()) {
+			pgVectorAvailable = false;
+			pgVectorType = null;
+			pgVectorEnsuredKey = key;
+			matchingModule.setPgVectorActive(false);
+			log.info("pgvector extension not installed — taxonomy embeddings stored as JSON with in-memory cosine search");
+			return;
+		}
+		pgVectorAvailable = true;
 		int dim = resolveDimension(model, key);
 		if (dim <= 0) {
 			log.warn("Could not resolve embedding dimension for model '{}' — pgvector column not created", matchingModule.getModel());
