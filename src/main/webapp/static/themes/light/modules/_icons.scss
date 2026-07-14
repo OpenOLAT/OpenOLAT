@@ -144,6 +144,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_courselog { @include o-add-icon('file-lines', true);}
 .o_icon_courseplanner { @include o-add-icon('compass-drafting');}
 .o_icon_courserun { @include o-add-icon('cube');}
+.o_icon_comment { @include o-add-icon('comment');}
 .o_icon_comment_sms { @include o-add-icon('comment-sms');}
 .o_icon_comments { @include o-add-icon('comments');}
 .o_icon_comments_none { @include o-add-icon('comment', false);}
@@ -320,6 +321,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_member_not_valid { @include o-add-icon('exclamation-triangle'); color: $brand-warning; }
 .o_icon_member_skipped { @include o-add-icon('minus-circle'); color: #A87E7E; }
 .o_icon_member_valid { @include o-add-icon('check'); color: $brand-success; }
+.o_icon_memo { @include o-add-icon('circle-info');}
 .o_icon_menuhandel { @include o-add-icon('bars');}
 .o_icon_message { @include o-add-icon('envelope');}
 .o_icon_message_open { @include o-add-icon('envelope-open');}

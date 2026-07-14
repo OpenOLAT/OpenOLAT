@@ -46,8 +46,8 @@ public class TooltipCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof String && StringHelper.containsNonWhitespace((String)cellValue)) {
-			render(renderer, target, (String)cellValue);
+		if(cellValue instanceof String string && StringHelper.containsNonWhitespace(string)) {
+			render(renderer, target, string);
 		}
 	}
 

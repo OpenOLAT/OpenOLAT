@@ -52,7 +52,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	private Position position;
 	private PositionReviewDefinition reviewDefinition;
 	
-	private final boolean author;
+	private final boolean selectusManager;
 	private final boolean olatAdmin;
 	private final PositionRole positionRole;
 	private final RecruitingSecurityCallback recruitingSecCallback;
@@ -68,7 +68,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 		recruitingModule = CoreSpringFactory.getImpl(RecruitingModule.class);
 
 		olatAdmin = roles.isAdministrator();
-		author = roles.isSelectusManager() || position.getKey() == null;
+		selectusManager = roles.isSelectusManager() || position.getKey() == null;
 	}
 	
 	@Override
@@ -91,17 +91,17 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canSeeAd() {
-		return author || !canRate();
+		return selectusManager || !canRate();
 	}
 	
 	@Override
 	public boolean canSeeExpertBlackList() {
-		return author || olatAdmin || isAllowedByPositionRole(recruitingModule.getRolesAllowedToSeeExpertBlackList());
+		return selectusManager || olatAdmin || isAllowedByPositionRole(recruitingModule.getRolesAllowedToSeeExpertBlackList());
 	}
 
 	@Override
 	public boolean canSeePositionURL() {
-		return author || recruitingSecCallback.canSeePositionURL();
+		return selectusManager || recruitingSecCallback.canSeePositionURL();
 	}
 
 	@Override
@@ -186,7 +186,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 		boolean canSee = positionRole != PositionRole.member;
 		if(canSee) {
 			//not a committee member, can see ratings
-			if(author || olatAdmin) {
+			if(selectusManager || olatAdmin) {
 				return true;
 			}
 			if(isAllowedByPositionRole(recruitingModule.getRolesAllowedToSeeRating())) {
@@ -204,7 +204,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	
 	@Override
 	public boolean canSeeCommitteeRatingsOnce() {
-		return author || olatAdmin 
+		return selectusManager || olatAdmin 
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToSeeRating());
 	}
 
@@ -215,7 +215,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canViewParalellApplications() {
-		return author || olatAdmin
+		return selectusManager || olatAdmin
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToSeeParallelApplications());
 	}
 
@@ -262,7 +262,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	@Override
 	public boolean canExcelReviewStatistics() {
 		return recruitingModule.isReviewEnabled() && recruitingModule.isReviewStatisticsDownloadEnabled() && position.isReviewEnabled()
-				&& (author || recruitingSecCallback.canExcelReviewStatistics()
+				&& (selectusManager || recruitingSecCallback.canExcelReviewStatistics()
 						|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToExportReviewsStatisticsExcel()));
 	}
 
@@ -271,7 +271,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 		boolean visible = false;
 		// the configured "always allowed" user roles override the config in UI. 
 		// e.g. head can always see the reviews, regardless of whether her can review or not 
-		boolean isAlwaysAllowed = author || olatAdmin;
+		boolean isAlwaysAllowed = selectusManager || olatAdmin;
 		
 		if(reviewDefinition != null) {
 			ReviewVisibilityEnum visibility = null;
@@ -335,8 +335,8 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canViewCommitteeComment() {
-		return  recruitingModule.isApplicationsCommitteeCommentEnabled() && position.isCommitteeCommentEnabled()
-				&& (author
+		return recruitingModule.isApplicationsCommitteeCommentEnabled() && position.isCommitteeCommentEnabled()
+				&& (selectusManager
 						|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationCommitteeComment())
 						|| isAllowedByPositionRole(position.getCommitteeCommentVisiblity()));
 	}
@@ -358,7 +358,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canDeleteReviews() {
-		return author || olatAdmin;
+		return selectusManager || olatAdmin;
 	}
 
 	@Override
@@ -368,7 +368,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canEditPosition() {
-		return author || recruitingSecCallback.canEditPosition()
+		return selectusManager || recruitingSecCallback.canEditPosition()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionStatus())
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionProfile())
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionApplicationsSettings())
@@ -380,12 +380,12 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canDeletePosition() {
-		return author || recruitingSecCallback.canEditPosition();
+		return selectusManager || recruitingSecCallback.canEditPosition();
 	}
 
 	@Override
 	public boolean canArchivePosition() {
-		return author || recruitingSecCallback.canEditPosition();
+		return selectusManager || recruitingSecCallback.canEditPosition();
 	}
 
 	@Override
@@ -411,7 +411,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canEditPositionStatus() {
-		return author || recruitingSecCallback.canEditPosition()
+		return selectusManager || recruitingSecCallback.canEditPosition()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionStatus());
 	}
 
@@ -419,75 +419,75 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	public boolean canEditPositionCategoriesSettings() {
 		return recruitingModule.isTaggingToolEnabled()
 				&& (recruitingModule.isSystemTagsEnabled() || recruitingModule.isPositionTagsEnabled())
-				&& (author || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionTagsSettings()));
+				&& (selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionTagsSettings()));
 	}
 
 	@Override
 	public boolean canEditPositionCategories() {
 		return recruitingModule.isTaggingToolEnabled()
 				&& (recruitingModule.isPositionTagsEnabled() && position.isPositionTagsEnabled())
-				&& (author || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionTagsSettings()));
+				&& (selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionTagsSettings()));
 	}
 	
 	@Override
 	public boolean canEditPositionMailTemplates() {
 		return recruitingModule.isMailTemplateToolPositionsEnabled()
-				&& (author || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionMailTemplates()));
+				&& (selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionMailTemplates()));
 	}
 
 	@Override
 	public boolean canEditApplicationCategories() {
 		return recruitingModule.isCategoriesEnabledFor(position)
-				&& (author || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationCategories())
+				&& (selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationCategories())
 					|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditAdministrativeTags()));
 	}
 
 	@Override
 	public boolean canEditApplicationAdministrativeCategories() {
 		return recruitingModule.isCategoriesEnabledFor(position) && recruitingModule.isAdministrativeTagsEnabled()
-				&& (author || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditAdministrativeTags()));
+				&& (selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditAdministrativeTags()));
 	}
 
 	@Override
 	public boolean canSeeApplicationAdministrativeCategories() {
 		return recruitingModule.isCategoriesEnabledFor(position) && recruitingModule.isAdministrativeTagsEnabled()
-				&& (author || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditAdministrativeTags())
+				&& (selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditAdministrativeTags())
 						|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToSeeAdministrativeTags()));
 	}
 
 	@Override
 	public boolean canEditPositionProfile() {
-		return author || recruitingSecCallback.canEditPosition()
+		return selectusManager || recruitingSecCallback.canEditPosition()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionProfile());
 	}
 
 	@Override
 	public boolean canEditPositionApplicationsSettings() {
-		return author || recruitingSecCallback.canEditPosition()
+		return selectusManager || recruitingSecCallback.canEditPosition()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionApplicationsSettings());
 	}
 
 	@Override
 	public boolean canEditPositionReferencesSettings() {
-		return author || recruitingSecCallback.canEditPosition()
+		return selectusManager || recruitingSecCallback.canEditPosition()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionReferencesSettings());
 	}
 	
 	@Override
 	public boolean canEditPositionFeedbackSettings() {
-		return author || recruitingSecCallback.canEditPosition()
+		return selectusManager || recruitingSecCallback.canEditPosition()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionFeedbacksSettings());
 	}
 
 	@Override
 	public boolean canEditPositionEvaluationSettings() {
-		return author || recruitingSecCallback.canEditPosition()
+		return selectusManager || recruitingSecCallback.canEditPosition()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionEvaluationSettings());
 	}
 	
 	@Override
 	public boolean canEditReportAttributes() {
-		return author;
+		return selectusManager;
 	}
 
 	@Override
@@ -498,18 +498,18 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canAddApplication() {
-		return author
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToCreateApplications());
 	}
 	
 	@Override
 	public boolean canCopyApplication() {
-		return author;
+		return selectusManager;
 	}
 
 	@Override
 	public boolean canEditApplication() {
-		return author
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationAcademicalBackground())
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationDocuments())
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationPersonalData())
@@ -521,61 +521,61 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canEditApplicationPersonalData() {
-		return author
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationPersonalData());
 	}
 
 	@Override
 	public boolean canEditApplicationAcademicalBackground() {
-		return author
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationAcademicalBackground());
 	}
 	
 	@Override
 	public boolean canEditApplicationProject() {
-		return author
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationProject());
 	}
 
 	@Override
 	public boolean canEditApplicationDocuments() {
-		return author
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationDocuments());
 	}
 
 	@Override
 	public boolean canEditApplicationMemo() {
 		return recruitingModule.isApplicationsMemoEnabled()
-				&& (author || isAllowedByPositionRole(recruitingModule.getPositionRolesAllowedToEditApplicationsMemo()));
+				&& (selectusManager || isAllowedByPositionRole(recruitingModule.getPositionRolesAllowedToEditApplicationsMemo()));
 	}
 	
 	@Override
 	public boolean canEditApplicationCommitteeComment() {
 		return recruitingModule.isApplicationsCommitteeCommentEnabled() && position.isCommitteeCommentEnabled()
-				&& (author || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationCommitteeComment()));
+				&& (selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationCommitteeComment()));
 	}
 
 	@Override
 	public boolean canEditApplicationStatus() {
-		return author
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationStatus());
 	}
 	
 	@Override
 	public boolean canEditApplicationReferences() {
-		return author
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditApplicationReferences());
 	}
 
 	@Override
 	public boolean canEditApplicationMembersFeedback() {
-		return author
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditMembersFeedback());
 	}
 
 	@Override
 	public boolean canEditCommitteeDecision() {
-		return author || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditCommitteDecision());
+		return selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditCommitteDecision());
 	}
 
 	@Override
@@ -585,7 +585,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	
 	@Override
 	public List<String> canSharedFiltersBy() {
-		if(author) {
+		if(selectusManager) {
 			return Collections.singletonList(FilterPermissions.author.name());
 		}
 		if(positionRole != null) {
@@ -699,7 +699,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	private boolean isAllowedByFilterPermission(FilterPermissions[] permissions) {
 		boolean hasPermission = false;
-		if(author) {
+		if(selectusManager) {
 			for(int i=permissions.length; i-->0; ) {
 				if(FilterPermissions.author.equals(permissions[i])) {
 					hasPermission = true;
@@ -717,7 +717,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public String shareFiltersAs() {
-		if(author) {
+		if(selectusManager) {
 			return FilterPermissions.author.name();
 		}
 		return positionRole == null ? "nobody" : positionRole.name();
@@ -736,17 +736,17 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	@Override
 	public boolean canGenerateApplicationList() {
 		return recruitingModule.isTableApplicationsGenerateListEnabled()
-				&& (author || isAllowedByPositionRole(recruitingModule.getRolesAllowedToExportGeneratedList()));
+				&& (selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToExportGeneratedList()));
 	}
 
 	@Override
 	public boolean canDeleteApplication() {
-		return author || isAllowedByPositionRole(recruitingModule.getRolesAllowedToDeleteApplication());
+		return selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToDeleteApplication());
 	}
 
 	@Override
 	public boolean canAddCommitteeMember() {
-		return author || recruitingSecCallback.canAddCommitteeMember()
+		return selectusManager || recruitingSecCallback.canAddCommitteeMember()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToAddPositionCommittee());
 	}
 
@@ -757,48 +757,48 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	
 	@Override
 	public boolean canEditCommitteeMember() {
-		return author || recruitingSecCallback.canEditCommitteeMember()
+		return selectusManager || recruitingSecCallback.canEditCommitteeMember()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditPositionCommittee());
 	}
 
 	@Override
 	public boolean canRemoveCommitteeMember() {
-		return author || recruitingSecCallback.canRemoveCommitteeMember()
+		return selectusManager || recruitingSecCallback.canRemoveCommitteeMember()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToRemovePositionCommittee());
 	}
 
 	@Override
 	public boolean canSendMailToCommittee() {
-		return author || recruitingSecCallback.canSendMailToCommittee()
+		return selectusManager || recruitingSecCallback.canSendMailToCommittee()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToSendEmailAllCommittee());
 	}
 
 	@Override
 	public boolean canEditAssignments() {
-		return author || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditAssignments());
+		return selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditAssignments());
 	}
 
 	@Override
 	public boolean canExcelListCommittee() {
-		return author || recruitingSecCallback.canExcelListCommittee()
+		return selectusManager || recruitingSecCallback.canExcelListCommittee()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToExportCommitteeListExcel());
 	}
 
 	@Override
 	public boolean canPDFApplicationList() {
-		return author || recruitingSecCallback.canPDFApplicationList()
+		return selectusManager || recruitingSecCallback.canPDFApplicationList()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToExportApplicationListPdf());
 	}
 	
 	@Override
 	public boolean canExcelApplicationList() {
-		return author || recruitingSecCallback.canExcelApplicationList()
+		return selectusManager || recruitingSecCallback.canExcelApplicationList()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToExportApplicationListExcel());
 	}
 
 	@Override
 	public boolean canPDFRatings() {
-		boolean allowed = author || recruitingSecCallback.canPDFRatings()
+		boolean allowed = selectusManager || recruitingSecCallback.canPDFRatings()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToExportRatingsPdf());
 		if(allowed && positionRole == PositionRole.member) {
 			String statusStr = position.getStatus();
@@ -814,37 +814,37 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canMailCenter() {
-		return author || recruitingSecCallback.canMailCenter()
+		return selectusManager || recruitingSecCallback.canMailCenter()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToViewMailCenter());
 	}
 
 	@Override
 	public boolean canMailCenterExportLog() {
-		return author || recruitingSecCallback.canMailCenterExportLog()
+		return selectusManager || recruitingSecCallback.canMailCenterExportLog()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToExportMailCenterLog());
 	}
 
 	@Override
 	public boolean canMailCenterViewEmail() {
-		return author || recruitingSecCallback.canMailCenterViewEmail()
+		return selectusManager || recruitingSecCallback.canMailCenterViewEmail()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToViewMailCenterEmail());
 	}
 
 	@Override
 	public boolean canMailCenterResendEmail() {
-		return author || recruitingSecCallback.canMailCenterResendEmail()
+		return selectusManager || recruitingSecCallback.canMailCenterResendEmail()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToResendMailCenterEmail());
 	}
 
 	@Override
 	public boolean canSendMailToApplicant() {
-		return author || recruitingSecCallback.canSendMailToApplicant()
+		return selectusManager || recruitingSecCallback.canSendMailToApplicant()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToSendMailToApplicant());
 	}
 	
 	@Override
 	public boolean canSendBulkApplicationEmails() {
-		return author
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToSendBulkApplicationEmails());
 	}
 
@@ -863,13 +863,13 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canConfigureDecisionTool() {
-		return position.isDecisionTool() && (author || recruitingSecCallback.canConfigureDecisionTool()
+		return position.isDecisionTool() && (selectusManager || recruitingSecCallback.canConfigureDecisionTool()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToConfigureDecisionTool()));
 	}
 	
 	@Override
 	public boolean canEditDecisionRubrics() {
-		return position.isDecisionTool() && (author || recruitingSecCallback.canEditDecisionRubrics()
+		return position.isDecisionTool() && (selectusManager || recruitingSecCallback.canEditDecisionRubrics()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToEditDecisionRubrics()));
 	}
 
@@ -880,7 +880,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	
 	@Override
 	public boolean canDeletePublicFeedbacks() {
-		return author || olatAdmin
+		return selectusManager || olatAdmin
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToDeletePublicFeedback());
 	}
 

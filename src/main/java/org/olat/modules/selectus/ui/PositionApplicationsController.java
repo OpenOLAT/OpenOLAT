@@ -888,7 +888,8 @@ public class PositionApplicationsController extends FormBasicController implemen
 		
 		if(secCallback.canViewCommitteeComment()) {
 			RecruitingTableOption commentOption = recruitingModule.getTableApplicationsCommitteeCommentOption();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(commentOption.isVisible(), Fields.committeeComment, new TooltipCellRenderer("o_icon_comment")));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(commentOption.isVisible(), Fields.committeeComment,
+					new TooltipCellRenderer("o_icon_comment")));
 		}
 		
 		if(secCallback.canNotes()) {
