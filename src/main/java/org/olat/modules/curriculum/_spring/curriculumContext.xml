@@ -81,7 +81,7 @@
 	<!-- Jobs -->
 	<bean id="curriculumAutomationTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
     	<property name="jobDetail" ref="curriculumAutomationJob.${cluster.singleton.services}" />
-    	<property name="cronExpression" value="* 5 * * * ?"/>
+    	<property name="cronExpression" value="0 45 2 * * ?"/>
     	<property name="startDelay" value="45000" />
 	</bean>
 
