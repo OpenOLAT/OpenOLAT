@@ -406,6 +406,9 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		for (String tag : data.getKeywords()) {
 			newTags.add(tag.toLowerCase());
 		}
+		if (StringHelper.containsNonWhitespace(data.getSubject())) {
+			newTags.add(data.getSubject());
+		}
 		if (!newTags.isEmpty()) {
 			tagsEl.setSelectedTags(List.of());
 			tagsEl.addNewDisplayNames(newTags);

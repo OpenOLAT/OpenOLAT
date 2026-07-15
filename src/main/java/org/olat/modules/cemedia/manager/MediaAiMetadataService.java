@@ -284,6 +284,9 @@ public class MediaAiMetadataService {
 			for (String tag : data.getKeywords()) {
 				tags.add(tag.toLowerCase());
 			}
+			if (StringHelper.containsNonWhitespace(data.getSubject())) {
+				tags.add(data.getSubject());
+			}
 			if (!tags.isEmpty()) {
 				mediaService.updateTags(requester, media, new ArrayList<>(tags));
 			}
