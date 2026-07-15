@@ -604,7 +604,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		initColumnModel(Fields.title, recruitingModule.getTableApplicationsPersonTitleOption(), filters);
 		initColumnModel(Fields.firstName, recruitingModule.getTableApplicationsPersonFirstNameOption(), filters);
 		initColumnModel(Fields.lastName, recruitingModule.getTableApplicationsPersonLastNameOption(), filters);
-		initColumnModel(Fields.gender, recruitingModule.getTableApplicationsGenderOption(), new GenderCellRenderer(), filters);
+		initColumnModel(Fields.gender, recruitingModule.getTableApplicationsGenderOption(), new GenderCellRenderer(), null);
 		initColumnModel(Fields.maritalStatus, recruitingModule.getTableApplicationsMaritalStatusOption(), filters);
 		initColumnModel(Fields.yearOfBirth, recruitingModule.getTableApplicationsYearOfBirthOption(), filters);
 		initDateColumnModel(Fields.birthday, recruitingModule.getTableApplicationsBirthdayOption(), filters);
@@ -928,7 +928,9 @@ public class PositionApplicationsController extends FormBasicController implemen
 		if(!option.isDisabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field,
 					SELECT_POSITION, render));
-			filters.add(new FlexiTableTextFilter(translate(field.i18nHeaderKey()), field.name(), false));
+			if(filters != null) {
+				filters.add(new FlexiTableTextFilter(translate(field.i18nHeaderKey()), field.name(), false));
+			}
 		}
 	}
 	
@@ -936,22 +938,28 @@ public class PositionApplicationsController extends FormBasicController implemen
 		if(!option.isDisabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field,
 					SELECT_POSITION, new DateCellRenderer()));
-			filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false,
+			if(filters != null) {
+				filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false,
 					getLocale()));
+			}
 		}
 	}
 	
 	private void initDateColumnModel(Fields field, FlexiCellRenderer render, List<FlexiTableExtendedFilter> filters) {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, field,
 				SELECT_POSITION, render));
-		filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false, getLocale()));
+		if(filters != null) {
+			filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false, getLocale()));
+		}
 	}
 	
 	private void initDateColumnModel(Fields field, RecruitingTableOption option, FlexiCellRenderer render, List<FlexiTableExtendedFilter> filters) {
 		if(!option.isDisabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field,
 					SELECT_POSITION, render));
-			filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false, getLocale()));
+			if(filters != null) {
+				filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false, getLocale()));
+			}
 		}
 	}
 	
@@ -1978,7 +1986,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 			}
 		} else if(batchDecisionCtrl == source || editReviewCtrl == source
 				|| batchAddCategoriesCtrl == source || batchApplicationStatusCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event instanceof DecisionEvent) {
 				loadModel(position);
 			}
 			cmc.deactivate();
