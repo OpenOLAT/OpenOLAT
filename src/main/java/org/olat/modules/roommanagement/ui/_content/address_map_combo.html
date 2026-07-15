@@ -1,8 +1,8 @@
 <div class="o_building_address_map_combo">
 	<div class="o_building_address_label">$r.render("building.address", "label")</div>
-	<div class="o_building_address_map_line">
-		<div class="o_building_address_input">$r.render("building.address")</div>
-		<div class="o_building_find_on_map">$r.render("building.find.on.map")</div>
+	<div class="input-group">
+		$r.render("building.address")
+		$r.render("building.find.on.map", "inputgroupaddon")
 	</div>
 	<div>
 		$r.render("building.address", "error")

@@ -158,10 +158,11 @@ body .modal-body {
 	color: $btn-primary-color !important;
 }
 
-/* Input-group addons styled as buttons get the button border */
+/* Input-group addons styled as buttons get the button border and background */
 .btn.input-group-addon,
 a.input-group-addon {
 	border-color: $btn-default-border;
+	background-color: $btn-default-bg;
 }
 /* Dividing border between btn-addon and form-control matches button border */
 .input-group:has(> .btn.input-group-addon:last-child) .form-control,
@@ -171,6 +172,11 @@ a.input-group-addon {
 .input-group:has(> .btn.input-group-addon:first-child) .form-control,
 .input-group:has(> a.input-group-addon:first-child) .form-control {
 	border-left-color: $btn-default-border;
+}
+/* Text field next to a button/link addon gets the button default background, even when disabled */
+.input-group:has(> .btn.input-group-addon) .form-control,
+.input-group:has(> a.input-group-addon) .form-control {
+	background-color: $btn-default-bg;
 }
 
 

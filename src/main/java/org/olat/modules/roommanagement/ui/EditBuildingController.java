@@ -171,6 +171,7 @@ public class EditBuildingController extends FormBasicController {
 		addressEl.setMandatory(true);
 
 		findOnMapLink = uifactory.addFormLink("building.find.on.map", addressMapCombo, Link.BUTTON);
+		findOnMapLink.setElementCssClass("input-group-addon");
 		findOnMapLink.setIconLeftCSS("o_icon o_icon_search");
 
 		updateMapContext();
