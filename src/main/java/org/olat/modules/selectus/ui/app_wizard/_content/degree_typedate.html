@@ -3,10 +3,10 @@
 	#if($f.hasError("type") || $f.hasError("degdate"))
 	<div class="col-xs-8 col-sm-10">
 		#if($f.hasError("type"))
-			$r.render("type_ERROR")
+			$r.render("type","error")
 		#end
 		#if($f.hasError("degdate"))
-			$r.render("degdate_ERROR")
+			$r.render("degdate","error")
 		#end
 	</div>
 	#end

@@ -261,7 +261,12 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		for(FlexiTableFilter filter:filters) {
 			int column;
 			if(Fields.isValue(filter.getFilter())) {
-				column = Fields.valueOf(filter.getFilter()).ordinal();
+				Fields field = Fields.valueOf(filter.getFilter());
+				if(field == Fields.myRating) {
+					continue; // Dedicated filter
+				} else {
+					column = field.ordinal();
+				}
 			} else if(filter.getFilter().startsWith("filter.")) {
 				column = Integer.parseInt(filter.getFilter().substring(7));
 			} else {
@@ -352,15 +357,6 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		if(ratings == null || ratings.isEmpty()) return true;
 		
 		String stringuifiedRating = getMyRating(row);
-		if(PositionApplicationsController.FILTER_NULL_KEY.equals(stringuifiedRating)) {
-			if(ratings.contains(PositionApplicationsController.FILTER_NULL_KEY)) {
-				// Application with decision cannot be rated
-				Integer decision = row.getDecision();
-				return decision == null;
-			}
-			return false;
-		}
-		
 		return ratings.contains(stringuifiedRating);
 	}
 	
