@@ -86,7 +86,7 @@ public class ReviewServiceTest extends OlatTestCase {
 	@Test
 	public void getReviewStatistics() {
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("selectus-1");
-		organisationService.addMember(admin, OrganisationRoles.selectusmanager, admin);
+		organisationService.addMember(defaultUnitTestOrganisation, admin, OrganisationRoles.selectusmanager, admin);
 		dbInstance.commitAndCloseSession();
 		
 		Identity reviewer1 = JunitTestHelper.createAndPersistIdentityAsRndUser("reviewer-service-1");
