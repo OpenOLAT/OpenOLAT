@@ -646,6 +646,9 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 			return switch(FIELDS[col]) {
 				case applicationStatus -> app.getApplicationStatus().name();
 				case decision -> app.getDecision() == null ? null : app.getDecision().toString();
+				case experts -> appRow.getRefereesStats().getNumOfExperts();
+				case recommendations -> appRow.getRefereesStats().getNumOfRecommendations();
+				case comparativeExperts -> appRow.getRefereesStats().getNumOfComparativeExperts();
 				default -> getValueAt(appRow, col);
 			};
 		}

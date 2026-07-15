@@ -801,19 +801,19 @@ public class PositionApplicationsController extends FormBasicController implemen
 		if(recruitingModule.isReferenceEnabled()) {
 			RecruitingTableOption providedOption = recruitingModule.getTableApplicationsProvidedExpertsRecommendationsOption();
 			if((position.isExpertRecommendationEnabled() || position.isRefereeRecommendationEnabled()) && !providedOption.isDisabled()) {
-				initColumnModel(Fields.providedExpertsRecommendations, providedOption, filters);
+				initNumericalColumnModel(Fields.providedExpertsRecommendations, providedOption, null, filters);
 			}
 			RecruitingTableOption expertsOption = recruitingModule.getTableApplicationsExpertsOption();
 			if(position.isExpertRecommendationEnabled() && !expertsOption.isDisabled()) {
-				initColumnModel(Fields.experts, expertsOption, new ReferencesStatsCellRenderer(ReferenceType.expert), filters);
+				initNumericalColumnModel(Fields.experts, expertsOption, new ReferencesStatsCellRenderer(ReferenceType.expert), filters);
 			}
 			RecruitingTableOption refereesOption = recruitingModule.getTableApplicationsRefereesOption();
 			if(position.isRefereeRecommendationEnabled() && !refereesOption.isDisabled()) {
-				initColumnModel(Fields.recommendations, refereesOption, new ReferencesStatsCellRenderer(ReferenceType.recommendation), filters);
+				initNumericalColumnModel(Fields.recommendations, refereesOption, new ReferencesStatsCellRenderer(ReferenceType.recommendation), filters);
 			}
 			RecruitingTableOption comparativeExpertsOption = recruitingModule.getTableApplicationsComparativeExpertsOption();
 			if(recruitingModule.isComparativeAssessmentExpertsEnabled() && position.isComparativeAssessmentExpertEnabled() && !comparativeExpertsOption.isDisabled()) {
-				initColumnModel(Fields.comparativeExperts, refereesOption, new ReferencesStatsCellRenderer(ReferenceType.comparativeAssessmentExpert), filters);
+				initNumericalColumnModel(Fields.comparativeExperts, refereesOption, new ReferencesStatsCellRenderer(ReferenceType.comparativeAssessmentExpert), filters);
 			}
 		}
 	}
@@ -930,6 +930,16 @@ public class PositionApplicationsController extends FormBasicController implemen
 					SELECT_POSITION, render));
 			if(filters != null) {
 				filters.add(new FlexiTableTextFilter(translate(field.i18nHeaderKey()), field.name(), false));
+			}
+		}
+	}
+	
+	private void initNumericalColumnModel(Fields field, RecruitingTableOption option, FlexiCellRenderer render, List<FlexiTableExtendedFilter> filters) {
+		if(!option.isDisabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field,
+					SELECT_POSITION, render));
+			if(filters != null) {
+				filters.add(new FlexiTableNumericalRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, "Von", "Bis"));
 			}
 		}
 	}
