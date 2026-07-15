@@ -577,7 +577,7 @@ public class PositionDAOTest extends OlatTestCase {
 	@Test
 	public void findPositionsSelectusManager() {
 		Identity staffMember = JunitTestHelper.createAndPersistIdentityAsRndUser("Staff-pos-1-", defaultUnitTestOrganisation, "test21");
-		organisationService.addMember(organisationService.getDefaultOrganisation(), staffMember, OrganisationRoles.selectusmanager, null);
+		organisationService.addMember(defaultUnitTestOrganisation, staffMember, OrganisationRoles.selectusmanager, null);
 		dbInstance.commitAndCloseSession();
 		
 		//position in preparation
