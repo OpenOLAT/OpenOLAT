@@ -1956,7 +1956,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			showWarning("error.atleastone.lecture");
 		} else {
 			manageTeachersCtrl = new ManageTeachersController(ureq, getWindowControl(), blocks,
-					config, entry, taxonomyEnabled, secCallback);
+					config, entry, secCallback);
 			listenTo(manageTeachersCtrl);
 			
 			String title = translate("manage.teachers");
@@ -2025,7 +2025,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 
 		config.setDetailsTimelineMode(FlexiTableRendererType.verticalTimeLine.equals(tableEl.getRendererType()));
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row,
-				mainForm, config, lectureManagementManaged, entry != null, taxonomyEnabled, secCallback);
+				mainForm, config, lectureManagementManaged, entry != null, secCallback);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

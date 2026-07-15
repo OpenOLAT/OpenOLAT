@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.model.TagInfoImpl;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -75,10 +76,20 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 
 		uifactory.addObjectSelectionElement("objects.browser", "selection.objects.browser", sectionContainer,
 				getWindowControl(), true, createBrowserNamesSource());
+		
+		ObjectSelectionElement objectSelectionDisabledNoSelectionEl = uifactory.addObjectSelectionElement(
+				"selection.objects.disabled.no.selection", "selection.objects.disabled.no.selection", sectionContainer,
+				getWindowControl(), true, new ObjectListSource(List.of()));
+		objectSelectionDisabledNoSelectionEl.setEnabled(false);
 
-		ObjectSelectionElement objectSelectionDisabledEl = uifactory.addObjectSelectionElement("objects.disabled",
+		ObjectSelectionElement objectSelectionDisabledEl = uifactory.addObjectSelectionElement("selection.objects.disabled",
 				"selection.objects.disabled", sectionContainer, getWindowControl(), true, createNamesSource(true));
 		objectSelectionDisabledEl.setEnabled(false);
+		
+		ObjectSelectionElement objectSelectionDisabledBrowserEl = uifactory.addObjectSelectionElement(
+				"selection.objects.disabled.browser", "selection.objects.disabled.browser", sectionContainer,
+				getWindowControl(), true, createBrowserNamesSource());
+		objectSelectionDisabledBrowserEl.setEnabled(false);
 	}
 	
 	private ObjectListSource createOrganisationSource() {
@@ -146,6 +157,10 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 		allTags.add(tag7);
 		allTags.add(new TagInfoImpl(8l, new Date(), translate("select.8"), 3l, false));
 		uifactory.addTagSelection("tags", "tags", sectionContainer, getWindowControl(), allTags);
+		
+		TagSelection tagDisabledEl = uifactory.addTagSelection("selection.tags.disabled", "selection.tags.disabled",
+				sectionContainer, getWindowControl(), allTags);
+		tagDisabledEl.setEnabled(false);
 	}
 
 	@Override

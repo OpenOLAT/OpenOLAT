@@ -147,11 +147,13 @@ public class EditLectureBlockController extends FormBasicController {
 	private TextElement preparationEl;
 	private TextElement locationEl;
 	private DateChooser dateEl;
+	private ObjectSelectionElement roomsEl;
 	private FormToggle compulsoryEl;
 	private FormLink editOnlineMeetingButton;
 	private SingleSelection onlineMeetingEl;
 	private FormToggle enabledOnlineMeetingEl;
 	private ObjectSelectionElement taxonomyLevelEl;
+	private FormLink adoptButton;
 	private SingleSelection plannedLecturesEl;
 	private MultipleSelectionElement teacherEl;
 	private TextElement onlineMeetingProviderUrlEl;
@@ -168,8 +170,6 @@ public class EditLectureBlockController extends FormBasicController {
 	private AddLectureContext addLectureCtxt;
 	private CurriculumElement curriculumElement;
 	private BigBlueButtonMeeting bigBlueButtonMeeting;
-	private FormLink adoptButton;
-	private ObjectSelectionElement roomsEl;
 	private Roles roles;
 	private int participantCount;
 

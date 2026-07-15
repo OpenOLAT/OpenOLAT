@@ -20,7 +20,6 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -45,8 +44,6 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
-import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -75,7 +72,6 @@ import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
-import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -100,12 +96,9 @@ import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.model.CollisionReport;
 import org.olat.modules.roommanagement.ui.RoomDetailViewController;
 import org.olat.modules.roommanagement.ui.RoomUIHelper;
-import org.olat.modules.taxonomy.TaxonomyRef;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryRuntimeType;
-import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.user.PortraitUser;
@@ -138,7 +131,6 @@ public class LectureListDetailsController extends FormBasicController {
 	private final boolean allowRepositoryEntry;
 	private final RepositoryEntry repositoryEntry;
 	private final boolean lectureManagementManaged;
-	private final boolean taxonomyEnabled;
 	private LectureListRepositoryConfig config;
 	private RepositoryEntryImageMapper mapperThumbnail;
 	private final LecturesSecurityCallback secCallback;
@@ -164,24 +156,18 @@ public class LectureListDetailsController extends FormBasicController {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
-	private CurriculumModule curriculumModule;
-	@Autowired
-	private RepositoryModule repositoryModule;
-	@Autowired
 	private RoomManagementModule roomManagementModule;
 	@Autowired
 	private RoomManagementService roomManagementService;
 	
 	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row, Form rootForm,
-			LectureListRepositoryConfig config, boolean lectureManagementManaged, boolean inRepoEntry, boolean taxonomyEnabled,
-			LecturesSecurityCallback secCallback) {
+			LectureListRepositoryConfig config, boolean lectureManagementManaged, boolean inRepoEntry, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "lecture_details_view", rootForm);
 		setTranslator(Util.createPackageTranslator(RoomUIHelper.class, ureq.getLocale(), getTranslator()));
 		this.row = row;
 		this.config = config;
 		this.secCallback = secCallback;
 		this.lectureManagementManaged = lectureManagementManaged;
-		this.taxonomyEnabled = taxonomyEnabled;
 		profileConfig = userPortraitService.createProfileConfig();
 		
 		repositoryEntry = row.getEntry() != null ? repositoryService.loadByKey(row.getEntry().key()) : null;
@@ -249,7 +235,7 @@ public class LectureListDetailsController extends FormBasicController {
 			if(allowRepositoryEntry) {
 				initFormReferencedCourses(layoutCont);
 			}
-			initFormSubjects(formLayout);
+			layoutCont.contextPut("subjects", row.getSubjectsLabel());
 			initFormTeachers(layoutCont, ureq);
 			initFormMetadata(formLayout, lectureBlock);
 			initFormParticipantsGroupTable(formLayout);
@@ -347,35 +333,6 @@ public class LectureListDetailsController extends FormBasicController {
 	
 	private String getRepositoryEntryPath() {
 		return "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
-	}
-
-	private void initFormSubjects(FormItemContainer formLayout) {
-		if (!taxonomyEnabled) {
-			return;
-		}
-
-		Collection<TaxonomyRef> taxonomyRefs = getTaxonomyRefs();
-		if (taxonomyRefs.isEmpty() || row.getSubjects() == null || row.getSubjects().isEmpty()) {
-			return;
-		}
-		
-		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(), row.getSubjects(), List::of, null);
-		ObjectSelectionElement taxonomyLevelEl = uifactory.addObjectSelectionElement("lecture.subjects",
-				"lecture.subjects", formLayout, getWindowControl(), true, source);
-		taxonomyLevelEl.setEnabled(false);
-	}
-
-	private Collection<TaxonomyRef> getTaxonomyRefs() {
-		Set<TaxonomyRef> taxonomyRefs = new HashSet<>();
-		if (curriculumElement != null) {
-			taxonomyRefs.addAll(curriculumModule.getTaxonomyRefs());
-		} else {
-			if (row.getLectureBlock() != null && row.getLectureBlock().getCurriculumElement() != null) {
-				taxonomyRefs.addAll(curriculumModule.getTaxonomyRefs());
-			}
-		}
-		taxonomyRefs.addAll(repositoryModule.getTaxonomyRefs());
-		return taxonomyRefs;
 	}
 
 	private void initFormTeachers(FormLayoutContainer formLayout, UserRequest ureq) {

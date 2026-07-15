@@ -84,6 +84,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 		component = ExpandButtonFactory.createSelectionDisplay(this);
 		component.setAriaHasPopup(ExpandButton.ARIA_HASPOPUP_DIALOG);
 		component.setEscapeMode(EscapeMode.none);
+		component.setDisabledAsText(true);
 	}
 
 	@Override

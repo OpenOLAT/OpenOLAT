@@ -57,6 +57,9 @@ public class ExpandButtonRenderer extends DefaultComponentRenderer {
 		sb.append("o_expand_button o_can_have_focus ");
 		if (StringHelper.containsNonWhitespace(cmp.getCssClass())) {
 			sb.append(cmp.getCssClass());
+			if (!cmp.isEnabled() && cmp.getCssClass().contains("btn")) {
+				sb.append(" disabled o_disabled");
+			}
 		}
 		sb.append("\" "); // class
 		if (StringHelper.containsNonWhitespace(cmp.getTitle())) {
@@ -108,7 +111,7 @@ public class ExpandButtonRenderer extends DefaultComponentRenderer {
 		sb.append("<div ");
 		sb.append("id=\"").append(cmp.getFormDispatchId()).append("\" ");
 		sb.append("class=\"");
-		sb.append("o_expand_button o_expand_button_disabled_text o_disabled disabled btn form-control-static");
+		sb.append("o_expand_button o_expand_button_disabled_text form-control-static");
 		sb.append("\"");
 		sb.append(">");
 		sb.append(cmp.getText(), cmp.getEscapeMode());

@@ -42,7 +42,6 @@ public class ExpandButtonFactory {
 		button.setCssClass("btn btn-default o_selection_display o_button_printed");
 		button.setIconRightExpandedCss("o_icon o_icon_caret");
 		button.setIconRightCollapsedCss("o_icon o_icon_caret");
-		button.setDisabledAsText(true);
 		return button;
 	}
 
@@ -52,7 +51,6 @@ public class ExpandButtonFactory {
 		button.setCssClass("btn btn-default o_selection_display o_button_printed");
 		button.setIconRightExpandedCss("o_icon o_icon_caret");
 		button.setIconRightCollapsedCss("o_icon o_icon_caret");
-		button.setDisabledAsText(true);
 		return button;
 	}
 

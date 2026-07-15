@@ -1459,8 +1459,7 @@ dialog {
 
 /* Selection Display Element */
 .o_expand_button {
-	&.o_selection_display,
-	&.o_expand_button_disabled_text {
+	&.o_selection_display {
 		display: flex;
 		gap: 5px;
 		border-color: $input-border;
@@ -1471,6 +1470,13 @@ dialog {
 			width: 100%;
 			max-width: 100%;
 			min-height: $input-height-base;
+		}
+		&.btn-default {
+			&.disabled {
+				&:hover {
+					border-color: $input-border;
+				}
+			}
 		}
 	}
 }
