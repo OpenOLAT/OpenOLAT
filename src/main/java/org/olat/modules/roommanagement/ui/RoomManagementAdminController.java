@@ -168,7 +168,7 @@ public class RoomManagementAdminController extends BasicController implements Ac
 	private void doOpenRoomScheduling(UserRequest ureq) {
 		if (roomSchedulingCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ROOM_SCHEDULING), null);
-			roomSchedulingCtrl = new RoomSchedulingController(ureq, swControl);
+			roomSchedulingCtrl = new RoomSchedulingController(ureq, swControl, true);
 			listenTo(roomSchedulingCtrl);
 		} else {
 			addToHistory(ureq, roomSchedulingCtrl);

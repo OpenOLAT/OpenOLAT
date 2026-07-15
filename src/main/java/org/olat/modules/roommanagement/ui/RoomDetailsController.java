@@ -56,14 +56,17 @@ public class RoomDetailsController extends FormBasicController {
 
 	private LightboxController lightboxCtrl;
 	private RoomDetailViewController roomDetailViewCtrl;
+	
 	private final Room room;
+	private final boolean readOnly;
 
 	@Autowired
 	private RoomManagementService roomManagementService;
 
-	public RoomDetailsController(UserRequest ureq, WindowControl wControl, Room room, Form mainForm) {
+	public RoomDetailsController(UserRequest ureq, WindowControl wControl, Room room, boolean readOnly, Form mainForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "room_details_view", mainForm);
 		this.room = room;
+		this.readOnly = readOnly;
 		initForm(ureq);
 	}
 
@@ -90,7 +93,7 @@ public class RoomDetailsController extends FormBasicController {
 		calendarLink = uifactory.addFormLink("room.detail.view.calendar", formLayout, Link.BUTTON);
 		calendarLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
 
-		if (room.getStatus() != RoomStatus.deleted) {
+		if (room.getStatus() != RoomStatus.deleted && !readOnly) {
 			editLink = uifactory.addFormLink("edit", formLayout, Link.BUTTON);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}

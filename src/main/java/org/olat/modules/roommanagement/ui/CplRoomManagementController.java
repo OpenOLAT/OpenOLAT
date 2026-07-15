@@ -120,7 +120,7 @@ public class CplRoomManagementController extends BasicController implements Acti
 	private void doOpenRoomScheduling(UserRequest ureq) {
 		if (roomSchedulingCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ROOM_SCHEDULING), null);
-			roomSchedulingCtrl = new RoomSchedulingController(ureq, swControl);
+			roomSchedulingCtrl = new RoomSchedulingController(ureq, swControl, false);
 			listenTo(roomSchedulingCtrl);
 		} else {
 			addToHistory(ureq, roomSchedulingCtrl);

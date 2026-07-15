@@ -614,7 +614,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		doCloseDetails(row);
 		Room room = roomManagementService.getRoom(new RoomRefImpl(row.getRoom().getKey()));
 		if (room == null) return;
-		RoomDetailsController detailsCtrl = new RoomDetailsController(ureq, getWindowControl(), room, mainForm);
+		RoomDetailsController detailsCtrl = new RoomDetailsController(ureq, getWindowControl(), room, readOnly, mainForm);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		expandedRow = row;

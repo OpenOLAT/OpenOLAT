@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.NewControllerFactory;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
@@ -45,22 +46,23 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionDelegateCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateWithDayFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
-import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
-import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionDelegateCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
@@ -91,6 +93,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -108,10 +111,8 @@ import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomStatus;
-import org.olat.core.util.DateRange;
 import org.olat.modules.roommanagement.model.SearchBuildingParameters;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
-import org.olat.NewControllerFactory;
 import org.olat.modules.roommanagement.ui.RoomSchedulingDataModel.SchedulingCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -144,6 +145,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	private FlexiFiltersTab tabWithWarnings;
 
 	private final Roles roles;
+	private final boolean withHint;
 
 	@Autowired
 	private CalendarModule calendarModule;
@@ -156,18 +158,23 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	@Autowired
 	private RoomManagementService roomManagementService;
 
-	public RoomSchedulingController(UserRequest ureq, WindowControl wControl) {
+	public RoomSchedulingController(UserRequest ureq, WindowControl wControl, boolean withHint) {
 		super(ureq, wControl, "room_scheduling");
 		setTranslator(Util.createPackageTranslator(LectureListRepositoryController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 
 		roles = ureq.getUserSession().getRoles();
+		this.withHint = withHint;
 		initForm(ureq);
 		loadModel();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("withHint", Boolean.valueOf(withHint));
+		}
+		
 		List<DateScope> scopes = ScopeFactory.dateScopesBuilder(getLocale())
 				.todayAndUpcoming()
 				.lastMonths(3)

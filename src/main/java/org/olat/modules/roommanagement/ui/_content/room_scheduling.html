@@ -1,9 +1,11 @@
 <fieldset>
 	<legend>$r.translate("admin.room.scheduling")</legend>
+	#if($r.isTrue($withHint))
 	<div class="o_hint">
 		$r.translate("room.scheduling.hint")
 		$r.contextHelpAdditionalInfo("manual_admin/administration/Modules_Room_Management_module/#room-scheduling")
 	</div>
+	#end
 	$r.render("scope")
 	$r.render("schedulings")
 </fieldset>
