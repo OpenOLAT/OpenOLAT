@@ -34,7 +34,7 @@
 
 	<div class="o_two_col_metadata o_block">
 		<div>
-			<span>$r.formatTimeShort($row.startDate) - $r.formatTimeShort($row.endDate)
+			<span><i class="o_icon o_icon-fw o_icon_time"> </i> $r.formatTimeShort($row.startDate) - $r.formatTimeShort($row.endDate)
 			#if(($r.isNotNull($row.leadTime) && $row.leadTime > 0) || ($r.isNotNull($row.followupTime) && $row.followupTime > 0))
 				<span class="o_lead_followup_times">
 				#if($row.leadTime > 0)
