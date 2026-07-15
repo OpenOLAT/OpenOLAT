@@ -32,9 +32,10 @@ import org.olat.modules.selectus.model.PersonName;
 import org.olat.modules.selectus.ui.RecruitingMainController;
 
 /**
+ * A salutation generator in english only.
  * 
  * Initial date: 24.06.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service("salutationGeneratorETH")

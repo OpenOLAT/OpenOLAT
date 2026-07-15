@@ -1,3 +1,4 @@
+
 /**
  * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
