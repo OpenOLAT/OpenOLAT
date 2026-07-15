@@ -41,7 +41,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.ai.essay.AiSourceCompanionFileStore;
 import org.olat.core.commons.services.ai.essay.EssayAiGrading;
+import org.olat.core.commons.services.ai.essay.EssayAiGradingFileStore;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -270,7 +272,28 @@ public class QTI21ExportProcessor {
 			}
 			FileUtils.bcopy(originalFile, exportFile, "Copy material QTI 2.1");
 		}
+		
+		exportCompanionFiles(fullItem, questionContainer);
+
 		return assessmentItem;
+	}
+	
+
+	protected void exportCompanionFiles(QuestionItemFull fullItem, File questionContainer) {
+		String dir = fullItem.getDirectory();
+		File resourceDirectory = qpoolFileStorage.getDirectory(dir);
+		
+		File aiSource = new File(resourceDirectory, AiSourceCompanionFileStore.FILENAME);
+		if(aiSource.exists()) {
+			File aiCopy = new File(questionContainer, AiSourceCompanionFileStore.FILENAME);
+			FileUtils.copyFileToFile(aiSource, aiCopy, false);
+		}
+		
+		File aiGrading = new File(resourceDirectory, EssayAiGradingFileStore.FILENAME);
+		if(aiGrading.exists()) {
+			File aiCopy = new File(questionContainer, EssayAiGradingFileStore.FILENAME);
+			FileUtils.copyFileToFile(aiGrading, aiCopy, false);
+		}
 	}
 	
 	protected void collectMaterials(QuestionItemFull fullItem, AssessmentItemsAndResources materials) {
@@ -290,8 +313,6 @@ public class QTI21ExportProcessor {
 			}
 		}
 	}
-	
-
 	
 	public void enrichWithMetadata(QuestionItemFull qitem, ResolvedAssessmentItem resolvedAssessmentItem, ManifestBuilder manifestBuilder) {
 		ResourceType resource = manifestBuilder.getResourceTypeByHref(qitem.getRootFilename());
