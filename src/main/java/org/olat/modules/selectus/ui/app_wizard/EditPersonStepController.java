@@ -79,7 +79,11 @@ public class EditPersonStepController extends StepFormBasicController {
 	@Override
 	public void back() {
 		Application app = (Application)getFromRunContext(WizardConstants.APPLICATION);
+		if(app.getKey() == null) {
+			app = recruitingService.saveTempApplication(app, false);
+		}
 		editPersonController.commitChanges(app);
+		addToRunContext(WizardConstants.APPLICATION, app);
 	}
 
 	@Override
