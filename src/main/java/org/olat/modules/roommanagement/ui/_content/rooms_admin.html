@@ -1,9 +1,11 @@
 <fieldset>
 	<legend>$r.translate("admin.rooms")</legend>
+	#if($r.isTrue($withHint))
 	<div class="o_hint">
 		$r.translate("admin.rooms.help")
 		$r.contextHelpAdditionalInfo("manual_admin/administration/Modules_Room_Management_module/#rooms")
 	</div>
+	#end
 	<div>
 		#if($r.available("create"))
 		<div class="o_button_group o_button_group_right">

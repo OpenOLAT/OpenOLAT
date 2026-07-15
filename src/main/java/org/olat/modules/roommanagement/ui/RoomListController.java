@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
@@ -159,6 +160,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		createRoomButton = uifactory.addFormLink("create", formLayout, Link.BUTTON);
 		createRoomButton.setIconLeftCSS("o_icon o_icon_add");
 		createRoomButton.setVisible(!readOnly);
+		
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("withHint", Boolean.valueOf(!readOnly));
+		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
