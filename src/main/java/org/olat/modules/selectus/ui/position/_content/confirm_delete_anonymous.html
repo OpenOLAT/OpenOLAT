@@ -8,21 +8,8 @@
 		</div>
 	</div>
 	$r.render("custom.attributes")
-	
-	#set($itemId = $f.getItemId("confirm.delete"))
 	<div class="form-group  #if($f.hasError("confirm.delete")) has-feedback has-error #end clearfix">
-		$r.render("confirm.delete_LABEL", "$itemId", "col-sm-3")
-		<div class='col-sm-9'>
-			$r.render("confirm.delete", "form")
-			#if($f.hasError("confirm.delete"))
-				<span class="o_icon o_icon_error form-control-feedback"></span>
-			#end
-		</div>
-		#if($f.hasError("confirm.delete"))
-			<div class="col-sm-offset-3 col-sm-9">
-				$r.render("confirm.delete_ERROR")
-			</div>
-		#end
+		$r.render("confirm.delete","3_9")
 	</div>
 	<div class="o_button_group">
 		$r.render("delete")

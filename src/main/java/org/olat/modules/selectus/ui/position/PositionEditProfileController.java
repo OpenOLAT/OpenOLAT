@@ -767,7 +767,7 @@ public class PositionEditProfileController extends FormBasicController implement
 			}
 		}
 		
-		allOk &= validateTextElement(homepageElement, 255, !recruitingModule.isPositionHomepageOptional());
+		allOk &= validateHomepage();
 		
 		for(RichTextElement descEl:descLanguagesEl) {
 			if(availableLocales.isEmpty()) {
@@ -845,6 +845,21 @@ public class PositionEditProfileController extends FormBasicController implement
 				}
 			}
 		}
+		return allOk;
+	}
+	
+	private boolean validateHomepage() {
+		boolean allOk = true;
+		
+		homepageElement.clearError();
+		if(!validateTextElement(homepageElement, 255, !recruitingModule.isPositionHomepageOptional())) {
+			allOk &= false;
+		} else if(StringHelper.containsNonWhitespace(homepageElement.getValue())
+				&& !isValidUrl(homepageElement.getValue())) {
+			homepageElement.setErrorKey("error.url.invalid");
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 	
