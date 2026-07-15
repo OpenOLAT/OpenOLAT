@@ -553,10 +553,13 @@ public class RepositoryLifecycleAdminController extends FormBasicController impl
 			if(event == Event.DONE_EVENT) {
 				doCommitChanges();
 				doStartJob();
+			} else {
+				markDirty();
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(source == cmc) {
+			markDirty();
 			cleanUp();
 		}
 		super.event(ureq, source, event);
