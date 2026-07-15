@@ -54,7 +54,6 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	private PositionReviewDefinition reviewDefinition;
 	
 	private final boolean selectusManager;
-	private final boolean olatAdmin;
 	private final PositionRole positionRole;
 	private final RecruitingSecurityCallback recruitingSecCallback;
 	
@@ -68,7 +67,6 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 		reviewDefinition = position.getReviewDefinition();
 		recruitingModule = CoreSpringFactory.getImpl(RecruitingModule.class);
 
-		olatAdmin = roles.isAdministrator();
 		selectusManager = (position.getOrganisation() != null && roles.hasRole(position.getOrganisation(), OrganisationRoles.selectusmanager))
 				|| position.getKey() == null;
 	}
@@ -98,7 +96,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	
 	@Override
 	public boolean canSeeExpertBlackList() {
-		return selectusManager || olatAdmin || isAllowedByPositionRole(recruitingModule.getRolesAllowedToSeeExpertBlackList());
+		return selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToSeeExpertBlackList());
 	}
 
 	@Override
@@ -188,7 +186,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 		boolean canSee = positionRole != PositionRole.member;
 		if(canSee) {
 			//not a committee member, can see ratings
-			if(selectusManager || olatAdmin) {
+			if(selectusManager) {
 				return true;
 			}
 			if(isAllowedByPositionRole(recruitingModule.getRolesAllowedToSeeRating())) {
@@ -206,7 +204,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	
 	@Override
 	public boolean canSeeCommitteeRatingsOnce() {
-		return selectusManager || olatAdmin 
+		return selectusManager 
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToSeeRating());
 	}
 
@@ -217,7 +215,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canViewParalellApplications() {
-		return selectusManager || olatAdmin
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToSeeParallelApplications());
 	}
 
@@ -273,7 +271,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 		boolean visible = false;
 		// the configured "always allowed" user roles override the config in UI. 
 		// e.g. head can always see the reviews, regardless of whether her can review or not 
-		boolean isAlwaysAllowed = selectusManager || olatAdmin;
+		boolean isAlwaysAllowed = selectusManager;
 		
 		if(reviewDefinition != null) {
 			ReviewVisibilityEnum visibility = null;
@@ -360,7 +358,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canDeleteReviews() {
-		return selectusManager || olatAdmin;
+		return selectusManager;
 	}
 
 	@Override
@@ -582,7 +580,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canManageFilters() {
-		return olatAdmin || isAllowedByFilterPermission(recruitingModule.getRolesAllowedToManageApplicationListFilters());
+		return selectusManager || isAllowedByFilterPermission(recruitingModule.getRolesAllowedToManageApplicationListFilters());
 	}
 	
 	@Override
@@ -696,7 +694,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	*/
 	
 	private boolean canShareFilters() {
-		return olatAdmin || isAllowedByFilterPermission(recruitingModule.getRolesAllowedToShareApplicationListFilters());
+		return selectusManager || isAllowedByFilterPermission(recruitingModule.getRolesAllowedToShareApplicationListFilters());
 	}
 
 	private boolean isAllowedByFilterPermission(FilterPermissions[] permissions) {
@@ -727,12 +725,12 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 
 	@Override
 	public boolean canBasicFilters() {
-		return olatAdmin || isAllowedByFilterPermission(recruitingModule.getRolesAllowedToApplicationListBasicFilters());
+		return selectusManager || isAllowedByFilterPermission(recruitingModule.getRolesAllowedToApplicationListBasicFilters());
 	}
 
 	@Override
 	public boolean canAdvancedFilters() {
-		return olatAdmin || isAllowedByFilterPermission(recruitingModule.getRolesAllowedToApplicationListAdvancedFilters());
+		return selectusManager || isAllowedByFilterPermission(recruitingModule.getRolesAllowedToApplicationListAdvancedFilters());
 	}
 
 	@Override
@@ -882,7 +880,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	
 	@Override
 	public boolean canDeletePublicFeedbacks() {
-		return selectusManager || olatAdmin
+		return selectusManager
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToDeletePublicFeedback());
 	}
 
