@@ -670,14 +670,7 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 				}
 				case firstName: return app.getPerson().getFirstName();
 				case lastName: return app.getPerson().getLastName();
-				case yearOfBirth: {
-					if(app.getPerson().getBirthday() != null) {
-						Calendar cal = Calendar.getInstance();
-						cal.setTime(app.getPerson().getBirthday());
-						return Integer.valueOf(cal.get(Calendar.YEAR));
-					}
-					return "";
-				}
+				case yearOfBirth: return app.getPerson().getBirthday();
 				case birthday: return app.getPerson().getBirthday();
 				case gender: return RecruitingHelper.formatGender(app.getPerson().getGender(), translator.getLocale());
 				case maritalStatus: {

@@ -44,13 +44,15 @@ public class FlexiFilterDateRangeController extends FlexiFilterExtendedControlle
 
 	private final FlexiTableDateRangeFilter filter;
 	private final boolean timeEnabled;
+	private final boolean twoDigitsYears;
 	private final DateRange initialDateRange;
 
 	public FlexiFilterDateRangeController(UserRequest ureq, WindowControl wControl, Form form, FlexiTableDateRangeFilter filter,
-			boolean timeEnabled, DateRange initialDateRange) {
+			boolean twoDigitsYears, boolean timeEnabled, DateRange initialDateRange) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, form);
 		this.filter = filter;
 		this.timeEnabled = timeEnabled;
+		this.twoDigitsYears = twoDigitsYears;
 		this.initialDateRange = initialDateRange;
 		
 		initForm(ureq);
@@ -71,6 +73,7 @@ public class FlexiFilterDateRangeController extends FlexiFilterExtendedControlle
 		rangeEl.setDateChooserTimeEnabled(timeEnabled);
 		rangeEl.setSecondDate(true);
 		rangeEl.setSecondDate(end);
+		rangeEl.set2DigitsYearFormat(twoDigitsYears);
 		rangeEl.setSeparator("to.separator");
 		rangeEl.addActionListener(FormEvent.ONCHANGE);
 		

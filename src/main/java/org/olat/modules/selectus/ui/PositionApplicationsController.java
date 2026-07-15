@@ -606,7 +606,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		initColumnModel(Fields.lastName, recruitingModule.getTableApplicationsPersonLastNameOption(), filters);
 		initColumnModel(Fields.gender, recruitingModule.getTableApplicationsGenderOption(), new GenderCellRenderer(), null);
 		initColumnModel(Fields.maritalStatus, recruitingModule.getTableApplicationsMaritalStatusOption(), filters);
-		initColumnModel(Fields.yearOfBirth, recruitingModule.getTableApplicationsYearOfBirthOption(), filters);
+		initDateColumnModel(Fields.yearOfBirth, new AcademicalDateCellRenderer(AcademicalDateFormat.yearsOnly(), getLocale()), filters);
 		initDateColumnModel(Fields.birthday, recruitingModule.getTableApplicationsBirthdayOption(), filters);
 		initColumnModel(Fields.academicTitle, recruitingModule.getTableApplicationPersonAcademicTitleOption(), filters);
 	}
@@ -939,7 +939,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field,
 					SELECT_POSITION, new DateCellRenderer()));
 			if(filters != null) {
-				filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false,
+				filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false, false,
 					getLocale()));
 			}
 		}
@@ -949,7 +949,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, field,
 				SELECT_POSITION, render));
 		if(filters != null) {
-			filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false, getLocale()));
+			filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false, false, getLocale()));
 		}
 	}
 	
@@ -958,7 +958,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field,
 					SELECT_POSITION, render));
 			if(filters != null) {
-				filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false, getLocale()));
+				filters.add(new FlexiTableDateRangeFilter(translate(field.i18nHeaderKey()), field.name(), false, false, false, getLocale()));
 			}
 		}
 	}

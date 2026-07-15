@@ -53,14 +53,20 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 	private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	
 	private final boolean timeEnabled;
+	private final boolean twoDigitsYear;
 	private final Locale locale;
 	private final Translator translator;
 	private DateRange filterDateRange;
 	
 	public FlexiTableDateRangeFilter(String label, String filter, boolean defaultVisible, boolean timeEnabled, Locale locale) {
+		this(label, filter, defaultVisible, true, timeEnabled, locale);
+	}
+	
+	public FlexiTableDateRangeFilter(String label, String filter, boolean defaultVisible, boolean twoDigitsYear, boolean timeEnabled, Locale locale) {
 		super(label, filter);
 		this.timeEnabled = timeEnabled;
 		this.locale = locale;
+		this.twoDigitsYear = twoDigitsYear;
 		this.translator = Util.createPackageTranslator(FlexiTableElementImpl.class, locale);
 		setDefaultVisible(defaultVisible);
 	}
@@ -166,7 +172,7 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 	@Override
 	public FlexiFilterExtendedController getController(UserRequest ureq, WindowControl wControl, Form form, Translator translator, Object preselectedValue) {
 		DateRange dateRange = preselectedValue != null? toDateRange(preselectedValue): filterDateRange;
-		return new FlexiFilterDateRangeController(ureq, wControl, form, this, timeEnabled, dateRange);
+		return new FlexiFilterDateRangeController(ureq, wControl, form, this, twoDigitsYear, timeEnabled, dateRange);
 	}
 
 	private DateRange toDateRange(Object object) {

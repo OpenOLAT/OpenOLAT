@@ -61,8 +61,8 @@ public class AcademicalDateCellRenderer implements CustomCellRenderer, FlexiCell
 	}
 	
 	private void render(StringOutput sb, Object val) {
-		if(val instanceof Date) {
-			String date = RecruitingHelper.formatAcademicalTableDate((Date)val, formats, locale);
+		if(val instanceof Date dateValue) {
+			String date = RecruitingHelper.formatAcademicalTableDate(dateValue, formats, locale);
 			if(date != null) {
 				sb.append(date);
 			}
