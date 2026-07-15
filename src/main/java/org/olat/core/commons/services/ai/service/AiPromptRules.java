@@ -48,7 +48,9 @@ public final class AiPromptRules {
 			- German text always uses Swiss spelling: never write the character ß, always write \
 			ss instead (gross, heisst, Strasse).
 			- German text always uses the real umlaut characters ä, ö, ü, Ä, Ö, Ü. Never write \
-			the replacement forms ae, oe, ue for an umlaut (Prüfung, not Pruefung).""";
+			the replacement forms ae, oe, ue for an umlaut (Prüfung, not Pruefung).
+			- Use natural, grammatically correct capitalization for the output language (e.g. \
+			capitalize nouns in German). Do not force text to all-lowercase.""";
 
 	private AiPromptRules() {
 		// constants only

@@ -41,7 +41,7 @@ public class ImageDescriptionData {
 	private String description;
 	@Description("Accessible description for screen readers, precise and informative, only relevant details, very short, avoids redundancy, does not start with 'Image of' or 'Picture of'")
 	private String altText;
-	@Description("Academic or professional subject area, 1-2 words, e.g. Biology, Computer Science, Marketing, History, Mathematics, Medicine, Art")
+	@Description("Academic or professional subject area, 1-2 words, e.g. biology, computer science, marketing, history, mathematics, medicine, art")
 	private String subject;
 	@Description("Exactly one of: horizontal, vertical, square")
 	private String orientation;

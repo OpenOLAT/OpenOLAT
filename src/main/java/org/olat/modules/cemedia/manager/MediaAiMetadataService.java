@@ -273,16 +273,16 @@ public class MediaAiMetadataService {
 		if (overwrite || !hasTags(media, requester)) {
 			Set<String> tags = new LinkedHashSet<>();
 			if (StringHelper.containsNonWhitespace(data.getOrientation())) {
-				tags.add(data.getOrientation().toLowerCase());
+				tags.add(data.getOrientation());
 			}
 			for (String tag : data.getColorTags()) {
-				tags.add(tag.toLowerCase());
+				tags.add(tag);
 			}
 			for (String tag : data.getCategoryTags()) {
-				tags.add(tag.toLowerCase());
+				tags.add(tag);
 			}
 			for (String tag : data.getKeywords()) {
-				tags.add(tag.toLowerCase());
+				tags.add(tag);
 			}
 			if (StringHelper.containsNonWhitespace(data.getSubject())) {
 				tags.add(data.getSubject());

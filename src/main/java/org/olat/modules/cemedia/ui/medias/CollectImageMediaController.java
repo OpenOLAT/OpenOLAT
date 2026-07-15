@@ -381,19 +381,19 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 			altTextEl.setValue(data.getAltText());
 		}
 
-		// Replace the tag selection with the AI-generated tags (lowercase, deduplicated)
+		// Replace the tag selection with the AI-generated tags (deduplicated)
 		Set<String> newTags = new LinkedHashSet<>();
 		if (StringHelper.containsNonWhitespace(data.getOrientation())) {
-			newTags.add(data.getOrientation().toLowerCase());
+			newTags.add(data.getOrientation());
 		}
 		for (String tag : data.getColorTags()) {
-			newTags.add(tag.toLowerCase());
+			newTags.add(tag);
 		}
 		for (String tag : data.getCategoryTags()) {
-			newTags.add(tag.toLowerCase());
+			newTags.add(tag);
 		}
 		for (String tag : data.getKeywords()) {
-			newTags.add(tag.toLowerCase());
+			newTags.add(tag);
 		}
 		if (StringHelper.containsNonWhitespace(data.getSubject())) {
 			newTags.add(data.getSubject());

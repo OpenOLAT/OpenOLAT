@@ -53,7 +53,7 @@ public interface ImageDescriptionAiService {
 				- title: Short descriptive title, max 10 words
 				- description: 2-3 sentences describing the image in detail, suitable for full-text search
 				- altText: Accessible description for screen readers, precise and informative, only relevant details, very short, avoids redundancy, does not start with 'Image of' or 'Picture of'
-				- subject: Academic or professional subject area, 1-2 words, e.g. Biology, Computer Science, Marketing, History, Mathematics, Medicine, Art
+				- subject: Academic or professional subject area, 1-2 words, e.g. biology, computer science, marketing, history, mathematics, medicine, art
 				- orientation: Exactly one of: horizontal, vertical, square
 				- colorTags: 1-2 dominant colors; use b&w for grayscale; empty list if no clear dominant color
 				- categoryTags: 1-2 categories describing the image content
