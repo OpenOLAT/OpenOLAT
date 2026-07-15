@@ -116,7 +116,7 @@ public class CopyPositionListController extends FormBasicController {
 		copyColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(copyColumn);
 
-		positionsDataModel = new PositionsDataModel(columnsModel, getLocale());
+		positionsDataModel = new PositionsDataModel(columnsModel, null, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "positions", positionsDataModel, 20, false, getTranslator(), formLayout);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, PREFS_ID);

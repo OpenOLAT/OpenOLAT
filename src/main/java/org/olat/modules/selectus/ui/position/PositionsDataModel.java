@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -44,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter.NumericalRange;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.selectus.model.PositionLight;
@@ -66,11 +68,13 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 
 	private static final Fields[] COLS = Fields.values();
 	
+	private final Roles roles;
 	private final Locale locale;
 	private List<PositionLightWithStatistics> backupList;
 	
-	public PositionsDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public PositionsDataModel(FlexiTableColumnModel columnsModel, Roles roles, Locale locale) {
 		super(columnsModel);
+		this.roles = roles;
 		this.locale = locale;
 	}
 
@@ -271,6 +275,7 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 				case numOfMaleApplications: return position.getNumOfMaleApplications() == null ? 0 : position.getNumOfMaleApplications();
 				case numOfFemaleApplications: return position.getNumOfFemaleApplications() == null ? 0 : position.getNumOfFemaleApplications();
 				case organisation: return position.getOrganisation() == null ? null : position.getOrganisation().getDisplayName();
+				case delete: return canDelete(position);
 				default: return position;
 			}
 		}
@@ -280,6 +285,11 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 			return position.getAdditionalValue(index);
 		}
 		return "ERROR";
+	}
+	
+	private Boolean canDelete(PositionLightWithStatistics position) {
+		Organisation organisation = position.getOrganisation();
+		return roles != null && roles.hasRole(organisation, OrganisationRoles.selectusmanager);
 	}
 	
 	private String getPositionTitle(PositionLightWithStatistics position) {
@@ -337,7 +347,8 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 		numOfApplications("edit.num_of_applications"),
 		numOfMaleApplications("edit.num_of_male_applications"),
 		numOfFemaleApplications("edit.num_of_female_applications"),
-		organisation("table.header.organisation.unit");
+		organisation("table.header.organisation.unit"),
+		delete("delete");
 
 		private final String key;
 		

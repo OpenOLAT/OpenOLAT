@@ -118,7 +118,7 @@ public class ChoosePositionController extends StepFormBasicController {
 		copyColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(copyColumn);
 
-		positionsDataModel = new PositionsDataModel(columnsModel, getLocale());
+		positionsDataModel = new PositionsDataModel(columnsModel, null, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", positionsDataModel, 20, false, getTranslator(), formLayout);
 		
 		tableEl.setExportEnabled(false);
