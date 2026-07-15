@@ -350,7 +350,7 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 	}
 	
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(feedbackDeadlineYearElement != null) {

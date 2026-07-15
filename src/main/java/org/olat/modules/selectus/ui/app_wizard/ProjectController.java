@@ -309,7 +309,7 @@ public class ProjectController extends FormBasicController {
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		allOk &= RecruitingHelper.validateTextElement(titleEl, 255, titleEl.isMandatory(), new OWASPAntiSamyXSSFilter());

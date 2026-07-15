@@ -276,7 +276,7 @@ public class DocumentsController extends FormBasicController {
 	}
 	
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		for(DocumentElement fileEl:fileElements) {
 			allOk &= validEncryption(ureq, fileEl.getFileElement());

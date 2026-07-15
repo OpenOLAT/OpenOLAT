@@ -395,7 +395,7 @@ public class ApplicationEditStatusController extends FormBasicController {
 	}
 	
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		statusElement.clearError();

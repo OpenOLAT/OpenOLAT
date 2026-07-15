@@ -37,9 +37,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.FeedbackService;
 import org.olat.modules.selectus.RecruitingModule;
@@ -62,6 +59,8 @@ import org.olat.modules.selectus.ui.comment.ApplicationCommitteeCommentControlle
 import org.olat.modules.selectus.ui.events.RequestPersistEvent;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.ApplicationFeedbackMembersListController;
 import org.olat.modules.selectus.ui.reference.ApplicationReferenceListController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 
 /**
@@ -81,7 +80,7 @@ public class ApplicationEditController extends FormBasicController {
 	private ApplicationReferenceListController referencesCtrl;
 	private ApplicationCommitteeCommentController commentCtrl;
 	private ApplicationFeedbackMembersListController feedbacksCtrl;
-	private List<CustomAttributesController> customAttributesCtrls = new ArrayList<>();
+	private final List<CustomAttributesController> customAttributesCtrls = new ArrayList<>();
 	
 	private FormLink personLink;
 	private FormLink documentsLink;
@@ -92,7 +91,7 @@ public class ApplicationEditController extends FormBasicController {
 	private FormLink commentLink;
 	private FormLink statusLink;
 	private FormLink academicalBackgroundLink;
-	private List<FormLink> customTabsLinks = new ArrayList<>();
+	private final List<FormLink> customTabsLinks = new ArrayList<>();
 	private SegmentViewComponent segmentView;
 	
 	private Application application;
@@ -355,7 +354,49 @@ public class ApplicationEditController extends FormBasicController {
 		boolean personOk = personCtrl.validateFormLogic(ureq);
 		personLink.setIconLeftCSS(personOk ? null : "o_icon o_icon_error");
 		
+		if(academicalCtrl != null) {
+			boolean academicalOk = academicalCtrl.validateFormLogic(ureq);
+			academicalBackgroundLink.setIconLeftCSS(academicalOk ? null : "o_icon o_icon_error");
+		}
+		
+		if(projectCtrl != null) {
+			boolean projectOk = projectCtrl.validateFormLogic(ureq);
+			projectLink.setIconLeftCSS(projectOk ? null : "o_icon o_icon_error");
+		}
+		
+		if(documentsCtrl != null) {
+			boolean documentsOk = documentsCtrl.validateFormLogic(ureq);
+			documentsLink.setIconLeftCSS(documentsOk ? null : "o_icon o_icon_error");
+		}
+		
+		if(feedbacksCtrl != null) {
+			boolean feedbacksOk = feedbacksCtrl.validateFormLogic(ureq);
+			feedbackLink.setIconLeftCSS(feedbacksOk ? null : "o_icon o_icon_error");
+		}
+		
+		if(statusCtrl != null) {
+			boolean statusOk = statusCtrl.validateFormLogic(ureq);
+			statusLink.setIconLeftCSS(statusOk ? null : "o_icon o_icon_error");
+		}
+		
+		for(CustomAttributesController customAttributeCtrl:customAttributesCtrls) {
+			boolean customAttributesOk = customAttributeCtrl.validateFormLogic(ureq);
+			FormLink customTabLink = getCustomAttirbute(customAttributeCtrl.tab());
+			if(customTabLink != null) {
+				customTabLink.setIconLeftCSS(customAttributesOk ? null : "o_icon o_icon_error");
+			}
+		}
+
 		return allOk;
+	}
+	
+	private FormLink getCustomAttirbute(Tab tab) {
+		for(FormLink customTabLink:customTabsLinks) {
+			if(tab == customTabLink.getUserObject()) {
+				return customTabLink;
+			}
+		}
+		return null;
 	}
 	
 	private void doPersistApplication() {
