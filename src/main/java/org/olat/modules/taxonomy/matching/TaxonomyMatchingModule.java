@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 public class TaxonomyMatchingModule extends AbstractSpringModule {
 
 	private static final String PROP_ENABLED = "taxonomy.matching.enabled";
+	private static final String PROP_PGVECTOR_ENABLED = "taxonomy.matching.pgvector.enabled";
 	private static final String PROP_SPI = "taxonomy.matching.spi";
 	private static final String PROP_MODEL = "taxonomy.matching.model";
 	private static final String PROP_MIN_SCORE = "taxonomy.matching.min.score";
@@ -51,22 +52,18 @@ public class TaxonomyMatchingModule extends AbstractSpringModule {
 
 	@Value("${taxonomy.matching.enabled:false}")
 	private boolean enabled;
-
+	@Value("${taxonomy.matching.pgvector.enabled:true}")
+	private boolean pgVectorEnabled;
 	@Value("${taxonomy.matching.spi:}")
 	private String spiId;
-
 	@Value("${taxonomy.matching.model:}")
 	private String model;
-
 	@Value("${taxonomy.matching.min.score:0.65}")
 	private double minScore;
-
 	@Value("${taxonomy.matching.local.model.dir:}")
 	private String localModelDir;
-
 	@Value("${taxonomy.matching.query.prefix:}")
 	private String queryPrefixOverride;
-
 	@Value("${taxonomy.matching.passage.prefix:}")
 	private String passagePrefixOverride;
 
@@ -102,6 +99,9 @@ public class TaxonomyMatchingModule extends AbstractSpringModule {
 		String enabledStr = getStringPropertyValue(PROP_ENABLED, Boolean.toString(enabled));
 		enabled = "true".equalsIgnoreCase(enabledStr);
 
+		String pgVectorEnabledStr = getStringPropertyValue(PROP_PGVECTOR_ENABLED, Boolean.toString(pgVectorEnabled));
+		pgVectorEnabled = "true".equalsIgnoreCase(pgVectorEnabledStr);
+
 		spiId = getStringPropertyValue(PROP_SPI, spiId);
 		model = getStringPropertyValue(PROP_MODEL, model);
 
@@ -134,6 +134,10 @@ public class TaxonomyMatchingModule extends AbstractSpringModule {
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setStringProperty(PROP_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isPgVectorEnabled() {
+		return pgVectorEnabled;
 	}
 
 	public String getSpiId() {

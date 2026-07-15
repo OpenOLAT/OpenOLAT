@@ -384,12 +384,13 @@ public class TaxonomyMatchingServiceImpl implements TaxonomyMatchingService, Gen
 		if (Objects.equals(key, pgVectorEnsuredKey)) {
 			return;
 		}
-		if (!embeddingDao.isPgVectorAvailable()) {
+		if (!matchingModule.isPgVectorEnabled() || !embeddingDao.isPgVectorAvailable()) {
 			pgVectorAvailable = false;
 			pgVectorType = null;
 			pgVectorEnsuredKey = key;
 			matchingModule.setPgVectorActive(false);
-			log.info("pgvector extension not installed — taxonomy embeddings stored as JSON with in-memory cosine search");
+			log.info("pgvector not used ({}) — taxonomy embeddings stored as JSON with in-memory cosine search",
+					matchingModule.isPgVectorEnabled() ? "extension not installed" : "disabled by configuration");
 			return;
 		}
 		pgVectorAvailable = true;
