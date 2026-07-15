@@ -7,7 +7,6 @@
 		</div>
 		<div class="o_lecture_status">
 			$lectureBlockStatusBadge
-			#if($r.isNotEmpty($rollCallStatusBadge)) $rollCallStatusBadge #end
 		</div>
 		#if($r.available("edit"))
 		<div class="o_button_group">
@@ -15,8 +14,8 @@
 		</div>
 		#end
 	</div>
-
-	#if($subjects)
+	
+	#if($r.isNotEmpty($subjects))
 	<div class="o_lecture_subjects">
 		$subjects
 	</div>

@@ -12,9 +12,9 @@
 		</div>
 	</div>
 
-	#if($r.available("lecture.subjects"))
+	#if($r.isNotEmpty($subjects))
 	<div class="o_lecture_subjects">
-		$r.render("lecture.subjects")
+		$subjects
 	</div>
 	#end
 

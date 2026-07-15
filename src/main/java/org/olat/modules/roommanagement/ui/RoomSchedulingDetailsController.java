@@ -39,7 +39,6 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.control.Controller;
@@ -53,18 +52,17 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.ui.LectureListRepositoryController;
+import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
-import org.olat.modules.lecture.LectureService;
-import org.olat.modules.lecture.model.LectureBlockBlockStatistics;
-import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
-import org.olat.modules.lecture.ui.LectureListRepositoryController;
-import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -113,6 +111,7 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 	public RoomSchedulingDetailsController(UserRequest ureq, WindowControl wControl, RoomSchedulingRow row, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "room_scheduling_details_view", rootForm);
 		setTranslator(Util.createPackageTranslator(LectureListRepositoryController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.row = row;
 		profileConfig = userPortraitService.createProfileConfig();
 		LectureBlock lb = row.getBooking().getLectureBlock();
@@ -158,16 +157,16 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 		Collection<TaxonomyRef> taxonomyRefs = new HashSet<>(curriculumModule.getTaxonomyRefs());
 		taxonomyRefs.addAll(repositoryModule.getTaxonomyRefs());
 		if (taxonomyRefs.isEmpty()) return;
-
-		List<TaxonomyLevel> subjects = lectureService.getTaxonomy(lb);
-		if (subjects == null || subjects.isEmpty()) return;
-
-		ObjectSelectionElement taxonomyLevelEl = uifactory.addObjectSelectionElement("lecture.subjects",
-				"lecture.subjects", formLayout, getWindowControl(), true,
-				new TaxonomyLevelSelectionSource(getLocale(), subjects, List::of, null));
-		taxonomyLevelEl.setEnabled(false);
+		
+		if (formLayout instanceof FormLayoutContainer layoutCont) {
+			List<TaxonomyLevel> subjects = lectureService.getTaxonomy(lb);
+			if (subjects == null || subjects.isEmpty()) return;
+			
+			String tags = TaxonomyUIFactory.getTags(getTranslator(), subjects);
+			layoutCont.contextPut("subjects", tags);
+		}
 	}
-
+	
 	private void initMetadata(FormItemContainer formLayout, LectureBlock lb) {
 		Formatter formatter = Formatter.getInstance(getLocale());
 
@@ -192,15 +191,10 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 
 		String participants = "<i class=\"o_icon o_icon-fw o_icon_user\"> </i> " + row.getNumParticipants();
 		uifactory.addStaticTextElement("lecture.participants", "lecture.participants", participants, formLayout);
-
-		LecturesBlockSearchParameters statsParams = new LecturesBlockSearchParameters();
-		statsParams.setLectureBlocks(List.of(lb));
-		List<LectureBlockBlockStatistics> statsList = lectureService.getLectureBlocksStatistics(statsParams);
-		if (!statsList.isEmpty()) {
-			int openAbsences = statsList.get(0).getNumOfAbsenceUnauthorized();
-			uifactory.addStaticTextElement("lecture.absences", "lecture.absences",
-					openAbsences + " " + translate("open"), formLayout);
-		}
+		
+		uifactory.addStaticTextElement("lecture.absences", "lecture.absences",
+				LectureBlockRollCallBasicStatusCellRenderer.getStatusLabelWithIcon(lb, getTranslator()),
+				formLayout);
 
 		String description = lb.getDescription();
 		if (StringHelper.containsNonWhitespace(description)) {

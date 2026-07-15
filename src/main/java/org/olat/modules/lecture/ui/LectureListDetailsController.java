@@ -78,9 +78,7 @@ import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
-import org.olat.modules.lecture.model.LectureBlockBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockRow;
-import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureListDetailsParticipantsGroupDataModel.GroupCols;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.component.IconDecoratorCellRenderer;
@@ -227,10 +225,6 @@ public class LectureListDetailsController extends FormBasicController {
 			
 			String badge = LectureBlockStatusCellRenderer.getStatusLabelSolidWithIcon(lectureBlock, row.isNextScheduled(), getTranslator());
 			layoutCont.contextPut("lectureBlockStatusBadge", badge);
-			if(config.withRollCall() != Visibility.NO) {
-				String rollCallBadge = LectureBlockRollCallBasicStatusCellRenderer.getStatusLabelSolidWithIcon(lectureBlock, getTranslator());
-				layoutCont.contextPut("rollCallStatusBadge", rollCallBadge);
-			}
 			
 			if(allowRepositoryEntry) {
 				initFormReferencedCourses(layoutCont);
@@ -396,14 +390,11 @@ public class LectureListDetailsController extends FormBasicController {
 		
 		String compulsory  = row.getLectureBlock().isCompulsory() ? translate("yes") : translate("no");
 		uifactory.addStaticTextElement("lecture.compulsory", "lecture.compulsory", compulsory, formLayout);
-
-		LecturesBlockSearchParameters statsParams = new LecturesBlockSearchParameters();
-		statsParams.setLectureBlocks(List.of(lectureBlock));
-		List<LectureBlockBlockStatistics> statsList = lectureService.getLectureBlocksStatistics(statsParams);
-		if (!statsList.isEmpty()) {
-			int openAbsences = statsList.get(0).getNumOfAbsenceUnauthorized();
+		
+		if (config.withRollCall() != Visibility.NO) {
 			uifactory.addStaticTextElement("lecture.absences", "lecture.absences",
-					openAbsences + " " + translate("open"), formLayout);
+					LectureBlockRollCallBasicStatusCellRenderer.getStatusLabelWithIcon(lectureBlock, getTranslator()),
+					formLayout);
 		}
 	}
 	

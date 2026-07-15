@@ -64,10 +64,6 @@ public class LectureBlockRollCallBasicStatusCellRenderer implements FlexiCellRen
 		return sb.toString();
 	}
 
-	public static final String getStatusLabelSolidWithIcon(LectureBlock block, Translator trans) {
-		return getStatusLabelWithIcon(block, trans, "o_labeled");
-	}
-
 	public static final String getStatusLabelWithIcon(LectureBlock block, Translator trans, String cssClass) {
 		LectureRollCallStatus status = block.getRollCallStatus();
 		String statusName = status.name();
