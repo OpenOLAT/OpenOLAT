@@ -381,6 +381,7 @@ public class ApplicationEditController extends FormBasicController {
 			application = erFrontendManager.getApplicationByKey(application.getKey());
 			before = auditService.toAuditXml(application);
 		} else {
+			application = erFrontendManager.saveTempApplication(application, false);
 			logCreation = true;
 			before = null;
 		}
