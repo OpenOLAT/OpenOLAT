@@ -639,7 +639,7 @@ public class ApplicationDAO {
 	}
 	
 	public List<Application> searchApplications(String searchText, Identity identity, PositionStatusFilters filters) {
-		StringBuilder sb = new StringBuilder(2048);
+		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select app from rapplication app ")
 		  .append(" inner join fetch app.position position")
 		  .append(" left join position.organisation orga")

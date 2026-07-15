@@ -36,6 +36,7 @@ import jakarta.persistence.TypedQuery;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
@@ -575,7 +576,7 @@ public class PositionDAO {
 	
 	public List<PositionLightWithMembership> findPositionsLight(Identity identity, PositionStatusFilters filters,
 			boolean valid) {
-		StringBuilder sb = new StringBuilder(2048);
+		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select position,")
 		  .append(" (select count(head.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" head")
 		  .append("    where head.securityGroup.key=position.committeeHeadGroup.key and head.identity.key=:identityKey) as numOfHeads,")
@@ -620,7 +621,7 @@ public class PositionDAO {
 	
 	public boolean hasPositions(Identity identity, PositionStatusFilters filters,
 			boolean valid) {
-		StringBuilder sb = new StringBuilder(2048);
+		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select position.key")
 		  .append(" from rpositionlight position")
 		  .append(" left join position.organisation orga")
@@ -642,7 +643,7 @@ public class PositionDAO {
 
 	public List<PositionLightWithStatistics> findPositionsLightWithStatistics(Identity identity, PositionStatusFilters filters,
 			List<PositionAttributeDefinition> globalDefinitions, boolean valid, Locale locale) {
-		StringBuilder sb = new StringBuilder(2048);
+		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select position,")
 		  .append(" (select count(app1.key) from rapplication app1 where app1.valid=true and app1.position.key=position.key) as numOfApps,")
 		  .append(" (select count(app2.key) from rapplication app2 where app2.valid=true and app2.position.key=position.key and app2.person.gender = 'm') as numOfMaleApps,")
@@ -727,7 +728,7 @@ public class PositionDAO {
 		return attrs;
 	}
 	
-	public boolean appendPositionPermission(StringBuilder sb, PositionStatusFilters filters) {
+	public boolean appendPositionPermission(QueryBuilder sb, PositionStatusFilters filters) {
 		if(filters.isCommittee()) {
 			StringBuilder roleCondition = new StringBuilder(512);
 
@@ -767,18 +768,18 @@ public class PositionDAO {
 				// organisation staff
 				if(filters.isOrganisation()) {
 					sb.append(" or ");
-					appendPositionPermissionOrganisation(sb, filters);
+					appendPositionManagerPermissionOnOrganisation(sb, filters);
 				}
 				sb.append(")");
 			} else if(filters.isOrganisation()) {
 				sb.append(" and ");
-				appendPositionPermissionOrganisation(sb, filters);
+				appendPositionManagerPermissionOnOrganisation(sb, filters);
 			} else {
 				return false;
 			}
 		} else if(filters.isOrganisation()) {
 			sb.append(" and ");
-			appendPositionPermissionOrganisation(sb, filters);
+			appendPositionManagerPermissionOnOrganisation(sb, filters);
 		} else if(filters.getFiltered().size() > 0) {
 			sb.append(" and position.status in (:status)");
 		}
@@ -792,10 +793,11 @@ public class PositionDAO {
 		return true;
 	}
 	
-	private void appendPositionPermissionOrganisation(StringBuilder sb, PositionStatusFilters filters) {
+	private void appendPositionManagerPermissionOnOrganisation(QueryBuilder sb, PositionStatusFilters filters) {
 		if(filters.isOrganisation()) {
 			sb.append(" exists (select orgmember.key from bgroupmember as orgmember")
-			  .append("  where orgmember.identity.key=:identityKey and orga.group.key=orgmember.group.key");
+			  .append("  where orgmember.identity.key=:identityKey and orga.group.key=orgmember.group.key")
+			  .append(" and orgmember.role").in(OrganisationRoles.selectusmanager);
 			if(filters.getFiltered().size() > 0) {
 				sb.append(" and position.status in (:status)");
 			}
@@ -848,7 +850,7 @@ public class PositionDAO {
 			}
 		} else {
 			if(roles.isSelectusManager()) {
-				//administrator -> they can see want they want
+				// Selectus manager -> they can see want they want
 				if(wishedStatusFilters != null) {
 					filtered.addAll(wishedStatusFilters);
 				}
