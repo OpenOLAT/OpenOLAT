@@ -132,10 +132,27 @@ public class PositionReferenceDataModel extends DefaultFlexiTableDataModel<Posit
 	private boolean acceptDecision(Set<String> status, PositionReferenceRow row) {
 		if(status == null || status.isEmpty()) return true;
 		
-		Integer decision = row.getApplication().getDecision();
-		if((decision == null || decision.intValue() <= 0) && status.contains(PositionReferenceListController.FILTER_NULL_KEY)
-				|| (decision != null && status.contains(decision.toString()))) {
-			return true;
+		if(row.getApplication() != null) {
+			return acceptDecision(status, row.getApplication());
+		}
+		
+		if(row.getApplications() != null) {
+			for(Application app:row.getApplications()) {
+				if(acceptDecision(status, app)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private boolean acceptDecision(Set<String> status, Application app) {
+		if(app != null) {
+			Integer decision = app.getDecision();
+			if((decision == null || decision.intValue() <= 0) && status.contains(PositionReferenceListController.FILTER_NULL_KEY)
+					|| (decision != null && status.contains(decision.toString()))) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -157,8 +174,25 @@ public class PositionReferenceDataModel extends DefaultFlexiTableDataModel<Posit
 	private boolean acceptApplicationStatus(Set<String> status, PositionReferenceRow row) {
 		if(status == null || status.isEmpty()) return true;
 		
-		ApplicationStatus applicationStatus = row.getApplication().getApplicationStatus();
-		return status.contains(applicationStatus.name());
+		if(row.getApplication() != null) {
+			return acceptApplicationStatus(status, row.getApplication());
+		}
+		
+		if(row.getApplications() != null) {
+			for(Application app:row.getApplications()) {
+				if(acceptApplicationStatus(status, app)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private boolean acceptApplicationStatus(Set<String> status, Application app) {
+		if(app == null) return false;
+
+		ApplicationStatus applicationStatus = app.getApplicationStatus();
+		return status != null && status.contains(applicationStatus.name());
 	}
 	
 	private boolean acceptCategories(Set<String> categories, PositionReferenceRow row) {
@@ -182,9 +216,26 @@ public class PositionReferenceDataModel extends DefaultFlexiTableDataModel<Posit
 	private boolean accept(String searchValue, PositionReferenceRow row) {
 		if(searchValue == null) return true;
 		
-		return accept(searchValue, row.getApplication().getPerson().getFirstName())
-				|| accept(searchValue, row.getApplication().getPerson().getLastName())
-				|| accept(searchValue, row.getApplication().getPerson().getMail());
+		if(row.getApplication() != null) {
+			accept(searchValue, row.getApplication()); 
+		}
+		
+		if(row.getApplications() != null) {
+			for(Application app:row.getApplications()) {
+				if(accept(searchValue, app)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private boolean accept(String searchValue, Application app) {
+		if(searchValue == null) return true;
+		
+		return accept(searchValue, app.getPerson().getFirstName())
+				|| accept(searchValue, app.getPerson().getLastName())
+				|| accept(searchValue, app.getPerson().getMail());
 	}
 	
 	private boolean accept(String searchValue, String val) {
