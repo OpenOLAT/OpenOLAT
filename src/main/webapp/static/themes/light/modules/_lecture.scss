@@ -571,7 +571,8 @@ tr.o_rm_room_preselected {
 .o_lecture_details {
 	.o_flex_header {
 		display: flex;
-		gap: 8px;
+		flex-wrap: wrap;
+		gap: 20px;
 		align-items: center;
 		min-height: 34px;
 		margin-bottom: 20px;
@@ -588,7 +589,6 @@ tr.o_rm_room_preselected {
 		
 		.o_lecture_status {
 			flex-grow: 1;
-			margin-left: 16px;
 		}
 	}
 
