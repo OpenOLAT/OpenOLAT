@@ -163,6 +163,10 @@ body .modal-body {
 a.input-group-addon {
 	border-color: $btn-default-border;
 	background-color: $btn-default-bg;
+	&:hover {
+		background-color: darken($btn-default-bg, 10%);
+		border-color: darken($btn-default-border, 12%);
+	}
 }
 /* Dividing border between btn-addon and form-control matches button border */
 .input-group:has(> .btn.input-group-addon:last-child) .form-control,
