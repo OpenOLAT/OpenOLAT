@@ -708,6 +708,8 @@ tr.o_rm_room_preselected {
 	
 	.o_lecture_timeline_details_actions {
 		text-align: right;
+		display: flex;
+		gap: 5px;
 	}
 	.o_lead_followup_times {
 		padding-left: 2em;
