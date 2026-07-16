@@ -345,6 +345,11 @@
 #o_main_center .o_header_with_buttons h2 +.o_button_group {
 	margin-top: 0;	
 }
+.o_btn_group_nowrap {
+	&.btn-group {
+		display: flex;
+	}
+}
 
 .panel-heading.o_header_with_buttons {
 	margin-bottom: 0;

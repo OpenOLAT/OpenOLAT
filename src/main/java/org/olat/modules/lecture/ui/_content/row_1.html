@@ -17,7 +17,7 @@
 			#end
 
 			#if($r.isNotNull($row.rollCallButton) && $r.isNotNull($row.toolsButton))
-			<div class="btn-group">
+			<div class="btn-group o_btn_group_nowrap">
 				$r.render($row.rollCallButton, "nolayout") $r.render($row.toolsButton, "nolayout")
 			</div>
 			#elseif($r.isNotNull($row.rollCallButton))
