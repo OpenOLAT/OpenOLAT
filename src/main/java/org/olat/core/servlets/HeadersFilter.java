@@ -36,6 +36,7 @@ import org.olat.core.commons.services.csp.CSPBuilder;
 import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
@@ -85,10 +86,13 @@ public class HeadersFilter implements Filter {
 						? "Content-Security-Policy-Report-Only"
 						: "Content-Security-Policy";
 				CSPBuilder builder = new CSPBuilder(securityModule);
-				String policy = builder
-						.defaultDirectives()
-						.configurationDirectives()
-						.build();
+				builder
+					.defaultDirectives()
+					.configurationDirectives();
+				if(content) {
+					builder.frameAncestors().addAdditionalDirectives(Settings.createServerURI());
+				}
+				String policy = builder.build();
 				httpResponse.setHeader(header, policy);
 			}
 		}

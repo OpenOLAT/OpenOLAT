@@ -304,9 +304,13 @@ public class CSPBuilder {
 		public String getAdditionalDirectives() {
 			return additionalDirectives;
 		}
-
-		public void setAdditionalDirectives(String additionalDirectives) {
-			this.additionalDirectives = additionalDirectives;
+		
+		public void addAdditionalDirectives(String directive) {
+			if(StringHelper.containsNonWhitespace(additionalDirectives)) {
+				additionalDirectives += " " + directive;
+			} else {
+				additionalDirectives = directive;
+			}
 		}
 
 		public CSPBuilder builder() {
