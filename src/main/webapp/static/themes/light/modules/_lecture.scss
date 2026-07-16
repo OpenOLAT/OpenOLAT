@@ -573,7 +573,8 @@ tr.o_rm_room_preselected {
 		display: flex;
 		gap: 8px;
 		align-items: center;
-		height: 34px;
+		min-height: 34px;
+		margin-bottom: 20px;
 		
 		.o_lecture_title {
 			display: flex;
@@ -595,7 +596,6 @@ tr.o_rm_room_preselected {
 	container-name: o-lecture-details;
 
 	.o_lecture_subjects {
-		margin-top: 12px;
 		margin-bottom: 12px;
 	}
 	
