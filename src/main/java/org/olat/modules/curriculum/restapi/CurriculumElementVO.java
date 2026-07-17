@@ -29,6 +29,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 
 /**
  * 
@@ -51,7 +52,7 @@ public class CurriculumElementVO {
 	private Date endDate;
 	
 	private String externalId;
-	@Schema(required = true, description = "Action to be performed on managedFlagsString", allowableValues = { 
+	@Schema(requiredMode = RequiredMode.NOT_REQUIRED, description = "Action to be performed on managedFlagsString", allowableValues = { 
 			"all",
 			 "identifier(all)",
 			 "displayName(all)",

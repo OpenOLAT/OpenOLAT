@@ -26,14 +26,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.olat.modules.roommanagement.Room;
-import org.olat.modules.roommanagement.RoomBooking;
-import org.olat.modules.roommanagement.RoomManagementModule;
-import org.olat.modules.roommanagement.RoomManagementService;
-import org.olat.modules.roommanagement.RoomStatus;
-import org.olat.modules.roommanagement.model.SearchRoomParameters;
-import org.olat.modules.roommanagement.restapi.RoomBookingVO;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -66,6 +58,13 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.manager.LectureBlockDAO;
 import org.olat.modules.lecture.manager.LectureBlockToTaxonomyLevelDAO;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.RoomStatus;
+import org.olat.modules.roommanagement.model.SearchRoomParameters;
+import org.olat.modules.roommanagement.restapi.RoomBookingVO;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -95,6 +94,7 @@ public class LectureBlockWebService {
 	private static final Logger log = Tracing.createLoggerFor(LectureBlockWebService.class);
 	
 	private final RepositoryEntry entry;
+	private final CurriculumElement element;
 	private final boolean administrator;
 	private LectureBlock lectureBlock;
 	
@@ -123,8 +123,9 @@ public class LectureBlockWebService {
 	@Autowired(required = false)
 	private RoomManagementService roomManagementService;
 
-	public LectureBlockWebService(LectureBlock lectureBlock, RepositoryEntry entry, boolean administrator) {
+	public LectureBlockWebService(LectureBlock lectureBlock, RepositoryEntry entry, CurriculumElement element, boolean administrator) {
 		this.entry = entry;
+		this.element = element;
 		this.lectureBlock = lectureBlock;
 		this.administrator = administrator;
 	}
@@ -143,7 +144,7 @@ public class LectureBlockWebService {
 	@ApiResponse(responseCode = "404", description = "Not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getLectureBlock() {
-		return Response.ok(LectureBlockVO.valueOf(lectureBlock, entry.getKey())).build();
+		return Response.ok(LectureBlockVO.valueOf(lectureBlock, entry, element)).build();
 	}
 	
 	@POST
@@ -161,7 +162,7 @@ public class LectureBlockWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		LectureBlock movedLectureBlock = lectureService.moveLectureBlock(lectureBlock, newEntry);
-		return Response.ok(LectureBlockVO.valueOf(movedLectureBlock, movedLectureBlock.getEntry().getKey())).build();
+		return Response.ok(LectureBlockVO.valueOf(movedLectureBlock, movedLectureBlock.getEntry(), movedLectureBlock.getCurriculumElement())).build();
 	}
 	
 

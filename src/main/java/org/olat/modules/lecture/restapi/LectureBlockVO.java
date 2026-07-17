@@ -25,8 +25,10 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
+import org.olat.repository.RepositoryEntryRef;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
@@ -84,12 +86,13 @@ public class LectureBlockVO implements LectureBlockRef {
 	private Long bigBlueButtonMeetingKey;
 
 	private Long repoEntryKey;
+	private Long curriculumElementKey;
 	
 	public LectureBlockVO() {
 		//make jaxb happy
 	}
 	
-	public static final LectureBlockVO valueOf(LectureBlock block, Long repoEntryKey) {
+	public static final LectureBlockVO valueOf(LectureBlock block, RepositoryEntryRef repoEntry, CurriculumElementRef curriculumElement) {
 		LectureBlockVO vo = new LectureBlockVO();
 		vo.setKey(block.getKey());
 		vo.setExternalId(block.getExternalId());
@@ -105,8 +108,14 @@ public class LectureBlockVO implements LectureBlockRef {
 		vo.setEndDate(block.getEndDate());
 		vo.setCompulsory(block.isCompulsory()); 
 		vo.setPlannedLectures(block.getPlannedLecturesNumber());
-		vo.setRepoEntryKey(repoEntryKey);
 		
+		if(repoEntry != null) {
+			vo.setRepoEntryKey(repoEntry.getKey());
+		}
+		if(curriculumElement != null) {
+			vo.setCurriculumElementKey(curriculumElement.getKey());
+		}
+
 		vo.setMeetingTitle(block.getMeetingTitle());
 		vo.setMeetingUrl(block.getMeetingUrl());
 		vo.setRecordingUrl(block.getRecordingUrl());
@@ -121,6 +130,52 @@ public class LectureBlockVO implements LectureBlockRef {
 			vo.setBigBlueButtonMeetingKey(block.getBBBMeeting().getKey());
 		}
 		return vo;
+	}
+	
+	public void transferTo(LectureBlock block) {
+		if(getExternalId() != null) {
+			block.setExternalId(getExternalId());
+		}
+		if(getExternalRef() != null) {
+			block.setExternalRef(getExternalRef());
+		}
+		if(getTitle() != null) {
+			block.setTitle(getTitle());
+		}
+		if(getDescription() != null) {
+			block.setDescription(getDescription());
+		}
+		if(getPreparation() != null) {
+			block.setPreparation(getPreparation());
+		}
+		if(getLocation() != null) {
+			block.setLocation(getLocation());
+		}
+		if(getComment() != null) {
+			block.setComment(getComment());
+		}
+		if(getStartDate() != null) {
+			block.setStartDate(getStartDate());
+		}
+		if(getEndDate() != null) {
+			block.setEndDate(getEndDate());
+		}
+		if(getCompulsory() != null) {
+			block.setCompulsory(getCompulsory().booleanValue());
+		}
+		if(getManagedFlagsString() != null) {
+			block.setManagedFlagsString(getManagedFlagsString());
+		}
+		block.setPlannedLecturesNumber(getPlannedLectures());
+		if(getMeetingTitle() != null) {
+			block.setMeetingTitle(getMeetingTitle());
+		}
+		if(getMeetingUrl() != null) {
+			block.setMeetingUrl(getMeetingUrl());
+		}
+		if(getRecordingUrl() != null) {
+			block.setRecordingUrl(getRecordingUrl());
+		}
 	}
 
 	@Override
@@ -138,6 +193,14 @@ public class LectureBlockVO implements LectureBlockRef {
 
 	public void setRepoEntryKey(Long repoEntryKey) {
 		this.repoEntryKey = repoEntryKey;
+	}
+
+	public Long getCurriculumElementKey() {
+		return curriculumElementKey;
+	}
+
+	public void setCurriculumElementKey(Long curriculumElementKey) {
+		this.curriculumElementKey = curriculumElementKey;
 	}
 
 	public String getExternalId() {

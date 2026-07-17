@@ -23,6 +23,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
@@ -42,17 +43,16 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
-import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
-import org.olat.modules.lecture.manager.LectureServiceImpl;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockRefImpl;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,24 +63,24 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 /**
  * 
- * Initial date: 8 juin 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 17 juil. 2026<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class LectureBlocksWebService {
+public class CurriculumElementLectureBlocksWebService {
 	
-	private final RepositoryEntry entry;
 	private final boolean administrator;
+	private final CurriculumElement element;
 	
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
-	private RepositoryService repositoryService;
+	private CurriculumService curriculumService;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	
-	public LectureBlocksWebService(RepositoryEntry entry, boolean administrator) {
-		this.entry = entry;
+	public CurriculumElementLectureBlocksWebService(CurriculumElement element, boolean administrator) {
+		this.element = element;
 		this.administrator = administrator;
 	}
 	
@@ -105,7 +105,7 @@ public class LectureBlocksWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		List<LectureBlock> blockList = lectureService.getLectureBlocks(entry);
+		List<LectureBlock> blockList = lectureService.getLectureBlocks(element, false);
 		LectureBlockVO[] voes = new LectureBlockVO[blockList.size()];
 		for(int i=blockList.size(); i-->0; ) {
 			LectureBlock block = blockList.get(i);
@@ -136,8 +136,7 @@ public class LectureBlocksWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Identity doer = getIdentity(httpRequest);
-		LectureBlock updatedBlock = saveLectureBlock(block, doer);
-		return Response.ok(LectureBlockVO.valueOf(updatedBlock, updatedBlock.getEntry(), updatedBlock.getCurriculumElement())).build();
+		return saveLectureBlock(block, doer);
 	}
 	
 	/**
@@ -167,11 +166,10 @@ public class LectureBlocksWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Identity doer = getIdentity(httpRequest);
-		LectureBlock updatedBlock = saveLectureBlock(block, doer);
-		return Response.ok(LectureBlockVO.valueOf(updatedBlock, updatedBlock.getEntry(), updatedBlock.getCurriculumElement())).build();
+		return saveLectureBlock(block, doer);
 	}
 	
-	private LectureBlock saveLectureBlock(LectureBlockVO blockVo, Identity doer) {
+	private Response saveLectureBlock(LectureBlockVO blockVo, Identity doer) {
 		LectureBlock block;
 		int currentPlannedLectures;
 		boolean autoclose = false;
@@ -182,13 +180,29 @@ public class LectureBlocksWebService {
 				autoclose = true;
 			}
 		} else {
-			block = lectureService.createLectureBlock(entry);
+			List<RepositoryEntry> curriculumElementEntries = curriculumService.getRepositoryEntries(element);
+			if(blockVo.getRepoEntryKey() != null) {
+				Optional<RepositoryEntry> entry = curriculumElementEntries.stream()
+						.filter(v -> blockVo.getRepoEntryKey().equals(v.getKey()))
+						.findFirst();
+				if(entry.isEmpty()) {
+					return Response.status(Status.CONFLICT).build();
+				}
+				block = lectureService.createLectureBlock(element, entry.get());
+			} else if(curriculumElementEntries.isEmpty()) {
+				block = lectureService.createLectureBlock(element, null);
+			} else if(curriculumElementEntries.size() == 1) {
+				block = lectureService.createLectureBlock(element, curriculumElementEntries.get(0));
+			} else {
+				return Response.status(Status.CONFLICT).build();
+			}
+
 			currentPlannedLectures = -1;
 			if("autoclosed".equals(blockVo.getRollCallStatus())) {
 				autoclose = true;
 			}
 		}
-
+		
 		blockVo.transferTo(block);
 		
 		if(autoclose) {
@@ -215,86 +229,11 @@ public class LectureBlocksWebService {
 			assessmentModeMgr.syncAssessmentModeToLectureBlock(assessmentMode);
 			assessmentModeMgr.merge(assessmentMode, false, doer);
 		}
-		return savedLectureBlock;
-	}
-	
-	/**
-	 * Return the configuration of the specified course or repository entry.
-	 * 
-	 * @param httpRequest The HTTP request
-	 * @return The configuration
-	 */
-	@GET
-	@Path("configuration")
-	@Operation(summary = "Return the configuration", description = "Return the configuration of the specified course or repository entry")
-	@ApiResponse(responseCode = "200", description = "The configuration of the lecture's feature", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)) })
-	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course not found")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response getConfiguration(@Context HttpServletRequest httpRequest) {
-		if(!administrator) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
-		}
-		
-		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
-		RepositoryEntryLectureConfigurationVO configVo;
-		if(config == null ) {
-			configVo = new RepositoryEntryLectureConfigurationVO();
-		} else {
-			configVo = new RepositoryEntryLectureConfigurationVO(config);
-		}
-		return Response.ok(configVo).build();
-	}
-	
-	/**
-	 * Update the configuration of the lecture's feature of a specified
-	 * course or repository entry.
-	 * 
-	 * @param configuration The configuration
-	 * @return It returns the updated configuration.
-	 */
-	@POST
-	@Path("configuration")
-	@Operation(summary = "Update the configuration", description = "Update the configuration of the lecture's feature of a specified")
-	@ApiResponse(responseCode = "200", description = "The updated configuration", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)) })
-	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The course not found")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response updateConfiguration(RepositoryEntryLectureConfigurationVO configuration) {
-		if(!administrator) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
-		}
-		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
-		if(configuration.getLectureEnabled() != null) {
-			config.setLectureEnabled(configuration.getLectureEnabled());
-		}
-		if(configuration.getCalculateAttendanceRate() != null) {
-			config.setCalculateAttendanceRate(configuration.getCalculateAttendanceRate());
-		}
-		if(configuration.getRequiredAttendanceRate() != null) {
-			config.setRequiredAttendanceRate(configuration.getRequiredAttendanceRate());
-		}
-		if(configuration.getOverrideModuleDefault() != null) {
-			config.setOverrideModuleDefault(configuration.getOverrideModuleDefault());
-		}
-		if(configuration.getCourseCalendarSyncEnabled() != null) {
-			config.setCourseCalendarSyncEnabled(configuration.getCourseCalendarSyncEnabled());
-		}
-		if(configuration.getRollCallEnabled() != null) {
-			config.setRollCallEnabled(configuration.getRollCallEnabled());
-		}
-		if(configuration.getTeacherCalendarSyncEnabled() != null) {
-			config.setTeacherCalendarSyncEnabled(configuration.getTeacherCalendarSyncEnabled());
-		}
-		RepositoryEntryLectureConfiguration updatedConfig = lectureService.updateRepositoryEntryLectureConfiguration(config);
-		return Response.ok(new RepositoryEntryLectureConfigurationVO(updatedConfig)).build();
-	}
 
+		return Response.ok(LectureBlockVO.valueOf(savedLectureBlock, savedLectureBlock.getEntry(), savedLectureBlock.getCurriculumElement()))
+				.build();
+	}
+	
 	/**
 	 * To get the web service for a specific lecture block.
 	 * 
@@ -312,66 +251,12 @@ public class LectureBlocksWebService {
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 		LectureBlock lectureBlock = lectureService.getLectureBlock(new LectureBlockRefImpl(lectureBlockKey));
-		if(lectureBlock == null || !entry.equals(lectureBlock.getEntry())) {
+		if(lectureBlock == null || !element.equals(lectureBlock.getCurriculumElement())) {
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}
 		LectureBlockWebService ws = new LectureBlockWebService(lectureBlock,
-				lectureBlock.getEntry(), lectureBlock.getCurriculumElement(), administrator);
+				lectureBlock.getEntry(), element, administrator);
 		CoreSpringFactory.autowireObject(ws);
 		return ws;
-	}
-
-	@POST
-	@Path("healmoved/{originEntryKey}")
-	@Operation(summary = "Post Entry", description = "Post Entry")
-	@ApiResponse(responseCode = "200", description = "Entry has been posted")
-	public Response healMoved(@PathParam("originEntryKey") Long originEntryKey) {
-		//check the lecture summary
-		
-		RepositoryEntry originEntry = repositoryService.loadByKey(originEntryKey);
-		if(originEntry == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-
-		int rows = ((LectureServiceImpl)lectureService).healMovedLectureBlocks(entry, originEntry);
-		
-		if(rows == 0) {
-			return Response.ok().status(Status.NOT_MODIFIED).build();
-		}
-		return Response.ok().build();
-	}
-	
-	/**
-	 * Synchronize the calendars based on the lecture blocks.
-	 * 
-	 * @return 200 if the calendar is successfully synchronized
-	 */
-	@POST
-	@Path("sync/calendar")
-	@Operation(summary = "Synchronize the calendars based on the lecture blocks", description = "Synchronize the calendars based on the lecture blocks")
-	@ApiResponse(responseCode = "200", description = "The calendar is successfully synchronized")
-	public Response syncCalendar() {
-		lectureService.syncCalendars(entry);
-		return Response.ok().build();
-	}
-	
-	/**
-	 * Adapt all roll call to the effective number of lectures. Use with caution!
-	 * 
-	 * @param httpRequest The HTTP request
-	 * @return 200 if the adaptation is successful
-	 */
-	@GET
-	@Path("adaptation")
-	@Operation(summary = "Adapt all roll call to the effective number of lectures", description = "Adapt all roll call to the effective number of lectures. Use with caution!")
-	@ApiResponse(responseCode = "200", description = "The adaptation is successful")
-	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
-	public Response adaptation(@Context HttpServletRequest httpRequest) {
-		if(!administrator) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
-		}
-		
-		lectureService.adaptAll(getIdentity(httpRequest));
-		return Response.ok().build();
 	}
 }

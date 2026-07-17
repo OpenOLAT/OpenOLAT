@@ -104,7 +104,7 @@ public class LectureBlocksRootWebService {
 		LectureBlockVO[] voes = new LectureBlockVO[blockList.size()];
 		for(int i=blockList.size(); i-->0; ) {
 			LectureBlock block = blockList.get(i); 
-			voes[i] = LectureBlockVO.valueOf(block, block.getEntry().getKey());
+			voes[i] = LectureBlockVO.valueOf(block, block.getEntry(), block.getCurriculumElement());
 		}
 		return Response.ok(voes).build();
 	}
