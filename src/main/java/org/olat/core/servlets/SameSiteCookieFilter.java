@@ -21,6 +21,7 @@ package org.olat.core.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpCookie;
 import java.util.Collection;
 import java.util.List;
@@ -40,8 +41,12 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.commons.services.csp.SameSiteEnum;
+import org.olat.core.dispatcher.DispatcherModule;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,6 +71,10 @@ public class SameSiteCookieFilter implements Filter {
 
 	@Autowired
 	private CSPModule securityModule;
+	@Autowired
+	private MapperService mapperService;
+	@Autowired
+	private UserSessionManager userSessionManager;
 
 	public SameSiteCookieFilter() {
 		//
@@ -96,7 +105,37 @@ public class SameSiteCookieFilter implements Filter {
 			CoreSpringFactory.autowireObject(this);
 		}
 
-		chain.doFilter(request, new SameSiteResponseProxy((HttpServletResponse) response));
+		boolean content = isContent(request);
+		chain.doFilter(request, new SameSiteResponseProxy((HttpServletResponse) response, content));
+	}
+	
+	private final boolean isContent(ServletRequest request) {
+		if(request instanceof HttpServletRequest hreq) {
+			try {
+				UserSession usess = userSessionManager.getUserSessionIfAlreadySet(hreq);
+				if(usess != null && usess.isContentDelivery()) {
+					return true;
+				}
+				
+				String pathInfo = DispatcherModule.subtractContextPath(hreq);
+				if(pathInfo.contains(DispatcherModule.PATH_MAPPED)) {
+					String subInfo = pathInfo.substring(DispatcherModule.PATH_MAPPED.length());
+					
+					int slashPos = subInfo.indexOf('/');
+
+					String smappath;
+					if (slashPos == -1) {
+						smappath = subInfo;
+					} else {
+						smappath = subInfo.substring(0, slashPos);
+					}
+					return mapperService.isSandbox(smappath);
+				}
+			} catch (UnsupportedEncodingException e) {
+				log.error("", e);
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -105,6 +144,7 @@ public class SameSiteCookieFilter implements Filter {
 	 */
 	private class SameSiteResponseProxy extends HttpServletResponseWrapper {
 
+		private final boolean content;
 		private final HttpServletResponse response;
 
 		/**
@@ -112,9 +152,10 @@ public class SameSiteCookieFilter implements Filter {
 		 *
 		 * @param resp the response to delegate to
 		 */
-		public SameSiteResponseProxy(HttpServletResponse resp) {
+		public SameSiteResponseProxy(HttpServletResponse resp, boolean content) {
 			super(resp);
 			response = resp;
+			this.content = content;
 		}
 
 		@Override
@@ -177,25 +218,33 @@ public class SameSiteCookieFilter implements Filter {
 					continue;
 				}
 
-				appendSameSiteAttribute(cookieHeader, firstHeader);
+				appendSameSiteAttribute(cookieHeader, content, firstHeader);
 				firstHeader = false;
 			}
 		}
 
 		/**
 		 * Append the SameSite cookie attribute with the specified samesite-value to the
-		 * {@code cookieHeader} iff it does not already have one set.
+		 * {@code cookieHeader} iff it does not already have one set. For content delivery,
+		 * the attribute must be set to SameSite=None; Partitioned; because the request
+		 * originated from a domain and the cookie is set in an other domain.
+		 * 
+		 * @see https://developer.mozilla.org/en-US/docs/Web/Privacy/Guides/Third-party_cookies/Partitioned_cookies
 		 *
 		 * @param cookieHeader  the cookie header value.
 		 * @param sameSiteValue the SameSite attribute value e.g. None, Lax, or Strict.
 		 * @param first         is this the first Set-Cookie header.
 		 */
-		private void appendSameSiteAttribute(String cookieHeader, boolean first) {
+		private void appendSameSiteAttribute(String cookieHeader, boolean content, boolean first) {
 			String sameSiteSetCookieValue = cookieHeader;
 			// only add if does not already exist, else leave
 			if (!cookieHeader.contains(SAMESITE_ATTRIBUTE_NAME)) {
-				SameSiteEnum sameSiteValue = securityModule.getCookieSameSite();
-				sameSiteSetCookieValue = String.format("%s; %s", cookieHeader, SAMESITE_ATTRIBUTE_NAME + "=" + sameSiteValue.sameSiteValue());
+				if(content) {
+					sameSiteSetCookieValue = String.format("%s; %s", sameSiteSetCookieValue, SAMESITE_ATTRIBUTE_NAME + "=None; Partitioned;");
+				} else {
+					SameSiteEnum sameSiteValue = securityModule.getCookieSameSite();
+					sameSiteSetCookieValue = String.format("%s; %s", sameSiteSetCookieValue, SAMESITE_ATTRIBUTE_NAME + "=" + sameSiteValue);
+				}
 			}
 
 			if (first) {

@@ -685,7 +685,8 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		return getPublisher(subsContext, null);
 	}
 
-	protected Publisher getPublisher(SubscriptionContext subsContext, PublisherData data) {
+	@Override
+	public Publisher getPublisher(SubscriptionContext subsContext, PublisherData data) {
 		List<Publisher> res = getInternalPublishers(subsContext, data);
 		if (res.isEmpty()) return null;
 		if (res.size() != 1) throw new AssertException("only one subscriber per person and publisher!!");
@@ -1086,7 +1087,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 			PublisherData publisherData) {
 		if(identities == null || identities.isEmpty()) return;
 		
-		Publisher toUpdate = getPublisherForUpdate(subscriptionContext);
+		Publisher toUpdate = getRootPublisherForUpdate(subscriptionContext);
 		if(toUpdate == null) {
 			//create the publisher
 			findOrCreatePublisher(subscriptionContext, publisherData, PublisherChannel.PULL);
