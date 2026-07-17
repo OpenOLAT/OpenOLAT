@@ -111,15 +111,20 @@ public class NotificationsWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response getPublisher(@PathParam("ressourceName") String ressourceName, @PathParam("ressourceId") Long ressourceId,
-			@PathParam("subIdentifier") String subIdentifier, @Context HttpServletRequest request) {
+			@PathParam("subIdentifier") String subIdentifier, @QueryParam("type") String type, @QueryParam("data") String data,
+			@Context HttpServletRequest request) {
 		if(!isAdmin(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		SubscriptionContext subsContext
 			= new SubscriptionContext(ressourceName, ressourceId, subIdentifier);
+		PublisherData publisherData = null;
+		if(StringHelper.containsNonWhitespace(type) && StringHelper.containsNonWhitespace(data)) {
+			publisherData = new PublisherData(type, data, null);
+		}
 
-		Publisher publisher = notificationsMgr.getPublisher(subsContext);
+		Publisher publisher = notificationsMgr.getPublisher(subsContext, publisherData);
 		if(publisher == null) {
 			return Response.ok().status(Status.NO_CONTENT).build();
 		}
