@@ -1,0 +1,38 @@
+@charset "UTF-8";
+
+/*
+ *  =================================================
+ *
+ *   SaSS file for the OpenOLAT documentation bundle (oo-docs.css).
+ *   Currently it contains only the icon definitions so that the
+ *   OpenOLAT manual (OpenOLAT-docs) can render exactly the same
+ *   icons as the application. Copy the compiled oo-docs.css together
+ *   with the referenced icon fonts into the manual and keep in sync.
+ *
+ *   @author uhensler, www.frentix.com
+ *   @date July 2026
+ *
+ *	 also read themes.README!
+ *  =================================================
+ */
+@use "sass:color";
+@use "sass:math";
+
+@import "functions";
+@import "config";
+@import "modules/mixins";
+
+/* Serve every icon font from a sibling fonts/ folder so this bundle is portable and can be copied as-is into OpenOLAT-docs. */
+$fa-font-path: "fonts";
+
+/* Custom openolat icon font (fontello), path relative to this bundle */
+@font-face {
+	font-family: 'openolat';
+	src:url('fonts/openolat.woff2') format('woff2'),
+		url('fonts/openolat.woff') format('woff'),
+		url('fonts/openolat.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@import "modules/icons"; /* provides the o_icon base and all o_icon_* / o_*_icon classes */
