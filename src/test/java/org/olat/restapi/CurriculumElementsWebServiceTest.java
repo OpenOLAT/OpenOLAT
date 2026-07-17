@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -71,6 +72,9 @@ import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.restapi.CurriculumElementMemberVO;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.manager.LectureBlockDAO;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
@@ -103,6 +107,10 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Autowired
 	private CurriculumDAO curriculumDao;
 	@Autowired
+	private LectureService lectureService;
+	@Autowired
+	private LectureBlockDAO lectureBlockDao;
+	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private CurriculumService curriculumService;
@@ -110,10 +118,8 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
 	private OrganisationService organisationService;
-
 	@Autowired
 	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
-	
 	
 	private static IdentityWithLogin defaultUnitTestAdministrator;
 	private static Organisation defaultUnitTestOrganisation;
@@ -815,6 +821,108 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		HttpResponse twiceResponse = conn.execute(twiceMethod);
 		Assert.assertEquals(304, twiceResponse.getStatusLine().getStatusCode());
 		EntityUtils.consume(twiceResponse.getEntity());
+	}
+	
+	@Test
+	public void addRepositoryEntryToCurriculumElementWithLectures()
+	throws IOException, URISyntaxException {
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", defaultUnitTestOrganisation, null, JunitTestHelper.getDefaultActor());
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(null, element);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-auth-1");
+		RepositoryEntry course = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commitAndCloseSession();
+
+		// add the relation
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("entries").path(course.getKey().toString()).build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(element);
+		Assertions.assertThat(entries)
+			.hasSize(1)
+			.containsExactly(course);
+		
+		List<LectureBlock> movedLectureBlocks = lectureService.getLectureBlocks(course);
+		Assertions.assertThat(movedLectureBlocks)
+			.hasSize(1)
+			.containsExactly(lectureBlock);
+		
+		List<LectureBlock> elementLectureBlocks = lectureService.getLectureBlocks(element, false);
+		Assertions.assertThat(elementLectureBlocks)
+			.hasSize(1)
+			.containsExactly(lectureBlock);
+	}
+	
+	/**
+	 * Check that the lecture block is not automatically moved on to the course.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void addRepositoryEntryToCurriculumElementWithLecturesButTwoCourses()
+	throws IOException, URISyntaxException {
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", defaultUnitTestOrganisation, null, JunitTestHelper.getDefaultActor());
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-11", "Element 11",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-auth-1");
+		RepositoryEntry course1 = JunitTestHelper.createRandomRepositoryEntry(author);
+		curriculumService.addRepositoryEntry(element, course1, false);
+		RepositoryEntry course2 = JunitTestHelper.createRandomRepositoryEntry(author);
+		curriculumService.addRepositoryEntry(element, course2, false);
+		
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(null, element);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+		RepositoryEntry course3 = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commitAndCloseSession();
+
+		// add the relation
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("entries").path(course3.getKey().toString()).build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(element);
+		Assertions.assertThat(entries)
+			.hasSize(3);
+		
+		List<LectureBlock> movedLectureBlocks = lectureService.getLectureBlocks(course3);
+		Assertions.assertThat(movedLectureBlocks)
+			.isEmpty();
+		
+		List<LectureBlock> elementLectureBlocks = lectureService.getLectureBlocks(element, false);
+		Assertions.assertThat(elementLectureBlocks)
+			.hasSize(1)
+			.containsExactly(lectureBlock);
 	}
 	
 	@Test

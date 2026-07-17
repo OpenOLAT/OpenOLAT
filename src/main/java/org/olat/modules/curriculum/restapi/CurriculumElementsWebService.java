@@ -64,6 +64,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.modules.lecture.restapi.CurriculumElementLectureBlocksWebService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
@@ -352,6 +353,28 @@ public class CurriculumElementsWebService {
 		}
 	}
 	
+	/**
+	 * To get the web service for the lecture blocks of a specific curriculum element.
+	 * 
+	 * @param request The request
+	 * @return The web service for lecture blocks.
+	 */
+	@Path("{curriculumElementKey}/lectureblocks")
+	public CurriculumElementLectureBlocksWebService getLectureBlocksWebService(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@Context HttpServletRequest request) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+		if(curriculumElement == null) {
+			throw new WebApplicationException(Status.NOT_FOUND);
+		}
+		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			throw new WebApplicationException(Status.FORBIDDEN);
+		}
+		
+		CurriculumElementLectureBlocksWebService service = new CurriculumElementLectureBlocksWebService(curriculumElement, true);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
 	@POST
 	@Path("{curriculumElementKey}/reorder")
 	@Operation(summary = "Reorder the children of a curriculum element entity",
@@ -567,7 +590,8 @@ public class CurriculumElementsWebService {
 		}
 		
 		if(!curriculumService.hasRepositoryEntry(curriculumElement, entry)) {
-			curriculumService.addRepositoryEntry(curriculumElement, entry, false);
+			boolean moveLectureBlocks = !curriculumService.hasRepositoryEntries(curriculumElement);
+			curriculumService.addRepositoryEntry(curriculumElement, entry, moveLectureBlocks);
 			return Response.ok().build();
 		}
 		return Response.ok().status(Status.NOT_MODIFIED).build();
