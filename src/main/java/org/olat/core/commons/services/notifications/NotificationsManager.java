@@ -100,6 +100,8 @@ public interface NotificationsManager {
 	 */
 	public Publisher getPublisher(SubscriptionContext subsContext);
 	
+	public Publisher getPublisher(SubscriptionContext subsContext, PublisherData data);
+	
 	/**
 	 * Get or create the publisher. 
 	 * @param scontext
@@ -358,6 +360,13 @@ public interface NotificationsManager {
 	 */
 	public void asyncSubscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
 	
+	/**
+	 * Subscribe to the root publisher of the specified context.
+	 * 
+	 * @param identities A list of identities to subscribe
+	 * @param subscriptionContext The subscription context
+	 * @param publisherData The publisher data
+	 */
 	public void subscribe(List<Identity> identities, SubscriptionContext subscriptionContext, PublisherData publisherData);
 	
 	public void initialSubscription(List<Identity> identities, SubscriptionContext subscriptionContext, PublisherData publisherData);
