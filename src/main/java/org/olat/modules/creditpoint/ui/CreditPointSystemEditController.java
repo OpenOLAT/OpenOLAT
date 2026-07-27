@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationModule;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
@@ -42,7 +42,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointService;
@@ -121,16 +120,13 @@ public class CreditPointSystemEditController extends FormBasicController {
 		organisationsEnableEl.toggle(creditPointSystem != null && creditPointSystem.isOrganisationsRestrictions());
 		organisationsEnableEl.setVisible(organisationModule.isEnabled());
 		
-		Roles roles = ureq.getUserSession().getRoles();
 		List<Organisation> selectedOrganisations = creditPointSystem != null
 				? creditPointSystem.getOrganisations().stream()
 						.map(CreditPointSystemToOrganisation::getOrganisation)
 						.toList()
 				: List.of();
 		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
-				selectedOrganisations,
-				() -> organisationService.getOrganisations(getIdentity(), roles,
-						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager));
+				selectedOrganisations, () -> organisationService.getOrganisations(new OrganisationStatus[] { OrganisationStatus.active }));
 		organisationsEl = uifactory.addObjectSelectionElement("organisations", "organisations.restrictions", restrictionsCont,
 				getWindowControl(), true, organisationSource);
 		organisationsEl.setVisible(organisationModule.isEnabled() && organisationsEnableEl.isOn());
