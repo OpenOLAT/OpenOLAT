@@ -294,16 +294,20 @@ public class LecturesSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditAbsenceNotices() {
-			if(isReadOnly() || principalRole) return false;
+			if(isReadOnly()) return false;
 			
-			return viewAs == LectureRoles.teacher || viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach;
+			// Exclude principal
+			return (viewAs == LectureRoles.teacher || viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach)
+					&& (adminRole || masterCoachRole || teacherRole);
 		}
 
 		@Override
 		public boolean canDeleteAbsenceNotices() {
-			if(isReadOnly() || principalRole) return false;
+			if(isReadOnly()) return false;
 			
-			return viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach;
+			// Exclude principal
+			return (viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach)
+					&& (adminRole || masterCoachRole);
 		}
 
 		@Override
