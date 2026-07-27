@@ -21,23 +21,16 @@
 package org.olat.modules.scorm.server.sequence;
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.scorm.SettingsHandler;
 import org.olat.modules.scorm.server.servermodels.SequencerModel;
-import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 /**
  * A class to handle prerequisites found for items in the manifest. Uses
@@ -130,99 +123,20 @@ public class PrerequisiteManager {
 	}
 
 	/**
-	 * @param prereq
-	 * @return true if ???
+	 * Evaluate the aicc_script prerequisite expression against the current status
+	 * of the tracked items.
+	 *
+	 * @param prereq the prerequisite expression, e.g. <code>I1&amp;I2</code>
+	 * @return true if the prerequisites are fulfilled
 	 */
 	public boolean checkPrerequisites(String prereq) {
 		try {
-			final ScriptEngine engine = new NashornScriptEngineFactory()
-					.getScriptEngine("--no-java");
-			if(engine == null) {
-				log.error("JavaScript engine not available");
-				return true;
-			}
-			
-			StringTokenizer st1 = new StringTokenizer(prereq, "&|()~");
-			StringTokenizer itemAndValue;
-			String aToken = "";
-			while (st1.hasMoreTokens()) {
-				aToken = st1.nextToken();
-				// if theres no value in quotes to check against..
-				if (aToken.indexOf("=") == -1 && aToken.indexOf("<>") == -1) {
-					// get boolean status
-					if (!doesItemExist(aToken)) {
-						return true;// identifer does not exist, so junk.
-					}
-					// item exists in prerequisites table. Has it been completed
-					// or passed -grab the answer and declare the var for the interpreter
-					engine.getContext().setAttribute(aToken.replaceAll("-", "_"), checkStatus(aToken), ScriptContext.ENGINE_SCOPE);
-				} else {
-					itemAndValue = new StringTokenizer(aToken, "=<>");
-					String anToken = itemAndValue.nextToken();
-					if (!doesItemExist(anToken)) { return true; // identifer does not
-					// exist, so junk..
-					}
-					// item exists in prerequisites table. Has it been
-					// completed or passed -grab the answer and declare
-					// the var for the interpreter...
-					engine.getContext().setAttribute(anToken.replaceAll("-", "_"), getStatus(anToken), ScriptContext.ENGINE_SCOPE);
-				}
-			}
-			
-			prereq = prereq.replaceAll("-", "_");
-			prereq = prereq.replaceAll("&", "&&");
-			prereq = prereq.replaceAll("\\|", "||");
-			prereq = prereq.replaceAll("~", "!");
-			prereq = prereq.replaceAll("<>\\\"", "@");
-			prereq = prereq.replaceAll("=\\\"", "^");
-			prereq = prereq.replaceAll("\\\"", "\")");
-			prereq = prereq.replaceAll("\\^", "=\\\"");
-			prereq = prereq.replaceAll("=", "==(");
-			
-			if (prereq.indexOf("@") != -1) {
-				List<String> v = new ArrayList<>();
-				StringBuilder sb = new StringBuilder();
-				sb.append(prereq);
-				boolean notSymbFound = false;
-				// go backwards char at a time. if you find &}"|& then insert a
-				// !)
-				for (int j = sb.length() - 1; j > -1; j--) {
-					if (sb.charAt(j) == '@') {
-						notSymbFound = true;
-					}
-					if (notSymbFound) {
-						if (sb.charAt(j) == '|' || sb.charAt(j) == '&' || sb.charAt(j) == '"' || sb.charAt(j) == '}' || sb.charAt(j) == ')') {
-							notSymbFound = false;
-							v.add(j + 1 + "");
-						}
-					}
-				}
-				Iterator<String> it = v.iterator();
-				while (it.hasNext()) {
-					sb.insert(Integer.parseInt(it.next()), '!');
-				}
-				if (notSymbFound) {
-					// the ! must be at the beginning
-					prereq = "!" + sb.toString();
-				} else {
-					prereq = sb.toString();
-				}
-			}
-			prereq = prereq.replaceAll("@", "==(\"");
-			Object a = engine.eval(prereq);
-			log.debug("eval: {} result was: {}", prereq, a);
-			if(a instanceof Boolean bRes) {
-				return bRes.booleanValue();
-			}
-			return Boolean.valueOf(a.toString()).booleanValue();
-		} catch(Exception ex) {
-			log.error("Could not parse prerequisites: ", ex);
-			/* __FIXME:gs:a:[pb] guido is it correct to send true in the exception case?
-			 * Could please leave a comment why you return true, although an exception occured. thx
-			 * 
-			 * gs: prerequisites decides about going further in scorm navigation to the next sco. I think
-			 * returning true may assure that in a failing case you can continue.
-			 */
+			return AiccScriptInterpreter.evaluate(prereq, _prereqTable::get);
+		} catch (Exception ex) {
+			log.error("Could not parse prerequisites: {}", prereq, ex);
+			/* prerequisites decides about going further in scorm navigation to the
+			 * next sco. Returning true in a failing case assures that navigation can
+			 * continue instead of blocking the learner. */
 			return true;
 		}
 	}
@@ -233,11 +147,6 @@ public class PrerequisiteManager {
 
 	protected String getStatus(String sco) {
 		return _prereqTable.get(sco);
-	}
-
-	protected boolean checkStatus(String sco) {
-		String stat = _prereqTable.get(sco);
-		return (stat.equals(SequencerModel.ITEM_COMPLETED) || stat.equals(SequencerModel.ITEM_PASSED));
 	}
 
 	/**
@@ -262,10 +171,9 @@ public class PrerequisiteManager {
 	/**
 	 * A utillity method to test a prerequisite string to see if it is legal.
 	 * (mainly to check that there are no illegal chars in it) More rubust
-	 * checking will be made once the prerequisite is parsed. Note: Because sets
-	 * are not yet supported, ie 2*{S1,S2,S3} we will not flag for ,*{}
-	 * characters. This will be addressed in a later version.
-	 * 
+	 * checking will be made once the prerequisite is parsed. Sets, i.e.
+	 * 2*{S1,S2,S3}, are supported so the ,*{} characters are allowed.
+	 *
 	 * @param aprereq
 	 * @return true or false
 	 */
@@ -273,11 +181,7 @@ public class PrerequisiteManager {
 		Pattern pattern;
 		Matcher matcher;
 		// now lets do a little pattern matching - look for illegal chars
-		// String pat =
-		// "[^a-zA-Z0-9\\&\\|\\~\\=\\<\\>\\\"\\*\\,\\{\\}\\-\\_\\(\\)\\s]+"; // with
-		// sets
-		String pat = "[^a-zA-Z0-9\\&\\|\\~\\=\\<\\>\\\"\\-\\_\\(\\)\\s]+"; // without
-		// sets
+		String pat = "[^a-zA-Z0-9\\&\\|\\~\\=\\<\\>\\\"\\*\\,\\{\\}\\-\\_\\(\\)\\s]+";
 		pattern = Pattern.compile(pat);
 		matcher = pattern.matcher(aprereq);
 		// make sure there is an even number of quotes
