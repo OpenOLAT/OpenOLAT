@@ -97,5 +97,20 @@ public class SafeExamBrowserValidatorTest {
 		boolean allowed = SafeExamBrowserValidator.isSafelyAllowed(request, safeExamBrowserKey, null);
 		Assert.assertFalse(allowed);
 	}
+	
+	@Test
+	public void isVersionAllowed() {
+		Assert.assertTrue(SafeExamBrowserValidator.isBrowserVersionAllowed("3.8.1", "3.8"));
+		Assert.assertTrue(SafeExamBrowserValidator.isBrowserVersionAllowed("3.10.1", "3.8"));
+		Assert.assertTrue(SafeExamBrowserValidator.isBrowserVersionAllowed("3.10.1", "3.8.1"));
+		Assert.assertTrue(SafeExamBrowserValidator.isBrowserVersionAllowed("3.10", "3.8.1"));
+	}
+	
+	@Test
+	public void isVersionNotAllowed() {
+		Assert.assertFalse(SafeExamBrowserValidator.isBrowserVersionAllowed("3.8", "3.8.1"));
+		Assert.assertFalse(SafeExamBrowserValidator.isBrowserVersionAllowed("3.8", "3.10.1"));
+		Assert.assertFalse(SafeExamBrowserValidator.isBrowserVersionAllowed("3.6.1", "3.6.2"));
+	}
 
 }

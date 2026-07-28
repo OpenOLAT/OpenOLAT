@@ -47,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
@@ -64,6 +65,7 @@ import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.IpListValidator;
 import org.olat.course.assessment.manager.SafeExamBrowserValidator;
+import org.olat.course.assessment.model.SafeExamBrowserVersion;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -244,6 +246,18 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			}
 			allowed &= ipInRange;
 		}
+		
+		if(assessmentModule.isSafeExamBrowserEnforceMinimalVersion()) {
+			boolean authorizedVersion = isVersionAllowed(ureq);
+			if(!authorizedVersion) {
+				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
+				sb.append(translate("error.safe.exam.version"));
+				sb.append("</h4>");
+				sb.append(translate("error.safe.exam.version.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
+			}
+			allowed &= authorizedVersion;
+		}
+		
 		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey())) {
 			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, mode.getSafeExamBrowserKey(), null, useHeaders);
 			if(!safeExamCheck) {
@@ -285,6 +299,19 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		
 		guard.sync(state, sb.toString(), mode, getLocale());
 		return guard;
+	}
+	
+	private boolean isVersionAllowed(UserRequest ureq) {
+		String browserVersion = ureq.getParameter("browserVersion");
+		String userAgent = ServletUtil.getUserAgent(ureq.getHttpReq());
+		getLogger().info("SEB browser version: {} (User-Agent: {})", browserVersion, userAgent);
+		
+		SafeExamBrowserVersion versionInfos = SafeExamBrowserVersion.valueOf(browserVersion);
+		if(versionInfos == null) {
+			return false;
+		}
+		String minimalVersion = assessmentModule.getSafeExamBrowserMinimalVersion(versionInfos.os());
+		return SafeExamBrowserValidator.isBrowserVersionAllowed(versionInfos.version(), minimalVersion);
 	}
 	
 	private boolean isSafelyAllowed(UserRequest ureq, String safeExamBrowserKeys, String configurationKey, Boolean useHeaders) {

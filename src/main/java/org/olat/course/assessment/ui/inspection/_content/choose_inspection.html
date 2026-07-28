@@ -78,14 +78,15 @@ function checkSEBKeys() {
 function didUpdateSEBKeys() {
 	jQuery("div.o_error.o_assessment_mode_error").addClass("hide");
 	
-	var configKey = SafeExamBrowser.security.configKey;
-	var browserExamKey = SafeExamBrowser.security.browserExamKey;
-	var currentPage = window.location.toString();
-	$f.openFfXHREvent(false, false, false), 'cid', 'checkSEBKeys', 'configKey', configKey, 'browserExamKey', browserExamKey, 'urlForKeyHash', currentPage);
+	const configKey = SafeExamBrowser.security.configKey;
+	const browserExamKey = SafeExamBrowser.security.browserExamKey;
+	const sebVersion = SafeExamBrowser.version;
+	const currentPage = window.location.toString();
+	$f.openFfXHREvent(false, false, false), 'cid', 'checkSEBKeys', 'configKey', configKey, 'browserExamKey', browserExamKey, 'urlForKeyHash', currentPage, 'browserVersion', sebVersion);
 }
 
 function checkSEBHeaders() {
-	var currentPage = window.location.toString();
+	const currentPage = window.location.toString();
 	$f.openFfXHREvent(false, false, false), 'cid', 'checkSEBHeaders', 'urlForKeyHash', currentPage);
 }
 

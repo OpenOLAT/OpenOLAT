@@ -68,6 +68,10 @@ public class AssessmentModule extends AbstractSpringModule {
 	private static final String SEB_ALLOWAUDIOCAPTURE = "safe.exam.browser.allow.audio.capture";
 	private static final String SEB_ALLOWVIDEOCAPTURE = "safe.exam.browser.allow.video.capture";
 	private static final String SEB_VIEWMODE = "safe.exam.browser.view.mode";
+	private static final String SEB_ENFORCE_MIN_VERSION = "safe.exam.browser.enforce.min.version";
+	private static final String SEB_MIN_VERSION_IOS = "safe.exam.browser.min.version.ios";
+	private static final String SEB_MIN_VERSION_MAC = "safe.exam.browser.min.version.mac";
+	private static final String SEB_MIN_VERSION_WIN = "safe.exam.browser.min.version.win";
 	
 	private static final String MANAGED_ASSESSMENT_MODES_ENABLED = "managedAssessmentModes";
 	
@@ -131,6 +135,15 @@ public class AssessmentModule extends AbstractSpringModule {
 	
 	@Value("${safe.exam.browser.download.url}")
 	private String safeExamBrowserDownloadUrl;
+
+	@Value("${safe.exam.browser.enforce.min.version}")
+	private String safeExamBrowserEnforceMinimalVersion;
+	@Value("${safe.exam.browser.min.version.ios}")
+	private String safeExamBrowserMinimalVersionIos;
+	@Value("${safe.exam.browser.min.version.mac}")
+	private String safeExamBrowserMinimalVersionMac;
+	@Value("${safe.exam.browser.min.version.win}")
+	private String safeExamBrowserMinimalVersionWin;
 	
 	private String shadowQuitUrl;
 
@@ -195,6 +208,11 @@ public class AssessmentModule extends AbstractSpringModule {
 		safeExamBrowserBlockedUrlRegex = getStringPropertyValue(SEB_BLOCKEDURLREGEX, safeExamBrowserBlockedUrlRegex);
 		
 		safeExamBrowserHint = getStringPropertyValue(SEB_HINT, safeExamBrowserHint);
+		
+		safeExamBrowserEnforceMinimalVersion = getStringPropertyValue(SEB_ENFORCE_MIN_VERSION, safeExamBrowserEnforceMinimalVersion);
+		safeExamBrowserMinimalVersionIos = getStringPropertyValue(SEB_MIN_VERSION_IOS, safeExamBrowserMinimalVersionIos);
+		safeExamBrowserMinimalVersionMac = getStringPropertyValue(SEB_MIN_VERSION_MAC, safeExamBrowserMinimalVersionMac);
+		safeExamBrowserMinimalVersionWin = getStringPropertyValue(SEB_MIN_VERSION_WIN, safeExamBrowserMinimalVersionWin);
 	}
 	
 	public boolean isAssessmentInspectionEnabled() {
@@ -226,6 +244,56 @@ public class AssessmentModule extends AbstractSpringModule {
 	
 	public String getSafeExamBrowserDownloadUrl() {
 		return safeExamBrowserDownloadUrl;
+	}
+
+	public boolean isSafeExamBrowserEnforceMinimalVersion() {
+		return "true".equals(safeExamBrowserEnforceMinimalVersion);
+	}
+
+	public void setSafeExamBrowserEnforceMinimalVersion(boolean enable) {
+		safeExamBrowserEnforceMinimalVersion = enable ? "true" : "false";
+		setStringProperty(SEB_ENFORCE_MIN_VERSION, safeExamBrowserEnforceMinimalVersion, true);
+	}
+
+	public String getSafeExamBrowserMinimalVersionIos() {
+		return safeExamBrowserMinimalVersionIos;
+	}
+
+	public void setSafeExamBrowserMinimalVersionIos(String version) {
+		this.safeExamBrowserMinimalVersionIos = version;
+		setStringProperty(SEB_MIN_VERSION_IOS, version, true);
+	}
+
+	public String getSafeExamBrowserMinimalVersionMac() {
+		return safeExamBrowserMinimalVersionMac;
+	}
+
+	public void setSafeExamBrowserMinimalVersionMac(String version) {
+		this.safeExamBrowserMinimalVersionMac = version;
+		setStringProperty(SEB_MIN_VERSION_MAC, version, true);
+	}
+
+	public String getSafeExamBrowserMinimalVersionWin() {
+		return safeExamBrowserMinimalVersionWin;
+	}
+
+	public void setSafeExamBrowserMinimalVersionWin(String version) {
+		this.safeExamBrowserMinimalVersionWin = version;
+		setStringProperty(SEB_MIN_VERSION_WIN, version, true);
+	}
+	
+	public String getSafeExamBrowserMinimalVersion(String os) {
+		String normalizedOs = os.toLowerCase();
+		if(normalizedOs.contains("ios") || normalizedOs.contains("ipad") || normalizedOs.contains("iphone")) {
+			return getSafeExamBrowserMinimalVersionIos();
+		}
+		if(normalizedOs.contains("mac") || normalizedOs.contains("osx")) {
+			return getSafeExamBrowserMinimalVersionMac();
+		}
+		if(normalizedOs.contains("win")) {
+			return getSafeExamBrowserMinimalVersionWin();
+		}
+		return null;
 	}
 
 	/*
