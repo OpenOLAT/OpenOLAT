@@ -110,7 +110,6 @@ public class NewAssessmentModeController extends FormBasicController {
 		leadTimeEl.setElementCssClass("o_sel_assessment_mode_leadtime o_form_number");
 		leadTimeEl.setExampleKey("mode.minutes", null);
 		leadTimeEl.setDisplaySize(3);
-		leadTimeEl.setInlineValidationOn(true);
 		
 		int followUp = assessmentModeToCopy == null ? 10 : assessmentModeToCopy.getFollowupTime();
 		followupTimeEl = uifactory.addIntegerElement("mode.followupTime", followUp, datesCont);
