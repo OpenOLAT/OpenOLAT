@@ -98,10 +98,14 @@ public class AssessmentModeEditSafeExamBrowserController extends AbstractEditSaf
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser));
 		safeExamBrowserHintEl.setEnabled(status != Status.end
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser));
-		
-		FormLayoutContainer buttonsWrapperCont = uifactory.addDefaultFormLayout("buttonsWrapper", null, formLayout);
-		FormLayoutContainer buttonCont = uifactory.addButtonsFormLayout("buttons", null, buttonsWrapperCont);
+	}
+	
+	@Override
+	protected void initButtonsForm(FormItemContainer formLayout, UserRequest ureq) {
+		Status status = assessmentMode.getStatus();
 		if(status != Status.end && !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser)) {
+			FormLayoutContainer buttonsWrapperCont = uifactory.addDefaultFormLayout("buttonsWrapper", null, formLayout);
+			FormLayoutContainer buttonCont = uifactory.addButtonsFormLayout("buttons", null, buttonsWrapperCont);
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
 	}

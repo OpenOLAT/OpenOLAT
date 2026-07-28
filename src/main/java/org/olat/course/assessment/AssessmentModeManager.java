@@ -199,7 +199,7 @@ public interface AssessmentModeManager {
 	
 	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node);
 
-	public SafeExamBrowserTemplate createSafeExamBrowserTemplate(String name);
+	public SafeExamBrowserTemplate createSafeExamBrowserTemplate(String name, SafeExamBrowserTemplateType type);
 
 	public SafeExamBrowserTemplate updateSafeExamBrowserTemplate(SafeExamBrowserTemplate sebTemplate);
 

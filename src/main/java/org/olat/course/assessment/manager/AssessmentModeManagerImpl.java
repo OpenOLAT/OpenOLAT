@@ -47,6 +47,7 @@ import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
 import org.olat.course.assessment.SafeExamBrowserTemplateSearchParams;
+import org.olat.course.assessment.SafeExamBrowserTemplateType;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.AssessmentModeToAreaImpl;
 import org.olat.course.assessment.model.AssessmentModeToCurriculumElementImpl;
@@ -513,8 +514,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
-	public SafeExamBrowserTemplate createSafeExamBrowserTemplate(String name) {
-		return safeExamBrowserTemplateDao.createTemplate(name);
+	public SafeExamBrowserTemplate createSafeExamBrowserTemplate(String name, SafeExamBrowserTemplateType type) {
+		return safeExamBrowserTemplateDao.createTemplate(name, type);
 	}
 
 	@Override
@@ -543,7 +544,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		params.setDefault(Boolean.TRUE);
 		List<SafeExamBrowserTemplate> templates = getSafeExamBrowserTemplates(params);
 		if (templates.isEmpty()) {
-			SafeExamBrowserTemplate template = safeExamBrowserTemplateDao.createTemplate("Default");
+			SafeExamBrowserTemplate template = safeExamBrowserTemplateDao.createTemplate("Default", SafeExamBrowserTemplateType.OO_FORM);
 			template.setDefault(true);
 			template.setSafeExamBrowserConfiguration(assessmentModule.getSafeExamBrowserConfigurationDefaultConfiguration());
 			template.setSafeExamBrowserHint(assessmentModule.getSafeExamBrowserHint());

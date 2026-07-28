@@ -90,6 +90,7 @@ public class SafeExamBrowserValidator {
 				safe = isSafeExam(safeExamHash, configurationKey, url) || isSafeExam(browserExamHash, configurationKey, url);
 			} else {
 				safe = true;
+				log.warn("Really safe???");
 			}
 		}
 		return safe;

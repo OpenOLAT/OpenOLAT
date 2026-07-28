@@ -44,6 +44,8 @@ public interface SafeExamBrowserTemplate extends ModifiedInfo, CreateInfo {
 	String getName();
 
 	void setName(String name);
+	
+	SafeExamBrowserTemplateType getType();
 
 	SafeExamBrowserConfiguration getSafeExamBrowserConfiguration();
 
@@ -52,9 +54,29 @@ public interface SafeExamBrowserTemplate extends ModifiedInfo, CreateInfo {
 	String getSafeExamBrowserConfigPList();
 
 	String getSafeExamBrowserConfigPListKey();
+	
+	Boolean getSafeExamBrowserConfigDownload();
+
+	void setSafeExamBrowserConfigDownload(Boolean enabled);
+	
+	Boolean getSafeExamBrowserConfigAllowExit();
+
+	void setSafeExamBrowserConfigAllowExit(Boolean allowExit);
+	
+	String getSafeExamBrowserConfigFilename();
+
+	void setSafeExamBrowserConfigFilename(String filename);
+	
+	String getSafeExamBrowserConfigExitPassword();
+
+	void setSafeExamBrowserConfigExitPassword(String password);
 
 	String getSafeExamBrowserHint();
 
 	void setSafeExamBrowserHint(String hint);
+	
+	String getSafeExamBrowserAuthorHint();
+
+	void setSafeExamBrowserAuthorHint(String hint);
 
 }

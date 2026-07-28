@@ -21,7 +21,7 @@
 	#if($mode.status == "leadtime")
 		<div class="o_hint">$r.render($mode.countDown.dispatchID)</div>
 	#end
-	
+
 	#if($mode.status == "assessment" || $mode.status == "leadtime")
 		#if($mode.safeExamBrowserHint && !$mode.safeExamBrowserHint.empty)
 			<div class="o_hint">$r.xssScan($mode.safeExamBrowserHint)</div>

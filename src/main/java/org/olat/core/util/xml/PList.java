@@ -19,7 +19,11 @@
  */
 package org.olat.core.util.xml;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,6 +42,10 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * 
@@ -49,18 +57,25 @@ public class PList {
 	
 	private static final Logger log = Tracing.createLoggerFor(PList.class);
 	
+	private static final String PUBLIC_ID = "-//Apple//DTD PLIST 1.0//EN";
+	private static final String SYSTEM_ID = "http://www.apple.com/DTDs/PropertyList-1.0.dtd";
+	
 	private Element rootDict;
 	private Document doc;
 	private DocumentType dt;
 	
-	public PList() {
+	private PList() {
+		//
+	}
+	
+	public static PList emptyPList() {
 		try {
 			// Create an empty, stand-alone DOM document
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory factory = XMLFactories.newDocumentBuilderFactory();
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			DOMImplementation di = builder.getDOMImplementation();
-			dt = di.createDocumentType("plist", "-//Apple//DTD PLIST 1.0//EN", "http://www.apple.com/DTDs/PropertyList-1.0.dtd");
-			doc = di.createDocument("", "plist", dt);
+			DocumentType dt = di.createDocumentType("plist", PUBLIC_ID, SYSTEM_ID);
+			Document doc = di.createDocument("", "plist", dt);
 			doc.setXmlStandalone(true);
 			
 			// Set plist version.
@@ -68,11 +83,50 @@ public class PList {
 			rootElement.setAttribute("version", "1.0");
 			
 			// dictionary level
-			rootDict = doc.createElement("dict");
+			Element rootDict = doc.createElement("dict");
 			rootElement.appendChild(rootDict);
+
+			PList plist = new PList();
+			plist.doc = doc;
+			plist.dt = dt;
+			plist.rootDict = rootDict;
+			return plist;
 		} catch (DOMException | ParserConfigurationException e) {
 			log.error("", e);
+			return null;
 		}
+	}
+
+	public static PList valueOf(String xml) {
+		try(InputStream in=new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))) {
+			// Create an empty, stand-alone DOM document
+			DocumentBuilderFactory factory = XMLFactories.newDocumentBuilderFactory();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			builder.setEntityResolver(new PListEntityResolver());
+			Document document = builder.parse(in);
+			
+			// Set plist version.
+			Element rootElement = document.getDocumentElement();
+			Element rootDict = null;
+			for(Node node=rootElement.getFirstChild(); node != null; node=node.getNextSibling()) {
+				if(node instanceof Element element && "dict".equalsIgnoreCase(element.getNodeName())) {
+					rootDict = element;
+					break;
+				}
+			}
+
+			PList plist = new PList();
+			plist.doc = document;
+			plist.rootDict = rootDict;
+			return plist;
+		} catch (DOMException | ParserConfigurationException | IOException | SAXException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public Element getRootDict() {
+		return rootDict;
 	}
 	
 	public void add(String key, String value) {
@@ -134,15 +188,45 @@ public class PList {
 		return dictElement;
 	}
 	
+	public void replace(String key, boolean value) {
+		Element previousElement = null;
+		for(Node node=rootDict.getFirstChild(); node != null; node=node.getNextSibling()) {
+			if(node instanceof Element element) {
+				if(previousElement != null
+						&& "key".equalsIgnoreCase(previousElement.getNodeName())
+						&& key.equals(previousElement.getTextContent())) {
+					Element valueElement = doc.createElement(value ? "true" : "false");
+					rootDict.replaceChild(valueElement, element);
+					break;
+				} 
+				previousElement = element;	
+			}
+		}
+	}
 	
+	public void replace(String key, String content) {
+		Element previousElement = null;
+		for(Node node=rootDict.getFirstChild(); node != null; node=node.getNextSibling()) {
+			if(node instanceof Element element) {
+				if(previousElement != null
+						&& "key".equalsIgnoreCase(previousElement.getNodeName())
+						&& key.equals(previousElement.getTextContent())) {
+					element.setTextContent(content);
+					break;
+				}
+				previousElement = element;
+			}
+		}
+	}
 	
 	public String toPlistString() throws TransformerException  {
 		DOMSource domSource = new DOMSource(doc);
 		TransformerFactory tf = XMLFactories.newTransformerFactory();
 		Transformer t = tf.newTransformer();
 		t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-		t.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, dt.getPublicId());
-		t.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, dt.getSystemId());
+		// Prefer the original but use the standard as fallback
+		t.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, dt == null ? PUBLIC_ID : dt.getPublicId());
+		t.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, dt == null ? SYSTEM_ID : dt.getSystemId());
 		t.setOutputProperty(OutputKeys.INDENT, "no");
 		
 		StringWriter stringWriter = new StringWriter();
@@ -150,5 +234,16 @@ public class PList {
 		t.transform(domSource, streamResult);
 		return stringWriter.toString();
 	}
-
+	
+	private static class PListEntityResolver implements EntityResolver {
+		@Override
+		public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+			String systemId_ = systemId.toLowerCase();
+			if (systemId_.endsWith("propertylist-1.0.dtd")) {
+				InputStream in = getClass().getResourceAsStream("/org/olat/core/util/xml/_resources/PropertyList-1.0.dtd");
+				return new InputSource(in);
+			}
+			return null;
+		}
+	}
 }

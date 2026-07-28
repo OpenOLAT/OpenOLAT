@@ -56,6 +56,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
 import org.olat.course.assessment.SafeExamBrowserTemplateSearchParams;
+import org.olat.course.assessment.SafeExamBrowserTemplateType;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.course.assessment.ui.mode.SafeExamBrowserTemplateDataModel.SEBTemplateCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,12 +70,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SafeExamBrowserTemplateListController extends FormBasicController {
 
 	private FormLink createTemplateButton;
+	private FormLink uploadTemplateButton;
 	private FlexiTableElement tableEl;
 	private SafeExamBrowserTemplateDataModel model;
 
 	private CloseableModalController cmc;
 	private SafeExamBrowserTemplateEditController editCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private SafeExamBrowserTemplateUploadController uploadCtrl;
 	private ToolsController toolsCtrl;
 
 	@Autowired
@@ -91,11 +94,17 @@ public class SafeExamBrowserTemplateListController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		createTemplateButton = uifactory.addFormLink("add.seb.template", formLayout, Link.BUTTON);
 		createTemplateButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		
+		uploadTemplateButton = uifactory.addFormLink("upload.seb.template", formLayout, Link.BUTTON);
+		uploadTemplateButton.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SEBTemplateCols.name));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SEBTemplateCols.active, new YesNoCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SEBTemplateCols.type,
+				new TemplateTypeCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SEBTemplateCols.status,
+				new TemplateStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SEBTemplateCols.isDefault, new DefaultConfigCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SEBTemplateCols.usages));
 
@@ -149,10 +158,16 @@ public class SafeExamBrowserTemplateListController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == createTemplateButton) {
 			doEdit(ureq, null);
+		} else if(source == uploadTemplateButton) {
+			doEditSEBFile(ureq, null);
 		} else if (source == tableEl) {
 			if (event instanceof SelectionEvent se && "edit-template".equals(se.getCommand())) {
 				SafeExamBrowserTemplateRow row = model.getObject(se.getIndex());
-				doEdit(ureq, row.getTemplate());
+				if(row.getType() == SafeExamBrowserTemplateType.OO_FORM) {
+					doEdit(ureq, row.getTemplate());
+				} else {
+					doEditSEBFile(ureq, row.getTemplate());
+				}
 			}
 		} else if (source instanceof FormLink formLink && "tools".equals(formLink.getCmd())) {
 			doOpenTools(ureq, formLink);
@@ -162,7 +177,7 @@ public class SafeExamBrowserTemplateListController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == editCtrl) {
+		if (source == editCtrl || source == uploadCtrl) {
 			if (event == Event.DONE_EVENT) {
 				reloadModel();
 			}
@@ -176,10 +191,12 @@ public class SafeExamBrowserTemplateListController extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(cmc);
 		toolsCalloutCtrl = null;
+		uploadCtrl = null;
 		toolsCtrl = null;
 		editCtrl = null;
 		cmc = null;
@@ -223,6 +240,18 @@ public class SafeExamBrowserTemplateListController extends FormBasicController {
 		String title = template != null ? translate("edit.seb.template") : translate("add.seb.template");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				editCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doEditSEBFile(UserRequest ureq, SafeExamBrowserTemplate template) {
+		removeAsListenerAndDispose(uploadCtrl);
+		uploadCtrl = new SafeExamBrowserTemplateUploadController(ureq, getWindowControl(), template);
+		listenTo(uploadCtrl);
+
+		String title = translate("upload.seb.template");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				uploadCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

@@ -174,6 +174,9 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			if(mode.getActionButton() != null) {
 				cmps.add(mode.getActionButton().getComponent());
 			}
+			if(mode.getViewPasswordButton() != null) {
+				cmps.add(mode.getViewPasswordButton().getComponent());
+			}
 			List<FormLink> elementLinks = mode.getElementLinks();
 			for(FormLink elementLink:elementLinks) {
 				cmps.add(elementLink.getComponent());
@@ -328,7 +331,17 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		} else {
 			row.setWaitBarItem(null);
 		}
-
+		
+		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigExitPassword())) {
+			String id = "viewp_" + (++count);
+			FormLink viewPasswordButton = uifactory.addFormLink(id, "viewpassword", "", null, flc, Link.LINK | Link.NONTRANSLATED);
+			viewPasswordButton.setDomReplacementWrapperRequired(false);
+			viewPasswordButton.setIconLeftCSS("o_icon o_icon_eye");
+			viewPasswordButton.setUserObject(row);
+			viewPasswordButton.setTitle(translate("view.password"));
+			row.setViewPasswordButton(viewPasswordButton);
+			flc.add(id, viewPasswordButton);
+		}
 		
 		String elements = mode.getElementList();
 		if(StringHelper.containsNonWhitespace(elements)) {
@@ -460,6 +473,9 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 				doConfirmStop(ureq, (AssessmentModeOverviewRow)link.getUserObject());
 			} else if("element".equals(link.getCmd())) {
 				doJumpTo(ureq, (CourseNode)link.getUserObject());
+			} else if("viewpassword".equals(link.getCmd())
+					&& link.getUserObject() instanceof AssessmentModeOverviewRow row) {
+				doToggleSEBPassword(link, row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -504,6 +520,20 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), stopCtrl.getInitialComponent(), true, title, true);
 			cmc.activate();
 			listenTo(cmc);
+		}
+	}
+	
+	private void doToggleSEBPassword(FormLink link, AssessmentModeOverviewRow row) {
+		if(row.isPasswordView()) {
+			row.setPasswordView(false);
+			link.setIconLeftCSS("o_icon o_icon_eye");
+		} else {
+			row.setPasswordView(true);
+			link.setIconLeftCSS("o_icon o_icon_eye o_icon_eye_slash");
+			
+			AssessmentMode mode = row.getAssessmentMode();
+			getLogger().info(Tracing.M_AUDIT, "View SEB password : {} ({}) in course: {} ({})",
+					mode.getName(), mode.getKey(), courseEntry.getDisplayname(), courseEntry.getKey());
 		}
 	}
 

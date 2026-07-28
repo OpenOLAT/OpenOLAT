@@ -291,7 +291,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		String safeExamHash = ureq.getParameter("configKey");
 		String url = ureq.getParameter("urlForKeyHash");
 		String browserExamKey = ureq.getParameter("browserExamKey");
-		getLogger().debug("SEB requests parameters - configkey: {}, url: {}, browser exam key: {}", safeExamHash, url, browserExamKey);
+		getLogger().info("SEB requests parameters - configkey: {}, url: {}, browser exam key: {} (Configuration: {})", safeExamHash, url, browserExamKey, configurationKey);
 		return (useHeaders != null && useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey))
 				|| (useHeaders != null && !useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, browserExamKey, url, safeExamBrowserKeys, configurationKey));
 	}

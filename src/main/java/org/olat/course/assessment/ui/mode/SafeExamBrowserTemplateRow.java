@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.mode;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
+import org.olat.course.assessment.SafeExamBrowserTemplateType;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 
 /**
@@ -52,6 +53,10 @@ public class SafeExamBrowserTemplateRow {
 
 	public String getName() {
 		return template.getName();
+	}
+	
+	public SafeExamBrowserTemplateType getType() {
+		return template.getType();
 	}
 
 	public boolean isActive() {

@@ -16,6 +16,17 @@
 			</div>
 		</div>
 
+		#if($r.isNotNull($row.viewPasswordButtonName))
+		<div class="o_assessment_seb">
+			<strong>$r.translate("seb.password.exit")</strong>
+			#if($r.isTrue($row.passwordView))
+				<span>${row.passwordToExit}</span>
+			#else
+				<span>********</span>
+			#end
+			$r.render($row.viewPasswordButton)
+		</div>
+		#end
 
 		<div class="text-muted">${helper.getBeginEndTooltip($row.assessmentMode)}</div>
 		<div class="text-muted">${helper.getLeadFollowupTime($row.assessmentMode)}</div>
