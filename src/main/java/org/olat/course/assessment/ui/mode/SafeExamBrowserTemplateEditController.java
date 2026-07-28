@@ -131,6 +131,7 @@ public class SafeExamBrowserTemplateEditController extends FormBasicController {
 		statusDropdown.setElementCssClass("o_seb_template_status");
 		statusDropdown.setEmbbeded(true);
 		statusDropdown.setLabeled(true, true);
+		statusDropdown.setEnabled(sebTemplate == null || !sebTemplate.isDefault());
 		boolean active = sebTemplate == null || sebTemplate.isActive();
 		updateStatus(active ? ACTIVE_STATUS_KEY : INACTIVE_STATUS_KEY);
 		
