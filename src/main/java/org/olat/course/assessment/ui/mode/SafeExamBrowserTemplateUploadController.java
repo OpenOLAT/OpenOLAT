@@ -182,7 +182,8 @@ public class SafeExamBrowserTemplateUploadController extends FormBasicController
 		safeExamBrowserHintEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		
 		allowToExitEl = uifactory.addToggleButton("mode.safeexambrowser.allow.toexit", "mode.safeexambrowser.allow.toexit", translate("on"), translate("off"), formLayout);
-		allowToExitEl.toggle(sebTemplate == null || sebTemplate.isActive());
+		allowToExitEl.toggle(sebTemplate == null
+				|| (sebTemplate.getSafeExamBrowserConfigAllowExit() != null && sebTemplate.getSafeExamBrowserConfigAllowExit().booleanValue()));
 		allowToExitEl.setEnabled(sebTemplate == null || !sebTemplate.isDefault());
 		
 		String password = sebTemplate != null ? sebTemplate.getSafeExamBrowserConfigExitPassword() : null;
@@ -256,7 +257,7 @@ public class SafeExamBrowserTemplateUploadController extends FormBasicController
 			if(sebTemplate == null && uploadEl.getUploadFile() == null) {
 				uploadEl.setErrorKey("form.mandatory.hover");
 				allOk &= false;
-			} else if(uploadEl.getUploadFile() != null && validateFile(uploadEl.getUploadFile())) {
+			} else if(uploadEl.getUploadFile() != null && !validateFile(uploadEl.getUploadFile())) {
 				uploadEl.setErrorKey("error.safe.exam.config.format");
 				allOk &= false;
 			}

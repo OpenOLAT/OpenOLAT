@@ -107,7 +107,7 @@ public class SafeExamBrowserConfigurationSerializer {
 					key = element.getTextContent();
 				} else if(key != null) {
 					JsonElement jsonValue = toJsonValue(element);
-					if(!isEmpty(jsonValue) && !"originatorVersion".equals(key)) {
+					if(!"originatorVersion".equals(key)) {
 						entries.add(Map.entry(key, jsonValue));
 					}
 					key = null;
@@ -122,13 +122,6 @@ public class SafeExamBrowserConfigurationSerializer {
 			json.add(entry.getKey(), entry.getValue());
 		}
 		return json;
-	}
-	
-	private static boolean isEmpty(JsonElement jsonValue) {
-		if(jsonValue instanceof JsonArray array) {
-			//return array.isEmpty();
-		}
-		return false;
 	}
 
 	private static JsonElement toJsonValue(Element valueElement) {
@@ -369,7 +362,7 @@ public class SafeExamBrowserConfigurationSerializer {
 	public static String overridePList(String originalPListConfig, boolean allowQuit, String passwordToExit) {
 		try {
 			PList plist = overridePListConfig(originalPListConfig, allowQuit, passwordToExit);
-			return plist.toPlistString();
+			return plist == null ? null : plist.toPlistString();
 		} catch (TransformerException e) {
 			log.error("", e);
 			return null;
@@ -378,11 +371,13 @@ public class SafeExamBrowserConfigurationSerializer {
 	
 	private static final PList overridePListConfig(String originalPListConfig, boolean allowQuit, String passwordToExit) {
 		PList plist = PList.valueOf(originalPListConfig);
-		plist.replace("allowQuit", allowQuit);
-		if(StringHelper.containsNonWhitespace(passwordToExit)) {
-			plist.replace("hashedQuitPassword", Encoder.sha256Exam(passwordToExit));
-		} else {
-			plist.replace(originalPListConfig, "");
+		if(plist != null) {
+			plist.replace("allowQuit", allowQuit);
+			if(StringHelper.containsNonWhitespace(passwordToExit)) {
+				plist.replace("hashedQuitPassword", Encoder.sha256Exam(passwordToExit));
+			} else {
+				plist.replace("hashedQuitPassword", "");
+			}
 		}
 		return plist;
 	}

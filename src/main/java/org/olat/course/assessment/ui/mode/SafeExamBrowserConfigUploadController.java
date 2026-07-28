@@ -75,7 +75,7 @@ public class SafeExamBrowserConfigUploadController extends FormBasicController {
 		if(uploadEl.getUploadFile() == null) {
 			uploadEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
-		} else if(uploadEl.getUploadFile() != null && validateFile(uploadEl.getUploadFile())) {
+		} else if(uploadEl.getUploadFile() != null && !validateFile(uploadEl.getUploadFile())) {
 			uploadEl.setErrorKey("error.safe.exam.config.format");
 			allOk &= false;
 		}

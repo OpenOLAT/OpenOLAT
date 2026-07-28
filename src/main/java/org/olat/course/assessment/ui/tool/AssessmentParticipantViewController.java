@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -109,8 +108,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentParticipantViewController extends BasicController implements Activateable2 {
 	
-	private final static DecimalFormat SCALE_FORMAT = new DecimalFormat("0.#");
-
 	private int counter = 0;
 	private final VelocityContainer mainVC;
 	private WidgetGroup widgetGroup;

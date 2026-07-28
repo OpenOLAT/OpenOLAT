@@ -42,10 +42,12 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
 
+import org.apache.logging.log4j.Logger;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Persistable;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.PList;
@@ -73,6 +75,8 @@ import org.olat.repository.RepositoryEntry;
 @NamedQuery(name="assessmentModeByRepoEntry", query="select mode from courseassessmentmode mode inner join fetch mode.repositoryEntry v inner join fetch v.olatResource res where mode.repositoryEntry.key=:entryKey order by mode.begin desc")
 public class AssessmentModeImpl implements Persistable, AssessmentMode {
 
+	private static final Logger log = Tracing.createLoggerFor(AssessmentModeImpl.class);
+	
 	private static final long serialVersionUID = 5208551950937018842L;
 
 	@Id
@@ -540,8 +544,7 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 				setSafeExamBrowserConfigPListKey(Encoder.sha256Exam(json));
 			}
 		} catch (TransformerException e) {
-			// TODO seb Auto-generated catch block
-			e.printStackTrace();
+			log.error("Cannot transform PList to JSON to Hash Key", e);
 		}
 	}
 

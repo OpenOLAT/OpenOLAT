@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
+import org.olat.course.assessment.SafeExamBrowserTemplate;
 import org.olat.course.assessment.model.AssessmentInspectionConfigurationImpl;
 import org.olat.course.assessment.model.AssessmentInspectionConfigurationWithUsage;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
@@ -79,6 +80,14 @@ public class AssessmentInspectionConfigurationDAO {
 		configuration.setSafeExamBrowserKey(sourceConfiguration.getSafeExamBrowserKey());
 		configuration.setSafeExamBrowserHint(sourceConfiguration.getSafeExamBrowserHint());
 		configuration.setSafeExamBrowserConfigDownload(sourceConfiguration.isSafeExamBrowserConfigDownload());
+		configuration.setSafeExamBrowserConfigAllowExit(sourceConfiguration.getSafeExamBrowserConfigAllowExit());
+		configuration.setSafeExamBrowserConfigExitPassword(sourceConfiguration.getSafeExamBrowserConfigExitPassword());
+		
+		SafeExamBrowserTemplate template = sourceConfiguration.getSafeExamBrowserTemplate();
+		if(template != null) {
+			configuration.setSafeExamBrowserTemplate(template);
+		}
+		
 		return saveConfiguration(configuration);
 	}
 	

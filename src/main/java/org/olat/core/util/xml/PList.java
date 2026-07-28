@@ -120,7 +120,7 @@ public class PList {
 			plist.rootDict = rootDict;
 			return plist;
 		} catch (DOMException | ParserConfigurationException | IOException | SAXException e) {
-			log.error("", e);
+			log.warn("", e);
 			return null;
 		}
 	}
@@ -189,6 +189,8 @@ public class PList {
 	}
 	
 	public void replace(String key, boolean value) {
+		boolean replaced = false;
+		
 		Element previousElement = null;
 		for(Node node=rootDict.getFirstChild(); node != null; node=node.getNextSibling()) {
 			if(node instanceof Element element) {
@@ -197,14 +199,20 @@ public class PList {
 						&& key.equals(previousElement.getTextContent())) {
 					Element valueElement = doc.createElement(value ? "true" : "false");
 					rootDict.replaceChild(valueElement, element);
+					replaced = true;
 					break;
 				} 
 				previousElement = element;	
 			}
 		}
+		
+		if(!replaced) {
+			add(key, value);
+		}
 	}
 	
 	public void replace(String key, String content) {
+		boolean replaced = false;
 		Element previousElement = null;
 		for(Node node=rootDict.getFirstChild(); node != null; node=node.getNextSibling()) {
 			if(node instanceof Element element) {
@@ -212,10 +220,15 @@ public class PList {
 						&& "key".equalsIgnoreCase(previousElement.getNodeName())
 						&& key.equals(previousElement.getTextContent())) {
 					element.setTextContent(content);
+					replaced = true;
 					break;
 				}
 				previousElement = element;
 			}
+		}
+		
+		if(!replaced) {
+			add(key, content);
 		}
 	}
 	

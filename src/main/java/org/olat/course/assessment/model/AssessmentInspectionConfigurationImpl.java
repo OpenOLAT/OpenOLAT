@@ -38,14 +38,17 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Persistable;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.PList;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
+import org.olat.course.assessment.SafeExamBrowserTemplateType;
 import org.olat.course.assessment.manager.SafeExamBrowserConfigurationSerializer;
 import org.olat.repository.RepositoryEntry;
 
@@ -54,6 +57,7 @@ import org.olat.repository.RepositoryEntry;
 @NamedQuery(name="hasAssessmentInspectionConfiguration", query="select config.key from courseassessmentinspectionconfig as config where config.repositoryEntry.key=:entryKey")
 public class AssessmentInspectionConfigurationImpl implements AssessmentInspectionConfiguration, Persistable {
 	
+	private static final Logger log = Tracing.createLoggerFor(AssessmentInspectionConfigurationImpl.class);
 	private static final long serialVersionUID = -8047542170697719545L;
 
 	@Id
@@ -284,8 +288,7 @@ public class AssessmentInspectionConfigurationImpl implements AssessmentInspecti
 				setSafeExamBrowserConfigPListKey(Encoder.sha256Exam(json));
 			}
 		} catch (TransformerException e) {
-			// TODO seb Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
 		}
 	}
 
@@ -299,6 +302,16 @@ public class AssessmentInspectionConfigurationImpl implements AssessmentInspecti
 
 	@Override
 	public String getSafeExamBrowserConfigPList() {
+		if(safeExamBrowserTemplate != null) {
+			if(safeExamBrowserTemplate.getType() == SafeExamBrowserTemplateType.OO_FORM) {
+				return safeExamBrowserTemplate.getSafeExamBrowserConfigPList();
+			}
+			if(safeExamBrowserTemplate.getType() == SafeExamBrowserTemplateType.SEB_FILE) {
+				String plist = safeExamBrowserTemplate.getSafeExamBrowserConfigPList();
+				boolean allowExit = getSafeExamBrowserConfigAllowExit() != null && getSafeExamBrowserConfigAllowExit().booleanValue();
+				return SafeExamBrowserConfigurationSerializer.overridePList(plist, allowExit, getSafeExamBrowserConfigExitPassword());
+			}
+		}
 		return safeExamBrowserConfigPlist;
 	}
 
@@ -308,6 +321,16 @@ public class AssessmentInspectionConfigurationImpl implements AssessmentInspecti
 
 	@Override
 	public String getSafeExamBrowserConfigPListKey() {
+		if(safeExamBrowserTemplate != null) {
+			if(safeExamBrowserTemplate.getType() == SafeExamBrowserTemplateType.OO_FORM) {
+				return safeExamBrowserTemplate.getSafeExamBrowserConfigPListKey();
+			}
+			if(safeExamBrowserTemplate.getType() == SafeExamBrowserTemplateType.SEB_FILE) {
+				String plist = safeExamBrowserTemplate.getSafeExamBrowserConfigPList();
+				boolean allowExit = getSafeExamBrowserConfigAllowExit() != null && getSafeExamBrowserConfigAllowExit().booleanValue();
+				return SafeExamBrowserConfigurationSerializer.calculateKey(plist, allowExit, getSafeExamBrowserConfigExitPassword());
+			}
+		}
 		return safeExamBrowserConfigPlistKey;
 	}
 
