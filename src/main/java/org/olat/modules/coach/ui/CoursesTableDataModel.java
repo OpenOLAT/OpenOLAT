@@ -124,15 +124,11 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		}
 	}
 	
-	private boolean accept(String searchValue, CourseStatEntryRow entry) {
-		if(searchValue == null) return true;
-		return accept(searchValue, entry.getDisplayName())
-				|| accept(searchValue, entry.getExternalRef())
-				|| accept(searchValue, entry.getExternalId());
-	}
-	
-	private boolean accept(String searchValue, String val) {
-		return val != null && val.toLowerCase().contains(searchValue);
+	private boolean accept(String searchString, CourseStatEntryRow entry) {
+		if(searchString == null) return true;
+		return StringHelper.searchFuzzy(entry.getDisplayName(), searchString)
+				|| StringHelper.searchFuzzy(entry.getExternalRef(), searchString)
+				|| StringHelper.searchFuzzy(entry.getExternalId(), searchString);
 	}
 
 	private boolean acceptStatus(List<String> refs, CourseStatEntryRow entry) {

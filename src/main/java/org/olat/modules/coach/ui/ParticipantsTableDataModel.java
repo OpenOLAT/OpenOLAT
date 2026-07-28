@@ -336,7 +336,7 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 	private boolean accept(String searchValue, String[] userProperties) {
 		for(int i=userProperties.length; i-->0; ) {
 			String userProp = userProperties[i];
-			if(userProp != null && userProp.toLowerCase().contains(searchValue)) {
+			if(StringHelper.searchFuzzy(userProp, searchValue)) {
 				return true;
 			}
 		}
