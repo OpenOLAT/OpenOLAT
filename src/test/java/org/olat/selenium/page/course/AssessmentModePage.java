@@ -68,20 +68,29 @@ public class AssessmentModePage {
 	 * @param manual
 	 * @return
 	 */
-	public AssessmentModePage editAssessment(String name, Date begin, Date end, int followUp, boolean manual) {
+	public AssessmentModePage editAssessment(String name, Date begin, Date end, int leadTime, int followUp, boolean manual) {
 		By nameBy = By.cssSelector("div.o_sel_assessment_mode_name input[type='text']");
 		OOGraphene.waitElement(nameBy, browser).sendKeys(name);
 		// Begin
 		setDateTime(begin, "o_sel_assessment_mode_begin");
 		// End
 		setDateTime(end, "o_sel_assessment_mode_end");
+		
+		// Lead time
+		if(leadTime >= 0) {
+			By ledTimeBy = By.cssSelector("div.o_sel_assessment_mode_leadtime input[type='text']");
+			WebElement leadTimeEl = OOGraphene.waitElement(ledTimeBy, browser);
+			leadTimeEl.clear();
+			leadTimeEl.sendKeys(Integer.toString(leadTime));
+		}
 		// Follow-up
-		if(followUp > 0) {
+		if(followUp >= 0) {
 			By followUpBy = By.cssSelector("div.o_sel_assessment_mode_followuptime input[type='text']");
 			WebElement followUpEl = OOGraphene.waitElement(followUpBy, browser);
 			followUpEl.clear();
 			followUpEl.sendKeys(Integer.toString(followUp));
 		}
+		
 		// Start mode
 		By startModeBy = By.cssSelector("div.o_sel_assessment_mode_start_mode input[type='radio'][value='" + (manual ? "manual" : "automatic") + "']");
 		browser.findElement(startModeBy).click();
