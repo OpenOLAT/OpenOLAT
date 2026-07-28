@@ -192,7 +192,7 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.add("browserWindowAllowReload", configuration.isBrowserWindowAllowReload());
 			if(StringHelper.containsNonWhitespace(configuration.getPasswordToExit())) {
 				plist.add("hashedQuitPassword", Encoder.sha256Exam(configuration.getPasswordToExit()));
-			}//TODO seb
+			}
 			plist.add("browserViewMode", configuration.getBrowserViewMode() < 0 ? 0 : configuration.getBrowserViewMode());
 			plist.add("browserWindowWebView", 3);
 			plist.add("downloadAndOpenSebConfig", Boolean.TRUE);

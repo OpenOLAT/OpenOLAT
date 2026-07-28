@@ -57,8 +57,8 @@ public class PList {
 	
 	private static final Logger log = Tracing.createLoggerFor(PList.class);
 	
-	private static final String PUBLIC_ID = "-//Apple//DTD PLIST 1.0//EN";
-	private static final String SYSTEM_ID = "http://www.apple.com/DTDs/PropertyList-1.0.dtd";
+	private static final String PUBLIC_ID = "-//Apple Computer//DTD PLIST 1.0//EN";
+	private static final String SYSTEM_ID = "https://www.apple.com/DTDs/PropertyList-1.0.dtd";
 	
 	private Element rootDict;
 	private Document doc;
@@ -245,7 +245,10 @@ public class PList {
 		StringWriter stringWriter = new StringWriter();
 		StreamResult streamResult = new StreamResult(stringWriter);
 		t.transform(domSource, streamResult);
-		return stringWriter.toString();
+		String string = stringWriter.toString();
+		// SEB Mac cannot read <data/>
+		string = string.replace("<data/>", "<data></data>");
+		return string;
 	}
 	
 	private static class PListEntityResolver implements EntityResolver {
