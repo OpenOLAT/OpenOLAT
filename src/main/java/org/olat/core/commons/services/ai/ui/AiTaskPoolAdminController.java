@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -56,13 +57,16 @@ public class AiTaskPoolAdminController extends FormBasicController {
 	private StaticTextElement batchStatsEl;
 	private FormLink refreshStatsLink;
 
+	private final boolean readOnly;
+	
 	@Autowired
 	private AiModule aiModule;
 	@Autowired
 	private AiTaskExecutorService aiTaskExecutorService;
 
-	public AiTaskPoolAdminController(UserRequest ureq, WindowControl wControl) {
+	public AiTaskPoolAdminController(UserRequest ureq, WindowControl wControl, boolean readOnly) {
 		super(ureq, wControl);
+		this.readOnly = readOnly;
 		initForm(ureq);
 	}
 
@@ -75,22 +79,26 @@ public class AiTaskPoolAdminController extends FormBasicController {
 				"ai.task.pool.interactive", aiModule.getAiTaskPoolInteractiveSize(), formLayout);
 		interactivePoolSizeEl.setHelpTextKey("ai.task.pool.interactive.help", null);
 		interactivePoolSizeEl.setMandatory(true);
+		interactivePoolSizeEl.setEnabled(!readOnly);
 
 		batchPoolSizeEl = uifactory.addIntegerElement("ai.task.pool.batch",
 				"ai.task.pool.batch", aiModule.getAiTaskPoolBatchSize(), formLayout);
 		batchPoolSizeEl.setHelpTextKey("ai.task.pool.batch.help", null);
 		batchPoolSizeEl.setMandatory(true);
+		batchPoolSizeEl.setEnabled(!readOnly);
 
 		interactiveStatsEl = uifactory.addStaticTextElement("ai.task.stats.interactive",
 				"ai.task.stats.interactive", "", formLayout);
 		batchStatsEl = uifactory.addStaticTextElement("ai.task.stats.batch",
 				"ai.task.stats.batch", "", formLayout);
 		updateStats();
-
-		refreshStatsLink = uifactory.addFormLink("ai.task.stats.refresh", formLayout, Link.BUTTON_SMALL);
+		
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		if(!readOnly) {
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
+		refreshStatsLink = uifactory.addFormLink("ai.task.stats.refresh", buttonsCont, Link.BUTTON_SMALL);
 		refreshStatsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
-
-		uifactory.addFormSubmitButton("save", formLayout);
 	}
 
 	private void updateStats() {

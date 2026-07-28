@@ -48,7 +48,7 @@ public interface AiSPI {
 
 	public void setEnabled(boolean enabled);
 
-	public Controller createAdminController(UserRequest ureq, WindowControl wControl);
+	public Controller createAdminController(UserRequest ureq, WindowControl wControl, boolean readOnly);
 
 	public ChatModel buildChatModel(String modelName, int maxTokens);
 
@@ -63,6 +63,10 @@ public interface AiSPI {
 	 * ignores the timeout and delegates to
 	 * {@link #buildChatModel(String, int)} for backwards compatibility with
 	 * providers that do not support per-call timeouts.
+	 * 
+	 * @param modelName The name of the model
+	 * @param maxTokens The maximum number of tokens
+	 * @param timeout The timeout (optional)
 	 */
 	public default ChatModel buildChatModel(String modelName, int maxTokens, Duration timeout) {
 		return buildChatModel(modelName, maxTokens);

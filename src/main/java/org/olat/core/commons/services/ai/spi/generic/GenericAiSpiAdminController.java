@@ -66,10 +66,12 @@ public class GenericAiSpiAdminController extends FormBasicController {
 	private FormLink checkLink;
 	private FormLink deleteLink;
 
+	private final boolean readOnly;
 	private final GenericAiSpiInstance instance;
 
-	public GenericAiSpiAdminController(UserRequest ureq, WindowControl wControl, GenericAiSpiInstance instance) {
+	public GenericAiSpiAdminController(UserRequest ureq, WindowControl wControl, GenericAiSpiInstance instance, boolean readOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(AiAdminController.class, ureq.getLocale()));
+		this.readOnly = readOnly;
 		this.instance = instance;
 		initForm(ureq);
 	}
@@ -87,35 +89,42 @@ public class GenericAiSpiAdminController extends FormBasicController {
 		} else {
 			enabledToggle.toggleOff();
 		}
+		enabledToggle.setEnabled(!readOnly);
 
 		nameEl = uifactory.addTextElement("name", "ai.generic.name", 256,
 				instance.getName().startsWith("Generic #") ? "" : instance.getName(), formLayout);
 		nameEl.setMandatory(true);
+		nameEl.setEnabled(!readOnly);
 
 		baseUrlEl = uifactory.addTextElement("baseUrl", "ai.generic.base.url", 1024,
 				instance.getBaseUrl(), formLayout);
 		baseUrlEl.setMandatory(true);
+		baseUrlEl.setEnabled(!readOnly);
 		baseUrlEl.setExampleKey("ai.generic.base.url.example", null);
 
 		boolean hasKey = StringHelper.containsNonWhitespace(instance.getApiKey());
 		apiKeyEl = uifactory.addPasswordElement("apikey", "ai.generic.apikey", KEY_MAXLENGTH,
 				hasKey ? PLACEHOLDER : "", formLayout);
+		apiKeyEl.setEnabled(!readOnly);
 
 		modelsEl = uifactory.addTextAreaElement("models", "ai.generic.models", 4000,
 				3, 60, false, false, instance.getModels(), formLayout);
+		modelsEl.setEnabled(!readOnly);
 		modelsEl.setHelpTextKey("ai.generic.models.help", null);
 
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		if(!readOnly) {
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
 		checkLink = uifactory.addFormLink("ai.generic.check", buttonsCont, Link.BUTTON);
 		checkLink.setGhost(true);
 		checkLink.getComponent().setSuppressDirtyFormWarning(true);
 		// The preset instance is defined via olat.properties and cannot be deleted
-		if (!instance.isPreset()) {
+		if (!instance.isPreset() && !readOnly) {
 			deleteLink = uifactory.addFormLink("ai.delete.config", buttonsCont, Link.BUTTON);
 			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		}
+
 	}
 
 	@Override

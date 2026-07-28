@@ -31,6 +31,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.ai.AiEmbeddingSPI;
+import org.olat.core.commons.services.ai.spi.localonnx.ui.LocalOnnxModelAdminController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -39,10 +40,10 @@ import org.olat.modules.taxonomy.matching.TaxonomyMatchingModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.embedding.onnx.OnnxEmbeddingModel;
 import dev.langchain4j.model.embedding.onnx.PoolingMode;
-import dev.langchain4j.model.chat.ChatModel;
 
 /**
  * AI SPI that runs an ONNX embedding model in-process.
@@ -159,8 +160,8 @@ public class LocalOnnxSPI implements AiEmbeddingSPI {
 	}
 
 	@Override
-	public Controller createAdminController(UserRequest ureq, WindowControl wControl) {
-		return new org.olat.core.commons.services.ai.spi.localonnx.ui.LocalOnnxModelAdminController(ureq, wControl);
+	public Controller createAdminController(UserRequest ureq, WindowControl wControl, boolean readOnly) {
+		return new LocalOnnxModelAdminController(ureq, wControl);
 	}
 
 	public String validateModel(String modelName) {

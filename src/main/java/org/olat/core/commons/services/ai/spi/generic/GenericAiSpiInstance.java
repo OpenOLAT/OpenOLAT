@@ -104,8 +104,8 @@ public class GenericAiSpiInstance implements AiEmbeddingSPI, AiApiKeySPI {
 	}
 
 	@Override
-	public Controller createAdminController(UserRequest ureq, WindowControl wControl) {
-		return new GenericAiSpiAdminController(ureq, wControl, this);
+	public Controller createAdminController(UserRequest ureq, WindowControl wControl, boolean readOnly) {
+		return new GenericAiSpiAdminController(ureq, wControl, this, readOnly);
 	}
 
 	@Override

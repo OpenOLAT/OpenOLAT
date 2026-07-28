@@ -83,9 +83,7 @@ public class LocalOnnxModelAdminController extends FormBasicController {
 
 		modelsEl = uifactory.addStaticTextElement("local.onnx.admin.models", null, buildModelsHtml(), formLayout);
 
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		rescanLink = uifactory.addFormLink("local.onnx.action.rescan", "local.onnx.action.rescan", null, buttonsCont, Link.BUTTON);
 		validateLink = uifactory.addFormLink("local.onnx.action.validate", "local.onnx.action.validate", null, buttonsCont, Link.BUTTON);
 	}

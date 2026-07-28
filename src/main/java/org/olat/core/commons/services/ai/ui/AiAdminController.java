@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Roles;
 
 /**
  * Segmented admin controller for the AI module. Provides four segments:
@@ -56,12 +57,17 @@ public class AiAdminController extends BasicController {
 	private final Link usageLogLink;
 
 	private Controller segmentCtrl;
+	
+	private final boolean configurationReadOnly;
 
 	public AiAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("ai_admin");
 		putInitialPanel(mainVC);
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		configurationReadOnly = !roles.isAdministrator() && !roles.isSystemAdmin();
 
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		providersLink = LinkFactory.createLink("segment.providers", mainVC, this);
@@ -96,15 +102,15 @@ public class AiAdminController extends BasicController {
 	}
 
 	private void doOpenProviders(UserRequest ureq) {
-		setSegmentController(new AiProvidersAdminController(ureq, getWindowControl()));
+		setSegmentController(new AiProvidersAdminController(ureq, getWindowControl(), configurationReadOnly));
 	}
 
 	private void doOpenFeatures(UserRequest ureq) {
-		setSegmentController(new AiFeaturesAdminController(ureq, getWindowControl()));
+		setSegmentController(new AiFeaturesAdminController(ureq, getWindowControl(), configurationReadOnly));
 	}
 
 	private void doOpenPools(UserRequest ureq) {
-		setSegmentController(new AiTaskPoolAdminController(ureq, getWindowControl()));
+		setSegmentController(new AiTaskPoolAdminController(ureq, getWindowControl(), configurationReadOnly));
 	}
 
 	private void doOpenUsageLog(UserRequest ureq) {

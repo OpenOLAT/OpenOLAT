@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -45,6 +46,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.matching.TaxonomyMatchingModule;
 import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
@@ -113,6 +115,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 	// Test controller
 	private AiFeaturesTestController testCtrl;
+	
+	private final boolean readOnly;
 
 	@Autowired
 	private AiModule aiModule;
@@ -129,8 +133,9 @@ public class AiFeaturesAdminController extends FormBasicController {
 	@Autowired
 	private TaxonomyMatchingService taxonomyMatchingService;
 
-	public AiFeaturesAdminController(UserRequest ureq, WindowControl wControl) {
+	public AiFeaturesAdminController(UserRequest ureq, WindowControl wControl, boolean readOnly) {
 		super(ureq, wControl);
+		this.readOnly = readOnly;
 		initForm(ureq);
 	}
 
@@ -141,93 +146,118 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 		// ---- Taxonomy Matching section ----
 		uifactory.addSpacerElement("taxMatchSpacer", formLayout, false);
-		uifactory.addStaticTextElement("taxMatchTitle", null,
+		StaticTextElement taxonomyTitleEl = uifactory.addStaticTextElement("taxMatchTitle", null,
 				"<h4>" + translate(AiFeature.TaxonomyMatching.getI18nKey()) + "</h4>", formLayout);
-
+		taxonomyTitleEl.setDomWrapperElement(DomWrapperElement.div);
+		
 		boolean taxMatchEnabled = taxonomyMatchingModule != null && taxonomyMatchingModule.isEnabled();
 		taxMatchEnabledEl = uifactory.addToggleButton("taxMatch.enabled", "ai.feature.enabled",
 				translate("on"), translate("off"), formLayout);
 		taxMatchEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		taxMatchEnabledEl.toggle(taxMatchEnabled);
+		taxMatchEnabledEl.setEnabled(!readOnly);
 
 		String taxMatchSpiId = taxonomyMatchingModule != null ? taxonomyMatchingModule.getSpiId() : null;
 		taxMatchSpiEl = buildEmbeddingSpiDropdown("taxMatch.spi", taxMatchSpiId, formLayout);
+		taxMatchSpiEl.setEnabled(!readOnly);
 		taxMatchModelDropdownEl = addModelDropdown("taxMatch.model", "ai.feature.taxonomy-matching.model", formLayout);
+		taxMatchModelDropdownEl.setEnabled(!readOnly);
 		taxMatchModelTextEl = addModelTextElement("taxMatch.model.text", "ai.feature.taxonomy-matching.model", formLayout);
-
+		taxMatchModelTextEl.setEnabled(!readOnly);
+		
 		// ---- Image Description Generator section ----
 		uifactory.addSpacerElement("imgDescSpacer", formLayout, false);
-		uifactory.addStaticTextElement("imgDescTitle", null,
+		StaticTextElement imgDescTitleEl = uifactory.addStaticTextElement("imgDescTitle", null,
 				"<h4>" + translate(AiFeature.ImageDescriptionGenerator.getI18nKey()) + "</h4>", formLayout);
-
+		imgDescTitleEl.setDomWrapperElement(DomWrapperElement.div);
+		
 		boolean imgDescEnabled = aiModule.isImageDescriptionGeneratorEnabled();
 		imgDescEnabledEl = uifactory.addToggleButton("imgDesc.enabled", "ai.feature.enabled",
 				translate("on"), translate("off"), formLayout);
 		imgDescEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		imgDescEnabledEl.toggle(imgDescEnabled);
+		imgDescEnabledEl.setEnabled(!readOnly);
 
 		imgDescSpiEl = buildSpiDropdown("imgDesc.spi", aiModule.getImgDescSpiId(), formLayout,
 				aiModule.getEnabledProviders());
-		imgDescModelDropdownEl = addModelDropdown("imgDesc.model", "ai.feature.image-description-generator.model", formLayout);
+		imgDescSpiEl.setEnabled(!readOnly);
+		imgDescModelDropdownEl = addModelDropdown("imgDesc.model", "ai.feature.image-description-generator.model", formLayout); 
+		imgDescModelDropdownEl.setEnabled(!readOnly);
 		imgDescModelTextEl = addModelTextElement("imgDesc.model.text", "ai.feature.image-description-generator.model", formLayout);
+		imgDescModelTextEl.setEnabled(!readOnly);
 		imgDescTestLink = addTestLink("imgDesc.test", formLayout);
 
 		// ---- MC Question Generator section ----
 		uifactory.addSpacerElement("mcSpacer", formLayout, false);
-		uifactory.addStaticTextElement("mcTitle", null,
+		StaticTextElement mcQuestionTitleEl = uifactory.addStaticTextElement("mcTitle", null,
 				"<h4>" + translate(AiFeature.MCQuestionGenerator.getI18nKey()) + "</h4>", formLayout);
-
+		mcQuestionTitleEl.setDomWrapperElement(DomWrapperElement.div);
+		
 		boolean mcEnabled = aiModule.isMCQuestionGeneratorEnabled();
 		mcEnabledEl = uifactory.addToggleButton("mc.enabled", "ai.feature.enabled",
 				translate("on"), translate("off"), formLayout);
+		mcEnabledEl.setEnabled(!readOnly);
 		mcEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		mcEnabledEl.toggle(mcEnabled);
 
 		mcGeneratorSpiEl = buildSpiDropdown("mc.spi", aiModule.getMCGeneratorSpiId(), formLayout,
 				aiModule.getEnabledProviders());
+		mcGeneratorSpiEl.setEnabled(!readOnly);
 		mcModelDropdownEl = addModelDropdown("mc.model", "ai.feature.model", formLayout);
+		mcModelDropdownEl.setEnabled(!readOnly);
 		mcModelTextEl = addModelTextElement("mc.model.text", "ai.feature.model", formLayout);
+		mcModelTextEl.setEnabled(!readOnly);
 		mcTestLink = addTestLink("mc.test", formLayout);
 
 		// ---- Essay Question Generator section ----
 		uifactory.addSpacerElement("essayGenSpacer", formLayout, false);
-		uifactory.addStaticTextElement("essayGenTitle", null,
+		StaticTextElement essayGenTitleEl = uifactory.addStaticTextElement("essayGenTitle", null,
 				"<h4>" + translate(AiFeature.EssayGeneration.getI18nKey()) + "</h4>", formLayout);
-
+		essayGenTitleEl.setDomWrapperElement(DomWrapperElement.div);
+		
 		boolean essayGenEnabled = aiModule.isEssayGenerationEnabled();
 		essayGenEnabledEl = uifactory.addToggleButton("essayGen.enabled", "ai.feature.enabled",
 				translate("on"), translate("off"), formLayout);
+		essayGenEnabledEl.setEnabled(!readOnly);
 		essayGenEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		essayGenEnabledEl.toggle(essayGenEnabled);
 
 		essayGenSpiEl = buildSpiDropdown("essayGen.spi", aiModule.getEssayGenerationSpiId(), formLayout,
 				aiModule.getEnabledProviders());
+		essayGenSpiEl.setEnabled(!readOnly);
 		essayGenModelDropdownEl = addModelDropdown("essayGen.model", "ai.feature.model", formLayout);
+		essayGenModelDropdownEl.setEnabled(!readOnly);
 		essayGenModelTextEl = addModelTextElement("essayGen.model.text", "ai.feature.model", formLayout);
+		essayGenModelTextEl.setEnabled(!readOnly);
 		essayGenTestLink = addTestLink("essayGen.test", formLayout);
 
 		// ---- Essay Grading section ----
 		uifactory.addSpacerElement("essayGradingSpacer", formLayout, false);
-		uifactory.addStaticTextElement("essayGradingTitle", null,
+		StaticTextElement essayGradingTitle = uifactory.addStaticTextElement("essayGradingTitle", null,
 				"<h4>" + translate(AiFeature.EssayGrading.getI18nKey()) + "</h4>", formLayout);
-
+		essayGradingTitle.setDomWrapperElement(DomWrapperElement.div);
+		
 		boolean essayGradingEnabled = aiModule.isEssayGradingEnabled();
 		essayGradingEnabledEl = uifactory.addToggleButton("essayGrading.enabled", "ai.feature.enabled",
 				translate("on"), translate("off"), formLayout);
+		essayGradingEnabledEl.setEnabled(!readOnly);
 		essayGradingEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		essayGradingEnabledEl.toggle(essayGradingEnabled);
 
 		essayGradingSpiEl = buildSpiDropdown("essayGrading.spi", aiModule.getEssayGradingSpiId(), formLayout,
 				aiModule.getEnabledProviders());
+		essayGradingSpiEl.setEnabled(!readOnly);
 		essayGradingModelDropdownEl = addModelDropdown("essayGrading.model", "ai.feature.model", formLayout);
+		essayGradingModelDropdownEl.setEnabled(!readOnly);
 		essayGradingModelTextEl = addModelTextElement("essayGrading.model.text", "ai.feature.model", formLayout);
+		essayGradingModelTextEl.setEnabled(!readOnly);
 		essayGradingTestLink = addTestLink("essayGrading.test", formLayout);
 
 		// Save button
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		if(!readOnly) {
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
 
 		// Populate the model selectors and set the initial visibility. The order
 		// of these calls no longer affects the layout, only the item content and

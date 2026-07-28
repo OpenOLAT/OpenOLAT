@@ -30,6 +30,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.junit.Test;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,8 +59,7 @@ public class AiModuleTest extends OlatTestCase {
 		@Override public String getName() { return id; }
 		@Override public boolean isEnabled() { return enabled; }
 		@Override public void setEnabled(boolean enabled) { this.enabled = enabled; }
-		@Override public org.olat.core.gui.control.Controller createAdminController(
-				org.olat.core.gui.UserRequest ureq, org.olat.core.gui.control.WindowControl wControl) {
+		@Override public org.olat.core.gui.control.Controller createAdminController(UserRequest ureq, WindowControl wControl, boolean readOnly) {
 			return null;
 		}
 		@Override public ChatModel buildChatModel(String modelName, int maxTokens) { return null; }

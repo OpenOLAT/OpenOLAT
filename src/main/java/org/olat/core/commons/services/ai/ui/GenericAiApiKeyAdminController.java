@@ -73,15 +73,17 @@ public class GenericAiApiKeyAdminController extends FormBasicController {
 	private final AiApiKeySPI spi;
 	private final AiSPI aiSpi;
 	private final String spiName;
+	private final boolean readOnly;
 
 	/**
 	 * @param ureq
 	 * @param wControl
 	 * @param spi      the provider; must implement {@link AiApiKeySPI}
 	 */
-	public GenericAiApiKeyAdminController(UserRequest ureq, WindowControl wControl, AiApiKeySPI spi) {
+	public GenericAiApiKeyAdminController(UserRequest ureq, WindowControl wControl, AiApiKeySPI spi, boolean readOnly) {
 		super(ureq, wControl);
 		this.spi = spi;
+		this.readOnly = readOnly;
 		this.aiSpi = (spi instanceof AiSPI s) ? s : null;
 		this.spiName = aiSpi != null ? aiSpi.getName() : spi.getClass().getSimpleName();
 		initForm(ureq);
@@ -97,6 +99,7 @@ public class GenericAiApiKeyAdminController extends FormBasicController {
 			enabledToggle = uifactory.addToggleButton("enabled", "ai.spi.enabled",
 					translate("on"), translate("off"), formLayout);
 			enabledToggle.addActionListener(FormEvent.ONCHANGE);
+			enabledToggle.setEnabled(!readOnly);
 			if (aiSpi.isEnabled()) {
 				enabledToggle.toggleOn();
 			} else {
@@ -107,19 +110,22 @@ public class GenericAiApiKeyAdminController extends FormBasicController {
 		boolean hasKey = StringHelper.containsNonWhitespace(spi.getApiKey());
 		apiKeyEl = uifactory.addPasswordElement("apikey", spi.getAdminApiKeyI18nKey(), KEY_MAXLENGTH,
 				hasKey ? PLACEHOLDER : "", formLayout);
+		apiKeyEl.setEnabled(!readOnly);
 		if (!hasKey) {
 			apiKeyEl.setWarningKey("ai.apikey.not.set", spiName);
 		}
 
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		if(!readOnly) {
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
 		checkKeyLink = uifactory.addFormLink("ai.apikey.check", buttonsCont, Link.BUTTON);
 		checkKeyLink.setGhost(true);
 		checkKeyLink.getComponent().setSuppressDirtyFormWarning(true);
 		checkKeyLink.setVisible(hasKey);
 		deleteLink = uifactory.addFormLink("ai.delete.config", buttonsCont, Link.BUTTON);
 		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		deleteLink.setVisible(!readOnly);
 	}
 
 	@Override

@@ -116,8 +116,8 @@ public class OpenAiSPI extends AbstractSpringModule implements AiEmbeddingSPI, A
 	}
 
 	@Override
-	public Controller createAdminController(UserRequest ureq, WindowControl wControl) {
-		return new GenericAiApiKeyAdminController(ureq, wControl, this);
+	public Controller createAdminController(UserRequest ureq, WindowControl wControl, boolean readOnly) {
+		return new GenericAiApiKeyAdminController(ureq, wControl, this, readOnly);
 	}
 
 	@Override

@@ -48,6 +48,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.WebappHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -77,9 +78,13 @@ public class AiProvidersAdminController extends BasicController {
 	// Delete confirmation
 	private DialogBoxController confirmDeleteCtrl;
 	private AiSPI deleteCandidate;
+	
+	private final boolean configurationReadOnly;
 
-	public AiProvidersAdminController(UserRequest ureq, WindowControl wControl) {
+	public AiProvidersAdminController(UserRequest ureq, WindowControl wControl, boolean configurationReadOnly) {
 		super(ureq, wControl);
+		this.configurationReadOnly = configurationReadOnly;
+		
 		mainVC = createVelocityContainer("ai_module");
 		putInitialPanel(mainVC);
 
@@ -120,7 +125,7 @@ public class AiProvidersAdminController extends BasicController {
 
 	private void doInitAddProviderDropdown(UserRequest ureq) {
 		removeAsListenerAndDispose(addProviderFormCtr);
-		addProviderFormCtr = new AddProviderFormController(ureq, getWindowControl());
+		addProviderFormCtr = new AddProviderFormController(ureq, getWindowControl(), configurationReadOnly);
 		listenTo(addProviderFormCtr);
 		mainVC.put("addProviderForm", addProviderFormCtr.getInitialComponent());
 	}
@@ -221,7 +226,7 @@ public class AiProvidersAdminController extends BasicController {
 			if (spi.isEnabled()) {
 				String ctrlName = "spiConfig_" + spi.getId();
 				spiConfigCtrlNames.add(ctrlName);
-				Controller ctrl = spi.createAdminController(ureq, getWindowControl());
+				Controller ctrl = spi.createAdminController(ureq, getWindowControl(), configurationReadOnly);
 				listenTo(ctrl);
 				spiConfigCtrs.add(ctrl);
 				spiByController.put(ctrl, spi);
@@ -233,7 +238,7 @@ public class AiProvidersAdminController extends BasicController {
 		for (GenericAiSpiInstance instance : aiModule.getGenericAiSPI().getInstances()) {
 			String ctrlName = "spiConfig_" + instance.getId();
 			spiConfigCtrlNames.add(ctrlName);
-			Controller ctrl = instance.createAdminController(ureq, getWindowControl());
+			Controller ctrl = instance.createAdminController(ureq, getWindowControl(), configurationReadOnly);
 			listenTo(ctrl);
 			spiConfigCtrs.add(ctrl);
 			spiByController.put(ctrl, instance);
@@ -268,28 +273,35 @@ public class AiProvidersAdminController extends BasicController {
 		private FormLink addOpenAiLink;
 		private FormLink addAnthropicLink;
 		private FormLink addGenericLink;
+		
+		private final boolean configurationReadOnly;
 
-		public AddProviderFormController(UserRequest ureq, WindowControl wControl) {
+		public AddProviderFormController(UserRequest ureq, WindowControl wControl, boolean configurationReadOnly) {
 			super(ureq, wControl);
+			this.configurationReadOnly = configurationReadOnly;
 			initForm(ureq);
 		}
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("ai.providers.title");
-			setFormDescription("ai.providers.desc");
+			if(configurationReadOnly) {
+				setFormDescription("ai.providers.fx", new String[] { WebappHelper.getMailConfig("mailSupport") });
+			} else {
+				setFormDescription("ai.providers.desc");
+			}
+			
 			setFormInfo("ai.privacy");
 			setFormWarning("warn.beta.feature");
 
-			FormLayoutContainer addCont = FormLayoutContainer.createCustomFormLayout("add.cont", getTranslator(),
-					velocity_root + "/add_provider.html");
-			addCont.setRootForm(mainForm);
-			formLayout.add(addCont);
+			FormLayoutContainer addCont = uifactory.addCustomFormLayout("add.cont", null,
+					velocity_root + "/add_provider.html", formLayout);
 
 			DropdownItem addDropdown = uifactory.addDropdownMenu("add.provider.menu",
 					"ai.add.provider", null, addCont, getTranslator());
 			addDropdown.setOrientation(DropdownOrientation.right);
 			addDropdown.setIconCSS("o_icon o_icon-fw o_icon_add");
+			addDropdown.setVisible(!configurationReadOnly);
 
 			// OpenAI and Anthropic: greyed out if already configured
 			boolean openAiConfigured = isSpringProviderEnabled("OpenAI");

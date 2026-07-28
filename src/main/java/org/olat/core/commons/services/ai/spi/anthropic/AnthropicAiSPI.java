@@ -114,8 +114,8 @@ public class AnthropicAiSPI extends AbstractSpringModule implements AiSPI, AiApi
 	}
 
 	@Override
-	public Controller createAdminController(UserRequest ureq, WindowControl wControl) {
-		return new GenericAiApiKeyAdminController(ureq, wControl, this);
+	public Controller createAdminController(UserRequest ureq, WindowControl wControl, boolean readOnly) {
+		return new GenericAiApiKeyAdminController(ureq, wControl, this, readOnly);
 	}
 
 	@Override
