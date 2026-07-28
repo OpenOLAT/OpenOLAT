@@ -1156,21 +1156,6 @@ alter table o_cur_automation_execution add constraint cur_auto_exec_rule_idx for
 create index idx_cur_auto_exec_el_idx on o_cur_automation_execution (fk_curriculum_element);
 
 
--- Safe Exam Browser
-alter table o_as_seb_template add column a_type varchar(16) default 'OO_FORM' not null;
-alter table o_as_seb_template add column a_safeexambrowserauthorhint mediumtext;
-alter table o_as_seb_template add column a_download bool;
-alter table o_as_seb_template add column a_exit_password varchar(255);
-alter table o_as_seb_template add column a_allow_exit bool;
-alter table o_as_seb_template add column a_config_filename varchar(255);
-
-alter table o_as_mode_course add column a_safeexambrowser_exit_password varchar(255);
-alter table o_as_mode_course add column a_safeexambrowser_allow_exit bool;
-
-alter table o_as_inspection_configuration add column a_safeexambrowser_exit_password varchar(255);
-alter table o_as_inspection_configuration add column a_safeexambrowser_allow_exit bool;
-
-
 -- Certification program
 alter table o_cer_program add column fk_print_template bigint;
 alter table o_cer_program add column c_print_template_enabled bool default false not null;

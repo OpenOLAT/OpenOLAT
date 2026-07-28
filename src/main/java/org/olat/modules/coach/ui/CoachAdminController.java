@@ -20,11 +20,9 @@
 package org.olat.modules.coach.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.coach.CoachingModule;
@@ -32,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class CoachAdminController extends FormBasicController {
 	
@@ -52,20 +50,10 @@ public class CoachAdminController extends FormBasicController {
 		setFormTitle("coaching.title");
 		setFormContextHelp("manual_user/area_modules/Coaching/");
 
-		boolean restEnabled = coachingModule.isEnabled();
 		String[] values = new String[] { translate("coaching.on") };
 		enabled = uifactory.addCheckboxesHorizontal("coaching.enabled", formLayout, keys, values);
-		enabled.addActionListener(FormEvent.ONCLICK);
-		enabled.select(keys[0], restEnabled);
-	}
-	
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enabled == source) {
-			boolean on = !enabled.getSelectedKeys().isEmpty();
-			coachingModule.setEnabled(on);
-			getWindowControl().setInfo("saved");
-		}
+		enabled.select(keys[0], coachingModule.isEnabled());
+		enabled.setEnabled(false);
 	}
 	
 	@Override
