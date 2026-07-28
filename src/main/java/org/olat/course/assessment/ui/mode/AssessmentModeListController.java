@@ -109,6 +109,7 @@ public class AssessmentModeListController extends FormBasicController implements
 	private DialogBoxController deleteDialogBox;
 	private ConfirmStopAssessmentModeController stopCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private NewAssessmentModeController newAssessmentModeCtrl;
 
 	private final RepositoryEntry entry;
 	private final AssessmentModeSecurityCallback secCallback;
@@ -265,7 +266,15 @@ public class AssessmentModeListController extends FormBasicController implements
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(editCtrl == source) {
+		if(newAssessmentModeCtrl == source) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				loadModel();
+				fireEvent(ureq, new AssessmentModeStatusEvent());
+				doEdit(ureq, newAssessmentModeCtrl.getAssessmentMode());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(editCtrl == source) {
 			toolbarPanel.popController(editCtrl);
 			removeAsListenerAndDispose(editCtrl);
 			editCtrl = null;
@@ -298,10 +307,12 @@ public class AssessmentModeListController extends FormBasicController implements
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(newAssessmentModeCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(stopCtrl);
 		removeAsListenerAndDispose(cmc);
+		newAssessmentModeCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		stopCtrl = null;
@@ -406,11 +417,15 @@ public class AssessmentModeListController extends FormBasicController implements
 	}
 
 	private void doAdd(UserRequest ureq) {
-		removeAsListenerAndDispose(editCtrl);
-		AssessmentMode newMode = assessmentModeMgr.createAssessmentMode(entry);
-		editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry, newMode);
-		listenTo(editCtrl);
-		toolbarPanel.pushController(translate("new.mode"), editCtrl);
+		removeAsListenerAndDispose(newAssessmentModeCtrl);
+		newAssessmentModeCtrl = new NewAssessmentModeController(ureq, getWindowControl(), entry);
+		listenTo(newAssessmentModeCtrl);
+		
+		String title = translate("create.assessment.mode");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newAssessmentModeCtrl.getInitialComponent(),
+				true, title, true);
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	private void doConfirmDelete(UserRequest ureq, List<AssessmentMode> modeToDelete) {
