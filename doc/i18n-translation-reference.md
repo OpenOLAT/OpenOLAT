@@ -89,6 +89,7 @@ intentionally contains only term mappings, not user-facing definitions.
 | ePortfolio | Portfolio | ePortfolio |  | ePortfolio |
 | Absence management | Absenzenmanagement | Gestion des absences |  | Gestione delle assenze |
 | Contact tracing | Contact Tracing | Traçage des contacts |  | Tracciamento dei contatti |
+| Selectus | Selectus | Selectus |  | Selectus |
 
 ## Features
 
@@ -303,3 +304,163 @@ intentionally contains only term mappings, not user-facing definitions.
 | Test (QTI 2.1) | Test | Test | Test | Test |
 | Video | Video | Vidéo | Vídeo | Video |
 | Wiki | Wiki | Wiki |  | Wiki |
+
+---
+
+# Selectus
+
+Selectus (`org.olat.modules.selectus`) is the faculty recruiting module: advertisement of a
+professorship, online application, appointment committee, external expert assessments, letters of
+recommendation and the resulting A/B/C decision.
+
+Only vocabulary that is specific to this domain is listed. Generic UI wording (submit, filter,
+deadline, status, published, archived) is not part of this chapter.
+
+*Terms in italics are not yet present in any properties file; they are the agreed wording to use
+when the key gets translated.* Coverage as of 2026-07-28: EN 2483 keys (complete),
+DE 426 translated / 2057 missing, FR 393 translated / 2090 missing.
+
+## Selectus tools and areas
+
+| English | Deutsch | Francais | Espanol | Italiano |
+|---------|---------|----------|---------|----------|
+| Selectus | Selectus | Selectus |  |  |
+| Decision tool | *Entscheidungswerkzeug* | *Outil de décision* |  |  |
+| Review tool | *Review-Werkzeug* | *Outil de review* |  |  |
+| Review questionnaire | *Review-Fragebogen* | *Questionnaire de review* |  |  |
+| Review discussion | *Review-Diskussion* | *Discussion de review* |  |  |
+| Referee management | *Referenzverwaltung* | *Gestion des références* |  |  |
+| Mail center | *Mailcenter* | *Centre de messagerie* |  |  |
+| Reporting | *Reporting* | *Reporting* |  |  |
+| Screening | *Screening* | *Screening* |  |  |
+| Assessment policy | *Beurteilungsrichtlinien* | *Directives d'appréciation* |  |  |
+| Form letter | *Serienbrief* | *Lettre type* |  |  |
+| Mail template | E-Mail-Vorlage | Modèle d'e-mail |  |  |
+| Profile paper | *Profildokument* | *Document de profil* |  |  |
+| Advertisement | *Ausschreibungstext* | *Texte de l'annonce* |  |  |
+| Organisation unit | *Organisationseinheit* | *Unité d'organisation* |  |  |
+| Tags | Tags | *Tags* |  |  |
+
+## Selectus roles
+
+| English | Deutsch | Francais | Espanol | Italiano |
+|---------|---------|----------|---------|----------|
+| Applicant | *Bewerber{in}* | *Candidat·e* |  |  |
+| Staff | *Sachbearbeitung* | *Personnel administratif* |  |  |
+| Committee | *Kommission* | *Commission* |  |  |
+| Committee member | *Kommissionsmitglied* | *Membre de la commission* |  |  |
+| Head of Committee | *Kommissionspräsident{in}* | *Président·e de la commission* |  |  |
+| Secretary | *Sekretär{in}* | *Secrétaire* |  |  |
+| Ex-Officio | *Ex-Officio* | *Ex-officio* |  |  |
+| Faculty member | *Fakultätsmitglied* | *Membre de la faculté* |  |  |
+| Referee | *Referenzperson* | Référent·e |  |  |
+| Expert | *Gutachter{in}* | Expert·e |  |  |
+| External expert | *Externe{r} Gutachter{in}* | *Expert·e externe* |  |  |
+| Comparative assessment expert | *Vergleichsgutachter{in}* | *Expert·e comparatif·ve* |  |  |
+| Reviewer | *Reviewer{in}* | *Auteur·e du review* |  |  |
+
+## Selectus concepts
+
+| English | Deutsch | Francais | Espanol | Italiano |
+|---------|---------|----------|---------|----------|
+| Position | *Ausschreibung* | *Poste* |  |  |
+| Application | Bewerbung | Candidature |  |  |
+| Committee assignment | *Kommissionszuweisung* | *Attribution à la commission* |  |  |
+| Rating | *Beurteilung* | *Appréciation* |  |  |
+| Committee rating | *Kommissionsbeurteilung* | *Appréciation de la commission* |  |  |
+| Decision | Entscheid | *Décision* |  |  |
+| Committee decision | *Kommissionsentscheid* | *Décision de la commission* |  |  |
+| Review | *Review* | *Review* |  |  |
+| Expert assessment | *Gutachten* | *Expertise* |  |  |
+| Comparative assessment | *Vergleichsgutachten* | *Évaluation comparative* |  |  |
+| Letter of recommendation | Referenzschreiben | Lettre de recommandation |  |  |
+| List of referees | Referenzenliste | Liste de références |  |  |
+| Faculty feedback | *Fakultätsfeedback* | *Retour de la faculté* |  |  |
+| Public feedback | Öffentliche Rückmeldung | *Retour public* |  |  |
+| Abstention | *Enthaltung* | Abstention |  |  |
+| Professorship type | *Professurtyp* | *Type de professorat* |  |  |
+| Full professor | *Ordentliche{r} Professor{in}* | *Professeur·e ordinaire* |  |  |
+| Assistant professor | *Assistenzprofessor{in}* | *Professeur·e assistant·e* |  |  |
+
+Compounds not listed separately follow the pattern *Committee \<term\>* = *Kommissions\<term\>*
+and *Francais* "\<term\> de la commission".
+
+## Selectus academic profile terms
+
+| English | Deutsch | Francais | Espanol | Italiano |
+|---------|---------|----------|---------|----------|
+| Academical background | Akademischer Hintergrund | Parcours universitaire |  |  |
+| Academic age | Akademisches Alter | Âge académique |  |  |
+| Highest degree | Höchster Abschluss | Diplôme le plus élevé |  |  |
+| Habilitation | Habilitation | Habilitation |  |  |
+| Dissertation | Dissertation | Thèse de doctorat |  |  |
+| Impact factor | *Impact-Faktor* | *Facteur d'impact* |  |  |
+| h-index | *h-Index* | *Indice h* |  |  |
+| First authorships | Erstautorenschaften | Publications en tant que premier·e auteur·e |  |  |
+| Last authorships | Letztautorenschaften | Publications en tant que dernier·e auteur·e |  |  |
+| Original publications | Originalpublikationen | Publications originales |  |  |
+
+## Selectus application documents
+
+| English | Deutsch | Francais | Espanol | Italiano |
+|---------|---------|----------|---------|----------|
+| Covering letter | Anschreiben | Lettre de motivation |  |  |
+| Curriculum vitae | Lebenslauf | Curriculum vitae |  |  |
+| Research statement | Forschungsziel | Objectifs de recherche |  |  |
+| Teaching statement | Lehransatz | Objectifs pédagogiques |  |  |
+| Leadership philosophy | Führungsphilosophie | Philosophie en matière de leadership |  |  |
+| Teaching assessment | Lehrbeurteilung | Évaluation de l'enseignement |  |  |
+| Certificate of Study | Studienbescheinigung | Certificat d'étude |  |  |
+| Degree certificates | Abschlusszertifikate | Diplômes |  |  |
+| Clinical expertise | *Klinische Expertise* | Expertise clinique |  |  |
+| Surgical expertise | *Chirurgische Expertise* | Expertise chirurgicale |  |  |
+| External funding | *Drittmittel* | Financement externe |  |  |
+| Reprints up to 5 publications | *Sonderdrucke von bis zu 5 Publikationen* | Copies d'un maximum de 5 publications |  |  |
+| Combined document | *Kombiniertes Dokument* | Document combiné |  |  |
+
+## Selectus status values
+
+Only the values whose natural translation would be wrong. All other status values
+(active, published, archived, rejected, withdrawn, hired) use ordinary wording.
+
+| English | Deutsch | Francais | Espanol | Italiano |
+|---------|---------|----------|---------|----------|
+| Granted | *Zusage* | *Nomination accordée* |  |  |
+| Not eligible | *Nicht wählbar* | *Non éligible* |  |  |
+| A / B / C candidate | *A-/B-/C-Kandidat{in}* | *Candidat·e A/B/C* |  |  |
+| A / B / C decision | A-/B-/C-Entscheid | *Décision A/B/C* |  |  |
+
+## Five assessment concepts kept apart
+
+German would happily collapse all of these into "Bewertung". They must stay distinct:
+
+| Concept | Deutsch | What it is |
+|---------|---------|------------|
+| Rating | Beurteilung | A/B/C rating by a single committee member |
+| Decision | Entscheid | A/B/C decision of the committee as a whole |
+| Expert assessment | Gutachten | Written assessment by an expert appointed by the committee |
+| Letter of recommendation | Referenzschreiben | Letter by a referee named by the applicant |
+| Review | Review | Questionnaire with sliders, texts and discussion |
+
+It follows that a **Referenzperson** (named by the applicant) is not a **Gutachter{in}**
+(appointed by the committee).
+
+## Terms to correct
+
+Conflicts found in the current properties files. The table values above are the target.
+
+| Term | Where | Problem |
+|------|-------|---------|
+| Position | DE `wizard.choose_position.*`, `positions.list.empty.text1`, `error.language`; FR `wizard.choose_position.*` | DE alternates between Position, Stelle, Ausschreibung and Professur - use Ausschreibung; FR alternates between "position" (anglicism) and "poste" - use poste |
+| Referee | DE `wizard.referees.*`, `application.recommendations`, `reviewer.title` | Rendered as "Gutachter", "Referenzschreiben" and "Gutachter {0}" - three wordings, and "Gutachter" belongs to Expert |
+| Application | DE `edit.config.application`; FR `wizard.review_submit.description` | DE left untranslated as "Application"; FR uses "l'application" instead of "la candidature" |
+| Evaluation | DE `topnav.evaluation` vs `edit.config.application.evaluation` | "Auswertung" vs "Bewertung" for the same EN term |
+| A/B/C decision | DE `ui/rejection` `rejection.1..3` vs `ui` `filter.decision` | "C-Entscheidung" vs "Entscheid" |
+| Mail template | DE `reference.mail`; FR `reference.mail` | "Emailvorlage" and "Modèle courriel" instead of "E-Mail-Vorlage" / "Modèle d'e-mail" |
+| Reference letter(s) | FR `edit.application.document.references` | Base key left in English, only the `.sized` variant is translated |
+| Impact factor, H-Factor | FR `edit.application.impactFactor`, `edit.application.hFactor` | Left in English. EN "H-Factor" should read "h-index" |
+| Habilitation | FR `edit.application.habilitation` vs `edit.application.document.habilitation` | "Habilitation" vs "Thèse d'habilitation" |
+| Clinical / Surgical expertise | FR `edit.application.document.clinicaldisciplines`, `...surgicaldisciplines` | "Expertise cliniques" / "Expertise chirurgicales" - adjective does not agree with the singular noun |
+| Apply online | FR `apply` | "Application en ligne" is an anglicism, use "Candidature en ligne" |
+| Academical background | EN `academical_background` | EN should read "Academic background" |
+| (unrelated) | DE `error.language` | EN says "only available in German", DE says "nur auf Englisch verfügbar" - contradictory |
