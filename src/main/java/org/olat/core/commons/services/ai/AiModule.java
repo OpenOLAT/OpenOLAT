@@ -117,9 +117,6 @@ public class AiModule extends AbstractSpringModule {
 	private String essayGradingModel;
 	private int aiTaskPoolInteractiveSize = DEFAULT_AI_TASK_POOL_INTERACTIVE_SIZE;
 	private int aiTaskPoolBatchSize = DEFAULT_AI_TASK_POOL_BATCH_SIZE;
-	
-	@Value("${vc.bigbluebutton.admin.fx.only:true}")
-	private boolean adminFxOnly;
 
 	@Autowired
 	private org.olat.core.commons.services.ai.manager.AiTaskExecutorService aiTaskExecutorService;
@@ -494,9 +491,4 @@ public class AiModule extends AbstractSpringModule {
 	public int getEssayGenerationMaxCallsPerMinutePerUser() {
 		return DEFAULT_ESSAY_GENERATION_MAX_CALLS_PER_MINUTE_PER_USER;
 	}
-	
-	public boolean isAdminFxOnly() {
-		return adminFxOnly;
-	}
-	
 }
