@@ -60,6 +60,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public abstract class AbstractEditSafeExamBrowserController extends FormBasicController {
+	
+	private static final String KEYS_KEY = "keys";
+	private static final String CONFIG_KEY = "inConfig";
+	private static final String TEMPLATE_KEY = "template";
+	private static final String CUSTOM_KEY = "custom";
 
 	protected SingleSelection typeOfUseEl;
 	protected SingleSelection configSourceEl;
@@ -172,24 +177,24 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		safeExamBrowserEl.setEnabled(editable);
 		
 		SelectionValues typeOfUse = new SelectionValues();
-		typeOfUse.add(SelectionValues.entry("keys", translate("mode.safeexambrowser.type.keys"),
-				translate("mode.safeexambrowser.type.keys.descr"), null, null, true));
-		typeOfUse.add(SelectionValues.entry("inConfig", translate("mode.safeexambrowser.type.inOpenOlat"),
+		typeOfUse.add(SelectionValues.entry(CONFIG_KEY, translate("mode.safeexambrowser.type.inOpenOlat"),
 				translate("mode.safeexambrowser.type.inOpenOlat.descr"), null, null, true));
+		typeOfUse.add(SelectionValues.entry(KEYS_KEY, translate("mode.safeexambrowser.type.keys"),
+				translate("mode.safeexambrowser.type.keys.descr"), null, null, true));
 		typeOfUseEl = uifactory.addCardSingleSelectHorizontal("mode.safeexambrowser.typeofuse", "mode.safeexambrowser.typeofuse", enableCont,
 				typeOfUse.keys(), typeOfUse.values(), typeOfUse.descriptions(), typeOfUse.icons());
 		typeOfUseEl.setEnabled(editable);
 		typeOfUseEl.addActionListener(FormEvent.ONCHANGE);
 		
 		if(StringHelper.containsNonWhitespace(configuration.getSafeExamBrowserKey())) {
-			typeOfUseEl.select("keys", true);
+			typeOfUseEl.select(KEYS_KEY, true);
 		} else {
-			typeOfUseEl.select("inConfig", true);
+			typeOfUseEl.select(CONFIG_KEY, true);
 		}
 
 		SelectionValues configSourceValues = new SelectionValues();
-		configSourceValues.add(SelectionValues.entry("template", translate("mode.safeexambrowser.template.source.template")));
-		configSourceValues.add(SelectionValues.entry("custom", translate("custom")));
+		configSourceValues.add(SelectionValues.entry(TEMPLATE_KEY, translate("mode.safeexambrowser.template.source.template")));
+		configSourceValues.add(SelectionValues.entry(CUSTOM_KEY, translate("custom")));
 		configSourceEl = uifactory.addCardSingleSelectHorizontal("mode.safeexambrowser.template.source", "mode.safeexambrowser.template.source", enableCont,
 				configSourceValues.keys(), configSourceValues.values(), configSourceValues.descriptions(), configSourceValues.icons());
 		configSourceEl.setEnabled(editable);
@@ -215,13 +220,17 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		templateEl.addActionListener(FormEvent.ONCHANGE);
 
 		if(currentTemplate != null) {
-			configSourceEl.select("template", true);
+			configSourceEl.select(TEMPLATE_KEY, true);
 			String templateKey = currentTemplate.getKey().toString();
 			if(templateEl.containsKey(templateKey)) {
 				templateEl.select(templateKey, true);
 			}
 		} else {
-			configSourceEl.select("custom", true);
+			if(configuration.getSafeExamBrowserConfiguration() != null) {
+				configSourceEl.select(CUSTOM_KEY, true);
+			} else {
+				configSourceEl.select(TEMPLATE_KEY, true);
+			}
 			SafeExamBrowserTemplate defaultTemplate = templates.stream()
 					.filter(SafeExamBrowserTemplate::isDefault)
 					.findFirst().orElse(templates.isEmpty() ? null : templates.get(0));
@@ -403,8 +412,8 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	
 	protected void updateUI() {
 		boolean enabled = safeExamBrowserEl.isOn();
-		boolean inConfig = typeOfUseEl.isOneSelected() && typeOfUseEl.isKeySelected("inConfig");
-		boolean useTemplate = configSourceEl.isOneSelected() && configSourceEl.isKeySelected("template");
+		boolean inConfig = typeOfUseEl.isOneSelected() && typeOfUseEl.isKeySelected(CONFIG_KEY);
+		boolean useTemplate = configSourceEl.isOneSelected() && configSourceEl.isKeySelected(TEMPLATE_KEY);
 		boolean sebFileConfig = false;
 
 		typeOfUseEl.setVisible(enabled);
@@ -639,7 +648,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		safeExamBrowserKeyEl.clearError();
-		if(safeExamBrowserEl.isOn() && typeOfUseEl.isKeySelected("keys")) {
+		if(safeExamBrowserEl.isOn() && typeOfUseEl.isKeySelected(KEYS_KEY)) {
 			String value = safeExamBrowserKeyEl.getValue();
 			if(!StringHelper.containsNonWhitespace(value)) {
 				safeExamBrowserKeyEl.setErrorKey("form.legende.mandatory");
@@ -659,14 +668,14 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		boolean safeExamEnabled = safeExamBrowserEl.isOn();
 		configuration.setSafeExamBrowser(safeExamEnabled);
 		if(safeExamEnabled) {
-			if(typeOfUseEl.isSelected(0)) {
+			if(typeOfUseEl.isKeySelected(KEYS_KEY)) {
 				configuration.setSafeExamBrowserKey(safeExamBrowserKeyEl.getValue());
 				configuration.setSafeExamBrowserConfiguration(null);
 				configuration.setSafeExamBrowserTemplate(null);
 				configuration.setSafeExamBrowserConfigAllowExit(null);
 				configuration.setSafeExamBrowserConfigExitPassword(null);
 				configuration.setSafeExamBrowserHint(safeExamBrowserHintEl.getValue());
-			} else if(configSourceEl.isKeySelected("template") && templateEl.isOneSelected()) {
+			} else if(configSourceEl.isKeySelected(TEMPLATE_KEY) && templateEl.isOneSelected()) {
 				configuration.setSafeExamBrowserKey(null);
 				SafeExamBrowserTemplate selectedTemplate = getSelectedTemplate();
 				configuration.setSafeExamBrowserTemplate(selectedTemplate);

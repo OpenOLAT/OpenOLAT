@@ -58,15 +58,17 @@ public class NewAssessmentModeController extends FormBasicController {
 	
 	private final RepositoryEntry entry;
 	private AssessmentMode assessmentMode;
+	private AssessmentMode assessmentModeToCopy;
 
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	
-	public NewAssessmentModeController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public NewAssessmentModeController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, AssessmentMode assessmentModeToCopy) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.entry = entry;
+		this.assessmentModeToCopy = assessmentModeToCopy;
 		
 		initForm(ureq);
 	}
@@ -74,12 +76,17 @@ public class NewAssessmentModeController extends FormBasicController {
 	public AssessmentMode getAssessmentMode() {
 		return assessmentMode;
 	}
+	
+	public AssessmentMode getAssessmentModeToCopy() {
+		return assessmentModeToCopy;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_new_assessment_mode_form");
 		
-		nameEl = uifactory.addTextElement("mode.name", "mode.name", 255, "", formLayout);
+		String name = assessmentModeToCopy == null ? null : translate("copy.name", assessmentModeToCopy.getName());
+		nameEl = uifactory.addTextElement("mode.name", "mode.name", 255, name, formLayout);
 		nameEl.setElementCssClass("o_sel_assessment_mode_name");
 		nameEl.setMandatory(true);
 		
@@ -97,24 +104,30 @@ public class NewAssessmentModeController extends FormBasicController {
 		endEl.setDefaultValue(beginEl);
 		endEl.setMandatory(true);
 		beginEl.setPushDateValueTo(endEl);
-
-		leadTimeEl = uifactory.addIntegerElement("mode.leadTime", 0, datesCont);
+		
+		int leadTime = assessmentModeToCopy == null ? 10 : assessmentModeToCopy.getLeadTime();
+		leadTimeEl = uifactory.addIntegerElement("mode.leadTime", leadTime, datesCont);
 		leadTimeEl.setElementCssClass("o_sel_assessment_mode_leadtime o_form_number");
 		leadTimeEl.setExampleKey("mode.minutes", null);
 		leadTimeEl.setDisplaySize(3);
 		leadTimeEl.setInlineValidationOn(true);
 		
-		followupTimeEl = uifactory.addIntegerElement("mode.followupTime", 0, datesCont);
+		int followUp = assessmentModeToCopy == null ? 10 : assessmentModeToCopy.getFollowupTime();
+		followupTimeEl = uifactory.addIntegerElement("mode.followupTime", followUp, datesCont);
 		followupTimeEl.setElementCssClass("o_sel_assessment_mode_followuptime o_form_number");
 		followupTimeEl.setExampleKey("mode.minutes", null);
 		followupTimeEl.setDisplaySize(3);
 		
 		SelectionValues startModePK = new SelectionValues();
-		startModePK.add(SelectionValues.entry("manual", translate("mode.beginend.manual")));
-		startModePK.add(SelectionValues.entry("automatic", translate("mode.beginend.automatic")));
+		startModePK.add(SelectionValues.entry("manual", translate("mode.beginend.manual"), translate("mode.beginend.manual.descr"), null, null, true));
+		startModePK.add(SelectionValues.entry("automatic", translate("mode.beginend.automatic"), translate("mode.beginend.automatic.descr"), null, null, true));
 		startModeEl = uifactory.addCardSingleSelectHorizontal("mode.beginend", "mode.beginend", formLayout, startModePK);
 		startModeEl.setElementCssClass("o_sel_assessment_mode_start_mode");
-		startModeEl.select("manual", true);
+		if(assessmentModeToCopy == null || assessmentModeToCopy.isManualBeginEnd()) {
+			startModeEl.select("manual", true);
+		} else {
+			startModeEl.select("automatic", true);
+		}
 
 		FormLayoutContainer buttonCont = uifactory.addButtonsFormLayout("button", null, formLayout);
 		uifactory.addFormSubmitButton("create", buttonCont);
@@ -180,7 +193,11 @@ public class NewAssessmentModeController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		assessmentMode = assessmentModeMgr.createAssessmentMode(entry);
+		if(assessmentModeToCopy != null) {
+			assessmentMode = assessmentModeMgr.createAssessmentMode(assessmentModeToCopy);
+		} else {
+			assessmentMode = assessmentModeMgr.createAssessmentMode(entry);
+		}
 		
 		assessmentMode.setTargetAudience(AssessmentMode.Target.course);
 		assessmentMode.setName(nameEl.getValue());
