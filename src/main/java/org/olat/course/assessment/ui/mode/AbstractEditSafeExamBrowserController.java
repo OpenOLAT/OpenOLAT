@@ -158,12 +158,10 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		FormLayoutContainer keyConfigCont = uifactory.addDefaultFormLayout("key.config", null, formLayout);
 		initKeyForm(keyConfigCont);
 		
-		initButtonsForm(formLayout, ureq);
-		
 		rawConfigurationCont = uifactory.addDefaultFormLayout("raw.container", null, formLayout);
-		rawConfigurationCont.setFormTitle(translate("mode.safeexambrowser.template.readonly.section.title"));
-		rawConfigurationCont.setFormInfo(translate("mode.safeexambrowser.template.readonly.section.descr"));
 		initRawConfigurationForm(rawConfigurationCont, ureq);
+		
+		initButtonsForm(formLayout, ureq);
 	}
 	
 	protected abstract void initButtonsForm(FormItemContainer formLayout, UserRequest ureq);
@@ -274,6 +272,8 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	
 	protected void initRawConfigurationForm(FormItemContainer rawConfigCont, UserRequest ureq) {
 		rawConfigurationCtrl = new SafeExamBrowserRawConfigurationController(ureq, getWindowControl(), mainForm);
+		rawConfigurationCtrl.setFormTitle("mode.safeexambrowser.template.readonly.section.title");
+		rawConfigurationCtrl.setFormInfo("mode.safeexambrowser.template.readonly.section.descr");
 		listenTo(rawConfigurationCtrl);
 		
 		FormItem rawTableEl = rawConfigurationCtrl.getInitialFormItem();

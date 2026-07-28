@@ -102,15 +102,13 @@ public class SafeExamBrowserTemplateUploadController extends FormBasicController
 		specificCont.setFormInfo(translate("seb.template.mode.hint"));
 		initSpecificForm(specificCont, ureq);
 
+		FormLayoutContainer rawConfigurationCont = uifactory.addDefaultFormLayout("rawconfigurationcont", null, formLayout);
+		initRawConfiguration(rawConfigurationCont, ureq);
+		
 		FormLayoutContainer buttonsWrapperCont = uifactory.addDefaultFormLayout("buttonscont", null, formLayout);
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, buttonsWrapperCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		
-		FormLayoutContainer rawConfigurationCont = uifactory.addDefaultFormLayout("rawconfigurationcont", null, formLayout);
-		rawConfigurationCont.setFormTitle(translate("seb.raw.configuration.section.title"));
-		rawConfigurationCont.setFormInfo(translate("seb.raw.configuration.section.hint"));
-		initRawConfiguration(rawConfigurationCont, ureq);
 	}
 	
 	private void initTemplateForm(FormLayoutContainer templateLayout, FormItemContainer formLayout) {
@@ -192,6 +190,8 @@ public class SafeExamBrowserTemplateUploadController extends FormBasicController
 	
 	private void initRawConfiguration(FormLayoutContainer formLayout, UserRequest ureq) {
 		rawConfigurationCtrl = new SafeExamBrowserRawConfigurationController(ureq, getWindowControl(), mainForm);
+		rawConfigurationCtrl.setFormTitle("seb.raw.configuration.section.title");
+		rawConfigurationCtrl.setFormInfo("seb.raw.configuration.section.hint");
 		listenTo(rawConfigurationCtrl);
 		
 		String plist = sebTemplate != null ? sebTemplate.getSafeExamBrowserConfigPList() : null;
