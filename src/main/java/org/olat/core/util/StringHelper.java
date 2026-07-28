@@ -805,8 +805,26 @@ public class StringHelper {
 		}
 		return shortenedText;
 	}
+
 	
-	public static boolean searchWildcard(String text, String searchValue) {
+	/**
+	 * If the searchValue contains an *, the search is delegated to searchWildcard,
+	 * if not it's handled by a simple contains.
+	 * 
+	 * @param text The text 
+	 * @param searchValue The search string (with or without *)
+	 * @return
+	 */
+	public static final boolean searchFuzzy(String text, String searchValue) {
+		if(searchValue == null || searchValue.equals("*") || searchValue.equals("**")) {
+			return true;
+		}
+		return text != null && (searchValue.indexOf('*') >= 0
+				? StringHelper.searchWildcard(text, searchValue)
+				: text.toLowerCase().contains(searchValue.toLowerCase()));
+	}
+	
+	public static final boolean searchWildcard(String text, String searchValue) {
 		if (!containsNonWhitespace(text) || !containsNonWhitespace(searchValue)) {
 			return false;
 		}

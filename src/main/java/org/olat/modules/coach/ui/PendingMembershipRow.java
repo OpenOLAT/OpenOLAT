@@ -149,15 +149,15 @@ public class PendingMembershipRow extends UserPropertiesRow {
 		if (!StringHelper.containsNonWhitespace(searchString)) {
 			return true;
 		}
-		searchString = searchString.toLowerCase();
-		if (StringHelper.containsNonWhitespace(getTitle()) && getTitle().toLowerCase().contains(searchString)) {
+		
+		if (StringHelper.searchFuzzy(getTitle(), searchString)) {
 			return true;
 		}
-		if (StringHelper.containsNonWhitespace(getExtRef()) && getExtRef().toLowerCase().contains(searchString)) {
+		if (StringHelper.searchFuzzy(getExtRef(), searchString)) {
 			return true;
 		}
 		for (String identityProp : getIdentityProps()) {
-			if (identityProp != null && identityProp.toLowerCase().contains(searchString)) {
+			if (StringHelper.searchFuzzy(identityProp, searchString)) {
 				return true;
 			}
 		}

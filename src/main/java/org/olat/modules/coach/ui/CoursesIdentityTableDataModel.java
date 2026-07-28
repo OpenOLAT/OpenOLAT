@@ -118,13 +118,9 @@ implements SortableFlexiTableDataModel<CourseIdentityRow>, FilterableFlexiTableM
 	
 	private boolean accept(String searchValue, CourseIdentityRow entry) {
 		if(searchValue == null) return true;
-		return accept(searchValue, entry.getRepositoryEntryDisplayname())
-				|| accept(searchValue, entry.getRepositoryEntryExternalRef())
-				|| accept(searchValue, entry.getRepositoryEntryExternalId());
-	}
-	
-	private boolean accept(String searchValue, String val) {
-		return val != null && val.toLowerCase().contains(searchValue);
+		return StringHelper.searchFuzzy(entry.getRepositoryEntryDisplayname(), searchValue)
+				|| StringHelper.searchFuzzy(entry.getRepositoryEntryExternalRef(), searchValue)
+				|| StringHelper.searchFuzzy(entry.getRepositoryEntryExternalId(), searchValue);
 	}
 	
 	private boolean acceptMarked(Boolean marked, CourseIdentityRow entry) {

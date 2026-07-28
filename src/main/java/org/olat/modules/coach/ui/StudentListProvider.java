@@ -75,7 +75,7 @@ public class StudentListProvider implements ListProvider {
 		String[] userProperties = entry.getIdentityProps();
 		for(int i=userProperties.length; i-->0; ) {
 			String userProp = userProperties[i];
-			if(userProp != null && userProp.toLowerCase().contains(searchValue)) {
+			if(StringHelper.searchFuzzy(userProp, searchValue)) {
 				return true;
 			}
 		}
