@@ -56,13 +56,6 @@ public class CoachingModule  extends AbstractSpringModule implements ConfigOnOff
 		return enabled;
 	}
 	
-
-	public void setEnabled(boolean enabled) {
-		if(this.enabled != enabled) {
-			setStringProperty("coaching.enabled", Boolean.toString(enabled), true);
-		}
-	}
-	
 	public boolean isResetPasswordEnabled() {
 		return resetPasswordEnabled;
 	}
@@ -75,18 +68,16 @@ public class CoachingModule  extends AbstractSpringModule implements ConfigOnOff
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("CoachSite",
 				new CoachContextEntryControllerCreator());
 
-		updateProperties();
+		String enabledObj = getStringPropertyValue("coaching.enabled", true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			removeProperty("coaching.enabled", true);
+		}
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
-		updateProperties();
+		//
 	}
 	
-	private void updateProperties() {
-		String enabledObj = getStringPropertyValue("coaching.enabled", true);
-		if(StringHelper.containsNonWhitespace(enabledObj)) {
-			enabled = "true".equals(enabledObj);
-		}
-	}
+
 }
