@@ -28,7 +28,6 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -55,7 +54,7 @@ public class AssessmentModePage {
 	public AssessmentModePage createAssessmentMode() {
 		By addBy = By.className("o_sel_assessment_mode_add");
 		browser.findElement(addBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
 	
@@ -84,10 +83,8 @@ public class AssessmentModePage {
 			followUpEl.sendKeys(Integer.toString(followUp));
 		}
 		// Start mode
-		By startBy = By.cssSelector("div.o_sel_assessment_mode_start_mode select");
-		WebElement startEl = browser.findElement(startBy);
-		new Select(startEl).selectByValue(manual ? "manual" : "automatic");
-
+		By startModeBy = By.cssSelector("div.o_sel_assessment_mode_start_mode input[type='radio'][value='" + (manual ? "manual" : "automatic") + "']");
+		browser.findElement(startModeBy).click();
 		return this;
 	}
 	
@@ -105,7 +102,7 @@ public class AssessmentModePage {
 		cal.setTime(date);
 		int hour = cal.get(Calendar.HOUR_OF_DAY);
 		int minute = cal.get(Calendar.MINUTE);
-		browser.findElement(By.cssSelector(".o_sel_assessment_mode_edit_form .o_info_with_icon")).click();
+		browser.findElement(By.cssSelector(".modal-header")).click();
 		
 		By datePickerBy = By.cssSelector("div." + seleniumCssClass + " div.datepicker-dropdown.active");
 		OOGraphene.waitElementDisappears(datePickerBy, 5, browser);
@@ -160,6 +157,19 @@ public class AssessmentModePage {
 		return this;
 	}
 	
+	public AssessmentModePage create() {
+		By createButtonBy = By.cssSelector(".o_sel_new_assessment_mode_form button.btn-primary");
+		OOGraphene.click(createButtonBy, browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
+	}
+	
+	public AssessmentModePage assertOnEditAssessmentMode(String assessmentModeTitle) {
+		By startBy = By.xpath("//fieldset/legend[text()[contains(.,'" + assessmentModeTitle + "')]]");
+		OOGraphene.waitElement(startBy, browser);
+		return this;
+	}
+	
 	/**
 	 * Save the assessment mode settings.
 	 * 
@@ -192,7 +202,7 @@ public class AssessmentModePage {
 	public AssessmentModePage start(String name) {
 		By startBy = By.xpath("//fieldset[contains(@class,'o_sel_assessment_mode_list')]//table//tr/td/a[contains(@onclick,'start')]");
 		OOGraphene.waitElement(startBy, browser).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
 	
@@ -205,7 +215,7 @@ public class AssessmentModePage {
 		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-footer a");
 		List<WebElement> buttonsEl = browser.findElements(confirmButtonBy);
 		buttonsEl.get(0).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
