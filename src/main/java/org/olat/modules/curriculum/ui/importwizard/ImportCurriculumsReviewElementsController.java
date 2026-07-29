@@ -40,6 +40,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,6 +60,8 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 	private LectureModule lectureModule;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
 	
 	public ImportCurriculumsReviewElementsController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			ImportCurriculumsContext context, StepsRunContext runContext) {
@@ -112,6 +115,8 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 				new ImportValueCellRenderer(ImportCurriculumsCols.referenceIdentifier, getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.location,
 				new ImportValueCellRenderer(ImportCurriculumsCols.location, getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.rooms,
+				new ImportValueCellRenderer(ImportCurriculumsCols.rooms, getLocale())));
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCurriculumsCols.elementType,
 				new ImportValueCellRenderer(ImportCurriculumsCols.elementType, getLocale())));
@@ -194,6 +199,9 @@ public class ImportCurriculumsReviewElementsController extends AbstractImportLis
 			context.getLoader().loadCurrentElements(rows, context.getImportedCurriculumsRows());
 			if(taxonomyModule.isEnabled()) {
 				context.getLoader().loadTaxonomy(rows);
+			}
+			if(roomManagementModule.isEnabled()) {
+				context.getLoader().loadRooms(rows);
 			}
 
 			final ImportCurriculumsValidator validator = context.getValidator();

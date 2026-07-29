@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui.importwizard;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,9 +60,12 @@ import org.olat.modules.curriculum.ui.CurriculumExport;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
 import org.olat.modules.curriculum.ui.EditCurriculumController;
 import org.olat.modules.curriculum.ui.EditCurriculumElementMetadataController;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.RoomKey;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.TaxonomyKey;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -104,6 +108,8 @@ public class ImportCurriculumsValidator {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RoomManagementService roomManagementService;
 	
 	public ImportCurriculumsValidator(Identity identity, Roles roles, Translator translator) {
 		CoreSpringFactory.autowireObject(this);
@@ -745,6 +751,8 @@ public class ImportCurriculumsValidator {
 			String col = translate(ImportCurriculumsCols.displayName.i18nHeaderKey());
 			importedRow.addChanged(col, importedRow.getLectureBlock().getLocation(), importedRow.getLocation(), ImportCurriculumsCols.location);
 		}
+		// Rooms
+		validateRooms(importedRow);
 		
 		// Taxonomy
 		validateTaxonomy(importedRow);
@@ -927,6 +935,58 @@ public class ImportCurriculumsValidator {
 		return allOk;
 	}
 	
+	private boolean validateRooms(ImportedRow importedRow) {
+		boolean allOk = true;
+		
+		String rooms = importedRow.getRooms();
+		List<RoomKey> roomsList = importedRow.getRoomsKeysList();
+		List<RoomKey> currentRooms = List.of();
+		if(importedRow.getLectureBlock() != null) {
+			List<RoomBooking> currentBookings = roomManagementService.getBookings(importedRow.getLectureBlock());
+			currentRooms = new ArrayList<>();
+			for(RoomBooking currentBooking:currentBookings) {
+				RoomKey key = RoomKey.valueOf(currentBooking.getRoom());
+				if(key != null) {
+					currentRooms.add(key);
+				}
+			}
+		}
+		
+		String column = translate(ImportCurriculumsCols.rooms.i18nHeaderKey());
+
+		for(RoomKey roomKey:roomsList) {
+			if(importedRow.getRoom(roomKey) == null) {
+				if(importedRow.isNew()) {
+					importedRow.addValidationError(ImportCurriculumsCols.rooms, column, null,
+							translator.translate("error.not.exist", rooms));
+					allOk &= false;
+				} else {
+					importedRow.addValidationWarning(ImportCurriculumsCols.rooms, column, null,
+							translator.translate("warning.not.exist.ignore", rooms));
+					allOk &= false;
+				}
+				break;// only one error per field
+			}
+		}
+		
+		if(allOk && !equalsRooms(roomsList, currentRooms)) {
+			importedRow.addChanged(column, currentRooms, roomsList, ImportCurriculumsCols.rooms);
+		}
+		return allOk;
+	}
+	
+	private boolean equalsRooms(List<RoomKey> rooms, List<RoomKey> currentRooms) {
+		int size = rooms == null ? 0 : rooms.size();
+		int currentSize = currentRooms == null ? 0 : currentRooms.size();
+		if(size == 0 && currentSize == 0) {
+			return true;
+		}
+		if(size > 0 && size == currentSize) {
+			return rooms != null && rooms.containsAll(currentRooms);
+		}
+		return false;
+	}
+	
 	private boolean validateTaxonomy(ImportedRow importedRow) {
 		boolean allOk = true;
 		
@@ -950,13 +1010,13 @@ public class ImportCurriculumsValidator {
 			}
 		}
 		
-		if(allOk && !equals(subjectsList, currentPaths)) {
+		if(allOk && !equalsTaxonomy(subjectsList, currentPaths)) {
 			importedRow.addChanged(column, currentPaths, subjectsList, ImportCurriculumsCols.taxonomyLevels);
 		}
 		return allOk;
 	}
 	
-	private boolean equals(List<TaxonomyKey> subjectsList, List<TaxonomyKey> currentPaths) {
+	private boolean equalsTaxonomy(List<TaxonomyKey> subjectsList, List<TaxonomyKey> currentPaths) {
 		if((subjectsList == null && currentPaths == null)
 				|| (subjectsList == null || subjectsList.isEmpty() && (currentPaths == null || currentPaths.isEmpty()))) {
 			return true;

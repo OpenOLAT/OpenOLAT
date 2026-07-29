@@ -85,6 +85,32 @@ public class ImportCurriculumsFileReaderTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadFileElementsEvent() throws URISyntaxException {
+		URL url = ImportCurriculumsFileReaderTest.class.getResource("products-reader-test.xlsx");
+		File file = new File(url.toURI());
+
+		ImportCurriculumsFileReader reader = new ImportCurriculumsFileReader(Roles.administratorRoles());
+		Import data = reader.loadFile(file);
+		List<ImportedRow> elementsRows = data.elementsRows();
+
+		ImportedRow row = elementsRows.get(5);
+		Assert.assertEquals(CurriculumExportType.EVENT, row.type());
+		Assert.assertEquals("P_ESP", row.getCurriculumIdentifier());
+		Assert.assertEquals("P_ESP-IMPL_1_EPP_SP26", row.getImplementationIdentifier());
+		Assert.assertEquals("Introduction 1", row.getDisplayName());
+		Assert.assertEquals("P_ESP-IMPL_1_EPP_SP26-M_1_ID-EV_INTRO_1", row.getIdentifier());
+		Assert.assertEquals("", row.getElementStatus());
+		Assert.assertNotNull(row.getStartDate());
+		Assert.assertNotNull(row.getStartTime());
+		Assert.assertNotNull(row.getEndDate());
+		Assert.assertNotNull(row.getEndTime());
+		Assert.assertEquals("3", row.getUnit());
+		Assert.assertEquals("Zuerich", row.getLocation());
+		Assertions.assertThat(row.getRoomsKeysList())
+			.hasSize(1);
+	}
+	
+	@Test
 	public void loadFileUsers() throws URISyntaxException {
 		URL url = ImportCurriculumsFileReaderTest.class.getResource("products-reader-test.xlsx");
 		File file = new File(url.toURI());

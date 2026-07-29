@@ -70,6 +70,9 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -120,6 +123,8 @@ public class CurriculumExport {
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private RoomManagementService roomManagementService;
 	@Autowired
 	private CurriculumMemberQueries curriculumMemberQueries;
 	@Autowired
@@ -357,6 +362,7 @@ public class CurriculumExport {
 		headerRow.addCell(col++, translator.translate("export.lectures"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.reference.external.ref"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.location"), workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(col++, translator.translate("table.header.rooms"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.element.type"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.calendars"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.lectures"), workbook.getStyles().getHeaderStyle());
@@ -444,9 +450,25 @@ public class CurriculumExport {
 		searchParams.setLectureConfiguredRepositoryEntry(false);
 		
 		List<LectureBlockWithTeachers> blocks = lectureService.getLectureBlocksWithOptionalTeachers(searchParams);
+		Map<Long,List<Room>> roomsByBlock = getRoomsMap(blocks);
 		for(LectureBlockWithTeachers block:blocks) {
-			addLectureBlockContent(block.lectureBlock(), element, workbook, exportSheet);
+			List<Room> rooms = roomsByBlock.get(block.getLectureBlock().getKey());
+			addLectureBlockContent(block.lectureBlock(), element, rooms, workbook, exportSheet);
 		}
+	}
+	
+	private Map<Long,List<Room>> getRoomsMap(List<LectureBlockWithTeachers> blocks) {
+		List<Long> lbKeys = blocks.stream()
+				.map(LectureBlockWithTeachers::getLectureBlock)
+				.map(LectureBlock::getKey)
+				.toList();
+		List<RoomBooking> bookings = roomManagementService.getBookings(lbKeys);
+		Map<Long, List<Room>> roomsByBlock = new HashMap<>();
+		for(RoomBooking booking : bookings) {
+			roomsByBlock.computeIfAbsent(booking.getLectureBlock().getKey(), k -> new ArrayList<>())
+					.add(booking.getRoom());
+		}
+		return roomsByBlock;
 	}
 	
 	private void addCurriculumElementContent(CurriculumElement element, OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
@@ -486,6 +508,7 @@ public class CurriculumExport {
 		row.addCell(col++, null);// No lectures
 		row.addCell(col++, null);// No ref. id.
 		row.addCell(col++, null);// No location
+		row.addCell(col++, null);// No rooms
 		
 		String elementType = element.getType() != null
 				? element.getType().getIdentifier()
@@ -580,6 +603,7 @@ public class CurriculumExport {
 		row.addCell(col++, null);// No lectures
 		row.addCell(col++, null);// No ref. id.
 		row.addCell(col++, null);// No location
+		row.addCell(col++, null);// No rooms
 		
 		row.addCell(col++, null); // No element type
 		row.addCell(col++, null); // No calendar option
@@ -597,7 +621,7 @@ public class CurriculumExport {
 		return formatTaxonomyLevels(levels);
 	}
 	
-	private void addLectureBlockContent(LectureBlock lectureBlock, CurriculumElement element,
+	private void addLectureBlockContent(LectureBlock lectureBlock, CurriculumElement element, List<Room> rooms,
 			OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
 		int col = 0;
 		Row row = exportSheet.newRow();
@@ -641,6 +665,8 @@ public class CurriculumExport {
 				: null;
 		row.addCell(col++, entryExternalRef);// Ref. to course
 		row.addCell(col++, lectureBlock.getLocation());// Location
+		String roomsList = getRooms(rooms);
+		row.addCell(col++, roomsList);// Rooms
 		
 		row.addCell(col++, null); // No element type
 		row.addCell(col++, null); // No calendar option
@@ -651,6 +677,25 @@ public class CurriculumExport {
 		row.addCell(col++, taxonomy);
 		row.addCell(col++, lectureBlock.getCreationDate(), workbook.getStyles().getDateTimeStyle());
 		row.addCell(col++, lectureBlock.getLastModified(), workbook.getStyles().getDateTimeStyle());
+	}
+	
+	private String getRooms(List<Room> rooms) {
+		StringBuilder sb = new StringBuilder();
+		if(rooms != null && !rooms.isEmpty()) {
+			for(Room room:rooms) {
+				if(StringHelper.containsNonWhitespace(room.getExternalRef())
+						&& room.getBuilding() != null
+						&& StringHelper.containsNonWhitespace(room.getBuilding().getExternalRef())) {
+					if(!sb.isEmpty()) {
+						sb.append(";");
+					}
+					sb.append(room.getBuilding().getExternalRef())
+					  .append(":")
+					  .append(room.getExternalRef());
+				}
+			}
+		}
+		return sb.toString();
 	}
 	
 	private String getTaxonomyLevels(LectureBlock lectureBlock) {

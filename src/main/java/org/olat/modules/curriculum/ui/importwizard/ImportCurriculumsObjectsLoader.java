@@ -50,6 +50,11 @@ import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableM
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockToTaxonomyLevel;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.RoomStatus;
+import org.olat.modules.roommanagement.model.SearchRoomParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
@@ -94,6 +99,10 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
+	@Autowired
+	private RoomManagementService roomManagementService;
 	
 	public ImportCurriculumsObjectsLoader(Translator translator) {
 		CoreSpringFactory.autowireObject(this);
@@ -223,6 +232,51 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		for(ImportedRow importedRow:importedRows) {
 			if(importedRow.type() == CurriculumExportType.EVENT) {
 				loadLectureBlock(importedRow, entries);
+			}
+		}
+	}
+	
+
+	public void loadRooms(List<ImportedRow> importedRows) {
+		if(!roomManagementModule.isEnabled()) return;
+		
+		Map<RoomKey, Room> roomsMap = new HashMap<>();
+		for(ImportedRow importedRow:importedRows) {
+			String rooms = importedRow.getRooms();
+			if(importedRow.type() == CurriculumExportType.EVENT
+					&& StringHelper.containsNonWhitespace(rooms)) {
+				String[] roomsArr = rooms.split(";");
+				for(String room:roomsArr) {
+					if(StringHelper.containsNonWhitespace(room)) {
+						loadRoom(importedRow, room, roomsMap);
+					}
+				}
+			}
+		}
+	}
+	
+	private void loadRoom(ImportedRow importedRow, String room, Map<RoomKey, Room> roomsMap) {
+		RoomKey key = RoomKey.valueOf(room);
+		if(key == null) {
+			String column = translator.translate(ImportCurriculumsCols.rooms.i18nHeaderKey());
+			importedRow.addValidationError(ImportCurriculumsCols.rooms, column, null, translator.translate("error.format.invalid", room));
+		} else {
+			Room r = roomsMap.get(key);
+			if(r == null) {
+				SearchRoomParameters idParams = new SearchRoomParameters();
+				idParams.setExactExternalRef(key.roomExternalRef());
+				idParams.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
+				List<Room> refRooms = roomManagementService.searchRooms(idParams, null);
+				for(Room refRoom:refRooms) {
+					RoomKey refKey = RoomKey.valueOf(refRoom);
+					if(refKey != null) {
+						roomsMap.put(refKey, refRoom);
+					}
+				}
+				r = roomsMap.get(key);
+			}
+			if(r != null) {
+				importedRow.addRoom(r);
 			}
 		}
 	}
@@ -591,6 +645,53 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 			if(obj instanceof LevelKey key) {
 				return implementationIdentifier != null && implementationIdentifier.equals(key.implementationIdentifier)
 						&& level != null && level.equals(key.level);
+			}
+			return false;
+		}
+	}
+	
+	public record RoomKey(String roomExternalRef, String buildExternalRef) {
+
+		public static final RoomKey valueOf(Room room) {
+			if(room == null || room.getBuilding() == null) {
+				return null;
+			}
+			
+			String buildingRef = room.getBuilding().getExternalRef();
+			String roomRef = room.getExternalRef();
+			if(StringHelper.containsNonWhitespace(roomRef) && StringHelper.containsNonWhitespace(buildingRef)) {
+				return new RoomKey(roomRef, buildingRef);
+			}
+			return null;
+		}
+
+		public static final RoomKey valueOf(String room) {
+			int index = room.indexOf(':');
+			if(index <= 0 || index >= room.length() - 1) {
+				return null;
+			}
+			
+			String buildingRef = room.substring(0, index).trim();
+			String roomRef = room.substring(index + 1).trim();
+			if(StringHelper.containsNonWhitespace(roomRef) && StringHelper.containsNonWhitespace(buildingRef)) {
+				return new RoomKey(roomRef, buildingRef);
+			}
+			return null;
+		}
+		
+		@Override
+		public int hashCode() {
+			return roomExternalRef == null ? -82387 : roomExternalRef.hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(obj == this) {
+				return true;
+			}
+			if(obj instanceof RoomKey key) {
+				return roomExternalRef != null && roomExternalRef.equals(key.roomExternalRef)
+						&& buildExternalRef != null && buildExternalRef.equals(key.buildExternalRef);
 			}
 			return false;
 		}

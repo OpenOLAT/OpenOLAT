@@ -35,6 +35,7 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.TaxonomyKey;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
+import org.olat.modules.roommanagement.Room;
 
 /**
  * 
@@ -140,6 +141,13 @@ public class AbstractImportRow {
 		} else if(currentValue instanceof Date date && newValue instanceof LocalTime) {
 			currentValue = DateUtils.toLocalTime(date);	
 		}
+		if(!Objects.equals(currentValue, newValue)) {
+			validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
+				.addChanged(currentValue, newValue);
+		}
+	}
+	
+	public void addRoomsChanged(String column, List<Room> currentValue, List<Room> newValue, ImportCurriculumsCols col) {
 		if(!Objects.equals(currentValue, newValue)) {
 			validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
 				.addChanged(currentValue, newValue);

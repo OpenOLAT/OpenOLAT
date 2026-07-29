@@ -33,8 +33,10 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.RoomKey;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.TaxonomyKey;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.roommanagement.Room;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 
@@ -59,6 +61,7 @@ public class ImportedRow extends AbstractImportRow {
 	private String progress;
 	private String description;
 	private String location;
+	private String rooms;
 	private String unit;
 	
 	private ReaderLocalDate startDate;
@@ -93,6 +96,8 @@ public class ImportedRow extends AbstractImportRow {
 	private String subjects;
 	private List<TaxonomyLevel> taxonomyLevels;
 	
+	private List<Room> roomsList;
+	
 	private final LocalDateTime creationDate;
 	private final LocalDateTime lastModified;
 
@@ -115,7 +120,7 @@ public class ImportedRow extends AbstractImportRow {
 	public ImportedRow(String type, int rowNum, String displayName, String identifier,
 			String curriculumIdentifier, String implementationIdentifier, String level, String elementStatus, String curriculumElementTypeIdentifier,
 			String referenceExternalRef, String unit, ReaderLocalDate startDate, ReaderLocalTime startTime, ReaderLocalDate endDate, ReaderLocalTime endTime,
-			String location, String calendar, String absences, String progress, String subjects, LocalDateTime creationDate, LocalDateTime lastModified) {
+			String location, String rooms, String calendar, String absences, String progress, String subjects, LocalDateTime creationDate, LocalDateTime lastModified) {
 		super(rowNum);
 		this.type = CurriculumExportType.secureValueOf(type);
 		this.rawType = type;
@@ -137,6 +142,7 @@ public class ImportedRow extends AbstractImportRow {
 		this.endTime = endTime;
 		this.subjects = subjects;
 		this.location = location;
+		this.rooms = rooms;
 		this.creationDate = creationDate;
 		this.lastModified = lastModified;
 	}
@@ -187,6 +193,52 @@ public class ImportedRow extends AbstractImportRow {
 
 	public String getLocation() {
 		return location;
+	}
+	
+	public String getRooms() {
+		return rooms;
+	}
+	
+	public List<RoomKey> getRoomsKeysList() {
+		String rooms = getRooms();
+		List<RoomKey> roomsKeys = new ArrayList<>();
+		if(type() == CurriculumExportType.EVENT
+				&& StringHelper.containsNonWhitespace(rooms)) {
+			String[] roomsArr = rooms.split(";");
+			for(String room:roomsArr) {
+				if(StringHelper.containsNonWhitespace(room)) {
+					RoomKey key = RoomKey.valueOf(room);
+					if(key != null && !roomsKeys.contains(key)) {
+						roomsKeys.add(key);
+					}
+				}
+			}
+		}
+		return roomsKeys;
+	}
+	
+	public Room getRoom(RoomKey key) {
+		if(roomsList != null) {
+			for(Room room:roomsList) {
+				if(key.equals(RoomKey.valueOf(room))) {
+					return room;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public List<Room> getRoomsList() {
+		return roomsList;
+	}
+	
+	public void addRoom(Room room) {
+		if(room == null) return;
+		
+		if(roomsList == null) {
+			roomsList = new ArrayList<>(3);
+		}
+		roomsList.add(room);
 	}
 	
 	public String getUnit() {
@@ -304,6 +356,7 @@ public class ImportedRow extends AbstractImportRow {
 		this.curriculumElementTypeIdentifier = curriculumElementTypeIdentifier;
 	}
 
+	@Override
 	public void setCurriculumElementParentRow(ImportedRow curriculumElementParentRow) {
 		super.setCurriculumElementParentRow(curriculumElementParentRow);
 		
