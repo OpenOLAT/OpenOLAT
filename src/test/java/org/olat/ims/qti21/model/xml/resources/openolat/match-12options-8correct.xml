@@ -1,0 +1,309 @@
+<assessmentItem
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
+	identifier="matchecee73847acbd7c498a62d5010e" title="Match"
+	adaptive="false" timeDependent="false" toolName="OpenOLAT"
+	toolVersion="20.3.3"
+	xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd">
+	<responseDeclaration identifier="RESPONSE_1"
+		cardinality="multiple" baseType="directedPair">
+		<correctResponse>
+			<value>sa113944490368526 M113944490368341</value>
+			<value>sa113944490368526 sa113944490368525</value>
+			<value>sa113944490368531 M113944490368341</value>
+			<value>sa113944490368531 N113944490368342</value>
+			<value>sa113944490368531 sa113944490368525</value>
+			<value>B113944490368340 sa113944490368525</value>
+			<value>A113944490368339 M113944490368341</value>
+			<value>A113944490368339 N113944490368342</value>
+		</correctResponse>
+	</responseDeclaration>
+	<outcomeDeclaration identifier="SCORE"
+		cardinality="single" baseType="float">
+		<defaultValue>
+			<value>0.0</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="MINSCORE"
+		cardinality="single" baseType="float" view="testConstructor">
+		<defaultValue>
+			<value>0.0</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="MAXSCORE"
+		cardinality="single" baseType="float">
+		<defaultValue>
+			<value>12.0</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="NPS_NUMCORRECT"
+		cardinality="single" baseType="integer" view="testConstructor">
+		<defaultValue>
+			<value>0</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="NPS_NUMINCORRECT"
+		cardinality="single" baseType="integer" view="testConstructor">
+		<defaultValue>
+			<value>0</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="FEEDBACKBASIC"
+		cardinality="single" baseType="identifier" view="testConstructor">
+		<defaultValue>
+			<value>none</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<itemBody>
+		<p>12 Optionen, 8 richtig</p>
+		<matchInteraction class="match_matrix"
+			responseIdentifier="RESPONSE_1" shuffle="false" maxAssociations="0">
+			<simpleMatchSet>
+				<simpleAssociableChoice
+					identifier="A113944490368339" matchMax="0" matchMin="0">
+					<p>A + B</p>
+				</simpleAssociableChoice>
+				<simpleAssociableChoice
+					identifier="B113944490368340" matchMax="0" matchMin="0">
+					<p>C</p>
+				</simpleAssociableChoice>
+				<simpleAssociableChoice
+					identifier="sa113944490368526" matchMax="0" matchMin="0">
+					<p>A + C</p>
+				</simpleAssociableChoice>
+				<simpleAssociableChoice
+					identifier="sa113944490368531" matchMax="0" matchMin="0">
+					<p>A + B + C</p>
+				</simpleAssociableChoice>
+			</simpleMatchSet>
+			<simpleMatchSet>
+				<simpleAssociableChoice
+					identifier="M113944490368341" matchMax="0" matchMin="0">
+					<p>A</p>
+				</simpleAssociableChoice>
+				<simpleAssociableChoice
+					identifier="N113944490368342" matchMax="0" matchMin="0">
+					<p>B</p>
+				</simpleAssociableChoice>
+				<simpleAssociableChoice
+					identifier="sa113944490368525" matchMax="0" matchMin="0">
+					<p>C</p>
+				</simpleAssociableChoice>
+			</simpleMatchSet>
+		</matchInteraction>
+	</itemBody>
+	<responseProcessing>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">A113944490368339 M113944490368341</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">A113944490368339 N113944490368342</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">A113944490368339 sa113944490368525</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMINCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMINCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">B113944490368340 M113944490368341</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMINCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMINCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">B113944490368340 N113944490368342</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMINCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMINCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">B113944490368340 sa113944490368525</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">sa113944490368526 M113944490368341</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">sa113944490368526 N113944490368342</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMINCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMINCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">sa113944490368526 sa113944490368525</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">sa113944490368531 M113944490368341</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">sa113944490368531 N113944490368342</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<member>
+					<baseValue baseType="directedPair">sa113944490368531 sa113944490368525</baseValue>
+					<variable identifier="RESPONSE_1" />
+				</member>
+				<setOutcomeValue identifier="NPS_NUMCORRECT">
+					<sum>
+						<variable identifier="NPS_NUMCORRECT" />
+						<baseValue baseType="integer">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<setOutcomeValue identifier="SCORE">
+			<subtract>
+				<divide>
+					<product>
+						<integerToFloat>
+							<variable identifier="NPS_NUMCORRECT" />
+						</integerToFloat>
+						<variable identifier="MAXSCORE" />
+					</product>
+					<baseValue baseType="integer">8</baseValue>
+				</divide>
+				<divide>
+					<product>
+						<integerToFloat>
+							<variable identifier="NPS_NUMINCORRECT" />
+						</integerToFloat>
+						<variable identifier="MAXSCORE" />
+					</product>
+					<baseValue baseType="integer">4</baseValue>
+				</divide>
+			</subtract>
+		</setOutcomeValue>
+		<responseCondition>
+			<responseIf>
+				<lt>
+					<variable identifier="SCORE" />
+					<variable identifier="MINSCORE" />
+				</lt>
+				<setOutcomeValue identifier="SCORE">
+					<variable identifier="MINSCORE" />
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<gt>
+					<variable identifier="SCORE" />
+					<variable identifier="MAXSCORE" />
+				</gt>
+				<setOutcomeValue identifier="SCORE">
+					<variable identifier="MAXSCORE" />
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+	</responseProcessing>
+</assessmentItem>

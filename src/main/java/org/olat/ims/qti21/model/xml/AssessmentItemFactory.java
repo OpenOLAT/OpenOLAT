@@ -1276,8 +1276,21 @@ public class AssessmentItemFactory {
 		SetOutcomeValue setOutcomeValue = new SetOutcomeValue(responseProcessing);
 		setOutcomeValue.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
 		
-		if(numOfIncorrectAnswers == 0) {
+		if(numOfCorrectAnswers <= 0 && numOfIncorrectAnswers <= 0) {
+			// Safeguard: neither a correct nor a wrong answer can be given, both blocks
+			// would divide by zero. The score stays at 0.0.
+			appendFloatBaseValue(setOutcomeValue, 0.0d);
+		} else if(numOfIncorrectAnswers <= 0) {
+			// Only correct answers can be given, there is nothing to subtract
 			createNPSCorrectBlock(setOutcomeValue, numOfCorrectAnswers);
+		} else if(numOfCorrectAnswers <= 0) {
+			// Safeguard: no correct answer is defined, subtract the wrong ones from 0.0
+			// instead of dividing by zero
+			Subtract subtract = new Subtract(setOutcomeValue);
+			setOutcomeValue.getExpressions().add(subtract);
+			appendFloatBaseValue(subtract, 0.0d);
+			// incorrect
+			createNPSIncorrectBlock(subtract, numOfIncorrectAnswers);
 		} else {
 			Subtract subtract = new Subtract(setOutcomeValue);
 			setOutcomeValue.getExpressions().add(subtract);
@@ -1289,7 +1302,14 @@ public class AssessmentItemFactory {
 
 		return setOutcomeValue;
 	}
-	
+
+	private static void appendFloatBaseValue(ExpressionParent parent, double value) {
+		BaseValue baseValue = new BaseValue(parent);
+		parent.getExpressions().add(baseValue);
+		baseValue.setBaseTypeAttrValue(BaseType.FLOAT);
+		baseValue.setSingleValue(new FloatValue(value));
+	}
+
 	private static void createNPSCorrectBlock(ExpressionParent parent, int numOfCorrectAnswers) {
 		Divide divide = new Divide(parent);
 		parent.getExpressions().add(divide);
