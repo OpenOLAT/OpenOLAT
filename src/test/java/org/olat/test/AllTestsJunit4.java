@@ -663,6 +663,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti21.manager.LogViewerDeserializerTest.class,
 	org.olat.ims.qti21.manager.ReferenceHistoryInfosDAOTest.class,
 	org.olat.ims.qti21.model.xml.AssessmentItemBuilderTest.class,
+	org.olat.ims.qti21.model.xml.MatchAssessmentItemBuilderTest.class,
 	org.olat.ims.qti21.model.xml.MultipleChoiceAssessmentItemBuilderTest.class,
 	org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilderTest.class,
 	org.olat.ims.qti21.model.xml.TestFeedbackBuilderTest.class,

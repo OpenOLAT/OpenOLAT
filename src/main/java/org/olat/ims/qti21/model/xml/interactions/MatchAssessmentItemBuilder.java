@@ -528,7 +528,6 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 		
 		int count = 0;
 		int numOfCorrect = 0;
-		int numOfChoices = sourceChoices.size() * targetChoices.size();
 		for(SimpleAssociableChoice sourceChoice:sourceChoices) {
 			for(SimpleAssociableChoice targetChoice:targetChoices) {
 				ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
@@ -542,7 +541,7 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 
 		SetOutcomeValue outcomeVal = AssessmentItemFactory.createNPSSetOutcomeValue(assessmentItem.getResponseProcessing(),
-				numOfCorrect, numOfChoices - numOfCorrect);
+				numOfCorrect, getNumOfIncorrectAnswers(numOfCorrect));
 		responseRules.add(count++, outcomeVal);
 		
 		if(correctFeedback != null || incorrectFeedback != null) {
@@ -578,6 +577,27 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 	}
 	
+	/**
+	 * The number of wrong answers a candidate is able to give. This is the base
+	 * used to weight the negative part of the score in the negative point system.
+	 * <ul>
+	 * 	<li>Multiple choice: every association which is not correct can be selected,
+	 * 		the base is the number of associations minus the correct ones.
+	 * 	<li>Single choice: only one association per source is allowed (matchMax=1),
+	 * 		at most one wrong answer per source is possible. The base is the number
+	 * 		of sources (the rows of the matrix).
+	 * </ul>
+	 *
+	 * @param numOfCorrect The number of correct associations
+	 * @return The number of wrong answers a candidate can give
+	 */
+	private int getNumOfIncorrectAnswers(int numOfCorrect) {
+		if(multipleChoice) {
+			return (getSourceChoices().size() * getTargetChoices().size()) - numOfCorrect;
+		}
+		return getSourceChoices().size();
+	}
+
 	/**
 	 * Special case where no answers are correct:<br>
 	 * <ul>
