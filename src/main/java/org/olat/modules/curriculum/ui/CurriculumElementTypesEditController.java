@@ -295,7 +295,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("uses".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
-				doOpenUsesSearch(ureq, row);
+				doOpenUsesSearch(row);
 			} else if("tools".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
 				doOpenTools(ureq, row, link);
 			} else if("parents".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
@@ -320,7 +320,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		//
 	}
 	
-	private void doOpenUsesSearch(UserRequest ureq, CurriculumElementTypeRow row) {
+	private void doOpenUsesSearch(CurriculumElementTypeRow row) {
 		String businessPath = "[CurriculumAdmin:0][Search:0][Type:" + row.getKey() + "]";
 		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
 		if(StringHelper.containsNonWhitespace(url)) {

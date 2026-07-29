@@ -32,6 +32,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.importwizard.CurriculumImportedValue.Level;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.RoomKey;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.TaxonomyKey;
 
 /**
@@ -99,6 +100,11 @@ public class ValidationResultController extends FormBasicController {
 					? tKey.taxonomyIdentifier() + ":"
 					: "";
 			val += tKey.levelPathIdentifiers();
+		} else if(obj instanceof RoomKey rKey) {
+			val = StringHelper.containsNonWhitespace(rKey.buildExternalRef())
+					? rKey.buildExternalRef() + ":"
+					: "";
+			val += rKey.roomExternalRef();
 		} else if(obj instanceof List<?> list) {
 			List<String> values = list.stream()
 					.map(v -> valueToString(v, formatter, false))

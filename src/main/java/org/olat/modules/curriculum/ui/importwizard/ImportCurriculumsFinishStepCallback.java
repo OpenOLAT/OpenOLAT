@@ -63,6 +63,9 @@ import org.olat.modules.curriculum.ui.EditCurriculumController;
 import org.olat.modules.curriculum.ui.EditCurriculumElementMetadataController;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -100,6 +103,8 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
+	@Autowired
+	private RoomManagementService roomManagementService;
 
 	public ImportCurriculumsFinishStepCallback(ImportCurriculumsContext context) {
 		CoreSpringFactory.autowireObject(this);
@@ -111,7 +116,7 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 		processCurriculums();
 		processCurriculumElements(ureq.getIdentity());
 		processRepositoryEntries();
-		processEvents();
+		processEvents(ureq.getIdentity());
 		processUsers(ureq.getIdentity());
 		processMemberships(ureq.getIdentity());
 		return StepsMainRunController.DONE_MODIFIED;
@@ -188,21 +193,21 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 		return identity;
 	}
 	
-	private void processEvents() {
+	private void processEvents(Identity doer) {
 		List<ImportedRow> importedRows = context.getImportedElementsRows();
 		for(ImportedRow importedRow:importedRows) {
 			if(importedRow.type() == CurriculumExportType.EVENT && !isIgnored(importedRow)) {
 				if(importedRow.getLectureBlock() == null) {
 					if(importedRow.getCourse() != null) {
-						createLectureBlock(importedRow, importedRow.getCourse());
+						createLectureBlock(importedRow, importedRow.getCourse(), doer);
 					} else if(importedRow.getCurriculumElementParentRow() != null
 							&& importedRow.getCurriculumElementParentRow().getCurriculumElement() != null) {
-						createLectureBlock(importedRow, importedRow.getCurriculumElementParentRow().getCurriculumElement());
+						createLectureBlock(importedRow, importedRow.getCurriculumElementParentRow().getCurriculumElement(), doer);
 					}
 				} else {
 					LectureBlock lectureBlock = lectureService.getLectureBlock(importedRow.getLectureBlock());
 					if(lectureBlock != null) {
-						updateLectureBlock(lectureBlock, importedRow);
+						updateLectureBlock(lectureBlock, importedRow, doer);
 					}
 				}
 				dbInstance.commit();
@@ -211,19 +216,19 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 		dbInstance.commitAndCloseSession();
 	}
 	
-	private void createLectureBlock(ImportedRow importedRow, RepositoryEntry entry) {
+	private void createLectureBlock(ImportedRow importedRow, RepositoryEntry entry, Identity doer) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
 		lectureBlock.setExternalRef(importedRow.getIdentifier());
-		updateLectureBlock(lectureBlock, importedRow);
+		updateLectureBlock(lectureBlock, importedRow, doer);
 	}
 	
-	private void createLectureBlock(ImportedRow importedRow, CurriculumElement element) {
+	private void createLectureBlock(ImportedRow importedRow, CurriculumElement element, Identity doer) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(element, null);
 		lectureBlock.setExternalRef(importedRow.getIdentifier());
-		updateLectureBlock(lectureBlock, importedRow);
+		updateLectureBlock(lectureBlock, importedRow, doer);
 	}
 
-	private void updateLectureBlock(LectureBlock lectureBlock, ImportedRow importedRow) {
+	private void updateLectureBlock(LectureBlock lectureBlock, ImportedRow importedRow, Identity doer) {
 		lectureBlock.setTitle(importedRow.getDisplayName());
 		lectureBlock.setDescription(importedRow.getDescription());
 		lectureBlock.setLocation(importedRow.getLocation());
@@ -253,6 +258,26 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 		Set<Long> taxonomyLevelsKeys = importedRow.getTaxonomyLevelsKeys();
 		if(!taxonomyLevelsKeys.isEmpty()) {
 			lectureService.updateTaxonomyLevels(lectureBlock, taxonomyLevelsKeys);
+		}
+		
+		List<Room> rooms = importedRow.getRoomsList() == null
+				? List.of()
+				: importedRow.getRoomsList();
+		List<RoomBooking> currentBookings = roomManagementService.getBookings(lectureBlock);
+		List<Room> currentRooms = currentBookings.stream()
+				.map(RoomBooking::getRoom)
+				.toList();
+		for(Room room:rooms) {
+			if(!currentRooms.contains(room)) {
+				roomManagementService.bookRoom(room, lectureBlock,
+						lectureBlock.getStartDate(), lectureBlock.getEndDate(), 0, 0, doer);
+			}
+		}
+		
+		for(RoomBooking currentBooking:currentBookings) {
+			if(!rooms.contains(currentBooking.getRoom())) {
+				roomManagementService.deleteBooking(currentBooking, doer);
+			}
 		}
 	}
 

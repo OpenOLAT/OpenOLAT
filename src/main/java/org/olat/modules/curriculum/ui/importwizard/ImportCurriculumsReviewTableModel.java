@@ -191,6 +191,7 @@ implements FilterableFlexiTableModel {
 			case unit -> importedRow.getUnit();
 			case referenceIdentifier -> importedRow.getReferenceExternalRef();
 			case location -> importedRow.getLocation();
+			case rooms -> importedRow.getRooms();
 			case elementType -> importedRow.getCurriculumElementTypeIdentifier();
 			case calendar -> importedRow.getCalendar();
 			case absences -> importedRow.getAbsences();
@@ -232,6 +233,7 @@ implements FilterableFlexiTableModel {
 		unit("table.header.unit"),
 		referenceIdentifier("table.header.reference.identifier"),
 		location("table.header.location"),
+		rooms("table.header.rooms"),
 		elementType("table.header.element.type"),
 		absences("table.header.absences"),
 		calendar("table.header.calendar"),

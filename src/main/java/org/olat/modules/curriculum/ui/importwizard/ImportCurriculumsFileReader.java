@@ -105,16 +105,17 @@ public class ImportCurriculumsFileReader extends AbstractExcelReader {
 		String unit = getNumberAsString(r, 11);
 		String referenceExternalRef = getString(r, 12);
 		String location = getString(r, 13);
-		String curriculumElementType = getString(r, 14);
+		String rooms = getString(r, 14);
+		String curriculumElementType = getString(r, 15);
 		
-		String calendar = getString(r, 15);
-		String absences = getString(r, 16);
-		String progress = getString(r, 17);
+		String calendar = getString(r, 16);
+		String absences = getString(r, 17);
+		String progress = getString(r, 18);
 		
-		String subjects = getString(r, 18);
+		String subjects = getString(r, 19);
 		
-		LocalDateTime creationDate = getDateTime(r, 19);
-		LocalDateTime lastModified = getDateTime(r, 20);
+		LocalDateTime creationDate = getDateTime(r, 20);
+		LocalDateTime lastModified = getDateTime(r, 21);
 		
 		if(!StringHelper.containsNonWhitespace(type)
 				&& !StringHelper.containsNonWhitespace(curriculumIdentifier)
@@ -123,7 +124,7 @@ public class ImportCurriculumsFileReader extends AbstractExcelReader {
 		}
 		return new ImportedRow(type, r.getRowNum(), title, externalRef,
 					curriculumIdentifier, implementationIdentifier, level, elementStatus, curriculumElementType,
-					referenceExternalRef, unit, startDate, startTime, endDate, endTime, location,
+					referenceExternalRef, unit, startDate, startTime, endDate, endTime, location, rooms,
 					calendar, absences, progress, subjects, creationDate, lastModified);
 	}
 	

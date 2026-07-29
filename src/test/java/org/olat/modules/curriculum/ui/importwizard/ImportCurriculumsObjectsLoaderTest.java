@@ -24,11 +24,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Locale;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFileReader.Import;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.RoomKey;
 import org.olat.test.OlatTestCase;
 
 /**
@@ -38,6 +40,16 @@ import org.olat.test.OlatTestCase;
  *
  */
 public class ImportCurriculumsObjectsLoaderTest extends OlatTestCase {
+	
+
+	@Test
+	public void parseRoomKey() throws URISyntaxException {
+		Assert.assertNotNull(RoomKey.valueOf("Aula:Blu"));
+		Assert.assertNull(RoomKey.valueOf(""));
+		Assert.assertNull(RoomKey.valueOf("Blu"));
+		Assert.assertNull(RoomKey.valueOf("Aula:"));
+		Assert.assertNull(RoomKey.valueOf(":Blu"));
+	}
 	
 	@Test
 	public void loaderSmokeTest() throws URISyntaxException {
