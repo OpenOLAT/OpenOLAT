@@ -376,8 +376,9 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	@Value("${role.search.applications:null}")
 	private String rolesAllowedToSearchApplications;
 	
-
-	@Value("${role.edit.assignments:null}")
+	@Value("${role.view.assignments:#{null}}")
+	private String rolesAllowedToViewAssignments;
+	@Value("${role.edit.assignments:#{null}}")
 	private String rolesAllowedToEditAssignments;
 	
 	@Value("${share.filters:enabled}")
@@ -1228,6 +1229,7 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 
 	private PositionRole[] positionRolesAllowedToSearchApplications;
 	
+	private PositionRole[] positionRolesAllowedToViewAssignments;
 	private PositionRole[] positionRolesAllowedToEditAssignments;
 	
 	private FilterPermissions[] positionRolesAllowedToShareApplicationListFilters;
@@ -1491,6 +1493,7 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 		
 		positionRolesAllowedToSearchApplications = PositionRole.valueOfArray(rolesAllowedToSearchApplications);
 		
+		positionRolesAllowedToViewAssignments = PositionRole.valueOfArray(rolesAllowedToViewAssignments);
 		positionRolesAllowedToEditAssignments = PositionRole.valueOfArray(rolesAllowedToEditAssignments);
 		
 		assignmentMethods = AssignmentMethods.valueOfArray(applicationAssignmentMethod);
@@ -2406,6 +2409,10 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	
 	public PositionRole[] getRolesAllowedToSearchApplications() {
 		return positionRolesAllowedToSearchApplications;
+	}
+	
+	public PositionRole[] getRolesAllowedToViewAssignments() {
+		return positionRolesAllowedToViewAssignments;
 	}
 	
 	public PositionRole[] getRolesAllowedToEditAssignments() {

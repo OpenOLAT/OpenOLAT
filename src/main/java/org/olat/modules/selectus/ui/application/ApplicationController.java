@@ -106,7 +106,7 @@ public class ApplicationController extends FormBasicController {
 		listenTo(documentsController);
 		formLayout.add("documents", documentsController.getInitialFormItem());
 		
-		if(recruitingModule.isApplicationAssignmentsEnabled()) {
+		if(recruitingModule.isApplicationAssignmentsEnabled() && secCallback.canViewAssignments()) {
 			ApplicationAssignmentsController assignementsController = new ApplicationAssignmentsController(ureq, getWindowControl(),
 					position, application, secCallback, mainForm);
 			listenTo(assignementsController);
