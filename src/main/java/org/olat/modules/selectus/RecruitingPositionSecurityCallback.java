@@ -267,6 +267,8 @@ public interface RecruitingPositionSecurityCallback extends RecruitingSecurityCa
 	 */
 	public boolean canEditCommitteeDecision();
 	
+	public boolean canViewAssignments();
+	
 	public boolean canEditAssignments();
 	
 	public boolean canDeletePublicFeedbacks();

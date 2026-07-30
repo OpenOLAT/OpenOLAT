@@ -517,6 +517,11 @@ public class RecruitingPositionSecurityCallbackForApplicant implements Recruitin
 	public boolean canDeleteCache() {
 		return false;
 	}
+	
+	@Override
+	public boolean canViewAssignments() {
+		return false;
+	}
 
 	@Override
 	public boolean canEditAssignments() {

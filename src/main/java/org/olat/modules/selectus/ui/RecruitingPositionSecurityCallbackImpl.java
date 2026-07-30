@@ -772,6 +772,11 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 		return selectusManager || recruitingSecCallback.canSendMailToCommittee()
 				|| isAllowedByPositionRole(recruitingModule.getRolesAllowedToSendEmailAllCommittee());
 	}
+	
+	@Override
+	public boolean canViewAssignments() {
+		return selectusManager || isAllowedByPositionRole(recruitingModule.getRolesAllowedToViewAssignments());
+	}
 
 	@Override
 	public boolean canEditAssignments() {
