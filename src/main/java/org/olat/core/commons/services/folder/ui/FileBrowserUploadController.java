@@ -23,9 +23,11 @@ import java.util.List;
 
 import org.olat.core.commons.services.folder.ui.event.FileBrowserSelectionEvent;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -71,6 +73,11 @@ public class FileBrowserUploadController extends FormBasicController {
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("submit", "submit", "noTransOnlyParam", new String[] {submitButtonText}, buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		//
 	}
 
 	@Override
