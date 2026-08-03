@@ -19,6 +19,7 @@
  */
 package org.olat.course.certificate.manager;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,17 +35,23 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateManagedFlag;
@@ -74,6 +81,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificatesManagerTest extends OlatTestCase {
 	
+	private static final Logger log = Tracing.createLoggerFor(CertificatesManagerTest.class);
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -84,6 +93,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 	private OrganisationService organisationService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
@@ -138,7 +149,9 @@ public class CertificatesManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		Assert.assertNotNull(certificate);
 		Assert.assertNotNull(certificate.getKey());
@@ -162,7 +175,9 @@ public class CertificatesManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
@@ -205,7 +220,9 @@ public class CertificatesManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
@@ -241,7 +258,9 @@ public class CertificatesManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CertificateInfos certificateInfos1 = new CertificateInfos(participant1, null, null, null, null, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate1 = certificatesManager.generateCertificate(certificateInfos1, entry, null, config);
 		Assert.assertNotNull(certificate1);
 		CertificateInfos certificateInfos2 = new CertificateInfos(participant2, null, null, null, null, "", null);
@@ -288,7 +307,9 @@ public class CertificatesManagerTest extends OlatTestCase {
 		
 		//make a certificate
 		CertificateInfos certificateInfos1 = new CertificateInfos(participant1, null, null, null, null, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate1 = certificatesManager.generateCertificate(certificateInfos1, entry, null, config);
 		Assert.assertNotNull(certificate1);
 		CertificateInfos certificateInfos2 = new CertificateInfos(participant2, null, null, null, null, "", null);
@@ -422,6 +443,55 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertEquals(reloadedCertificate, lastCertificate);
 	}
 	
+	@Test
+	public void getBrokenCertificates() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "", null);
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
+		Assert.assertNotNull(certificate);
+		dbInstance.commitAndCloseSession();
+		
+		waitCertificate(certificate.getKey());
+		
+		// Reload the certificate
+		certificate = certificatesManager.getCertificateById(certificate.getKey());
+		
+		VFSItem item = vfsRepositoryService.getItemFor(certificate.getMetadata());
+		if(item instanceof VFSLeaf leaf) {
+			try(InputStream in = new ByteArrayInputStream(new byte[0])) {
+				VFSManager.copyContent(in, leaf, identity);	
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		}
+		dbInstance.commitAndCloseSession();
+		
+		// Load all broken certificates
+		List<Certificate> certificates = certificatesManager.getBrokenCertificates(null, null);
+		Assertions.assertThat(certificates)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.contains(certificate);
+		
+		// Regenerate certificate
+		certificatesManager.regenerateCertificateFile(certificate, certificateInfos, null, false, null, config);
+		waitCertificateFile(certificate.getKey());
+		dbInstance.commitAndCloseSession();
+		
+		// Reload the certificate
+		certificate = certificatesManager.getCertificateById(certificate.getKey());
+		VFSItem certificateItem = vfsRepositoryService.getItemFor(certificate.getMetadata());
+		Assert.assertTrue(certificateItem instanceof VFSLeaf);
+		VFSLeaf certificateLeaf = (VFSLeaf)certificateItem;
+		Assert.assertTrue(certificateLeaf.exists());
+		Assert.assertTrue(certificateLeaf.getSize() > 0l);
+	}
+	
 	/**
 	 * Create a course, add a certificate to it and delete the course.
 	 * The certificate stays.
@@ -530,6 +600,17 @@ public class CertificatesManagerTest extends OlatTestCase {
 				return CertificateStatus.ok.equals(reloadedCertificate.getStatus())
 						&& ((AbstractCertificate)reloadedCertificate).isLast()
 						&& EmailStatus.ok.equals(((AbstractCertificate)reloadedCertificate).getEmailStatus());
+			}
+		}, 30000);
+	}
+	
+	private void waitCertificateFile(Long certificateKey) {
+		//wait until the certificate file is created
+		waitForCondition(new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificateKey);
+				return reloadedCertificate.getMetadata() != null && reloadedCertificate.getMetadata().getFileSize() > 0l;
 			}
 		}, 30000);
 	}

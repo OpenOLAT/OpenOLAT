@@ -219,7 +219,10 @@ public class CertificationProgramsWebServiceTest extends OlatRestTestCase {
 
 		CertificateInfos certificateInfos = new CertificateInfos(participant, 2.0f, Float.valueOf(10), true,
 				Double.valueOf(0.2), "", null);
-		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.withSendEmailBcc(false)
+				.build();
 		
 		Certificate activeCertificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		dbInstance.commitAndCloseSession();

@@ -19,8 +19,6 @@
  */
 package org.olat.restapi;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -46,6 +44,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -97,7 +96,9 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
 				Double.valueOf(0.2), "", null);
-		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
@@ -179,7 +180,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(allCertificateVoes);
 		Assert.assertNotNull(allCertificateVoes.getCertificates());
 
-		assertThat(allCertificateVoes.getCertificates())
+		Assertions.assertThat(allCertificateVoes.getCertificates())
 			.hasSize(2)
 			.map(CertificateVO::getKey)
 			.containsExactlyInAnyOrder(certificate.getKey(), managedCertificate.getKey());
@@ -233,7 +234,9 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, Float.valueOf(10), true,
 				Double.valueOf(0.2), "", null);
-		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(false)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
@@ -427,7 +430,10 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		
 		CertificateInfos certificateInfos = new CertificateInfos(participant, 2.0f, Float.valueOf(10), true,
 				Double.valueOf(0.2), "", null);
-		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.withSendEmailBcc(false)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		dbInstance.commitAndCloseSession();
 		//wait until the certificate is created

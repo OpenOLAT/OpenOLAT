@@ -21,6 +21,7 @@ package org.olat.course.certificate;
 
 import java.io.File;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -167,6 +168,8 @@ public interface CertificatesManager {
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource,
 			String externalId, Boolean managedOnly, Boolean lastOnly);
 	
+	public List<Certificate> getBrokenCertificates(LocalDateTime startDate, LocalDateTime endDate);
+	
 	/**
 	 * Return the last certificates of all users f the specified course.
 	 * @param resourceKey The resource primary key of the course.
@@ -295,6 +298,17 @@ public interface CertificatesManager {
 	public Certificate generateCertificate(CertificateInfos infos, RepositoryEntry entry, CertificateTemplate template, CertificateConfig config);
 	
 	public Certificate generateCertificate(CertificateInfos infos, CertificationProgram certificationProgram, RepositoryEntry entry, CertificateConfig config);
+	
+	/**
+	 * This method only try to generate again the PDF file of the certificate.
+	 * 
+	 * @param certificate The certificate
+	 * @param certificateInfos
+	 * @param template
+	 * @param config
+	 */
+	public void regenerateCertificateFile(Certificate certificate, CertificateInfos certificateInfos,
+			CertificateTemplate template, boolean printTemplateEnabled, CertificateTemplate printTemplate, CertificateConfig config);
 	
 	public void revokeCertificate(Certificate certificate);
 	

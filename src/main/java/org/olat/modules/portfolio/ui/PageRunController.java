@@ -109,9 +109,9 @@ import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
 import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.MarkdownImportController;
-import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.PageController;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
+import org.olat.modules.ceditor.ui.PageElementTarget;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.ceditor.ui.event.ImportEvent;
 import org.olat.modules.ceditor.ui.event.ImportMarkdownEvent;
@@ -248,7 +248,7 @@ public class PageRunController extends BasicController implements TooledControll
 		allPagesLink.setVisible(false);
 		HelpLinkSPI provider = helpModule.getManualProvider();
 		helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("show.help.tooltip"),
-				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/area_modules/The_portfolio_editor_17_1/");
+				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/forms/Three_Steps_to_your_Form/");
 
 		addHighlightJs();
 
