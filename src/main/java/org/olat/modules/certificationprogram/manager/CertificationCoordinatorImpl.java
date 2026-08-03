@@ -293,6 +293,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				.withCustom1(certificationProgram.getCertificateCustom1())
 				.withCustom2(certificationProgram.getCertificateCustom2())
 				.withCustom3(certificationProgram.getCertificateCustom3())
+				.withSendEmail(true)
 				.withSendEmailBcc(true)
 				.withSendEmailLinemanager(true)
 				.withSendEmailIdentityRelations(true)

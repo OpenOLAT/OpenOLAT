@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -120,6 +121,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -654,6 +656,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource,
 			String externalId, Boolean managedOnly, Boolean lastOnly) {
 		return certificatesDao.getCertificates(identity, resource, externalId, managedOnly, lastOnly);
+	}
+
+	@Override
+	public List<Certificate> getBrokenCertificates(LocalDateTime startDate, LocalDateTime endDate) {
+		return certificatesDao.getBrokenCertificates(startDate, endDate);
 	}
 
 	@Override
@@ -1222,6 +1229,15 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		return certificate;
 	}
+	
+	@Override
+	public void regenerateCertificateFile(Certificate certificate, CertificateInfos certificateInfos,
+			CertificateTemplate template, CertificateConfig config) {
+		//send message
+		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getMaxScore(),
+				certificateInfos.getPassed(), certificateInfos.getProgress(), certificateInfos.getGrade(), config,
+				certificateInfos.getDoerKey());
+	}
 
 	private Certificate persistCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
 			CertificateTemplate template, CertificationProgram certificationProgram, CertificateConfig config) {
@@ -1398,7 +1414,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			certificateFile = null;
 		}
 
-		if(certificateFile != null) {
+		VFSItem brokenCertificate = null;
+		if(certificateFile != null && certificateFile.length() > 0) {
+			if(certificate.getMetadata() != null) {
+				brokenCertificate = vfsRepositoryService.getItemFor(certificate.getMetadata());
+			}
+			
 			VFSMetadata metadata = vfsRepositoryService.getMetadataFor(certificateFile);
 			certificate.setMetadata(metadata);
 			certificate.setPath(dir + certificateFile.getName());
@@ -1413,17 +1434,23 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 		
 		Identity doer = workUnit.getDoerKey() == null ? null : securityManager.loadIdentityByKey(workUnit.getDoerKey());
-		MailerResult result = sendCertificate(identity, certificationProgram, entry, certificate, doer, certificateFile, workUnit.getConfig());
-		if(result.isSuccessful()) {
-			certificate.setEmailStatus(EmailStatus.ok);
-		} else {
-			certificate.setEmailStatus(EmailStatus.error);
+		if(workUnit.getConfig().isSendEmail()) {
+			MailerResult result = sendCertificate(identity, certificationProgram, entry, certificate, doer, certificateFile, workUnit.getConfig());
+			if(result.isSuccessful()) {
+				certificate.setEmailStatus(EmailStatus.ok);
+			} else {
+				certificate.setEmailStatus(EmailStatus.error);
+			}
 		}
 		dbInstance.getCurrentEntityManager().merge(certificate);
 		dbInstance.commit();
 		
 		CertificateEvent event = new CertificateEvent(identity.getKey(), certificate.getKey(), resource.getKey());
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, ORES_CERTIFICATE_EVENT);
+		
+		if(brokenCertificate instanceof VFSLeaf brokenLeaf && brokenLeaf.canDelete() == VFSStatus.YES) {
+			brokenLeaf.deleteSilently();
+		}
 	}
 	
 	private MailerResult sendCertificate(Identity to, CertificationProgram certificationProgram, RepositoryEntry entry,

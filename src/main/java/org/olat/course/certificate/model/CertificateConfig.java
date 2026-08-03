@@ -36,6 +36,7 @@ public class CertificateConfig implements Serializable {
 	private final String custom1;
 	private final String custom2;
 	private final String custom3;
+	private final boolean sendEmail;
 	private final boolean sendEmailBcc;
 	private final boolean sendEmailLinemanager;
 	private final boolean sendEmailIdentityRelations;
@@ -45,6 +46,7 @@ public class CertificateConfig implements Serializable {
 		this.custom1 = builder.custom1;
 		this.custom2 = builder.custom2;
 		this.custom3 = builder.custom3;
+		this.sendEmail = builder.sendEmail;
 		this.sendEmailBcc = builder.sendEmailBcc;
 		this.sendEmailLinemanager = builder.sendEmailLinemanager;
 		this.sendEmailIdentityRelations = builder.sendEmailIdentityRelations;
@@ -61,6 +63,10 @@ public class CertificateConfig implements Serializable {
 
 	public String getCustom3() {
 		return custom3;
+	}
+	
+	public boolean isSendEmail() {
+		return sendEmail;
 	}
 
 	public boolean isSendEmailBcc() {
@@ -87,6 +93,7 @@ public class CertificateConfig implements Serializable {
 		private String custom1;
 		private String custom2;
 		private String custom3;
+		private boolean sendEmail;
 		private boolean sendEmailBcc;
 		private boolean sendEmailLinemanager;
 		private boolean sendEmailIdentityRelations;
@@ -108,6 +115,11 @@ public class CertificateConfig implements Serializable {
 
 		public Builder withCustom3(String custom3) {
 			this.custom3 = custom3;
+			return this;
+		}
+		
+		public Builder withSendEmail(boolean sendEmail) {
+			this.sendEmail = sendEmail;
 			return this;
 		}
 

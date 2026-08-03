@@ -19,6 +19,7 @@
  */
 package org.olat.course.certificate.manager;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -204,6 +205,35 @@ public class CertificatesDAO {
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("revokedStatus", CertificateStatus.revoked.name())
 				.getResultList();
+	}
+	
+	public List<Certificate> getBrokenCertificates(LocalDateTime startDate, LocalDateTime endDate) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select cer from certificate cer")
+		  .append(" inner join fetch cer.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" inner join fetch cer.olatResource as ores")
+		  .append(" left join fetch cer.certificationProgram as program")
+		  .append(" left join fetch cer.metadata as metadata")
+		  .where().append(" cer.last=true")
+		  .and().append(" (metadata.key is null or metadata.fileSize=0)");
+		
+		if(startDate != null) {
+			sb.and().append(" cer.creationDate>=:startDate");
+		}
+		if(endDate != null) {
+			sb.and().append(" cer.creationDate<=:endDate");
+		}
+		
+		TypedQuery<Certificate> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Certificate.class);
+		if(startDate != null) {
+			query.setParameter("startDate", startDate);
+		}
+		if(endDate != null) {
+			query.setParameter("endDate", endDate);
+		}
+		return query.getResultList();
 	}
 	
 	public int removeLastFlag(IdentityRef identity, CertificationProgramRef program) {

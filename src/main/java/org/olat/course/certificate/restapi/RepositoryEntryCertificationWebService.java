@@ -259,6 +259,7 @@ public class RepositoryEntryCertificationWebService {
 				.withCustom1(certificateConfig.getCertificateCustom1())
 				.withCustom2(certificateConfig.getCertificateCustom2())
 				.withCustom3(certificateConfig.getCertificateCustom3())
+				.withSendEmail(true)
 				.withSendEmailBcc(false)
 				.withSendEmailLinemanager(false)
 				.withSendEmailIdentityRelations(false)
