@@ -109,7 +109,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity1, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate expiredCertificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(expiredCertificate);
 		
@@ -146,7 +148,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate expiredCertificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(expiredCertificate);
 		
@@ -184,7 +188,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity1, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate expiredCertificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(expiredCertificate);
 		
@@ -224,7 +230,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity1, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate expiredCertificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(expiredCertificate);
 		
@@ -266,7 +274,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 
@@ -311,7 +321,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 
@@ -351,7 +363,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 
@@ -380,7 +394,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 
@@ -413,7 +429,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 
@@ -464,7 +482,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 
@@ -528,7 +548,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 		waitMessageAreConsumed();
@@ -583,7 +605,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 		waitMessageAreConsumed();
@@ -648,7 +672,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 		waitMessageAreConsumed();
@@ -715,7 +741,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, new BigDecimal("30"), null, "Give away", wallet, identity, null, null, null, null, null);
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 

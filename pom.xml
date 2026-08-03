@@ -1641,7 +1641,7 @@
 			<!-- Used by email address validator -->
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
-			<version>1.10.1</version>
+			<version>1.11.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>

@@ -19,19 +19,32 @@
  */
 package org.olat.course.certificate.manager;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.Callable;
 
+import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.EmailStatus;
+import org.olat.course.certificate.model.AbstractCertificate;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.modules.certificationprogram.CertificationProgram;
@@ -48,6 +61,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificatesDAOTest extends OlatTestCase {
 	
+	private static final Logger log = Tracing.createLoggerFor(CertificatesDAOTest.class);
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -58,6 +73,8 @@ public class CertificatesDAOTest extends OlatTestCase {
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	private static Organisation defaultUnitTestOrganisation;
 	
@@ -121,6 +138,48 @@ public class CertificatesDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getBrokenCertificates() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-user-program-8", defaultUnitTestOrganisation, null);
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("cer-program-8", "Program");
+		dbInstance.commitAndCloseSession();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "", null);
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate);
+		dbInstance.commitAndCloseSession();
+		
+		waitCertificate(certificate.getKey());
+		
+		// Reload the certificate
+		certificate = certificatesManager.getCertificateById(certificate.getKey());
+		
+		VFSItem item = vfsRepositoryService.getItemFor(certificate.getMetadata());
+		if(item instanceof VFSLeaf leaf) {
+			try(InputStream in = new ByteArrayInputStream(new byte[0])) {
+				VFSManager.copyContent(in, leaf, identity);	
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		}
+		
+		// Load all broken certificates
+		List<Certificate> certificates = certificatesDao.getBrokenCertificates(null, null);
+		Assertions.assertThat(certificates)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.contains(certificate);
+		
+		LocalDateTime start = LocalDateTime.now().minusDays(1);
+		LocalDateTime end = LocalDateTime.now().plusDays(1);
+		List<Certificate> certificatesByDates = certificatesDao.getBrokenCertificates(start, end);
+		Assertions.assertThat(certificatesByDates)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.contains(certificate);
+	}
+	
+	@Test
 	public void removeLastFlagByCertificationProgram() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-user-program-3", defaultUnitTestOrganisation, null);
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("cer-program-3", "Program");
@@ -173,5 +232,23 @@ public class CertificatesDAOTest extends OlatTestCase {
 		// Has a last certificate
 		Certificate noLastCertificate = certificatesDao.getLastCertificate(identity, program);
 		Assert.assertNull(noLastCertificate);
+	}
+	
+	/**
+	 * Wait that the certificate is generated, email sent, and flag last set.
+	 * 
+	 * @param certificateKey The primary key of the certificate
+	 */
+	private void waitCertificate(Long certificateKey) {
+		//wait until the certificate is created
+		waitForCondition(new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificateKey);
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus())
+						&& ((AbstractCertificate)reloadedCertificate).isLast()
+						&& EmailStatus.ok.equals(((AbstractCertificate)reloadedCertificate).getEmailStatus());
+			}
+		}, 30000);
 	}
 }

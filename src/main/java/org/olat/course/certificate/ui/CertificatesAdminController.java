@@ -41,13 +41,16 @@ import org.olat.core.util.resource.OresHelper;
  *
  */
 public class CertificatesAdminController extends BasicController {
-	
+
+	private final Link settingsLink;
+	private final Link certificatesLink;
+	private final Link certificatesMaintenanceLink;
 	private final VelocityContainer mainVC;
-	private final Link settingsLink, certificatesLink;
 	private final SegmentViewComponent segmentView;
 	
 	private CertificatesSettingsAdminController settingsCtrl;
 	private CertificatesListAdminController certificatesCtrl;
+	private CertificatesMaintenanceController certificatesMaintenanceCtrl;
 
 	public CertificatesAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -61,6 +64,8 @@ public class CertificatesAdminController extends BasicController {
 		segmentView.addSegment(settingsLink, true);
 		certificatesLink = LinkFactory.createLink("admin.certificates.templates", mainVC, this);
 		segmentView.addSegment(certificatesLink, false);
+		certificatesMaintenanceLink = LinkFactory.createLink("admin.certificates.maintenance", mainVC, this);
+		segmentView.addSegment(certificatesMaintenanceLink, false);
 		
 		doOpenSettings(ureq);
 		
@@ -70,14 +75,15 @@ public class CertificatesAdminController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == settingsLink) {
 					doOpenSettings(ureq);
 				} else if (clickedLink == certificatesLink) {
 					doOpenCertificatesList(ureq);
+				} else if (clickedLink == certificatesMaintenanceLink) {
+					doOpenCertificatesMaintenance(ureq);
 				}
 			}
 		}
@@ -101,5 +107,15 @@ public class CertificatesAdminController extends BasicController {
 			listenTo(certificatesCtrl);
 		}
 		mainVC.put("segmentCmp", certificatesCtrl.getInitialComponent());
+	}
+	
+	private void doOpenCertificatesMaintenance(UserRequest ureq) {
+		if(certificatesMaintenanceCtrl == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Maintenance", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			certificatesMaintenanceCtrl = new CertificatesMaintenanceController(ureq, bwControl);
+			listenTo(certificatesMaintenanceCtrl);
+		}
+		mainVC.put("segmentCmp", certificatesMaintenanceCtrl.getInitialComponent());
 	}
 }

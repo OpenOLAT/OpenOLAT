@@ -212,6 +212,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 				.withCustom1(certificateConfig.getCertificateCustom1())
 				.withCustom2(certificateConfig.getCertificateCustom2())
 				.withCustom3(certificateConfig.getCertificateCustom3())
+				.withSendEmail(true)
 				.withSendEmailBcc(true)
 				.withSendEmailLinemanager(true)
 				.withSendEmailIdentityRelations(true)
