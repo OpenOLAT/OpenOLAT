@@ -58,7 +58,7 @@ public class TopicBrokerExcelMediaResource implements MediaResource {
 	
 	@Override
 	public String getContentType() {
-		return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+		return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 	}
 
 	@Override
