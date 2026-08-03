@@ -530,7 +530,7 @@ public class EditLectureBlockController extends FormBasicController {
 		Date start = lectureBlock == null ? null : lectureBlock.getStartDate();
 		Date end = lectureBlock == null ? null : lectureBlock.getEndDate();
 		RoomSelectionSource source = new RoomSelectionSource(getTranslator(), roomManagementService,
-				roles, start, end, lectureBlock, preSelectedRooms, participantCount);
+				roles, getIdentity(), start, end, lectureBlock, preSelectedRooms, participantCount);
 		roomsEl = uifactory.addObjectSelectionElement("rooms", "lecture.rooms", formLayout,
 				getWindowControl(), true, source);
 		roomsEl.setPopupCssClass("o_rm_event_room_selector");
@@ -551,7 +551,7 @@ public class EditLectureBlockController extends FormBasicController {
 		if (start == null || end == null) return;
 
 		RoomSelectionSource newSource = new RoomSelectionSource(getTranslator(), roomManagementService,
-				roles, start, end, lectureBlock, List.of(), participantCount);
+				roles, getIdentity(), start, end, lectureBlock, List.of(), participantCount);
 		roomsEl.setSource(newSource);
 	}
 

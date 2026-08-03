@@ -260,6 +260,7 @@ public class AddRoomsController extends FormBasicController {
 
 		SearchRoomParameters params = new SearchRoomParameters();
 		params.setStatus(List.of(RoomStatus.active));
+		params.setIdentity(getIdentity());
 		List<Room> rooms = roomManagementService.searchRooms(params, roles);
 
 		allRows = new ArrayList<>(rooms.size());
