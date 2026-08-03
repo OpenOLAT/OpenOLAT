@@ -239,7 +239,9 @@ public class CertificationProgramToCurriculumElementDAOTest extends OlatTestCase
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-curriculum-5", "Program to curriculum");
 		
 		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificateManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
@@ -258,7 +260,9 @@ public class CertificationProgramToCurriculumElementDAOTest extends OlatTestCase
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-curriculum-6", "Program to curriculum");
 		
 		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "", null);
-		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
 		Certificate certificate = certificateManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
