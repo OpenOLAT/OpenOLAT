@@ -86,7 +86,6 @@ import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoTaskSession;
-import org.olat.modules.video.model.VideoTaskScore;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -274,10 +273,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntry videoEntry = getReferencedRepositoryEntry();
 		Long videoEntryKey = videoEntry.getKey();
 
-		Float maxScore = (Float) getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		Float cutValue = (Float) getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-		int rounding = getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
-				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);
 
 		AssessmentService assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
@@ -299,39 +295,34 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		for (AssessmentEntry assessmentEntry : assessmentEntries) {
 			VideoTaskSession taskSession = getLastTaskSession(assessmentEntry, identityKeyToSessions);
 			AssessmentEvaluation currentEval = courseAssessmentService.toAssessmentEvaluation(assessmentEntry, assessmentConfig);
-			VideoTaskScore scoring = null;
-			if(taskSession != null) {
-				scoring = videoAssessmentService.calculateScore(taskSession, maxScore, cutValue, rounding);
-			}
 			
 			String grade = null;
 			String gradeSystemIdent = null;
 			String performanceClassIdent = null;
 			Boolean passed = null;
-			BigDecimal score = scoring == null ? null : scoring.score();
-			Float scoreAsFloat = scoring == null ? null : scoring.scoreAsFloat();
 			BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
-			Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(scoreAsFloat, scoreScale);
+			Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(currentEval.getScore(), scoreScale);
 			
 			if (gradeEnabled && assessmentConfig.hasGrade()) {
 				if (assessmentConfig.isAutoGrade() || StringHelper.containsNonWhitespace(currentEval.getGrade())) {
-					if (scoreAsFloat != null) {
-						GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreAsFloat);
+					if (currentEval.getScore() != null) {
+						GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, currentEval.getScore());
 						grade = gradeScoreRange.getGrade();
 						gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 						passed = gradeScoreRange.getPassed();
 					}
 				}
+			} else if (taskSession != null && cutValue != null && currentEval.getScore() != null) {
+				passed = Boolean.valueOf(currentEval.getScore().compareTo(cutValue) >= 0);
 			} else {
-				passed = scoring == null ? null : scoring.passed();
+				passed = assessmentEntry.getPassed();
 			}
 			
 			boolean hasChanges = !Objects.equals(grade, assessmentEntry.getGrade())
 					|| !Objects.equals(gradeSystemIdent, assessmentEntry.getGradeSystemIdent())
 					|| !Objects.equals(performanceClassIdent, assessmentEntry.getPerformanceClassIdent())
 					|| !Objects.equals(passed, assessmentEntry.getPassed())
-					|| !Objects.equals(score, assessmentEntry.getScore())
 					|| !ScoreScalingHelper.equals(scoreScale, assessmentEntry.getScoreScale());
 			
 			if (hasChanges
@@ -339,7 +330,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 					|| !videoEntryKey.equals(assessmentEntry.getReferenceEntry().getKey())) {
 				IdentityEnvironment ienv = new IdentityEnvironment(assessmentEntry.getIdentity(), Roles.userRoles());
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-				ScoreEvaluation scoreEval = new ScoreEvaluation(scoreAsFloat, weightedScore, scoreScale, grade, gradeSystemIdent,
+				ScoreEvaluation scoreEval = new ScoreEvaluation(currentEval.getScore(), weightedScore, scoreScale, grade, gradeSystemIdent,
 						performanceClassIdent, passed, currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
 						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
 						currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
