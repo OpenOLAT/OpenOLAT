@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.gui.UserRequest;
@@ -117,7 +118,10 @@ public class ImageUploadController extends FormBasicController implements PageEl
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
-		fileEl.limitToMimeType(imageMimeTypes, null, null);
+		String imagesSuffix = imageMimeTypes.stream()
+				.map(m -> m.replace("image/", ""))
+				.collect(Collectors.joining(", "));
+		fileEl.limitToMimeType(imageMimeTypes, "error.mimetype", new String[]{ imagesSuffix });
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setMaxUploadSizeKB(10000, null, null);
 		fileEl.setPreview(ureq.getUserSession(), true);
@@ -129,10 +133,9 @@ public class ImageUploadController extends FormBasicController implements PageEl
 			}
 		}
 
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	@Override
