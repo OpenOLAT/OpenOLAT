@@ -284,7 +284,12 @@ public class CurriculumElementsWebService {
 			elementToSave.setBeginDate(curriculumElement.getBeginDate());
 			elementToSave.setEndDate(curriculumElement.getEndDate());
 			elementToSave.setType(type);
-			if((parentElement != null && elementToSave.getParent() != null && !elementToSave.getParent().getKey().equals(parentElement.getKey()))) {
+			if((parentElement != null
+					&& elementToSave.getParent() != null && !elementToSave.getParent().getKey().equals(parentElement.getKey()))) {
+				// Move from a parent to an other
+				move = true;
+			} else if(parentElement != null && elementToSave.getParent() == null) {
+				// Move an implementation to a new parent
 				move = true;
 			} else if(parentElement == null && elementToSave.getParent() == null
 					&& (elementToSave.getCurriculum() != null && !elementToSave.getCurriculum().getKey().equals(curriculum.getKey()))) {
