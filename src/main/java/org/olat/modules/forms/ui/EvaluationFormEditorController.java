@@ -129,7 +129,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 		
 		HelpLinkSPI provider = helpModule.getManualProvider();
 		helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("show.help.tooltip"),
-				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/forms/Form_editor_17_1/");
+				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/forms/Three_Steps_to_your_Form/");
 		
 		PageEditorSecurityCallback secCallback = restrictedEdit ? new RestrictedEditorSecurityCallback() : FullEditorSecurityCallback.all();
 		pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(), new FormPageEditorProvider(), secCallback, getTranslator(), true);
@@ -202,7 +202,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 	private void fireContainerRuleLinkEvent(UserRequest ureq) {
 		Set<String> elementIds = form.getRules().stream()
 				.map(Rule::getAction)
-				.filter(action -> action instanceof VisibilityAction)
+				.filter(VisibilityAction.class::isInstance)
 				.map(action -> ((VisibilityAction)action).getElementId())
 				.collect(Collectors.toSet());
 		fireEvent(ureq, new ContainerRuleLinkEvent(elementIds));
