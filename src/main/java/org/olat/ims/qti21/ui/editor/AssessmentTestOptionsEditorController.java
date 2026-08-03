@@ -256,6 +256,7 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 				}
 			} else {
 				cutValueEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
 			}
 		}
 		

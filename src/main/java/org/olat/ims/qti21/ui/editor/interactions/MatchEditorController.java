@@ -296,6 +296,18 @@ public class MatchEditorController extends FormBasicController {
 		}
 		
 		commitTemporaryAssociations(ureq);
+		
+		singleMultiEl.clearError();
+		if(singleMultiEl.isOneSelected() && singleMultiEl.isSelected(0)) {
+			for(MatchWrapper sourceWrapper:sourceWrappers) {
+				List<String> targets =temporaryAssociations.get(sourceWrapper.getIdentifierString());
+				if(targets == null || targets.size() != 1) {
+					singleMultiEl.setErrorKey("error.singlechoice");
+					allOk &= false;
+				}
+			}
+		}
+		
 		if(layoutEl != null) {
 			layoutEl.clearError();
 			if(!layoutEl.isOneSelected()) {
