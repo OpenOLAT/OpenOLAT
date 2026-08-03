@@ -417,7 +417,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	
 
 	@Test
-	public void updateCurriculumElement_moveToOtherCurriculum()
+	public void updateCurriculumElementAndMoveToOtherCurriculum()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
@@ -480,6 +480,74 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(sourceElements.isEmpty());
 	}
 	
+	@Test
+	public void updateCurriculumElementAndMoveImplementatioToParent()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 40", "REST-p-40-organisation", "", defaultUnitTestOrganisation, null, JunitTestHelper.getDefaultActor());
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum", false, organisation);
+		CurriculumElement implementation = curriculumService.createCurriculumElement("Element-40", "Element40",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-40.1", "Element40.1",
+				CurriculumElementStatus.active, null, null, implementation, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_1 = curriculumService.createCurriculumElement("Element-40.1.1", "Element40.1.1",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		CurriculumElement implementationToMove = curriculumService.createCurriculumElement("Element-40.1.2", "Element40.1.2",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElementVO vo = new CurriculumElementVO();
+		vo.setKey(implementationToMove.getKey());
+		vo.setDisplayName(implementationToMove.getDisplayName());
+		vo.setDescription("Moved");
+		vo.setCurriculumKey(curriculum.getKey());
+		vo.setParentElementKey(element1.getKey());
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		// Checked VO
+		CurriculumElementVO savedVo = conn.parse(response, CurriculumElementVO.class);
+		Assert.assertNotNull(savedVo);
+		Assert.assertNotNull(savedVo.getKey());
+		Assert.assertEquals(implementationToMove.getDisplayName(), savedVo.getDisplayName());
+		Assert.assertEquals("Moved", savedVo.getDescription());
+		Assert.assertEquals(curriculum.getKey(), savedVo.getCurriculumKey());
+		Assert.assertEquals(element1.getKey(), savedVo.getParentElementKey());
+		
+		// Checked database
+		CurriculumElement savedElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(savedVo.getKey()));
+		Assert.assertNotNull(savedElement);
+		Assert.assertEquals(savedVo.getKey(), savedElement.getKey());
+		Assert.assertEquals(implementationToMove.getDisplayName(), savedElement.getDisplayName());
+		Assert.assertEquals(curriculum, savedElement.getCurriculum());
+		Assert.assertEquals(element1, savedElement.getParent());
+		Assert.assertEquals(implementation, savedElement.getImplementation());
+
+		// Check implementations of the curriculum, now only one
+		List<CurriculumElement> implementations = curriculumService.getImplementations(curriculum);
+		Assertions.assertThat(implementations)
+			.hasSize(1)
+			.containsExactly(implementation);
+		
+		List<CurriculumElement> childrenElements = curriculumService.getCurriculumElementsChildren(element1);
+		Assertions.assertThat(childrenElements)
+			.hasSize(2)
+			.contains(element1_1, implementationToMove);
+	}
+	
 	/**
 	 * Set the parent element key as itself.
 	 * 
@@ -487,7 +555,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void updateCurriculumElement_conflict()
+	public void updateCurriculumElementConflict()
 	throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
