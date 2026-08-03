@@ -631,6 +631,9 @@ public class UserRolesController extends FormBasicController {
 	}
 
 	private void doAddIdentityToOrganisation(Organisation organisation) {
+		if (organisation == null || organisations.contains(organisation)) {
+			return;
+		}
 		editedRoles = securityManager.getRoles(editedIdentity, false);
 		organisations.add(organisation);
 		addAdditionalRolesWrapper(organisation);
