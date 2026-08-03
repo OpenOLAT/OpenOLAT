@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionS
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
@@ -64,6 +65,7 @@ public class RoomSelectionSource implements ObjectSelectionSource {
 	private final Collator collator;
 	private final RoomManagementService roomManagementService;
 	private final Roles roles;
+	private final Identity identity;
 	private final Date startDate;
 	private final Date endDate;
 	private final LectureBlock lectureBlock;
@@ -75,12 +77,13 @@ public class RoomSelectionSource implements ObjectSelectionSource {
 	private Map<Long, RoomBooking> occupiedByOther;
 
 	public RoomSelectionSource(Translator translator, RoomManagementService roomManagementService,
-			Roles roles, Date startDate, Date endDate, LectureBlock lectureBlock,
+			Roles roles, Identity identity, Date startDate, Date endDate, LectureBlock lectureBlock,
 			Collection<Room> selectedRooms, int participantCount) {
 		this.translator = translator;
 		this.collator = Collator.getInstance(translator.getLocale());
 		this.roomManagementService = roomManagementService;
 		this.roles = roles;
+		this.identity = identity;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.lectureBlock = lectureBlock;
@@ -213,6 +216,7 @@ public class RoomSelectionSource implements ObjectSelectionSource {
 
 		SearchRoomParameters params = new SearchRoomParameters();
 		params.setStatus(List.of(RoomStatus.active));
+		params.setIdentity(identity);
 		List<Room> rooms = roomManagementService.searchRooms(params, roles);
 		allRoomsMap = rooms.stream().collect(Collectors.toMap(Room::getKey, r -> r));
 	}
