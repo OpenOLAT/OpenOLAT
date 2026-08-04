@@ -19,6 +19,7 @@
  */
 package org.olat.course.condition;
 
+import java.util.Collection;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
@@ -34,6 +35,7 @@ import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CNSCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -91,8 +93,8 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 	
 	@Override
-	public boolean isUpdateEvaluationOnPublish() {
-		return false;
+	public boolean isUpdateEvaluationOnPublish(Collection<CourseNode> publishedCourseNodes) {
+		return publishedCourseNodes.stream().anyMatch(STCourseNode.class::isInstance);
 	}
 
 	@Override

@@ -125,6 +125,11 @@ public interface AssessmentService {
 	 */
 	public Long getScoreCount(RepositoryEntryRef remositoryEntry, String subIdent);
 
+	/**
+	 * @return whether at least one assessment entry has a score, is passed or has a grade.
+	 */
+	public boolean hasAssessments(RepositoryEntryRef repositoryEntry, String subIdent);
+
 	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start);
 
 	public List<AssessmentEntry> getRootEntriesWithoutPassed(RepositoryEntryRef repositoryEntry);

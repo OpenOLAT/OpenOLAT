@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodeaccess.manager;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -109,8 +110,8 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 	
 	@Override
-	public boolean isUpdateEvaluationOnPublish(NodeAccessType type) {
-		return getNodeAccessProvider(type).isUpdateEvaluationOnPublish();
+	public boolean isUpdateEvaluationOnPublish(NodeAccessType type, Collection<CourseNode> publishedCourseNodes) {
+		return getNodeAccessProvider(type).isUpdateEvaluationOnPublish(publishedCourseNodes);
 	}
 	
 	@Override

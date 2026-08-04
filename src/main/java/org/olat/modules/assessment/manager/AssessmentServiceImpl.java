@@ -196,6 +196,11 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	}
 
 	@Override
+	public boolean hasAssessments(RepositoryEntryRef repositoryEntry, String subIdent) {
+		return assessmentEntryDao.hasAssessments(repositoryEntry, subIdent);
+	}
+
+	@Override
 	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start) {
 		return assessmentEntryDao.getRootEntriesWithStartOverSubEntries(start);
 	}

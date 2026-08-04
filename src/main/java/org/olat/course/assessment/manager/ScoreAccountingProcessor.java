@@ -20,8 +20,12 @@
 package org.olat.course.assessment.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import jakarta.annotation.PostConstruct;
 
@@ -470,11 +474,21 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		try {
 			log.debug("Process publish of course {}", pe.getPublishedCourseResId());
 			ICourse course = CourseFactory.loadCourse(pe.getPublishedCourseResId());
-			boolean update = nodeAccessService.isUpdateEvaluationOnPublish(NodeAccessType.of(course));
+			boolean update = nodeAccessService.isUpdateEvaluationOnPublish(NodeAccessType.of(course),
+					getPublishedCourseNodes(course, pe));
 			courseAssessmentService.evaluateAllAsync(pe.getPublishedCourseResId(), update);
 		} catch (Exception e) {
 			log.warn("Error when processing publish of course {}", pe.getPublishedCourseResId());
 		}
+	}
+
+	private Collection<CourseNode> getPublishedCourseNodes(ICourse course, PublishEvent pe) {
+		Set<String> nodeIdents = new HashSet<>(pe.getModifiedCourseNodeIds());
+		nodeIdents.addAll(pe.getInsertedCourseNodeIds());
+		return nodeIdents.stream()
+				.map(nodeIdent -> course.getRunStructure().getNode(nodeIdent))
+				.filter(Objects::nonNull)
+				.toList();
 	}
 	
 	private void assignCoachRecursive(UserCourseEnvironment userCourseEnv, CourseNode courseNode) {

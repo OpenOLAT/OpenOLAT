@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodeaccess;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -67,9 +68,10 @@ public interface NodeAccessService {
 	 * the assessment entries or not.
 	 *
 	 * @param type
+	 * @param publishedCourseNodes The course nodes that have been published
 	 * @return
 	 */
-	public boolean isUpdateEvaluationOnPublish(NodeAccessType type);
+	public boolean isUpdateEvaluationOnPublish(NodeAccessType type, Collection<CourseNode> publishedCourseNodes);
 	
 	/**
 	 * Update configs if a node is created or updated.
