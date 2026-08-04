@@ -52,6 +52,11 @@
 			#set ($coursefolderUlLimitBytes = $coursefolder.getUlLimitKB() * 1000)
 			<td>$r.formatBytes($coursefolderUlLimitBytes) ($coursefolder.getUlLimitKB())</td></tr>
 
+			#set ($coachfolderQuotaBytes = $coachfolder.getQuotaKB() * 1000)
+			<tr class='#if($r.isTrue($coachfolderDef))info#end'><td>$r.translate("qd.coachfolder")</td><td>$r.formatBytes($coachfolderQuotaBytes) ($coachfolder.getQuotaKB())</td>
+			#set ($coachfolderUlLimitBytes = $coachfolder.getUlLimitKB() * 1000)
+			<td>$r.formatBytes($coachfolderUlLimitBytes) ($coachfolder.getUlLimitKB())</td></tr>
+
 			#set ($nodefolderQuotaBytes = $nodefolder.getQuotaKB() * 1000)
 			<tr class='#if($r.isTrue($nodefolderDef))info#end'><td>$r.translate("qd.nodefolder")</td><td>$r.formatBytes($nodefolderQuotaBytes) ($nodefolder.getQuotaKB())</td>
 			#set ($nodefolderUlLimitBytes = $nodefolder.getUlLimitKB() * 1000)

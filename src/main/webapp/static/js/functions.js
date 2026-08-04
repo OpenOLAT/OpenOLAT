@@ -1445,40 +1445,26 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 	// file upload forms are rendered transparent and have a fake input field that is rendered.
 	// on change events of the real input field this method is triggered to display the file 
 	// path in the fake input field. See the code for more info on this
-	let fileName = fileInputElement.value;
-	// remove unix path
-	let slashPos = fileName.lastIndexOf('/');
-	if (slashPos != -1) {
-		fileName=fileName.substring(slashPos + 1); 
-	}
-	// remove windows path
-	slashPos = fileName.lastIndexOf('\\');	
-	if (slashPos != -1) {
-		fileName=fileName.substring(slashPos + 1); 
-	}
+
 	// add file name to fake input field
-	if (fakeInputElement) {		
+	o_resetFileMetadata(fileInputElement);
+	if (fakeInputElement) {
+		let fileName = o_extractFileName(fileInputElement.value);
 		fakeInputElement.value=fileName;
 	} else {
 		// in drop-down mode, add filename above input field
-		let fileSizeFormatted;
-		if(fileSize < 250 * 1024) {
-			fileSizeFormatted = (fileSize / 1024).toFixed(1) + " KB";
-		} else if(fileSize < 250 * 1024 * 1024) {
-			fileSizeFormatted = (fileSize / 1024 / 1024).toFixed(1) + " MB";
-		} else {
-			fileSizeFormatted = (fileSize / 1024 / 1024 / 1024).toFixed(1) + " GB";
-		}
 		let inputWrapperEl = jQuery(fileInputElement).parent();
-		let escapedFileName = o_escapeHtml(fileName);
-		let fileHtml = "<div><i class='o_icon o_icon-fw o_filetype_file'> </i> " + escapedFileName + " <span class='text-muted o_filesize'>(" + fileSizeFormatted + ")</span></div>";
-		let existingMetaEl = inputWrapperEl.parent().find('.o_filemeta');
-		if (existingMetaEl.length == 0) {
-			jQuery("<div class='o_filemeta'>" + fileHtml + "</div>").insertBefore(inputWrapperEl);						
+		if(fileInputElement.files) {
+			for(let i=0; i<fileInputElement.files.length; i++) {
+				let file = fileInputElement.files[i];
+				let fileName = o_extractFileName(file.name);	
+				o_handleFileMetadata(inputWrapperEl, fileName, file.size)
+			}
+			
 		} else {
-			existingMetaEl[0].insertAdjacentHTML("beforeend", fileHtml)			
+			let fileName = o_extractFileName(fileInputElement.value);
+			o_handleFileMetadata(inputWrapperEl, fileName, fileSize);
 		}
-		
 	}
 	// set focus to next element if available
 	let elements = fileInputElement.form.elements;
@@ -1494,6 +1480,44 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 		saveButton.className='o_button_dirty';
 	}
 	return true;
+}
+
+function o_resetFileMetadata(inputElement) {
+	try {
+		let inputWrapperEl = jQuery(inputElement).parent()
+		let existingMetaEl = inputWrapperEl.parent().find('.o_filemeta');
+		if (existingMetaEl.length == 1) {
+			existingMetaEl[0].innerHTML = "";	
+		}
+	} catch(e) {
+		if(window.console) console.log(e);
+	}
+}
+
+function o_handleFileMetadata(inputWrapperEl, fileName, fileSize) {
+	let fileSizeFormatted = o_handleFileFormatSize(fileSize);
+	let escapedFileName = o_escapeHtml(fileName);
+	let fileHtml = "<div><i class='o_icon o_icon-fw o_filetype_file'> </i> " + escapedFileName + " <span class='text-muted o_filesize'>(" + fileSizeFormatted + ")</span></div>";
+	let existingMetaEl = inputWrapperEl.parent().find('.o_filemeta');
+	if (existingMetaEl.length == 0) {
+		jQuery("<div class='o_filemeta'>" + fileHtml + "</div>").insertBefore(inputWrapperEl);				
+	} else {
+		existingMetaEl[0].insertAdjacentHTML("beforeend", fileHtml);
+	}
+}
+
+function o_extractFileName(fileName) {
+	// remove unix path
+	let slashPos = fileName.lastIndexOf('/');
+	if (slashPos != -1) {
+		fileName = fileName.substring(slashPos + 1); 
+	}
+	// remove windows path
+	slashPos = fileName.lastIndexOf('\\');	
+	if (slashPos != -1) {
+		fileName = fileName.substring(slashPos + 1); 
+	}
+	return fileName;
 }
 
 function o_escapeHtml(str) {

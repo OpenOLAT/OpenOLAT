@@ -645,7 +645,7 @@ public class QuotaManagerImpl implements QuotaManager, UserDataDeletable, Reposi
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_COURSE;
 			} else if(path.indexOf("/coursedocuments") >= 0) {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_DOCUMENTS;
-			} else if(path.indexOf("/coachfolder") >= 0) {
+			} else if(path.indexOf("/coachfolder") >= 0 || path.indexOf("/coachdocuments") >= 0) {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_COACHFOLDER;
 			} else if(path.indexOf("/participantfolder/") >= 0) {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_PFNODES;
