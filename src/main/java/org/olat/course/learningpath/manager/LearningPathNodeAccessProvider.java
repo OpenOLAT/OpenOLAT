@@ -19,6 +19,7 @@
  */
 package org.olat.course.learningpath.manager;
 
+import java.util.Collection;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
@@ -106,7 +107,7 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	}
 	
 	@Override
-	public boolean isUpdateEvaluationOnPublish() {
+	public boolean isUpdateEvaluationOnPublish(Collection<CourseNode> publishedCourseNodes) {
 		return true;
 	}
 

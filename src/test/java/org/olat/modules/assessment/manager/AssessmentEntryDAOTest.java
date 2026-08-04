@@ -251,6 +251,52 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldGetHasAssessments() {
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-7");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = random();
+		AssessmentEntry ae = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, null);
+		dbInstance.commitAndCloseSession();
+
+		// No score, passed or grade
+		assertThat(assessmentEntryDao.hasAssessments(entry, subIdent)).isFalse();
+
+		// Score
+		ae.setScore(new BigDecimal("22"));
+		assessmentEntryDao.updateAssessmentEntry(ae);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(assessmentEntryDao.hasAssessments(entry, subIdent)).isTrue();
+
+		// Passed only
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-8");
+		String subIdent2 = random();
+		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent2, null, null);
+		ae2.setPassed(Boolean.TRUE);
+		assessmentEntryDao.updateAssessmentEntry(ae2);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(assessmentEntryDao.hasAssessments(entry, subIdent2)).isTrue();
+
+		// Grade only
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-9");
+		String subIdent3 = random();
+		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent3, null, null);
+		ae3.setGrade("Grade A");
+		assessmentEntryDao.updateAssessmentEntry(ae3);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(assessmentEntryDao.hasAssessments(entry, subIdent3)).isTrue();
+
+		// Other subIdent on the same entry
+		assertThat(assessmentEntryDao.hasAssessments(entry, random())).isFalse();
+
+		// Other repository entry with the same subIdent
+		RepositoryEntry otherEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		assertThat(assessmentEntryDao.hasAssessments(otherEntry, subIdent)).isFalse();
+	}
+
+	@Test
 	public void shouldGetScoreCount() {
 		// No score
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
