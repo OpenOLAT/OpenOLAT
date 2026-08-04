@@ -43,6 +43,8 @@ public class AddRoomsRow {
 	private Reference elementReference;
 	private Reference courseReference;
 	private Date earlierSlotFrom;
+	private Date earlierSlotTo;
+	private Date laterSlotFrom;
 	private Date laterSlotTo;
 
 	public AddRoomsRow(Room room, RoomBooking occupiedBy, boolean myEvent, int participantCount) {
@@ -109,6 +111,22 @@ public class AddRoomsRow {
 
 	public void setEarlierSlotFrom(Date earlierSlotFrom) {
 		this.earlierSlotFrom = earlierSlotFrom;
+	}
+
+	public Date getEarlierSlotTo() {
+		return earlierSlotTo;
+	}
+
+	public void setEarlierSlotTo(Date earlierSlotTo) {
+		this.earlierSlotTo = earlierSlotTo;
+	}
+
+	public Date getLaterSlotFrom() {
+		return laterSlotFrom;
+	}
+
+	public void setLaterSlotFrom(Date laterSlotFrom) {
+		this.laterSlotFrom = laterSlotFrom;
 	}
 
 	public Date getLaterSlotTo() {
