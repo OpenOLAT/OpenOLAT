@@ -172,9 +172,9 @@ public class AddRoomsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
 				AddRoomsDataModel.AddRoomsCols.course, new ReferenceRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AddRoomsDataModel.AddRoomsCols.earlierSlot,
-				new TimeSlotCellRenderer(startDate, true, getLocale())));
+				new TimeSlotCellRenderer(true, getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AddRoomsDataModel.AddRoomsCols.laterSlot,
-				new TimeSlotCellRenderer(endDate, false, getLocale())));
+				new TimeSlotCellRenderer(false, getLocale())));
 		tableModel = new AddRoomsDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "rooms.table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCssDelegate(new PreSelectedRowsCssDelegate());
@@ -284,7 +284,9 @@ public class AddRoomsController extends FormBasicController {
 			}
 
 			List<RoomBooking> roomDayBookings = dayBookingsByRoom.getOrDefault(room.getKey(), List.of());
-			computeAdjacentSlots(rowObj, roomDayBookings);
+			if (occupiedBy != null) {
+				computeAdjacentSlots(rowObj, roomDayBookings, occupiedBy);
+			}
 
 			allRows.add(rowObj);
 		}
@@ -316,18 +318,37 @@ public class AddRoomsController extends FormBasicController {
 		return byRoom;
 	}
 
-	private void computeAdjacentSlots(AddRoomsRow row, List<RoomBooking> roomBookings) {
-		// Earlier slot: end of the latest booking that ends at or before startDate
-		roomBookings.stream()
-				.filter(b -> b.getEndDate() != null && !b.getEndDate().after(startDate))
-				.max(Comparator.comparing(RoomBooking::getEndDate))
-				.ifPresent(b -> row.setEarlierSlotFrom(b.getEndDate()));
+	private void computeAdjacentSlots(AddRoomsRow row, List<RoomBooking> roomBookings, RoomBooking occupiedBy) {
+		// If the room is occupied, the conflicting booking itself defines the nearest edge of the
+		// free slot, not the requested start/end (which may lie inside the conflicting booking).
+		Date earlierTo = (occupiedBy != null && occupiedBy.getStartDate() != null && occupiedBy.getStartDate().before(startDate))
+				? occupiedBy.getStartDate() : startDate;
+		Date laterFrom = (occupiedBy != null && occupiedBy.getEndDate() != null && occupiedBy.getEndDate().after(endDate))
+				? occupiedBy.getEndDate() : endDate;
+		// Fallback slot length when no other booking bounds the gap: same duration as the requested event
+		long durationMs = endDate.getTime() - startDate.getTime();
 
-		// Later slot: start of the earliest booking that starts at or after endDate
-		roomBookings.stream()
-				.filter(b -> b.getStartDate() != null && !b.getStartDate().before(endDate))
+		// Earlier slot: end of the latest other booking that ends at or before earlierTo,
+		// or a slot of the requested duration if no such booking exists
+		row.setEarlierSlotTo(earlierTo);
+		Date earlierFrom = roomBookings.stream()
+				.filter(b -> occupiedBy == null || !b.getKey().equals(occupiedBy.getKey()))
+				.filter(b -> b.getEndDate() != null && !b.getEndDate().after(earlierTo))
+				.max(Comparator.comparing(RoomBooking::getEndDate))
+				.map(RoomBooking::getEndDate)
+				.orElseGet(() -> new Date(earlierTo.getTime() - durationMs));
+		row.setEarlierSlotFrom(earlierFrom);
+
+		// Later slot: start of the earliest other booking that starts at or after laterFrom,
+		// or a slot of the requested duration if no such booking exists
+		row.setLaterSlotFrom(laterFrom);
+		Date laterTo = roomBookings.stream()
+				.filter(b -> occupiedBy == null || !b.getKey().equals(occupiedBy.getKey()))
+				.filter(b -> b.getStartDate() != null && !b.getStartDate().before(laterFrom))
 				.min(Comparator.comparing(RoomBooking::getStartDate))
-				.ifPresent(b -> row.setLaterSlotTo(b.getStartDate()));
+				.map(RoomBooking::getStartDate)
+				.orElseGet(() -> new Date(laterFrom.getTime() + durationMs));
+		row.setLaterSlotTo(laterTo);
 	}
 
 	private void applyFilters() {
@@ -589,13 +610,11 @@ public class AddRoomsController extends FormBasicController {
 
 	private static class TimeSlotCellRenderer implements FlexiCellRenderer {
 
-		private final Date boundaryDate;
-		private final boolean isBefore;
+		private final boolean isEarlier;
 		private final Formatter formatter;
 
-		TimeSlotCellRenderer(Date boundaryDate, boolean isBefore, Locale locale) {
-			this.boundaryDate = boundaryDate;
-			this.isBefore = isBefore;
+		TimeSlotCellRenderer(boolean isEarlier, Locale locale) {
+			this.isEarlier = isEarlier;
 			this.formatter = Formatter.getInstance(locale);
 		}
 
@@ -603,20 +622,12 @@ public class AddRoomsController extends FormBasicController {
 		public void render(Renderer renderer, StringOutput target, Object cellValue,
 				int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 			if (!(cellValue instanceof AddRoomsRow roomRow)) return;
-			if (isBefore) {
-				Date from = roomRow.getEarlierSlotFrom();
-				if (from != null) {
-					target.appendHtmlEscaped(formatter.formatTime(from))
-							.append(" – ")
-							.appendHtmlEscaped(formatter.formatTime(boundaryDate));
-				}
-			} else {
-				Date to = roomRow.getLaterSlotTo();
-				if (to != null) {
-					target.appendHtmlEscaped(formatter.formatTime(boundaryDate))
-							.append(" – ")
-							.appendHtmlEscaped(formatter.formatTime(to));
-				}
+			Date from = isEarlier ? roomRow.getEarlierSlotFrom() : roomRow.getLaterSlotFrom();
+			Date to = isEarlier ? roomRow.getEarlierSlotTo() : roomRow.getLaterSlotTo();
+			if (from != null && to != null) {
+				target.appendHtmlEscaped(formatter.formatTime(from))
+						.append(" – ")
+						.appendHtmlEscaped(formatter.formatTime(to));
 			}
 		}
 	}
