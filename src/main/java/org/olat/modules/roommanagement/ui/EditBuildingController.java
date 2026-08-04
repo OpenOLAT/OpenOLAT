@@ -145,7 +145,9 @@ public class EditBuildingController extends FormBasicController {
 			Roles roles = ureq.getUserSession().getRoles();
 			OrganisationSelectionSource source = new OrganisationSelectionSource(
 					currentOrgs,
-					() -> organisationService.getOrganisations(getIdentity(), roles, OrganisationRoles.administrator));
+					() -> roles.isSystemAdmin()
+							? organisationService.getOrganisations()
+							: organisationService.getOrganisations(getIdentity(), roles, OrganisationRoles.administrator));
 			adminAccessEl = uifactory.addObjectSelectionElement("building.admin.access",
 					"building.admin.access", formLayout, getWindowControl(), true, source);
 			adminAccessEl.setMandatory(true);
