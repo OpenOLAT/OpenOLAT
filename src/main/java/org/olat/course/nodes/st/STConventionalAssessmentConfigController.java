@@ -346,9 +346,6 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		for (String formItemName : formItems.keySet()) {
 			formItems.get(formItemName).setEnabled(!displayOnly);
 		}
-		if (gradeScaleButtonsCont != null) {
-			gradeScaleButtonsCont.setVisible(!displayOnly);
-		}
 		buttonWrapperCont.setVisible(!displayOnly);
 		if (!displayOnly) {
 			updateConfigUI();
