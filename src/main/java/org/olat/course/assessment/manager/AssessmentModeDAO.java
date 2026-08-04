@@ -46,6 +46,7 @@ import org.olat.group.area.BGtoAreaRelationImpl;
 import org.olat.modules.dcompensation.DisadvantageCompensationStatusEnum;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -224,20 +225,30 @@ public class AssessmentModeDAO {
 				.getResultList();
 	}
 	
+	/**
+	 * All assessment modes with are running (with all followup, lead time, ...)
+	 * in courses which are published (to be accessible to participants).
+	 * 
+	 * @param now The value of now
+	 * @return A list of relevant assessment modes
+	 */
 	public List<AssessmentMode> getAssessmentModes(Date now) {
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(Calendar.SECOND, 0);
 		
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select mode from courseassessmentmode mode where ")
-		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now")
+		sb.append("select mode from courseassessmentmode mode")
+		  .append(" inner join mode.repositoryEntry as entry")
+		  .append(" where entry.status=:status")
+		  .append(" and ((mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now")
 		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
 		  .append(" or mode.statusString ").in(Status.leadtime, Status.assessment, Status.followup)
-		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutBoth, EndStatus.withoutExtraTime, EndStatus.withoutDisadvantage).append(")");
+		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutBoth, EndStatus.withoutExtraTime, EndStatus.withoutDisadvantage).append("))");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentMode.class)
+				.setParameter("status", RepositoryEntryStatusEnum.published.name())
 				.setParameter("now", now)
 				.getResultList();
 	}
