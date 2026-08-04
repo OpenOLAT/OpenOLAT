@@ -301,8 +301,8 @@ public class MatchEditorController extends FormBasicController {
 		if(singleMultiEl.isOneSelected() && singleMultiEl.isSelected(0)) {
 			for(MatchWrapper sourceWrapper:sourceWrappers) {
 				List<String> targets =temporaryAssociations.get(sourceWrapper.getIdentifierString());
-				if(targets == null || targets.size() != 1) {
-					singleMultiEl.setErrorKey("error.singlechoice");
+				if(targets != null && targets.size() > 1) {
+					singleMultiEl.setErrorKey("error.singlechoice.editor");
 					allOk &= false;
 				}
 			}
