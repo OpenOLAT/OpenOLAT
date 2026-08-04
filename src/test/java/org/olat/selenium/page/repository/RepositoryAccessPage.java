@@ -81,12 +81,16 @@ public class RepositoryAccessPage {
 	public RepositoryAccessPage setAccessToPublic() {
 		By allUsersBy = By.xpath("//fieldset[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='public']");
 		browser.findElement(allUsersBy).click();
+		By allUsersCheckedBy = By.xpath("//fieldset[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='public' and @checked='checked']");
+		OOGraphene.waitElement(allUsersCheckedBy, browser);
 		return this;
 	}
 	
 	public RepositoryAccessPage setAccessToMembersOnly() {
-		By allUsersBy = By.xpath("//fieldset[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='private']");
-		browser.findElement(allUsersBy).click();
+		By privateBy = By.xpath("//fieldset[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='private']");
+		browser.findElement(privateBy).click();
+		By privateCheckedBy = By.xpath("//fieldset[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='private' and @checked='checked']");
+		OOGraphene.waitElement(privateCheckedBy, browser);
 		return this;
 	}
 	
