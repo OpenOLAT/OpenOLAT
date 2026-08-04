@@ -173,8 +173,12 @@ public class CurriculumElementLectureBlocksWebService {
 		LectureBlock block;
 		int currentPlannedLectures;
 		boolean autoclose = false;
-		if(blockVo.getKey() != null && blockVo.getKey() > 0) {
+		if(blockVo.getKey() != null && blockVo.getKey().longValue() > 0) {
 			block = lectureService.getLectureBlock(blockVo);
+			if(block == null || !element.equals(block.getCurriculumElement())) {
+				throw new WebApplicationException(Status.NOT_FOUND);
+			}
+
 			currentPlannedLectures = block.getPlannedLecturesNumber();
 			if("autoclosed".equals(blockVo.getRollCallStatus()) && block.getRollCallStatus() != LectureRollCallStatus.autoclosed) {
 				autoclose = true;
