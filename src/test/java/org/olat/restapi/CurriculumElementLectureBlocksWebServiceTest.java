@@ -46,6 +46,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -270,6 +271,52 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 	}
 	
 	@Test
+	public void updateLectureBlock()
+	throws IOException, URISyntaxException {
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures", "Curriculum", false, defaultUnitTestOrganisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum 7", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		LectureBlock lectureBlock = lectureService.createLectureBlock(element, null);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello block 7");
+		lectureBlock.setPlannedLecturesNumber(4);
+		lectureBlock = lectureService.save(lectureBlock, null);
+		
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlockVO lectureBlockVo = new LectureBlockVO();
+		lectureBlockVo.setKey(lectureBlock.getKey());
+		lectureBlockVo.setTitle("Block 7 in curriculum");
+		lectureBlockVo.setDescription("Under my element");
+		lectureBlockVo.setPlannedLectures(4);
+		lectureBlockVo.setStartDate(new Date());
+		lectureBlockVo.setEndDate(new Date());
+		lectureBlockVo.setCurriculumElementKey(element.getKey());
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
+				.path(element.getKey().toString())
+				.path("lectureblocks").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, lectureBlockVo);
+		HttpResponse response = conn.execute(method);
+		
+		// check the response
+		Assertions.assertThat(response.getStatusLine().getStatusCode())
+			.isEqualTo(200);
+		
+		// check the database
+		LectureBlock dbBlock = lectureService.getLectureBlock(new LectureBlockRefImpl(lectureBlock.getKey()));
+		Assert.assertNotNull(dbBlock);
+		Assert.assertEquals("Block 7 in curriculum", dbBlock.getTitle());
+		Assert.assertEquals(element, dbBlock.getCurriculumElement());
+		Assert.assertEquals("Under my element", dbBlock.getDescription());
+	}
+	
+	@Test
 	public void createFailedLectureBlockWithCourses()
 	throws IOException, URISyntaxException {
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures", "Curriculum", false, defaultUnitTestOrganisation);
@@ -366,5 +413,118 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		//check the database
 		List<Identity> teachers = lectureService.getTeachers(lectureBlock);
 		Assert.assertTrue(teachers.contains(teacher));
+	}
+	
+	@Test
+	public void updateLectureBlockWithInconsistency()
+	throws IOException, URISyntaxException {
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures", "Curriculum", false, defaultUnitTestOrganisation);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Block to curriculum 6", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		CurriculumElement element2 = curriculumService.createCurriculumElement("Block to curriculum 6.1", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlockVO lectureBlockVo = new LectureBlockVO();
+		lectureBlockVo.setTitle("Block 6 in curriculum");
+		lectureBlockVo.setDescription("Under my element");
+		lectureBlockVo.setPlannedLectures(4);
+		lectureBlockVo.setStartDate(new Date());
+		lectureBlockVo.setEndDate(new Date());
+		lectureBlockVo.setCurriculumElementKey(element1.getKey());
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
+				.path(element1.getKey().toString())
+				.path("lectureblocks").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, lectureBlockVo);
+		HttpResponse response = conn.execute(method);
+		
+		// check the response
+		Assertions.assertThat(response.getStatusLine().getStatusCode())
+			.isEqualTo(200);
+		
+		LectureBlockVO savedLectureBlock = conn.parse(response, LectureBlockVO.class);
+		savedLectureBlock.setTitle("Block 6.1 in curriculum");
+		savedLectureBlock.setDescription("Block saved in the wrong element");
+		savedLectureBlock.setCurriculumElementKey(element2.getKey());
+		
+		URI updateUri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
+				.path(element2.getKey().toString())
+				.path("lectureblocks").build();
+		HttpPut updateMethod = conn.createPut(updateUri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(updateMethod, savedLectureBlock);
+		HttpResponse updateResponse = conn.execute(updateMethod);
+
+		// No lecture block with this key found under element 2 (used in URI)
+		Assertions.assertThat(updateResponse.getStatusLine().getStatusCode())
+			.isEqualTo(404);
+		
+		// check the database
+		LectureBlock dbBlock = lectureService.getLectureBlock(new LectureBlockRefImpl(savedLectureBlock.getKey()));
+		Assert.assertNotNull(dbBlock);
+		Assert.assertEquals("Block 6 in curriculum", dbBlock.getTitle());
+		Assert.assertEquals(element1, dbBlock.getCurriculumElement());
+		Assert.assertEquals("Under my element", dbBlock.getDescription());
+	}
+	
+	
+	@Test
+	public void updateLectureBlockWithSwap()
+	throws IOException, URISyntaxException {
+		Curriculum curriculum1 = curriculumService.createCurriculum("Lectures-blocks-cur-8", "Curriculum with lectures 8", "Curriculum", false, defaultUnitTestOrganisation);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Block to curriculum 8", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum1);
+		IdentityWithLogin curriculum1Manager = JunitTestHelper.createAndPersistRndUser("curr-8-owner");
+		curriculumService.addMember(curriculum1, curriculum1Manager.getIdentity(), CurriculumRoles.curriculummanager);
+		
+		LectureBlock lectureBlock = lectureService.createLectureBlock(element1, null);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello block 7");
+		lectureBlock.setPlannedLecturesNumber(4);
+		lectureBlock = lectureService.save(lectureBlock, null);
+		
+		Curriculum curriculum2 = curriculumService.createCurriculum("Lectures-blocks-cur-9", "Curriculum with lectures 9", "Curriculum", false, defaultUnitTestOrganisation);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("Block to curriculum 9", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum2);
+		IdentityWithLogin curriculum2Manager = JunitTestHelper.createAndPersistRndUser("curr-9-owner");
+		curriculumService.addMember(curriculum2, curriculum2Manager.getIdentity(), CurriculumRoles.curriculummanager);
+		
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlockVO lectureBlockVo = new LectureBlockVO();
+		lectureBlockVo.setKey(lectureBlock.getKey());
+		lectureBlockVo.setTitle("Block 8 in curriculum");
+		lectureBlockVo.setDescription("Under my element");
+		lectureBlockVo.setPlannedLectures(4);
+		lectureBlockVo.setStartDate(new Date());
+		lectureBlockVo.setEndDate(new Date());
+		lectureBlockVo.setCurriculumElementKey(element1.getKey());
+
+		RestConnection conn = new RestConnection(curriculum2Manager);
+		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum2.getKey().toString()).path("elements")
+				.path(element2.getKey().toString())
+				.path("lectureblocks").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, lectureBlockVo);
+		HttpResponse response = conn.execute(method);
+		
+		// Try to update a block in the wrong curriculum
+		Assertions.assertThat(response.getStatusLine().getStatusCode())
+			.isEqualTo(404);
+		
+		// check the database
+		LectureBlock dbBlock = lectureService.getLectureBlock(new LectureBlockRefImpl(lectureBlock.getKey()));
+		Assert.assertNotNull(dbBlock);
+		Assert.assertEquals("Hello block 7", dbBlock.getTitle());
+		Assert.assertEquals(element1, dbBlock.getCurriculumElement());
 	}
 }
