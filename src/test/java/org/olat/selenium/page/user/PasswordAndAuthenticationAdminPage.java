@@ -82,7 +82,7 @@ public class PasswordAndAuthenticationAdminPage {
 	
 	public PasswordAndAuthenticationAdminPage enablePasskeyLevel(PasskeyLevels level) {
 		By calloutButtonBy = By.cssSelector("button.o_sel_passkey_level_all_roles");
-		OOGraphene.waitElement(calloutButtonBy, browser).click();
+		OOGraphene.click(calloutButtonBy, browser);
 
 		By calloutBy = By.cssSelector("ul.o_sel_passkey_level_all_roles");
 		OOGraphene.waitElement(calloutBy, browser);
