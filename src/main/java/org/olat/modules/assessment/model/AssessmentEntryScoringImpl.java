@@ -44,10 +44,14 @@ public class AssessmentEntryScoringImpl implements AssessmentEntryScoring {
 	private final Boolean passed;
 	private final Boolean passedOriginal;
 	private final Date passedModificationDate;
-	
+	private final String grade;
+	private final String gradeSystemIdent;
+	private final String performanceClassIdent;
+
 	public AssessmentEntryScoringImpl(Long key, Long repositoryEntryKey, Double completion,
 			BigDecimal score, BigDecimal weightedScore, BigDecimal maxScore, BigDecimal weightedMaxScore,
-			Boolean passed, Boolean passedOriginal, Date passedModificationDate) {
+			Boolean passed, Boolean passedOriginal, Date passedModificationDate,
+			String grade, String gradeSystemIdent, String performanceClassIdent) {
 		this.key = key;
 		this.repositoryEntryKey = repositoryEntryKey;
 		this.completion = completion;
@@ -58,6 +62,9 @@ public class AssessmentEntryScoringImpl implements AssessmentEntryScoring {
 		this.passed = passed;
 		this.passedOriginal = passedOriginal;
 		this.passedModificationDate = passedModificationDate;
+		this.grade = grade;
+		this.gradeSystemIdent = gradeSystemIdent;
+		this.performanceClassIdent = performanceClassIdent;
 	}
 
 	@Override
@@ -105,6 +112,21 @@ public class AssessmentEntryScoringImpl implements AssessmentEntryScoring {
 	@Override
 	public BigDecimal getWeightedMaxScore() {
 		return weightedMaxScore;
+	}
+
+	@Override
+	public String getGrade() {
+		return grade;
+	}
+
+	@Override
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
+	}
+
+	@Override
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
 	}
 
 }

@@ -216,6 +216,23 @@ public class AssessmentEntryDAO {
 				.isEmpty();
 	}
 	
+	public boolean hasAssessments(RepositoryEntryRef repositoryEntry, String subIdent) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select data.key");
+		sb.append("  from assessmententry data");
+		sb.and().append(" data.repositoryEntry.key=:repositoryEntryKey");
+		sb.and().append(" data.subIdent=:subIdent");
+		sb.and().append(" (data.score is not null or data.passed is not null or data.grade is not null)");
+
+		return !dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("repositoryEntryKey", repositoryEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.setMaxResults(1)
+				.getResultList()
+				.isEmpty();
+	}
+
 	public Long getScoreCount(RepositoryEntryRef repositoryEntry, String subIdent) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(data.key)");
@@ -532,6 +549,9 @@ public class AssessmentEntryDAO {
 		sb.append("     , ae.passed");
 		sb.append("     , ae.passedOriginal");
 		sb.append("     , ae.passedModificationDate");
+		sb.append("     , ae.grade");
+		sb.append("     , ae.gradeSystemIdent");
+		sb.append("     , ae.performanceClassIdent");
 		sb.append("     )");
 		sb.append("  from assessmententry ae");
 		sb.and().append(" ae.entryRoot = true");

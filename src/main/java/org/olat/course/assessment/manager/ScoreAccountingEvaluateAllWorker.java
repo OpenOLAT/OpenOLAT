@@ -136,22 +136,26 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 		AssessmentEntry rootAssessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, courseEntry, rootNode.getIdent());
 		Boolean previousPassed = null;
 		String previousScore = null;
+		String previousGrade = null;
 		if (rootAssessmentEntry != null) {
 			previousPassed = rootAssessmentEntry.getPassedOverridable().getCurrent();
 			previousScore = AssessmentHelper.getRoundedScore(rootAssessmentEntry.getScore());
+			previousGrade = rootAssessmentEntry.getGrade();
 		}
-		
+
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 		scoreAccounting.setObligationContext(obligationContext);
 		scoreAccounting.setCourseNodesToDoSyncher(courseNodesToDoSyncher);
 		scoreAccounting.evaluateAll(update);
-		
+
 		AssessmentEvaluation rootAssessmentEvaluation = scoreAccounting.evalCourseNode(rootNode);
 		Boolean currentPassed = rootAssessmentEvaluation.getPassed();
 		String currentSore = AssessmentHelper.getRoundedScore(rootAssessmentEvaluation.getScore());
-		
+		String currentGrade = rootAssessmentEvaluation.getGrade();
+
 		// Save root score evaluation to propagate to efficiency statement
-		if (!Objects.equals(previousPassed, currentPassed) || !Objects.equals(previousScore, currentSore)) {
+		if (!Objects.equals(previousPassed, currentPassed) || !Objects.equals(previousScore, currentSore)
+				|| !Objects.equals(previousGrade, currentGrade)) {
 			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 			am.saveScoreEvaluation(rootNode, null, assessedIdentity, rootAssessmentEvaluation, userCourseEnv, false, null);
 		}

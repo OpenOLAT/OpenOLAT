@@ -31,6 +31,8 @@ import java.util.Set;
 import org.olat.core.commons.controllers.filechooser.LinkFileCombiCalloutController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -65,6 +67,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -128,6 +131,10 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private STConventionalAssessmentConfigController conventionalAssessmentConfigCtrl;
 	private HighScoreEditController highScoreNodeConfigController;
 
+	private VelocityContainer scoreVc;
+	private Link enableEditingLink;
+	private boolean hasAssessments;
+
 	
 	private VelocityContainer configvc;
 	private final CourseConfig courseConfig;
@@ -152,6 +159,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private AssessmentService assessmentService;
 
 	public STCourseNodeEditController(UserRequest ureq, WindowControl wControl, STCourseNode stNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
@@ -208,12 +217,28 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		if (nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course))) {
 			conventionalAssessmentConfigCtrl = new STConventionalAssessmentConfigController(ureq, wControl, euce, stNode, assessableChildren);
 			listenTo(conventionalAssessmentConfigCtrl);
+
+			scoreVc = createVelocityContainer("edit_score");
+			scoreVc.put("scoreform", conventionalAssessmentConfigCtrl.getInitialComponent());
+			enableEditingLink = LinkFactory.createButtonSmall("enable.editing", scoreVc, this);
+			enableEditingLink.setPrimary(true);
+			enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
+
+			RepositoryEntry courseEntry = euce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			hasAssessments = assessmentService.hasAssessments(courseEntry, stNode.getIdent());
+			scoreVc.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));
+			if (hasAssessments) {
+				conventionalAssessmentConfigCtrl.setDisplayOnly(true);
+			}
 		}
 	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == enableEditingLink) {
+			conventionalAssessmentConfigCtrl.setDisplayOnly(false);
+			scoreVc.contextPut("isOverwriting", Boolean.TRUE);
+		}
 	}
 
 	@Override
@@ -336,7 +361,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ST_CONFIG), "o_sel_st_config", configvc);
 		if (conventionalAssessmentConfigCtrl != null) {
-			tabbedPane.addTab(translate("pane.tab.st_scorecalculation"), "o_sel_st_score", conventionalAssessmentConfigCtrl.getInitialComponent());
+			tabbedPane.addTab(translate("pane.tab.st_scorecalculation"), "o_sel_st_score", scoreVc);
 		}
 		highScoreTabPos = tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();

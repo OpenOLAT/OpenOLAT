@@ -659,5 +659,20 @@ public class CurriculumElementWithViewsDataModelFilterStatusTest {
 		public long getNumOfTaxonomyLevels() {
 			return 0;
 		}
+
+		@Override
+		public String getGrade() {
+			return null;
+		}
+
+		@Override
+		public String getGradeSystemIdent() {
+			return null;
+		}
+
+		@Override
+		public String getPerformanceClassIdent() {
+			return null;
+		}
 	}
 }

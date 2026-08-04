@@ -23,6 +23,7 @@ import org.hibernate.collection.spi.PersistentBag;
 import org.hibernate.collection.spi.PersistentList;
 import org.hibernate.collection.spi.PersistentMap;
 import org.hibernate.collection.spi.PersistentSet;
+import org.hibernate.proxy.HibernateProxy;
 
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 
@@ -40,6 +41,12 @@ public class EnhancedMapper extends MapperWrapper {
 	
 	@Override
 	public Class<?> realClass(String elementName) {
+		if (elementName != null) {
+			int proxyIndex = elementName.indexOf("$HibernateProxy");
+			if(proxyIndex > 0) {
+				return super.realClass(elementName.substring(0, proxyIndex));
+			}
+		}
 		if("org.hibernate.collection.PersistentBag".equals(elementName)
 				|| "org.hibernate.collection.internal.PersistentBag".equals(elementName)) {
 			return PersistentBag.class;
@@ -54,5 +61,13 @@ public class EnhancedMapper extends MapperWrapper {
 		} else {
 			return super.realClass(elementName);
 		}
+	}
+
+	@Override
+	public String serializedClass(Class type) {
+		if(type != null && HibernateProxy.class.isAssignableFrom(type)) {
+			return super.serializedClass(type.getSuperclass());
+		}
+		return super.serializedClass(type);
 	}
 }

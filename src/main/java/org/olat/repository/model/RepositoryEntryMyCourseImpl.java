@@ -62,6 +62,9 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private Float score;
 	private Boolean passed;
 	private Double completion;
+	private String grade;
+	private String gradeSystemIdent;
+	private String performanceClassIdent;
 
 	private final boolean marked;
 	
@@ -239,6 +242,33 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 
 	public void setCompletion(Double completion) {
 		this.completion = completion;
+	}
+
+	@Override
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	@Override
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
+	}
+
+	public void setGradeSystemIdent(String gradeSystemIdent) {
+		this.gradeSystemIdent = gradeSystemIdent;
+	}
+
+	@Override
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
+	public void setPerformanceClassIdent(String performanceClassIdent) {
+		this.performanceClassIdent = performanceClassIdent;
 	}
 
 	@Override

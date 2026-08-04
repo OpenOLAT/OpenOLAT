@@ -35,4 +35,10 @@ public interface AssessmentEntryScoring extends AssessmentEntryLight, Assessment
 
 	public BigDecimal getWeightedMaxScore();
 
+	public String getGrade();
+
+	public String getGradeSystemIdent();
+
+	public String getPerformanceClassIdent();
+
 }

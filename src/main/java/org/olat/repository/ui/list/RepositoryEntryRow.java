@@ -67,6 +67,9 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private Boolean passed;
 	private Double completion;
 	private ProgressBarItem completionItem;
+	private String grade;
+	private String gradeSystemIdent;
+	private String performanceClassIdent;
 	
 	private boolean member;
 	
@@ -116,6 +119,9 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 			score = AssessmentHelper.getRoundedScore(entry.getScore());
 			// Assessment entry
 			completion = entry.getCompletion();
+			grade = entry.getGrade();
+			gradeSystemIdent = entry.getGradeSystemIdent();
+			performanceClassIdent = entry.getPerformanceClassIdent();
 		}
 		
 		//rating
@@ -431,7 +437,19 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public String getScore() {
 		return score;
 	}
-	
+
+	public String getGrade() {
+		return grade;
+	}
+
+	public String getGradeSystemIdent() {
+		return gradeSystemIdent;
+	}
+
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
 	public boolean isPassed() {
 		return passed != null && passed.booleanValue();
 	}

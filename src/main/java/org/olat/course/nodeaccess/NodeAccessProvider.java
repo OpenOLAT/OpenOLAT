@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodeaccess;
 
+import java.util.Collection;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
@@ -49,7 +51,7 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 	
 	public boolean isEditPreviewSupported();
 
-	public boolean isUpdateEvaluationOnPublish();
+	public boolean isUpdateEvaluationOnPublish(Collection<CourseNode> publishedCourseNodes);
 
 	public void updateConfigDefaults(CourseNode courseNode, boolean newNode, INode parent);
 

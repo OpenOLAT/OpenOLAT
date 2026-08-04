@@ -22,6 +22,7 @@ package org.olat.course.nodes.st;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -107,7 +108,8 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement gradeMinMaxEl;
 	private StaticTextElement gradePassedEl;
-	
+	private FormLayoutContainer buttonWrapperCont;
+
 	private CloseableModalController cmc;
 	private GradeScaleEditController gradeScaleCtrl;
 	
@@ -330,7 +332,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		gradeMinMaxEl = uifactory.addStaticTextElement("score.min.max", "score.min.max", "", gradeCont);
 		gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "grade.success.criterion", "", gradeCont);
 		
-		FormLayoutContainer buttonWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonWrapper", getTranslator());
+		buttonWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonWrapper", getTranslator());
 		buttonWrapperCont.setElementCssClass("o_sel_score_buttons");
 		buttonWrapperCont.setRootForm(mainForm);
 		formLayout.add(buttonWrapperCont);
@@ -339,6 +341,17 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		uifactory.addFormSubmitButton("submit", buttonCont);
 	}
 	
+	public void setDisplayOnly(boolean displayOnly) {
+		Map<String, FormItem> formItems = flc.getFormComponents();
+		for (String formItemName : formItems.keySet()) {
+			formItems.get(formItemName).setEnabled(!displayOnly);
+		}
+		buttonWrapperCont.setVisible(!displayOnly);
+		if (!displayOnly) {
+			updateConfigUI();
+		}
+	}
+
 	/**
 	 * Initializes the node selection form elements first check if the form has a
 	 * selection on a node that has been deleted in since the last edition of this

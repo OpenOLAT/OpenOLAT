@@ -241,49 +241,49 @@ public class ApplicationWizardPage {
 		return acceptDataProtectionDisclaimer();
 	}
 	
-	private ApplicationWizardPage next() {
+	private ApplicationWizardPage nextStep() {
 		By nextBy = By.className("o_wizard_button_next");
-		OOGraphene.clickAndWait(nextBy, browser);
+		OOGraphene.click(nextBy, browser);
 		return this;
 	}
 	
 	public ApplicationWizardPage nextToInstructions() {
-		next();
+		nextStep();
 		By instructionsBy = By.className("fx_r_app_instructions");
 		OOGraphene.waitElement(instructionsBy, browser);
 		return this;
 	}
 	
 	public ApplicationWizardPage nextToDataProtection() {
-		next();
+		nextStep();
 		By privacyBy = By.className("fx_r_app_dataprotection");
 		OOGraphene.waitElement(privacyBy, browser);
 		return this;
 	}
 	
 	public ApplicationWizardPage nextToPersonalData() {
-		next();
+		nextStep();
 		By personalDataBy = By.className("o_sel_edit_person");
 		OOGraphene.waitElement(personalDataBy, browser);
 		return this;
 	}
 	
 	public ApplicationWizardPage nextToAcademicalBackground() {
-		next();
+		nextStep();
 		By backgroundBy = By.className("o_sel_academical_background");
 		OOGraphene.waitElement(backgroundBy, browser);
 		return this;
 	}
 	
 	public ApplicationWizardPage nextToProject() {
-		next();
+		nextStep();
 		By projectBy = By.className("o_sel_edit_project");
 		OOGraphene.waitElement(projectBy, browser);
 		return this;
 	}
 	
 	public ApplicationWizardPage nextToReview() {
-		next();
+		nextStep();
 		By detailsBy = By.className("fx_r_app_details");
 		OOGraphene.waitElement(detailsBy, browser);
 		return this;
