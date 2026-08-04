@@ -161,9 +161,10 @@ public interface AssessmentModeManager {
 	/**
 	 * This return all modes between the begin date minus lead time and end time.
 	 * Or if the assessment modes are stopped but some users with disadvantage
-	 * compensations are still at work.
+	 * compensations are still at work. The course needs to be published to
+	 * be accessible to participants.
 	 * 
-	 * @return The list of modes
+	 * @return The list of assessment modes
 	 */
 	public List<AssessmentMode> getAssessmentModes(Date now);
 	
