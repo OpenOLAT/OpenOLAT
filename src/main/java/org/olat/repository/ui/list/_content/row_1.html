@@ -118,6 +118,14 @@
 					</span>
 				</span> 
 				#end
+				
+				#if($r.isTrue($gradeEnabled))
+					#set($grade = $gradeRenderer.render($row))
+					#if($r.isNotEmpty($grade))
+						<span class="o_spacer">&middot;</span>
+						<span class="o_grade"> $grade </span>
+					#end
+				#end
 			</div>
 		</div>
 	</div>

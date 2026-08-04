@@ -79,6 +79,15 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	 * @return The completion of the root assessment entry
 	 */
 	public Double getCompletion();
+
+	/**
+	 * @return The grade of the root assessment entry
+	 */
+	public String getGrade();
+
+	public String getGradeSystemIdent();
+
+	public String getPerformanceClassIdent();
 	
 	/**
 	 * @return True if the user as bookmarked this entry

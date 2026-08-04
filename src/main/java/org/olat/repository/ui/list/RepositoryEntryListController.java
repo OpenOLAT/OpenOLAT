@@ -20,7 +20,6 @@
  */
 package org.olat.repository.ui.list;
 
-import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -92,9 +92,11 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.modules.assessment.ui.component.GradeCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryHeaderConfig;
+import org.olat.modules.grade.GradeModule;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.LifecycleModule;
@@ -167,7 +169,9 @@ public class RepositoryEntryListController extends FormBasicController
 	private LifecycleModule lifecycleModule;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
-	
+	@Autowired
+	private GradeModule gradeModule;
+
 	private final boolean guestOnly;
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
@@ -270,6 +274,15 @@ public class RepositoryEntryListController extends FormBasicController
 			DefaultFlexiColumnModel completionColumnModel = new DefaultFlexiColumnModel(Cols.completion.i18nKey(),
 					Cols.completion.ordinal(), true, OrderBy.completion.name());
 			columnsModel.addFlexiColumnModel(completionColumnModel);
+			DefaultFlexiColumnModel scoreColumnModel = new DefaultFlexiColumnModel(false, Cols.score.i18nKey(),
+					Cols.score.ordinal(), true, OrderBy.score.name());
+			columnsModel.addFlexiColumnModel(scoreColumnModel);
+			if(gradeModule.isEnabled()) {
+				DefaultFlexiColumnModel gradeColumnModel = new DefaultFlexiColumnModel(Cols.grade.i18nKey(), Cols.grade.ordinal(),
+						new GradeCellRenderer(getLocale()));
+				gradeColumnModel.setDefaultVisible(false);
+				columnsModel.addFlexiColumnModel(gradeColumnModel);
+			}
 			DefaultFlexiColumnModel successStatusColumnModel = new DefaultFlexiColumnModel(false, Cols.successStatus.i18nKey(),
 					Cols.successStatus.ordinal(), true, OrderBy.passed.name(), FlexiColumnModel.ALIGNMENT_LEFT, new PassedCellRenderer(getLocale()));
 			columnsModel.addFlexiColumnModel(successStatusColumnModel);
@@ -302,6 +315,10 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		if (gradeModule.isEnabled()) {
+			row.contextPut("gradeEnabled", Boolean.TRUE);
+			row.contextPut("gradeRenderer", new GradeCellRenderer(getLocale()));
+		}
 		tableEl.setRowRenderer(row, this);
 		
 		if(config.withPresets()) {

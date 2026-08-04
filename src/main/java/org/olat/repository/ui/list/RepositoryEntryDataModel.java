@@ -85,6 +85,8 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 			case location -> item.getLocation();
 			case educationalType -> item.getEducationalType();
 			case completion -> item.getCompletionItem();
+			case score -> item.getScore();
+			case grade -> item;
 			case successStatus -> item.getPassed();
 			case details -> item.getDetailsLink();
 			case ratings -> item.getRatingFormItem();
@@ -106,6 +108,8 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 		location("table.header.location"),
 		educationalType("table.header.educational.type"),
 		completion("table.header.completion"),
+		score("table.header.score"),
+		grade("table.header.rating"),
 		successStatus("table.header.success.status"),
 		details("table.header.learn.more"),
 		select("table.header.learn.more"),

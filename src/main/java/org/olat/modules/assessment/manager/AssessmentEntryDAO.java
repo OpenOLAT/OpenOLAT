@@ -532,6 +532,9 @@ public class AssessmentEntryDAO {
 		sb.append("     , ae.passed");
 		sb.append("     , ae.passedOriginal");
 		sb.append("     , ae.passedModificationDate");
+		sb.append("     , ae.grade");
+		sb.append("     , ae.gradeSystemIdent");
+		sb.append("     , ae.performanceClassIdent");
 		sb.append("     )");
 		sb.append("  from assessmententry ae");
 		sb.and().append(" ae.entryRoot = true");

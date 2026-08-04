@@ -175,6 +175,9 @@ public class RepositoryEntryMyCourseQueries {
 				view.setScore(score != null? Float.valueOf(score.floatValue()): null);
 				view.setPassed(assessmentEntry.getPassed());
 				view.setCompletion(assessmentEntry.getCompletion());
+				view.setGrade(assessmentEntry.getGrade());
+				view.setGradeSystemIdent(assessmentEntry.getGradeSystemIdent());
+				view.setPerformanceClassIdent(assessmentEntry.getPerformanceClassIdent());
 			}
 			
 			AtomicLong levels = levelsMap.get(view.getKey());
@@ -707,9 +710,12 @@ public class RepositoryEntryMyCourseQueries {
 					break;
 				case score:
 					needIdentityKey = true;
-					sb.append(" ,(select eff4.score from effstatement as eff4")
-					  .append("    where eff4.resource=res and eff4.identity.key=:identityKey and eff4.lastStatement=true")
-					  .append(" ) as score");
+					sb.append(" ,(select ae2.score")
+					  .append("     from assessmententry as ae2")
+					  .append("    where ae2.repositoryEntry.key = v.key")
+					  .append("      and ae2.entryRoot = true")
+					  .append("      and ae2.identity.key=:identityKey")
+					  .append("  ) as score");
 					break;
 				case completion:
 					needIdentityKey = true;

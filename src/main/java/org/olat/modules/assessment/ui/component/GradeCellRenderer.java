@@ -33,6 +33,7 @@ import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementRow;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.repository.ui.list.RepositoryEntryRow;
 
 /**
  * 
@@ -63,7 +64,16 @@ public class GradeCellRenderer extends PassedDependentRenderer implements FlexiC
 		} else if (cellValue instanceof CertificateAndEfficiencyStatementRow) {
 			CertificateAndEfficiencyStatementRow statementRow = (CertificateAndEfficiencyStatementRow)cellValue;
 			appendGrade(target, statementRow.getPerformanceClassIdent(), statementRow.getGrade(), statementRow.getPassed(), statementRow.getGradeSystemIdent());
+		} else if (cellValue instanceof RepositoryEntryRow) {
+			RepositoryEntryRow entryRow = (RepositoryEntryRow)cellValue;
+			appendGrade(target, entryRow.getPerformanceClassIdent(), entryRow.getGrade(), entryRow.getPassed(), entryRow.getGradeSystemIdent());
 		}
+	}
+	
+	public String render(Object cellValue) {
+		StringOutput target = new StringOutput();
+		render(null, target, cellValue, -1, null, null, null);
+		return target.toString();
 	}
 
 	private void appendGrade(StringOutput target, String performanceClassident, String grade, Boolean passed, String gradeSystemIdent) {
