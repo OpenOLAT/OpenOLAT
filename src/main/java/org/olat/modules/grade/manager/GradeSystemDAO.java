@@ -58,6 +58,7 @@ public class GradeSystemDAO {
 		gradeSystem.setIdentifier(identifier);
 		gradeSystem.setPredefined(predefined);
 		gradeSystem.setEnabled(true);
+		gradeSystem.setDefault(false);
 		gradeSystem.setPassed(false);
 		gradeSystem.setType(type);
 		dbInstance.getCurrentEntityManager().persist(gradeSystem);
@@ -101,10 +102,19 @@ public class GradeSystemDAO {
 
 	public void delete(GradeSystemRef gradeSystem) {
 		String query = "delete from gradesystem gs where gs.key = :key";
-		
+
 		dbInstance.getCurrentEntityManager()
 				.createQuery(query)
 				.setParameter("key", gradeSystem.getKey())
+				.executeUpdate();
+	}
+
+	public void unsetDefault() {
+		String query = "update gradesystem gs set gs.isDefault = false, gs.lastModified = :now where gs.isDefault = true";
+
+		dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("now", new Date())
 				.executeUpdate();
 	}
 

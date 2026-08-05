@@ -34,9 +34,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultConfigCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -62,7 +66,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class GradeSystemListController extends FormBasicController {
-	
+
+	private static final String CMD_EDIT = "edit-grade-system";
+
 	private FlexiTableElement tableEl;
 	private GradeSystemDataModel dataModel;
 	private FormLink addButton;
@@ -105,12 +111,23 @@ public class GradeSystemListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.label));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.usageCount));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.enabled));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.isDefault, new DefaultConfigCellRenderer()));
+
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel(
+				GradeSystemCols.edit.i18nHeaderKey(), GradeSystemCols.edit.ordinal(), CMD_EDIT,
+				new BooleanCellRenderer(new StaticFlexiCellRenderer("", CMD_EDIT, null, "o_icon-lg o_icon_edit", translate("edit")), null));
+		editColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_edit");
+		editColumn.setHeaderLabel(translate("edit"));
+		editColumn.setAlwaysVisible(true);
+		editColumn.setExportable(false);
+		columnsModel.addFlexiColumnModel(editColumn);
+
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(GradeSystemCols.tools));
 		
 		dataModel = new GradeSystemDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "grade-systems");
+		tableEl.setAndLoadPersistedPreferences(ureq, "grade-systems-v1");
 	}
 
 	private void loadModel() {
@@ -141,6 +158,11 @@ public class GradeSystemListController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == addButton) {
 			doAddGradeSystem(ureq);
+		} else if (source == tableEl) {
+			if (event instanceof SelectionEvent se && CMD_EDIT.equals(se.getCommand())) {
+				GradeSystemRow gradeSystemRow = dataModel.getObject(se.getIndex());
+				doEditGradeSystem(ureq, gradeSystemRow.getGradeSystem());
+			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -247,6 +269,11 @@ public class GradeSystemListController extends FormBasicController {
 		}
 		loadModel();
 	}
+
+	private void doSetDefault(GradeSystem gradeSystem) {
+		gradeService.setDefaultGradeSystem(gradeSystem);
+		loadModel();
+	}
 	
 	private void doOpenTools(UserRequest ureq, GradeSystemRow gradeSystemRow, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
@@ -264,24 +291,31 @@ public class GradeSystemListController extends FormBasicController {
 	private class ToolsController extends BasicController {
 		
 		private Link editLink;
+		private Link setDefaultLink;
 		private Link deleteLink;
-		
+
 		private final GradeSystemRow gradeSystemRow;
-		
+
 		public ToolsController(UserRequest ureq, WindowControl wControl, GradeSystemRow gradeSystemRow) {
 			super(ureq, wControl);
 			this.gradeSystemRow = gradeSystemRow;
-			
+
 			VelocityContainer mainVC = createVelocityContainer("grade_system_tools");
-			
+
 			editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
-			
-			if (gradeSystemRow.getScaleCount() == 0 && !gradeSystemRow.getGradeSystem().isPredefined()) {
+
+			if (!gradeSystemRow.getGradeSystem().isDefault() && gradeSystemRow.getGradeSystem().isEnabled()) {
+				setDefaultLink = LinkFactory.createLink("set.default", "set.default", getTranslator(), mainVC, this, Link.LINK);
+				setDefaultLink.setIconLeftCSS("o_icon o_icon-fw o_icon_default_config");
+			}
+
+			if (gradeSystemRow.getScaleCount() == 0 && !gradeSystemRow.getGradeSystem().isPredefined()
+					&& !gradeSystemRow.getGradeSystem().isDefault()) {
 				deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
 				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			}
-			
+
 			putInitialPanel(mainVC);
 		}
 
@@ -290,6 +324,8 @@ public class GradeSystemListController extends FormBasicController {
 			this.fireEvent(ureq, Event.DONE_EVENT);
 			if(editLink == source) {
 				doEditGradeSystem(ureq, gradeSystemRow.getGradeSystem());
+			} else if(setDefaultLink == source) {
+				doSetDefault(gradeSystemRow.getGradeSystem());
 			} else if(deleteLink == source) {
 				doConfirmDelete(ureq, gradeSystemRow.getGradeSystem());
 			}

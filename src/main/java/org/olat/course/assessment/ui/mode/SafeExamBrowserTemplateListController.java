@@ -299,7 +299,7 @@ public class SafeExamBrowserTemplateListController extends FormBasicController {
 
 			editLink = addLink("edit", "o_icon_edit", links);
 			if (!row.isDefault() && row.isActive()) {
-				setDefaultLink = addLink("seb.template.set.default", "o_icon_star", links);
+				setDefaultLink = addLink("set.default", "o_icon_default_config", links);
 			}
 			if (row.isActive() && !row.isDefault()) {
 				toggleActiveLink = addLink("seb.template.deactivate", "o_icon_deactivate", links);

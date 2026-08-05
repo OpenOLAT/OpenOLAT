@@ -74,6 +74,8 @@ public class GradeSystemImpl implements GradeSystem, Persistable, CreateInfo, Mo
 	private GradeSystemType type;
 	@Column(name="g_enabled", nullable=false, insertable=true, updatable=true)
 	private boolean enabled;
+	@Column(name="g_default", nullable=false, insertable=true, updatable=true)
+	private boolean isDefault;
 	@Column(name="g_has_passed", nullable=false, insertable=true, updatable=true)
 	private boolean hasPassed;
 	@Enumerated(EnumType.STRING)
@@ -153,6 +155,16 @@ public class GradeSystemImpl implements GradeSystem, Persistable, CreateInfo, Mo
 	@Override
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+	}
+
+	@Override
+	public boolean isDefault() {
+		return isDefault;
+	}
+
+	@Override
+	public void setDefault(boolean isDefault) {
+		this.isDefault = isDefault;
 	}
 
 	@Override

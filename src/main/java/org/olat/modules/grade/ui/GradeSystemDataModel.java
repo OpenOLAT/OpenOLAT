@@ -66,6 +66,8 @@ implements SortableFlexiTableDataModel<GradeSystemRow> {
 			case label: return row.getLabel();
 			case usageCount: return row.getScaleCount();
 			case enabled: return Boolean.valueOf(row.getGradeSystem().isEnabled());
+			case isDefault: return Boolean.valueOf(row.getGradeSystem().isDefault());
+			case edit: return Boolean.TRUE;
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
@@ -77,6 +79,8 @@ implements SortableFlexiTableDataModel<GradeSystemRow> {
 		label("grade.system.label"),
 		usageCount("grade.system.usage.count"),
 		enabled("grade.system.enabled"),
+		isDefault("default"),
+		edit("table.header.edit"),
 		tools("action.more");
 		
 		private final String i18nKey;

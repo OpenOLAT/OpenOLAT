@@ -2,6 +2,9 @@
 #if($r.available("edit"))
 	<li>$r.render("edit")</li>
 #end
+#if($r.available("set.default"))
+	<li>$r.render("set.default")</li>
+#end
 #if($r.available("delete"))
 	<li>$r.render("delete")</li>
 #end

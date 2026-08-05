@@ -158,6 +158,7 @@ public class GradeSystemEditController extends FormBasicController {
 		String[] onValues = new String[]{ translate("on") };
 		enabledEl = uifactory.addCheckboxesHorizontal("grade.system.enabled", formLayout, onKeys, onValues);
 		enabledEl.select(onKeys[0], gradeSystem.isEnabled());
+		enabledEl.setEnabled(!gradeSystem.isDefault());
 		
 		SelectionValues typeSV = new SelectionValues();
 		typeSV.add(entry(GradeSystemType.numeric.name(), translate("grade.system.type.numeric")));

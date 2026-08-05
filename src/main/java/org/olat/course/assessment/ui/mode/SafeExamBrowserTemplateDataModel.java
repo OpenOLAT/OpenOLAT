@@ -94,7 +94,7 @@ public class SafeExamBrowserTemplateDataModel
 		name("seb.template.name"),
 		type("seb.template.type"),
 		status("seb.template.status"),
-		isDefault("seb.template.default"),
+		isDefault("default"),
 		usages("seb.template.usages"),
 		browserViewMode("mode.safeexambrowser.browser.view.mode"),
 		allowQuit("mode.safeexambrowser.allow.toexit"),

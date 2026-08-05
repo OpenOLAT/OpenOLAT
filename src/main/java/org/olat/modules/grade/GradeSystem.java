@@ -40,7 +40,11 @@ public interface GradeSystem extends GradeSystemRef {
 	public boolean isEnabled();
 
 	public void setEnabled(boolean enabled);
-	
+
+	public boolean isDefault();
+
+	public void setDefault(boolean isDefault);
+
 	public boolean hasPassed();
 	
 	public void setPassed(boolean passed);

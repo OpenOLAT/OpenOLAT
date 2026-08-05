@@ -112,7 +112,7 @@ public class GradeScaleEditController extends FormBasicController {
 	private BigDecimal maxScore;
 	private final boolean minMaxFromScale;
 	private final Map<Integer, Long> scoreToCount;
-	private final SelectionValues gradeSystemSV;
+	private SelectionValues gradeSystemSV;
 	private GradeScale gradeScale;
 	private GradeSystem gradeSystem;
 	private Map<Integer, Breakpoint> positionToBreakpoint;
@@ -133,9 +133,8 @@ public class GradeScaleEditController extends FormBasicController {
 		this.maxScore = maxScore != null ? new BigDecimal(maxScore) : null;
 		this.minMaxFromScale = minMaxFromScale;
 		this.scoreToCount = null;
-		this.gradeSystemSV = getGradeSystemSV();
-		initGradeScaleAndSystem(courseEntry, subIdent);
-		
+		initGradeSystemAndScale(courseEntry, subIdent);
+
 		initForm(ureq);
 		updateSystemUI();
 		updateScaleUI(ureq);
@@ -165,15 +164,14 @@ public class GradeScaleEditController extends FormBasicController {
 		this.minMaxFromScale = minMaxFromScale;
 		this.scoreToCount = scoreStatistics.stream()
 				.collect(Collectors.toMap(AssessmentScoreStatistic::getScore, AssessmentScoreStatistic::getCount));
-		this.gradeSystemSV = getGradeSystemSV();
-		initGradeScaleAndSystem(courseEntry, subIdent);
-		
+		initGradeSystemAndScale(courseEntry, subIdent);
+
 		initForm(ureq);
 		updateSystemUI();
 		updateScaleUI(ureq);
 	}
 
-	private void initGradeScaleAndSystem(RepositoryEntry courseEntry, String subIdent) {
+	private void initGradeSystemAndScale(RepositoryEntry courseEntry, String subIdent) {
 		gradeScale = gradeService.getGradeScale(courseEntry, subIdent);
 		if (gradeScale != null) {
 			gradeSystem = gradeScale.getGradeSystem();
@@ -182,11 +180,33 @@ public class GradeScaleEditController extends FormBasicController {
 						.collect(Collectors.toMap(Breakpoint::getBestToLowest, Function.identity()));
 			}
 		}
+
+		GradeSystemSearchParams enabledParams = new GradeSystemSearchParams();
+		enabledParams.setEnabledOnly(true);
+		List<GradeSystem> enabledGradeSystems = gradeService.getGradeSystems(enabledParams);
+
+		gradeSystemSV = new SelectionValues();
+		enabledGradeSystems.forEach(gs -> gradeSystemSV.add(SelectionValues.entry(gs.getKey().toString(),
+				GradeUIFactory.translateGradeSystemName(getTranslator(), gs))));
+
 		if (gradeSystem == null) {
-			loadGradeSystem(gradeSystemSV.keys()[0]);
+			GradeSystem defaultGradeSystem = gradeService.getDefaultGradeSystem(enabledGradeSystems);
+			gradeSystem = defaultGradeSystem != null && gradeSystemSV.containsKey(defaultGradeSystem.getKey().toString())
+					? defaultGradeSystem
+					: (!enabledGradeSystems.isEmpty() ? enabledGradeSystems.get(0) : null);
 			markDirty();
+		} else if (!gradeSystemSV.containsKey(gradeSystem.getKey().toString())) {
+			GradeSystemSearchParams currentParams = new GradeSystemSearchParams();
+			currentParams.setGradeSystem(gradeSystem);
+			List<GradeSystem> currentGradeSystems = gradeService.getGradeSystems(currentParams);
+			gradeSystem = !currentGradeSystems.isEmpty() ? currentGradeSystems.get(0) : null;
+			if (gradeSystem != null) {
+				gradeSystemSV.add(SelectionValues.entry(gradeSystem.getKey().toString(), translate("grade.system.disabled",
+						GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem))));
+			}
 		}
-		
+		gradeSystemSV.sort(SelectionValues.VALUE_ASC);
+
 		if (minMaxFromScale) {
 			if (gradeScale != null) {
 				minScore = gradeScale.getMinScore();
@@ -358,30 +378,6 @@ public class GradeScaleEditController extends FormBasicController {
 			submitButton = uifactory.addFormSubmitButton("save", buttonsCont);
 			submitButton.setElementCssClass("o_sel_grade_scale_save");
 		}
-	}
-
-	private SelectionValues getGradeSystemSV() {
-		// Load enabled grade systems
-		GradeSystemSearchParams searchParams = new GradeSystemSearchParams();
-		searchParams.setEnabledOnly(true);
-		List<GradeSystem> gradeSystems = gradeService.getGradeSystems(searchParams);
-		SelectionValues gradeSystemSV = new SelectionValues();
-		gradeSystems.forEach(gs -> gradeSystemSV.add(SelectionValues.entry(gs.getKey().toString(),
-				GradeUIFactory.translateGradeSystemName(getTranslator(), gs))));
-		// Get current, but disabled grade system
-		if (gradeSystem != null && !gradeSystemSV.containsKey(gradeSystem.getKey().toString())) {
-			searchParams = new GradeSystemSearchParams();
-			searchParams.setGradeSystem(gradeSystem);
-			gradeSystems = gradeService.getGradeSystems(searchParams);
-			gradeSystem = !gradeSystems.isEmpty() ? gradeSystems.get(0) : null;
-			if (gradeSystem != null) {
-				gradeSystemSV
-						.add(SelectionValues.entry(gradeSystem.getKey().toString(), translate("grade.system.disabled",
-								GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem))));
-			}
-		}
-		gradeSystemSV.sort(SelectionValues.VALUE_ASC);
-		return gradeSystemSV;
 	}
 
 	private SelectionValues getBreakpointGradeSV() {

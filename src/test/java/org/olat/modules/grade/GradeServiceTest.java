@@ -213,4 +213,49 @@ public class GradeServiceTest extends OlatTestCase {
 		assertThat(positionToBreakpoint.get(Integer.valueOf(2)).getScore()).isEqualByComparingTo(new BigDecimal(12));
 	}
 
+	@Test
+	public void shouldSetDefaultGradeSystem() {
+		GradeSystem gradeSystem1 = sut.createGradeSystem(random(), GradeSystemType.numeric);
+		GradeSystem gradeSystem2 = sut.createGradeSystem(random(), GradeSystemType.numeric);
+		dbInstance.commitAndCloseSession();
+
+		sut.setDefaultGradeSystem(gradeSystem1);
+		dbInstance.commitAndCloseSession();
+		assertThat(sut.getDefaultGradeSystem(null)).isEqualTo(gradeSystem1);
+
+		sut.setDefaultGradeSystem(gradeSystem2);
+		dbInstance.commitAndCloseSession();
+		assertThat(sut.getDefaultGradeSystem(null)).isEqualTo(gradeSystem2);
+	}
+
+	@Test
+	public void shouldIgnoreDisabledGradeSystemAsDefault() {
+		GradeSystem gradeSystem = sut.createGradeSystem(random(), GradeSystemType.numeric);
+		sut.setDefaultGradeSystem(gradeSystem);
+		gradeSystem.setEnabled(false);
+		sut.updateGradeSystem(gradeSystem);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(sut.getDefaultGradeSystem(null)).isNotEqualTo(gradeSystem);
+	}
+
+	@Test
+	public void shouldReturnDefaultFromPreloadedGradeSystems() {
+		GradeSystem gradeSystem = sut.createGradeSystem(random(), GradeSystemType.numeric);
+		GradeSystem defaultGradeSystem = sut.setDefaultGradeSystem(gradeSystem);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(sut.getDefaultGradeSystem(List.of(defaultGradeSystem))).isEqualTo(defaultGradeSystem);
+	}
+
+	@Test
+	public void shouldFallThroughWhenPreloadedGradeSystemsHaveNoDefault() {
+		GradeSystem otherGradeSystem = sut.createGradeSystem(random(), GradeSystemType.numeric);
+		GradeSystem defaultGradeSystem = sut.createGradeSystem(random(), GradeSystemType.numeric);
+		sut.setDefaultGradeSystem(defaultGradeSystem);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(sut.getDefaultGradeSystem(List.of(otherGradeSystem))).isEqualTo(defaultGradeSystem);
+	}
+
 }

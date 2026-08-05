@@ -20,6 +20,7 @@
 package org.olat.modules.grade;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -45,6 +46,10 @@ public interface GradeService {
 	public void deleteGradeSystem(GradeSystemRef gradeSystem);
 	
 	public List<GradeSystem> getGradeSystems(GradeSystemSearchParams searchParams);
+
+	public GradeSystem getDefaultGradeSystem(Collection<GradeSystem> gradeSystems);
+
+	public GradeSystem setDefaultGradeSystem(GradeSystemRef gradeSystem);
 
 	public GradeSystem getGradeSystem(RepositoryEntryRef repositoryEntry, String subIdent);
 	

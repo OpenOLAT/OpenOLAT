@@ -20,7 +20,9 @@
 package org.olat.modules.grade.manager;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +39,7 @@ import jakarta.annotation.PostConstruct;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.modules.grade.Breakpoint;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScaleRef;
@@ -112,7 +115,59 @@ public class GradeServiceImpl implements GradeService {
 	public List<GradeSystem> getGradeSystems(GradeSystemSearchParams searchParams) {
 		return gradeSystemDao.load(searchParams);
 	}
+
+	@Override
+	public GradeSystem getDefaultGradeSystem(Collection<GradeSystem> gradeSystems) {
+		// Step 1: the caller may already have a (possibly different, e.g. including one disabled
+		// system) list loaded - check it first to avoid a redundant query.
+		if (gradeSystems != null) {
+			GradeSystem preloadedDefault = gradeSystems.stream()
+					.filter(GradeSystem::isDefault)
+					.findFirst()
+					.orElse(null);
+			if (preloadedDefault != null) {
+				return preloadedDefault;
+			}
+		}
+
+		// Step 2: load the authoritative enabled list and look again.
+		GradeSystemSearchParams searchParams = new GradeSystemSearchParams();
+		searchParams.setEnabledOnly(true);
+		List<GradeSystem> loadedGradeSystems = gradeSystemDao.load(searchParams);
+		GradeSystem defaultGradeSystem = loadedGradeSystems.stream()
+				.filter(GradeSystem::isDefault)
+				.findFirst()
+				.orElse(null);
+		if (defaultGradeSystem == null && !loadedGradeSystems.isEmpty()) {
+			// Step 3: self-healing - no grading system has been flagged as default yet (fresh install,
+			// or an installation upgraded before this feature existed). Pick one deterministically
+			// instead of leaving course authors with an arbitrary preselection.
+			Translator translator = Util.createPackageTranslator(GradeUIFactory.class, I18nModule.getDefaultLocale());
+			GradeSystem candidate = getAlphabeticallyFirstGradeSystem(translator, loadedGradeSystems);
+			if (candidate != null) {
+				defaultGradeSystem = setDefaultGradeSystem(candidate);
+			}
+		}
+		return defaultGradeSystem;
+	}
 	
+	private GradeSystem getAlphabeticallyFirstGradeSystem(Translator translator, List<GradeSystem> gradeSystems) {
+		return gradeSystems.stream()
+				.min(Comparator.comparing(gradeSystem -> GradeUIFactory.translateGradeSystemName(translator, gradeSystem), String::compareToIgnoreCase))
+				.orElse(null);
+	}
+
+	@Override
+	public GradeSystem setDefaultGradeSystem(GradeSystemRef gradeSystem) {
+		gradeSystemDao.unsetDefault();
+
+		GradeSystemSearchParams searchParams = new GradeSystemSearchParams();
+		searchParams.setGradeSystem(gradeSystem);
+		GradeSystem gradeSystemToUpdate = gradeSystemDao.load(searchParams).get(0);
+		gradeSystemToUpdate.setDefault(true);
+		return gradeSystemDao.save(gradeSystemToUpdate);
+	}
+
 	@Override
 	public GradeSystem getGradeSystem(RepositoryEntryRef repositoryEntry, String subIdent) {
 		GradeScale gradeScale = getGradeScale(repositoryEntry, subIdent);

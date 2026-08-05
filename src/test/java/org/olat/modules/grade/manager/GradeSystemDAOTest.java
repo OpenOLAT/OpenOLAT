@@ -68,6 +68,7 @@ public class GradeSystemDAOTest extends OlatTestCase {
 		softly.assertThat(gradeSystem.hasPassed()).isFalse();
 		softly.assertThat(gradeSystem.getType()).isEqualTo(type);
 		softly.assertThat(gradeSystem.isEnabled()).isTrue();
+		softly.assertThat(gradeSystem.isDefault()).isFalse();
 		softly.assertThat(gradeSystem.getResolution()).isNull();
 		softly.assertThat(gradeSystem.getRounding()).isNull();
 		softly.assertThat(gradeSystem.getBestGrade()).isNull();
@@ -165,6 +166,26 @@ public class GradeSystemDAOTest extends OlatTestCase {
 		assertThat(filtered)
 				.containsExactlyInAnyOrder(gradeSystem1, gradeSystem2)
 				.doesNotContain(gradeSystem3);
+	}
+
+	@Test
+	public void shouldUnsetDefault() {
+		GradeSystem gradeSystem1 = sut.create(random(), GradeSystemType.numeric);
+		gradeSystem1.setDefault(true);
+		gradeSystem1 = sut.save(gradeSystem1);
+		GradeSystem gradeSystem2 = sut.create(random(), GradeSystemType.numeric);
+		gradeSystem2.setDefault(true);
+		gradeSystem2 = sut.save(gradeSystem2);
+		dbInstance.commitAndCloseSession();
+
+		sut.unsetDefault();
+		dbInstance.commitAndCloseSession();
+
+		GradeSystemSearchParams searchParams = new GradeSystemSearchParams();
+		searchParams.setGradeSystems(List.of(gradeSystem1, gradeSystem2));
+		List<GradeSystem> filtered = sut.load(searchParams);
+
+		assertThat(filtered).allMatch(gradeSystem -> !gradeSystem.isDefault());
 	}
 
 	@Test

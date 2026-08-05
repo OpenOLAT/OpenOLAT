@@ -2130,6 +2130,7 @@ create table o_gr_grade_system (
    g_has_passed number default 1 not null,
    g_type varchar(32) not null,
    g_enabled number default 1 not null,
+   g_default number default 0 not null,
    g_resolution varchar(32),
    g_rounding varchar(32),
    g_best_grade number(20),

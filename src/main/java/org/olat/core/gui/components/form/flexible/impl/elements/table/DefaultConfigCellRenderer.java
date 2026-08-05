@@ -23,7 +23,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
 
 /**
  *
@@ -37,8 +36,7 @@ public class DefaultConfigCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput sb, Object cellValue,
 					   int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof Boolean isDefault && Boolean.TRUE.equals(isDefault)) {
-			Translator t = Util.createPackageTranslator(DefaultConfigCellRenderer.class, translator.getLocale());
-			String title = t.translate("default");
+			String title = translator.translate("default");
 			sb.append("<span class='o_labeled_light o_default_config'>")
 					.append("<i class='o_icon o_icon-fw o_icon_default_config'> </i> ")
 					.append("<span>").append(title).append("</span>")
