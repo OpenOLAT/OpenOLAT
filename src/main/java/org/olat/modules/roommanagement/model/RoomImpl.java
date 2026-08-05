@@ -203,7 +203,7 @@ public class RoomImpl implements Persistable, Room {
 	public boolean equals(Object obj) {
 		if (this == obj) return true;
 		if (obj instanceof RoomImpl room) {
-			return key != null && key.equals(room.key);
+			return getKey() != null && getKey().equals(room.getKey());
 		}
 		return false;
 	}

@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -63,8 +62,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.library.LibraryModule;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -105,9 +105,9 @@ public class CalendarEntryLinksController extends FormBasicController {
 	private final CustomMediaChooserController customMediaChooserCtr;
 
 	@Autowired
-	private CalendarManager calendarManager;
+	private LibraryModule libraryModule;
 	@Autowired
-	private RepositoryEntryDAO repositoryEntryDAO;
+	private RepositoryService repositoryService;
 
 	protected CalendarEntryLinksController(UserRequest ureq, WindowControl wControl, KalendarEvent kalendarEvent,
 										   KalendarRenderWrapper chosenCalendarWrapper, Collection<KalendarRenderWrapper> availableCalendars,
@@ -125,8 +125,8 @@ public class CalendarEntryLinksController extends FormBasicController {
 			this.chosenCalendarWrapper = chosenCalendarWrapper;
 		}
 
-		this.isReadOnly = chosenCalendarWrapper == null || chosenCalendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
-		this.customMediaChooserFactory = (CustomMediaChooserFactory) CoreSpringFactory.getBean(CustomMediaChooserFactory.class.getName());
+		isReadOnly = chosenCalendarWrapper != null && chosenCalendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
+		customMediaChooserFactory = (CustomMediaChooserFactory) CoreSpringFactory.getBean(CustomMediaChooserFactory.class.getName());
 		customMediaChooserCtr = customMediaChooserFactory.getInstance(ureq, getWindowControl());
 
 		calendarEntryLinkRows = new ArrayList<>();
@@ -177,7 +177,7 @@ public class CalendarEntryLinksController extends FormBasicController {
 		boolean isAllowed = !isReadOnly && !CalendarManagedFlag.isManaged(kalendarEvent, CalendarManagedFlag.links);
 
 		createLinkToCourseEl.setVisible(isAllowed);
-		createLinkToLibrary.setVisible(isAllowed);
+		createLinkToLibrary.setVisible(isAllowed && libraryModule.isEnabled());
 		createExternalLink.setVisible(isAllowed);
 	}
 
@@ -244,7 +244,7 @@ public class CalendarEntryLinksController extends FormBasicController {
 			CalendarEntryLinkRow calendarEntryLinkRow = null;
 
 			if (calendarType.equals(COURSE)) {
-				Long courseId = repositoryEntryDAO.loadByResourceId("CourseModule", Long.valueOf(chosenCalendarWrapper.getKalendar().getCalendarID())).getKey();
+				Long courseId = repositoryService.loadByResourceId("CourseModule", Long.valueOf(chosenCalendarWrapper.getKalendar().getCalendarID())).getKey();
 				url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + courseId + "]");
 				calendarEntryLinkRow = new CalendarEntryLinkRow(url, CalendarEntryLinkType.LINK_TO_COURSE);
 				KalendarEventLink courseCalEventLink = new KalendarEventLink(RepositoryEntry.class.getSimpleName(), url, title, url, "o_CourseModule_icon");
@@ -323,7 +323,7 @@ public class CalendarEntryLinksController extends FormBasicController {
 
 	private void doStartCreateLinkToLibraryDoc(UserRequest ureq) {
 		if (CoreSpringFactory.containsBean(CustomMediaChooserFactory.class.getName())
-				&& (customMediaChooserCtr != null)) {
+				&& customMediaChooserCtr != null) {
 			listenTo(customMediaChooserCtr);
 			MediaLinksController mediaLinksController = new MediaLinksController(ureq, getWindowControl(), kalendarEvent, customMediaChooserFactory);
 			listenTo(mediaLinksController);
@@ -351,29 +351,20 @@ public class CalendarEntryLinksController extends FormBasicController {
 		cmc.activate();
 	}
 
-	private void doCreateLinkToExternalRss(UserRequest ureq) {
-		//save externals links
-		Kalendar cal = kalendarEvent.getCalendar();
-		if (kalendarEvent.getCalendar() != null) {
-			boolean doneSuccessfully = calendarManager.updateEventFrom(cal, kalendarEvent);
-			if (doneSuccessfully) {
-				List<KalendarEventLink> externalLinkList = kalendarEvent.getKalendarEventLinks()
-						.stream()
-						.filter(c -> c.getProvider().equals(ExternalLinksController.EXTERNAL_LINKS_PROVIDER))
-						.toList();
-				if (!externalLinkList.isEmpty()) {
-					for (KalendarEventLink externalLink : externalLinkList) {
-						CalendarEntryLinkRow row = new CalendarEntryLinkRow(externalLink.getId(), CalendarEntryLinkType.LINK_EXTERNAL);
-						calendarExternalLinkRows.add(forgeRow(row, externalLink.getDisplayName(), externalLink.getURI()));
-					}
-				}
-				loadLinkItems();
-				fireEvent(ureq, Event.DONE_EVENT);
-			} else {
-				showError("cal.error.save");
-				fireEvent(ureq, Event.FAILED_EVENT);
+	private void doCreateLinkToExternalLink() {
+		//Transfer externals links, the modal dialog works directly on the event object
+		List<KalendarEventLink> externalLinkList = kalendarEvent.getKalendarEventLinks()
+			.stream()
+			.filter(c -> c.getProvider().equals(ExternalLinksController.EXTERNAL_LINKS_PROVIDER))
+			.toList();
+		if (!externalLinkList.isEmpty()) {
+			calendarExternalLinkRows.clear();
+			for (KalendarEventLink externalLink : externalLinkList) {
+				CalendarEntryLinkRow row = new CalendarEntryLinkRow(externalLink.getId(), CalendarEntryLinkType.LINK_EXTERNAL);
+				calendarExternalLinkRows.add(forgeRow(row, externalLink.getDisplayName(), externalLink.getURI()));
 			}
 		}
+		loadLinkItems();
 	}
 
 	private void doForgeExistingLinks() {
@@ -429,7 +420,6 @@ public class CalendarEntryLinksController extends FormBasicController {
 			doCreateLinkToCourseEl(ureq);
 			cmc.deactivate();
 		} else if (source == customMediaChooserCtr) {
-			boolean doneSuccessfully = true;
 			if (event instanceof URLChoosenEvent urlEvent) {
 				String url = urlEvent.getURL();
 				List<KalendarEventLink> links = kalendarEvent.getKalendarEventLinks();
@@ -443,23 +433,14 @@ public class CalendarEntryLinksController extends FormBasicController {
 				}
 
 				links.add(new KalendarEventLink(provider, url, displayName, uri, iconCssClass));
-
-				Kalendar cal = kalendarEvent.getCalendar();
-				doneSuccessfully = calendarManager.updateEventFrom(cal, kalendarEvent);
-
-				if (doneSuccessfully) {
-					doCreateLinkToLibraryDoc(url, displayName, url);
-					fireEvent(ureq, event);
-				} else {
-					showError("cal.error.save");
-					fireEvent(ureq, Event.FAILED_EVENT);
-				}
+				doCreateLinkToLibraryDoc(url, displayName, url);
+				fireEvent(ureq, event);
 			}
 			cmc.deactivate();
 		} else if (source == externalLinksController) {
-			doCreateLinkToExternalRss(ureq);
+			doCreateLinkToExternalLink();
 			cmc.deactivate();
-		} else if (source == deleteDialogCtrl && (DialogBoxUIFactory.isOkEvent(event))) {
+		} else if (source == deleteDialogCtrl && DialogBoxUIFactory.isOkEvent(event)) {
 			doDelete((CalendarEntryLinkRow) deleteDialogCtrl.getUserObject());
 			fireEvent(ureq, Event.CHANGED_EVENT);
 			loadLinkItems();
