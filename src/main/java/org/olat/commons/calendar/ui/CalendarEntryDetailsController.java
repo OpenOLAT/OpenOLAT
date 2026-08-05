@@ -59,7 +59,7 @@ public class CalendarEntryDetailsController extends FormBasicController {
 
 	private FormLink deleteEventButton;
 
-	private final KalendarRenderWrapper calendarWrapper;
+	private KalendarRenderWrapper calendarWrapper;
 	private final Collection<KalendarRenderWrapper> availableCalendars;
 	private final boolean isNew;
 	private Boolean linksOpen = Boolean.FALSE;
