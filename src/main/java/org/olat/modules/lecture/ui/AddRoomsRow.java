@@ -51,7 +51,7 @@ public class AddRoomsRow {
 		this.room = room;
 		this.occupiedBy = occupiedBy;
 		this.myEvent = myEvent;
-		this.seatWarning = room.getSeats() != null && participantCount > 0 && room.getSeats() < participantCount;
+		this.seatWarning = room != null && room.getSeats() != null && participantCount > 0 && room.getSeats() < participantCount;
 	}
 
 	public Room getRoom() {
