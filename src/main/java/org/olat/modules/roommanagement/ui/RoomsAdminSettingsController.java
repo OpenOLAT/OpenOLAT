@@ -19,6 +19,7 @@
  */
 package org.olat.modules.roommanagement.ui;
 
+import org.olat.admin.site.ui.SitesConfigurationController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -29,6 +30,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.navigation.SiteConfiguration;
+import org.olat.core.gui.control.navigation.SiteDefinitions;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.site.CurriculumAdminSiteDef;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.roommanagement.RoomManagementModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,6 +51,14 @@ public class RoomsAdminSettingsController extends FormBasicController {
 
 	@Autowired
 	private RoomManagementModule roomManagementModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private CurriculumAdminSiteDef curriculumAdminSiteDef;
+	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
+	private SiteDefinitions siteDefinitions;
 
 	public RoomsAdminSettingsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -59,6 +76,27 @@ public class RoomsAdminSettingsController extends FormBasicController {
 				translate("on"), translate("off"), moduleCont);
 		enabledEl.toggle(roomManagementModule.isEnabled());
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
+
+		initDependenciesSection(formLayout);
+	}
+
+	private void initDependenciesSection(FormItemContainer formLayout) {
+		FormLayoutContainer dependenciesCont = FormLayoutContainer.createCustomFormLayout(
+				"dependencies", getTranslator(), velocity_root + "/module_dependencies.html");
+		formLayout.add(dependenciesCont);
+
+		boolean curriculumEnabled = curriculumModule.isEnabled();
+		dependenciesCont.contextPut("curriculumEnabled", curriculumEnabled);
+		if (curriculumEnabled) {
+			SiteConfiguration siteConfig = siteDefinitions.getConfigurationSite(curriculumAdminSiteDef);
+			String secCallbackBeanId = siteConfig == null ? null : siteConfig.getSecurityCallbackBeanId();
+			if (StringHelper.containsNonWhitespace(secCallbackBeanId)) {
+				Translator siteTranslator = Util.createPackageTranslator(SitesConfigurationController.class, getLocale());
+				dependenciesCont.contextPut("curriculumAccess", siteTranslator.translate(secCallbackBeanId));
+			}
+		}
+
+		dependenciesCont.contextPut("lectureEnabled", lectureModule.isEnabled());
 	}
 
 	@Override

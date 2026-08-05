@@ -1,0 +1,27 @@
+<div class="panel panel-default o_block">
+	<div class="panel-heading">
+		<strong>$r.translate("admin.dependencies.title")</strong>
+	</div>
+	<table class="table">
+		<tr>
+			<td class="o_nowrap"><strong>$r.translate("admin.dependencies.curriculum")</strong></td>
+			<td>
+				#if($curriculumEnabled)
+					$r.translate("enabled")#if($curriculumAccess) | $curriculumAccess#end
+				#else
+					$r.translate("disabled")
+				#end
+			</td>
+		</tr>
+		<tr>
+			<td class="o_nowrap"><strong>$r.translate("admin.dependencies.lecture")</strong></td>
+			<td>
+				#if($lectureEnabled)
+					$r.translate("enabled")
+				#else
+					$r.translate("disabled")
+				#end
+			</td>
+		</tr>
+	</table>
+</div>
