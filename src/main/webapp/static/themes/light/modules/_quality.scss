@@ -36,112 +36,110 @@
 			}
 		}
 	}
-
-	/* --- Data collection dc_status in configuration view --- */
-	.o_labeled,
-	.o_toolbar .o_tools_container a.o_labeled {
-		&.o_qual_dc_status_preparation {
-			background-color: 	$o-qual-dc-preparation-color;
-			border-color: 		$o-qual-dc-preparation-color;
-			color: 				$o-qual-status-color-bright;
-		}
-		&.o_qual_dc_status_ready {
-			@extend %o_labeled_yellow;
-		}
-		&.o_qual_dc_status_running {
-			background-color: 	$o-qual-dc-running-color;
-			border-color: 		$o-qual-dc-running-color;
-			color: 				$o-qual-status-color-bright;
-		}
-		&.o_qual_dc_status_finished {
-			background-color: 	$o-qual-dc-finished-color;
-			border-color: 		$o-qual-dc-finished-color;
-			color: 				$o-qual-status-color-bright;
-		}
-	}	
-	.o_toolbar .o_tools_container a.o_labeled:hover {
-		&.o_qual_dc_status_preparation {
-			background-color: 	darken($o-qual-dc-preparation-color,10%);
-		}
-		&.o_qual_dc_status_ready {
-			background-color: darken($o-labeled-yellow-bg-color,10%);
-		}
-		&.o_qual_dc_status_running {
-			background-color: 	darken($o-qual-dc-running-color,10%);
-		}
-		&.o_qual_dc_status_finished {
-			background-color: 	darken($o-qual-dc-finished-color,10%);
-		}
-	}
-	
-	/* --- Data collection status in data collection list --- */
-
-	.o_qual_dc_list {
-		tbody {
-			tr {
-				// status
-				td:nth-child(1) {
-					padding-top: 3px;
-				}
-			}
-		}
-	}
-	.o_labeled_light,
-	.o_toolbar .o_tools_container a.o_labeled_light {		
-		&.o_qual_dc_status_preparation_light {
-			border-color: 		$o-qual-dc-preparation-color;
-			color: 				$o-qual-dc-preparation-color;
-		}
-		&.o_qual_dc_status_ready_light {
-			@extend %o_labeled_light_yellow;
-		}
-		&.o_qual_dc_status_running_light {
-			border-color: 		$o-qual-dc-running-color;
-			color: 				$o-qual-dc-running-color;
-		}
-		&.o_qual_dc_status_finished_light {
-			border-color: 		$o-qual-dc-finished-color;
-			color: 				$o-qual-dc-finished-color;
-		}
-	}
-	
-	
-	/* --- Status in executor participation list --- */
-
-	.o_qual_exec_list {
-		tbody {
-			tr {
-				// status
-				td:nth-child(1) {
-					padding-top: 3px;
-				}
-			}
-		}
-	}
-
-	.o_qual_exec_status_future_light {
-		border-color: 		$o-qual-exec-future-color;
-		color: 				$o-qual-exec-future-color;
-	}
-	.o_qual_exec_status_ready_light {
-		border-color: 		$o-qual-exec-ready-color;
-		color: 				$o-qual-exec-ready-color-dark;
-	}
-	.o_qual_exec_status_participating_light {
-		border-color: 		$o-qual-exec-participating-color;
-		color: 				$o-qual-exec-participating-color;
-	}
-	.o_qual_exec_status_participated_light {
-		border-color: 		$o-qual-exec-participated-color;
-		color: 				$o-qual-exec-participated-color;
-	}
-	.o_qual_exec_status_over_light {
-		border-color: 		$o-qual-exec-over-color;
-		color: 				$o-qual-exec-over-color;
-	}
-	
 }
 
+/* --- Data collection dc_status in configuration view --- */
+.o_labeled,
+.o_toolbar .o_tools_container a.o_labeled {
+	&.o_qual_dc_status_preparation {
+		background-color: 	$o-qual-dc-preparation-color;
+		border-color: 		$o-qual-dc-preparation-color;
+		color: 				$o-qual-status-color-bright;
+	}
+	&.o_qual_dc_status_ready {
+		@extend %o_labeled_yellow;
+	}
+	&.o_qual_dc_status_running {
+		background-color: 	$o-qual-dc-running-color;
+		border-color: 		$o-qual-dc-running-color;
+		color: 				$o-qual-status-color-bright;
+	}
+	&.o_qual_dc_status_finished {
+		background-color: 	$o-qual-dc-finished-color;
+		border-color: 		$o-qual-dc-finished-color;
+		color: 				$o-qual-status-color-bright;
+	}
+}	
+.o_toolbar .o_tools_container a.o_labeled:hover {
+	&.o_qual_dc_status_preparation {
+		background-color: 	darken($o-qual-dc-preparation-color,10%);
+	}
+	&.o_qual_dc_status_ready {
+		background-color: darken($o-labeled-yellow-bg-color,10%);
+	}
+	&.o_qual_dc_status_running {
+		background-color: 	darken($o-qual-dc-running-color,10%);
+	}
+	&.o_qual_dc_status_finished {
+		background-color: 	darken($o-qual-dc-finished-color,10%);
+	}
+}
+
+/* --- Data collection status in data collection list --- */
+
+.o_qual_dc_list {
+	tbody {
+		tr {
+			// status
+			td:nth-child(1) {
+				padding-top: 3px;
+			}
+		}
+	}
+}
+.o_labeled_light,
+.o_toolbar .o_tools_container a.o_labeled_light {		
+	&.o_qual_dc_status_preparation_light {
+		border-color: 		$o-qual-dc-preparation-color;
+		color: 				$o-qual-dc-preparation-color;
+	}
+	&.o_qual_dc_status_ready_light {
+		@extend %o_labeled_light_yellow;
+	}
+	&.o_qual_dc_status_running_light {
+		border-color: 		$o-qual-dc-running-color;
+		color: 				$o-qual-dc-running-color;
+	}
+	&.o_qual_dc_status_finished_light {
+		border-color: 		$o-qual-dc-finished-color;
+		color: 				$o-qual-dc-finished-color;
+	}
+}
+
+
+/* --- Status in executor participation list --- */
+
+.o_qual_exec_list {
+	tbody {
+		tr {
+			// status
+			td:nth-child(1) {
+				padding-top: 3px;
+			}
+		}
+	}
+}
+
+.o_qual_exec_status_future_light {
+	border-color: 		$o-qual-exec-future-color;
+	color: 				$o-qual-exec-future-color;
+}
+.o_qual_exec_status_ready_light {
+	border-color: 		$o-qual-exec-ready-color;
+	color: 				$o-qual-exec-ready-color-dark;
+}
+.o_qual_exec_status_participating_light {
+	border-color: 		$o-qual-exec-participating-color;
+	color: 				$o-qual-exec-participating-color;
+}
+.o_qual_exec_status_participated_light {
+	border-color: 		$o-qual-exec-participated-color;
+	color: 				$o-qual-exec-participated-color;
+}
+.o_qual_exec_status_over_light {
+	border-color: 		$o-qual-exec-over-color;
+	color: 				$o-qual-exec-over-color;
+}
 
 .o_qual_execute_header, .o_qual_report_header {
 	.o_qual_context_table {

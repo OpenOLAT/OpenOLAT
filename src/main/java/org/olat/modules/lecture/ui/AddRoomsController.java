@@ -285,7 +285,7 @@ public class AddRoomsController extends FormBasicController {
 
 			List<RoomBooking> roomDayBookings = dayBookingsByRoom.getOrDefault(room.getKey(), List.of());
 			if (occupiedBy != null) {
-				computeAdjacentSlots(rowObj, roomDayBookings, occupiedBy);
+				computeAdjacentSlots(rowObj, startDate, endDate, roomDayBookings, occupiedBy);
 			}
 
 			allRows.add(rowObj);
@@ -318,37 +318,76 @@ public class AddRoomsController extends FormBasicController {
 		return byRoom;
 	}
 
-	private void computeAdjacentSlots(AddRoomsRow row, List<RoomBooking> roomBookings, RoomBooking occupiedBy) {
-		// If the room is occupied, the conflicting booking itself defines the nearest edge of the
-		// free slot, not the requested start/end (which may lie inside the conflicting booking).
-		Date earlierTo = (occupiedBy != null && occupiedBy.getStartDate() != null && occupiedBy.getStartDate().before(startDate))
-				? occupiedBy.getStartDate() : startDate;
-		Date laterFrom = (occupiedBy != null && occupiedBy.getEndDate() != null && occupiedBy.getEndDate().after(endDate))
-				? occupiedBy.getEndDate() : endDate;
-		// Fallback slot length when no other booking bounds the gap: same duration as the requested event
-		long durationMs = endDate.getTime() - startDate.getTime();
+	public static void computeAdjacentSlots(AddRoomsRow row, Date requestedStartDate, Date requestedEndDate, 
+											List<RoomBooking> roomBookings, RoomBooking occupiedBy) {
+		if (occupiedBy == null || occupiedBy.getStartDate() == null || occupiedBy.getEndDate() == null) {
+			return;
+		}
+		
+		long requestedDurationMs = requestedEndDate.getTime() - requestedStartDate.getTime();
 
-		// Earlier slot: end of the latest other booking that ends at or before earlierTo,
-		// or a slot of the requested duration if no such booking exists
-		row.setEarlierSlotTo(earlierTo);
-		Date earlierFrom = roomBookings.stream()
-				.filter(b -> occupiedBy == null || !b.getKey().equals(occupiedBy.getKey()))
-				.filter(b -> b.getEndDate() != null && !b.getEndDate().after(earlierTo))
-				.max(Comparator.comparing(RoomBooking::getEndDate))
-				.map(RoomBooking::getEndDate)
-				.orElseGet(() -> new Date(earlierTo.getTime() - durationMs));
-		row.setEarlierSlotFrom(earlierFrom);
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(requestedStartDate);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date startOfDay = cal.getTime();
 
-		// Later slot: start of the earliest other booking that starts at or after laterFrom,
-		// or a slot of the requested duration if no such booking exists
-		row.setLaterSlotFrom(laterFrom);
-		Date laterTo = roomBookings.stream()
-				.filter(b -> occupiedBy == null || !b.getKey().equals(occupiedBy.getKey()))
-				.filter(b -> b.getStartDate() != null && !b.getStartDate().before(laterFrom))
-				.min(Comparator.comparing(RoomBooking::getStartDate))
-				.map(RoomBooking::getStartDate)
-				.orElseGet(() -> new Date(laterFrom.getTime() + durationMs));
-		row.setLaterSlotTo(laterTo);
+		cal.set(Calendar.HOUR_OF_DAY, 23);
+		cal.set(Calendar.MINUTE, 59);
+		cal.set(Calendar.SECOND, 59);
+		cal.set(Calendar.MILLISECOND, 999);
+		Date endOfDay = cal.getTime();
+
+		List<RoomBooking> sortedBookings = new ArrayList<>(roomBookings);
+		sortedBookings.sort(Comparator.comparing(RoomBooking::getStartDate));
+
+		// Earlier slot detection
+		List<RoomBooking> withoutLaterBookings = sortedBookings.stream()
+				.filter(booking -> !booking.getStartDate().after(occupiedBy.getEndDate())).toList();
+		
+		Date earlierSlotFrom = null;
+		Date earlierSlotTo = null;
+		for (int i = withoutLaterBookings.size() - 1; i >= 0; i--) {
+			RoomBooking booking = withoutLaterBookings.get(i);
+			Date to = booking.getStartDate();
+			Date from = new Date(to.getTime() - requestedDurationMs);
+			RoomBooking earlierBooking = (i - 1) >= 0 ? withoutLaterBookings.get(i - 1) : null;
+			if (earlierBooking == null || !earlierBooking.getEndDate().after(from)) {
+				earlierSlotFrom = from;
+				earlierSlotTo = to;
+				break;
+			}
+		}
+		
+		if (earlierSlotFrom != null && !earlierSlotFrom.before(startOfDay)) {
+			row.setEarlierSlotFrom(earlierSlotFrom);
+			row.setEarlierSlotTo(earlierSlotTo);
+		}
+		
+		// Later slot detection
+		List<RoomBooking> withoutEarlierBookings = sortedBookings.stream()
+				.filter(booking -> !booking.getEndDate().before(occupiedBy.getStartDate())).toList();		
+		
+		Date laterSlotFrom = null;
+		Date laterSlotTo = null;
+		for (int i = 0; i < withoutEarlierBookings.size(); i++) {
+			RoomBooking booking = withoutEarlierBookings.get(i);
+			Date from = booking.getEndDate();
+			Date to = new Date(from.getTime() + requestedDurationMs);
+			RoomBooking laterBooking = (i + 1) < withoutEarlierBookings.size() ? withoutEarlierBookings.get(i + 1) : null;
+			if (laterBooking == null || !laterBooking.getStartDate().before(to)) {
+				laterSlotFrom = from;
+				laterSlotTo = to;
+				break;
+			}
+		}
+		
+		if (laterSlotTo != null && !laterSlotTo.after(endOfDay)) {
+			row.setLaterSlotFrom(laterSlotFrom);
+			row.setLaterSlotTo(laterSlotTo);
+		}
 	}
 
 	private void applyFilters() {
