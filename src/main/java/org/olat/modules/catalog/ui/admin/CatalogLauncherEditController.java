@@ -112,6 +112,7 @@ public abstract class CatalogLauncherEditController extends FormBasicController 
 		String translateLauncherName = CatalogV2UIFactory.translateLauncherName(getTranslator(), handler, identifier);
 		translateLauncherName = StringHelper.escapeHtml(translateLauncherName);
 		nameEl = uifactory.addTextElement("admin.launcher.name", 100, translateLauncherName, nameCont);
+		nameEl.setElementCssClass("o_omit_margin");
 		nameEl.setAriaLabel(translate("admin.launcher.name"));
 		nameEl.setEnabled(false);
 		nameEl.setDomReplacementWrapperRequired(false);

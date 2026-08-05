@@ -38,7 +38,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -82,9 +81,9 @@ public class GradeSystemEditController extends FormBasicController {
 	private static final String[] onValues = new String[] { "" };
 	private static final String CMD_EDIT = "edit";
 	
-	private StaticTextElement systemNameEl;
+	private TextElement systemNameEl;
 	private FormLink systemNameLink;
-	private StaticTextElement systemLabelEl;
+	private TextElement systemLabelEl;
 	private FormLink systemLabelLink;
 	private MultipleSelectionElement enabledEl;
 	private SingleSelection typeEl;
@@ -129,30 +128,40 @@ public class GradeSystemEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		uifactory.addStaticTextElement("grade.system.identifier", gradeSystem.getIdentifier(), formLayout);
 		
-		FormLayoutContainer nameCont = FormLayoutContainer.createButtonLayout("nameCont", getTranslator());
+		FormLayoutContainer nameCont = FormLayoutContainer.createInputGroupLayout("nameCont", getTranslator(), null, null);
 		nameCont.setLabel("grade.system.name", null);
-		nameCont.setElementCssClass("o_inline_cont");
 		nameCont.setRootForm(mainForm);
 		formLayout.add(nameCont);
 		
-		String translateGradeSystem = GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem);
-		systemNameEl = uifactory.addStaticTextElement("grade.system.name", null, translateGradeSystem, nameCont);
+		String translateGradeSystem = StringHelper.escapeHtml(GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
+		systemNameEl = uifactory.addTextElement("grade.system.name", 100, translateGradeSystem, nameCont);
+		systemNameEl.setElementCssClass("o_omit_margin");
+		systemNameEl.setAriaLabel(translate("grade.system.name"));
+		systemNameEl.setEnabled(false);
+		systemNameEl.setDomReplacementWrapperRequired(false);
 		
 		if (!predefined) {
-			systemNameLink = uifactory.addFormLink("grade.system.name.edit", nameCont);
+			systemNameLink = uifactory.addFormLink("rightAddOn", "translate", "translate", null, nameCont, Link.BUTTON);
+			systemNameLink.setIconLeftCSS("o_icon o_icon-lg o_icon_language");
+			systemNameLink.setElementCssClass("input-group-addon");
 		}
 		
-		FormLayoutContainer labelCont = FormLayoutContainer.createButtonLayout("labelCont", getTranslator());
+		FormLayoutContainer labelCont = FormLayoutContainer.createInputGroupLayout("labelCont", getTranslator(), null, null);
 		labelCont.setLabel("grade.system.label", null);
-		labelCont.setElementCssClass("o_inline_cont");
 		labelCont.setRootForm(mainForm);
 		formLayout.add(labelCont);
 		
-		String translateGradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem);
-		systemLabelEl = uifactory.addStaticTextElement("grade.system.label", null, translateGradeSystemLabel, labelCont);
+		String translateGradeSystemLabel = StringHelper.escapeHtml(GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem));
+		systemLabelEl = uifactory.addTextElement("grade.system.label", 100, translateGradeSystemLabel, labelCont);
+		systemLabelEl.setElementCssClass("o_omit_margin");
+		systemLabelEl.setAriaLabel(translate("grade.system.label"));
+		systemLabelEl.setEnabled(false);
+		systemLabelEl.setDomReplacementWrapperRequired(false);
 		
 		if (!predefined) {
-			systemLabelLink = uifactory.addFormLink("grade.system.label.edit", labelCont);
+			systemLabelLink = uifactory.addFormLink("rightAddOn", "translate", "translate", null, labelCont, Link.BUTTON);
+			systemLabelLink.setIconLeftCSS("o_icon o_icon-lg o_icon_language");
+			systemLabelLink.setElementCssClass("input-group-addon");
 		}
 		
 		String[] onValues = new String[]{ translate("on") };
@@ -273,11 +282,11 @@ public class GradeSystemEditController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == systemNameTranslatorCtrl) {
-			systemNameEl.setValue(GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
+			systemNameEl.setValue(StringHelper.escapeHtml(GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem)));
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == systemLabelTranslatorCtrl) {
-			systemLabelEl.setValue(GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem));
+			systemLabelEl.setValue(StringHelper.escapeHtml(GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem)));
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == translatorCtrl) {
