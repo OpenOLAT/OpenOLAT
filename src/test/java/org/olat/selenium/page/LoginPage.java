@@ -182,7 +182,7 @@ public class LoginPage {
 		return postSuccessfulLogin(landingPointBy);
 	}
 	
-	private LoginPage postSuccessfulLogin(By landingPointBy) {
+	public LoginPage postSuccessfulLogin(By landingPointBy) {
 		try {
 			OOGraphene.waitElement(authOrDisclaimerXPath, browser);
 			

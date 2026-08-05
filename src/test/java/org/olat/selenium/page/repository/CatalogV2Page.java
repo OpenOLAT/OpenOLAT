@@ -89,11 +89,26 @@ public class CatalogV2Page {
 	}
 	
 	public CatalogV2Page login(UserVO user) {
-		new LoginPage(browser).loginAs(user.getLogin(), user.getPassword());
-
 		try {
-			By landingPointBy = By.cssSelector(".o_navbar_button a>i.o_icon_login");
-			OOGraphene.waitElementDisappears(landingPointBy, 10, browser);
+			//fill login form
+			By usernameId = By.id("o_fiooolat_login_name");
+			OOGraphene.waitElement(usernameId, browser).sendKeys(user.getLogin());
+			By loginBy = By.id("o_fiooolat_login_button");
+			browser.findElement(loginBy).click();
+			
+			OOGraphene.waitBusy(browser);
+			OOGraphene.waitingALittleBit();
+			assertOnLogin();
+			
+			By passwordId = By.id("o_fiooolat_login_pass");
+			OOGraphene.waitElement(passwordId, browser).sendKeys(user.getPassword());
+			browser.findElement(loginBy).click();
+
+			By landingPointBy = By.cssSelector("#o_footer_user #o_username");
+			new LoginPage(browser).postSuccessfulLogin(landingPointBy);
+
+			By loginButtonBy = By.cssSelector(".o_navbar_button a>i.o_icon_login");
+			OOGraphene.waitElementDisappears(loginButtonBy, 10, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Login catalog", browser);
 			throw e;

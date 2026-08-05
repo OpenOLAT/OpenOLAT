@@ -237,15 +237,6 @@ public class SafeExamBrowserTemplateImpl implements Persistable, SafeExamBrowser
 			if(json != null) {
 				setSafeExamBrowserConfigPListKey(Encoder.sha256Exam(json));
 			}
-			
-			System.out.println(plist);
-			
-			System.out.println(json);
-			System.out.println(Encoder.sha256Exam(json));
-			
-			
-			
-			
 		}
 	}
 
