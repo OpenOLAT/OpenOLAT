@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -85,13 +86,13 @@ public class GradeSystemEditController extends FormBasicController {
 	private FormLink systemNameLink;
 	private TextElement systemLabelEl;
 	private FormLink systemLabelLink;
-	private MultipleSelectionElement enabledEl;
+	private FormToggle enabledEl;
 	private SingleSelection typeEl;
 	private SingleSelection resolutionEl;
 	private SingleSelection roundingEl;
 	private TextElement bestGradeEl;
 	private TextElement lowestGradeEl;
-	private MultipleSelectionElement passedEl;
+	private FormToggle passedEl;
 	private TextElement cutValueEl;
 	private FormLayoutContainer performanceClassCont;
 	private FormLink addButton;
@@ -164,9 +165,8 @@ public class GradeSystemEditController extends FormBasicController {
 			systemLabelLink.setElementCssClass("input-group-addon");
 		}
 		
-		String[] onValues = new String[]{ translate("on") };
-		enabledEl = uifactory.addCheckboxesHorizontal("grade.system.enabled", formLayout, onKeys, onValues);
-		enabledEl.select(onKeys[0], gradeSystem.isEnabled());
+		enabledEl =  uifactory.addToggleButton("grade.system.enabled", "grade.system.enabled", translate("on"), translate("off"), formLayout);
+		enabledEl.toggle(gradeSystem.isEnabled());
 		enabledEl.setEnabled(!gradeSystem.isDefault());
 		
 		SelectionValues typeSV = new SelectionValues();
@@ -207,15 +207,15 @@ public class GradeSystemEditController extends FormBasicController {
 		roundingEl.setEnabled(!hasScale && !predefined);
 		
 		String bestGrade = gradeSystem.getBestGrade() != null? THREE_DIGITS.format(gradeSystem.getBestGrade()): null;
-		bestGradeEl = uifactory.addTextElement("grade.system.best.grade", 10, bestGrade, formLayout);
+		bestGradeEl = uifactory.addTextElement("grade.system.highest.grade", 10, bestGrade, formLayout);
 		bestGradeEl.setMandatory(true);
 		
 		String lowestGrade = gradeSystem.getLowestGrade() != null? THREE_DIGITS.format(gradeSystem.getLowestGrade()): null;
 		lowestGradeEl = uifactory.addTextElement("grade.system.lowest.grade", 10, lowestGrade, formLayout);
 		lowestGradeEl.setMandatory(true);
 		
-		passedEl = uifactory.addCheckboxesHorizontal("grade.system.has.passed", formLayout, onKeys, onValues);
-		passedEl.select(onKeys[0], gradeSystem.hasPassed());
+		passedEl = uifactory.addToggleButton("grade.system.with.success.status", "grade.system.with.success.status", translate("on"), translate("off"), formLayout);
+		passedEl.toggle(gradeSystem.hasPassed());
 		passedEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String cutValue = gradeSystem.getCutValue() != null? THREE_DIGITS.format(gradeSystem.getCutValue()): null;
@@ -245,18 +245,18 @@ public class GradeSystemEditController extends FormBasicController {
 		lowestGradeEl.setVisible(numeric);
 		passedEl.setEnabled(!hasScale && !predefined);
 		cutValueEl.setEnabled(!hasScale && !predefined);
-		cutValueEl.setVisible(numeric && passedEl.isAtLeastSelected(1));
+		cutValueEl.setVisible(numeric && passedEl.isOn());
 		
 		if (!numeric) {
 			for (PerformanceClassRow row : performanceClassRows) {
-				row.getMarkPassedEl().setVisible(passedEl.isAtLeastSelected(1));
+				row.getMarkPassedEl().setVisible(passedEl.isOn());
 				row.getMarkPassedEl().setEnabled(!hasScale && !predefined);
 			}
 			
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassCols.position));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassCols.name));
-			if (passedEl.isAtLeastSelected(1)) {
+			if (passedEl.isOn()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassCols.markPassed));
 			}
 			if (!hasScale && !predefined) {
@@ -375,7 +375,7 @@ public class GradeSystemEditController extends FormBasicController {
 			if (performanceClassRows.isEmpty()) {
 				tableEl.setErrorKey("error.performance.class.madatory");
 				allOk &= false;
-			} else if (passedEl.isAtLeastSelected(1)) {
+			} else if (passedEl.isOn()) {
 				Boolean passed = null;
 				boolean firstPassed = true;
 				boolean noSinglePassed = true;
@@ -414,8 +414,8 @@ public class GradeSystemEditController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		hasScale = gradeService.hasGradeScale(gradeSystem);
 		
-		gradeSystem.setEnabled(enabledEl.isAtLeastSelected(1));
-		gradeSystem.setPassed(passedEl.isAtLeastSelected(1));
+		gradeSystem.setEnabled(enabledEl.isOn());
+		gradeSystem.setPassed(passedEl.isOn());
 		
 		if (!hasScale && !predefined) {
 			GradeSystemType gradeSystemType = GradeSystemType.valueOf(typeEl.getSelectedKey());
@@ -567,7 +567,7 @@ public class GradeSystemEditController extends FormBasicController {
 			}
 			
 			performanceClass.setBestToLowest(row.getPosition());
-			performanceClass.setPassed(passedEl.isAtLeastSelected(1) && row.getMarkPassedEl().isAtLeastSelected(1));
+			performanceClass.setPassed(passedEl.isOn() && row.getMarkPassedEl().isAtLeastSelected(1));
 			gradeService.updatePerformanceClass(performanceClass);
 		}
 		
