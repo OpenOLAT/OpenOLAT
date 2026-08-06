@@ -39,12 +39,12 @@ $r.render("leafletLoader")
 	#if($appleMapsUrl || $googleMapsUrl)
 	<div class="o_building_detail_map_actions">
 		#if($appleMapsUrl)
-		<a href="$r.escapeHtml($appleMapsUrl)" target="_blank" rel="noopener noreferrer" class="btn btn-default">
+		<a href="$r.escapeHtml($appleMapsUrl)" target="_blank" rel="noopener noreferrer" class="btn btn-default btn-sm">
 			<i class="o_icon o_icon-fw o_icon_arrow_up_right_from_square"> </i>$r.translate("building.apple.maps")
 		</a>
 		#end
 		#if($googleMapsUrl)
-		<a href="$r.escapeHtml($googleMapsUrl)" target="_blank" rel="noopener noreferrer" class="btn btn-default">
+		<a href="$r.escapeHtml($googleMapsUrl)" target="_blank" rel="noopener noreferrer" class="btn btn-default btn-sm">
 			<i class="o_icon o_icon-fw o_icon_arrow_up_right_from_square"> </i>$r.translate("building.google.maps")
 		</a>
 		#end
