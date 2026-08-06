@@ -45,6 +45,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
@@ -143,6 +144,7 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 		openInCoursePlannerLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
 		openInCoursePlannerLink.setUrl(BusinessControlFactory.getInstance()
 				.getRelativeURLFromBusinessPathString(RoomUIHelper.getEventsBusinessPath(lb)));
+		openInCoursePlannerLink.setNewWindow(true, true, false);
 
 		initSubjects(formLayout, lb);
 		initMetadata(formLayout, lb);
@@ -287,8 +289,8 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == openInCoursePlannerLink) {
-			LectureBlock lb = row.getBooking().getLectureBlock();
-			NewControllerFactory.getInstance().launch(RoomUIHelper.getEventsBusinessPath(lb), ureq, getWindowControl());
+			getWindowControl().getWindowBackOffice().sendCommandTo(
+					CommandFactory.createNewWindowRedirectTo(openInCoursePlannerLink.getComponent().getUrl()));
 		} else if (source == openEntryLink) {
 			doOpenRepositoryEntry(ureq);
 		} else if (source instanceof FormLink link && roomCardLinks.contains(link) && link.getUserObject() instanceof Room room) {
