@@ -200,17 +200,6 @@ public class RoomDetailsController extends FormBasicController {
 		//
 	}
 
-	public void openLightbox(UserRequest ureq) {
-		doOpenDetails(ureq);
-	}
-
-	public void closeLightbox() {
-		removeAsListenerAndDispose(lightboxCtrl);
-		lightboxCtrl = null;
-		removeAsListenerAndDispose(roomDetailViewCtrl);
-		roomDetailViewCtrl = null;
-	}
-
 	private void doOpenDetails(UserRequest ureq) {
 		removeAsListenerAndDispose(roomDetailViewCtrl);
 		removeAsListenerAndDispose(lightboxCtrl);

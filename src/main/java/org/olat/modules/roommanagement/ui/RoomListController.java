@@ -76,6 +76,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
@@ -120,6 +121,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private CloseableCalloutWindowController toolsCalloutWindowCtrl;
 	private DialogBoxController confirmDeactivateDialog;
 	private DialogBoxController confirmDeleteDialog;
+	private LightboxController lightboxCtrl;
+	private RoomDetailViewController roomDetailViewCtrl;
 	private FlexiTableElement tableEl;
 	private RoomListDataModel dataModel;
 	private FullCalendarElement calendarEl;
@@ -438,7 +441,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 
 		FormLink detailsIconLink = uifactory.addFormLink("det_" + room.getKey(), "details", "",
 				null, null, Link.LINK | Link.NONTRANSLATED);
-		detailsIconLink.setIconLeftCSS("o_icon o_icon_lightbulb");
+		detailsIconLink.setIconLeftCSS("o_icon o_icon_circle_info");
 		detailsIconLink.setUserObject(row);
 		detailsIconLink.setTitle(translate("room.detail.open.details"));
 		row.setDetailsIconLink(detailsIconLink);
@@ -531,6 +534,11 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			}
 			removeAsListenerAndDispose(confirmDeleteDialog);
 			confirmDeleteDialog = null;
+		} else if (source == lightboxCtrl) {
+			removeAsListenerAndDispose(lightboxCtrl);
+			lightboxCtrl = null;
+			removeAsListenerAndDispose(roomDetailViewCtrl);
+			roomDetailViewCtrl = null;
 		}
 		super.event(ureq, source, event);
 	}
@@ -596,15 +604,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 				} else if ("details".equals(cmd)) {
 					int rowIndex = dataModel.getObjects().indexOf(row);
 					if (rowIndex >= 0) {
-						if (tableEl.isDetailsExpended(rowIndex)) {
-							expandedRow.getDetailsController().closeLightbox();
-							doCloseDetails(row);
-							tableEl.collapseDetails(rowIndex);
-						} else {
-							doOpenDetails(ureq, row, rowIndex);
-							expandedRow.getDetailsController().openLightbox(ureq);
-							tableEl.expandDetails(rowIndex);
-						}
+						openLightbox(ureq, row);
 					}
 				} else if ("tools".equals(cmd)) {
 					doOpenTools(ureq, row, link);
@@ -614,6 +614,18 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void openLightbox(UserRequest ureq, RoomRow row) {
+		removeAsListenerAndDispose(roomDetailViewCtrl);
+		removeAsListenerAndDispose(lightboxCtrl);
+
+		roomDetailViewCtrl = new RoomDetailViewController(ureq, getWindowControl(), row.getRoom());
+		listenTo(roomDetailViewCtrl);
+
+		lightboxCtrl = new LightboxController(ureq, getWindowControl(), roomDetailViewCtrl);
+		listenTo(lightboxCtrl);
+		lightboxCtrl.activate();
 	}
 
 	private void doOpenDetails(UserRequest ureq, RoomRow row, @SuppressWarnings("unused") int rowIndex) {

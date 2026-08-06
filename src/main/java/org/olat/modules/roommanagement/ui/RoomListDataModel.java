@@ -105,7 +105,7 @@ public class RoomListDataModel extends DefaultFlexiTableDataModel<RoomRow>
 		detailsIcon("room.col.details") {
 			@Override
 			public String iconHeader() {
-				return "o_icon o_icon_lightbulb";
+				return "o_icon o_icon_circle_info";
 			}
 
 			@Override
