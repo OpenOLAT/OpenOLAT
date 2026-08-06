@@ -188,11 +188,13 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		DefaultFlexiColumnModel calendarIconCol = new DefaultFlexiColumnModel(RoomCols.calendarIcon);
 		calendarIconCol.setHeaderTooltip(translate("room.calendar.title"));
 		calendarIconCol.setIconHeader(RoomCols.calendarIcon.iconHeader());
+		calendarIconCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(calendarIconCol);
 
 		DefaultFlexiColumnModel detailsIconCol = new DefaultFlexiColumnModel(RoomCols.detailsIcon);
 		detailsIconCol.setHeaderTooltip(translate("room.detail.open.details"));
 		detailsIconCol.setIconHeader(RoomCols.detailsIcon.iconHeader());
+		detailsIconCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(detailsIconCol);
 		if (!readOnly) {
 			columnsModel.addFlexiColumnModel(new ActionsColumnModel(RoomCols.tools));
