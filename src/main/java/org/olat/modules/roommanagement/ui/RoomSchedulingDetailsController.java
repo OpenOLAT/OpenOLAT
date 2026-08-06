@@ -21,9 +21,11 @@ package org.olat.modules.roommanagement.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.olat.NewControllerFactory;
@@ -261,9 +263,15 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 
 	private void initRooms(FormLayoutContainer formLayout, LectureBlock lb) {
 		List<RoomBooking> bookings = roomManagementService.getBookings(lb);
+
+		Long currentRoomKey = row.getBooking().getRoom().getKey();
+		List<RoomBooking> sortedBookings = bookings.stream()
+				.sorted(Comparator.comparing(b -> !Objects.equals(b.getRoom().getKey(), currentRoomKey)))
+				.toList();
+		
 		List<String> roomCardIds = new ArrayList<>();
 
-		for (RoomBooking booking : bookings) {
+		for (RoomBooking booking : sortedBookings) {
 			Room room = booking.getRoom();
 			if (room == null) continue;
 
@@ -272,7 +280,14 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 			roomCardLinks.add(cardResult.detailsLink());
 		}
 
-		formLayout.contextPut("roomCardIds", roomCardIds);
+		if (!roomCardIds.isEmpty()) {
+			formLayout.contextPut("ownRoomCardId", roomCardIds.get(0));
+		}
+
+		if (roomCardIds.size() > 1) {
+			List<String> additionalRoomCardIds = roomCardIds.subList(1, roomCardIds.size());
+			formLayout.contextPut("additionalRoomCardIds", additionalRoomCardIds);
+		}
 	}
 
 	@Override
