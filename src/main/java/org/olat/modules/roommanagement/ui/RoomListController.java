@@ -204,6 +204,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);
+		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "room-management-rooms");
 
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.external, FlexiTableRendererType.classic);

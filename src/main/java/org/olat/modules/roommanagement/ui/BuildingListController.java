@@ -159,6 +159,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);
+		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "room-management-buildings");
 
 		VelocityContainer detailsVC = createVelocityContainer("building_details");

@@ -212,6 +212,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		tableEl = uifactory.addTableElement(getWindowControl(), "schedulings", dataModel, 20, 
 				false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
+		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "room-management-scheduling");
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.external, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
