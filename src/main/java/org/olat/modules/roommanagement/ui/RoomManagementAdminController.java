@@ -26,10 +26,10 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -62,7 +62,7 @@ public class RoomManagementAdminController extends BasicController implements Ac
 
 	private RoomsAdminSettingsController settingsCtrl;
 	private RoomSchedulingController roomSchedulingCtrl;
-	private BreadcrumbedStackedPanel roomsPanel;
+	private TooledStackedPanel roomsPanel;
 	private RoomListController roomListCtrl;
 	private BuildingListController buildingListCtrl;
 
@@ -179,7 +179,8 @@ public class RoomManagementAdminController extends BasicController implements Ac
 	private void doOpenRooms(UserRequest ureq) {
 		if (roomListCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ROOMS), null);
-			roomsPanel = new BreadcrumbedStackedPanel("roomsPanel", getTranslator(), this);
+			roomsPanel = new TooledStackedPanel("roomsPanel", getTranslator(), this);
+			roomsPanel.setToolbarEnabled(false);
 			roomListCtrl = new RoomListController(ureq, swControl, roomsPanel);
 			listenTo(roomListCtrl);
 			roomsPanel.pushController(translate("admin.rooms"), roomListCtrl);
