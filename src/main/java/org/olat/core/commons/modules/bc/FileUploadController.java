@@ -246,8 +246,7 @@ public class FileUploadController extends FormBasicController {
 			pathEl = uifactory.addStaticTextElement("ul.target", path, fileUpload);
 			
 			if (subfolderPath != null) {
-				targetSubPath = uifactory.addInlineTextElement("ul.target.child", subfolderPath, fileUpload, this);	
-				targetSubPath.setLabel("ul.target.child", null);
+				targetSubPath = uifactory.addTextElement("targetSubPath", "ul.target.child", 255, subfolderPath, fileUpload);
 			}
 		}
 
