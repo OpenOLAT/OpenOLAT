@@ -191,7 +191,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 		filters.add(new FlexiTableMultiSelectionFilter(translate("building.filter.status"),
 				FILTER_STATUS, statusValues, true));
 
-		tableEl.setFilters(true, filters, false, false);
+		tableEl.setFilters(true, filters, true, false);
 	}
 
 	private void initFilterTabs(UserRequest ureq) {

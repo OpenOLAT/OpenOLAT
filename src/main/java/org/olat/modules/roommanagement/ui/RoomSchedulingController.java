@@ -272,7 +272,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		initBuildingFilter(filters, filterStatuses);
 		initRoomFilter(filters, filterStatuses);
 
-		tableEl.setFilters(true, filters, false, false);
+		tableEl.setFilters(true, filters, true, false);
 	}
 
 	private void initBuildingFilter(List<FlexiTableExtendedFilter> filters, List<RoomStatus> statuses) {

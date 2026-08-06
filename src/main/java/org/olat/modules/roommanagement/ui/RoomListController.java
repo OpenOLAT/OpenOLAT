@@ -236,7 +236,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void initFilters() {
-		tableEl.setFilters(true, buildFilters(List.of(RoomStatus.active)), false, false);
+		tableEl.setFilters(true, buildFilters(List.of(RoomStatus.active)), true, false);
 	}
 
 	private List<FlexiTableExtendedFilter> buildFilters(List<RoomStatus> tabStatuses) {
@@ -258,7 +258,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void reinitBuildingAndRoomFilters() {
-		tableEl.setFilters(true, buildFilters(getTabStatuses()), false, false);
+		tableEl.setFilters(true, buildFilters(getTabStatuses()), true, false);
 	}
 
 	private List<RoomStatus> getTabStatuses() {
