@@ -82,6 +82,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -795,6 +796,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			if (row.getRoom().getKey().equals(roomKey)) {
 				doOpenDetails(ureq, row, i);
 				tableEl.expandDetails(i);
+				flc.contextPut("scrollToRoom", new ConsumableBoolean(true));
+				flc.contextPut("scrollToRoomRowId", "row_" + tableEl.getFormDispatchId() + "-" + i);
 				break;
 			}
 		}
