@@ -76,12 +76,14 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -119,6 +121,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private CloseableCalloutWindowController toolsCalloutWindowCtrl;
 	private DialogBoxController confirmDeactivateDialog;
 	private DialogBoxController confirmDeleteDialog;
+	private LightboxController lightboxCtrl;
+	private RoomDetailViewController roomDetailViewCtrl;
 	private FlexiTableElement tableEl;
 	private RoomListDataModel dataModel;
 	private FullCalendarElement calendarEl;
@@ -188,11 +192,13 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		DefaultFlexiColumnModel calendarIconCol = new DefaultFlexiColumnModel(RoomCols.calendarIcon);
 		calendarIconCol.setHeaderTooltip(translate("room.calendar.title"));
 		calendarIconCol.setIconHeader(RoomCols.calendarIcon.iconHeader());
+		calendarIconCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(calendarIconCol);
 
 		DefaultFlexiColumnModel detailsIconCol = new DefaultFlexiColumnModel(RoomCols.detailsIcon);
 		detailsIconCol.setHeaderTooltip(translate("room.detail.open.details"));
 		detailsIconCol.setIconHeader(RoomCols.detailsIcon.iconHeader());
+		detailsIconCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(detailsIconCol);
 		if (!readOnly) {
 			columnsModel.addFlexiColumnModel(new ActionsColumnModel(RoomCols.tools));
@@ -204,6 +210,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);
+		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "room-management-rooms");
 
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.external, FlexiTableRendererType.classic);
@@ -236,7 +243,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void initFilters() {
-		tableEl.setFilters(true, buildFilters(List.of(RoomStatus.active)), false, false);
+		tableEl.setFilters(true, buildFilters(List.of(RoomStatus.active)), true, false);
 	}
 
 	private List<FlexiTableExtendedFilter> buildFilters(List<RoomStatus> tabStatuses) {
@@ -258,7 +265,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	}
 
 	private void reinitBuildingAndRoomFilters() {
-		tableEl.setFilters(true, buildFilters(getTabStatuses()), false, false);
+		tableEl.setFilters(true, buildFilters(getTabStatuses()), true, false);
 	}
 
 	private List<RoomStatus> getTabStatuses() {
@@ -432,21 +439,21 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		calendarIconLink.setTitle(translate("room.calendar.title"));
 		row.setCalendarIconLink(calendarIconLink);
 
-		FormLink detailsIconLink = uifactory.addFormLink("det_" + room.getKey(), "details", "",
+		FormLink detailsIconLink = uifactory.addFormLink("det_" + room.getKey(), "details-in-lightbox", "",
 				null, null, Link.LINK | Link.NONTRANSLATED);
-		detailsIconLink.setIconLeftCSS("o_icon o_icon_lightbulb");
+		detailsIconLink.setIconLeftCSS("o_icon o_icon_circle_info");
 		detailsIconLink.setUserObject(row);
 		detailsIconLink.setTitle(translate("room.detail.open.details"));
 		row.setDetailsIconLink(detailsIconLink);
 
 		if (RoomUIHelper.isColumnInfoTextTruncated(room.getRoomInfo())) {
-			FormLink additionalInfoLink = uifactory.addFormLink("ail_" + room.getKey(), "details",
+			FormLink additionalInfoLink = uifactory.addFormLink("ail_" + room.getKey(), "toggle-details",
 					"…", null, null, Link.LINK | Link.NONTRANSLATED);
 			additionalInfoLink.setUserObject(row);
 			row.setAdditionalInfoLink(additionalInfoLink);
 		}
 		if (RoomUIHelper.isColumnInfoTextTruncated(room.getAdminInfo())) {
-			FormLink adminInfoLink = uifactory.addFormLink("adml_" + room.getKey(), "details",
+			FormLink adminInfoLink = uifactory.addFormLink("adml_" + room.getKey(), "toggle-details",
 					"…", null, null, Link.LINK | Link.NONTRANSLATED);
 			adminInfoLink.setUserObject(row);
 			row.setAdminInfoLink(adminInfoLink);
@@ -527,6 +534,11 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			}
 			removeAsListenerAndDispose(confirmDeleteDialog);
 			confirmDeleteDialog = null;
+		} else if (source == lightboxCtrl) {
+			removeAsListenerAndDispose(lightboxCtrl);
+			lightboxCtrl = null;
+			removeAsListenerAndDispose(roomDetailViewCtrl);
+			roomDetailViewCtrl = null;
 		}
 		super.event(ureq, source, event);
 	}
@@ -589,16 +601,19 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 					}
 				} else if ("calendar".equals(cmd)) {
 					doOpenRoomCalendar(ureq, row);
-				} else if ("details".equals(cmd)) {
+				} else if ("details-in-lightbox".equals(cmd)) {
+					int rowIndex = dataModel.getObjects().indexOf(row);
+					if (rowIndex >= 0) {
+						openLightbox(ureq, row);
+					}
+				} else if ("toggle-details".equals(cmd)) {
 					int rowIndex = dataModel.getObjects().indexOf(row);
 					if (rowIndex >= 0) {
 						if (tableEl.isDetailsExpended(rowIndex)) {
-							expandedRow.getDetailsController().closeLightbox();
 							doCloseDetails(row);
 							tableEl.collapseDetails(rowIndex);
 						} else {
 							doOpenDetails(ureq, row, rowIndex);
-							expandedRow.getDetailsController().openLightbox(ureq);
 							tableEl.expandDetails(rowIndex);
 						}
 					}
@@ -610,6 +625,18 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void openLightbox(UserRequest ureq, RoomRow row) {
+		removeAsListenerAndDispose(roomDetailViewCtrl);
+		removeAsListenerAndDispose(lightboxCtrl);
+
+		roomDetailViewCtrl = new RoomDetailViewController(ureq, getWindowControl(), row.getRoom());
+		listenTo(roomDetailViewCtrl);
+
+		lightboxCtrl = new LightboxController(ureq, getWindowControl(), roomDetailViewCtrl);
+		listenTo(lightboxCtrl);
+		lightboxCtrl.activate();
 	}
 
 	private void doOpenDetails(UserRequest ureq, RoomRow row, @SuppressWarnings("unused") int rowIndex) {
@@ -792,6 +819,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			if (row.getRoom().getKey().equals(roomKey)) {
 				doOpenDetails(ureq, row, i);
 				tableEl.expandDetails(i);
+				flc.contextPut("scrollToRoom", new ConsumableBoolean(true));
+				flc.contextPut("scrollToRoomRowId", "row_" + tableEl.getFormDispatchId() + "-" + i);
 				break;
 			}
 		}

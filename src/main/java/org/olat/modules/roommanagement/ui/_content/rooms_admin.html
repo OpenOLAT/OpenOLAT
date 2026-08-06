@@ -17,3 +17,8 @@
 		#end
 	</div>
 </fieldset>
+#if($r.isTrue($scrollToRoom))
+<script>
+o_scrollToElementIfInvisible(document.getElementById('$scrollToRoomRowId'));
+</script>
+#end

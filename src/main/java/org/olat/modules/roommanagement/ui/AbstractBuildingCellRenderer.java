@@ -44,6 +44,12 @@ abstract class AbstractBuildingCellRenderer implements FlexiCellRenderer {
 		FormLink link = getBuildingLink(cellValue);
 		if (link == null || !(link.getUserObject() instanceof Building building)) return;
 
+		if (renderer == null) {
+			// Export (e.g. Excel): no live renderer available to expand the link component, just the plain text
+			target.append(link.getComponent().getCustomDisplayText());
+			return;
+		}
+
 		FlexiTableElementImpl ftE = source.getFormItem();
 		link.setTranslator(translator);
 		if (ftE.getRootForm() != link.getRootForm()) {

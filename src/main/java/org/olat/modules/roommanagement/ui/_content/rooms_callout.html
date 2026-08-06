@@ -1,8 +1,8 @@
 <div class="o_building_rooms_callout">
 	<h5>$r.escapeHtml($title)</h5>
 	<ul class="list-unstyled">
-		#foreach($linkName in $roomLinkNames)
-		<li>$r.render($linkName)</li>
+		#foreach($row in $calloutRows)
+		<li>$r.render($row.linkName)$row.statusHtml</li>
 		#end
 	</ul>
 </div>

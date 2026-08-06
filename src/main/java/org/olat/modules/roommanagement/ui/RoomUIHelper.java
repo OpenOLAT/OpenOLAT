@@ -57,7 +57,7 @@ import org.olat.modules.roommanagement.RoomStatus;
 public class RoomUIHelper {
 
 	private static final int MAX_COLUMN_INFO_TEXT_LENGTH = 250;
-
+	private static final int MAX_DESC_LENGTH = 40;
 	/**
 	 * Business path to the given lecture block in the curriculum admin "Events" list,
 	 * opening and expanding its row detail view there.
@@ -100,8 +100,9 @@ public class RoomUIHelper {
 		if (StringHelper.containsNonWhitespace(room.getExternalRef())) {
 			cardCont.contextPut("reference", room.getExternalRef());
 		}
-		if (StringHelper.containsNonWhitespace(room.getDescription())) {
-			cardCont.contextPut("description", room.getDescription());
+		String roomDesc = room.getDescription();
+		if (StringHelper.containsNonWhitespace(roomDesc) && !roomDesc.equals(room.getExternalRef())) {
+			cardCont.contextPut("description", roomDesc);
 		}
 
 		Building building = room.getBuilding();
@@ -203,25 +204,38 @@ public class RoomUIHelper {
 		if (!hasRef && !hasDesc) {
 			return null;
 		}
-
+		
+		boolean showDesc = hasDesc && !desc.equals(ref);
+		
 		StringBuilder html = new StringBuilder();
 		if (hasRef) {
 			html.append("<span>").append(StringHelper.escapeHtml(ref)).append("</span>");
 		}
-		if (hasDesc) {
+		if (hasDesc && showDesc) {
 			html.append("<span class=\"").append(descCssClass).append(" text-muted\"> &middot; ")
-					.append(StringHelper.escapeHtml(desc)).append("</span>");
+					.append(StringHelper.escapeHtml(Formatter.truncate(desc, MAX_DESC_LENGTH))).append("</span>");
 		}
-		if (status != null) {
-			String statusName = status.name();
-			String statusLabel = translator.translate("building.status." + statusName);
-			html.append("&nbsp;|&nbsp;");
-			html.append("<div class=\"o_building_room_status_icon\">");
-			html.append("<i class=\"o_icon o_icon_circle_color o_building_room_status_").append(StringHelper.escapeHtml(statusName)).append("\"> </i>");
-			html.append("</div>");
-			html.append("&nbsp;");
-			html.append("<span>").append(StringHelper.escapeHtml(statusLabel)).append("</span>");
+		html.append(buildStatusSuffixHtml(status, translator));
+		return html.toString();
+	}
+
+	/**
+	 * The | separator followed by a colored status bullet and the translated
+	 * status label (e.g. "Active"), as used in the buildings/rooms filter options.
+	 */
+	public static String buildStatusSuffixHtml(RoomStatus status, Translator translator) {
+		if (status == null) {
+			return "";
 		}
+		String statusName = status.name();
+		String statusLabel = translator.translate("building.status." + statusName);
+		StringBuilder html = new StringBuilder();
+		html.append("&nbsp;|&nbsp;");
+		html.append("<div class=\"o_building_room_status_icon\">");
+		html.append("<i class=\"o_icon o_icon_circle_color o_building_room_status_").append(StringHelper.escapeHtml(statusName)).append("\"> </i>");
+		html.append("</div>");
+		html.append("&nbsp;");
+		html.append("<span>").append(StringHelper.escapeHtml(statusLabel)).append("</span>");
 		return html.toString();
 	}
 

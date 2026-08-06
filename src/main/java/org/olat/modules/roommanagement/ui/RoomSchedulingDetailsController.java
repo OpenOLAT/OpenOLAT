@@ -21,9 +21,11 @@ package org.olat.modules.roommanagement.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.olat.NewControllerFactory;
@@ -45,6 +47,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
@@ -143,6 +146,7 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 		openInCoursePlannerLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
 		openInCoursePlannerLink.setUrl(BusinessControlFactory.getInstance()
 				.getRelativeURLFromBusinessPathString(RoomUIHelper.getEventsBusinessPath(lb)));
+		openInCoursePlannerLink.setNewWindow(true, true, false);
 
 		initSubjects(formLayout, lb);
 		initMetadata(formLayout, lb);
@@ -259,9 +263,15 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 
 	private void initRooms(FormLayoutContainer formLayout, LectureBlock lb) {
 		List<RoomBooking> bookings = roomManagementService.getBookings(lb);
+
+		Long currentRoomKey = row.getBooking().getRoom().getKey();
+		List<RoomBooking> sortedBookings = bookings.stream()
+				.sorted(Comparator.comparing(b -> !Objects.equals(b.getRoom().getKey(), currentRoomKey)))
+				.toList();
+		
 		List<String> roomCardIds = new ArrayList<>();
 
-		for (RoomBooking booking : bookings) {
+		for (RoomBooking booking : sortedBookings) {
 			Room room = booking.getRoom();
 			if (room == null) continue;
 
@@ -270,7 +280,14 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 			roomCardLinks.add(cardResult.detailsLink());
 		}
 
-		formLayout.contextPut("roomCardIds", roomCardIds);
+		if (!roomCardIds.isEmpty()) {
+			formLayout.contextPut("ownRoomCardId", roomCardIds.get(0));
+		}
+
+		if (roomCardIds.size() > 1) {
+			List<String> additionalRoomCardIds = roomCardIds.subList(1, roomCardIds.size());
+			formLayout.contextPut("additionalRoomCardIds", additionalRoomCardIds);
+		}
 	}
 
 	@Override
@@ -287,8 +304,8 @@ public class RoomSchedulingDetailsController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == openInCoursePlannerLink) {
-			LectureBlock lb = row.getBooking().getLectureBlock();
-			NewControllerFactory.getInstance().launch(RoomUIHelper.getEventsBusinessPath(lb), ureq, getWindowControl());
+			getWindowControl().getWindowBackOffice().sendCommandTo(
+					CommandFactory.createNewWindowRedirectTo(openInCoursePlannerLink.getComponent().getUrl()));
 		} else if (source == openEntryLink) {
 			doOpenRepositoryEntry(ureq);
 		} else if (source instanceof FormLink link && roomCardLinks.contains(link) && link.getUserObject() instanceof Room room) {

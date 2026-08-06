@@ -104,8 +104,7 @@ public class FileCreatorController extends FormBasicController {
 		uifactory.addStaticTextElement("ul.target", path,formLayout);
 
 		// Sub path, can be modified
-		targetSubPath = uifactory.addInlineTextElement("ul.target.child", subfolderPath, formLayout, this);	
-		targetSubPath.setLabel("ul.target.child", null);
+		targetSubPath = uifactory.addTextElement("targetSubPath", "ul.target.child", 255, subfolderPath, formLayout);
 
 		// The file name of the new file
 		fileNameElement = FormUIFactory.getInstance().addTextElement("fileName", "filecreator.filename", 50, fileName, formLayout);

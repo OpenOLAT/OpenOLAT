@@ -212,6 +212,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		tableEl = uifactory.addTableElement(getWindowControl(), "schedulings", dataModel, 20, 
 				false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
+		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "room-management-scheduling");
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.external, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
@@ -272,7 +273,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		initBuildingFilter(filters, filterStatuses);
 		initRoomFilter(filters, filterStatuses);
 
-		tableEl.setFilters(true, filters, false, false);
+		tableEl.setFilters(true, filters, true, false);
 	}
 
 	private void initBuildingFilter(List<FlexiTableExtendedFilter> filters, List<RoomStatus> statuses) {

@@ -38,6 +38,7 @@ import org.olat.core.commons.services.ai.model.ImageDescriptionData;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
@@ -253,7 +254,7 @@ public class MediaAiMetadataService {
 		boolean changed = false;
 		if (StringHelper.containsNonWhitespace(data.getTitle())
 				&& (overwrite || !StringHelper.containsNonWhitespace(media.getTitle()) || isFilenameLike(media.getTitle()))) {
-			media.setTitle(data.getTitle());
+			media.setTitle(Formatter.truncate(data.getTitle(), 255));
 			changed = true;
 		}
 		if (StringHelper.containsNonWhitespace(data.getDescription())
@@ -263,7 +264,7 @@ public class MediaAiMetadataService {
 		}
 		if (StringHelper.containsNonWhitespace(data.getAltText())
 				&& (overwrite || !StringHelper.containsNonWhitespace(media.getAltText()))) {
-			media.setAltText(data.getAltText());
+			media.setAltText(Formatter.truncateOnly(data.getAltText(), 1000));
 			changed = true;
 		}
 		if (changed) {

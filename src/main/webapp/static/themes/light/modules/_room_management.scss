@@ -86,7 +86,7 @@
 		background: rgba(255, 255, 255, 0.85);
 		
 		a {
-			z-index: 400;
+			z-index: 1000;
 		}
 	}
 }
@@ -227,6 +227,7 @@
 	padding: 12px;
 	border: 1px solid $panel-default-border;
 	border-radius: $border-radius-base;
+	overflow-y: auto;
 }
 
 .o_room_card_info {

@@ -82,6 +82,8 @@ public class RoomDetailViewController extends FormBasicController {
 			}
 		}
 
+		formLayout.contextPut("roomSeats", room.getSeats());
+		
 		if (StringHelper.containsNonWhitespace(room.getRoomInfo())) {
 			formLayout.contextPut("roomInfo", StringHelper.xssScan(room.getRoomInfo()));
 		}

@@ -82,19 +82,19 @@
 		</div>
 		#end
 
-		#if($r.isNotNull($roomCardIds) && $roomCardIds.size() == 1)
+		#if($r.isNotNull($ownRoomCardId))
 		<div class="o_lecture_label_and_resource">
 			<label class="o_lecture_room">$r.translate("lecture.room")</label>
-			$r.render($roomCardIds[0])
+			$r.render($ownRoomCardId)
 		</div>
 		#end
 	</div>
 
-	#if($r.isNotNull($roomCardIds) &&  $roomCardIds.size() > 1)
+	#if($r.isNotNull($additionalRoomCardIds) &&  $additionalRoomCardIds.size() > 0)
 	<div class="o_lecture_resources o_lecture_rooms">
-		<label class="o_lecture_room">$r.translate("lecture.rooms")</label>
-		#foreach($roomCardId in $roomCardIds)
-			$r.render($roomCardId)
+		<label class="o_lecture_room">$r.translate("lecture.rooms.more")</label>
+		#foreach($additionalRoomCardId in $additionalRoomCardIds)
+			$r.render($additionalRoomCardId)
 		#end
 	</div>
 	#end

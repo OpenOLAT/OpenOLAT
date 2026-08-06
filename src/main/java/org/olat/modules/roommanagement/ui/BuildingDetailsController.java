@@ -76,8 +76,9 @@ public class BuildingDetailsController extends FormBasicController {
 		if (StringHelper.containsNonWhitespace(building.getExternalRef())) {
 			formLayout.contextPut("reference", building.getExternalRef());
 		}
-		if (StringHelper.containsNonWhitespace(building.getDescription())) {
-			formLayout.contextPut("description", building.getDescription());
+		String buildingDesc = building.getDescription();
+		if (StringHelper.containsNonWhitespace(buildingDesc) && !buildingDesc.equals(building.getExternalRef())) {
+			formLayout.contextPut("description", buildingDesc);
 		}
 		formLayout.contextPut("statusName", building.getStatus().name());
 		formLayout.contextPut("statusLabel", translate("building.status." + building.getStatus().name()));
