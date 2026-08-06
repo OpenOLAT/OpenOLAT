@@ -664,7 +664,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 
 			String roomBaseUrl = Settings.getServerContextPathURI() + "/auth/AdminSite/0/roommanagement/0/Rooms/0/Room/";
 
-			List<String> linkNames = new ArrayList<>();
+			List<RoomCalloutRow> calloutRows = new ArrayList<>();
 			for (Room room : rooms) {
 				String label = StringHelper.containsNonWhitespace(room.getExternalRef())
 						? room.getExternalRef() : room.getDescription();
@@ -677,9 +677,12 @@ public class BuildingListController extends FormBasicController implements Flexi
 				roomLink.setUrl(roomBaseUrl + room.getKey());
 				roomLink.setUserObject(room.getKey());
 				roomLinks.add(roomLink);
-				linkNames.add(roomLink.getComponentName());
+
+				String statusHtml = RoomUIHelper.buildStatusSuffixHtml(room.getStatus(), translator);
+
+				calloutRows.add(new RoomCalloutRow(roomLink.getComponentName(), statusHtml));
 			}
-			mainVC.contextPut("roomLinkNames", linkNames);
+			mainVC.contextPut("calloutRows", calloutRows);
 			putInitialPanel(mainVC);
 		}
 
@@ -691,6 +694,9 @@ public class BuildingListController extends FormBasicController implements Flexi
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}
+	}
+
+	public record RoomCalloutRow(String linkName, String statusHtml) {
 	}
 
 	private static final class MapsCalloutController extends BasicController {

@@ -212,16 +212,27 @@ public class RoomUIHelper {
 			html.append("<span class=\"").append(descCssClass).append(" text-muted\"> &middot; ")
 					.append(StringHelper.escapeHtml(desc)).append("</span>");
 		}
-		if (status != null) {
-			String statusName = status.name();
-			String statusLabel = translator.translate("building.status." + statusName);
-			html.append("&nbsp;|&nbsp;");
-			html.append("<div class=\"o_building_room_status_icon\">");
-			html.append("<i class=\"o_icon o_icon_circle_color o_building_room_status_").append(StringHelper.escapeHtml(statusName)).append("\"> </i>");
-			html.append("</div>");
-			html.append("&nbsp;");
-			html.append("<span>").append(StringHelper.escapeHtml(statusLabel)).append("</span>");
+		html.append(buildStatusSuffixHtml(status, translator));
+		return html.toString();
+	}
+
+	/**
+	 * The | separator followed by a colored status bullet and the translated
+	 * status label (e.g. "Active"), as used in the buildings/rooms filter options.
+	 */
+	public static String buildStatusSuffixHtml(RoomStatus status, Translator translator) {
+		if (status == null) {
+			return "";
 		}
+		String statusName = status.name();
+		String statusLabel = translator.translate("building.status." + statusName);
+		StringBuilder html = new StringBuilder();
+		html.append("&nbsp;|&nbsp;");
+		html.append("<div class=\"o_building_room_status_icon\">");
+		html.append("<i class=\"o_icon o_icon_circle_color o_building_room_status_").append(StringHelper.escapeHtml(statusName)).append("\"> </i>");
+		html.append("</div>");
+		html.append("&nbsp;");
+		html.append("<span>").append(StringHelper.escapeHtml(statusLabel)).append("</span>");
 		return html.toString();
 	}
 
