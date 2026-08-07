@@ -37,6 +37,7 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -86,13 +87,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
@@ -138,6 +139,8 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 	private FullCalendarElement calendarEl;
 
 	private CloseableCalloutWindowController calloutCtrl;
+	private RoomSchedulingBookingCalloutController bookingCalloutCtrl;
+	private final Map<Long, RoomBooking> calendarBookingsByKey = new HashMap<>();
 
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabToday;
@@ -417,6 +420,11 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
 		List<RoomBooking> bookings = loadFilteredBookings();
 
+		calendarBookingsByKey.clear();
+		for (RoomBooking booking : bookings) {
+			calendarBookingsByKey.put(booking.getKey(), booking);
+		}
+
 		Set<Long> warningKeys = RoomUIHelper.computeBookingKeysWithWarnings(bookings, lectureService);
 
 		boolean withWarningsFilterActive = tableEl.getFilters() != null && tableEl.getFilters().stream()
@@ -497,7 +505,7 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 		} else {
 			subject = "";
 		}
-		String eventId = CodeHelper.getGlobalForeverUniqueID();
+		String eventId = String.valueOf(booking.getKey());
 		ZonedDateTime zStart = DateUtils.toZonedDateTime(booking.getStartDate(), calendarModule.getDefaultZoneId());
 		ZonedDateTime zEnd = DateUtils.toZonedDateTime(booking.getEndDate(), calendarModule.getDefaultZoneId());
 		KalendarEvent event = new KalendarEvent(eventId, null, subject, zStart, zEnd);
@@ -690,6 +698,10 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 				RoomSchedulingRow row = dataModel.getObject(se.getIndex());
 				doOpenWarningsCallout(ureq, row, targetId);
 			}
+		} else if (source == calendarEl) {
+			if (event instanceof CalendarGUISelectEvent selectEvent) {
+				doOpenBookingCallout(ureq, selectEvent);
+			}
 		} else if (source instanceof FormLink link && "building".equals(link.getCmd())) {
 			doOpenBuilding(ureq, link);
 		} else if (source instanceof FormLink link && "selectRoom".equals(link.getCmd())) {
@@ -706,6 +718,16 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 			calloutCtrl.deactivate();
 			removeAsListenerAndDispose(calloutCtrl);
 			calloutCtrl = null;
+			removeAsListenerAndDispose(bookingCalloutCtrl);
+			bookingCalloutCtrl = null;
+		} else if (source == bookingCalloutCtrl
+				&& event instanceof RoomSchedulingBookingCalloutController.OpenInCoursePlannerEvent openEvent) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(
+					CommandFactory.createNewWindowRedirectTo(openEvent.getUrl()));
+			if (calloutCtrl != null) {
+				calloutCtrl.deactivate();
+			}
+			cleanUpBookingCallout();
 		}
 		super.event(ureq, source, event);
 	}
@@ -720,6 +742,28 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 				new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
+	}
+
+	private void doOpenBookingCallout(UserRequest ureq, CalendarGUISelectEvent selectEvent) {
+		KalendarEvent kalendarEvent = selectEvent.getKalendarEvent();
+		if (kalendarEvent == null || !StringHelper.isLong(kalendarEvent.getID())) return;
+		RoomBooking booking = calendarBookingsByKey.get(Long.valueOf(kalendarEvent.getID()));
+		if (booking == null) return;
+
+		cleanUpBookingCallout();
+		bookingCalloutCtrl = new RoomSchedulingBookingCalloutController(ureq, getWindowControl(), booking);
+		listenTo(bookingCalloutCtrl);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				bookingCalloutCtrl.getInitialComponent(), selectEvent.getTargetDomId(), null, true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
+	}
+
+	private void cleanUpBookingCallout() {
+		removeAsListenerAndDispose(bookingCalloutCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		bookingCalloutCtrl = null;
+		calloutCtrl = null;
 	}
 
 	private void doOpenDetails(UserRequest ureq, RoomSchedulingRow row, int rowIndex) {

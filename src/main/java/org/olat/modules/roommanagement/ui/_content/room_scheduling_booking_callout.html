@@ -1,0 +1,34 @@
+<div class="o_rm_scheduling_booking_callout">
+	<div>$r.translate("room.scheduling.booking.title")</div>
+	<hr>
+	<div class="o_rm_booking_row">
+		<strong>$r.escapeHtml($roomRef)</strong>
+		#if($roomDescription)
+		&middot; <span class="text-muted">$r.escapeHtml($roomDescription)</span>
+		#end
+	</div>
+	#if($eventTitle)
+	<div class="o_rm_booking_row">
+		<i class="o_icon o_icon-fw o_icon_calendar_day"> </i>
+		$r.escapeHtml($eventTitle)
+		#if($eventExternalRef)
+		&middot; <small class="text-muted">$r.escapeHtml($eventExternalRef)</small>
+		#end
+	</div>
+	#end
+	#if($date)
+	<div class="o_rm_booking_row">
+		<i class="o_icon o_icon-fw o_icon_calendar"> </i> $r.escapeHtml($date)
+	</div>
+	#end
+	#if($timeRange)
+	<div class="o_rm_booking_row">
+		<i class="o_icon o_icon-fw o_icon_time"> </i> $r.escapeHtml($timeRange)
+	</div>
+	#end
+	#if($eventTitle)
+	<div class="o_button_group o_block_top">
+		$r.render("room.scheduling.details.open.in.course.planner")
+	</div>
+	#end
+</div>

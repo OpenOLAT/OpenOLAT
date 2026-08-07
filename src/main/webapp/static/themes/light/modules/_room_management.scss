@@ -323,9 +323,20 @@
 		margin-top: 16px;	
 	}
 }
+
 .o_rm_scheduling_details {
 	.o_warning_with_icon {
 		margin-top: 10px;
+	}
+}
+
+.o_rm_scheduling_booking_callout {
+	hr {
+		margin: 8px -14px 14px -14px;
+	}
+	
+	.o_rm_booking_row {
+		margin: 6px 0;
 	}
 }
 
@@ -333,6 +344,10 @@
  * Styling for calendars in room management:
  */
 .o_rm_cal_pastel {
+	
+	&.fc-event {
+		cursor: pointer;
+	}
 	
 	&.fc-timegrid-event {
 		border-radius: $border-radius-base;
