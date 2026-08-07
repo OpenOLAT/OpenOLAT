@@ -228,6 +228,23 @@
 	border: 1px solid $panel-default-border;
 	border-radius: $border-radius-base;
 	overflow-y: auto;
+	
+	&.o_room_card_warning {
+		border-color: $brand-warning;
+		margin-bottom: 4px;
+
+		.o_room_card_warning_text {
+			grid-column: 1 / -1;
+			
+			.o_room_card_warning_icon {
+				color: $brand-warning;
+			}
+		}
+		
+		:last-child {
+			margin-bottom: 0;
+		}
+	}
 }
 
 .o_room_card_info {
@@ -255,11 +272,6 @@
 .o_room_card_details_btn {
 	line-height: 100px;
 	text-align: right;
-}
-
-.o_room_card_warning {
-	grid-column: 1 / -1;
-	color: $brand-warning;
 }
 
 .o_rm_details {
