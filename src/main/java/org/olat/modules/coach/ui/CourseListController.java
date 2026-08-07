@@ -19,6 +19,8 @@
  */
 package org.olat.modules.coach.ui;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
@@ -82,6 +85,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -130,6 +134,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class CourseListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
+
+	private static final Logger log = Tracing.createLoggerFor(CourseListController.class);
 	
 	protected static final String COURSE_MODULE = "CourseModule";
 	
@@ -543,22 +549,31 @@ public class CourseListController extends FormBasicController implements Activat
 	}
 
 	private void loadModel() {
+		Instant start = Instant.now();
+		
 		List<Mark> marks = markManager.getMarks(getIdentity(), List.of("RepositoryEntry"));
+		log.debug("Favorites loaded in {} millis", Duration.between(start, Instant.now()).toMillis());
 		Set<Long> markedKeys = marks.stream()
 				.map(Mark::getOLATResourceable)
 				.map(OLATResourceable::getResourceableId)
 				.collect(Collectors.toSet());
 		
 		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(runtimeTypesGroup);
+		Instant statisticsStart = Instant.now();
 		List<CourseStatEntry> courseStatistics = curriculumElement != null
 				? coachingService.getCoursesStatistics(curriculumElement)
 				: coachingService.getCoursesStatistics(getIdentity(), role, coursesStatisticsParams);
+		log.debug("Statistics loaded in {} millis", Duration.between(statisticsStart, Instant.now()).toMillis());
 		Map<Long,VFSThumbnailInfos> thumbnails = mapperThumbnail.getResourceableThumbnails(courseStatistics);
 
 		List<CourseStatEntryRow> rows = courseStatistics.stream()
 				.map(stats -> forgeRow(stats, markedKeys.contains(stats.getRepoKey()), thumbnails))
 				.collect(Collectors.toList());
+		Instant taxonomyStart = Instant.now();
 		loadTaxonomy(rows);
+		log.debug("Taxonomy loaded in {} millis", Duration.between(taxonomyStart, Instant.now()).toMillis());
+		
+		log.debug("Data loaded in {} millis", Duration.between(start, Instant.now()).toMillis());
 		
 		tableModel.setObjects(rows);
 		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());

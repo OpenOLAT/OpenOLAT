@@ -5798,7 +5798,7 @@ create index idx_as_entry_to_coach_idx on o_as_entry (fk_coach);
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 create index idx_as_entry_start_idx on o_as_entry (a_date_start) where a_date_start is not null;
 create index idx_as_entry_root_id_idx on o_as_entry (id) where a_entry_root=true;
-create index idx_as_entry_root_fk_idx on o_as_entry (fk_entry, fk_identity) where a_entry_root=true;
+create index idx_as_entry_root_cov_idx on o_as_entry (fk_entry, fk_identity) include (a_subident, a_passed, a_completion) where a_entry_root=true;
 create index idx_as_entry_subident_idx on o_as_entry(a_subident, fk_entry, fk_identity);
 create index idx_as_entry_re_status_idx on o_as_entry(fk_entry, a_status);
 
