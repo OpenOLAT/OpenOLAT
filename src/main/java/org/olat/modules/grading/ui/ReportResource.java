@@ -392,8 +392,11 @@ public class ReportResource extends OpenXMLWorkbookResource {
 		for(GradingAssignmentLog assignmentLog:assignmentsLogs) {
 			GraderToAssignementKey graderToAssignementKey
 				= new GraderToAssignementKey(assignmentLog.getGrader().getKey(), assignmentLog.getGradingAssignmentKey());
-			if(!assignmentsKeys.contains(assignmentLog.getGradingAssignmentKey())
-					|| (assignmentLog.isDeleted() && !graderToAssignementKeys.contains(graderToAssignementKey))) {
+			if(graderToAssignementKeys.contains(graderToAssignementKey)) {
+				continue;
+			}
+			
+			if(!assignmentsKeys.contains(assignmentLog.getGradingAssignmentKey()) || assignmentLog.isDeleted()) {
 				createAssignmentsLogData(assignmentLog, sheet, workbook);
 				graderToAssignementKeys.add(graderToAssignementKey);
 			}
