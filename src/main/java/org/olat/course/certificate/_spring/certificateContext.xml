@@ -7,9 +7,7 @@
   http://www.springframework.org/schema/beans/spring-beans.xsd
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
-                        
-	<import resource="classpath:org/olat/course/certificate/_spring/certificateJms_${jms.provider}.xml" />
-	
+
 	<!-- Certificates report panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8211" />
@@ -28,6 +26,16 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
+	</bean>
+	
+	<bean id="certificatesGenerationTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+    	<property name="jobDetail" ref="certificatesGenerationJob" />
+    	<property name="cronExpression" value="${certificate.generation.job.cron}"/>
+    	<property name="startDelay" value="30000" />
+	</bean>
+	
+	<bean id="certificatesGenerationJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="jobClass" value="org.olat.course.certificate.manager.CertificatesGenerationJob" />
 	</bean>
                         
 </beans>

@@ -28,15 +28,19 @@ package org.olat.test;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -48,6 +52,14 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.matchers.KeyMatcher;
+import org.quartz.listeners.JobListenerSupport;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.ContextConfiguration;
@@ -223,6 +235,50 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 			log.error("", e);
 		}
 		return result.get();
+	}
+	
+	public void triggerAndWaitMessageAreConsumed(JobKey key) {
+		WaitJobListener listener = new WaitJobListener();
+		Scheduler scheduler = CoreSpringFactory.getImpl(Scheduler.class);
+		
+		JobExecutionException ex = null;
+		try {
+			scheduler.getListenerManager().addJobListener(listener, KeyMatcher.keyEquals(key));
+			scheduler.triggerJob(key, new JobDataMap(Map.of(listener.getName(), "l-name")));
+			ex = listener.await(key, 30, TimeUnit.SECONDS);
+			scheduler.getListenerManager().removeJobListener(listener.getName());
+		} catch (SchedulerException | InterruptedException e) {
+			log.error("", e);
+		}
+		Assert.assertNull(ex);
+	}
+	
+	private static class WaitJobListener extends JobListenerSupport {
+
+		private final String name = "olat-test-job-listener-" + UUID.randomUUID();
+		private final CountDownLatch latch = new CountDownLatch(1);
+		private final AtomicReference<JobExecutionException> exception = new AtomicReference<>();
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public void jobWasExecuted(JobExecutionContext context, JobExecutionException jobException) {
+			exception.set(jobException);
+			String runMarker = context.getMergedJobDataMap().getString(name);
+			if("l-name".equals(runMarker)) {
+				latch.countDown();
+			}
+		}
+
+		public JobExecutionException await(JobKey jobKey, long timeout, TimeUnit unit) throws InterruptedException {
+			if(!latch.await(timeout, unit)) {
+				Assert.fail("Job " + jobKey + " did not finish within " + timeout + " " + unit);
+			}
+			return exception.get();
+		}
 	}
 	
 	protected void sleep(int milliSeconds) {

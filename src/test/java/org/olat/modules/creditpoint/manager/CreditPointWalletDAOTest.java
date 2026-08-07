@@ -22,6 +22,7 @@ package org.olat.modules.creditpoint.manager;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.assertj.core.api.Assertions;
@@ -30,7 +31,9 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.AbstractCertificate;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.modules.certificationprogram.CertificationProgram;
@@ -163,11 +166,24 @@ public class CreditPointWalletDAOTest extends OlatTestCase {
 		CertificateConfig config = CertificateConfig.builder().build();
 		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "", null);
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
-		waitMessageAreConsumed();
+		triggerAndWaitCertificate(certificate.getKey());
 		Assert.assertNotNull(certificate);
 		
 		List<CreditPointWallet> walletsList = creditPointWalletDao.loadWalletOfCertificationProgram(program);
 		Assertions.assertThat(walletsList)
 			.containsExactly(wallet);
+	}
+	
+	private void triggerAndWaitCertificate(Long certificateKey) {
+		certificatesManager.triggerGenerationJob();
+		//wait until the certificate is created
+		waitForCondition(new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificateKey);
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus())
+						&& ((AbstractCertificate)reloadedCertificate).isLast();
+			}
+		}, 30000);
 	}
 }

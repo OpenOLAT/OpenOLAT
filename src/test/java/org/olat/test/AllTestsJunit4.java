@@ -316,6 +316,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.assessment.manager.AssessmentServiceTest.class,
 	org.olat.course.certificate.manager.CertificatesDAOTest.class,
 	org.olat.course.certificate.manager.CertificatesManagerTest.class,
+	org.olat.course.certificate.manager.CertificateWorkUnitXStreamTest.class,
 	org.olat.course.certificate.manager.RepositoryEntryCertificateConfigurationDAOTest.class,
 	org.olat.course.config.CourseConfigManagerImplTest.class,
 	org.olat.course.config.ExternalToolVisibilityTest.class,

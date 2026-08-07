@@ -103,7 +103,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		//wait until the certificate is created
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users")
 				.path(assessedIdentity.getKey().toString())
@@ -241,7 +241,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		//wait until the certificate is created
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users")
 				.path(assessedIdentity.getKey().toString())

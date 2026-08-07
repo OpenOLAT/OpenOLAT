@@ -229,7 +229,7 @@ public class CertificationProgramsWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(activeCertificate);
 		dbInstance.commitAndCloseSession();
 		//wait until the certificate is created
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 
 		// Filter by active status
 		URI uri = UriBuilder.fromUri(getContextURI())

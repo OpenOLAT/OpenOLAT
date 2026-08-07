@@ -249,6 +249,8 @@ public class CertificatesMaintenanceController extends FormBasicController {
 			}
 		}
 		
+		certificatesManager.triggerGenerationJob();
+		
 		showInfo("maintenance.regenerate.started", Integer.toString(certificates.size()));
 	}
 	
@@ -273,7 +275,7 @@ public class CertificatesMaintenanceController extends FormBasicController {
 				.withCertificationProgramMailType(CertificationProgramMailType.certificate_issued)
 				.build();
 		getLogger().info(Tracing.M_AUDIT, "Regenerate certificate with ID: {} for user {} with email: {} in certification program {}", certificate.getKey(), assessedIdentity.getKey(), sendMail, program.getKey());
-		certificatesManager.regenerateCertificateFile(certificate, certificateInfos, template, printTemplateEnabled, printTemplate, config);
+		certificatesManager.resetGenerateCertificateFile(certificate, certificateInfos, template, printTemplateEnabled, printTemplate, config);
 	}
 	
 	private void regenerateCourseCertificate(Certificate certificate, Identity assessedIdentity, RepositoryEntry courseEntry, ICourse course, boolean sendMail) {
@@ -301,7 +303,7 @@ public class CertificatesMaintenanceController extends FormBasicController {
 				.withSendEmailIdentityRelations(sendMail)
 				.build();
 		getLogger().info(Tracing.M_AUDIT, "Regenerate certificate with ID: {} for user {} with email: {} in course {}", certificate.getKey(), assessedIdentity.getKey(), sendMail, courseEntry.getKey());
-		certificatesManager.regenerateCertificateFile(certificate, certificateInfos, template, false, null, config);
+		certificatesManager.resetGenerateCertificateFile(certificate, certificateInfos, template, false, null, config);
 	}
 	
 	private record Regeneration(List<Certificate> certificates, boolean sendMail) {

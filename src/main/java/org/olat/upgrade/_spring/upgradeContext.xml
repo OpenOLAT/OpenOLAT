@@ -70,6 +70,7 @@
 				<bean id="upgrade_20_3_0" class="org.olat.upgrade.OLATUpgrade_20_3_0"/>
 				<bean id="upgrade_20_3_2" class="org.olat.upgrade.OLATUpgrade_20_3_2"/>
 				<bean id="upgrade_21_0_0" class="org.olat.upgrade.OLATUpgrade_21_0_0"/>
+				<bean id="upgrade_21_1_0" class="org.olat.upgrade.OLATUpgrade_21_1_0"/>
 			</list>
 		</property>
 	</bean>

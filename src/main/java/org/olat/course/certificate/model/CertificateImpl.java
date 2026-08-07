@@ -59,6 +59,13 @@ public class CertificateImpl extends AbstractCertificate {
 	@Column(name="c_recertification_paused", nullable=false, insertable=true, updatable=true)
 	private boolean recertificationPaused;
 	
+	@Column(name="c_generation_retries", nullable=false, insertable=true, updatable=true)
+	private long generationRetries;
+	@Column(name="c_generation_next_date", nullable=true, insertable=true, updatable=true)
+	private Date generationNextDate;
+	@Column(name="c_generation_data", nullable=true, insertable=true, updatable=true)
+	private String generationData;
+	
 	@ManyToOne(targetEntity=CertificationProgramImpl.class,fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_certification_program", nullable=false, insertable=true, updatable=false)
 	private CertificationProgram certificationProgram;
@@ -109,6 +116,30 @@ public class CertificateImpl extends AbstractCertificate {
 
 	public void setRecertificationPaused(boolean recertificationPaused) {
 		this.recertificationPaused = recertificationPaused;
+	}
+
+	public long getGenerationRetries() {
+		return generationRetries;
+	}
+
+	public void setGenerationRetries(long generationRetries) {
+		this.generationRetries = generationRetries;
+	}
+
+	public Date getGenerationNextDate() {
+		return generationNextDate;
+	}
+
+	public void setGenerationNextDate(Date generationNextDate) {
+		this.generationNextDate = generationNextDate;
+	}
+
+	public String getGenerationData() {
+		return generationData;
+	}
+
+	public void setGenerationData(String generationData) {
+		this.generationData = generationData;
 	}
 
 	@Override

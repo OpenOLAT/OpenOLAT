@@ -44,18 +44,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Resource;
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.JMSException;
-import jakarta.jms.Message;
-import jakarta.jms.MessageConsumer;
-import jakarta.jms.MessageListener;
-import jakarta.jms.ObjectMessage;
-import jakarta.jms.Queue;
-import jakarta.jms.QueueConnection;
-import jakarta.jms.QueueSender;
-import jakarta.jms.QueueSession;
-import jakarta.jms.Session;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
@@ -147,7 +135,7 @@ import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.model.CertificateStandalone;
 import org.olat.course.certificate.model.CertificateTemplateImpl;
 import org.olat.course.certificate.model.CertificateWithInfos;
-import org.olat.course.certificate.model.JmsCertificateWork;
+import org.olat.course.certificate.model.CertificateWorkUnit;
 import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.course.certificate.ui.CertificateController;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
@@ -185,7 +173,8 @@ import org.olat.user.UserManager;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.user.propertyhandlers.DatePropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.springframework.beans.factory.DisposableBean;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -197,8 +186,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("certificatesManager")
-public class CertificatesManagerImpl implements CertificatesManager, MessageListener,
-		InitializingBean, DisposableBean, UserDataExportable {
+public class CertificatesManagerImpl implements CertificatesManager, InitializingBean, UserDataExportable {
 	
 	private static final Logger log = Tracing.createLoggerFor(CertificatesManagerImpl.class);
 
@@ -206,6 +194,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private Scheduler scheduler;
 	@Autowired
 	private PdfModule pdfModule;
 	@Autowired
@@ -254,15 +244,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private CertificationProgramMailConfigurationDAO certificationProgramMailConfigurationDao;
 	@Autowired
 	private GradeService gradeService;
-	
-
-	@Resource(name="certificateQueue")
-	private Queue jmsQueue;
-	private Session certificateSession;
-	private MessageConsumer consumer;
-	@Resource(name="certificateConnectionFactory")
-	private ConnectionFactory connectionFactory;
-	private QueueConnection connection;
 
 	private FileStorage usersStorage;
 	private FileStorage templatesStorage;
@@ -284,52 +265,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		} catch(Exception e) {
 			log.error("Can not read qrcode.min.js for QR Code PDF generation", e);
 		}
-		
-		//start the queues
-		try {
-			startQueue();
-		} catch (JMSException e) {
-			log.error("", e);
-		}
-	}
-	
-	private void startQueue() throws JMSException {
-		connection = (QueueConnection)connectionFactory.createConnection();
-		connection.start();
-		log.info("springInit: JMS connection started with connectionFactory={}", connectionFactory);
-
-		//listen to the queue only if indexing node
-		certificateSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		consumer = certificateSession.createConsumer(jmsQueue);
-		consumer.setMessageListener(this);
-	}
+	}	
 
 	@Override
-	public void destroy() throws Exception {
-		closeJms();
-	}
-	
-	private void closeJms() {
-		if(consumer != null) {
-			try {
-				consumer.close();
-			} catch (JMSException e) {
-				log.error("", e);
-			}
+	public void triggerGenerationJob() {
+		try {
+			scheduler.triggerJob(GENERATION_JOB_TRIGGER_KEY);
+			log.debug(Tracing.M_AUDIT, "Trigger certificates generation job");
+		} catch (SchedulerException e) {
+			log.error("", e);
 		}
-		if(connection != null) {
-			try {
-				certificateSession.close();
-				connection.stop();
-				connection.close();
-			} catch (JMSException e) {
-				log.error("", e);
-			}
-		}
-	}
-	
-	private Queue getJmsQueue() {
-		return jmsQueue;
 	}
 
 	@Override
@@ -528,7 +473,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select cer.key from certificate cer")
 		  .append(" where (cer.olatResource.key=:resourceKey or cer.archivedResourceKey=:resourceKey)")
-		  .append(" and cer.identity.key=:identityKey and cer.last=true and cer.statusString").in(CertificateStatus.pending, CertificateStatus.ok);
+		  .append(" and cer.identity.key=:identityKey and cer.last=true and cer.statusString").in(CertificateStatus.pending, CertificateStatus.rendering, CertificateStatus.ok);
 		List<Number> certififcates = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("resourceKey", resourceKey)
@@ -671,6 +616,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource,
 			String externalId, Boolean managedOnly, Boolean lastOnly) {
 		return certificatesDao.getCertificates(identity, resource, externalId, managedOnly, lastOnly);
+	}
+	
+	@Override
+	public List<Long> getPendingCertificatesToProcess() {
+		return certificatesDao.getPendingCertificates();
+	}
+
+	@Override
+	public List<Long> getCertificatesToReprocess(LocalDateTime referenceDate) {
+		return certificatesDao.getCertificatesToReprocess(referenceDate);
 	}
 
 	@Override
@@ -1286,12 +1241,21 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	@Override
-	public void regenerateCertificateFile(Certificate certificate, CertificateInfos certificateInfos,
+	public void resetGenerateCertificateFile(Certificate certificate, CertificateInfos certificateInfos,
 			CertificateTemplate template, boolean printTemplateEnabled, CertificateTemplate printTemplate, CertificateConfig config) {
 		//send message
-		sendJmsCertificateFile(certificate, template, printTemplateEnabled, printTemplate, certificateInfos.getScore(), certificateInfos.getMaxScore(),
-				certificateInfos.getPassed(), certificateInfos.getProgress(), certificateInfos.getGrade(), config,
-				certificateInfos.getDoerKey());
+		if(certificate instanceof CertificateImpl certificateImpl) {
+			CertificateWorkUnit generationData = CertificateWorkUnit.valueOf(template, printTemplateEnabled, printTemplate, certificateInfos.getScore(),
+					certificateInfos.getMaxScore(), certificateInfos.getPassed(), certificateInfos.getProgress(),
+					certificateInfos.getGrade(), config, certificateInfos.getDoerKey());
+			String generationDataXml = CertificateWorkUnitXStream.toXml(generationData);
+			certificateImpl.setGenerationData(generationDataXml);
+			certificateImpl.setGenerationNextDate(null);
+			certificateImpl.setGenerationRetries(0);
+			certificateImpl.setStatus(CertificateStatus.pending);
+			certificate = certificatesDao.updateCertificate(certificateImpl);
+			dbInstance.commitAndCloseSession();
+		}
 	}
 
 	private Certificate persistCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
@@ -1337,15 +1301,18 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 		certificate.setNextRecertificationDate(nextCertificationDate);
 		
-		dbInstance.getCurrentEntityManager().persist(certificate);
-		dbInstance.commit();
-		log.info(Tracing.M_AUDIT, "Certificate generated for {} in {}", identity, resource);
+		certificate.setGenerationRetries(0);
+		certificate.setGenerationNextDate(null);// Now
 		
-		//send message
-		sendJmsCertificateFile(certificate, template, printTemplateEnabled, printTemplate, certificateInfos.getScore(),
+		CertificateWorkUnit generationData = CertificateWorkUnit.valueOf(template, printTemplateEnabled, printTemplate, certificateInfos.getScore(),
 				certificateInfos.getMaxScore(), certificateInfos.getPassed(), certificateInfos.getProgress(),
 				certificateInfos.getGrade(), config, certificateInfos.getDoerKey());
-
+		String generationDataXml = CertificateWorkUnitXStream.toXml(generationData);
+		certificate.setGenerationData(generationDataXml);
+		
+		dbInstance.getCurrentEntityManager().persist(certificate);
+		dbInstance.commit();
+		log.info(Tracing.M_AUDIT, "Certificate queued for {} in {}", identity, resource);
 		return certificate;
 	}
 	
@@ -1374,55 +1341,38 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return velocityEngine;
 	}
 	
-	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, boolean printTemplateEnabled, CertificateTemplate printTemplate,
-			Float score, Float maxScore, Boolean passed, Double completion, String grade, CertificateConfig config, Long doerKey) {
-		
-		JmsCertificateWork workUnit = new JmsCertificateWork();
-		workUnit.setCertificateKey(certificate.getKey());
-		if(template != null) {
-			workUnit.setTemplateKey(template.getKey());
-		}
-		workUnit.setPrintTemplate(printTemplateEnabled);
-		if(printTemplate != null) {
-			workUnit.setPrintTemplateKey(printTemplate.getKey());
-		}
-		workUnit.setScore(score);
-		workUnit.setMaxScore(maxScore);
-		workUnit.setPassed(passed);
-		workUnit.setCompletion(completion);
-		workUnit.setConfig(config);
-		workUnit.setGrade(grade);
-		workUnit.setDoerKey(doerKey);
-
-		try(QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-				QueueSender sender = session.createSender(getJmsQueue())) {
-			ObjectMessage message = session.createObjectMessage();
-			message.setObject(workUnit);
-			sender.send(message);
-		} catch (JMSException e) {
-			log.error("", e);
-		}
-	}
-	
 	@Override
-	public void onMessage(Message message) {
-		if(message instanceof ObjectMessage objMsg) {
-			try {
-				JmsCertificateWork workUnit = (JmsCertificateWork)objMsg.getObject();
-				doCertificate(workUnit);
-				message.acknowledge();
-			} catch (JMSException e) {
-				log.error("", e);
-			} finally {
-				dbInstance.commitAndCloseSession();
-			}
+	public Certificate generateCertificateFile(Long certificateKey) {
+		CertificateImpl certificate = certificatesDao.loadForUpdate(certificateKey);
+		if(certificate == null) {
+			return null; // Nothing to do
 		}
+		CertificateWorkUnit workUnit = CertificateWorkUnitXStream
+				.fromXml(certificate.getGenerationData());
+		if(workUnit == null) {
+			log.error("Try to generate a certificate without a work unit: {}, set to failed", certificate.getKey());
+			certificate.setStatus(CertificateStatus.failed);
+			certificate = (CertificateImpl)certificatesDao.updateCertificate(certificate);
+			dbInstance.commit();
+			return certificate;
+		}
+		if(certificate.getStatus() == CertificateStatus.rendering) {
+			// Someone else is rendering the pdf
+			dbInstance.commit();
+			return certificate;
+		}
+		
+		certificate.setStatus(CertificateStatus.rendering);
+		certificate = (CertificateImpl)certificatesDao.updateCertificate(certificate);
+		dbInstance.commit();
+		
+		return renderCertificateFile(certificate, workUnit);
 	}
 	
-	private void doCertificate(JmsCertificateWork workUnit) {
-		CertificateImpl certificate = getCertificateById(workUnit.getCertificateKey());
+	private Certificate renderCertificateFile(CertificateImpl certificate, CertificateWorkUnit workUnit) {
+
 		CertificateTemplate template = null;
-		if(workUnit.getTemplateKey() != null) {
+		if(workUnit != null && workUnit.getTemplateKey() != null) {
 			template = getTemplateById(workUnit.getTemplateKey());
 		}
 		
@@ -1531,8 +1481,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				certificatePrintFile = worker.fill(printTemplate, dirFile, printFilename);
 			}
 		}
-
+		
 		VFSItem brokenCertificate = null;
+		boolean firstTry = certificate.getGenerationRetries() == 0l;
 		if(certificateFile != null && certificateFile.length() > 0) {
 			if(certificate.getMetadata() != null) {
 				brokenCertificate = vfsRepositoryService.getItemFor(certificate.getMetadata());
@@ -1542,7 +1493,13 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			certificate.setMetadata(metadata);
 			certificate.setPath(dir + certificateFile.getName());
 			certificate.setStatus(CertificateStatus.ok);
+		} else if(certificatesModule.getCertificateGenerationRetryMax() <= certificate.getGenerationRetries()) {
+			// Max retry
+			certificate.setGenerationNextDate(null);
+			certificate.setStatus(CertificateStatus.failed);	
 		} else {
+			certificate.setGenerationRetries(certificate.getGenerationRetries() + 1);
+			certificate.setGenerationNextDate(getNextRetryDate());
 			certificate.setStatus(CertificateStatus.error);
 		}
 		
@@ -1552,13 +1509,15 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			certificate.setPrintPath(dir + certificatePrintFile.getName());
 		}
 		
-		if(dateFirstCertification != null) {
+		if(dateFirstCertification != null && certificate.isLast()) {
 			//not the first certification, reset the last of the others certificates
-			certificatesDao.removeLastFlag(identity, resource.getKey());
+			certificatesDao.removeLastFlag(identity, resource.getKey(), certificate);
 		}
 		
 		Identity doer = workUnit.getDoerKey() == null ? null : securityManager.loadIdentityByKey(workUnit.getDoerKey());
-		if(workUnit.getConfig().isSendEmail()) {
+		// Send an email if wanting, certificate is Ok or it's the first time (mean certification is ok but PDF file not)
+		if(workUnit.getConfig().isSendEmail()
+				&& (certificate.getStatus() == CertificateStatus.ok || firstTry)) {
 			MailerResult result = sendCertificate(identity, certificationProgram, entry, certificate, doer, certificateFile, workUnit.getConfig());
 			if(result.isSuccessful()) {
 				certificate.setEmailStatus(EmailStatus.ok);
@@ -1575,8 +1534,15 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		if(brokenCertificate instanceof VFSLeaf brokenLeaf && brokenLeaf.canDelete() == VFSStatus.YES) {
 			brokenLeaf.deleteSilently();
 		}
+		
+		return certificate;
 	}
 	
+	private Date getNextRetryDate() {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.SECOND, certificatesModule.getCertificateGenerationRetryDelay());
+		return cal.getTime();
+	}
 	
 	private MailerResult sendCertificate(Identity to, CertificationProgram certificationProgram, RepositoryEntry entry,
 			CertificateImpl certificate, Identity actor, File certificateFile, CertificateConfig config) {

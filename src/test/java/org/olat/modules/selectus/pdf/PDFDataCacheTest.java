@@ -199,7 +199,7 @@ public class PDFDataCacheTest extends OlatTestCase {
 		@Override
 		public void createBigData(ZipOutputStream zipOut) {
 			try {
-				Thread.sleep(10000);
+				Thread.sleep(4000);
 			} catch (InterruptedException e) {
 				log.error("", e);
 			}

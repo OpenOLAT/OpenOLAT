@@ -44,6 +44,10 @@ public class CertificatesModule extends AbstractSpringModule {
 	private static final String CERTIFICATE_USER_MANAGER_UPLOAD = "certificate.user.manager.upload.external";
 	private static final String CERTIFICATE_USER_UPLOAD = "certificate.user.upload.external";
 	private static final String CERTIFICATE_UPLOAD_LIMIT = "certificate.upload.limit.mb";
+	
+	private static final String CERTIFICATE_GENERATION_RETRY_MAX = "certificate.generation.retry.max";
+	private static final String CERTIFICATE_GENERATION_RETRY_DELAY = "certificate.generation.retry.delay";
+	private static final String CERTIFICATE_GENERATION_CIRCUITBREAKER_FAILURES = "certificate.generation.circuitbreaker.failures";
 
 	@Value("${certificate.managed}")
 	private boolean managedCertificates;
@@ -57,6 +61,14 @@ public class CertificatesModule extends AbstractSpringModule {
 	private boolean userManagerCanUploadExternalCertificates;
 	@Value("${certificate.upload.limit.mb}")
 	private int uploadLimit;
+	
+	@Value("${certificate.generation.retry.max:10}")
+	private int certificateGenerationRetryMax;
+	@Value("${certificate.generation.retry.delay:3600}")
+	private int certificateGenerationRetryDelay;
+	@Value("${certificate.generation.circuitbreaker.failures:3}")
+	private int certificateGenerationCircuitBreakerFailures;
+
 	
 	@Autowired
 	public CertificatesModule(CoordinatorManager coordinatorManager) {
@@ -91,6 +103,9 @@ public class CertificatesModule extends AbstractSpringModule {
 		}
 		
 		uploadLimit = getIntPropertyValue(CERTIFICATE_UPLOAD_LIMIT, uploadLimit);
+		certificateGenerationRetryMax = getIntPropertyValue(CERTIFICATE_GENERATION_RETRY_MAX, certificateGenerationRetryMax);
+		certificateGenerationRetryDelay = getIntPropertyValue(CERTIFICATE_GENERATION_RETRY_DELAY, certificateGenerationRetryDelay);
+		certificateGenerationCircuitBreakerFailures = getIntPropertyValue(CERTIFICATE_GENERATION_CIRCUITBREAKER_FAILURES, certificateGenerationCircuitBreakerFailures);
 	}
 
 	@Override
@@ -166,5 +181,31 @@ public class CertificatesModule extends AbstractSpringModule {
 		this.uploadLimit = uploadLimit;
 		setIntProperty(CERTIFICATE_UPLOAD_LIMIT, uploadLimit, true);
 	}
-	
+
+	public int getCertificateGenerationRetryMax() {
+		return certificateGenerationRetryMax;
+	}
+
+	public void setCertificateGenerationRetryMax(int maxRetry) {
+		this.certificateGenerationRetryMax = maxRetry;
+		setIntProperty(CERTIFICATE_GENERATION_RETRY_MAX, maxRetry, true);
+	}
+
+	public int getCertificateGenerationRetryDelay() {
+		return certificateGenerationRetryDelay;
+	}
+
+	public void setCertificateGenerationRetryDelay(int delay) {
+		this.certificateGenerationRetryDelay = delay;
+		setIntProperty(CERTIFICATE_GENERATION_RETRY_DELAY, delay, true);
+	}
+
+	public int getCertificateGenerationCircuitBreakerFailures() {
+		return certificateGenerationCircuitBreakerFailures;
+	}
+
+	public void setCertificateGenerationCircuitBreakerFailures(int failures) {
+		certificateGenerationCircuitBreakerFailures = failures;
+		setIntProperty(CERTIFICATE_GENERATION_CIRCUITBREAKER_FAILURES, failures, true);
+	}
 }

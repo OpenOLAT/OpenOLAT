@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
@@ -66,6 +67,22 @@ public class CertificatesDAO {
 				.setParameter("certificateKey", key)
 				.getResultList();
 		return certificates.isEmpty() ? null : certificates.get(0);
+	}
+	
+	public CertificateImpl loadForUpdate(Long key) {
+		String query = """
+				select cer from certificate cer
+				where cer.key=:certificateKey""";
+		List<CertificateImpl> certificates = dbInstance.getCurrentEntityManager()
+				.createQuery(query, CertificateImpl.class)
+				.setParameter("certificateKey", key)
+				.getResultList();
+		if(certificates.size() == 1) {
+			CertificateImpl certificate = certificates.get(0);
+			dbInstance.getCurrentEntityManager().lock(certificate, LockModeType.PESSIMISTIC_WRITE);
+			return certificate;
+		}
+		return null;
 	}
 	
 	public long certificationCount(IdentityRef identity, CertificationProgram certificationProgram) {
@@ -207,6 +224,35 @@ public class CertificatesDAO {
 				.getResultList();
 	}
 	
+	public List<Long> getPendingCertificates() {
+		String query = """
+				select cer.key from certificate cer
+				inner join cer.olatResource as rsrc
+				inner join cer.identity as ident
+				where cer.statusString=:pendingStatus
+				order by cer.creationDate""";
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("pendingStatus", CertificateStatus.pending.name())
+				.getResultList();
+	}
+	
+	public List<Long> getCertificatesToReprocess(LocalDateTime referenceDate) {
+		String query = """
+				select cer.key from certificate cer
+				inner join cer.olatResource as rsrc
+				inner join cer.identity as ident
+				where (cer.statusString=:errorStatus and (cer.generationNextDate is null or cer.generationNextDate<=:now))
+				order by cer.creationDate""";
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("errorStatus", CertificateStatus.error.name())
+				.setParameter("now", referenceDate)
+				.getResultList();
+	}
+	
 	public List<Certificate> getBrokenCertificates(LocalDateTime startDate, LocalDateTime endDate) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select cer from certificate cer")
@@ -216,7 +262,7 @@ public class CertificatesDAO {
 		  .append(" left join fetch cer.certificationProgram as program")
 		  .append(" left join fetch cer.metadata as metadata")
 		  .where().append(" cer.last=true")
-		  .and().append(" (metadata.key is null or metadata.fileSize=0)");
+		  .and().append(" (metadata.key is null or metadata.fileSize=0 or cer.statusString in (:status))");
 		
 		if(startDate != null) {
 			sb.and().append(" cer.creationDate>=:startDate");
@@ -226,7 +272,8 @@ public class CertificatesDAO {
 		}
 		
 		TypedQuery<Certificate> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Certificate.class);
+				.createQuery(sb.toString(), Certificate.class)
+				.setParameter("status", List.of(CertificateStatus.error.name(), CertificateStatus.failed.name()));
 		if(startDate != null) {
 			query.setParameter("startDate", startDate);
 		}
@@ -256,6 +303,18 @@ public class CertificatesDAO {
 		dbInstance.getCurrentEntityManager().createQuery(query)
 				.setParameter("resourceKey", resourceKey)
 				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+	}
+	
+	public void removeLastFlag(IdentityRef identity, Long resourceKey, Certificate currentLast) {
+		String query = """
+				update certificate cer set cer.last=false
+				where cer.identity.key=:identityKey and cer.olatResource.key=:resourceKey and cer.last=true and cer.key<>:currentLastKey""";
+		
+		dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("resourceKey", resourceKey)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("currentLastKey", currentLast.getKey())
 				.executeUpdate();
 	}
 	

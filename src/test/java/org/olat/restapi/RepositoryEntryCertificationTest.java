@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
@@ -48,8 +49,10 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesManagerTest;
+import org.olat.course.certificate.model.AbstractCertificate;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.restapi.CertificateVO;
@@ -100,8 +103,8 @@ public class RepositoryEntryCertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, defaultEntry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		//wait until the certificate is created
-		waitMessageAreConsumed();
+
+		triggerAndWaitCertificate(certificate.getKey());
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(defaultEntry.getKey().toString())
@@ -131,7 +134,8 @@ public class RepositoryEntryCertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, defaultEntry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		waitMessageAreConsumed();
+
+		triggerAndWaitCertificate(certificate.getKey());
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(defaultEntry.getKey().toString())
@@ -174,9 +178,10 @@ public class RepositoryEntryCertificationTest extends OlatRestTestCase {
 
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-		// Wait until certificate is processed
-		waitMessageAreConsumed();
+		CertificateVO certificateVo = conn.parse(response, CertificateVO.class);
+		Assert.assertNotNull(certificateVo);
+
+		triggerAndWaitCertificate(certificateVo.getKey());
 		
 		//check certificate
 		Certificate certificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
@@ -294,7 +299,7 @@ public class RepositoryEntryCertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		waitMessageAreConsumed();
+		triggerAndWaitCertificate(certificate.getKey());
 		
 		// check that there is a real certificate with its file
 		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
@@ -332,5 +337,23 @@ public class RepositoryEntryCertificationTest extends OlatRestTestCase {
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal.getTime();
+	}
+	
+	/**
+	 * Wait that the certificate is generated, email sent, and flag last set.
+	 * 
+	 * @param certificateKey The primary key of the certificate
+	 */
+	private void triggerAndWaitCertificate(Long certificateKey) {
+		certificatesManager.triggerGenerationJob();
+		//wait until the certificate is created
+		waitForCondition(new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificateKey);
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus())
+						&& ((AbstractCertificate)reloadedCertificate).isLast();
+			}
+		}, 30000);
 	}
 }

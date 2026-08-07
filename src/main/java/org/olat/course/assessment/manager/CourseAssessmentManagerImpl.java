@@ -840,6 +840,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					.withSendEmailIdentityRelations(true)
 					.build();
 			certificatesManager.generateCertificate(certificateInfos, courseEntry, template, config);
+			
+			if(doer != null) {// If not automated -> try to get the PDF file ASAP
+				certificatesManager.triggerGenerationJob();
+			}
 		}
 	}
 	

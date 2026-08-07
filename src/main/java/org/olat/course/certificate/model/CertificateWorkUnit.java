@@ -21,13 +21,15 @@ package org.olat.course.certificate.model;
 
 import java.io.Serializable;
 
+import org.olat.course.certificate.CertificateTemplate;
+
 /**
  * 
  * Initial date: 19.11.2014<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class JmsCertificateWork implements Serializable {
+public class CertificateWorkUnit implements Serializable {
 
 	private static final long serialVersionUID = 4462884019283948487L;
 	
@@ -43,11 +45,11 @@ public class JmsCertificateWork implements Serializable {
 	private String grade;
 	private CertificateConfig config;
 	
-	public JmsCertificateWork() {
+	public CertificateWorkUnit() {
 		//
 	}
 	
-	public JmsCertificateWork(Long certificateKey, Long templateKey, boolean printTemplate, Long printTemplateKey,
+	public CertificateWorkUnit(Long certificateKey, Long templateKey, boolean printTemplate, Long printTemplateKey,
 			Float score, Float maxScore, Boolean passed, Double completion, CertificateConfig config, Long doerKey) {
 		this.score = score;
 		this.maxScore = maxScore;
@@ -59,6 +61,28 @@ public class JmsCertificateWork implements Serializable {
 		this.printTemplateKey = printTemplateKey;
 		this.certificateKey = certificateKey;
 		this.doerKey = doerKey;
+	}
+	
+	public static CertificateWorkUnit valueOf(CertificateTemplate template, boolean printTemplateEnabled, CertificateTemplate printTemplate,
+			Float score, Float maxScore, Boolean passed, Double completion, String grade, CertificateConfig config, Long doerKey) {
+		
+		CertificateWorkUnit workUnit = new CertificateWorkUnit();
+		if(template != null) {
+			workUnit.setTemplateKey(template.getKey());
+		}
+		workUnit.setPrintTemplate(printTemplateEnabled);
+		if(printTemplate != null) {
+			workUnit.setPrintTemplateKey(printTemplate.getKey());
+		}
+		workUnit.setScore(score);
+		workUnit.setMaxScore(maxScore);
+		workUnit.setPassed(passed);
+		workUnit.setCompletion(completion);
+		workUnit.setConfig(config);
+		workUnit.setGrade(grade);
+		workUnit.setDoerKey(doerKey);
+		
+		return workUnit;
 	}
 
 	public Float getScore() {
@@ -125,14 +149,6 @@ public class JmsCertificateWork implements Serializable {
 		this.printTemplateKey = printTemplateKey;
 	}
 
-	public Long getCertificateKey() {
-		return certificateKey;
-	}
-
-	public void setCertificateKey(Long certificateKey) {
-		this.certificateKey = certificateKey;
-	}
-
 	public String getGrade() {
 		return grade;
 	}
@@ -159,7 +175,7 @@ public class JmsCertificateWork implements Serializable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof JmsCertificateWork work) {
+		if(obj instanceof CertificateWorkUnit work) {
 			return certificateKey != null && certificateKey.equals(work.certificateKey);
 		}
 		return false;

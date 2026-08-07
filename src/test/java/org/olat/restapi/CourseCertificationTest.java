@@ -101,7 +101,7 @@ public class CourseCertificationTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		//wait until the certificate is created
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(defaultEntry.getOlatResource().getKey().toString())
@@ -131,7 +131,7 @@ public class CourseCertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, defaultEntry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(defaultEntry.getOlatResource().getKey().toString())
@@ -176,7 +176,7 @@ public class CourseCertificationTest extends OlatRestTestCase {
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 		// Wait until certificate is processed
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		//check certificate
 		Certificate certificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
@@ -293,7 +293,7 @@ public class CourseCertificationTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		// check that there is a real certificate with its file
 		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());

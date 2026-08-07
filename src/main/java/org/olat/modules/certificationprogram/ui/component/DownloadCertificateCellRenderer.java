@@ -19,8 +19,6 @@
  */
 package org.olat.modules.certificationprogram.ui.component;
 
-import java.util.Locale;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -33,6 +31,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.user.UserManager;
 
 /**
@@ -44,9 +43,11 @@ import org.olat.user.UserManager;
 public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 	
 	private final Formatter formatter;
+	private final Translator translator;
 	
-	public DownloadCertificateCellRenderer(Locale locale) {
-		formatter = Formatter.getInstance(locale);
+	public DownloadCertificateCellRenderer(Translator translator) {
+		formatter = Formatter.getInstance(translator.getLocale());
+		this.translator = translator;
 	}
 
 	@Override
@@ -69,9 +70,21 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 	private void render(StringOutput sb, Certificate certificate, Identity identity) {
 		String name = getName(certificate, identity, false);
 		sb.append("<a href='").append(getUrl(certificate, identity))
-		  .append("' rel='noopener noreferrer' target='_blank'>")
-		  .append("<i class='o_icon o_filetype_pdf'> </i> ")
-		  .append(name).append("</a>");
+		  .append("' rel='noopener noreferrer' target='_blank'>");
+		if(CertificateStatus.pending.equals(certificate.getStatus()) || CertificateStatus.rendering.equals(certificate.getStatus())) {
+			renderIcons( sb, "o_icon_certificate_status_pending", "certificate.status.pending");
+		} else if(CertificateStatus.error.equals(certificate.getStatus())) {
+			renderIcons( sb, "o_icon_certificate_status_error", "certificate.status.error");
+		} else if(CertificateStatus.failed.equals(certificate.getStatus())) {
+			renderIcons( sb, "o_icon_certificate_status_failed", "certificate.status.failed");
+		} else {
+			sb.append("<i class='o_icon o_filetype_pdf'> </i> ");
+		}
+		sb.append(name).append("</a>");
+	}
+	
+	private void renderIcons(StringOutput sb, String iconCssClass, String i18nKey) {
+		sb.append("<i class=\"o_icon ").append(iconCssClass).append("\" title=\"").append(translator.translate(i18nKey)).append("\"> </i> ");
 	}
 	
 	private String getUrl(Certificate certificate, Identity identity) {

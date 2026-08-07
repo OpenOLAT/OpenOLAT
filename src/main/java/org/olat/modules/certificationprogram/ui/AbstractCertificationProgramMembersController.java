@@ -101,6 +101,7 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 	protected static final String FILTER_EXPIRATION = "Expiration";
 	protected static final String FILTER_EXPIRE_SOON = "ExpireSoon";
 	protected static final String FILTER_RECERTIFIED = "Recertified";
+	protected static final String FILTER_CERTIFICATE_STATUS = "CertificateStatus";
 	protected static final String FILTER_NOT_ENOUGH_CREDIT_POINTS = "NotEnoughCreditPoints";
 
 	protected FlexiFiltersTab allTab;

@@ -553,7 +553,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 
 		Date now = new Date();
 		Date refDate = DateUtils.addDays(now, 3);
@@ -610,7 +610,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 
 		Date now = new Date();
 		updateCertificate(certificate, DateUtils.addDays(now, -3), program);
@@ -618,7 +618,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		
 		boolean recertificationOk = certificationCoordinator.processCertificationRequest(identity, program, RequestMode.AUTOMATIC, now, null);
 		Assert.assertTrue(recertificationOk);
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		Certificate renewedCertifcate = this.certificatesDao.getLastCertificate(identity, program);
 		
@@ -677,7 +677,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 
 		Date now = new Date();
 		updateCertificate(certificate, DateUtils.addDays(now, -3), program);
@@ -685,7 +685,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		
 		boolean recertificationOk = certificationCoordinator.processCertificationRequest(identity, program, RequestMode.COACH, now, coach);
 		Assert.assertTrue(recertificationOk);
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		Date refDate = DateUtils.addDays(now, 3);
 		List<Certificate> certificatesNotYet = certificationProgramMailQueries.getUpcomingCertificates(configuration, refDate);

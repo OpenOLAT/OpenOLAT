@@ -19,6 +19,7 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
+import static org.olat.modules.certificationprogram.ui.AbstractCertificationProgramMembersController.FILTER_CERTIFICATE_STATUS;
 import static org.olat.modules.certificationprogram.ui.AbstractCertificationProgramMembersController.FILTER_EXPIRATION;
 import static org.olat.modules.certificationprogram.ui.AbstractCertificationProgramMembersController.FILTER_EXPIRE_SOON;
 import static org.olat.modules.certificationprogram.ui.AbstractCertificationProgramMembersController.FILTER_NOT_ENOUGH_CREDIT_POINTS;
@@ -45,6 +46,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.util.StringHelper;
+import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.modules.certificationprogram.ui.component.NextRecertificationInDays;
 
 /**
@@ -84,6 +87,7 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 
 			final List<String> status = getFilteredList(filters, FILTER_STATUS);
 			final Set<String> statusSet = status == null ? Set.of() : new HashSet<>(status);
+			final List<String> certificateStatus = getFilteredList(filters, FILTER_CERTIFICATE_STATUS);
 			final boolean expireSoon = isFilterSelected(filters, FILTER_EXPIRE_SOON);
 			final boolean recertified = isFilterSelected(filters, FILTER_RECERTIFIED);
 			final boolean notEnoughCreditPoints = isFilterSelected(filters, FILTER_NOT_ENOUGH_CREDIT_POINTS);
@@ -95,6 +99,7 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 						&& acceptStatus(statusSet, row)
 						&& acceptRecertified(recertified, row)
 						&& acceptExpireSoon(expireSoon, row)
+						&& acceptCertificateStatus(certificateStatus, row)
 						&& acceptNotEnoughCreditPoints(notEnoughCreditPoints, row)
 						&& acceptNextRecertification(nextRecertificationDateRange, row);
 				if(accept) {
@@ -141,6 +146,17 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 		}
 		CertificationIdentityStatus iStatus = memberRow.getIdentityStatus();
 		return status.contains(iStatus.name());
+	}
+	
+	private boolean acceptCertificateStatus(List<String> status, CertificationProgramMemberRow memberRow) {
+		if(status == null || status.isEmpty()) return true;
+		
+		Certificate certificate = memberRow.getCertificate();
+		if(certificate == null || certificate.getStatus() == null) {
+			return false;
+		}
+		CertificateStatus cStatus = certificate.getStatus();
+		return cStatus != null && status.contains(cStatus.name());
 	}
 	
 	private boolean acceptRecertified(boolean recertified, CertificationProgramMemberRow memberRow) {

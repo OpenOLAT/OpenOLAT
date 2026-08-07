@@ -4,7 +4,7 @@
 #set($expired = ${row.hasExpired()})
 <div class="o_achievement_card">
 	<div class="o_achievement_type">
-		#if($row.status == "pending")
+		#if($row.status == "pending" || $row.status == "rendering")
 			<span><i class="o_icon o_icon_pending o_icon-spin"> </i></span>
 		#elseif($row.status == "ok" || $row.status == "archived" || $row.status == "revoked")
 			#if($r.isTrue($row.thumbnailAvailable))
@@ -12,7 +12,7 @@
 			#else
 				<span class="o_sel_certificate_icon"><i class="o_icon o_filetype_pdf"> </i></span>
 			#end
-		#elseif($row.status == "error")
+		#elseif($row.status == "error" || $row.status == "failed")
 			<span><i class="o_icon o_icon_error"> </i></span>
 		#end
 	</div>

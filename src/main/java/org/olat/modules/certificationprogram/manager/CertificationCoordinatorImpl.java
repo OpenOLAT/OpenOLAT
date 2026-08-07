@@ -120,6 +120,10 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 						null, null, "certified", null, null, null, doer);
 				dbInstance.commit();// Prevent deadlock with MySQL
 				accepted = true;
+				
+				if(requestMode != RequestMode.AUTOMATIC) {
+					certificatesManager.triggerGenerationJob();
+				}
 			} else {
 				accepted = processRecertificationRequest(identity, certificationProgram, lastCertificate, requestMode, referenceDate, doer);
 			}
@@ -184,6 +188,10 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 					beforeStatus, null, "certified", null, null, null, doer);
 		}
 		dbInstance.commit();// Prevent deadlock with MySQL
+		
+		if(requestMode != RequestMode.AUTOMATIC) {
+			certificatesManager.triggerGenerationJob();
+		}
 
 		return true;
 	}

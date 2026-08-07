@@ -84,10 +84,12 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 	
 	private void render(StringOutput sb, CertificateLight certificate, IdentityRef identity, Locale loc) {
 		String name = Formatter.getInstance(loc).formatDate(certificate.getCreationDate());
-		if(CertificateStatus.pending.equals(certificate.getStatus())) {
-			sb.append("<span><i class='o_icon o_icon_pending o_icon-spin'> </i> ").append(name).append(".pdf").append("</span>");
+		if(CertificateStatus.pending.equals(certificate.getStatus()) || CertificateStatus.rendering.equals(certificate.getStatus())) {
+			sb.append("<span><i class='o_icon o_icon_certificate_status_pending o_icon-spin'> </i> ").append(name).append(".pdf").append("</span>");
 		} else if(CertificateStatus.error.equals(certificate.getStatus())) {
-			sb.append("<span><i class='o_icon o_icon_error'> </i> ").append(name).append(".pdf").append("</span>");
+			sb.append("<span><i class='o_icon o_icon_certificate_status_error'> </i> ").append(name).append(".pdf").append("</span>");
+		} else if(CertificateStatus.failed.equals(certificate.getStatus())) {
+			sb.append("<span><i class='o_icon o_icon_certificate_status_failed'> </i> ").append(name).append(".pdf").append("</span>");
 		} else {
 			sb.append("<a href='").append(getUrl(certificate, identity))
 			  .append("' rel='noopener noreferrer' target='_blank'>");

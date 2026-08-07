@@ -150,7 +150,7 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 		recertificationCountCol.setIconHeader("o_icon o_icon_recertification");
 		columnsModel.addFlexiColumnModel(recertificationCountCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RecertificationCols.certificate,
-				new DownloadCertificateCellRenderer(getLocale())));
+				new DownloadCertificateCellRenderer(getTranslator())));
 		if(certificationProgram.isSerialNumberEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RecertificationCols.certificateSerialNumber));
 		}

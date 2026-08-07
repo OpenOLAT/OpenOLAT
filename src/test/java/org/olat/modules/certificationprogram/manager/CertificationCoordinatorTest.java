@@ -35,6 +35,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateStatus;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
@@ -212,7 +213,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		
 		boolean allOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(allOk);
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		List<Certificate> certificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(certificates)
@@ -227,7 +228,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		
 		boolean recertOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(recertOk);
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		List<Certificate> recertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(recertificates)
@@ -357,7 +358,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 
 		boolean courseOk = certificationCoordinator.processCertificationRequest(identity, program, RequestMode.COURSE, new Date(), identity);
 		Assert.assertTrue(courseOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		// Has a last certificate
 		Certificate certificate = certificatesDao.getLastCertificate(identity, program);
@@ -395,7 +396,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 
 		boolean courseOk = certificationCoordinator.processCertificationRequest(identity, program, RequestMode.COURSE, new Date(), identity);
 		Assert.assertTrue(courseOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		// Has a last certificate
 		Certificate certificate = certificatesDao.getLastCertificate(identity, program);
@@ -433,7 +434,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		
 		boolean courseOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(courseOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		List<Certificate> firstCertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(firstCertificates)
@@ -462,7 +463,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		// Try again the course and get a second valid certificate
 		boolean courseAgainOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(courseAgainOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		List<Certificate> secondCertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(secondCertificates)
@@ -475,7 +476,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		// Try again the course a third time and get a third valid certificate
 		boolean courseThirdOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(courseThirdOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		List<Certificate> thirdCertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(thirdCertificates)
@@ -511,7 +512,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		
 		boolean courseOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(courseOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		List<Certificate> firstCertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(firstCertificates)
@@ -530,10 +531,10 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		boolean notOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.AUTOMATIC, new Date(), null);
 		Assert.assertFalse(notOk);
 		
-		// The manager recertifiy the participant
+		// The manager recertify the participant
 		boolean managerOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COACH, new Date(), actor);
 		Assert.assertTrue(managerOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		List<Certificate> secondCertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(secondCertificates)
@@ -551,7 +552,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		// Participant does the course again and get a new valid certificate
 		boolean courseAgainOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(courseAgainOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		List<Certificate> thirdCertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(thirdCertificates)
@@ -585,7 +586,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		
 		boolean courseOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(courseOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		List<Certificate> firstCertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(firstCertificates)
@@ -637,7 +638,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		
 		boolean courseOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(courseOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		List<Certificate> firstCertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(firstCertificates)
@@ -664,7 +665,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		// Renew the certificate automatically
 		boolean automaticOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.AUTOMATIC, new Date(), null);
 		Assert.assertTrue(automaticOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		Certificate secondCertificate = certificatesDao.getLastCertificate(participant, program);
 		assertCertificateStatus(secondCertificate, CertificationStatus.VALID, CertificationIdentityStatus.CERTIFIED);
@@ -685,7 +686,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		// Participant passed the course again
 		boolean courseAgainOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(courseAgainOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		List<Certificate> thirdCertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(thirdCertificates)
@@ -739,7 +740,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		Certificate certificate = certificationCoordinator.generateCertificate(participant, program, null, RequestMode.COACH,
 				CertificationProgramMailType.certificate_issued, CertificationProgramLogAction.issue_certificate, actor);
 		Assert.assertNotNull(certificate);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		Certificate firstCertificate = certificatesDao.getLastCertificate(participant, program);
 		assertCertificateStatus(firstCertificate, CertificationStatus.VALID, CertificationIdentityStatus.CERTIFIED);
@@ -767,7 +768,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		// Renew the certificate automatically
 		boolean automaticOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.AUTOMATIC, new Date(), null);
 		Assert.assertTrue(automaticOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		Certificate secondCertificate = certificatesDao.getLastCertificate(participant, program);
 		assertCertificateStatus(secondCertificate, CertificationStatus.VALID, CertificationIdentityStatus.CERTIFIED);
@@ -816,7 +817,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		
 		boolean courseOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(courseOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		List<Certificate> firstCertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(firstCertificates)
@@ -843,7 +844,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		// Renew the certificate automatically
 		boolean automaticOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.AUTOMATIC, new Date(), null);
 		Assert.assertTrue(automaticOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		Certificate secondCertificate = certificatesDao.getLastCertificate(participant, program);
 		assertCertificateStatus(secondCertificate, CertificationStatus.VALID, CertificationIdentityStatus.CERTIFIED);
@@ -874,7 +875,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		
 		boolean courseAgainOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(courseAgainOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 	}
 	
 	
@@ -908,7 +909,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		
 		Certificate certificate = certificationCoordinator.generateCertificate(participant, program, null, RequestMode.COACH,
 				CertificationProgramMailType.certificate_issued, CertificationProgramLogAction.issue_certificate, actor);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		Assert.assertNotNull(certificate);
 		
 		List<Certificate> firstCertificates = certificationProgramService.getCertificates(participant, program);
@@ -932,7 +933,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		// Renew the certificate automatically
 		boolean automaticOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.AUTOMATIC, new Date(), null);
 		Assert.assertTrue(automaticOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		Certificate secondCertificate = certificatesDao.getLastCertificate(participant, program);
 		assertCertificateStatus(secondCertificate, CertificationStatus.VALID, CertificationIdentityStatus.CERTIFIED);
@@ -971,7 +972,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		
 		boolean courseOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
 		Assert.assertTrue(courseOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		List<Certificate> firstCertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(firstCertificates)
@@ -990,7 +991,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		// Renew the certificate automatically
 		boolean automaticOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.AUTOMATIC, new Date(), null);
 		Assert.assertTrue(automaticOk);
-		waitMessageAreConsumed();// Wait certificate is generated
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);// Wait certificate is generated
 		
 		Certificate secondCertificate = certificatesDao.getLastCertificate(participant, program);
 		assertCertificateStatus(secondCertificate, CertificationStatus.VALID, CertificationIdentityStatus.CERTIFIED);

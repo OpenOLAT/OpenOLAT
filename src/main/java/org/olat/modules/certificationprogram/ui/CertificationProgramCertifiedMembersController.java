@@ -59,6 +59,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters.Type;
@@ -190,6 +191,14 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		FlexiTableOneClickSelectionFilter recertifiedFilter = new FlexiTableOneClickSelectionFilter(translate("filter.recertified"),
 				FILTER_RECERTIFIED, recertifiedValues, false);
 		filters.add(recertifiedFilter);
+		
+		SelectionValues certificateStatusValues = new SelectionValues();
+		certificateStatusValues.add(SelectionValues.entry(CertificateStatus.pending.name(), translate("filter.certificate.pending")));
+		certificateStatusValues.add(SelectionValues.entry(CertificateStatus.error.name(), translate("filter.certificate.error")));
+		certificateStatusValues.add(SelectionValues.entry(CertificateStatus.failed.name(), translate("filter.certificate.failed")));
+		FlexiTableMultiSelectionFilter certificateStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.certificate.status"),
+				FILTER_CERTIFICATE_STATUS, certificateStatusValues, false);
+		filters.add(certificateStatusFilter);
 	}
 
 	@Override

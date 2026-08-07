@@ -159,7 +159,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertEquals(entry.getOlatResource().getKey(), certificate.getArchivedResourceKey());
 		//check if the pdf exists / flush cache, reload the entry with the updated path
 		dbInstance.commitAndCloseSession();
-
+		
+		certificatesManager.triggerGenerationJob();
 		waitCertificate(certificate.getKey());
 
 		Certificate reloadCertificate = certificatesManager.getCertificateById(certificate.getKey());
@@ -181,7 +182,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
-		
+
+		certificatesManager.triggerGenerationJob();
 		waitCertificate(certificate.getKey());
 		
 		//full
@@ -226,7 +228,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
-		
+
+		certificatesManager.triggerGenerationJob();
 		waitCertificate(certificate.getKey());
 		
 		//per resource
@@ -268,6 +271,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertNotNull(certificate2);
 		dbInstance.commitAndCloseSession();
 		
+		certificatesManager.triggerGenerationJob();
 		waitCertificate(certificate1.getKey());
 		waitCertificate(certificate2.getKey());
 		
@@ -316,7 +320,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Certificate certificate2 = certificatesManager.generateCertificate(certificateInfos2, entry, null, config);
 		Assert.assertNotNull(certificate2);
 		dbInstance.commitAndCloseSession();
-		
+
+		certificatesManager.triggerGenerationJob();
 		waitCertificate(certificate1.getKey());
 		waitCertificate(certificate2.getKey());
 
@@ -456,7 +461,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
-		
+
+		certificatesManager.triggerGenerationJob();
 		waitCertificate(certificate.getKey());
 		
 		// Reload the certificate
@@ -479,7 +485,9 @@ public class CertificatesManagerTest extends OlatTestCase {
 			.contains(certificate);
 		
 		// Regenerate certificate
-		certificatesManager.regenerateCertificateFile(certificate, certificateInfos, null, false, null, config);
+		certificatesManager.resetGenerateCertificateFile(certificate, certificateInfos, null, false, null, config);
+		
+		certificatesManager.triggerGenerationJob();
 		waitCertificateFile(certificate.getKey());
 		dbInstance.commitAndCloseSession();
 		

@@ -23,7 +23,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import org.apache.logging.log4j.Logger;
@@ -46,6 +48,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.EmailStatus;
 import org.olat.course.certificate.model.AbstractCertificate;
 import org.olat.course.certificate.model.CertificateConfig;
+import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.manager.CertificationProgramDAO;
@@ -138,6 +141,30 @@ public class CertificatesDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getCertificatesToProcess() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-owner-1", defaultUnitTestOrganisation, null);
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("cer-program-10", "Program");
+		
+		CertificateImpl certificate = new CertificateImpl();
+		certificate.setCreationDate(new Date());
+		certificate.setLastModified(certificate.getCreationDate());
+		certificate.setStatus(CertificateStatus.pending);
+		certificate.setUuid(UUID.randomUUID().toString());
+		certificate.setArchivedResourceKey(Long.valueOf(1));
+		certificate.setIdentity(identity);
+		certificate.setOlatResource(program.getResource());
+		certificate.setCertificationProgram(program);
+		dbInstance.getCurrentEntityManager().persist(certificate);
+		
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> pendingCertificates = certificatesDao.getPendingCertificates();
+		Assertions.assertThat(pendingCertificates)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.contains(certificate.getKey());
+	}
+	
+	@Test
 	public void getBrokenCertificates() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-user-program-8", defaultUnitTestOrganisation, null);
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("cer-program-8", "Program");
@@ -151,7 +178,7 @@ public class CertificatesDAOTest extends OlatTestCase {
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
 		
-		waitCertificate(certificate.getKey());
+		triggerAndWaitCertificate(certificate.getKey());
 		
 		// Reload the certificate
 		certificate = certificatesManager.getCertificateById(certificate.getKey());
@@ -234,12 +261,47 @@ public class CertificatesDAOTest extends OlatTestCase {
 		Assert.assertNull(noLastCertificate);
 	}
 	
+	@Test
+	public void removeLastFlagByResourceKeyButNotLast() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-user-program-6", defaultUnitTestOrganisation, null);
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("cer-program-6", "Program");
+		dbInstance.commitAndCloseSession();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "", null);
+		CertificateConfig config = CertificateConfig.builder()
+				.withSendEmail(true)
+				.build();
+		Certificate certificate1 = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate1);
+		dbInstance.commitAndCloseSession();
+		triggerAndWaitCertificate(certificate1.getKey());
+		
+		Certificate certificate2 = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate2);
+		dbInstance.commitAndCloseSession();
+		triggerAndWaitCertificate(certificate2.getKey());
+		
+		// Has a last certificate
+		Certificate lastCertificate = certificatesDao.getLastCertificate(identity, program);
+		Assert.assertNotNull(lastCertificate);
+		Assert.assertEquals(certificate2, lastCertificate);
+		
+		certificatesDao.removeLastFlag(identity, program.getResource().getKey(), lastCertificate);
+		dbInstance.commitAndCloseSession();
+		
+		// Has a last certificate
+		Certificate stillLastCertificate = certificatesDao.getLastCertificate(identity, program);
+		Assert.assertNotNull(stillLastCertificate);
+		Assert.assertEquals(certificate2, stillLastCertificate);
+	}
+	
 	/**
 	 * Wait that the certificate is generated, email sent, and flag last set.
 	 * 
 	 * @param certificateKey The primary key of the certificate
 	 */
-	private void waitCertificate(Long certificateKey) {
+	private void triggerAndWaitCertificate(Long certificateKey) {
+		certificatesManager.triggerGenerationJob();
 		//wait until the certificate is created
 		waitForCondition(new Callable<Boolean>() {
 			@Override

@@ -46,6 +46,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
 
 /**
  * 
@@ -57,6 +59,8 @@ public interface CertificatesManager {
 
 	public static final String ORES_CERTIFICATE =  OresHelper.calculateTypeName(CertificatesManager.class);
 	public static final OLATResourceable ORES_CERTIFICATE_EVENT =  OresHelper.createOLATResourceableInstance("Certificate", 0l);
+	public static final JobKey GENERATION_JOB_TRIGGER_KEY = new JobKey("certificatesGenerationJob", Scheduler.DEFAULT_GROUP);
+	
 	
 	public boolean isHTMLTemplateAllowed();
 	
@@ -188,6 +192,10 @@ public interface CertificatesManager {
 	public List<Certificate> getCertificatesForNotifications(Identity identity, RepositoryEntry entry, Date creationDateAfter);
 
 	public List<Certificate> getCertificates(OLATResource resource);
+
+	public List<Long> getPendingCertificatesToProcess();
+	
+	public List<Long> getCertificatesToReprocess(LocalDateTime referenceDate);
 	
 	public boolean hasCertificate(IdentityRef identity, Long resourceKey);
 	
@@ -299,15 +307,19 @@ public interface CertificatesManager {
 	
 	public Certificate generateCertificate(CertificateInfos infos, CertificationProgram certificationProgram, RepositoryEntry entry, CertificateConfig config);
 	
+	public Certificate generateCertificateFile(Long certificateKey);
+	
 	/**
-	 * This method only try to generate again the PDF file of the certificate.
+	 * This method reset the states to generate again the PDF file of the certificate.
 	 * 
 	 * @param certificate The certificate
-	 * @param certificateInfos
-	 * @param template
-	 * @param config
+	 * @param certificateInfos Some informations
+	 * @param template The template
+	 * @param printTemplateEnabled Is print template enabled
+	 * @param printTemplate The template for print
+	 * @param config The configuration
 	 */
-	public void regenerateCertificateFile(Certificate certificate, CertificateInfos certificateInfos,
+	public void resetGenerateCertificateFile(Certificate certificate, CertificateInfos certificateInfos,
 			CertificateTemplate template, boolean printTemplateEnabled, CertificateTemplate printTemplate, CertificateConfig config);
 	
 	public void revokeCertificate(Certificate certificate);
@@ -315,5 +327,7 @@ public interface CertificatesManager {
 	public void deleteCertificate(Certificate certificate);
 	
 	public void deleteStandalonCertificate(Certificate certificate);
+	
+	public void triggerGenerationJob();
 
 }

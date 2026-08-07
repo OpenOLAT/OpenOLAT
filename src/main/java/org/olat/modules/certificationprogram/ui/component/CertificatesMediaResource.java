@@ -111,7 +111,8 @@ public class CertificatesMediaResource implements MediaResource {
 		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			for(Certificate certificate:certificates) {
-				if(certificate.getStatus() == CertificateStatus.pending) {
+				if(certificate.getStatus() == CertificateStatus.pending
+						|| certificate.getStatus() == CertificateStatus.rendering) {
 					certificate = certificatesManager.getCertificateById(certificate.getKey());
 					dbInstance.commit();
 				}

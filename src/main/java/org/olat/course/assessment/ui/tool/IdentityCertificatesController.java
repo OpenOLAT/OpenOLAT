@@ -410,6 +410,8 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		loadModel();
 		showInfo("msg.certificate.pending");
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		
+		certificatesManager.triggerGenerationJob();
 	}
 	
 	private static class ThumbnailMapper implements Mapper {

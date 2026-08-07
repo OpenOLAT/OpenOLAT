@@ -245,7 +245,7 @@ public class CertificationProgramToCurriculumElementDAOTest extends OlatTestCase
 		Certificate certificate = certificateManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		CertificationProgramMemberSearchParameters searchParams = new CertificationProgramMemberSearchParameters(program);
 		searchParams.setIdentityKey(participant.getKey());
@@ -266,7 +266,7 @@ public class CertificationProgramToCurriculumElementDAOTest extends OlatTestCase
 		Certificate certificate = certificateManager.generateCertificate(certificateInfos, program, null, config);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
-		waitMessageAreConsumed();
+		triggerAndWaitMessageAreConsumed(CertificatesManager.GENERATION_JOB_TRIGGER_KEY);
 		
 		CertificationProgramMemberSearchParameters searchParams = new CertificationProgramMemberSearchParameters(program);
 		searchParams.setIdentityKey(participant.getKey());

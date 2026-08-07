@@ -611,10 +611,14 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 		CertificateConfig config = CertificateConfig.builder().build();
 		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "", null);
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
-		waitCertificate(certificate.getKey());
+		
+		triggerAndWaitCertificate(certificate.getKey());
+		
+		certificate = certificatesManager.getCertificateById(certificate.getKey());
 		certificate.setNextRecertificationDate(CalendarUtils.endOfDay(DateUtils.addDays(now, nextRecertification)));
 		((CertificateImpl)certificate).setRecertificationWindowDate(CalendarUtils.endOfDay(DateUtils.addDays(now, window)));
 		certificate = certificatesDao.updateCertificate(certificate);
+		dbInstance.commit();
 		return certificate;
 	}
 	
@@ -623,7 +627,8 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 	 * 
 	 * @param certificateKey The primary key of the certificate
 	 */
-	private void waitCertificate(Long certificateKey) {
+	private void triggerAndWaitCertificate(Long certificateKey) {
+		certificatesManager.triggerGenerationJob();
 		//wait until the certificate is created
 		waitForCondition(new Callable<Boolean>() {
 			@Override

@@ -287,7 +287,7 @@ public class AssessmentToolPage {
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 
 		By certificateBy = By.xpath("//div[@class='o_achievement_card'][div[@class='o_achievement_type']/span[@class='o_sel_certificate_icon']]");
-		OOGraphene.waitElementSlowly(certificateBy, 15, browser);
+		OOGraphene.waitElementSlowly(certificateBy, 45, browser);
 		return this;
 	}
 	

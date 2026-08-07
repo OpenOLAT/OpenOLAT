@@ -221,6 +221,8 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 		loadList();
 		showInfo("msg.certificate.pending");
 		fireEvent(ureq, Event.CHANGED_EVENT);
+
+		certificatesManager.triggerGenerationJob();
 	}
 	
 	public static class Links {

@@ -1063,6 +1063,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_certification_certified { @include o-add-icon('certificate'); color: $o-base-green-color; };
 .o_icon_certification_certifying { @include o-add-icon('arrow-rotate-right'); color: $o-base-blue-color; };
 
+.o_icon_certificate_status_pending { @include o-add-icon('hourglass-half'); }
+.o_icon_certificate_status_error { @include o-add-icon('circle-xmark'); }
+.o_icon_certificate_status_failed { @include o-add-icon('circle-xmark'); color: $brand-danger; }
+
 /* Menu tree status icons for course editor and SCORM module */
 .o_scorm_org { @include o-add-icon('archive');}
 .o_scorm_item { @include o-add-icon('file', false);}

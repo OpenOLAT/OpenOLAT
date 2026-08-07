@@ -358,8 +358,8 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 		Identity identity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("Reminder-next-4");
 		Identity identity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("Reminder-next-5");
 		Identity identity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("Reminder-next-6");
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(actor);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(actor);
 		dbInstance.commitAndCloseSession();
 		
 		Date dueDate = new Date();

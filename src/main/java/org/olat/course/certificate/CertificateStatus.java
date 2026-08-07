@@ -27,8 +27,10 @@ package org.olat.course.certificate;
  */
 public enum CertificateStatus {
 	pending,
+	rendering,
 	ok,
 	archived,
 	revoked,
-	error
+	error,
+	failed
 }

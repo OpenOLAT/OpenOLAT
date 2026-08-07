@@ -35,6 +35,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
 import org.olat.modules.certificationprogram.CertificationCoordinator.RequestMode;
 import org.olat.modules.certificationprogram.CertificationProgram;
@@ -58,6 +59,8 @@ public class AddProgramMemberFinishStepCallback implements StepRunnerCallback {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private CertificatesManager certificatesManager;
 	@Autowired
 	private CertificationCoordinator certificationCoordinator;
 	@Autowired
@@ -84,6 +87,9 @@ public class AddProgramMemberFinishStepCallback implements StepRunnerCallback {
 					statusBefore, null, "certified", val, null, null, ureq.getIdentity());
 		}
 		dbInstance.commit();
+		
+		certificatesManager.triggerGenerationJob();
+		
 		return StepsMainRunController.DONE_MODIFIED;
 	}
 	
