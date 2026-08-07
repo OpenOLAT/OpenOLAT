@@ -1,4 +1,4 @@
-<div class="o_room_card">
+<div class="o_room_card #if($warningText) o_room_card_warning #end">
 	#if($roomCardMapId)
 	<div>
 		$r.render($roomCardMapId)
@@ -41,9 +41,11 @@
 		$r.render($roomDetailsLinkId)
 	</div>
 	#end
-	#if($warningText)
-	<div class="o_room_card_warning">
-		<i class="o_icon o_icon_warn"></i>&nbsp;$r.escapeHtml($warningText)
-	</div>
-	#end
 </div>
+#if($warningText)
+<div class="o_room_card o_room_card_warning">
+	<div class="o_room_card_warning_text">
+		<i class="o_icon o_icon_warn o_room_card_warning_icon"></i>&nbsp;$r.escapeHtml($warningText)
+	</div>
+</div>
+#end
