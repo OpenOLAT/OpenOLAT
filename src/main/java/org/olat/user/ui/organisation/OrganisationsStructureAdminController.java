@@ -40,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsCol
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -163,7 +162,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 			}
 		}
 		
-		Collections.sort(rows, new FlexiTreeNodeComparator());
+		Collections.sort(rows, new OrganisationRowComparator(getLocale()));
 		model.setObjects(rows);
 		tableEl.reset(reset, reset, true);
 		modelDirty = false;
