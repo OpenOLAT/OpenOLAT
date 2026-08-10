@@ -308,15 +308,6 @@ public class UserOverviewController extends BasicController implements NextPrevi
 			});
 		}
 
-		if (catalogV2Module.isEnabled() && roleSecurityCallback.canViewResourcesAndBookings()) {
-			orderTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("tab.bookings"), uureq -> {
-				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_BOOKINGS), null);
-				userOrderController = new UserOrderController(uureq, bwControl, mentee, roleSecurityCallback.canViewPendingCourseBookings());
-				listenTo(userOrderController);
-				return userOrderController;
-			});
-		}
-
 		if (lectureModule.isEnabled() && roleSecurityCallback.canViewLecturesAndAbsences()) {
 			lecturesTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("lectures"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_LECTURES), null);
@@ -351,6 +342,15 @@ public class UserOverviewController extends BasicController implements NextPrevi
 				badgesController = new BadgesController(uureq, bwControl, mentee);
 				listenTo(badgesController);
 				return badgesController.getInitialComponent();
+			});
+		}
+		
+		if (catalogV2Module.isEnabled() && roleSecurityCallback.canViewResourcesAndBookings()) {
+			orderTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("tab.bookings"), uureq -> {
+				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_BOOKINGS), null);
+				userOrderController = new UserOrderController(uureq, bwControl, mentee, roleSecurityCallback.canViewPendingCourseBookings());
+				listenTo(userOrderController);
+				return userOrderController;
 			});
 		}
 
