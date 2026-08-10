@@ -36,12 +36,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.DateUtils;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
@@ -71,10 +73,16 @@ import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -100,6 +108,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
@@ -113,6 +123,10 @@ public class CoachingDAOTest extends OlatTestCase {
 	private EfficiencyStatementManager efficiencyStatementManager;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private LectureService lectureService;
+	@Autowired
+	private ACReservationDAO reservationDao;
 	
 	private static Organisation defaultUnitTestOrganisation;
 	
@@ -481,7 +495,32 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assertions.assertThat(list)
 			.contains(curriculum);
 	}
-	
+
+	@Test
+	public void getCoursesStatisticsByCurriculumElement() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-5b");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("repo-owner-1b");
+
+		Curriculum curriculum = curriculumService.createCurriculum("Cur-for-impl-5b", "Curriculum for implementation", "Curriculum", false,
+				JunitTestHelper.getDefaultOrganisation());
+
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-5b", "5b. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
+		curriculumService.addMember(element, owner, CurriculumRoles.owner, JunitTestHelper.getDefaultActor());
+
+		URL courseUrl = JunitTestHelper.class.getResource("file_resources/curriculum_course.zip");
+		RepositoryEntry course = JunitTestHelper.deployCourse(owner, "Course in curriculum stats", RepositoryEntryStatusEnum.published, courseUrl);
+		curriculumService.addRepositoryEntry(element, course, false);
+		dbInstance.commitAndCloseSession();
+
+		List<CourseStatEntry> statistics = coachingDAO.getCoursesStatistics(element);
+		Assertions.assertThat(statistics)
+			.map(CourseStatEntry::getRepoKey)
+			.contains(course.getKey());
+	}
+
 	@Test
 	public void getCourseReferences() {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-6");
@@ -1545,6 +1584,276 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertFalse(canCourseParticipantAsOwner);
 	}
 	
+	/**
+	 * The runtime types group decides which courses are visible and, for the
+	 * embedded / template group, that no statistics are loaded at all.
+	 */
+	@Test
+	public void getCoursesStatisticsRuntimeTypesGroups() {
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry standaloneCourse = JunitTestHelper.deployCourse(null, "Coaching standalone course",
+				RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry templateCourse = JunitTestHelper.deployCourse(null, "Coaching template course",
+				RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-rt-1", defaultUnitTestOrganisation, null);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Part-rt-1", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(owner, standaloneCourse, GroupRoles.owner.name());
+		repositoryService.addRole(owner, templateCourse, GroupRoles.owner.name());
+		repositoryService.addRole(participant, standaloneCourse, GroupRoles.participant.name());
+		repositoryService.addRole(participant, templateCourse, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant, standaloneCourse);
+		setScoreInformations(new Date(), 5.0f, null, "g1", "gs1", "pc1", true, participant, templateCourse);
+		dbInstance.commitAndCloseSession();
+
+		templateCourse = repositoryManager.setRuntimeType(templateCourse, RepositoryEntryRuntimeType.template);
+		dbInstance.commitAndCloseSession();
+
+		List<CourseStatEntry> standaloneStats = coachingDAO.getCoursesStatistics(owner, GroupRoles.owner,
+				CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular));
+		Assertions.assertThat(standaloneStats)
+			.map(CourseStatEntry::getRepoKey)
+			.contains(standaloneCourse.getKey())
+			.doesNotContain(templateCourse.getKey());
+		CourseStatEntry standaloneEntry = getCourseStatEntry(standaloneCourse, standaloneStats);
+		Assertions.assertThat(standaloneEntry.getParticipants()).isEqualTo(1);
+		Assertions.assertThat(standaloneEntry.getSuccessStatus().numPassed()).isEqualTo(1);
+
+		List<CourseStatEntry> templateStats = coachingDAO.getCoursesStatistics(owner, GroupRoles.owner,
+				CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.embeddedAndTemplate));
+		Assertions.assertThat(templateStats)
+			.map(CourseStatEntry::getRepoKey)
+			.contains(templateCourse.getKey())
+			.doesNotContain(standaloneCourse.getKey());
+		CourseStatEntry templateEntry = getCourseStatEntry(templateCourse, templateStats);
+		Assertions.assertThat(templateEntry.getParticipants()).isZero();
+		Assertions.assertThat(templateEntry.getAverageScore()).isNull();
+		Assertions.assertThat(templateEntry.getAverageCompletion()).isNull();
+	}
+
+	/**
+	 * The statistics of an owner are restricted by the list of courses, the queries
+	 * which load the statistics don't filter by role anymore.
+	 */
+	@Test
+	public void getCoursesStatisticsOwnerDoesNotLeakForeignCourses() {
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry ownedCourse = JunitTestHelper.deployCourse(null, "Coaching owned course",
+				RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry foreignCourse = JunitTestHelper.deployCourse(null, "Coaching foreign course",
+				RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry participatedCourse = JunitTestHelper.deployCourse(null, "Coaching participated course",
+				RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-leak-1", defaultUnitTestOrganisation, null);
+		Identity foreignOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-leak-2", defaultUnitTestOrganisation, null);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Part-leak-1", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(owner, ownedCourse, GroupRoles.owner.name());
+		repositoryService.addRole(owner, participatedCourse, GroupRoles.participant.name());
+		repositoryService.addRole(foreignOwner, foreignCourse, GroupRoles.owner.name());
+		repositoryService.addRole(participant, ownedCourse, GroupRoles.participant.name());
+		repositoryService.addRole(participant, foreignCourse, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant, ownedCourse);
+		setScoreInformations(new Date(), 3.0f, null, "g1", "gs1", "pc1", false, participant, foreignCourse);
+		dbInstance.commitAndCloseSession();
+
+		List<CourseStatEntry> statistics = coachingDAO.getCoursesStatistics(owner, GroupRoles.owner,
+				CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular));
+		Assertions.assertThat(statistics)
+			.map(CourseStatEntry::getRepoKey)
+			.contains(ownedCourse.getKey())
+			.doesNotContain(foreignCourse.getKey(), participatedCourse.getKey());
+
+		CourseStatEntry entry = getCourseStatEntry(ownedCourse, statistics);
+		Assertions.assertThat(entry.getParticipants()).isEqualTo(1);
+		Assertions.assertThat(entry.getSuccessStatus().numPassed()).isEqualTo(1);
+		Assertions.assertThat(entry.getSuccessStatus().numFailed()).isZero();
+	}
+
+	@Test
+	public void getCoursesStatisticsOwnerExcludesTrashedCourses() {
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry preparationCourse = JunitTestHelper.deployCourse(null, "Coaching course in preparation",
+				RepositoryEntryStatusEnum.preparation, courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry trashedCourse = JunitTestHelper.deployCourse(null, "Coaching course in trash",
+				RepositoryEntryStatusEnum.trash, courseUrl, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-trash-1", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(owner, preparationCourse, GroupRoles.owner.name());
+		repositoryService.addRole(owner, trashedCourse, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+
+		List<CourseStatEntry> statistics = coachingDAO.getCoursesStatistics(owner, GroupRoles.owner,
+				CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular));
+		Assertions.assertThat(statistics)
+			.map(CourseStatEntry::getRepoKey)
+			.contains(preparationCourse.getKey())
+			.doesNotContain(trashedCourse.getKey());
+	}
+
+	@Test
+	public void hasResourcesAsOwner() {
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry course = JunitTestHelper.deployCourse(null, "Coaching course as owner",
+				RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-res-1", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-res-1", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(owner, course, GroupRoles.owner.name());
+		repositoryService.addRole(coach, course, GroupRoles.coach.name());
+		dbInstance.commitAndCloseSession();
+
+		Assertions.assertThat(coachingDAO.hasResourcesAsOwner(owner, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular)).isTrue();
+		Assertions.assertThat(coachingDAO.hasResourcesAsOwner(owner, CoursesStatisticsRuntimeTypesGroup.embeddedAndTemplate)).isFalse();
+		Assertions.assertThat(coachingDAO.hasResourcesAsOwner(coach, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular)).isFalse();
+	}
+
+	@Test
+	public void isTeacherAndMasterCoach() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("Teacher-1", defaultUnitTestOrganisation, null);
+		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Master-coach-1", defaultUnitTestOrganisation, null);
+		Identity other = JunitTestHelper.createAndPersistIdentityAsRndUser("No-coach-1", defaultUnitTestOrganisation, null);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Coaching lecture");
+		lectureBlock.setPlannedLecturesNumber(2);
+		lectureBlock = lectureService.save(lectureBlock, null);
+		dbInstance.commit();
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+
+		Curriculum curriculum = curriculumService.createCurriculum("Cur-master-coach", "Curriculum master coach", "Curriculum", false,
+				JunitTestHelper.getDefaultOrganisation());
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-mc", "Element master coach",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+
+		Assertions.assertThat(coachingDAO.isTeacher(teacher)).isTrue();
+		Assertions.assertThat(coachingDAO.isTeacher(other)).isFalse();
+		Assertions.assertThat(coachingDAO.isMasterCoach(masterCoach)).isTrue();
+		Assertions.assertThat(coachingDAO.isMasterCoach(other)).isFalse();
+	}
+
+	@Test
+	public void getCoursesReferences() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("repo-owner-refs-1");
+
+		Curriculum curriculum = curriculumService.createCurriculum("Cur-for-refs", "Curriculum for references", "Curriculum", false,
+				JunitTestHelper.getDefaultOrganisation());
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-refs", "Element references",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, owner, CurriculumRoles.owner, JunitTestHelper.getDefaultActor());
+
+		URL courseUrl = JunitTestHelper.class.getResource("file_resources/curriculum_course.zip");
+		RepositoryEntry course = JunitTestHelper.deployCourse(owner, "Courses with ref. to curriculum",
+				RepositoryEntryStatusEnum.published, courseUrl);
+		curriculumService.addRepositoryEntry(element, course, false);
+		dbInstance.commitAndCloseSession();
+
+		List<Curriculum> list = coachingDAO.getCoursesReferences(owner, GroupRoles.owner,
+				CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular.runtimeTypes());
+		Assertions.assertThat(list)
+			.contains(curriculum);
+	}
+
+	@Test
+	public void getUsersByOrganization() {
+		Organisation organisation = organisationService.createOrganisation("Coaching-org-users", "Coaching-org-users", "",
+				null, null, JunitTestHelper.getDefaultActor());
+		Organisation otherOrganisation = organisationService.createOrganisation("Coaching-org-other", "Coaching-org-other", "",
+				null, null, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+
+		Identity userManagerIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("Org-manager-1", organisation, null);
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Org-user-1", organisation, null);
+		Identity otherUser = JunitTestHelper.createAndPersistIdentityAsRndUser("Org-user-2", otherOrganisation, null);
+		organisationService.addMember(organisation, userManagerIdentity, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		List<StudentStatEntry> entries = coachingDAO.getUsersByOrganization(userPropertyHandlers, userManagerIdentity,
+				List.of(organisation), OrganisationRoles.usermanager, Locale.ENGLISH);
+		Assertions.assertThat(entries)
+			.map(StudentStatEntry::getIdentityKey)
+			.contains(user.getKey())
+			.doesNotContain(otherUser.getKey(), userManagerIdentity.getKey());
+	}
+
+	@Test
+	public void getStudentsCompletionStatement() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Completion-part-1");
+
+		Curriculum curriculum = curriculumService.createCurriculum("Cur-for-completion", "Curriculum for completion", "Curriculum", false,
+				JunitTestHelper.getDefaultOrganisation());
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-completion", "Element completion",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
+
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		curriculumService.addRepositoryEntry(element, course, false);
+		dbInstance.commitAndCloseSession();
+
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(participant, null, course,
+				random(), Boolean.TRUE, null, false);
+		assessmentEntry.setCompletion(Double.valueOf(1));
+		assessmentService.updateAssessmentEntry(assessmentEntry);
+		dbInstance.commitAndCloseSession();
+
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		StudentStatEntry statEntry = new StudentStatEntry(participant, userPropertyHandlers, Locale.ENGLISH);
+		Map<Long,StudentStatEntry> statistics = Map.of(participant.getKey(), statEntry);
+
+		boolean found = coachingDAO.getStudentsCompletionStatement(List.of(element), statistics);
+		Assertions.assertThat(found).isTrue();
+		Assertions.assertThat(statEntry.getAverageCompletion()).isEqualTo(1.0d);
+	}
+
+	@Test
+	public void getParticipantsStatisticsWithReservations() {
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry course = JunitTestHelper.deployCourse(null, "Coaching course with reservation",
+				RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-resa-1", defaultUnitTestOrganisation, null);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Part-resa-1", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(owner, course, GroupRoles.owner.name());
+		repositoryService.addRole(participant, course, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		reservationDao.createReservation(participant, "repo_participant", DateUtils.addDays(new Date(), 3),
+				ConfirmationByEnum.PARTICIPANT, course.getOlatResource());
+		dbInstance.commitAndCloseSession();
+
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(owner, GroupRoles.owner)
+				.withReservations(true);
+		List<ParticipantStatisticsEntry> participantsStats = coachingService.getParticipantsStatistics(participantsSearch,
+				userPropertyHandlers, Locale.ENGLISH);
+
+		ParticipantStatisticsEntry entry = getParticipantStatisticsEntry(participant, participantsStats);
+		Assertions.assertThat(entry).isNotNull();
+		Assertions.assertThat(entry.getReservations()).isEqualTo(1);
+		Assertions.assertThat(entry.getReservationsConfirmedByUser()).isEqualTo(1);
+		Assertions.assertThat(entry.getReservationsConfirmedByAdmin()).isZero();
+	}
+
 	private void setScoreInformations(Date date, Float score, Float weightedScore,
 			String grade, String gradeSystemIdent, String performanceClassIdent,
 			Boolean passed, Identity identity, RepositoryEntry entry) {

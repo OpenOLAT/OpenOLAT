@@ -499,9 +499,8 @@ public class CoachingDAO {
 		
 		Map<Long,CourseStatEntry> map = getCourses(element, null, null, status, runtimeTypes);
 		if(!map.isEmpty()) {
-			loadCoursesStatistics(element, null, null, status, runtimeTypes, true, map);
-			loadCoursesStatisticsStatements(element, null, null, status, map);
-			loadCoursesCompletions(element, null, null, status, map);
+			loadCoursesStatistics(element, null, null, true, map);
+			loadCoursesStatementsAndCompletions(element, null, null, true, true, map);
 		}
 		return new ArrayList<>(map.values());
 	}
@@ -515,14 +514,9 @@ public class CoachingDAO {
 		Map<Long,CourseStatEntry> map = getCourses(null, identity, role, status, runtimeTypes);
 		if(!map.isEmpty()) {
 			if(params.withStatistics() || params.withCertificates()) {
-				loadCoursesStatistics(null, identity, role, status, runtimeTypes, params.withCertificates(), map);
+				loadCoursesStatistics(null, identity, role, params.withCertificates(), map);
 			}
-			if(params.withStatements()) {
-				loadCoursesStatisticsStatements(null, identity, role, status, map);
-			}
-			if(params.withCompletions()) {
-				loadCoursesCompletions(null, identity, role, status, map);
-			}
+			loadCoursesStatementsAndCompletions(null, identity, role, params.withStatements(), params.withCompletions(), map);
 			if(params.withReferences()) {
 				loadCoursesReferences(identity, role, map);
 			}
@@ -605,7 +599,6 @@ public class CoachingDAO {
 	}
 	
 	private void loadCoursesStatistics(CurriculumElement element, IdentityRef coach, GroupRoles role,
-			List<RepositoryEntryStatusEnum> status, List<RepositoryEntryRuntimeType> runtimeTypes,
 			boolean withCertificates, Map<Long,CourseStatEntry> map) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key,")
@@ -622,191 +615,139 @@ public class CoachingDAO {
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as participantGroup")
 		  .append(" inner join participantGroup.members as participantMembers on (participantMembers.role='participant')")
-		  .append(" left join usercourseinfos as courseInfos on (courseInfos.identity.key=participantMembers.identity.key and courseInfos.resource.key=res.key)");
+		  .append(" left join usercourseinfos as courseInfos on (courseInfos.identity.key=participantMembers.identity.key")
+		  .append("  and courseInfos.resource.key=res.key")
+		  .append("  and courseInfos.resource.key in (select vRes.olatResource.key from repositoryentry as vRes where vRes.key in (:entryKeys)))");
 		if(withCertificates) { 
 			sb.append(" left join certificateentryconfig as certificateConfig on (certificateConfig.entry.key=v.key and res.resName='CourseModule')")
 			  .append(" left join certificate as certificate on (certificate.identity.key=participantMembers.identity.key and certificate.last=true and certificate.olatResource.key=res.key)");
 		}
 		  
 		sb.where()
-		  .append(" v.status in :status and v.runtimeTypeString in :runtimeTypes")
-		  .and();
-		
+		  .append(" v.key in (:entryKeys)");
+
 		if(element != null) {
-			sb.append(" participantGroup.key=:elementGroupKey");
-		} else if(role == GroupRoles.owner) {
-			sb.append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-			  .append("  where owner.identity.key=:coachKey")
-			  .append(")");
-		} else {
-			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
+			sb.and().append(" participantGroup.key=:elementGroupKey");
+		} else if(role == GroupRoles.coach) {
+			sb.and().append(" participantGroup.key in (select coach.group.key from bgroupmember as coach")
 			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
 			  .append(")");
 		}
 		sb.append(" group by v.key");
-		
-		List<String> runtimeTypesList = runtimeTypes.stream()
-				.map(RepositoryEntryRuntimeType::name)
-				.toList();
-		List<String> statusList = status.stream()
-				.map(RepositoryEntryStatusEnum::name)
-				.toList();
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
-				.setFlushMode(FlushModeType.COMMIT)
-				.setParameter("runtimeTypes", runtimeTypesList)
-				.setParameter("status", statusList);
+				.setFlushMode(FlushModeType.COMMIT);
 		if(withCertificates) {
 			query.setParameter("now", new Date(), TemporalType.TIMESTAMP);
 		}
 		if(element != null) {
 			query.setParameter("elementGroupKey", element.getGroup().getKey());
-		} else {
+		} else if(role == GroupRoles.coach) {
 			query.setParameter("coachKey", coach.getKey());
 		}
 
-		List<Object[]> list = query.getResultList();
-		for(Object[] rawStat:list) {
-			Long repoKey = ((Number)rawStat[0]).longValue();
-			
-			CourseStatEntry entry = map.get(repoKey);
-			if(entry != null) {
-				entry.setParticipants(PersistenceHelper.extractPrimitiveInt(rawStat, 1));
-				entry.setParticipantsVisited(PersistenceHelper.extractPrimitiveInt(rawStat, 2));
-				entry.setParticipantsNotVisited(entry.getParticipants() - entry.getParticipantsVisited());
-				entry.setLastVisit((Date)rawStat[3]);
-				
-				long withCertificate = PersistenceHelper.extractPrimitiveLong(rawStat, 4);
-				if(withCertificate > 0l) {
-					long numOfCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, 5);
-					long numOfInvalidCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, 6);
-					entry.setCertificates(new Certificates(numOfCertificates, withCertificate, numOfInvalidCertificates));
+		for(List<Long> entryKeys:PersistenceHelper.collectionOfChunks(new ArrayList<>(map.keySet()), 2)) {
+			query.setParameter("entryKeys", entryKeys);
+			List<Object[]> list = query.getResultList();
+			for(Object[] rawStat:list) {
+				Long repoKey = ((Number)rawStat[0]).longValue();
+
+				CourseStatEntry entry = map.get(repoKey);
+				if(entry != null) {
+					entry.setParticipants(PersistenceHelper.extractPrimitiveInt(rawStat, 1));
+					entry.setParticipantsVisited(PersistenceHelper.extractPrimitiveInt(rawStat, 2));
+					entry.setParticipantsNotVisited(entry.getParticipants() - entry.getParticipantsVisited());
+					entry.setLastVisit((Date)rawStat[3]);
+
+					long withCertificate = PersistenceHelper.extractPrimitiveLong(rawStat, 4);
+					if(withCertificate > 0l) {
+						long numOfCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, 5);
+						long numOfInvalidCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, 6);
+						entry.setCertificates(new Certificates(numOfCertificates, withCertificate, numOfInvalidCertificates));
+					}
 				}
 			}
 		}
 	}
-	
-	private void loadCoursesStatisticsStatements(CurriculumElement element, Identity coach, GroupRoles role,
-			List<RepositoryEntryStatusEnum> status, Map<Long,CourseStatEntry> map) {
+
+	private void loadCoursesStatementsAndCompletions(CurriculumElement element, Identity coach, GroupRoles role,
+			boolean withStatements, boolean withCompletions, Map<Long,CourseStatEntry> map) {
+		if(!withStatements && !withCompletions) {
+			return;
+		}
+
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
-		  .append("  ae.repositoryEntry.key,")
-		  .append("  sum(case when ae.passed=true then 1 else 0 end) as numPassed,")
-		  .append("  sum(case when ae.passed=false then 1 else 0 end) as numFailed,")
-		  .append("  count(ae.key) as total,")
-		  .append("  avg(ae.score) as averageScore")
-		  .append(" from assessmententry as ae")
-		  .append(" where ae.key in (select distinct ae2.key from repositoryentry as re")
-		  .append("  inner join re.groups as reToParticipantGroup")
-		  .append("  inner join reToParticipantGroup.group as participantGroup")
-		  .append("  inner join participantGroup.members as participant on (participant.role='participant')")
-		  .append("  inner join assessmententry as ae2 on (participant.identity.key=ae2.identity.key and ae2.repositoryEntry.key=re.key)")
-		  .append("  inner join courseelement rootElement on (rootElement.repositoryEntry.key=re.key and rootElement.subIdent=ae2.subIdent)")
-		  .where()
-		  .append("  ae2.entryRoot=true and rootElement.passedMode<>'none' and re.status in :status")
-		  .and();
-		
-		if(element != null) {
-			sb.append("participantGroup.key = :elementGroupKey");
-		} else if(role == GroupRoles.owner) {
-			sb.append("re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-			  .append("  where owner.identity.key=:coachKey")
-			  .append(" )");
-		} else {
-			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
-			  .append(")");
+		  .append("  ae.repositoryEntry.key");
+		if(withStatements) {
+			sb.append(",  sum(case when rootElement.passedMode<>'none' and ae.passed=true then 1 else 0 end) as numPassed")
+			  .append(",  sum(case when rootElement.passedMode<>'none' and ae.passed=false then 1 else 0 end) as numFailed")
+			  .append(",  sum(case when rootElement.passedMode<>'none' then 1 else 0 end) as total")
+			  .append(",  avg(case when rootElement.passedMode<>'none' then ae.score end) as averageScore");
 		}
-		sb.append(" )")
+		if(withCompletions) {
+			sb.append(",  avg(ae.completion) as completion");
+		}
+		sb.append(" from assessmententry as ae");
+		if(withStatements) {
+			sb.append(" left join courseelement as rootElement on (rootElement.repositoryEntry.key=ae.repositoryEntry.key")
+			  .append("  and rootElement.subIdent=ae.subIdent)");
+		}
+		sb.where()
+		  .append("  ae.entryRoot=true")
+		  .and()
+		  .append("  ae.repositoryEntry.key in (:entryKeys)")
+		  .and()
+		  .append("  (ae.repositoryEntry.key, ae.identity.key) in (select reToParticipantGroup.entry.key, participant.identity.key")
+		  .append("   from repoentrytogroup as reToParticipantGroup")
+		  .append("   inner join bgroupmember as participant on (participant.role='participant' and participant.group.key=reToParticipantGroup.group.key)")
+		  .append("   where reToParticipantGroup.entry.key in (:entryKeys)");
+
+		if(element != null) {
+			sb.append("   and reToParticipantGroup.group.key=:elementGroupKey");
+		} else if(role == GroupRoles.coach) {
+			sb.append("   and reToParticipantGroup.group.key in (select coach.group.key from bgroupmember as coach")
+			  .append("    where coach.role='coach' and coach.identity.key=:coachKey)");
+		}
+
+		sb.append("  )")
 		  .append(" group by ae.repositoryEntry.key");
 
-		List<String> statusList = status.stream()
-				.map(RepositoryEntryStatusEnum::name)
-				.toList();
-		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
-				.setFlushMode(FlushModeType.COMMIT)
-				.setParameter("status", statusList);
+				.setFlushMode(FlushModeType.COMMIT);
 		if(element != null) {
 			query.setParameter("elementGroupKey", element.getGroup().getKey());
-		} else {
+		} else if(role == GroupRoles.coach) {
 			query.setParameter("coachKey", coach.getKey());
 		}
-		
-		List<Object[]> list = query.getResultList();
-		for(Object[] rawObjects:list) {
-			Long entryKey = ((Number)rawObjects[0]).longValue();
-			CourseStatEntry stats = map.get(entryKey);
-			if(stats != null) {
-				long numPassed = PersistenceHelper.extractPrimitiveLong(rawObjects, 1);
-				long numFailed = PersistenceHelper.extractPrimitiveLong(rawObjects, 2);
-				long total = PersistenceHelper.extractPrimitiveLong(rawObjects, 3);
-				long numUndefined = total - numFailed - numPassed;
-				stats.setSuccessStatus(new SuccessStatus(numPassed, numFailed, numUndefined, total));
 
-				Double averageScore = PersistenceHelper.extractDouble(rawObjects, 4);
-				stats.setAverageScore(averageScore);
-			}
-		}
-	}
-	
-	private void loadCoursesCompletions(CurriculumElement element, Identity coach, GroupRoles role,
-			List<RepositoryEntryStatusEnum> status, Map<Long,CourseStatEntry> map) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select")
-		  .append("  ae.repositoryEntry.key,")
-		  .append("  avg(ae.completion) as completion")
-		  .append(" from assessmententry as ae")
-		  .append(" where ae.key in (select distinct ae2.key from repositoryentry as re")
-		  .append("  inner join re.groups as reToParticipantGroup")
-		  .append("  inner join reToParticipantGroup.group as participantGroup")
-		  .append("  inner join bgroupmember as participant on (participant.role='participant' and participant.group.key=participantGroup.key)")
-		  .append("  inner join assessmententry as ae2 on (ae2.repositoryEntry.key=re.key and participant.identity.key=ae2.identity.key and ae2.entryRoot=true)")
-		  .where()
-		  .append("  re.status in :status")
-		  .and();
-		
-		if(element != null) {
-			sb.append("participantGroup.key=:elementGroupKey");
-		} else if(role == GroupRoles.owner) {
-			sb.append("re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-			  .append("  where owner.identity.key=:coachKey")
-			  .append(")");
-		} else {
-			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
-			  .append(" )");
-		}
-		
-		sb.append(" )")
-		  .append(" group by ae.repositoryEntry.key");
-		
-		List<String> statusList = status.stream()
-				.map(RepositoryEntryStatusEnum::name)
-				.toList();
-		
-		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
-				.setFlushMode(FlushModeType.COMMIT)
-				.setParameter("status", statusList);
-		if(element != null) {
-			query.setParameter("elementGroupKey", element.getGroup().getKey());
-		} else {
-			query.setParameter("coachKey", coach.getKey());
-		}
-		
-		List<Object[]> list = query.getResultList();
-		for(Object[] rawObjects:list) {
-			Long entryKey = ((Number)rawObjects[0]).longValue();
-			CourseStatEntry stats = map.get(entryKey);
-			if(stats != null) {
-				Double completion = PersistenceHelper.extractDouble(rawObjects, 1);
-				stats.setAverageCompletion(completion);
+		for(List<Long> entryKeys:PersistenceHelper.collectionOfChunks(new ArrayList<>(map.keySet()), 2)) {
+			query.setParameter("entryKeys", entryKeys);
+			List<Object[]> list = query.getResultList();
+			for(Object[] rawObjects:list) {
+				Long entryKey = ((Number)rawObjects[0]).longValue();
+				CourseStatEntry stats = map.get(entryKey);
+				if(stats == null) {
+					continue;
+				}
+
+				int pos = 1;
+				if(withStatements) {
+					long numPassed = PersistenceHelper.extractPrimitiveLong(rawObjects, pos++);
+					long numFailed = PersistenceHelper.extractPrimitiveLong(rawObjects, pos++);
+					long total = PersistenceHelper.extractPrimitiveLong(rawObjects, pos++);
+					long numUndefined = total - numFailed - numPassed;
+					stats.setSuccessStatus(new SuccessStatus(numPassed, numFailed, numUndefined, total));
+
+					Double averageScore = PersistenceHelper.extractDouble(rawObjects, pos++);
+					stats.setAverageScore(averageScore);
+				}
+				if(withCompletions) {
+					Double completion = PersistenceHelper.extractDouble(rawObjects, pos++);
+					stats.setAverageCompletion(completion);
+				}
 			}
 		}
 	}
@@ -1035,6 +976,16 @@ public class CoachingDAO {
 	protected List<ParticipantStatisticsEntry> loadParticipantsCoursesStatistics(Identity coach, GroupRoles role,
 			List<Group> organisationsGroups, RelationRole userRelation, List<OrganisationRoles> excludedRoles,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		List<Long> entryKeys = null;
+		List<Long> identityKeys = null;
+		if(role == GroupRoles.owner) {
+			entryKeys = loadCourseEntryKeys(coach, role, null);
+			if(entryKeys.isEmpty()) return new ArrayList<>();
+		} else if(role != GroupRoles.coach && organisationsGroups != null && !organisationsGroups.isEmpty()) {
+			identityKeys = loadOrganisationMemberKeys(organisationsGroups, excludedRoles);
+			if(identityKeys.isEmpty()) return new ArrayList<>();
+		}
+
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
 		  .append("  participant.key,")
@@ -1061,32 +1012,37 @@ public class CoachingDAO {
 			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
 			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
 			  .append(")");
-		} else if(role == GroupRoles.owner) {
-			sb.append("re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-			  .append("  where owner.identity.key=:coachKey")
-			  .append(")");
-		} else if(organisationsGroups != null && !organisationsGroups.isEmpty()) {
-			sb.append("participant.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
-			  .append("  where organisationMember.group.key in (:organisationGroupKeys) and organisationMember.role='user'");
-			sb.append(")");
+		} else if(entryKeys != null) {
+			sb.append("re.key in (:entryKeys)");
+		} else if(identityKeys != null) {
+			sb.append("participant.key in (:identityKeys)");
 		} else if(userRelation != null) {
 			sb.append("participant.key in (select relation.target.key from identitytoidentity as relation")
 			  .append("  where relation.source.key=:coachKey and relation.role.key=:roleKey")
 			  .append(")");
 		}
-		
-		if(excludedRoles != null && !excludedRoles.isEmpty()) {
+
+		if(identityKeys == null && excludedRoles != null && !excludedRoles.isEmpty()) {
 			sb.and().append("participant.key not in (select managerMember.identity.key from bgroupmember as managerMember")
 			  .append("  where managerMember.role in (:excludedRoles)")
 			  .append(")");
 		}
-		
+
 		sb.append(" group by participant.key, participantUser.key") ;
-		
-		final TypedQuery<Object[]> query = buildTypedQuery(sb, coach, role,
-				organisationsGroups, userRelation);
-		if(excludedRoles != null && !excludedRoles.isEmpty()) {
+
+		final TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(role == GroupRoles.coach) {
+			query.setParameter("coachKey", coach.getKey());
+		} else if(entryKeys != null) {
+			query.setParameter("entryKeys", entryKeys);
+		} else if(identityKeys != null) {
+			query.setParameter("identityKeys", identityKeys);
+		} else if(userRelation != null) {
+			query.setParameter("coachKey", coach.getKey());
+			query.setParameter("roleKey", userRelation.getKey());
+		}
+		if(identityKeys == null && excludedRoles != null && !excludedRoles.isEmpty()) {
 			List<String> rolesStrings = excludedRoles.stream()
 					.map(OrganisationRoles::name)
 					.toList();
@@ -1147,113 +1103,137 @@ public class CoachingDAO {
 		for(UserPropertyHandler handler:userPropertyHandlers) {
 			sb.append(" ").append(user).append(".").append(handler.getName()).append(" as ")
 			  .append("ident_user_").append(handler.getDatabaseColumnName()).append(",");
-		}	
-	}
-	
-	protected void processParticipantsPassedFailedStatistics(Identity coach, GroupRoles role,
-			List<Group> organisationsGroups, RelationRole userRelation,
-			Map<Long,ParticipantStatisticsEntry> statEntries) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select")
-		  .append("  ae.identity.key,")
-		  .append("  sum(case when ae.passed=true then 1 else 0 end) as numPassed,")
-		  .append("  sum(case when ae.passed=false then 1 else 0 end) as numFailed,")
-		  .append("  count(ae.key) as total")
-		  .append(" from assessmententry as ae")
-		  .append(" where ae.key in (select distinct ae2.key from repositoryentry as re")
-		  .append("  inner join re.groups as reToParticipantGroup")
-		  .append("  inner join reToParticipantGroup.group as participantGroup")
-		  .append("  inner join participantGroup.members as participant on (participant.role='participant')")
-		  .append("  inner join assessmententry as ae2 on (participant.identity.key=ae2.identity.key and ae2.repositoryEntry.key=re.key)")
-		  .append("  inner join courseelement rootElement on (rootElement.repositoryEntry.key=re.key and rootElement.subIdent=ae2.subIdent)")
-		  .where()
-		  .append("  ae2.entryRoot=true and ae2.completion is not null and rootElement.passedMode<>'none' and re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-		  .and();
-		
-		if(role == GroupRoles.coach) {
-			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
-			  .append(" )");
-		} else if(role == GroupRoles.owner) {
-			sb.append("re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-			  .append("  where owner.identity.key=:coachKey")
-			  .append(" )");
-		} else if(!organisationsGroups.isEmpty()) {
-			sb.append("participant.identity.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
-			  .append("  where organisationMember.group.key in (:organisationGroupKeys) and organisationMember.role='user'")
-			  .append(")");
-		} else if(userRelation != null) {
-			sb.append("participant.identity.key in (select relation.target.key from identitytoidentity as relation")
-			  .append("  where relation.source.key=:coachKey and relation.role.key=:roleKey")
-			  .append(")");
-		}
-		sb.append(" )")
-		  .append(" group by ae.identity.key");
-		
-		final TypedQuery<Object[]> query = buildTypedQuery(sb, coach, role,
-				organisationsGroups, userRelation);
-		final List<Object[]> rawList = query.getResultList();
-		for(Object[] rawObjects:rawList) {
-			Long identityKey = ((Number)rawObjects[0]).longValue();
-			ParticipantStatisticsEntry stats = statEntries.get(identityKey);
-			if(stats != null) {
-				long numPassed = PersistenceHelper.extractPrimitiveLong(rawObjects, 1);
-				long numFailed = PersistenceHelper.extractPrimitiveLong(rawObjects, 2);
-				long total = PersistenceHelper.extractPrimitiveLong(rawObjects, 3);
-				long numUndefined = total - numFailed - numPassed;
-				stats.setSuccessStatus(new SuccessStatus(numPassed, numFailed, numUndefined, total));
-			}
 		}
 	}
-	
-	protected void processParticipantsCompletionStatistics(Identity identity, GroupRoles role,
-			List<Group> organisationsGroups, RelationRole userRelation,
-			Map<Long,ParticipantStatisticsEntry> statEntries) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select")
-		  .append("  ae.identity.key,")
-		  .append("  avg(ae.completion) as completion")
-		  .append(" from assessmententry as ae")
-		  .append(" where ae.key in (select distinct ae2.key from repositoryentry as re")
-		  .append("  inner join re.groups as reToParticipantGroup")
-		  .append("  inner join reToParticipantGroup.group as participantGroup")
-		  .append("  inner join bgroupmember as participant on (participant.role='participant' and participant.group.key=participantGroup.key)")
-		  .append("  inner join assessmententry as ae2 on (ae2.repositoryEntry.key=re.key and participant.identity.key=ae2.identity.key and ae2.entryRoot=true)")
-		  .where()
-		  .append("  re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-		  .and();
 
-		if(role == GroupRoles.coach) {
-			sb.append("participantGroup.key in (select distinct coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
-			  .append(" )");
-		} else if(role == GroupRoles.owner) {
-			sb.append("re.key in (select distinct reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-			  .append("  where owner.identity.key=:coachKey")
-			  .append(" )");
-		} else if(!organisationsGroups.isEmpty()) {
-			sb.append("participant.identity.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
-			  .append("  where organisationMember.group.key in (:organisationGroupKeys) and organisationMember.role='user'")
-			  .append(")");
-		} else if(userRelation != null) {
-			sb.append("participant.identity.key in (select relation.target.key from identitytoidentity as relation")
-			  .append("  where relation.source.key=:coachKey and relation.role.key=:roleKey")
+	private List<Long> loadCourseEntryKeys(Identity coach, GroupRoles role, RepositoryEntryStatusEnum[] status) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct re.key from repositoryentry as re")
+		  .append(" inner join re.groups as reToGroup")
+		  .append(" inner join reToGroup.group as courseGroup")
+		  .append(" inner join courseGroup.members as member on (member.role=:role and member.identity.key=:coachKey)");
+		if(status != null) {
+			sb.where()
+			  .append(" re.status").in(status);
+		}
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("role", role.name())
+				.setParameter("coachKey", coach.getKey())
+				.getResultList();
+	}
+
+	private List<Long> loadOrganisationMemberKeys(List<Group> organisationsGroups, List<OrganisationRoles> excludedRoles) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct member.identity.key from bgroupmember as member")
+		  .where()
+		  .append(" member.group.key in (:organisationGroupKeys) and member.role='user'");
+		if(excludedRoles != null && !excludedRoles.isEmpty()) {
+			sb.and().append(" member.identity.key not in (select excluded.identity.key from bgroupmember as excluded")
+			  .append("  where excluded.role in (:excludedRoles)")
 			  .append(")");
 		}
-		sb.append(" )")
-		  .append(" group by ae.identity.key");
-		
-		final TypedQuery<Object[]> query = buildTypedQuery(sb, identity, role,
-				organisationsGroups, userRelation);
+
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("organisationGroupKeys", organisationsGroups.stream().map(Group::getKey).toList());
+		if(excludedRoles != null && !excludedRoles.isEmpty()) {
+			query.setParameter("excludedRoles", excludedRoles.stream().map(OrganisationRoles::name).toList());
+		}
+		return query.getResultList();
+	}
+
+	protected void processParticipantsStatementsAndCompletions(Identity coach, GroupRoles role,
+			List<Group> organisationsGroups, RelationRole userRelation,
+			boolean withStatus, boolean withCompletion,
+			Map<Long,ParticipantStatisticsEntry> statEntries) {
+		if(!withStatus && !withCompletion) {
+			return;
+		}
+
+		List<Long> entryKeys = null;
+		if(role == GroupRoles.coach || role == GroupRoles.owner) {
+			entryKeys = loadCourseEntryKeys(coach, role, RepositoryEntryStatusEnum.coachPublishedToClosed());
+			if(entryKeys.isEmpty()) return;
+		}
+
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select")
+		  .append("  ae.identity.key");
+		if(withStatus) {
+			sb.append(",  sum(case when rootElement.passedMode<>'none' and ae.completion is not null and ae.passed=true then 1 else 0 end) as numPassed")
+			  .append(",  sum(case when rootElement.passedMode<>'none' and ae.completion is not null and ae.passed=false then 1 else 0 end) as numFailed")
+			  .append(",  sum(case when rootElement.passedMode<>'none' and ae.completion is not null then 1 else 0 end) as total");
+		}
+		if(withCompletion) {
+			sb.append(",  avg(ae.completion) as completion");
+		}
+		sb.append(" from assessmententry as ae");
+		if(withStatus) {
+			sb.append(" left join courseelement as rootElement on (rootElement.repositoryEntry.key=ae.repositoryEntry.key")
+			  .append("  and rootElement.subIdent=ae.subIdent)");
+		}
+		if(entryKeys != null) {
+			sb.where()
+			  .append("  ae.entryRoot=true")
+			  .and()
+			  .append("  ae.repositoryEntry.key in (:entryKeys)")
+			  .and()
+			  .append("  exists (select rel.key from repoentrytogroup as rel")
+			  .append("   inner join bgroupmember as participant on (participant.role='participant' and participant.group.key=rel.group.key)")
+			  .append("   where rel.entry.key=ae.repositoryEntry.key and participant.identity.key=ae.identity.key")
+			  .append("  )");
+		} else {
+			sb.append(" where ae.key in (select distinct ae2.key from repositoryentry as re")
+			  .append("  inner join re.groups as reToParticipantGroup")
+			  .append("  inner join reToParticipantGroup.group as participantGroup")
+			  .append("  inner join participantGroup.members as participant on (participant.role='participant')")
+			  .append("  inner join assessmententry as ae2 on (participant.identity.key=ae2.identity.key and ae2.repositoryEntry.key=re.key and ae2.entryRoot=true)")
+			  .where()
+			  .append("  re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+			  .and();
+
+			if(!organisationsGroups.isEmpty()) {
+				sb.append("participant.identity.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
+				  .append("  where organisationMember.group.key in (:organisationGroupKeys) and organisationMember.role='user'")
+				  .append(")");
+			} else if(userRelation != null) {
+				sb.append("participant.identity.key in (select relation.target.key from identitytoidentity as relation")
+				  .append("  where relation.source.key=:coachKey and relation.role.key=:roleKey")
+				  .append(")");
+			}
+			sb.append(" )");
+		}
+		sb.append(" group by ae.identity.key");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(entryKeys != null) {
+			query.setParameter("entryKeys", entryKeys);
+		} else if(!organisationsGroups.isEmpty()) {
+			query.setParameter("organisationGroupKeys", organisationsGroups.stream().map(Group::getKey).toList());
+		} else if(userRelation != null) {
+			query.setParameter("coachKey", coach.getKey());
+			query.setParameter("roleKey", userRelation.getKey());
+		}
+
 		final List<Object[]> rawList = query.getResultList();
 		for(Object[] rawObjects:rawList) {
 			Long identityKey = ((Number)rawObjects[0]).longValue();
 			ParticipantStatisticsEntry stats = statEntries.get(identityKey);
 			if(stats != null) {
-				Double completion = PersistenceHelper.extractDouble(rawObjects, 1);
-				stats.setAverageCompletion(completion);
+				int pos = 1;
+				if(withStatus) {
+					long numPassed = PersistenceHelper.extractPrimitiveLong(rawObjects, pos++);
+					long numFailed = PersistenceHelper.extractPrimitiveLong(rawObjects, pos++);
+					long total = PersistenceHelper.extractPrimitiveLong(rawObjects, pos++);
+					long numUndefined = total - numFailed - numPassed;
+					stats.setSuccessStatus(new SuccessStatus(numPassed, numFailed, numUndefined, total));
+				}
+				if(withCompletion) {
+					Double completion = PersistenceHelper.extractDouble(rawObjects, pos);
+					stats.setAverageCompletion(completion);
+				}
 			}
 		}
 	}
@@ -1377,7 +1357,7 @@ public class CoachingDAO {
 	
 	public boolean getStudentsCompletionStatement(List<? extends CurriculumElementRef> elements, Map<Long, ? extends CompletionStats> statistics) {
 		if(elements == null || elements.isEmpty() || statistics == null || statistics.isEmpty()) return false;
-		
+
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ae.identity.key, avg(ae.completion)")
 		  .append(" from assessmententry as ae")
@@ -1391,11 +1371,11 @@ public class CoachingDAO {
 		  .append(" and asge.entryRoot=true and asge.completion is not null")
 		  .append(")")
 		  .append(" group by ae.identity.key");
-		
+
 		List<Long> elementKeys = elements.stream()
 				.map(CurriculumElementRef::getKey)
 				.collect(Collectors.toList());
-		
+
 		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("elementKeys", elementKeys)
@@ -1404,7 +1384,7 @@ public class CoachingDAO {
 		for(Object[] rawStat:rawList) {
 			Long identityKey = ((Number)rawStat[0]).longValue();
 			Double completion = PersistenceHelper.extractDouble(rawStat, 1);
-			
+
 			CompletionStats stats = statistics.get(identityKey);
 			if(stats != null) {
 				stats.setAverageCompletion(completion);

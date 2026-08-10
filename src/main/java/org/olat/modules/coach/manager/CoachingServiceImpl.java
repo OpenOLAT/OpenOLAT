@@ -173,14 +173,9 @@ public class CoachingServiceImpl implements CoachingService {
 			coachingDao.loadRelationUsers(identity, userRelation, statsEntries, statisticsEntries, userPropertyHandlers, locale);
 		}
 		
-		if(params.withCourseStatus()) {
-			coachingDao.processParticipantsPassedFailedStatistics(identity, role,
-				organisationsGroups, userRelation, statisticsEntries);
-		}
-		if(params.withCourseCompletion()) {
-			coachingDao.processParticipantsCompletionStatistics(identity, role,
-				organisationsGroups, userRelation, statisticsEntries);
-		}
+		coachingDao.processParticipantsStatementsAndCompletions(identity, role,
+			organisationsGroups, userRelation,
+			params.withCourseStatus(), params.withCourseCompletion(), statisticsEntries);
 		
 		if(params.withReservations()) {
 			if(curriculumModule.isEnabled()) {
