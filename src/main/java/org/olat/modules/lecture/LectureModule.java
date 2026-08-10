@@ -51,7 +51,6 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String ASSESSMENT_MODE_SEB_KEYS = "lecture.assessment.mode.seb.keys";
 	private static final String ASSESSMENT_MODE_SEB_DEFAULT = "lecture.assessment.mode.seb.default";
 	private static final String ASSESSMENT_MODE_SEB_DOWNLOAD = "lecture.assessment.mode.seb.download";
-	private static final String ASSESSMENT_MODE_SEB_HINT = "lecture.assessment.mode.seb.hint";
 
 	private static final String CAN_OVERRIDE_STANDARD_CONFIGURATION = "lecture.can.override.standard.configuration";
 	private static final String STATUS_PARTIALLY_DONE_ENABLED = "lecture.status.partially.done.enabled";
