@@ -377,15 +377,16 @@ public class LectureSettingsAdminController extends FormBasicController {
 			assessmentFollowupTimeEl.setValue("");
 		}
 		
-		if(StringHelper.containsNonWhitespace(lectureModule.getAssessmentModeSebKeys())) {
-			assessmentSafeExamBrowserEl.select(SEB_KEYS, true);
-			assessmentSafeExamBrowserKeysEl.setValue(lectureModule.getAssessmentModeSebKeys());
-			assessmentSafeExamBrowserDownloadEl.select(Boolean.FALSE.toString(), true);
-		} else {
+		// Assessment mode disabled -> select not visible
+		if(lectureModule.isAssessmentModeSebDefault()) {
 			assessmentSafeExamBrowserEl.select(SEB_OPENOLAT_DEF_CONFIG, true);
 			assessmentSafeExamBrowserKeysEl.setValue(null);
 			String download = Boolean.toString(lectureModule.isAssessmentModeSebDownload());
 			assessmentSafeExamBrowserDownloadEl.select(download, true);
+		} else {
+			assessmentSafeExamBrowserEl.select(SEB_KEYS, true);
+			assessmentSafeExamBrowserKeysEl.setValue(lectureModule.getAssessmentModeSebKeys());
+			assessmentSafeExamBrowserDownloadEl.select(Boolean.FALSE.toString(), true);
 		}
 	
 		dayBatchRollCallEnableEl.select(lectureModule.getDailyRollCall().name(), true);
@@ -407,7 +408,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		assessmentLeadTimeEl.setVisible(assessmentModeEnabled);
 		assessmentFollowupTimeEl.setVisible(assessmentModeEnabled);
 		assessmentIpsEl.setVisible(assessmentModeEnabled);
-		assessmentSafeExamBrowserKeysEl.setVisible( enabled && assessmentSafeExamBrowserEl.isOneSelected()
+		assessmentSafeExamBrowserKeysEl.setVisible(enabled && assessmentSafeExamBrowserEl.isOneSelected()
 				&& SEB_KEYS.equals(assessmentSafeExamBrowserEl.getSelectedKey()));
 		assessmentSafeExamBrowserDownloadEl.setVisible(enabled && assessmentSafeExamBrowserEl.isOneSelected()
 				&& SEB_OPENOLAT_DEF_CONFIG.equals(assessmentSafeExamBrowserEl.getSelectedKey()));
@@ -589,19 +590,16 @@ public class LectureSettingsAdminController extends FormBasicController {
 			lectureModule.setAssessmentModeAdmissibleIps(assessmentIpsEl.getValue());
 			lectureModule.setAssessmentModeLeadTime(Integer.parseInt(assessmentLeadTimeEl.getValue()));
 			lectureModule.setAssessmentModeFollowupTime(Integer.parseInt(assessmentFollowupTimeEl.getValue()));
-			if(SEB_KEYS.equals(assessmentSafeExamBrowserEl.getSelectedKey())) {
-				lectureModule.setAssessmentModeSebDefault(false);
-				lectureModule.setAssessmentModeSebKeys(assessmentSafeExamBrowserKeysEl.getValue());
-				lectureModule.setAssessmentModeSebDownload(false);
-			} else {
-				lectureModule.setAssessmentModeSebDefault(true);
-				lectureModule.setAssessmentModeSebKeys("");
-				lectureModule.setAssessmentModeSebDownload(Boolean.TRUE.toString().equals(assessmentSafeExamBrowserDownloadEl.getSelectedKey()));
-			}
-		} else {
-			lectureModule.setAssessmentModeSebKeys("");
-			lectureModule.setAssessmentModeAdmissibleIps("");
+		}
+		
+		if(SEB_KEYS.equals(assessmentSafeExamBrowserEl.getSelectedKey())) {
+			lectureModule.setAssessmentModeSebDefault(false);
+			lectureModule.setAssessmentModeSebKeys(assessmentSafeExamBrowserKeysEl.getValue());
 			lectureModule.setAssessmentModeSebDownload(false);
+		} else {
+			lectureModule.setAssessmentModeSebDefault(true);
+			lectureModule.setAssessmentModeSebKeys("");
+			lectureModule.setAssessmentModeSebDownload(Boolean.TRUE.toString().equals(assessmentSafeExamBrowserDownloadEl.getSelectedKey()));
 		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);

@@ -29,6 +29,8 @@ import org.olat.core.gui.control.generic.dashboard.DashboardController;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.ui.CoachMainController;
+import org.olat.modules.lecture.LectureModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -43,6 +45,9 @@ public class CoachDashboardController extends BasicController {
 	private CoachLectureBlocksWidgetController lectureBlocksCtrl;
 	
 	private boolean hasWidgets = false;
+	
+	@Autowired
+	private LectureModule lectureModule;
 
 	public CoachDashboardController(UserRequest ureq, WindowControl wControl, CoachingSecurity coachingSec) {
 		super(ureq, wControl);
@@ -56,7 +61,11 @@ public class CoachDashboardController extends BasicController {
 			courseCoachCtrl = new CourseWidgetController(ureq, wControl);
 			listenTo(courseCoachCtrl);
 			dashbordCtrl.addWidget("courseCoach", translate("course.as.coach"), courseCoachCtrl, BentoBoxSize.box_4_1);
-
+			
+			hasWidgets = true;
+		}
+		
+		if (lectureModule.isEnabled() && (coachingSec.isTeacher() || coachingSec.isMasterCoachForLectures())) {
 			lectureBlocksCtrl = new CoachLectureBlocksWidgetController(ureq, wControl);
 			listenTo(lectureBlocksCtrl);
 			lectureBlocksCtrl.reload();

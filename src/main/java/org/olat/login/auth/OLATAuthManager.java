@@ -243,6 +243,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 			}
 			status.setProvider("OLAT");
 			status.setStatus(AuthHelper.LOGIN_OK);
+			log.info(Tracing.M_AUDIT, "Authenticate user {} via provider OLAT", login);
 			return identity;
 		} else if(status != null) {
 			status.setStatus(AuthHelper.LOGIN_FAILED);
