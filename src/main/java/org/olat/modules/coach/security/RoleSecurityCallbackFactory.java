@@ -94,6 +94,11 @@ public class RoleSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canViewCreditPoints() {
+			return roleRights.contains(ViewCreditPointsRightProvider.RELATION_RIGHT);
+		}
+
+		@Override
 		public boolean canViewCalendar() {
 			return roleRights.contains(ViewCourseCalendarRightProvider.RELATION_RIGHT);
 		}

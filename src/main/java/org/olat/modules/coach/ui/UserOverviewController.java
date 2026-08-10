@@ -75,6 +75,10 @@ import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.ui.AbstractParticipantsListController.NextPreviousController;
 import org.olat.modules.coach.ui.curriculum.certificate.CertificateAndEfficiencyStatementWrapperController;
 import org.olat.modules.coach.ui.curriculum.course.CourseListWrapperController;
+import org.olat.modules.creditpoint.CreditPointModule;
+import org.olat.modules.creditpoint.ui.CreditPointSecurityCallback;
+import org.olat.modules.creditpoint.ui.CreditPointSecurityCallbackFactory;
+import org.olat.modules.creditpoint.ui.CreditPointUserController;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
@@ -108,6 +112,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private static final String CMD_STATEMENTS = "Statements";
 	private static final String CMD_CERTIFICATES = "Certificates";
 	private static final String CMD_BADGES = "Badges";
+	private static final String CMD_CREDIT_POINTS = "CreditPoints";
 	private static final String CMD_GROUPS = "Groups";
 	private static final String CMD_PROFILE = "Profile";
 	private static final String CMD_ENROLLMENTS = "Enrollments";
@@ -121,6 +126,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private int statementsTabIndex;
 	private int certificatesTabIndex;
 	private int badgesTabIndex;
+	private int creditPointsTabIndex;
 	private int groupTabIndex;
 	private int calendarTabIndex;
 	private int profileTabIndex;
@@ -147,6 +153,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private CertificatesListOverviewController certificatesCtrl;
 	private CertificateAndEfficiencyStatementWrapperController certificateAndEfficiencyStatementWrapperController;
 	private BadgesController badgesController;
+	private CreditPointUserController creditPointUserController;
 	private BookOnBehalfOfController bookOnBehalfOfController;
 	private UserAccountController userAccountController;
 
@@ -182,6 +189,8 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private ACReservationDAO reservationDAO;
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private CreditPointModule creditPointModule;
 	
 	public UserOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 								  Object statEntry, Identity mentee, int index, int numOfStudents, String role, 
@@ -342,6 +351,16 @@ public class UserOverviewController extends BasicController implements NextPrevi
 				badgesController = new BadgesController(uureq, bwControl, mentee);
 				listenTo(badgesController);
 				return badgesController.getInitialComponent();
+			});
+		}
+		
+		if (creditPointModule.isEnabled() && roleSecurityCallback.canViewCreditPoints()) {
+			creditPointsTabIndex = functionsTabbedPane.addTab(ureq, translate("tab.credit.points"), uureq -> {
+				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_CREDIT_POINTS), null);
+				CreditPointSecurityCallback secCallback = CreditPointSecurityCallbackFactory.userToolSecurityCallback();
+				creditPointUserController = new CreditPointUserController(uureq, bwControl, mentee, false, secCallback);
+				listenTo(creditPointUserController);
+				return creditPointUserController.getInitialComponent();
 			});
 		}
 		
@@ -516,6 +535,8 @@ public class UserOverviewController extends BasicController implements NextPrevi
 			}
 		} else if (CMD_BADGES.equalsIgnoreCase(type) && badgesTabIndex >= 0) {
 			functionsTabbedPane.setSelectedPane(ureq, badgesTabIndex);
+		} else if (CMD_CREDIT_POINTS.equalsIgnoreCase(type) && creditPointsTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, creditPointsTabIndex);
 		} else if(CMD_GROUPS.equalsIgnoreCase(type) && groupTabIndex >= 0) {
 			functionsTabbedPane.setSelectedPane(ureq, groupTabIndex);
 		} else if(CMD_PROFILE.equalsIgnoreCase(type) && profileTabIndex >= 0) {

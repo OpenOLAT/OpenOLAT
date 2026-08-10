@@ -49,6 +49,13 @@ public interface RoleSecurityCallback {
 	public boolean canShowBadges();
 
 	/**
+	 * Is this role allowed to view credit points?
+	 *
+	 * @return true if the role is allowed to view credit points.
+	 */
+	public boolean canViewCreditPoints();
+
+	/**
 	 * Is this role allowed to show the user's calendar?
 	 * 
 	 * @return
