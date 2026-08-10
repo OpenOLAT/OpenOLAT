@@ -25,49 +25,46 @@ import org.olat.basesecurity.RightProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.ui.CoachMainController;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/* 
- * Initial date: 24 Jun 2020<br>
- * @author aboeckle, alexander.boeckle@frentix.com
+/**
+ * Initial date: 2026-08-10<br>
+ *
+ * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 @Component
-public class AdministrativePropertiesRightProvider implements RightProvider {
+public class ViewCreditPointsRightProvider implements RightProvider {
 
-	public static final String RELATION_RIGHT = "showAdministrativeProperties";
-
-	@Autowired
-	private EditProfileRightProvider parentRight;
-
+	public static final String RELATION_RIGHT = "viewCreditPoints";
+	
 	@Override
 	public String getRight() {
 		return RELATION_RIGHT;
 	}
-
+	
 	@Override
 	public RightProvider getParent() {
-		return parentRight;
+		return null;
 	}
-
+	
 	@Override
 	public boolean isUserRelationsRight() {
 		return true;
 	}
-
+	
 	@Override
 	public int getUserRelationsPosition() {
-		return UserRelationRightsOrder.AdministrativePropertiesRight.ordinal();
+		return UserRelationRightsOrder.ViewCreditPointsRight.ordinal();
 	}
-
+	
 	@Override
 	public int getOrganisationPosition() {
-		return OrganisationRightsOrder.AdministrativePropertiesRight.ordinal();
+		return OrganisationRightsOrder.ViewCreditPointsRight.ordinal();
 	}
-
+	
 	@Override
 	public String getTranslatedName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(CoachMainController.class, locale);
-		return translator.translate("relation.right.show.administrative.properties");
+		return translator.translate("relation.right.view.credit.points");
 	}
 }
