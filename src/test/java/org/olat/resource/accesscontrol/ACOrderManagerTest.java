@@ -804,6 +804,45 @@ public class ACOrderManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findOrdersByResources() {
+		//create some offers to buy
+		OLATResource randomOres1 = createResource();
+		Offer offer1 = acService.createOffer(randomOres1, "TestLoadBy 1");
+		offer1 = acService.save(offer1);
+		
+		OLATResource randomOres2 = createResource();
+		Offer offer2 = acService.createOffer(randomOres2, "TestLoadBy 2");
+		offer2 = acService.save(offer2);
+		
+		dbInstance.commitAndCloseSession();
+		
+		//create a link offer to method
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
+		Assert.assertNotNull(methods);
+		Assert.assertEquals(1, methods.size());
+		AccessMethod method = methods.get(0);
+		
+		OfferAccess access1 = acMethodManager.createOfferAccess(offer1, method);
+		acMethodManager.save(access1);
+		OfferAccess access2 = acMethodManager.createOfferAccess(offer2, method);
+		acMethodManager.save(access2);
+		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("resources-by-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("resources-by-2");
+
+		dbInstance.commitAndCloseSession();
+		
+		Order order1 = acOrderManager.saveOneClick(id1, access1);
+		Order order2 = acOrderManager.saveOneClick(id2, access2);
+		dbInstance.commitAndCloseSession();
+		
+		List<Order> orders = acOrderManager.findOrdersByResources(List.of(randomOres1, randomOres2));
+		Assertions.assertThat(orders)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(order1, order2);
+	}
+	
+	@Test
 	public void deleteResource() {
 		//create some offers to buy
 		OLATResource randomOres1 = createResource();

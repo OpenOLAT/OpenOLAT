@@ -580,6 +580,42 @@ public class ACOrderDAO {
 		return query.getResultList();
 	}
 	
+	public List<Order> findOrdersByResources(List<OLATResource> resources, OrderStatus... status) {
+		if(resources == null || resources.isEmpty()) {
+			return new ArrayList<>();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(o) from acorder o")
+		  .append(" inner join o.parts orderPart")
+		  .append(" inner join orderPart.lines orderLine")
+		  .append(" inner join orderLine.offer offer")
+		  .append(" inner join offer.resource rsrc")
+		  .append(" inner join fetch o.delivery delivery")
+		  .append(" inner join fetch delivery.user deliveryUser")
+		  .append(" where rsrc.key in (:resourceKeys)");
+		if(status != null && status.length > 0) {
+			sb.append(" and o.orderStatus in (:status)");
+		}
+		
+		List<Long> resourcesKeys = resources.stream()
+				.map(OLATResource::getKey)
+				.toList();
+
+		TypedQuery<Order> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Order.class)
+				.setParameter("resourceKeys", resourcesKeys);
+		if(status != null && status.length > 0) {
+			List<String> statusStr = new ArrayList<>();
+			for(OrderStatus s:status) {
+				statusStr.add(s.name());
+			}
+			query.setParameter("status", statusStr);
+		}
+
+		return query.getResultList();
+	}
+	
 	public List<Order> findOrdersBy(IdentityRef identity, OLATResource resource, OrderStatus... status) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(o) from acorder o")

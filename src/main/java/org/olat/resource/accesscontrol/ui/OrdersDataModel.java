@@ -132,7 +132,7 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		costCenterName("cost.center", "cost_center_names"),
 		costCenterAccount("cost.center.account", "cost_center_accounts"),
 		purchaseOrderNumber("order.purchase.number", "purchase_order_number"),
-		comment("order.comment", "comment"),
+		comment("table.header.order.comment", "comment"),
 		billingAddressIdentifier("billing.address", "billing_address_identifier"),
 		summary("order.summary", "resDisplaynames"),
 		status("order.status", "o_status"),

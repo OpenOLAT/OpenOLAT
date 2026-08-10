@@ -57,6 +57,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
@@ -76,6 +77,7 @@ import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.ui.OrderCommentRenderer;
 
 /**
  * 
@@ -98,7 +100,6 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	private StepsMainRunController addMemberCtrl;
 	private CancelMembershipsController cancelCtrl;
 	private AcceptDeclineMembershipsController acceptDeclineCtrl;
-	private CloseableCalloutWindowController calloutCtrl;
 
 	private final boolean membersManaged;
 	
@@ -139,6 +140,10 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		NumOfCellRenderer numOfRenderer = new NumOfCellRenderer(descendants.size() + 1);	
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.asParticipant,
 				numOfRenderer));
+		orderCommentRenderer = new OrderCommentRenderer("element", getTranslator());
+		DefaultFlexiColumnModel commentCol = new DefaultFlexiColumnModel(MemberCols.userComment, orderCommentRenderer);
+		commentCol.setIconHeader("o_icon o_icon-lg o_icon_notes");
+		columnsModel.addFlexiColumnModel(commentCol);
 	}
 
 	@Override
@@ -152,7 +157,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 			tableEl.addBatchButton(declineBatchButton);
 		}
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-pending-members-v2");
+		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-pending-members-v3");
 	}
 
 	@Override
@@ -192,8 +197,9 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	protected void loadModel(boolean reset) {
 		// Reservations
 		List<OLATResource> resources = getCurriculumElementsResources();
+		Map<Long,Order> ordersMap = loadOrders(resources);
 		List<ResourceReservation> reservations = acService.getReservations(resources);
-
+		
 		// Memberships
 		SearchMemberParameters params = getSearchCurriculumElementParameters();
 		List<CurriculumMember> members = curriculumService.getCurriculumElementsMembers(params);
@@ -207,6 +213,11 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 				MemberRow row = keyToMemberMap.computeIfAbsent(reservation.getIdentity().getKey(),
 						key -> new MemberRow(member, userPropertyHandlers, getLocale()));
 				row.addReservation(role, reservation);
+				
+				Order order = ordersMap.get(member.getKey());
+				if(order != null && StringHelper.containsNonWhitespace(order.getComment())) {
+					row.setUserComment(order.getComment());
+				}
 				
 				forgeLinks(row);
 				forgeOnlineStatus(row, loadStatus);

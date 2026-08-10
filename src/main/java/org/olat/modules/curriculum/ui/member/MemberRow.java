@@ -50,6 +50,8 @@ public class MemberRow extends UserPropertiesRow {
 	private Identity identity;
 	private List<ResourceReservation> reservations;
 	private final GroupMembershipInheritance inheritanceMode;
+	
+	private String userComment;
 
 	private String onlineStatus;
 	private FormLink toolsLink;
@@ -93,6 +95,14 @@ public class MemberRow extends UserPropertiesRow {
 		return registration;
 	}
 	
+	public String getUserComment() {
+		return userComment;
+	}
+
+	public void setUserComment(String userComment) {
+		this.userComment = userComment;
+	}
+
 	public List<CurriculumRoles> getRoles() {
 		List<CurriculumRoles> roles = new ArrayList<>(numOfRoles.keySet());
 		if(roles.size() > 1) {

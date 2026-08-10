@@ -91,7 +91,7 @@ public class HomeOrdersController extends BasicController {
 
 	private void doOpenOrders(UserRequest ureq) {
 		if(ordersCtrl == null) {
-			OrdersSettings settings = OrdersSettings.defaultSettings();
+			OrdersSettings settings = OrdersSettings.defaultSettings("home");
 			ordersCtrl = new OrdersController(ureq, getWindowControl(), getIdentity(), settings);
 			listenTo(ordersCtrl);
 		}

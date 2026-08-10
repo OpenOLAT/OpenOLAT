@@ -375,6 +375,15 @@ public interface ACService {
 	public List<AccessMethod> findAccessMethods(Order order);
 
 	public List<Order> findOrders(OLATResource resource, OrderStatus... status);
+	
+	/**
+	 * Load order with delivery.
+	 * 
+	 * @param resources The resources (mandatory)
+	 * @param status The status (optional)
+	 * @return A list of orders
+	 */
+	public List<Order> findOrdersWithDelivery(List<OLATResource> resources, OrderStatus... status);
 
 	public int countOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
 			OrderStatus[] statuss);

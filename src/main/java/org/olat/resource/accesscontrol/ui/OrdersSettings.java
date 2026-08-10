@@ -27,25 +27,33 @@ package org.olat.resource.accesscontrol.ui;
  */
 public class OrdersSettings {
 	
+	private final String tableId;
+	
 	private final boolean canEditOrder;
 	
 	private final boolean withTools;
 	private final boolean withActivities;
 	private final boolean withResourceDisplayName;
 	
-	private OrdersSettings(boolean withActivities, boolean withTools, boolean withResourceDisplayName, boolean canEditOrder) {
+	private OrdersSettings(String tableId, boolean withActivities,
+			boolean withTools, boolean withResourceDisplayName, boolean canEditOrder) {
+		this.tableId = tableId;
 		this.canEditOrder = canEditOrder;
 		this.withTools = withTools;
 		this.withActivities = withActivities;
 		this.withResourceDisplayName = withResourceDisplayName;
 	}
 	
-	public static OrdersSettings defaultSettings() {
-		return new OrdersSettings(false, true, true, false);
+	public static OrdersSettings defaultSettings(String tableId) {
+		return new OrdersSettings(tableId, false, true, true, false);
 	}
 	
-	public static OrdersSettings valueOf(boolean withActivities, boolean withTools, boolean withResourceDisplayName, boolean canEditOrder) {
-		return new OrdersSettings(withActivities, withTools, withResourceDisplayName, canEditOrder);
+	public static OrdersSettings valueOf(String tableId, boolean withActivities, boolean withTools, boolean withResourceDisplayName, boolean canEditOrder) {
+		return new OrdersSettings(tableId, withActivities, withTools, withResourceDisplayName, canEditOrder);
+	}
+	
+	public String getTableId() {
+		return tableId;
 	}
 	
 	public boolean canEditOrder() {

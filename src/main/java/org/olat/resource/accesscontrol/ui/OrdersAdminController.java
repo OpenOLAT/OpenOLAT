@@ -106,7 +106,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * <P>
  * Initial Date:  30 mai 2011 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class OrdersAdminController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate, PresetDelegate, ForgeDelegate {
 
@@ -127,11 +127,13 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private OrdersDataSource dataSource;
 	private OrdersDataModel dataModel;
 	private VelocityContainer detailsVC;
+	private OrderCommentRenderer orderCommentRenderer;
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private OrderDetailController detailController;
 	private PriceEditController priceEditCtrl;
+	private OrderCommentController commentCtrl;
 	private CancellationFeeEditController cancellationFeeEditCtrl;
 	private BillingAddressSelectionController addressSelectionCtrl;
 	private ConfirmationController setWrittenOffConfirmationCtrl;
@@ -236,7 +238,11 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
+			
+			orderCommentRenderer = new OrderCommentRenderer("admin", getTranslator());
+			DefaultFlexiColumnModel commentCol = new DefaultFlexiColumnModel(OrderCol.comment, orderCommentRenderer);
+			commentCol.setIconHeader("o_icon o_icon-lg o_icon_notes");
+			columnsModel.addFlexiColumnModel(commentCol);
 		}
 		
 		if(!readOnly) {
@@ -267,7 +273,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
 		
-		String id = resource == null ? "orders-admin-list-v3" : "orders-resource-list-v3";
+		String id = resource == null ? "orders-admin-list-v4" : "orders-resource-list-v4";
 		tableEl.setAndLoadPersistedPreferences(ureq, id);
 		
 		if(!readOnly && isWithInvoice) {
@@ -496,6 +502,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 						doOpenOrderDetails(ureq, row);
 						tableEl.expandDetails(se.getIndex());
 					}
+				} else if(OrderCommentRenderer.CMD_COMMENT.equals(cmd)) {
+					OrderTableRow row = dataModel.getObject(se.getIndex());
+					doOpenComment(ureq, row, orderCommentRenderer.getId(se.getIndex()));
 				}
 			} else if(event instanceof DetailsToggleEvent toggleEvent) {
 				OrderTableRow row = dataModel.getObject(toggleEvent.getRowIndex());
@@ -507,8 +516,8 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			} else if(event instanceof FlexiTableFilterTabEvent) {
 				resetModel();
 			}
-		 } else if(source instanceof FormLink link && CMD_TOOLS.equals(link.getCmd())
-				&& link.getUserObject() instanceof OrderTableRow row) {
+		 } else if(source instanceof FormLink link  && CMD_TOOLS.equals(link.getCmd())
+				 && link.getUserObject() instanceof OrderTableRow row) {
 			doOpenTools(ureq, row, link);
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -569,6 +578,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		removeAsListenerAndDispose(addressSelectionCtrl);
 		removeAsListenerAndDispose(detailController);
 		removeAsListenerAndDispose(priceEditCtrl);
+		removeAsListenerAndDispose(commentCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
@@ -577,6 +587,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		addressSelectionCtrl = null;
 		detailController = null;
 		priceEditCtrl = null;
+		commentCtrl = null;
 		calloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
@@ -592,6 +603,19 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		tableEl.deselectAll();
 		tableEl.reloadData();
 		openOrders(ureq, detailsOrderKeys);
+	}
+	
+	private void doOpenComment(UserRequest ureq, OrderTableRow member, String id) {
+		removeAsListenerAndDispose(commentCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+
+		commentCtrl = new OrderCommentController(ureq, getWindowControl(), member.getComment());
+		listenTo(commentCtrl);
+
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				commentCtrl.getInitialComponent(), id, "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private void doOpenTools(UserRequest ureq, OrderTableRow member, FormLink link) {

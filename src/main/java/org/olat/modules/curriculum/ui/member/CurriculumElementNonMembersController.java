@@ -64,7 +64,6 @@ import org.olat.resource.accesscontrol.ResourceReservation;
 public class CurriculumElementNonMembersController extends AbstractMembersController {
 
 	private ToolsController	toolsCtrl;
-	private CloseableCalloutWindowController calloutCtrl;
 	
 	public CurriculumElementNonMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {

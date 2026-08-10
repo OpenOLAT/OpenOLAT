@@ -107,7 +107,7 @@ public class MemberDetailsController extends FormBasicController {
 				curriculum, selectedCurriculumElement, elements, member, config);
 		listenTo(rolesDetailsCtrl);
 		
-		OrdersSettings settings = OrdersSettings.valueOf(config.withActivityColumns(),
+		OrdersSettings settings = OrdersSettings.valueOf("members-details", config.withActivityColumns(),
 				config.withOrdersDetails(), false, config.canEditOrder());
 		ordersCtrl = new OrdersController(ureq, getWindowControl(), identity, selectedCurriculumElement.getResource(),
 				settings, rootForm);

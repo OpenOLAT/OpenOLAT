@@ -257,7 +257,8 @@ public class OrderDetailController extends FormBasicController {
 			uifactory.addStaticTextElement("order-po-number", "order.purchase.number", StringHelper.escapeHtml(order.getPurchaseOrderNumber()), formLayout);
 		}
 		if(StringHelper.containsNonWhitespace(order.getComment())) {
-			uifactory.addStaticTextElement("order-comment", "order.comment", StringHelper.escapeHtml(order.getComment()), formLayout);
+			StringBuilder comment = Formatter.escWithBR(order.getComment());
+			uifactory.addStaticTextElement("order-comment", "order.user.comment", (comment == null ? "" : comment.toString()) , formLayout);
 		}
 		
 		if (order.getBillingAddress() != null) {

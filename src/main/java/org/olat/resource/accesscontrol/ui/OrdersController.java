@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsCol
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -80,11 +81,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OrdersController extends FormBasicController implements Activateable2, ForgeDelegate, BreadcrumbPanelAware {
 
 	private static final String CMD_TOOLS = "ordertools";
+	private static final String CMD_COMMENT = "comment";
 
 	private FlexiTableElement tableEl;
 	private OrdersDataSource dataSource;
 	private OrdersDataModel dataModel;
 	private BreadcrumbPanel stackPanel;
+	private OrderCommentRenderer orderCommentRenderer;
 
 	private final Identity identity;
 	private final OLATResource resource;
@@ -92,8 +95,9 @@ public class OrdersController extends FormBasicController implements Activateabl
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
-	private OrderDetailController detailController;
 	private PriceEditController priceEditCtrl;
+	private OrderCommentController commentCtrl;
+	private OrderDetailController detailController;
 	private CancellationFeeEditController cancellationFeeEditCtrl;
 	private BillingAddressSelectionController addressSelectionCtrl;
 	private ConfirmationController setWrittenOffConfirmationCtrl;
@@ -164,7 +168,11 @@ public class OrdersController extends FormBasicController implements Activateabl
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
 			}
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
+		
+			orderCommentRenderer = new OrderCommentRenderer("user" + identity.getKey(), getTranslator());
+			DefaultFlexiColumnModel commentCol = new DefaultFlexiColumnModel(OrderCol.comment, orderCommentRenderer);
+			commentCol.setIconHeader("o_icon o_icon-lg o_icon_notes");
+			columnsModel.addFlexiColumnModel(commentCol);
 		}
 		
 		if(settings.withTools()) {
@@ -179,6 +187,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
 				.withMessageI18nKey("table.order.empty")
 				.build());
+		tableEl.setAndLoadPersistedPreferences(ureq, settings.getTableId() + "-orders-v1.0");
 	}
 	
 	@Override
@@ -207,7 +216,14 @@ public class OrdersController extends FormBasicController implements Activateabl
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink link && CMD_TOOLS.equals(link.getCmd())
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent se) {
+				if(CMD_COMMENT.equals(se.getCommand())) {
+					OrderTableRow row = dataModel.getObject(se.getIndex());
+					doOpenComment(ureq, row, orderCommentRenderer.getId(se.getIndex()));
+				}
+			}
+		} else if(source instanceof FormLink link && CMD_TOOLS.equals(link.getCmd())
 				&& link.getUserObject() instanceof OrderTableRow row) {
 			doOpenTools(ureq, row, link);
 		}
@@ -264,6 +280,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		removeAsListenerAndDispose(detailController);
 		removeAsListenerAndDispose(priceEditCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(commentCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		setWrittenOffConfirmationCtrl = null;
@@ -272,6 +289,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		detailController = null;
 		priceEditCtrl = null;
 		calloutCtrl = null;
+		commentCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
 	}
@@ -279,6 +297,19 @@ public class OrdersController extends FormBasicController implements Activateabl
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
+	}
+	
+	private void doOpenComment(UserRequest ureq, OrderTableRow member, String id) {
+		removeAsListenerAndDispose(commentCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+
+		commentCtrl = new OrderCommentController(ureq, getWindowControl(), member.getComment());
+		listenTo(commentCtrl);
+
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				commentCtrl.getInitialComponent(), id, "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private void doOpenTools(UserRequest ureq, OrderTableRow member, FormLink link) {

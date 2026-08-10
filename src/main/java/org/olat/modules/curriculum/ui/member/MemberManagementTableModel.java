@@ -231,6 +231,7 @@ implements SortableFlexiTableDataModel<MemberRow>, FilterableFlexiTableModel {
 				case asMasterCoach -> row.getNumOfRole(CurriculumRoles.mastercoach);
 				case asElementOwner -> row.getNumOfRole(CurriculumRoles.curriculumelementowner);
 				case pending -> row.getNumOfReservations();
+				case userComment -> row.getUserComment();
 				case online -> getChatLink(row);
 				case tools -> row.getToolsLink();
 				default -> "ERROR";
@@ -285,6 +286,7 @@ implements SortableFlexiTableDataModel<MemberRow>, FilterableFlexiTableModel {
 		asMasterCoach("table.header.num.as.mastercoach"),
 		asElementOwner("table.header.num.as.element.owner"),
 		pending("table.header.num.pending"),
+		userComment("table.header.order.comment"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;

@@ -61,6 +61,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
@@ -77,10 +78,12 @@ import org.olat.modules.curriculum.ui.wizard.EditMember1MembershipStep;
 import org.olat.modules.curriculum.ui.wizard.EditMemberFinishCallback;
 import org.olat.modules.curriculum.ui.wizard.EditMembersContext;
 import org.olat.modules.curriculum.ui.wizard.MembersContext;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.ui.OrderCommentRenderer;
 
 /**
  * 
@@ -109,7 +112,6 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	private StepsMainRunController editMemberCtrl;
 	private RemoveMembershipsController removeCtrl;
 	private CancelMembershipsController cancelCtrl;
-	private CloseableCalloutWindowController calloutCtrl;
 
 	private final boolean membersManaged;
 	private final Map<CurriculumRoles,FlexiFiltersTab> rolesToTab = new EnumMap<>(CurriculumRoles.class);
@@ -164,7 +166,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			tableEl.addBatchButton(removeBatchButton);
 		}
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-non-members-v3");
+		tableEl.setAndLoadPersistedPreferences(ureq, "cpl-element-non-members-v4");
 	}
 	
 	@Override
@@ -184,6 +186,10 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 				numOfRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MemberCols.asElementOwner,
 				numOfRenderer));
+		orderCommentRenderer = new OrderCommentRenderer("element", getTranslator());
+		DefaultFlexiColumnModel commentCol = new DefaultFlexiColumnModel(MemberCols.userComment, orderCommentRenderer);
+		commentCol.setIconHeader("o_icon o_icon-lg o_icon_notes");
+		columnsModel.addFlexiColumnModel(commentCol);
 	}
 
 	@Override
@@ -237,11 +243,19 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		SearchMemberParameters params = getSearchParameters();
 		List<CurriculumMember> members = curriculumService.getCurriculumElementsMembers(params);
 		
+		List<OLATResource> resources = getCurriculumElementsResources();
+		Map<Long,Order> ordersMap = loadOrders(resources);
+
 		Map<Long,MemberRow> keyToMemberMap = new HashMap<>();
 		List<Long> loadStatus = new ArrayList<>();
 		for(CurriculumMember member:members) {
 			MemberRow row = keyToMemberMap.computeIfAbsent(member.getIdentity().getKey(),
 					key -> new MemberRow(member, userPropertyHandlers, getLocale()));
+			
+			Order order = ordersMap.get(member.getIdentity().getKey());
+			if(order != null && StringHelper.containsNonWhitespace(order.getComment())) {
+				row.setUserComment(order.getComment());
+			}
 			
 			if(CurriculumRoles.isValueOf(member.getRole())) {
 				CurriculumRoles role = CurriculumRoles.valueOf(member.getRole());
@@ -337,12 +351,10 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	protected void cleanUp() {
 		super.cleanUp();
 		removeAsListenerAndDispose(addMemberCtrl);
-		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(removeCtrl);
 		removeAsListenerAndDispose(cancelCtrl);
 		removeAsListenerAndDispose(cmc);
 		addMemberCtrl = null;
-		calloutCtrl = null;
 		removeCtrl = null;
 		cancelCtrl = null;
 		cmc = null;

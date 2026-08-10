@@ -1390,6 +1390,11 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	}
 
 	@Override
+	public List<Order> findOrdersWithDelivery(List<OLATResource> resources, OrderStatus... status) {
+		return orderManager.findOrdersByResources(resources, status);
+	}
+
+	@Override
 	public List<AccessTransaction> findAccessTransactions(Order order) {
 		return transactionManager.loadTransactionsForOrder(order);
 	}

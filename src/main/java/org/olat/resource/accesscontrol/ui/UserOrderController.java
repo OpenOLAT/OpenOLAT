@@ -136,7 +136,7 @@ public class UserOrderController extends BasicController {
 
 	private void doOpenOrders(UserRequest ureq) {
 		if(ordersCtrl == null) {
-			OrdersSettings settings = OrdersSettings.defaultSettings();
+			OrdersSettings settings = OrdersSettings.defaultSettings("user");
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(SCOPE_KEY_ORDERS), null);
 			ordersCtrl = new OrdersController(ureq, bwControl, identity, settings);
 			listenTo(ordersCtrl);

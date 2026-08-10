@@ -20,6 +20,8 @@
 package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,6 +56,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -79,6 +82,10 @@ import org.olat.modules.curriculum.ui.member.MemberManagementTableModel.MemberCo
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ui.OrderCommentController;
+import org.olat.resource.accesscontrol.ui.OrderCommentRenderer;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
@@ -106,6 +113,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	protected final VelocityContainer detailsVC;
 	protected MemberManagementTableModel tableModel;
 	protected final TooledStackedPanel toolbarPanel;
+	protected OrderCommentRenderer orderCommentRenderer;
 
 	protected int counter = 0;
 	protected final boolean chatEnabled;
@@ -115,9 +123,11 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	protected final Curriculum curriculum;
 	protected final List<CurriculumElement> descendants;
 	protected final CurriculumElement curriculumElement;
-	
+
+	private OrderCommentController commentCtrl;
 	protected ContactFormController contactCtrl;
 	protected EditMemberController editSingleMemberCtrl;
+	protected CloseableCalloutWindowController calloutCtrl;
 
 	@Autowired
 	protected ACService acService;
@@ -299,6 +309,18 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	
 	protected abstract void loadModel(boolean reset);
 	
+	protected Map<Long,Order> loadOrders(List<OLATResource> resources) {
+		List<Order> orders = acService.findOrdersWithDelivery(resources, OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+		if(orders.size() > 1) {
+			Collections.sort(orders, new OrderComparator());
+		}
+		Map<Long,Order> ordersMap = new HashMap<>();
+		for(Order order:orders) {
+			ordersMap.put(order.getDelivery().getKey(), order);
+		}
+		return ordersMap;
+	}
+	
 	protected void loadImStatus(List<Long> loadStatus, Map<Long,MemberRow> keyToMemberMap) {
 		if(!loadStatus.isEmpty()) {
 			List<Long> statusToLoadList = new ArrayList<>(loadStatus);
@@ -381,8 +403,6 @@ public abstract class AbstractMembersController extends FormBasicController impl
 			}
 		}
 	}
-	
-	
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -397,8 +417,12 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	protected void cleanUp() {
 		removeAsListenerAndDispose(editSingleMemberCtrl);
 		removeAsListenerAndDispose(contactCtrl);
+		removeAsListenerAndDispose(commentCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
 		editSingleMemberCtrl = null;
+		commentCtrl = null;
 		contactCtrl = null;
+		calloutCtrl = null;
 	}
 	
 
@@ -433,6 +457,9 @@ public abstract class AbstractMembersController extends FormBasicController impl
 						doOpenMemberDetails(ureq, row);
 						tableEl.expandDetails(se.getIndex());
 					}
+				} else if(OrderCommentRenderer.CMD_COMMENT.equals(se.getCommand())) {
+					MemberRow row = tableModel.getObject(se.getIndex());
+					doOpenComment(ureq, row, orderCommentRenderer.getId(se.getIndex()));
 				}
 			} else if(event instanceof FlexiTableSearchEvent
 					|| event instanceof FlexiTableFilterTabEvent) {
@@ -525,6 +552,19 @@ public abstract class AbstractMembersController extends FormBasicController impl
 				curriculum, elements, member, profileConfig);
 		listenTo(editSingleMemberCtrl);
 		toolbarPanel.pushController(fullname, editSingleMemberCtrl);
+	}
+	
+	private void doOpenComment(UserRequest ureq, MemberRow member, String id) {
+		removeAsListenerAndDispose(commentCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+
+		commentCtrl = new OrderCommentController(ureq, getWindowControl(), member.getUserComment());
+		listenTo(commentCtrl);
+
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				commentCtrl.getInitialComponent(), id, "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 
 	protected void doOpenContact(UserRequest ureq) {
