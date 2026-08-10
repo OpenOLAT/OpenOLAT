@@ -72,4 +72,10 @@ public interface UserLifecycleManager {
 	
 	public boolean updatePlannedInactivationDates();
 
+	/**
+	 * @return The next time the daily user lifecycle job (account expiration check,
+	 * automatic deactivation/deletion) is scheduled to run, or null if it cannot be determined.
+	 */
+	public Date getNextExecutionTime();
+
 }

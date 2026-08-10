@@ -64,6 +64,10 @@ import org.olat.user.UserDataDeletable;
 import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserModule;
 import org.olat.user.ui.admin.lifecycle.UserAdminLifecycleConfigurationController;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.TriggerKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -96,6 +100,8 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	private UserSessionManager userSessionManager;
 	@Autowired
 	private RepositoryDeletionModule repositoryDeletionModule;
+	@Autowired
+	private Scheduler scheduler;
 	
 	@Override
 	public long getDaysUntilDeactivation(IdentityLifecycle identity, Date referenceDate) {
@@ -632,7 +638,20 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			return false;
 		}
 	}
-	
+
+	@Override
+	public Date getNextExecutionTime() {
+		try {
+			Trigger trigger = scheduler.getTrigger(TriggerKey.triggerKey("lifecycleUserTrigger"));
+			if (trigger != null) {
+				return trigger.getNextFireTime();
+			}
+		} catch (SchedulerException e) {
+			log.error("", e);
+		}
+		return null;
+	}
+
 	private void updatePlannedDates(IdentityRef identity, Date plannedInactivationDate, Date plannedDeletionDate) {
 		String query = "update bidentitylastlogin set plannedInactivationDate=:plannedInactivationDate, plannedDeletionDate=:plannedDeletionDate where key=:identityKey";
 		dbInstance.getCurrentEntityManager()
