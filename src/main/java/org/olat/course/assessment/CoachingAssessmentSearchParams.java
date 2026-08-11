@@ -49,6 +49,8 @@ public class CoachingAssessmentSearchParams {
 	private RepositoryEntry repositoryEntry;
 	private boolean coachNotAssigned;
 	private List<Long> assignedCoachKeys;
+	private int maxResults;
+	private boolean maxResultsExceeded;
 	
 	public String getSearchString() {
 		return searchString;
@@ -164,5 +166,21 @@ public class CoachingAssessmentSearchParams {
 
 	public void setAssignedCoachKeys(List<Long> assignedCoachKeys) {
 		this.assignedCoachKeys = assignedCoachKeys;
+	}
+
+	public int getMaxResults() {
+		return maxResults;
+	}
+
+	public void setMaxResults(int maxResults) {
+		this.maxResults = maxResults;
+	}
+
+	public boolean isMaxResultsExceeded() {
+		return maxResultsExceeded;
+	}
+
+	public void setMaxResultsExceeded(boolean maxResultsExceeded) {
+		this.maxResultsExceeded = maxResultsExceeded;
 	}
 }

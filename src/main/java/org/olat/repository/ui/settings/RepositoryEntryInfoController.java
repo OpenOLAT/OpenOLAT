@@ -124,7 +124,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
-		setFormContextHelp("manual_user/learningresources/Set_up_info_page/");
+		setFormContextHelp("manual_user/learningresources/Course_Settings_Info/");
 		formLayout.setElementCssClass("o_sel_edit_repositoryentry");
 		setFormTitle("details.info.title");
 
@@ -141,7 +141,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		} else {
 			externalRef = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, extRef, formLayout);
 			externalRef.setHelpText(translate("cif.externalref.hover"));
-			externalRef.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
+			externalRef.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Info/");
 		}
 		
 		teaser = uifactory.addTextElement("cif.teaser", "cif.teaser", 150, repositoryEntry.getTeaser(), formLayout);

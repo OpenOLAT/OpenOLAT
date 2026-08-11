@@ -6713,6 +6713,7 @@ create index idx_as_entry_root_id_idx on o_as_entry (id) where a_entry_root=true
 create index idx_as_entry_root_cov_idx on o_as_entry (fk_entry, fk_identity) include (a_subident, a_passed, a_completion) where a_entry_root=true;
 create index idx_as_entry_subident_idx on o_as_entry(a_subident, fk_entry, fk_identity);
 create index idx_as_entry_re_status_idx on o_as_entry(fk_entry, a_status);
+create index idx_as_entry_release_todo_idx on o_as_entry (fk_entry) where a_status='done' and a_user_visibility=false;
 
 alter table o_as_score_accounting_trigger add constraint satrigger_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_satrigger_re_idx on o_as_score_accounting_trigger (fk_entry);
