@@ -240,7 +240,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		
 		externalRef = uifactory.addTextElement("cif.externalref", 255, null, generalCont);
 		externalRef.setHelpText(translate("cif.externalref.hover"));
-		externalRef.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
+		externalRef.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Info/");
 		externalRef.setInlineValidationOn(true);
 		
 		initRuntimeTypeElement(generalCont, listener, ureq);

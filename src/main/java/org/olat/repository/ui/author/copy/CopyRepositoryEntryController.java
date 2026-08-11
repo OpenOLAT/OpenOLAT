@@ -106,7 +106,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		}
 		externalRefEl = uifactory.addTextElement("cif.externalref", "cif.externalref.long", 255, externalRef, formLayout);
 		externalRefEl.setHelpText(translate("cif.externalref.hover"));
-		externalRefEl.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
+		externalRefEl.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Info/");
 		externalRefEl.setInlineValidationOn(true);
 		
 		if (saveAsTemplate) {

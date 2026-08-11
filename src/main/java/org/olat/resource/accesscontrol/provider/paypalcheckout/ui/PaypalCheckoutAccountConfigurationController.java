@@ -82,7 +82,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("checkout.config.title");
 		setFormDescription("checkout.config.description");
-		setFormContextHelp("manual_admin/administration/PayPal_Configuration/");
+		setFormContextHelp("manual_admin/administration/Payment_PayPal/");
 		
 		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("enable", "paypal.enable", formLayout, onKeys, onValues);
