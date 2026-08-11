@@ -110,7 +110,7 @@ public class TransientAssessmentMode implements Serializable, LockRequest {
 		if(mode.isSafeExamBrowser()) {
 			safeExamBrowserKey = mode.getSafeExamBrowserKey();
 			safeExamBrowserHint = mode.getSafeExamBrowserHint();
-			if(!StringHelper.isHtml(safeExamBrowserHint)) {
+			if(StringHelper.containsNonWhitespace(safeExamBrowserHint) && !StringHelper.isHtml(safeExamBrowserHint)) {
 				safeExamBrowserHint = Formatter.escWithBR(safeExamBrowserHint).toString();
 				safeExamBrowserHint = Formatter.formatURLsAsLinks(safeExamBrowserHint, false);
 			}
