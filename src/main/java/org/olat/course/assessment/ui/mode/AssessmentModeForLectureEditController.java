@@ -468,7 +468,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		assessmentMode.setSafeExamBrowser(useSEB);
 		if(useSEB) {
 			if(lectureModule.isAssessmentModeSebDefault()) {
-				boolean withTemplate = false;
+				SafeExamBrowserTemplate template = null;
 				SafeExamBrowserConfiguration configuration = null;
 				if (sebTemplateEl.isOneSelected()) {
 					if (KEY_CUSTOM.equals(sebTemplateEl.getSelectedKey())) {
@@ -478,24 +478,21 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 						params.setKey(Long.valueOf(sebTemplateEl.getSelectedKey()));
 						List<SafeExamBrowserTemplate> templates = assessmentModeMgr.getSafeExamBrowserTemplates(params);
 						if (!templates.isEmpty()) {
-							assessmentMode.setSafeExamBrowserTemplate(templates.get(0));
-							withTemplate = true;
+							template = templates.get(0);
+							assessmentMode.setSafeExamBrowserTemplate(template);
 						}
 					}
 				}
-				SafeExamBrowserTemplate defaultTemplate = assessmentModeMgr.getDefaultSafeExamBrowserTemplate();
-				if (!withTemplate) {
-					if (configuration == null) {
-						configuration = defaultTemplate.getSafeExamBrowserConfiguration();
-					}
-					assessmentMode.setSafeExamBrowserConfiguration(configuration);
+				
+				// Fallback for older lectures with assessment mode
+				if (template == null && configuration == null) {
+					SafeExamBrowserTemplate defaultTemplate = assessmentModeMgr.getDefaultSafeExamBrowserTemplate();
+					SafeExamBrowserConfiguration defaultConfiguration = defaultTemplate.getSafeExamBrowserConfiguration();
+					assessmentMode.setSafeExamBrowserConfiguration(defaultConfiguration);
 				}
 
 				boolean safeExamBrowserConfigDownload = lectureModule.isAssessmentModeSebDownload();
 				assessmentMode.setSafeExamBrowserConfigDownload(safeExamBrowserConfigDownload);
-				String safeExamBrowserHint = defaultTemplate.getSafeExamBrowserHint();
-				assessmentMode.setSafeExamBrowserHint(safeExamBrowserHint);
-				assessmentMode.setSafeExamBrowserKey(null);
 			} else {
 				String sebKey = ConfigurationHelper.getSebKeys(lectureConfig, lectureModule);
 				assessmentMode.setSafeExamBrowserKey(sebKey);
