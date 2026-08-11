@@ -27,12 +27,15 @@ import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,6 +57,9 @@ public class AssessmentModeAdminController extends BasicController {
 	private SafeExamBrowserTemplateListController safeExamBrowserCtrl;
 	private SafeExamBrowserVersionsController safeExamBrowserVersionCtrl;
 	
+	@Autowired
+	private AssessmentModule assessmentModule;
+	
 	public AssessmentModeAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
@@ -61,6 +67,7 @@ public class AssessmentModeAdminController extends BasicController {
 
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setReselect(true);
+		segmentView.setDontShowSingleSegment(true);
 
 		settingsLink = LinkFactory.createLink("admin.assessment.mode.settings", mainVC, this);
 		segmentView.addSegment(settingsLink, true);
@@ -73,6 +80,20 @@ public class AssessmentModeAdminController extends BasicController {
 		segmentView.addSegment(safeExamBrowserVersionsLink, false);
 
 		putInitialPanel(mainVC);
+		updateUI();
+	}
+	
+	private void updateUI() {
+		assessmentModesLink.setVisible(assessmentModule.isAssessmentModeEnabled());
+		safeExamBrowserLink.setVisible(assessmentModule.isAssessmentModeEnabled() || assessmentModule.isAssessmentInspectionEnabled());
+		safeExamBrowserVersionsLink.setVisible(assessmentModule.isAssessmentModeEnabled() || assessmentModule.isAssessmentInspectionEnabled());
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(settingsCtrl == source) {
+			updateUI();
+		}
 	}
 
 	@Override

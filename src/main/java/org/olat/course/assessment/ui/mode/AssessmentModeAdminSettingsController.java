@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.AssessmentModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,8 +67,10 @@ public class AssessmentModeAdminSettingsController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enableAssessmentModeEl == source) {
 			assessmentModule.setAssessmentModeEnabled(enableAssessmentModeEl.isOn());
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if(enableAssessmentInspectionEl == source) {
 			assessmentModule.setAssessmentInspectionEnabled(enableAssessmentInspectionEl.isOn());
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

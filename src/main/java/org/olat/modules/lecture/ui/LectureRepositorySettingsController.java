@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -42,6 +43,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
@@ -67,14 +69,14 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	private FormLink overrideLink;
 	private FormLink unOverrideLink;
 	private FormSubmit saveButton;
-	
+
+	private FormToggle enableEl;
 	private SingleSelection overrideEl;
 	private TextElement attendanceRateEl;
 	private TextElement assessmentIpsEl;
 	private TextElement assessmentLeadTimeEl;
 	private TextElement assessmentFollowupTimeEl;
 	private TextElement assessmentSafeExamBrowserEl;
-	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement rollCallEnabledEl;
 	private MultipleSelectionElement calculateAttendanceRateEl;
 	private MultipleSelectionElement teacherCalendarSyncEl;
@@ -95,6 +97,8 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
+	private AssessmentModule assessmentModule;
+	@Autowired
 	private RepositoryService repositoryService;
 	
 	public LectureRepositorySettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
@@ -112,7 +116,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	}
 	
 	public boolean isLectureEnabled() {
-		return enableEl.isAtLeastSelected(1);
+		return enableEl.isOn();
 	}
 
 	@Override
@@ -151,14 +155,12 @@ public class LectureRepositorySettingsController extends FormBasicController {
 			}
 		}
 		
-		String[] onValues = new String[] { translate("on") };
-		enableEl = uifactory.addCheckboxesHorizontal("lecture.admin.enabled", formLayout, onKeys, onValues);
+		enableEl = uifactory.addToggleButton("lecture.admin.course.enabled", "lecture.admin.course.enabled",
+				translate("on"), translate("off"), formLayout);
 		enableEl.setEnabled(!lectureConfigManaged && !readOnly);
 		enableEl.setElementCssClass("o_sel_repo_lecture_enable");
 		enableEl.addActionListener(FormEvent.ONCHANGE);
-		if(lectureConfig.isLectureEnabled()) {
-			enableEl.select(onKeys[0], true);
-		}
+		enableEl.toggle(lectureConfig.isLectureEnabled());
 		
 		String[] overrideValues = new String[]{ translate("config.override.yes"), translate("config.override.no") };
 		overrideEl = uifactory.addRadiosHorizontal("config.override", formLayout, overrideKeys, overrideValues);
@@ -173,7 +175,8 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		if(!lectureModule.isCanOverrideStandardConfiguration() && !lectureConfig.isOverrideModuleDefault()) {
 			overrideEl.setEnabled(false);
 		}
-		
+
+		String[] onValues = new String[] { translate("on") };
 		rollCallEnabledEl = uifactory.addCheckboxesHorizontal("config.rollcall.enabled", formLayout, onKeys, onValues);
 		rollCallEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -184,6 +187,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		// assessment mode
 		enableAssessmentModeEl = uifactory.addCheckboxesHorizontal("lecture.assessment.mode.enabled", formLayout, onKeys, onValues);
+		enableAssessmentModeEl.setHelpText(translate("lecture.assessment.mode.enabled.hint"));
 		enableAssessmentModeEl.addActionListener(FormEvent.ONCHANGE);
 		
 		assessmentLeadTimeEl = uifactory.addTextElement("lecture.assessment.mode.leading.time", "lecture.assessment.mode.leading.time", 8, "", formLayout);
@@ -192,8 +196,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		assessmentSafeExamBrowserEl = uifactory.addTextAreaElement("lecture.assessment.mode.seb", "lecture.assessment.mode.seb", 16000, 4, 60, false, false, "", formLayout);
 		assessmentSafeExamBrowserEl.setMaxLength(16000);
 		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		saveButton = uifactory.addFormSubmitButton("save", buttonsCont);
 		saveButton.setVisible((!lectureConfigManaged || overrideManaged) && !readOnly);
 		FormCancel cancelButton = uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
@@ -259,7 +262,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	}
 	
 	private void updateVisibility() {
-		boolean lectureEnabled = enableEl.isAtLeastSelected(1);
+		boolean lectureEnabled = enableEl.isOn();
 		boolean rollCallEnabled = rollCallEnabledEl.isAtLeastSelected(1);
 		overrideEl.setVisible(lectureEnabled);
 		rollCallEnabledEl.setVisible(lectureEnabled);
@@ -267,7 +270,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		attendanceRateEl.setVisible(lectureEnabled && rollCallEnabled);
 		teacherCalendarSyncEl.setVisible(lectureEnabled);
 		courseCalendarSyncEl.setVisible(lectureEnabled);
-		enableAssessmentModeEl.setVisible(lectureEnabled);
+		enableAssessmentModeEl.setVisible(lectureEnabled && assessmentModule.isAssessmentModeEnabled());
 
 		boolean assessmentModeEnabled = enableAssessmentModeEl.isVisible()
 				&& enableAssessmentModeEl.isAtLeastSelected(1);
@@ -365,7 +368,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean enabled = enableEl.isAtLeastSelected(1);
+		boolean enabled = enableEl.isOn();
 		lectureConfig.setLectureEnabled(enabled);
 		boolean override = overrideEl.isSelected(0);
 		if(enabled && override) {
@@ -399,23 +402,29 @@ public class LectureRepositorySettingsController extends FormBasicController {
 			lectureConfig.setCourseCalendarSyncEnabled(null);
 		}
 		
-		boolean assessmentModeEnabled = enableAssessmentModeEl.isAtLeastSelected(1) && enabled && override;
-		if(assessmentModeEnabled) {
-			lectureConfig.setAssessmentModeEnabled(Boolean.TRUE);
-			lectureConfig.setAssessmentModeFollowupTime(Integer.parseInt(assessmentFollowupTimeEl.getValue()));
-			lectureConfig.setAssessmentModeLeadTime(Integer.parseInt(assessmentLeadTimeEl.getValue()));
-			lectureConfig.setAssessmentModeAdmissibleIps(assessmentIpsEl.getValue());
-			lectureConfig.setAssessmentModeSebKeys(assessmentSafeExamBrowserEl.getValue());
-		} else {
-			if(enabled && override) {
-				lectureConfig.setAssessmentModeEnabled(Boolean.FALSE);
+		if(assessmentModule.isAssessmentModeEnabled()) {
+			boolean assessmentModeEnabled = enableAssessmentModeEl.isAtLeastSelected(1) && enabled && override;
+			if(assessmentModeEnabled) {
+				lectureConfig.setAssessmentModeEnabled(Boolean.TRUE);
+				lectureConfig.setAssessmentModeFollowupTime(Integer.parseInt(assessmentFollowupTimeEl.getValue()));
+				lectureConfig.setAssessmentModeLeadTime(Integer.parseInt(assessmentLeadTimeEl.getValue()));
+				lectureConfig.setAssessmentModeAdmissibleIps(assessmentIpsEl.getValue());
+				if(assessmentSafeExamBrowserEl.isVisible()) {
+					lectureConfig.setAssessmentModeSebKeys(assessmentSafeExamBrowserEl.getValue());
+				} else {
+					lectureConfig.setAssessmentModeSebKeys(null);
+				}
 			} else {
-				lectureConfig.setAssessmentModeEnabled(null);
+				if(enabled && override) {
+					lectureConfig.setAssessmentModeEnabled(Boolean.FALSE);
+				} else {
+					lectureConfig.setAssessmentModeEnabled(null);
+				}
+				lectureConfig.setAssessmentModeFollowupTime(null);
+				lectureConfig.setAssessmentModeLeadTime(null);
+				lectureConfig.setAssessmentModeAdmissibleIps(null);
+				lectureConfig.setAssessmentModeSebKeys(null);
 			}
-			lectureConfig.setAssessmentModeFollowupTime(null);
-			lectureConfig.setAssessmentModeLeadTime(null);
-			lectureConfig.setAssessmentModeAdmissibleIps(null);
-			lectureConfig.setAssessmentModeSebKeys(null);
 		}
 		
 		lectureConfig = lectureService.updateRepositoryEntryLectureConfiguration(lectureConfig);
