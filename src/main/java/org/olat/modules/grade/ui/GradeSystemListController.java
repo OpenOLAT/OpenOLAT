@@ -118,7 +118,7 @@ public class GradeSystemListController extends FormBasicController {
 				new BooleanCellRenderer(new StaticFlexiCellRenderer("", CMD_EDIT, null, "o_icon-lg o_icon_edit", translate("edit")), null));
 		editColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_edit");
 		editColumn.setHeaderLabel(translate("edit"));
-		editColumn.setAlwaysVisible(true);
+		editColumn.setAlwaysVisible(false);
 		editColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(editColumn);
 
@@ -131,7 +131,13 @@ public class GradeSystemListController extends FormBasicController {
 	}
 
 	private void loadModel() {
-		List<GradeSystem> gradeSystems = gradeService.getGradeSystems(new GradeSystemSearchParams());
+		GradeSystemSearchParams searchParams = new GradeSystemSearchParams();
+		List<GradeSystem> gradeSystems = gradeService.getGradeSystems(searchParams);
+		if (gradeSystems.stream().noneMatch(GradeSystem::isDefault)) {
+			// Init default if not set
+			gradeService.getDefaultGradeSystem(List.of());
+			gradeSystems = gradeService.getGradeSystems(searchParams);
+		}
 		Map<Long, Long> gradeSystemKeyToCount = gradeService.getGradeScaleStats().stream()
 				.collect(Collectors.toMap(GradeScaleStats::getGradeSystemKey, GradeScaleStats::getCount));
 		List<GradeSystemRow> rows = new ArrayList<>(gradeSystems.size());
@@ -153,7 +159,7 @@ public class GradeSystemListController extends FormBasicController {
 		dataModel.setObjects(rows);
 		tableEl.reset(false, false, true);
 	}
-	
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == addButton) {

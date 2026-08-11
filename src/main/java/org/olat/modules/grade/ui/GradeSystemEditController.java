@@ -206,13 +206,13 @@ public class GradeSystemEditController extends FormBasicController {
 		roundingEl.select(roundingKey, true);
 		roundingEl.setEnabled(!hasScale && !predefined);
 		
-		String bestGrade = gradeSystem.getBestGrade() != null? THREE_DIGITS.format(gradeSystem.getBestGrade()): null;
-		bestGradeEl = uifactory.addTextElement("grade.system.highest.grade", 10, bestGrade, formLayout);
-		bestGradeEl.setMandatory(true);
-		
 		String lowestGrade = gradeSystem.getLowestGrade() != null? THREE_DIGITS.format(gradeSystem.getLowestGrade()): null;
 		lowestGradeEl = uifactory.addTextElement("grade.system.lowest.grade", 10, lowestGrade, formLayout);
 		lowestGradeEl.setMandatory(true);
+		
+		String bestGrade = gradeSystem.getBestGrade() != null? THREE_DIGITS.format(gradeSystem.getBestGrade()): null;
+		bestGradeEl = uifactory.addTextElement("grade.system.highest.grade", 10, bestGrade, formLayout);
+		bestGradeEl.setMandatory(true);
 		
 		passedEl = uifactory.addToggleButton("grade.system.with.success.status", "grade.system.with.success.status", translate("on"), translate("off"), formLayout);
 		passedEl.toggle(gradeSystem.hasPassed());

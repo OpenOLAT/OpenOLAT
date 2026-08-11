@@ -22,9 +22,12 @@ package org.olat.modules.grade.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.grade.GradeModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -35,7 +38,10 @@ import org.olat.core.gui.control.controller.BasicController;
 public class GradeAdminController extends BasicController {
 
 	private final GradeAdminConfigsController configsCtrl;
-	private final GradeSystemListController gradeSystemListCtrl;
+	private final GradeSystemListController gradeSystemListCtrl;	
+	
+	@Autowired
+	private GradeModule gradeModule;
 
 	public GradeAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -48,6 +54,7 @@ public class GradeAdminController extends BasicController {
 		gradeSystemListCtrl = new GradeSystemListController(ureq, wControl);
 		listenTo(gradeSystemListCtrl);
 		mainVC.put("grade.systems", gradeSystemListCtrl.getInitialComponent());
+		doShowHideGradeSystems();
 		
 		putInitialPanel(mainVC);
 	}
@@ -55,6 +62,20 @@ public class GradeAdminController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == configsCtrl) {
+			if (event == Event.CHANGED_EVENT) {
+				doShowHideGradeSystems();
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void doShowHideGradeSystems() {
+		gradeSystemListCtrl.getInitialComponent().setVisible(gradeModule.isEnabled());
 	}
 
 }

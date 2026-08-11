@@ -1,2 +1,4 @@
 $r.render("configs")
-$r.render("grade.systems")
+#if($r.visible("grade.systems"))
+	$r.render("grade.systems")
+#end

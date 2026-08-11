@@ -77,7 +77,7 @@ implements SortableFlexiTableDataModel<GradeSystemRow> {
 		identifier("grade.system.identifier"),
 		name("grade.system.name"),
 		label("grade.system.label"),
-		usageCount("grade.system.usage.count"),
+		usageCount("grade.system.usage.num"),
 		enabled("grade.system.enabled"),
 		isDefault("default"),
 		edit("table.header.edit"),

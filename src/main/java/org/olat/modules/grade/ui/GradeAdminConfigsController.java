@@ -22,10 +22,11 @@ package org.olat.modules.grade.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.grade.GradeModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GradeAdminConfigsController extends FormBasicController {
 	
-	private static final String[] onKeys = new String[] { "on" };
-
-	private MultipleSelectionElement enableEl;
+	private FormToggle enableEl;
 	
 	@Autowired
 	private GradeModule gradeModule;
@@ -55,16 +54,15 @@ public class GradeAdminConfigsController extends FormBasicController {
 		setFormTitle("admin.config.title");
 		setFormContextHelp("manual_admin/administration/Assessment_translate_points_in_grades_admin/");
 		
-		String[] onValues = new String[]{ translate("on") };
-		enableEl = uifactory.addCheckboxesHorizontal("grade.enabled", "admin.config.grade.enabled", formLayout, onKeys, onValues);
+		enableEl =  uifactory.addToggleButton("grade.system.enabled", "grade.system.enabled", translate("on"), translate("off"), formLayout);
+		enableEl.toggle(gradeModule.isEnabled());
 		enableEl.addActionListener(FormEvent.ONCHANGE);
-		enableEl.select(onKeys[0], gradeModule.isEnabled());
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enableEl == source) {
-			save();
+			save(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -74,9 +72,9 @@ public class GradeAdminConfigsController extends FormBasicController {
 		//
 	}
 
-	private void save() {
-		boolean enabled = enableEl.isAtLeastSelected(1);
-		gradeModule.setEnabled(enabled);
+	private void save(UserRequest ureq) {
+		gradeModule.setEnabled(enableEl.isOn());
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 }
