@@ -43,6 +43,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
@@ -95,6 +96,8 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private AssessmentModule assessmentModule;
 	@Autowired
 	private RepositoryService repositoryService;
 	
@@ -267,7 +270,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		attendanceRateEl.setVisible(lectureEnabled && rollCallEnabled);
 		teacherCalendarSyncEl.setVisible(lectureEnabled);
 		courseCalendarSyncEl.setVisible(lectureEnabled);
-		enableAssessmentModeEl.setVisible(lectureEnabled);
+		enableAssessmentModeEl.setVisible(lectureEnabled && assessmentModule.isAssessmentModeEnabled());
 
 		boolean assessmentModeEnabled = enableAssessmentModeEl.isVisible()
 				&& enableAssessmentModeEl.isAtLeastSelected(1);
@@ -399,23 +402,29 @@ public class LectureRepositorySettingsController extends FormBasicController {
 			lectureConfig.setCourseCalendarSyncEnabled(null);
 		}
 		
-		boolean assessmentModeEnabled = enableAssessmentModeEl.isAtLeastSelected(1) && enabled && override;
-		if(assessmentModeEnabled) {
-			lectureConfig.setAssessmentModeEnabled(Boolean.TRUE);
-			lectureConfig.setAssessmentModeFollowupTime(Integer.parseInt(assessmentFollowupTimeEl.getValue()));
-			lectureConfig.setAssessmentModeLeadTime(Integer.parseInt(assessmentLeadTimeEl.getValue()));
-			lectureConfig.setAssessmentModeAdmissibleIps(assessmentIpsEl.getValue());
-			lectureConfig.setAssessmentModeSebKeys(assessmentSafeExamBrowserEl.getValue());
-		} else {
-			if(enabled && override) {
-				lectureConfig.setAssessmentModeEnabled(Boolean.FALSE);
+		if(assessmentModule.isAssessmentModeEnabled()) {
+			boolean assessmentModeEnabled = enableAssessmentModeEl.isAtLeastSelected(1) && enabled && override;
+			if(assessmentModeEnabled) {
+				lectureConfig.setAssessmentModeEnabled(Boolean.TRUE);
+				lectureConfig.setAssessmentModeFollowupTime(Integer.parseInt(assessmentFollowupTimeEl.getValue()));
+				lectureConfig.setAssessmentModeLeadTime(Integer.parseInt(assessmentLeadTimeEl.getValue()));
+				lectureConfig.setAssessmentModeAdmissibleIps(assessmentIpsEl.getValue());
+				if(assessmentSafeExamBrowserEl.isVisible()) {
+					lectureConfig.setAssessmentModeSebKeys(assessmentSafeExamBrowserEl.getValue());
+				} else {
+					lectureConfig.setAssessmentModeSebKeys(null);
+				}
 			} else {
-				lectureConfig.setAssessmentModeEnabled(null);
+				if(enabled && override) {
+					lectureConfig.setAssessmentModeEnabled(Boolean.FALSE);
+				} else {
+					lectureConfig.setAssessmentModeEnabled(null);
+				}
+				lectureConfig.setAssessmentModeFollowupTime(null);
+				lectureConfig.setAssessmentModeLeadTime(null);
+				lectureConfig.setAssessmentModeAdmissibleIps(null);
+				lectureConfig.setAssessmentModeSebKeys(null);
 			}
-			lectureConfig.setAssessmentModeFollowupTime(null);
-			lectureConfig.setAssessmentModeLeadTime(null);
-			lectureConfig.setAssessmentModeAdmissibleIps(null);
-			lectureConfig.setAssessmentModeSebKeys(null);
 		}
 		
 		lectureConfig = lectureService.updateRepositoryEntryLectureConfiguration(lectureConfig);

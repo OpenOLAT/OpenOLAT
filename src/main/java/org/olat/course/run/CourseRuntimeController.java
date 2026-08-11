@@ -670,7 +670,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void setAssessmentModeMessage(UserRequest ureq) {
 		UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
-		if(userCourseEnv != null && assessmentLink != null) {
+		if(userCourseEnv != null && assessmentLink != null && assessmentModule.isAssessmentModeEnabled()) {
 			RepositoryEntry courseEntry = getRepositoryEntry();
 			List<AssessmentMode> modes = assessmentModeManager.getCurrentAssessmentMode(courseEntry, new Date());
 			if(!modes.isEmpty()) {

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.ui;
 
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 
@@ -55,7 +56,10 @@ public class ConfigurationHelper {
 		return lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
 	}
 	
-	public static boolean isAssessmentModeEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
+	public static boolean isAssessmentModeEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule, AssessmentModule assessmentModule) {
+		if(!assessmentModule.isAssessmentModeEnabled()) {
+			return false;
+		}
 		if(lectureConfig != null && lectureConfig.isOverrideModuleDefault()) {
 			return lectureConfig.getAssessmentModeEnabled() == null ?
 					lectureModule.isAssessmentModeEnabledDefault() : lectureConfig.getAssessmentModeEnabled().booleanValue();

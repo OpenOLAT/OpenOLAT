@@ -205,7 +205,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		
 		assessmentModeListCtrl = new AssessmentModeOverviewListController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(assessmentModeListCtrl);
-		if(assessmentModeListCtrl.getNumOfAssessmentModes() > 0) {
+		if(assessmentModule.isAssessmentModeEnabled() && assessmentModeListCtrl.getNumOfAssessmentModes() > 0) {
 			mainVC.put("assessmentModes", assessmentModeListCtrl.getInitialComponent());
 		}
 		

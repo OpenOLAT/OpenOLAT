@@ -124,6 +124,7 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.ui.mode.AssessmentModeForLectureEditController;
 import org.olat.course.assessment.ui.mode.TimeCellRenderer;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
@@ -318,6 +319,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private CalendarModule calendarModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private AssessmentModule assessmentModule;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -542,7 +545,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.status,
 				new LectureBlockStatusCellRenderer(getTranslator())));
 		
-		if(entry != null && config.withExam() != Visibility.NO) {
+		if(entry != null && config.withExam() != Visibility.NO && assessmentModule.isAssessmentModeEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withExam() == Visibility.SHOW, BlockCols.assessmentMode,
 				new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_assessment_mode"), null)));
 		}
@@ -2364,7 +2367,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			} else if(lectureBlock.getEntry() != null) {
 				entryConfig = lectureService.getRepositoryEntryLectureConfiguration(lectureBlock.getEntry());
 			}
-			boolean withAssessment = entryConfig != null && ConfigurationHelper.isAssessmentModeEnabled(entryConfig, lectureModule);
+			boolean withAssessment = entryConfig != null && ConfigurationHelper.isAssessmentModeEnabled(entryConfig, lectureModule, assessmentModule);
 			
 			if(secCallback.canViewList()) {
 				exportLink = addLink("export", "export", "o_icon o_icon-fw o_filetype_xlsx", mainVC);
@@ -2374,7 +2377,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				attendanceListForSignatureLink = addLink("attendance.list.to.sign", "attendance.list.to.sign", "o_icon o_icon-fw o_filetype_pdf", mainVC);
 			}
 			
-			if(secCallback.canAssessmentMode()) {
+			if(assessmentModule.isAssessmentModeEnabled() && secCallback.canAssessmentMode()) {
 				if(row.isAssessmentMode()) {
 					editAssessmentModeLink = addLink("edit.assessment.mode", "add.assessment.mode", "o_icon o_icon-fw o_icon_assessment_mode", mainVC);
 					deleteAssessmentModeLink = addLink("delete.assessment.mode", "delete.assessment.mode", "o_icon o_icon-fw o_icon_delete_item", mainVC);

@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.ui.mode.AssessmentModeAdminController;
 import org.olat.modules.lecture.DailyRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -98,13 +99,15 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private FormLayoutContainer globalCont;
 	private FormLayoutContainer courseCont;
 	private FormLayoutContainer assessmentModeCont;
-	private SpacerElement syncCalendarsSpacerEl;
+	private SpacerElement assessmentModeSpacerEl;
 	private SpacerElement canOverrideStandardSpacerEl;
 	
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
 	private UserToolsModule userToolsModule;
+	@Autowired
+	private AssessmentModule assessmentModule;
 	
 	public LectureSettingsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "admin_settings", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale(),
@@ -165,7 +168,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		syncTeachersCalendarEnableEl = uifactory.addCheckboxesHorizontal("sync.teachers.calendar.enabled", courseCont, onKeys, onValues);
 		syncCourseCalendarEnableEl = uifactory.addCheckboxesHorizontal("sync.course.calendar.enabled", courseCont, onKeys, onValues);
 		
-		syncCalendarsSpacerEl = uifactory.addSpacerElement("synccalendarspacer", courseCont, false);
+		assessmentModeSpacerEl = uifactory.addSpacerElement("assessmentmodespacer", courseCont, false);
 		
 		// assessment mode
 		enableAssessmentModeEl = uifactory.addCheckboxesHorizontal("lecture.assessment.mode.enabled", courseCont, onKeys, onValues);
@@ -425,12 +428,17 @@ public class LectureSettingsAdminController extends FormBasicController {
 		reminderEnableEl.setVisible(enabled);
 		syncTeachersCalendarEnableEl.setVisible(enabled);
 		syncCourseCalendarEnableEl.setVisible(enabled);
-		syncCalendarsSpacerEl.setVisible(enabled);
-		enableAssessmentModeEl.setVisible(enabled);
 		
-		boolean configureAssessmentModeReadonly = canOverrideStandardConfigEl.isOneSelected() && READONLY_KEY.equals(canOverrideStandardConfigEl.getSelectedKey());
-		boolean assessmentModeEnable = enableAssessmentModeEl.isVisible() && enableAssessmentModeEl.isAtLeastSelected(1);
-		boolean configureAssessmentModeVisible = enabled && (!configureAssessmentModeReadonly || assessmentModeEnable);
+		boolean assessmentModeEnabled = enabled && assessmentModule.isAssessmentModeEnabled();
+		assessmentModeSpacerEl.setVisible(assessmentModeEnabled);
+		enableAssessmentModeEl.setVisible(assessmentModeEnabled);
+		
+		boolean configureAssessmentModeReadonly = canOverrideStandardConfigEl.isOneSelected()
+				&& READONLY_KEY.equals(canOverrideStandardConfigEl.getSelectedKey());
+		boolean assessmentModeEnable = enableAssessmentModeEl.isVisible()
+				&& enableAssessmentModeEl.isAtLeastSelected(1);
+		boolean configureAssessmentModeVisible = assessmentModeEnabled
+				&& (!configureAssessmentModeReadonly || assessmentModeEnable);
 		assessmentModeCont.setVisible(configureAssessmentModeVisible);
 		assessmentLeadTimeEl.setVisible(configureAssessmentModeVisible);
 		assessmentFollowupTimeEl.setVisible(configureAssessmentModeVisible);
@@ -548,9 +556,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		boolean enabled = enableEl.isOn();
 		lectureModule.setEnabled(enabled);
-		boolean assessmentModeEnabled = enabled && enableAssessmentModeEl.isAtLeastSelected(1);
-		lectureModule.setAssessmentModeEnabledDefault(assessmentModeEnabled);
-		
+
 		if(enabled) {
 			boolean canOverride = canOverrideStandardConfigEl.isOneSelected() && OVERRIDE_KEY.equals(canOverrideStandardConfigEl.getSelectedKey());
 			lectureModule.setCanOverrideStandardConfiguration(canOverride);
@@ -613,6 +619,11 @@ public class LectureSettingsAdminController extends FormBasicController {
 		
 			lectureModule.setShowLectureBlocksAllTeachersDefault(showAllTeachersLecturesEl.isSelected(0));
 			lectureModule.setDailyRollCall(DailyRollCall.valueOf(dayBatchRollCallEnableEl.getSelectedKey()));
+			
+			if(enableAssessmentModeEl.isVisible()) {
+				boolean assessmentModeEnabled = enableAssessmentModeEl.isAtLeastSelected(1);
+				lectureModule.setAssessmentModeEnabledDefault(assessmentModeEnabled);
+			}
 			
 			if(assessmentIpsEl.isVisible()) {
 				lectureModule.setAssessmentModeAdmissibleIps(assessmentIpsEl.getValue());
