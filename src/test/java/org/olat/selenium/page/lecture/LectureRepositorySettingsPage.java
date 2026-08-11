@@ -22,7 +22,6 @@ package org.olat.selenium.page.lecture;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -39,9 +38,7 @@ public class LectureRepositorySettingsPage {
 	}
 	
 	public LectureRepositorySettingsPage enableLectures() {
-		By enableBy = By.xpath("//label/input[@name='lecture.admin.enabled' and @value='on']");
-		WebElement checkboxEl = OOGraphene.waitElement(enableBy, browser);
-		OOGraphene.check(checkboxEl, Boolean.TRUE);
+		OOGraphene.toggle("button.o_sel_repo_lecture_enable.o_button_toggle", true, true, browser);
 		
 		By overrideBy = By.cssSelector("div.o_sel_repo_lecture_override input[type=radio]");
 		OOGraphene.waitElement(overrideBy, browser);

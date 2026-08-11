@@ -75,6 +75,9 @@ public class LectureAdminSettingsPage {
 		String val = enabled ? "yes" : "no";
 		By overrideBy = By.xpath("//input[@name='lecture.can.override.standard.configuration'][@value='" + val + "']");
 		browser.findElement(overrideBy).click();
+		OOGraphene.waitBusy(browser);
+		By overrideCheckedBy = By.xpath("//input[@name='lecture.can.override.standard.configuration'][@value='" + val + "'][@checked='checked']");
+		OOGraphene.waitElement(overrideCheckedBy, browser);
 		return this;
 	}
 	
