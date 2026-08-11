@@ -98,8 +98,6 @@ public class PreferencesFormController extends FormBasicController {
 	private DocEditorService docEditorService;
 	@Autowired
 	private NotificationsManager notificationManager;
-	@Autowired
-	private UserLifecycleManager userLifecycleManager;
 
 	/**
 	 * Constructor for the user preferences form
@@ -192,18 +190,13 @@ public class PreferencesFormController extends FormBasicController {
 		username.setElementCssClass("o_sel_home_settings_username");
 		username.setEnabled(false);
 		
-		// Expiration
-		boolean expirationDateVisible = tobeChangedIdentity.getExpirationDate() != null
+		// Account expiration
+		Date expirationDate = tobeChangedIdentity.getExpirationDate();
+		boolean expirationDateVisible = expirationDate != null
 				&& !tobeChangedIdentity.getStatus().equals(Identity.STATUS_INACTIVE);
-
-		Date expirationDate = userLifecycleManager.getDateUntilDeactivation(tobeChangedIdentity);
 		String expDate = Formatter.getInstance(getLocale()).formatDate(expirationDate);
 		StaticTextElement expirationDateEl = uifactory.addStaticTextElement("rightsForm.expiration.date", expDate, formLayout);
 		expirationDateEl.setVisible(expirationDateVisible);
-
-		long days = userLifecycleManager.getDaysUntilDeactivation(tobeChangedIdentity, ureq.getRequestTimestamp());
-		StaticTextElement expirationDaysEl = uifactory.addStaticTextElement("rightsForm.days.inactivation", Long.toString(days), formLayout);
-		expirationDaysEl.setVisible(expirationDateVisible);
 
 		// Language
 		Map<String, String> languages = i18nManager.getEnabledLanguagesTranslated();
