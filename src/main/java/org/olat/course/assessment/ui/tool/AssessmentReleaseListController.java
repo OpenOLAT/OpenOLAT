@@ -87,7 +87,7 @@ public class AssessmentReleaseListController extends AssessmentCoachingListContr
 		params.setRepositoryEntry(options.getCourseEntry());
 		applyFiltersToSearchParams(params);
 		
-		return assessmentToolManager.getCoachingEntries(params);
+		return loadCoachingEntries(params);
 	}
 
 }

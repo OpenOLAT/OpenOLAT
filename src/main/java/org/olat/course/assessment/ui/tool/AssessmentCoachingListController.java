@@ -123,6 +123,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 	private static final String CMD_ASSESS = "assess";
 	private static final String CMD_DETAILS = "details";
 	private static final String CMD_APPLY_GRADE = "apply";
+	private static final int MAX_RESULTS = 5000;
 	
 	public static final String ASSIGNED_TO_ME_TAB_ID = "AssignedToMe";
 	public static final String ALL_TAB_ID = "All";
@@ -204,6 +205,15 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 				params.setCoachNotAssigned(filterValues.contains("-1"));
 			}
 		}
+	}
+
+	protected List<CoachingAssessmentEntry> loadCoachingEntries(CoachingAssessmentSearchParams params) {
+		params.setMaxResults(MAX_RESULTS);
+		List<CoachingAssessmentEntry> entries = assessmentToolManager.getCoachingEntries(params);
+		if (params.isMaxResultsExceeded()) {
+			showWarning("warning.max.results", Integer.toString(MAX_RESULTS));
+		}
+		return entries;
 	}
 	
 	@Override

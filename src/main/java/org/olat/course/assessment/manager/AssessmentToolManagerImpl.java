@@ -85,6 +85,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class AssessmentToolManagerImpl implements AssessmentToolManager {
 
+	// The database can only limit the rows before the coach specific eligibility is
+	// evaluated in Java, so it fetches a multiple of the requested maximum. Only the
+	// lists which can discard rows in filterAndAppend need that reserve.
+	private static final int MAX_RESULTS_FETCH_FACTOR = 10;
+	
 	@Autowired
 	private DB dbInstance;
 
@@ -763,9 +768,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		QueryParams queryParams = new QueryParams();
 		appendIdentityQuery(sb, params, queryParams, "ident.key", null);
 		
-		Long identityKey = appendUserSearchByKey(sb, params.getSearchString());
-		String[] searchArr = appendUserSearchFull(sb, params.getSearchString(),
-				params.getUserPropertyHandlers(), identityKey == null);
+		Long identityKey = searchIdentityKey(params.getSearchString());
+		String[] searchArr = appendUserSearch(sb, params.getSearchString(),
+				params.getUserPropertyHandlers(), identityKey);
 
 		TypedQuery<T> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), classResult);
@@ -777,7 +782,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		return query;
 	}
 	
-	private Long appendUserSearchByKey(QueryBuilder sb, String search) {
+	private Long searchIdentityKey(String search) {
 		Long identityKey = null;
 		if(StringHelper.containsNonWhitespace(search)) {
 			if(StringHelper.isLong(search)) {
@@ -788,15 +793,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				}
 			}
 			
-			if(identityKey != null) {
-				sb.append(" and ident.key=:searchIdentityKey");
-			}
 		}
 		return identityKey;
 
 	}
 	
-	private String[] appendUserSearchFull(QueryBuilder sb, String search, List<UserPropertyHandler> userPropertyHandlers, boolean and) {
+	private String[] appendUserSearch(QueryBuilder sb, String search, List<UserPropertyHandler> userPropertyHandlers, Long searchIdentityKey) {
 		String[] searchArr = null;
 
 		if(StringHelper.containsNonWhitespace(search)) {
@@ -816,10 +818,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				}
 			}
 
-			if(and) {
-				sb.append(" and (");
-			} else {
-				sb.append(" or (");
+			sb.append(" and (");
+			if(searchIdentityKey != null) {
+				sb.append("ident.key=:searchIdentityKey or ");
 			}
 			boolean start = true;
 			for(int i=0; i<searchArr.length; i++) {
@@ -1033,20 +1034,25 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		// In this second step some other search parameters are applied.
 		List<CoachingAssessmentEntryImpl> loadedCoachedEntries = loadCoachingEntries(params);
 		
-		Map<Long, Identity> assessedIdentityKeyToIdentity = loadAssessedIdentities(loadedCoachedEntries, params).stream()
+		Map<Long, Identity> assessedIdentityKeyToIdentity = loadAssessedIdentities(loadedCoachedEntries).stream()
 				.collect(Collectors.toMap(Identity::getKey, Function.identity()));
-		Map<Long, Identity> statusDoneByIdentityKeyToIdentity = loadStatusDoneByIdentities(loadedCoachedEntries, params).stream()
+		Map<Long, Identity> statusDoneByIdentityKeyToIdentity = loadStatusDoneByIdentities(loadedCoachedEntries).stream()
 				.collect(Collectors.toMap(Identity::getKey, Function.identity()));
 		Map<Long, Identity> assignedCoachByIdentityKeyToIdentity = loadAssignedCoachByIdentities(loadedCoachedEntries).stream()
 				.collect(Collectors.toMap(Identity::getKey, Function.identity()));
 		List<RepositoryEntry> repositoryEntries = loadRepositoryEntries(loadedCoachedEntries);
 		Map<Long, RepositoryEntry> repoKeyToEntry = repositoryEntries.stream()
 				.collect(Collectors.toMap(RepositoryEntry::getKey, Function.identity()));
+		// The course config is only ever consulted for rows that are coach but not owner
+		// (see canSetUserVisibility()/canApplyGrade()), so only those courses need to be loaded.
+		List<RepositoryEntry> coachOnlyRepositoryEntries = params.isUserVisibilitySettable() || params.isGradeApplicable()
+				? coachOnlyRepositoryEntries(loadedCoachedEntries, repositoryEntries)
+				: List.of();
 		Map<Long, Boolean> repoKeyToCoachUserVisibilitySettable = params.isUserVisibilitySettable()
-				? getCoachUserVisibleSettable(repositoryEntries)
+				? getCoachUserVisibleSettable(coachOnlyRepositoryEntries)
 				: Collections.emptyMap();
 		Map<Long, Boolean> repoKeyToCoachGradeApplicable = params.isGradeApplicable()
-				? getCoachGradeApplicable(repositoryEntries)
+				? getCoachGradeApplicable(coachOnlyRepositoryEntries)
 				: Collections.emptyMap();
 		
 		List<CoachingAssessmentEntry> coachedEntries = new ArrayList<>();
@@ -1055,10 +1061,25 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 					statusDoneByIdentityKeyToIdentity, assignedCoachByIdentityKeyToIdentity,
 					repoKeyToEntry, repoKeyToCoachUserVisibilitySettable, repoKeyToCoachGradeApplicable);
 		}
+		if (params.getMaxResults() > 0 && coachedEntries.size() > params.getMaxResults()) {
+			coachedEntries = coachedEntries.subList(0, params.getMaxResults());
+			params.setMaxResultsExceeded(true);
+		}
 		
 		return coachedEntries;
 	}
 
+	private List<RepositoryEntry> coachOnlyRepositoryEntries(List<CoachingAssessmentEntryImpl> loadedCoachedEntries,
+			List<RepositoryEntry> repositoryEntries) {
+		Set<Long> coachOnlyRepositoryEntryKeys = loadedCoachedEntries.stream()
+				.filter(coachedEntry -> !coachedEntry.isOwner() && coachedEntry.isCoach())
+				.map(CoachingAssessmentEntryImpl::getRepositoryEntryKey)
+				.collect(Collectors.toSet());
+		return repositoryEntries.stream()
+				.filter(repositoryEntry -> coachOnlyRepositoryEntryKeys.contains(repositoryEntry.getKey()))
+				.toList();
+	}
+	
 	private void filterAndAppend(List<CoachingAssessmentEntry> coachedEntries, CoachingAssessmentSearchParams params,
 			CoachingAssessmentEntryImpl coachedEntry, Map<Long, Identity> assessedIdentityKeyToIdentity,
 			Map<Long, Identity> statusDoneByIdentityKeyToIdentity, Map<Long, Identity> assignedCoachByIdentityKeyToIdentity,
@@ -1102,10 +1123,19 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	}
 
 	private List<CoachingAssessmentEntryImpl> loadCoachingEntries(CoachingAssessmentSearchParams params) {
+		params.setMaxResultsExceeded(false);
+		Set<Long> ownerEntryKeys = new HashSet<>(loadCourseEntryKeys(params.getCoach(), GroupRoles.owner, params.getRepositoryEntry()));
+		Set<Long> coachEntryKeys = new HashSet<>(loadCourseEntryKeys(params.getCoach(), GroupRoles.coach, params.getRepositoryEntry()));
+		Set<Long> entryKeys = new HashSet<>(ownerEntryKeys);
+		entryKeys.addAll(coachEntryKeys);
+		if (entryKeys.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select new org.olat.course.assessment.model.CoachingAssessmentEntryImpl(");
 		sb.append("   aentry.key");
-		sb.append(" , aentry.identity.key");
+		sb.append(" , ident.key");
 		sb.append(" , aentry.repositoryEntry.key");
 		sb.append(" , aentry.subIdent");
 		sb.append(" , courseele.type");
@@ -1114,20 +1144,13 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append(" , aentry.lastUserModified");
 		sb.append(" , aentry.assessmentDoneBy.key");
 		sb.append(" , aentry.assessmentDone");
-		sb.append(" , (");
-		sb.append("      select count(*) > 0 from repoentrytogroup as rel1, bgroupmember as owner");
-		sb.append("       where rel1.entry.key=aentry.repositoryEntry.key");
-		sb.append("         and rel1.group=owner.group and owner.role='").append(GroupRoles.owner.name()).append("' and owner.identity.key=:identityKey");
-		sb.append("   ) as wner");
-		sb.append(" , (");
-		sb.append("      select count(*) > 0 from repoentrytogroup as rel2, bgroupmember as participant, bgroupmember as coach");
-		sb.append("       where rel2.entry.key=aentry.repositoryEntry.key");
-		sb.append("         and rel2.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey");
-		sb.append("         and rel2.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("' and participant.identity=aentry.identity");
-		sb.append("   ) as oach");
 		sb.append(" , aentry.coach.key");
 		sb.append(")");
 		sb.append("  from assessmententry aentry");
+		sb.append("       inner join aentry.identity as ident");
+		if (StringHelper.containsNonWhitespace(params.getSearchString())) {
+			sb.append("       inner join ident.user as user");
+		}
 		sb.append("       inner join courseelement courseele");
 		sb.append("               on courseele.repositoryEntry.key = aentry.repositoryEntry.key");
 		sb.append("              and courseele.subIdent = aentry.subIdent");
@@ -1143,12 +1166,25 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if (params.getConfigScoreModes() != null && !params.getConfigScoreModes().isEmpty()) {
 			sb.append(" and courseele.scoreMode in :scoreModes");
 		}
+		sb.and().append("ident.status<").append(Identity.STATUS_DELETED);
 		sb.and().append("(aentry.obligation is null or aentry.obligation <> '").append(AssessmentObligation.excluded).append("')");
-		sb.and().append(" exists (select 1");
-		sb.append("                 from repoentrytogroup as rtg, bgroupmember as rtgm");
-		sb.append("                where rtg.entry.key=aentry.repositoryEntry.key");
-		sb.append("                  and rtg.group=rtgm.group and rtgm.role").in(GroupRoles.owner, GroupRoles.coach);
-		sb.append("                  and rtgm.identity.key=:identityKey");
+		sb.and().append("aentry.repositoryEntry.key in (:entryKeys)");
+		sb.and().append("(");
+		boolean firstBranch = true;
+		if (!ownerEntryKeys.isEmpty()) {
+			sb.append("aentry.repositoryEntry.key in (:ownerEntryKeys)");
+			firstBranch = false;
+		}
+		if (!coachEntryKeys.isEmpty()) {
+			if (!firstBranch) {
+				sb.append(" or ");
+			}
+			sb.append("exists (select 1 from repoentrytogroup as rel, bgroupmember as rcoach, bgroupmember as participant");
+			sb.append("         where rel.entry.key=aentry.repositoryEntry.key");
+			sb.append("           and rel.group=rcoach.group and rcoach.role='").append(GroupRoles.coach.name()).append("' and rcoach.identity.key=:identityKey");
+			sb.append("           and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'");
+			sb.append("           and participant.identity.key=ident.key)");
+		}
 		sb.append(")");
 		if(params.getScoreNull() != null) {
 			sb.append(" and aentry.score is").append(" not", !params.getScoreNull()).append(" null");
@@ -1172,9 +1208,18 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			sb.and().append("aentry.coach.key in (:assignedCoachKeys)");
 		}
 		
+		Long searchIdentityKey = searchIdentityKey(params.getSearchString());
+		String[] searchArr = appendUserSearch(sb, params.getSearchString(), null, searchIdentityKey);
+		
 		TypedQuery<CoachingAssessmentEntryImpl> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CoachingAssessmentEntryImpl.class)
-				.setParameter("identityKey", params.getCoach().getKey());
+				.setParameter("entryKeys", entryKeys);
+		if (!ownerEntryKeys.isEmpty()) {
+			query.setParameter("ownerEntryKeys", ownerEntryKeys);
+		}
+		if (!coachEntryKeys.isEmpty()) {
+			query.setParameter("identityKey", params.getCoach().getKey());
+		}
 		if (params.getConfigScoreModes() != null && !params.getConfigScoreModes().isEmpty()) {
 			query.setParameter("scoreModes", params.getConfigScoreModes());
 		}
@@ -1190,21 +1235,90 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if (!params.isCoachNotAssigned() && params.hasAssignedCoachKeys()) {
 			query.setParameter("assignedCoachKeys", params.getAssignedCoachKeys());
 		}
+		if (searchIdentityKey != null) {
+			query.setParameter("searchIdentityKey", searchIdentityKey);
+		}
+		appendUserSearchToQuery(searchArr, query);
+		int fetchFactor = params.isUserVisibilitySettable() || params.isGradeApplicable() ? MAX_RESULTS_FETCH_FACTOR : 1;
+		int fetchLimit = params.getMaxResults() > 0 ? params.getMaxResults() * fetchFactor : 0;
+		if (fetchLimit > 0) {
+			query.setMaxResults(fetchLimit + 1);
+		}
+
+		List<CoachingAssessmentEntryImpl> coachedEntries = query.getResultList();
+		if (fetchLimit > 0 && coachedEntries.size() > fetchLimit) {
+			coachedEntries = coachedEntries.subList(0, fetchLimit);
+			params.setMaxResultsExceeded(true);
+		}
+		Map<Long, Set<Long>> entryKeyToCoachedIdentityKeys = coachEntryKeys.isEmpty()
+				? Collections.emptyMap()
+				: loadCoachedParticipants(params.getCoach(), coachEntryKeys);
+		for (CoachingAssessmentEntryImpl coachedEntry : coachedEntries) {
+			coachedEntry.setOwner(ownerEntryKeys.contains(coachedEntry.getRepositoryEntryKey()));
+			coachedEntry.setCoach(entryKeyToCoachedIdentityKeys
+					.getOrDefault(coachedEntry.getRepositoryEntryKey(), Collections.emptySet())
+					.contains(coachedEntry.getAssessedIdentityKey()));
+		}
+		return coachedEntries;
+	}
+	
+	private Map<Long, Set<Long>> loadCoachedParticipants(IdentityRef coach, Set<Long> coachEntryKeys) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rel.entry.key, participant.identity.key");
+		sb.append("  from repoentrytogroup as rel");
+		sb.append("     , bgroupmember as rcoach");
+		sb.append("     , bgroupmember as participant");
+		sb.where().append("rel.group=rcoach.group and rcoach.role='").append(GroupRoles.coach.name()).append("' and rcoach.identity.key=:identityKey");
+		sb.and().append("rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'");
+		sb.and().append("rel.entry.key in (:coachEntryKeys)");
 		
+		List<Object[]> rows = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", coach.getKey())
+				.setParameter("coachEntryKeys", coachEntryKeys)
+				.getResultList();
+		
+		Map<Long, Set<Long>> entryKeyToIdentityKeys = new HashMap<>();
+		for (Object[] row : rows) {
+			entryKeyToIdentityKeys.computeIfAbsent((Long)row[0], key -> new HashSet<>()).add((Long)row[1]);
+		}
+		return entryKeyToIdentityKeys;
+	}
+	
+	private List<Long> loadCourseEntryKeys(IdentityRef coach, GroupRoles role, RepositoryEntry repositoryEntry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct re.key from ").append(RepositoryEntry.class.getName()).append(" as re");
+		sb.append(" inner join re.olatResource as ores");
+		sb.append(" inner join re.groups as reToGroup");
+		sb.append(" inner join reToGroup.group as baseGroup");
+		sb.append(" inner join baseGroup.members as membership on (membership.role=:role and membership.identity.key=:identityKey)");
+		sb.where().append("ores.resName='CourseModule'");
+		sb.and().append("re.status").in(RepositoryEntryStatusEnum.preparationToPublished());
+		if (repositoryEntry != null) {
+			sb.and().append("re.key=:courseEntryKey");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("role", role.name())
+				.setParameter("identityKey", coach.getKey());
+		if (repositoryEntry != null) {
+			query.setParameter("courseEntryKey", repositoryEntry.getKey());
+		}
 		return query.getResultList();
 	}
 	
-	private List<Identity> loadAssessedIdentities(List<CoachingAssessmentEntryImpl> coachedEntries, CoachingAssessmentSearchParams params) {
+	private List<Identity> loadAssessedIdentities(List<CoachingAssessmentEntryImpl> coachedEntries) {
 		if (coachedEntries == null || coachedEntries.isEmpty()) return Collections.emptyList();
 		
 		Set<Long> identityKeys = coachedEntries.stream()
 				.map(CoachingAssessmentEntryImpl::getAssessedIdentityKey)
 				.collect(Collectors.toSet());
 		
-		return loadIdentities(identityKeys, params.getSearchString());
+		return loadIdentities(identityKeys);
 	}
 	
-	private List<Identity> loadStatusDoneByIdentities(List<CoachingAssessmentEntryImpl> coachedEntries, CoachingAssessmentSearchParams params) {
+	private List<Identity> loadStatusDoneByIdentities(List<CoachingAssessmentEntryImpl> coachedEntries) {
 		if (coachedEntries == null || coachedEntries.isEmpty()) return Collections.emptyList();
 		
 		Set<Long> identityKeys = coachedEntries.stream()
@@ -1212,7 +1326,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 		
-		return loadIdentities(identityKeys, params.getSearchString());
+		return loadIdentities(identityKeys);
 	}
 	
 	private List<Identity> loadAssignedCoachByIdentities(List<CoachingAssessmentEntryImpl> coachedEntries) {
@@ -1223,10 +1337,10 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 		
-		return loadIdentities(identityKeys, null);
+		return loadIdentities(identityKeys);
 	}
 	
-	private List<Identity> loadIdentities(Collection<Long> identityKeys, String searchString) {
+	private List<Identity> loadIdentities(Collection<Long> identityKeys) {
 		if (identityKeys == null || identityKeys.isEmpty()) return Collections.emptyList();
 		
 		QueryBuilder sb = new QueryBuilder();
@@ -1234,14 +1348,11 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append(" inner join fetch ident.user user");
 		sb.and().append(" ident.key in (:identityKeys)");
 		sb.and().append(" ident.status<").append(Identity.STATUS_DELETED);
-		String[] searchArr = appendUserSearchFull(sb, searchString, null, true);
 		
-		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
-				.setParameter("identityKeys", identityKeys);
-		appendUserSearchToQuery(searchArr, query);
-		
-		return query.getResultList();
+				.setParameter("identityKeys", identityKeys)
+				.getResultList();
 	}
 	
 	private List<RepositoryEntry> loadRepositoryEntries(List<CoachingAssessmentEntryImpl> coachedEntries) {
@@ -1279,7 +1390,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if (coachedEntry.isOwner()) {
 			return true;
 		} else if (coachedEntry.isCoach()) {
-			return repoEntryKeyToCoachUserVisibilitySettable.get(coachedEntry.getRepositoryEntryKey()).booleanValue();
+			return Boolean.TRUE.equals(repoEntryKeyToCoachUserVisibilitySettable.get(coachedEntry.getRepositoryEntryKey()));
 		}
 		return false;
 	}
@@ -1298,7 +1409,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if (coachedEntry.isOwner()) {
 			return true;
 		} else if (coachedEntry.isCoach()) {
-			return repoEntryKeyToCoachGradeApplicable.get(coachedEntry.getRepositoryEntryKey()).booleanValue();
+			return Boolean.TRUE.equals(repoEntryKeyToCoachGradeApplicable.get(coachedEntry.getRepositoryEntryKey()));
 		}
 		return false;
 	}
