@@ -247,6 +247,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		DateFlexiCellRenderer dateRenderer = new DateFlexiCellRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(settings.isLifecycleColumnsDefault(), UserCols.inactivationDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.expirationDate, dateRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.daysToExpiry));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.daysToInactivation));
 		if(userModule.isUserAutomaticDeletion()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(settings.isLifecycleColumnsDefault(), UserCols.daysToDeletion));

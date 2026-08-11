@@ -107,6 +107,7 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 				case lastLogin: return getLastLogin(userRow);
 				case status: return userRow.getStatus();
 				case expirationDate: return userRow.getExpirationDate();
+				case daysToExpiry: return getDaysToExpiry(userRow);
 				case inactivationDate: return userRow.getInactivationDate();
 				case daysToInactivation: return getDaysToInactivation(userRow);
 				case daysToDeletion: return getDaysToDeletion(userRow);
@@ -141,6 +142,14 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		return null;
 	}
 	
+	private Long getDaysToExpiry(IdentityPropertiesRow userRow) {
+		Date date = userRow.getExpirationDate();
+		if(date != null && !guestsKeys.contains(userRow.getIdentityKey())) {
+			return DateUtils.countDays(now, date);
+		}
+		return null;
+	}
+
 	private Long getDaysToDeletion(IdentityPropertiesRow userRow) {
 		Date date = userRow.getPlannedDeletionDate();
 		if(date != null && !guestsKeys.contains(userRow.getIdentityKey())) {
@@ -164,6 +173,7 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		daysToInactivation("table.identity.days.inactivation"),
 		daysToDeletion("table.identity.days.deletion"),
 		expirationDate("table.identity.expiration.date"),
+		daysToExpiry("table.identity.days.expiry"),
 		organisations("table.identity.organisations"),
 		externalId("table.identity.external.id");
 		
