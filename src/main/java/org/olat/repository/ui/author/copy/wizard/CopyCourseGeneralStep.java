@@ -203,7 +203,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			}
 			externalRefEl = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, externalRef, referenceAndTitleLayout);
 			externalRefEl.setHelpText(translate("cif.externalref.hover"));
-			externalRefEl.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
+			externalRefEl.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Info/");
 			externalRefEl.setInlineValidationOn(true);
 			
 			// Administrative access

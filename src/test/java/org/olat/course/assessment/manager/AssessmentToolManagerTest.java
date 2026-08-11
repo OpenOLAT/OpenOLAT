@@ -254,6 +254,12 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 					assessedIdentity6
 				);
 
+		params.setSearchString(assessedIdentity1.getKey().toString());
+		assertThat(assessmentToolManager.getAssessedIdentities(coach, params))
+				.as("assert that a numeric search matches the identity key without bypassing the coach scope")
+				.containsExactly(assessedIdentity1);
+		params.setSearchString(null);
+		
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, AssessmentEntryStatus.notStarted);
 		Assert.assertEquals(0, assessmentEntries.size());
 		
@@ -1551,6 +1557,280 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// Coach without assessment entry
 		fakeParticipants = assessmentToolManager.getFakeParticipants(entry, coachWithoutAE, false, true);
 		assertThat(fakeParticipants).isEmpty();
+	}
+
+	@Test
+	public void getCoachingEntries_groupScopedCoach() {
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-10").getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		waitForCourseElementsSync(entry);
+
+		String subIdent = random();
+		createCourseElement(entry, subIdent);
+		dbInstance.commitAndCloseSession();
+
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity groupParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity courseParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity otherGroupParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		dbInstance.commitAndCloseSession();
+
+		BusinessGroup coachedGroup = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRelationToResource(coachedGroup, entry);
+		businessGroupRelationDao.addRole(coach, coachedGroup, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(groupParticipant, coachedGroup, GroupRoles.participant.name());
+
+		BusinessGroup otherGroup = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRelationToResource(otherGroup, entry);
+		businessGroupRelationDao.addRole(otherGroupParticipant, otherGroup, GroupRoles.participant.name());
+
+		repositoryEntryRelationDao.addRole(courseParticipant, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		AssessmentEntry aeGroup = createAssessmentEntry(groupParticipant, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry aeCourse = createAssessmentEntry(courseParticipant, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry aeOtherGroup = createAssessmentEntry(otherGroupParticipant, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		dbInstance.commitAndCloseSession();
+
+		CoachingAssessmentSearchParams params = new CoachingAssessmentSearchParams();
+		params.setCoach(coach);
+		params.setStatus(AssessmentEntryStatus.inReview);
+		params.setUserVisibility(Boolean.FALSE);
+		List<CoachingAssessmentEntry> coachingEntries = assessmentToolManager.getCoachingEntries(params);
+
+		assertThat(coachingEntries).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert that a group coach sees only the participants of the coached group")
+				.contains(
+					aeGroup.getKey()
+				).doesNotContain(
+					aeCourse.getKey(),
+					aeOtherGroup.getKey()
+				);
+
+		assertThat(coachingEntries).filteredOn(CoachingAssessmentEntry::isCoach).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert that is coach")
+				.contains(aeGroup.getKey());
+
+		assertThat(coachingEntries).filteredOn(CoachingAssessmentEntry::isOwner).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert that is not owner")
+				.doesNotContain(aeGroup.getKey());
+	}
+
+	@Test
+	public void getCoachingEntries_filter_searchString() {
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-11").getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		waitForCourseElementsSync(entry);
+
+		String subIdent = random();
+		createCourseElement(entry, subIdent);
+		dbInstance.commitAndCloseSession();
+
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		String searchedLogin = "ast-searched-" + miniRandom();
+		Identity searched = JunitTestHelper.createAndPersistIdentityAsRndUser(searchedLogin, defaultUnitTestOrganisation, null);
+		Identity notSearched = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		dbInstance.commitAndCloseSession();
+
+		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(searched, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(notSearched, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		AssessmentEntry aeSearched = createAssessmentEntry(searched, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		aeSearched.setAssessmentDoneBy(coach);
+		aeSearched = assessmentEntryDao.updateAssessmentEntry(aeSearched);
+		AssessmentEntry aeNotSearched = createAssessmentEntry(notSearched, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		dbInstance.commitAndCloseSession();
+
+		// The login, and with it the email, contains the digits of the searched identity key,
+		// so a numeric search matches this identity by text while the user visibility excludes it.
+		String searchedIdentityKey = searched.getKey().toString();
+		Identity alreadyReleased = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-released-" + searchedIdentityKey, defaultUnitTestOrganisation, null);
+		repositoryEntryRelationDao.addRole(alreadyReleased, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		AssessmentEntry aeAlreadyReleased = createAssessmentEntry(alreadyReleased, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.TRUE);
+		dbInstance.commitAndCloseSession();
+		
+		CoachingAssessmentSearchParams params = new CoachingAssessmentSearchParams();
+		params.setCoach(coach);
+		params.setStatus(AssessmentEntryStatus.inReview);
+		params.setUserVisibility(Boolean.FALSE);
+
+		params.setSearchString(searched.getUser().getFirstName());
+		List<CoachingAssessmentEntry> searchedByFirstName = assessmentToolManager.getCoachingEntries(params);
+		assertThat(searchedByFirstName).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert search by first name")
+				.containsExactly(aeSearched.getKey());
+		assertThat(searchedByFirstName.get(0).getStatusDoneBy())
+				.as("assert that the done-by identity is still resolved while a search is active")
+				.isEqualTo(coach);
+
+		params.setSearchString(searched.getUser().getLastName());
+		assertThat(assessmentToolManager.getCoachingEntries(params)).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert search by last name")
+				.containsExactly(aeSearched.getKey());
+
+		params.setSearchString(searched.getUser().getEmail());
+		assertThat(assessmentToolManager.getCoachingEntries(params)).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert search by email")
+				.containsExactly(aeSearched.getKey());
+
+		params.setSearchString(searchedLogin);
+		assertThat(assessmentToolManager.getCoachingEntries(params)).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert search by a fragment of the name")
+				.containsExactly(aeSearched.getKey());
+
+		params.setSearchString(searched.getUser().getFirstName() + " " + searched.getUser().getLastName());
+		assertThat(assessmentToolManager.getCoachingEntries(params)).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert search with several terms")
+				.containsExactly(aeSearched.getKey());
+
+		params.setSearchString(searchedIdentityKey);
+		assertThat(assessmentToolManager.getCoachingEntries(params)).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert that a numeric search matches the identity key without bypassing the other filters")
+				.containsExactly(aeSearched.getKey())
+				.doesNotContain(aeAlreadyReleased.getKey());
+		
+		params.setSearchString(random());
+		assertThat(assessmentToolManager.getCoachingEntries(params))
+				.as("assert search without match")
+				.isEmpty();
+
+		params.setSearchString(null);
+		assertThat(assessmentToolManager.getCoachingEntries(params)).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert without search")
+				.containsExactlyInAnyOrder(aeSearched.getKey(), aeNotSearched.getKey());
+	}
+
+	@Test
+	public void getCoachingEntries_deletedIdentity() {
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-12").getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		waitForCourseElementsSync(entry);
+
+		String subIdent = random();
+		createCourseElement(entry, subIdent);
+		dbInstance.commitAndCloseSession();
+
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity activeParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity deletedParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		dbInstance.commitAndCloseSession();
+
+		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(activeParticipant, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(deletedParticipant, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		AssessmentEntry aeActive = createAssessmentEntry(activeParticipant, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry aeDeleted = createAssessmentEntry(deletedParticipant, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		securityManager.saveIdentityStatus(deletedParticipant, Identity.STATUS_DELETED, admin);
+		dbInstance.commitAndCloseSession();
+
+		CoachingAssessmentSearchParams params = new CoachingAssessmentSearchParams();
+		params.setCoach(coach);
+		params.setStatus(AssessmentEntryStatus.inReview);
+		params.setUserVisibility(Boolean.FALSE);
+		List<CoachingAssessmentEntry> coachingEntries = assessmentToolManager.getCoachingEntries(params);
+
+		assertThat(coachingEntries).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert that deleted identities are excluded in a live course")
+				.containsExactly(aeActive.getKey())
+				.doesNotContain(aeDeleted.getKey());
+	}
+
+	@Test
+	public void getCoachingEntries_maxResults() {
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-13").getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		waitForCourseElementsSync(entry);
+
+		String subIdent = random();
+		createCourseElement(entry, subIdent);
+		dbInstance.commitAndCloseSession();
+
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		dbInstance.commitAndCloseSession();
+
+		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(participant1, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant2, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant3, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		createAssessmentEntry(participant1, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		createAssessmentEntry(participant2, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		createAssessmentEntry(participant3, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		dbInstance.commitAndCloseSession();
+
+		CoachingAssessmentSearchParams params = new CoachingAssessmentSearchParams();
+		params.setCoach(coach);
+		params.setStatus(AssessmentEntryStatus.inReview);
+		params.setUserVisibility(Boolean.FALSE);
+
+		params.setMaxResults(2);
+		List<CoachingAssessmentEntry> coachingEntries = assessmentToolManager.getCoachingEntries(params);
+		assertThat(coachingEntries)
+				.as("assert that the result is truncated to maxResults")
+				.hasSize(2);
+		assertThat(params.isMaxResultsExceeded())
+				.as("assert that the truncation flag is set")
+				.isTrue();
+
+		params.setMaxResults(3);
+		coachingEntries = assessmentToolManager.getCoachingEntries(params);
+		assertThat(coachingEntries)
+				.as("assert that a maxResults equal to the number of rows is not truncated")
+				.hasSize(3);
+		assertThat(params.isMaxResultsExceeded())
+				.as("assert that the truncation flag is not set at the exact boundary")
+				.isFalse();
+		
+		params.setMaxResults(0);
+		coachingEntries = assessmentToolManager.getCoachingEntries(params);
+		assertThat(coachingEntries)
+				.as("assert that maxResults 0 means unlimited")
+				.hasSize(3);
+		assertThat(params.isMaxResultsExceeded())
+				.as("assert that the truncation flag is reset when the query is not truncated")
+				.isFalse();
+	}
+
+	/**
+	 * The publish of a course triggers an asynchronous sync of its course elements
+	 * (see CourseNodeServiceImpl#event(Event)), which deletes any course element not
+	 * present in the real run structure. Manually created course elements added
+	 * before that sync has run are wiped out. Waiting for at least one course
+	 * element to appear ensures the sync has already happened once, so it will not
+	 * run again and delete elements added afterwards.
+	 */
+	private void waitForCourseElementsSync(RepositoryEntry entry) {
+		for (int i = 0; i < 100; i++) {
+			Long count = dbInstance.getCurrentEntityManager()
+					.createQuery("select count(ce) from courseelement as ce where ce.repositoryEntry.key=:entryKey", Long.class)
+					.setParameter("entryKey", entry.getKey())
+					.getSingleResult();
+			if (count != null && count.longValue() > 0) {
+				return;
+			}
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return;
+			}
+		}
+		Assert.fail("Timeout waiting for the course elements sync of repository entry " + entry.getKey());
 	}
 
 	private AssessmentEntry createAssessmentEntry(Identity identity, RepositoryEntry entry, String subIdent,

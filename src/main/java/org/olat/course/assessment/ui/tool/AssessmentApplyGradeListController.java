@@ -90,7 +90,7 @@ public class AssessmentApplyGradeListController extends AssessmentCoachingListCo
 		params.setRepositoryEntry(options.getCourseEntry());
 		applyFiltersToSearchParams(params);
 		
-		return assessmentToolManager.getCoachingEntries(params);
+		return loadCoachingEntries(params);
 	}
 
 }
