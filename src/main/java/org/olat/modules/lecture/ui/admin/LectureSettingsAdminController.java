@@ -25,8 +25,10 @@ import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -56,8 +58,10 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private static final String SEB_KEYS = "sebkeys";
 	private static final String SEB_OPENOLAT_DEF_CONFIG = "openolatconfig";
 	
+	private static final String OVERRIDE_KEY = "yes";
+	private static final String READONLY_KEY = "no";
+	
 	private static final String[] onKeys = new String[] { "on" };
-	private static final String[] yesNoKeys = new String[] { "yes", "no" };
 	private static final String[] showKeys = new String[] { "all", "mine" };
 	private static final String[] dailyBatchKeys = new String[] { DailyRollCall.startOfLectureBlock.name(), DailyRollCall.daily.name() };
 
@@ -74,7 +78,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private TextElement assessmentSafeExamBrowserKeysEl;
 	private SingleSelection assessmentSafeExamBrowserDownloadEl;
 	private TextElement defaultPlannedLecturesEl;
-	private MultipleSelectionElement enableEl;
+	private FormToggle enableEl;
 	private MultipleSelectionElement enableAbsenceNoticeEl;
 	private MultipleSelectionElement enableAssessmentModeEl;
 	private MultipleSelectionElement calculateAttendanceRateEnableEl;
@@ -92,6 +96,10 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private MultipleSelectionElement rollCallEnableEl;
 	private SingleSelection dayBatchRollCallEnableEl;
 	private FormLayoutContainer globalCont;
+	private FormLayoutContainer courseCont;
+	private FormLayoutContainer assessmentModeCont;
+	private SpacerElement syncCalendarsSpacerEl;
+	private SpacerElement canOverrideStandardSpacerEl;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -108,29 +116,41 @@ public class LectureSettingsAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer defaultCont = uifactory.addDefaultFormLayout("defconf", null, formLayout);
+		defaultCont.setElementCssClass("o_sel_lectures_configuration_form");
+		
+		String[] onValues = new String[] { translate("on") };
+		enableEl = uifactory.addToggleButton("lecture.admin.enabled", "lecture.admin.enabled", translate("on"), translate("off"), defaultCont);
+		enableEl.addActionListener(FormEvent.ONCHANGE);
+		enableEl.toggle(lectureModule.isEnabled());
+		
+		enableAbsenceNoticeEl = uifactory.addCheckboxesHorizontal("lecture.absence.notice.enabled", defaultCont, onKeys, onValues);
+		
 		initCourseForm(formLayout);
 		initAssessmentModeForm(formLayout);
 		initGlobalForm(formLayout);
 	}
-	
 
 	private void initCourseForm(FormItemContainer formLayout) {
 		// configuration which can be overriden in course
-		FormLayoutContainer courseCont = uifactory.addDefaultFormLayout("course", null, formLayout);
-		courseCont.setFormTitle(translate("lecture.admin.course.override.title"));
+		courseCont = uifactory.addDefaultFormLayout("course", null, formLayout);
+		courseCont.setFormTitle(translate("lecture.admin.course.title"));
 		courseCont.setFormContextHelp("manual_admin/administration/Modules_Events_and_Absences/");
 		courseCont.setElementCssClass("o_sel_lectures_configuration_form");
 
-		String[] onValues = new String[] { translate("on") };
-		enableEl = uifactory.addCheckboxesHorizontal("lecture.admin.enabled", courseCont, onKeys, onValues);
-		enableEl.addActionListener(FormEvent.ONCHANGE);
-		
-		enableAbsenceNoticeEl = uifactory.addCheckboxesHorizontal("lecture.absence.notice.enabled", courseCont, onKeys, onValues);
-		
-		String[] yesNoValues = new String[]{ translate("yes"), translate("no") };
-		canOverrideStandardConfigEl = uifactory.addRadiosHorizontal("lecture.can.override.standard.configuration", courseCont, yesNoKeys, yesNoValues);
+		SelectionValues overridePK = new SelectionValues();
+		overridePK.add(SelectionValues.entry(READONLY_KEY, translate("lecture.can.standard.configuration.readonly"),
+				translate("lecture.can.standard.configuration.readonly.descr"), null, null, true));
+		overridePK.add(SelectionValues.entry(OVERRIDE_KEY, translate("lecture.can.standard.configuration.override"),
+				translate("lecture.can.standard.configuration.override.descr"), null, null, true));
+		canOverrideStandardConfigEl = uifactory.addCardSingleSelectHorizontal("lecture.can.override.standard.configuration",
+				"lecture.can.override.standard.configuration", courseCont, overridePK);
 		canOverrideStandardConfigEl.setElementCssClass("o_sel_lecture_override_standard_config");
+		canOverrideStandardConfigEl.addActionListener(FormEvent.ONCHANGE);
 		
+		canOverrideStandardSpacerEl = uifactory.addSpacerElement("canoverridespace", courseCont, false);
+
+		String[] onValues = new String[] { translate("on") };
 		// roll call enabled
 		rollCallEnableEl = uifactory.addCheckboxesHorizontal("lecture.rollcall.default.enabled", courseCont, onKeys, onValues);
 
@@ -145,13 +165,16 @@ public class LectureSettingsAdminController extends FormBasicController {
 		syncTeachersCalendarEnableEl = uifactory.addCheckboxesHorizontal("sync.teachers.calendar.enabled", courseCont, onKeys, onValues);
 		syncCourseCalendarEnableEl = uifactory.addCheckboxesHorizontal("sync.course.calendar.enabled", courseCont, onKeys, onValues);
 		
+		syncCalendarsSpacerEl = uifactory.addSpacerElement("synccalendarspacer", courseCont, false);
+		
 		// assessment mode
 		enableAssessmentModeEl = uifactory.addCheckboxesHorizontal("lecture.assessment.mode.enabled", courseCont, onKeys, onValues);
+		enableAssessmentModeEl.setHelpText(translate("lecture.assessment.mode.enabled.hint"));
 		enableAssessmentModeEl.addActionListener(FormEvent.ONCHANGE);
 	}
 		
 	private void initAssessmentModeForm(FormItemContainer formLayout) {	
-		FormLayoutContainer assessmentModeCont = uifactory.addDefaultFormLayout("assessment.mode", null, formLayout);
+		assessmentModeCont = uifactory.addDefaultFormLayout("assessment.mode", null, formLayout);
 		
 		assessmentLeadTimeEl = uifactory.addTextElement("lecture.assessment.mode.leading.time", "lecture.assessment.mode.leading.time", 8, "", assessmentModeCont);
 		assessmentFollowupTimeEl = uifactory.addTextElement("lecture.assessment.mode.followup.time", "lecture.assessment.mode.followup.time", 8, "", assessmentModeCont);
@@ -244,17 +267,14 @@ public class LectureSettingsAdminController extends FormBasicController {
 	}
 	
 	private void initializeValues() {
-		if(lectureModule.isEnabled()) {
-			enableEl.select(onKeys[0], true);
-		}
 		if(lectureModule.isAbsenceNoticeEnabled()) {
 			enableAbsenceNoticeEl.select(onKeys[0], true);
 		}
 		
 		if(lectureModule.isCanOverrideStandardConfiguration()) {
-			canOverrideStandardConfigEl.select(yesNoKeys[0], true);
+			canOverrideStandardConfigEl.select(OVERRIDE_KEY, true);
 		} else {
-			canOverrideStandardConfigEl.select(yesNoKeys[1], true);
+			canOverrideStandardConfigEl.select(READONLY_KEY, true);
 		}
 		
 		if(lectureModule.isRollCallDefaultEnabled()) {
@@ -275,7 +295,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		if(lectureModule.isTeacherCalendarSyncEnabledDefault()) {
 			syncTeachersCalendarEnableEl.select(onKeys[0], true);
 		} else {
-			syncCourseCalendarEnableEl.uncheckAll();
+			syncTeachersCalendarEnableEl.uncheckAll();
 		}
 		if(lectureModule.isCourseCalendarSyncEnabledDefault()) {
 			syncCourseCalendarEnableEl.select(onKeys[0], true);
@@ -393,26 +413,33 @@ public class LectureSettingsAdminController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		boolean enabled = enableEl.isAtLeastSelected(1);
+		boolean enabled = enableEl.isOn();
 		enableAbsenceNoticeEl.setVisible(enabled);
+		
+		courseCont.setVisible(enabled);
 		canOverrideStandardConfigEl.setVisible(enabled);
+		canOverrideStandardSpacerEl.setVisible(enabled);
 		authorizedAbsenceEnableEl.setVisible(enabled);
 		attendanceRateEl.setVisible(enabled);
 		appealAbsenceEnableEl.setVisible(enabled);
 		reminderEnableEl.setVisible(enabled);
 		syncTeachersCalendarEnableEl.setVisible(enabled);
 		syncCourseCalendarEnableEl.setVisible(enabled);
+		syncCalendarsSpacerEl.setVisible(enabled);
 		enableAssessmentModeEl.setVisible(enabled);
 		
-		boolean assessmentModeEnabled = enableAssessmentModeEl.isVisible() && enableAssessmentModeEl.isAtLeastSelected(1);
-		assessmentLeadTimeEl.setVisible(assessmentModeEnabled);
-		assessmentFollowupTimeEl.setVisible(assessmentModeEnabled);
-		assessmentIpsEl.setVisible(assessmentModeEnabled);
-		assessmentSafeExamBrowserKeysEl.setVisible(enabled && assessmentSafeExamBrowserEl.isOneSelected()
+		boolean configureAssessmentModeReadonly = canOverrideStandardConfigEl.isOneSelected() && READONLY_KEY.equals(canOverrideStandardConfigEl.getSelectedKey());
+		boolean assessmentModeEnable = enableAssessmentModeEl.isVisible() && enableAssessmentModeEl.isAtLeastSelected(1);
+		boolean configureAssessmentModeVisible = enabled && (!configureAssessmentModeReadonly || assessmentModeEnable);
+		assessmentModeCont.setVisible(configureAssessmentModeVisible);
+		assessmentLeadTimeEl.setVisible(configureAssessmentModeVisible);
+		assessmentFollowupTimeEl.setVisible(configureAssessmentModeVisible);
+		assessmentIpsEl.setVisible(configureAssessmentModeVisible);
+		assessmentSafeExamBrowserKeysEl.setVisible(configureAssessmentModeVisible && assessmentSafeExamBrowserEl.isOneSelected()
 				&& SEB_KEYS.equals(assessmentSafeExamBrowserEl.getSelectedKey()));
-		assessmentSafeExamBrowserDownloadEl.setVisible(enabled && assessmentSafeExamBrowserEl.isOneSelected()
+		assessmentSafeExamBrowserDownloadEl.setVisible(configureAssessmentModeVisible && assessmentSafeExamBrowserEl.isOneSelected()
 				&& SEB_OPENOLAT_DEF_CONFIG.equals(assessmentSafeExamBrowserEl.getSelectedKey()));
-		assessmentSafeExamBrowserEl.setVisible(enabled);
+		assessmentSafeExamBrowserEl.setVisible(configureAssessmentModeVisible);
 		
 		globalCont.setVisible(enabled);
 		autoClosePeriodEl.setVisible(enabled);
@@ -504,13 +531,14 @@ public class LectureSettingsAdminController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enableEl == source) {
-			if(enableEl.isAtLeastSelected(1)) {
+			if(enableEl.isOn()) {
 				initializeValues();
 			}
 			updateUI();
 		} else if(appealAbsenceEnableEl == source || reminderEnableEl == source
 				|| authorizedAbsenceEnableEl == source || enableAssessmentModeEl == source
-				|| countAuthorizedAbsenceAsAttendantEl == source || assessmentSafeExamBrowserEl == source) {
+				|| countAuthorizedAbsenceAsAttendantEl == source || assessmentSafeExamBrowserEl == source
+				|| canOverrideStandardConfigEl == source) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -518,13 +546,14 @@ public class LectureSettingsAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean enabled = enableEl.isAtLeastSelected(1);
+		boolean enabled = enableEl.isOn();
 		lectureModule.setEnabled(enabled);
 		boolean assessmentModeEnabled = enabled && enableAssessmentModeEl.isAtLeastSelected(1);
 		lectureModule.setAssessmentModeEnabledDefault(assessmentModeEnabled);
 		
 		if(enabled) {
-			lectureModule.setCanOverrideStandardConfiguration(canOverrideStandardConfigEl.isSelected(0));
+			boolean canOverride = canOverrideStandardConfigEl.isOneSelected() && OVERRIDE_KEY.equals(canOverrideStandardConfigEl.getSelectedKey());
+			lectureModule.setCanOverrideStandardConfiguration(canOverride);
 			lectureModule.setAbsenceNoticeEnabled(enableAbsenceNoticeEl.isSelected(0));
 
 			//enabled user tool
@@ -584,22 +613,27 @@ public class LectureSettingsAdminController extends FormBasicController {
 		
 			lectureModule.setShowLectureBlocksAllTeachersDefault(showAllTeachersLecturesEl.isSelected(0));
 			lectureModule.setDailyRollCall(DailyRollCall.valueOf(dayBatchRollCallEnableEl.getSelectedKey()));
-		}
-		
-		if(assessmentModeEnabled) {
-			lectureModule.setAssessmentModeAdmissibleIps(assessmentIpsEl.getValue());
-			lectureModule.setAssessmentModeLeadTime(Integer.parseInt(assessmentLeadTimeEl.getValue()));
-			lectureModule.setAssessmentModeFollowupTime(Integer.parseInt(assessmentFollowupTimeEl.getValue()));
-		}
-		
-		if(SEB_KEYS.equals(assessmentSafeExamBrowserEl.getSelectedKey())) {
-			lectureModule.setAssessmentModeSebDefault(false);
-			lectureModule.setAssessmentModeSebKeys(assessmentSafeExamBrowserKeysEl.getValue());
-			lectureModule.setAssessmentModeSebDownload(false);
-		} else {
-			lectureModule.setAssessmentModeSebDefault(true);
-			lectureModule.setAssessmentModeSebKeys("");
-			lectureModule.setAssessmentModeSebDownload(Boolean.TRUE.toString().equals(assessmentSafeExamBrowserDownloadEl.getSelectedKey()));
+			
+			if(assessmentIpsEl.isVisible()) {
+				lectureModule.setAssessmentModeAdmissibleIps(assessmentIpsEl.getValue());
+			}
+			
+			if(assessmentLeadTimeEl.isVisible() && assessmentFollowupTimeEl.isVisible()) {
+				lectureModule.setAssessmentModeLeadTime(Integer.parseInt(assessmentLeadTimeEl.getValue()));
+				lectureModule.setAssessmentModeFollowupTime(Integer.parseInt(assessmentFollowupTimeEl.getValue()));
+			}
+			
+			if(assessmentSafeExamBrowserEl.isVisible()) {
+				if(SEB_KEYS.equals(assessmentSafeExamBrowserEl.getSelectedKey())) {
+					lectureModule.setAssessmentModeSebDefault(false);
+					lectureModule.setAssessmentModeSebKeys(assessmentSafeExamBrowserKeysEl.getValue());
+					lectureModule.setAssessmentModeSebDownload(false);
+				} else {
+					lectureModule.setAssessmentModeSebDefault(true);
+					lectureModule.setAssessmentModeSebKeys("");
+					lectureModule.setAssessmentModeSebDownload(Boolean.TRUE.toString().equals(assessmentSafeExamBrowserDownloadEl.getSelectedKey()));
+				}
+			}
 		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
