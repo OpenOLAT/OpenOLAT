@@ -655,6 +655,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	/**
+	 * Use the configuration defined in the default template.
+	 * 
 	 * @return Use the default configuration in OpenOlat
 	 */
 	public boolean isAssessmentModeSebDefault() {
@@ -662,7 +664,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	/**
-	 * @param sebConfiguration The Safe exam Browser configuration in XML format.
+	 * @param defaultConfiguration Use or not the default configuration defined in OpenOlat
 	 */
 	public void setAssessmentModeSebDefault(boolean defaultConfiguration) {
 		this.assessmentModeSebDefault = defaultConfiguration ? "true" : "false";
