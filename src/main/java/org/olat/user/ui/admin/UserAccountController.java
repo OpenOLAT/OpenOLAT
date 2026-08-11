@@ -53,6 +53,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.user.UserLifecycleManager;
@@ -89,9 +90,14 @@ public class UserAccountController extends FormBasicController {
 	private StaticTextElement creationDateEl;
 	private StaticTextElement inactivationDateEl;
 	private StaticTextElement reactivationDateEl;
-	private StaticTextElement daysInactivationEl;
-	private StaticTextElement daysDeletionEl;
+	private StaticTextElement daysExpiryEl;
 	private SpacerElement loginDateSpacerEl;
+
+	private StaticTextElement lifecycleLastLoginEl;
+	private StaticTextElement lifecycleInactivationDateEl;
+	private StaticTextElement lifecycleReactivationDateEl;
+	private StaticTextElement lifecycleDaysDeactivationEl;
+	private StaticTextElement lifecycleDaysDeletionEl;
 	
 	private FormLink inviteeToUserButton;
 	
@@ -137,7 +143,7 @@ public class UserAccountController extends FormBasicController {
 
 	public UserAccountController(WindowControl wControl, UserRequest ureq, Identity identity,
 								 boolean canDeactivateAccounts, boolean restrictedView) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.canDeactivateAccounts = canDeactivateAccounts;
 		this.restrictedView = restrictedView;
 		setTranslator(Util.createPackageTranslator(UserAdminController.class, getLocale(), getTranslator()));
@@ -168,17 +174,22 @@ public class UserAccountController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer topLayout = FormLayoutContainer.createDefaultFormLayout("topLayout", getTranslator());
+		formLayout.add("topLayout", topLayout);
+		
 		boolean iAmAdmin = managerRoles.isManagerOf(OrganisationRoles.administrator, editedRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles);
 		boolean iAmUserManager = managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles);
 	
-		initUserTypeForm(formLayout);
-		initFormStatus(formLayout, iAmAdmin, iAmUserManager);
-		
+		initUserTypeForm(topLayout);
+		initFormStatus(topLayout, iAmAdmin, iAmUserManager);
+
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
-		formLayout.add(buttonGroupLayout);
+		topLayout.add(buttonGroupLayout);
 		saveButton = uifactory.addFormSubmitButton("submit", buttonGroupLayout);
 		cancelButton = uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
+
+		initLifecycle(formLayout);
 	}
 	
 	private void initUserTypeForm(FormItemContainer formLayout) {
@@ -191,6 +202,8 @@ public class UserAccountController extends FormBasicController {
 	private void initFormStatus(FormItemContainer formLayout, boolean iAmAdmin, boolean iAmUserManager) {
 		creationDateEl = uifactory.addStaticTextElement("rightsForm.creation.date", "", formLayout);
 		lastLoginEl = uifactory.addStaticTextElement("rightsForm.last.login", "", formLayout);
+		inactivationDateEl = uifactory.addStaticTextElement("rightsForm.inactivation.date", "", formLayout);
+		reactivationDateEl = uifactory.addStaticTextElement("rightsForm.reactivation.date", "", formLayout);
 		loginDateSpacerEl = uifactory.addSpacerElement("datesep", formLayout, false);
 		
 		// status
@@ -201,13 +214,23 @@ public class UserAccountController extends FormBasicController {
 		
 		statusEl.setVisible(iAmAdmin || iAmUserManager || canDeactivateAccounts);
 		sendLoginDeniedEmailEl.setVisible(false);
-		
-		// life cycle information
+
+		// account expiration
 		expirationDateEl = uifactory.addDateChooser("rightsForm.expiration.date", null, formLayout);
-		inactivationDateEl = uifactory.addStaticTextElement("rightsForm.inactivation.date", "", formLayout);
-		reactivationDateEl = uifactory.addStaticTextElement("rightsForm.reactivation.date", "", formLayout);
-		daysInactivationEl = uifactory.addStaticTextElement("rightsForm.days.inactivation", "", formLayout);
-		daysDeletionEl = uifactory.addStaticTextElement("rightsForm.days.deletion", "", formLayout);
+		daysExpiryEl = uifactory.addStaticTextElement("rightsForm.days.expiry", "", formLayout);
+	}
+	
+	private void initLifecycle(FormItemContainer formLayout) {
+		
+		// automatic user lifecycle
+		FormLayoutContainer lifecycleCont = FormLayoutContainer.createDefaultFormLayout("lifecycle", getTranslator());
+		lifecycleCont.setFormTitle(translate("rightsForm.lifecycle.title"));
+		formLayout.add(lifecycleCont);
+		lifecycleLastLoginEl = uifactory.addStaticTextElement("lifecycle.last.login", "rightsForm.last.login", "", lifecycleCont);
+		lifecycleReactivationDateEl = uifactory.addStaticTextElement("lifecycle.reactivation.date", "rightsForm.reactivation.date", "", lifecycleCont);
+		lifecycleInactivationDateEl = uifactory.addStaticTextElement("lifecycle.inactivation.date", "rightsForm.inactivation.date", "", lifecycleCont);
+		lifecycleDaysDeactivationEl = uifactory.addStaticTextElement("lifecycle.days.deactivation", "rightsForm.days.inactivation", "", lifecycleCont);
+		lifecycleDaysDeletionEl = uifactory.addStaticTextElement("lifecycle.days.deletion", "rightsForm.days.deletion", "", lifecycleCont);
 	}
 	
 	private void update() {
@@ -254,23 +277,64 @@ public class UserAccountController extends FormBasicController {
 		reactivationDateEl.setValue(formatter.formatDateAndTime(reactivationDate));
 		reactivationDateEl.setVisible(reactivationDate != null);
 
-		daysInactivationEl.setVisible((userModule.isUserAutomaticDeactivation() || editedIdentity.getExpirationDate() != null)
-				&& (editedIdentity.getStatus().equals(Identity.STATUS_ACTIV)
-						|| editedIdentity.getStatus().equals(Identity.STATUS_PENDING)
-						|| editedIdentity.getStatus().equals(Identity.STATUS_LOGIN_DENIED))
-				&& !editedRoles.isGuestOnly());
-		daysDeletionEl.setVisible(userModule.isUserAutomaticDeletion() && editedIdentity.getInactivationDate() != null);
 		loginDateSpacerEl.setVisible(!editedRoles.isGuestOnly());
 		
-		if(!editedRoles.isGuestOnly() || inactivationDate != null || reactivationDate != null
-				|| editedIdentity.getDeletionEmailDate() != null || editedIdentity.getExpirationDate() != null) {
-			Date now = new Date();
-			long daysBeforeDeactivation = userLifecycleManager.getDaysUntilDeactivation(editedIdentity, now);
-			daysInactivationEl.setValue(Long.toString(daysBeforeDeactivation));
+		Date now = new Date();
 
-			long daysBeforeDeletion = userLifecycleManager.getDaysUntilDeletion(editedIdentity, now);
-			daysDeletionEl.setValue(Long.toString(daysBeforeDeletion));
+		// Days until expiry: purely derived from the account expiration date,
+		// independent of the automatic user lifecycle (last login, deactivation, deletion).
+		Date expirationDate = editedIdentity.getExpirationDate();
+		boolean expiryVisible = expirationDateEl.isVisible() && expirationDate != null;
+		if(expiryVisible) {
+			long daysToExpiry = DateUtils.countDays(now, expirationDate);
+			if(daysToExpiry > 0) {
+				daysExpiryEl.setValue(translate("rightsForm.days.expiry.future", Long.toString(daysToExpiry)));
+			} else {
+				String overdue = translate("rightsForm.days.expiry.overdue", Long.toString(Math.abs(daysToExpiry)));
+				daysExpiryEl.setValue("<span class=\"text-danger\">" + overdue + "</span>");
+			}
 		}
+		daysExpiryEl.setVisible(expiryVisible);
+
+		// Automatic user lifecycle: Active / Inactive / Reactivated (within or after the grace period)
+		boolean withinGracePeriod = false;
+		if(reactivationDate != null) {
+			Date graceEnd = DateUtils.addDays(reactivationDate, userModule.getNumberOfDayReactivationPeriod());
+			withinGracePeriod = now.before(graceEnd);
+		}
+		boolean showAsInactive = Identity.STATUS_INACTIVE.equals(editedIdentity.getStatus()) && !withinGracePeriod;
+		boolean showAsReactivated = withinGracePeriod;
+		boolean showAsActive = !showAsInactive && !showAsReactivated;
+
+		boolean lifecycleVisible = !editedRoles.isGuestOnly();
+
+		String lastLoginDate = formatter.formatDate(editedIdentity.getLastLogin());
+		lifecycleLastLoginEl.setValue(lastLoginDate == null ? "" : lastLoginDate);
+		lifecycleLastLoginEl.setVisible(lifecycleVisible && (showAsActive || showAsReactivated));
+
+		lifecycleReactivationDateEl.setValue(formatter.formatDate(reactivationDate));
+		lifecycleReactivationDateEl.setVisible(lifecycleVisible && showAsReactivated);
+
+		lifecycleInactivationDateEl.setValue(formatter.formatDate(inactivationDate));
+		lifecycleInactivationDateEl.setVisible(lifecycleVisible && showAsInactive);
+
+		boolean showDaysDeactivation = lifecycleVisible && userModule.isUserAutomaticDeactivation()
+				&& (showAsActive || showAsReactivated);
+		if(showDaysDeactivation) {
+			long daysBeforeDeactivation = userLifecycleManager.getDaysUntilDeactivation(editedIdentity, now);
+			String deactivationDate = formatter.formatDate(userLifecycleManager.getDateUntilDeactivation(editedIdentity));
+			String i18nKey = showAsReactivated ? "rightsForm.lifecycle.days.deactivation.grace" : "rightsForm.lifecycle.days.deactivation.value";
+			lifecycleDaysDeactivationEl.setValue(translate(i18nKey, Long.toString(daysBeforeDeactivation), deactivationDate));
+		}
+		lifecycleDaysDeactivationEl.setVisible(showDaysDeactivation);
+
+		boolean showDaysDeletion = lifecycleVisible && userModule.isUserAutomaticDeletion() && showAsInactive;
+		if(showDaysDeletion) {
+			long daysBeforeDeletion = userLifecycleManager.getDaysUntilDeletion(editedIdentity, now);
+			String deletionDate = formatter.formatDate(userLifecycleManager.getDateUntilDeletion(editedIdentity));
+			lifecycleDaysDeletionEl.setValue(translate("rightsForm.lifecycle.days.deletion.value", Long.toString(daysBeforeDeletion), deletionDate));
+		}
+		lifecycleDaysDeletionEl.setVisible(showDaysDeletion);
 		
 		boolean editableFieldsVisible = statusEl.isVisible() || expirationDateEl.isVisible();
 		saveButton.setVisible(editableFieldsVisible);

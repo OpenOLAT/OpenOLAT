@@ -116,22 +116,31 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 				? Formatter.getInstance(getLocale()).formatTimeShort(nextExecution)
 				: "-";
 		
+		FormLayoutContainer expirationTitleCont = FormLayoutContainer.createHorizontalFormLayout("expirationTitle", getTranslator());
+		expirationTitleCont.setElementCssClass("o_user_admin_lifecycle_cont");
+		expirationTitleCont.setFormTitle(translate("legend.account.expiration"));
+		expirationTitleCont.setFormInfo(translate("legend.account.expiration.info", time));
+		formLayout.add(expirationTitleCont);
+				
 		FormLayoutContainer expirationCont = FormLayoutContainer.createDefaultFormLayout("expiration", getTranslator());
-		expirationCont.setFormTitle(translate("legend.account.expiration"));
-		expirationCont.setFormInfo(translate("legend.account.expiration.info", time));
 		formLayout.add(expirationCont);
 		initExpirationForm(expirationCont);
 		
+		FormLayoutContainer lifecycleTitleCont = FormLayoutContainer.createHorizontalFormLayout("lifecycleTitle", getTranslator());
+		lifecycleTitleCont.setElementCssClass("o_user_admin_lifecycle_cont");
+		lifecycleTitleCont.setFormTitle(translate("legend.user.lifecycle"));
+		lifecycleTitleCont.setFormInfo(translate("legend.user.lifecycle.info", time));
+		formLayout.add(lifecycleTitleCont);
+		
 		FormLayoutContainer lifecycleCont = FormLayoutContainer.createDefaultFormLayout("lifecycle", getTranslator());
-		lifecycleCont.setFormTitle(translate("legend.user.lifecycle"));
-		lifecycleCont.setFormInfo(translate("legend.user.lifecycle.info", time));
 		formLayout.add(lifecycleCont);
 		initDeactivationForm(lifecycleCont);
+
 		uifactory.addSpacerElement("del-deac", lifecycleCont, false);
 		initDeletionForm(lifecycleCont);
 
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
-		formLayout.add(buttonsLayout);
+		lifecycleCont.add(buttonsLayout);
 		uifactory.addFormSubmitButton("save", buttonsLayout);
 	}
 	
