@@ -953,7 +953,7 @@ public class PositionEditProfileController extends FormBasicController implement
 			OrganisationUnit selectedUnit = null;
 			for(TextElement departmentEl:departmentLanguagesEl) {
 				if(!StringHelper.containsNonWhitespace(departmentEl.getValue())) {
-					if(selectedUnit == null && selectOrganisation != null) {
+					if(selectedUnit == null) {
 						selectedUnit = erFrontendManager.getOrganisationUnit(selectOrganisation);
 						if(selectedUnit == null) {
 							break;
@@ -993,7 +993,7 @@ public class PositionEditProfileController extends FormBasicController implement
 		Organisation organisation = null;
 		if(organisationEl != null && organisationEl.isVisible() && organisationEl.isOneSelected()) {
 			if(ORG_UNIT_EMPTY_KEY.equals(organisationEl.getSelectedKey())) {
-				organisation = null;
+				// Do nothing, it's null
 			} else {
 				organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationEl.getSelectedKey())));
 

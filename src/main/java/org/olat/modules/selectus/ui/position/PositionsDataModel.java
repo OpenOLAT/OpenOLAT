@@ -289,6 +289,9 @@ implements SortableFlexiTableDataModel<PositionLightWithStatistics>, FilterableF
 	
 	private Boolean canDelete(PositionLightWithStatistics position) {
 		Organisation organisation = position.getOrganisation();
+		if(organisation == null) {
+			return roles != null && roles.hasRole(OrganisationRoles.selectusmanager);
+		}
 		return roles != null && roles.hasRole(organisation, OrganisationRoles.selectusmanager);
 	}
 	
