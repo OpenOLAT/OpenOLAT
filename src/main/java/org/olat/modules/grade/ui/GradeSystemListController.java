@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TranslateCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -52,6 +53,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.grade.GradeScaleStats;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.GradeSystem;
@@ -68,14 +70,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GradeSystemListController extends FormBasicController {
 
 	private static final String CMD_EDIT = "edit-grade-system";
+	private static final String CMD_TRANSLATE_LABEL = "translate-label";
 
 	private FlexiTableElement tableEl;
 	private GradeSystemDataModel dataModel;
 	private FormLink addButton;
-	
+
 	private CloseableModalController cmc;
 	private GradeSystemCreateController createCtrl;
 	private GradeSystemEditController editCtrl;
+	private SingleKeyTranslatorController translatorCtrl;
 	private DialogBoxController deleteCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ToolsController toolsCtrl;
@@ -107,8 +111,8 @@ public class GradeSystemListController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.identifier));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.name));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.label));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.name, new TranslateCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.label, new TranslateCellRenderer(CMD_TRANSLATE_LABEL)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.usageCount));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.enabled));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.isDefault, new DefaultConfigCellRenderer()));
@@ -165,9 +169,15 @@ public class GradeSystemListController extends FormBasicController {
 		if (source == addButton) {
 			doAddGradeSystem(ureq);
 		} else if (source == tableEl) {
-			if (event instanceof SelectionEvent se && CMD_EDIT.equals(se.getCommand())) {
-				GradeSystemRow gradeSystemRow = dataModel.getObject(se.getIndex());
-				doEditGradeSystem(ureq, gradeSystemRow.getGradeSystem());
+			if (event instanceof SelectionEvent se) {
+				GradeSystemRow row = dataModel.getObject(se.getIndex());
+				if (CMD_EDIT.equals(se.getCommand())) {
+					doEditGradeSystem(ureq, row.getGradeSystem());
+				} else if (TranslateCellRenderer.CMD_TRANSLATE.equals(se.getCommand())) {
+					doTranslate(ureq, GradeUIFactory.getGradeSystemNameI18nKey(row.getGradeSystem()), translate("grade.system.name"));
+				} else if (CMD_TRANSLATE_LABEL.equals(se.getCommand())) {
+					doTranslate(ureq, GradeUIFactory.getGradeSystemLabelI18nKey(row.getGradeSystem().getIdentifier()), translate("grade.system.label"));
+				}
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -206,6 +216,10 @@ public class GradeSystemListController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (translatorCtrl == source) {
+			loadModel();
+			cmc.deactivate();
+			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
 		} else if (deleteCtrl == source) {
@@ -220,12 +234,14 @@ public class GradeSystemListController extends FormBasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(translatorCtrl);
 		removeAsListenerAndDispose(createCtrl);
 		removeAsListenerAndDispose(deleteCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(cmc);
 		toolsCalloutCtrl = null;
+		translatorCtrl = null;
 		createCtrl = null;
 		deleteCtrl = null;
 		toolsCtrl = null;
@@ -262,6 +278,17 @@ public class GradeSystemListController extends FormBasicController {
 		cmc.activate();
 	}
 	
+	private void doTranslate(UserRequest ureq, String i18nKey, String title) {
+		if(guardModalController(translatorCtrl)) return;
+
+		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), i18nKey, GradeSystemListController.class);
+		listenTo(translatorCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), translatorCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
 	private void doConfirmDelete(UserRequest ureq, GradeSystem gradeSystem) {
 		String title = translate("grade.system.delete.title");
 		String text = translate("grade.system.delete.text", GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
