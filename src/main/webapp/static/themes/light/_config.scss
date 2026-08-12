@@ -845,9 +845,10 @@ $o-curriculum-style-course-lifecycle-bg			: $o-curriculum-l2-lifecycle-bg !defau
 $o-curriculum-style-course-lifecycle-padding	: $o-curriculum-l2-lifecycle-padding !default;
 
 /* Curriculum management */
+$o-curriculum-title-font-size-medium			: 21px !default;
+$o-curriculum-title-font-size-small				: 18px !default;
 $o-curriculum-avatar-width-medium				: 120px !default;
-$o-curriculum-avatar-height-medium				: 75px !default;
-$o-curriculum-avatar-font-size-medium			: calc($o-curriculum-avatar-height-medium / 5) !default;
+$o-curriculum-avatar-font-size-medium			: 15px !default;
 $o-curriculum-avatar-font-size-large			: 18px !default;
 $o-curriculum-avatar-color						: #fff !default;
 $o-curriculum-avatar-bg-color					: $brand-primary !default;

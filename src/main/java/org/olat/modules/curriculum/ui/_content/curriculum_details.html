@@ -8,9 +8,12 @@
 			<div class="o_curriculum_ref">
 				<small class="text-muted">$r.escapeHtml($curriculumExternalRef)</small>
 			</div>
+			<div class="o_curriculum_type_dates">
+				<span class="o_curriculum_type"><i class="o_icon o_icon_curriculum"> </i> $r.translate("curriculum.title")</span>
+			</div>
 		</div>
 	</div>
-	<div class="o_title_cmds">
+	<div class="o_title_cmds o_curriculum_actions">
 	#if($r.available("more"))
 		<div class="o_curriculum_title_actions">$r.render("more")</div>
 	#end

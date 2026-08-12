@@ -60,13 +60,28 @@ fieldset.o_validation_result {
 
 .o_curriculum_title {
 	display: flex;
-	flex-wrap: nowrap;
+	flex-wrap: wrap;
 	align-items: start;
+	column-gap: 10px;
+	row-gap: 20px;
+	@media (min-width: $screen-md-min) {
+		flex-wrap: nowrap;
+	}
+	
+	// To align the actions to the title row.
+	// -15px below does lift up the title again.
+	// The actions gets a top margin only if not wrapped.
+	margin-top: 15px;
 
 	.o_curriculum_avatar_title_ref {
+		margin-top: -15px;
 		flex-grow: 1;
 		display: flex;
+		flex-wrap: wrap;
 		gap: 15px;
+		@media (min-width: $screen-xs-min) {
+			flex-wrap: nowrap;
+		}
 		
 		.o_curriculum_avatar ~ .o_curriculum_title_ref {
 			display: flex;
@@ -81,10 +96,15 @@ fieldset.o_validation_result {
 			flex-wrap: wrap;
 			align-items: center;
 			column-gap: 20px;
+			row-gap: 10px;
 			
 			h2 {
+				font-size: $o-curriculum-title-font-size-small;
 				padding: 0px;
 				margin: 0px;
+				@media (min-width: $screen-xs-min) {
+					font-size: $o-curriculum-title-font-size-medium;
+				}
 			}
 		}
 		
@@ -94,48 +114,69 @@ fieldset.o_validation_result {
 		
 		.o_curriculum_type_dates {
 			order: 3;
+			margin-top: 10px;
 			
 			display: flex;
-			gap: 15px;
+			flex-wrap: wrap;
+			column-gap: 15px;
+			row-gap: 5px;
 			flex-direction: row;
 		}
 	}
 	
 	.o_title_cmds .o_curriculum_title_actions {
-		position: relative;
+		display: flex;
+		gap: 5px;
+		.btn-group {
+			display: flex;
+		}
+	}
+	.o_curriculum_actions {
+		width: 100%;
+		@media (min-width: $screen-xs-min) {
+			width: unset;
+		}
 	}
 }
 
 .o_curriculum_avatar {
 	display: grid;
-	align-items: start;
-	justify-content: right;
 	grid-template-columns: 1fr;
+	align-items: center;
+	span {
+		grid-area: 1/1;
+	}
 	
 	color: $o-curriculum-avatar-color;
 	background-color: $o-curriculum-avatar-bg-color;
 	border-radius: $o-curriculum-avatar-border-radius;
 		
-	min-width: $o-curriculum-avatar-width-medium;
-	width: $o-curriculum-avatar-width-medium;
-	height: $o-curriculum-avatar-height-medium;
 	padding: 10px;
+	
+	width: 100%;
+	@media (min-width: $screen-xs-min) {
+		min-width: $o-curriculum-avatar-width-medium;
+		width: $o-curriculum-avatar-width-medium;
+		height: unset;
+	}
 
 	.o_curriculum_avatar_ref {
 		font-size: $o-curriculum-avatar-font-size-medium;
 		padding-left: 20px;
 		overflow: hidden;
-		height: 1.3em;
-		text-align: right;
 		word-break: break-all;
 		justify-self: end;
-		align-self: start;
+		@media (min-width: $screen-xs-min) {
+			align-self: start;
+		}
 	}
 	
 	.o_curriculum_avatar_icon {
 		font-size: $o-curriculum-avatar-font-size-large;
 		justify-self: start;
-		align-self: end;
+		@media (min-width: $screen-xs-min) {
+			align-self: end;
+		}
 	}
 }
 
