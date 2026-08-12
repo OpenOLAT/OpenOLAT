@@ -1552,9 +1552,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			certificate.setPrintPath(dir + certificatePrintFile.getName());
 		}
 		
-		if(dateFirstCertification != null) {
+		if(dateFirstCertification != null && certificate.isLast()) {
 			//not the first certification, reset the last of the others certificates
-			certificatesDao.removeLastFlag(identity, resource.getKey());
+			certificatesDao.removeLastFlag(identity, resource.getKey(), certificate);
 		}
 		
 		Identity doer = workUnit.getDoerKey() == null ? null : securityManager.loadIdentityByKey(workUnit.getDoerKey());

@@ -259,6 +259,18 @@ public class CertificatesDAO {
 				.executeUpdate();
 	}
 	
+	public void removeLastFlag(IdentityRef identity, Long resourceKey, Certificate currentLast) {
+		String query = """
+				update certificate cer set cer.last=false
+				where cer.identity.key=:identityKey and cer.olatResource.key=:resourceKey and cer.last=true and cer.key<>:currentLastKey""";
+		
+		dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("resourceKey", resourceKey)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("currentLastKey", currentLast.getKey())
+				.executeUpdate();
+	}
+	
 	public Certificate updateCertificate(Certificate certificate) {
 		return dbInstance.getCurrentEntityManager().merge(certificate);
 	}

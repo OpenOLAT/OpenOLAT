@@ -490,6 +490,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		VFSLeaf certificateLeaf = (VFSLeaf)certificateItem;
 		Assert.assertTrue(certificateLeaf.exists());
 		Assert.assertTrue(certificateLeaf.getSize() > 0l);
+		Assert.assertTrue(certificate.isLast());
 	}
 	
 	/**
