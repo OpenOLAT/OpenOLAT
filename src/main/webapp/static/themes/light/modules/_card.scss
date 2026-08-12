@@ -269,6 +269,62 @@
 	}
 }
 
+/* Fact sheet */
+.o_fact_sheet {
+	border: $o-fact-sheet-border;
+	border-radius: $o-fact-sheet-border-radius;
+	padding: $o-fact-sheet-padding;
+
+	.o_fact_sheet_title {
+		font-size: $o-fact-sheet-title-font-size;
+		font-weight: $o-fact-sheet-title-font-weight;
+		border-bottom: $o-fact-sheet-separator-border;
+		padding-bottom: 10px;
+		margin-bottom: 20px;
+	}
+
+	.o_facts {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax($o-fact-min-width, 1fr));
+		gap: $o-fact-sheet-gap;
+	}
+
+	.o_fact {
+		display: flex;
+		gap: 10px;
+	}
+
+	.o_fact_icon {
+		flex-shrink: 0;
+		width: $o-fact-icon-size;
+		height: $o-fact-icon-size;
+		border-radius: 50%;
+		background-color: $o-fact-icon-bg-color;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		.o_icon {
+			font-size: $o-fact-icon-font-size;
+			color: $o-fact-icon-color;
+		}
+	}
+
+	.o_fact_label {
+		font-size: 14px;
+		color: $text-muted;
+	}
+
+	.o_fact_value {
+		font-size: 18px;
+	}
+
+	.o_fact_sub_value {
+		font-size: 12px;
+		color: $text-muted;
+	}
+}
+
 
 /* Dashboard widgets */
 .o_dashboard_widget {

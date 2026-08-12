@@ -1868,6 +1868,20 @@ $o-widget-figure-desc-font-weight			: normal !default;
 $o-widget-figure-desc-color					: #2d2926 !default;
 $o-widgets-gap								: 10px !default;
 
+/* Fact sheet */
+$o-fact-sheet-border						: $o-repo-info-border !default;
+$o-fact-sheet-border-radius					: $o-repo-info-border-radius !default;
+$o-fact-sheet-separator-border				: $o-repo-info-separator-border !default;
+$o-fact-sheet-padding						: 20px !default;
+$o-fact-sheet-title-font-size				: 18px !default;
+$o-fact-sheet-title-font-weight				: bold !default;
+$o-fact-sheet-gap							: 20px !default;
+$o-fact-min-width							: 320px !default;
+$o-fact-icon-size							: 32px !default;
+$o-fact-icon-font-size						: 14px !default;
+$o-fact-icon-color							: $brand-primary !default;
+$o-fact-icon-bg-color						: rgb($brand-primary, 0.1) !default;
+
 /* Dashboard Widget */
 $o-dashboard-widget-padding						: 0 !default;
 $o-dashboard-widget-base-margin					: 15px !default;
