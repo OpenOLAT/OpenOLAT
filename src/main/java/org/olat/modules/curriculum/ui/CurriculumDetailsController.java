@@ -445,7 +445,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 						translate("delete"), curriculumToDelete.curriculum());
 				listenTo(deleteCurriculumCtrl);
 
-				String title = translate("delete.curriculum.title", StringHelper.escapeHtml(curriculum.getDisplayName()));
+				String title = translate("delete.curriculum.title");
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCurriculumCtrl.getInitialComponent(), true, title);
 				listenTo(cmc);
 				cmc.activate();

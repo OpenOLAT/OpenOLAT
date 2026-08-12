@@ -335,7 +335,7 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 			confirmDeleteConfigCtrl = new ConfirmDeleteConfigurationController(ureq, getWindowControl(), List.of(configuration));
 			listenTo(confirmDeleteConfigCtrl);
 			
-			String title = translate("confirm.delete.title", StringHelper.escapeHtml(row.getName()));
+			String title = translate("confirm.delete.title", row.getName());
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteConfigCtrl.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);

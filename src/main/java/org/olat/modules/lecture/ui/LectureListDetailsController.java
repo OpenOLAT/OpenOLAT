@@ -629,7 +629,7 @@ public class LectureListDetailsController extends FormBasicController {
 				if(groupRow.getCurriculumElement() != null) {
 					openI18nKey = "open.curriculum.element";
 				}
-				openLink = LinkFactory.createLink("open", openI18nKey, getTranslator(), mainVC, this, Link.LINK);
+				openLink = LinkFactory.createLink(null, "open", "open", openI18nKey, getTranslator(), mainVC, this, Link.LINK);
 				openLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
 				openLink.setUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath));
 				openLink.setNewWindow(true, false);

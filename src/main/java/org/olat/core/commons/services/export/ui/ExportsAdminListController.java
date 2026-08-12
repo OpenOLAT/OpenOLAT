@@ -60,7 +60,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -312,7 +311,7 @@ public class ExportsAdminListController extends FormBasicController {
 		confirmDeleteCtrl = new ConfirmDeleteExportController(ureq, getWindowControl(), row);
 		listenTo(confirmDeleteCtrl);
 		
-		String title = translate("confirm.delete.title", StringHelper.escapeHtml(row.getTitle()));
+		String title = translate("confirm.delete.title", row.getTitle());
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
@@ -339,7 +338,7 @@ public class ExportsAdminListController extends FormBasicController {
 		detailsCtrl = new ExportInfosController(ureq, getWindowControl(), row);
 		listenTo(detailsCtrl);
 		
-		String title = translate("details.title", StringHelper.escapeHtml(row.getTitle()));
+		String title = translate("details.title", row.getTitle());
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), detailsCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();

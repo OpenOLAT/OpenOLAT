@@ -501,7 +501,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		confirmResetCalendarDialog = new ConfirmCalendarResetController(ureq, getWindowControl(), row);
 		listenTo(confirmResetCalendarDialog);
 		
-		String title = translate("cal.confirm.reset.title", new String[] { StringHelper.escapeHtml(row.getDisplayName() )});
+		String title = translate("cal.confirm.reset.title", row.getDisplayName());
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmResetCalendarDialog.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
@@ -523,7 +523,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		confirmDeleteImportedToCalendarDialog = new ConfirmDeleteImportedToCalendarController(ureq, getWindowControl(), row);
 		listenTo(confirmDeleteImportedToCalendarDialog);
 		
-		String title = translate("cal.confirm.delete.imported.to.title", new String[] { StringHelper.escapeHtml(row.getDisplayName() )});
+		String title = translate("cal.confirm.delete.imported.to.title", row.getDisplayName());
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteImportedToCalendarDialog.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
