@@ -134,7 +134,7 @@ public class ReviewServiceTest extends OlatTestCase {
 		PositionRole positionRole = recruitingService.getRole(position, admin);
 		RecruitingSecurityCallback secCallback = new RecruitingSecurityCallbackImpl(adminRoles, CommitteeMembershipsStats.empty());
 		RecruitingPositionSecurityCallback positionSecCallback
-				= new RecruitingPositionSecurityCallbackImpl(secCallback, position, admin, adminRoles, positionRole);
+				= new RecruitingPositionSecurityCallbackImpl(secCallback, position, adminRoles, positionRole);
 		PositionStatistics stats = reviewService.getReviewStatistics(position, admin, positionSecCallback);
 		
 		ApplicationStatistics appStats1 = stats.getApplicationStatistics(app1);

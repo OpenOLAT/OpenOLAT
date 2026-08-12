@@ -505,7 +505,7 @@ public class PositionListController extends FormBasicController implements Toole
 		} else {
 			PositionRole positionRole = recruitingService.getRole(fullPosition, getIdentity());
 			RecruitingPositionSecurityCallback positionSecCallback
-				= new RecruitingPositionSecurityCallbackImpl(secCallback, fullPosition, getIdentity(), ureq.getUserSession().getRoles(), positionRole);
+				= new RecruitingPositionSecurityCallbackImpl(secCallback, fullPosition, ureq.getUserSession().getRoles(), positionRole);
 			confirmDeleteController = new PositionConfirmDeleteController(ureq, getWindowControl(), fullPosition, positionSecCallback);
 			listenTo(confirmDeleteController);
 
@@ -543,7 +543,7 @@ public class PositionListController extends FormBasicController implements Toole
 		Position newPosition = recruitingService.createPosition(defaultOrganisation);
 		PositionRole positionRole = recruitingService.getRole(newPosition, getIdentity());
 		RecruitingPositionSecurityCallback positionSecCallback
-			= new RecruitingPositionSecurityCallbackImpl(secCallback, newPosition, getIdentity(), ureq.getUserSession().getRoles(), positionRole);
+			= new RecruitingPositionSecurityCallbackImpl(secCallback, newPosition, ureq.getUserSession().getRoles(), positionRole);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Edit"), null);
 		addPositionController = new PositionEditController(ureq, swControl, stackPanel, newPosition, true, positionSecCallback);
 		listenTo(addPositionController);
@@ -580,7 +580,7 @@ public class PositionListController extends FormBasicController implements Toole
 			}
 		}
 		
-		if(selectedPositions == null || selectedPositions.isEmpty()) {
+		if(selectedPositions.isEmpty()) {
 			showWarning("warning.atleast.reporting.position");
 			return;
 		}

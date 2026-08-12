@@ -22,7 +22,6 @@ package org.olat.modules.selectus.ui;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Roles;
@@ -60,7 +59,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 	private final RecruitingModule recruitingModule;
 	
 	public RecruitingPositionSecurityCallbackImpl(RecruitingSecurityCallback recruitingSecCallback,
-			Position position, IdentityRef identity, Roles roles, PositionRole positionRole) {
+			Position position, Roles roles, PositionRole positionRole) {
 		this.recruitingSecCallback = recruitingSecCallback;
 		this.positionRole = positionRole;
 		this.position = position;
@@ -68,6 +67,7 @@ public class RecruitingPositionSecurityCallbackImpl implements RecruitingPositio
 		recruitingModule = CoreSpringFactory.getImpl(RecruitingModule.class);
 
 		selectusManager = (position.getOrganisation() != null && roles.hasRole(position.getOrganisation(), OrganisationRoles.selectusmanager))
+				|| (position.getOrganisation() == null && roles.hasRole(OrganisationRoles.selectusmanager))
 				|| position.getKey() == null;
 	}
 	

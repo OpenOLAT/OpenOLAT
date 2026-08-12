@@ -45,7 +45,7 @@ public class PositionEditHelper {
 			locales = new Locale[] { recruitingModule.getReportingLocale() };
 		} else {
 			locales = recruitingModule.getPositionLocales();
-			if(position != null && StringHelper.containsNonWhitespace(position.getAvailableLanguages())) {
+			if(StringHelper.containsNonWhitespace(position.getAvailableLanguages())) {
 				String[] langArr = position.getAvailableLanguagesArray();
 				for(Locale locale:locales) {
 					for(String lang:langArr) {

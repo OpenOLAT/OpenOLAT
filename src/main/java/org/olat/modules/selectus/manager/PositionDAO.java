@@ -772,14 +772,16 @@ public class PositionDAO {
 				}
 				sb.append(")");
 			} else if(filters.isOrganisation()) {
-				sb.append(" and ");
+				sb.append(" and (");
 				appendPositionManagerPermissionOnOrganisation(sb, filters);
+				sb.append(")");
 			} else {
 				return false;
 			}
 		} else if(filters.isOrganisation()) {
-			sb.append(" and ");
+			sb.append(" and (");
 			appendPositionManagerPermissionOnOrganisation(sb, filters);
+			sb.append(")");
 		} else if(filters.getFiltered().size() > 0) {
 			sb.append(" and position.status in (:status)");
 		}
@@ -795,7 +797,9 @@ public class PositionDAO {
 	
 	private void appendPositionManagerPermissionOnOrganisation(QueryBuilder sb, PositionStatusFilters filters) {
 		if(filters.isOrganisation()) {
-			sb.append(" exists (select orgmember.key from bgroupmember as orgmember")
+			sb.append(" orga.key is null")
+			  .append(" or ")
+			  .append(" exists (select orgmember.key from bgroupmember as orgmember")
 			  .append("  where orgmember.identity.key=:identityKey and orga.group.key=orgmember.group.key")
 			  .append(" and orgmember.role").in(OrganisationRoles.selectusmanager);
 			if(filters.getFiltered().size() > 0) {

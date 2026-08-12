@@ -281,15 +281,17 @@ public class RecruitingMainController extends BasicController implements Activat
 		// Reduce the roles to the ones of the position's organisation
 		Roles roles = ureq.getUserSession().getRoles();
 		Organisation organisation = position.getOrganisation();
-		RolesByOrganisation rolesOfPosition = roles.getRoles(organisation);
-		if(rolesOfPosition == null) {
-			roles = roles.isGuestOnly() ? Roles.guestRoles() : Roles.userRoles();
-		} else {
-			roles = Roles.valueOf(List.of(rolesOfPosition), false);
+		if(organisation != null) {
+			RolesByOrganisation rolesOfPosition = roles.getRoles(organisation);
+			if(rolesOfPosition == null) {
+				roles = roles.isGuestOnly() ? Roles.guestRoles() : Roles.userRoles();
+			} else {
+				roles = Roles.valueOf(List.of(rolesOfPosition), false);
+			}
 		}
 		RecruitingSecurityCallback reduceSecCallback = new RecruitingSecurityCallbackImpl(roles, CommitteeMembershipsStats.empty());
 		RecruitingPositionSecurityCallback positionSecCallback
-			= new RecruitingPositionSecurityCallbackImpl(reduceSecCallback, position, getIdentity(), roles, positionRole);
+			= new RecruitingPositionSecurityCallbackImpl(reduceSecCallback, position, roles, positionRole);
 		
 		OLATResourceable positionRes = OresHelper.createOLATResourceableInstance(Position.class, position.getKey());
 		WindowControl swControl = addToHistory(ureq, positionRes, null);
@@ -325,6 +327,9 @@ public class RecruitingMainController extends BasicController implements Activat
 		Roles roles = ureq.getUserSession().getRoles();
 		if(position.getOrganisation() != null) {
 			return roles.hasSomeRoles(position.getOrganisation(), OrganisationRoles.selectusmanager);
+		}
+		if(position.getOrganisation() == null) {
+			return roles.hasRole(OrganisationRoles.selectusmanager);
 		}
 		return false;
 	}
