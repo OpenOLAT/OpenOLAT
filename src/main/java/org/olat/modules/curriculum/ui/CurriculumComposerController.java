@@ -1225,7 +1225,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			moveElementCtrl = new MoveCurriculumElementController(ureq, getWindowControl(), element, curriculum, secCallback);
 			listenTo(moveElementCtrl);
 			
-			String title = translate("move.element.title", StringHelper.escapeHtml(row.getDisplayName()));
+			String title = translate("move.element.title", row.getDisplayName());
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), moveElementCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
