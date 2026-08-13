@@ -309,7 +309,10 @@ public class LogFormatter {
 
 				if (action.startsWith("Deadline extension for assignment of")) {
 					// Handle deadline extension special case
-					return handleDeadlineExtension(action, details);
+					return handleAssignmentDeadlineExtension(action, details);
+				} else if (action.startsWith("Deadline extension for revision of")) {
+					// Handle deadline extension special case
+					return handleRevisionDeadlineExtension(action, details);
 				} else if (action.startsWith("Back to submission of")) {
 					// Handle back to submission special case
 					return handleBackToSubmission(action, details);
@@ -332,13 +335,21 @@ public class LogFormatter {
 	 * @param details the initial details extracted
 	 * @return a ParsedAction object with normalized action and details
 	 */
-	private static ParsedAction handleDeadlineExtension(String action, String details) {
+	private static ParsedAction handleAssignmentDeadlineExtension(String action, String details) {
+		return handleDeadlineExtension(action, "Deadline extension for assignment", details);
+	}
+	
+	private static ParsedAction handleRevisionDeadlineExtension(String action, String details) {
+		return handleDeadlineExtension(action, "Deadline extension for revision of", details);
+	}
+
+	private static ParsedAction handleDeadlineExtension(String action, String actionNormalized, String details) {
 		int ofIdx = action.lastIndexOf("of");
 		String userId = "";
 		if (ofIdx > 0 && ofIdx + 3 < action.length()) {
 			userId = action.substring(ofIdx + 3).trim();
 		}
-		action = "Deadline extension for assignment"; // normalize
+		action = actionNormalized; // normalize
 
 		// Keep the real 'details' for date parsing
 		String[] dateParts = details.replace("Standard date", "").trim().split(" to ");
@@ -652,5 +663,8 @@ public class LogFormatter {
 
 	// Custom unchecked exception to signal unexpected end-of-file.
 	private static class UnexpectedEOFException extends RuntimeException {
+
+		private static final long serialVersionUID = 2024138957548977798L;
+		
 	}
 }

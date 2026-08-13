@@ -56,9 +56,14 @@ import org.olat.user.UserPortraitService;
 public class TimelineBuilder {
 
 	private TimelineBuilder() {
+		//
+	}
+	
+	public static List<TimelineModel.TimelineYear> buildLogEntriesTimeline(List<LogEntry> logEntries, Locale locale) {
+		return buildLogEntriesTimeline(logEntries, (id) -> id, locale);
 	}
 
-	public static List<TimelineModel.TimelineYear> buildLogEntriesTimeline(List<LogEntry> logEntries, Locale locale) {
+	public static List<TimelineModel.TimelineYear> buildLogEntriesTimeline(List<LogEntry> logEntries, LogIdProvider userProvider, Locale locale) {
 		if (logEntries.isEmpty()) return Collections.emptyList();
 
 		Formatter formatter = Formatter.getInstance(locale);
@@ -79,7 +84,7 @@ public class TimelineBuilder {
 			yearDayMap
 					.computeIfAbsent(year, y -> new TreeMap<>())
 					.computeIfAbsent(localDate, d -> new ArrayList<>())
-					.add(new LogEntryTimelineEntry(logEntry, locale, userIdToProfileUser.get(logEntry.userId())));
+					.add(new LogEntryTimelineEntry(logEntry, locale, userIdToProfileUser.get(logEntry.userId()), userProvider));
 		}
 
 		for (var yearEntry : yearDayMap.entrySet()) {

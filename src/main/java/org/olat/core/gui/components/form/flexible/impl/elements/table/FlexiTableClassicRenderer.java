@@ -68,8 +68,9 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				renderSelectAll(target, ftE, translator);
 			} else if(ftE.getSelectionMode() == SelectionMode.multi) {
 				// 1b) Select all feature disabled
-				target.append("<div title=\"").append(translator.translate("form.checksinge")).append("\">")
-					.append("<i class='o_icon o_icon-lg o_icon_check_disabled text-muted' aria-hidden='true'> </i></div>");
+				target.append("<div title=\"").append(translator.translate("form.checkmulti")).append("\">")
+					.append("<i class='o_icon o_icon-lg o_icon_check_disabled text-muted' aria-hidden='true'> </i>")
+					.append("<span class='sr-only'>").append(translator.translate("form.checkmulti")).append("</span></div>");
 			} else {
 				// single selection, no icons
 				target.append(" ");

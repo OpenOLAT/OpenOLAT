@@ -277,6 +277,8 @@ public interface GTAManager {
 	
 	
 	public Membership getMembership(IdentityRef identity, RepositoryEntryRef entry, GTACourseNode cNode);
+
+	public Task getTaskById(Long key);
 	
 	public Task getTask(TaskRef task);
 	

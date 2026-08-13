@@ -127,7 +127,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 				showInfo("configuration.management.package.import.success", importLangKeys.toString());
 				
 			} else {
-				// In language adaption mode: import is copied to user managed i18n package space in olatdata
+				// In language adaptation mode: import is copied to user managed i18n package space in olatdata
 				if (alreadyInstalledLangs.size() == importLangKeys.size()) {
 					showError("configuration.management.package.import.failure.installed");
 					return;
@@ -170,7 +170,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 				importKeys.setKeysAndValues(langKeys, langKeys);
 				importKeys.selectAll();
 				importKeys.setVisible(true);
-				// In language adaption mode the import is done as a package - can't deselect anything
+				// In language adaptation mode the import is done as a package - can't deselect anything
 				importKeys.setEnabled(false);
 			}			
 		}

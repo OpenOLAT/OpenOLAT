@@ -42,6 +42,7 @@ import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.User;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -863,7 +864,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return assignedTask;
 	}
 	
-	protected void nodeLog(UserRequest ureq, @SuppressWarnings("unused") Task assignedTask) {
+	protected void nodeLog(UserRequest ureq, Task assignedTask) {
 		String logContent = "";
 		List<LogEntry> logEntries = new ArrayList<>();
 		LogFormatter logFormatter = new LogFormatter();
@@ -880,13 +881,14 @@ public abstract class GTAAbstractController extends BasicController implements G
 				logEntries = logFormatter.parseLog(userLog).validEntries();
 			}
 		}
-		doShowLogs(ureq, logEntries, logContent, mainVC);
+		doShowLogs(ureq, logEntries, assignedTask, logContent, mainVC);
 	}
 
-	protected void doShowLogs(UserRequest ureq, List<LogEntry> logEntries,
+	protected void doShowLogs(UserRequest ureq, List<LogEntry> logEntries, final Task assignedTask,
 							  String logContent, VelocityContainer contentVC) {
 		if (withGrading && !logContent.isBlank() && logEntries != null && !logEntries.isEmpty()) {
-			List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale());
+			List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder
+					.buildLogEntriesTimeline(logEntries, (id) -> toLogUserId(id, assignedTask), getLocale());
 			
 			timelineCtrl = new TimelineController(
 					ureq, getWindowControl(), getTranslator(), logTimeline, logTimeline, false, true);
@@ -895,6 +897,19 @@ public abstract class GTAAbstractController extends BasicController implements G
 		} else {
 			contentVC.remove(logContent);
 		}
+	}
+	
+	private String toLogUserId(String id, Task assignedTask) {
+		if(assignedTask != null && assignedTask.getKey() != null && assignedTask.getKey().toString().equals(id)) {
+			if(assignedTask.getIdentity() != null) {
+				User user = assignedTask.getIdentity().getUser();
+				return user.getFirstName() + " " + user.getLastName();
+			}
+			if(assignedTask.getBusinessGroup() != null) {
+				return assignedTask.getBusinessGroup().getName();
+			}
+		}
+		return id;
 	}
 	
 	public static final TaskRevision getTaskRevision(List<TaskRevision> revisionList, TaskProcess status, int revisionLoop) {
