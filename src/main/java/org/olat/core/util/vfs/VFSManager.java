@@ -447,6 +447,9 @@ public class VFSManager {
 		if (vfsItem instanceof VFSContainer) {
 			// VFSContainer
 			if (vfsItem instanceof LocalFolderImpl localFolder) {
+				if("/".equals(localFolder.getRelPath())) {
+					return 0l;// Ignore the bcroot in calculation
+				}
 				if (VFSStatus.YES == localFolder.canDescendants()) {
 					return CoreSpringFactory.getImpl(VFSRepositoryService.class).getDescendantsSize(localFolder.getMetaInfo(), Boolean.FALSE, null) / 1024l;
 				}

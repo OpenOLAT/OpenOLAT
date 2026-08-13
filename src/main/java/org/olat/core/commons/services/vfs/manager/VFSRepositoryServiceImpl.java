@@ -1245,7 +1245,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			if(thumbnail == null
 					&& !Boolean.TRUE.equals(metadata.getCannotGenerateThumbnails())) {
 				thumbnailLeaf = generateThumbnail(file, metadata, fill, maxWidth, maxHeight);
-			} else {
+			} else if(thumbnail != null) {
 				VFSItem item = parentContainer.resolve(thumbnail.getFilename());
 				if(item instanceof VFSLeaf leaf) {
 					thumbnailLeaf = leaf;
