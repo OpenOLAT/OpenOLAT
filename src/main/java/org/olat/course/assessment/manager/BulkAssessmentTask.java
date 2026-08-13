@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.NavigableSet;
@@ -92,6 +93,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.ta.ReturnboxController;
@@ -100,6 +102,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
@@ -109,7 +112,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
-import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 
@@ -196,7 +198,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_BULK, getClass(), infos);
 		} catch (Exception e) {
 			log.error("", e);
-			feedbacks.add(new BulkAssessmentFeedback("", "bulk.assessment.error"));
+			feedbacks.add(new BulkAssessmentFeedback("bulk.assessment.error"));
 			throw e;
 		} finally {
 			cleanupUnzip();
@@ -214,7 +216,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			cleanup();
 		} catch (Exception e) {
 			log.error("", e);
-			feedbacks.add(new BulkAssessmentFeedback("", "bulk.assessment.error"));
+			feedbacks.add(new BulkAssessmentFeedback("bulk.assessment.error"));
 		} finally {
 			cleanupUnzip();
 		}
@@ -286,19 +288,15 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 	}
 	
 	public static String renderFeedback(List<BulkAssessmentFeedback> feedbacks, Translator translator) {
-		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
-		
 		StringBuilder sb = new StringBuilder();
 		for(BulkAssessmentFeedback feedback:feedbacks) {
 			String errorKey = feedback.getErrorKey();
 			String msg = translator.translate(errorKey);
-			String assessedName;
-			if(feedback.getAssessedIdentity() != null) {
-				assessedName = userManager.getUserDisplayName(feedback.getAssessedIdentity());
-			} else {
-				assessedName = feedback.getAssessedId();
+			if(StringHelper.containsNonWhitespace(feedback.getAssessedId())) {
+				String assessedName = feedback.getAssessedId();
+				sb.append(assessedName).append(": ");
 			}
-			sb.append(assessedName).append(": ").append(msg).append("\n");
+			sb.append(msg).append("\n");
 		}
 		return sb.toString();
 	}
@@ -379,6 +377,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		
 		int count = 0;
 		List<BulkAssessmentRow> rows = datas.getRows();
+		Set<org.olat.course.nodes.gta.Task> steppedTask = new HashSet<>();
 		for(BulkAssessmentRow row:rows) {
 			Long identityKey = row.getIdentityKey();
 			if(identityKey == null) {
@@ -484,10 +483,10 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 				GTACourseNode gtaNode = (GTACourseNode)courseNode;
 				if((hasScore && score != null) || (hasPassed && passed != null)) {
 					//pushed to graded
-					updateTasksState(gtaNode, coachIdentity, uce, TaskProcess.grading, acceptSubmission);
+					updateTasksState(gtaNode, coachIdentity, uce, TaskProcess.grading, acceptSubmission, steppedTask);
 				} else if(hasReturnFiles) {
 					//push to revised
-					updateTasksState(gtaNode, coachIdentity, uce, TaskProcess.correction, acceptSubmission);
+					updateTasksState(gtaNode, coachIdentity, uce, TaskProcess.correction, acceptSubmission, steppedTask);
 				}
 			}
 			
@@ -533,36 +532,62 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		return Optional.empty();
 	}
 	
-	private void updateTasksState(GTACourseNode courseNode, Identity coachIdentity, UserCourseEnvironment uce, TaskProcess status, boolean acceptSubmission) {
+	private void updateTasksState(GTACourseNode courseNode, Identity coachIdentity, UserCourseEnvironment uce,
+			TaskProcess status, boolean acceptSubmission, Set<org.olat.course.nodes.gta.Task> steppedTask) {
 		final GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		Identity identity = uce.getIdentityEnvironment().getIdentity();
 		RepositoryEntry entry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		org.olat.course.nodes.gta.Task gtaTask;
 		TaskList taskList = gtaManager.getTaskList(entry, courseNode);
-		if(taskList == null) {
-			taskList = gtaManager.createIfNotExists(entry, courseNode);
-			gtaTask = gtaManager.createTask(null, taskList, status, null, identity, courseNode);
+		if(GTAType.group.name().equals(courseNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			List<BusinessGroup> businessGroups = gtaManager.getParticipatingBusinessGroups(identity, courseNode);
+			if(businessGroups.size() == 1) {
+				BusinessGroup businessGroup = businessGroups.get(0);
+				if(taskList == null) {
+					taskList = gtaManager.createIfNotExists(entry, courseNode);
+					gtaTask = gtaManager.createTask(null, taskList, status, businessGroup, null, courseNode);
+				} else {
+					gtaTask = gtaManager.getTask(businessGroup, taskList);
+					if(gtaTask == null) {
+						gtaTask = gtaManager.createTask(null, taskList, status, businessGroup, null, courseNode);
+					}
+				}
+			} else {
+				//TODO gta error
+				return;
+			}
 		} else {
-			gtaTask = gtaManager.getTask(identity, taskList);
-			if(gtaTask == null) {
+			if(taskList == null) {
+				taskList = gtaManager.createIfNotExists(entry, courseNode);
 				gtaTask = gtaManager.createTask(null, taskList, status, null, identity, courseNode);
+			} else {
+				gtaTask = gtaManager.getTask(identity, taskList);
+				if(gtaTask == null) {
+					gtaTask = gtaManager.createTask(null, taskList, status, null, identity, courseNode);
+				}
 			}
 		}
 		
 		if(gtaTask == null) {
 			log.error("GTA Task is null by bulk assessment for: {} in entry:{} {}", identity, entry, courseNode.getIdent());
 		} else if(status == TaskProcess.correction) {
-			int iteration = gtaTask.getRevisionLoop() <= 0 ? 1 : gtaTask.getRevisionLoop() + 1;
-			gtaManager.updateTask(gtaTask, status, iteration, courseNode, false, coachIdentity, Role.auto);
-		} else if(status == TaskProcess.grading && acceptSubmission) {
-			if(gtaTask.getTaskStatus() == TaskProcess.review
-					|| gtaTask.getTaskStatus() == TaskProcess.correction
-					|| gtaTask.getTaskStatus() == TaskProcess.revision) {
-				gtaTask = gtaManager.reviewedTask(gtaTask, courseNode, coachIdentity, Role.auto);
+			if(!steppedTask.contains(gtaTask)) {
+				int iteration = gtaTask.getRevisionLoop() <= 0 ? 1 : gtaTask.getRevisionLoop() + 1;
+				gtaTask = gtaManager.updateTask(gtaTask, status, iteration, courseNode, false, coachIdentity, Role.auto);
+				steppedTask.add(gtaTask);
 			}
-			TaskProcess nextStep = gtaManager.nextStep(status, courseNode);
-			gtaManager.updateTask(gtaTask, nextStep, courseNode, false, coachIdentity, Role.auto);
+		} else if(status == TaskProcess.grading && acceptSubmission) {
+			if(!steppedTask.contains(gtaTask)) {
+				if(gtaTask.getTaskStatus() == TaskProcess.review
+						|| gtaTask.getTaskStatus() == TaskProcess.correction
+						|| gtaTask.getTaskStatus() == TaskProcess.revision) {
+					gtaTask = gtaManager.reviewedTask(gtaTask, courseNode, coachIdentity, Role.auto);
+				}
+				TaskProcess nextStep = gtaManager.nextStep(status, courseNode);
+				gtaTask = gtaManager.updateTask(gtaTask, nextStep, courseNode, false, coachIdentity, Role.auto);
+				steppedTask.add(gtaTask);
+			}
 		}
 	}
 	
@@ -601,10 +626,17 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 	 */
 	private VFSContainer getReturnBox(UserCourseEnvironment uce, CourseNode courseNode, Identity identity) {
 		VFSContainer returnContainer = null;
-		if(courseNode instanceof GTACourseNode) {
+		if(courseNode instanceof GTACourseNode gtaNode) {
 			final GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 			CourseEnvironment courseEnv = uce.getCourseEnvironment();
-			returnContainer = gtaManager.getCorrectionContainer(courseEnv, (GTACourseNode)courseNode, identity);
+			if(GTAType.group.name().equals(courseNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+				List<BusinessGroup> businessGroups = gtaManager.getParticipatingBusinessGroups(identity, gtaNode);
+				if(businessGroups.size() == 1) {
+					returnContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, businessGroups.get(0));
+				}
+			} else {
+				returnContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, identity);
+			}
 		} else {
 			String returnPath = ReturnboxController.getReturnboxPathRelToFolderRoot(uce.getCourseEnvironment(), courseNode);
 			VFSContainer rootFolder = VFSManager.olatRootContainer(returnPath, null);

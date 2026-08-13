@@ -19,8 +19,6 @@
  */
 package org.olat.course.assessment.model;
 
-import org.olat.core.id.Identity;
-
 /**
  * 
  * Initial date: 22.11.2013<br>
@@ -29,26 +27,20 @@ import org.olat.core.id.Identity;
  */
 public class BulkAssessmentFeedback {
 	
-	private String errorKey;
+	private final String errorKey;
 	private String assessedId;
-	private Identity assessedIdentity;
 	
-	public BulkAssessmentFeedback(String errorKey, String assessedId) {
+	public BulkAssessmentFeedback(String errorKey) {
 		this.errorKey = errorKey;
-		this.assessedId = assessedId;
 	}
 	
-	public BulkAssessmentFeedback(String errorKey, Identity assessedIdentity) {
-		this.errorKey = errorKey;
-		this.assessedIdentity = assessedIdentity;
+	public BulkAssessmentFeedback(String errorKey, String assessedId) {
+		this(errorKey);
+		this.assessedId = assessedId;
 	}
 	
 	public String getErrorKey() {
 		return errorKey;
-	}
-	
-	public void setErrorKey(String errorKey) {
-		this.errorKey = errorKey;
 	}
 	
 	public String getAssessedId() {
@@ -57,13 +49,5 @@ public class BulkAssessmentFeedback {
 	
 	public void setAssessedId(String assessedId) {
 		this.assessedId = assessedId;
-	}
-	
-	public Identity getAssessedIdentity() {
-		return assessedIdentity;
-	}
-	
-	public void setAssessedIdentity(Identity assessedIdentity) {
-		this.assessedIdentity = assessedIdentity;
 	}
 }
