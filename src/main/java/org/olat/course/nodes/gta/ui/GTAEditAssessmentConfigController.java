@@ -663,14 +663,14 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		maxValEl.clearError();
 		evaluationScoreScalingEl.clearError();
 		if (scoreGranted.isOn()) {
-			if (!minValEl.getValue().matches(scoreRex)) {
+			if (!isFloat(minValEl.getValue())) {
 				minValEl.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
 			}
-			if (!maxValEl.getValue().matches(scoreRex)) {
+			if (!isFloat(maxValEl.getValue())) {
 				maxValEl.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
-			} else if (Float.parseFloat(minValEl.getValue()) > Float.parseFloat(maxValEl.getValue())) {
+			} else if (isFloat(minValEl.getValue()) && Float.parseFloat(minValEl.getValue()) > Float.parseFloat(maxValEl.getValue())) {
 				maxValEl.setErrorKey("form.error.minGreaterThanMax");
 				allOk &= false;
 			}
@@ -721,7 +721,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 						Float.parseFloat(value);
 					} catch(Exception e) {
 						el.setErrorKey("form.error.wrongFloat");
-						allOk = false;
+						allOk &= false;
 					}
 				} else {
 					try {
@@ -737,6 +737,18 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		}
 		
 		return allOk;
+	}
+	
+	private boolean isFloat(String val) {
+		if (StringHelper.containsNonWhitespace(val)) {
+			try {
+				Float.parseFloat(val);
+				return true;
+			} catch (NumberFormatException e) {
+				// 
+			}
+		}
+		return false;
 	}
 	
 	@Override
