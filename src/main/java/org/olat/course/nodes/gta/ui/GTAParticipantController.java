@@ -882,7 +882,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				logContent = "userLog";
 				if(StringHelper.containsNonWhitespace(userLog)) {
 					logEntries = logFormatter.parseLog(userLog).validEntries();
-					super.doShowLogs(ureq, logEntries, logContent, mainVC);
+					super.doShowLogs(ureq, logEntries, assignedTask, logContent, mainVC);
 				}
 			} else {
 				super.nodeLog(ureq, assignedTask);

@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.timeline.TimelineEntry;
+import org.olat.core.gui.components.timeline.LogIdProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -43,13 +44,15 @@ public class LogEntryTimelineEntry implements TimelineEntry {
 	private final LogEntry logEntry;
 	private final Formatter formatter;
 	private final Translator translator;
+	private final LogIdProvider userIdProvider;
 	private final UserPortraitComponent userPortraitComp;
 
-	public LogEntryTimelineEntry(LogEntry logEntry, Locale locale, UserPortraitComponent userPortraitComp) {
+	public LogEntryTimelineEntry(LogEntry logEntry, Locale locale, UserPortraitComponent userPortraitComp, LogIdProvider userIdProvider) {
 		this.logEntry = logEntry;
 		this.formatter = Formatter.getInstance(locale);
 		this.translator = Util.createPackageTranslator(LogEntryTimelineEntry.class, locale);
 		this.userPortraitComp = userPortraitComp;
+		this.userIdProvider = userIdProvider;
 	}
 
 	@Override
@@ -126,38 +129,48 @@ public class LogEntryTimelineEntry implements TimelineEntry {
 			return details.replace("\n", "</br>");
 		}
 
-		// Handle "Deadline extension for assignment" specially
-		if (action.equalsIgnoreCase("Deadline extension for assignment")) {
-			Map<String, String> detailMap = Arrays.stream(details.split(";"))
-					.map(kv -> kv.split("="))
-					.filter(pair -> pair.length == 2)
-					.collect(Collectors.toMap(pair -> pair[0], pair -> pair[1]));
-
-			String userId = detailMap.getOrDefault("userId", "-");
-			String fromDate = detailMap.getOrDefault("from", "-");
-			String toDate = detailMap.getOrDefault("to", "-");
-
-			return translator.translate("log.action.deadline.extension.details", userId, fromDate, toDate);
-		}
-
 		// Handle grouped entries
 		String[] detailParts = details.split("\n");
-		// Only translate boolean strings if present (found in passed set to)
-		if (details.toLowerCase().contains("true") || details.toLowerCase().contains("false")) {
+		
+		// Handle "Deadline extension for assignment" specially
+		if (action.contains("Deadline extension for assignment")
+				|| action.contains("Deadline extension for revision of")) {
 			detailParts = Arrays.stream(detailParts)
-					.map(part -> {
-						String trimmed = part.trim().toLowerCase();
-						if (trimmed.equals("true")) {
-							return translator.translate("log.action.passed.true");
-						} else if (trimmed.equals("false")) {
-							return translator.translate("log.action.passed.false");
-						}
-						return part;
-					})
+					.map(part -> deadlineExtension(part))
+					.toArray(String[]::new);
+		}
+		// Only translate boolean strings if present (found in passed set to)
+		else if (details.toLowerCase().contains("true") || details.toLowerCase().contains("false")) {
+			detailParts = Arrays.stream(detailParts)
+					.map(part -> detailPassed(part))
 					.toArray(String[]::new);
 		}
 
 		return String.join("\n", detailParts);
+	}
+	
+	private String detailPassed(String part) {
+		String trimmed = part.trim().toLowerCase();
+		if (trimmed.equals("true")) {
+			return translator.translate("log.action.passed.true");
+		} else if (trimmed.equals("false")) {
+			return translator.translate("log.action.passed.false");
+		}
+		return part;
+	}
+	
+	private String deadlineExtension(String part) {
+		Map<String, String> detailMap = Arrays.stream(part.split(";"))
+				.map(kv -> kv.split("="))
+				.filter(pair -> pair.length == 2)
+				.collect(Collectors.toMap(pair -> pair[0], pair -> pair[1], (u, v) -> u));
+
+		String userId = detailMap.getOrDefault("userId", "-");
+		String user = userIdProvider == null ? userId : userIdProvider.toUser(userId);
+		String fromDate = detailMap.getOrDefault("from", "-");
+		String toDate = detailMap.getOrDefault("to", "-");
+	
+		return translator.translate("log.action.deadline.extension.details", user, fromDate, toDate);
 	}
 }
 
