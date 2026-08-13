@@ -85,7 +85,7 @@ public class ImportCalendarJob extends JobWithDB {
 			String id = importedToCalendar.getToCalendarId();
 			String importUrl = importedToCalendar.getUrl();
 			if(check || importToCalendarManager.check(importedToCalendar)) {
-				try (CloseableHttpClient client = httpClientService.createHttpClient();
+				try (CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
 						CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
 						InputStream in = response.getEntity().getContent()) {
 					Kalendar cal = calendarManager.getCalendar(type, id);

@@ -27,6 +27,7 @@ import org.olat.core.commons.services.ai.spi.generic.GenericAiSPI;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.modules.taxonomy.matching.TaxonomyMatchingModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AiModule extends AbstractSpringModule {
+	
+	public static final ProtectionProfile PROTECTION_PROFILE = ProtectionProfile.CONFIGURED;
+	
 	// Feature config property keys
 	private static final String AI_MC_GENERATOR_ENABLED = "ai.feature.mc-question-generator.enabled";
 	private static final String AI_MC_GENERATOR_SPI = "ai.feature.mc-question-generator.spi";

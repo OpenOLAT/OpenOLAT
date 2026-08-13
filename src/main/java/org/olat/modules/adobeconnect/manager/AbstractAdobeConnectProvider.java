@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.AdobeConnectCourseNode;
@@ -73,6 +74,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 	private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat(DATE_FORMAT);
 	private static final String DATE_ISO_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 	private static final SimpleDateFormat DATE_ISO_FORMATTER = new SimpleDateFormat(DATE_ISO_FORMAT);
+	protected static final ProtectionProfile PROTECTION_PROFILE = ProtectionProfile.CONFIGURED;
 
 	private static final String SHARED_TEMPLATES_FOLDER = "shared-meeting-templates";
 	private static final String MY_TEMPLATES_FOLDER = "my-meeting-templates";
@@ -223,7 +225,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		boolean ok = false;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode == 200 || statusCode == 201) {
@@ -298,7 +300,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		boolean ok = false;
 		HttpGet get = createAdminMethod(builder, error);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode >= 200 && statusCode < 400) {
@@ -333,7 +335,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		boolean ok = false;
 		HttpGet get = createAdminMethod(builder, error);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode >= 200 && statusCode < 400) {
@@ -367,7 +369,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		boolean ok = false;
 		HttpGet get = createAdminMethod(builder, error);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode >= 200 && statusCode < 400) {
@@ -400,7 +402,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		boolean ok = false;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode >= 200 && statusCode < 400) {
@@ -464,7 +466,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		List<AdobeConnectSco> shortCuts = null;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode == 200) {
@@ -493,7 +495,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		AdobeConnectPrincipal user = null;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode == 200) {
@@ -565,7 +567,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 
 		BreezeSession session = null;
 		HttpGet getInfo = new HttpGet(uric);
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 			CloseableHttpResponse response = httpClient.execute(getInfo)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200) {
@@ -594,7 +596,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 			.build();
 		
 		HttpGet getLogin = new HttpGet(uri);
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 			CloseableHttpResponse response = httpClient.execute(getLogin)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200) {
@@ -617,7 +619,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		List<AdobeConnectSco> scos = null;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode == 200 || statusCode == 201) {
@@ -636,7 +638,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		List<AdobeConnectPrincipal> users = null;
 		HttpGet get = createAdminMethod(builder, errors);
 		if(get != null) {
-			try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 					CloseableHttpResponse response = httpClient.execute(get)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if(statusCode == 200 || statusCode == 201) {

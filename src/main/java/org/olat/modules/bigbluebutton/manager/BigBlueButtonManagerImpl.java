@@ -71,6 +71,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.gui.GuiPreferenceService;
 import org.olat.core.util.resource.OresHelper;
@@ -136,6 +137,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	
 	private static final Logger log = Tracing.createLoggerFor(BigBlueButtonManagerImpl.class);
 	private static final String TASK_MEETING_RESNAME = BigBlueButtonMeeting.class.getSimpleName();
+	
+	private static final ProtectionProfile PROTECTION_PROFILE = ProtectionProfile.CONFIGURED;
 
 	@Autowired
 	private DB dbInstance;
@@ -1386,7 +1389,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		HttpEntity myEntity = new StringEntity(payload, cType);
 		post.setEntity(myEntity);
 		
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClientBuilder()
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClientBuilder(PROTECTION_PROFILE)
 				.disableAutomaticRetries()
 				.build();
 				CloseableHttpResponse response = httpClient.execute(post)) {
@@ -1403,7 +1406,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private Document sendGetRequest(BigBlueButtonUriBuilder builder, BigBlueButtonErrors errors) {
 		URI uri = builder.build();
 		HttpGet get = new HttpGet(uri);
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClientBuilder()
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClientBuilder(PROTECTION_PROFILE)
 				.disableAutomaticRetries()
 				.build();
 				CloseableHttpResponse response = httpClient.execute(get)) {

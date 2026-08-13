@@ -91,7 +91,7 @@ public class ImportCalendarManager {
 
 	public KalendarRenderWrapper importCalendar(Identity identity, String calendarName, String type, String url) throws IOException {
 		File tmpFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID() + ".ics");
-		try (CloseableHttpClient client = httpClientService.createHttpClient();
+		try (CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(new HttpGet(url));
 				InputStream in = response.getEntity().getContent()) {
 			Files.copy(in, tmpFile.toPath());
@@ -230,7 +230,7 @@ public class ImportCalendarManager {
 	 * @param calId
 	 */
 	private void reloadCalendarFromUrl(String importUrl, String calType, String calId, KalendarEventFilter filter) {
-		try(CloseableHttpClient client = httpClientService.createHttpClient();
+		try(CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
 				InputStream in = response.getEntity().getContent()) {
 			String targetId = "-" + CalendarManager.TYPE_USER + "-" + calId;

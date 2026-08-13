@@ -40,6 +40,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -140,7 +141,7 @@ public class BulkSMSProvider extends AbstractSpringModule implements MessagesSPI
 		HttpEntity smsEntity = new StringEntity(objectStr, ContentType.APPLICATION_JSON);
 		send.setEntity(smsEntity);
 		
-		try(CloseableHttpClient httpclient = httpClientService.createHttpClient();
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
 				CloseableHttpResponse response = httpclient.execute(send)) {
 			int returnCode = response.getStatusLine().getStatusCode();
 			String responseString = EntityUtils.toString(response.getEntity());

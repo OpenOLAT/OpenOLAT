@@ -201,7 +201,7 @@ public class JupyterHubConfigTabController extends FormBasicController {
 		try {
 			String url = String.format(jupyterHub.getImageCheckingServiceUrl(), image);
 			HttpGet httpGet = new HttpGet(url);
-			try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true);
+			try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, JupyterManager.PROTECTION_PROFILE);
 				 CloseableHttpResponse response = httpClient.execute(httpGet)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				if (statusCode >= 200 && statusCode < 300) {

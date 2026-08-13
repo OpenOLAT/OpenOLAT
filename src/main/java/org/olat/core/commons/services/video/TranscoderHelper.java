@@ -32,6 +32,8 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpStatus;
@@ -53,6 +55,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TranscoderHelper {
+	
+	public static final ProtectionProfile PROTECTION_PROFILE = ProtectionProfile.CONFIGURED;
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private static final Logger log = Tracing.createLoggerFor(TranscoderHelper.class);
@@ -75,7 +79,7 @@ public class TranscoderHelper {
 			post.setHeader("Accept", "application/json");
 			post.setEntity(stringEntity);
 
-			try (CloseableHttpClient client = httpClientService.createHttpClient();
+			try (CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				 CloseableHttpResponse response = client.execute(post)) {
 				int statusCode = response.getStatusLine().getStatusCode();
 				log.debug("Post job {} status code: {}", transcoderJob.getUuid(), statusCode);
@@ -107,7 +111,7 @@ public class TranscoderHelper {
 		HttpDelete delete = new HttpDelete(url);
 		delete.setHeader("Accept", "application/json");
 
-		try (CloseableHttpClient client = httpClientService.createHttpClient();
+		try (CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
 			 CloseableHttpResponse response = client.execute(delete)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Delete generated: [url={},  statusCode={}]", url, statusCode);

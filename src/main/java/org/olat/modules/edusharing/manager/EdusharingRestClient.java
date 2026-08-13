@@ -19,6 +19,8 @@
  */
 package org.olat.modules.edusharing.manager;
 
+import static org.olat.modules.edusharing.EdusharingModule.PROTECTION_PROFILE;
+
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -83,7 +85,7 @@ public class EdusharingRestClient {
 		StringEntity stringEntity = new StringEntity(userProfileJson, ContentType.APPLICATION_JSON);
 		request.setEntity(stringEntity);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
@@ -106,7 +108,7 @@ public class EdusharingRestClient {
 		HttpGet request = new HttpGet(url);
 		decorateTicket(request, ticket);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
@@ -140,7 +142,7 @@ public class EdusharingRestClient {
 		StringEntity stringEntity = new StringEntity(json, ContentType.APPLICATION_JSON);
 		request.setEntity(stringEntity);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
@@ -166,7 +168,7 @@ public class EdusharingRestClient {
 		decorateSignature(request, ticket.getTooken());
 		decorateTicket(request, ticket);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
@@ -189,7 +191,7 @@ public class EdusharingRestClient {
 		decorateSignature(request, nodeIdentifier.getNodeId() + usageId);
 		decorateTicket(request, ticket);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			

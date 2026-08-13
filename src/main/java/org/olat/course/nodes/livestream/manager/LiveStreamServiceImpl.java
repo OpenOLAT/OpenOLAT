@@ -56,6 +56,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
 import org.olat.course.nodes.livestream.LiveStreamModule;
@@ -296,7 +297,7 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 
 	private boolean isStreaming(String url) {
 		HttpGet request = new HttpGet(url);
-		try(CloseableHttpClient httpclient = httpClientService.createHttpClient();
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED);
 			CloseableHttpResponse response = httpclient.execute(request);) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if (statusCode == HttpStatus.SC_OK) {

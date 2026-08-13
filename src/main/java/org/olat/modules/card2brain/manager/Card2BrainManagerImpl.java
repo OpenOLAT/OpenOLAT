@@ -30,6 +30,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.ims.lti.LTIManager;
 import org.olat.modules.card2brain.Card2BrainManager;
 import org.olat.modules.card2brain.Card2BrainModule;
@@ -76,7 +77,7 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 			log.warn("card2brain alias with illegal characters: {}", url);
 			return false;
 		}
-		try(CloseableHttpClient httpclient = httpClientService.createHttpClient();
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
 				CloseableHttpResponse response = httpclient.execute(request);) {
 			setOfFlashcardExists = isSetOfFlashcardExisting(response);
 		} catch(Exception e) {

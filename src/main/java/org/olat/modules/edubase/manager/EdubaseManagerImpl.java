@@ -37,6 +37,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.modules.edubase.BookDetails;
@@ -182,7 +183,7 @@ public class EdubaseManagerImpl implements EdubaseManager {
 		BookDetails infoReponse = new BookDetailsImpl();
 
 		String url = String.format(edubaseModule.getInfoverUrl(), bookId);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
 				CloseableHttpResponse httpResponse = httpClient.execute(new HttpGet(url));) {
 			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
 			ObjectMapper objectMapper = new ObjectMapper();

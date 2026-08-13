@@ -52,6 +52,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.modules.oaipmh.DataProvider;
 import org.olat.modules.oaipmh.OAIPmhMetadataProvider;
 import org.olat.modules.oaipmh.OAIPmhModule;
@@ -200,7 +201,7 @@ public class OAIServiceImpl implements OAIService, RobotsProvider, SitemapProvid
 
 
 		for (String url : searchEngineUrls) {
-			try (CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
+			try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
 				if (url.contains("sitemap")) {					
 					// 1) Submit to sitemap capable search engines
 					String sitemapUrlEncoded = URLEncoder.encode(ResourceInfoDispatcher.getUrl("sitemap.xml"));

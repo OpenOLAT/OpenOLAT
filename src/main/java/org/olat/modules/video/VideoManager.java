@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -53,6 +54,8 @@ import org.olat.resource.OLATResource;
  * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
  */
 public interface VideoManager {
+	
+	static final ProtectionProfile PROTECTION_PROFILE = ProtectionProfile.USER_PROVIDED;
 	
 	OLATResourceable ores = OresHelper.lookupType(VideoManager.class);
 	

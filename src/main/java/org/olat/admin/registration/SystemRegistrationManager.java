@@ -55,6 +55,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.crypto.RandomUtils;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
@@ -144,7 +145,7 @@ public class SystemRegistrationManager implements InitializingBean {
 		}
 		
 		String csvCoordinates = null;
-		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true)) {
+		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.USER_PROVIDED)) {
 			URIBuilder uriBuilder = new URIBuilder("http://maps.google.com/maps/geo");
 			List<NameValuePair> nvps = new ArrayList<>(5);
 			nvps.add(new BasicNameValuePair("q",textLocation));
@@ -183,7 +184,7 @@ public class SystemRegistrationManager implements InitializingBean {
 	protected void sendRegistrationData() {
 		HttpPut method = null;
 
-		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true)) {
+		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.USER_PROVIDED)) {
 			// Do it optimistic and try to generate the XML message. If the message
 			// doesn't contain anything, the user does not want to register this
 			// instance

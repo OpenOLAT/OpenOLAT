@@ -39,6 +39,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.util.httpclient.HttpClientModule;
 import org.olat.core.util.httpclient.HttpClientService;
 
@@ -85,7 +86,7 @@ public class LangChain4jHttpClient implements HttpClient {
 	@Override
 	public SuccessfulHttpResponse execute(HttpRequest request) throws HttpException {
 		HttpUriRequest apacheRequest = toApacheRequest(request);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(AiModule.PROTECTION_PROFILE);
 				CloseableHttpResponse response = httpClient.execute(apacheRequest)) {
 
 			int statusCode = response.getStatusLine().getStatusCode();
@@ -113,7 +114,7 @@ public class LangChain4jHttpClient implements HttpClient {
 	public void execute(HttpRequest request, ServerSentEventParser parser, ServerSentEventListener listener) {
 		HttpUriRequest apacheRequest = toApacheRequest(request);
 		CompletableFuture.runAsync(() -> {
-			try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+			try (CloseableHttpClient httpClient = httpClientService.createHttpClient(AiModule.PROTECTION_PROFILE);
 					CloseableHttpResponse response = httpClient.execute(apacheRequest)) {
 
 				int statusCode = response.getStatusLine().getStatusCode();

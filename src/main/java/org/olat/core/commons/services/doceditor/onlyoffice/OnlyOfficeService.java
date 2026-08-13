@@ -22,6 +22,7 @@ package org.olat.core.commons.services.doceditor.onlyoffice;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.lock.LockResult;
 
@@ -32,6 +33,8 @@ import org.olat.core.util.vfs.lock.LockResult;
  *
  */
 public interface OnlyOfficeService {
+	
+	static final ProtectionProfile PROTECTION_PROFILE = ProtectionProfile.CONFIGURED;
 
 	boolean fileExists(String fileId);
 

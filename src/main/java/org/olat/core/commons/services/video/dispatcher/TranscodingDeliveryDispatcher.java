@@ -47,6 +47,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.commons.services.video.MovieService;
+import org.olat.core.commons.services.video.TranscoderHelper;
 import org.olat.core.commons.services.video.model.TranscoderJob;
 import org.olat.core.commons.services.video.model.TranscoderJobResult;
 import org.olat.core.commons.services.video.model.TranscoderJobStatus;
@@ -588,7 +589,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	
 	private void download(String url, File targetFile) throws IOException {
 		HttpGet get = new HttpGet(url);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(TranscoderHelper.PROTECTION_PROFILE);
 			 CloseableHttpResponse httpResponse = httpClient.execute(get)) {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode != HttpServletResponse.SC_OK) {

@@ -20,12 +20,16 @@
 package org.olat.core.util.httpclient;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.httpclient.filter.IpAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -38,6 +42,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class HttpClientModule extends AbstractSpringModule {
+	
+	private static final Logger log = Tracing.createLoggerFor(HttpClientModule.class);
 
 	@Value("${http.connect.timeout:30000}")
 	private int httpConnectTimeout;
@@ -56,7 +62,14 @@ public class HttpClientModule extends AbstractSpringModule {
 	private String httpProxyUser;
 	@Value("${http.proxy.pwd}")
 	private String httpProxyPwd;
-	
+	@Value("${http.ssrf.protection.enabled:true}")
+	private boolean ssrfProtectionEnabled;
+	@Value("${http.ssrf.allowed.addresses}")
+	private String ssrfAllowedAddresses;
+	private List<String> ssrfAllowedAddressesList;
+	@Value("${http.ssrf.allowed.hosts}")
+	private String ssrfAllowedHosts;
+
 	@Autowired
 	private HttpClientModule(CoordinatorManager coordinateManager) {
 		super(coordinateManager);
@@ -73,9 +86,28 @@ public class HttpClientModule extends AbstractSpringModule {
 	}
 	
 	private void updateProperties() {
-		//
+		// Validate the addresses
+		ssrfAllowedAddressesList = StringHelper.containsNonWhitespace(ssrfAllowedAddresses)
+				? Arrays.stream(ssrfAllowedAddresses.split(","))
+						.map(String::trim)
+						.map(addr -> {
+							try {
+								IpAddress.of(addr);
+								return addr;
+							} catch(IllegalArgumentException e) {
+								log.error("Cannot parse IP address: {}, will be ignored", addr, e);
+							}
+							return null;
+						}) 
+						.filter(StringHelper::containsNonWhitespace)
+						.toList()
+				: List.of();
 	}
-	
+
+	public boolean isSsrfProtectionEnabled() {
+		return ssrfProtectionEnabled;
+	}
+
 	public int getHttpConnectTimeout() {
 		return httpConnectTimeout;
 	}
@@ -118,4 +150,29 @@ public class HttpClientModule extends AbstractSpringModule {
 		return httpProxyPwd;
 	}
 
+	public String getSsrfAllowedAddresses() {
+		return ssrfAllowedAddresses;
+	}
+	
+	public List<String> getSsrfAllowedAddressesList() {
+		return ssrfAllowedAddressesList;
+	}
+
+	public String getSsrfAllowedHosts() {
+		return ssrfAllowedHosts;
+	}
+	
+	public List<String> getSsrfAllowedHostsList() {
+		return parseLists(ssrfAllowedHosts);
+	}
+	
+	private List<String> parseLists(String allowedString) {
+		return StringHelper.containsNonWhitespace(allowedString)
+				? Arrays.stream(allowedString.split(","))
+						.map(String::trim)
+						.filter(StringHelper::containsNonWhitespace)
+						.toList()
+				: List.of();
+	}
+	
 }

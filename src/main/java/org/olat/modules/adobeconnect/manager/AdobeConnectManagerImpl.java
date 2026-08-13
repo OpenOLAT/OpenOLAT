@@ -607,7 +607,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager,
 		
 		BreezeSession session = null;
 		HttpGet commonGet = new HttpGet(common);
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(AbstractAdobeConnectProvider.PROTECTION_PROFILE);
 			CloseableHttpResponse response = httpClient.execute(commonGet)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200) {
@@ -627,7 +627,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager,
 			request += "&session" + session.getSession();
 			get.setHeader(new BasicHeader("Cookie", AbstractAdobeConnectProvider.COOKIE + session.getSession()));
 		}
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(AbstractAdobeConnectProvider.PROTECTION_PROFILE);
 			CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {

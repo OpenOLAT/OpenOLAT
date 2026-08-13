@@ -37,6 +37,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 
 /**
  * 
@@ -64,7 +65,7 @@ public class TinyDispatcher implements Dispatcher {
 		String nanooId = ureq.getParameter("nanooId");
 		if(ureq.getUserSession().isAuthenticated() && StringHelper.containsNonWhitespace(nanooId) && nanooId.length() > 5) {
 			HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.class);
-			try(CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
+			try(CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
 				String url = "https://www.nanoo.tv/services/oembed?url=https%3A//nanoo.tv/link/v/" + nanooId + "&format=json";
 				HttpGet get = new HttpGet(url);
 				get.addHeader("Accept", "application/json");

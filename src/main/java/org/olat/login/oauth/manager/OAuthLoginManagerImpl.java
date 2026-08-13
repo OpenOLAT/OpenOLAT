@@ -42,6 +42,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.login.auth.AuthenticationProviderSPI;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.oauth.OAuthLoginManager;
@@ -221,7 +222,7 @@ public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationP
 
 	@Override
 	public JSONObject loadDiscoveryUrl(String url) {
-		try(CloseableHttpClient httpClient=httpClientService.createHttpClient()) {
+		try(CloseableHttpClient httpClient=httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
 			HttpGet get = new HttpGet(new URL(url).toURI());
 			HttpResponse response = httpClient.execute(get);
 			String content = EntityUtils.toString(response.getEntity());

@@ -1318,7 +1318,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "image/jpg");
 		
-		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true);
+		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, PROTECTION_PROFILE);
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			download(response, posterFile);	
 		} catch(Exception e) {
@@ -1351,7 +1351,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "video/mp4");
 		
-		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true);
+		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, PROTECTION_PROFILE);
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			download(response, videoFile);	
 		} catch(Exception e) {
@@ -1934,7 +1934,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		String thumbnailFileName = null;
 
 		HttpGet downLoadRequest = new HttpGet(thumbnailUrl);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 			 CloseableHttpResponse httpResponse = httpClient.execute(downLoadRequest);) {
 			if (httpResponse.getStatusLine().getStatusCode() == 200) {
 				HttpEntity httpEntity = httpResponse.getEntity();
@@ -1983,7 +1983,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	}
 
 	private JSONObject getOembedJson(String oembedUrl) {
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
 			HttpGet get = new HttpGet(oembedUrl);
 			HttpResponse response = httpClient.execute(get);
 			int status = response.getStatusLine().getStatusCode();

@@ -62,6 +62,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -275,7 +276,7 @@ public class EditBuildingController extends FormBasicController {
 			get.setHeader("User-Agent", "OpenOlat/RoomManagement (https://www.openolat.org)");
 			get.setHeader("Accept-Language", getLocale().getLanguage());
 
-			try (CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true);
+			try (CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.CONFIGURED);
 				 CloseableHttpResponse response = client.execute(get)) {
 
 				int status = response.getStatusLine().getStatusCode();

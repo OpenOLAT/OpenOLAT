@@ -41,6 +41,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.group.BusinessGroup;
+import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti13.LTI13JsonUtil;
 import org.olat.repository.RepositoryEntry;
 
@@ -107,7 +108,7 @@ public class LTI13RequestUtil {
 		method.setEntity(myEntity);
 
 		try(CloseableHttpClient httpClient = CoreSpringFactory.getImpl(HttpClientService.class)
-				.createHttpClientBuilder()
+				.createHttpClientBuilder(LTIManager.PROTECTION_PROFILE)
 				.disableAutomaticRetries()
 				.build();
 				CloseableHttpResponse response = httpClient.execute(method)) {
@@ -128,7 +129,7 @@ public class LTI13RequestUtil {
 		get.addHeader("Accept", accept);
 
 		try(CloseableHttpClient httpClient = CoreSpringFactory.getImpl(HttpClientService.class)
-				.createHttpClientBuilder()
+				.createHttpClientBuilder(LTIManager.PROTECTION_PROFILE)
 				.disableAutomaticRetries()
 				.build();
 				CloseableHttpResponse response = httpClient.execute(get)) {

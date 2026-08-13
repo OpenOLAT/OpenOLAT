@@ -427,7 +427,7 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	}
 
 	private CheckConnectionResponse execute(HttpPost request) {
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 			 CloseableHttpResponse response = httpClient.execute(request)) {
 			int status = response.getStatusLine().getStatusCode();
 			if (status != 302) {

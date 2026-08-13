@@ -351,7 +351,7 @@ public class LTIManagerImpl implements LTIManager {
 				.collect(Collectors.toList());
 
 		// make the http request and evaluate the result
-		try (CloseableHttpClient httpclient = httpClientService.createHttpClient()) {
+		try (CloseableHttpClient httpclient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
 			HttpPost request = new HttpPost(url);
 			HttpEntity postParams = new UrlEncodedFormEntity(urlParameters);
 			request.setEntity(postParams);

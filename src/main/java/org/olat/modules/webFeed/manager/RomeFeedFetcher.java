@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.modules.webFeed.Enclosure;
 import org.olat.modules.webFeed.ExternalFeedFetcher;
 import org.olat.modules.webFeed.Feed;
@@ -141,7 +142,7 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 	}
 	
 	private SyndFeed getSyndFeed(String feedURL) throws IOException, IllegalArgumentException, FeedException {
-		try(CloseableHttpClient client = httpClientService.createHttpClient();
+		try(CloseableHttpClient client = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED);
 				CloseableHttpResponse response = client.execute(new HttpGet(feedURL))) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", feedURL, statusCode);

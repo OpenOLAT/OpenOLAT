@@ -74,6 +74,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.AlertBoxSettings;
@@ -809,7 +810,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 			String suffix = filename.contains(".") ? filename.substring(filename.lastIndexOf('.')) : ".png";
 
 			HttpGet get = new HttpGet(uri);
-			try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true);
+			try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.USER_PROVIDED);
 					CloseableHttpResponse response = httpClient.execute(get)) {
 
 				int statusCode = response.getStatusLine().getStatusCode();

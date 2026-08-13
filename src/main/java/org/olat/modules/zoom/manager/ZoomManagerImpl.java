@@ -41,6 +41,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.ims.lti13.LTI13Constants;
@@ -407,7 +408,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
     }
 
     private ZoomConnectionResponse execute(HttpUriRequest request) {
-        try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+        try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
              CloseableHttpResponse response = httpClient.execute(request)) {
             int status = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();

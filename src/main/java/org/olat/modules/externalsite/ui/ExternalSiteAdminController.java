@@ -55,6 +55,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.modules.externalsite.ExternalSitesConfigRow;
 import org.olat.modules.externalsite.model.ExternalSiteConfiguration;
@@ -167,7 +168,7 @@ public class ExternalSiteAdminController extends FormBasicController {
 		boolean isAllowed = false;
 		HttpPost request = new HttpPost(urlEl.getValue());
 
-		try (CloseableHttpClient client = httpClientService.createHttpClient();
+		try (CloseableHttpClient client = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED);
 			 CloseableHttpResponse response = client.execute(request)) {
 			if (response != null) {
 				// check as first instance if CSP contains frame-ancestor which allows iFrame

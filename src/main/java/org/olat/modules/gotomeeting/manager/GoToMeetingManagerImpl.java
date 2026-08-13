@@ -47,6 +47,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.gotomeeting.GoToMeeting;
@@ -643,7 +644,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	}
 	
 	private GoToResponse execute(HttpUriRequest request) {
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
 				CloseableHttpResponse response = httpClient.execute(request)) {
 			int status = response.getStatusLine().getStatusCode();
 			HttpEntity entity = response.getEntity();

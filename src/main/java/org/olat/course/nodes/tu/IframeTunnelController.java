@@ -39,6 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.modules.ModuleConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -91,7 +92,8 @@ public class IframeTunnelController extends BasicController {
 		} else { // tunnel
 			Identity ident = ureq.getIdentity();
 			String ipAddress = ureq.getUserSession().getSessionInfo().getFromIP();
-			httpClientInstance = httpClientService.createThreadSafeHttpClient(host, port.intValue(), user, pass, true);
+			httpClientInstance = httpClientService.createThreadSafeHttpClient(host, port.intValue(), user, pass,
+					true, ProtectionProfile.USER_PROVIDED);
 			Mapper mapper = new TunnelMapper(proto, host, port, startUri, ipAddress, ident, httpClientInstance);
 			String amapPath = registerMapper(ureq, mapper);
 			String alluri = amapPath + startUri;

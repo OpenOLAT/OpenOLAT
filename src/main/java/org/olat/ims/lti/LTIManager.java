@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.course.ICourse;
 import org.olat.resource.OLATResource;
 
@@ -35,6 +36,8 @@ import org.olat.resource.OLATResource;
  *
  */
 public interface LTIManager {
+	
+	static final ProtectionProfile PROTECTION_PROFILE = ProtectionProfile.USER_PROVIDED;
 
 	String COURSE_INFO_PREFIX = "$courseinfo_";
 	String COURSE_INFO_COURSE_ID = "course_id";

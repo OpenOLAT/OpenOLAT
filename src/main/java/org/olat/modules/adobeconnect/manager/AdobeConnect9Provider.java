@@ -133,7 +133,7 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 		URI uri = builder.build();
 		BreezeSession session = null;
 		HttpGet getInfo = new HttpGet(uri);
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 			CloseableHttpResponse response = httpClient.execute(getInfo)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {

@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -95,7 +96,7 @@ public class GotenbergSPI extends AbstractPdfSPI {
 
 	@Override
 	protected void render(String key, String rootFilename, PdfOutputOptions options, OutputStream out) {
-		try(CloseableHttpClient httpclient = httpClientService.createHttpClient()) {
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
 			
 			StringBuilder sb = new StringBuilder(128);
 			sb.append(serviceUrl);

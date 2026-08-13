@@ -20,6 +20,7 @@
 package org.olat.modules.edusharing.manager;
 
 import static org.olat.core.util.StringHelper.blankIfNull;
+import static org.olat.modules.edusharing.EdusharingModule.PROTECTION_PROFILE;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -67,7 +68,7 @@ class EdusharingHttpClient {
 		String url = edusharingModule.getBaseUrl() + "metadata?format=repository";
 		HttpGet request = new HttpGet(url);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode == 200) {
@@ -134,7 +135,7 @@ class EdusharingHttpClient {
 	private EdusharingResponse getEdusharingResponse(String url) throws IOException, ClientProtocolException {
 		log.debug("edu-sharing: get from " + url);
 		HttpGet request = new HttpGet(url);
-		CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 		CloseableHttpResponse httpResponse = httpClient.execute(request);
 		logUnsuccessful(httpResponse, url);
 		return new EdusharingHttpResponse(httpClient, httpResponse);

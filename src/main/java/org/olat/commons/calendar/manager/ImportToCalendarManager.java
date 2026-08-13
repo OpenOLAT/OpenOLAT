@@ -106,7 +106,7 @@ public class ImportToCalendarManager {
 		String id = importedToCalendar.getToCalendarId();
 		String importUrl = importedToCalendar.getUrl();
 		
-		try (CloseableHttpClient client = httpClientService.createHttpClient();
+		try (CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
 				InputStream in = response.getEntity().getContent()) {
 			Kalendar importedKalendar = calendarManager.buildKalendarFrom(in, "TEMP", UUID.randomUUID().toString());
@@ -129,7 +129,7 @@ public class ImportToCalendarManager {
 		String id = importedToCalendar.getToCalendarId();
 		String importUrl = importedToCalendar.getUrl();
 		
-		try (CloseableHttpClient client = httpClientService.createHttpClient();
+		try (CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
 				InputStream in = response.getEntity().getContent()) {
 			Kalendar importedKalendar = calendarManager.buildKalendarFrom(in, "TEMP", UUID.randomUUID().toString());
@@ -195,7 +195,7 @@ public class ImportToCalendarManager {
 	 * @return
 	 */
 	public boolean importCalendarIn(Kalendar cal, String importUrl) {
-		try(CloseableHttpClient client = httpClientService.createHttpClient();
+		try(CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
 				InputStream in = response.getEntity().getContent()) {
 			Kalendar importedCal = calendarManager.buildKalendarFrom(in, cal.getType(), cal.getCalendarID());

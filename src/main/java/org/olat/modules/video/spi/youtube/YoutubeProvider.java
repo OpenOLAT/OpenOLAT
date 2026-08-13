@@ -39,6 +39,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.LOMDuration;
@@ -117,7 +118,7 @@ public class YoutubeProvider extends AbstractSpringModule implements ConfigOnOff
 		
 		YoutubeMetadata data = null;		
 		HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.class);
-		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true);
+		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.CONFIGURED);
 				CloseableHttpResponse response = client.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200) {

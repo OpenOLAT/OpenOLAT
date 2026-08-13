@@ -29,6 +29,7 @@ import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,8 @@ import org.springframework.stereotype.Service;
 public class EdusharingModule extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final Logger log = Tracing.createLoggerFor(EdusharingModule.class);
+	
+	public static final ProtectionProfile PROTECTION_PROFILE = ProtectionProfile.CONFIGURED;
 
 	private static final String EDUSHARING_ENABLED = "edusharing.enabled";
 	private static final String EDUSHARING_COURSE_NODE_ENABLED = "edusharing.course.node.enabled";

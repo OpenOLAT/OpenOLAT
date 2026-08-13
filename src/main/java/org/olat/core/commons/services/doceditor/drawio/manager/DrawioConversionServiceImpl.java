@@ -38,6 +38,7 @@ import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -96,7 +97,7 @@ public class DrawioConversionServiceImpl implements DrawioConversionService {
 		request.setEntity(new UrlEncodedFormEntity(params));
 		
 		boolean thumbnailCreated = false;
-		try (CloseableHttpClient client = httpClientService.createHttpClient();
+		try (CloseableHttpClient client = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of create thumbnail request: {}", statusCode);

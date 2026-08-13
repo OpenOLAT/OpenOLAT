@@ -29,6 +29,7 @@ import org.olat.core.commons.services.doceditor.discovery.Discovery;
 import org.olat.core.commons.services.doceditor.discovery.model.DiscoveryImpl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +53,7 @@ class DiscoveryClient {
 	
 	Discovery getDiscovery(String discoveryUrl) {
 		HttpGet request = new HttpGet(discoveryUrl);
-		try (CloseableHttpClient httpClient = HttpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = HttpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
 			if (statusCode == 200) {

@@ -49,6 +49,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.core.util.xml.XMLFactories;
 import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
@@ -230,7 +231,7 @@ public class OpenBadgesVerificationController extends FormBasicController {
     
     private CryptographicKey loadPublicKey(String publicKeyUrl, StringBuilder sb) {
         HttpGet httpGet = new HttpGet(publicKeyUrl);
-        try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+        try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED);
              CloseableHttpResponse response = httpClient.execute(httpGet)) {
             int status = response.getStatusLine().getStatusCode();
             if (status < 200 || status > 299) {

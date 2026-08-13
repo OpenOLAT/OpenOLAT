@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.modules.opencast.AuthDelegate;
 import org.olat.modules.opencast.OpencastModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class OpencastRestClient {
 
 	private static final Logger log = Tracing.createLoggerFor(OpencastRestClient.class);
+	private static final ProtectionProfile PROTECTION_PROFILE = ProtectionProfile.CONFIGURED;
 	
 	private static final Event[] NO_EVENTS = new Event[]{};
 	private static final Series[] NO_SERIES = new Series[]{};
@@ -67,7 +69,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient();
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -87,7 +89,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient();
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -122,7 +124,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request, params.getAuthDelegate());
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient();
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -151,7 +153,7 @@ public class OpencastRestClient {
 		HttpDelete request = new HttpDelete(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient();
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -169,7 +171,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient();
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -204,7 +206,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request, params.getAuthDelegate());
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient();
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
@@ -232,7 +234,7 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient();
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);

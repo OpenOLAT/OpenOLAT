@@ -41,12 +41,15 @@ import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 
 import net.fortuna.ical4j.model.Calendar;
 
 public interface CalendarManager {
+	
+	static final ProtectionProfile PROTECTION_PROFILE = ProtectionProfile.USER_PROVIDED;
 
 	public static final String TYPE_USER = "user";
 	public static final String TYPE_GROUP = "group";

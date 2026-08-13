@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.id.Identity;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.course.ICourse;
 import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Tool;
@@ -37,6 +38,9 @@ import org.olat.repository.RepositoryEntry;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public interface JupyterManager {
+	
+	static final ProtectionProfile PROTECTION_PROFILE = ProtectionProfile.CONFIGURED;
+	
 	JupyterHub getJupyterHub(String selectedKey);
 
 	List<JupyterHub> getJupyterHubs();

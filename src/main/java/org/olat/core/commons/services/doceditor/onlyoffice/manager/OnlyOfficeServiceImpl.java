@@ -347,7 +347,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		String autorization = "Bearer " + token;
 		HttpGet request = new HttpGet(url);
 		request.addHeader("Authorization", autorization);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
 			if (httpResponse.getStatusLine().getStatusCode() == 200) {
 				InputStream content = httpResponse.getEntity().getContent();
