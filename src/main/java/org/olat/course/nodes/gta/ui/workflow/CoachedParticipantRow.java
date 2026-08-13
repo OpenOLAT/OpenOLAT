@@ -72,6 +72,9 @@ public class CoachedParticipantRow extends UserPropertiesRow {
 	
 	private DueDate solutionDueDate;
 	
+	private String correctionMessage;
+	private String correctionMessageInfos;
+	
 	private FormLink markLink;
 	private String coachFullName;
 	private Long coachKey;
@@ -342,6 +345,22 @@ public class CoachedParticipantRow extends UserPropertiesRow {
 
 	public void setCollectDocumentsLink(FormLink collectDocumentsLink) {
 		this.collectDocumentsLink = collectDocumentsLink;
+	}
+
+	public String getCorrectionMessage() {
+		return correctionMessage;
+	}
+
+	public void setCorrectionMessage(String correctionMessage) {
+		this.correctionMessage = correctionMessage;
+	}
+
+	public String getCorrectionMessageInfos() {
+		return correctionMessageInfos;
+	}
+
+	public void setCorrectionMessageInfos(String correctionMessageInfos) {
+		this.correctionMessageInfos = correctionMessageInfos;
 	}
 
 	public Controller getDetailsCtrl() {

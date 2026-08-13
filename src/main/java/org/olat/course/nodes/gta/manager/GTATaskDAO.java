@@ -56,7 +56,7 @@ public class GTATaskDAO {
 		return dbInstance.getCurrentEntityManager().merge(task);
 	}
 	
-	public Task loadTask(TaskRef task) {
+	public Task loadTask(Long key) {
 		String q = """
 				select task from gtatask task
 				left join fetch task.businessGroup as businessGroup
@@ -65,7 +65,7 @@ public class GTATaskDAO {
 				left join fetch task.survey as survey
 				where task.key=:taskKey""";
 		List<Task> tasks = dbInstance.getCurrentEntityManager().createQuery(q, Task.class)
-			.setParameter("taskKey", task.getKey())
+			.setParameter("taskKey", key)
 			.getResultList();
 
 		return tasks.isEmpty() ? null : tasks.get(0);

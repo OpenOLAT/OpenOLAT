@@ -896,11 +896,20 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				.setParameter("courseNodeIdent", cNode.getIdent())
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
+	}	
+
+	@Override
+	public Task getTaskById(Long key) {
+		if(key == null) return null;
+
+		return taskDao.loadTask(key);
 	}
 
 	@Override
 	public Task getTask(TaskRef task) {
-		return taskDao.loadTask(task);
+		if(task == null) return null;
+
+		return taskDao.loadTask(task.getKey());
 	}
 
 	@Override
