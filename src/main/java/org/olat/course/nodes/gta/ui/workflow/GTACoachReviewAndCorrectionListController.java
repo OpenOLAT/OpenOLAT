@@ -53,6 +53,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
@@ -294,6 +295,16 @@ public class GTACoachReviewAndCorrectionListController extends AbstractCoachWork
 		Identity assessedIdentity = row.getAssessedIdentity();
 		File documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, assessedIdentity);
 		VFSContainer documentsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedIdentity);
+
+		List<TaskRevision> taskRevisions = gtaManager.getTaskRevisions(row.getTask());
+		TaskRevision taskRevision = GTAAbstractController.getTaskRevision(taskRevisions, TaskProcess.correction, 0);
+		if(taskRevision != null && StringHelper.containsNonWhitespace(taskRevision.getComment())) {
+			String commentator = userManager.getUserDisplayName(taskRevision.getCommentAuthor());
+			String commentDate = Formatter.getInstance(getLocale()).formatDate(taskRevision.getCommentLastModified());
+			String infos = translate("run.corrections.comment.infos", commentDate, commentator);
+			row.setCorrectionMessage(taskRevision.getComment());
+			row.setCorrectionMessageInfos(infos);
+		}
 
 		boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
 		row.setCorrectionsDoneWithoutDocuments(!hasDocuments);

@@ -1,7 +1,14 @@
+#if($r.isNotEmpty($row.correctionMessage))
+<div class="o_note">
+	<h5>$r.translate("run.coach.corrections.comment")</strong> <small>$r.escapeHtml($row.correctionMessageInfos)</small></h5>
+	<p>$r.xssScan($row.correctionMessage)</p>
+</div> 
+#end
+
 #if(${row.isDetailsControllerAvailable()})
 	$r.render(${row.getDetailsControllerName()})
 #elseif($r.isTrue(${row.hasRevisions()}))
-	<span><i class='o_icon o_icon_error'> </i> $r.translate("coach.corrections.rejected")</span>
+	<span><i class='o_icon o_icon_warn'> </i> $r.translate("coach.corrections.rejected")</span>
 #elseif(${row.isCorrectionsDoneWithoutDocuments()})
 	<span><i class='o_icon o_icon_ok'> </i> $r.translate("coach.corrections.closed")</span>
 #end
