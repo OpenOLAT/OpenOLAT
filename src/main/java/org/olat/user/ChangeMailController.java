@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.registration.MailValidationController;
+import org.olat.registration.MailValidationController.Flow;
 
 
 /**
@@ -64,7 +65,7 @@ public class ChangeMailController extends FormBasicController {
 		uifactory.addStaticTextElement("change.mail.current", currentMail, mailCont);
 
 		mailValidationCtrl = new MailValidationController(ureq, getWindowControl(), formLayout.getRootForm(),
-				null, false, isUserManager, null);
+				null, Flow.EMAIL_CHANGE, isUserManager, null);
 		listenTo(mailValidationCtrl);
 		formLayout.add(mailValidationCtrl.getInitialFormItem());
 
