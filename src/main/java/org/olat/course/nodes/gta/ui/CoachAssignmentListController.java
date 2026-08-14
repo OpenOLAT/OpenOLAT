@@ -189,6 +189,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		initFilters();
 		initFiltersPresets();
 		tableEl.setSelectedFilterTab(ureq, allTab);
+		tableEl.setExportEnabled(true);
 		
 		backLink = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
 		
@@ -263,7 +264,7 @@ public class CoachAssignmentListController extends FormBasicController {
 					FILTER_GROUP, groupValues, true));
 		}
 		
-		tableEl.setFilters(true, filters, false, false);
+		tableEl.setFilters(true, filters, true, false);
 	}
 	
 	private void loadCoaches() {
