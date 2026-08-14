@@ -103,8 +103,17 @@ public interface InfoMessageFrontendManager {
 	 *
 	 * @param infoMessage   object linked to a businessGroup
 	 * @param businessGroup object linked to infoMessage
+	 * @param sendMailTo    comma-separated roles (coach/participant) selected for this group
 	 */
-	void createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup);
+	void createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup, String sendMailTo);
+
+	/**
+	 * update the roles selected for an existing infoMessageToGroup entry
+	 *
+	 * @param infoMessageToGroup entry to update
+	 * @param sendMailTo         comma-separated roles (coach/participant) selected for this group
+	 */
+	void updateInfoMessageToGroup(InfoMessageToGroup infoMessageToGroup, String sendMailTo);
 
 	/**
 	 * remove specific infoMessageToGroup object from DB
@@ -118,8 +127,17 @@ public interface InfoMessageFrontendManager {
 	 *
 	 * @param infoMessage       object linked to a curriculumElement
 	 * @param curriculumElement object linked to infoMessage
+	 * @param sendMailTo        comma-separated roles (coach/participant) selected for this curriculum element
 	 */
-	void createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement);
+	void createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement, String sendMailTo);
+
+	/**
+	 * update the roles selected for an existing infoMessageToCurriculumElement entry
+	 *
+	 * @param infoMessageToCurriculumElement entry to update
+	 * @param sendMailTo                     comma-separated roles (coach/participant) selected for this curriculum element
+	 */
+	void updateInfoMessageToCurriculumElement(InfoMessageToCurriculumElement infoMessageToCurriculumElement, String sendMailTo);
 
 	/**
 	 * remove specific infoMessageToCurriculumElement object from DB

@@ -957,6 +957,7 @@ create table o_info_message_to_group (
    id bigint not null auto_increment,
    fk_info_message_id bigint not null,
    fk_group_id bigint not null,
+   sendmailto varchar(255),
    primary key (id)
 );
 
@@ -964,6 +965,7 @@ create table o_info_message_to_cur_el (
    id bigint not null auto_increment,
    fk_info_message_id bigint not null,
    fk_cur_element_id bigint not null,
+   sendmailto varchar(255),
    primary key (id)
 );
 

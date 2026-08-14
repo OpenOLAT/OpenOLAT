@@ -240,12 +240,19 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 	}
 
 	@Override
-	public InfoMessageToGroup createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup) {
+	public InfoMessageToGroup createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup, String sendMailTo) {
 		InfoMessageToGroupImpl infoMessageToGroup = new InfoMessageToGroupImpl();
 		infoMessageToGroup.setInfoMessage(infoMessage);
 		infoMessageToGroup.setBusinessGroup(businessGroup);
+		infoMessageToGroup.setSendMailTo(sendMailTo);
 		dbInstance.getCurrentEntityManager().persist(infoMessageToGroup);
 		return infoMessageToGroup;
+	}
+
+	@Override
+	public void updateInfoMessageToGroup(InfoMessageToGroup infoMessageToGroup, String sendMailTo) {
+		infoMessageToGroup.setSendMailTo(sendMailTo);
+		dbInstance.getCurrentEntityManager().merge(infoMessageToGroup);
 	}
 
 	@Override
@@ -267,12 +274,19 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 	}
 
 	@Override
-	public InfoMessageToCurriculumElement createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement) {
+	public InfoMessageToCurriculumElement createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement, String sendMailTo) {
 		InfoMessageToCurriculumElementImpl infoMessageToCurriculumElement = new InfoMessageToCurriculumElementImpl();
 		infoMessageToCurriculumElement.setInfoMessage(infoMessage);
 		infoMessageToCurriculumElement.setCurriculumElement(curriculumElement);
+		infoMessageToCurriculumElement.setSendMailTo(sendMailTo);
 		dbInstance.getCurrentEntityManager().persist(infoMessageToCurriculumElement);
 		return infoMessageToCurriculumElement;
+	}
+
+	@Override
+	public void updateInfoMessageToCurriculumElement(InfoMessageToCurriculumElement infoMessageToCurriculumElement, String sendMailTo) {
+		infoMessageToCurriculumElement.setSendMailTo(sendMailTo);
+		dbInstance.getCurrentEntityManager().merge(infoMessageToCurriculumElement);
 	}
 
 	@Override

@@ -48,16 +48,22 @@ public class SendMembersMailOption implements SendMailOption {
 	private final String label;
 	private final GroupRoles role;
 	private final RepositoryEntry repositoryEntry;
-	
+	private final RepositoryEntryRelationType scope;
+
 	public SendMembersMailOption(RepositoryEntry repositoryEntry, GroupRoles role, String label) {
+		this(repositoryEntry, role, RepositoryEntryRelationType.all, label);
+	}
+
+	public SendMembersMailOption(RepositoryEntry repositoryEntry, GroupRoles role, RepositoryEntryRelationType scope, String label) {
 		this.role = role;
 		this.label = label;
 		this.repositoryEntry = repositoryEntry;
+		this.scope = scope;
 	}
 
 	@Override
 	public String getOptionKey() {
-		return role.name();
+		return scope == RepositoryEntryRelationType.defaultGroup ? role.name() + "-course" : role.name();
 	}
 
 	@Override
@@ -68,7 +74,7 @@ public class SendMembersMailOption implements SendMailOption {
 	@Override
 	public List<Identity> getSelectedIdentities() {
 		List<Identity> reMembers = Objects.requireNonNull(CoreSpringFactory.getImpl(RepositoryService.class))
-				.getMembers(repositoryEntry, RepositoryEntryRelationType.all, role.name());
+				.getMembers(repositoryEntry, scope, role.name());
 		Set<Identity> identities = new HashSet<>(reMembers);
 		return new ArrayList<>(identities);
 	}

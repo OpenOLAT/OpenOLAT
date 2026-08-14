@@ -923,6 +923,7 @@ create table o_info_message_to_group (
     id number(20) generated always as identity,
     fk_info_message_id number(20) not null,
     fk_group_id number(20) not null,
+    sendmailto varchar2(255),
     primary key (id)
 );
 
@@ -930,6 +931,7 @@ create table o_info_message_to_cur_el (
     id number(20) generated always as identity,
     fk_info_message_id number(20) not null,
     fk_cur_element_id number(20) not null,
+    sendmailto varchar2(255),
     primary key (id)
 );
 

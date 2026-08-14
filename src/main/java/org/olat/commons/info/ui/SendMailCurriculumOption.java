@@ -20,9 +20,12 @@
 package org.olat.commons.info.ui;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -36,32 +39,43 @@ import org.olat.modules.curriculum.model.SearchMemberParameters;
  */
 public class SendMailCurriculumOption implements SendMailOption {
 
-	private final List<CurriculumRoles> roles;
+	private final CurriculumRoles role;
 	private final CurriculumElement curriculumElement;
+	private final String label;
 
-	public SendMailCurriculumOption(CurriculumElement curriculumElement, List<CurriculumRoles> roles) {
-		this.roles = roles;
+	public SendMailCurriculumOption(CurriculumElement curriculumElement, CurriculumRoles role, Locale locale) {
+		this.role = role;
 		this.curriculumElement = curriculumElement;
+		String key = role == CurriculumRoles.coach
+				? "wizard.step1.send_option.curriculum.coach"
+				: "wizard.step1.send_option.curriculum.participant";
+		String reference = StringHelper.escapeHtml(curriculumElement.getDisplayName())
+				+ "<span class=\"text-muted o_small\"> · " + StringHelper.escapeHtml(curriculumElement.getIdentifier()) + "</span>";
+		this.label = Util.createPackageTranslator(SendMailCurriculumOption.class, locale).translate(key, reference);
 	}
 
 	public CurriculumElement getCurriculumElement() {
 		return curriculumElement;
 	}
 
+	public CurriculumRoles getRole() {
+		return role;
+	}
+
 	@Override
 	public String getOptionKey() {
-		return "send-mail-curriculum-" + curriculumElement.getKey();
+		return "send-mail-curriculum-" + role.name() + "-" + curriculumElement.getKey();
 	}
 
 	@Override
 	public String getOptionName() {
-		return curriculumElement.getDisplayName() + " - " + curriculumElement.getIdentifier() + " (" + getSelectedIdentities().size() + ")";
+		return label + " (" + getSelectedIdentities().size() + ")";
 	}
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
 		SearchMemberParameters params = new SearchMemberParameters(curriculumElement);
-		params.setRoles(roles);
+		params.setRoles(List.of(role));
 
 		List<CurriculumMember> curriculaMembers = CoreSpringFactory.getImpl(CurriculumService.class).getCurriculumElementsMembers(params);
 		if (curriculaMembers == null || curriculaMembers.isEmpty()) {

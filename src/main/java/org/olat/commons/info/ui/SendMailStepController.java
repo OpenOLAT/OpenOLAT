@@ -25,8 +25,12 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -55,8 +59,10 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
@@ -76,15 +82,22 @@ public class SendMailStepController extends StepFormBasicController {
 	private final String[] sendSubscriberOptionKeys;
 	private final String[] sendSubscriberOptionValues;
 	private final String[] sendCourseRolesOptionKeys;
-	private final String[] sendCourseRolesOptionValues;
+	private final String[] combinedCourseRoleOptionKeys;
 	private String[] sendGroupsOptionKeys;
-	private String[] sendGroupsOptionValues;
 	private String[] sendCurriculaOptionKeys;
-	private String[] sendCurriculaOptionValues;
+	private final boolean hasGroupsOrCurricula;
+
+	private final List<SendMailOption> courseRoleOptions;
+	private final List<SendMailOption> groupOptions;
+	private final List<SendMailOption> curriculaOptions;
+
 	private MultipleSelectionElement sendSubscriberSelection;
-	private MultipleSelectionElement sendCourseMemberSelection;
-	private MultipleSelectionElement sendGroupMemberSelection;
-	private MultipleSelectionElement sendCurriculumMemberSelection;
+	// Case A: course (or business group) has no groups/curriculum elements attached
+	private MultipleSelectionElement sendMembersSelection;
+	// Case B: course has groups and/or curriculum elements attached
+	private MultipleSelectionElement sendOwnerSelection;
+	private MultipleSelectionElement sendCoachSelection;
+	private MultipleSelectionElement sendParticipantSelection;
 	private SingleSelection notificationEl;
 	private SingleSelection recipientEl;
 	private StaticTextElement publicationTextEl;
@@ -105,42 +118,32 @@ public class SendMailStepController extends StepFormBasicController {
 								  List<SendMailOption> courseRoleOptions, List<SendMailOption> groupOptions, List<SendMailOption> curriculaOptions, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 
+		this.courseRoleOptions = courseRoleOptions;
+		this.groupOptions = groupOptions;
+		this.curriculaOptions = curriculaOptions;
+
 		// Subscriber option
 		sendSubscriberOptionKeys = new String[]{subscriberOption.getOptionKey()};
 		sendSubscriberOptionValues = new String[]{subscriberOption.getOptionName()};
 
-		// Course members/roles option
-		sendCourseRolesOptionKeys = new String[courseRoleOptions.size()];
-		sendCourseRolesOptionValues = new String[courseRoleOptions.size()];
-		int count = 0;
-		for (SendMailOption option : courseRoleOptions) {
-			sendCourseRolesOptionKeys[count] = option.getOptionKey();
-			sendCourseRolesOptionValues[count++] = option.getOptionName();
-		}
+		// Course members/roles option keys (values are built lazily in initForm, since building them
+		// eagerly here would trigger their recipient-count queries twice)
+		sendCourseRolesOptionKeys = courseRoleOptions.stream().map(SendMailOption::getOptionKey).toArray(String[]::new);
+		combinedCourseRoleOptionKeys = Arrays.stream(sendCourseRolesOptionKeys)
+				.filter(key -> !key.endsWith("-course"))
+				.toArray(String[]::new);
 
 		// groups option
 		if (groupOptions != null && !groupOptions.isEmpty()) {
-			sendGroupsOptionKeys = new String[groupOptions.size()];
-			sendGroupsOptionValues = new String[groupOptions.size()];
-
-			int groupCount = 0;
-			for (SendMailOption groupOption : groupOptions) {
-				sendGroupsOptionKeys[groupCount] = groupOption.getOptionKey();
-				sendGroupsOptionValues[groupCount++] = groupOption.getOptionName();
-			}
+			sendGroupsOptionKeys = groupOptions.stream().map(SendMailOption::getOptionKey).toArray(String[]::new);
 		}
 
 		// curricula options
 		if (curriculaOptions != null && !curriculaOptions.isEmpty()) {
-			sendCurriculaOptionKeys = new String[curriculaOptions.size()];
-			sendCurriculaOptionValues = new String[curriculaOptions.size()];
-
-			int curriculaCount = 0;
-			for (SendMailOption curriculaOption : curriculaOptions) {
-				sendCurriculaOptionKeys[curriculaCount] = curriculaOption.getOptionKey();
-				sendCurriculaOptionValues[curriculaCount++] = curriculaOption.getOptionName();
-			}
+			sendCurriculaOptionKeys = curriculaOptions.stream().map(SendMailOption::getOptionKey).toArray(String[]::new);
 		}
+
+		hasGroupsOrCurricula = !ArrayUtils.isEmpty(sendGroupsOptionKeys) || !ArrayUtils.isEmpty(sendCurriculaOptionKeys);
 
 		initForm(ureq);
 	}
@@ -234,54 +237,158 @@ public class SendMailStepController extends StepFormBasicController {
 						: WizardConstants.ALL_COURSE_MEMBERS;
 		recipientEl.select(recipientMode, true);
 
+		boolean isIndividualRecipient = recipientMode.equals(WizardConstants.INDIVIDUAL_RECIPIENT);
+		Set<String> sendMailToKeys = parseSendMailToKeys(infoMessage);
+
 		// select if all subscribers should receive e-mails
 		sendSubscriberSelection = uifactory.addCheckboxesVertical("indi.subscribers", formLayout, sendSubscriberOptionKeys, sendSubscriberOptionValues, 1);
-		if (recipientMode.equals(WizardConstants.INDIVIDUAL_RECIPIENT) && infoMessage.getSendMailTo() != null
-				&& infoMessage.getSendMailTo().contains(WizardConstants.SEND_MAIL_SUBSCRIBERS)) {
+		if (isIndividualRecipient && sendMailToKeys.contains(WizardConstants.SEND_MAIL_SUBSCRIBERS)) {
 			// pre-select checkbox, if this ui is shown while editing infoMessage, and it was selected before
 			sendSubscriberSelection.select(WizardConstants.SEND_MAIL_SUBSCRIBERS, true);
 		}
 
-		// selection checkboxes for which course member roles should receive an e-mail
-		sendCourseMemberSelection = uifactory.addCheckboxesVertical("indi.course.member", formLayout, sendCourseRolesOptionKeys, sendCourseRolesOptionValues, 1);
-		if (recipientMode.equals(WizardConstants.INDIVIDUAL_RECIPIENT) && infoMessage.getSendMailTo() != null) {
-			// pre-select checkboxes, if this ui is shown while editing infoMessage, and it was selected before
-			List<String> sendMailsTo = Arrays.stream(sendCourseRolesOptionKeys).filter(infoMessage.getSendMailTo()::contains).toList();
-			if (!sendMailsTo.isEmpty()) {
-				for (String sendMailTo : sendMailsTo) {
-					sendCourseMemberSelection.select(sendMailTo, true);
+		// selection checkboxes for which member roles should receive an e-mail, grouped by role
+		if (hasGroupsOrCurricula) {
+			List<SendMailOption> ownerOptions = filterCourseRoleOptions(GroupRoles.owner);
+			List<SendMailOption> coachOptions = new ArrayList<>(filterCourseRoleOptions(GroupRoles.coach));
+			coachOptions.addAll(filterGroupOptions(GroupRoles.coach));
+			coachOptions.addAll(filterCurriculumOptions(CurriculumRoles.coach));
+			List<SendMailOption> participantOptions = new ArrayList<>(filterCourseRoleOptions(GroupRoles.participant));
+			participantOptions.addAll(filterGroupOptions(GroupRoles.participant));
+			participantOptions.addAll(filterCurriculumOptions(CurriculumRoles.participant));
+
+			sendOwnerSelection = addOptionsCheckboxes("indi.owners", formLayout, ownerOptions, false);
+			sendCoachSelection = addOptionsCheckboxes("indi.coaches", formLayout, coachOptions, true);
+			sendParticipantSelection = addOptionsCheckboxes("indi.participants", formLayout, participantOptions, true);
+
+			if (isIndividualRecipient) {
+				// pre-select checkboxes, if this ui is shown while editing infoMessage, and it was selected before
+				preSelectFromSendMailTo(sendOwnerSelection, sendMailToKeys);
+				preSelectFromSendMailTo(sendCoachSelection, sendMailToKeys);
+				preSelectFromSendMailTo(sendParticipantSelection, sendMailToKeys);
+
+				// for editing messages: set given data, if message is scheduled
+				// check if publishDate is null, only messages which are getting edited have already a publishDate
+				if (infoMessage.getPublishDate() != null) {
+					preSelectGroupsAndCurricula(infoMessage);
 				}
 			}
-		}
+		} else {
+			List<SendMailOption> memberOptions = new ArrayList<>();
+			memberOptions.addAll(filterCourseRoleOptions(GroupRoles.owner));
+			memberOptions.addAll(filterCourseRoleOptions(GroupRoles.coach));
+			memberOptions.addAll(filterCourseRoleOptions(GroupRoles.participant));
 
-		// selection, which group members should receive e-mails
-		sendGroupMemberSelection = uifactory.addCheckboxesVertical("indi.group.member", formLayout, sendGroupsOptionKeys != null ? sendGroupsOptionKeys : new String[]{}, sendGroupsOptionValues != null ? sendGroupsOptionValues : new String[]{}, 1);
-		// for editing messages: set given data, if message is scheduled
-		// check if publishDate is null, only messages which are getting edited have already a publishDate
-		if (recipientMode.equals(WizardConstants.INDIVIDUAL_RECIPIENT) && infoMessage.getPublishDate() != null) {
-			// pre-select checkboxes, if this ui is shown while editing infoMessage, and it was selected before
-			Set<InfoMessageToGroup> infoMessageToGroups = infoMessage.getGroups();
-			if (!infoMessageToGroups.isEmpty()) {
-				for (InfoMessageToGroup infoGroup : infoMessageToGroups) {
-					sendGroupMemberSelection.select("send-mail-group-" + infoGroup.getBusinessGroup().getKey().toString(), true);
-				}
-			}
-		}
-
-		// selection, which curricula members should receive e-mails
-		sendCurriculumMemberSelection = uifactory.addCheckboxesVertical("indi.curriculum.member", formLayout, sendCurriculaOptionKeys != null ? sendCurriculaOptionKeys : new String[]{}, sendCurriculaOptionValues != null ? sendCurriculaOptionValues : new String[]{}, 1);
-		// for editing messages: set given data, if message is scheduled
-		// check if publishDate is null, only messages which are getting edited have already a publishDate
-		if (recipientMode.equals(WizardConstants.INDIVIDUAL_RECIPIENT) && infoMessage.getPublishDate() != null) {
-			Set<InfoMessageToCurriculumElement> infoMessageToCurriculumElements = infoMessage.getCurriculumElements();
-			if (!infoMessageToCurriculumElements.isEmpty()) {
-				for (InfoMessageToCurriculumElement infoCurEl : infoMessageToCurriculumElements) {
-					sendCurriculumMemberSelection.select("send-mail-curriculum-" + infoCurEl.getCurriculumElement().getKey().toString(), true);
-				}
+			sendMembersSelection = addOptionsCheckboxes("indi.members", formLayout, memberOptions, false);
+			if (isIndividualRecipient) {
+				preSelectFromSendMailTo(sendMembersSelection, sendMailToKeys);
 			}
 		}
 
 		updateIndividualContainerVisibility();
+	}
+
+	/**
+	 * Course-role options (owner/coach/participant, plus the course-only coach/participant
+	 * variants) for the given role, combined variant first, course-only variant second.
+	 */
+	private List<SendMailOption> filterCourseRoleOptions(GroupRoles role) {
+		return courseRoleOptions.stream()
+				.filter(option -> option.getOptionKey().equals(role.name()) || option.getOptionKey().equals(role.name() + "-course"))
+				.sorted(Comparator.comparing(option -> option.getOptionKey().endsWith("-course")))
+				.toList();
+	}
+
+	private List<SendMailOption> filterGroupOptions(GroupRoles role) {
+		if (groupOptions == null) {
+			return List.of();
+		}
+		return groupOptions.stream()
+				.filter(SendMailGroupOption.class::isInstance)
+				.map(SendMailGroupOption.class::cast)
+				.filter(option -> option.getRole() == role)
+				.sorted(Comparator.comparing(option -> option.getBusinessGroup().getName(), String.CASE_INSENSITIVE_ORDER))
+				.map(SendMailOption.class::cast)
+				.toList();
+	}
+
+	private List<SendMailOption> filterCurriculumOptions(CurriculumRoles role) {
+		if (curriculaOptions == null) {
+			return List.of();
+		}
+		return curriculaOptions.stream()
+				.filter(SendMailCurriculumOption.class::isInstance)
+				.map(SendMailCurriculumOption.class::cast)
+				.filter(option -> option.getRole() == role)
+				.sorted(Comparator.comparing(option -> option.getCurriculumElement().getDisplayName(), String.CASE_INSENSITIVE_ORDER))
+				.map(SendMailOption.class::cast)
+				.toList();
+	}
+
+	private MultipleSelectionElement addOptionsCheckboxes(String name, FormItemContainer formLayout, List<SendMailOption> options, boolean allowHtml) {
+		String[] keys = options.stream().map(SendMailOption::getOptionKey).toArray(String[]::new);
+		String[] values = options.stream().map(SendMailOption::getOptionName).toArray(String[]::new);
+		MultipleSelectionElement element = uifactory.addCheckboxesVertical(name, formLayout, keys, values, 1);
+		if (allowHtml) {
+			// values may contain a muted HTML span for the CPL element reference (see SendMailCurriculumOption) -
+			// every label sharing this widget must therefore already be escaped by its own SendMailOption
+			element.setEscapeHtml(false);
+		}
+		return element;
+	}
+
+	private void preSelectFromSendMailTo(MultipleSelectionElement element, Set<String> sendMailToKeys) {
+		for (String key : element.getKeys()) {
+			if (sendMailToKeys.contains(key)) {
+				element.select(key, true);
+			}
+		}
+	}
+
+	/**
+	 * Pre-selects, for each linked group/curriculum element, exactly the role(s) recorded on its
+	 * own InfoMessageToGroup/InfoMessageToCurriculumElement.sendMailTo value.
+	 */
+	private void preSelectGroupsAndCurricula(InfoMessage infoMessage) {
+		Set<InfoMessageToGroup> infoMessageToGroups = infoMessage.getGroups();
+		if (infoMessageToGroups != null) {
+			for (InfoMessageToGroup infoGroup : infoMessageToGroups) {
+				String groupKey = infoGroup.getBusinessGroup().getKey().toString();
+				Set<String> roles = parseRoles(infoGroup.getSendMailTo());
+				if (roles.contains(GroupRoles.coach.name())) {
+					sendCoachSelection.select("send-mail-group-coach-" + groupKey, true);
+				}
+				if (roles.contains(GroupRoles.participant.name())) {
+					sendParticipantSelection.select("send-mail-group-participant-" + groupKey, true);
+				}
+			}
+		}
+
+		Set<InfoMessageToCurriculumElement> infoMessageToCurriculumElements = infoMessage.getCurriculumElements();
+		if (infoMessageToCurriculumElements != null) {
+			for (InfoMessageToCurriculumElement infoCurEl : infoMessageToCurriculumElements) {
+				String curriculumElementKey = infoCurEl.getCurriculumElement().getKey().toString();
+				Set<String> roles = parseRoles(infoCurEl.getSendMailTo());
+				if (roles.contains(CurriculumRoles.coach.name())) {
+					sendCoachSelection.select("send-mail-curriculum-coach-" + curriculumElementKey, true);
+				}
+				if (roles.contains(CurriculumRoles.participant.name())) {
+					sendParticipantSelection.select("send-mail-curriculum-participant-" + curriculumElementKey, true);
+				}
+			}
+		}
+	}
+
+	private static Set<String> parseRoles(String sendMailTo) {
+		return StringHelper.containsNonWhitespace(sendMailTo) ? new HashSet<>(Arrays.asList(sendMailTo.split(","))) : Set.of();
+	}
+
+	private Set<String> parseSendMailToKeys(InfoMessage infoMessage) {
+		String sendMailTo = infoMessage.getSendMailTo();
+		if (!StringHelper.containsNonWhitespace(sendMailTo)) {
+			return Set.of();
+		}
+		return new HashSet<>(Arrays.asList(sendMailTo.split(",")));
 	}
 
 	@Override
@@ -302,14 +409,15 @@ public class SendMailStepController extends StepFormBasicController {
 	private void updateIndividualContainerVisibility() {
 		// Update visibility of UI elements
 		recipientEl.setVisible(notificationEl.isKeySelected(WizardConstants.SEND_TO_SUBS_AND_MAILS));
-		sendSubscriberSelection.setVisible(recipientEl.isVisible() && recipientEl.isKeySelected(WizardConstants.INDIVIDUAL_RECIPIENT));
-		sendCourseMemberSelection.setVisible(recipientEl.isVisible() && recipientEl.isKeySelected(WizardConstants.INDIVIDUAL_RECIPIENT));
-		sendGroupMemberSelection.setVisible(recipientEl.isVisible()
-				&& recipientEl.isKeySelected(WizardConstants.INDIVIDUAL_RECIPIENT)
-				&& !ArrayUtils.isEmpty(sendGroupsOptionKeys));
-		sendCurriculumMemberSelection.setVisible(recipientEl.isVisible()
-				&& recipientEl.isKeySelected(WizardConstants.INDIVIDUAL_RECIPIENT)
-				&& !ArrayUtils.isEmpty(sendCurriculaOptionKeys));
+		boolean showIndividual = recipientEl.isVisible() && recipientEl.isKeySelected(WizardConstants.INDIVIDUAL_RECIPIENT);
+		sendSubscriberSelection.setVisible(showIndividual);
+		if (hasGroupsOrCurricula) {
+			sendOwnerSelection.setVisible(showIndividual);
+			sendCoachSelection.setVisible(showIndividual);
+			sendParticipantSelection.setVisible(showIndividual);
+		} else {
+			sendMembersSelection.setVisible(showIndividual);
+		}
 	}
 
 	@Override
@@ -329,26 +437,44 @@ public class SendMailStepController extends StepFormBasicController {
 				addToRunContext(WizardConstants.SEND_MAIL_SUBSCRIBERS, sendSubscriberSelection.isKeySelected(WizardConstants.SEND_MAIL_SUBSCRIBERS));
 			}
 
-			if (sendCourseMemberSelection != null) {
-				addToRunContext(WizardConstants.RECIPIENT_MODE, recipientEl.getSelectedKey());
-				if (recipientEl.isKeySelected(WizardConstants.ALL_COURSE_MEMBERS)) {
-					addToRunContext(WizardConstants.SEND_MAIL, sendCourseMemberSelection.getKeys());
+			addToRunContext(WizardConstants.RECIPIENT_MODE, recipientEl.getSelectedKey());
+			if (recipientEl.isKeySelected(WizardConstants.ALL_COURSE_MEMBERS)) {
+				// "All members": bypass the checkboxes entirely, same 3 historical keys as before this change;
+				// group/curriculum-specific selections are never part of this bypass, matching prior behaviour
+				addToRunContext(WizardConstants.SEND_MAIL, new LinkedHashSet<>(Arrays.asList(combinedCourseRoleOptionKeys)));
+				addToRunContext(WizardConstants.SEND_GROUPS, Set.of());
+				addToRunContext(WizardConstants.SEND_CURRICULA, Set.of());
+			} else {
+				Set<String> allSelected = new HashSet<>();
+				if (hasGroupsOrCurricula) {
+					allSelected.addAll(sendOwnerSelection.getSelectedKeys());
+					allSelected.addAll(sendCoachSelection.getSelectedKeys());
+					allSelected.addAll(sendParticipantSelection.getSelectedKeys());
 				} else {
-					addToRunContext(WizardConstants.SEND_MAIL, sendCourseMemberSelection.getSelectedKeys());
+					allSelected.addAll(sendMembersSelection.getSelectedKeys());
 				}
-			}
 
-			if (sendGroupMemberSelection != null) {
-				addToRunContext(WizardConstants.SEND_GROUPS, sendGroupMemberSelection.getSelectedKeys());
-			}
-
-			if (sendCurriculumMemberSelection != null) {
-				addToRunContext(WizardConstants.SEND_CURRICULA, sendCurriculumMemberSelection.getSelectedKeys());
+				addToRunContext(WizardConstants.SEND_MAIL, intersect(allSelected, sendCourseRolesOptionKeys));
+				addToRunContext(WizardConstants.SEND_GROUPS, intersect(allSelected, sendGroupsOptionKeys));
+				addToRunContext(WizardConstants.SEND_CURRICULA, intersect(allSelected, sendCurriculaOptionKeys));
 			}
 		} else {
 			addToRunContext(WizardConstants.PUBLICATION_NOTIFICATION_TYPE, WizardConstants.ONLY_NOTIFY_SUBS);
 		}
 
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+
+	private static Set<String> intersect(Set<String> selectedKeys, String[] candidateKeys) {
+		if (ArrayUtils.isEmpty(candidateKeys)) {
+			return Set.of();
+		}
+		Set<String> result = new LinkedHashSet<>();
+		for (String key : candidateKeys) {
+			if (selectedKeys.contains(key)) {
+				result.add(key);
+			}
+		}
+		return result;
 	}
 }

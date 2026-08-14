@@ -64,6 +64,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -183,30 +184,35 @@ public class InfoRunController extends BasicController {
 			listenTo(subscriptionController);
 		}	
 		
+		List<BusinessGroup> activeGroups = new ArrayList<>();
+		for (BusinessGroup group : cgm.getAllBusinessGroups()) {
+			if (group.getGroupStatus().equals(BusinessGroupStatusEnum.active)) {
+				activeGroups.add(group);
+			}
+		}
+		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(courseEntry);
+		boolean hasGroupsOrCurricula = !activeGroups.isEmpty() || !curriculumElements.isEmpty();
+
 		infoDisplayController = new InfoDisplayController(ureq, getWindowControl(), maxResults, duration, secCallback, infoResourceable, resSubPath, businessPath);
 		infoDisplayController.setSendSubscriberOption(new SendSubscriberMailOption(infoResourceable, resSubPath, getLocale()));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.owner, translate("wizard.step1.send_option.owner")));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.coach, translate("wizard.step1.send_option.coach")));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.participant, translate("wizard.step1.send_option.participant")));
-		
-		List<GroupRoles> groupRolesToSend = new ArrayList<>();
-		groupRolesToSend.add(GroupRoles.participant);
-		groupRolesToSend.add(GroupRoles.coach);
-		groupRolesToSend.add(GroupRoles.owner);
-		
-		for (BusinessGroup group : cgm.getAllBusinessGroups()) {
-			if (group.getGroupStatus().equals(BusinessGroupStatusEnum.active)) {
-				infoDisplayController.addGroupMailOption(new SendMailGroupOption(group, groupRolesToSend));
-			}
+		if (hasGroupsOrCurricula) {
+			infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.coach,
+					RepositoryEntryRelationType.defaultGroup, translate("wizard.step1.send_option.coach.course")));
+			infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.participant,
+					RepositoryEntryRelationType.defaultGroup, translate("wizard.step1.send_option.participant.course")));
 		}
 		
-		List<CurriculumRoles> curriculumRolesToSend = new ArrayList<>();
-		curriculumRolesToSend.add(CurriculumRoles.participant);
-		curriculumRolesToSend.add(CurriculumRoles.coach);
-		curriculumRolesToSend.add(CurriculumRoles.owner);
+		for (BusinessGroup group : activeGroups) {
+			infoDisplayController.addGroupMailOption(new SendMailGroupOption(group, GroupRoles.coach, getLocale()));
+			infoDisplayController.addGroupMailOption(new SendMailGroupOption(group, GroupRoles.participant, getLocale()));
+		}
 		
-		for (CurriculumElement curriculumElement : curriculumService.getCurriculumElements(courseEntry)) {
-			infoDisplayController.addCurriuclaMailOptions(new SendMailCurriculumOption(curriculumElement, curriculumRolesToSend));
+		for (CurriculumElement curriculumElement : curriculumElements) {
+			infoDisplayController.addCurriuclaMailOptions(new SendMailCurriculumOption(curriculumElement, CurriculumRoles.coach, getLocale()));
+			infoDisplayController.addCurriuclaMailOptions(new SendMailCurriculumOption(curriculumElement, CurriculumRoles.participant, getLocale()));
 		}
 
 		MailFormatter mailFormatter = new SendInfoMailFormatter(infoMailTitle, businessPath, getTranslator());

@@ -65,9 +65,18 @@ public interface InfoMessageManager {
 	 *
 	 * @param infoMessage new entry belongs to this specific infoMessage
 	 * @param businessGroup new entry is linked to this specific group
+	 * @param sendMailTo comma-separated roles (coach/participant) selected for this group
 	 * @return InfoMessageToGroup object
 	 */
-	InfoMessageToGroup createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup);
+	InfoMessageToGroup createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup, String sendMailTo);
+
+	/**
+	 * update the roles selected for an existing infoMessageToGroup entry
+	 *
+	 * @param infoMessageToGroup entry to update
+	 * @param sendMailTo comma-separated roles (coach/participant) selected for this group
+	 */
+	void updateInfoMessageToGroup(InfoMessageToGroup infoMessageToGroup, String sendMailTo);
 
 	/**
 	 * retrieve all infoMessageToGroup objects with given group
@@ -89,9 +98,18 @@ public interface InfoMessageManager {
 	 *
 	 * @param infoMessage new entry belongs to this specific infoMessage
 	 * @param curriculumElement new entry is linked to this specific curriculumElement
+	 * @param sendMailTo comma-separated roles (coach/participant) selected for this curriculum element
 	 * @return infoMessageToCurriculumElement object
 	 */
-	InfoMessageToCurriculumElement createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement);
+	InfoMessageToCurriculumElement createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement, String sendMailTo);
+
+	/**
+	 * update the roles selected for an existing infoMessageToCurriculumElement entry
+	 *
+	 * @param infoMessageToCurriculumElement entry to update
+	 * @param sendMailTo comma-separated roles (coach/participant) selected for this curriculum element
+	 */
+	void updateInfoMessageToCurriculumElement(InfoMessageToCurriculumElement infoMessageToCurriculumElement, String sendMailTo);
 
 	/**
 	 * retrieve all infoMessageToCurriculumElement objects with given group

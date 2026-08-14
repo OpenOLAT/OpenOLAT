@@ -43,4 +43,13 @@ public interface InfoMessageToCurriculumElement {
 	 * @return related curriculumElement object
 	 */
 	CurriculumElement getCurriculumElement();
+
+	/**
+	 * comma-separated list of roles (owner/coach/participant) of the curriculumElement which should receive an e-mail
+	 *
+	 * @return the roles selected for this curriculum element
+	 */
+	String getSendMailTo();
+
+	void setSendMailTo(String sendMailTo);
 }

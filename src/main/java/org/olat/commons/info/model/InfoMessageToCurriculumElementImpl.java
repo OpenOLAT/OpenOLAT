@@ -57,6 +57,9 @@ public class InfoMessageToCurriculumElementImpl implements Persistable, InfoMess
 	@JoinColumn(name = "fk_cur_element_id", nullable = false, updatable = false)
 	private CurriculumElement curriculumElement;
 
+	@Column(name = "sendmailto")
+	private String sendMailTo;
+
 	@Override
 	public InfoMessage getInfoMessage() {
 		return infoMessage;
@@ -73,6 +76,16 @@ public class InfoMessageToCurriculumElementImpl implements Persistable, InfoMess
 
 	public void setCurriculumElement(CurriculumElement curriculumElement) {
 		this.curriculumElement = curriculumElement;
+	}
+
+	@Override
+	public String getSendMailTo() {
+		return sendMailTo;
+	}
+
+	@Override
+	public void setSendMailTo(String sendMailTo) {
+		this.sendMailTo = sendMailTo;
 	}
 
 	@Override

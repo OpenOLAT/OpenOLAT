@@ -20,11 +20,14 @@
 package org.olat.commons.info.ui;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 
@@ -35,35 +38,40 @@ import org.olat.group.BusinessGroupService;
  */
 public class SendMailGroupOption implements SendMailOption {
 
-	private final List<GroupRoles> roles;
+	private final GroupRoles role;
 	private final BusinessGroup businessGroup;
+	private final String label;
 
-	public SendMailGroupOption(BusinessGroup businessGroup, List<GroupRoles> roles) {
-		this.roles = roles;
+	public SendMailGroupOption(BusinessGroup businessGroup, GroupRoles role, Locale locale) {
+		this.role = role;
 		this.businessGroup = businessGroup;
+		String key = role == GroupRoles.coach
+				? "wizard.step1.send_option.group.coach"
+				: "wizard.step1.send_option.group.participant";
+		this.label = Util.createPackageTranslator(SendMailGroupOption.class, locale)
+				.translate(key, StringHelper.escapeHtml(businessGroup.getName()));
 	}
 
 	public BusinessGroup getBusinessGroup() {
 		return businessGroup;
 	}
 
+	public GroupRoles getRole() {
+		return role;
+	}
+
 	@Override
 	public String getOptionKey() {
-		return "send-mail-group-" + businessGroup.getKey();
+		return "send-mail-group-" + role.name() + "-" + businessGroup.getKey();
 	}
 
 	@Override
 	public String getOptionName() {
-		return businessGroup.getName() + " (" + getSelectedIdentities().size() + ")";
+		return label + " (" + getSelectedIdentities().size() + ")";
 	}
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
-		String[] rolesArray = new String[roles.size()];
-		for (int i = 0; i < roles.size(); i++) {
-			rolesArray[i] = roles.get(i).name();
-		}
-
-		return Objects.requireNonNull(CoreSpringFactory.getImpl(BusinessGroupService.class)).getMembers(businessGroup, rolesArray);
+		return Objects.requireNonNull(CoreSpringFactory.getImpl(BusinessGroupService.class)).getMembers(businessGroup, role.name());
 	}
 }

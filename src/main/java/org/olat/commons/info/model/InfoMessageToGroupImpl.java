@@ -59,6 +59,9 @@ public class InfoMessageToGroupImpl implements Persistable, InfoMessageToGroup {
 	@JoinColumn(name = "fk_group_id", nullable = false, insertable = true, updatable = false)
 	private BusinessGroup businessGroup;
 
+	@Column(name = "sendmailto")
+	private String sendMailTo;
+
 	@Override
 	public InfoMessage getInfoMessage() {
 		return infoMessage;
@@ -75,6 +78,16 @@ public class InfoMessageToGroupImpl implements Persistable, InfoMessageToGroup {
 
 	public void setBusinessGroup(BusinessGroup businessGroup) {
 		this.businessGroup = businessGroup;
+	}
+
+	@Override
+	public String getSendMailTo() {
+		return sendMailTo;
+	}
+
+	@Override
+	public void setSendMailTo(String sendMailTo) {
+		this.sendMailTo = sendMailTo;
 	}
 
 	@Override

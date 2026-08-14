@@ -554,8 +554,13 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	}
 
 	@Override
-	public void createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup) {
-		infoMessageManager.createInfoMessageToGroup(infoMessage, businessGroup);
+	public void createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup, String sendMailTo) {
+		infoMessageManager.createInfoMessageToGroup(infoMessage, businessGroup, sendMailTo);
+	}
+
+	@Override
+	public void updateInfoMessageToGroup(InfoMessageToGroup infoMessageToGroup, String sendMailTo) {
+		infoMessageManager.updateInfoMessageToGroup(infoMessageToGroup, sendMailTo);
 	}
 
 	@Override
@@ -564,8 +569,13 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	}
 
 	@Override
-	public void createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement) {
-		infoMessageManager.createInfoMessageToCurriculumElement(infoMessage, curriculumElement);
+	public void createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement, String sendMailTo) {
+		infoMessageManager.createInfoMessageToCurriculumElement(infoMessage, curriculumElement, sendMailTo);
+	}
+
+	@Override
+	public void updateInfoMessageToCurriculumElement(InfoMessageToCurriculumElement infoMessageToCurriculumElement, String sendMailTo) {
+		infoMessageManager.updateInfoMessageToCurriculumElement(infoMessageToCurriculumElement, sendMailTo);
 	}
 
 	@Override

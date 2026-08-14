@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -80,6 +81,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.run.GoToEvent;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -675,26 +677,32 @@ public class InfoDisplayController extends FormBasicController {
 		}
 
 		private void handleGroupOptions(InfoMessage msg, Set<String> selectedGroupOptions) {
-			// create link entries between infoMessage and groups
 			Set<InfoMessageToGroup> infoMessageToGroups = msg.getGroups() != null ? msg.getGroups() : new HashSet<>();
-			// check if group already is saved for given message, if not then create an entry
-			for (SendMailOption option : groupsMailOptions) {
-				if (selectedGroupOptions.contains(option.getOptionKey())
-						&& (option instanceof SendMailGroupOption groupOption)
-						&& (infoMessageToGroups.stream().noneMatch(ig -> ig.getBusinessGroup().equals(groupOption.getBusinessGroup())))) {
-					infoMessageManager.createInfoMessageToGroup(msg, groupOption.getBusinessGroup());
+
+			// create group to role set (coach/participant) mapping for options selected in the UI
+			Map<BusinessGroup, String> selectedRolesByGroup = groupsMailOptions.stream()
+					.filter(option -> selectedGroupOptions.contains(option.getOptionKey()))
+					.filter(SendMailGroupOption.class::isInstance)
+					.map(SendMailGroupOption.class::cast)
+					.collect(Collectors.groupingBy(SendMailGroupOption::getBusinessGroup,
+							Collectors.mapping(option -> option.getRole().name(), Collectors.joining(","))));
+
+			// existing info_message to group relations
+			for (InfoMessageToGroup infoGroup : infoMessageToGroups) {
+				String roles = selectedRolesByGroup.remove(infoGroup.getBusinessGroup());
+				
+				// there is nothing selected in the UI for the group-part of the relation: delete it in the DB
+				if (roles == null) {
+					infoMessageManager.deleteInfoMessageToGroup(infoGroup);
+					
+				// there is something selected in the UI for the group-part of the relation: update it in the DB	
+				} else if (!roles.equals(infoGroup.getSendMailTo())) {
+					infoMessageManager.updateInfoMessageToGroup(infoGroup, roles);
 				}
 			}
 
-			// if group gets deselected, delete connection to infoMessage
-			if (!infoMessageToGroups.isEmpty()) {
-				for (InfoMessageToGroup infoGroup : infoMessageToGroups) {
-					if (!selectedGroupOptions
-							.contains("send-mail-group-" + infoGroup.getBusinessGroup().getKey().toString())) {
-						infoMessageManager.deleteInfoMessageToGroup(infoGroup);
-					}
-				}
-			}
+			// whatever remains has no existing info_message to group relation yet: add to the DB
+			selectedRolesByGroup.forEach((group, roles) -> infoMessageManager.createInfoMessageToGroup(msg, group, roles));
 		}
 
 		private void addIdentitiesFromCurriculumOptions(Set<String> selectedCurriculumOptions, Set<Identity> identities) {
@@ -706,30 +714,35 @@ public class InfoDisplayController extends FormBasicController {
 		}
 
 		private void handleCurriculumOptions(InfoMessage msg, Set<String> selectedCurriculumOptions) {
-			// create link entries between infoMessage and curricula
 			Set<InfoMessageToCurriculumElement> infoMessageToCurriculumElements = msg.getCurriculumElements() != null
 					? msg.getCurriculumElements()
 					: new HashSet<>();
+			
+			// create curriculum element to role set (coach/participant) mappings for options selected in the UI
+			Map<CurriculumElement, String> selectedRolesByCurriculumElement = curriculaMailOptions.stream()
+					.filter(option -> selectedCurriculumOptions.contains(option.getOptionKey()))
+					.filter(SendMailCurriculumOption.class::isInstance)
+					.map(SendMailCurriculumOption.class::cast)
+					.collect(Collectors.groupingBy(SendMailCurriculumOption::getCurriculumElement,
+							Collectors.mapping(option -> option.getRole().name(), Collectors.joining(","))));
 
-			// check if curriculumElement already is saved for given message, if not then create an entry
-			for (SendMailOption option : curriculaMailOptions) {
-				if (selectedCurriculumOptions.contains(option.getOptionKey())
-						&& (option instanceof SendMailCurriculumOption curriculumOption)
-						&& (infoMessageToCurriculumElements.stream()
-						.noneMatch(g -> g.getCurriculumElement().equals(curriculumOption.getCurriculumElement())))) {
-					infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumOption.getCurriculumElement());
+			// existing info_message to curriculum element relations
+			for (InfoMessageToCurriculumElement infoCurEl : infoMessageToCurriculumElements) {
+				String roles = selectedRolesByCurriculumElement.remove(infoCurEl.getCurriculumElement());
+
+				// there is nothing selected in the UI for the curriculum-element-part of the relation: delete it in the DB
+				if (roles == null) {
+					infoMessageManager.deleteInfoMessageToCurriculumElement(infoCurEl);
+					
+				// there is something selected in the UI for the curriculum-element-part of the relation: update it in the DB	
+				} else if (!roles.equals(infoCurEl.getSendMailTo())) {
+					infoMessageManager.updateInfoMessageToCurriculumElement(infoCurEl, roles);
 				}
 			}
 
-			// if curriculumElement gets deselected, delete connection to infoMessage
-			if (!infoMessageToCurriculumElements.isEmpty()) {
-				for (InfoMessageToCurriculumElement infoCurEl : infoMessageToCurriculumElements) {
-					if (!selectedCurriculumOptions
-							.contains("send-mail-curriculum-" + infoCurEl.getCurriculumElement().getKey().toString())) {
-						infoMessageManager.deleteInfoMessageToCurriculumElement(infoCurEl);
-					}
-				}
-			}
+			// whatever remains has no existing info_message to curriculum element relation yet: add to the DB
+			selectedRolesByCurriculumElement.forEach((curriculumElement, roles) ->
+					infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement, roles));
 		}
 	}
 	

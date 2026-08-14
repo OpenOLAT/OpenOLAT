@@ -157,10 +157,37 @@ public class InfoManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// createInfoMessageToGroup object/relation
-		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group);
+		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group, "coach");
 		assertNotNull(infoMessageToGroup);
 		// assert that infoMessageToGroup object has same infoMessage like msg
 		assertEquals(infoMessageToGroup.getInfoMessage(), msg);
+		assertEquals("coach", infoMessageToGroup.getSendMailTo());
+	}
+
+	@Test
+	public void testUpdateInfoMessageToGroup() {
+		// create new infoMessage
+		RepositoryEntry entry =  JunitTestHelper.createAndPersistRepositoryEntry();
+		final InfoOLATResourceable ores = new InfoOLATResourceable(entry.getOlatResource().getResourceableId(), entry.getOlatResource().getResourceableTypeName());
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg);
+		infoMessageManager.saveInfoMessage(msg);
+		BusinessGroup group = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, entry);
+		assertNotNull(group);
+		dbInstance.commitAndCloseSession();
+
+		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group, "coach");
+		assertNotNull(infoMessageToGroup);
+		assertEquals("coach", infoMessageToGroup.getSendMailTo());
+
+		// update the roles selected for the group
+		infoMessageManager.updateInfoMessageToGroup(infoMessageToGroup, "coach,participant");
+		dbInstance.commitAndCloseSession();
+
+		List<InfoMessageToGroupImpl> infoMessageToGroups = infoMessageManager.loadInfoMessageToGroupByGroup(group);
+		assertEquals(1, infoMessageToGroups.size());
+		assertEquals("coach,participant", infoMessageToGroups.get(0).getSendMailTo());
 	}
 
 	@Test
@@ -181,10 +208,10 @@ public class InfoManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// create two new infoMessageToGroup objects with different infoMessages
-		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group);
+		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group, "coach");
 		assertNotNull(infoMessageToGroup);
 		assertEquals(infoMessageToGroup.getInfoMessage(), msg);
-		InfoMessageToGroup infoMessageToGroup2 = infoMessageManager.createInfoMessageToGroup(msg2, group);
+		InfoMessageToGroup infoMessageToGroup2 = infoMessageManager.createInfoMessageToGroup(msg2, group, "participant");
 		assertNotNull(infoMessageToGroup2);
 		assertEquals(infoMessageToGroup2.getInfoMessage(), msg2);
 
@@ -211,10 +238,10 @@ public class InfoManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// create two new infoMessageToGroup objects with different infoMessages
-		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group);
+		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group, "coach");
 		assertNotNull(infoMessageToGroup);
 		assertEquals(infoMessageToGroup.getInfoMessage(), msg);
-		InfoMessageToGroup infoMessageToGroup2 = infoMessageManager.createInfoMessageToGroup(msg2, group);
+		InfoMessageToGroup infoMessageToGroup2 = infoMessageManager.createInfoMessageToGroup(msg2, group, "participant");
 		assertNotNull(infoMessageToGroup2);
 		assertEquals(infoMessageToGroup2.getInfoMessage(), msg2);
 
@@ -248,10 +275,10 @@ public class InfoManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// create two new infoMessageToGroup objects with different infoMessages
-		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group1);
+		InfoMessageToGroup infoMessageToGroup = infoMessageManager.createInfoMessageToGroup(msg, group1, "coach");
 		assertNotNull(infoMessageToGroup);
 		assertEquals(infoMessageToGroup.getInfoMessage(), msg);
-		InfoMessageToGroup infoMessageToGroup2 = infoMessageManager.createInfoMessageToGroup(msg2, group2);
+		InfoMessageToGroup infoMessageToGroup2 = infoMessageManager.createInfoMessageToGroup(msg2, group2, "participant");
 		assertNotNull(infoMessageToGroup2);
 		assertEquals(infoMessageToGroup2.getInfoMessage(), msg2);
 		dbInstance.commitAndCloseSession();
@@ -280,10 +307,39 @@ public class InfoManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// infoMessageToCurriculumElement object/relation
-		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement);
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement, "coach");
 		assertNotNull(infoMessageToCurriculumElement);
 		// assert that infoMessageToCurriculumElement object has same infoMessage like msg
 		assertEquals(infoMessageToCurriculumElement.getInfoMessage(), msg);
+		assertEquals("coach", infoMessageToCurriculumElement.getSendMailTo());
+	}
+
+	@Test
+	public void testUpdateInfoMessageToCurriculumElement() {
+		// create new infoMessage
+		RepositoryEntry entry =  JunitTestHelper.createAndPersistRepositoryEntry();
+		final InfoOLATResourceable ores = new InfoOLATResourceable(entry.getOlatResource().getResourceableId(), entry.getOlatResource().getResourceableTypeName());
+		InfoMessage msg = infoMessageManager.createInfoMessage(ores, null, null, id1);
+		assertNotNull(msg);
+		infoMessageManager.saveInfoMessage(msg);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, null);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		assertNotNull(curriculumElement);
+		dbInstance.commitAndCloseSession();
+
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement, "coach");
+		assertNotNull(infoMessageToCurriculumElement);
+		assertEquals("coach", infoMessageToCurriculumElement.getSendMailTo());
+
+		// update the roles selected for the curriculum element
+		infoMessageManager.updateInfoMessageToCurriculumElement(infoMessageToCurriculumElement, "coach,participant");
+		dbInstance.commitAndCloseSession();
+
+		List<InfoMessageToCurriculumElementImpl> infoMessageToCurriculumElements = infoMessageManager.loadInfoMessageToCurriculumElementByCurEl(curriculumElement);
+		assertEquals(1, infoMessageToCurriculumElements.size());
+		assertEquals("coach,participant", infoMessageToCurriculumElements.get(0).getSendMailTo());
 	}
 
 	@Test
@@ -306,10 +362,10 @@ public class InfoManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// create two new infoMessageToCurriculumElement objects with different infoMessages
-		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement);
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement, "coach");
 		assertNotNull(infoMessageToCurriculumElement);
 		assertEquals(infoMessageToCurriculumElement.getInfoMessage(), msg);
-		InfoMessageToCurriculumElement infoMessageToCurriculumElement2 = infoMessageManager.createInfoMessageToCurriculumElement(msg2, curriculumElement);
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement2 = infoMessageManager.createInfoMessageToCurriculumElement(msg2, curriculumElement, "participant");
 		assertNotNull(infoMessageToCurriculumElement2);
 		assertEquals(infoMessageToCurriculumElement2.getInfoMessage(), msg2);
 
@@ -338,10 +394,10 @@ public class InfoManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// create two new infoMessageToCurriculumElement objects with different infoMessages
-		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement);
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement, "coach");
 		assertNotNull(infoMessageToCurriculumElement);
 		assertEquals(infoMessageToCurriculumElement.getInfoMessage(), msg);
-		InfoMessageToCurriculumElement infoMessageToCurriculumElement2 = infoMessageManager.createInfoMessageToCurriculumElement(msg2, curriculumElement);
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement2 = infoMessageManager.createInfoMessageToCurriculumElement(msg2, curriculumElement, "participant");
 		assertNotNull(infoMessageToCurriculumElement2);
 		assertEquals(infoMessageToCurriculumElement2.getInfoMessage(), msg2);
 
@@ -378,10 +434,10 @@ public class InfoManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// create two new infoMessageToCurriculumElement objects with different infoMessages
-		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement);
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement = infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumElement, "coach");
 		assertNotNull(infoMessageToCurriculumElement);
 		assertEquals(infoMessageToCurriculumElement.getInfoMessage(), msg);
-		InfoMessageToCurriculumElement infoMessageToCurriculumElement2 = infoMessageManager.createInfoMessageToCurriculumElement(msg2, curriculumElement2);
+		InfoMessageToCurriculumElement infoMessageToCurriculumElement2 = infoMessageManager.createInfoMessageToCurriculumElement(msg2, curriculumElement2, "participant");
 		assertNotNull(infoMessageToCurriculumElement2);
 		assertEquals(infoMessageToCurriculumElement2.getInfoMessage(), msg2);
 		dbInstance.commitAndCloseSession();

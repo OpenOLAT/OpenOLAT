@@ -43,4 +43,13 @@ public interface InfoMessageToGroup {
 	 * @return related businessGroup object
 	 */
 	BusinessGroup getBusinessGroup();
+
+	/**
+	 * comma-separated list of roles (owner/coach/participant) of the businessGroup which should receive an e-mail
+	 *
+	 * @return the roles selected for this group
+	 */
+	String getSendMailTo();
+
+	void setSendMailTo(String sendMailTo);
 }
