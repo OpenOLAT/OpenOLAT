@@ -151,16 +151,19 @@ public class EssayAiGradingEditorController extends FormBasicController {
 				"ai.grading.learning.objective", 1024,
 				value(grading == null ? null : grading.getLearningObjective()), formLayout);
 		learningObjectiveEl.setEnabled(!readOnly);
+		learningObjectiveEl.setMandatory(true);
 
 		referenceExcerptEl = uifactory.addTextAreaElement("ai.grading.reference.excerpt",
 				"ai.grading.reference.excerpt", -1, 6, 80, true, false,
 				value(grading == null ? null : grading.getReferenceExcerpt()), formLayout);
 		referenceExcerptEl.setEnabled(!readOnly);
+		referenceExcerptEl.setMandatory(true);
 
 		modelAnswerEl = uifactory.addTextAreaElement("ai.grading.model.answer",
 				"ai.grading.model.answer", -1, 8, 80, true, false,
 				value(grading == null ? null : grading.getModelAnswer()), formLayout);
 		modelAnswerEl.setEnabled(!readOnly);
+		modelAnswerEl.setMandatory(true);
 
 		gradingHintsEl = uifactory.addTextAreaElement("ai.grading.hints",
 				"ai.grading.hints", -1, 4, 80, true, false,
@@ -175,6 +178,7 @@ public class EssayAiGradingEditorController extends FormBasicController {
 		bloomLevelEl = uifactory.addDropdownSingleselect("ai.grading.bloom",
 				"ai.grading.bloom", formLayout, bloomKeys.keys(), bloomKeys.values(), null);
 		bloomLevelEl.setEnabled(!readOnly);
+		bloomLevelEl.setMandatory(true);
 		String currentBloom = grading == null ? null : grading.getBloomLevel();
 		if (currentBloom != null && bloomKeys.containsKey(currentBloom)) {
 			bloomLevelEl.select(currentBloom, true);
@@ -182,10 +186,14 @@ public class EssayAiGradingEditorController extends FormBasicController {
 			bloomLevelEl.select(AiBloomLevel.UNDERSTAND.name(), true);
 		}
 
+		String currentLanguage = grading == null ? null : grading.getLanguage();
+		if (!StringHelper.containsNonWhitespace(currentLanguage)) {
+			currentLanguage = getLocale().getLanguage();
+		}
 		languageTagEl = uifactory.addTextElement("ai.grading.language.tag",
-				"ai.grading.language.tag", 16,
-				value(grading == null ? null : grading.getLanguage()), formLayout);
+				"ai.grading.language.tag", 16, value(currentLanguage), formLayout);
 		languageTagEl.setEnabled(!readOnly);
+		languageTagEl.setMandatory(true);
 
 		SelectionValues difficultyKeys = new SelectionValues();
 		difficultyKeys.add(SelectionValues.entry(DIFFICULTY_UNKNOWN_KEY,
@@ -211,6 +219,7 @@ public class EssayAiGradingEditorController extends FormBasicController {
 		keyPointsContainer = FormLayoutContainer.createCustomFormLayout("ai.grading.keypoints",
 				getTranslator(), velocity_root + "/ai_grading_keypoints.html");
 		keyPointsContainer.setLabel("ai.grading.keypoints", null);
+		keyPointsContainer.setExampleKey("ai.grading.weight.sum.hint", null);
 		keyPointsContainer.setRootForm(mainForm);
 		formLayout.add(keyPointsContainer);
 		keyPointsContainer.contextPut("rows", keyPointRows);
@@ -232,6 +241,7 @@ public class EssayAiGradingEditorController extends FormBasicController {
 		rubricCriteriaContainer = FormLayoutContainer.createCustomFormLayout("ai.grading.rubric",
 				getTranslator(), velocity_root + "/ai_grading_rubric.html");
 		rubricCriteriaContainer.setLabel("ai.grading.rubric", null);
+		rubricCriteriaContainer.setExampleKey("ai.grading.weight.sum.hint", null);
 		rubricCriteriaContainer.setRootForm(mainForm);
 		formLayout.add(rubricCriteriaContainer);
 		rubricCriteriaContainer.contextPut("rows", rubricCriterionRows);
@@ -479,21 +489,11 @@ public class EssayAiGradingEditorController extends FormBasicController {
 		return allOk;
 	}
 
-	private boolean validateMandatoryText(FormItem element) {
-		if (element instanceof TextElement te) {
-			te.clearError();
-			if (!StringHelper.containsNonWhitespace(te.getValue())) {
-				te.setErrorKey("form.legende.mandatory");
-				return false;
-			}
-			return true;
-		}
-		if (element instanceof TextAreaElement ta) {
-			ta.clearError();
-			if (!StringHelper.containsNonWhitespace(ta.getValue())) {
-				ta.setErrorKey("form.legende.mandatory");
-				return false;
-			}
+	private boolean validateMandatoryText(TextElement element) {
+		element.clearError();
+		if (!StringHelper.containsNonWhitespace(element.getValue())) {
+			element.setErrorKey("form.legende.mandatory");
+			return false;
 		}
 		return true;
 	}
@@ -521,13 +521,8 @@ public class EssayAiGradingEditorController extends FormBasicController {
 				allOk = false;
 			}
 		}
-		if (!anyValid) {
-			// At least one key point is required
-			if (!keyPointRows.isEmpty()) {
-				keyPointRows.get(0).text.setErrorKey("form.legende.mandatory");
-			}
-			allOk = false;
-		} else if (Math.abs(sum - 1.0) > WEIGHT_SUM_TOLERANCE) {
+		// Key points are optional; the weight sum is only checked once a row is filled.
+		if (anyValid && Math.abs(sum - 1.0) > WEIGHT_SUM_TOLERANCE) {
 			if (!keyPointRows.isEmpty()) {
 				keyPointRows.get(0).weight.setErrorKey("ai.grading.error.weight.sum");
 			}
@@ -558,12 +553,8 @@ public class EssayAiGradingEditorController extends FormBasicController {
 				allOk = false;
 			}
 		}
-		if (!anyValid) {
-			if (!rubricCriterionRows.isEmpty()) {
-				rubricCriterionRows.get(0).name.setErrorKey("form.legende.mandatory");
-			}
-			allOk = false;
-		} else if (Math.abs(sum - 1.0) > WEIGHT_SUM_TOLERANCE) {
+		// Rubric criteria are optional; the weight sum is only checked once a row is filled.
+		if (anyValid && Math.abs(sum - 1.0) > WEIGHT_SUM_TOLERANCE) {
 			if (!rubricCriterionRows.isEmpty()) {
 				rubricCriterionRows.get(0).weight.setErrorKey("ai.grading.error.weight.sum");
 			}
