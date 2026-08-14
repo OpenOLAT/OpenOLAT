@@ -66,10 +66,27 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MailValidationController extends FormBasicController {
 
+	public enum Flow {
+		PW_CHANGE(RegistrationManager.PW_CHANGE),
+		REGISTRATION(RegistrationManager.REGISTRATION),
+		EMAIL_CHANGE(RegistrationManager.EMAIL_CHANGE);
+		
+		private final String action;
+		
+		private Flow(String action) {
+			this.action = action;
+		}
+		
+		public String action() {
+			return action;
+		}
+	}
+	
 	private static final String SEPARATOR = "____________________________________________________________________\n";
-	private final boolean isRegistrationProcess;
+	private final Flow process;
 	private final boolean isUserManager;
 	private final StepsRunContext runContext;
+	private boolean userInformed = false;
 
 	private FormLink validateMailLink;
 	private FormLink resendOtpLink;
@@ -101,15 +118,15 @@ public class MailValidationController extends FormBasicController {
 	private OrganisationService organisationService;
 
 	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm, String invitationEmail,
-									boolean isRegistrationProcess, boolean isUserManager, StepsRunContext runContext) {
-		this(ureq, wControl, mainForm, invitationEmail, isRegistrationProcess, isUserManager, runContext, null);
+			Flow process, boolean isUserManager, StepsRunContext runContext) {
+		this(ureq, wControl, mainForm, invitationEmail, process, isUserManager, runContext, null);
 	}
 
 	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm, String invitationEmail,
-									boolean isRegistrationProcess, boolean isUserManager, StepsRunContext runContext,
-									TextElement externalMailEl) {
+			Flow process, boolean isUserManager, StepsRunContext runContext,
+			TextElement externalMailEl) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
-		this.isRegistrationProcess = isRegistrationProcess;
+		this.process = process;
 		this.isUserManager = isUserManager;
 		this.invitationEmail = invitationEmail;
 		this.runContext = runContext;
@@ -119,7 +136,7 @@ public class MailValidationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (isRegistrationProcess && externalMailEl == null) {
+		if (process == Flow.REGISTRATION && externalMailEl == null) {
 			setFormTitle("reg.title");
 			setFormInfo("reg.desc");
 			formLayout.setElementCssClass("o_sel_registration_email_form");
@@ -207,7 +224,7 @@ public class MailValidationController extends FormBasicController {
 
 		if(StringHelper.containsNonWhitespace(invitationEmail)) {
 			loadOrCreateTemporaryKey(ureq, invitationEmail, ip, whereFromAttrs);
-		} else if ( isEmailEligibleForRegistration(email)) {
+		} else if (isEmailEligibleForRegistration(email)) {
 			loadOrCreateTemporaryKey(ureq, email, ip, whereFromAttrs);
 		} else {
 			// if users with this email address exists, they are informed.
@@ -227,15 +244,9 @@ public class MailValidationController extends FormBasicController {
 			temporaryKey = registrationManager.loadTemporaryKeyByEmail(email);
 		}
 		if (temporaryKey == null) {
-			String action;
-			if (isRegistrationProcess) {
-				action = RegistrationManager.REGISTRATION;
-			} else {
-				action = RegistrationManager.EMAIL_CHANGE;
-			}
+			String action = process.action();
 			temporaryKey = registrationManager.loadOrCreateTemporaryKeyByEmail(
-					email, ip, action, registrationModule.getValidUntilMinutesGui()
-			);
+					email, ip, action, registrationModule.getValidUntilMinutesGui());
 			sendRegistrationEmail(email, whereFromAttrs);
 		} else {
 			// if temporaryKey already exists, then update otp
@@ -276,6 +287,7 @@ public class MailValidationController extends FormBasicController {
 				showError("email.notsent");
 			}
 		}
+		userInformed = true;
 	}
 
 	private String resolveUsername(Identity identity) {
@@ -305,17 +317,20 @@ public class MailValidationController extends FormBasicController {
 
 	private boolean isOtpValid() {
 		TemporaryKey otpToken = registrationManager.loadTemporaryKeyByEmail(getEmailAddress());
-		return otpToken != null && otpToken.getRegistrationKey().equals(otpEl.getValue());
+		return otpToken != null && otpToken.getRegistrationKey().equals(otpEl.getValue())
+				&& process.action().equals(otpToken.getRegAction());
 	}
 
 	private void resendNewOtp(UserRequest ureq) {
-		temporaryKey = registrationManager.updateTemporaryRegistrationKey(getEmailAddress());
-		String serverPath = Settings.getServerContextPathURI();
-		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
-		String[] whereFromAttrs = new String[]{ serverPath, today };
-
-		if (temporaryKey != null) {
-			sendRegistrationEmail(getEmailAddress(), whereFromAttrs);
+		if(!userInformed) {
+			temporaryKey = registrationManager.updateTemporaryRegistrationKey(getEmailAddress());
+			String serverPath = Settings.getServerContextPathURI();
+			String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
+			String[] whereFromAttrs = new String[]{ serverPath, today };
+	
+			if (temporaryKey != null) {
+				sendRegistrationEmail(getEmailAddress(), whereFromAttrs);
+			}
 		}
 		otpEl.reset();
 	}
@@ -333,7 +348,7 @@ public class MailValidationController extends FormBasicController {
 				otpEl.setErrorKey("reg.otp.invalid");
 				allOk = false;
 			}
-		} else if ((validationCont == null || !validationCont.isVisible()) && isRegistrationProcess) {
+		} else if ((validationCont == null || !validationCont.isVisible()) && process == Flow.REGISTRATION) {
 			mailEl.setErrorKey("email.address.not.validated");
 			allOk = false;
 		} else if (!isUserManager) {

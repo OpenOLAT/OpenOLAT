@@ -63,6 +63,7 @@ import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
 import org.olat.registration.DisclaimerFormController;
 import org.olat.registration.MailValidationController;
+import org.olat.registration.MailValidationController.Flow;
 import org.olat.registration.RegistrationPersonalDataController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
@@ -201,7 +202,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	private void initEmailValidation(UserRequest ureq, TextElement mailEl) {
 		flc.remove(submitBtn);
 		mailValidationCtrl = new MailValidationController(ureq, getWindowControl(), mainForm,
-				null, true, false, null, mailEl);
+				null, Flow.REGISTRATION, false, null, mailEl);
 		listenTo(mailValidationCtrl);
 		flc.add(mailValidationCtrl.getInitialFormItem());
 	}

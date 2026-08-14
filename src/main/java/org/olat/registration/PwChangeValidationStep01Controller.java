@@ -322,10 +322,10 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 	private boolean isOtpValid() {
 		if (selectedValidationType.equals(PwChangeVSelectionStep01Controller.PW_CHANGE_VAL_TYPE_MAIL)) {
 			TemporaryKey otpToken = registrationManager.loadTemporaryKeyByEmail(recipientEmail);
-			return otpToken != null && otpToken.getRegistrationKey().equals(otpEl.getValue());
-		} else {
-			return otpEl.getValue().equals(sentToken);
+			return otpToken != null && otpToken.getRegistrationKey().equals(otpEl.getValue())
+					&& RegistrationManager.PW_CHANGE.equals(otpToken.getRegAction());
 		}
+		return otpEl.getValue().equals(sentToken);
 	}
 
 	@Override
