@@ -25,7 +25,6 @@ import org.olat.core.commons.services.ai.AiEssayGenerationService;
 import org.olat.core.commons.services.ai.AiEssayGradingService;
 import org.olat.core.commons.services.ai.AiImageDescriptionService;
 import org.olat.core.commons.services.ai.AiMCQuestionService;
-import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.core.commons.services.ai.model.ImageDescriptionData;
@@ -288,8 +287,7 @@ public class AiFeaturesTestController extends BasicController {
 
 	public AiFeaturesTestController(UserRequest ureq, WindowControl wControl,
 			AiMCQuestionService mcQuestionService, AiImageDescriptionService imageDescriptionService,
-			AiEssayGenerationService aiEssayGenerationService, AiEssayGradingService aiEssayGradingService,
-			AiModule aiModule) {
+			AiEssayGenerationService aiEssayGenerationService, AiEssayGradingService aiEssayGradingService) {
 		super(ureq, wControl);
 		this.mcQuestionService = mcQuestionService;
 		this.imageDescriptionService = imageDescriptionService;

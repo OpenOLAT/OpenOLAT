@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.ai.essay;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.stream.Collectors;
@@ -113,6 +114,21 @@ public class AiGradingTierTest {
 	@Test
 	public void longTier_softTimeoutIsZero() {
 		assertEquals(0L, AiGradingTier.LONG.softTimeoutMs());
+	}
+
+	@Test
+	public void shortTier_maxTokensIs16384() {
+		assertThat(AiGradingTier.SHORT.maxTokens()).isEqualTo(16_384);
+	}
+
+	@Test
+	public void mediumTier_maxTokensIs16384() {
+		assertThat(AiGradingTier.MEDIUM.maxTokens()).isEqualTo(16_384);
+	}
+
+	@Test
+	public void longTier_maxTokensIs16384() {
+		assertThat(AiGradingTier.LONG.maxTokens()).isEqualTo(16_384);
 	}
 
 	// ---------------------------------------------------------------- helpers

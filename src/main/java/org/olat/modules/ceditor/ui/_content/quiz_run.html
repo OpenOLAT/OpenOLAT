@@ -52,7 +52,7 @@
 		<div class="o_quiz_progress">
 			$r.render("progressBar")
 		</div>
-		<div class="o_quiz_question o_essay_ai_correction_host#if($aiCorrectionVisible) o_essay_ai_correction_in_progress#end">
+		<div class="o_quiz_question o_essay_ai_correction_host#if($aiCorrectionVisible) o_essay_ai_correction_in_progress#end#if($aiCorrectionSlowHint) o_essay_ai_correction_slow#end#if($aiCorrectionLongHint) o_essay_ai_correction_long#end">
 			$r.render("question")
 			#if($aiCorrectionVisible)
 				<div class="o_essay_ai_correction_overlay" role="status" aria-live="polite">

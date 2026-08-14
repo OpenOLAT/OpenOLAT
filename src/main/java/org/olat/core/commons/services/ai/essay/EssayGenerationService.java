@@ -271,6 +271,13 @@ public class EssayGenerationService {
 							}
 						}
 					}
+				} catch (AiEssayGenerationResponseTruncatedException essayEx) {
+					// Reasoning model exhausted its token budget on internal
+					// reasoning and returned no content — expected degradation,
+					// not a bug, so log at info and skip the raw-body humanizing.
+					essayFailure = "AI response truncated (essay leg)";
+					log.info("Essay generation leg for requester {} response truncated — will still try MC leg: {}",
+							requester.getKey(), essayEx.getMessage());
 				} catch (Exception essayEx) {
 					String raw = essayEx.getMessage() == null
 							? essayEx.getClass().getSimpleName() : essayEx.getMessage();
