@@ -47,7 +47,13 @@ public class CoachSingleSelectionCellRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof IdentityAssignmentRow assignmentRow
 				&& assignmentRow.getChoices().getComponent().getHTMLRendererSingleton() instanceof SingleSelectionRenderer selectionRenderer) {
-			selectionRenderer.renderSingleRadio(target, assignmentRow.getChoices().getComponent(), index);	
+			if(renderer == null) {
+				if(assignmentRow.getChoices().isSelected(index)) {
+					target.append("x");
+				}
+			} else {
+				selectionRenderer.renderSingleRadio(target, assignmentRow.getChoices().getComponent(), index);
+			}
 		}
 	}
 }

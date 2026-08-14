@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -58,8 +60,10 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.GTAUIFactory;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -68,6 +72,9 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.MemberViewQueries;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -98,6 +105,10 @@ public class GTAResultsExport {
 	private GTAManager gtaManager;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private AssessmentService assessmentService;
+	@Autowired
+	protected MemberViewQueries memberQueries;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -154,8 +165,33 @@ public class GTAResultsExport {
 		for (UserPropertyHandler propertyHandler : userPropertyHandlers) {
 			headerRow.addCell(headerColCnt++, translator.translate(propertyHandler.i18nColumnDescriptorLabelKey()));
 		}
+		
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			headerRow.addCell(headerColCnt++, translator.translate("table.header.group.name"));
+		}
 
-		headerRow.addCell(headerColCnt++, translator.translate("column.field.submitted"));
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+			headerRow.addCell(headerColCnt++, translator.translate("table.header.group.taskTitle"));
+		}
+		
+		headerRow.addCell(headerColCnt++, translator.translate("table.header.group.step"));
+		
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+			headerRow.addCell(headerColCnt++, translator.translate("table.header.assignment.completed"));
+		}
+		
+		headerRow.addCell(headerColCnt++, translator.translate("table.header.submitted"));
+		
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
+			headerRow.addCell(headerColCnt++, translator.translate("table.header.review.correction.acceptation.date.alt"));
+		}
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
+			headerRow.addCell(headerColCnt++, translator.translate("table.header.revision.acceptation.date.alt"));
+		}
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
+			headerRow.addCell(headerColCnt++, translator.translate("table.header.assessment.date"));
+		}
+
 		headerRow.addCell(headerColCnt++, translator.translate("table.header.remarks"));
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, gtaNode);
@@ -172,27 +208,96 @@ public class GTAResultsExport {
 			headerRow.addCell(headerColCnt++, translator.translate("column.header.obligation"));
 		}
 		headerRow.addCell(headerColCnt++, translator.translate("column.header.scoreLastModified"));//last modified
+		
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)) {
+			headerRow.addCell(headerColCnt++, translator.translate("table.header.assignment.coach"));
+		}
+		
 		if (assessmentConfig.hasComment()) {
 			headerRow.addCell(headerColCnt++, translator.translate("column.header.comment"));
 		}
+	
 		headerRow.addCell(headerColCnt, translator.translate("column.header.coachcomment"));//coach comment
 	}
 	
 	private void writeData(List<Identity> assessedIdentities, List<BusinessGroup> businessGroups, OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
+		
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))
+				&& businessGroups == null) {
+			businessGroups = gtaManager.getBusinessGroups(gtaNode);
+		}
+
+		List<BusinessGroupMembership> groupsMemberships = getGroupMemberships(assessedIdentities, businessGroups);
+		Map<Long,String> groupsMap = getGroups(groupsMemberships, businessGroups);
+		
 		Map<Long,Date> firstTimes = userCourseInfosMgr.getInitialLaunchDates(courseEntry, assessedIdentities);
-		Map<Long,Task> tasksMap = getTasks(assessedIdentities, businessGroups);
+		Map<Long,Task> tasksMap = getTasks(groupsMemberships);
+		
+		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(course.getCourseEnvironment(), gtaNode);
+		Map<String,TaskDefinition> fileNameToDefinitions = taskDefinitions.stream()
+				.filter(def -> Objects.nonNull(def.getFilename()))
+				.collect(Collectors.toMap(TaskDefinition::getFilename, Function.identity(), (u, v) -> u));
+		
+		List<AssessmentEntry> assessments = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, gtaNode.getIdent());
+		Map<Long,AssessmentEntry> assessmentsEntriesMap = assessments.stream()
+				.filter(entry -> entry.getIdentity() != null)
+				.collect(Collectors.toMap(entry -> entry.getIdentity().getKey(), Function.identity(), (u, v) -> u));
 		
 		int rowNumber = 0;
 		for(Identity assessedIdentity:assessedIdentities) {
 			Date firstTime = firstTimes.get(assessedIdentity.getKey());
 			Task task = tasksMap.get(assessedIdentity.getKey());
-			writeData(++rowNumber, assessedIdentity, task, firstTime, exportSheet, workbook);
+			TaskDefinition taskDefinition = (task != null && StringHelper.containsNonWhitespace(task.getTaskName()))
+					? fileNameToDefinitions.get(task.getTaskName())
+					: null;
+			AssessmentEntry assessmentEntry = assessmentsEntriesMap.get(assessedIdentity.getKey());
+			String groups = groupsMap.get(assessedIdentity.getKey());
 			
+			writeData(++rowNumber, assessedIdentity, task, taskDefinition, assessmentEntry, firstTime, groups, exportSheet, workbook);
 			dbInstance.commitAndCloseSession();
 		}
 	}
 	
-	private Map<Long,Task> getTasks(List<Identity> assessedIdentities, List<BusinessGroup> businessGroups) {
+	private List<BusinessGroupMembership> getGroupMemberships(List<Identity> assessedIdentities, List<BusinessGroup> businessGroups) {
+		if(GTAType.individual.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))
+				|| businessGroups == null || businessGroups.isEmpty()) {
+			return List.of();
+		}
+
+		List<Long> businessGroupsKeys = businessGroups.stream()
+				.map(BusinessGroup::getKey)
+				.collect(Collectors.toList());
+		Identity[] assessedIdentitiesArr = assessedIdentities.toArray(new Identity[assessedIdentities.size()]);
+		return businessGroupService.getBusinessGroupMembership(businessGroupsKeys, assessedIdentitiesArr);
+	}
+	
+	private Map<Long,String> getGroups(List<BusinessGroupMembership> groupsMemberships, List<BusinessGroup> businessGroups) {
+		if(GTAType.individual.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))
+				|| businessGroups == null || businessGroups.isEmpty()) {
+			return Map.of();
+		}
+		
+		Map<Long,String> businessGroupsNames = businessGroups.stream()
+				.collect(Collectors.toMap(BusinessGroup::getKey, BusinessGroup::getName, (u, v) -> u));
+	
+		Map<Long,String> membershipsMap = new HashMap<>();
+		for(BusinessGroupMembership membership:groupsMemberships) {
+			String name = businessGroupsNames.get(membership.getGroupKey());
+			if(StringHelper.containsNonWhitespace(name) && membership.isParticipant()) {
+			
+				String names = membershipsMap.get(membership.getIdentityKey());
+				if(names == null) {
+					membershipsMap.put(membership.getIdentityKey(), name);
+				} else {
+					names += ", " + name;
+					membershipsMap.put(membership.getIdentityKey(), names);
+				}
+			}
+		}
+		return membershipsMap;
+	}
+	
+	private Map<Long,Task> getTasks(List<BusinessGroupMembership> groupsMemberships) {
 		TaskList taskList = gtaManager.getTaskList(courseEntry, gtaNode);
 		if(taskList == null) {
 			return new HashMap<>();
@@ -200,27 +305,18 @@ public class GTAResultsExport {
 
 		List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
 		Map<Long,Task> tasksMap;
-		if("ita".equals(gtaNode.getType())) {
+
+		if(GTAType.individual.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			tasksMap = tasks.stream()
 				.filter(task -> task.getIdentity() != null)
 				.collect(Collectors.toMap(task -> task.getIdentity().getKey(), task -> task, (u, v) -> u));
 		} else {
-			if(businessGroups == null) {
-				businessGroups = gtaManager.getBusinessGroups(gtaNode);
-			}
-			
-			List<Long> businessGroupsKeys = businessGroups.stream()
-					.map(BusinessGroup::getKey)
-					.collect(Collectors.toList());
-			Identity[] assessedIdentitiesArr = assessedIdentities.toArray(new Identity[assessedIdentities.size()]);
-			List<BusinessGroupMembership> memberships = businessGroupService.getBusinessGroupMembership(businessGroupsKeys, assessedIdentitiesArr);
-			
 			Map<Long,Task> groupTasksMap = tasks.stream()
 					.filter(task -> task.getBusinessGroup() != null)
 					.collect(Collectors.toMap(task -> task.getBusinessGroup().getKey(), task -> task, (u, v) -> u));
 			
 			tasksMap = new HashMap<>();
-			for(BusinessGroupMembership membership:memberships) {
+			for(BusinessGroupMembership membership:groupsMemberships) {
 				if(!membership.isParticipant()) continue;
 				
 				Task task = groupTasksMap.get(membership.getGroupKey());
@@ -232,7 +328,9 @@ public class GTAResultsExport {
 		return tasksMap;
 	}
 	
-	private void writeData(int rowNumber, Identity assessedIdentity, Task task, Date firstTime, OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
+	private void writeData(int rowNumber, Identity assessedIdentity, Task task, TaskDefinition taskDefinition,
+			AssessmentEntry assessmentEntry, Date firstTime, String groups,
+			OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
 		Row dataRow = exportSheet.newRow();
 		int dataColCnt = 0;
 
@@ -255,7 +353,11 @@ public class GTAResultsExport {
 				dataColCnt++;
 			}
 		}
-
+		
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			dataRow.addCell(dataColCnt++, groups);
+		}
+		
 		// create a identenv with no roles, no attributes, no locale
 		IdentityEnvironment ienv = new IdentityEnvironment();
 		ienv.setIdentity(assessedIdentity);
@@ -265,15 +367,47 @@ public class GTAResultsExport {
 
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, gtaNode);
 		AssessmentEvaluation se = scoreAccount.evalCourseNode(gtaNode);
+		
+		// Task title/name
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+			String title = taskDefinition == null ? null : taskDefinition.getTitle();
+			if(!StringHelper.containsNonWhitespace(title) && task != null) {
+				title = task.getTaskName();
+			}
+			dataRow.addCell(dataColCnt++, title);
+		}
+		
+		//Step
+		String status = task == null
+				? null
+				: translator.translate("process." + task.getTaskStatus());
+		dataRow.addCell(dataColCnt++, status);
+		
+		// Assignment date
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+			Date assignmentDate = task == null ? null : task.getAssignmentDate();
+			dataRow.addCell(dataColCnt++, assignmentDate, workbook.getStyles().getDateStyle());
+		}
 
 		Date submissionDate = null;
 		if(task != null) {
 			submissionDate = task.getCollectionDate() == null ? task.getSubmissionDate() : task.getCollectionDate();
 		}
-		if (submissionDate != null) {
-			dataRow.addCell(dataColCnt, submissionDate, workbook.getStyles().getDateStyle());
+		dataRow.addCell(dataColCnt++, submissionDate, workbook.getStyles().getDateStyle());
+		
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
+			Date acceptationDate = task == null || task.getRevisionLoop() > 0 ? null : task.getAcceptationDate();
+			dataRow.addCell(dataColCnt++, acceptationDate, workbook.getStyles().getDateStyle());
 		}
-		dataColCnt++;
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
+			Date acceptationDate = task == null || task.getRevisionLoop() == 0 ? null : task.getAcceptationDate();
+			dataRow.addCell(dataColCnt++, acceptationDate, workbook.getStyles().getDateStyle());
+		}
+		// Grading date
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
+			Date gradingDate = assessmentEntry == null ? null : assessmentEntry.getAssessmentDone();
+			dataRow.addCell(dataColCnt++, gradingDate, workbook.getStyles().getDateStyle());
+		}
 
 		if(submissionDate != null) {
 			StringBuilder remark = new StringBuilder();
@@ -282,7 +416,7 @@ public class GTAResultsExport {
 			} else if(gtaManager.isSubmissionLate(task, assessedIdentity, null, gtaNode, courseEntry, true)) {
 				remark.append(translator.translate("label.late"));
 			}
-			if(task.getCollectionDate() != null) {
+			if(task != null && task.getCollectionDate() != null) {
 				if(remark.length() > 0) remark.append(", ");
 				remark.append(translator.translate("label.collected"));
 			}
@@ -339,6 +473,14 @@ public class GTAResultsExport {
 		if(se.getLastModified() != null) {
 			dataRow.addCell(dataColCnt++, se.getLastModified(), workbook.getStyles().getDateStyle());
 		} else {
+			dataColCnt++;
+		}
+		
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)) {
+			String coach = assessmentEntry != null && assessmentEntry.getCoach() != null
+					? userManager.getUserDisplayName(assessmentEntry.getCoach())
+					: null;
+			dataRow.addCell(dataColCnt++, coach);
 			dataColCnt++;
 		}
 
