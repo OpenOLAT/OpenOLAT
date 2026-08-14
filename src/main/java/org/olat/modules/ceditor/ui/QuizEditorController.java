@@ -129,15 +129,23 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		// finishes, but the page editor may still hold the pre-update copy.
 		// em.find() on a managed entity returns the cached instance, so
 		// detach first to force a real DB read.
-		var em = dbInstance.getCurrentEntityManager();
-		Long key = quizPart.getKey();
-		if (key != null) {
-			if (em.contains(quizPart)) {
-				em.refresh(quizPart);
-			} else {
-				QuizPart fresh = em.find(QuizPart.class, key);
-				if (fresh != null) {
-					quizPart = fresh;
+		// Only do this while the marker is present: a freshly added quiz has
+		// no pending pos update yet, and AbstractPart.pos (insertable=false,
+		// only written through the owning collection's @OrderColumn) is still
+		// null in the DB until that flush, which would break a refresh/find.
+		String title = quizPart.getSettings() == null ? null : quizPart.getSettings().getTitle();
+		if (title != null && title.startsWith(EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER)) {
+			var em = dbInstance.getCurrentEntityManager();
+			Long key = quizPart.getKey();
+			if (key != null) {
+				em.flush();
+				if (em.contains(quizPart)) {
+					em.refresh(quizPart);
+				} else {
+					QuizPart fresh = em.find(QuizPart.class, key);
+					if (fresh != null) {
+						quizPart = fresh;
+					}
 				}
 			}
 		}
