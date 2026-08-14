@@ -238,6 +238,10 @@ dialog.popover {
 	&.bottom>.arrow {
 		top: 1px;
 	}
+
+	&.top>.arrow {
+		bottom: -9px;
+	}
 }
 
 dialog::backdrop {

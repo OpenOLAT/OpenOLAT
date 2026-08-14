@@ -1,0 +1,14 @@
+<div class="o_share_links">
+	#foreach($link in $links)$r.render($link)#end
+</div>
+#if($r.available("copyLink"))
+<script>
+'use strict';
+jQuery(function() {
+	jQuery('#copyLink').on('click', function(e) {
+		e.preventDefault();
+		o_shareCopyLink('$r.escapeJavaScript($copyUrl)', '$r.escapeJavaScript($copyInfoTitle)', '$r.escapeJavaScript($copyLinkCopiedMessage)');
+	});
+});
+</script>
+#end

@@ -87,32 +87,53 @@
 	z-index: -1;
 }
 		
-/*  social links (FB, twitter, google) from SocialModule.java */
-#o_share { 
+/*  share links (copy link, QR code, social networks) from SocialModule.java */
+#o_share {
 	margin-top: 10px;
-	a { 
+	a {
 		@include opacity(.6);
 	}
-	a:hover { 
-		@include opacity(1); 
+	a:hover {
+		@include opacity(1);
 	}
 }
 
-#o_share, #o_share_social_container { 
-	a { 
+#o_share, .o_share_links {
+	a {
 		color: $o-footer-default-link-color;
-		margin: 0 0.25em 0 0; 
+		margin: 0 0.25em 0 0;
 		@extend %o_undecorated;
 	}
-	a:hover { 
+	a:hover {
 		color: $o-footer-default-link-hover-color;
 	}
 }
 
+.o_share_links {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+}
+
+.o_lightbox_modal_form.o_share_qrcode {
+	text-align: center;
+	width: auto;
+	max-width: 90vw;
+
+	.o_qrcode {
+		margin: 0 auto;
+	}
+
+	.o_share_qrcode_url {
+		margin-top: 0.5em;
+		font-size: $font-size-small;
+		word-break: break-all;
+	}
+}
 
 /* hide images and stuff on mobile */
-@media (max-width: $screen-xs-max) { 
-	#o_counter, #o_footer_version, #o_share {
+@media (max-width: $screen-xs-max) {
+	#o_counter, #o_footer_version {
 		display: none;
 	}
 	#o_footer_impressum {

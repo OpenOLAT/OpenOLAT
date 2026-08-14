@@ -26,11 +26,17 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -43,64 +49,179 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * <h3>Description:</h3>
  * <p>
- * This controller displays a row of buttons to share the link of the current
- * page (perma-link/business-path link) with other people. Besides some common
- * social networks a mail button and a link copy/past button is also
- * implemented.
+ * This controller displays a "Share" link that opens a callout with the
+ * business path link to the current page. The callout offers copying the
+ * link, showing a QR code and, if configured, a few social networks.
+ * Besides that, a separate link lets the user set the current page as the
+ * personal landing page.
  * <p>
- * The list of buttons can be configured in the SocialModule and the olat.properties
+ * The list of the social networks can be configured in the SocialModule and
+ * the olat.properties.
  * <p>
  * <h3>Events thrown by this controller:</h3>
  * <p>
  * none
  * <p>
  * Initial Date: 13.09.2012 <br>
- * 
+ *
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class ShareLinkController extends BasicController {
-	private final VelocityContainer shareLinkVC;
-	
+
+	private final VelocityContainer mainVC;
+	private final Link shareLink;
+	private final Link landingPageLink;
+
+	private ShareLinkListController shareListCtrl;
+	private CloseableCalloutWindowController shareCalloutCtrl;
+	private ShareQrCodeController qrCodeCtrl;
+	private LightboxController qrLightboxCtrl;
+
 	@Autowired
 	private SocialModule socialModule;
-	
+
 	/**
-	 * Standard constructor for the share link controller
 	 * @param ureq
 	 * @param wControl
+	 * @param iconOnly true: the Share link shows the icon only; false: the icon
+	 *            and its translated label are shown
+	 * @param withLandingPageLink true: show the "Set as landing page" link next
+	 *            to Share; false: hide it. The link is shown only if the
+	 *            condition is true and the user is authenticated and not a
+	 *            guest.
 	 */
-	public ShareLinkController(UserRequest ureq, WindowControl wControl) {
+	public ShareLinkController(UserRequest ureq, WindowControl wControl, boolean iconOnly, boolean withLandingPageLink) {
 		super(ureq, wControl);
-		// For simplicity we use only one velocity template
-		shareLinkVC = createVelocityContainer("shareLink");
-		// Add the OpenOLAT base URL from the config
-		shareLinkVC.contextPut("baseURL", Settings.getServerContextPathURI());
-		// Load configured share link buttons from the SocialModule configuration
-		shareLinkVC.contextPut("shareLinks", socialModule.getEnabledShareLinkButtons());
-		// Tell if user is logged in
+		mainVC = createVelocityContainer("shareLink");
+
+		shareLink = LinkFactory.createCustomLink("share", "share", "share.social", Link.LINK, mainVC, this);
+		shareLink.setIconLeftCSS("o_icon o_icon_share o_icon-lg");
+		if (iconOnly) {
+			shareLink.setCustomDisplayText("");
+		}
+		shareLink.setTitle("share.social");
+		shareLink.setAriaDialogOpener();
+
 		UserSession usess = ureq.getUserSession();
-		shareLinkVC.contextPut("isUser", usess.isAuthenticated() && !usess.getRoles().isGuestOnly());
-		putInitialPanel(shareLinkVC);
+		boolean isUser = usess.isAuthenticated() && !usess.getRoles().isGuestOnly();
+		if (withLandingPageLink && isUser) {
+			landingPageLink = LinkFactory.createCustomLink("landingpage", "setLandingPage", "landingpage.set.current", Link.LINK, mainVC, this);
+			landingPageLink.setIconLeftCSS("o_icon o_icon_landingpage o_icon-lg");
+			if (iconOnly) {
+				landingPageLink.setCustomDisplayText("");
+			}
+			landingPageLink.setTitle("landingpage.set.current");
+		} else {
+			landingPageLink = null;
+		}
+
+		putInitialPanel(mainVC);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		UserSession usess = ureq.getUserSession();
-		if (source == shareLinkVC && "setLandingPage".equals(event.getCommand()) && usess != null && usess.isAuthenticated()) {
-			HistoryPoint p = usess.getLastHistoryPoint();
-			if(p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
-				List<ContextEntry> ces = p.getEntries();
-				String landingPage = BusinessControlFactory.getInstance().getAsURIString(ces, true);
-				int start = landingPage.indexOf("/url/");
-				if (start != -1) {
-					// start with / after /url
-					landingPage = landingPage.substring(start + 4);
-				}
-				// update user prefs
-				usess.getGuiPreferences().putAndSave(WindowManager.class, "landing-page", landingPage);				
-				getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand
-						.showInfoMessage(translate("info.header"), translate("landingpage.set.message")));
+		if (source == shareLink) {
+			doOpenShareCallout(ureq);
+		} else if (source == landingPageLink) {
+			doSetLandingPage(ureq);
+		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == shareListCtrl) {
+			if (ShareLinkListController.QR_EVENT == event) {
+				String url = getShareUrl(ureq);
+				shareCalloutCtrl.deactivate();
+				cleanUpCallout();
+				doOpenQrLightbox(ureq, url);
+			}
+		} else if (source == shareCalloutCtrl) {
+			if (CloseableCalloutWindowController.CLOSE_WINDOW_EVENT == event) {
+				cleanUpCallout();
+			}
+		} else if (source == qrLightboxCtrl) {
+			if (Event.CLOSE_EVENT == event) {
+				cleanUpLightbox();
 			}
 		}
+	}
+
+	private void doOpenShareCallout(UserRequest ureq) {
+		cleanUpCallout();
+
+		String url = getShareUrl(ureq);
+		String title = getShareTitle();
+		shareListCtrl = new ShareLinkListController(ureq, getWindowControl(), socialModule.getEnabledShareLinkButtons(), url, title);
+		listenTo(shareListCtrl);
+
+		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottomOrTop, false, null);
+		// set explicitly, the fallback in CloseableCalloutWindowController would use the untranslated i18n key
+		settings.setAriaLabel(translate("share.social"));
+		shareCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				shareListCtrl.getInitialComponent(), shareLink, "", true, "", settings);
+		listenTo(shareCalloutCtrl);
+		shareCalloutCtrl.activate();
+	}
+
+	private void doOpenQrLightbox(UserRequest ureq, String url) {
+		qrCodeCtrl = new ShareQrCodeController(ureq, getWindowControl(), url);
+		listenTo(qrCodeCtrl);
+		qrLightboxCtrl = new LightboxController(ureq, getWindowControl(), qrCodeCtrl);
+		listenTo(qrLightboxCtrl);
+		qrLightboxCtrl.activate();
+	}
+
+	private void doSetLandingPage(UserRequest ureq) {
+		UserSession usess = ureq.getUserSession();
+		if (usess == null || !usess.isAuthenticated()) return;
+
+		HistoryPoint p = usess.getLastHistoryPoint();
+		if (p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
+			List<ContextEntry> ces = p.getEntries();
+			String landingPage = BusinessControlFactory.getInstance().getAsURIString(ces, true);
+			int start = landingPage.indexOf("/url/");
+			if (start != -1) {
+				// start with / after /url
+				landingPage = landingPage.substring(start + 4);
+			}
+			// update user prefs
+			usess.getGuiPreferences().putAndSave(WindowManager.class, "landing-page", landingPage);
+			showInfo("landingpage.set.message");
+		}
+	}
+
+	private String getShareUrl(UserRequest ureq) {
+		HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
+		if (p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
+			return BusinessControlFactory.getInstance().getAsURIString(p.getEntries(), true);
+		}
+		return Settings.getServerContextPathURI();
+	}
+
+	private String getShareTitle() {
+		String title = getWindowControl().getWindowBackOffice().getWindow().getTitle().getValue();
+		return StringHelper.containsNonWhitespace(title) ? title : Settings.getApplicationName();
+	}
+
+	private void cleanUpCallout() {
+		removeAsListenerAndDispose(shareCalloutCtrl);
+		removeAsListenerAndDispose(shareListCtrl);
+		shareCalloutCtrl = null;
+		shareListCtrl = null;
+	}
+
+	private void cleanUpLightbox() {
+		removeAsListenerAndDispose(qrLightboxCtrl);
+		removeAsListenerAndDispose(qrCodeCtrl);
+		qrLightboxCtrl = null;
+		qrCodeCtrl = null;
+	}
+
+	@Override
+	protected void doDispose() {
+		cleanUpCallout();
+		cleanUpLightbox();
+		super.doDispose();
 	}
 }

@@ -184,9 +184,6 @@ function o_init() {
 				url = o_info.serverUri + url;
 			}
 			o_info.businessPath = url;
-			if(!(typeof o_shareActiveSocialUrl === "undefined")) {
-				o_shareActiveSocialUrl();	
-			}
 		}
 	} catch(e) {
 		if (o_info.debug) o_log("error in o_init: "+showerror(e));
@@ -1708,32 +1705,7 @@ function o_popoverWithTitle(id, contentId, title, loc) {
 	return popover;
 }
 
-function o_shareLinkPopup(id, text, loc) {
-	if(typeof(loc)==='undefined') loc = 'top';
-	const elem = jQuery('#' + id);
-	elem.popover({
-    	placement : loc,
-    	html: true,
-    	sanitize: false,
-    	trigger: 'click',
-    	container: 'body',
-    	content: text
-	}).on('shown.bs.popover', function () {
-		const clickListener = function (e) {
-			if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) {
-				jQuery('#' + id).popover('hide');
-				jQuery('body').off('click', clickListener);
-			}
-		};
-		setTimeout(function() {
-			jQuery('body').on('click', clickListener);
-		}, 5);
-	});
-	// make mouse over link text work again
-	elem.attr('title',elem.attr('data-original-title'));
-}
-
-function o_QRCodePopup(id, text, loc, containerSelector) {	
+function o_QRCodePopup(id, text, loc, containerSelector) {
 	if(typeof(loc) === 'undefined') {
 		loc = 'top';
 	}
@@ -2523,9 +2495,6 @@ function o_pushState(historyPointId, title, url) {
 			url = o_info.serverUri + url;
 		}
 		o_info.businessPath = url;
-		if(!(typeof o_shareActiveSocialUrl === "undefined")) {
-			o_shareActiveSocialUrl();	
-		}
 		if(window.history && !(typeof window.history === "undefined") && window.history.pushState) {
 			window.history.pushState(data, title, pUrl);
 		} else {
@@ -3303,6 +3272,13 @@ function o_copyToClipboard(selector) {
 		copyText += jQuery(els.get(i)).text() + "\n";
 	}
 	navigator.clipboard.writeText(copyText);
+}
+
+function o_shareCopyLink(text, title, message) {
+	navigator.clipboard.writeText(text).then(function() {
+		showInfoBox(title, message);
+		jQuery('.o_callout_content a.close').last().trigger('click');
+	});
 }
 
 /*

@@ -167,6 +167,33 @@ public class CloseableCalloutWindowController extends BasicController implements
 	 * need to activate the window. In contrast to the modal dialogs you have to
 	 * render the content of this controller your self with the
 	 * getInitialComponent() method.
+	 *
+	 * @param ureq
+	 *            The user request
+	 * @param wControl
+	 *            The window control
+	 * @param calloutWindowContent
+	 *            The component that should be displayed in the callout window
+	 * @param targetLink
+	 *            The link which the callout should popup from. The link object
+	 *            is not used to catch any events, it only used to get the DOM
+	 *            ID of the link for rendering purpose.
+	 * @param settings
+	 */
+	public CloseableCalloutWindowController(UserRequest ureq,
+			WindowControl wControl, Component calloutWindowContent,
+			Link targetLink, String title, boolean closable, String cssClasses, CalloutSettings settings) {
+		this(ureq, wControl, calloutWindowContent, "o_c" + targetLink.getDispatchID(), title, closable, cssClasses, settings);
+		this.targetLink = targetLink;
+		fallbackAriaLabel(targetLink);
+	}
+
+	/**
+	 * Constructor for a closable callout window controller. After calling the
+	 * constructor, the callout window will be visible immediately, there is no
+	 * need to activate the window. In contrast to the modal dialogs you have to
+	 * render the content of this controller your self with the
+	 * getInitialComponent() method.
 	 * 
 	 * @param ureq The user request
 	 * @param wControl

@@ -14,32 +14,39 @@ function positionBottomOrTopCallout(target, callout) {
 		return;
 	}
 
-	var targetRect = target.get(0).getBoundingClientRect();
-	// If target is a wide object (e.g. a full-width button in a form on a wide screen), 
+	var targetOffset = target.offset();
+	var targetWidth = target.outerWidth();
+	var targetHeight = target.outerHeight();
+	// If target is a wide object (e.g. a full-width button in a form on a wide screen),
 	// let the popup's width grow to that width.
-	if (targetRect && targetRect.width && targetRect.width > 450) {
-		callout.css({'max-width': targetRect.width + 'px', 'width': targetRect.width + 'px', 'padding-left': 0, 'padding-right': 0});
+	if (targetWidth > 450) {
+		callout.css({'max-width': targetWidth + 'px', 'width': targetWidth + 'px', 'padding-left': 0, 'padding-right': 0});
 	}
-	var calloutRect = callout.get(0).getBoundingClientRect();
-	var topOffset = {
-		left: targetRect.x + (targetRect.width - calloutRect.width) / 2,
-		top: targetRect.y - calloutRect.height,
-	};
-	var bottomOffset = {
-		left: topOffset.left,
-		top: targetRect.y + targetRect.height,
-	};
-	var topDist = topOffset.top;
-	var bottomDist = window.innerHeight - (bottomOffset.top + calloutRect.height);
-	var documentScrollTop = jQuery(document).scrollTop();
-	if (bottomDist > topDist) {
-		bottomOffset.top += documentScrollTop;
-		callout.offset(bottomOffset);
+	var calloutWidth = callout.outerWidth();
+	var calloutHeight = callout.outerHeight();
+
+	var idealLeft = targetOffset.left + (targetWidth - calloutWidth) / 2;
+	var docWidth = jQuery(document).width();
+	// clamp into the viewport, e.g. for a target close to the left or right edge
+	var left = Math.max(5, Math.min(idealLeft, docWidth - calloutWidth - 5));
+
+	var topPos = targetOffset.top - calloutHeight;
+	var bottomPos = targetOffset.top + targetHeight;
+	var topDist = topPos;
+	var bottomDist = window.innerHeight - (bottomPos + calloutHeight - jQuery(document).scrollTop());
+	var showBottom = bottomDist > topDist;
+
+	callout.offset({left: left, top: showBottom ? bottomPos : topPos});
+	if (showBottom) {
 		callout.removeClass('top').addClass('bottom');
 	} else {
-		topOffset.top += documentScrollTop;
-		callout.offset(topOffset);
 		callout.removeClass('bottom').addClass('top');
+	}
+
+	if (left !== idealLeft && calloutWidth > 0) {
+		// point the arrow back at the target's horizontal center, relative to the (clamped) callout's own left edge
+		var percent = (targetOffset.left + targetWidth / 2 - left) / calloutWidth * 100;
+		callout.find('.arrow').css({'left': percent + '%'});
 	}
 }
 

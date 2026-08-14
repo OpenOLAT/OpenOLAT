@@ -1,0 +1,10 @@
+<div class="o_share_qrcode o_lightbox_modal_form">
+	<div id="o_share_qr_$r.getCId()" class="o_qrcode"></div>
+	<div class="o_share_qrcode_url">$r.escapeHtml($url)</div>
+</div>
+<script>
+'use strict';
+jQuery(function() {
+	o_QRCode('o_share_qr_$r.getCId()', '$r.escapeJavaScript($url)');
+});
+</script>

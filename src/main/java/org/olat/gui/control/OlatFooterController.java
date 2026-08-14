@@ -101,7 +101,7 @@ public class OlatFooterController extends BasicController implements LockableCon
 
 		// share links
 		if (socialModule.isShareEnabled() && socialModule.getEnabledShareLinkButtons().size() > 0) {
-			shareLinkCtr = new ShareLinkController(ureq, wControl);
+			shareLinkCtr = new ShareLinkController(ureq, wControl, true, true);
 			listenTo(shareLinkCtr);
 			olatFootervc.put("shareLink", shareLinkCtr.getInitialComponent());
 		}

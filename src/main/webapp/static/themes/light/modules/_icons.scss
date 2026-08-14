@@ -1163,17 +1163,13 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_filetype_dwb { @include o-add-icon('file', false);}
 
 /* social share icons */
-.o_icon_share_social { @include o-add-icon('share-square');}
 .o_icon_apple { @include o-add-brand-icon('apple');}
 .o_icon_facebook { @include o-add-brand-icon('facebook-square');}
 .o_icon_twitter { @include o-add-brand-icon('square-x-twitter');}
 .o_icon_google { @include o-add-brand-icon('google-plus-square');}
-.o_icon_delicious { @include o-add-brand-icon('delicious');}
-.o_icon_digg { @include o-add-brand-icon('digg');}
 .o_icon_mailto { @include o-add-icon('envelope-square');}
 .o_icon_link { @include o-add-icon('link');}
 .o_icon_linkedin { @include o-add-brand-icon('linkedin');}
-.o_icon_yahoo { @include o-add-brand-icon('yahoo');}
 .o_icon_youtube { @include o-add-brand-icon('youtube-square');}
 	
 /* evaluation form and survey course node*/
