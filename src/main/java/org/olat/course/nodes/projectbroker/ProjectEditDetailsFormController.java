@@ -40,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -85,7 +84,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 
 	private TextElement projectTitle;	
 	private RichTextElement projectDescription;
-	private IntegerElement maxMembers;
+	private TextElement maxMembers;
 	private FormLayoutContainer stateLayout;
 	private FileElement attachmentFileName;
 
@@ -137,32 +136,53 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+				
 		// validate event dates
-		for (Project.EventType eventType : eventStartElementList.keySet()) {
+		for(Project.EventType eventType : eventStartElementList.keySet()) {
 			Date startDate = eventStartElementList.get(eventType).getDate();
 			Date endDate   = eventEndElementList.get(eventType).getDate();
 			getLogger().debug("validate startDate={} enddate={}", startDate, endDate);
 			if ( (startDate != null) && (endDate != null) && startDate.after(endDate) ) {
 				eventStartElementList.get(eventType).setErrorKey("from.error.date.start.after.end");
-				return false;
+				allOk &= false;
 			}
 		}
-		if (  !project.getTitle().equals(projectTitle.getValue()) 
+
+		projectTitle.clearError();
+		if(!project.getTitle().equals(projectTitle.getValue()) 
 				&& projectBrokerManager.existProjectName(project.getProjectBroker().getKey(), projectTitle.getValue()) ) {		
 			projectTitle.setErrorKey("form.error.project.title.already.exist");
-			return false;
-		}
-		if (projectTitle.getValue().trim().isEmpty()) {
+			allOk &= false;
+		} else if(!StringHelper.containsNonWhitespace(projectTitle.getValue())) {
 			projectTitle.setErrorKey("form.error.project.title.is.empty");
-			return false;
+			allOk &= false;
+		}
+		
+		maxMembers.clearError();
+		if(maxMembers.isVisible()) {
+			if(!StringHelper.containsNonWhitespace(maxMembers.getValue())) {
+				maxMembers.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else if(!StringHelper.isLong(maxMembers.getValue())) {
+				maxMembers.setErrorKey("form.error.positive.integer");
+				allOk &= false;
+			} else {
+				long val = Long.parseLong(maxMembers.getValue());
+				if(val < 1l || val > 100000l) {
+					maxMembers.setErrorKey("form.error.nointeger.between", new String[] { "1", "100000" });
+					allOk &= false;
+				}
+			}
 		}
 		
 		// http://jira.openolat.org/browse/OO-131  check for too long filename
+		attachmentFileName.clearError();
 		if (attachmentFileName.getUploadFileName() != null && attachmentFileName.getUploadFileName().length() > 99) {
 			attachmentFileName.setErrorKey("form.error.project.filenametoolong");
-			return false;
+			allOk &= false;
 		}
-		return true;
+		return allOk;
 	}
 
 	/**
@@ -208,8 +228,8 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			keyDetailsformMax = "detailsform.max.members.label";
 		}
 		selectionMaxMembers = uifactory.addCheckboxesHorizontal(keyDetailsformMax, formLayout, keys, values);
-		maxMembers = uifactory.addIntegerElement("form.options.number.of.participants.per.topic_nbr", project.getMaxMembers(), formLayout);
-		maxMembers.setMinValueCheck(0, null);
+		String max = Integer.toString(project.getMaxMembers());
+		maxMembers = uifactory.addTextElement("form.options.number.of.participants.per.topic_nbr", 8, max, formLayout);
 		maxMembers.setDisplaySize(3);
 		if (project.getMaxMembers() == Project.MAX_MEMBERS_UNLIMITED) {
 			maxMembers.setVisible(false);
@@ -344,11 +364,16 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			project.setDescription(projectDescription.getValue());
 			projectChanged = true;
 		}
-		if (project.getMaxMembers() != maxMembers.getIntValue()) {
-			project.setMaxMembers(maxMembers.getIntValue());
-			projectGroupManager.setProjectGroupMaxMembers(getIdentity(), project.getProjectGroup(), maxMembers.getIntValue());
+		
+		int max = maxMembers.isVisible() && StringHelper.isLong(maxMembers.getValue())
+				? Integer.parseInt(maxMembers.getValue())
+				: Project.MAX_MEMBERS_UNLIMITED;
+		if (project.getMaxMembers() != max) {
+			project.setMaxMembers(max);
+			projectGroupManager.setProjectGroupMaxMembers(getIdentity(), project.getProjectGroup(), max);
 			projectChanged = true;
-		}			
+		}
+		
 		if (StringHelper.containsNonWhitespace(attachmentFileName.getUploadFileName())) {
 			// First call uploadFiles than setAttachedFileName because uploadFiles needs old attachment name 
 			String fillename = uploadFiles(attachmentFileName);
@@ -437,10 +462,10 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		if (source == selectionMaxMembers) {
 			if (selectionMaxMembers.isSelected(0)) {
 				maxMembers.setVisible(true);
-				maxMembers.setIntValue(MAX_MEMBERS_DEFAULT);
+				maxMembers.setValue(Integer.toString(MAX_MEMBERS_DEFAULT));
 			} else {
 				maxMembers.setVisible(false);
-				maxMembers.setIntValue(Project.MAX_MEMBERS_UNLIMITED);
+				maxMembers.setValue(Integer.toString(Project.MAX_MEMBERS_UNLIMITED));
 			}
 		} else if(source == allowDeselection){
 			if(allowDeselection.isSelected(0)){
