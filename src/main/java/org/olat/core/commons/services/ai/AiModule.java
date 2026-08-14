@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.ai.manager.AiTaskExecutorService;
 import org.olat.core.commons.services.ai.spi.generic.GenericAiSPI;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
@@ -64,6 +65,14 @@ public class AiModule extends AbstractSpringModule {
 	private static final String AI_ESSAY_GRADING_MODEL = "ai.feature.essay-grading.model";
 	private static final String AI_TASK_POOL_INTERACTIVE_SIZE = "ai.task.pool.interactive.size";
 	private static final String AI_TASK_POOL_BATCH_SIZE = "ai.task.pool.batch.size";
+	private static final String AI_MC_GENERATOR_MAX_OUTPUT_TOKENS = "ai.mc.generator.max.output.tokens";
+	private static final String AI_IMG_DESC_MAX_OUTPUT_TOKENS = "ai.img.desc.max.output.tokens";
+	private static final String AI_ESSAY_GENERATION_MAX_OUTPUT_TOKENS = "ai.essay.generation.max.output.tokens";
+	private static final String AI_ESSAY_GRADING_MAX_OUTPUT_TOKENS = "ai.essay.grading.max.output.tokens";
+	private static final String AI_MC_GENERATOR_TIMEOUT_SECONDS = "ai.mc.generator.timeout.seconds";
+	private static final String AI_IMG_DESC_TIMEOUT_SECONDS = "ai.img.desc.timeout.seconds";
+	private static final String AI_ESSAY_GENERATION_TIMEOUT_SECONDS = "ai.essay.generation.timeout.seconds";
+	private static final String AI_ESSAY_GRADING_TIMEOUT_SECONDS = "ai.essay.grading.timeout.seconds";
 
 	// Per-user rate limit defaults (calls / minute / identity). Sized so a
 	// fast-typing learner submitting essay answers across many questions in a
@@ -74,12 +83,6 @@ public class AiModule extends AbstractSpringModule {
 	// once the admin UI surface for per-feature rate limits exists.
 	private static final int DEFAULT_ESSAY_GRADING_MAX_CALLS_PER_MINUTE_PER_USER = 30;
 	private static final int DEFAULT_ESSAY_GENERATION_MAX_CALLS_PER_MINUTE_PER_USER = 10;
-
-	// AI task pool defaults (worker threads per node). The right values
-	// depend on the infrastructure behind the provider: cloud APIs handle
-	// 10+ parallel calls, a single self-hosted GPU saturates at 2-4.
-	private static final int DEFAULT_AI_TASK_POOL_INTERACTIVE_SIZE = 4;
-	private static final int DEFAULT_AI_TASK_POOL_BATCH_SIZE = 2;
 
 	// List of all Spring-registered SPI implementations (OpenAI, Anthropic)
 	private List<AiSPI> springProviders = List.of();
@@ -119,11 +122,29 @@ public class AiModule extends AbstractSpringModule {
 	private String essayGradingSpiId;
 	@Value("${ai.feature.essay-grading.model:}")
 	private String essayGradingModel;
-	private int aiTaskPoolInteractiveSize = DEFAULT_AI_TASK_POOL_INTERACTIVE_SIZE;
-	private int aiTaskPoolBatchSize = DEFAULT_AI_TASK_POOL_BATCH_SIZE;
+	@Value("${ai.task.pool.interactive.size:8}")
+	private int aiTaskPoolInteractiveSize;
+	@Value("${ai.task.pool.batch.size:2}")
+	private int aiTaskPoolBatchSize;
+	@Value("${ai.mc.generator.max.output.tokens:16384}")
+	private int mcGeneratorMaxOutputTokens;
+	@Value("${ai.img.desc.max.output.tokens:8192}")
+	private int imgDescMaxOutputTokens;
+	@Value("${ai.essay.generation.max.output.tokens:16384}")
+	private int essayGenerationMaxOutputTokens;
+	@Value("${ai.essay.grading.max.output.tokens:16384}")
+	private int essayGradingMaxOutputTokens;
+	@Value("${ai.mc.generator.timeout.seconds:180}")
+	private int mcGeneratorTimeoutSeconds;
+	@Value("${ai.img.desc.timeout.seconds:180}")
+	private int imgDescTimeoutSeconds;
+	@Value("${ai.essay.generation.timeout.seconds:180}")
+	private int essayGenerationTimeoutSeconds;
+	@Value("${ai.essay.grading.timeout.seconds:600}")
+	private int essayGradingTimeoutSeconds;
 
 	@Autowired
-	private org.olat.core.commons.services.ai.manager.AiTaskExecutorService aiTaskExecutorService;
+	private AiTaskExecutorService aiTaskExecutorService;
 
 	/**
 	 * Spring constructor
@@ -160,10 +181,16 @@ public class AiModule extends AbstractSpringModule {
 		essayGradingEnabled = "true".equalsIgnoreCase(getStringPropertyValue(AI_ESSAY_GRADING_ENABLED, Boolean.toString(essayGradingEnabled)));
 		essayGradingSpiId = getStringPropertyValue(AI_ESSAY_GRADING_SPI, essayGradingSpiId);
 		essayGradingModel = getStringPropertyValue(AI_ESSAY_GRADING_MODEL, essayGradingModel);
-		aiTaskPoolInteractiveSize = getIntPropertyValue(AI_TASK_POOL_INTERACTIVE_SIZE,
-				DEFAULT_AI_TASK_POOL_INTERACTIVE_SIZE);
-		aiTaskPoolBatchSize = getIntPropertyValue(AI_TASK_POOL_BATCH_SIZE,
-				DEFAULT_AI_TASK_POOL_BATCH_SIZE);
+		aiTaskPoolInteractiveSize = getIntPropertyValue(AI_TASK_POOL_INTERACTIVE_SIZE, aiTaskPoolInteractiveSize);
+		aiTaskPoolBatchSize = getIntPropertyValue(AI_TASK_POOL_BATCH_SIZE, aiTaskPoolBatchSize);
+		mcGeneratorMaxOutputTokens = getIntPropertyValue(AI_MC_GENERATOR_MAX_OUTPUT_TOKENS, mcGeneratorMaxOutputTokens);
+		imgDescMaxOutputTokens = getIntPropertyValue(AI_IMG_DESC_MAX_OUTPUT_TOKENS, imgDescMaxOutputTokens);
+		essayGenerationMaxOutputTokens = getIntPropertyValue(AI_ESSAY_GENERATION_MAX_OUTPUT_TOKENS, essayGenerationMaxOutputTokens);
+		essayGradingMaxOutputTokens = getIntPropertyValue(AI_ESSAY_GRADING_MAX_OUTPUT_TOKENS, essayGradingMaxOutputTokens);
+		mcGeneratorTimeoutSeconds = getIntPropertyValue(AI_MC_GENERATOR_TIMEOUT_SECONDS, mcGeneratorTimeoutSeconds);
+		imgDescTimeoutSeconds = getIntPropertyValue(AI_IMG_DESC_TIMEOUT_SECONDS, imgDescTimeoutSeconds);
+		essayGenerationTimeoutSeconds = getIntPropertyValue(AI_ESSAY_GENERATION_TIMEOUT_SECONDS, essayGenerationTimeoutSeconds);
+		essayGradingTimeoutSeconds = getIntPropertyValue(AI_ESSAY_GRADING_TIMEOUT_SECONDS, essayGradingTimeoutSeconds);
 		applyTaskPoolSizes();
 	}
 
@@ -255,6 +282,36 @@ public class AiModule extends AbstractSpringModule {
 	}
 
 	/**
+	 * @return maximum number of output tokens for the MC question generator model
+	 */
+	public int getMCGeneratorMaxOutputTokens() {
+		return mcGeneratorMaxOutputTokens;
+	}
+
+	public void setMCGeneratorMaxOutputTokens(int maxTokens) {
+		if (maxTokens < 1) {
+			return;
+		}
+		mcGeneratorMaxOutputTokens = maxTokens;
+		setIntProperty(AI_MC_GENERATOR_MAX_OUTPUT_TOKENS, maxTokens, true);
+	}
+
+	/**
+	 * @return HTTP timeout in seconds for the MC question generator model
+	 */
+	public int getMCGeneratorTimeoutSeconds() {
+		return mcGeneratorTimeoutSeconds;
+	}
+
+	public void setMCGeneratorTimeoutSeconds(int timeoutSeconds) {
+		if (timeoutSeconds < 1) {
+			return;
+		}
+		mcGeneratorTimeoutSeconds = timeoutSeconds;
+		setIntProperty(AI_MC_GENERATOR_TIMEOUT_SECONDS, timeoutSeconds, true);
+	}
+
+	/**
 	 * @return true: the image description generator feature is switched on by the admin,
 	 *         regardless of whether the provider/model config is complete
 	 */
@@ -293,6 +350,36 @@ public class AiModule extends AbstractSpringModule {
 	 */
 	public String getImgDescModel() {
 		return imgDescModel;
+	}
+
+	/**
+	 * @return maximum number of output tokens for the image description model
+	 */
+	public int getImgDescMaxOutputTokens() {
+		return imgDescMaxOutputTokens;
+	}
+
+	public void setImgDescMaxOutputTokens(int maxTokens) {
+		if (maxTokens < 1) {
+			return;
+		}
+		imgDescMaxOutputTokens = maxTokens;
+		setIntProperty(AI_IMG_DESC_MAX_OUTPUT_TOKENS, maxTokens, true);
+	}
+
+	/**
+	 * @return HTTP timeout in seconds for the image description model
+	 */
+	public int getImgDescTimeoutSeconds() {
+		return imgDescTimeoutSeconds;
+	}
+
+	public void setImgDescTimeoutSeconds(int timeoutSeconds) {
+		if (timeoutSeconds < 1) {
+			return;
+		}
+		imgDescTimeoutSeconds = timeoutSeconds;
+		setIntProperty(AI_IMG_DESC_TIMEOUT_SECONDS, timeoutSeconds, true);
 	}
 
 	/**
@@ -450,6 +537,36 @@ public class AiModule extends AbstractSpringModule {
 		return essayGenerationModel;
 	}
 
+	/**
+	 * @return maximum number of output tokens for the essay generation model
+	 */
+	public int getEssayGenerationMaxOutputTokens() {
+		return essayGenerationMaxOutputTokens;
+	}
+
+	public void setEssayGenerationMaxOutputTokens(int maxTokens) {
+		if (maxTokens < 1) {
+			return;
+		}
+		essayGenerationMaxOutputTokens = maxTokens;
+		setIntProperty(AI_ESSAY_GENERATION_MAX_OUTPUT_TOKENS, maxTokens, true);
+	}
+
+	/**
+	 * @return HTTP timeout in seconds for the essay generation model
+	 */
+	public int getEssayGenerationTimeoutSeconds() {
+		return essayGenerationTimeoutSeconds;
+	}
+
+	public void setEssayGenerationTimeoutSeconds(int timeoutSeconds) {
+		if (timeoutSeconds < 1) {
+			return;
+		}
+		essayGenerationTimeoutSeconds = timeoutSeconds;
+		setIntProperty(AI_ESSAY_GENERATION_TIMEOUT_SECONDS, timeoutSeconds, true);
+	}
+
 	public void setEssayGenerationConfig(String spiId, String model) {
 		this.essayGenerationSpiId = spiId;
 		this.essayGenerationModel = model;
@@ -463,6 +580,36 @@ public class AiModule extends AbstractSpringModule {
 
 	public String getEssayGradingModel() {
 		return essayGradingModel;
+	}
+
+	/**
+	 * @return maximum number of output tokens for the essay grading model
+	 */
+	public int getEssayGradingMaxOutputTokens() {
+		return essayGradingMaxOutputTokens;
+	}
+
+	public void setEssayGradingMaxOutputTokens(int maxTokens) {
+		if (maxTokens < 1) {
+			return;
+		}
+		essayGradingMaxOutputTokens = maxTokens;
+		setIntProperty(AI_ESSAY_GRADING_MAX_OUTPUT_TOKENS, maxTokens, true);
+	}
+
+	/**
+	 * @return HTTP timeout in seconds for the essay grading model
+	 */
+	public int getEssayGradingTimeoutSeconds() {
+		return essayGradingTimeoutSeconds;
+	}
+
+	public void setEssayGradingTimeoutSeconds(int timeoutSeconds) {
+		if (timeoutSeconds < 1) {
+			return;
+		}
+		essayGradingTimeoutSeconds = timeoutSeconds;
+		setIntProperty(AI_ESSAY_GRADING_TIMEOUT_SECONDS, timeoutSeconds, true);
 	}
 
 	public void setEssayGradingConfig(String spiId, String model) {

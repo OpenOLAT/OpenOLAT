@@ -53,11 +53,6 @@ record CachedChatModel(String spiId, String modelName, Duration timeout, ChatMod
 	}
 
 	static CachedChatModel getOrRefresh(CachedChatModel cached,
-			AiSPI spi, String spiId, String modelName, int maxTokens) {
-		return getOrRefresh(cached, spi, spiId, modelName, maxTokens, null);
-	}
-
-	static CachedChatModel getOrRefresh(CachedChatModel cached,
 			AiSPI spi, String spiId, String modelName, int maxTokens, Duration timeout) {
 		if (cached != null && cached.matches(spiId, modelName, timeout)) {
 			return cached;

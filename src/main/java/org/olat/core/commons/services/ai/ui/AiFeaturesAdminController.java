@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -74,6 +75,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AiFeaturesAdminController extends FormBasicController {
 
+	// No model can produce valid structured JSON output (required keys, nested
+	// arrays) in fewer tokens than this, for any of the four AI features.
+	private static final int MIN_MAX_OUTPUT_TOKENS = 1024;
+
+	// A timeout below this can never let a real AI call complete and would
+	// just cause constant spurious timeouts.
+	private static final int MIN_TIMEOUT_SECONDS = 10;
+
 	// Taxonomy Matching elements
 	private FormToggle taxMatchEnabledEl;
 	private SingleSelection taxMatchSpiEl;
@@ -87,6 +96,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 	private SingleSelection imgDescModelDropdownEl;
 	private TextElement imgDescModelTextEl;
 	private FormItem imgDescModelEl;
+	private IntegerElement imgDescMaxOutputTokensEl;
+	private IntegerElement imgDescTimeoutSecondsEl;
 	private FormLink imgDescTestLink;
 
 	// MC Question Generator elements
@@ -95,6 +106,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 	private SingleSelection mcModelDropdownEl;
 	private TextElement mcModelTextEl;
 	private FormItem mcGeneratorModelEl;
+	private IntegerElement mcMaxOutputTokensEl;
+	private IntegerElement mcTimeoutSecondsEl;
 	private FormLink mcTestLink;
 
 	// Essay Question Generator elements
@@ -103,6 +116,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 	private SingleSelection essayGenModelDropdownEl;
 	private TextElement essayGenModelTextEl;
 	private FormItem essayGenModelEl;
+	private IntegerElement essayGenMaxOutputTokensEl;
+	private IntegerElement essayGenTimeoutSecondsEl;
 	private FormLink essayGenTestLink;
 
 	// Essay Grading elements
@@ -111,6 +126,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 	private SingleSelection essayGradingModelDropdownEl;
 	private TextElement essayGradingModelTextEl;
 	private FormItem essayGradingModelEl;
+	private IntegerElement essayGradingMaxOutputTokensEl;
+	private IntegerElement essayGradingTimeoutSecondsEl;
 	private FormLink essayGradingTestLink;
 
 	// Test controller
@@ -185,6 +202,12 @@ public class AiFeaturesAdminController extends FormBasicController {
 		imgDescModelDropdownEl.setEnabled(!readOnly);
 		imgDescModelTextEl = addModelTextElement("imgDesc.model.text", "ai.feature.image-description-generator.model", formLayout);
 		imgDescModelTextEl.setEnabled(!readOnly);
+		imgDescMaxOutputTokensEl = addMaxOutputTokensElement("imgDesc.max.output.tokens",
+				"ai.feature.image-description-generator.max-output-tokens", aiModule.getImgDescMaxOutputTokens(), formLayout);
+		imgDescMaxOutputTokensEl.setEnabled(!readOnly);
+		imgDescTimeoutSecondsEl = addTimeoutElement("imgDesc.timeout.seconds",
+				"ai.feature.image-description-generator.timeout-seconds", aiModule.getImgDescTimeoutSeconds(), formLayout);
+		imgDescTimeoutSecondsEl.setEnabled(!readOnly);
 		imgDescTestLink = addTestLink("imgDesc.test", formLayout);
 
 		// ---- MC Question Generator section ----
@@ -207,6 +230,12 @@ public class AiFeaturesAdminController extends FormBasicController {
 		mcModelDropdownEl.setEnabled(!readOnly);
 		mcModelTextEl = addModelTextElement("mc.model.text", "ai.feature.model", formLayout);
 		mcModelTextEl.setEnabled(!readOnly);
+		mcMaxOutputTokensEl = addMaxOutputTokensElement("mc.max.output.tokens",
+				"ai.feature.mc-question-generator.max-output-tokens", aiModule.getMCGeneratorMaxOutputTokens(), formLayout);
+		mcMaxOutputTokensEl.setEnabled(!readOnly);
+		mcTimeoutSecondsEl = addTimeoutElement("mc.timeout.seconds",
+				"ai.feature.mc-question-generator.timeout-seconds", aiModule.getMCGeneratorTimeoutSeconds(), formLayout);
+		mcTimeoutSecondsEl.setEnabled(!readOnly);
 		mcTestLink = addTestLink("mc.test", formLayout);
 
 		// ---- Essay Question Generator section ----
@@ -229,6 +258,12 @@ public class AiFeaturesAdminController extends FormBasicController {
 		essayGenModelDropdownEl.setEnabled(!readOnly);
 		essayGenModelTextEl = addModelTextElement("essayGen.model.text", "ai.feature.model", formLayout);
 		essayGenModelTextEl.setEnabled(!readOnly);
+		essayGenMaxOutputTokensEl = addMaxOutputTokensElement("essayGen.max.output.tokens",
+				"ai.feature.essay-generation.max-output-tokens", aiModule.getEssayGenerationMaxOutputTokens(), formLayout);
+		essayGenMaxOutputTokensEl.setEnabled(!readOnly);
+		essayGenTimeoutSecondsEl = addTimeoutElement("essayGen.timeout.seconds",
+				"ai.feature.essay-generation.timeout-seconds", aiModule.getEssayGenerationTimeoutSeconds(), formLayout);
+		essayGenTimeoutSecondsEl.setEnabled(!readOnly);
 		essayGenTestLink = addTestLink("essayGen.test", formLayout);
 
 		// ---- Essay Grading section ----
@@ -251,6 +286,12 @@ public class AiFeaturesAdminController extends FormBasicController {
 		essayGradingModelDropdownEl.setEnabled(!readOnly);
 		essayGradingModelTextEl = addModelTextElement("essayGrading.model.text", "ai.feature.model", formLayout);
 		essayGradingModelTextEl.setEnabled(!readOnly);
+		essayGradingMaxOutputTokensEl = addMaxOutputTokensElement("essayGrading.max.output.tokens",
+				"ai.feature.essay-grading.max-output-tokens", aiModule.getEssayGradingMaxOutputTokens(), formLayout);
+		essayGradingMaxOutputTokensEl.setEnabled(!readOnly);
+		essayGradingTimeoutSecondsEl = addTimeoutElement("essayGrading.timeout.seconds",
+				"ai.feature.essay-grading.timeout-seconds", aiModule.getEssayGradingTimeoutSeconds(), formLayout);
+		essayGradingTimeoutSecondsEl.setEnabled(!readOnly);
 		essayGradingTestLink = addTestLink("essayGrading.test", formLayout);
 
 		// Save button
@@ -278,6 +319,22 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 	private TextElement addModelTextElement(String elName, String labelKey, FormItemContainer container) {
 		return uifactory.addTextElement(elName, labelKey, 256, "", container);
+	}
+
+	private IntegerElement addMaxOutputTokensElement(String elName, String labelKey, int currentValue,
+			FormItemContainer container) {
+		IntegerElement maxTokensEl = uifactory.addIntegerElement(elName, labelKey, currentValue, container);
+		maxTokensEl.setHelpTextKey(labelKey + ".help", null);
+		maxTokensEl.setMandatory(true);
+		return maxTokensEl;
+	}
+
+	private IntegerElement addTimeoutElement(String elName, String labelKey, int currentValue,
+			FormItemContainer container) {
+		IntegerElement timeoutEl = uifactory.addIntegerElement(elName, labelKey, currentValue, container);
+		timeoutEl.setHelpTextKey(labelKey + ".help", null);
+		timeoutEl.setMandatory(true);
+		return timeoutEl;
 	}
 
 	private FormLink addTestLink(String elName, FormItemContainer container) {
@@ -456,6 +513,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 		boolean on = imgDescEnabledEl.isOn();
 		imgDescSpiEl.setVisible(on);
 		setModelVisibility(on, imgDescModelEl, imgDescModelDropdownEl, imgDescModelTextEl);
+		imgDescMaxOutputTokensEl.setVisible(on);
+		imgDescTimeoutSecondsEl.setVisible(on);
 		imgDescTestLink.setVisible(on && hasSpiSelected(imgDescSpiEl) && hasModelValue(imgDescModelEl));
 	}
 
@@ -463,6 +522,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 		boolean on = mcEnabledEl.isOn();
 		mcGeneratorSpiEl.setVisible(on);
 		setModelVisibility(on, mcGeneratorModelEl, mcModelDropdownEl, mcModelTextEl);
+		mcMaxOutputTokensEl.setVisible(on);
+		mcTimeoutSecondsEl.setVisible(on);
 		mcTestLink.setVisible(on && hasSpiSelected(mcGeneratorSpiEl) && hasModelValue(mcGeneratorModelEl));
 	}
 
@@ -470,6 +531,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 		boolean on = essayGenEnabledEl.isOn();
 		essayGenSpiEl.setVisible(on);
 		setModelVisibility(on, essayGenModelEl, essayGenModelDropdownEl, essayGenModelTextEl);
+		essayGenMaxOutputTokensEl.setVisible(on);
+		essayGenTimeoutSecondsEl.setVisible(on);
 		essayGenTestLink.setVisible(on && hasSpiSelected(essayGenSpiEl) && hasModelValue(essayGenModelEl));
 	}
 
@@ -477,6 +540,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 		boolean on = essayGradingEnabledEl.isOn();
 		essayGradingSpiEl.setVisible(on);
 		setModelVisibility(on, essayGradingModelEl, essayGradingModelDropdownEl, essayGradingModelTextEl);
+		essayGradingMaxOutputTokensEl.setVisible(on);
+		essayGradingTimeoutSecondsEl.setVisible(on);
 		essayGradingTestLink.setVisible(on && hasSpiSelected(essayGradingSpiEl) && hasModelValue(essayGradingModelEl));
 	}
 
@@ -549,7 +614,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 		if (testCtrl == null) {
 			testCtrl = new AiFeaturesTestController(ureq, getWindowControl(),
 					mcQuestionService, imageDescriptionService,
-					aiEssayGenerationService, aiEssayGradingService, aiModule);
+					aiEssayGenerationService, aiEssayGradingService);
 			listenTo(testCtrl);
 		}
 	}
@@ -576,7 +641,67 @@ public class AiFeaturesAdminController extends FormBasicController {
 			allOk &= validateModelElement(taxMatchModelEl);
 		}
 
+		if (mcEnabledEl.isOn()) {
+			allOk &= validateMaxOutputTokens(mcMaxOutputTokensEl);
+		}
+		if (imgDescEnabledEl.isOn()) {
+			allOk &= validateMaxOutputTokens(imgDescMaxOutputTokensEl);
+		}
+		if (essayGenEnabledEl.isOn()) {
+			allOk &= validateMaxOutputTokens(essayGenMaxOutputTokensEl);
+		}
+		if (essayGradingEnabledEl.isOn()) {
+			allOk &= validateMaxOutputTokens(essayGradingMaxOutputTokensEl);
+		}
+
+		if (mcEnabledEl.isOn()) {
+			allOk &= validateTimeoutSeconds(mcTimeoutSecondsEl);
+		}
+		if (imgDescEnabledEl.isOn()) {
+			allOk &= validateTimeoutSeconds(imgDescTimeoutSecondsEl);
+		}
+		if (essayGenEnabledEl.isOn()) {
+			allOk &= validateTimeoutSeconds(essayGenTimeoutSecondsEl);
+		}
+		if (essayGradingEnabledEl.isOn()) {
+			allOk &= validateTimeoutSeconds(essayGradingTimeoutSecondsEl);
+		}
+
 		return allOk;
+	}
+
+	private boolean validateMaxOutputTokens(IntegerElement el) {
+		el.clearError();
+		if (!StringHelper.containsNonWhitespace(el.getValue())) {
+			el.setErrorKey("ai.feature.max-output-tokens.error.range");
+			return false;
+		}
+		if (el.getIntValue() < 1) {
+			el.setErrorKey("ai.feature.max-output-tokens.error.range");
+			return false;
+		}
+		if (el.getIntValue() < MIN_MAX_OUTPUT_TOKENS) {
+			el.setErrorKey("ai.feature.max-output-tokens.error.min");
+			return false;
+		}
+		return true;
+	}
+
+	private boolean validateTimeoutSeconds(IntegerElement el) {
+		el.clearError();
+		if (!StringHelper.containsNonWhitespace(el.getValue())) {
+			el.setErrorKey("ai.feature.timeout-seconds.error.range");
+			return false;
+		}
+		if (el.getIntValue() < 1) {
+			el.setErrorKey("ai.feature.timeout-seconds.error.range");
+			return false;
+		}
+		if (el.getIntValue() < MIN_TIMEOUT_SECONDS) {
+			el.setErrorKey("ai.feature.timeout-seconds.error.min");
+			return false;
+		}
+		return true;
 	}
 
 	private boolean validateModelElement(FormItem modelEl) {
@@ -602,6 +727,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 			String mcModel = extractModelValue(mcGeneratorModelEl);
 			aiModule.setMCQuestionGeneratorEnabled(true);
 			aiModule.setMCQuestionGeneratorConfig(mcSpiId, mcModel);
+			aiModule.setMCGeneratorMaxOutputTokens(mcMaxOutputTokensEl.getIntValue());
+			aiModule.setMCGeneratorTimeoutSeconds(mcTimeoutSecondsEl.getIntValue());
 			logAudit("MC question generator configured: provider=" + mcSpiId + ", model=" + mcModel);
 		} else {
 			aiModule.setMCQuestionGeneratorEnabled(false);
@@ -613,6 +740,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 			String imgDescModel = extractModelValue(imgDescModelEl);
 			aiModule.setImageDescriptionGeneratorEnabled(true);
 			aiModule.setImageDescriptionGeneratorConfig(imgDescSpiId, imgDescModel);
+			aiModule.setImgDescMaxOutputTokens(imgDescMaxOutputTokensEl.getIntValue());
+			aiModule.setImgDescTimeoutSeconds(imgDescTimeoutSecondsEl.getIntValue());
 			logAudit("Image description generator configured: provider=" + imgDescSpiId + ", model=" + imgDescModel);
 		} else {
 			aiModule.setImageDescriptionGeneratorEnabled(false);
@@ -624,6 +753,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 			String essayGenModel = extractModelValue(essayGenModelEl);
 			aiModule.setEssayGenerationEnabled(true);
 			aiModule.setEssayGenerationConfig(essayGenSpiId, essayGenModel);
+			aiModule.setEssayGenerationMaxOutputTokens(essayGenMaxOutputTokensEl.getIntValue());
+			aiModule.setEssayGenerationTimeoutSeconds(essayGenTimeoutSecondsEl.getIntValue());
 			logAudit("Essay question generator configured: provider=" + essayGenSpiId + ", model=" + essayGenModel);
 		} else {
 			aiModule.setEssayGenerationEnabled(false);
@@ -635,6 +766,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 			String essayGradingModel = extractModelValue(essayGradingModelEl);
 			aiModule.setEssayGradingEnabled(true);
 			aiModule.setEssayGradingConfig(essayGradingSpiId, essayGradingModel);
+			aiModule.setEssayGradingMaxOutputTokens(essayGradingMaxOutputTokensEl.getIntValue());
+			aiModule.setEssayGradingTimeoutSeconds(essayGradingTimeoutSecondsEl.getIntValue());
 			logAudit("Essay grading configured: provider=" + essayGradingSpiId + ", model=" + essayGradingModel);
 		} else {
 			aiModule.setEssayGradingEnabled(false);

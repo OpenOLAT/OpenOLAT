@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.essay.AiOverloadedException;
 import org.olat.core.commons.services.ai.essay.AiRateLimitExceededException;
 import org.olat.core.commons.services.ai.essay.EssayAiGrading;
@@ -103,10 +103,25 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private Map<String, Boolean> questionPassedState = new HashMap<>();
 	private QuizQuestion currentQuizQuestion;
 
+	/** Poll cadence for essay AI correction (matches {@link #updateQuizUI()},
+	 *  which sets {@code aiCorrectionPollDelayMs} to the same value). */
+	private static final int AI_CORRECTION_POLL_DELAY_MS = 2000;
 	/** Async AI correction — per-question state. Reset on each new question. */
 	private Long aiCorrectionKey;
-	/** Maximum poll attempts before the UI gives up (≈ 35 s at 2-s cadence). */
-	private static final int MAX_POLL_ATTEMPTS = 18;
+	/** Maximum poll attempts before the UI gives up. Derived once per
+	 *  controller instance from the admin-configured
+	 *  {@link AiModule#getEssayGradingTimeoutSeconds()}, rounded up to the
+	 *  next full poll tick so the UI never gives up before the server-side
+	 *  grading timeout does. */
+	private final int maxPollAttempts;
+	/** Poll attempt at which the UI switches from the generic "waiting"
+	 *  message to a "taking longer than usual" hint (≈ 10 s at the 2-s
+	 *  cadence), while grading is still PENDING/RUNNING. */
+	private static final int SLOW_GRADING_HINT_POLL_ATTEMPTS = 5;
+	/** Poll attempt at which the UI switches to the "several minutes" hint
+	 *  for genuinely long waits (≈ 60 s at the 2-s cadence), while grading
+	 *  is still PENDING/RUNNING. */
+	private static final int LONG_GRADING_HINT_POLL_ATTEMPTS = 30;
 	/** Generation poll cadence (matches QuizEditorController for parity). */
 	private static final int AI_GEN_POLL_DELAY_MS = 3000;
 	private static final int MAX_AI_GEN_POLL_ATTEMPTS = 90;
@@ -128,6 +143,12 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private Map<String, Object> aiCorrectionFeedbackView;
 	private String aiCorrectionError;
 	private boolean aiCorrectionVisible;
+	/** Set once {@link #SLOW_GRADING_HINT_POLL_ATTEMPTS} is crossed while
+	 *  grading is still PENDING/RUNNING, to switch the overlay message. */
+	private boolean aiCorrectionSlowHint;
+	/** Set once {@link #LONG_GRADING_HINT_POLL_ATTEMPTS} is crossed while
+	 *  grading is still PENDING/RUNNING, to switch the overlay message. */
+	private boolean aiCorrectionLongHint;
 
 	@Autowired
 	private ContentEditorQti contentEditorQti;
@@ -141,6 +162,10 @@ public class QuizRunController extends BasicController implements PageRunElement
 	private EssayAiGradingFileStore essayAiGradingFileStore;
 	@Autowired
 	private EssayAiCorrectionService essayAiCorrectionService;
+	@Autowired
+	private AiModule aiModule;
+	@Autowired
+	private DB db;
 
 	public QuizRunController(UserRequest ureq, WindowControl wControl, QuizPart quizPart, boolean editable,
 							 RepositoryEntry entry, String subIdent) {
@@ -150,6 +175,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 		this.editable = editable;
 		this.entry = entry;
 		this.subIdent = StringHelper.containsNonWhitespace(subIdent) ? subIdent + "_" + quizPart.getId() : "";
+		this.maxPollAttempts = (int) Math.ceil(aiModule.getEssayGradingTimeoutSeconds() * 1000.0 / AI_CORRECTION_POLL_DELAY_MS);
 
 		if (this.entry != null && StringHelper.containsNonWhitespace(this.subIdent)) {
 			assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, entry,
@@ -307,7 +333,11 @@ public class QuizRunController extends BasicController implements PageRunElement
 		mainVC.contextPut("aiCorrectionVisible", aiCorrectionVisible);
 		mainVC.contextPut("aiCorrectionFeedback", aiCorrectionFeedbackView);
 		mainVC.contextPut("aiCorrectionError", aiCorrectionError);
-		mainVC.contextPut("aiCorrectionWaitingLabel", translate("ai.essay.correction.waiting"));
+		mainVC.contextPut("aiCorrectionSlowHint", aiCorrectionSlowHint);
+		mainVC.contextPut("aiCorrectionLongHint", aiCorrectionLongHint);
+		mainVC.contextPut("aiCorrectionWaitingLabel", translate(aiCorrectionLongHint
+				? "ai.essay.correction.longrunning" : aiCorrectionSlowHint
+				? "ai.essay.correction.stillrunning" : "ai.essay.correction.waiting"));
 		if (aiCorrectionVisible) {
 			if (aiCorrectionPollLink == null) {
 				aiCorrectionPollLink = LinkFactory.createCustomLink(
@@ -318,7 +348,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 				// Timer-driven link — must not trigger the dirty-form warning.
 				aiCorrectionPollLink.setSuppressDirtyFormWarning(true);
 			}
-			mainVC.contextPut("aiCorrectionPollDelayMs", Integer.valueOf(2000));
+			mainVC.contextPut("aiCorrectionPollDelayMs", Integer.valueOf(AI_CORRECTION_POLL_DELAY_MS));
 		} else {
 			mainVC.contextPut("aiCorrectionPollDelayMs", Integer.valueOf(0));
 		}
@@ -409,7 +439,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 			doStart(ureq);
 			updateUI(ureq);
 		} else if (aiCorrectionPollLink != null && source == aiCorrectionPollLink) {
-			doPollAiCorrection(ureq);
+			doPollAiCorrection();
 		} else if (aiGenerationPollLink != null && source == aiGenerationPollLink) {
 			doPollAiGeneration(ureq);
 		}
@@ -423,8 +453,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 	 */
 	private void doPollAiGeneration(UserRequest ureq) {
 		aiGenerationPollAttempts++;
-		QuizPart fresh = CoreSpringFactory.getImpl(DB.class)
-				.getCurrentEntityManager().find(QuizPart.class, quizPart.getKey());
+		QuizPart fresh = db.getCurrentEntityManager().find(QuizPart.class, quizPart.getKey());
 		if (fresh != null) {
 			quizPart = fresh;
 		}
@@ -450,10 +479,12 @@ public class QuizRunController extends BasicController implements PageRunElement
 	/**
 	 * Poll tick — invoked by the hidden {@code poll} link which is
 	 * re-clicked via a JS {@code setTimeout} on every render while the
-	 * overlay is visible. Stops after {@link #MAX_POLL_ATTEMPTS} ticks
-	 * (client-side safety cap ≈ 35 s at the 2-s cadence).
+	 * overlay is visible. Stops after {@link #maxPollAttempts} ticks,
+	 * derived from the admin-configured
+	 * {@link AiModule#getEssayGradingTimeoutSeconds()} so the client-side
+	 * cap always covers the actual server-side grading timeout.
 	 */
-	private void doPollAiCorrection(UserRequest ureq) {
+	private void doPollAiCorrection() {
 		if (aiCorrectionKey == null) {
 			return;
 		}
@@ -485,9 +516,19 @@ public class QuizRunController extends BasicController implements PageRunElement
 					finishAiCorrection();
 				}
 				case PENDING, RUNNING -> {
-					if (aiCorrectionPollAttempts >= MAX_POLL_ATTEMPTS) {
+					if (aiCorrectionPollAttempts >= maxPollAttempts) {
 						aiCorrectionError = translate("ai.essay.correction.timeout");
 						finishAiCorrection();
+					} else if (!aiCorrectionLongHint && aiCorrectionPollAttempts >= LONG_GRADING_HINT_POLL_ATTEMPTS) {
+						// Crossing the long-grading threshold: allow this one
+						// re-render to swap the overlay message, then fall
+						// back to suppressing repaints below.
+						aiCorrectionLongHint = true;
+					} else if (!aiCorrectionSlowHint && aiCorrectionPollAttempts >= SLOW_GRADING_HINT_POLL_ATTEMPTS) {
+						// Crossing the slow-grading threshold: allow this one
+						// re-render to swap the overlay message, then fall
+						// back to suppressing repaints below.
+						aiCorrectionSlowHint = true;
 					} else {
 						// Still running — no observable state change. Skip
 						// re-render so the SVG animation in the overlay does
@@ -532,6 +573,8 @@ public class QuizRunController extends BasicController implements PageRunElement
 		aiCorrectionKey = null;
 		aiCorrectionVisible = false;
 		aiCorrectionPollAttempts = 0;
+		aiCorrectionSlowHint = false;
+		aiCorrectionLongHint = false;
 	}
 
 	/**
@@ -546,6 +589,8 @@ public class QuizRunController extends BasicController implements PageRunElement
 		aiCorrectionVisible = false;
 		aiCorrectionFeedbackView = null;
 		aiCorrectionError = null;
+		aiCorrectionSlowHint = false;
+		aiCorrectionLongHint = false;
 	}
 
 	/**
@@ -555,7 +600,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 	 * essay items (no grading row) fall through to the legacy
 	 * "Awaiting correction" behaviour unchanged.
 	 */
-	private void triggerAiCorrectionIfEssay(UserRequest ureq, String studentAnswer) {
+	private void triggerAiCorrectionIfEssay(String studentAnswer) {
 		if (currentQuizQuestion == null) {
 			logDebug("AI correction skipped: currentQuizQuestion is null");
 			return;
@@ -831,7 +876,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 			// Kick off the async AI correction job (if the question is an essay
 			// backed by an EssayAiGrading row) AFTER super has persisted the
 			// item session — we need its key for provenance on the usage log.
-			triggerAiCorrectionIfEssay(ureq, essayAnswer);
+			triggerAiCorrectionIfEssay(essayAnswer);
 		}
 
 		Long getItemSessionKey() {

@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.ai.manager;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 
@@ -46,8 +47,6 @@ import dev.langchain4j.service.AiServices;
  */
 @Service
 public class AiImageDescriptionServiceImpl implements AiImageDescriptionService {
-
-	private static final int MAX_TOKENS = 2000;
 
 	@Autowired
 	private AiModule aiModule;
@@ -77,7 +76,9 @@ public class AiImageDescriptionServiceImpl implements AiImageDescriptionService 
 		long startTime = System.currentTimeMillis();
 		AiLoggingChatModel loggingModel = null;
 		try {
-			cachedAiService = CachedChatModel.getOrRefresh(cachedAiService, spi, spiId, modelName, MAX_TOKENS);
+			Duration timeout = Duration.ofSeconds(aiModule.getImgDescTimeoutSeconds());
+			cachedAiService = CachedChatModel.getOrRefresh(cachedAiService, spi, spiId, modelName,
+					aiModule.getImgDescMaxOutputTokens(), timeout);
 			ChatModel chatModel = cachedAiService.chatModel();
 
 			List<Content> contents = ImageDescriptionAiService.buildContents(locale, imageBase64, mimeType);

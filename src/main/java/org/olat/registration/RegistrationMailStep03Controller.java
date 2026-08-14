@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.registration.MailValidationController.Flow;
 
 /**
  * Initial date: Okt 25, 2024
@@ -48,7 +49,7 @@ public class RegistrationMailStep03Controller extends StepFormBasicController {
 		this.runContext = runContext;
 		this.registrationStepsListener = registrationStepsListener;
 		String invitationEmail = invitation == null ? null : invitation.getMail();
-		emailForm = new MailValidationController(ureq, wControl, rootForm, invitationEmail, true, false, runContext);
+		emailForm = new MailValidationController(ureq, wControl, rootForm, invitationEmail, Flow.REGISTRATION, false, runContext);
 
 		initForm(ureq);
 	}

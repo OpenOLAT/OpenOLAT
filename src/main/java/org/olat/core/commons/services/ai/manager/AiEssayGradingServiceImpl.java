@@ -32,8 +32,6 @@ import org.olat.core.commons.services.ai.essay.AiEssayResponseTruncatedException
 import org.olat.core.commons.services.ai.essay.AiGradingTier;
 import org.olat.core.commons.services.ai.essay.EssayAiGrading;
 import org.olat.core.commons.services.ai.essay.GradingSuggestion;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.service.EssayGradingAiService;
 import org.olat.core.logging.Tracing;
@@ -62,19 +60,6 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 
 	/** Inlined constant stamped on every usage-log row — mirrors MC feature. */
 	public static final String PROMPT_TEMPLATE_VERSION = "essay-grading-v1";
-
-	private static final int DEFAULT_MAX_TOKENS = 2048;
-
-	/**
-	 * Per-call HTTP read timeout for the grading call. {@link
-	 * org.olat.core.commons.services.ai.essay.EssayFormativeFeedbackService}
-	 * enforces a hard 30 s service-level timeout on the future; we set the
-	 * HTTP timeout slightly above that (35 s) so the service-level cap is
-	 * the first gate to fire and users get a clean
-	 * {@code EssayGradingTimeoutException} instead of a raw
-	 * {@code SocketTimeoutException}.
-	 */
-	private static final Duration GRADING_HTTP_TIMEOUT = Duration.ofSeconds(35);
 
 	@Autowired
 	private AiModule aiModule;
@@ -128,8 +113,13 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 		// writing a second usage log row.
 		AiLoggingChatModel loggingModel = null;
 		try {
-			int maxTokens = tier == null ? DEFAULT_MAX_TOKENS : tier.maxTokens();
-			ChatModel chatModel = spi.buildChatModel(modelName, maxTokens, GRADING_HTTP_TIMEOUT);
+			// The admin-configured budget always applies. AiGradingTier.maxTokens() is not
+			// used here: since all three tiers were raised to the same 16_384 ceiling, that
+			// value no longer differentiates anything and would silently override the
+			// admin setting for every caller, because every caller supplies a non-null tier.
+			int maxTokens = aiModule.getEssayGradingMaxOutputTokens();
+			Duration timeout = Duration.ofSeconds(aiModule.getEssayGradingTimeoutSeconds());
+			ChatModel chatModel = spi.buildChatModel(modelName, maxTokens, timeout);
 
 			AiUsageContext ctx = usageContext != null
 					? usageContext
@@ -182,7 +172,7 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 				aiUsageLogDAO.createErrorLog(spiId, modelName, AiFeature.EssayGrading.getType(), usageContext,
 						System.currentTimeMillis() - startTime, cause);
 			}
-			if (isJsonParseFailure(cause)) {
+			if (AiJsonParseFailure.isJsonParseFailure(cause)) {
 				throw new AiEssayResponseTruncatedException(
 						"AI response could not be parsed (likely truncated): "
 								+ (cause.getMessage() != null ? cause.getMessage() : cause.getClass().getName()),
@@ -197,22 +187,4 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 		return s == null ? "" : s;
 	}
 
-	/**
-	 * Walk the exception cause chain looking for a Jackson parse error.
-	 * LangChain4j wraps Jackson failures in its own runtime exceptions when
-	 * the LLM reply does not validate against the structured-output schema,
-	 * so the indicator we care about always sits somewhere in the cause
-	 * chain rather than at the top level.
-	 */
-	private static boolean isJsonParseFailure(Throwable t) {
-		for (Throwable c = t; c != null; c = c.getCause()) {
-			if (c instanceof JsonProcessingException) {
-				return true;
-			}
-			if (c == c.getCause()) {
-				break;
-			}
-		}
-		return false;
-	}
 }

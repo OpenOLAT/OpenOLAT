@@ -31,6 +31,7 @@ import org.olat.core.commons.services.ai.AiSPI;
 import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 import org.olat.core.commons.services.ai.essay.AiContentChunk;
 import org.olat.core.commons.services.ai.essay.AiEssayGenerationException;
+import org.olat.core.commons.services.ai.essay.AiEssayGenerationResponseTruncatedException;
 import org.olat.core.commons.services.ai.essay.EssayItemDraft;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.service.EssayGenerationAiService;
@@ -58,17 +59,6 @@ import dev.langchain4j.service.AiServices;
 @Service
 public class AiEssayGenerationServiceImpl implements AiEssayGenerationService {
 	private static final Logger log = Tracing.createLoggerFor(AiEssayGenerationServiceImpl.class);
-
-	private static final int MAX_TOKENS = 4096;
-
-	/**
-	 * Per-call HTTP read timeout for essay generation. Generation runs
-	 * asynchronously on the task executor and may produce multiple drafts
-	 * in a single call, so cloud-provider wall time of 30-120 s is normal.
-	 * Three minutes is a safe ceiling that still prevents a truly stuck
-	 * call from hanging a worker thread forever.
-	 */
-	private static final Duration GENERATION_HTTP_TIMEOUT = Duration.ofMinutes(3);
 
 	@Autowired
 	private AiModule aiModule;
@@ -115,8 +105,9 @@ public class AiEssayGenerationServiceImpl implements AiEssayGenerationService {
 		long startTime = System.currentTimeMillis();
 		AiLoggingChatModel loggingModel = null;
 		try {
+			Duration timeout = Duration.ofSeconds(aiModule.getEssayGenerationTimeoutSeconds());
 			cachedAiService = CachedChatModel.getOrRefresh(cachedAiService, spi, spiId, modelName,
-					MAX_TOKENS, GENERATION_HTTP_TIMEOUT);
+					aiModule.getEssayGenerationMaxOutputTokens(), timeout);
 			ChatModel chatModel = cachedAiService.chatModel();
 
 			AiServices<EssayGenerationAiService> builder = AiServices.builder(EssayGenerationAiService.class);
@@ -158,6 +149,12 @@ public class AiEssayGenerationServiceImpl implements AiEssayGenerationService {
 			} else {
 				aiUsageLogDAO.createErrorLog(spiId, modelName, AiFeature.EssayGeneration.getType(), usageContext,
 						System.currentTimeMillis() - startTime, cause);
+			}
+			if (AiJsonParseFailure.isJsonParseFailure(cause)) {
+				throw new AiEssayGenerationResponseTruncatedException(
+						"AI response could not be parsed (likely truncated): "
+								+ (cause.getMessage() != null ? cause.getMessage() : cause.getClass().getName()),
+						cause);
 			}
 			throw new AiEssayGenerationException(
 					cause.getMessage() != null ? cause.getMessage() : cause.getClass().getName(), cause);

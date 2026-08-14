@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.ai.manager;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 
@@ -48,8 +49,6 @@ import dev.langchain4j.service.AiServices;
  */
 @Service
 public class AiMCQuestionServiceImpl implements AiMCQuestionService {
-	
-	private static final int MAX_TOKENS = 4000;
 
 	@Autowired
 	private AiModule aiModule;
@@ -96,7 +95,9 @@ public class AiMCQuestionServiceImpl implements AiMCQuestionService {
 				return response;
 			}
 
-			cachedAiService = CachedChatModel.getOrRefresh(cachedAiService, spi, spiId, modelName, MAX_TOKENS);
+			Duration timeout = Duration.ofSeconds(aiModule.getMCGeneratorTimeoutSeconds());
+			cachedAiService = CachedChatModel.getOrRefresh(cachedAiService, spi, spiId, modelName,
+					aiModule.getMCGeneratorMaxOutputTokens(), timeout);
 			ChatModel chatModel = cachedAiService.chatModel();
 
 			String language = locale.getDisplayLanguage(Locale.ENGLISH);

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.ai.AiEssayGradingService;
 import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 import org.olat.core.commons.services.ai.essay.AiGradingTier;
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -55,6 +57,8 @@ import org.olat.core.util.StringHelper;
  *
  */
 public class AiEssayGradingTestController extends FormBasicController {
+
+	private static final Logger log = Tracing.createLoggerFor(AiEssayGradingTestController.class);
 
 	static final String ESSAY_GRADING_REFERENCE = "Zellen sind die kleinsten lebensfähigen Einheiten aller "
 			+ "Lebewesen. Eukaryotische Zellen besitzen einen Zellkern, der die DNA enthält. "
@@ -166,6 +170,13 @@ public class AiEssayGradingTestController extends FormBasicController {
 			}
 		} catch (Exception e) {
 			errorMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+			log.warn("Essay grading admin test call failed", e);
+		} catch (Throwable t) {
+			// Catches anything below normal Exception handling (e.g. a client-library
+			// Error) so this admin smoke test always renders a graceful result instead
+			// of letting a raw throwable escape the request thread uncaught.
+			errorMessage = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+			log.error("Essay grading admin test call failed with a Throwable", t);
 		}
 
 		flc.contextPut("suggestionView", toSuggestionView(resultSuggestion));

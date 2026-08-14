@@ -184,11 +184,11 @@ public class PFManager {
 	 */
 	private int countFiles(VFSContainer vfsContainer) {
 		int counter = 0;
-		if (vfsContainer.exists()) {
+		if (vfsContainer != null && vfsContainer.exists()) {
 			List<VFSItem> children = vfsContainer.getItems(attachmentExcludeFilter);
 			for (VFSItem vfsItem : children) {
-				if (vfsItem instanceof VFSContainer){
-					counter += countFiles((VFSContainer)vfsItem);
+				if (vfsItem instanceof VFSContainer subContainer) {
+					counter += countFiles(subContainer);
 				} else {
 					counter++;										
 				}
