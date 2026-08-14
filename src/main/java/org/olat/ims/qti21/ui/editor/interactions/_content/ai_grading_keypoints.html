@@ -11,8 +11,20 @@
 		<tbody>
 		#foreach($row in $rows)
 			<tr>
-				<td>$r.render(${row.getText()})</td>
-				<td>$r.render(${row.getWeight()})</td>
+				<td class="#if($f.hasError(${row.getText().getComponent().getComponentName()})) has-feedback has-error #end">
+					$r.render(${row.getText()})
+					#if($f.hasError(${row.getText().getComponent().getComponentName()}))
+						<span class="o_icon o_icon_error form-control-feedback"></span>
+						$r.render("${row.getText().getComponent().getComponentName()}", "error")
+					#end
+				</td>
+				<td class="#if($f.hasError(${row.getWeight().getComponent().getComponentName()})) has-feedback has-error #end">
+					$r.render(${row.getWeight()})
+					#if($f.hasError(${row.getWeight().getComponent().getComponentName()}))
+						<span class="o_icon o_icon_error form-control-feedback"></span>
+						$r.render("${row.getWeight().getComponent().getComponentName()}", "error")
+					#end
+				</td>
 				<td>$r.render(${row.getRequired()})</td>
 				<td>$r.render(${row.getRemoveButton()})</td>
 			</tr>
