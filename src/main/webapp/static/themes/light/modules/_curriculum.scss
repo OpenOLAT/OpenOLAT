@@ -62,8 +62,7 @@ fieldset.o_validation_result {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: start;
-	column-gap: 10px;
-	row-gap: 20px;
+	gap: 10px;
 	@media (min-width: $screen-md-min) {
 		flex-wrap: nowrap;
 	}
@@ -91,13 +90,16 @@ fieldset.o_validation_result {
 		
 		.o_curriculum_dashboard_title {
 			order: 2;
-			
+
 			display: flex;
+			align-items: baseline;
 			flex-wrap: wrap;
-			align-items: center;
+			@media (min-width: $screen-xs-min) {
+				flex-wrap: nowrap;
+			}
 			column-gap: 20px;
 			row-gap: 10px;
-			
+
 			h2 {
 				font-size: $o-curriculum-title-font-size-small;
 				padding: 0px;
