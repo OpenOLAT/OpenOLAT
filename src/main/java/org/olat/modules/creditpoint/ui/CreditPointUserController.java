@@ -37,6 +37,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.certificationprogram.ui.CertificationHelper;
 import org.olat.modules.creditpoint.CreditPointService;
@@ -76,10 +78,16 @@ public class CreditPointUserController extends BasicController {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.assessedIdentity = assessedIdentity;
-		systems = showAllSystems
+		List<CreditPointSystem> availableSystems = showAllSystems
 				? creditPointService.getActiveCreditPointSystems()
 				: creditPointService.getCreditPointSystems(assessedIdentity);
-		
+		// Someone else's credit points are being viewed (e.g. coaching tool, user management): systems
+		// restricted to an organisation must only be shown if the viewer is a member of that organisation.
+		// Viewing one's own credit points is never restricted this way.
+		systems = assessedIdentity.equals(ureq.getIdentity())
+				? availableSystems
+				: filterByViewerOrganisations(availableSystems, ureq.getUserSession().getRoles());
+
 		mainVC = createVelocityContainer("user_systems");
 		if(assessedIdentity.equals(ureq.getIdentity())) {
 			mainVC.contextPut("withHeader", Boolean.TRUE);
@@ -92,7 +100,20 @@ public class CreditPointUserController extends BasicController {
 		initScopes(ureq, true);
 		putInitialPanel(mainVC);
 	}
-	
+
+	private static List<CreditPointSystem> filterByViewerOrganisations(List<CreditPointSystem> availableSystems, Roles viewerRoles) {
+		List<OrganisationRef> viewerOrgs = viewerRoles.getOrganisations();
+		return availableSystems.stream()
+				.filter(system -> !system.isOrganisationsRestrictions() || isMemberOfRestrictionOrgs(system, viewerOrgs))
+				.toList();
+	}
+
+	private static boolean isMemberOfRestrictionOrgs(CreditPointSystem system, List<OrganisationRef> viewerOrgs) {
+		return system.getOrganisations().stream()
+				.anyMatch(restrictionOrg -> viewerOrgs.stream()
+						.anyMatch(viewerOrg -> viewerOrg.getKey().equals(restrictionOrg.getOrganisation().getKey())));
+	}
+
 	private ScopeSelection initScopes(UserRequest ureq, boolean openDetails) {
 		List<CreditPointWallet> wallets = creditPointService.getWallets(assessedIdentity);
 		List<Scope> systemScopes = new ArrayList<>();
