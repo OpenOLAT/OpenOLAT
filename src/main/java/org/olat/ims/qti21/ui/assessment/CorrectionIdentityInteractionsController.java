@@ -604,7 +604,8 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		if(StringHelper.containsNonWhitespace(el.getValue())) {
 			try {
 				// check with the parse algorithm of BigDecimal first
-				new BigDecimal(el.getValue()).doubleValue();
+				String val = el.getValue().replace(',', '.');
+				new BigDecimal(val).doubleValue();
 
 				Double minScore = QtiNodesExtractor.extractMinScore(assessmentItem);
 				Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
