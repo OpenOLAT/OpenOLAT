@@ -72,7 +72,9 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 		String myName = getName();
 
 		if (DATE_TYPE_CR.equals(myName))
-			return user.getCreationDate();
+			if(user != null) {
+				return user.getCreationDate();
+			}
 		if (DATE_TYPE_LL.equals(myName)) {
 			if (user instanceof UserImpl userImpl) {
 				Identity id = userImpl.getIdentity();
@@ -82,10 +84,10 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 			} else if (user instanceof TransientIdentity) {
 				// anticipated, some kind of preview screen
 				return new Date(0);
+			} else if(user != null) {
+				// huh, we didn't find this identity
+				log.warn("Couldn't find Identity for given User: {}", user.getKey());
 			}
-			// huh, we didn't find this identity
-			log.warn("Couldn't find Identity for given User: {}", user.getKey());
-			return new Date(0);
 		}
 
 		// huh, something different.. return 1970

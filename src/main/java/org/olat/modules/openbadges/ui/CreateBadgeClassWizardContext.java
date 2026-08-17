@@ -21,6 +21,7 @@ package org.olat.modules.openbadges.ui;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -134,7 +135,7 @@ public class CreateBadgeClassWizardContext {
 		if (entry == null) {
 			return null;
 		}
-		if (entry.getEntryStatus() != RepositoryEntryStatusEnum.published && entry.getEntryStatus() != RepositoryEntryStatusEnum.preparation) {
+		if (!Arrays.asList(RepositoryEntryStatusEnum.preparationToPublished()).contains(entry.getEntryStatus())) {
 			return null;
 		}
 		ICourse course = CourseFactory.loadCourse(courseResourcableId);
