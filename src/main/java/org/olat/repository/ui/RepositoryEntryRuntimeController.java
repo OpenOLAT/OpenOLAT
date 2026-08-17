@@ -1325,6 +1325,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void doRestore(UserRequest ureq) {
+		popToRoot(ureq);
+		
 		RepositoryEntry reloadedEntry = loadRepositoryEntry();
 		refreshRepositoryEntry(reloadedEntry);
 		reloadSecurity(ureq);
