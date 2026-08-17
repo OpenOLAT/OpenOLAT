@@ -54,7 +54,7 @@ public class GradeAdminConfigsController extends FormBasicController {
 		setFormTitle("admin.config.title");
 		setFormContextHelp("manual_admin/administration/Assessment_translate_points_in_grades_admin/");
 		
-		enableEl =  uifactory.addToggleButton("grade.system.enabled", "grade.system.enabled", translate("on"), translate("off"), formLayout);
+		enableEl =  uifactory.addToggleButton("enable", "admin.config.grade.enabled", translate("on"), translate("off"), formLayout);
 		enableEl.toggle(gradeModule.isEnabled());
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 	}
