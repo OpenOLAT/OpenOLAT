@@ -345,7 +345,8 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		boolean useSEB = useSafeExamBrowserEl.isOn();
 		
 		boolean showConfiguration = (assessmentMode.getKey() == null && lectureModule.isAssessmentModeSebDefault())
-				|| (assessmentMode.getKey() != null && assessmentMode.isSafeExamBrowser() && assessmentMode.getSafeExamBrowserConfiguration() != null);
+				|| (assessmentMode.getKey() != null && assessmentMode.isSafeExamBrowser() && assessmentMode.getSafeExamBrowserConfiguration() != null)
+				|| (assessmentMode.getKey() != null && assessmentMode.getSafeExamBrowserTemplate() != null);
 		sebTemplateEl.setVisible(useSEB && showConfiguration);
 		safeExamBrowserConfigurationEl.setVisible(useSEB && showConfiguration);
 		
