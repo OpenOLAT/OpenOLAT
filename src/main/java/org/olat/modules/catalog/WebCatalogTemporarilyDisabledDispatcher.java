@@ -67,6 +67,11 @@ public class WebCatalogTemporarilyDisabledDispatcher implements Dispatcher {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
+
+		final String pathInfo = request.getPathInfo();
+		if(pathInfo != null && pathInfo.contains("close-window")) {
+			DispatcherModule.setNotContent(pathInfo, response);
+		}
 		
 		UserRequest ureq = null;
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
