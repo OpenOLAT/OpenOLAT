@@ -107,6 +107,9 @@
 	a:hover {
 		color: $o-footer-default-link-hover-color;
 	}
+	a:focus {
+		outline-offset: 2px;
+	}
 }
 
 .o_share_links {
