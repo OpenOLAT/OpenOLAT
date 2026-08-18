@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.junit.Test;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.modules.coach.ui.UserListController;
 import org.olat.test.JunitTestHelper;
@@ -75,6 +76,42 @@ public class IdentityPowerSearchQueriesTest extends OlatTestCase {
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		List<IdentityPropertiesRow> rows = identityPowerSearchQueries.getIdentitiesByPowerSearch(params, userPropertyHandlers, Locale.ENGLISH, null, 0, -1);
+		assertThat(rows)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.map(row -> row.getIdentityKey())
+			.contains(id.getKey());
+	}
+
+	@Test
+	public void searchOrderedByDaysToExpiry() {
+		// OO-8382: sorting the "days to expiry" column crashed with a Hibernate syntax exception
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("power-3");
+
+		OrganisationRoles[] roles = { OrganisationRoles.user };
+		GroupMembershipInheritance[] inheritence = { GroupMembershipInheritance.root, GroupMembershipInheritance.none };
+		SearchIdentityParams params = SearchIdentityParams.roles(roles, inheritence, Identity.STATUS_VISIBLE_LIMIT);
+
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		SortKey sortKey = new SortKey("daysToExpiry", true);
+		List<IdentityPropertiesRow> rows = identityPowerSearchQueries.getIdentitiesByPowerSearch(params, userPropertyHandlers, Locale.ENGLISH, sortKey, 0, -1);
+		assertThat(rows)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.map(row -> row.getIdentityKey())
+			.contains(id.getKey());
+	}
+
+	@Test
+	public void searchOrderedByIllegalKeyFallsBackGracefully() {
+		// OO-8382: an unmapped sort key must fall back to a valid order-by, not a malformed one
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("power-4");
+
+		OrganisationRoles[] roles = { OrganisationRoles.user };
+		GroupMembershipInheritance[] inheritence = { GroupMembershipInheritance.root, GroupMembershipInheritance.none };
+		SearchIdentityParams params = SearchIdentityParams.roles(roles, inheritence, Identity.STATUS_VISIBLE_LIMIT);
+
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		SortKey sortKey = new SortKey("notAValidSortKey", true);
+		List<IdentityPropertiesRow> rows = identityPowerSearchQueries.getIdentitiesByPowerSearch(params, userPropertyHandlers, Locale.ENGLISH, sortKey, 0, -1);
 		assertThat(rows)
 			.hasSizeGreaterThanOrEqualTo(1)
 			.map(row -> row.getIdentityKey())

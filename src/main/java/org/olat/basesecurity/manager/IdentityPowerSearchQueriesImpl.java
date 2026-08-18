@@ -660,6 +660,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				sb.append(" order by ident.inactivationDate ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
 				break;
 			case "expirationDate":
+			case "daysToExpiry":
 				sb.append(" order by ident.expirationDate ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
 				break;
 			case "name":
@@ -680,7 +681,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 					sb.append(" order by lower(user.").append(orderBy.getKey()).append(") ").append(orderBy.isAsc() ? "asc" : "desc");
 				} else {
 					log.warn("Try to order by with illegal key: {}", orderBy);
-					sb.append(" order by lower(user.id ").append(orderBy.isAsc() ? "asc" : "desc");
+					sb.append(" order by ident.key ").append(orderBy.isAsc() ? "asc" : "desc");
 				}
 				break;
 		}
