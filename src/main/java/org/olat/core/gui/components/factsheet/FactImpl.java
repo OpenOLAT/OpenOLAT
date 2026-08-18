@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.factsheet;
 
+import org.olat.core.gui.components.Component;
+
 /**
  *
  * Initial date: 12 Aug 2026<br>
@@ -31,12 +33,22 @@ class FactImpl implements Fact {
 	private final String label;
 	private final String value;
 	private final String subValue;
+	private final Component valueComponent;
 
 	FactImpl(String iconCss, String label, String value, String subValue) {
 		this.iconCss = iconCss;
 		this.label = label;
 		this.value = value;
 		this.subValue = subValue;
+		this.valueComponent = null;
+	}
+
+	FactImpl(String iconCss, String label, Component valueComponent) {
+		this.iconCss = iconCss;
+		this.label = label;
+		this.value = null;
+		this.subValue = null;
+		this.valueComponent = valueComponent;
 	}
 
 	@Override
@@ -57,6 +69,11 @@ class FactImpl implements Fact {
 	@Override
 	public String getSubValue() {
 		return subValue;
+	}
+
+	@Override
+	public Component getValueComponent() {
+		return valueComponent;
 	}
 
 }

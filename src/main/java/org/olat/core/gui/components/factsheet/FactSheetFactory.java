@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.factsheet;
 
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 
 /**
@@ -43,6 +44,10 @@ public class FactSheetFactory {
 
 	public static Fact createFact(String iconCss, String label, String value, String subValue) {
 		return new FactImpl(iconCss, label, value, subValue);
+	}
+
+	public static Fact createFact(String iconCss, String label, Component valueComponent) {
+		return new FactImpl(iconCss, label, valueComponent);
 	}
 
 }

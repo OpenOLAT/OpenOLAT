@@ -56,14 +56,14 @@ public class FactSheetRenderer extends DefaultComponentRenderer {
 
 		sb.append("<div class=\"o_facts\">");
 		for (Fact fact : factSheet.getFacts()) {
-			renderFact(sb, fact);
+			renderFact(renderer, sb, fact, args);
 		}
 		sb.append("</div>");
 
 		sb.append("</div>");
 	}
 
-	private void renderFact(StringOutput sb, Fact fact) {
+	private void renderFact(Renderer renderer, StringOutput sb, Fact fact, String[] args) {
 		sb.append("<div class=\"o_fact\">");
 
 		if (StringHelper.containsNonWhitespace(fact.getIconCss())) {
@@ -79,7 +79,12 @@ public class FactSheetRenderer extends DefaultComponentRenderer {
 		sb.append(StringHelper.escapeHtml(fact.getLabel()));
 		sb.append("</div>");
 		sb.append("<div class=\"o_fact_value\">");
-		sb.append(StringHelper.escapeHtml(fact.getValue()));
+		Component valueComponent = fact.getValueComponent();
+		if (valueComponent != null) {
+			renderer.render(valueComponent, sb, args);
+		} else {
+			sb.append(StringHelper.escapeHtml(fact.getValue()));
+		}
 		sb.append("</div>");
 		if (StringHelper.containsNonWhitespace(fact.getSubValue())) {
 			sb.append("<div class=\"o_fact_sub_value\">");

@@ -27,6 +27,10 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.factsheet.Fact;
 import org.olat.core.gui.components.factsheet.FactSheet;
 import org.olat.core.gui.components.factsheet.FactSheetFactory;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.util.ComponentList;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -69,12 +73,38 @@ public class GuiDemoFactSheetController extends BasicController {
 				translate("factsheet.fact.price.value"), translate("factsheet.fact.price.subvalue")));
 		facts.add(FactSheetFactory.createFact("o_icon_graduate", translate("factsheet.fact.coaches.label"),
 				translate("factsheet.fact.coaches.value"), translate("factsheet.fact.coaches.subvalue")));
+		facts.add(FactSheetFactory.createFact("o_icon_group", translate("factsheet.fact.groups.label"),
+				createGroupLinks()));
+		facts.add(FactSheetFactory.createFact("o_icon_status_in_progress", translate("factsheet.fact.progress.label"),
+				createProgressBar()));
 		return facts;
+	}
+
+	private Component createGroupLinks() {
+		// The info page can show more than one group. A fact value is a single
+		// component, so the group links are wrapped in one ComponentList.
+		// Group names are user data, hence NONTRANSLATED.
+		List<Component> groupLinks = List.of(
+				createGroupLink("group1", translate("factsheet.fact.groups.value1")),
+				createGroupLink("group2", translate("factsheet.fact.groups.value2")));
+		return new ComponentList("groups", groupLinks);
+	}
+
+	private Link createGroupLink(String name, String groupName) {
+		Link groupLink = LinkFactory.createCustomLink(name, name, "group", groupName, Link.LINK | Link.NONTRANSLATED, null, this);
+		groupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+		return groupLink;
+	}
+
+	private Component createProgressBar() {
+		return new ProgressBar("progress", 100, 65, 100, "%");
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source instanceof Link link && "group".equals(link.getCommand())) {
+			showInfo("factsheet.fact.groups.clicked");
+		}
 	}
 
 }

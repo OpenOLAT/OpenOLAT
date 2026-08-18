@@ -17,7 +17,7 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.factsheet;
+package org.olat.core.gui.components.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,20 +29,24 @@ import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
 
 /**
+ * Renders a list of components as one component, wrapped in a flex layout
+ * with a gap between the components. Use it wherever a single slot (e.g. a
+ * Fact value in org.olat.core.gui.components.factsheet) must show more than
+ * one component.
  *
- * Initial date: 12 Aug 2026<br>
+ * Initial date: 18 Aug 2026<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class FactSheet extends AbstractComponent implements ComponentCollection {
+public class ComponentList extends AbstractComponent implements ComponentCollection {
 
-	private static final ComponentRenderer RENDERER = new FactSheetRenderer();
+	private static final ComponentRenderer RENDERER = new ComponentListRenderer();
 
-	private String title;
-	private List<Fact> facts = new ArrayList<>();
+	private final List<Component> components;
 
-	protected FactSheet(String name) {
+	public ComponentList(String name, List<Component> components) {
 		super(name);
+		this.components = components == null ? List.of() : components;
 	}
 
 	@Override
@@ -55,30 +59,15 @@ public class FactSheet extends AbstractComponent implements ComponentCollection 
 		//
 	}
 
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-		setDirty(true);
-	}
-
-	public List<Fact> getFacts() {
-		return facts;
-	}
-
-	public void setFacts(List<Fact> facts) {
-		this.facts = facts == null ? new ArrayList<>() : facts;
-		setDirty(true);
+	public List<Component> getComponentList() {
+		return components;
 	}
 
 	@Override
 	public Component getComponent(String name) {
-		for (Fact fact : facts) {
-			Component valueComponent = fact.getValueComponent();
-			if (valueComponent != null && name.equals(valueComponent.getComponentName())) {
-				return valueComponent;
+		for (Component component : components) {
+			if (name.equals(component.getComponentName())) {
+				return component;
 			}
 		}
 		return null;
@@ -86,14 +75,7 @@ public class FactSheet extends AbstractComponent implements ComponentCollection 
 
 	@Override
 	public Iterable<Component> getComponents() {
-		List<Component> valueComponents = new ArrayList<>(facts.size());
-		for (Fact fact : facts) {
-			Component valueComponent = fact.getValueComponent();
-			if (valueComponent != null) {
-				valueComponents.add(valueComponent);
-			}
-		}
-		return valueComponents;
+		return new ArrayList<>(components);
 	}
 
 }

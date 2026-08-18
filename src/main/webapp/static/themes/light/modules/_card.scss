@@ -317,6 +317,12 @@
 
 	.o_fact_value {
 		font-size: 18px;
+
+		// A fact value can be a component (link, progress bar, status) instead
+		// of plain text. Its own styling takes over the font size.
+		.btn, .o_progress {
+			font-size: initial;
+		}
 	}
 
 	.o_fact_sub_value {

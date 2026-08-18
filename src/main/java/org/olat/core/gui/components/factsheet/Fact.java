@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.factsheet;
 
+import org.olat.core.gui.components.Component;
+
 /**
  *
  * Initial date: 12 Aug 2026<br>
@@ -34,5 +36,12 @@ public interface Fact {
 	String getValue();
 
 	String getSubValue();
+
+	/**
+	 * @return a component rendered instead of the value, or null if the value
+	 *         (a plain, escaped string) is rendered. Use a {@link ComponentList}
+	 *         if more than one component is needed.
+	 */
+	Component getValueComponent();
 
 }
