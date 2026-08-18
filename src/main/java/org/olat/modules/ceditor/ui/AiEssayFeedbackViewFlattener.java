@@ -69,7 +69,7 @@ final class AiEssayFeedbackViewFlattener {
 			if (r != null) {
 				v.put("rejectionMessageKey", nullToEmpty(r.messageKey()));
 				String localized = translator == null || r.messageKey() == null
-						? nullToEmpty(r.detail()) : translator.translate(r.messageKey());
+						? nullToEmpty(r.detail()) : translator.translate(r.messageKey(), r.messageParams());
 				v.put("rejectionMessage", localized);
 			}
 			return v;

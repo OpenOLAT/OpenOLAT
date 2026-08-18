@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.services.ai.AiEssayGradingService;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 import org.olat.core.commons.services.ai.essay.AiRateLimitExceededException;
 import org.olat.core.commons.services.ai.essay.EssayGenerationService;
@@ -91,8 +92,6 @@ public class NewAiQuestionsImportController extends FormBasicController {
 
 	/** Default upload size limit in KB (50 MB) — matches MarkdownImportController. */
 	public static final int MAX_UPLOAD_SIZE_KB = 51200;
-	/** Maximum source text length (chars) — same cap as the legacy NewAiItemController. */
-	private static final int MAX_INPUT_LEN = 60000;
 	/** Maximum number of questions per leg — UI cap. */
 	private static final int MAX_AI_COUNT = 10;
 	/** Minimum number of questions per leg (zero = opt-out of that leg). */
@@ -121,6 +120,8 @@ public class NewAiQuestionsImportController extends FormBasicController {
 	private EssayGenerationService essayGenerationService;
 	@Autowired
 	private AiEssayGradingService aiEssayGradingService;
+	@Autowired
+	private AiModule aiModule;
 
 	public NewAiQuestionsImportController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, null);
@@ -160,10 +161,11 @@ public class NewAiQuestionsImportController extends FormBasicController {
 		fileUploadEl.setVisible(false);
 
 		// Text paste
+		int maxInputChars = resolveMaxInputChars();
 		contentEl = uifactory.addTextAreaElement("ai.questions.content", "ai.questions.content", -1, 12, 100, false, false, "", formLayout);
 		contentEl.setPlaceholderKey("ai.questions.content.placeholder", null);
-		contentEl.setNotLongerThanCheck(MAX_INPUT_LEN, "form.error.toolong");
-		contentEl.setExampleKey("ai.questions.content.example", new String[]{ String.valueOf(MAX_INPUT_LEN) });
+		contentEl.setNotLongerThanCheck(maxInputChars, "form.error.toolong");
+		contentEl.setExampleKey("ai.questions.content.example", new String[]{ String.valueOf(maxInputChars) });
 		contentEl.addActionListener(FormEvent.ONCHANGE);
 
 		// MC count — always available
@@ -258,13 +260,25 @@ public class NewAiQuestionsImportController extends FormBasicController {
 		boolean ok = super.validateFormLogic(ureq);
 		fileUploadEl.clearError();
 		contentEl.clearError();
+		int maxInputChars = resolveMaxInputChars();
 		if (MODE_FILE.equals(modeEl.getSelectedKey())) {
 			if (!fileUploadEl.isUploadSuccess()) {
 				fileUploadEl.setErrorKey("ai.questions.file.missing");
 				ok = false;
+			} else {
+				String resolved = resolveInputText();
+				if (resolved != null && resolved.length() > maxInputChars) {
+					fileUploadEl.setErrorKey("form.error.toolong", String.valueOf(maxInputChars));
+					ok = false;
+				}
 			}
 		} else if (!StringHelper.containsNonWhitespace(contentEl.getValue())) {
 			contentEl.setErrorKey("ai.questions.content.empty");
+			ok = false;
+		} else if (contentEl.getValue().length() > maxInputChars) {
+			// super.validateFormLogic() already ran contentEl's own too-long check via
+			// flc.validate(), but the clearError() above wipes that result — recheck here.
+			contentEl.setErrorKey("form.error.toolong", String.valueOf(maxInputChars));
 			ok = false;
 		}
 		ok &= validateCount(aiMcCountEl);
@@ -352,6 +366,26 @@ public class NewAiQuestionsImportController extends FormBasicController {
 		showInfo("ai.questions.submitted.background");
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_CREATED));
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	/**
+	 * The source text feeds both the MC and the essay question generator, so
+	 * the effective cap is the lower of the two — whichever leg the author
+	 * requests must fit. A feature that is not enabled/configured cannot be
+	 * exercised from this dialog, so its limit is not considered.
+	 */
+	private int resolveMaxInputChars() {
+		int max = Integer.MAX_VALUE;
+		boolean anyActive = false;
+		if (aiModule.isMCQuestionGeneratorEnabled() && aiModule.isMCQuestionGeneratorConfigured()) {
+			max = Math.min(max, aiModule.getMCGeneratorMaxInputChars());
+			anyActive = true;
+		}
+		if (aiModule.isEssayGenerationEnabled() && aiModule.isEssayGenerationConfigured()) {
+			max = Math.min(max, aiModule.getEssayGenerationMaxInputChars());
+			anyActive = true;
+		}
+		return anyActive ? max : aiModule.getEssayGenerationMaxInputChars();
 	}
 
 	/** Read the source text — either from the uploaded file (with .docx

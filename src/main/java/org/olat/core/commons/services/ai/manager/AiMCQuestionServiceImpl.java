@@ -86,6 +86,13 @@ public class AiMCQuestionServiceImpl implements AiMCQuestionService {
 			response.setError("AI provider is not configured or not available.");
 			return response;
 		}
+		int maxInputChars = aiModule.getMCGeneratorMaxInputChars();
+		if (input != null && input.length() > maxInputChars) {
+			response.setError("Input text exceeds the configured maximum of " + maxInputChars + " characters.");
+			aiUsageLogDAO.createGuardLog(AiFeature.MCQuestionGenerator.getType(), usageContext,
+					"InputTooLong", "input length " + input.length() + " exceeds max " + maxInputChars);
+			return response;
+		}
 		long startTime = System.currentTimeMillis();
 		AiLoggingChatModel loggingModel = null;
 		try {

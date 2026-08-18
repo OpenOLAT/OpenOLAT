@@ -190,6 +190,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		initFiltersPresets();
 		tableEl.setSelectedFilterTab(ureq, allTab);
 		tableEl.setExportEnabled(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coach-assignment-" + repoEntry.getKey() + "-" + gtaNode.getIdent());
 		
 		backLink = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
 		
