@@ -357,7 +357,7 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		if (sourceBookings.isEmpty()) return 0;
 		int copied = 0;
 		for (RoomBooking src : sourceBookings) {
-			RoomBooking tgt = roomBookingDao.create(src.getRoom(), target, src.getStartDate(), src.getEndDate());
+			RoomBooking tgt = roomBookingDao.create(src.getRoom(), target, target.getStartDate(), target.getEndDate());
 			tgt.setBufferBefore(src.getBufferBefore());
 			tgt.setBufferAfter(src.getBufferAfter());
 			tgt = roomBookingDao.update(tgt);

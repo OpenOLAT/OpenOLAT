@@ -58,12 +58,14 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyRoomBookings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyToDos;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.copy.CopyElementOverviewTableModel.CopyElementCols;
+import org.olat.modules.roommanagement.RoomManagementModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -89,6 +91,8 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 	
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
 	@Autowired
 	private CurriculumElementToDoProvider curriculumElementToDoProvider;
 	
@@ -124,6 +128,10 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 				new CopyInfosCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.numOfLectureBlocks,
 				new CopyInfosCellRenderer()));
+		if(roomManagementModule.isEnabled() && context.getCopyRoomBookings() == CopyRoomBookings.rooms) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.numOfRoomBookings,
+				new CopyInfosCellRenderer()));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.numOfToDos,
 				new CopyInfosCellRenderer()));
 		
@@ -196,9 +204,14 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		long toDos = curriculumElementToDoProvider.countActiveToDoTasks(element, List.of(element));
 		long effectiveToDos = context.getToDosCopySetting() != CopyToDos.dont ? toDos : 0;
 		CopyInfos numOfToDos = new CopyInfos(effectiveToDos, toDos);
-
+		
+		long roomBookings = elementWithInfos.numOfLectureBlocks();
+		long effectiveRoomBookings = context.getCopyRoomBookings() != CopyRoomBookings.dont ? roomBookings : 0;
+		CopyInfos numOfRoomBookings = new CopyInfos(effectiveRoomBookings, roomBookings);
+		
 		CopyElementSetting setting = calculateSetting(element);
-		CopyElementRow row = new CopyElementRow(element, setting, numOfResources, numOfTemplates, numOfLectureBlocks, numOfToDos);
+		CopyElementRow row = new CopyElementRow(element, setting, numOfResources, numOfTemplates,
+				numOfLectureBlocks, numOfRoomBookings, numOfToDos);
 		
 		Date beginDate = context.shiftDate(element.getBeginDate());
 		DateChooser beginDateEl = uifactory.addDateChooser("begin.date." + (++counter), null, beginDate, flc);

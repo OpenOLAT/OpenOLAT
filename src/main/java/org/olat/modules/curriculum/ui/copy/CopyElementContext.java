@@ -31,6 +31,7 @@ import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyRoomBookings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyToDos;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 
@@ -200,5 +201,13 @@ public class CopyElementContext {
 
 	public void setCurriculumElementsToCopy(List<CopyElementSetting> settings) {
 		copySettings.setCopyElementSettings(settings);
+	}
+	
+	public CopyRoomBookings getCopyRoomBookings() {
+		return copySettings.getCopyRoomBookings();
+	}
+
+	public void setCopyRoomBookings(CopyRoomBookings copy) {
+		copySettings.setCopyRoomBookings(copy);
 	}
 }

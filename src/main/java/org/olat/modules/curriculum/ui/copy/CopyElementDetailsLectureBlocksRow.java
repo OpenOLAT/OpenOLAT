@@ -20,9 +20,11 @@
 package org.olat.modules.curriculum.ui.copy;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.roommanagement.Room;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -31,21 +33,8 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CopyElementDetailsLectureBlocksRow {
-	
-	private String externalRef;
-	private final Date startDate;
-	private final CopyResources copySetting;
-	private final LectureBlock lectureBlock;
-	private final RepositoryEntry repositoryEntry;
-	
-	public CopyElementDetailsLectureBlocksRow(LectureBlock lectureBlock, CopyResources copySetting, Date startDate, String externalRef) {
-		this.startDate = startDate;
-		this.externalRef = externalRef;
-		this.lectureBlock = lectureBlock;
-		this.repositoryEntry = lectureBlock.getEntry();
-		this.copySetting = copySetting;
-	}
+public record CopyElementDetailsLectureBlocksRow(LectureBlock lectureBlock, RepositoryEntry repositoryEntry, List<Room> rooms,
+		CopyResources copySetting, Date startDate, String externalRef) {
 	
 	public Long getKey() {
 		return lectureBlock.getKey();
@@ -59,20 +48,8 @@ public class CopyElementDetailsLectureBlocksRow {
 		return lectureBlock.getExternalId();
 	}
 	
-	public String getExternalRef() {
-		return externalRef;
-	}
-	
 	public Date getBeginDate() {
 		return startDate == null ? lectureBlock.getStartDate() : startDate;
-	}
-
-	public CopyResources getCopySetting() {
-		return copySetting;
-	}
-
-	public LectureBlock getLectureBlock() {
-		return lectureBlock;
 	}
 	
 	public String getRepositoryEntryDisplayName() {

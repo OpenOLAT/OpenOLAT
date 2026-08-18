@@ -461,12 +461,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Override
 	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block, boolean persist) {
 		return copyLectureBlock(block, newTitle, block.getExternalRef(), block.getStartDate(), block.getEndDate(),
-				block.getEntry(), block.getCurriculumElement(), persist);
+				block.getEntry(), block.getCurriculumElement(), persist, persist);
 	}
 
 	@Override
 	public LectureBlock copyLectureBlock(LectureBlock block, String title, String externalRef, Date start, Date end,
-			RepositoryEntry entry, CurriculumElement element, boolean persist) {
+			RepositoryEntry entry, CurriculumElement element, boolean persist, boolean copyRoomBookings) {
 		LectureBlock copy = lectureBlockDao.createLectureBlock(entry, element);
 		copy.setTitle(title);
 		copy.setExternalRef(externalRef);
@@ -481,7 +481,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		copy.setEndDate(end);
 		if(persist) {
 			copy = lectureBlockDao.update(copy);
-			if (roomManagementModule.isEnabled()) {
+			if (roomManagementModule.isEnabled() && copyRoomBookings) {
 				roomManagementService.copyBookingsForLectureBlock(block, copy, null);
 			}
 		}

@@ -64,13 +64,14 @@ implements SortableFlexiTableDataModel<CopyElementDetailsLectureBlocksRow> {
 	@Override
 	public Object getValueAt(CopyElementDetailsLectureBlocksRow row, int col) {
 		return switch(COLS[col]) {
-			case activity -> row.getCopySetting();
+			case activity -> row.copySetting();
 			case key -> row.getKey();
 			case title -> row.getTitle();
 			case externalId -> row.getExternalId();
-			case externalRef -> row.getExternalRef();
+			case externalRef -> row.externalRef();
 			case resource -> row.getRepositoryEntryDisplayName();
 			case beginDate -> row.getBeginDate();
+			case rooms -> row.rooms();
 			default -> "ERROR";
 		};
 	}
@@ -82,7 +83,8 @@ implements SortableFlexiTableDataModel<CopyElementDetailsLectureBlocksRow> {
 		externalId("table.header.external.id"),
 		externalRef("table.header.external.ref"),
 		resource("table.header.resource"),
-		beginDate("table.header.date");
+		beginDate("table.header.date"),
+		rooms("table.header.rooms");
 
 		private final String i18nKey;
 
