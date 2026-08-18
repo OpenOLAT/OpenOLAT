@@ -307,7 +307,10 @@ public class LogFormatter {
 					return new ParsedAction("Revision of", rest);
 				}
 
-				if (action.startsWith("Deadline extension for assignment of")) {
+				if (action.startsWith("Deadline extension for submission of")) {
+					// Handle deadline extension special case
+					return handleSubmissionDeadlineExtension(action, details);
+				} else if (action.startsWith("Deadline extension for assignment of")) {
 					// Handle deadline extension special case
 					return handleAssignmentDeadlineExtension(action, details);
 				} else if (action.startsWith("Deadline extension for revision of")) {
@@ -337,6 +340,10 @@ public class LogFormatter {
 	 */
 	private static ParsedAction handleAssignmentDeadlineExtension(String action, String details) {
 		return handleDeadlineExtension(action, "Deadline extension for assignment", details);
+	}
+	
+	private static ParsedAction handleSubmissionDeadlineExtension(String action, String details) {
+		return handleDeadlineExtension(action, "Deadline extension for submission of", details);
 	}
 	
 	private static ParsedAction handleRevisionDeadlineExtension(String action, String details) {
