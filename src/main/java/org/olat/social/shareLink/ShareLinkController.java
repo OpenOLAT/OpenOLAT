@@ -77,6 +77,9 @@ public class ShareLinkController extends BasicController {
 	private ShareQrCodeController qrCodeCtrl;
 	private LightboxController qrLightboxCtrl;
 
+	private String shareUrl;
+	private String shareTitle;
+
 	@Autowired
 	private SocialModule socialModule;
 
@@ -116,6 +119,25 @@ public class ShareLinkController extends BasicController {
 		}
 
 		putInitialPanel(mainVC);
+	}
+
+	/**
+	 * Overrides the shared URL, which otherwise defaults to the URL of the
+	 * current view (the user's last history point).
+	 *
+	 * @param shareUrl the URL to share, or null to restore the default
+	 */
+	public void setShareUrl(String shareUrl) {
+		this.shareUrl = shareUrl;
+	}
+
+	/**
+	 * Overrides the shared title, which otherwise defaults to the window title.
+	 *
+	 * @param shareTitle the title to share, or null to restore the default
+	 */
+	public void setShareTitle(String shareTitle) {
+		this.shareTitle = shareTitle;
 	}
 
 	@Override
@@ -192,6 +214,9 @@ public class ShareLinkController extends BasicController {
 	}
 
 	private String getShareUrl(UserRequest ureq) {
+		if (StringHelper.containsNonWhitespace(shareUrl)) {
+			return shareUrl;
+		}
 		HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
 		if (p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
 			return BusinessControlFactory.getInstance().getAsURIString(p.getEntries(), true);
@@ -200,6 +225,9 @@ public class ShareLinkController extends BasicController {
 	}
 
 	private String getShareTitle() {
+		if (StringHelper.containsNonWhitespace(shareTitle)) {
+			return shareTitle;
+		}
 		String title = getWindowControl().getWindowBackOffice().getWindow().getTitle().getValue();
 		return StringHelper.containsNonWhitespace(title) ? title : Settings.getApplicationName();
 	}
