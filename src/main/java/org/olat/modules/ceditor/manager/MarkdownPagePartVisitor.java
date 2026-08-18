@@ -74,6 +74,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.modules.ceditor.ContentEditorXStream;
@@ -432,7 +433,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 			return;
 		}
 		String destination = imageNode.getDestination();
-		String altText = renderChildrenToPlainText(imageNode);
+		String altText = Formatter.truncateOnly(renderChildrenToPlainText(imageNode), 1000);
 		String title = imageNode.getTitle();
 
 		File imageFile = resolveImageFile(destination);
@@ -450,6 +451,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 			if (mediaTitle.isBlank()) {
 				mediaTitle = filename;
 			}
+			mediaTitle = Formatter.truncate(mediaTitle, 255);
 			// check for duplicate media file, reuse same image that has already been uploaded
 			Media media = null;
 			MediaService mediaService = (MediaService) CoreSpringFactory.getImpl(MediaService.class); 
