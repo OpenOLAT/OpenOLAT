@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.services.ai.AiEssayGenerationService;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 import org.olat.core.commons.services.ai.essay.EssayGenerationService;
 import org.olat.core.commons.services.ai.essay.EssayGenerationService.GenerationRequest;
@@ -135,6 +136,8 @@ public class MarkdownImportController extends FormBasicController {
 	private EssayGenerationService essayGenerationService;
 	@Autowired
 	private AiEssayGenerationService aiEssayGenerationService;
+	@Autowired
+	private AiModule aiModule;
 
 	public MarkdownImportController(UserRequest ureq, WindowControl wControl, Page page, OLATResourceable aiOres,
 			String subIdent, String targetContainerId, int targetColumn,
@@ -175,8 +178,10 @@ public class MarkdownImportController extends FormBasicController {
 		fileUploadEl.addActionListener(FormEvent.ONCHANGE);
 
 		// Text input
+		int maxInputChars = resolveMaxInputChars();
 		markdownTextEl = uifactory.addTextAreaElement("import.text", "import.text", -1, 15, 80, false, false, "", formLayout);
 		markdownTextEl.setElementCssClass("o_sel_import_text");
+		markdownTextEl.setNotLongerThanCheck(maxInputChars, "form.error.toolong");
 
 		markdownTextEl.setVisible(false);
 
@@ -274,16 +279,29 @@ public class MarkdownImportController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
+		int maxInputChars = resolveMaxInputChars();
 		if (MODE_FILE.equals(modeEl.getSelectedKey())) {
 			fileUploadEl.clearError();
 			if (!fileUploadEl.isUploadSuccess()) {
 				fileUploadEl.setErrorKey("import.file.missing");
 				allOk = false;
+			} else {
+				int uploadedLength = resolveUploadedTextLength();
+				if (uploadedLength >= 0 && uploadedLength > maxInputChars) {
+					fileUploadEl.setErrorKey("form.error.toolong", String.valueOf(maxInputChars));
+					allOk = false;
+				}
 			}
 		} else {
 			markdownTextEl.clearError();
 			if (!StringHelper.containsNonWhitespace(markdownTextEl.getValue())) {
 				markdownTextEl.setErrorKey("import.markdown.empty");
+				allOk = false;
+			} else if (markdownTextEl.getValue().length() > maxInputChars) {
+				// super.validateFormLogic() already ran markdownTextEl's own too-long
+				// check via flc.validate(), but the clearError() above wipes that
+				// result — recheck here.
+				markdownTextEl.setErrorKey("form.error.toolong", String.valueOf(maxInputChars));
 				allOk = false;
 			}
 		}
@@ -344,6 +362,57 @@ public class MarkdownImportController extends FormBasicController {
 			return Integer.parseInt(raw.trim());
 		} catch (NumberFormatException e) {
 			return 0;
+		}
+	}
+
+	/**
+	 * The imported text feeds both the MC and the essay question generator, so
+	 * the effective cap is the lower of the two — whichever leg the author
+	 * requests must fit. A feature that is not enabled/configured cannot be
+	 * exercised from this dialog, so its limit is not considered.
+	 */
+	private int resolveMaxInputChars() {
+		int max = Integer.MAX_VALUE;
+		boolean anyActive = false;
+		if (aiModule.isMCQuestionGeneratorEnabled() && aiModule.isMCQuestionGeneratorConfigured()) {
+			max = Math.min(max, aiModule.getMCGeneratorMaxInputChars());
+			anyActive = true;
+		}
+		if (aiModule.isEssayGenerationEnabled() && aiModule.isEssayGenerationConfigured()) {
+			max = Math.min(max, aiModule.getEssayGenerationMaxInputChars());
+			anyActive = true;
+		}
+		return anyActive ? max : aiModule.getEssayGenerationMaxInputChars();
+	}
+
+	/**
+	 * Length in characters of the text an uploaded file would resolve to, for
+	 * the input-length validation in {@link #validateFormLogic(UserRequest)}.
+	 * Returns -1 when the length cannot be determined without the heavier
+	 * zip extraction that {@link #formOK(UserRequest)} performs on submit —
+	 * in that case the length is not enforced here.
+	 */
+	private int resolveUploadedTextLength() {
+		File uploaded = fileUploadEl.getUploadFile();
+		String filename = fileUploadEl.getUploadFileName();
+		if (filename == null) {
+			return -1;
+		}
+		String lower = filename.toLowerCase();
+		if (lower.endsWith(".docx")) {
+			try {
+				return docxToMarkdownService.convert(uploaded).markdown().length();
+			} catch (Exception e) {
+				return -1;
+			}
+		}
+		if (lower.endsWith(".zip")) {
+			return -1;
+		}
+		try {
+			return Files.readString(uploaded.toPath(), StandardCharsets.UTF_8).length();
+		} catch (Exception e) {
+			return -1;
 		}
 	}
 

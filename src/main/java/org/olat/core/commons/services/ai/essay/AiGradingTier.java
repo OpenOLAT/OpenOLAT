@@ -20,9 +20,11 @@
 package org.olat.core.commons.services.ai.essay;
 
 /**
- * Length-based tier for essay grading requests. Determines the vLLM
- * {@code max_tokens} cap, the client-side soft timeout, and whether
- * the call runs live (Short/Medium) or always as a background job (Long).
+ * Length-based tier for essay grading requests. {@link #SHORT} and
+ * {@link #MEDIUM} answers are graded live; {@link #LONG} is an internal
+ * sentinel meaning "over the admin-configured maximum word count" and is
+ * always refused by {@link LengthPreFilter} before any grading call is made
+ * — there is no separate Long-tier grading path.
  *
  * Initial date: 2026-04-18<br>
  * @author Florian Gnägi, gnaegi, https://www.frentix.com
@@ -59,9 +61,9 @@ public enum AiGradingTier {
 	}
 
 	/**
-	 * Client-side soft timeout in milliseconds before the UI switches
-	 * to the background-fallback microcopy. {@link #LONG} is 0 —
-	 * no live attempt, the background job starts immediately.
+	 * Client-side soft timeout in milliseconds before the UI would switch to
+	 * a background-fallback microcopy. Not currently read by any caller —
+	 * {@link #LONG} answers are refused before a grading call is ever made.
 	 */
 	public long softTimeoutMs() {
 		return softTimeoutMs;
@@ -73,12 +75,24 @@ public enum AiGradingTier {
 	 * the character count is divided by 3 to approximate words.
 	 */
 	public static AiGradingTier classify(String studentAnswer) {
+		return classify(studentAnswer, MEDIUM.wordThreshold());
+	}
+
+	/**
+	 * @param mediumWordThreshold the admin-configured maximum word count. An
+	 *                            answer at or below it classifies as
+	 *                            {@link #SHORT} or {@link #MEDIUM} and is
+	 *                            graded live; above it, it classifies as
+	 *                            {@link #LONG} and is refused. Defaults to
+	 *                            {@link #MEDIUM}'s own 400-word threshold.
+	 */
+	public static AiGradingTier classify(String studentAnswer, int mediumWordThreshold) {
 		if (studentAnswer == null || studentAnswer.isBlank()) {
 			return SHORT;
 		}
 		int words = countWords(studentAnswer);
 		if (words <= SHORT.wordThreshold) return SHORT;
-		if (words <= MEDIUM.wordThreshold) return MEDIUM;
+		if (words <= mediumWordThreshold) return MEDIUM;
 		return LONG;
 	}
 

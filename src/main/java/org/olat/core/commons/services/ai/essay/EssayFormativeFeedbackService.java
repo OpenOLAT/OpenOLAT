@@ -30,6 +30,7 @@ import java.util.Optional;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.ai.AiEssayGradingService;
 import org.olat.core.commons.services.ai.AiFeature;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.manager.AiEssayGradingServiceImpl;
 import org.olat.core.commons.services.ai.manager.AiUsageLogDAO;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
@@ -90,6 +91,8 @@ public class EssayFormativeFeedbackService {
 	private AiUsageLogDAO aiUsageLogDAO;
 	@Autowired
 	private EssayAiCorrectionDao correctionDao;
+	@Autowired
+	private AiModule aiModule;
 
 	/**
 	 * Grade a student essay answer synchronously against a pre-loaded
@@ -134,8 +137,10 @@ public class EssayFormativeFeedbackService {
 		}
 		AiUsageContext usageContext = usageContextBuilder.build();
 
+		int maxInputWords = aiModule.getEssayGradingMaxInputWords();
+
 		// 1. Length pre-filter. Long tier refused with inline error (no LLM call).
-		Optional<RejectionReason> lengthReject = LengthPreFilter.check(studentAnswer);
+		Optional<RejectionReason> lengthReject = LengthPreFilter.check(studentAnswer, maxInputWords);
 		if (lengthReject.isPresent()) {
 			RejectionReason reason = lengthReject.get();
 			logPreFilterRejection(usageContext, reason);
@@ -158,11 +163,11 @@ public class EssayFormativeFeedbackService {
 		LanguagePreFilter.check(studentAnswer, grading.getLanguage()).ifPresent(warnings::add);
 
 		// 4. Tier.
-		AiGradingTier tier = AiGradingTier.classify(studentAnswer);
+		AiGradingTier tier = AiGradingTier.classify(studentAnswer, maxInputWords);
 		if (tier == AiGradingTier.LONG) {
 			// Defensive — LengthPreFilter should already have caught this.
 			RejectionReason reason = new RejectionReason(
-					LengthPreFilter.REASON_TOO_LONG, "tier classified as LONG");
+					LengthPreFilter.REASON_TOO_LONG, "tier classified as LONG", String.valueOf(maxInputWords));
 			logPreFilterRejection(usageContext, reason);
 			return FormativeFeedback.refusedLong(reason);
 		}

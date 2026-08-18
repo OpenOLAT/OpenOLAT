@@ -24,11 +24,18 @@ package org.olat.core.commons.services.ai.essay;
  * Common rejection carrier used by the student-answer pre-filters
  * (length, language, gibberish). Holds an i18n message key that the UI
  * binds to a localised explanation plus a human-readable {@code detail}
- * captured in the usage log.
+ * captured in the usage log. {@code messageParams} are passed to the
+ * translator alongside {@code messageKey} for messages that interpolate
+ * a configured value (e.g. the maximum word count).
  *
  * Initial date: 2026-04-20<br>
  *
  * @author Florian Gnägi, gnaegi, https://www.frentix.com
  *
  */
-public record RejectionReason(String messageKey, String detail) { }
+public record RejectionReason(String messageKey, String detail, String... messageParams) {
+
+	public RejectionReason(String messageKey, String detail) {
+		this(messageKey, detail, new String[0]);
+	}
+}

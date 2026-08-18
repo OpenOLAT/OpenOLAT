@@ -69,6 +69,9 @@ public class AiModule extends AbstractSpringModule {
 	private static final String AI_IMG_DESC_TIMEOUT_SECONDS = "ai.img.desc.timeout.seconds";
 	private static final String AI_ESSAY_GENERATION_TIMEOUT_SECONDS = "ai.essay.generation.timeout.seconds";
 	private static final String AI_ESSAY_GRADING_TIMEOUT_SECONDS = "ai.essay.grading.timeout.seconds";
+	private static final String AI_MC_GENERATOR_MAX_INPUT_CHARS = "ai.mc.generator.max.input.chars";
+	private static final String AI_ESSAY_GENERATION_MAX_INPUT_CHARS = "ai.essay.generation.max.input.chars";
+	private static final String AI_ESSAY_GRADING_MAX_INPUT_WORDS = "ai.essay.grading.max.input.words";
 
 	// Per-user rate limit defaults (calls / minute / identity). Sized so a
 	// fast-typing learner submitting essay answers across many questions in a
@@ -138,6 +141,12 @@ public class AiModule extends AbstractSpringModule {
 	private int essayGenerationTimeoutSeconds;
 	@Value("${ai.essay.grading.timeout.seconds:600}")
 	private int essayGradingTimeoutSeconds;
+	@Value("${ai.mc.generator.max.input.chars:60000}")
+	private int mcGeneratorMaxInputChars;
+	@Value("${ai.essay.generation.max.input.chars:60000}")
+	private int essayGenerationMaxInputChars;
+	@Value("${ai.essay.grading.max.input.words:400}")
+	private int essayGradingMaxInputWords;
 
 	@Autowired
 	private AiTaskExecutorService aiTaskExecutorService;
@@ -187,6 +196,9 @@ public class AiModule extends AbstractSpringModule {
 		imgDescTimeoutSeconds = getIntPropertyValue(AI_IMG_DESC_TIMEOUT_SECONDS, imgDescTimeoutSeconds);
 		essayGenerationTimeoutSeconds = getIntPropertyValue(AI_ESSAY_GENERATION_TIMEOUT_SECONDS, essayGenerationTimeoutSeconds);
 		essayGradingTimeoutSeconds = getIntPropertyValue(AI_ESSAY_GRADING_TIMEOUT_SECONDS, essayGradingTimeoutSeconds);
+		mcGeneratorMaxInputChars = getIntPropertyValue(AI_MC_GENERATOR_MAX_INPUT_CHARS, mcGeneratorMaxInputChars);
+		essayGenerationMaxInputChars = getIntPropertyValue(AI_ESSAY_GENERATION_MAX_INPUT_CHARS, essayGenerationMaxInputChars);
+		essayGradingMaxInputWords = getIntPropertyValue(AI_ESSAY_GRADING_MAX_INPUT_WORDS, essayGradingMaxInputWords);
 		applyTaskPoolSizes();
 	}
 
@@ -305,6 +317,21 @@ public class AiModule extends AbstractSpringModule {
 		}
 		mcGeneratorTimeoutSeconds = timeoutSeconds;
 		setIntProperty(AI_MC_GENERATOR_TIMEOUT_SECONDS, timeoutSeconds, true);
+	}
+
+	/**
+	 * @return maximum number of characters of input text sent to the MC question generator model
+	 */
+	public int getMCGeneratorMaxInputChars() {
+		return mcGeneratorMaxInputChars;
+	}
+
+	public void setMCGeneratorMaxInputChars(int maxChars) {
+		if (maxChars < 1) {
+			return;
+		}
+		mcGeneratorMaxInputChars = maxChars;
+		setIntProperty(AI_MC_GENERATOR_MAX_INPUT_CHARS, maxChars, true);
 	}
 
 	/**
@@ -563,6 +590,21 @@ public class AiModule extends AbstractSpringModule {
 		setIntProperty(AI_ESSAY_GENERATION_TIMEOUT_SECONDS, timeoutSeconds, true);
 	}
 
+	/**
+	 * @return maximum number of characters of input text sent to the essay generation model
+	 */
+	public int getEssayGenerationMaxInputChars() {
+		return essayGenerationMaxInputChars;
+	}
+
+	public void setEssayGenerationMaxInputChars(int maxChars) {
+		if (maxChars < 1) {
+			return;
+		}
+		essayGenerationMaxInputChars = maxChars;
+		setIntProperty(AI_ESSAY_GENERATION_MAX_INPUT_CHARS, maxChars, true);
+	}
+
 	public void setEssayGenerationConfig(String spiId, String model) {
 		this.essayGenerationSpiId = spiId;
 		this.essayGenerationModel = model;
@@ -606,6 +648,21 @@ public class AiModule extends AbstractSpringModule {
 		}
 		essayGradingTimeoutSeconds = timeoutSeconds;
 		setIntProperty(AI_ESSAY_GRADING_TIMEOUT_SECONDS, timeoutSeconds, true);
+	}
+
+	/**
+	 * @return maximum number of words of a student answer accepted for essay grading
+	 */
+	public int getEssayGradingMaxInputWords() {
+		return essayGradingMaxInputWords;
+	}
+
+	public void setEssayGradingMaxInputWords(int maxWords) {
+		if (maxWords < 1) {
+			return;
+		}
+		essayGradingMaxInputWords = maxWords;
+		setIntProperty(AI_ESSAY_GRADING_MAX_INPUT_WORDS, maxWords, true);
 	}
 
 	public void setEssayGradingConfig(String spiId, String model) {

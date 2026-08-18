@@ -24,11 +24,13 @@ import java.util.Optional;
 /**
  *
  * Length-based pre-filter for student essay answers. Rejects empty
- * submissions outright, and rejects submissions larger than the MVP hard
- * cap (400 words — the upper bound of {@link AiGradingTier#MEDIUM}). The
- * Long tier is deferred to Phase 2, so anything that classifies as Long
- * is refused at this stage with the stable message key
- * {@code ai.essay.error.too.long}.
+ * submissions outright, and rejects submissions longer than the
+ * admin-configured maximum ({@code AiModule#getEssayGradingMaxInputWords()},
+ * 400 words by default) with the stable message key
+ * {@code ai.essay.error.too.long}. {@link AiGradingTier#LONG} is used only
+ * as the internal sentinel for "over the configured maximum" — it is never
+ * sent to the grading SPI, so there is no separate Long-tier grading path
+ * to support.
  *
  * Initial date: 2026-04-20<br>
  *
@@ -39,19 +41,28 @@ public final class LengthPreFilter {
 
 	/** i18n key surfaced when the answer is empty. */
 	public static final String REASON_EMPTY = "ai.essay.error.empty";
-	/** i18n key surfaced when the answer exceeds the MVP 400-word cap. */
+	/** i18n key surfaced when the answer exceeds the configured maximum word count. */
 	public static final String REASON_TOO_LONG = "ai.essay.error.too.long";
 
 	private LengthPreFilter() { /* utility */ }
 
 	public static Optional<RejectionReason> check(String studentAnswer) {
+		return check(studentAnswer, AiGradingTier.MEDIUM.wordThreshold());
+	}
+
+	/**
+	 * @param maxWords the admin-configured maximum word count (see
+	 *                 {@code AiModule#getEssayGradingMaxInputWords()}).
+	 */
+	public static Optional<RejectionReason> check(String studentAnswer, int maxWords) {
 		if (studentAnswer == null || studentAnswer.isBlank()) {
 			return Optional.of(new RejectionReason(REASON_EMPTY, "student answer is empty"));
 		}
-		AiGradingTier tier = AiGradingTier.classify(studentAnswer);
+		AiGradingTier tier = AiGradingTier.classify(studentAnswer, maxWords);
 		if (tier == AiGradingTier.LONG) {
 			return Optional.of(new RejectionReason(REASON_TOO_LONG,
-					"answer exceeds MVP hard cap of " + AiGradingTier.MEDIUM.wordThreshold() + " words"));
+					"answer exceeds configured cap of " + maxWords + " words",
+					String.valueOf(maxWords)));
 		}
 		return Optional.empty();
 	}

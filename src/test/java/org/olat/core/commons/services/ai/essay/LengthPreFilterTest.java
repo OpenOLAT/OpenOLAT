@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.ai.essay;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -92,6 +93,26 @@ public class LengthPreFilterTest {
 		String cjk = "这".repeat(150);
 		Optional<RejectionReason> result = LengthPreFilter.check(cjk);
 		assertFalse("Short CJK text must pass", result.isPresent());
+	}
+
+	// ---------------------------------------------------------------- configurable maxWords
+
+	@Test
+	public void check_customMaxWordsRejectsBelowDefaultThreshold() {
+		// 200 words passes the default 400-word cap but not a configured 100-word cap
+		String answer = words(200);
+		Optional<RejectionReason> result = LengthPreFilter.check(answer, 100);
+		assertTrue(result.isPresent());
+		assertEquals(LengthPreFilter.REASON_TOO_LONG, result.get().messageKey());
+		assertArrayEquals(new String[]{ "100" }, result.get().messageParams());
+	}
+
+	@Test
+	public void check_customMaxWordsAcceptsAboveDefaultThreshold() {
+		// 500 words is rejected by the default 400-word cap but accepted with a configured 600-word cap
+		String answer = words(500);
+		Optional<RejectionReason> result = LengthPreFilter.check(answer, 600);
+		assertFalse(result.isPresent());
 	}
 
 	// ---------------------------------------------------------------- helpers

@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.ai.AiEssayGradingService;
+import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 import org.olat.core.commons.services.ai.essay.AiGradingTier;
 import org.olat.core.commons.services.ai.essay.EssayAiGrading;
@@ -40,6 +41,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -85,6 +87,9 @@ public class AiEssayGradingTestController extends FormBasicController {
 	private final String modelName;
 	private final AiEssayGradingService aiEssayGradingService;
 	private final EssayAiGrading externalGrading;
+
+	@Autowired
+	private AiModule aiModule;
 
 	private TextAreaElement answerEl;
 	private FormSubmit submitButton;
@@ -160,7 +165,7 @@ public class AiEssayGradingTestController extends FormBasicController {
 
 		try {
 			EssayAiGrading grading = externalGrading != null ? externalGrading : buildTestGrading();
-			AiGradingTier tier = AiGradingTier.classify(answer);
+			AiGradingTier tier = AiGradingTier.classify(answer, aiModule.getEssayGradingMaxInputWords());
 			Locale locale = resolveLocale(grading);
 			AiEssayGradingService.GradingRun run = aiEssayGradingService.gradeWithLog(null, grading,
 					answer, locale, tier, spiId, modelName);
