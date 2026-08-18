@@ -20,10 +20,12 @@
 package org.olat.modules.curriculum.ui.copy;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -39,9 +41,11 @@ import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyMemberships;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyRoomBookings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyToDos;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
+import org.olat.modules.roommanagement.RoomManagementModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,11 +61,14 @@ public class CopyElementSettingsController extends StepFormBasicController {
 	private SingleSelection courseEventsEl;
 	private SingleSelection standaloneEventsEl;
 	private SingleSelection toDosEl;
+	private SingleSelection roomsEl;
 	private SingleSelection membershipCoachEl;
 	private SingleSelection membershipOwnerAndMasterCoachEl;
 	
 	private final CopyElementContext context;
-	
+
+	@Autowired
+	private RoomManagementModule roomManagementModule;
 	@Autowired
 	private CertificationModule certificationProgramModule;
 	@Autowired
@@ -74,6 +81,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		this.context = context;
 
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -87,6 +95,11 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		FormLayoutContainer optionsCont = uifactory.addDefaultFormLayout("options", null, formLayout);
 		optionsCont.setFormTitle(translate("wizard.options"));
 		initOptionsForm(optionsCont);
+		
+		FormLayoutContainer roomCont = uifactory.addDefaultFormLayout("rooms", null, formLayout);
+		roomCont.setFormTitle(translate("wizard.rooms"));
+		roomCont.setVisible(roomManagementModule.isEnabled());
+		initRoomsForm(roomCont);
 		
 		FormLayoutContainer membersCont = uifactory.addDefaultFormLayout("members", null, formLayout);
 		membersCont.setFormTitle(translate("wizard.members"));
@@ -139,6 +152,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 				translate("copy.resources.none"), translate("copy.resources.none.desc"), "o_icon o_icon_ban", null, true));
 		courseEventsEl = uifactory.addCardSingleSelectHorizontal("copy.courses.with.events", formLayout,
 				eventsPK.keys(), eventsPK.values(), eventsPK.descriptions(), eventsPK.icons());
+		courseEventsEl.addActionListener(FormEvent.ONCHANGE);
 		courseEventsEl.setElementCssClass("o_curriculum_copy_options");
 		courseEventsEl.select(CopyResources.resource.name(), true);
 		
@@ -149,6 +163,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 				translate("copy.events.none"), translate("copy.events.none.desc"), "o_icon o_icon_ban", null, true));
 		standaloneEventsEl = uifactory.addCardSingleSelectHorizontal("copy.standalone.events", "copy.standalone.events", formLayout,
 				standalonePK.keys(), standalonePK.values(), standalonePK.descriptions(), standalonePK.icons());
+		standaloneEventsEl.addActionListener(FormEvent.ONCHANGE);
 		standaloneEventsEl.select(CopyResources.resource.name(), true);
 
 		SelectionValues toDosPK = new SelectionValues();
@@ -163,8 +178,20 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		toDosEl.setElementCssClass("o_curriculum_copy_options");
 		toDosEl.select(CopyToDos.todosWithAssignments.name(), true);
 	}
+	
+	private void initRoomsForm(FormItemContainer formLayout) {
+		SelectionValues eventsPK = new SelectionValues();
+		eventsPK.add(SelectionValues.entry(CopyRoomBookings.rooms.name(),
+				translate("copy.rooms"), translate("copy.rooms.desc"), "o_icon o_icon_copy", null, true));
+		eventsPK.add(SelectionValues.entry(CopyRoomBookings.dont.name(),
+				translate("copy.rooms.none"), translate("copy.rooms.none.desc"), "o_icon o_icon_ban", null, true));
+		roomsEl = uifactory.addCardSingleSelectHorizontal("copy.rooms.schedule", formLayout,
+				eventsPK.keys(), eventsPK.values(), eventsPK.descriptions(), eventsPK.icons());
+		roomsEl.setElementCssClass("o_curriculum_copy_rooms");
+		roomsEl.select(CopyRoomBookings.rooms.name(), true);
+	}
 
-	private void initMembersForm(FormItemContainer formLayout) {	
+	private void initMembersForm(FormItemContainer formLayout) {
 		SelectionValues coachesPK = new SelectionValues();
 		coachesPK.add(SelectionValues.entry(CopyMemberships.membershipsAddTeachers.name(),
 				translate("copy.membership.coaches.teachers.copy"), translate("copy.membership.coaches.teachers.copy.desc"), "o_icon o_icon_copy", null, true));
@@ -186,6 +213,20 @@ public class CopyElementSettingsController extends StepFormBasicController {
 				ownersPK.keys(), ownersPK.values(), ownersPK.descriptions(), ownersPK.icons());
 		membershipOwnerAndMasterCoachEl.select(CopyMemberships.memberships.name(), true);
 	}
+	
+	private void updateUI() {
+		boolean copyCourseEvents = CopyResources.valueOf(courseEventsEl.getSelectedKey()) == CopyResources.resource;
+		boolean copyStandaloneEvents = CopyResources.valueOf(standaloneEventsEl.getSelectedKey()) == CopyResources.resource;
+		roomsEl.setEnabled(copyCourseEvents || copyStandaloneEvents);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(courseEventsEl == source || standaloneEventsEl == source) {
+			updateUI();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -197,6 +238,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		allOk &= validateFormLogic(courseEventsEl);
 		allOk &= validateFormLogic(standaloneEventsEl);
 		allOk &= validateFormLogic(toDosEl);
+		allOk &= validateFormLogic(roomsEl);
 		allOk &= validateFormLogic(membershipCoachEl);
 		allOk &= validateFormLogic(membershipOwnerAndMasterCoachEl);
 		
@@ -207,7 +249,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		boolean allOk = true;
 
 		el.clearError();
-		if(el.isVisible() && !el.isOneSelected()) {
+		if(el.isVisible() && el.isEnabled() && !el.isOneSelected()) {
 			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -225,6 +267,11 @@ public class CopyElementSettingsController extends StepFormBasicController {
 				|| CopyMemberships.membershipsAddTeachers.name().equals(membershipCoachEl.getSelectedKey());
 		context.setCopyCoachesMemberships(copyCoachesMemberships);
 		context.setAddCoachesAsTeacher(CopyMemberships.membershipsAddTeachers.name().equals(membershipCoachEl.getSelectedKey()));
+		
+		CopyRoomBookings copyRoomBookings = roomManagementModule.isEnabled() && roomsEl.isEnabled()
+				? CopyRoomBookings.valueOf(roomsEl.getSelectedKey(), CopyRoomBookings.dont)
+				: CopyRoomBookings.dont;
+		context.setCopyRoomBookings(copyRoomBookings);
 		
 		boolean copyOwnersAndMasterCoachesMemberships = CopyMemberships.memberships.name().equals(this.membershipOwnerAndMasterCoachEl.getSelectedKey());
 		context.setCopyOwnersMemberships(copyOwnersAndMasterCoachesMemberships);

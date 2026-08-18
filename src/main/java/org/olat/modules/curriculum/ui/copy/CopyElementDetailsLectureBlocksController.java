@@ -21,7 +21,10 @@ package org.olat.modules.curriculum.ui.copy;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
@@ -37,11 +40,17 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyRoomBookings;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.copy.CopyElementDetailsLectureBlocksTableModel.CopyLectureBlockCols;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.lecture.ui.component.RoomsCellRenderer;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,6 +70,10 @@ public class CopyElementDetailsLectureBlocksController extends FormBasicControll
 	
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
+	@Autowired
+	private RoomManagementService roomManagementService;
 	
 	public CopyElementDetailsLectureBlocksController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			CurriculumElement curriculumElement, CopyElementContext context) {
@@ -85,6 +98,10 @@ public class CopyElementDetailsLectureBlocksController extends FormBasicControll
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyLectureBlockCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyLectureBlockCols.resource));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyLectureBlockCols.beginDate));
+		if(roomManagementModule.isEnabled() && context.getCopyRoomBookings() == CopyRoomBookings.rooms) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyLectureBlockCols.rooms,
+					new RoomsCellRenderer()));
+		}
 
 		tableModel = new CopyElementDetailsLectureBlocksTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "lecturesBlocksTable", tableModel, 20, false, getTranslator(), formLayout);
@@ -98,6 +115,18 @@ public class CopyElementDetailsLectureBlocksController extends FormBasicControll
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setCurriculumElement(curriculumElement);
 		List<LectureBlock> blocks = lectureService.getLectureBlocks(curriculumElement, true);
+		
+		Map<Long, List<Room>> roomsByBlock = new HashMap<>();
+		if(roomManagementModule.isEnabled() && !blocks.isEmpty()) {
+			List<Long> lbKeys = blocks.stream().map(LectureBlock::getKey).collect(Collectors.toList());
+			List<RoomBooking> bookings = roomManagementService.getBookings(lbKeys);
+			
+			for(RoomBooking booking : bookings) {
+				roomsByBlock.computeIfAbsent(booking.getLectureBlock().getKey(), k -> new ArrayList<>())
+						.add(booking.getRoom());
+			}
+		}
+
 		List<CopyElementDetailsLectureBlocksRow> rows = new ArrayList<>(blocks.size());
 		for(LectureBlock lectureBlock:blocks) {
 			CopyResources copySetting = lectureBlock.getEntry() != null && lectureBlock.getEntry().getKey() != null
@@ -105,9 +134,10 @@ public class CopyElementDetailsLectureBlocksController extends FormBasicControll
 					: (context.isStandaloneEventsCopySetting() ? CopyResources.resource : CopyResources.dont);
 			String externalRef = context.evaluateIdentifier(lectureBlock.getExternalRef());
 			Date startDate = context.shiftDate(lectureBlock.getStartDate());
+			List<Room> rooms =roomsByBlock.getOrDefault(lectureBlock.getKey(), List.of());
 			
-			
-			rows.add(new CopyElementDetailsLectureBlocksRow(lectureBlock, copySetting, startDate, externalRef));
+			rows.add(new CopyElementDetailsLectureBlocksRow(lectureBlock, lectureBlock.getEntry(), rooms,
+					copySetting, startDate, externalRef));
 		}
 		
 		tableModel.setObjects(rows);

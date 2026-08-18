@@ -244,7 +244,7 @@ public interface LectureService {
 	 * @return The new lecture block
 	 */
 	public LectureBlock copyLectureBlock(LectureBlock block, String title, String externalRef, Date start, Date end,
-			RepositoryEntry entry, CurriculumElement curriculumElement, boolean persist);
+			RepositoryEntry entry, CurriculumElement curriculumElement, boolean persist, boolean copyRoomBooking);
 	
 	public LectureBlock moveLectureBlock(LectureBlockRef block, RepositoryEntry newEntry);
 	

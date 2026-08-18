@@ -57,6 +57,7 @@ public class CurriculumCopySettings {
 	
 	private CopyResources copyResources;
 	private CopyToDos copyToDos = CopyToDos.todosWithAssignments;
+	private CopyRoomBookings copyRoomBookings = CopyRoomBookings.dont;
 	
 	private boolean addCoachesAsTeacher;
 	private boolean copyOwnersMemberships;
@@ -182,6 +183,14 @@ public class CurriculumCopySettings {
 		this.addCoachesAsTeacher = addCoachesAsTeacher;
 	}
 
+	public CopyRoomBookings getCopyRoomBookings() {
+		return copyRoomBookings;
+	}
+
+	public void setCopyRoomBookings(CopyRoomBookings copy) {
+		this.copyRoomBookings = copy;
+	}
+
 	public boolean isCopyOffers() {
 		return copyOffers;
 	}
@@ -254,6 +263,22 @@ public class CurriculumCopySettings {
 
 	public void setCopyCertificationProgram(boolean copyCertificationProgram) {
 		this.copyCertificationProgram = copyCertificationProgram;
+	}
+	
+	public enum CopyRoomBookings {
+		dont,
+		rooms;
+		
+		public static CopyRoomBookings valueOf(String val, CopyRoomBookings def) {
+			if(val == null) return def;
+
+			for(CopyRoomBookings value:values()) {
+				if(val.equals(value.name())) {
+					return value;
+				}
+			}
+			return def;
+		}
 	}
 
 	public enum CopyResources {

@@ -119,6 +119,7 @@ import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyRoomBookings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyToDos;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -677,7 +678,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 						Date start = settings.shiftDate(blockToCopy.getStartDate());
 						Date end = settings.shiftDate(blockToCopy.getEndDate());
 						String externalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
-						LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone, true);
+						boolean copyRoomBookings = settings.getCopyRoomBookings() == CopyRoomBookings.rooms;
+						LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy,
+								blockToCopy.getTitle(), externalRef, start, end, null, clone, true, copyRoomBookings);
 						lectureBlocksCloned.add(blockToCopy.getKey());
 						lectureBlockDao.addGroupToLectureBlock(copiedBlock, clone.getGroup());
 						if(settings.isCopyCoachesMemberships() && settings.isAddCoachesAsTeacher()) {
@@ -702,7 +705,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 								Date start = settings.shiftDate(blockToCopy.getStartDate());
 								Date end = settings.shiftDate(blockToCopy.getEndDate());
 								String blockExternalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
-								LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), blockExternalRef, start, end, entryCopy, clone, true);
+								boolean copyRoomBookings = settings.getCopyRoomBookings() == CopyRoomBookings.rooms;
+								LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy,
+										blockToCopy.getTitle(), blockExternalRef, start, end, entryCopy, clone, true, copyRoomBookings);
 								lectureBlocksCloned.add(blockToCopy.getKey());
 								if(settings.isCopyCoachesMemberships() && settings.isAddCoachesAsTeacher()) {
 									copyLectureBlockTeachers(blockToCopy, copiedBlock);
@@ -741,7 +746,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					Date start = settings.shiftDate(blockToCopy.getStartDate());
 					Date end = settings.shiftDate(blockToCopy.getEndDate());
 					String externalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
-					LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone, true);
+					boolean copyRoomBookings = settings.getCopyRoomBookings() == CopyRoomBookings.rooms;
+					LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy,
+							blockToCopy.getTitle(), externalRef, start, end, null, clone, true, copyRoomBookings);
 					lectureBlocksCloned.add(blockToCopy.getKey());
 					lectureBlockDao.addGroupToLectureBlock(copiedBlock, clone.getGroup());
 					if(settings.isCopyCoachesMemberships() && settings.isAddCoachesAsTeacher()) {
@@ -757,8 +764,6 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				curriculumElementToTaxonomyLevelDao.createRelation(clone, taxonomyLevel);	
 			}
 		}
-		
-		
 		
 		CopyToDos copyToDos = settings.getCopyToDos();
 		if(copyToDos == CopyToDos.todos || copyToDos == CopyToDos.todosWithAssignments) {

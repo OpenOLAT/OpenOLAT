@@ -64,6 +64,7 @@ public class CopyElementOverviewTableModel extends DefaultFlexiTreeTableDataMode
 			case numOfResources -> elementRow.getNumOfResources();
 			case numOfTemplates -> elementRow.getNumOfTemplates();
 			case numOfLectureBlocks -> elementRow.getNumOfLectureBlocks();
+			case numOfRoomBookings -> elementRow.getNumOfRoomBookings();
 			case numOfToDos -> elementRow.getNumOfToDos();
 			default -> "ERROR";
 		};
@@ -79,6 +80,7 @@ public class CopyElementOverviewTableModel extends DefaultFlexiTreeTableDataMode
 		numOfResources("table.header.num.of.courses"),
 		numOfTemplates("table.header.num.of.templates"),
 		numOfLectureBlocks("table.header.num.of.lecture.blocks"),
+		numOfRoomBookings("table.header.num.of.rooms"),
 		numOfToDos("table.header.num.of.todos");
 		
 		private final String i18nKey;

@@ -26,11 +26,12 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 /**
  * 
  * Initial date: 29 juin 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public record CurriculumElementInfos(CurriculumElement curriculumElement, Curriculum curriculum,
-		long numOfResources, long numOfTemplates, long numOfLectureBlocks, long numOfLectureBlocksWithEntry,
+		long numOfResources, long numOfTemplates,
+		long numOfLectureBlocks, long numOfLectureBlocksWithEntry, long numOfRoomBookings,
 		long numOfParticipants, long numOfCoaches, long numOfOwners,
 		long numOfCurriculumElementOwners, long numOfMasterChoaches, long numOfPending)
 implements CurriculumElementRef {
