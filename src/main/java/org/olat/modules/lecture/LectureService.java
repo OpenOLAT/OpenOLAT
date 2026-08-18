@@ -82,6 +82,8 @@ public interface LectureService {
 	 */
 	public boolean isRepositoryEntryLectureEnabled(RepositoryEntryRef entry);
 	
+	public void enableRepositoryEntryLecture(RepositoryEntry entry);
+	
 	/**
 	 * Update the specified configuration
 	 * @param config The configuration to merge

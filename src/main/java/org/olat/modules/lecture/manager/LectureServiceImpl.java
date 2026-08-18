@@ -240,6 +240,15 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
+	public void enableRepositoryEntryLecture(RepositoryEntry entry) {
+		if(!isRepositoryEntryLectureEnabled(entry)) {
+			RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(entry);
+			config.setLectureEnabled(true);
+			updateRepositoryEntryLectureConfiguration(config);
+		}
+	}
+
+	@Override
 	public RepositoryEntryLectureConfiguration copyRepositoryEntryLectureConfiguration(RepositoryEntry sourceEntry, RepositoryEntry targetEntry) {
 		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.getConfiguration(sourceEntry);
 		if(config != null) {

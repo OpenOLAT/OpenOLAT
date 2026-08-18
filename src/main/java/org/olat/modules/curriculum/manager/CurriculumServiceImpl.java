@@ -153,6 +153,7 @@ import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
@@ -1859,6 +1860,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			lectureBlock = lectureBlockDao.update(lectureBlock);
 			lectureBlockDao.addGroupToLectureBlock(lectureBlock, curriculumElement.getGroup());
 			moved |= true;
+		}
+		if(moved && !RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lectureconfig)) {
+			LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
+			lectureService.enableRepositoryEntryLecture(entry);
 		}
 		return moved;
 	}

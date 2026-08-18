@@ -956,6 +956,9 @@ public class EditLectureBlockController extends FormBasicController {
 			if(currentPlannedLectures >= 0) {
 				lectureService.adaptRollCalls(lectureBlock);
 			}
+			if(entry != null && !RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lectureconfig)) {
+				lectureService.enableRepositoryEntryLecture(entry);
+			}
 			lectureService.syncCalendars(lectureBlock);
 			//update eventual assessment mode
 			AssessmentMode assessmentMode = assessmentModeMgr.getAssessmentMode(lectureBlock);

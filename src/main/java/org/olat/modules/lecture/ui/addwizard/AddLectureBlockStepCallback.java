@@ -46,6 +46,7 @@ import org.olat.modules.roommanagement.model.RoomRefImpl;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -106,6 +107,10 @@ public class AddLectureBlockStepCallback implements StepRunnerCallback {
 		List<Identity> selectedTeachers = addLectureCtxt.getTeachers();
 		for(Identity teacher:selectedTeachers) {
 			lectureService.addTeacher(lectureBlock, teacher);
+		}
+		
+		if(entry != null && !RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lectureconfig)) {
+			lectureService.enableRepositoryEntryLecture(entry);
 		}
 
 		String afterxml = lectureService.toAuditXml(lectureBlock);

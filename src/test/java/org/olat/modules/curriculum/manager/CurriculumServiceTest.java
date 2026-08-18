@@ -66,6 +66,7 @@ import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
@@ -170,13 +171,17 @@ public class CurriculumServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//Check the transfer of block
-		
 		List<LectureBlock> courseLectureBlocks = lectureService.getLectureBlocks(courseEntry);
 		Assertions
 			.assertThat(courseLectureBlocks)
 			.isNotNull()
 			.hasSize(1)
 			.containsExactly(lectureBlock);
+		
+		//Check the lectures is automatically enabled
+		RepositoryEntryLectureConfiguration configuration = lectureService.getRepositoryEntryLectureConfiguration(courseEntry);
+		Assert.assertNotNull(configuration);
+		Assert.assertTrue(configuration.isLectureEnabled());
 	}
 	
 	@Test
