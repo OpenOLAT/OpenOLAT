@@ -110,6 +110,12 @@ public class WebCatalogDispatcher implements Dispatcher {
 			return;
 		}
 		
+		String pathInfo = request.getPathInfo();
+		if(pathInfo != null && pathInfo.contains("close-window")) {
+			DispatcherModule.setNotContent(pathInfo, response);
+			return;
+		}
+		
 		UserRequest ureq = null;
 		try {
 			ureq = new UserRequestImpl(uriPrefix, request, response);
