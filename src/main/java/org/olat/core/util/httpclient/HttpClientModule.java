@@ -44,6 +44,8 @@ import org.springframework.stereotype.Service;
 public class HttpClientModule extends AbstractSpringModule {
 	
 	private static final Logger log = Tracing.createLoggerFor(HttpClientModule.class);
+	
+	public static final String HTTP_SSRF_PROTECTION_ENABLED_KEY = "http.ssrf.protection.enabled";
 
 	@Value("${http.connect.timeout:30000}")
 	private int httpConnectTimeout;
@@ -63,7 +65,7 @@ public class HttpClientModule extends AbstractSpringModule {
 	@Value("${http.proxy.pwd}")
 	private String httpProxyPwd;
 	@Value("${http.ssrf.protection.enabled:true}")
-	private boolean ssrfProtectionEnabled;
+	private String ssrfProtectionEnabled;
 	@Value("${http.ssrf.allowed.addresses}")
 	private String ssrfAllowedAddresses;
 	private List<String> ssrfAllowedAddressesList;
@@ -86,6 +88,8 @@ public class HttpClientModule extends AbstractSpringModule {
 	}
 	
 	private void updateProperties() {
+		ssrfProtectionEnabled = getStringPropertyValue(HTTP_SSRF_PROTECTION_ENABLED_KEY, ssrfProtectionEnabled);
+		
 		// Validate the addresses
 		ssrfAllowedAddressesList = StringHelper.containsNonWhitespace(ssrfAllowedAddresses)
 				? Arrays.stream(ssrfAllowedAddresses.split(","))
@@ -102,10 +106,6 @@ public class HttpClientModule extends AbstractSpringModule {
 						.filter(StringHelper::containsNonWhitespace)
 						.toList()
 				: List.of();
-	}
-
-	public boolean isSsrfProtectionEnabled() {
-		return ssrfProtectionEnabled;
 	}
 
 	public int getHttpConnectTimeout() {
@@ -148,6 +148,15 @@ public class HttpClientModule extends AbstractSpringModule {
 
 	public String getHttpProxyPwd() {
 		return httpProxyPwd;
+	}
+	
+	public boolean isSsrfProtectionEnabled() {
+		return "true".equals(ssrfProtectionEnabled);
+	}
+	
+	public void setSsrfProtectionEnabled(boolean enabled) {
+		ssrfProtectionEnabled = enabled ? "true" : "false";
+		setStringProperty(HTTP_SSRF_PROTECTION_ENABLED_KEY, ssrfProtectionEnabled, true);
 	}
 
 	public String getSsrfAllowedAddresses() {

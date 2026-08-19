@@ -167,7 +167,7 @@ public class HttpClientServicempl implements HttpClientService {
 				.build();
 	}
 	
-	public InetAddressFilter createSsrfAddressFilter() {
+	private InetAddressFilter createSsrfAddressFilter() {
 		List<String> allowedAddresses = httpClientModule.getSsrfAllowedAddressesList();
 		InetAddressFilter filter = InetAddressFilter.externalAddresses();
 		if(!allowedAddresses.isEmpty()) {

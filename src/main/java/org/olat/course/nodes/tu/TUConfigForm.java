@@ -25,9 +25,14 @@
 
 package org.olat.course.nodes.tu;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,7 +48,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Oct 12, 2004
@@ -108,6 +116,9 @@ public class TUConfigForm extends FormBasicController {
 	private String pass;
 	private String fullURI;
 	private ModuleConfiguration config;
+	
+	@Autowired
+	private HttpClientService httpClientService;
 	
 	/**
 	 * Constructor for the tunneling configuration form
@@ -181,6 +192,19 @@ public class TUConfigForm extends FormBasicController {
 				allOk &= false;
 			} else if (url.getHost().startsWith(Settings.getServerDomainName())) {
 				thost.setWarningKey("error.internal");
+			} else if(selectables.isOneSelected() && OPTION_TUNNEL_THROUGH_OLAT_IFRAME.equals(selectables.getSelectedKey())) {
+				try (CloseableHttpClient client = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED);
+						CloseableHttpResponse response = client.execute(new HttpHead(url.toURI()))) {	
+					// Do nothing, it's only head
+				} catch(IOException e) {
+					getLogger().error("Cannot load {}", url, e);
+					thost.setErrorKey("TUConfigForm.unreachableurl");
+					allOk &= false;
+				} catch (URISyntaxException e1) {
+					getLogger().error("Invalid URL {}", url, e1);
+					thost.setErrorKey("TUConfigForm.invalidurl");
+					allOk &= false;
+				}
 			}
 		} catch (MalformedURLException e) {
 			thost.setErrorKey("TUConfigForm.invalidurl");

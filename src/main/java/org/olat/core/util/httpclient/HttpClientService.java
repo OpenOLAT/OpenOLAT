@@ -35,7 +35,7 @@ public interface HttpClientService {
 	 * 
 	 * @param profile Profile to activate SSRF protection
 	 */
-	public HttpClientBuilder createHttpClientBuilder(ProtectionProfile profile);
+	HttpClientBuilder createHttpClientBuilder(ProtectionProfile profile);
 	
 	/*
 	 * Creates a HttpClientBuilder with default configuration.
@@ -46,14 +46,14 @@ public interface HttpClientService {
 	 * @param user For basic authentication
 	 * @param profile Profile to activate SSRF protection
 	 */
-	public HttpClientBuilder createHttpClientBuilder(String host, int port, String user, String password, ProtectionProfile profile);
+	HttpClientBuilder createHttpClientBuilder(String host, int port, String user, String password, ProtectionProfile profile);
 	
 	/*
 	 * Creates a HttpClient with default configuration.
 	 * 
 	 * @param profile Profile to activate SSRF protection
 	 */
-	public CloseableHttpClient createHttpClient(ProtectionProfile profile);
+	CloseableHttpClient createHttpClient(ProtectionProfile profile);
 	
 	/**
 	 * Creates a thread safe http client.
@@ -62,7 +62,7 @@ public interface HttpClientService {
 	 * @param profile Profile to activate SSRF protection
 	 * @return CloseableHttpClient
 	 */
-	public CloseableHttpClient createThreadSafeHttpClient(boolean redirect, ProtectionProfile profile);
+	CloseableHttpClient createThreadSafeHttpClient(boolean redirect, ProtectionProfile profile);
 	
 	/**
 	 * Creates a thread safe http client.
@@ -75,6 +75,6 @@ public interface HttpClientService {
 	 * @param profile Profile to activate SSRF protection
 	 * @return CloseableHttpClient
 	 */
-	public CloseableHttpClient createThreadSafeHttpClient(String host, int port, String user, String password, boolean redirect, ProtectionProfile profile);
+	CloseableHttpClient createThreadSafeHttpClient(String host, int port, String user, String password, boolean redirect, ProtectionProfile profile);
 
 }

@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.servlets.HeadersFilter;
+import org.olat.core.util.httpclient.HttpClientModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,6 +67,8 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 	private MultipleSelectionElement contentSecurityPolicyEl;
 	private MultipleSelectionElement contentSecurityPolicyReportOnlyEl;
 	
+	private MultipleSelectionElement ssrfEl;
+	
 	private TextElement defaultSrcEl;
 	private TextElement formActionEl;
 	private TextElement scriptSrcEl;
@@ -84,6 +87,8 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 	private CSPModule cspModule;
 	@Autowired
 	private FolderModule folderModule;
+	@Autowired
+	private HttpClientModule httpClientModule;
 	
 	private final HeadersFilter headersProvider;
 	
@@ -160,6 +165,15 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 		SameSiteEnum sameSiteValue = cspModule.getCookieSameSite();
 		if(sameSiteValue != null && cookieSameSitePK.containsKey(sameSiteValue.name())) {
 			sameSiteEl.select(sameSiteValue.name(), true);
+		}
+		
+		FormLayoutContainer ssrfCont = FormLayoutContainer.createDefaultFormLayout("ssrfCont", getTranslator());
+		formLayout.add(ssrfCont);
+		ssrfCont.setFormDescription(translate("sec.ssrf.descr"));
+		
+		ssrfEl = uifactory.addCheckboxesHorizontal("sec.ssrf", "sec.ssrf", ssrfCont, keys, values);
+		if(httpClientModule.isSsrfProtectionEnabled()) {
+			ssrfEl.select("on", true);
 		}
 		
 		FormLayoutContainer cspCont = FormLayoutContainer.createDefaultFormLayout("csp", getTranslator());
@@ -264,6 +278,7 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 		cspModule.setContentSecurityPolicy(contentSecurityPolicyEl.isAtLeastSelected(1));
 		cspModule.setCsrfEnabled(csrfEl.isAtLeastSelected(1));
 		cspModule.setCookieSameSite(SameSiteEnum.secureValueOf(sameSiteEl.getSelectedKey(), null));
+		httpClientModule.setSsrfProtectionEnabled(ssrfEl.isAtLeastSelected(1));
 		
 		boolean cspEnabled = contentSecurityPolicyEl.isAtLeastSelected(1);
 		cspModule.setContentSecurityPolicy(cspEnabled);

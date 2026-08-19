@@ -19,17 +19,22 @@
  */
 package org.olat.upgrade;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientModule;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 
 /**
  * 
@@ -44,9 +49,12 @@ public class OLATUpgrade_21_1_0 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_21.1.0";
 	
 	private static final String MIGRATE_CERTIFICATE_IN_ERROR_STATUS = "MIGRATE CERTIFICATE IN ERROR STATUS";
+	private static final String DISABLE_SSRF_EXISTING_INSTANCE = "DISABLE SSRF EXISTING INSTANCE";
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private HttpClientModule httpClientModule;
 	@Autowired
 	private CertificatesManager certificatesManager;
 
@@ -66,6 +74,7 @@ public class OLATUpgrade_21_1_0 extends OLATUpgrade {
 
 		boolean allOk = true;
 		allOk &= migrateCertificateInErrorStatus(upgradeManager, uhd);
+		allOk &= disableSSRFOnExistingInstances(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -76,6 +85,36 @@ public class OLATUpgrade_21_1_0 extends OLATUpgrade {
 			log.info(Tracing.M_AUDIT, "OLATUpgrade_21_1_0 not finished, try to restart OpenOlat!");
 		}
 		return allOk;
+	}
+	
+	private boolean disableSSRFOnExistingInstances(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(DISABLE_SSRF_EXISTING_INSTANCE)) {
+			// Only update existing instances. New instances doesn't run this updated
+			// protection is enable, older instances run it, protection disabled
+			if(httpClientModule.isSsrfProtectionEnabled()
+					&& !isExplicitlyConfigured(HttpClientModule.HTTP_SSRF_PROTECTION_ENABLED_KEY)) {
+				httpClientModule.setSsrfProtectionEnabled(false);
+				log.info(Tracing.M_AUDIT, "SSRF mitigation disabled.");
+			}
+
+			uhd.setBooleanDataValue(DISABLE_SSRF_EXISTING_INSTANCE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private boolean isExplicitlyConfigured(String key) {
+		if (System.getProperty(key) != null) {
+			return true;
+		}
+		Properties localProperties = new Properties();
+		try (InputStream in = new ClassPathResource("olat.local.properties").getInputStream()) {
+			localProperties.load(in);
+		} catch (IOException e) {
+			return false; // no local overrides at all, nothing was configured explicitly
+		}
+		return localProperties.containsKey(key);
 	}
 	
 	private boolean migrateCertificateInErrorStatus(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {

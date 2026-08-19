@@ -54,6 +54,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.filter.FilteredHostException;
 
 /**
  * 
@@ -166,10 +167,20 @@ public class TunnelMapper implements Mapper {
 		} catch (ClientProtocolException | URISyntaxException e) {
 			log.error("", e);
 			return createMediaResourceWithError(e);
+		} catch (FilteredHostException e) {
+			log.error("", e);
+			return createMediaResourceWithErrorNoInfos();
 		} catch (IOException e) {
 			log.error("Error loading URI: {}", (meth == null ? "???" : meth.getURI()), e);
 			return createMediaResourceWithError(e);
 		}
+	}
+	
+	private MediaResource createMediaResourceWithErrorNoInfos() {
+		StringMediaResource smr = new StringMediaResource();
+		smr.setData("<html><head><title>Error</title></head><body><strong>Error</strong></body></html>");
+		smr.setContentType("text/html");		
+		return smr;
 	}
 	
 	/**
@@ -183,7 +194,7 @@ public class TunnelMapper implements Mapper {
 		StringMediaResource smr = new StringMediaResource();
 		String msg = e.getMessage();
 		String lookupUrl = "https://google.com/search?q=" + StringHelper.urlEncodeUTF8(e.getMessage());			
-		smr.setData("<html></body><b>Error:</b> <a href='" + lookupUrl + "' target='_blank' title='Click to google what this means'>" + msg + "</a></body></html>");
+		smr.setData("<html><head><title>Error</title></head><body><strong>Error:</strong> <a href='" + lookupUrl + "' target='_blank' title='Click to google what this means'>" + msg + "</a></body></html>");
 		smr.setContentType("text/html");		
 		return smr;
 	}
