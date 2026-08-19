@@ -307,47 +307,33 @@ public class LogFormatter {
 					return new ParsedAction("Revision of", rest);
 				}
 
+				// Handle deadline extension special case
+				if (action.startsWith("Deadline extension for assignment of")) {
+					return handleDeadlineExtension(action, "Deadline extension for assignment", details);
+				} 
 				if (action.startsWith("Deadline extension for submission of")) {
-					// Handle deadline extension special case
-					return handleSubmissionDeadlineExtension(action, details);
-				} else if (action.startsWith("Deadline extension for assignment of")) {
-					// Handle deadline extension special case
-					return handleAssignmentDeadlineExtension(action, details);
-				} else if (action.startsWith("Deadline extension for revision of")) {
-					// Handle deadline extension special case
-					return handleRevisionDeadlineExtension(action, details);
-				} else if (action.startsWith("Back to submission of")) {
-					// Handle back to submission special case
-					return handleBackToSubmission(action, details);
-				} else {
-					// Handle generic case with possible " of " suffix
-					return handleGenericSuffix(action, details);
+					return handleDeadlineExtension(action, "Deadline extension for submission of", details);
 				}
+				if (action.startsWith("Deadline extension for revision of")) {
+					return handleDeadlineExtension(action, "Deadline extension for revision of", details);
+				}
+				if (action.startsWith("Deadline extension for solution of")) {
+					return handleDeadlineExtension(action, "Deadline extension for solution of", details);
+				}
+				
+				// Handle back to submission special case
+				if (action.startsWith("Back to submission of")) {
+					return handleBackToSubmission(action, details);
+				}
+				
+				// Handle generic case with possible " of " suffix
+				return handleGenericSuffix(action, details);
 			} else {
 				// If no delimiter is present, treat the whole line as the action
 				action = actionLine.trim();
 				return new ParsedAction(action, details);
 			}
 		}
-	}
-
-	/**
-	 * Handles the special case for deadline extension
-	 *
-	 * @param action  the initial action extracted
-	 * @param details the initial details extracted
-	 * @return a ParsedAction object with normalized action and details
-	 */
-	private static ParsedAction handleAssignmentDeadlineExtension(String action, String details) {
-		return handleDeadlineExtension(action, "Deadline extension for assignment", details);
-	}
-	
-	private static ParsedAction handleSubmissionDeadlineExtension(String action, String details) {
-		return handleDeadlineExtension(action, "Deadline extension for submission of", details);
-	}
-	
-	private static ParsedAction handleRevisionDeadlineExtension(String action, String details) {
-		return handleDeadlineExtension(action, "Deadline extension for revision of", details);
 	}
 
 	private static ParsedAction handleDeadlineExtension(String action, String actionNormalized, String details) {

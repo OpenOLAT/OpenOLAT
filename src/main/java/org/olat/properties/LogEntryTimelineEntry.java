@@ -134,7 +134,9 @@ public class LogEntryTimelineEntry implements TimelineEntry {
 		
 		// Handle "Deadline extension for assignment" specially
 		if (action.contains("Deadline extension for assignment")
-				|| action.contains("Deadline extension for revision of")) {
+				|| action.contains("Deadline extension for submission of")
+				|| action.contains("Deadline extension for revision of")
+				|| action.contains("Deadline extension for solution of")) {
 			detailParts = Arrays.stream(detailParts)
 					.map(part -> deadlineExtension(part))
 					.toArray(String[]::new);
