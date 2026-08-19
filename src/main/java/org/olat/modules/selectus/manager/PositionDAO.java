@@ -797,15 +797,17 @@ public class PositionDAO {
 	
 	private void appendPositionManagerPermissionOnOrganisation(QueryBuilder sb, PositionStatusFilters filters) {
 		if(filters.isOrganisation()) {
-			sb.append(" orga.key is null")
+			// A position without organisation is visible to every selectus manager,
+			// but the status filter must apply to it in the same way.
+			sb.append(" (orga.key is null")
 			  .append(" or ")
 			  .append(" exists (select orgmember.key from bgroupmember as orgmember")
 			  .append("  where orgmember.identity.key=:identityKey and orga.group.key=orgmember.group.key")
-			  .append(" and orgmember.role").in(OrganisationRoles.selectusmanager);
+			  .append("  and orgmember.role").in(OrganisationRoles.selectusmanager)
+			  .append("))");
 			if(filters.getFiltered().size() > 0) {
 				sb.append(" and position.status in (:status)");
 			}
-			sb.append(")");
 		}
 	}
 	
