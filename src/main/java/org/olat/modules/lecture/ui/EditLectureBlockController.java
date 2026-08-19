@@ -550,8 +550,13 @@ public class EditLectureBlockController extends FormBasicController {
 		updateRoomsEnabledState(start, end);
 		if (start == null || end == null) return;
 
+		List<Room> selectedRooms = roomsEl.getSelectedKeys().stream()
+				.map(key -> roomManagementService.getRoom(new RoomRefImpl(Long.valueOf(key))))
+				.filter(room -> room != null)
+				.collect(Collectors.toList());
+
 		RoomSelectionSource newSource = new RoomSelectionSource(getTranslator(), roomManagementService,
-				roles, getIdentity(), start, end, lectureBlock, List.of(), participantCount);
+				roles, getIdentity(), start, end, lectureBlock, selectedRooms, participantCount);
 		roomsEl.setSource(newSource);
 	}
 
