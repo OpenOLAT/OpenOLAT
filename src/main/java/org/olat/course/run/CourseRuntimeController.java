@@ -2419,7 +2419,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				.withDetailsExam(true)
 				.withDetailsUnits(true)
 				.withDetailsExternalRef(true)
-				.withinCurriculums(false);
+				.withinCurriculums(false)
+				.withHelpUrl("manual_user/learningresources/Events_and_absences/");
 		return config;
 	}
 	
@@ -2485,7 +2486,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				.withDetailsUnits(false)
 				.withDetailsExternalRef(true)
 				.withinCurriculums(false)
-				.showCourseParticipantViewWarning(reSecurity.getCurrentRole() == Role.fakeParticipant);
+				.showCourseParticipantViewWarning(reSecurity.getCurrentRole() == Role.fakeParticipant)
+				.withHelpUrl("manual_user/learningresources/Events_and_absences/");
 		return config;
 	}
 	

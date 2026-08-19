@@ -491,6 +491,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			String titleSize = config.getTitleSize() <= 0 ? "" : "h" + config.getTitleSize();
 			layoutCont.contextPut("titleSize", titleSize);
+			layoutCont.contextPut("helpUrl", config.getHelpUrl());
 		}
 	}
 	

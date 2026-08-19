@@ -60,7 +60,9 @@ public class LectureListRepositoryConfig {
 	private boolean withinCurriculums = false;
 	
 	private boolean showCourseParticipantViewWarning = false;
-	
+
+	private String helpUrl = "manual_user/area_modules/Course_Planner_Events/";
+
 	private final String prefsId;
 	
 	private LectureListRepositoryConfig(String prefsId, int titleSize, boolean withScopes, boolean withFilterPresetRelevant,
@@ -319,6 +321,15 @@ public class LectureListRepositoryConfig {
 
 	public LectureListRepositoryConfig showCourseParticipantViewWarning(boolean showWarning) {
 		this.showCourseParticipantViewWarning = showWarning;
+		return this;
+	}
+
+	public String getHelpUrl() {
+		return helpUrl;
+	}
+
+	public LectureListRepositoryConfig withHelpUrl(String helpUrl) {
+		this.helpUrl = helpUrl;
 		return this;
 	}
 
