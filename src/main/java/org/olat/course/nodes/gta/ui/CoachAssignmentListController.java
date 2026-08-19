@@ -191,6 +191,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		tableEl.setSelectedFilterTab(ureq, allTab);
 		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coach-assignment-" + repoEntry.getKey() + "-" + gtaNode.getIdent());
+		makeAllCoachColumnsVisible();
 		
 		backLink = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
 		
@@ -333,7 +334,13 @@ public class CoachAssignmentListController extends FormBasicController {
 			coachColumn.setColumnModel(col);
 			columnsModel.addFlexiColumnModel(col);
 		}
-		
+	}
+	
+	/**
+	 * Ensure all coaches columns are visible if a coach is added in the course,
+	 * removed... This override the customization but it's a tradeoff.
+	 */
+	private void makeAllCoachColumnsVisible() {
 		//Make sure all coach columns are visible
 		if(tableEl != null) {
 			for(CoachColumn colum: coachesColumns) {
