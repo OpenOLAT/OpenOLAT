@@ -427,12 +427,16 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		configSourceEl.setVisible(enabled && inConfig);
 		templateEl.setVisible(enabled && inConfig && useTemplate);
 
-		if(inConfig && useTemplate) {
+		if(enabled && inConfig && useTemplate) {
 			SafeExamBrowserTemplate selectedTemplate = getSelectedTemplate();
 			if(selectedTemplate != null) {
 				updateFromTemplate(selectedTemplate);
 				sebFileConfig = selectedTemplate.getType() == SafeExamBrowserTemplateType.SEB_FILE;
+			} else {
+				removeInformationsForAuthorsEl();
 			}
+		} else {
+			removeInformationsForAuthorsEl();
 		}
 
 		boolean urlFilterEnabled = urlFilterEl.isOneSelected() && urlFilterEl.isKeySelected("true");
@@ -553,9 +557,13 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 			informationsForAuthorsEl.setValue("<p class='o_info_with_icon'>" + StringHelper.xssScan(authorHint) + "</p>");
 			informationsForAuthorsEl.setVisible(true);
 		} else {
-			informationsForAuthorsEl.setValue("");
-			informationsForAuthorsEl.setVisible(false);
+			removeInformationsForAuthorsEl();
 		}
+	}
+	
+	private void removeInformationsForAuthorsEl() {
+		informationsForAuthorsEl.setValue("");
+		informationsForAuthorsEl.setVisible(false);
 	}
 
 	private void updateConfigurationValues(SafeExamBrowserConfiguration sebConfig) {
