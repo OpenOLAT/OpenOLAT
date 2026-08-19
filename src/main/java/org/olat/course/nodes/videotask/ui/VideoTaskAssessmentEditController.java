@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.videotask.ui;
 
+import java.util.Map;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -93,6 +95,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	private SpacerElement ignoreSpacer;
 	private MultipleSelectionElement individualAssessmentEl;
 	private SelectionValues individualAssessmentKV;
+	private FormLayoutContainer buttonsCont;
 
 	private GradeScale gradeScale;
 	private final String nodeIdent;
@@ -180,8 +183,23 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 			individualAssessmentEl.select(individualAssessmentKV.keys()[1], true);
 		}
 	
-		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
+
+	/**
+	 * Disables (or re-enables) every form item and hides the submit button, used to make
+	 * the assessment configuration read-only once assessments already exist for this node.
+	 */
+	public void setDisplayOnly(boolean displayOnly) {
+		Map<String, FormItem> formItems = flc.getFormComponents();
+		for (FormItem formItem : formItems.values()) {
+			formItem.setEnabled(!displayOnly);
+		}
+		buttonsCont.setVisible(!displayOnly);
+		if (!displayOnly) {
+			updateUI();
+		}
 	}
 	
 	private void initFormScore(FormItemContainer formLayout) {

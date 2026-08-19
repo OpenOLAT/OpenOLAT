@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.IconPanelLabelTextContent;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -44,6 +46,7 @@ import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
@@ -100,12 +103,16 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 	
 	private TabbedPane myTabbedPane;
 	private VelocityContainer configurationVC;
+	private VelocityContainer assessmentVC;
 	private final IconPanelLabelTextContent iconPanelContent;
 	
 	private int assessmentTab;
 	private final RepositoryEntry entry;
 	private final ModuleConfiguration config;
 	private final VideoTaskCourseNode videoTaskNode;
+
+	private Link enableEditingLink;
+	private boolean hasAssessments;
 
 	private CloseableModalController cmc;
 	private VideoDisplayController previewCtrl;
@@ -118,6 +125,8 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 	private VideoManager videoManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private AssessmentService assessmentService;
 	private final CourseEnvironment courseEnv;
 
 	public VideoTaskEditController(UserRequest ureq, WindowControl wControl, ICourse course, VideoTaskCourseNode videoTaskNode) {
@@ -147,7 +156,19 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 		
 		assessmentCtrl = new VideoTaskAssessmentEditController(ureq, getWindowControl(), course, videoTaskNode);
 		listenTo(assessmentCtrl);
-		
+
+		assessmentVC = createVelocityContainer("edit_assessment");
+		assessmentVC.put("assessmentform", assessmentCtrl.getInitialComponent());
+		enableEditingLink = LinkFactory.createButtonSmall("enable.editing", assessmentVC, this);
+		enableEditingLink.setPrimary(true);
+		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
+
+		hasAssessments = assessmentService.hasAssessments(entry, videoTaskNode.getIdent());
+		assessmentVC.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));
+		if (hasAssessments) {
+			assessmentCtrl.setDisplayOnly(true);
+		}
+
 		putInitialPanel(configurationVC);
 		updateEditController(ureq, videoEntry, false);
 	}
@@ -167,7 +188,7 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_VIDEOCONFIG), "o_sel_video_configuration", configurationVC);
-		assessmentTab = tabbedPane.addTab(translate(PANE_TAB_ASSESSMENT), "o_sel_video_assessment_configuration", assessmentCtrl.getInitialComponent());
+		assessmentTab = tabbedPane.addTab(translate(PANE_TAB_ASSESSMENT), "o_sel_video_assessment_configuration", assessmentVC);
 		updateTabs();
 	}
 
@@ -227,7 +248,10 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (event == NodeEditController.NODECONFIG_CHANGED_EVENT){
+		if (source == enableEditingLink) {
+			assessmentCtrl.setDisplayOnly(false);
+			assessmentVC.contextPut("isOverwriting", Boolean.TRUE);
+		} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT){
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 	}
