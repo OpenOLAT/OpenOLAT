@@ -41,10 +41,11 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
-import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.modules.assessment.AssessmentService;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,11 +66,13 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	private TabbedPane myTabbedPane;
 	
-	private boolean hasLogEntries;
-	private Link editScoringConfigButton;
+	private boolean hasAssessments;
+	private Link enableEditingLink;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private AssessmentService assessmentService;
 
 	/**
 	 * Constructor for a manual scoring course edit controller
@@ -85,7 +88,9 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		this.course = course;
 		
 		configurationVC = createVelocityContainer("edit");
-		editScoringConfigButton = LinkFactory.createButtonSmall("scoring.config.enable.button", configurationVC, this);
+		enableEditingLink = LinkFactory.createButtonSmall("enable.editing", configurationVC, this);
+		enableEditingLink.setPrimary(true);
+		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
 		
 		configController = new MSConfigController(ureq, wControl, course, msNode);
 		listenTo(configController);
@@ -94,18 +99,19 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, msNode.getModuleConfiguration(), course);
 		listenTo(highScoreNodeConfigController);
 		
-		// if there is already user data available, make for read only
-		UserNodeAuditManager auditManager = course.getCourseEnvironment().getAuditManager();
-		hasLogEntries = auditManager.hasUserNodeLogs(msNode);
-		configurationVC.contextPut("hasLogEntries", Boolean.valueOf(hasLogEntries));
-		if (hasLogEntries) {
+		// if there are already assessments, make read only
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		hasAssessments = assessmentService.hasAssessments(courseEntry, msNode.getIdent());
+		configurationVC.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));
+		if (hasAssessments) {
 			configController.setDisplayOnly(true);
 		}
+		configurationVC.contextPut("isOverwriting", Boolean.valueOf(false));
 	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == editScoringConfigButton) {
+		if (source == enableEditingLink) {
 			configController.setDisplayOnly(false);
 			configurationVC.contextPut("isOverwriting", Boolean.TRUE);
 		}
