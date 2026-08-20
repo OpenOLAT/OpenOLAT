@@ -228,7 +228,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return Itself
 	 */
 	public QTI21GapEntriesEditorPage addInlineChoice(String answer) {
-		By addBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_gap_text')]//button[contains(@title,'L\u00FCckentext')]");
+		By addBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_gap_text')]//button[contains(@title,'L\u00FCckentext mit Dropdown')]");
 		browser.findElement(addBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
