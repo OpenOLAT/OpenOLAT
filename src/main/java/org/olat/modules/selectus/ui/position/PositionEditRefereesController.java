@@ -19,7 +19,6 @@
  */
 package org.olat.modules.selectus.ui.position;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -52,9 +51,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.RecruitingModule;
@@ -78,6 +74,8 @@ import org.olat.modules.selectus.ui.reference.ReferenceHelper;
 import org.olat.modules.selectus.ui.rejection.MailVariablesController;
 import org.olat.modules.selectus.ui.rejection.PreviewEmailController;
 import org.olat.modules.selectus.ui.rejection.VariablesValidationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -91,9 +89,6 @@ public class PositionEditRefereesController extends FormBasicController implemen
 	private static final String REFEREE_ENABLED = "on";
 	private static final String REFEREE_APP_MANAGE = "manage";
 	
-	private static final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-	private String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
-
 	private FormLink previewLink;
 	private Link variablesButton;
 	private SingleSelection applicantRefereesEl;
@@ -128,9 +123,6 @@ public class PositionEditRefereesController extends FormBasicController implemen
 		super(ureq, wControl, Util.createPackageTranslator(PositionController.class, ureq.getLocale()));
 		this.position = position;
 		this.readOnly = readOnly;
-		for(int i=monthKeys.length; i-->0; ) {
-			monthValues[i] = translate("month.long." + i);
-		}
 		initForm(ureq);
 	}
 
@@ -337,7 +329,7 @@ public class PositionEditRefereesController extends FormBasicController implemen
 				refereeDeadlineEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else {
-				allOk &= validateYearElement(refereeDeadlineEl);
+				allOk &= RecruitingHelper.validateYearElement(refereeDeadlineEl);
 			}
 			
 			if(REFEREE_APP_MANAGE.equals(applicantRefereesEl.getSelectedKey())) {
@@ -345,7 +337,7 @@ public class PositionEditRefereesController extends FormBasicController implemen
 					applicantDeadlineEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				} else {
-					allOk &= validateYearElement(applicantDeadlineEl);
+					allOk &= RecruitingHelper.validateYearElement(applicantDeadlineEl);
 				}
 			}
 		}
@@ -361,26 +353,6 @@ public class PositionEditRefereesController extends FormBasicController implemen
 		}
 		
 		return allOk;
-	}
-	
-	private boolean validateYearElement(DateChooser dateEl) {
-		boolean ok = true;
-		if(dateEl.getDate() != null) {
-			int currentYear = Calendar.getInstance().get(Calendar.YEAR) + 5;
-			try {
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(dateEl.getDate());
-				int year = cal.get(Calendar.YEAR);
-				if(year < 2010 || year > currentYear) {
-					ok &= false;
-					dateEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear) });
-				}
-			} catch (NumberFormatException e) {
-				ok =false;
-				dateEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear) });
-			}
-		}
-		return ok;
 	}
 	
 	private boolean validateInteger(TextElement el) {

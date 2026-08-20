@@ -783,6 +783,26 @@ public class RecruitingHelper {
 		return ok;
 	}
 	
+	public static boolean validateYearElement(DateChooser dateEl) {
+		boolean ok = true;
+		if(StringHelper.containsNonWhitespace(dateEl.getValue())) {
+			Calendar cal = Calendar.getInstance();
+			int currentYear = cal.get(Calendar.YEAR) + 5;
+			try {
+				cal.setTime(dateEl.getDate());
+				int year = cal.get(Calendar.YEAR);
+				if(year < 2010 || year > currentYear) {
+					ok &= false;
+					dateEl.setErrorKey("deadline.error", Integer.toString(currentYear));
+				}
+			} catch (NumberFormatException e) {
+				ok =false;
+				dateEl.setErrorKey("deadline.error", Integer.toString(currentYear));
+			}
+		}
+		return ok;
+	}
+	
 	public static List<String> splitEmails(String text) {
 		String[] emails = text.split("[;,]");
 		List<String> emailList = new ArrayList<>();

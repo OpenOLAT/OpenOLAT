@@ -134,6 +134,12 @@ form .o_form, form.o_form {
 		width: 11em;
 	}
 	
+	.o_date_add_on {
+		display: inline-block;
+		padding-top: ($padding-base-vertical + 1);
+		padding-bottom: ($padding-base-vertical + 1);
+	}
+	
 	.o_date_bloc {
 		white-space: nowrap;
 		.o_first_date {

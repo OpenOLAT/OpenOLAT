@@ -1,0 +1,41 @@
+<script>
+"use strict";
+jQuery(function() {
+	const scope = ".o_sel_rating_deadline";
+
+	function effectiveDeadline() {
+		const input = jQuery(scope + " input.o_date_day").get(0);
+		if(!input || !input.datepicker) return null;
+		const date = input.datepicker.getDate();
+		if(!date) return null;
+		return date;
+	}
+
+	function updateDst() {
+		let date = effectiveDeadline();
+		if(date === null) return;
+		
+		let year = date.getFullYear();
+		if(year < 100) {
+			year = 2000 + year;
+			date = new Date(year, date.getMonth(), date.getDay(), 0, 0, 0, 0);
+		}
+		
+		const jan = new Date(year, 0, 1).getTimezoneOffset();
+		const jul = new Date(year, 6, 1).getTimezoneOffset();
+
+		let dst;
+	    if(date.getTimezoneOffset() < Math.max(jan, jul)) {
+	    	dst = "CEST";
+	    } else {
+	    	dst = "CET";
+	    }
+	    console.log(date + " " + date.getFullYear() + " " + date.getTimezoneOffset() + " " + jan + " " + " " + jul + " " + dst);
+		jQuery(scope + " .o_date_add_on").text(dst);
+	}
+
+	jQuery(document)
+		.off(".fxRatingDst")
+		.on("changeDate.fxRatingDst change.fxRatingDst", scope + " input.o_date_day", updateDst);
+});
+</script>

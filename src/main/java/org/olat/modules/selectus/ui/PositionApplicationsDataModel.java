@@ -525,15 +525,6 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		ApplicationRow app = getObject(row);
 		return getValueAt(app, col);
 	}
-	
-	/* TODO selectus
-	@Override
-	public String getMultiSelectAriaLabel(int row) {
-		ApplicationRow app = getObject(row);
-		Integer id = app.getApplication().getId();
-		return id == null ? null : id.toString();
-	}
-	*/
 
 	@Override
 	public Object getValueForExportAt(int row, int col) {

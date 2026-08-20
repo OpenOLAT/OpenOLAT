@@ -20,7 +20,6 @@
 package org.olat.modules.selectus.ui.reference;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -32,8 +31,8 @@ import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -61,6 +60,7 @@ import org.olat.modules.selectus.model.ReferenceType;
 import org.olat.modules.selectus.model.SubjectAndBody;
 import org.olat.modules.selectus.model.mail.InvitationVariables;
 import org.olat.modules.selectus.ui.PositionController;
+import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.rejection.MailVariablesController;
 import org.olat.modules.selectus.ui.rejection.VariablesValidationContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,9 +73,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TemplateForInvitationEmailController extends StepFormBasicController {
 
-	private static final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-	private String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
-
 	private Link variablesButton;
 	private TextElement expertSubjectEl;
 	private RichTextElement expertBodyEl;
@@ -86,9 +83,7 @@ public class TemplateForInvitationEmailController extends StepFormBasicControlle
 	private TextElement comparativeExpertSubjectEl;
 	private RichTextElement comparativeExpertBodyEl;
 	
-	private TextElement submissionDeadlineDayElement;
-	private TextElement submissionDeadlineYearElement;
-	private SingleSelection submissionDeadlineMonthElement;
+	private DateChooser submissionDeadlineEl;
 	
 	private Reference soloReference;
 	private final InvitationVariables emailVar;
@@ -104,10 +99,6 @@ public class TemplateForInvitationEmailController extends StepFormBasicControlle
 		super(ureq, wControl, form, runContext, LAYOUT_DEFAULT, null);
 		setTranslator(Util.createPackageTranslator(PositionController.class, getLocale(), getTranslator()));
 		this.emailVar = emailVar;
-		
-		for(int i=monthKeys.length; i-->0; ) {
-			monthValues[i] = translate("month.long." + i);
-		}
 		
 		List<Reference> selectedApps = emailVar.getSelectedReferences();
 		if(selectedApps.size() == 1) {
@@ -156,40 +147,9 @@ public class TemplateForInvitationEmailController extends StepFormBasicControlle
 	}
 	
 	private void initSubmissionDeadline(FormItemContainer formLayout) {
-		//submission deadline container
-		String pageDeadline = velocity_root + "/edit_deadline.html";
-		FormLayoutContainer submissionDeadlineContainer = FormLayoutContainer.createCustomFormLayout("expert.deadline", getTranslator(), pageDeadline);
-		submissionDeadlineContainer.setRootForm(mainForm);
-		submissionDeadlineContainer.setLabel("edit.expert.deadline", null);
-		submissionDeadlineContainer.setMandatory(true);
-		formLayout.add(submissionDeadlineContainer);
-		
-		String day = "";
-		String month= "0";
-		String year = "";
 		Date submissionDeadline = getDefaultSubmissionDeadline();
-		if(submissionDeadline != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(submissionDeadline);
-			day = Integer.toString(cal.get(Calendar.DATE));
-			month = Integer.toString(cal.get(Calendar.MONTH));
-			year = Integer.toString(cal.get(Calendar.YEAR));
-		}
-		
-		submissionDeadlineDayElement = uifactory.addTextElement("deadline.day", "", 2, day, submissionDeadlineContainer);
-		submissionDeadlineDayElement.setDomReplacementWrapperRequired(false);
-		submissionDeadlineDayElement.setDisplaySize(2);
-		submissionDeadlineDayElement.setMandatory(true);
-		
-		submissionDeadlineMonthElement = uifactory.addDropdownSingleselect("deadline.month", "", submissionDeadlineContainer, monthKeys, monthValues, null);
-		submissionDeadlineMonthElement.setDomReplacementWrapperRequired(false);
-		submissionDeadlineMonthElement.setMandatory(true);
-		submissionDeadlineMonthElement.select(month, true);
-		
-		submissionDeadlineYearElement = uifactory.addTextElement("deadline.year", "", 4, year, submissionDeadlineContainer);
-		submissionDeadlineYearElement.setDomReplacementWrapperRequired(false);
-		submissionDeadlineYearElement.setDisplaySize(4);
-		submissionDeadlineYearElement.setMandatory(true);
+		submissionDeadlineEl = uifactory.addDateChooser("edit.expert.deadline", submissionDeadline, formLayout);
+		submissionDeadlineEl.setMandatory(true);
 	}
 	
 	private void initFormReferees(FormItemContainer formLayout, UserRequest ureq) {
@@ -317,35 +277,16 @@ public class TemplateForInvitationEmailController extends StepFormBasicControlle
 			allOk &= checkElement(comparativeExpertBodyEl, ReferenceType.comparativeAssessmentExpert);
 		}
 		
-		if(submissionDeadlineYearElement != null) {
-			submissionDeadlineYearElement.clearError();
-			if(getSubmissionDeadline() == null) {
-				submissionDeadlineYearElement.setErrorKey("form.legende.mandatory");
+		if(submissionDeadlineEl != null) {
+			submissionDeadlineEl.clearError();
+			if(submissionDeadlineEl.getDate() == null) {
+				submissionDeadlineEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else {
-				allOk &= validateYearElement(submissionDeadlineYearElement);
+				allOk &= RecruitingHelper.validateYearElement(submissionDeadlineEl);
 			}
 		}
 		return allOk;
-	}
-	
-	private boolean validateYearElement(TextElement textEl) {
-		boolean ok = true;
-		if(StringHelper.containsNonWhitespace(textEl.getValue())) {
-			int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-			int maxYear = currentYear + 5;
-			try { 
-				int year = Integer.parseInt(textEl.getValue());
-				if(year < currentYear || year > maxYear) {
-					ok &= false;
-					textEl.setErrorKey("deadline.error", new String[] { Integer.toString(maxYear) });
-				}
-			} catch (NumberFormatException e) {
-				ok = false;
-				textEl.setErrorKey("deadline.error", new String[] { Integer.toString(maxYear) });
-			}
-		}
-		return ok;
 	}
 	
 	private boolean checkElement(TextElement element, ReferenceType referenceType) {
@@ -412,34 +353,6 @@ public class TemplateForInvitationEmailController extends StepFormBasicControlle
 		return allOk;
 	}
 	
-	private Date getSubmissionDeadline() {
-		String dayStr = submissionDeadlineDayElement.getValue();
-		String monthStr = submissionDeadlineMonthElement.getSelectedKey();
-		String yearStr = submissionDeadlineYearElement.getValue();
-		
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			return getDeadline(day, month, year, 0, 0);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private Date getDeadline(int day, int month, int year, int hour, int minute) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DATE, day);
-		cal.set(Calendar.HOUR_OF_DAY, hour);
-		cal.set(Calendar.MINUTE, minute);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
-	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(variablesButton == source) {
@@ -466,7 +379,9 @@ public class TemplateForInvitationEmailController extends StepFormBasicControlle
 			comparativeExpertsTemplate.setBodyTemplate(comparativeExpertBodyEl.getValue());
 		}
 		
-		Date submissionDeadline = getSubmissionDeadline();
+		Date submissionDeadline = submissionDeadlineEl == null
+				? null
+				: submissionDeadlineEl.getDate();
 		emailVar.setSubmissionDeadline(submissionDeadline);
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

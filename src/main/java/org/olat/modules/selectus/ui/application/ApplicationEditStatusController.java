@@ -20,7 +20,6 @@
 package org.olat.modules.selectus.ui.application;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +28,7 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -42,9 +42,6 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.ApplicationStatus;
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.RecruitingModule;
@@ -60,6 +57,8 @@ import org.olat.modules.selectus.model.category.ApplicationCategoryInfos;
 import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.comparator.TextBoxItemComparator;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -73,14 +72,8 @@ import org.olat.modules.selectus.ui.components.DateCellRenderer;
 public class ApplicationEditStatusController extends FormBasicController {
 
 	private SingleSelection statusElement;
-	
-	private TextElement statusDayElement;
-	private SingleSelection statusMonthElement;
-	private TextElement statusYearElement;
-	private FormLayoutContainer statusContainer;
-	
+	private DateChooser statusDateEl;
 	private TextElement statusCommentEl;
-
 	private TextBoxListElement committeeCategoriesEl;
 	
 	private Application application;
@@ -89,9 +82,6 @@ public class ApplicationEditStatusController extends FormBasicController {
 	private final boolean categoriesEnabled;
 	private final Position position;
 	private final RecruitingPositionSecurityCallback secCallback;
-	
-	private final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-	private final String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 	
 	private final SelectionValues availableStatusKV;
 	
@@ -125,10 +115,6 @@ public class ApplicationEditStatusController extends FormBasicController {
 		for(int i=0; i<availableStatus.length; i++) {
 			String label = translate("application.status.".concat(availableStatus[i].name()));
 			availableStatusKV.add(SelectionValues.entry(availableStatus[i].name(), label));
-		}
-
-		for(int i=monthKeys.length; i-->0; ) {
-			monthValues[i] = translate("month.long." + i);
 		}
 		
 		this.application = application;
@@ -171,29 +157,8 @@ public class ApplicationEditStatusController extends FormBasicController {
 		}
 		
 		// status date container
-		String pageDeadline = velocity_root + "/edit_deadline.html";
-		statusContainer = FormLayoutContainer.createCustomFormLayout("status.container", getTranslator(), pageDeadline);
-		statusContainer.setRootForm(mainForm);
-		statusContainer.setLabel("edit.application.status.date", null);
-		formLayout.add(statusContainer);
-
-		statusDayElement = uifactory.addTextElement("deadline.day", "", 2, null, statusContainer);
-		statusDayElement.setDomReplacementWrapperRequired(false);
-		statusDayElement.setDisplaySize(2);
-		statusDayElement.setMandatory(true);
-		statusDayElement.setEnabled(editableStatus);
-		
-		statusMonthElement = uifactory.addDropdownSingleselect("deadline.month", "", statusContainer, monthKeys, monthValues, null);
-		statusMonthElement.setDomReplacementWrapperRequired(false);
-		statusMonthElement.setMandatory(true);
-		statusMonthElement.setEnabled(editableStatus);
-		
-		statusYearElement = uifactory.addTextElement("deadline.year", "", 4, null, statusContainer);
-		statusYearElement.setDomReplacementWrapperRequired(false);
-		statusYearElement.setDisplaySize(4);
-		statusYearElement.setMandatory(true);
-		statusYearElement.setEnabled(editableStatus);
-		
+		statusDateEl = uifactory.addDateChooser("edit.application.status.date", null, formLayout);
+		statusDateEl.setEnabled(editableStatus);
 		updateStatusDate();
 		
 		String comment = application.getStatusComment();
@@ -303,18 +268,8 @@ public class ApplicationEditStatusController extends FormBasicController {
 		if(date == null) {
 			date = new Date();
 		}
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		String day = Integer.toString(cal.get(Calendar.DATE));
-		String month = Integer.toString(cal.get(Calendar.MONTH));
-		String year = Integer.toString(cal.get(Calendar.YEAR));
-		
-		statusDayElement.setValue(day);
-		statusDayElement.setEnabled(editable);
-		statusMonthElement.select(month, true);
-		statusMonthElement.setEnabled(editable);
-		statusYearElement.setValue(year);
-		statusYearElement.setEnabled(editable);
+		statusDateEl.setDate(date);
+		statusDateEl.setEnabled(editable);
 	}
 
 	public Application commitChanges(Application app) {
@@ -325,7 +280,7 @@ public class ApplicationEditStatusController extends FormBasicController {
 		
 		ApplicationStatus status = ApplicationStatus.valueOf(statusElement.getSelectedKey());
 		app.setApplicationStatus(status);
-		Date statusDate = getStatusDate();
+		Date statusDate = statusDateEl.getDate();
 		switch(status) {
 			case onhold: app.setOnholdDate(statusDate); break;
 			case withdrawn: app.setWithdrawnDate(statusDate); break;
@@ -365,34 +320,7 @@ public class ApplicationEditStatusController extends FormBasicController {
 		
 		return application;
 	}
-	
-	private Date getStatusDate() {
-		String dayStr = statusDayElement.getValue();
-		String monthStr = statusMonthElement.getSelectedKey();
-		String yearStr = statusYearElement.getValue();
-		
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			return getDate(day, month, year);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private Date getDate(int day, int month, int year) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DATE, day);
-		cal.set(Calendar.HOUR, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
+
 	
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
@@ -404,9 +332,9 @@ public class ApplicationEditStatusController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		statusContainer.clearError();
-		if(statusElement.isOneSelected() && getStatusDate() == null) {
-			statusContainer.setErrorKey("form.legende.mandatory");
+		statusDateEl.clearError();
+		if(statusElement.isOneSelected() && statusDateEl.getDate() == null) {
+			statusDateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

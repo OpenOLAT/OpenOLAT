@@ -73,14 +73,12 @@ import org.olat.modules.selectus.ui.reference.ApplicationReferenceDataModel.ARCo
 /**
  * 
  * Initial date: 15.09.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ApplicationReferenceListController extends FormBasicController {
 	
 	private static final String PREFS_ID = "recruitingAppRecommendationFlexiList";
-	private static final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-	private String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 	
 	private FormLink addExpertButton;
 	private FormLink addReferenceButton;
@@ -122,10 +120,7 @@ public class ApplicationReferenceListController extends FormBasicController {
 		this.position = position;
 		this.secCallback = secCallback;
 		canEditReferences = secCallback.canEditApplicationReferences();
-		for(int i=monthKeys.length; i-->0; ) {
-			monthValues[i] = translate("month.long." + i);
-		}
-		
+
 		initForm(ureq);
 		loadModel();
 	}

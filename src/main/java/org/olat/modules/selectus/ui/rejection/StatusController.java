@@ -20,7 +20,6 @@
 package org.olat.modules.selectus.ui.rejection;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -28,12 +27,12 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -45,8 +44,6 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.ApplicationStatus;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
@@ -55,6 +52,7 @@ import org.olat.modules.selectus.model.Category;
 import org.olat.modules.selectus.model.mail.EmailVariables;
 import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.comparator.TextBoxItemComparator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -65,15 +63,9 @@ import org.olat.modules.selectus.ui.comparator.TextBoxItemComparator;
 public class StatusController extends StepFormBasicController {
 
 	private TextElement statusCommentEl;
-	private TextElement statusDayElement;
-	private TextElement statusYearElement;
-	private SingleSelection statusMonthElement;
+	private DateChooser statusDateEl;
 	private SingleSelection changeStatusEl;
 	private TextBoxListElement categoriesEl;
-	private FormLayoutContainer statusContainer;
-	
-	private final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-	private final String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 	
 	private final EmailVariables emailVar;
 	private final RecruitingPositionSecurityCallback secCallback;
@@ -92,10 +84,6 @@ public class StatusController extends StepFormBasicController {
 		setTranslator(Util.createPackageTranslator(PositionController.class, getLocale(), getTranslator()));
 		this.emailVar = emailVar;
 		this.secCallback = secCallback;
-		
-		for(int i=monthKeys.length; i-->0; ) {
-			monthValues[i] = translate("month.long." + i);
-		}
 
 		initForm(ureq);
 	}
@@ -120,27 +108,9 @@ public class StatusController extends StepFormBasicController {
 		changeStatusEl.addActionListener(FormEvent.ONCHANGE);
 		changeStatusEl.select("-", true);
 		
-		// status date container
-		String pageDeadline = velocity_root + "/edit_deadline.html";
-		statusContainer = FormLayoutContainer.createCustomFormLayout("status.container", getTranslator(), pageDeadline);
-		statusContainer.setRootForm(mainForm);
-		statusContainer.setLabel("edit.application.status.date", null);
-		formLayout.add(statusContainer);
-		statusContainer.setVisible(false);
-
-		statusDayElement = uifactory.addTextElement("deadline.day", "", 2, null, statusContainer);
-		statusDayElement.setDomReplacementWrapperRequired(false);
-		statusDayElement.setDisplaySize(2);
-		statusDayElement.setMandatory(true);
-		
-		statusMonthElement = uifactory.addDropdownSingleselect("deadline.month", "", statusContainer, monthKeys, monthValues, null);
-		statusMonthElement.setDomReplacementWrapperRequired(false);
-		statusMonthElement.setMandatory(true);
-		
-		statusYearElement = uifactory.addTextElement("deadline.year", "", 4, null, statusContainer);
-		statusYearElement.setDomReplacementWrapperRequired(false);
-		statusYearElement.setDisplaySize(4);
-		statusYearElement.setMandatory(true);
+		statusDateEl = uifactory.addDateChooser("edit.application.status.date", null, formLayout);
+		statusDateEl.setMandatory(true);
+		statusDateEl.setVisible(false);
 		
 		setStatusDate(new Date());
 		
@@ -233,9 +203,9 @@ public class StatusController extends StepFormBasicController {
 			allOk &= false;
 		}
 		
-		statusContainer.clearError();
-		if(changeStatusEl.isOneSelected() && !"-".equals(changeStatusEl.getSelectedKey()) && getStatusDate() == null) {
-			statusContainer.setErrorKey("form.legende.mandatory");
+		statusDateEl.clearError();
+		if(changeStatusEl.isOneSelected() && !"-".equals(changeStatusEl.getSelectedKey()) && statusDateEl.getDate() == null) {
+			statusDateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -248,11 +218,7 @@ public class StatusController extends StepFormBasicController {
 			boolean visible = (changeStatusEl.isOneSelected() && !"-".equals(changeStatusEl.getSelectedKey()));
 			statusCommentEl.setVisible(visible);
 			boolean dateVisible = visible && !ApplicationStatus.active.name().equals(changeStatusEl.getSelectedKey());
-			statusContainer.setVisible(dateVisible);
-			statusDayElement.setVisible(dateVisible);
-			statusMonthElement.setVisible(dateVisible);
-			statusYearElement.setVisible(dateVisible);
-			
+			statusDateEl.setVisible(dateVisible);
 			updateStatusCommentPlaceholder();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -280,59 +246,17 @@ public class StatusController extends StepFormBasicController {
 		if(changeStatusEl.isOneSelected() && !"-".equals(changeStatusEl.getSelectedKey())) {
 			ApplicationStatus status = ApplicationStatus.valueOf(changeStatusEl.getSelectedKey());
 			emailVar.setApplicationStatus(status);
-			emailVar.setApplicationStatusDate(getStatusDate());
+			emailVar.setApplicationStatusDate(statusDateEl.getDate());
 			emailVar.setApplicationStatusComment(statusCommentEl.getValue());
 		}
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
-	
-	private Date getStatusDate() {
-		if(!statusContainer.isVisible()) return null;
-		
-		String dayStr = statusDayElement.getValue();
-		String monthStr = statusMonthElement.getSelectedKey();
-		String yearStr = statusYearElement.getValue();
-		
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			return getDate(day, month, year);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private Date getDate(int day, int month, int year) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DATE, day);
-		cal.set(Calendar.HOUR, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
-	
+
 	private void setStatusDate(Date date) {
-		String day = "";
-		String month = "0";
-		String year = "";
-		
 		if(date == null) {
 			date = new Date();
 		}
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		day = Integer.toString(cal.get(Calendar.DATE));
-		month = Integer.toString(cal.get(Calendar.MONTH));
-		year = Integer.toString(cal.get(Calendar.YEAR));
-		
-		statusDayElement.setValue(day);
-		statusMonthElement.select(month, true);
-		statusYearElement.setValue(year);
+		statusDateEl.setDate(date);
 	}
 }
