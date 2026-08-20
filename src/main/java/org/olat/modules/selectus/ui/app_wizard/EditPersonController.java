@@ -34,6 +34,7 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -42,7 +43,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -91,10 +91,8 @@ public class EditPersonController extends FormBasicController {
 	private SingleSelection maritalStatusEl;
 	private TextElement firstNameEl;
 	private TextElement lastNameEl;
-	private TextElement birthDayEl;
+	private DateChooser birthdayEl;
 	private TextElement academicTitleEl;
-	private SingleSelection birthMonthEl;
-	private TextElement birthYearEl;
 	private TextElement nationalityEl;
 	private SingleSelection nationalitySelectionEl;
 	private TextElement additionalNationalitiesEl;
@@ -125,7 +123,6 @@ public class EditPersonController extends FormBasicController {
 	private SingleSelection countryEl;
 	private SingleSelection businessCountryEl;
 	
-	private FormLayoutContainer birthdayContainer;
 	private List<FormItem> additionalAttributesEl = new ArrayList<>();
 	private final ApplicationAttributesDelegate attributesDelegate
 		= new ApplicationAttributesDelegate(PositionApplicationAttributeTabEnum.personalData);
@@ -140,8 +137,6 @@ public class EditPersonController extends FormBasicController {
 	private final String[] genderValues;
 	private static final String genderChooseKey = "choose";
 	private final SelectionValues maritalStatusKV;
-	private final String[] monthKeys;
-	private final String[] monthValues;
 	private final String[] addressTypeKeys = {Address.Type.BUSINESS.getType(), Address.Type.PRIVATE.getType()};
 	private final String[] addressTypeValues = new String[2];
 	private static final String[] disabilityKeys = new String[] { "xx" };
@@ -191,20 +186,6 @@ public class EditPersonController extends FormBasicController {
 		for(int i=personTitles.length; i-->0; ) {
 			titleKeys[i+2] = personTitles[i].title();
 			titleValues[i+2] = translate(personTitles[i].i18nKey());
-		}
-		
-		if(admin) {
-			monthKeys = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "-"};
-			monthValues = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "-"};
-			for(int i=0; i<12; i++) {
-				monthValues[i] = translate("month.long." + i);
-			}
-		} else {
-			monthKeys = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-			monthValues = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
-			for(int i=monthKeys.length; i-->0; ) {
-				monthValues[i] = translate("month.long." + i);
-			}
 		}
 
 		PersonGender[] personGenders = recruitingModule.getPersonGenders();
@@ -370,54 +351,14 @@ public class EditPersonController extends FormBasicController {
 		} else {
 			maritalStatusEl.select(maritalStatusKV.keys()[0], true);
 		}
-		
-		//birthday container
-		String page = velocity_root + "/edit_birthday.html";
-		birthdayContainer = FormLayoutContainer.createCustomFormLayout("birthday_cont", getTranslator(), page);
-		birthdayContainer.setRootForm(mainForm);
-		birthdayContainer.setLabel("edit.application.birthday", null);
-		birthdayContainer.setElementCssClass("o_sel_edit_person_birthday");
-		birthdayContainer.setMandatory(!admin && !recruitingModule.isApplicationPersonBirthdayOptional());
-		birthdayContainer.setVisible(recruitingModule.isApplicationPersonBirthdayEnabled());
-		formLayout.add(birthdayContainer);
 
-		String day = "";
-		String month= "0";
-		String year = "";
 		Date birthday = person == null ? null : person.getBirthday();
-		if(birthday != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(birthday);
-			day = Integer.toString(cal.get(Calendar.DATE));
-			month = Integer.toString(cal.get(Calendar.MONTH));
-			year = Integer.toString(cal.get(Calendar.YEAR));
-		}
-		
-		birthDayEl = uifactory.addTextElement("birthday.day", "", 2, day, birthdayContainer);
-		birthDayEl.setDomReplacementWrapperRequired(false);
-		birthDayEl.setDisplaySize(2);
-		birthDayEl.setMandatory(!admin);
-		birthDayEl.setEnabled(editable);
-		
-		birthMonthEl = uifactory.addDropdownSingleselect("birthday.month", "", birthdayContainer, monthKeys, monthValues, null);
-		birthMonthEl.setDomReplacementWrapperRequired(false);
-		birthMonthEl.setMandatory(true);
-		birthMonthEl.setEnabled(editable);
-		if(admin && birthday == null) {
-			birthMonthEl.select("-", true);
-		} else {
-			for(String monthKey:monthKeys) {
-				if(monthKey.equals(month)) {
-					birthMonthEl.select(monthKey, true);
-				}
-			}
-		}
-		
-		birthYearEl = uifactory.addTextElement("birthday.year", "", 4, year, birthdayContainer);
-		birthYearEl.setDomReplacementWrapperRequired(false);
-		birthYearEl.setDisplaySize(4);
-		birthYearEl.setMandatory(!admin);
-		birthYearEl.setEnabled(editable);
+		birthdayEl = uifactory.addDateChooser("edit.application.birthday", birthday, formLayout);
+		birthdayEl.set2DigitsYearFormat(false);
+		birthdayEl.setElementCssClass("o_sel_edit_person_birthday");
+		birthdayEl.setEnabled(editable);
+		birthdayEl.setMandatory(!admin && !recruitingModule.isApplicationPersonBirthdayOptional());
+		birthdayEl.setVisible(recruitingModule.isApplicationPersonBirthdayEnabled());
 		
 		initNationalitiesForm(person, formLayout);
 		
@@ -959,71 +900,22 @@ public class EditPersonController extends FormBasicController {
 	
 	protected boolean validateBirthDay() {
 		boolean allOk = true;
-		
-		birthdayContainer.clearError();
-		int month = -1;
-		try {
-			birthMonthEl.clearError();
-			String monthStr = birthMonthEl.getSelectedKey();
-			if(admin && "-".equals(monthStr)) {
-				month = -1;
-			} else {
-				month = Integer.parseInt(monthStr);
-			}
-		} catch (NumberFormatException e) {
-			allOk = false;
-			birthdayContainer.setErrorKey("birthday.date.error");
-		}
-		
-		int year = -1;
-		try {
-			birthYearEl.clearError();
-			String yearStr = birthYearEl.getValue();
-			if(!admin && !StringHelper.containsNonWhitespace(yearStr) && !recruitingModule.isApplicationPersonBirthdayOptional()) {
-				birthdayContainer.setErrorKey("birthday.date.error");
-				allOk = false;
-			} else if (StringHelper.containsNonWhitespace(yearStr)) {
-				year = Integer.parseInt(yearStr);
-				if(year < 1900) {
-					allOk = false;
-					birthdayContainer.setErrorKey("birthday.date.error");
-				}
-			}
-		} catch (NumberFormatException e) {
+	
+		birthdayEl.clearError();
+		Date birthDay = birthdayEl.getDate();
+		if(!admin && birthDay == null && !recruitingModule.isApplicationPersonBirthdayOptional()) {
+			birthdayEl.setErrorKey("birthday.date.error");
 			allOk =false;
-			birthdayContainer.setErrorKey("birthday.date.error");
-		}
-		
-		try {
-			birthDayEl.clearError();
-			String dayStr = birthDayEl.getValue();
-			if(!admin && !StringHelper.containsNonWhitespace(dayStr) && !recruitingModule.isApplicationPersonBirthdayOptional()) {
-				birthdayContainer.setErrorKey("birthday.date.error");
-				allOk =false;
-			} else if (StringHelper.containsNonWhitespace(dayStr)) {
-				int day = Integer.parseInt(dayStr);
-				int maxDay = 31;
-				if(month >= 0 && year > 1900) {
-					Calendar cal = Calendar.getInstance();
-					cal.setTime(getBirthday(1, month, year));
-					maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				}
-				if(day < 1 || day > maxDay) {
-					allOk =false;
-					birthdayContainer.setErrorKey("birthday.date.error");
-				}
+		} else if(birthdayEl.getDate() != null) {
+			Calendar cal = Calendar.getInstance();
+			int currentYear = cal.get(Calendar.YEAR);
+			cal.setTime(birthdayEl.getDate());
+			int year = cal.get(Calendar.YEAR);
+			if(year < 1900 || year > currentYear - 1) {
+				birthdayEl.setErrorKey("birthday.date.error");
+				allOk &= false;
 			}
-		} catch (NumberFormatException e) {
-			allOk =false;
-			birthdayContainer.setErrorKey("birthday.date.error");
 		}
-		
-		Date birthday = getBirthday();
-		if(!admin && birthday == null && !recruitingModule.isApplicationPersonBirthdayOptional()) {
-			allOk &= false;
-			birthdayContainer.setErrorKey("birthday.date.error");
-		}
-		
 		return allOk;
 	}
 	
@@ -1101,8 +993,8 @@ public class EditPersonController extends FormBasicController {
 		
 		attributesDelegate.commitChanges(additionalAttributesEl, app);
 		
-		if(birthdayContainer.isVisible()) {
-			person.setBirthday(getBirthday());
+		if(birthdayEl.isVisible()) {
+			person.setBirthday(birthdayEl.getDate());
 		}
 		
 		if(nationalityEl != null) {
@@ -1181,45 +1073,12 @@ public class EditPersonController extends FormBasicController {
 		
 		application = app;
 	}
-	
-	private Date getBirthday() {
-		String dayStr = birthDayEl.getValue();
-		String monthStr = birthMonthEl.getSelectedKey();
-		String yearStr = birthYearEl.getValue();
-		
-		if("-".equals(monthStr)) {
-			return null;
-		}
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			return getBirthday(day, month, year);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private Date getBirthday(int day, int month, int year) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DATE, day);
-		cal.set(Calendar.HOUR, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		commitChanges(application);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-	
-	
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

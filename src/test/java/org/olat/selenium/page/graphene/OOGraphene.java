@@ -23,6 +23,11 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.chrono.Chronology;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.FormatStyle;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -838,6 +843,14 @@ public class OOGraphene {
 			sdf.applyPattern(pattern); 
 		}
 		return df.format(date);
+	}
+	
+	public static String formatDate(LocalDate date, Locale locale) {
+		String pattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null,
+				Chronology.ofLocale(locale), locale);
+		pattern = pattern.replaceAll("y+","yyyy");
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern(pattern, locale);
+		return dtf.format(date);
 	}
 	
 	/**

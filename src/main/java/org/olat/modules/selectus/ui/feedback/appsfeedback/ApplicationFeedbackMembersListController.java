@@ -22,7 +22,6 @@ package org.olat.modules.selectus.ui.feedback.appsfeedback;
 import static org.olat.modules.selectus.ui.RecruitingHelper.formatFullName;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -31,12 +30,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -54,11 +52,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.FeedbackService;
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
@@ -73,6 +67,7 @@ import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.RecruitingAuditLog.Action;
 import org.olat.modules.selectus.model.ReferenceStatus;
 import org.olat.modules.selectus.ui.PositionController;
+import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMailTemplate;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.components.ReferenceStatusCellRenderer;
@@ -80,6 +75,8 @@ import org.olat.modules.selectus.ui.feedback.appsfeedback.FeedbackMembersDataMod
 import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.AddFeedbacksMemberFinishCallback;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.Feedback1EmailStep;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.wizard.FeedbackMembersContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Enable/disable public feedback<br>
@@ -94,19 +91,13 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 	
 	private static final String PREFS_ID = "recruitingAppFeedbackMembersFlexiList";
 	private static final String[] enableKeys = new String[]{ "on" };
-	private static final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-	private String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 	
 	private FormLink addMemberButton;
 	private FlexiTableElement membersFeedbackTableEl;
 	private FeedbackMembersDataModel membersFeedbackModel;
-
 	private StaticTextElement feedbackLinkEl;
 	private MultipleSelectionElement enablePublicFeedbackEl;
-	private TextElement feedbackDeadlineDayElement;
-	private SingleSelection feedbackDeadlineMonthElement;
-	private TextElement feedbackDeadlineYearElement;
-	private FormLayoutContainer feedbackDeadlineContainer;
+	private DateChooser feedbackDeadlineEl;
 
 	private CloseableModalController cmc;
 	private StepsMainRunController addMembersFeedbackWizard;
@@ -140,9 +131,6 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 		this.publicFeedbackEnabled = publicFeedbackEnabled;
 		this.membersFeedbackEnabled = membersFeedbackEnabled;
 		canEditFeedbacks = secCallback.canEditApplicationMembersFeedback();
-		for(int i=monthKeys.length; i-->0; ) {
-			monthValues[i] = translate("month.long." + i);
-		}
 		
 		initForm(ureq);
 		loadModel();
@@ -180,44 +168,13 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 		
 		String link = feedbackService.getPublicFeedbackLink(app);
 		feedbackLinkEl = uifactory.addStaticTextElement("edit.application.public.feedback.link", "edit.application.public.feedback.link", link, formLayout);
-		
-		// deadline container
-		String feedbackDeadlineCont = velocity_root + "/edit_public_feedback.html";
-		feedbackDeadlineContainer = FormLayoutContainer.createCustomFormLayout("public.feedback.deadline", getTranslator(), feedbackDeadlineCont);
-		feedbackDeadlineContainer.setRootForm(mainForm);
-		feedbackDeadlineContainer.setLabel("edit.public.feedback.deadline", null);
-		feedbackDeadlineContainer.setMandatory(true);
-		formLayout.add(feedbackDeadlineContainer);
-		
-		String feedbackDay = "";
-		String feedbackMonth= "0";
-		String feedbackYear = "";
+
 		Date feedbackDeadline = app.getPublicFeedbackDeadline();
 		if(feedbackDeadline == null) {
 			feedbackDeadline = position.getPublicFeedbackDeadline();
 		}
-		if(feedbackDeadline != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(feedbackDeadline);
-			feedbackDay = Integer.toString(cal.get(Calendar.DATE));
-			feedbackMonth = Integer.toString(cal.get(Calendar.MONTH));
-			feedbackYear = Integer.toString(cal.get(Calendar.YEAR));
-		}
-		
-		feedbackDeadlineDayElement = uifactory.addTextElement("public.feedback.deadline.day", null, 2, feedbackDay, feedbackDeadlineContainer);
-		feedbackDeadlineDayElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineDayElement.setDisplaySize(2);
-		feedbackDeadlineDayElement.setMandatory(true);
-		
-		feedbackDeadlineMonthElement = uifactory.addDropdownSingleselect("public.feedback.deadline.month", null, feedbackDeadlineContainer, monthKeys, monthValues, null);
-		feedbackDeadlineMonthElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineMonthElement.setMandatory(true);
-		feedbackDeadlineMonthElement.select(feedbackMonth, true);
-		
-		feedbackDeadlineYearElement = uifactory.addTextElement("public.feedback.deadline.year", null, 4, feedbackYear, feedbackDeadlineContainer);
-		feedbackDeadlineYearElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineYearElement.setDisplaySize(4);
-		feedbackDeadlineYearElement.setMandatory(true);
+		feedbackDeadlineEl = uifactory.addDateChooser("edit.public.feedback.deadline", feedbackDeadline, formLayout);
+		feedbackDeadlineEl.setMandatory(true);
 	}
 
 	private void initFeedbackForm(FormItemContainer formLayout, UserRequest ureq) {
@@ -260,7 +217,7 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 		if(enablePublicFeedbackEl != null) {
 			boolean feedbackEnabled = enablePublicFeedbackEl.isAtLeastSelected(1);
 			feedbackLinkEl.setVisible(feedbackEnabled);
-			feedbackDeadlineContainer.setVisible(feedbackEnabled);
+			feedbackDeadlineEl.setVisible(feedbackEnabled);
 		}
 	}
 	
@@ -303,63 +260,17 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 		}
 	}
 	
-	private Date getPublicFeedbackDeadline() {
-		String dayStr = feedbackDeadlineDayElement.getValue();
-		String monthStr = feedbackDeadlineMonthElement.getSelectedKey();
-		String yearStr = feedbackDeadlineYearElement.getValue();
-		
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			return getDeadline(day, month, year, 0, 0);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private Date getDeadline(int day, int month, int year, int hour, int minute) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DATE, day);
-		cal.set(Calendar.HOUR_OF_DAY, hour);
-		cal.set(Calendar.MINUTE, minute);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
-	
-	private boolean validateYearElement(TextElement textEl) {
-		boolean ok = true;
-		if(StringHelper.containsNonWhitespace(textEl.getValue())) {
-			int currentYear = Calendar.getInstance().get(Calendar.YEAR) + 5;
-			try {
-				int year = Integer.parseInt(textEl.getValue());
-				if(year < 2010 || year > currentYear) {
-					ok &= false;
-					textEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear) });
-				}
-			} catch (NumberFormatException e) {
-				ok =false;
-				textEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear) });
-			}
-		}
-		return ok;
-	}
-	
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		if(feedbackDeadlineYearElement != null) {
-			feedbackDeadlineYearElement.clearError();
-			if(getPublicFeedbackDeadline() == null) {
-				feedbackDeadlineYearElement.setErrorKey("form.legende.mandatory");
+		if(feedbackDeadlineEl != null) {
+			feedbackDeadlineEl.clearError();
+			if(feedbackDeadlineEl.getDate() == null) {
+				feedbackDeadlineEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else {
-				allOk &= validateYearElement(feedbackDeadlineYearElement);
+				allOk &= RecruitingHelper.validateYearElement(feedbackDeadlineEl);
 			}
 		}
 
@@ -372,7 +283,7 @@ public class ApplicationFeedbackMembersListController extends FormBasicControlle
 				logPublicFeedback(Action.add, "audit.log.public.feedback.link.add");
 			}
 			application.setPublicFeedbackEnabled(true);
-			application.setPublicFeedbackDeadline(getPublicFeedbackDeadline());
+			application.setPublicFeedbackDeadline(feedbackDeadlineEl.getDate());
 		} else {
 			if(application.isPublicFeedbackEnabled()) {
 				logPublicFeedback(Action.remove, "audit.log.public.feedback.link.delete");

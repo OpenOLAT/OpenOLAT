@@ -5,6 +5,9 @@
  */
 package org.olat.selenium.page.selectus;
 
+import java.time.LocalDate;
+import java.util.Locale;
+
 import org.olat.core.util.StringHelper;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -184,14 +187,14 @@ public class EditApplicationPage {
 	 * @return
 	 */
 	public EditApplicationPage fillBirthday(int day, int month, int year) {
-		By dayBy = By.cssSelector(".o_sel_edit_person_birthday input[type='text'][size='2']");
-		By monthBy = By.cssSelector(".o_sel_edit_person_birthday select");
-		By yearBy = By.cssSelector(".o_sel_edit_person_birthday input[type='text'][size='4']");
+		LocalDate date = LocalDate.of(year, month, day);
+		Locale locale = OOGraphene.getLocale(browser);
+		String dateText = OOGraphene.formatDate(date, locale);
 
-		browser.findElement(dayBy).sendKeys(Integer.toString(day));
-		WebElement selectMonthEl = browser.findElement(monthBy);
-		new Select(selectMonthEl).selectByValue(Integer.toString(month));
-		browser.findElement(yearBy).sendKeys(Integer.toString(year));
+		By dateBy = By.cssSelector("div.o_sel_edit_person_birthday input.o_date_day");
+		browser.findElement(dateBy).sendKeys(dateText);
+		browser.findElement(dateBy).sendKeys("\t");
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

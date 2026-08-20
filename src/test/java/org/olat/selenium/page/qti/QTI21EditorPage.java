@@ -169,6 +169,11 @@ public class QTI21EditorPage {
 		return new QTI21GapEntriesEditorPage(browser);
 	}
 	
+	public QTI21GapEntriesEditorPage addGapMixed() {
+		addQuestion(QTI21QuestionType.gapmixed);
+		return new QTI21GapEntriesEditorPage(browser);
+	}
+	
 	private QTI21EditorPage addQuestion(QTI21QuestionType type) {
 		openElementsMenu();
 		

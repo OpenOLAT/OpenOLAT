@@ -20,7 +20,6 @@
 package org.olat.modules.selectus.ui.position;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -53,9 +52,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
@@ -70,12 +66,15 @@ import org.olat.modules.selectus.model.Reference;
 import org.olat.modules.selectus.model.ReferenceType;
 import org.olat.modules.selectus.model.SubjectAndBody;
 import org.olat.modules.selectus.ui.PositionController;
+import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMailTemplate;
 import org.olat.modules.selectus.ui.events.NewPositionSavedEvent;
 import org.olat.modules.selectus.ui.reference.ReferenceHelper;
 import org.olat.modules.selectus.ui.rejection.MailVariablesController;
 import org.olat.modules.selectus.ui.rejection.PreviewEmailController;
 import org.olat.modules.selectus.ui.rejection.VariablesValidationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -205,7 +204,7 @@ public class PositionEditComparativeAssessmentExpertsController extends FormBasi
 				deadlineEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else {
-				allOk &= validateYearElement(deadlineEl);
+				allOk &= RecruitingHelper.validateYearElement(deadlineEl);
 			}
 		}
 		
@@ -219,27 +218,6 @@ public class PositionEditComparativeAssessmentExpertsController extends FormBasi
 			allOk &= checkTemplate(mailSubjectEl);
 		}
 		return allOk;
-	}
-	
-	private boolean validateYearElement(DateChooser dateEl) {
-		boolean ok = true;
-		Date date = dateEl.getDate();
-		if(date != null) {
-			Calendar cal = Calendar.getInstance();
-			int currentYear = cal.get(Calendar.YEAR) + 5;
-			try {
-				cal.setTime(date);
-				int year = cal.get(Calendar.YEAR);
-				if(year < 2010 || year > currentYear) {
-					ok &= false;
-					dateEl.setErrorKey("deadline.error", Integer.toString(currentYear));
-				}
-			} catch (NumberFormatException e) {
-				ok =false;
-				dateEl.setErrorKey("deadline.error", Integer.toString(currentYear));
-			}
-		}
-		return ok;
 	}
 	
 	private boolean checkTemplate(TextElement element) {

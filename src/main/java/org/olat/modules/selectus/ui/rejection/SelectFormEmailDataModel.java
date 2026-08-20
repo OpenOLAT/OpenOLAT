@@ -35,14 +35,12 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.model.ApplicationLight;
 import org.olat.modules.selectus.model.EmptyUserRating;
@@ -64,7 +62,7 @@ import org.olat.modules.selectus.ui.rating.UserMapperCommitteeRatingComparator;
  *
  */
 public class SelectFormEmailDataModel extends DefaultTableDataModel<ApplicationLight>
-	implements FlexiTableDataModel<ApplicationLight>, SortableFlexiTableDataModel<ApplicationLight> {
+	implements SortableFlexiTableDataModel<ApplicationLight> {
 	
 	private static final Fields[] FIELDS = Fields.values();
 	
@@ -122,13 +120,6 @@ public class SelectFormEmailDataModel extends DefaultTableDataModel<ApplicationL
 		ApplicationLight app = getObject(row);
 		String mail = app.getPerson().getMail();
 		return StringHelper.containsNonWhitespace(mail);
-	}
-	
-
-	//TODO selectus @Override
-	public String getMultiSelectAriaLabel(int row) {
-		ApplicationLight app = getObject(row);
-		return app.getPerson().getLastName();
 	}
 
 	@Override

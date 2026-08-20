@@ -26,9 +26,9 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -39,8 +39,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.RecruitingModule;
 import org.olat.modules.selectus.RecruitingService;
@@ -51,6 +49,7 @@ import org.olat.modules.selectus.model.RecruitingAuditLog.ActionTarget;
 import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.events.NewPositionSavedEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -59,28 +58,17 @@ import org.olat.modules.selectus.ui.events.NewPositionSavedEvent;
  * <P>
  * Initial Date:  30 jul. 2010 <br>
  *
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class PositionEditStatusController extends FormBasicController implements PositionEditableController {
 
+	private DateChooser deadlineEl;
+	private DateChooser reminderDateEl;
+	private DateChooser ratingDeadlineEl;
 	private SingleSelection statusElement;
 	private FormLayoutContainer statusContainer;
-
-	private TextElement deadlineDayElement;
-	private TextElement reminderDayElement;
-	private TextElement ratingDeadlineDayElement;
-	private SingleSelection deadlineMonthElement;
-	private SingleSelection reminderMonthElement;
-	private SingleSelection ratingDeadlineMonthElement;
-	private TextElement deadlineYearElement;
-	private TextElement reminderYearElement;
-	private TextElement ratingDeadlineYearElement;
-	private TextElement ratingDeadlineTimeElement;
-	private MultipleSelectionElement reminderEnableElement;
 	private MultipleSelectionElement advertiseElement;
-	private FormLayoutContainer deadlineContainer;
-	private FormLayoutContainer reminderContainer;
-	private FormLayoutContainer ratingDeadlineContainer;
+	private MultipleSelectionElement reminderEnableElement;
 
 	private Position position;
 	private final boolean readOnly;
@@ -94,24 +82,10 @@ public class PositionEditStatusController extends FormBasicController implements
 	@Autowired
 	private RecruitingService recruitingService;
 	
-
-	private static final String[] docKeys = new String[]{"available","mandatory"};
-	private final String[] docValues = new String[docKeys.length];
-
-	private static final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-	private final String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
-	
 	public PositionEditStatusController(UserRequest ureq, WindowControl wControl, Position position, boolean readOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(PositionController.class, ureq.getLocale()));
 		this.position = position;
 		this.readOnly = readOnly;
-
-		docValues[0] = translate("document.available");
-		docValues[1] = translate("document.mandatory");
-		for(int i=monthKeys.length; i-->0; ) {
-			monthValues[i] = translate("month.long." + i);
-		}
-		
 		initForm(ureq);
 	}
 
@@ -185,96 +159,33 @@ public class PositionEditStatusController extends FormBasicController implements
 	}
 
 	private void initDeadlineForm(FormItemContainer formLayout) {
-		String pageDeadline = velocity_root + "/edit_deadline.html";
-		deadlineContainer = FormLayoutContainer.createCustomFormLayout("deadline", getTranslator(), pageDeadline);
-		deadlineContainer.setRootForm(mainForm);
-		deadlineContainer.setLabel("edit.deadline", null);
-		formLayout.add(deadlineContainer);
-		
-		String day = "";
-		String month= "0";
-		String year = "";
-		Date birthday = position.getApplicationDeadline();
-		if(birthday != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(birthday);
-			day = Integer.toString(cal.get(Calendar.DATE));
-			month = Integer.toString(cal.get(Calendar.MONTH));
-			year = Integer.toString(cal.get(Calendar.YEAR));
-		}
-		
-		deadlineDayElement = uifactory.addTextElement("deadline.day", "", 2, day, deadlineContainer);
-		deadlineDayElement.setDomReplacementWrapperRequired(false);
-		deadlineDayElement.setDisplaySize(2);
-		deadlineDayElement.setMandatory(true);
-		deadlineDayElement.setEnabled(!readOnly);
-		
-		deadlineMonthElement = uifactory.addDropdownSingleselect("deadline.month", "", deadlineContainer, monthKeys, monthValues, null);
-		deadlineMonthElement.setDomReplacementWrapperRequired(false);
-		deadlineMonthElement.setMandatory(true);
-		deadlineMonthElement.select(month, true);
-		deadlineMonthElement.setEnabled(!readOnly);
-		
-		deadlineYearElement = uifactory.addTextElement("deadline.year", "", 4, year, deadlineContainer);
-		deadlineYearElement.setDomReplacementWrapperRequired(false);
-		deadlineYearElement.setDisplaySize(4);
-		deadlineYearElement.setMandatory(true);
-		deadlineYearElement.setEnabled(!readOnly);
+		Date deadline = position.getApplicationDeadline();
+		deadlineEl = uifactory.addDateChooser("edit.deadline", deadline, formLayout);
+		deadlineEl.setMandatory(true);
+		deadlineEl.setEnabled(!readOnly);
 	}
 	
 	private void initRatingDeadlineForm(FormItemContainer formLayout) {
-		String pageRatingDeadline = velocity_root + "/edit_rating_deadline.html";
-		ratingDeadlineContainer = FormLayoutContainer.createCustomFormLayout("rating.deadline", getTranslator(), pageRatingDeadline);
-		ratingDeadlineContainer.setRootForm(mainForm);
-		ratingDeadlineContainer.setLabel("edit.rating.deadline", null);
-		formLayout.add(ratingDeadlineContainer);
-		
-		String ratingDay = "";
-		String ratingMonth= "0";
-		String ratingYear = "";
-		String ratingTime = "";
-		Date ratingDate = position.getRatingDeadline();
-		if(ratingDate != null) {
+		Date ratingDeadline = position.getRatingDeadline();
+		if(ratingDeadline != null) {
 			Calendar cal = Calendar.getInstance();
-			cal.setTime(ratingDate);
-			ratingDay = Integer.toString(cal.get(Calendar.DATE));
-			ratingMonth = Integer.toString(cal.get(Calendar.MONTH));
-			ratingYear = Integer.toString(cal.get(Calendar.YEAR));
+			cal.setTime(ratingDeadline);
 			if(cal.get(Calendar.HOUR_OF_DAY) == 23 && cal.get(Calendar.MINUTE) == 59) {
-				ratingTime = "";//short cut
-			} else {
-				ratingTime = Integer.toString(cal.get(Calendar.HOUR_OF_DAY)) + ":" + Integer.toString(cal.get(Calendar.MINUTE));
+				// Until end of day
+				cal.set(Calendar.HOUR_OF_DAY, 0);
+				cal.set(Calendar.MINUTE, 0);
+				ratingDeadline = cal.getTime();
 			}
 		}
-		
-		ratingDeadlineDayElement = uifactory.addTextElement("rating.deadline.day", "", 2, ratingDay, ratingDeadlineContainer);
-		ratingDeadlineDayElement.setElementCssClass("o_sel_rating_day");
-		ratingDeadlineDayElement.setDomReplacementWrapperRequired(false);
-		ratingDeadlineDayElement.setDisplaySize(2);
-		ratingDeadlineDayElement.setMandatory(true);
-		ratingDeadlineDayElement.setEnabled(!readOnly);
-		
-		ratingDeadlineMonthElement = uifactory.addDropdownSingleselect("rating.deadline.month", "", ratingDeadlineContainer, monthKeys, monthValues, null);
-		ratingDeadlineMonthElement.setElementCssClass("o_sel_rating_month");
-		ratingDeadlineMonthElement.setDomReplacementWrapperRequired(false);
-		ratingDeadlineMonthElement.setMandatory(true);
-		ratingDeadlineMonthElement.select(ratingMonth, true);
-		ratingDeadlineMonthElement.setEnabled(!readOnly);
-		
-		ratingDeadlineYearElement = uifactory.addTextElement("rating.deadline.year", "", 4, ratingYear, ratingDeadlineContainer);
-		ratingDeadlineYearElement.setElementCssClass("o_sel_rating_year");
-		ratingDeadlineYearElement.setDomReplacementWrapperRequired(false);
-		ratingDeadlineYearElement.setDisplaySize(4);
-		ratingDeadlineYearElement.setMandatory(true);
-		ratingDeadlineYearElement.setEnabled(!readOnly);
-		
-		ratingDeadlineTimeElement = uifactory.addTextElement("rating.deadline.time", "", 5, ratingTime, ratingDeadlineContainer);
-		ratingDeadlineTimeElement.setDomReplacementWrapperRequired(false);
-		ratingDeadlineTimeElement.setDisplaySize(5);
-		ratingDeadlineTimeElement.setMandatory(true);
-		ratingDeadlineTimeElement.setEnabled(!readOnly);
-		
+		ratingDeadlineEl = uifactory.addDateChooser("edit.rating.deadline", ratingDeadline, formLayout);
+		ratingDeadlineEl.setDateChooserTimeEnabled(true);
+		ratingDeadlineEl.setElementCssClass("o_sel_rating_deadline");
+		ratingDeadlineEl.setEnabled(!readOnly);
 		updateSummerTime();
+
+		// Update the CET/CEST hint client side, a form event would redraw the date chooser
+		String dstPage = velocity_root + "/edit_rating_deadline_dst.html";
+		uifactory.addCustomFormLayout("dst", null, dstPage, formLayout);
 	}
 	
 	private void initReminderForm(FormItemContainer formLayout) {
@@ -289,41 +200,10 @@ public class PositionEditStatusController extends FormBasicController implements
 			reminderEnableElement.select(onKeys[0], true);
 		}
 
-		String pageRatingDeadline = velocity_root + "/edit_reminder_date.html";
-		reminderContainer = FormLayoutContainer.createCustomFormLayout("reminder.date", getTranslator(), pageRatingDeadline);
-		reminderContainer.setRootForm(mainForm);
-		reminderContainer.setLabel(null, null);
-		reminderContainer.setVisible(reminderEnableElement.isAtLeastSelected(1));
-		formLayout.add(reminderContainer);
-		
-		String ratingDay = "";
-		String ratingMonth= "0";
-		String ratingYear = "";
-		if(reminderDate != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(reminderDate);
-			ratingDay = Integer.toString(cal.get(Calendar.DATE));
-			ratingMonth = Integer.toString(cal.get(Calendar.MONTH));
-			ratingYear = Integer.toString(cal.get(Calendar.YEAR));
-		}
-		
-		reminderDayElement = uifactory.addTextElement("reminder.date.day", "", 2, ratingDay, reminderContainer);
-		reminderDayElement.setDomReplacementWrapperRequired(false);
-		reminderDayElement.setDisplaySize(2);
-		reminderDayElement.setMandatory(true);
-		reminderDayElement.setEnabled(!readOnly);
-		
-		reminderMonthElement = uifactory.addDropdownSingleselect("reminder.date.month", "", reminderContainer, monthKeys, monthValues, null);
-		reminderMonthElement.setDomReplacementWrapperRequired(false);
-		reminderMonthElement.setMandatory(true);
-		reminderMonthElement.select(ratingMonth, true);
-		reminderMonthElement.setEnabled(!readOnly);
-		
-		reminderYearElement = uifactory.addTextElement("reminder.date.year", "", 4, ratingYear, reminderContainer);
-		reminderYearElement.setDomReplacementWrapperRequired(false);
-		reminderYearElement.setDisplaySize(4);
-		reminderYearElement.setMandatory(true);
-		reminderYearElement.setEnabled(!readOnly);
+		reminderDateEl = uifactory.addDateChooser("", reminderDate, formLayout);
+		reminderDateEl.setMandatory(true);
+		reminderDateEl.setEnabled(!readOnly);
+		reminderDateEl.setVisible(reminderEnableElement.isAtLeastSelected(1));
 	}
 	
 	@Override
@@ -340,216 +220,26 @@ public class PositionEditStatusController extends FormBasicController implements
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		allOk &= validateDeadline();
-		allOk &= validateRatingDeadline();
+		allOk &= validateDate(deadlineEl, false);
+		allOk &= validateDate(ratingDeadlineEl, false);
 		if(reminderEnableElement.isSelected(0)) {
-			allOk &= validateReminder();
+			allOk &= validateDate(reminderDateEl, true);
 		}
 
 		return allOk;
 	}
 	
-	private boolean validateDeadline() {
-		return validateYearMonthDay(deadlineYearElement, deadlineMonthElement, deadlineDayElement,
-				getDeadline(), null, deadlineContainer, false);
-	}
-	
-	private boolean validateRatingDeadline() {
-		return validateYearMonthDay(ratingDeadlineYearElement, ratingDeadlineMonthElement, ratingDeadlineDayElement,
-				getRatingDeadline(), ratingDeadlineTimeElement, ratingDeadlineContainer, false);
-	}
-	
-	private boolean validateReminder() {
-		return validateYearMonthDay(reminderYearElement, reminderMonthElement, reminderDayElement,
-				getCommitteeReminderDate(), null, reminderContainer, reminderEnableElement.isSelected(0));
-	}
-	
-	private boolean validateYearMonthDay(TextElement yearEl, SingleSelection monthEl, TextElement dayEl,
-			Date deadline, TextElement timeEl, FormLayoutContainer container, boolean mandatory) {
+	private boolean validateDate(DateChooser dateEl, boolean mandatory) {
 		boolean allOk = true;
-		container.clearError();
-		int month = -1;
-		try {
-			String monthStr = monthEl.getSelectedKey();
-			monthEl.clearError();
-			if(StringHelper.containsNonWhitespace(monthStr)) {
-				month = Integer.parseInt(monthStr);
-				if(month < 0 || month > 11) {
-					allOk =false;
-					container.setErrorKey("deadline.error");
-				}
-			}
-		} catch (NumberFormatException e) {
-			allOk = false;
-			container.setErrorKey("deadline.error");
-		}
-		int year = -1;
-		try {
-			String yearStr = yearEl.getValue();
-			yearEl.clearError();
-			if(StringHelper.containsNonWhitespace(yearStr)) {
-				year = Integer.parseInt(yearStr);
-				if(year < 2010) {
-					allOk = false;
-					container.setErrorKey("deadline.error");
-				}
-			} else if(mandatory) {
-				container.setErrorKey("form.legende.mandatory");
-			}
-		} catch (NumberFormatException e) {
-			allOk = false;
-			container.setErrorKey("deadline.error");
-		}
 		
-		
-		int day = -1;
-		try {
-			String dayStr = dayEl.getValue();
-			dayEl.clearError();
-			if(StringHelper.containsNonWhitespace(dayStr)) {
-				day = Integer.parseInt(dayStr);
-				
-				int maxDay = 31;
-				if(month >= 0 && year >= 2010) {
-					Calendar cal = Calendar.getInstance();
-					cal.setTime(getDeadline(1, month, year, 0, 0));
-					maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				}
-				if(day < 1 || day > maxDay) {
-					allOk = false;
-					container.setErrorKey("deadline.error");
-				}
-				if(deadline == null) {
-					allOk = false;
-					container.setErrorKey("deadline.error");
-				}
-			} else if(mandatory) {
-				container.setErrorKey("form.legende.mandatory");
-			}
-		} catch (NumberFormatException e) {
-			allOk = false;
-			container.setErrorKey("deadline.error");
-		}
-		
-		if(timeEl != null) {
-			try {
-				String timeStr = timeEl.getValue();
-				timeEl.clearError();
-				if(StringHelper.containsNonWhitespace(timeStr)) {
-					String[] timeArr = splitTime(timeStr);
-					if(timeArr == null || timeArr.length != 2) {
-						allOk &= false;
-						container.setErrorKey("deadline.error");
-					} else {
-						int hh = Integer.parseInt(timeArr[0]);
-						int mm = Integer.parseInt(timeArr[1]);
-						if(hh < 0 && hh > 23) {
-							allOk = false;
-							container.setErrorKey("deadline.error");
-						}
-						if(mm < 0 && mm > 59) {
-							allOk = false;
-							container.setErrorKey("deadline.error");
-						}
-					}
-				}
-			} catch (NumberFormatException e) {
-				allOk = false;
-				container.setErrorKey("deadline.error");
-			}
-		}
-		
-		if((year == -1 && (day != -1)) || (year != -1 && day == -1)) {
-			allOk = false;
-			container.setErrorKey("deadline.error");
+		dateEl.clearError();
+		if(mandatory && dateEl.getDate() == null) {
+			dateEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
 		}
 
 		return allOk;
 	}
-	
-	private Date getCommitteeReminderDate() {
-		String dayStr = reminderDayElement.getValue();
-		String monthStr = reminderMonthElement.getSelectedKey();
-		String yearStr = reminderYearElement.getValue();
-		
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			return getDeadline(day, month, year, 0, 0);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private Date getDeadline() {
-		String dayStr = deadlineDayElement.getValue();
-		String monthStr = deadlineMonthElement.getSelectedKey();
-		String yearStr = deadlineYearElement.getValue();
-		
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			return getDeadline(day, month, year, 0, 0);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private Date getDeadline(int day, int month, int year, int hour, int minute) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DATE, day);
-		cal.set(Calendar.HOUR_OF_DAY, hour);
-		cal.set(Calendar.MINUTE, minute);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
-	
-	private Date getRatingDeadline() {
-		String dayStr = ratingDeadlineDayElement.getValue();
-		String monthStr = ratingDeadlineMonthElement.getSelectedKey();
-		String yearStr = ratingDeadlineYearElement.getValue();
-		String timeStr = ratingDeadlineTimeElement.getValue();
-		
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			int hour = 0;
-			int minute = 0;
-			if(StringHelper.containsNonWhitespace(timeStr)) {
-				String[] timeArr = splitTime(timeStr);
-				if(timeArr != null) {
-					String hourStr = timeArr[0];
-					String minuteStr = timeArr[1];
-					hour = Integer.parseInt(hourStr);
-					minute = Integer.parseInt(minuteStr);
-				}
-			} else {
-				hour = 23;
-				minute = 59;
-			}
-			return getDeadline(day, month, year, hour, minute);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private String[] splitTime(String time) {
-		String[] timeArr = time.split("[:.]");
-		if(timeArr.length == 2) {
-			return timeArr;
-		}
-		return null;
-	}
-	
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -562,11 +252,11 @@ public class PositionEditStatusController extends FormBasicController implements
 		
 		String before = auditService.toAuditXml(position);
 		String beforeStatus = position.getStatus();
-
+		
 		position.setRatingDeadline(getRatingDeadline());
-		position.setApplicationDeadline(getDeadline());
+		position.setApplicationDeadline(deadlineEl.getDate());
 		if(reminderEnableElement.isAtLeastSelected(1)) {
-			position.setCommitteeReminderDate(getCommitteeReminderDate());
+			position.setCommitteeReminderDate(reminderDateEl.getDate());
 		} else {
 			position.setCommitteeReminderDate(null);
 			position.setCommitteeReminderSentDate(null);
@@ -615,17 +305,35 @@ public class PositionEditStatusController extends FormBasicController implements
 				statusContainer.contextPut("statusCss", status);
 			}
 		} else if(reminderEnableElement == source) {
-			reminderContainer.setVisible(reminderEnableElement.isAtLeastSelected(1));
+			reminderDateEl.setVisible(reminderEnableElement.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	/**
+	 * @return The rating deadline as it is saved: midnight is a short cut for the end of the day.
+	 */
+	private Date getRatingDeadline() {
+		Date ratingDeadline = ratingDeadlineEl.getDate();
+		if(ratingDeadline != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(ratingDeadline);
+			if(cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0) {
+				// Until end of day
+				cal.set(Calendar.HOUR_OF_DAY, 23);
+				cal.set(Calendar.MINUTE, 59);
+				ratingDeadline = cal.getTime();
+			}
+		}
+		return ratingDeadline;
+	}
+
 	private void updateSummerTime() {
 		Date date = getRatingDeadline();
 		String dst = "CET";
 		if(date != null) {
 			dst = RecruitingHelper.isSummerTime(date) ? "CEST" : "CET";
 		}
-		ratingDeadlineContainer.getFormItemComponent().contextPut("dst", dst);
+		ratingDeadlineEl.setTextAddOn(dst, false);
 	}
 }

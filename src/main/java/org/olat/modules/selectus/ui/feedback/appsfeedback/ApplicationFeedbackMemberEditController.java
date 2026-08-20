@@ -19,7 +19,6 @@
  */
 package org.olat.modules.selectus.ui.feedback.appsfeedback;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,8 +31,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -58,13 +57,6 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.registration.RegistrationManager;
-import org.olat.registration.RegistrationModule;
-import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.FeedbackService;
 import org.olat.modules.selectus.RecruitingService;
@@ -77,6 +69,12 @@ import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMainController;
 import org.olat.modules.selectus.ui.committee.wizard.MembersController;
+import org.olat.registration.RegistrationManager;
+import org.olat.registration.RegistrationModule;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -88,18 +86,12 @@ public class ApplicationFeedbackMemberEditController extends FormBasicController
 
 	private static final String formIdentifyer = MembersController.formIdentifyer;
 	private static final String LOGINNAME = "loginname";
-	
-	private static final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-	private String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 
 	private Map<String, String> formContext;
 	private List<UserPropertyHandler> userPropertyHandlers;
 
 	private TextElement emailTextElement;
-	private TextElement feedbackDeadlineDayElement;
-	private SingleSelection feedbackDeadlineMonthElement;
-	private TextElement feedbackDeadlineYearElement;
-	private FormLayoutContainer feedbackDeadlineContainer;
+	private DateChooser feedbackDeadlineEl;
 	private FormLink sendPasswordLink;
 
 	private final Identity member;
@@ -139,9 +131,6 @@ public class ApplicationFeedbackMemberEditController extends FormBasicController
 		this.feedback = feedback;
 		this.application = application;
 		formContext = new HashMap<>();
-		for(int i=monthKeys.length; i-->0; ) {
-			monthValues[i] = translate("month.long." + i);
-		}
 
 		initForm(ureq);
 	}
@@ -182,71 +171,13 @@ public class ApplicationFeedbackMemberEditController extends FormBasicController
 	}
 	
 	private void initDeadline(FormItemContainer formLayout) {
-		// deadline container
-		String feedbackDeadlineCont = velocity_root + "/edit_public_feedback.html";
-		feedbackDeadlineContainer = FormLayoutContainer.createCustomFormLayout("public.feedback.deadline", getTranslator(), feedbackDeadlineCont);
-		feedbackDeadlineContainer.setRootForm(mainForm);
-		feedbackDeadlineContainer.setLabel("edit.public.feedback.deadline", null);
-		feedbackDeadlineContainer.setMandatory(true);
-		formLayout.add(feedbackDeadlineContainer);
-		
-		String feedbackDay = "";
-		String feedbackMonth= "0";
-		String feedbackYear = "";
 		Date feedbackDeadline = feedback.getDeadline();
 		if(feedbackDeadline == null) {
 			feedbackDeadline = feedback.getConfiguration().getDeadline();
 		}
-		if(feedbackDeadline != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(feedbackDeadline);
-			feedbackDay = Integer.toString(cal.get(Calendar.DATE));
-			feedbackMonth = Integer.toString(cal.get(Calendar.MONTH));
-			feedbackYear = Integer.toString(cal.get(Calendar.YEAR));
-		}
-		
-		feedbackDeadlineDayElement = uifactory.addTextElement("public.feedback.deadline.day", null, 2, feedbackDay, feedbackDeadlineContainer);
-		feedbackDeadlineDayElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineDayElement.setDisplaySize(2);
-		feedbackDeadlineDayElement.setMandatory(true);
-		
-		feedbackDeadlineMonthElement = uifactory.addDropdownSingleselect("public.feedback.deadline.month", null, feedbackDeadlineContainer, monthKeys, monthValues, null);
-		feedbackDeadlineMonthElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineMonthElement.setMandatory(true);
-		feedbackDeadlineMonthElement.select(feedbackMonth, true);
-		
-		feedbackDeadlineYearElement = uifactory.addTextElement("public.feedback.deadline.year", null, 4, feedbackYear, feedbackDeadlineContainer);
-		feedbackDeadlineYearElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineYearElement.setDisplaySize(4);
-		feedbackDeadlineYearElement.setMandatory(true);
-	}
-	
-	private Date getFeedbackDeadline() {
-		String dayStr = feedbackDeadlineDayElement.getValue();
-		String monthStr = feedbackDeadlineMonthElement.getSelectedKey();
-		String yearStr = feedbackDeadlineYearElement.getValue();
-		
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			return getDeadline(day, month, year, 0, 0);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private Date getDeadline(int day, int month, int year, int hour, int minute) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DATE, day);
-		cal.set(Calendar.HOUR_OF_DAY, hour);
-		cal.set(Calendar.MINUTE, minute);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
+
+		feedbackDeadlineEl = uifactory.addDateChooser("edit.public.feedback.deadline", feedbackDeadline, formLayout);
+		feedbackDeadlineEl.setMandatory(true);
 	}
 	
 	@Override
@@ -276,33 +207,15 @@ public class ApplicationFeedbackMemberEditController extends FormBasicController
 			}
 		}
 		
-		feedbackDeadlineYearElement.clearError();
-		if(getFeedbackDeadline() == null) {
-			feedbackDeadlineYearElement.setErrorKey("form.legende.mandatory");
+		feedbackDeadlineEl.clearError();
+		if(feedbackDeadlineEl.getDate() == null) {
+			feedbackDeadlineEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
-			allOk &= validateYearElement(feedbackDeadlineYearElement);
+			allOk &= RecruitingHelper.validateYearElement(feedbackDeadlineEl);
 		}
 		
 		return allOk;
-	}
-	
-	private boolean validateYearElement(TextElement textEl) {
-		boolean ok = true;
-		if(StringHelper.containsNonWhitespace(textEl.getValue())) {
-			int currentYear = Calendar.getInstance().get(Calendar.YEAR) + 5;
-			try {
-				int year = Integer.parseInt(textEl.getValue());
-				if(year < 2010 || year > currentYear) {
-					ok &= false;
-					textEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear)} );
-				}
-			} catch (NumberFormatException e) {
-				ok =false;
-				textEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear)});
-			}
-		}
-		return ok;
 	}
 	
 	@Override
@@ -325,7 +238,7 @@ public class ApplicationFeedbackMemberEditController extends FormBasicController
 	}
 	
 	private void saveFeedback(Identity memberToModify) {
-		Date deadline = getFeedbackDeadline();
+		Date deadline = feedbackDeadlineEl.getDate();
 		if(feedback.getDeadline() == null || !DateUtils.isSameDay(deadline, feedback.getDeadline())) {
 			Action action = Action.update;
 			String before = auditService.toAuditXml(feedback);

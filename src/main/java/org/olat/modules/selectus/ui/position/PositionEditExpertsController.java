@@ -19,7 +19,6 @@
  */
 package org.olat.modules.selectus.ui.position;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -29,10 +28,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -50,9 +49,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.olat.modules.selectus.AuditService;
 import org.olat.modules.selectus.MailService;
 import org.olat.modules.selectus.RecruitingModule;
@@ -68,12 +64,15 @@ import org.olat.modules.selectus.model.Reference;
 import org.olat.modules.selectus.model.SubjectAndBody;
 import org.olat.modules.selectus.model.mail.MailAttachment;
 import org.olat.modules.selectus.ui.PositionController;
+import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMailTemplate;
 import org.olat.modules.selectus.ui.events.NewPositionSavedEvent;
 import org.olat.modules.selectus.ui.reference.ReferenceHelper;
 import org.olat.modules.selectus.ui.rejection.MailVariablesController;
 import org.olat.modules.selectus.ui.rejection.PreviewEmailController;
 import org.olat.modules.selectus.ui.rejection.VariablesValidationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -84,16 +83,11 @@ import org.olat.modules.selectus.ui.rejection.VariablesValidationContext;
 public class PositionEditExpertsController extends FormBasicController implements PositionEditableController {
 	
 	private static final String[] enableKeys = new String[]{ "on" };
-	private static final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-	private String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 	
 	private FormLink previewLink;
 	private Link variablesButton;
 	private MultipleSelectionElement staffCanAddExpertsEl;
-	private TextElement expertDeadlineDayElement;
-	private SingleSelection expertDeadlineMonthElement;
-	private TextElement expertDeadlineYearElement;
-	private FormLayoutContainer expertDeadlineContainer;
+	private DateChooser expertDeadlineEl;
 	private TextElement expertMailSubjectEl;
 	private RichTextElement expertMailTemplateEl;
 	
@@ -120,9 +114,6 @@ public class PositionEditExpertsController extends FormBasicController implement
 		super(ureq, wControl, Util.createPackageTranslator(PositionController.class, ureq.getLocale()));
 		this.position = position;
 		this.readOnly = readOnly;
-		for(int i=monthKeys.length; i-->0; ) {
-			monthValues[i] = translate("month.long." + i);
-		}
 		initForm(ureq);
 	}
 
@@ -140,44 +131,11 @@ public class PositionEditExpertsController extends FormBasicController implement
 			staffCanAddExpertsEl.select(enableKeys[0], true);
 		}
 		
-		//expert deadline container
-		String pageDeadline = velocity_root + "/edit_deadline.html";
-		expertDeadlineContainer = FormLayoutContainer.createCustomFormLayout("expert.deadline", getTranslator(), pageDeadline);
-		expertDeadlineContainer.setRootForm(mainForm);
-		expertDeadlineContainer.setLabel("edit.expert.deadline", null);
-		expertDeadlineContainer.setMandatory(true);
-		formLayout.add(expertDeadlineContainer);
-		
-		String day = "";
-		String month= "0";
-		String year = "";
 		Date expertDeadline = position.getExpertRecommandationDeadline();
-		if(expertDeadline != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(expertDeadline);
-			day = Integer.toString(cal.get(Calendar.DATE));
-			month = Integer.toString(cal.get(Calendar.MONTH));
-			year = Integer.toString(cal.get(Calendar.YEAR));
-		}
-		
-		expertDeadlineDayElement = uifactory.addTextElement("deadline.day", "", 2, day, expertDeadlineContainer);
-		expertDeadlineDayElement.setDomReplacementWrapperRequired(false);
-		expertDeadlineDayElement.setDisplaySize(2);
-		expertDeadlineDayElement.setMandatory(true);
-		expertDeadlineDayElement.setEnabled(!readOnly);
-		
-		expertDeadlineMonthElement = uifactory.addDropdownSingleselect("deadline.month", "", expertDeadlineContainer, monthKeys, monthValues, null);
-		expertDeadlineMonthElement.setDomReplacementWrapperRequired(false);
-		expertDeadlineMonthElement.setMandatory(true);
-		expertDeadlineMonthElement.select(month, true);
-		expertDeadlineMonthElement.setEnabled(!readOnly);
-		
-		expertDeadlineYearElement = uifactory.addTextElement("deadline.year", "", 4, year, expertDeadlineContainer);
-		expertDeadlineYearElement.setDomReplacementWrapperRequired(false);
-		expertDeadlineYearElement.setDisplaySize(4);
-		expertDeadlineYearElement.setMandatory(true);
-		expertDeadlineYearElement.setEnabled(!readOnly);
-		
+		expertDeadlineEl = uifactory.addDateChooser("edit.expert.deadline", expertDeadline, formLayout);
+		expertDeadlineEl.setMandatory(true);
+		expertDeadlineEl.setEnabled(!readOnly);
+
 		String subject = getExpertSubject();
 		expertMailSubjectEl = uifactory.addTextElement("edit.subject.experts", "edit.subject.experts", "reference.subject", 255, subject, formLayout);
 		
@@ -215,7 +173,7 @@ public class PositionEditExpertsController extends FormBasicController implement
 	
 	private void updateGUI() {
 		boolean expertEnabled = staffCanAddExpertsEl.isAtLeastSelected(1);
-		expertDeadlineContainer.setVisible(expertEnabled);
+		expertDeadlineEl.setVisible(expertEnabled);
 		expertMailSubjectEl.setVisible(expertEnabled);
 		expertMailTemplateEl.setVisible(expertEnabled);
 		variablesButton.setVisible(expertEnabled);
@@ -251,46 +209,18 @@ public class PositionEditExpertsController extends FormBasicController implement
 		String subject = getExpertSubject();
 		expertMailSubjectEl.setValue(subject);
 	}
-	
-	private Date getExpertDeadline() {
-		String dayStr = expertDeadlineDayElement.getValue();
-		String monthStr = expertDeadlineMonthElement.getSelectedKey();
-		String yearStr = expertDeadlineYearElement.getValue();
-		
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			return getDeadline(day, month, year, 0, 0);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private Date getDeadline(int day, int month, int year, int hour, int minute) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DATE, day);
-		cal.set(Calendar.HOUR_OF_DAY, hour);
-		cal.set(Calendar.MINUTE, minute);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		expertDeadlineYearElement.clearError();
+		expertDeadlineEl.clearError();
 		if(staffCanAddExpertsEl.isAtLeastSelected(1)) {
-			if(getExpertDeadline() == null) {
-				expertDeadlineYearElement.setErrorKey("form.legende.mandatory");
+			if(expertDeadlineEl.getDate() == null) {
+				expertDeadlineEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else {
-				allOk &= validateYearElement(expertDeadlineYearElement);
+				allOk &= RecruitingHelper.validateYearElement(expertDeadlineEl);
 			}
 		}
 		
@@ -333,26 +263,6 @@ public class PositionEditExpertsController extends FormBasicController implement
 		}
 		return allOk;
 	}
-	
-	private boolean validateYearElement(TextElement textEl) {
-		boolean ok = true;
-		if(StringHelper.containsNonWhitespace(textEl.getValue())) {
-			int currentYear = Calendar.getInstance().get(Calendar.YEAR) + 5;
-			try {
-				int year = Integer.parseInt(textEl.getValue());
-				if(year < 2010 || year > currentYear) {
-					ok &= false;
-					textEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear) });
-				}
-			} catch (NumberFormatException e) {
-				ok =false;
-				textEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear) });
-			}
-		}
-		return ok;
-	}
-	
-	
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
@@ -397,7 +307,7 @@ public class PositionEditExpertsController extends FormBasicController implement
 		}
 		position.setExpertRecommendationEnabled(expertEnabled);
 		if(expertEnabled) {
-			position.setExpertRecommandationDeadline(getExpertDeadline());
+			position.setExpertRecommandationDeadline(expertDeadlineEl.getDate());
 			position.setExpertRecommandationMailSubject(expertMailSubjectEl.getValue());
 			position.setExpertRecommandationMailTemplate(expertMailTemplateEl.getValue());
 		} else {
@@ -464,7 +374,7 @@ public class PositionEditExpertsController extends FormBasicController implement
 		}
 		
 		Reference reference = ReferenceHelper.generateDummyReference();
-		Date deadline = getExpertDeadline();
+		Date deadline = expertDeadlineEl.getDate();
 		if(deadline != null) {
 			reference.setSubmissionDeadline(deadline);
 		}

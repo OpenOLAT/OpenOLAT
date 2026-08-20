@@ -2377,6 +2377,154 @@ public class ImsQTI21EditorTest extends Deployments {
 	}
 	
 	/**
+	 * An author makes a test with one question mixing fill-in-blank,
+	 * numerical text entry and inline choice.<br>
+	 * A first user makes the test, but doesn't answer all questions
+	 * correctly, makes some corrections after reading the feedback and
+	 * the hint. A second makes the test, makes errors but end the test
+	 * with 0 points.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorGap_mixed()
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO secondParticipant = new UserRestClient(deploymentUrl).createRandomUser("Lisa");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+
+		String qtiTestTitle = "Mixed QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI21Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single Choice")
+			.deleteNode();
+		
+		//add a gap entry: all answers score
+		QTI21GapEntriesEditorPage fibEditor = qtiEditor
+			.addGapMixed()
+			.appendContent("Usefull in logarithms ")
+			.editGapEntry("e", "2.71828", 1)
+			.saveGapEntry()
+			.addNumericalInput("2.71828", "e (numerical)", ToleranceMode.ABSOLUTE, "2.8", "2.6")
+			.saveNumericInput()
+			.addInlineChoice("3,14159")
+			.addChoice("1,61803", 2)
+			.addChoice("2,71828", 3)
+			.setCorrect(3)
+			.saveInlineChoice()
+			.save();
+		//set max score
+		fibEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.allCorrectAnswers)
+			.setMaxScore("3")
+			.save();
+		// set feedbacks
+		fibEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is a usefull hint")
+			.setCorrectSolution("Correct solution", "This is an information about the correct solution")
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.settings()
+			.accessConfiguration()
+			.setStandaloneAccessToRegisteredUser()
+			.clickToolbarBack();
+		qtiPage
+			.publish();
+		// show results
+		qtiPage
+			.settings()
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+		NavigationPage participantNavBar = NavigationPage.load(browser);
+		participantNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// User make the test
+		QTI21Page participantQtiPage = QTI21Page
+				.getQTI21Page(browser);
+		participantQtiPage
+			.assertOnAssessmentItem()
+			.answerGapTextWithPlaceholder("b", "2.71828")
+			.answerGapTextWithPlaceholder("3.3", "e (numerical)")
+			.answerInlineChoiceByText("1,61803", 1)
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerGapTextWithPlaceholder("e", "2.71828")
+			.answerGapTextWithPlaceholder("2.718", "e (numerical)")
+			.answerInlineChoiceByText("2,71828", 1)
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(3);
+		
+		//A second user makes the test, some incorrect answers
+		LoginPage secondParticipantLoginPage = LoginPage.load(browser, deploymentUrl);
+		secondParticipantLoginPage
+			.loginAs(secondParticipant.getLogin(), secondParticipant.getPassword());
+		NavigationPage secondParticipantNavBar = NavigationPage.load(browser);
+		secondParticipantNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// Make the test with some the incorrect answers
+		QTI21Page
+			.getQTI21Page(browser)
+			.assertOnAssessmentItem()
+			.answerGapTextWithPlaceholder("b", "2.71828")
+			.answerGapTextWithPlaceholder("2.718", "e (numerical)")
+			.answerInlineChoiceByText("1,61803", 1)
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(0);
+	}
+	
+	/**
 	 * An author make a test with 2 matches. A match with "multiple selection"
 	 * and score "all answers", a second with "single selection" and score
 	 * "per answers".<br>

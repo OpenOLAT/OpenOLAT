@@ -19,7 +19,6 @@
  */
 package org.olat.modules.selectus.ui.feedback.appsfeedback;
 
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -30,10 +29,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -64,6 +63,7 @@ import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.SubjectAndBody;
 import org.olat.modules.selectus.model.mail.MailAttachment;
 import org.olat.modules.selectus.ui.PositionController;
+import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.RecruitingMailTemplate;
 import org.olat.modules.selectus.ui.position.PositionEditableController;
 import org.olat.modules.selectus.ui.reference.ReferenceHelper;
@@ -82,16 +82,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class PositionEditApplicationsFeedbackConfigurationController extends FormBasicController implements PositionEditableController {
 
 	private static final String[] enableKeys = new String[]{ "on" };
-	private static final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-	private String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 
 	private FormLink previewLink;
 	private Link variablesButton;
 	private MultipleSelectionElement enableFeedbackEl;
-	private TextElement feedbackDeadlineDayElement;
-	private SingleSelection feedbackDeadlineMonthElement;
-	private TextElement feedbackDeadlineYearElement;
-	private FormLayoutContainer feedbackDeadlineContainer;
+	private DateChooser feedbackDeadlineEl;
 	private TextElement feedbackMailSubjectEl;
 	private RichTextElement feedbackMailTemplateEl;
 	
@@ -115,9 +110,6 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 		super(ureq, wControl, Util.createPackageTranslator(PositionController.class, ureq.getLocale()));
 		this.configuration = configuration;
 		this.position = position;
-		for(int i=monthKeys.length; i-->0; ) {
-			monthValues[i] = translate("month.long." + i);
-		}
 		initForm(ureq);
 		updateGUI();
 	}
@@ -162,41 +154,10 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 		if(configuration.isEnabled()) {
 			enableFeedbackEl.select(enableKeys[0], true);
 		}
-		
-		// deadline container
-		String feedbackDeadlineCont = velocity_root + "/edit_public_feedback.html";
-		feedbackDeadlineContainer = FormLayoutContainer.createCustomFormLayout("public.feedback.deadline", getTranslator(), feedbackDeadlineCont);
-		feedbackDeadlineContainer.setRootForm(mainForm);
-		feedbackDeadlineContainer.setLabel("edit.public.feedback.deadline", null);
-		feedbackDeadlineContainer.setMandatory(true);
-		formLayout.add(feedbackDeadlineContainer);
-		
-		String feedbackDay = "";
-		String feedbackMonth= "0";
-		String feedbackYear = "";
+	
 		Date feedbackDeadline = configuration.getDeadline();
-		if(feedbackDeadline != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(feedbackDeadline);
-			feedbackDay = Integer.toString(cal.get(Calendar.DATE));
-			feedbackMonth = Integer.toString(cal.get(Calendar.MONTH));
-			feedbackYear = Integer.toString(cal.get(Calendar.YEAR));
-		}
-		
-		feedbackDeadlineDayElement = uifactory.addTextElement("public.feedback.deadline.day", null, 2, feedbackDay, feedbackDeadlineContainer);
-		feedbackDeadlineDayElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineDayElement.setDisplaySize(2);
-		feedbackDeadlineDayElement.setMandatory(true);
-		
-		feedbackDeadlineMonthElement = uifactory.addDropdownSingleselect("public.feedback.deadline.month", null, feedbackDeadlineContainer, monthKeys, monthValues, null);
-		feedbackDeadlineMonthElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineMonthElement.setMandatory(true);
-		feedbackDeadlineMonthElement.select(feedbackMonth, true);
-		
-		feedbackDeadlineYearElement = uifactory.addTextElement("public.feedback.deadline.year", null, 4, feedbackYear, feedbackDeadlineContainer);
-		feedbackDeadlineYearElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineYearElement.setDisplaySize(4);
-		feedbackDeadlineYearElement.setMandatory(true);
+		feedbackDeadlineEl = uifactory.addDateChooser("edit.public.feedback.deadline", feedbackDeadline, formLayout);
+		feedbackDeadlineEl.setMandatory(true);
 		
 		String subject = getSubjectTemplate();
 		feedbackMailSubjectEl = uifactory.addTextElement("edit.subject.referee", "edit.subject.referee", "reference.subject", 255, subject, formLayout);
@@ -248,51 +209,23 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 	
 	private void updateGUI() {
 		boolean enabled = enableFeedbackEl.isAtLeastSelected(1);
-		feedbackDeadlineContainer.setVisible(enabled);
+		feedbackDeadlineEl.setVisible(enabled);
 		feedbackMailSubjectEl.setVisible(enabled);
 		feedbackMailTemplateEl.setVisible(enabled);
 		previewLink.setVisible(enabled);
 		variablesButton.setVisible(enabled);
 	}
 	
-	private Date getFeedbackDeadline() {
-		String dayStr = feedbackDeadlineDayElement.getValue();
-		String monthStr = feedbackDeadlineMonthElement.getSelectedKey();
-		String yearStr = feedbackDeadlineYearElement.getValue();
-		
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			return getDeadline(day, month, year, 0, 0);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private Date getDeadline(int day, int month, int year, int hour, int minute) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DATE, day);
-		cal.set(Calendar.HOUR_OF_DAY, hour);
-		cal.set(Calendar.MINUTE, minute);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
-	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		feedbackDeadlineYearElement.clearError();
-		if(getFeedbackDeadline() == null) {
-			feedbackDeadlineYearElement.setErrorKey("form.legende.mandatory");
+		feedbackDeadlineEl.clearError();
+		if(feedbackDeadlineEl.getDate() == null) {
+			feedbackDeadlineEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
-			allOk &= validateYearElement(feedbackDeadlineYearElement);
+			allOk &= RecruitingHelper.validateYearElement(feedbackDeadlineEl);
 		}
 		
 		feedbackMailTemplateEl.clearError();
@@ -326,7 +259,7 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 				subjectAndBody.getSubject(), subjectAndBody.getBody(), subjectAndBody.getLetter(),
 				headOfCommittee, secretary, subjectAndBody, salutationGenerator, getTranslator());
 		
-		ApplicationFeedback feedback = FeedbackHelper.generateDummyFeedback(configuration, getFeedbackDeadline());
+		ApplicationFeedback feedback = FeedbackHelper.generateDummyFeedback(configuration, feedbackDeadlineEl.getDate());
 		List<ApplicationFeedback> feedbacks = Collections.singletonList(feedback);
 		Identity member = FeedbackHelper.generateDummyMember();
 		
@@ -340,24 +273,6 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 			allOk &= false;
 		}
 		return allOk;
-	}
-
-	private boolean validateYearElement(TextElement textEl) {
-		boolean ok = true;
-		if(StringHelper.containsNonWhitespace(textEl.getValue())) {
-			int currentYear = Calendar.getInstance().get(Calendar.YEAR) + 5; 
-			try {
-				int year = Integer.parseInt(textEl.getValue());
-				if(year < 2010 || year > currentYear) {
-					ok &= false;
-					textEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear) });
-				}
-			} catch (NumberFormatException e) {
-				ok =false;
-				textEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear) });
-			}
-		}
-		return ok;
 	}
 	
 	@Override
@@ -401,7 +316,7 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 	protected void formOK(UserRequest ureq) {
 		configuration.setEnabled(enableFeedbackEl.isAtLeastSelected(1));
 		
-		configuration.setDeadline(getFeedbackDeadline());
+		configuration.setDeadline(feedbackDeadlineEl.getDate());
 		configuration.setMailSubject(feedbackMailSubjectEl.getValue());
 		configuration.setMailTemplate(feedbackMailTemplateEl.getValue());
 		
@@ -436,7 +351,7 @@ public class PositionEditApplicationsFeedbackConfigurationController extends For
 			secretary = ReferenceHelper.generateDummySecretary();
 		}
 		
-		ApplicationFeedback feedback = FeedbackHelper.generateDummyFeedback(configuration, getFeedbackDeadline());
+		ApplicationFeedback feedback = FeedbackHelper.generateDummyFeedback(configuration, feedbackDeadlineEl.getDate());
 		List<ApplicationFeedback> feedbacks = Collections.singletonList(feedback);
 		Application app = ReferenceHelper.generateDummyApplication(position);
 		List<Application> apps = Collections.singletonList(app);

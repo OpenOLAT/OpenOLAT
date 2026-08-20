@@ -201,6 +201,21 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("</div>");
 		}
+		
+		renderTextAddOn(sb, jsdcc, translator);
+	}
+	
+	private void renderTextAddOn(StringOutput sb, JSDateChooserComponent jsdcc, Translator translator) {
+		JSDateChooser jsdci = jsdcc.getFormItem();
+		if(StringHelper.containsNonWhitespace(jsdci.getTextAddOn()) ) {
+			sb.append(" <span class='o_date_add_on'>");
+			if(jsdci.isTranslateTextAddOn()) {
+				sb.append(translator.translate(jsdci.getTextAddOn()));
+			} else {
+				sb.append(jsdci.getTextAddOn());
+			}
+			sb.append("</span>");
+		}
 	}
 	
 	private void renderSeparator(StringOutput sb, String sepId, String sep) {
@@ -409,6 +424,8 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				renderTimeDisabled(sb, jsdcc.getSecondDate(), receiverId.concat("_snd"), "o_second_ms");
 			}
 		}
+		
+		renderTextAddOn(sb, jsdcc, translator);
 	}
 	
 	private StringOutput renderMS(StringOutput dc, String id, String onChangeId, JSDateChooserComponent teC, int time) {

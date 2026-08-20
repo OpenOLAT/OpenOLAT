@@ -19,7 +19,6 @@
  */
 package org.olat.modules.selectus.ui.feedback.appsfeedback.wizard;
 
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -30,9 +29,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -60,6 +59,7 @@ import org.olat.modules.selectus.model.ApplicationLight;
 import org.olat.modules.selectus.model.ApplicationsFeedbackConfiguration;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.ui.PositionController;
+import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.feedback.appsfeedback.FeedbackHelper;
 import org.olat.modules.selectus.ui.rejection.MailVariablesController;
 import org.olat.modules.selectus.ui.rejection.VariablesValidationContext;
@@ -74,16 +74,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TemplateForEmailDeadlineController extends StepFormBasicController {
 	
 	private static final String[] sendKeys = new String[] { "send" };
-	private static final String[] monthKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"};
-	private String[] monthValues = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
-
+	
 	private Link variablesButton;
 	private TextElement subjectEl;
 	private RichTextElement bodyEl;
 	private MultipleSelectionElement sendEmailEl;
-	private TextElement feedbackDeadlineDayElement;
-	private SingleSelection feedbackDeadlineMonthElement;
-	private TextElement feedbackDeadlineYearElement;
+	private DateChooser feedbackDeadlineEl;
 
 	private final FeedbackMembersContext feedbacksContext;
 
@@ -95,9 +91,6 @@ public class TemplateForEmailDeadlineController extends StepFormBasicController 
 		super(ureq, wControl, form, runContext, LAYOUT_DEFAULT, null);
 		setTranslator(Util.createPackageTranslator(PositionController.class, getLocale(), getTranslator()));
 		this.feedbacksContext = feedbacksContext;
-		for(int i=monthKeys.length; i-->0; ) {
-			monthValues[i] = translate("month.long." + i);
-		}
 		initForm(ureq);
 	}
 	
@@ -133,40 +126,9 @@ public class TemplateForEmailDeadlineController extends StepFormBasicController 
 		variablesButton.setIconLeftCSS("o_icon o_icon_help");
 		variablesButton.setPopup(new LinkPopupSettings(800, 600, "Variables"));
 
-		// deadline container
-		String feedbackDeadlineCont = velocity_root + "/edit_deadline.html";
-		FormLayoutContainer feedbackDeadlineContainer = FormLayoutContainer.createCustomFormLayout("public.feedback.deadline", getTranslator(), feedbackDeadlineCont);
-		feedbackDeadlineContainer.setRootForm(mainForm);
-		feedbackDeadlineContainer.setLabel("edit.public.feedback.deadline", null);
-		feedbackDeadlineContainer.setMandatory(true);
-		formLayout.add(feedbackDeadlineContainer);
-		
-		String feedbackDay = "";
-		String feedbackMonth= "0";
-		String feedbackYear = "";
 		Date feedbackDeadline = feedbacksContext.getDeadline();
-		if(feedbackDeadline != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(feedbackDeadline);
-			feedbackDay = Integer.toString(cal.get(Calendar.DATE));
-			feedbackMonth = Integer.toString(cal.get(Calendar.MONTH));
-			feedbackYear = Integer.toString(cal.get(Calendar.YEAR));
-		}
-		
-		feedbackDeadlineDayElement = uifactory.addTextElement("public.feedback.deadline.day", null, 2, feedbackDay, feedbackDeadlineContainer);
-		feedbackDeadlineDayElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineDayElement.setDisplaySize(2);
-		feedbackDeadlineDayElement.setMandatory(true);
-		
-		feedbackDeadlineMonthElement = uifactory.addDropdownSingleselect("public.feedback.deadline.month", null, feedbackDeadlineContainer, monthKeys, monthValues, null);
-		feedbackDeadlineMonthElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineMonthElement.setMandatory(true);
-		feedbackDeadlineMonthElement.select(feedbackMonth, true);
-		
-		feedbackDeadlineYearElement = uifactory.addTextElement("public.feedback.deadline.year", null, 4, feedbackYear, feedbackDeadlineContainer);
-		feedbackDeadlineYearElement.setDomReplacementWrapperRequired(false);
-		feedbackDeadlineYearElement.setDisplaySize(4);
-		feedbackDeadlineYearElement.setMandatory(true);
+		feedbackDeadlineEl = uifactory.addDateChooser("edit.public.feedback.deadline", feedbackDeadline, formLayout);
+		feedbackDeadlineEl.setMandatory(true);
 	}
 	
 	private void updateGUI() {
@@ -183,34 +145,6 @@ public class TemplateForEmailDeadlineController extends StepFormBasicController 
 		StringBuilder sb = Formatter.stripTabsAndReturns(text);
 		return sb == null ? "" : sb.toString();
 	}
-	
-	private Date getFeedbackDeadline() {
-		String dayStr = feedbackDeadlineDayElement.getValue();
-		String monthStr = feedbackDeadlineMonthElement.getSelectedKey();
-		String yearStr = feedbackDeadlineYearElement.getValue();
-		
-		try {
-			int day = Integer.parseInt(dayStr);
-			int month = Integer.parseInt(monthStr);
-			int year = Integer.parseInt(yearStr);
-			return getDeadline(day, month, year, 0, 0);
-		} catch (NumberFormatException e) {
-			logDebug("Cannot parse date from: " + dayStr + "." + monthStr + "." + yearStr);
-			return null;
-		}
-	}
-	
-	private Date getDeadline(int day, int month, int year, int hour, int minute) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DATE, day);
-		cal.set(Calendar.HOUR_OF_DAY, hour);
-		cal.set(Calendar.MINUTE, minute);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -219,33 +153,15 @@ public class TemplateForEmailDeadlineController extends StepFormBasicController 
 		allOk &= checkSubjectSize(subjectEl, subjectEl.getMaxLength());
 		allOk &= checkBodyElement(bodyEl);
 		
-		feedbackDeadlineYearElement.clearError();
-		if(getFeedbackDeadline() == null) {
-			feedbackDeadlineYearElement.setErrorKey("form.legende.mandatory");
+		feedbackDeadlineEl.clearError();
+		if(feedbackDeadlineEl.getDate() == null) {
+			feedbackDeadlineEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
-			allOk &= validateYearElement(feedbackDeadlineYearElement);
+			allOk &= RecruitingHelper.validateYearElement(feedbackDeadlineEl);
 		}
 
 		return allOk;
-	}
-	
-	private boolean validateYearElement(TextElement textEl) {
-		boolean ok = true;
-		if(StringHelper.containsNonWhitespace(textEl.getValue())) {
-			int currentYear = Calendar.getInstance().get(Calendar.YEAR) + 5;
-			try {
-				int year = Integer.parseInt(textEl.getValue());
-				if(year < 2010 || year > currentYear) {
-					ok &= false;
-					textEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear) });
-				}
-			} catch (NumberFormatException e) {
-				ok =false;
-				textEl.setErrorKey("deadline.error", new String[] { Integer.toString(currentYear) });
-			}
-		}
-		return ok;
 	}
 	
 	private boolean checkSubjectSize(TextElement element, int size) {
@@ -293,7 +209,7 @@ public class TemplateForEmailDeadlineController extends StepFormBasicController 
 		
 		ApplicationMailTemplate template = feedbacksContext.getMailTemplate();
 		ApplicationsFeedbackConfiguration feedbackConfig = feedbacksContext.getConfiguration();
-		ApplicationFeedback dummyFeedback = FeedbackHelper.generateDummyFeedback(feedbackConfig, getFeedbackDeadline());
+		ApplicationFeedback dummyFeedback = FeedbackHelper.generateDummyFeedback(feedbackConfig, feedbackDeadlineEl.getDate());
 		List<ApplicationFeedback> dummyFeedbacks = Collections.singletonList(dummyFeedback);
 		Identity member = FeedbackHelper.generateDummyMember();
 
@@ -335,7 +251,7 @@ public class TemplateForEmailDeadlineController extends StepFormBasicController 
 		
 		feedbacksContext.setSendMail(sendEmailEl.isAtLeastSelected(1));
 		
-		Date deadline = getFeedbackDeadline();
+		Date deadline = feedbackDeadlineEl.getDate();
 		feedbacksContext.setDeadline(deadline);
 
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
