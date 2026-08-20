@@ -79,7 +79,6 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
@@ -91,6 +90,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -147,7 +147,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 	private MSEditFormController scoringController;
 	private FolderController frc;
 	private ConditionEditController taskConditionC, dropConditionC, returnboxConditionC, scoringConditionC, solutionConditionC;
-	private boolean hasLogEntries;	
+	private boolean hasAssessments;
 	private DialogBoxController dialogBoxController;
 
 	private Link btfButton;
@@ -162,6 +162,8 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 	private MailManager mailManager;
 	@Autowired
 	private QuotaManager quotaManager;
+	@Autowired
+	private AssessmentService assessmentService;
 
 	/**
 	 * @param ureq
@@ -254,17 +256,16 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 
 		// Scoring config		
 		editScoring = this.createVelocityContainer("editScoring");
-		editScoringConfigButton = LinkFactory.createButtonSmall("scoring.config.enable.button", editScoring, this);
+		editScoringConfigButton = LinkFactory.createButtonSmall("enable.editing", editScoring, this);
 
 		scoringController = new MSEditFormController(ureq, wControl, course, node, NodeAccessType.of(course));
 		listenTo(scoringController);
 		editScoring.put("scoringController", scoringController.getInitialComponent());
 		
-		// if there is already user data available, make for read only
-		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
-		hasLogEntries = am.hasUserNodeLogs(node);
-		editScoring.contextPut("hasLogEntries", Boolean.valueOf(hasLogEntries));
-		if (hasLogEntries) {
+		// if there are already assessments, make read only
+		hasAssessments = assessmentService.hasAssessments(courseEntry, node.getIdent());
+		editScoring.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));
+		if (hasAssessments) {
 			scoringController.setDisplayOnly(true);
 		}
 		//Initialstate
@@ -434,7 +435,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			}
 		} else if (source == scoringController) {
 			if (event == Event.CANCELLED_EVENT) {
-				if (hasLogEntries) {
+				if (hasAssessments) {
 					scoringController.setDisplayOnly(true);}
 				editScoring.contextPut("isOverwriting", Boolean.FALSE);
 				return;				

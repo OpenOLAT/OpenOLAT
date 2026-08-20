@@ -2,19 +2,19 @@
 	<legend>$r.contextHelpWithWrapper("manual_user/learningresources/Course_Element_Assessment/")
 	$r.translate("form.configuration")</legend>
 	
-	#if ($hasLogEntries)
+	#if ($hasAssessments)
 		#if ($isOverwriting)
 			<div class="o_warning_with_icon">
-				<i>$r.translate("scoring.overwriting.note")</i>
+				$r.translate("assessments.exist.warning")
 			</div>
 		#else
 			<div class="o_warning_with_icon">
-				<i>$r.translate("scoring.overwriting")</i>
+				$r.translate("assessments.exist.info")
 			</div>
 			<div class="o_button_group">
-				$r.render("scoring.config.enable.button")			
+				$r.render("enable.editing")
 			</div>
-		#end		
+		#end
 	#end
 </fieldset>
 $r.render("scoringController")
