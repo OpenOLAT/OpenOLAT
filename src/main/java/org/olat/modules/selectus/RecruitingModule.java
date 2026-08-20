@@ -183,7 +183,7 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	private int maxRating = 3;
 	@Value("${recruiting.rating.abstention:disabled}")
 	private String ratingAbstention;
-	@Value("${recruiting.rejection.all.decision:disabled}")
+	@Value("${recruiting.rejection.all.decision:enabled}")
 	private String rejectionAllDecisionsStep;
 	
 	@Value("${recruiting.officeMail}")
