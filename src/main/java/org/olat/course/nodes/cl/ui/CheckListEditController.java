@@ -22,7 +22,10 @@ package org.olat.course.nodes.cl.ui;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -37,6 +40,8 @@ import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
+import org.olat.modules.assessment.AssessmentService;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,11 +62,16 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	private CheckListCourseNode courseNode;
 
 	private TabbedPane myTabbedPane;
+	private VelocityContainer configurationVC;
+	private Link enableEditingLink;
+	private boolean hasAssessments;
 	
 	private ICourse course;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private AssessmentService assessmentService;
 
 	private static final String[] paneKeys = { PANE_TAB_CLCONFIG, PANE_TAB_CHECKBOX };
 
@@ -80,8 +90,23 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 				NodeAccessType.of(course), numOfChecks > 0);
 		listenTo(configurationCtrl);
 		
+		configurationVC = createVelocityContainer("edit_clconfig");
+		configurationVC.put("assessmentform", configurationCtrl.getInitialComponent());
+		enableEditingLink = LinkFactory.createButtonSmall("enable.editing", configurationVC, this);
+		enableEditingLink.setPrimary(true);
+		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
+
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode.getModuleConfiguration(), course);
 		listenTo(highScoreNodeConfigController);
+
+		// if there are already assessments, make read only
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		hasAssessments = assessmentService.hasAssessments(courseEntry, courseNode.getIdent());
+		configurationVC.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));
+		if (hasAssessments) {
+			configurationCtrl.setDisplayOnly(true);
+		}
+		configurationVC.contextPut("isOverwriting", Boolean.valueOf(false));
 	}
 
 	@Override
@@ -103,7 +128,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CLCONFIG), configurationCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CLCONFIG), configurationVC);
 		tabbedPane.addTab(translate(PANE_TAB_CHECKBOX), checkboxListEditCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();
@@ -111,7 +136,10 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == enableEditingLink) {
+			configurationCtrl.setDisplayOnly(false);
+			configurationVC.contextPut("isOverwriting", Boolean.TRUE);
+		}
 	}
 
 	@Override

@@ -20,6 +20,7 @@
 package org.olat.course.nodes.cl.ui;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -95,6 +96,7 @@ public class CheckListConfigurationController extends FormBasicController {
 	private FormLayoutContainer gradeScaleCont;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement gradePassedEl;
+	private FormLayoutContainer buttonsLayout;
 	
 	private CloseableModalController cmc;
 	private GradeScaleEditController gradeScaleCtrl;
@@ -333,13 +335,27 @@ public class CheckListConfigurationController extends FormBasicController {
 		}
 		
 		if(!wizard) {
-			FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			formLayout.add(buttonsLayout);
 			uifactory.addFormSubmitButton("submit", "submit", buttonsLayout);
 		}
 		
 		updateScoreVisibility();
 		updatePassedAndOutputVisibilty();
+	}
+
+	public void setDisplayOnly(boolean displayOnly) {
+		Map<String, FormItem> formItems = flc.getFormComponents();
+		for (FormItem formItem : formItems.values()) {
+			formItem.setEnabled(!displayOnly);
+		}
+		if (buttonsLayout != null) {
+			buttonsLayout.setVisible(!displayOnly);
+		}
+		if (!displayOnly) {
+			updateScoreVisibility();
+			updatePassedAndOutputVisibilty();
+		}
 	}
 
 	@Override
