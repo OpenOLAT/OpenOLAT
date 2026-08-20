@@ -22,6 +22,8 @@ package org.olat.course.nodes.portfolio;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -30,7 +32,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.ICourse;
-import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -38,7 +39,9 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  6 oct. 2010 <br>
@@ -53,16 +56,20 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	
 	private final VelocityContainer configContent;
 	private final PortfolioConfigForm configForm;
-	private final Component scoringContent;
+	private final VelocityContainer scoringContent;
 	private final MSEditFormController scoringController;
+	private final Link enableEditingLink;
 	private final HighScoreEditController highScoreNodeConfigController;
 	
 	private TabbedPane myTabbedPane;
 	
-	private final boolean hasLogEntries;
+	private final boolean hasAssessments;
 	private final ModuleConfiguration config;
 	private final PortfolioCourseNode courseNode;
-	
+
+	@Autowired
+	private AssessmentService assessmentService;
+
 	public PortfolioCourseNodeEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, PortfolioCourseNode node, ModuleConfiguration config) {
 		super(ureq, wControl);
@@ -73,9 +80,14 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		listenTo(configForm);
 		scoringController = new MSEditFormController(ureq, wControl, course, node, NodeAccessType.of(course),
 				translate("grading.configuration.title"), "manual_user/learningresources/Portfolio_assignment_Grading/");
-		scoringContent = scoringController.getInitialComponent();
 		listenTo(scoringController);
 		
+		scoringContent = createVelocityContainer("edit_scoring");
+		scoringContent.put("assessmentform", scoringController.getInitialComponent());
+		enableEditingLink = LinkFactory.createButtonSmall("enable.editing", scoringContent, this);
+		enableEditingLink.setPrimary(true);
+		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
+
 		configContent = createVelocityContainer("edit");
 		configContent.put("configForm", configForm.getInitialComponent());
 		
@@ -83,15 +95,15 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config, course);
 		listenTo(highScoreNodeConfigController);
 		
-	// if there is already user data available, make for read only
-		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
-		hasLogEntries = am.hasUserNodeLogs(node);
-		configContent.contextPut("hasLogEntries", Boolean.valueOf(hasLogEntries));
-		if (hasLogEntries) {
+		// if there are already assessments, make read only
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		hasAssessments = assessmentService.hasAssessments(courseEntry, node.getIdent());
+		scoringContent.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));
+		if (hasAssessments) {
 			scoringController.setDisplayOnly(true);
 		}
 		//Initialstate
-		configContent.contextPut("isOverwriting", Boolean.valueOf(false));
+		scoringContent.contextPut("isOverwriting", Boolean.valueOf(false));
 	}
 	
 	public static boolean isModuleConfigValid(ModuleConfiguration moduleConfiguration) {
@@ -101,7 +113,10 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == enableEditingLink) {
+			scoringController.setDisplayOnly(false);
+			scoringContent.contextPut("isOverwriting", Boolean.TRUE);
+		}
 	}
 	
 	@Override
@@ -116,9 +131,9 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 			}
 		} else if (source == scoringController) {
 			if (event == Event.CANCELLED_EVENT) {
-				if (hasLogEntries) {
+				if (hasAssessments) {
 					scoringController.setDisplayOnly(true);}
-				configContent.contextPut("isOverwriting", Boolean.valueOf(false));			
+				scoringContent.contextPut("isOverwriting", Boolean.valueOf(false));
 			} else if (event == Event.DONE_EVENT){
 				scoringController.updateModuleConfiguration(config);
 				updateHighscoreTab();
