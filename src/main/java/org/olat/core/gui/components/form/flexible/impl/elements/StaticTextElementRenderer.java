@@ -53,6 +53,7 @@ class StaticTextElementRenderer extends DefaultComponentRenderer {
 		String id = steC.getFormDispatchId();
 		String value = steC.getValue();
 		
+		int len0 = sb.length();
 		sb.append("<").append(steC.getDomWrapperElement().name()).append(" id=\"").append(id).append("\" ");
 		sb.append(FormJSHelper.getRawJSFor(steC.getRootForm(), id, steC.getAction()));
 		sb.append(" class='");
@@ -61,5 +62,6 @@ class StaticTextElementRenderer extends DefaultComponentRenderer {
 			sb.append(steC.getElementCssClass());
 		}
 		sb.append("'>").append(value).append("</").append(steC.getDomWrapperElement().name()).append(">");
+		System.err.println(sb.toString().substring(len0));
 	}
 }

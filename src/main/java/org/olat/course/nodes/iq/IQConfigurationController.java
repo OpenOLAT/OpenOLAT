@@ -30,6 +30,8 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.IconPanelLabelTextContent;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -77,6 +79,7 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21OverrideOptions;
 import org.olat.ims.qti21.ui.event.RestartEvent;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
@@ -110,12 +113,16 @@ public class IQConfigurationController extends BasicController implements Refere
 	private ConfirmChangeResourceController confirmChangeResourceCtrl;
 	
 	private QTI21EditForm mod21ConfigForm;
+	private VelocityContainer mod21ConfigVC;
+	private Link enableEditingLink;
+	private boolean hasAssessments;
 	
 	private final ICourse course;
 	private final boolean newReference;
 	private final ModuleConfiguration moduleConfiguration;
 	private final AbstractAccessableCourseNode courseNode;
 	private final boolean selfAssessment;
+	private final String type;
 
 	@Autowired
 	private QTI21Module qti21Module;
@@ -131,6 +138,8 @@ public class IQConfigurationController extends BasicController implements Refere
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private AssessmentService assessmentService;
 
 	public IQConfigurationController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
 			AbstractAccessableCourseNode courseNode, String type) {
@@ -141,6 +150,7 @@ public class IQConfigurationController extends BasicController implements Refere
 		this.course = course;
 		this.courseNode = courseNode;
 		this.selfAssessment = courseNode instanceof IQSELFCourseNode;
+		this.type = type;
 		if (stackPanel != null) {
 			stackPanel.addListener(this);
 		}
@@ -308,7 +318,22 @@ public class IQConfigurationController extends BasicController implements Refere
 					selfAssessment, min, max);
 			mod21ConfigForm.updateUI();
 			listenTo(mod21ConfigForm);
-			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
+
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			hasAssessments = QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type)
+					&& assessmentService.hasAssessments(courseEntry, courseNode.getIdent());
+
+			mod21ConfigVC = createVelocityContainer("edit_test_config");
+			mod21ConfigVC.put("assessmentform", mod21ConfigForm.getInitialComponent());
+			enableEditingLink = LinkFactory.createButtonSmall("enable.editing", mod21ConfigVC, this);
+			enableEditingLink.setPrimary(true);
+			enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
+			mod21ConfigVC.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));
+			if (hasAssessments) {
+				mod21ConfigForm.setDisplayOnly(true);
+			}
+
+			myContent.put("iqeditform", mod21ConfigVC);
 		} else {
 			myContent.remove("iqeditform");
 			showError("error.qti12");
@@ -371,6 +396,9 @@ public class IQConfigurationController extends BasicController implements Refere
 					cleanUpQti21PreviewSession();
 				}
 			}
+		} else if (source == enableEditingLink) {
+			mod21ConfigForm.setDisplayOnly(false);
+			mod21ConfigVC.contextPut("isOverwriting", Boolean.TRUE);
 		}
 	}
 	

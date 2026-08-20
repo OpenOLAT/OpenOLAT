@@ -23,12 +23,14 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -110,6 +112,7 @@ public class QTI21EditForm extends FormBasicController {
 	private SelectionValues relativeToDatesKV;
 	
 	private FormLayoutContainer correctionLayout;
+	private FormSubmit submitButton;
 	private SingleSelection correctionModeEl;
 	private SingleSelection scoreVisibilityAfterCorrectionEl;
 	private SingleSelection showResultsDateDependentEl;
@@ -501,7 +504,7 @@ public class QTI21EditForm extends FormBasicController {
 		assessmentResultsOnFinishEl.setHelpUrlForManualPage("manual_user/learningresources/Test_settings/#results");
 		
 		if (!wizard) {
-			uifactory.addFormSubmitButton("submit", formLayout);
+			submitButton = uifactory.addFormSubmitButton("submit", formLayout);
 		}
 		
 		//setup the values
@@ -809,6 +812,21 @@ public class QTI21EditForm extends FormBasicController {
 		update();
 	}
 	
+	/**
+	 * Disables (or re-enables) every form item and hides the submit button, used to make
+	 * the test configuration read-only once assessments already exist for this node.
+	 */
+	public void setDisplayOnly(boolean displayOnly) {
+		Map<String, FormItem> formItems = flc.getFormComponents();
+		for (FormItem formItem : formItems.values()) {
+			formItem.setEnabled(!displayOnly);
+		}
+		if (submitButton != null) {
+			submitButton.setVisible(!displayOnly);
+		}
+	}
+
+
 	private void updateGradeUI() {
 		if (gradeEnabledEl != null) {
 			boolean hasScore = minValue != null;

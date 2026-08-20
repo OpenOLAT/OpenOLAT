@@ -27,17 +27,21 @@ package org.olat.course.nodes.scorm;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
@@ -54,6 +58,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -69,6 +74,7 @@ import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.scorm.ScormConstants;
 import org.olat.modules.scorm.ScormDisplayEnum;
 import org.olat.modules.scorm.ScormMainManager;
@@ -151,6 +157,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 	private NodeAccessService nodeAccessService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private AssessmentService assessmentService;
 
 	public ScormEditController(ScormCourseNode scormNode, UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl);
@@ -221,10 +229,13 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 		boolean fullWindowWidthHeightWithBack = config.getBooleanSafe(CONFIG_FULLWINDOW_WIDTH_HEIGHT_WITH_BACK, false);
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
 		
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		boolean hasAssessments = assessmentService.hasAssessments(courseEntry, scormNode.getIdent());
+
 		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons, assessableType, maxScore,
 				cutvalue, ignoreInCourseAssessmentAvailable, ignoreInCourseAssessment, scoreScalingEnabled, scaling,
 				fullWindow, fullWindowWidthHeight, fullWindowWidthHeightWithBack,
-				closeOnFinish, maxAttempts, advanceScore, attemptsDependOnScore);
+				closeOnFinish, maxAttempts, advanceScore, attemptsDependOnScore, hasAssessments);
 		listenTo(scorevarform);
 		cpConfigurationVc.put("scorevarform", scorevarform.getInitialComponent());
 
@@ -433,7 +444,11 @@ class VarForm extends FormBasicController {
 	private SingleSelection attemptsEl;
 	private MultipleSelectionElement advanceScoreEl;
 	private MultipleSelectionElement scoreAttemptsEl;
-	
+	private StaticTextElement assessmentLockMsgEl;
+	private FormLink enableEditingLink;
+	private FormSubmit saveButton;
+	private FormLayoutContainer gradingCont;
+
 	private boolean showMenu;
 	private boolean showNavButtons;
 	private boolean skipLaunchPage;
@@ -454,14 +469,18 @@ class VarForm extends FormBasicController {
 	private boolean advanceScore;
 	private boolean scoreAttempts;
 	private int maxattempts;
-	
+	private final boolean hasAssessments;
+	private boolean isOverwriting = false;
+
 	public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage,
 			boolean showNavButtons, String assessableType, int maxScore, int cutValue,
 			boolean ignoreInCourseAssessmentAvailable, boolean ignoreInCourseAssessment,
 			boolean scoreScalingEnabled, String scoreScaling,
 			boolean fullWindow, boolean fullWindowWidthHeight, boolean fullWindowWidthHeightWithBack,
-			boolean closeOnFinish, int maxattempts, boolean advanceScore, boolean attemptsDependOnScore) {
+			boolean closeOnFinish, int maxattempts, boolean advanceScore, boolean attemptsDependOnScore,
+			boolean hasAssessments) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
+		this.hasAssessments = hasAssessments;
 		this.showMenu = showMenu;
 		this.skipLaunchPage = skipLaunchPage;
 		this.showNavButtons = showNavButtons;
@@ -489,6 +508,9 @@ class VarForm extends FormBasicController {
 			};
 		initForm (ureq);
 		updateUI();
+		if (hasAssessments) {
+			setDisplayOnly(true);
+		}
 	}
 	
 	public Integer getMaxScore() {
@@ -565,9 +587,13 @@ class VarForm extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(isAssessableEl == source || advanceScoreEl == source
+		if (enableEditingLink == source) {
+			isOverwriting = true;
+			setDisplayOnly(false);
+			updateAssessmentLockUI();
+		} else if(isAssessableEl == source || advanceScoreEl == source
 				|| fullWindowEl == source || incorporateInCourseAssessmentEl == source) {
-			updateUI();		
+			updateUI();
 			markDirty();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -622,7 +648,7 @@ class VarForm extends FormBasicController {
 		FormLayoutContainer configurationCont = uifactory.addDefaultFormLayout("configuration", null, formLayout);
 		initConfigurationForm(configurationCont);
 		
-		FormLayoutContainer gradingCont = uifactory.addDefaultFormLayout("config.grading", null, formLayout);
+		gradingCont = uifactory.addDefaultFormLayout("config.grading", null, formLayout);
 		initGradingForm(gradingCont);
 	}
 	
@@ -664,6 +690,11 @@ class VarForm extends FormBasicController {
 	private void initGradingForm(FormLayoutContainer formLayout) {
 		formLayout.setFormTitle(translate("grading.configuration.title"));
 		
+		assessmentLockMsgEl = uifactory.addStaticTextElement("assessments.lock.msg", null, "", formLayout);
+		enableEditingLink = uifactory.addFormLink("enable.editing", formLayout, Link.BUTTON_SMALL);
+		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
+		updateAssessmentLockUI();
+
 		isAssessableEl = uifactory.addRadiosVertical("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues);
 		isAssessableEl.addActionListener(FormEvent.ONCHANGE);
 		if(ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(assessableType)) {
@@ -713,7 +744,44 @@ class VarForm extends FormBasicController {
 		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scoreScaling, formLayout);
 		scoreScalingEl.setExampleKey("score.scaling.example", null);
 		
-		uifactory.addFormSubmitButton("save", formLayout);
+		saveButton = uifactory.addFormSubmitButton("save", formLayout);
+	}
+
+	/**
+	 * Shows/hides the read-only info banner and the "enable editing" link depending on
+	 * whether assessments already exist for this node and whether editing was unlocked.
+	 */
+	private void updateAssessmentLockUI() {
+		if (!hasAssessments) {
+			assessmentLockMsgEl.setDomWrapperElement(DomWrapperElement.p);
+			assessmentLockMsgEl.setVisible(false);
+			enableEditingLink.setVisible(false);
+		} else if (isOverwriting) {
+			assessmentLockMsgEl.setDomWrapperElement(DomWrapperElement.div);
+			assessmentLockMsgEl.setValue("<div class=\"o_warning_with_icon\">" + translate("assessments.exist.warning") + "</div>");
+			assessmentLockMsgEl.setVisible(true);
+			enableEditingLink.setVisible(false);
+		} else {
+			assessmentLockMsgEl.setDomWrapperElement(DomWrapperElement.div);
+			assessmentLockMsgEl.setValue("<div class=\"o_warning_with_icon\">" + translate("assessments.exist.info") + "</div>");
+			assessmentLockMsgEl.setVisible(true);
+			enableEditingLink.setVisible(true);
+		}
+	}
+
+	/**
+	 * Disables (or re-enables) every grading form item and hides the submit button, used to
+	 * make the grading configuration read-only once assessments already exist for this node.
+	 * Configuration settings unrelated to grading (window mode, menu, nav buttons) are unaffected.
+	 */
+	public void setDisplayOnly(boolean displayOnly) {
+		Map<String, FormItem> formItems = gradingCont.getFormComponents();
+		for (FormItem formItem : formItems.values()) {
+			if (formItem != assessmentLockMsgEl && formItem != enableEditingLink && formItem != saveButton) {
+				formItem.setEnabled(!displayOnly);
+			}
+		}
+		saveButton.setVisible(!displayOnly);
 	}
 	
 	private void updateUI() {
