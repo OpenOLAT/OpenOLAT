@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -137,6 +138,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	private ComponentWrapperElement referenceEl;
 	private IconPanelLabelTextContent iconPanelContent;
 	private IconPanelLabelTextContent iconPanelSettings;
+	private FormLayoutContainer buttonsCont;
 
 	private GradeScale gradeScale;
 	private GTACourseNode gtaNode;
@@ -215,9 +217,21 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		assessmentContainer.setElementCssClass("o_sel_course_ms_form");
 		initAssessmentForm(assessmentContainer, ureq);
 		
-		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, assessmentContainer);
+		buttonsCont = uifactory.addButtonsFormLayout("buttons", null, assessmentContainer);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+
+	/**
+	 * Disables (or re-enables) every form item and hides the submit/cancel buttons, used to make
+	 * the assessment configuration read-only once assessments already exist for this node.
+	 */
+	public void setDisplayOnly(boolean displayOnly) {
+		Map<String, FormItem> formItems = flc.getFormComponents();
+		for (FormItem formItem : formItems.values()) {
+			formItem.setEnabled(!displayOnly);
+		}
+		buttonsCont.setVisible(!displayOnly);
 	}
 
 	private void initEvaluationFormForm(FormItemContainer formLayout) {

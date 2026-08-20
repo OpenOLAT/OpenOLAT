@@ -21,8 +21,11 @@ package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -36,7 +39,9 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -75,6 +80,9 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private GTAAssignmentEditController assignmentCtrl;
 	private GTASubmissionEditController submissionCtrl;
 	private GTAEditAssessmentConfigController assessmentCtrl;
+	private VelocityContainer assessmentVC;
+	private Link enableEditingLink;
+	private boolean hasAssessments;
 	private GTASampleSolutionsEditController solutionsCtrl;
 	private HighScoreEditController highScoreNodeConfigController;
 	
@@ -83,7 +91,10 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private final UserCourseEnvironment euce;
 	private final CourseEnvironment courseEnv;
 	private final RepositoryEntry courseEntry;
-	
+
+	@Autowired
+	private AssessmentService assessmentService;
+
 	public GTAEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, GTACourseNode gtaNode,
 			ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
@@ -112,6 +123,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		//grading
 		assessmentCtrl = createManualAssessmentCtrl(ureq, course);
 		listenTo(assessmentCtrl);
+		assessmentVC = wrapAssessmentCtrl();
 		//solutions
 		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), gtaNode, courseEnv, false);
 		listenTo(solutionsCtrl);
@@ -131,7 +143,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		submissionPos = tabbedPane.addTab(translate(PANE_TAB_SUBMISSION), "o_sel_gta_submission", submissionCtrl.getInitialComponent());
 		peerReviewPos = tabbedPane.addTab(translate(PANE_TAB_PEER_REVIEW), peerReviewCtrl.getInitialComponent());
 		revisionPos = tabbedPane.addTab(translate(PANE_TAB_REVIEW_AND_CORRECTIONS), revisionCtrl.getInitialComponent());
-		gradingPos = tabbedPane.addTab(translate(PANE_TAB_GRADING), "o_sel_gta_assessment", assessmentCtrl.getInitialComponent());
+		gradingPos = tabbedPane.addTab(translate(PANE_TAB_GRADING), "o_sel_gta_assessment", assessmentVC);
 		solutionsPos = tabbedPane.addTab(translate(PANE_TAB_SOLUTIONS), "o_sel_gta_solution", solutionsCtrl.getInitialComponent());
 		highScoreTabPosition = myTabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
 		updateEnabledDisabledTabs();
@@ -163,7 +175,10 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == enableEditingLink) {
+			assessmentCtrl.setDisplayOnly(false);
+			assessmentVC.contextPut("isOverwriting", Boolean.TRUE);
+		}
 	}
 
 	@Override
@@ -232,7 +247,8 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				removeAsListenerAndDispose(assessmentCtrl);
 				assessmentCtrl = createManualAssessmentCtrl(ureq, CourseFactory.loadCourse(courseEntry));
 				listenTo(assessmentCtrl);
-				myTabbedPane.replaceTab(gradingPos, assessmentCtrl.getInitialComponent());
+				assessmentVC = wrapAssessmentCtrl();
+				myTabbedPane.replaceTab(gradingPos, assessmentVC);
 			} else if(event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
@@ -265,5 +281,20 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 
 	private GTAEditAssessmentConfigController createManualAssessmentCtrl(UserRequest ureq, ICourse course) {
 		return new GTAEditAssessmentConfigController(ureq, getWindowControl(), stackPanel, gtaNode, course);
+	}
+
+	private VelocityContainer wrapAssessmentCtrl() {
+		VelocityContainer vc = createVelocityContainer("edit_grading");
+		vc.put("assessmentform", assessmentCtrl.getInitialComponent());
+		enableEditingLink = LinkFactory.createButtonSmall("enable.editing", vc, this);
+		enableEditingLink.setPrimary(true);
+		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
+
+		hasAssessments = assessmentService.hasAssessments(courseEntry, gtaNode.getIdent());
+		vc.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));
+		if (hasAssessments) {
+			assessmentCtrl.setDisplayOnly(true);
+		}
+		return vc;
 	}
 }
