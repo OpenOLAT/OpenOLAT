@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -213,7 +214,12 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 		tableModel = new CreditPointUserTransactionsTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
-		
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withIconCss("o_icon_coins")
+				.withMessageI18nKey("transactions.empty")
+				.withHintI18nKey("transactions.empty.hint")
+				.build());
+
 		initFilters();
 		initFiltersPresets();
 	}
