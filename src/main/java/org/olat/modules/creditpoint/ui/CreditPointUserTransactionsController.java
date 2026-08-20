@@ -138,7 +138,7 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 		this.system = wallet.getCreditPointSystem();
 		this.secCallback = secCallback;
 		initForm(ureq);
-		loadModel();
+		loadModel(true);
 	}
 	
 	public CreditPointWallet getWallet() {
@@ -262,7 +262,7 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 		tableEl.setFilterTabs(true, tabs);
 	}
 	
-	private void loadModel() {
+	private void loadModel(boolean isInitialLoad) {
 		List<CreditPointTransactionWithInfos> transactions = creditPointService.getCreditPointTransactions(wallet);
 		List<CreditPointTransactionRow> rows = new ArrayList<>(transactions.size());
 		for(CreditPointTransactionWithInfos transaction:transactions) {
@@ -270,6 +270,16 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+		
+		if(isInitialLoad) {
+			if(!rows.isEmpty()) {
+				tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+						.withIconCss("o_icon_coins")
+						.withMessageI18nKey("transactions.empty.after.filter")
+						.withHintI18nKey("transactions.empty.after.filter.hint")
+						.build());
+			}
+		}
 	}
 
 	private CreditPointTransactionRow forgeRow(CreditPointTransactionWithInfos transactionWithInfos) {
@@ -337,7 +347,7 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 		if(addTransactionCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				wallet = addTransactionCtrl.getWallet();
-				loadModel();
+				loadModel(false);
 				updateWalletUI(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -346,7 +356,7 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 		} else if(removeTransactionCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				wallet = removeTransactionCtrl.getWallet();
-				loadModel();
+				loadModel(false);
 				updateWalletUI(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -355,7 +365,7 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 		} else if(confirmCancelTransactionCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				wallet = confirmCancelTransactionCtrl.getWallet();
-				loadModel();
+				loadModel(false);
 				updateWalletUI(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
