@@ -126,9 +126,12 @@ import org.olat.modules.selectus.model.ApplicationRef;
 import org.olat.modules.selectus.model.ApplicationRefereeStats;
 import org.olat.modules.selectus.model.ApplicationsFeedbackConfiguration;
 import org.olat.modules.selectus.model.Category;
+import org.olat.modules.selectus.model.Country;
 import org.olat.modules.selectus.model.EmptyUserRating;
+import org.olat.modules.selectus.model.HighestDegreeType;
 import org.olat.modules.selectus.model.Notes;
 import org.olat.modules.selectus.model.PersonGender;
+import org.olat.modules.selectus.model.PersonTitle;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionApplicationAttributeTabEnum;
 import org.olat.modules.selectus.model.PositionLight;
@@ -976,18 +979,14 @@ public class PositionApplicationsController extends FormBasicController implemen
 	protected void initColumnModel(Fields field,  List<FlexiTableExtendedFilter> filters) {
 		if(field.visible(excludedAttributesList)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, field, SELECT_POSITION));
-			if(filters != null) {
-				filters.add(new FlexiTableTextFilter(translate(field.i18nHeaderKey()), field.name(), false));
-			}
+			initFilter(field, filters);
 		}
 	}
 	
 	private void initColumnModel(Fields field, RecruitingTableOption option, List<FlexiTableExtendedFilter> filters) {
 		if(!option.isDisabled() && field.visible(excludedAttributesList)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(option.isVisible(), field, SELECT_POSITION));
-			if(filters != null) {
-				filters.add(new FlexiTableTextFilter(translate(field.i18nHeaderKey()), field.name(), false));
-			}
+			initFilter(field, filters);
 		}
 	}
 	
@@ -1084,6 +1083,48 @@ public class PositionApplicationsController extends FormBasicController implemen
 			}
 		}
 		return false;
+	}
+	
+	private void initFilter(Fields field, List<FlexiTableExtendedFilter> filters) {
+		if(filters == null) return;
+		
+		if(field == Fields.title) {	
+			SelectionValues titlePK = new SelectionValues();
+			titlePK.add(SelectionValues.entry(PositionApplicationsController.FILTER_NULL_KEY, translate("edit.application.title.none")));
+			PersonTitle[] personTitles = recruitingModule.getApplicantPersonTitles();
+			for(PersonTitle personTitle:personTitles) {
+				titlePK.add(SelectionValues.entry(personTitle.title(), translate(personTitle.i18nKey())));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate(field.i18nHeaderKey()), field.name(), titlePK, false));
+		} else if(field == Fields.highestDegreeType) {
+			SelectionValues typesPK = new SelectionValues();
+			typesPK.add(SelectionValues.entry(PositionApplicationsController.FILTER_NULL_KEY, translate("edit.application.title.none")));
+			HighestDegreeType[] types = recruitingModule.getHighestDegreeTypes();
+			for(HighestDegreeType type:types) {
+				typesPK.add(SelectionValues.entry(type.name(), translate(type.i18nKey())));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate(field.i18nHeaderKey()), field.name(), typesPK, false));
+		} else if((field == Fields.nationality && recruitingModule.isApplicationPersonNationalityUseCountry())
+				|| field == Fields.country || field == Fields.businessCountry) {
+			SelectionValues countriesPK = generateCountrySelection();
+			filters.add(new FlexiTableMultiSelectionFilter(translate(field.i18nHeaderKey()), field.name(), countriesPK, false));
+		} else {
+			filters.add(new FlexiTableTextFilter(translate(field.i18nHeaderKey()), field.name(), false));
+		}
+	}
+	
+	private SelectionValues generateCountrySelection() {
+		Country[] countries = Country.values();
+		Translator countryTranslator = userManager.getPropertyHandlerTranslator(getTranslator());
+		
+		SelectionValues countriesPK = new SelectionValues();
+		countriesPK.add(SelectionValues.entry(PositionApplicationsController.FILTER_NULL_KEY, translate("edit.application.title.none")));
+		
+		for(Country country:countries) {
+			String translation = countryTranslator.translate(country.i18nKey());
+			countriesPK.add(SelectionValues.entry(country.key(), translation));	
+		}
+		return countriesPK;
 	}
 	
 	private void initFilters(List<FlexiTableExtendedFilter> filedsFilters) {

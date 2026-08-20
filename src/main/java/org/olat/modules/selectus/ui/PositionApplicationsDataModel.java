@@ -635,6 +635,8 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		ApplicationLight app = appRow.getApplication();
 		if(col >= 0 && col < FIELDS.length) {
 			return switch(FIELDS[col]) {
+				case title -> app.getPerson().getTitle();
+				case highestDegreeType -> app.getAcademicalBackground().getHighestDegreeType();
 				case applicationStatus -> app.getApplicationStatus().name();
 				case decision -> app.getDecision() == null ? null : app.getDecision().toString();
 				case experts -> appRow.getRefereesStats().getNumOfExperts();
