@@ -62,7 +62,7 @@ public class HeaderStartController extends BasicController {
 		
 		leaveLink = LinkFactory.createCustomLink("leave", "header.leave", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
 		leaveLink.setCustomDisplayText(translate("sign.out"));
-		leaveLink.setElementCssClass("o_sign_out");
+		leaveLink.setElementCssClass("o_sign_out btn-danger");
 		leaveLink.setIconLeftCSS("o_icon o_icon_sign_out");
 		leaveLink.setGhost(true);
 		leaveLink.setVisible(false);
@@ -107,11 +107,11 @@ public class HeaderStartController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == startLink) {
-			fireEvent(ureq, AbstractDetailsHeaderController.START_EVENT);
+			fireEvent(ureq, AbstractInfoPageGetStartedController.START_EVENT);
 		} else if (source == leaveLink) {
-			fireEvent(ureq, AbstractDetailsHeaderController.LEAVE_EVENT);
+			fireEvent(ureq, AbstractInfoPageGetStartedController.LEAVE_EVENT);
 		} else if (source == startAdminLink) {
-			fireEvent(ureq, AbstractDetailsHeaderController.START_ADMIN_EVENT);
+			fireEvent(ureq, AbstractInfoPageGetStartedController.START_ADMIN_EVENT);
 		}
 	}
 

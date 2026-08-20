@@ -1,47 +1,27 @@
-.o_repo_details {
+.o_info_page {
 	position: relative;
-	
+
 	.o_header {
-		padding-bottom: $o-coursesite-meta-header-padding-bottom	;
-		border-bottom: $o-coursesite-meta-header-border-width solid $o-coursesite-meta-header-border;
-		
 		.o_lead {
 			display: flex;
-			flex-wrap: nowrap;
-			justify-content: left;
+			flex-direction: column;
 			width: 100%;
-			
-			@media (max-width: $screen-xs-max) {
-				display: block;
-			}	
-			
-			.o_media  {
-				order: 2;
-				margin-left: 2em;
-				max-width: floor(570px * 0.75); //570x380
-				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
-					max-width: floor(570px * 0.5); //570x380	
-				}
-				@media (max-width: $screen-xs-max) {
-					margin-left: 0;
-					margin-bottom: 1em;
-					max-width: 100%;	
-					width: 100%;
-					.o_image, img, .o_video, video {
-						width: 100%;
-					}
-				}
-			}
+
 			.o_meta_wrapper {
 				display: flex;
 				flex-direction: column;
 				gap: 1em;
-				
+
 				flex-grow: 1;
 				flex-shrink: 1;
 				width: 100%;
 			}
-			
+
+			.o_meta {
+				display: flex;
+				flex-direction: column;
+			}
+
 			.o_ext_ref {
 				color: $text-muted;
 			}
@@ -56,122 +36,167 @@
 			.o_teaser {
 				white-space: normal;
 			}
-			
+
+			.o_header_actions {
+				display: flex;
+				gap: 5px;
+				margin-bottom: 10px;
+			}
+
+			.o_tags {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 5px;
+
+				// Let the individual taxonomy tags wrap alongside the
+				// educational type badge instead of the whole group jumping
+				// to the next line as one atomic block.
+				.o_taxonomy_tags {
+					display: contents;
+				}
+
+				// Spacing between all tags comes only from the flex gap
+				// above; each tag's own margin would otherwise stack on top.
+				.o_educational_type,
+				.o_tag {
+					margin-right: 0;
+				}
+
+				.o_tag {
+					font-weight: normal;
+				}
+			}
+
 			.o_educational_type {
-				margin-right: .5em;
-				margin-top: auto;
-				margin-bottom: auto;
-				line-height: normal;
+				margin-top: 0;
+				margin-bottom: 2px;
+				line-height: inherit;
+				font-size: 12px;
+				padding: 1px 0.5em;
+				border-radius: 0.5em;
 			}
 			
 			.o_author {
 				color: $o-coursesite-meta-author-color;
 				white-space: normal;
 			}
-			
-			.o_header_offers {
-				margin-top: auto;
-			}
+		}
+	}
 
-			.o_offer_login_buton {
-				width: 50%;
+	// The start/leave/admin buttons are rendered inside the "Get started"
+	// card (get_started.html), not inside the header - not nested under
+	// .o_header here.
+	.o_get_started {
+		.o_header_offers {
+			margin-top: auto;
+		}
+
+		.o_start_wrapper {
+			.o_start_message {
+				width: $o-ac-offers-container-max-width;
+				max-width: $o-ac-offers-container-max-width;
+				margin-bottom: math.div($o-radio-cards-gap, 2);
 			}
-			
-			.o_start_wrapper {
-				.o_start_message {
-					width: $o-ac-offers-container-max-width;
-					max-width: $o-ac-offers-container-max-width;
-					margin-bottom: math.div($o-radio-cards-gap, 2);
+			// Open/leave/admin always stacked, one below the other.
+			.o_start_inner {
+				display: flex;
+				flex-direction: column;
+				gap: 5px; // matches .o_button_group's inter-button spacing
+
+				> .o_button_call_to_action {
+					max-width: 100%;
+					margin-top: 0;
 				}
-				.o_start_inner {
-					> .o_button_call_to_action {
-						max-width: 100%;
-						margin-top: 0;
-						justify-self: stretch;
-					}
-					
-					display: grid;
-					grid-template-columns: minmax(100px, $o-ac-offers-container-max-width) max-content;
-					gap: 20px;
-					align-items: center;
-					justify-items: center;
-					
-					// Only the leave action is available
-					&:not(:has(> :nth-child(2))) {
-						grid-template-columns: 1fr;
-						justify-items: start;
-						.o_leave_space {
-							display: none;
-						}
-					}
-				}
-			}
-			.o_start_wrapper {
-				container-type: inline-size;
-				container-name: o_start_wrapper;
-			}
-			@container o_start_wrapper (max-width: 440px) {
-				.o_start_wrapper {
-					.o_start_inner {
-						grid-template-columns: 1fr;
-						.o_leave_space {
-							display: none;
-						}
-					}
+
+				.o_leave_space {
+					display: none;
 				}
 			}
 		}
-	}
-	
-	.o_repo_meta {
-		column-count: 1;
-	}
-	&>div {
-		margin-bottom: 20px;
 	}
 
 	display: grid;
 	grid-template-columns: 1fr;
-	
-	.o_subcolumn {
-		break-inside: avoid-column;
-		padding-top: 10px;
+	gap: 20px;
+
+	// Mobile: both column wrappers disappear from the box tree, their items
+	// become direct grid children so `order` alone controls the sequence.
+	.o_info_page_column_aside,
+	.o_info_page_column_main {
+		display: contents;
 	}
-	
-	@media (min-width: 500px) {
-		.o_repo_meta {
-			column-count: 2;
-		}
-		.subcolumn {
-			width: 45%;	
-		}
-	}
-	
-	@media (min-width: $screen-md-min) {
-		grid-template-columns: 1fr auto;
-		&>div {
-			grid-column-start: span 2;
-		}
-		.o_repo_column {
-			grid-column-start: span 1;
-		}
-		.o_repo_column:has(.o_repo_meta) {
-			min-width: 300px;
-			max-width: 450px;
-			margin-top: 20px; // Align with description title
-			margin-left: 60px;
-			
-		}
-		
-		.o_repo_column .o_repo_meta {
-			column-count: 1;
-			.o_subcolumn {
-				width: auto;
-			}
+
+	.o_info_page_thumbnail { order: 1; }
+	.o_info_page_header { order: 2; }
+	.o_info_page_get_started { order: 3; }
+	.o_info_page_my_course { order: 4; }
+	.o_info_page_events { order: 5; }
+	.o_info_page_benefits { order: 6; }
+	.o_info_page_facts { order: 7; }
+	.o_info_page_sections { order: 8; }
+	.o_info_page_licence { order: 9; }
+	.o_info_page_rating { order: 10; }
+	.o_info_page_technical { order: 11; }
+
+	.o_info_page_thumbnail {
+		.o_image, img, .o_video, video {
+			width: 100%;
+			max-width: 570px; //570x380
+			border-radius: $o-repo-info-border-radius;
 		}
 	}
 
-	.o_social {
+	// Tablet width: still a single overall column (aside/main stacked), but
+	// wide enough to put the thumbnail next to the title again, as before
+	// the redesign moved it into its own grid item.
+	@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
+		grid-template-columns: 1fr auto;
+
+		.o_info_page_item {
+			grid-column: 1 / -1;
+		}
+
+		.o_info_page_header {
+			grid-column: 1;
+			grid-row: 1;
+		}
+
+		.o_info_page_thumbnail {
+			grid-column: 2;
+			grid-row: 1;
+			max-width: floor(570px * 0.5); //570x380
+		}
+	}
+
+	@media (min-width: $screen-md-min) {
+		grid-template-columns: 2fr 1fr;
+		align-items: start;
+
+		// Desktop: the wrappers regain their box, each an independent-height
+		// flex column; `order` above still sorts correctly within each one.
+		.o_info_page_column_aside,
+		.o_info_page_column_main {
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+		}
+
+		.o_info_page_column_main {
+			grid-column: 1;
+			grid-row: 1;
+		}
+
+		.o_info_page_column_aside {
+			grid-column: 2;
+			grid-row: 1;
+		}
+	}
+
+	.o_get_started .o_header_offers .btn {
+		width: 100%;
+	}
+
+	.o_info_page_rating {
 		@include clearfix();
 		.o_rating_wrapper {
 			float: left;
@@ -180,12 +205,12 @@
 			@extend %o_undecorated;
 			margin-left: 1em;
 		}
-	}	
+	}
     .o_tag {
     	display: inline-block;
     }
 }
-.o_repo_info_panel.o_lightbox_modal_form:is(.basicLightbox *),  // Hack to keep the background in lightbox
+
 .o_repo_info_panel {
 	border: 1px solid $o-coursesite-sidecol-border;
 	border-radius: $o-coursesite-sidecol-radius;

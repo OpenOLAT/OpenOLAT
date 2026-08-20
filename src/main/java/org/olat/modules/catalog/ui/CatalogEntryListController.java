@@ -1063,7 +1063,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 				Roles roles = getIdentity() != null && getIdentity().equals(searchParams.getMember())? ureq.getUserSession().getRoles(): Roles.userRoles();
 				config = new CatalogRepositoryEntryHeaderConfig(entry, searchParams.getMember(), roles, true);
 			}
-			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, entry, config);
+			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, entry, config, searchParams.isWebPublish());
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
@@ -1104,7 +1104,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			} else {
 				config = new CatalogCurriculumElementStructuredHeaderConfig(curriculumElement, searchParams.getMember());
 			}
-			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, config);
+			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, config, searchParams.isWebPublish());
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			

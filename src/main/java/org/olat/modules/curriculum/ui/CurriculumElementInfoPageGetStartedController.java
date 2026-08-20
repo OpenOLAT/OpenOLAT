@@ -37,13 +37,10 @@ import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.repository.RepositoryEntryEducationalType;
-import org.olat.repository.ui.list.AbstractDetailsHeaderController;
+import org.olat.repository.ui.list.AbstractInfoPageGetStartedController;
 import org.olat.repository.ui.list.DetailsHeaderConfig;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.OLATResource;
@@ -54,87 +51,36 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
- * Initial date: Jan 15, 2025<br>
+ *
+ * Initial date: 19 Aug 2026<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class CurriculumElementInfosHeaderController extends AbstractDetailsHeaderController {
-	
+public class CurriculumElementInfoPageGetStartedController extends AbstractInfoPageGetStartedController {
+
 	private CloseableModalController cmc;
 	private ConfirmationController leaveConfirmationCtrl;
-	
+
 	private final CurriculumElement element;
 	private final Identity bookedIdentity;
 
 	@Autowired
 	private CurriculumService curriculumService;
-	
-	
-	public CurriculumElementInfosHeaderController(UserRequest ureq, WindowControl wControl,
+
+	public CurriculumElementInfoPageGetStartedController(UserRequest ureq, WindowControl wControl,
 			DetailsHeaderConfig config, CurriculumElement element) {
 		super(ureq, wControl, config);
 		this.element = element;
 		this.bookedIdentity = config.getBookedIdentity();
-		
+
 		init(ureq);
 	}
-	
-	@Override
-	protected String getIconCssClass() {
-		return "o_icon_curriculum_element";
-	}
-	
-	@Override
-	protected String getExternalRef() {
-		return element.getIdentifier();
-	}
 
-	@Override
-	protected String getTranslatedTechnicalType() {
-		return element.getType() != null? element.getType().getDisplayName(): null;
-	}
-
-	@Override
-	protected String getTitle() {
-		return element.getDisplayName();
-	}
-
-	@Override
-	protected String getAuthors() {
-		return element.getAuthors();
-	}
-
-	@Override
-	protected String getTeaser() {
-		return element.getTeaser();
-	}
-
-	@Override
-	protected VFSLeaf getTeaserImage() {
-		return curriculumService.getCurriculumElemenFile(element, CurriculumElementFileType.teaserImage);
-	}
-
-	@Override
-	protected VFSLeaf getTeaserMovie() {
-		return curriculumService.getCurriculumElemenFile(element, CurriculumElementFileType.teaserVideo);
-	}
-
-	@Override
-	protected RepositoryEntryEducationalType getEducationalType() {
-		return element.getEducationalType();
-	}
-
-	@Override
-	protected String getPendingMessageElementName() {
-		return element.getType().getDisplayName();
-	}
-	
 	@Override
 	protected String getLeaveText(boolean withFee) {
-		return withFee? translate("leave.cancel.fee"): translate("leave.cancel");
+		return withFee ? translate("leave.cancel.fee") : translate("leave.cancel");
 	}
-	
+
 	@Override
 	protected String getStartLinkText() {
 		return translate("open.with.type", StringHelper.escapeHtml(element.getType().getDisplayName()));
@@ -144,7 +90,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	protected OLATResource getResource() {
 		return element.getResource();
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == startCtrl) {
@@ -170,12 +116,12 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		leaveConfirmationCtrl = null;
 		cmc = null;
 	}
-	
-	private void doConfirmLeave(UserRequest ureq) {	
+
+	private void doConfirmLeave(UserRequest ureq) {
 		List<Order> orders = acService.findOrders(bookedIdentity, element.getResource(),
 				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
 		Price cancellationFee = acService.getCancellationFee(element.getResource(), element.getBeginDate(), orders);
-		
+
 		String modalTitle;
 		if (cancellationFee == null) {
 			leaveConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
@@ -193,14 +139,14 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			modalTitle = translate("leave.cancel.fee");
 		}
 		listenTo(leaveConfirmationCtrl);
-		
+
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				leaveConfirmationCtrl.getInitialComponent(), true, modalTitle, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
-	private void doLeave(UserRequest ureq) {	
+
+	private void doLeave(UserRequest ureq) {
 		List<Order> orders = acService.findOrders(bookedIdentity, element.getResource(),
 				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
 		if (orders.isEmpty()) {
@@ -220,8 +166,8 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 				curriculumService.removeMemberReservation(element, bookedIdentity, CurriculumRoles.participant, GroupMembershipStatus.removed, getIdentity(), null);
 			}
 		}
-		
+
 		fireEvent(ureq, new LeavingEvent(element));
 	}
-	
+
 }

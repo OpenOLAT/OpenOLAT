@@ -1,0 +1,78 @@
+<div class="o_info_page #if($educationalTypeClass) $educationalTypeClass #end">
+	<script>
+		#if($oInfoCourse)
+			o_info.course=$oInfoCourse;
+		#else
+			delete o_info.course;
+		#end
+	</script>
+
+	<div class="o_info_page_column_aside">
+		#if($r.available("thumbnail"))
+			<div class="o_info_page_item o_info_page_thumbnail">
+				$r.render("thumbnail")
+			</div>
+		#end
+
+		#if($r.available("getStarted"))
+			<div class="o_info_page_item o_info_page_get_started">
+				$r.render("getStarted")
+			</div>
+		#end
+
+		#if($r.available("myCourse"))
+			<div class="o_info_page_item o_info_page_my_course">
+				$r.render("myCourse")
+			</div>
+		#end
+
+		#if($r.available("events"))
+			<div class="o_info_page_item o_info_page_events">
+				$r.render("events")
+			</div>
+		#end
+	</div>
+
+	<div class="o_info_page_column_main">
+		<div class="o_info_page_item o_info_page_header">
+			$r.render("header")
+		</div>
+
+		#if($r.available("benefits"))
+			<div class="o_info_page_item o_info_page_benefits">
+				$r.render("benefits")
+			</div>
+		#end
+
+		#if($r.available("facts"))
+			<div class="o_info_page_item o_info_page_facts">
+				$r.render("facts")
+			</div>
+		#end
+
+		#if($r.available("sections"))
+			<div class="o_info_page_item o_info_page_sections">
+				$r.render("sections")
+			</div>
+		#end
+
+		#if($r.available("licence"))
+			<div class="o_info_page_item o_info_page_licence">
+				$r.render("licence")
+			</div>
+		#end
+
+		#if($r.available("rating") || $r.available("comments"))
+			<fieldset class="o_info_page_item o_info_page_rating"><legend>$r.translate("ratings")</legend>
+				#if($r.available("rating")) $r.render("rating") #end
+				#if($r.available("comments")) $r.render("comments") #end
+			</fieldset>
+		#end
+
+		#if($r.available("technical"))
+			<div class="o_info_page_item o_info_page_technical">
+				$r.render("technical")
+			</div>
+		#end
+	</div>
+</div>

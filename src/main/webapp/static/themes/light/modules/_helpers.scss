@@ -246,6 +246,13 @@
 		background-color: $o-button-ghost-hover-background-color;
 		border-color: $o-button-ghost-hover-border-color;
 	}
+	&.btn-danger {
+		color: $brand-danger;
+		&:hover {
+			color: $brand-danger;
+			border-color: $brand-danger;
+		}
+	}
 }
 /* ---- Transitions for modern behavior ---- */
 @media (prefers-reduced-motion: no-preference) {

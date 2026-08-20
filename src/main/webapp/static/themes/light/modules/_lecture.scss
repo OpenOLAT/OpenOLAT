@@ -435,16 +435,16 @@ tr.o_rm_room_preselected {
 	.o_lectures_timeline_rows {
 		display: flex;
 		flex-direction: column;
-		gap: $o-lm-timeline-rows-gap;
 		.o_lectures_timeline_row {
 			background-color: $o-lm-timeline-row-bg;
 			border-radius: $o-lm-timeline-row-border-radius;
-			
+
 			display: flex;
-			
+
 			.o_lectures_timeline_year {
 				display: flex;
 				align-items: center;
+				margin-left: 1rem;
 				h5 {
 					font-size: $font-size-h4;
 					font-weight: bold;
@@ -453,12 +453,12 @@ tr.o_rm_room_preselected {
 			.o_lectures_timeline_day {
 				padding: $o-lm-timeline-row-padding;
 				min-width: $o-lm-timeline-day-width;
-				
+
 				display: flex;
 				flex-direction: column;
 				align-items: center;
 				justify-content: center;
-				
+
 				.o_lectures_timeline_day_name {
 					font-size: 14px;
 					font-weight: 500;
@@ -476,16 +476,16 @@ tr.o_rm_room_preselected {
 					text-transform: uppercase;
 				}
 			}
-			
+
 			.o_lectures_timeline_path_lectures {
 				display: flex;
 				flex-direction: column;
-				
+
 				.o_lectures_timeline_path_lecture {
 					display: flex;
 					height: 100%;
 				}
-				
+
 				>.o_lectures_timeline_path_lecture:last-child {
 					.o_lectures_timeline_lecture {
 						>div:last-child {
@@ -495,14 +495,14 @@ tr.o_rm_room_preselected {
 					}
 				}
 			}
-			
+
 			.o_lectures_timeline_path {
 				width: $o-lm-timeline-path-width	;
 				min-width: $o-lm-timeline-path-width	;
-				
+
 				display: flex;
 				flex-direction: column;
-				
+
 				.o_lectures_timeline_path_top,
 				.o_lectures_timeline_path_bottom {
 					border-left: $o-lm-timeline-path-stroke-width solid $o-lm-timeline-path-color;
@@ -522,13 +522,13 @@ tr.o_rm_room_preselected {
 					flex-grow: 2;
 				}
 			}
-			
+
 			.o_lectures_timeline_lecture {
 				padding-right: $o-lm-timeline-row-padding;
-				
+
 				display: flex;
 				flex-direction: column;
-				
+
 				.o_lectures_timeline_lectures_top {
 					height: ($o-lm-timeline-path-top-height - 2px);
 				}
@@ -543,7 +543,7 @@ tr.o_rm_room_preselected {
 				}
 			}
 		}
-		
+
 		// Do not show a path before the first event (first child = year)
 		>.o_lectures_timeline_row:nth-child(2) {
 			.o_lectures_timeline_path_lecture:first-child {

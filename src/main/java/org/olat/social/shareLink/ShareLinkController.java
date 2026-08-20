@@ -97,10 +97,14 @@ public class ShareLinkController extends BasicController {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("shareLink");
 
-		shareLink = LinkFactory.createCustomLink("share", "share", "share.social", Link.LINK, mainVC, this);
+		int presentation = iconOnly ? Link.LINK : Link.BUTTON;
+
+		shareLink = LinkFactory.createCustomLink("share", "share", "share.social", presentation, mainVC, this);
 		shareLink.setIconLeftCSS("o_icon o_icon_share o_icon-lg");
 		if (iconOnly) {
 			shareLink.setCustomDisplayText("");
+		} else {
+			shareLink.setElementCssClass("o_button_ghost");
 		}
 		shareLink.setTitle("share.social");
 		shareLink.setAriaDialogOpener();
@@ -108,10 +112,12 @@ public class ShareLinkController extends BasicController {
 		UserSession usess = ureq.getUserSession();
 		boolean isUser = usess.isAuthenticated() && !usess.getRoles().isGuestOnly();
 		if (withLandingPageLink && isUser) {
-			landingPageLink = LinkFactory.createCustomLink("landingpage", "setLandingPage", "landingpage.set.current", Link.LINK, mainVC, this);
+			landingPageLink = LinkFactory.createCustomLink("landingpage", "setLandingPage", "landingpage.set.current", presentation, mainVC, this);
 			landingPageLink.setIconLeftCSS("o_icon o_icon_landingpage o_icon-lg");
 			if (iconOnly) {
 				landingPageLink.setCustomDisplayText("");
+			} else {
+				landingPageLink.setElementCssClass("o_button_ghost");
 			}
 			landingPageLink.setTitle("landingpage.set.current");
 		} else {

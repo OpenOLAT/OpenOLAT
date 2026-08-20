@@ -49,9 +49,9 @@ public class FactSheetRenderer extends DefaultComponentRenderer {
 		sb.append("\">");
 
 		if (StringHelper.containsNonWhitespace(factSheet.getTitle())) {
-			sb.append("<div class=\"o_fact_sheet_title\">");
+			sb.append("<h3 class=\"o_fact_sheet_title\">");
 			sb.append(StringHelper.escapeHtml(factSheet.getTitle()));
-			sb.append("</div>");
+			sb.append("</h3>");
 		}
 
 		sb.append("<div class=\"o_facts\">");

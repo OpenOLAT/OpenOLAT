@@ -1,0 +1,38 @@
+<div class="o_get_started o_fact_sheet">
+	<h3 class="o_fact_sheet_title">$r.translate("details.get.started")</h3>
+
+	#if($r.isNotEmpty($info))
+		<div class="o_info_with_icon">
+			<div>$info</div>
+		</div>
+	#end
+
+	#if($r.isNotEmpty($warning))
+		<div class="o_warning_with_icon">
+			<h4>$warning</h4>
+			<div>$warningHint</div>
+		</div>
+	#end
+
+	#if($r.isNotEmpty($warning2))
+		<div class="o_warning_with_icon">
+			<h4>$warning2</h4>
+			<div>$warning2Hint</div>
+		</div>
+	#end
+
+	#if($r.available("acceptPendingReservation"))
+		$r.render("acceptPendingReservation")
+	#end
+
+	<div class="o_header_offers">
+		#if($r.available("offers") && $r.visible("offers"))
+			$r.render("offers")
+		#elseif($r.isNotEmpty($catalogBookable))
+			<p>$catalogBookable</p>
+			$r.render("showCatalog")
+		#elseif($r.available("start") && $r.visible("start"))
+			$r.render("start")
+		#end
+	</div>
+</div>

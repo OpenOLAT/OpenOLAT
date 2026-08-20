@@ -1459,8 +1459,8 @@ div.o_correction_navigation {
     color: 	$o-edu-type-selfstudy-course-color;
 }
 
-/* in ".o_repo_details .o_lead" and ".o_coursetable .o_rendertype_custom" */
-.o_repo_details .o_lead .o_educational_type,
+/* in ".o_info_page .o_lead" and ".o_coursetable .o_rendertype_custom" */
+.o_info_page .o_lead .o_educational_type,
 .o_coursetable.o_rendertype_custom .o_educational_type {
 	margin-right: 0.5em; 
 	margin-top: auto;

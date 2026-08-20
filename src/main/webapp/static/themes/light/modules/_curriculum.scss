@@ -592,30 +592,6 @@ fieldset.o_validation_result {
 	}
 }
 
-.o_curriculum_element_infos {
-	.o_curriculum_element_infos_main {
-		display: flex;
-		gap: 15px;
-		flex-direction: column;
-		.o_curriculum_element_infos_left {
-			flex-grow: 2
-		}
-		
-		@media (min-width: $screen-md-max) {
-			flex-direction: row;
-			.o_curriculum_element_infos_right {
-				// align with teaser image: o_repo_details o_media 
-				min-width: floor(570px * 0.75);
-				max-width: floor(570px * 0.75);
-			}
-		}
-		>div {
-			display: grid;
-			gap: 15px;
-			align-content: start;
-		}
-	}
-}
 
 .o_curriculum_element_outline {
 	.o_curriculum_element_outline_main {

@@ -1,0 +1,17 @@
+<div class="o_license_info">
+	<h3 class="sr-only">$r.translate("license")</h3>
+	#if ($licenseIconCss != "")
+		<i class="o_icon o_icon-2x $r.escapeCssClass($licenseIconCss)"> </i>
+	#end
+	<div class="o_license">
+		$r.escapeHtml($license)
+	</div>
+	<div class="o_licensor">
+		– $r.escapeHtml($licensor)
+	</div>
+	#if($licenseText)
+	<div class="o_license_text">
+		$r.xssScan($licenseText)
+	</div>
+	#end
+</div>

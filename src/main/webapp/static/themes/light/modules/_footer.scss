@@ -88,7 +88,7 @@
 }
 		
 /*  share links (copy link, QR code, social networks) from SocialModule.java */
-#o_share {
+#o_footer_user #o_share {
 	margin-top: 10px;
 	a {
 		@include opacity(.6);
@@ -98,7 +98,7 @@
 	}
 }
 
-#o_share, .o_share_links {
+#o_footer_user #o_share, #o_footer_user .o_share_links {
 	a {
 		color: $o-footer-default-link-color;
 		margin: 0 0.25em 0 0;

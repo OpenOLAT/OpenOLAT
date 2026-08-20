@@ -24,6 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ResourceInfoDispatcher;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
@@ -32,7 +33,7 @@ public class RepositoryEntryPublicInfosController extends RepositoryEntryDetails
 
 
 	public RepositoryEntryPublicInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		super(ureq, wControl, entry, true, false, null);
+		super(ureq, wControl, entry, null, ResourceInfoDispatcher.getUrl(entry.getKey().toString()), true, false);
 	}
 
 	@Override

@@ -28,111 +28,47 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.course.condition.ConditionNodeAccessProvider;
-import org.olat.course.nodeaccess.NodeAccessService;
-import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.run.leave.ConfirmLeaveController;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
- * Initial date: Jan 15, 2025<br>
+ *
+ * Initial date: 19 Aug 2026<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeaderController {
+public class RepositoryEntryInfoPageGetStartedController extends AbstractInfoPageGetStartedController {
 
 	private CloseableModalController cmc;
 	private ConfirmLeaveController leaveDialogBox;
-	
+
 	private final RepositoryEntry entry;
 	private final boolean closeTabOnLeave;
-	
+
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
-	private NodeAccessService nodeAccessService;
-	@Autowired
 	private BusinessGroupService businessGroupService;
 
-	public RepositoryEntryDetailsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+	public RepositoryEntryInfoPageGetStartedController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			boolean closeTabOnLeave, DetailsHeaderConfig config) {
 		super(ureq, wControl, config);
 		this.entry = entry;
 		this.closeTabOnLeave = closeTabOnLeave;
-		
+
 		init(ureq);
 	}
 
 	@Override
-	protected String getIconCssClass() {
-		return RepositoyUIFactory.getIconCssClass(entry);
-	}
-
-	@Override
-	protected String getExternalRef() {
-		return entry.getExternalRef();
-	}
-
-	@Override
-	protected String getTranslatedTechnicalType() {
-		if (StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
-			NodeAccessType type = NodeAccessType.of(entry.getTechnicalType());
-			return ConditionNodeAccessProvider.TYPE.equals(type.getType())
-					? translate("CourseModule")
-					: nodeAccessService.getNodeAccessTypeName(type, getLocale());
-		}
-		return translate(entry.getOlatResource().getResourceableTypeName());
-	}
-
-	@Override
-	protected String getTitle() {
-		return entry.getDisplayname();
-	}
-
-	@Override
-	protected String getAuthors() {
-		return entry.getAuthors();
-	}
-
-	@Override
-	protected String getTeaser() {
-		return entry.getTeaser();
-	}
-
-	@Override
-	protected VFSLeaf getTeaserImage() {
-		return repositoryService.getIntroductionImage(entry);
-	}
-
-	@Override
-	protected VFSLeaf getTeaserMovie() {
-		return repositoryService.getIntroductionMovie(entry);
-	}
-
-	@Override
-	protected RepositoryEntryEducationalType getEducationalType() {
-		return entry.getEducationalType();
-	}
-
-	@Override
-	protected String getPendingMessageElementName() {
-		return translate("CourseModule");
-	}
-	
-	@Override
 	protected String getLeaveText(boolean withFee) {
 		return translate("sign.out.type", translate(entry.getOlatResource().getResourceableTypeName()));
 	}
-	
+
 	@Override
 	protected String getStartLinkText() {
 		return translate("open.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
@@ -142,11 +78,11 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	protected OLATResource getResource() {
 		return entry.getOlatResource();
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == startCtrl) {
-			if (event == LEAVE_EVENT) {
+			if (event == AbstractInfoPageGetStartedController.LEAVE_EVENT) {
 				doConfirmLeave(ureq);
 			}
 		} else if (leaveDialogBox == source) {
@@ -161,7 +97,7 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(leaveDialogBox);
 		removeAsListenerAndDispose(cmc);
@@ -179,20 +115,18 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
+
 	private void doLeave(UserRequest ureq) {
 		MailerResult result = new MailerResult();
 		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), true);
 		LeavingStatusList status = new LeavingStatusList();
-		//leave course
 		repositoryManager.leave(getIdentity(), entry, status, reMailing);
-		//leave groups
 		businessGroupService.leave(getIdentity(), entry, status, reMailing);
-		DBFactory.getInstance().commit();//make sure all changes are committed
-		
-		if(status.isWarningManagedGroup() || status.isWarningManagedCourse()) {
+		DBFactory.getInstance().commit();
+
+		if (status.isWarningManagedGroup() || status.isWarningManagedCourse()) {
 			showWarning("sign.out.warning.managed");
-		} else if(status.isWarningGroupWithMultipleResources()) {
+		} else if (status.isWarningGroupWithMultipleResources()) {
 			showWarning("sign.out.warning.mutiple.resources");
 		} else {
 			showInfo("sign.out.success", new String[]{ StringHelper.escapeHtml(entry.getDisplayname()) });

@@ -2266,3 +2266,8 @@ ul.o_list_narrow {
 		}
 	}
 }
+
+/* Collapsible sections */
+.o_sections .o_section .collapse.in {
+	margin-bottom: 1em;
+}

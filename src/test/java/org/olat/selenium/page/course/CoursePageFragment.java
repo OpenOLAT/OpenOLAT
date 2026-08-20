@@ -85,13 +85,13 @@ public class CoursePageFragment {
 	 * @return Itself
 	 */
 	public CoursePageFragment assertOnCourseStartPage() {
-		By startBy = By.cssSelector(".o_repo_details a.btn.o_start");
+		By startBy = By.cssSelector(".o_info_page a.btn.o_start");
 		OOGraphene.waitElement(startBy, browser);
 		return this;
 	}
 	
 	public CoursePageFragment startCourse() {
-		By startBy = By.cssSelector(".o_repo_details a.btn.o_start");
+		By startBy = By.cssSelector(".o_info_page a.btn.o_start");
 		OOGraphene.waitElement(startBy, browser);
 		browser.findElement(startBy).click();
 		OOGraphene.waitBusy(browser);
@@ -419,7 +419,7 @@ public class CoursePageFragment {
 		By infosBy = By.xpath("//div[@class='o_tools_container']//li[@class='o_tool']/a[contains(@onclick,'courseconfig')][i[contains(@class,'o_icon_details')]]");
 		OOGraphene.waitElement(infosBy, browser).click();
 		
-		By detailsBy = By.cssSelector(".o_repo_details .o_repo_header .o_meta>h2");
+		By detailsBy = By.cssSelector(".o_info_page .o_header .o_meta>h2");
 		OOGraphene.waitElement(detailsBy, browser);
 		
 		return new CourseInfoPage(browser);

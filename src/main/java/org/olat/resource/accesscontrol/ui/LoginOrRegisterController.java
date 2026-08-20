@@ -21,6 +21,7 @@ package org.olat.resource.accesscontrol.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -35,7 +36,8 @@ public class LoginOrRegisterController extends FormBasicController implements Fo
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		uifactory.addFormSubmitButton("login.or.register", formLayout);
+		FormSubmit submitButton = uifactory.addFormSubmitButton("login.or.register", formLayout);
+		submitButton.setElementCssClass("o_button_call_to_action");
 	}
 
 	@Override

@@ -46,7 +46,11 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	protected ACService acService;
 
 	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, DetailsHeaderConfig config) {
-		super(ureq, wControl, entry, false, false, config);
+		super(ureq, wControl, entry, config, RepositoryEntryDetailsController.getShareUrl(entry), false, false);
+	}
+
+	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, DetailsHeaderConfig config, boolean webPublish) {
+		super(ureq, wControl, entry, config, CatalogBCFactory.get(webPublish).getOfferUrl(entry.getOlatResource()), false, false);
 	}
 
 	@Override

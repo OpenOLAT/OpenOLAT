@@ -63,7 +63,7 @@ public class MyCoursesPage {
 	
 	public MyCoursesPage assertOnCurriculumElementDetails(String title) {
 		title = Formatter.truncateOnly(title, 55);
-		By titleBy = By.xpath("//div[@class='o_curriculum_element_infos']//div[contains(@class,'o_curriculum_element_infos_header')]//h2[text()[contains(.,'" + title + "')]]");
+		By titleBy = By.xpath("//div[contains(@class,'o_info_page')]//div[@class='o_meta']/h2[text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElement(titleBy, browser);
 		return this;
 	}

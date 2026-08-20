@@ -64,7 +64,7 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 	@Autowired
 	private CurriculumService curriculumService;
 
-	protected CurriculumElementInfosOutlineController(UserRequest ureq, WindowControl wControl,
+	public CurriculumElementInfosOutlineController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement rootElement, List<LectureBlock> lectureBlocks) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("curriculum_element_outline");

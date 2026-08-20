@@ -36,6 +36,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
@@ -46,6 +47,9 @@ import org.olat.course.CourseModule;
 import org.olat.course.run.InfoCourse;
 import org.olat.modules.catalog.ui.BookEvent;
 import org.olat.modules.catalog.ui.BookedEvent;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.ui.LectureBlocksTimelineController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -57,23 +61,28 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * 
+ *
  * Initial date: 25.03.2014<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
- * 
+ *
  */
 public abstract class RepositoryEntryDetailsController extends BasicController implements Activateable2 {
 
 	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryDetailsController.class);
-	
-	private RepositoryEntryDetailsHeaderController headerCtrl;
-	private RepositoryEntryResourceInfoDetailsHeaderController resourceInfoHeaderCtrl;
-	private final RepositoryEntryDetailsDescriptionController descriptionCtrl;
-	private final RepositoryEntryDetailsMetadataController metadataCtrl;
-	private final RepositoryEntryDetailsLinkController linkCtrl;
-	private RepositoryEntryDetailsTechnicalController technicalDetailsCtrl;
-	private RepositoryEntryDetailsBenefitsController benefitsCtrl;
+
+	private final InfoPageHeaderController headerCtrl;
+	private final InfoPageTeaserImageController teaserImageCtrl;
+	private RepositoryEntryInfoPageGetStartedController getStartedCtrl;
+	private InfoPagePublicGetStartedController publicGetStartedCtrl;
+	private final InfoPageBenefitsController benefitsCtrl;
+	private final InfoPageFactsController factsCtrl;
+	private final RepositoryEntryInfoPageSectionsController sectionsCtrl;
+	private LectureBlocksTimelineController lectureBlocksCtrl;
+	private final InfoPageLicenceController licenceCtrl;
+	private final InfoPageMyCourseController myCourseCtrl;
+	private InfoPageRatingController ratingCtrl;
 	private UserCommentsAndRatingsController userCommentsCtrl;
+	private RepositoryEntryDetailsTechnicalController technicalDetailsCtrl;
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private final RepositoryEntry entry;
@@ -86,50 +95,95 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private LectureService lectureService;
 
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean isResourceInfoView, boolean closeTabOnLeave, DetailsHeaderConfig config) {
+			DetailsHeaderConfig config, String shareUrl, boolean isResourceInfoView, boolean closeTabOnLeave) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		UserSession usess = ureq.getUserSession();
 		guestOnly = usess.getRoles() == null || usess.getRoles().isGuestOnly();
-		
+
 		List<String> memberRoles = getIdentity() != null? repositoryService.getRoles(getIdentity(), entry): List.of();
 		boolean isOwner = memberRoles.contains(GroupRoles.owner.name());
 		boolean isParticipant = memberRoles.contains(GroupRoles.participant.name());
 		boolean isMember = isOwner || isParticipant || memberRoles.contains(GroupRoles.coach.name());
-		
+
 		velocity_root = Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class);
-		VelocityContainer mainVC = createVelocityContainer("details");
+		VelocityContainer mainVC = createVelocityContainer("info_page");
+
+		InfoPageData data = new RepositoryEntryInfoPageData(entry, getTranslator());
+
+		headerCtrl = new InfoPageHeaderController(ureq, wControl, data, shareUrl);
+		listenTo(headerCtrl);
+		mainVC.put("header", headerCtrl.getInitialComponent());
+
+		teaserImageCtrl = new InfoPageTeaserImageController(ureq, wControl, data);
+		listenTo(teaserImageCtrl);
+		if (teaserImageCtrl.hasContent()) {
+			mainVC.put("thumbnail", teaserImageCtrl.getInitialComponent());
+		}
 
 		if (isResourceInfoView) {
-			resourceInfoHeaderCtrl = new RepositoryEntryResourceInfoDetailsHeaderController(ureq, wControl, entry);
-			listenTo(resourceInfoHeaderCtrl);
-			mainVC.put("header", resourceInfoHeaderCtrl.getInitialComponent());
-			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, true);
+			publicGetStartedCtrl = new InfoPagePublicGetStartedController(ureq, wControl, entry);
+			listenTo(publicGetStartedCtrl);
+			if (publicGetStartedCtrl.hasContent()) {
+				mainVC.put("getStarted", publicGetStartedCtrl.getInitialComponent());
+			}
 		} else {
-			headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, closeTabOnLeave, config);
-			listenTo(headerCtrl);
-			mainVC.put("header", headerCtrl.getInitialComponent());
-			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, guestOnly);
+			getStartedCtrl = new RepositoryEntryInfoPageGetStartedController(ureq, wControl, entry, closeTabOnLeave, config);
+			listenTo(getStartedCtrl);
+			if (getStartedCtrl.hasContent()) {
+				mainVC.put("getStarted", getStartedCtrl.getInitialComponent());
+			}
 		}
-		
-		benefitsCtrl = new RepositoryEntryDetailsBenefitsController(ureq, wControl, entry);
+
+		myCourseCtrl = new InfoPageMyCourseController(ureq, wControl, entry, isMember, guestOnly);
+		listenTo(myCourseCtrl);
+		if (myCourseCtrl.hasContent()) {
+			mainVC.put("myCourse", myCourseCtrl.getInitialComponent());
+		}
+
+		benefitsCtrl = new InfoPageBenefitsController(ureq, wControl, entry);
 		listenTo(benefitsCtrl);
-		mainVC.put("benefits", benefitsCtrl.getInitialComponent());
-		
-		listenTo(metadataCtrl);
-		mainVC.put("metadata", metadataCtrl.getInitialComponent());
-		
-		descriptionCtrl = new RepositoryEntryDetailsDescriptionController(ureq, wControl, entry);
-		listenTo(descriptionCtrl);
-		mainVC.put("description", descriptionCtrl.getInitialComponent());
-		mainVC.contextPut("hasDescription", Boolean.valueOf(descriptionCtrl.hasDescription()));
-		
-		linkCtrl = new RepositoryEntryDetailsLinkController(ureq, wControl, entry);
-		listenTo(linkCtrl);
-		mainVC.put("link", linkCtrl.getInitialComponent());
+		if (benefitsCtrl.hasContent()) {
+			mainVC.put("benefits", benefitsCtrl.getInitialComponent());
+		}
+
+		List<LectureBlock> lectureBlocks = lectureService.isRepositoryEntryLectureEnabled(entry)
+				? lectureService.getLectureBlocks(entry)
+				: List.of();
+		factsCtrl = new InfoPageFactsController(ureq, wControl, entry, lectureBlocks.size());
+		listenTo(factsCtrl);
+		if (factsCtrl.hasContent()) {
+			mainVC.put("facts", factsCtrl.getInitialComponent());
+		}
+
+		sectionsCtrl = new RepositoryEntryInfoPageSectionsController(ureq, wControl, entry);
+		listenTo(sectionsCtrl);
+		if (sectionsCtrl.hasContent()) {
+			mainVC.put("sections", sectionsCtrl.getInitialComponent());
+		}
+
+		if (!lectureBlocks.isEmpty()) {
+			lectureBlocksCtrl = new LectureBlocksTimelineController(ureq, wControl, lectureBlocks, true);
+			listenTo(lectureBlocksCtrl);
+			mainVC.put("events", lectureBlocksCtrl.getInitialComponent());
+		}
+
+		licenceCtrl = new InfoPageLicenceController(ureq, wControl, entry);
+		listenTo(licenceCtrl);
+		if (licenceCtrl.hasContent()) {
+			mainVC.put("licence", licenceCtrl.getInitialComponent());
+		}
+
+		if (repositoryModule.isRatingEnabled()) {
+			ratingCtrl = new InfoPageRatingController(ureq, wControl, entry, guestOnly);
+			listenTo(ratingCtrl);
+			mainVC.put("rating", ratingCtrl.getInitialComponent());
+		}
 
 		if (repositoryModule.isCommentEnabled()) {
 			userCommentsCtrl = initCommentsCtrl(ureq);
@@ -145,11 +199,11 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 				mainVC.put("technical", technicalDetailsCtrl.getInitialComponent());
 			}
 		}
-		
+
 		if (entry.getEducationalType() != null) {
-			mainVC.contextPut("educationalTypeClass", entry.getEducationalType().getCssClass());	
+			mainVC.contextPut("educationalTypeClass", entry.getEducationalType().getCssClass());
 		}
-		
+
 		if (courseModule.isInfoDetailsEnabled()) {
 			String oInfoCourse = null;
 			try {
@@ -162,8 +216,14 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 			}
 			mainVC.contextPut("oInfoCourse", oInfoCourse);
 		}
-		
+
 		putInitialPanel(mainVC);
+	}
+
+	public static String getShareUrl(RepositoryEntry entry) {
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "][Infos:0]";
+		List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
+		return BusinessControlFactory.getInstance().getAsURIString(ces, true);
 	}
 
 	private UserCommentsAndRatingsController initCommentsCtrl(UserRequest ureq) {
@@ -177,7 +237,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
-		
+
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Comments".equalsIgnoreCase(type) && userCommentsCtrl != null) {
 			userCommentsCtrl.scrollToCommentsArea();
@@ -191,10 +251,10 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == headerCtrl) {
-			if (event == RepositoryEntryDetailsHeaderController.START_EVENT) {
+		if (source == getStartedCtrl) {
+			if (event == AbstractInfoPageGetStartedController.START_EVENT) {
 				doStart(ureq);
-			} else if (event == RepositoryEntryDetailsHeaderController.RESERVATION_CONFIRMATION_EVENT) {
+			} else if (event == AbstractInfoPageGetStartedController.RESERVATION_CONFIRMATION_EVENT) {
 				doBooked(ureq);
 				fireEvent(ureq, new BookedEvent(entry));
 			} else if (event instanceof BookEvent) {
@@ -207,20 +267,20 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 			} else if (event == OffersController.LOGIN_EVENT) {
 				fireEvent(ureq, new BookEvent(entry.getOlatResource().getKey()));
 			}
-		} else if (source == resourceInfoHeaderCtrl) {
-			if (event == RepositoryEntryResourceInfoDetailsHeaderController.START_EVENT) {
+		} else if (source == publicGetStartedCtrl) {
+			if (event == InfoPagePublicGetStartedController.START_EVENT) {
 				doStart(ureq);
 			}
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	protected RepositoryEntry getEntry() {
 		return entry;
 	}
-	
+
 	protected abstract void doStart(UserRequest ureq);
-	
+
 	protected abstract void doBooked(UserRequest ureq);
 
 }
