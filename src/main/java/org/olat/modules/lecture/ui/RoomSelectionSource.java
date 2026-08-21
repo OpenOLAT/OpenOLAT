@@ -209,7 +209,8 @@ public class RoomSelectionSource implements ObjectSelectionSource {
 			boolean isOwn = lectureBlock != null && lectureBlock.getKey() != null
 					&& booking.getLectureBlock() != null
 					&& booking.getLectureBlock().getKey().equals(lectureBlock.getKey());
-			if (!isOwn) {
+			boolean overlaps = booking.getStartDate().before(endDate) && booking.getEndDate().after(startDate);
+			if (!isOwn && overlaps) {
 				occupiedByOther.put(booking.getRoom().getKey(), booking);
 			}
 		}

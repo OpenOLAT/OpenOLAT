@@ -250,7 +250,8 @@ public class AddRoomsController extends FormBasicController {
 			boolean isOwnEvent = lectureBlock != null && lectureBlock.getKey() != null
 					&& booking.getLectureBlock() != null
 					&& booking.getLectureBlock().getKey().equals(lectureBlock.getKey());
-			if (!isOwnEvent) {
+			boolean overlaps = booking.getStartDate().before(endDate) && booking.getEndDate().after(startDate);
+			if (!isOwnEvent && overlaps) {
 				occupiedByOther.put(booking.getRoom().getKey(), booking);
 			}
 		}
