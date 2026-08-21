@@ -43,6 +43,7 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String PROP_APPOINTMENTS_ENABLED = "vc.teams.appointments";
 	private static final String PROP_LECTURES_ENABLED = "vc.teams.lectures";
 	private static final String PROP_PRODUCER_ID = "vc.teams.producer.id";
+	private static final String PROP_PERMANENT_MEETINGS_ENABLED = "vc.teams.permanent.meetings";
 	
 	private static final String MSGRAPH_API_KEY = "vc.teams.api.key";
 	private static final String MSGRAPH_API_SECRET = "vc.teams.api.secret";
@@ -74,6 +75,9 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	@Value("${vc.teams.lectures:true}")
 	private String lecturesEnabled;
 	
+	@Value("${vc.teams.permanent.meetings:true}")
+	private String permanentMeetingsEnabled;
+	
 	@Autowired
 	public TeamsModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -97,6 +101,7 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 		chatExamsEnabled = getStringPropertyValue(PROP_CHAT_EXAM_ENABLED, chatExamsEnabled);
 		appointmentsEnabled = getStringPropertyValue(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled);
 		lecturesEnabled = getStringPropertyValue(PROP_LECTURES_ENABLED, lecturesEnabled);
+		permanentMeetingsEnabled = getStringPropertyValue(PROP_PERMANENT_MEETINGS_ENABLED, permanentMeetingsEnabled);
 	}
 
 	@Override
@@ -178,5 +183,14 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setLecturesEnabled(boolean enabled) {
 		lecturesEnabled = enabled ? "true" : "false";
 		setStringProperty(PROP_LECTURES_ENABLED, lecturesEnabled, true);
+	}
+
+	public boolean isPermanentMeetingsEnabled() {
+		return "true".equals(permanentMeetingsEnabled);
+	}
+
+	public void setPermanentMeetings(boolean enabled) {
+		permanentMeetingsEnabled = enabled ? "true" : "false";
+		setStringProperty(PROP_PERMANENT_MEETINGS_ENABLED, permanentMeetingsEnabled, true);
 	}
 }

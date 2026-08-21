@@ -54,6 +54,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.ui.EditTeamsMeetingController.Mode;
 import org.olat.modules.teams.ui.TeamsMeetingTableModel.MeetingsCols;
@@ -96,6 +97,8 @@ public class TeamsEditMeetingsController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
 	private TeamsService teamsService;
 	
 	public TeamsEditMeetingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdentifier,
@@ -121,9 +124,11 @@ public class TeamsEditMeetingsController extends FormBasicController {
 			addSingleMeetingButton.setElementCssClass("o_sel_teams_single_meeting_add");
 			addMeetingDropdown.addElement(addSingleMeetingButton);
 			
-			addPermanentMeetingButton = uifactory.addFormLink("add.permanent.meeting", formLayout, Link.LINK);
-			addPermanentMeetingButton.setElementCssClass("o_sel_teams_permanent_meeting_add");
-			addMeetingDropdown.addElement(addPermanentMeetingButton);
+			if(teamsModule.isPermanentMeetingsEnabled()) {
+				addPermanentMeetingButton = uifactory.addFormLink("add.permanent.meeting", formLayout, Link.LINK);
+				addPermanentMeetingButton.setElementCssClass("o_sel_teams_permanent_meeting_add");
+				addMeetingDropdown.addElement(addPermanentMeetingButton);
+			}
 			
 			addDailyRecurringMeetingsLink = uifactory.addFormLink("add.daily.meeting", formLayout, Link.LINK);
 			addDailyRecurringMeetingsLink.setElementCssClass("o_sel_teams_daily_meeting_add");

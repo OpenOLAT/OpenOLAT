@@ -26,6 +26,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -50,13 +52,17 @@ public class TeamsConfigurationController extends FormBasicController {
 	private static final String FOR_GROUPS_KEY = "groups";
 	private static final String FOR_CHATEXAMS_KEY = "chatexams";
 	private static final String FOR_LECTURES_KEY = "lectures";
-	private static final String[] ENABLED_KEY = new String[]{ "on" };
+	private static final String ON_KEY = "on";
+	private static final String OFF_KEY = "off";
+	private static final String[] ENABLED_KEY = new String[]{ ON_KEY };
 
 	private MultipleSelectionElement moduleEnabled;
 	private MultipleSelectionElement enabledForEl;
+	private SingleSelection permanentMeetingsEl;
 	private StaticTextElement clientIdEl;
 	private StaticTextElement secretEl;
 	private StaticTextElement tenantEl;
+	private SpacerElement spacerEl;
 	
 	@Autowired
 	private TeamsModule teamsModule;
@@ -91,8 +97,18 @@ public class TeamsConfigurationController extends FormBasicController {
 		enabledForEl.select(FOR_GROUPS_KEY, teamsModule.isGroupsEnabled());
 		enabledForEl.select(FOR_CHATEXAMS_KEY, teamsModule.isChatExamsEnabled());
 		
+		SelectionValues onOffPK = new SelectionValues();
+		onOffPK.add(SelectionValues.entry(ON_KEY, translate("on")));
+		onOffPK.add(SelectionValues.entry(OFF_KEY, translate("off")));
+		permanentMeetingsEl = uifactory.addRadiosHorizontal("teams.module.permanent.meetings", formLayout, onOffPK.keys(), onOffPK.values());
+		String permanentSelectedKey = teamsModule.isPermanentMeetingsEnabled() ? ON_KEY : OFF_KEY;
+		permanentMeetingsEl.select(permanentSelectedKey, true);
+		
+		
 		String clientId = teamsModule.getApiKey();
 		boolean showOldConfiguration = StringHelper.containsNonWhitespace(clientId);
+		spacerEl = uifactory.addSpacerElement("old-config-space", formLayout, false);
+		spacerEl.setVisible(showOldConfiguration);
 		clientIdEl = uifactory.addStaticTextElement("client.id", "azure.adfs.id", clientId, formLayout);
 		clientIdEl.setVisible(showOldConfiguration);
 		String clientSecret = teamsModule.getApiSecret();
@@ -101,10 +117,9 @@ public class TeamsConfigurationController extends FormBasicController {
 		String tenant = teamsModule.getTenantGuid();
 		tenantEl = uifactory.addStaticTextElement("tenant", "azure.tenant.guid", tenant, formLayout);
 		tenantEl.setVisible(showOldConfiguration);
-		
+
 		//buttons save - check
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
-		formLayout.add(buttonLayout);
+		FormLayoutContainer buttonLayout = uifactory.addButtonsFormLayout("save", null, formLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 	}
 
@@ -118,11 +133,14 @@ public class TeamsConfigurationController extends FormBasicController {
 	
 	private void updateUI() {
 		boolean enabled = moduleEnabled.isAtLeastSelected(1);
+		enabledForEl.setVisible(enabled);
+		permanentMeetingsEl.setVisible(enabled);
+		
 		boolean showOldConfiguration = StringHelper.containsNonWhitespace(clientIdEl.getValue());
+		spacerEl.setVisible(enabled && showOldConfiguration);
 		clientIdEl.setVisible(enabled && showOldConfiguration);
 		secretEl.setVisible(enabled && showOldConfiguration);
 		tenantEl.setVisible(enabled && showOldConfiguration);
-		enabledForEl.setVisible(enabled);
 	}
 
 	@Override
@@ -136,6 +154,9 @@ public class TeamsConfigurationController extends FormBasicController {
 			teamsModule.setLecturesEnabled(selectedFor.contains(FOR_LECTURES_KEY));
 			teamsModule.setGroupsEnabled(selectedFor.contains(FOR_GROUPS_KEY));
 			teamsModule.setChatExamsEnabled(selectedFor.contains(FOR_CHATEXAMS_KEY));
+			boolean permanentMeetingsEnabled = permanentMeetingsEl.isOneSelected()
+					&& ON_KEY.equals(permanentMeetingsEl.getSelectedKey());
+			teamsModule.setPermanentMeetings(permanentMeetingsEnabled);
 			showInfo("info.saved");
 		}
 		CollaborationToolsFactory.getInstance().initAvailableTools();
