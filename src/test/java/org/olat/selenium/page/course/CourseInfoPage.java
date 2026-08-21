@@ -22,6 +22,7 @@ package org.olat.selenium.page.course;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -44,9 +45,17 @@ public class CourseInfoPage {
 	}
 	
 	public String guestUrl() {
-		By guestUrlBy = By.xpath("//input[@aria-labelledby='o_extlink2']");
-		return OOGraphene.waitElement(guestUrlBy, browser)
-				.getDomAttribute("value");
+		By shareLinksBy = By.cssSelector("#o_share a.o_button_ghost");
+		OOGraphene.waitElement(shareLinksBy, browser).click();
+		OOGraphene.waitCallout(browser, ".o_share_links");
+		
+		By guestUrlBy = By.cssSelector(".o_share_links #copyLink");
+		WebElement urlEl = OOGraphene.waitElement(guestUrlBy, browser);
+		String url = urlEl.getDomAttribute("href");
+		urlEl.click();
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		// Remove details + add guest link
+		return url.replace("/Infos/0", "") + "?guest=true&lang=de";
 	}
 
 }
