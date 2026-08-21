@@ -19,6 +19,8 @@
  */
 package org.olat.user.propertyhandlers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -27,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
@@ -49,22 +52,31 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	
 	private static final String MALE = "male";
 	private static final String FEMALE = "female";
-	private static final String OTHER = "-";
-	private static final String[] keys = new String[] { MALE, FEMALE, OTHER };
+	private static final String OTHER = "other";
+	private static final String NOT_AVAILABLE = "-";
+	private static final String[] keys = new String[] { MALE, FEMALE, OTHER, NOT_AVAILABLE };
 	
-	/**
-	 * Helper method to create translated values that correspond with the static keys
-	 * @param locale
-	 * @return
-	 */
+	private String genders = "male,female,-";
+
+	public String getGenders() {
+		return genders;
+	}
+
+	public void setGenders(String genders) {
+		this.genders = genders;
+	}
 	
-	private String[] getTranslatedValues(Locale locale) {
-		Translator trans = Util.createPackageTranslator(this.getClass(), locale);
-		return new String[] { 
-				trans.translate(i18nFormElementLabelKey() + "." +keys[0]), 
-				trans.translate(i18nFormElementLabelKey() + "." +keys[1]),
-				trans.translate(i18nFormElementLabelKey() + "." +keys[2])
-		};
+	private List<String> getGenderList() {
+		List<String> list = new ArrayList<>(5);
+		if(StringHelper.containsNonWhitespace(genders)) {
+			String[] arr = genders.split(",");
+			for(String str:arr) {
+				if(StringHelper.containsNonWhitespace(str)) {
+					list.add(str);
+				}
+			}	
+		}
+		return list;
 	}
 
 	@Override
@@ -74,7 +86,9 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 				value = "male";
 			} else if("f".equals(value)) {
 				value = "female";
-			}	
+			} else if("o".equals(value)) {
+				value = "other";
+			}
 		}
 		super.setUserProperty(user, value);
 	}
@@ -82,8 +96,9 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	@Override
 	public String getUserProperty(User user, Locale locale) {
 		String internalValue = getInternalValue(user);
-		if(!FEMALE.equals(internalValue) && !MALE.equals(internalValue) && !OTHER.equals(internalValue)) {
-			internalValue = OTHER;
+		if(!FEMALE.equals(internalValue) && !MALE.equals(internalValue)
+				&& !OTHER.equals(internalValue) && !NOT_AVAILABLE.equals(internalValue)) {
+			internalValue = NOT_AVAILABLE;
 		}
 		Translator myTrans;
 		if (locale == null) {
@@ -102,7 +117,10 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 
 	@Override
 	public String getStringValue(FormItem formItem) {
-		return ((org.olat.core.gui.components.form.flexible.elements.SingleSelection) formItem).getSelectedKey();
+		if (formItem instanceof SingleSelection sel && sel.isOneSelected()) {
+			return sel.getSelectedKey();
+		}
+		return null;
 	}
 
 	@Override
@@ -117,19 +135,27 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 
 	@Override
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser,	FormItemContainer formItemContainer) {
-		SingleSelection	genderElem = FormUIFactory.getInstance().addRadiosVertical(getName(), i18nFormElementLabelKey(), formItemContainer, keys, getTranslatedValues(locale));
-		String key = user == null ? OTHER : getInternalValue(user);
-		for(int i=keys.length; i-->0; ) {
-			if(keys[i].equals(key)) {
-				genderElem.select(keys[i], true);
-			}
+		String key = user == null ? NOT_AVAILABLE : getInternalValue(user);
+		
+		List<String> gendersList = getGenderList();
+		SelectionValues genderPK = new SelectionValues();
+		String i18nPrefix = i18nFormElementLabelKey();
+		Translator trans = Util.createPackageTranslator(this.getClass(), locale);
+		for(String gender:gendersList) {
+			genderPK.add(SelectionValues.entry(gender, trans.translate(i18nPrefix + "." + gender)));
+		}
+		SingleSelection	genderElem = FormUIFactory.getInstance().addRadiosVertical(getName(), i18nPrefix, formItemContainer,
+				genderPK.keys(), genderPK.values());
+		if(genderPK.containsKey(key)) {
+			genderElem.select(key, true);
+			
 		}
 		
 		UserManager um = UserManager.getInstance();
-		if ( um.isUserViewReadOnly(usageIdentifyer, this) && ! isAdministrativeUser) {
+		if(um.isUserViewReadOnly(usageIdentifyer, this) && ! isAdministrativeUser) {
 			genderElem.setEnabled(false);
 		}
-		if (um.isMandatoryUserProperty(usageIdentifyer, this)) {
+		if(um.isMandatoryUserProperty(usageIdentifyer, this)) {
 			genderElem.setMandatory(true);
 		}
 		return genderElem;
@@ -138,13 +164,12 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	@Override
 	public String getInternalValue(User user) {
 		String value = super.getInternalValue(user);
-		return (StringHelper.containsNonWhitespace(value) ? value : OTHER); // default		
+		return (StringHelper.containsNonWhitespace(value) ? value : NOT_AVAILABLE); // default		
 	}
 
 	@Override
 	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
-		if (formItem.isMandatory()) {
-			org.olat.core.gui.components.form.flexible.elements.SingleSelection sse = (org.olat.core.gui.components.form.flexible.elements.SingleSelection) formItem;
+		if (formItem.isMandatory() && formItem instanceof SingleSelection sse) {
 			// when mandatory, the - must not be selected
 			if (sse.getSelectedKey().equals("-")) {
 				sse.setErrorKey("gender.error");
