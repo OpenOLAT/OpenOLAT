@@ -235,6 +235,11 @@
 					flex-shrink: 0;
 					margin-left: 20px;
 					text-align: center;
+
+					.o_qrcode {
+						width: 128px;
+						height: 128px;
+					}
 				}
 			}
 		}
