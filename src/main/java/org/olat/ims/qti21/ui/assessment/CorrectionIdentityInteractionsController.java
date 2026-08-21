@@ -272,6 +272,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			
 			overrideScoreButton = uifactory.addFormLink("override.score", overrideScoreCont, Link.BUTTON_SMALL);
 			overrideScoreButton.setDomReplacementWrapperRequired(false);
+			overrideScoreButton.setAriaDialogOpener();
 			overrideScoreButton.setVisible(!readOnly);
 		}
 		commentEl = uifactory.addRichTextElementForStringData("commentItem", "comment", coachComment, 8, -1,
@@ -756,7 +757,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		listenTo(overrideScoreCtrl);
 
 		overrideScoreCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				overrideScoreCtrl.getInitialComponent(), overrideScoreButton.getFormDispatchId(), "", true, "o_assessmentitem_scoring_override_window");
+				overrideScoreCtrl.getInitialComponent(), overrideScoreButton, "", true, "o_assessmentitem_scoring_override_window");
 		listenTo(overrideScoreCalloutCtrl);
 		overrideScoreCalloutCtrl.activate();
 	}

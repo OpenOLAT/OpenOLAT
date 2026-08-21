@@ -96,6 +96,7 @@ public class RelativeDateElementImpl extends FormItemImpl
 		if (link == null) {
 			link = new FormLinkImpl(LINK_COMP_NAME, LINK_COMP_NAME, "set.rule", Link.BUTTON);
 			link.setIconLeftCSS("o_icon o_icon_calendar");
+			link.setAriaDialogOpener();
 			link.setElementCssClass("input-group-addon");
 			link.setTranslator(Util.createPackageTranslator(RelativeDateElementImpl.class, getTranslator().getLocale()));
 			link.setRootForm(getRootForm());
@@ -136,7 +137,7 @@ public class RelativeDateElementImpl extends FormItemImpl
 		pickerCtrl = new RelativeDatePickerController(ureq, wControl, context, value);
 		pickerCtrl.addControllerListener(this);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl,
-				pickerCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "",
+				pickerCtrl.getInitialComponent(), link, "", true, "",
 				new CalloutSettings(true, CalloutSettings.CalloutOrientation.bottomOrTop, false, null));
 		calloutCtrl.addControllerListener(this);
 		calloutCtrl.activate();

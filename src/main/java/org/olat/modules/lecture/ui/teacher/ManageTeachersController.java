@@ -168,9 +168,11 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		assignToAllEventsButton = uifactory.addFormLink("assign.to.all.events", formLayout, Link.BUTTON);
 		assignToAllEventsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_check_on");
 		assignToAllEventsButton.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
+		assignToAllEventsButton.setAriaDialogOpener();
 		removeFromAllEventsButton = uifactory.addFormLink("remove.from.all.events", formLayout, Link.BUTTON);
 		removeFromAllEventsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_check_off");
 		removeFromAllEventsButton.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
+		removeFromAllEventsButton.setAriaDialogOpener();
 		
 		uifactory.addFormSubmitButton("apply", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
@@ -525,7 +527,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		listenTo(assignTeachersCtrl);
 	
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				assignTeachersCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				assignTeachersCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
@@ -552,7 +554,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		listenTo(removeTeachersCtrl);
 	
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				removeTeachersCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				removeTeachersCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

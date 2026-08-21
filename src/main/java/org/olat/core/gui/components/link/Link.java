@@ -503,6 +503,14 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 		setAriaExpanded(Boolean.FALSE);
 	}
 
+	public boolean isNonTranslated() {
+		int p = presentation;
+		if ((p - Link.FLEXIBLEFORMLNK) >= 0) {
+			p = p - Link.FLEXIBLEFORMLNK;
+		}
+		return (p - Link.NONTRANSLATED) >= 0;
+	}
+
 	/**
 	 * Only used in olat flexi form stuff
 	 * @return returns the custom setted element id

@@ -302,6 +302,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 							"assessment.docs", "assessment.docs", null, flc, Link.LINK);
 					assessmentDocsTooltipLink.setIconLeftCSS("o_icon o_icon_files");
 					assessmentDocsTooltipLink.setUserObject(row);
+					assessmentDocsTooltipLink.setAriaDialogOpener();
 					row.setAssessmentDocsTooltipLink(assessmentDocsTooltipLink);
 				}
 			}
@@ -314,6 +315,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 					commentLink = uifactory.addFormLink("comment-" + CodeHelper.getRAMUniqueID(), "comment", "comment", null, flc, Link.LINK);
 					commentLink.setIconLeftCSS("o_icon o_icon_comments");
 					commentLink.setUserObject(row);
+					commentLink.setAriaDialogOpener();
 				}
 				row.setComment(comment);
 				row.setCommentTooltipLink(commentLink);
@@ -418,7 +420,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		assessmentDocsCtrl = new EditAssessmentDocumentController(ureq, getWindowControl(), courseOres, gtaNode, row, true, true);
 		listenTo(assessmentDocsCtrl);
 		assessmentDocsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				assessmentDocsCtrl.getInitialComponent(), row.getAssessmentDocsTooltipLink().getFormDispatchId(),
+				assessmentDocsCtrl.getInitialComponent(), row.getAssessmentDocsTooltipLink(),
 				"", true, "");
 		listenTo(assessmentDocsCalloutCtrl);
 		assessmentDocsCalloutCtrl.activate();
@@ -430,7 +432,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		VelocityContainer descriptionVC = createVelocityContainer("comment_readonly_callout");
 		descriptionVC.contextPut("comment", row.getComment());
 		commentCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				descriptionVC, row.getCommentTooltipLink().getFormDispatchId(), "", true, "");
+				descriptionVC, row.getCommentTooltipLink(), "", true, "");
 		listenTo(commentCalloutCtrl);
 		commentCalloutCtrl.activate();
 	}

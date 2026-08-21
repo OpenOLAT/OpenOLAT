@@ -288,6 +288,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 				createWizardButton = uifactory.addFormLink("cmd.create.wizard", buttonContainer, Link.BUTTON);
 				createWizardButton.setElementCssClass("o_sel_repo_create_wizards");
 				createWizardButton.setIconRightCSS("o_icon o_icon_caret");
+				createWizardButton.setAriaDialogOpener();
 			}
 		}
 		
@@ -526,7 +527,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		listenTo(wizardProviderCtrl);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				wizardProviderCtrl.getInitialComponent(), button.getFormDispatchId(), "", true, "",
+				wizardProviderCtrl.getInitialComponent(), button, "", true, "",
 				new CalloutSettings(false, CalloutOrientation.bottom, false, null, true));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();

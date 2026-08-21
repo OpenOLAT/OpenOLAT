@@ -181,6 +181,7 @@ public class RulesEditController extends StepFormBasicController {
 		intervalInfoCont.contextPut("internalName", internalName);
 		
 		infoLink = uifactory.addFormLink("interval.info", "interval.info", "", null, intervalInfoCont, Link.LINK + Link.NONTRANSLATED);
+		infoLink.setAriaDialogOpener();
 		infoLink.setIconRightCSS("o_icon o_icon_info");
 		infoLink.setAriaLabel(translate("interval.info"));
 		infoLink.setAriaRole("button");
@@ -406,7 +407,7 @@ public class RulesEditController extends StepFormBasicController {
 		
 		intervalInfoCont.contextPut("dispatchTimes", dispatchMessage);
 
-		intervalInfoCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),intervalInfoCont, infoLink.getFormDispatchId(), "", true, "");
+		intervalInfoCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),intervalInfoCont, infoLink, "", true, "");
 		listenTo(intervalInfoCalloutCtrl);
 		intervalInfoCalloutCtrl.activate();
 	}

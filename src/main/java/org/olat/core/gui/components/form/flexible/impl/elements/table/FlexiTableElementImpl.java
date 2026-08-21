@@ -227,12 +227,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		sortOrderButton.setTranslator(translator);
 		sortOrderButton.setIconLeftCSS("o_icon o_icon_sort_menu o_icon-lg");
 		sortOrderButton.setIconRightCSS("o_icon o_icon_caret o_icon-sm");
+		sortOrderButton.setAriaDialogOpener();
 		sortOrderButton.setTitle(translator.translate("aria.sort"));
 		components.put("rSortOrder", sortOrderButton);
 
 		customButton = new FormLinkImpl(dispatchId.concat("_customButton"), "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		customButton.setTranslator(translator);
 		customButton.setIconLeftCSS("o_icon o_icon_customize");
+		customButton.setAriaDialogOpener();
 		customButton.setTitle(translator.translate("aria.customize"));
 		components.put("rCustomize", customButton);
 		

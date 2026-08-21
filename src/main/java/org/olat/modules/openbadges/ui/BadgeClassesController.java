@@ -334,7 +334,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		listenTo(toolsCtrl);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

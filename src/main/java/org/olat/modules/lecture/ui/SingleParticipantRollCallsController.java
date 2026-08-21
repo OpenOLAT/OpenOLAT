@@ -340,6 +340,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 				noticeLink.setDomReplacementWrapperRequired(false);
 				noticeLink.setIconLeftCSS("o_icon o_icon_info");
 				noticeLink.setUserObject(row);
+				noticeLink.setAriaDialogOpener();
 				row.setNoticeLink(noticeLink);
 			} else {
 				String reasonId = "abs_reason_".concat(Integer.toString(++counter));
@@ -458,7 +459,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 					doCheckAllRow(row);
 					recalculateNumOfAbsences(row);
 				} else if(cmd.startsWith("notice_")) {
-					doCalloutAbsenceNotice(ureq, link.getFormDispatchId(), (SingleParticipantRollCallRow)link.getUserObject());
+					doCalloutAbsenceNotice(ureq, link, (SingleParticipantRollCallRow)link.getUserObject());
 				}
 			}
 		}
@@ -491,12 +492,12 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		row.getNumOfAbsencesEl().setValue(Integer.toString(numOfAbsences));
 	}
 	
-	private void doCalloutAbsenceNotice(UserRequest ureq, String elementId, SingleParticipantRollCallRow row) {
+	private void doCalloutAbsenceNotice(UserRequest ureq, FormLink link, SingleParticipantRollCallRow row) {
 		noticeDetailsCtrl = new AbsenceNoticeDetailsCalloutController(ureq, getWindowControl(), row.getAbsenceNotice());
 		listenTo(noticeDetailsCtrl);
 
 		noticeCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				noticeDetailsCtrl.getInitialComponent(), elementId, "", true, "");
+				noticeDetailsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(noticeCalloutCtrl);
 		noticeCalloutCtrl.activate();
 	}

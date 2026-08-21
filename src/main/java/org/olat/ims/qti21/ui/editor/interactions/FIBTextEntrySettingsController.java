@@ -122,6 +122,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		addMultipleAlternativesButton = uifactory.addFormLink("add.multi.alternatives", "add.multi", "fib.add.multiple.alternatives", null, alternativesCont, Link.BUTTON);
 		addMultipleAlternativesButton.setVisible(!restrictedEdit && !readOnly);
 		addMultipleAlternativesButton.setGhost(true);
+		addMultipleAlternativesButton.setAriaDialogOpener();
 
 		List<TextEntryAlternative> alternatives = interaction.getAlternatives();
 		if(alternatives != null && !alternatives.isEmpty()) {
@@ -417,7 +418,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		listenTo(alternativesCtrl);
 		
 		alternativesCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				alternativesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				alternativesCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(alternativesCalloutCtrl);
 		alternativesCalloutCtrl.activate();
 	}

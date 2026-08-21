@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -54,7 +55,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -167,7 +167,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
 	
-	private int counter = 0;
 	private final Roles roles;
 	private final boolean isMultiOrganisations;
 	private final CurriculumSecurityCallback secCallback;
@@ -247,11 +246,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			columnsModel.addFlexiColumnModel(lecturesCol);
 		}
 		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CurriculumCols.tools);
-		toolsCol.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_actions");
-		toolsCol.setExportable(false);
-		toolsCol.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(CurriculumCols.tools));
 		
 		tableModel = new CurriculumManagerDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -460,9 +455,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	 * @return A curriculum row
 	 */
 	private CurriculumRow forgeManagedRow(CurriculumInfos curriculum, boolean canManage) {
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		String businessPathUrl = getBusinessPathUrl(curriculum);
 		CurriculumRow row = new CurriculumRow(curriculum, businessPathUrl, toolsLink, canManage);
 		toolsLink.setUserObject(row);
@@ -781,7 +774,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			listenTo(toolsCtrl);
 	
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					toolsCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}

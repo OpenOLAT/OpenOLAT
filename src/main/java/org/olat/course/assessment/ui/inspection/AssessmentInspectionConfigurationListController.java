@@ -163,6 +163,7 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 		infosButton.setIconLeftCSS("o_icon o_icon-fw o_icon_description");
 		infosButton.setTitle(translate("show.results.display"));
 		infosButton.setUserObject(row);
+		infosButton.setAriaDialogOpener();
 		row.setInfosButton(infosButton);
 		
 		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
@@ -258,7 +259,7 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 		listenTo(optionsCtrl);
 		
 		optionsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				optionsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				optionsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(optionsCalloutCtrl);
 		optionsCalloutCtrl.activate();
 	}
@@ -268,7 +269,7 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 		listenTo(toolsCtrl);
 		
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), configurationRow.getToolsButton().getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), configurationRow.getToolsButton(), "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

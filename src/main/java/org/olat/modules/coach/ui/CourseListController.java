@@ -684,6 +684,7 @@ public class CourseListController extends FormBasicController implements Activat
 		
 		if(row.getNumOfReferences() > 0) {
 			FormLink referencesLink = uifactory.addFormLink("refs_".concat(count), CMD_REFERENCES, Long.toString(row.getNumOfReferences()), tableEl, Link.NONTRANSLATED);
+			referencesLink.setAriaDialogOpener();
 			referencesLink.setUserObject(row);
 			row.setReferencesLink(referencesLink);
 		}
@@ -760,7 +761,7 @@ public class CourseListController extends FormBasicController implements Activat
 			} else if(CMD_LEVELS.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
 				doOpenCourseInfos(ureq, row, "[Taxonomy:0]");
 			} else if(CMD_REFERENCES.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
-				doOpenReferences(ureq, row, link.getFormDispatchId());
+				doOpenReferences(ureq, row, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -844,12 +845,12 @@ public class CourseListController extends FormBasicController implements Activat
 		return true;
 	}
 	
-	private void doOpenReferences(UserRequest ureq, CourseStatEntryRow entry, String targetId) {
+	private void doOpenReferences(UserRequest ureq, CourseStatEntryRow entry, FormLink link) {
 		referencesCtrl = new CourseReferencesController(ureq, getWindowControl(), entry, role);
 		listenTo(referencesCtrl);
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				referencesCtrl.getInitialComponent(), targetId, "", true, "");
+				referencesCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

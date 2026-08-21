@@ -403,7 +403,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		toolsController = new ToolsController(ureq, getWindowControl(), timelineRow);
 		listenTo(toolsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), toolsController.getInitialComponent(),
-				formLink.getFormDispatchId(), "", true, "");
+				formLink, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

@@ -322,6 +322,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		detailsLink.setIconRightCSS("o_icon o_icon_info o_icon-lg");
 		detailsLink.setTitle(translate("details"));
 		detailsLink.setUserObject(row);
+		detailsLink.setAriaDialogOpener();
 		flc.add(detailsLinkName, detailsLink);
 		row.setDetailsLink(detailsLink);
 		
@@ -358,6 +359,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		String linkName = "entries-" + counter++;
 		FormLink entriesLink = uifactory.addFormLink(linkName, "entries", title, null, flc, Link.LINK | Link.NONTRANSLATED);
 		entriesLink.setUserObject(row);
+		entriesLink.setAriaDialogOpener();
 		flc.add(linkName, entriesLink);
 		row.setEntriesLink(entriesLink);
 	}
@@ -499,7 +501,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			listenTo(toolsCtrl);
 	
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					toolsCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
@@ -520,7 +522,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			listenTo(detailsCtrl);
 	
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					detailsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					detailsCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
@@ -568,7 +570,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			listenTo(entriesCalloutCtrl);
 			
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					entriesCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					entriesCalloutCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}

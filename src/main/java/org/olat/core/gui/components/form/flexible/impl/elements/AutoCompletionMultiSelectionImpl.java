@@ -81,6 +81,7 @@ public class AutoCompletionMultiSelectionImpl extends FormItemImpl implements Au
 		button.setTranslator(translator);
 		button.setElementCssClass("o_acms_button");
 		button.setIconRightCSS("o_icon o_icon_caret");
+		button.setAriaDialogOpener();
 		components.put(id, button);
 		rootFormAvailable(button);
 	}
@@ -219,7 +220,7 @@ public class AutoCompletionMultiSelectionImpl extends FormItemImpl implements Au
 		autoCompletionrCtrl.addControllerListener(this);
 
 		autoCompletionCallout = new CloseableCalloutWindowController(ureq, wControl, autoCompletionrCtrl.getInitialComponent(),
-				button.getFormDispatchId(), "", true, "", new CalloutSettings(false));
+				button, "", true, "", new CalloutSettings(false));
 		autoCompletionCallout.addControllerListener(this);
 		autoCompletionCallout.activate();
 	}

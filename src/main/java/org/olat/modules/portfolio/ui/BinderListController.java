@@ -219,7 +219,8 @@ public class BinderListController extends FormBasicController
 				|| portfolioModule.isCanCreateBindersFromTemplate()
 				|| portfolioModule.isCanCreateBindersFromCourse()) {
 			newBinderDropdown = uifactory.addFormLink("create.binders", "create.new.binder", null, formLayout, Link.BUTTON);
-			
+			newBinderDropdown.setAriaDialogOpener();
+
 			int count = (portfolioModule.isLearnerCanCreateBinders() ? 1 : 0)
 					+ (portfolioModule.isCanCreateBindersFromTemplate() ? 1 : 0)
 					+ (portfolioModule.isCanCreateBindersFromCourse() ? 1 :0);
@@ -550,7 +551,7 @@ public class BinderListController extends FormBasicController
 			listenTo(chooseNewBinderTypeCtrl);
 	
 			newBinderCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					chooseNewBinderTypeCtrl.getInitialComponent(), newBinderDropdown.getFormDispatchId(),
+					chooseNewBinderTypeCtrl.getInitialComponent(), newBinderDropdown,
 					"", true, "", new CalloutSettings(false));
 			listenTo(newBinderCalloutCtrl);
 			newBinderCalloutCtrl.activate();
@@ -654,7 +655,7 @@ public class BinderListController extends FormBasicController
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

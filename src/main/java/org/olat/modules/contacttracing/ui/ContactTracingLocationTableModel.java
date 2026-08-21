@@ -151,6 +151,7 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
             FormLink toolsLink = new FormLinkImpl("tools-" + objects.indexOf(location), ACTIONS_CMD, "", Link.NONTRANSLATED);
             toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
             toolsLink.setUserObject(location);
+            toolsLink.setAriaDialogOpener();
 
             toolLinks.put(location, toolsLink);
         }

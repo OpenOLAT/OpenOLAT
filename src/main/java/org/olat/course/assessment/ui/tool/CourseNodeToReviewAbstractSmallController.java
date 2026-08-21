@@ -174,6 +174,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 							: translate("participants.to.review", Integer.toString(identities.size())) + " <i class='o_icon o_icon_info'> </i>";
 					FormLink identityLink = uifactory.addFormLink("o_user_" + counter++, CMD_IDENTITY, identityLabel, null, null, Link.NONTRANSLATED);
 					identityLink.setUserObject(row);
+					identityLink.setAriaDialogOpener();
 					row.setIdentityLink(identityLink);
 					
 					rows.add(row);
@@ -249,7 +250,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 			
 			CalloutSettings settings = new CalloutSettings();
 			ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), identitySelectionCtrl.getInitialComponent(),
-					link.getFormDispatchId(), "", true, "", settings);
+					link, "", true, "", settings);
 			listenTo(ccwc);
 			ccwc.activate();
 		}

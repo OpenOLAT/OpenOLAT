@@ -297,6 +297,7 @@ public class ApplicantRefereeListController extends FormBasicController {
 			toolsLink.setDomReplacementWrapperRequired(false);
 			toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions_v2");
 			toolsLink.setUserObject(row);
+			toolsLink.setAriaDialogOpener();
 			row.setToolsLink(toolsLink);
 		}
 		return row;
@@ -408,7 +409,7 @@ public class ApplicantRefereeListController extends FormBasicController {
 		listenTo(toolsCtrl);
 
 		toolsCallout = new CloseableCalloutWindowController(ureq, getWindowControl(), toolsCtrl.getInitialComponent(),
-				link.getFormDispatchId(), translate("edit"), true, "");
+				link, translate("edit"), true, "");
 		listenTo(toolsCallout);
 		toolsCallout.activate();
 	}

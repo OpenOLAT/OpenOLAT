@@ -2362,7 +2362,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		listenTo(toolsCtrl);
 	
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

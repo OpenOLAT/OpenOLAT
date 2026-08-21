@@ -2255,6 +2255,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			messagesButton.setIconLeftCSS("o_icon o_icon-fw o_infomsg_icon");
 			messagesButton.setTitle(translate("assessment.test.message.explanation"));
 			messagesButton.setElementCssClass("o_sel_assessment_messages_test");
+			messagesButton.setAriaDialogOpener();
 			messagesButton.setVisible(messageDisplayCtrl.hasMessages());
 			
 			flc.getFormItemComponent().addListener(this);
@@ -2602,7 +2603,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			listenTo(messageDisplayCalloutCtrl);
 			
 			calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					messageDisplayCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					messageDisplayCalloutCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(calloutCtrl);
 			calloutCtrl.activate();
 		}

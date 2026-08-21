@@ -745,7 +745,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		} else if(source instanceof FormLink sourceLink) {
 			if (sourceLink.getCmd().equals("tools")) {
 				CertificateAndEfficiencyStatementRow row = (CertificateAndEfficiencyStatementRow)source.getUserObject();
-				doOpenTools(ureq, row, source);
+				doOpenTools(ureq, row, sourceLink);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -782,7 +782,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		cmc = null;
 	}
 	
-	private void doOpenTools(UserRequest ureq, CertificateAndEfficiencyStatementRow row, FormItem link) {
+	private void doOpenTools(UserRequest ureq, CertificateAndEfficiencyStatementRow row, FormLink link) {
 		removeAsListenerAndDispose(calloutCtrl);
 		removeControllerListener(toolsCtrl);
 		
@@ -790,7 +790,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		listenTo(toolsCtrl);
 			
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

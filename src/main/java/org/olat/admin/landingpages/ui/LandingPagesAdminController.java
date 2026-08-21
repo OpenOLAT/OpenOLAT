@@ -191,6 +191,7 @@ public class LandingPagesAdminController extends FormBasicController {
 
 		FormLink chooser = uifactory.addFormLink("chooser-" + i, "chooser", RCols.landingPageChooser.i18nKey(), null, formLayout, Link.BUTTON);
 		chooser.setIconRightCSS("o_icon o_icon_caret");
+		chooser.setAriaDialogOpener();
 		chooser.setUserObject(wrapper);
 		wrapper.setLandingPageChooser(chooser);
 		return wrapper;
@@ -274,7 +275,7 @@ public class LandingPagesAdminController extends FormBasicController {
 		listenTo(chooserCtrl);
 
 		chooserCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				chooserCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				chooserCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(chooserCalloutCtrl);
 		chooserCalloutCtrl.activate();
 	}

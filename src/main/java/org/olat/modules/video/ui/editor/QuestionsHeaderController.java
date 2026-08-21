@@ -155,11 +155,13 @@ public class QuestionsHeaderController extends FormBasicController {
 		addQuestionButton = uifactory.addFormLink("addQuestion", "form.add", "form.add", formLayout, Link.BUTTON);
 		addQuestionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addQuestionButton.setIconRightCSS("o_icon o_icon_caret");
+		addQuestionButton.setAriaDialogOpener();
 
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
 		commandsButton.setTitle(translate("action.more"));
+		commandsButton.setAriaDialogOpener();
 	}
 
 	public void setQuestions(VideoQuestions questions) {
@@ -268,7 +270,7 @@ public class QuestionsHeaderController extends FormBasicController {
 		listenTo(newQuestionCtrl);
 
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), newQuestionCtrl.getInitialComponent(),
-				addQuestionButton.getFormDispatchId(), "", true, "",
+				addQuestionButton, "", true, "",
 				new CalloutSettings(false));
 		listenTo(ccwc);
 		ccwc.activate();
@@ -280,7 +282,7 @@ public class QuestionsHeaderController extends FormBasicController {
 		commandsController.setCanExport(!questionsKV.isEmpty());
 		listenTo(commandsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
-				commandsButton.getFormDispatchId(), "", true, "");
+				commandsButton, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

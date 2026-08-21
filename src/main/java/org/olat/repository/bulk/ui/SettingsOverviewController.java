@@ -427,6 +427,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 		String linkName = "usage-" + counter++;
 		FormLink link = uifactory.addFormLink(linkName, CMD_RESOURCE, "", null, overviewCont, Link.LINK | Link.NONTRANSLATED);
 		link.setI18nKey(linkText);
+		link.setAriaDialogOpener();
 		link.setEnabled(!repositoryEntries.isEmpty());
 		link.setUserObject(repositoryEntries);
 		return linkName;
@@ -474,7 +475,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 				.toList();
 		usageVC.contextPut("entryNames", entryNames);
 		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), usageVC, link.getFormDispatchId(), "", true, "");
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), usageVC, link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

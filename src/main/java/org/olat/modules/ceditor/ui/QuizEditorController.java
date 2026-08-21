@@ -186,11 +186,13 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		addQuestionButton = uifactory.addFormLink("addQuestion", "addremove.add.text", "", formLayout, Link.BUTTON);
 		addQuestionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addQuestionButton.setIconRightCSS("o_icon o_icon_caret");
+		addQuestionButton.setAriaDialogOpener();
 
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
 		commandsButton.setTitle("action.more");
+		commandsButton.setAriaDialogOpener();
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel upColumn = new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.up);
@@ -243,6 +245,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 				toolLink.setTranslator(getTranslator());
 				toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 				toolLink.setTitle(translate("action.more"));
+				toolLink.setAriaDialogOpener();
 			}
 			toolLink.setUserObject(questionRow);
 			questionRow.setToolLink(toolLink);
@@ -425,7 +428,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		listenTo(newQuestionController);
 
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), newQuestionController.getInitialComponent(),
-				addQuestionButton.getFormDispatchId(), "", true, "",
+				addQuestionButton, "", true, "",
 				new CalloutSettings(false));
 		listenTo(ccwc);
 		ccwc.activate();
@@ -446,7 +449,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 				false, true, false);
 		listenTo(commandsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
-				commandsButton.getFormDispatchId(), "", true, "");
+				commandsButton, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}
@@ -617,7 +620,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		toolsController = new ToolsController(ureq, getWindowControl(), questionRow);
 		listenTo(toolsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), toolsController.getInitialComponent(),
-				formLink.getFormDispatchId(), "", true, "");
+				formLink, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

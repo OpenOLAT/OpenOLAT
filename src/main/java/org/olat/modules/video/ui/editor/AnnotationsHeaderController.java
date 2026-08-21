@@ -116,6 +116,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
 		commandsButton.setTitle(translate("action.more"));
+		commandsButton.setAriaDialogOpener();
 	}
 
 	public void setAnnotations(VideoMarkers annotations) {
@@ -257,7 +258,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 		commandsController = new HeaderCommandsController(ureq, getWindowControl());
 		listenTo(commandsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
-				commandsButton.getFormDispatchId(), "", true, "");
+				commandsButton, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

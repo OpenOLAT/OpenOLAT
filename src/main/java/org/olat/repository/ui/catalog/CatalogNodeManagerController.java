@@ -533,12 +533,14 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			
 			if(entry.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 				FormLink positionLink = uifactory.addFormLink("position_" + counter.incrementAndGet(), "positionClosedEntries", String.valueOf(row.getPosition() + 1), null, null, Link.NONTRANSLATED);
+				positionLink.setAriaDialogOpener();
 				positionLink.setUserObject(row);
 				row.setPositionLink(positionLink);
 				
 				closedItems.add(row);
 			} else {
 				FormLink positionLink = uifactory.addFormLink("position_" + counter.incrementAndGet(), "positionEntries", String.valueOf(row.getPosition() + 1), null, null, Link.NONTRANSLATED);
+				positionLink.setAriaDialogOpener();
 				positionLink.setUserObject(row);
 				row.setPositionLink(positionLink);
 				
@@ -597,6 +599,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				NodeEntryRow row = new NodeEntryRow(entry);
 				
 				FormLink positionLink = uifactory.addFormLink("position_" + counter.incrementAndGet(), "positionNodes", String.valueOf(row.getPosition() + 1), null, null, Link.NONTRANSLATED);
+				positionLink.setAriaDialogOpener();
 				positionLink.setUserObject(row);
 				row.setPositionLink(positionLink);
 				nodeEntries.add(row);
@@ -1133,7 +1136,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			listenTo(positionCtrl);
 			
 			CalloutSettings settings = new CalloutSettings(true);
-			positionCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),positionCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", settings);
+			positionCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),positionCtrl.getInitialComponent(), link, "", true, "", settings);
 			listenTo(positionCalloutCtrl);
 			positionCalloutCtrl.activate();
 			

@@ -266,6 +266,7 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), CMD_TOOLS, "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsLink.setEnabled(false);
+		toolsLink.setAriaDialogOpener();
 		return toolsLink;
 	}
 
@@ -414,7 +415,7 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		listenTo(toolsCtrl);
 	
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

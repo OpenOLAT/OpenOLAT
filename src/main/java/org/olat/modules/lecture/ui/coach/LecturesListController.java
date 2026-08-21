@@ -174,6 +174,7 @@ public class LecturesListController extends FormBasicController {
 			FormLink link = uifactory.addFormLink("unauthorized_" + (count++), "unauthorized", val, null, flc, Link.LINK | Link.NONTRANSLATED);
 			row.setUnauthorizedLink(link);
 			link.setUserObject(row);
+			link.setAriaDialogOpener();
 		}
 		return row;
 	}
@@ -255,7 +256,7 @@ public class LecturesListController extends FormBasicController {
 			listenTo(lectureBlocksListCtrl);
 		
 			lectureBlocksListCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					lectureBlocksListCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					lectureBlocksListCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(lectureBlocksListCalloutCtrl);
 			lectureBlocksListCalloutCtrl.activate();
 		}

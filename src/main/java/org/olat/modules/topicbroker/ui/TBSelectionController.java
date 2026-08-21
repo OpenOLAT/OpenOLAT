@@ -1240,7 +1240,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		listenTo(selectionToolsCtrl);
 	
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				selectionToolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				selectionToolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
@@ -1253,7 +1253,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		listenTo(topicToolsCtrl);
 	
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				topicToolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				topicToolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

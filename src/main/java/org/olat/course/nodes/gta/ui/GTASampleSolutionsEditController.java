@@ -227,8 +227,10 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 				if (solution.isInTranscoding()) {
 					openLink = uifactory.addFormLink("transcoding_" + (++linkCounter), "transcoding", "av.converting", null, flc, Link.LINK);
 					openLink.setUserObject(solution);
+					openLink.setAriaDialogOpener();
 					documentLink = uifactory.addFormLink("transcoding_" + (++linkCounter), "transcoding", "av.converting", null, flc, Link.LINK);
 					documentLink.setUserObject(solution);
+					documentLink.setAriaDialogOpener();
 				} else {
 					downloadLink = uifactory.addDownloadLink("file_" + (++linkCounter), filename, null, vfsLeaf, solutionTable);
 					downloadLink.setUserObject(vfsLeaf);
@@ -264,7 +266,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
@@ -412,7 +414,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), solution);
 		listenTo(avConvertingMenuCtrl);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				avConvertingMenuCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				avConvertingMenuCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

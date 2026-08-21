@@ -161,6 +161,7 @@ public class AnnotationController extends FormBasicController {
 				Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
 		positionSizeEditLink.setIconLeftCSS("o_icon o_icon_edit");
 		positionSizeEditLink.setTitle(translate("edit"));
+		positionSizeEditLink.setAriaDialogOpener();
 
 		uifactory.addFormSubmitButton("save", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
@@ -249,7 +250,7 @@ public class AnnotationController extends FormBasicController {
 		editPositionSizeController.setHeight(height);
 		listenTo(editPositionSizeController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), editPositionSizeController.getInitialComponent(),
-				positionSizeEditLink.getFormDispatchId(), "", true, "");
+				positionSizeEditLink, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

@@ -106,6 +106,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		String dispatchId = component.getDispatchID();
 		
 		addFiltersButton = new FormLinkImpl(dispatchId.concat("_addFiltersButton"), "rAddFiltersButton", "add.filters", Link.BUTTON);
+		addFiltersButton.setAriaDialogOpener();
 		addFiltersButton.setElementCssClass("o_table_add_filter");
 		addFiltersButton.setDomReplacementWrapperRequired(false);
 		addFiltersButton.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
@@ -584,7 +585,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		component.setDirty(true);
 	}
 	
-	private void doOpenFilter(UserRequest ureq, FormItem button, FlexiTableExtendedFilter filter) {
+	private void doOpenFilter(UserRequest ureq, FormLink button, FlexiTableExtendedFilter filter) {
 		String elementCssClass = StringHelper.blankIfNull(button.getComponent().getElementCssClass());
 		button.setElementCssClass(elementCssClass + " o_filter_open");
 		component.setDirty(true);
@@ -593,7 +594,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		filterCtrl.addControllerListener(this);
 
 		filtersCallout = new CloseableCalloutWindowController(ureq, wControl, filterCtrl.getInitialComponent(),
-				button.getFormDispatchId(), "", true, "", new CalloutSettings(false, CalloutOrientation.bottom, true, null));
+				button, "", true, "", new CalloutSettings(false, CalloutOrientation.bottom, true, null));
 		filtersCallout.addControllerListener(this);
 		filtersCallout.activate();
 	}

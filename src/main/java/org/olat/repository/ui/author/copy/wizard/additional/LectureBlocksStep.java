@@ -227,6 +227,7 @@ public class LectureBlocksStep extends BasicStep {
 					
 					FormLink teachersLink = uifactory.addFormLink("lecture_block_teachers_" + counter++, tableItems);
 					teachersLink.setI18nKey("edit.teachers");
+					teachersLink.setAriaDialogOpener();
 					teachersLink.setUserObject(row);
 					
 					row.setTeacherChooserLink(teachersLink);

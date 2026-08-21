@@ -1337,6 +1337,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if (isSearchEnabled) {
 			searchLink = LinkFactory.createToolLink("coursesearch", translate("command.coursesearch"), this, "o_icon_search");
 			searchLink.setVisible(cc.isCourseSearchEnabled());
+			searchLink.setAriaDialogOpener();
 			toolbarPanel.addTool(searchLink);
 		}
 
@@ -2940,7 +2941,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		searchController.setContextHelpPage("manual_user/learningresources/Additional_Course_Features/");
 		listenTo(searchController);
 		courseSearchCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				searchController.getInitialComponent(), searchLink.getDispatchID(), null, true, null);
+				searchController.getInitialComponent(), searchLink, null, true, null);
 		courseSearchCalloutCtr.addDisposableChildController(searchController);
 		courseSearchCalloutCtr.activate();
 		listenTo(courseSearchCalloutCtr);

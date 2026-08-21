@@ -244,13 +244,16 @@ public class QuestionListController extends AbstractItemListController implement
 			}
 			importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
 			importItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_import");
+			importItem.setAriaDialogOpener();
 		}
 		
 		if (getSecurityCallback().canUseCollections()) {
 			list = uifactory.addFormLink("list", formLayout, Link.BUTTON);
+			list.setAriaDialogOpener();
 		}
 		if (getSecurityCallback().canCreateTest()) {
 			createTest = uifactory.addFormLink("create.test", formLayout, Link.BUTTON);
+			createTest.setAriaDialogOpener();
 		}
 		exportItem = uifactory.addFormLink("export.item", formLayout, Link.BUTTON);
 		
@@ -258,6 +261,7 @@ public class QuestionListController extends AbstractItemListController implement
 		if(getSecurityCallback().canShareQuestions()) {
 			if (getSecurityCallback().canUsePools() || getSecurityCallback().canUseGroups()) {
 				shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
+				shareItem.setAriaDialogOpener();
 			}
 			if(getSource().isRemoveEnabled()) {
 				removeItem = uifactory.addFormLink("unshare.item", formLayout, Link.BUTTON);

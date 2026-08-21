@@ -404,6 +404,7 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 		CurriculumElementType type = curriculumElement.getType();
 		if (type == null || !type.isSingleElement()) {
 			FormLink structureLink = uifactory.addFormLink("structure_" + row.getKey(), CMD_STRUCTURE, "", tableEl, Link.NONTRANSLATED);
+			structureLink.setAriaDialogOpener();
 			structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_structure");
 			structureLink.setTitle(translate("action.structure"));
 			structureLink.setUserObject(curriculumElement);
@@ -473,7 +474,7 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true, null);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				curriculumStructureCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", settings);
+				curriculumStructureCalloutCtrl.getInitialComponent(), link, "", true, "", settings);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

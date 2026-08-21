@@ -188,6 +188,7 @@ public class PracticeParticipantController extends FormBasicController {
 		}
 		
 		globalLevelsLink = uifactory.addFormLink("global.levels", "0", null, flc, Link.LINK | Link.NONTRANSLATED);
+		globalLevelsLink.setAriaDialogOpener();
 		
 		initPractiseStarters(formLayout);
 		initSubjectStatistics(formLayout);
@@ -432,6 +433,7 @@ public class PracticeParticipantController extends FormBasicController {
 			FormLink calloutLink = uifactory.addFormLink("levels_callout_" + (counter++), linkValue, null, flc, Link.LINK | Link.NONTRANSLATED);
 			levelRow.setLevelsLink(calloutLink);
 			calloutLink.setUserObject(levels);
+			calloutLink.setAriaDialogOpener();
 		}
 	}
 	
@@ -519,10 +521,10 @@ public class PracticeParticipantController extends FormBasicController {
 				}
 			}
 		} else if(globalLevelsLink == source) {
-			doOpenLevelsCallout(ureq, globalLevelsLink.getFormDispatchId(), (Levels)globalLevelsLink.getUserObject());
+			doOpenLevelsCallout(ureq, globalLevelsLink, (Levels)globalLevelsLink.getUserObject());
 		} else if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof Levels) {
 			FormLink calloutLink = (FormLink)source;
-			doOpenLevelsCallout(ureq, calloutLink.getFormDispatchId(), (Levels)calloutLink.getUserObject());
+			doOpenLevelsCallout(ureq, calloutLink, (Levels)calloutLink.getUserObject());
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -607,7 +609,7 @@ public class PracticeParticipantController extends FormBasicController {
 		}
 	}
 	
-	private void doOpenLevelsCallout(UserRequest ureq, String elementId, Levels levels) {
+	private void doOpenLevelsCallout(UserRequest ureq, FormLink elementId, Levels levels) {
 		levelsCtrl = new PracticeLevelsCalloutController(ureq, getWindowControl(), levels);
 		listenTo(levelsCtrl);
 

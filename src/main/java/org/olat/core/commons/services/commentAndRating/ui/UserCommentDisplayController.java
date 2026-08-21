@@ -268,6 +268,7 @@ public class UserCommentDisplayController extends BasicController {
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolsLink.setTitle(translate("action.more"));
 			toolsLink.setGhost(true);
+			toolsLink.setAriaDialogOpener();
 		}
 	}
 
@@ -376,7 +377,7 @@ public class UserCommentDisplayController extends BasicController {
 	private void handleLinkEvent(UserRequest ureq, Link link) {
 		switch (link.getCommand()) {
 			case "tools":
-				doOpenTools(ureq, link.getDispatchID());
+				doOpenTools(ureq, link);
 				break;
 			case "preview":
 				VFSLeaf previewAttachment = (VFSLeaf) link.getUserObject();
@@ -527,12 +528,12 @@ public class UserCommentDisplayController extends BasicController {
 		toolsCtrl = null;
 	}
 
-	private void doOpenTools(UserRequest ureq, String dispatchID) {
+	private void doOpenTools(UserRequest ureq, Link toolsLink) {
 		toolsCtrl = new ToolsController(ureq, getWindowControl());
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), dispatchID, "", true, "");
+				toolsCtrl.getInitialComponent(), toolsLink, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

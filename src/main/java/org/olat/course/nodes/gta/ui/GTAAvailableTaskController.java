@@ -203,6 +203,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 			if(StringHelper.containsNonWhitespace(taskDef.getDescription())) {
 				descriptionLink = uifactory.addFormLink("preview-" + CodeHelper.getRAMUniqueID(), "description", "task.description", null, flc, Link.LINK);
 				descriptionLink.setIconLeftCSS("o_icon o_icon_description");
+				descriptionLink.setAriaDialogOpener();
 			}
 			
 			FormLink download = null;
@@ -425,7 +426,7 @@ public class GTAAvailableTaskController extends FormBasicController {
 		VelocityContainer descriptionVC = createVelocityContainer("description_callout");
 		descriptionVC.contextPut("description", row.taskDef().getDescription());
 		descriptionCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				descriptionVC, row.descriptionLink().getFormDispatchId(), "", true, "");
+				descriptionVC, row.descriptionLink(), "", true, "");
 		listenTo(descriptionCalloutCtrl);
 		descriptionCalloutCtrl.activate();
 	}

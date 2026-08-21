@@ -239,15 +239,25 @@ public class CloseableCalloutWindowController extends BasicController implements
 		this(ureq, wControl, calloutWindowContent, "o_fi"
 				+ targetFormLink.getComponent().getDispatchID(), title, closable, cssClasses, settings);
 		this.targetLink = targetFormLink.getComponent();
+		fallbackAriaLabel(targetLink);
 	}
 
 	private void fallbackAriaLabel(Link trigger) {
-		if (!StringHelper.containsNonWhitespace(settings.getTitle())) {
-			String label = StringHelper.containsNonWhitespace(trigger.getTitle()) ? trigger.getTitle() : trigger.getAriaLabel();
-			if (StringHelper.containsNonWhitespace(label)) {
-				settings.setAriaLabel(label);
-			}
+		if (StringHelper.containsNonWhitespace(settings.getTitle())
+				|| StringHelper.containsNonWhitespace(settings.getAriaLabel())) {
+			return;
 		}
+		String label = StringHelper.containsNonWhitespace(trigger.getTitle()) ? trigger.getTitle() : trigger.getAriaLabel();
+		if (!StringHelper.containsNonWhitespace(label)) {
+			return;
+		}
+		if (!trigger.isNonTranslated()) {
+			if (trigger.getTranslator() == null) {
+				return;
+			}
+			label = trigger.getTranslator().translate(label);
+		}
+		settings.setAriaLabel(label);
 	}
 
 	@Override

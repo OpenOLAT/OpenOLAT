@@ -196,7 +196,7 @@ public class CertificationProgramNotificationsController extends AbstractNotific
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd) && link.getUserObject() instanceof CertificationProgramNotificationRow row) {
-				doOpenTools(ureq, row, link.getFormDispatchId());
+				doOpenTools(ureq, row, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -207,7 +207,7 @@ public class CertificationProgramNotificationsController extends AbstractNotific
 		//
 	}
 	
-	private void doOpenTools(UserRequest ureq, CertificationProgramNotificationRow elementRow, String targetId) {
+	private void doOpenTools(UserRequest ureq, CertificationProgramNotificationRow elementRow, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 
@@ -215,7 +215,7 @@ public class CertificationProgramNotificationsController extends AbstractNotific
 		listenTo(toolsCtrl);
 	
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), targetId, "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

@@ -252,6 +252,7 @@ public class PositionEditApplicationEditStepsController extends FormBasicControl
 		editLabelButton.setIconLeftCSS("o_icon o_icon-lg o_icon_language");
 		editLabelButton.setUserObject(row);
 		editLabelButton.setVisible(!readOnly);
+		editLabelButton.setAriaDialogOpener();
 		row.setEditLabelButton(editLabelButton);
 	}
 	
@@ -466,7 +467,7 @@ public class PositionEditApplicationEditStepsController extends FormBasicControl
 
 		String title = translate("edit.step.custom");
 		editCallout = new CloseableCalloutWindowController(ureq, getWindowControl(), editLabelCtrl.getInitialComponent(),
-				link.getFormDispatchId(), title, true, "");
+				link, title, true, "");
 		listenTo(editCallout);
 		editCallout.activate();
 	}

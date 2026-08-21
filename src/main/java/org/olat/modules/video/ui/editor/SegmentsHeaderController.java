@@ -121,6 +121,7 @@ public class SegmentsHeaderController extends FormBasicController {
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
 		commandsButton.setEnabled(!restrictedEdit);
 		commandsButton.setTitle(translate("action.more"));
+		commandsButton.setAriaDialogOpener();
 	}
 
 	public void setSegments(VideoSegments segments) {
@@ -350,7 +351,7 @@ public class SegmentsHeaderController extends FormBasicController {
 		commandsController = new HeaderCommandsController(ureq, getWindowControl());
 		listenTo(commandsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
-				commandsButton.getFormDispatchId(), "", true, "");
+				commandsButton, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

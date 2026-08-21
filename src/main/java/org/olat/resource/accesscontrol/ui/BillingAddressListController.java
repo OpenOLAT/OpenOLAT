@@ -35,7 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -132,10 +132,7 @@ public class BillingAddressListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BillingAddressCols.status, new BillingAddressStatusRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BillingAddressCols.numOrders));
 		
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(BillingAddressCols.tools);
-		toolsColumn.setAlwaysVisible(true);
-		toolsColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(BillingAddressCols.tools));
 		
 		dataModel = new BillingAddressDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -159,9 +156,7 @@ public class BillingAddressListController extends FormBasicController {
 			
 			row.setNumOrders(billingAddressKeyToOffersCount.getOrDefault(billingAddress.getKey(), Long.valueOf(0)));
 			
-			FormLink toolsLink = uifactory.addFormLink("tools_" + row.getBillingAddress().getKey(), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
-			toolsLink.setTitle(translate("table.action"));
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 			
@@ -303,7 +298,7 @@ public class BillingAddressListController extends FormBasicController {
 		listenTo(toolsCtrl);
 	
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

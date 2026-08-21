@@ -60,7 +60,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
@@ -423,11 +423,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(progressCol);
 
 		if(secCallback.canEditCurriculumElements(curriculum) || (!managed && secCallback.canManageCurriculumElementsUsers(curriculum))) {
-			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(ElementCols.tools);
-			toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
-			toolsColumn.setExportable(false);
-			toolsColumn.setAlwaysVisible(true);
-			columnsModel.addFlexiColumnModel(toolsColumn);
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(ElementCols.tools));
 		}
 		
 		if(!config.isFlat()) {
@@ -839,14 +835,13 @@ public class CurriculumComposerController extends FormBasicController implements
 				element.numOfParticipants() + element.numOfPending(), true);
 		
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		
 		FormLink structureLink = null;
 		CurriculumElementType type = element.curriculumElement().getType();
 		if(type == null || !type.isSingleElement()) {
 			structureLink = uifactory.addFormLink("structure_".concat(id), "structure", "", null, null, Link.NONTRANSLATED);
+			structureLink.setAriaDialogOpener();
 			structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_structure");
 			structureLink.setTitle(translate("action.structure"));
 		}
@@ -855,6 +850,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		long refs = element.numOfResources() + element.numOfLectureBlocks();
 		if(refs > 0) {
 			resourcesLink = uifactory.addFormLink("resources_" + (++counter), "resources", String.valueOf(refs), null, null, Link.NONTRANSLATED);
+			resourcesLink.setAriaDialogOpener();
 		}
 		CurriculumElementRow row = new CurriculumElementRow(element.curriculumElement(), refs,
 				element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
@@ -1245,7 +1241,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			listenTo(toolsCtrl);
 	
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					toolsCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
@@ -1339,7 +1335,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 			CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true, null);
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					referencesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", settings);
+					referencesCtrl.getInitialComponent(), link, "", true, "", settings);
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
@@ -1353,7 +1349,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				curriculumStructureCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", settings);
+				curriculumStructureCalloutCtrl.getInitialComponent(), link, "", true, "", settings);
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

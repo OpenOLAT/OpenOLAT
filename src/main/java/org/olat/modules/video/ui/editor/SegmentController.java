@@ -136,6 +136,7 @@ public class SegmentController extends FormBasicController {
 		categoryButton.setIconRightCSS("o_icon o_icon_caret o_video_segment_category_icon");
 		categoryButton.setElementCssClass("o_video_segment_category");
 		categoryButton.setEnabled(!restrictedEdit);
+		categoryButton.setAriaDialogOpener();
 
 		editCategoriesButton = uifactory.addFormLink("editCategories", "form.segment.category.edit",
 				"form.segment.category.edit", formLayout, Link.BUTTON);
@@ -176,7 +177,7 @@ public class SegmentController extends FormBasicController {
 		segmentCategoryController = new SegmentCategoryController(ureq, getWindowControl(), segments, segment);
 		listenTo(segmentCategoryController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				segmentCategoryController.getInitialComponent(), categoryButton.getFormDispatchId(), "",
+				segmentCategoryController.getInitialComponent(), categoryButton, "",
 				true, "", new CalloutSettings(false));
 		listenTo(ccwc);
 		ccwc.activate();

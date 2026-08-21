@@ -274,8 +274,10 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 				if (metaInfo.isInTranscoding()) {
 					openLink = uifactory.addFormLink("transcoding_" + (++linkCounter), "transcoding", "av.converting", null, null, Link.LINK);
 					openLink.setUserObject(def);
+					openLink.setAriaDialogOpener();
 					documentLink = uifactory.addFormLink("transcoding_" + (++linkCounter), "transcoding", "av.converting", null, null, Link.LINK);
 					documentLink.setUserObject(def);
+					documentLink.setAriaDialogOpener();
 				} else {
 					downloadLink = uifactory.addDownloadLink("file_" + (++linkCounter), item.getName(), null, vfsLeaf, taskDefTableEl);
 					downloadLink.setUserObject(vfsLeaf);
@@ -494,7 +496,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
@@ -576,7 +578,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), taskDef);
 		listenTo(avConvertingMenuCtrl);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				avConvertingMenuCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				avConvertingMenuCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

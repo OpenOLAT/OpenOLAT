@@ -292,7 +292,7 @@ public class GroupOverviewController extends FormBasicController {
 			FormLink link = (FormLink)source;
 			if("invitation".equals(link.getCmd()) && link.getUserObject() instanceof GroupOverviewRow) {
 				GroupOverviewRow row = (GroupOverviewRow)link.getUserObject();
-				doOpenInvitationLink(ureq, link.getFormDispatchId(), row);
+				doOpenInvitationLink(ureq, link, row);
 			}
 		}
 		
@@ -346,14 +346,14 @@ public class GroupOverviewController extends FormBasicController {
 		businessGroupService.updateMemberships(getIdentity(), changes, mailing);
 	}
 	
-	private void doOpenInvitationLink(UserRequest ureq, String elementId, GroupOverviewRow row) {
+	private void doOpenInvitationLink(UserRequest ureq, FormLink link, GroupOverviewRow row) {
 		String url = invitationService.toUrl(row.getInvitation());
 		invitationUrlCtrl = new InvitationURLController(ureq, getWindowControl(), url);
 		listenTo(invitationUrlCtrl);
 
 		String title = translate("invitation.link.long");
 		urlCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				invitationUrlCtrl.getInitialComponent(), elementId, title, true, "");
+				invitationUrlCtrl.getInitialComponent(), link, title, true, "");
 		listenTo(urlCalloutCtrl);
 		urlCalloutCtrl.activate();
 	}

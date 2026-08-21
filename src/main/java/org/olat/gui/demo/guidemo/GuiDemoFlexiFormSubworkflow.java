@@ -179,6 +179,7 @@ public class GuiDemoFlexiFormSubworkflow extends FormBasicController {
 		institution.setEnabled(false);
 		
 		choose = uifactory.addFormLink("choose", horizontalLayout);
+		choose.setAriaDialogOpener();
 		
 		if (inputMode) {
 			// submit only if in input mode

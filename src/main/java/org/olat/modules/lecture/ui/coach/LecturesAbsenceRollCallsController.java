@@ -209,6 +209,7 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 			FormLink noticeLink = uifactory.addFormLink("notice_" + rollCall.getKey(), "notice", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 			noticeLink.setIconRightCSS("o_icon o_icon_info o_icon-lg");
 			noticeLink.setUserObject(row);
+			noticeLink.setAriaDialogOpener();
 			row.setNoticeLink(noticeLink);
 		}
 		row.setAuthorized(authorized);
@@ -294,7 +295,7 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("notice".equals(link.getCmd()) && link.getUserObject() instanceof LectureAbsenceRollCallRow) {
-				doOpenAbsenceNoticeCallout(ureq, link.getFormDispatchId(), (LectureAbsenceRollCallRow)link.getUserObject());
+				doOpenAbsenceNoticeCallout(ureq, link, (LectureAbsenceRollCallRow)link.getUserObject());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -317,12 +318,12 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private void doOpenAbsenceNoticeCallout(UserRequest ureq, String elementId, LectureAbsenceRollCallRow row) {
+	private void doOpenAbsenceNoticeCallout(UserRequest ureq, FormLink link, LectureAbsenceRollCallRow row) {
 		noticeDetailsCtrl = new AbsenceNoticeDetailsCalloutController(ureq, getWindowControl(), row.getAbsenceNotice());
 		listenTo(noticeDetailsCtrl);
 
 		noticeCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				noticeDetailsCtrl.getInitialComponent(), elementId, "", true, "");
+				noticeDetailsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(noticeCalloutCtrl);
 		noticeCalloutCtrl.activate();
 	}

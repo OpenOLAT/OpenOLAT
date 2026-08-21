@@ -42,7 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -211,11 +211,7 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.status,
 				new CurriculumStatusCellRenderer(getTranslator())));
 		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(SearchCols.tools);
-		toolsCol.setIconHeader("o_icon o_icon-lg o_icon_actions");
-		toolsCol.setExportable(false);
-		toolsCol.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(SearchCols.tools));
 
 		tableModel = new CurriculumElementSearchDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
@@ -478,9 +474,7 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 	private CurriculumElementSearchRow forgeRow(CurriculumElementSearchInfos element) {
 		String id = element.curriculumElement().getKey().toString();
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		
 		final long children = element.numOfChildren();
 		final boolean showStructure = showStructure(element.curriculumElement(), children);
@@ -493,11 +487,13 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 		
 		if(refs > 0) {
 			FormLink resourcesLink = uifactory.addFormLink("resources_".concat(id), "resources", String.valueOf(refs), null, null, Link.NONTRANSLATED);
+			resourcesLink.setAriaDialogOpener();
 			resourcesLink.setUserObject(row);
 			row.setResourcesLink(resourcesLink);
 		}
 		if(showStructure) {
 			FormLink structureLink = uifactory.addFormLink("structure_".concat(id), "structure", "", null, null, Link.NONTRANSLATED);
+			structureLink.setAriaDialogOpener();
 			structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_structure");
 			structureLink.setTitle(translate("action.structure"));
 			structureLink.setUserObject(row);
@@ -598,7 +594,7 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 		
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				curriculumStructureCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", settings);
+				curriculumStructureCalloutCtrl.getInitialComponent(), link, "", true, "", settings);
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
@@ -639,7 +635,7 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 			listenTo(toolsCtrl);
 	
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					toolsCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
@@ -658,7 +654,7 @@ public class CurriculumSearchManagerController extends FormBasicController imple
 			listenTo(referencesCtrl);
 	
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					referencesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					referencesCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}

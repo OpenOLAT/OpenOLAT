@@ -317,6 +317,7 @@ public class MediaCenterController extends FormBasicController
 		if(withSelect) {
 			newMediaCallout = uifactory.addFormLink("new.medias", formLayout, Link.BUTTON);
 			newMediaCallout.setIconRightCSS("o_icon o_icon_caret o_icon-fw");
+			newMediaCallout.setAriaDialogOpener();
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -1271,7 +1272,7 @@ public class MediaCenterController extends FormBasicController
 		listenTo(newMediasCtrl);
 
 		newMediasCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				newMediasCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", new CalloutSettings(false));
+				newMediasCtrl.getInitialComponent(), link, "", true, "", new CalloutSettings(false));
 		listenTo(newMediasCalloutCtrl);
 		newMediasCalloutCtrl.activate();
 	}

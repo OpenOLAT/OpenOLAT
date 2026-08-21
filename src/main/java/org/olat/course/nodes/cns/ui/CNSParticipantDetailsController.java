@@ -197,6 +197,7 @@ public class CNSParticipantDetailsController extends FormBasicController {
 		FormLink formLink = uifactory.addFormLink("o_obli_" + (counter++) + suffix, CMD_OBLIGATION + suffix,
 				sb.toString(), null, null, Link.NONTRANSLATED);
 		formLink.setUserObject(row.getCourseNode());
+		formLink.setAriaDialogOpener();
 		row.setObligationFormItem(formLink);
 	}
 	
@@ -247,7 +248,7 @@ public class CNSParticipantDetailsController extends FormBasicController {
 		
 		CalloutSettings settings = new CalloutSettings();
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), obligationEditCtrl.getInitialComponent(),
-				link.getFormDispatchId(), "", true, "", settings);
+				link, "", true, "", settings);
 		listenTo(ccwc);
 		ccwc.activate();
 	}

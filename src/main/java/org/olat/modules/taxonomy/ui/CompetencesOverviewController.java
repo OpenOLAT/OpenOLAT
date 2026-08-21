@@ -157,6 +157,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 
 			if (taxonomyRow.hasDescription()) {
 				FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + taxonomyRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+				detailsLink.setAriaDialogOpener();
 				detailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
 				detailsLink.setUserObject(taxonomyRow);
 				taxonomyRow.setDetailsLink(detailsLink);
@@ -174,6 +175,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 			
 			if (levelRow.hasDescription()) {
 				FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+				detailsLink.setAriaDialogOpener();
 				detailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
 				detailsLink.setUserObject(levelRow);
 				levelRow.setDetailsLink(detailsLink);
@@ -196,6 +198,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 			}
 			if (competenceRow.hasDescription()) {
 				FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + competenceRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+				detailsLink.setAriaDialogOpener();
 				detailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
 				detailsLink.setUserObject(competenceRow);
 				competenceRow.setDetailsLink(detailsLink);

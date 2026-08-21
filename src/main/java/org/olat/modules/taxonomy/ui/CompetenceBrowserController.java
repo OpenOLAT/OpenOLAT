@@ -164,6 +164,7 @@ public class CompetenceBrowserController extends FormBasicController {
 					levelRow.setSelected(isPreselected);
 					if (StringHelper.containsNonWhitespace(levelRow.getDescription())) {
 						FormLink levelDetailsLink = uifactory.addFormLink("det_" + levelRow.getKey(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+						levelDetailsLink.setAriaDialogOpener();
 						levelDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
 						levelDetailsLink.setUserObject(levelRow);
 						levelRow.setDetailsLink(levelDetailsLink);

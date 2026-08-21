@@ -434,6 +434,7 @@ public class TeacherRollCallController extends FormBasicController {
 				noticeLink.setDomReplacementWrapperRequired(false);
 				noticeLink.setIconLeftCSS("o_icon o_icon_info");
 				noticeLink.setUserObject(row);
+				noticeLink.setAriaDialogOpener();
 				row.setNoticeLink(noticeLink);
 			} else {
 				String reasonId = "abs_reason_".concat(Integer.toString(++counter));
@@ -602,7 +603,7 @@ public class TeacherRollCallController extends FormBasicController {
 						doUncheckAllRow((TeacherRollCallRow)link.getUserObject());
 					}
 				} else if(cmd.startsWith("notice_")) {
-					doCalloutAbsenceNotice(ureq, link.getFormDispatchId(), (TeacherRollCallRow)link.getUserObject());
+					doCalloutAbsenceNotice(ureq, link, (TeacherRollCallRow)link.getUserObject());
 				}
 			}
 		}
@@ -814,12 +815,12 @@ public class TeacherRollCallController extends FormBasicController {
 		row.setRollCall(rollCall);
 	}
 	
-	private void doCalloutAbsenceNotice(UserRequest ureq, String elementId, TeacherRollCallRow row) {
+	private void doCalloutAbsenceNotice(UserRequest ureq, FormLink link, TeacherRollCallRow row) {
 		noticeDetailsCtrl = new AbsenceNoticeDetailsCalloutController(ureq, getWindowControl(), row.getAbsenceNotice());
 		listenTo(noticeDetailsCtrl);
 
 		noticeCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				noticeDetailsCtrl.getInitialComponent(), elementId, "", true, "");
+				noticeDetailsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(noticeCalloutCtrl);
 		noticeCalloutCtrl.activate();
 	}

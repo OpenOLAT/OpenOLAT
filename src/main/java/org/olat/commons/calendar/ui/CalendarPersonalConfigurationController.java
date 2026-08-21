@@ -217,6 +217,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 
 		FormLink feedLink = uifactory.addFormLink("fee_" + (++counter), "feed", "", null, null, Link.NONTRANSLATED);
 		feedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_rss");
+		feedLink.setAriaDialogOpener();
 		feedLink.setTitle(translate("table.header.ical"));
 		feedLink.setUserObject(row);
 		row.setFeedLink(feedLink);
@@ -445,7 +446,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		listenTo(feedUrlCtrl);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				feedUrlCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				feedUrlCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
@@ -472,7 +473,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		listenTo(calendarToolsCtrl);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				calendarToolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				calendarToolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

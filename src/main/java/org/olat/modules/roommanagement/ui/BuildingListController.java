@@ -262,6 +262,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 					StringHelper.escapeHtml(building.getAddress()), null, null, Link.LINK | Link.NONTRANSLATED);
 			addressLink.setIconLeftCSS("o_icon o_icon_location");
 			addressLink.setUserObject(row);
+			addressLink.setAriaDialogOpener();
 			row.setAddressLink(addressLink);
 		}
 
@@ -285,6 +286,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 			FormLink roomsLink = uifactory.addFormLink("rooms_" + building.getKey(), "rooms",
 					String.valueOf(roomCount), null, null, Link.LINK | Link.NONTRANSLATED);
 			roomsLink.setUserObject(row);
+			roomsLink.setAriaDialogOpener();
 			row.setRoomsLink(roomsLink);
 		}
 
@@ -489,7 +491,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
 		listenTo(toolsCtrl);
 		toolsCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutWindowCtrl);
 		toolsCalloutWindowCtrl.activate();
 	}
@@ -576,7 +578,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 		mapsCalloutCtrl = new MapsCalloutController(ureq, getWindowControl(), row.getBuilding());
 		listenTo(mapsCalloutCtrl);
 		mapsCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				mapsCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				mapsCalloutCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(mapsCalloutWindowCtrl);
 		mapsCalloutWindowCtrl.activate();
 	}
@@ -590,7 +592,7 @@ public class BuildingListController extends FormBasicController implements Flexi
 		roomsCalloutCtrl = new RoomsCalloutController(ureq, getWindowControl(), rooms, getTranslator());
 		listenTo(roomsCalloutCtrl);
 		roomsCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				roomsCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				roomsCalloutCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(roomsCalloutWindowCtrl);
 		roomsCalloutWindowCtrl.activate();
 	}

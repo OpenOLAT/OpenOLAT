@@ -258,6 +258,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		if(template.numOfLectureBlocks() > 0) {
 			FormLink resourcesLink = uifactory.addFormLink("resources." + (++counter), CMD_REFERENCES,
 					String.valueOf(template.numOfLectureBlocks()), tableEl, Link.LINK | Link.NONTRANSLATED);
+			resourcesLink.setAriaDialogOpener();
 			resourcesLink.setUserObject(row);
 			row.setResourcesLink(resourcesLink);
 		}
@@ -518,7 +519,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		listenTo(referencesCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				referencesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				referencesCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
@@ -565,7 +566,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

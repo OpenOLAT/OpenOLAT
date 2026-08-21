@@ -119,6 +119,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
 			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 			addMemberButton.setIconRightCSS("o_icon o_icon_caret");
+			addMemberButton.setAriaDialogOpener();
 		
 			removeMembershipButton = uifactory.addFormLink("remove.memberships", formLayout, Link.BUTTON);
 		}

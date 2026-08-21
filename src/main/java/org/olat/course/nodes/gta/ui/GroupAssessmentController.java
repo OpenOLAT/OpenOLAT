@@ -631,6 +631,7 @@ public class GroupAssessmentController extends FormBasicController {
 			if(withDocs) {
 				FormLink assessmentDocsLink = uifactory.addFormLink("docs-" + CodeHelper.getRAMUniqueID(), "assessment.docs", "assessment.docs", null, flc, Link.LINK);
 				assessmentDocsLink.setUserObject(row);
+				assessmentDocsLink.setAriaDialogOpener();
 				row.setAssessmentDocsEditLink(assessmentDocsLink);
 				
 				UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
@@ -659,6 +660,7 @@ public class GroupAssessmentController extends FormBasicController {
 					commentLink.setIconLeftCSS("o_icon o_icon_comments_none");
 				}
 				commentLink.setUserObject(row);
+				commentLink.setAriaDialogOpener();
 				row.setComment(comment);
 				row.setCommentEditLink(commentLink);
 
@@ -1058,7 +1060,7 @@ public class GroupAssessmentController extends FormBasicController {
 		editAssessmentDocsCtrl = new EditAssessmentDocumentController(ureq, getWindowControl(), courseOres, gtaNode, row, false, false);
 		listenTo(editAssessmentDocsCtrl);
 		assessmentDocsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				editAssessmentDocsCtrl.getInitialComponent(), row.getAssessmentDocsEditLink().getFormDispatchId(),
+				editAssessmentDocsCtrl.getInitialComponent(), row.getAssessmentDocsEditLink(),
 				"", true, "");
 		listenTo(assessmentDocsCalloutCtrl);
 		assessmentDocsCalloutCtrl.activate();
@@ -1071,7 +1073,7 @@ public class GroupAssessmentController extends FormBasicController {
 		editCommentCtrl = new EditCommentController(ureq, getWindowControl(), courseOres, gtaNode, row);
 		listenTo(editCommentCtrl);
 		commentCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				editCommentCtrl.getInitialComponent(), row.getCommentEditLink().getFormDispatchId(),
+				editCommentCtrl.getInitialComponent(), row.getCommentEditLink(),
 				"", true, "");
 		listenTo(commentCalloutCtrl);
 		commentCalloutCtrl.activate();

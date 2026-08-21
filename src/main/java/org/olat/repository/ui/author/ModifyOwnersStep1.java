@@ -114,6 +114,7 @@ public class ModifyOwnersStep1 extends BasicStep {
 			for (Identity owner : context.getOwners()) {
 				ModifyOwnersRemoveTableRow row = new ModifyOwnersRemoveTableRow(owner, context.getOwnersResourcesMap().get(owner));
 				FormLink detailsLink = uifactory.addFormLink("details_" + owner.getKey().toString(), "modify.owners.remove.resource.details", null, (FormItemContainer)null, Link.LINK);
+				detailsLink.setAriaDialogOpener();
 				detailsLink.setUserObject(row);
 				row.setDetailsLink(detailsLink);
 				tableRows.add(row);
@@ -144,7 +145,7 @@ public class ModifyOwnersStep1 extends BasicStep {
 				VelocityContainer detailsContainer = createVelocityContainer("modify_owners_remove_resources_details");
 				detailsContainer.contextPut("resources", context.getOwnersResourcesMap().get(row.getIdentity()));
 
-				detailsCallOutController = new CloseableCalloutWindowController(ureq, getWindowControl(), detailsContainer, source.getFormDispatchId(), "", true, "", settings);
+				detailsCallOutController = new CloseableCalloutWindowController(ureq, getWindowControl(), detailsContainer, (FormLink) source, "", true, "", settings);
 				listenTo(detailsCallOutController);
 				detailsCallOutController.activate();
 			}

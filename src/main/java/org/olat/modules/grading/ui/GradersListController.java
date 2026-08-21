@@ -445,7 +445,7 @@ public class GradersListController extends FormBasicController {
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
@@ -470,6 +470,7 @@ public class GradersListController extends FormBasicController {
 			assignmentsLink = addLink("tool.show.assignments", "show_assignments", "o_icon o_icon_assessment_mode", mainVC);
 			sendMailLink = addLink("tool.send.mail", "send_mail", "o_icon o_icon_mail", mainVC);
 			reportLink = addLink("tool.download.report", "report", "o_icon o_icon_download", mainVC);
+			reportLink.setAriaDialogOpener();
 			
 			if(row.hasGraderStatus(GraderStatus.activated)) {
 				deactivateLink = addLink("tool.deactivate", "deactivate", "o_icon o_icon_deactivate", mainVC);
@@ -537,7 +538,7 @@ public class GradersListController extends FormBasicController {
 			listenTo(reportCtrl);
 			
 			reportCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					reportCtrl.getInitialComponent(), link.getDispatchID(), "", true, "");
+					reportCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(reportCalloutCtrl);
 			reportCalloutCtrl.activate();
 		}

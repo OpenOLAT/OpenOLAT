@@ -230,6 +230,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		if(!parents.isEmpty()) {
 			FormLink parentsLink = uifactory.addFormLink("parents_" + type.getKey(), "parents",
 					String.valueOf(parents.size()), null, null, Link.NONTRANSLATED);
+			parentsLink.setAriaDialogOpener();
 			parentsLink.setUserObject(row);
 			row.setParentsLink(parentsLink);
 		}
@@ -238,6 +239,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		if(!children.isEmpty()) {
 			FormLink childrenLink = uifactory.addFormLink("children_" + type.getKey(), "children",
 					String.valueOf(children.size()), null, null, Link.NONTRANSLATED);
+			childrenLink.setAriaDialogOpener();
 			childrenLink.setUserObject(row);
 			row.setChildrenLink(childrenLink);
 		}
@@ -341,7 +343,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			listenTo(toolsCtrl);
 	
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					toolsCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
@@ -362,7 +364,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		typeNamesCalloutCtrl = new TypeNamesCalloutController(ureq, getWindowControl(), title, types);
 		listenTo(typeNamesCalloutCtrl);
 		typeNamesCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				typeNamesCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				typeNamesCalloutCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(typeNamesCalloutWindowCtrl);
 		typeNamesCalloutWindowCtrl.activate();
 	}

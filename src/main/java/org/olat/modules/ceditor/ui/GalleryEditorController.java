@@ -219,6 +219,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 				toolLink.setTranslator(getTranslator());
 				toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 				toolLink.setTitle(translate("action.more"));
+				toolLink.setAriaDialogOpener();
 			}
 			toolLink.setUserObject(galleryRow);
 			galleryRow.setToolLink(toolLink);
@@ -315,7 +316,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 		listenTo(toolsController);
 
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsController.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsController.getInitialComponent(), link, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

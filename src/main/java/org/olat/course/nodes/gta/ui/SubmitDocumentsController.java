@@ -344,8 +344,10 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 				if (inTranscoding) {
 					openLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
 					openLink.setUserObject(filename);
+					openLink.setAriaDialogOpener();
 					documentLink = uifactory.addFormLink("transcoding_" + CodeHelper.getRAMUniqueID(), "transcoding", "av.converting", null, flc, Link.LINK);
 					documentLink.setUserObject(filename);
+					documentLink.setAriaDialogOpener();
 				} else {
 					if (!embeddedEditor && filename.endsWith(".html")) {
 						openLink = uifactory.addFormLink("open_" + CodeHelper.getRAMUniqueID(), "view", iconFilename, null, flc, Link.NONTRANSLATED);
@@ -601,7 +603,7 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
@@ -665,7 +667,7 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 		avConvertingMenuCtrl = new AVConvertingMenuController(ureq, getWindowControl(), filename);
 		listenTo(avConvertingMenuCtrl);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				avConvertingMenuCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				avConvertingMenuCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

@@ -86,6 +86,7 @@ public class CoachingNotificationsController extends BasicController implements 
 		notificationsLink.setElementCssClass("badge");
 		notificationsLink.setIconRightCSS("o_icon o_icon_time");
 		notificationsLink.setDomReplacementWrapperRequired(false);
+		notificationsLink.setAriaDialogOpener();
 		
 		StackedPanel panel = new SimpleStackedPanel("coachingNotificationsPanel");
 		panel.setContent(mainVC);
@@ -162,7 +163,7 @@ public class CoachingNotificationsController extends BasicController implements 
 		listenTo(listCtrl);
 
 		listCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				listCtrl.getInitialComponent(), link.getDispatchID(), "", true, "");
+				listCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(listCalloutCtrl);
 		listCalloutCtrl.activate();
 	}

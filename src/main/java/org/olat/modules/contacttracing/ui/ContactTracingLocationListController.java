@@ -378,7 +378,7 @@ public class ContactTracingLocationListController extends FormBasicController {
         locationToolsContainer.put("editLocation", editLocationCalloutLink.getComponent());
         locationToolsContainer.put("deleteLocation", deleteCalloutLink.getComponent());
 
-        calloutWindowController = new CloseableCalloutWindowController(ureq, getWindowControl(), locationToolsContainer, link.getFormDispatchId(), "", true, "", settings);
+        calloutWindowController = new CloseableCalloutWindowController(ureq, getWindowControl(), locationToolsContainer, link, "", true, "", settings);
         listenTo(calloutWindowController);
         calloutWindowController.activate();
     }

@@ -347,6 +347,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 			toolLink = uifactory.addFormLink(toolId, "tools", "", tableEl, Link.LINK | Link.NONTRANSLATED);
 			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolLink.setTitle(translate("action.more"));
+			toolLink.setAriaDialogOpener();
 		}
 		toolLink.setUserObject(row);
 		row.setToolLink(toolLink);
@@ -579,7 +580,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		listenTo(toolsCtrl);
 	
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

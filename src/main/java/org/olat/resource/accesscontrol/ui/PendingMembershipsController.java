@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateWithDayFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -47,7 +48,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
@@ -87,7 +87,6 @@ public class PendingMembershipsController extends FormBasicController implements
 	private static final String ROW_SELECT_ACTION = "select.row";
 	private static final String CMD_ACCEPT = "accept";
 	private static final String CMD_DECLINE = "decline";
-	private static final String CMD_TOOLS = "tools";
 
 	private final Identity identity;
 	private FlexiTableElement tableEl;
@@ -149,11 +148,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		declineColumn.setAlwaysVisible(true);
 		columnModel.addFlexiColumnModel(declineColumn);
 
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(PendingMembershipCol.tools);
-		toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
-		toolsColumn.setAlwaysVisible(true);
-		toolsColumn.setExportable(false);
-		columnModel.addFlexiColumnModel(toolsColumn);
+		columnModel.addFlexiColumnModel(new ActionsColumnModel(PendingMembershipCol.tools));
 		
 		tableModel = new  PendingMembershipsTableModel(columnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
@@ -202,7 +197,7 @@ public class PendingMembershipsController extends FormBasicController implements
 			}
 		} else if (source instanceof FormLink formLink) {
 			if (formLink.getUserObject() instanceof PendingMembershipRow row) {
-				if (CMD_TOOLS.equals(formLink.getCmd())) {
+				if ("tools".equals(formLink.getCmd())) {
 					doOpenTools(ureq, row, formLink);
 				} else if (CMD_ACCEPT.equals(formLink.getCmd())) {
 					doAcceptDeclineOne(ureq, row, true);
@@ -219,7 +214,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		if (source instanceof MemberDetailsController detailsCtrl) {
 			if (detailsCtrl.getUserObject() instanceof PendingMembershipRow row) {
 				if (event instanceof ImplementationEvent) {
-					doLearnMoreAboutImplementation(ureq, row);
+					doLearnMoreAboutImplementation(row);
 				} else if (event == Event.CHANGED_EVENT) {
 					loadModel();
 					checkAcceptDeclineOutcome(row.getCurriculumElementKey());
@@ -349,9 +344,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		declineLink.setUserObject(row);
 		row.setDeclineLink(declineLink);
 
-		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}
@@ -405,7 +398,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		}
 	}
 	
-	private void doLearnMoreAboutImplementation(UserRequest ureq, PendingMembershipRow row) {
+	private void doLearnMoreAboutImplementation(PendingMembershipRow row) {
 		int rowIndex = tableModel.getObjects().indexOf(row);
 		if (rowIndex < 0) {
 			return;
@@ -442,7 +435,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		listenTo(toolsCtrl);
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), toolsCtrl.getInitialComponent(),
-				formLink.getFormDispatchId(), "", true, "");
+				formLink, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

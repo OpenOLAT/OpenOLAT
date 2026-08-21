@@ -275,6 +275,7 @@ implements Activateable2, FlexiTableComponentDelegate {
 		long refs = elementsInfos.numOfResources();
 		if(refs > 0) {
 			FormLink resourcesLink = uifactory.addFormLink("resources_" + (++counter), CMD_RESOURCES, String.valueOf(refs), null, null, Link.NONTRANSLATED);
+			resourcesLink.setAriaDialogOpener();
 			resourcesLink.setUserObject(row);
 			row.setResources(resourcesLink);
 		}
@@ -452,7 +453,7 @@ implements Activateable2, FlexiTableComponentDelegate {
 	
 			CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true, null);
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					referencesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", settings);
+					referencesCtrl.getInitialComponent(), link, "", true, "", settings);
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}

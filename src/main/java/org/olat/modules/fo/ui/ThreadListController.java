@@ -136,6 +136,7 @@ public class ThreadListController extends FormBasicController {
 			toolsLink = uifactory.addFormLink("tools.link", "foToolsLink", "", null, formLayout, Link.BUTTON_SMALL + Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolsLink.setTitle(translate("action.more"));
+			toolsLink.setAriaDialogOpener();
 		}
 		
 		if(formLayout instanceof FormLayoutContainer) {
@@ -350,7 +351,7 @@ public class ThreadListController extends FormBasicController {
 		ToolsController toolsCtrl = new ToolsController(ureq, getWindowControl());
 		listenTo(toolsCtrl);
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

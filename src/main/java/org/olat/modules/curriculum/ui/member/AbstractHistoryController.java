@@ -265,6 +265,7 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		
 		if(StringHelper.containsNonWhitespace(point.getAdminNote())) {
 			FormLink noteLink = uifactory.addFormLink("note_" + (++counter), "note", "", null, flc, Link.LINK | Link.NONTRANSLATED);
+			noteLink.setAriaDialogOpener();
 			noteLink.setDomReplacementWrapperRequired(false);
 			noteLink.setIconLeftCSS("o_icon o_icon_notes");
 			noteLink.setTitle(translate("note"));
@@ -331,7 +332,7 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		String title = translate("note");
 		CalloutSettings settings = new CalloutSettings(title);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				noteCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "", settings);
+				noteCtrl.getInitialComponent(), link, title, true, "", settings);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

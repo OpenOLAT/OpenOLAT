@@ -1461,7 +1461,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				listenTo(toolsCtrl);
 				
 				calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-						toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+						toolsCtrl.getInitialComponent(), link, "", true, "");
 				listenTo(calloutCtrl);
 				calloutCtrl.activate();
 			}
@@ -1485,7 +1485,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			listenTo(referencesCtrl);
 	
 			calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					referencesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					referencesCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(calloutCtrl);
 			calloutCtrl.activate();
 		}
@@ -1504,7 +1504,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			listenTo(infosCtrl);
 			
 			calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), infosCtrl.getInitialComponent(),
-					link.getFormDispatchId(), null, true, null);
+					link, null, true, null);
 			listenTo(calloutCtrl);
 			calloutCtrl.activate();
 		}
@@ -2225,6 +2225,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(configuration.isInfos()) {
 			FormLink infosLink = uifactory.addFormLink("infos_".concat(count), "infos", "", null, null, Link.NONTRANSLATED);
 			infosLink.setIconLeftCSS("o_icon o_icon_info_resource o_icon-fws o_icon-lg");
+			infosLink.setAriaDialogOpener();
 			infosLink.setUserObject(row);
 			infosLink.setTitle(translate("details.info.title"));
 			row.setInfosLink(infosLink);
@@ -2233,6 +2234,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(row.getNumOfReferences() > 0 || row.getNumOfCurriculumElements() > 0) {
 			String numOfReferences = Integer.toString(row.getNumOfReferences() + row.getNumOfCurriculumElements());
 			FormLink referencesLink = uifactory.addFormLink("refs_".concat(count), "references", numOfReferences, null, null, Link.NONTRANSLATED);
+			referencesLink.setAriaDialogOpener();
 			referencesLink.setUserObject(row);
 			referencesLink.setTitle(translate("details.referenceinfo"));
 			row.setReferencesLink(referencesLink);

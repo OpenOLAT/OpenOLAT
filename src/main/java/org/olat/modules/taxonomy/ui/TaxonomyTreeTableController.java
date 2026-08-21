@@ -182,6 +182,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		
 		if (secCallback.canImportExport()) {
 			FormLink importExportLink = uifactory.addFormLink(TOOLS_IMPORT_EXPORT, TOOLS_IMPORT_EXPORT, "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
+			importExportLink.setAriaDialogOpener();
 			importExportLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions");
 			importExportLink.setTitle(translate("action.more"));
 		}
@@ -316,6 +317,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 
 	private TaxonomyLevelRow forgeRow(TaxonomyLevel taxonomyLevel) {
 		FormLink structureLink = uifactory.addFormLink("structure_" + taxonomyLevel.getKey(), "structure", "", null, null, Link.NONTRANSLATED);
+		structureLink.setAriaDialogOpener();
 		structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_structure");
 		structureLink.setTitle(translate("table.header.taxonomy.level.levels"));
 		
@@ -770,7 +772,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				taxonomyLevelsCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", settings);
+				taxonomyLevelsCalloutCtrl.getInitialComponent(), link, "", true, "", settings);
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
@@ -788,7 +790,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			listenTo(toolsCtrl);
 	
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					toolsCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
@@ -802,7 +804,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

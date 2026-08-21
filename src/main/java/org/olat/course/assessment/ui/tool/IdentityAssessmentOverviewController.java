@@ -462,6 +462,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			linkText += " <i class='o_icon o_icon_info'> </i>";
 			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 			formLink.setUserObject(row);
+			formLink.setAriaDialogOpener();
 			row.setScoreDesc(formLink);
 			
 			if (scoreScalingEnabled && StringHelper.containsNonWhitespace(row.getRoundedWeightedScore())) {
@@ -469,6 +470,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 				linkText += " <i class='o_icon o_icon_info'> </i>";
 				formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 				formLink.setUserObject(row);
+				formLink.setAriaDialogOpener();
 				row.setWeightedScoreDesc(formLink);
 			}
 		}
@@ -507,6 +509,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			linkText += " <i class='o_icon o_icon_info'> </i>";
 			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 			formLink.setUserObject(rootRow);
+			formLink.setAriaDialogOpener();
 			rootRow.setScoreDesc(formLink);
 			
 			if (scoreScalingEnabled) {
@@ -516,6 +519,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 				linkText += " <i class='o_icon o_icon_info'> </i>";
 				formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 				formLink.setUserObject(rootRow);
+				formLink.setAriaDialogOpener();
 				rootRow.setWeightedScoreDesc(formLink);
 			}
 		}
@@ -673,7 +677,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		
 		CalloutSettings settings = new CalloutSettings();
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), scoreDescCtrl.getInitialComponent(),
-				link.getFormDispatchId(), "", true, "", settings);
+				link, "", true, "", settings);
 		listenTo(ccwc);
 		ccwc.activate();
 	}

@@ -169,6 +169,7 @@ public class UsrPropCfgTableController extends FormBasicController {
 				translateLink = uifactory.addFormLink(FT_NAME_PREFIX_TRANSL + handlerName, "upc.translate", null, propTableFlc, Link.LINK);
 				translateLink.setCustomEnabledLinkCSS("o_ochre");
 			}
+			translateLink.setAriaDialogOpener();
 			translateLink.setUserObject(handler);
 
 			// the "handler-config" link

@@ -150,6 +150,7 @@ public class CertificationProgramCandidatesController extends FormBasicControlle
 	
 	private CertificationProgramCandidateRow forgeRow(Identity participant) {
 		FormLink elementsLink = uifactory.addFormLink("elements_" + (++count), "details", "1", null, flc, Link.LINK | Link.NONTRANSLATED);
+		elementsLink.setAriaDialogOpener();
 		CertificationProgramCandidateRow row = new CertificationProgramCandidateRow(participant, elementsLink, userPropertyHandlers, getLocale());
 		elementsLink.setUserObject(row);
 		return row;
@@ -206,7 +207,7 @@ public class CertificationProgramCandidatesController extends FormBasicControlle
 		
 		String title = translate("certification.program.memberships");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				elementsCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "");
+				elementsCtrl.getInitialComponent(), link, title, true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

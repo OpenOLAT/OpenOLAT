@@ -297,7 +297,7 @@ public class CourseOverviewController extends FormBasicController  {
 			}
 		} else if(source instanceof FormLink link) {
 			if("invitation".equals(link.getCmd()) && link.getUserObject() instanceof CourseMemberView row) {
-				doOpenInvitationLink(ureq, link.getFormDispatchId(), row);
+				doOpenInvitationLink(ureq, link, row);
 			}
 		}
 	}
@@ -386,7 +386,7 @@ public class CourseOverviewController extends FormBasicController  {
 		NewControllerFactory.getInstance().launch("[RepositoryEntry:" + repoKey + "]", ureq, getWindowControl());
 	}
 	
-	private void doOpenInvitationLink(UserRequest ureq, String elementId, CourseMemberView row) {
+	private void doOpenInvitationLink(UserRequest ureq, FormLink elementId, CourseMemberView row) {
 		String url = invitationService.toUrl(row.getInvitation());
 		invitationUrlCtrl = new InvitationURLController(ureq, getWindowControl(), url);
 		listenTo(invitationUrlCtrl);

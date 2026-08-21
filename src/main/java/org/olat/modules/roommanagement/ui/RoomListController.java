@@ -872,7 +872,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
 		listenTo(toolsCtrl);
 		toolsCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutWindowCtrl);
 		toolsCalloutWindowCtrl.activate();
 	}

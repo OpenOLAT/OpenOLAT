@@ -560,12 +560,14 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		ratingCmp.setUserObject(itemRow);
 	}
 
-	private void doOpenTools(UserRequest ureq, Item feedItem, String dispatchID) {
+	private void doOpenTools(UserRequest ureq, Item feedItem, FormLink toolsLink) {
+		if (toolsLink == null) return;
+		
 		toolsCtrl = new ToolsController(ureq, getWindowControl(), feedItem);
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), dispatchID, "", true, "");
+				toolsCtrl.getInitialComponent(), toolsLink, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
@@ -600,6 +602,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsLink.setGhost(true);
 		toolsLink.setUserObject(feedItemRow.getItem());
+		toolsLink.setAriaDialogOpener();
 		feedItemRow.setToolsLink(toolsLink);
 	}
 
@@ -949,7 +952,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			} else if (source == bulkRemoveTags) {
 				doBulkRemoveTags(ureq);
 			} else if (link.getCmd().equals("tools")) {
-				doOpenTools(ureq, (Item) link.getUserObject(), link.getFormDispatchId());
+				doOpenTools(ureq, (Item) link.getUserObject(), link);
 			}
 		} else if (source == tableEl) {
 			if (event instanceof FlexiTableSearchEvent
@@ -959,7 +962,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				String cmd = se.getCommand();
 				FeedItemRow row = tableModel.getObject(se.getIndex());
 				if ("tools".equals(cmd)) {
-					doOpenTools(ureq, row.getItem(), "o-tools-".concat(row.getItem().getGuid()));
+					doOpenTools(ureq, row.getItem(), row.getToolsLink());
 				} else if ("openEntry".equals(cmd)) {
 					displayFeedItem(ureq, row.getItem());
 				}

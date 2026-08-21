@@ -828,6 +828,7 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 			editLabelButton.setIconLeftCSS("o_icon o_icon-lg o_icon_language");
 			editLabelButton.setUserObject(row);
 			editLabelButton.setVisible(!readOnly);
+			editLabelButton.setAriaDialogOpener();
 			row.setEditLabelButton(editLabelButton);
 		}
 		if(placeholderEl != null) {
@@ -881,6 +882,7 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 		editPlaceholderButton.setDomReplacementWrapperRequired(false);
 		editPlaceholderButton.setIconLeftCSS("o_icon o_icon-lg o_icon_language");
 		editPlaceholderButton.setUserObject(row);
+		editPlaceholderButton.setAriaDialogOpener();
 		return editPlaceholderButton;
 	}
 	
@@ -998,7 +1000,7 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 
 		String title = translate("edit.custom.attribute", new String[] { row.getAttributeDefinition().getLabel(getLocale(), true) });
 		editCallout = new CloseableCalloutWindowController(ureq, getWindowControl(), editAttributeLabelCtrl.getInitialComponent(),
-				link.getFormDispatchId(), title, true, "");
+				link, title, true, "");
 		listenTo(editCallout);
 		editCallout.activate();
 	}
@@ -1017,7 +1019,7 @@ public class PositionEditAdditionalAttributesController extends FormBasicControl
 
 		String title = translate("edit.custom.attribute", new String[] { row.getAttributeDefinition().getPlaceholder(getLocale(), true) });
 		editCallout = new CloseableCalloutWindowController(ureq, getWindowControl(), editAttributePlaceholderCtrl.getInitialComponent(),
-				link.getFormDispatchId(), title, true, "");
+				link, title, true, "");
 		listenTo(editCallout);
 		editCallout.activate();
 	}

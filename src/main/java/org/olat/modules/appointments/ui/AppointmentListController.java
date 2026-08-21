@@ -569,6 +569,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 			FormLink participationsEl = uifactory.addFormLink("participations_" + row.getKey(), CMD_SHOW_PARTICIPANTS,
 					numOfParticipations, null, null, Link.NONTRANSLATED);
 			participationsEl.setUserObject(row);
+			participationsEl.setAriaDialogOpener();
 			row.setParticipationsEl(participationsEl);
 		} else {
 			StaticTextElement participationsEl = uifactory.addStaticTextElement("participations_" + row.getKey(), null,
@@ -1068,7 +1069,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		
 		String title = translate("appointment.participations", String.valueOf(participants.size()));
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				participationsCont, link.getFormDispatchId(), title, true, "");
+				participationsCont, link, title, true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

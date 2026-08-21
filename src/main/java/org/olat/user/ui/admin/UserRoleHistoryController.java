@@ -357,6 +357,7 @@ public class UserRoleHistoryController extends FormBasicController implements Ex
 			FormLink noteLink = uifactory.addFormLink("note_" + (++counter), "note", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 			noteLink.setDomReplacementWrapperRequired(false);
 			noteLink.setIconLeftCSS("o_icon o_icon_notes");
+			noteLink.setAriaDialogOpener();
 			noteLink.setTitle(translate("note"));
 			noteLink.setUserObject(row);
 			row.setNoteLink(noteLink);
@@ -467,7 +468,7 @@ public class UserRoleHistoryController extends FormBasicController implements Ex
 		String title = translate("note");
 		CalloutSettings settings = new CalloutSettings(title);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				noteCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "", settings);
+				noteCtrl.getInitialComponent(), link, title, true, "", settings);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

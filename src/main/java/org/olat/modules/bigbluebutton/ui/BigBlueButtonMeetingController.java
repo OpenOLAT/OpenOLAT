@@ -345,6 +345,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 						"publish", "publish.recording", tableEl);
 				row.setPublishLink(publishLink);
 				publishLink.setUserObject(row);
+				publishLink.setAriaDialogOpener();
 			}
 			
 			if(withTools) {
@@ -605,7 +606,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		listenTo(publishCtrl); 
 
 		publishCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				publishCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				publishCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(publishCalloutCtrl);
 		publishCalloutCtrl.activate();
 	}
@@ -615,7 +616,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		listenTo(toolsCtrl); 
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

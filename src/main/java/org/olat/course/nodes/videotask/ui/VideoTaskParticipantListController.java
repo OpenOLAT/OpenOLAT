@@ -28,7 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -112,9 +112,7 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 	
 	@Override
 	protected void initCalloutColumns(FlexiTableColumnModel columnsModel) {
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(IdentityCourseElementCols.tools);
-		toolsCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(IdentityCourseElementCols.tools));
 	}
 	
 	@Override

@@ -334,6 +334,7 @@ public class EditMemberController extends FormBasicController {
 
 	private FormLink forgeLink(String id, String cmd, String i18n, String boxCssClass, String iconCssClass) {
 		FormLink link = uifactory.addFormLink(id, cmd, i18n, null, flc, Link.BUTTON_XSMALL);
+		link.setAriaDialogOpener();
 		link.setDomReplacementWrapperRequired(false);
 		link.setCustomEnabledLinkCSS("o_labeled_light " + boxCssClass);
 		link.setIconLeftCSS("o_icon o_icon-fw " + iconCssClass);
@@ -343,6 +344,7 @@ public class EditMemberController extends FormBasicController {
 	
 	private FormLink forgeNoteLink(String id) {
 		FormLink noteLink = uifactory.addFormLink("note_" + id, CMD_NOTE, "", null, flc, Link.LINK | Link.NONTRANSLATED);
+		noteLink.setAriaDialogOpener();
 		noteLink.setDomReplacementWrapperRequired(false);
 		noteLink.setIconLeftCSS("o_icon o_icon_notes");
 		noteLink.setTitle(translate("note"));
@@ -351,6 +353,7 @@ public class EditMemberController extends FormBasicController {
 	
 	private FormLink forgeAddLink(String id) {
 		FormLink addLink = uifactory.addFormLink(id, CMD_ADD, "add", null, flc, Link.LINK);
+		addLink.setAriaDialogOpener();
 		addLink.setDomReplacementWrapperRequired(false);
 		addLink.setIconLeftCSS("o_icon o_icon-fw o_icon_plus");
 		return addLink;
@@ -650,7 +653,7 @@ public class EditMemberController extends FormBasicController {
 		
 		String title = translate("add.membership");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				addMembershipCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "");
+				addMembershipCtrl.getInitialComponent(), link, title, true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
@@ -673,7 +676,7 @@ public class EditMemberController extends FormBasicController {
 			
 			String title = translate("confirm.membership");
 			calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					confirmMembershipCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "");
+					confirmMembershipCtrl.getInitialComponent(), link, title, true, "");
 			listenTo(calloutCtrl);
 			calloutCtrl.activate();
 		}
@@ -689,7 +692,7 @@ public class EditMemberController extends FormBasicController {
 		
 		String title = translate("change.membership");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				changeMembershipCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "");
+				changeMembershipCtrl.getInitialComponent(), link, title, true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
@@ -714,7 +717,7 @@ public class EditMemberController extends FormBasicController {
 		String title = translate("note");
 		CalloutSettings settings = new CalloutSettings(title);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				noteCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "", settings);
+				noteCtrl.getInitialComponent(), link, title, true, "", settings);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

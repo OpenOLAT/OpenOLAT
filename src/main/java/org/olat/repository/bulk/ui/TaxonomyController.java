@@ -218,6 +218,7 @@ public class TaxonomyController extends StepFormBasicController {
 		FormLink usageLink = uifactory.addFormLink(usageLinkName, CMD_USAGE, "", null, null, Link.LINK | Link.NONTRANSLATED);
 		String usageText = translate("settings.bulk.taxonomy.usage.num", new String[] {String.valueOf(usageEntries.size())});
 		usageLink.setI18nKey(usageText);
+		usageLink.setAriaDialogOpener();
 		usageLink.setEnabled(!usageEntries.isEmpty());
 		usageLink.setUserObject(row);
 		row.setUsageItem(usageLink);
@@ -289,7 +290,7 @@ public class TaxonomyController extends StepFormBasicController {
 		List<String> entryNames = usageEntries.stream().map(RepositoryEntry::getDisplayname).sorted().collect(Collectors.toList());
 		usageVC.contextPut("entryNames", entryNames);
 		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), usageVC, link.getFormDispatchId(), "", true, "");
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), usageVC, link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

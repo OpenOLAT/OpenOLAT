@@ -70,6 +70,7 @@ public abstract class TableWidgetController extends FormBasicController implemen
 		prefsLink = uifactory.addFormLink("prefs", "prefs", "", null, widgetCont, Link.BUTTON_SMALL + Link.NONTRANSLATED);
 		prefsLink.setIconLeftCSS("o_icon o_icon_customize");
 		prefsLink.setLinkTitle(translate("settings.change"));
+		prefsLink.setAriaDialogOpener();
 		
 		widgetCont.contextPut("title", getTitle());
 		widgetCont.contextPut("indicatorsComponentName", createIndicators(widgetCont));
@@ -180,7 +181,7 @@ public abstract class TableWidgetController extends FormBasicController implemen
 		listenTo(prefsCtrl);
 	
 		prefsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				prefsCtrl.getInitialComponent(), link.getFormDispatchId(), translate("settings"), true, "");
+				prefsCtrl.getInitialComponent(), link, translate("settings"), true, "");
 		listenTo(prefsCalloutCtrl);
 		prefsCalloutCtrl.activate();
 	}

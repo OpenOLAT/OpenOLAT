@@ -178,6 +178,7 @@ public class ToDoCollectionEditOverviewController extends StepFormBasicControlle
 		
 		String linkName = "o_change_" + counter++;
 		FormLink link = uifactory.addFormLink(linkName, CMD_CHANGES, "", null, overviewCont, Link.LINK | Link.NONTRANSLATED);
+		link.setAriaDialogOpener();
 		link.setI18nKey(linkText);
 		link.setEnabled(changes != null && !changes.isEmpty());
 		link.setUserObject(changes);
@@ -215,7 +216,7 @@ public class ToDoCollectionEditOverviewController extends StepFormBasicControlle
 		VelocityContainer changesVC = createVelocityContainer("bulk_changes");
 		changesVC.contextPut("names", names);
 		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), changesVC, link.getFormDispatchId(), "", true, "");
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), changesVC, link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

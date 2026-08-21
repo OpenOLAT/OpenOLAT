@@ -130,6 +130,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 				|| !TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.haveCompetence)
 				|| !TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.targetCompetence)) {
 			addCompetencesButton = uifactory.addFormLink("add.competences", formLayout, Link.BUTTON);
+			addCompetencesButton.setAriaDialogOpener();
 			addCompetencesButton.setElementCssClass("o_sel_competence_add");
 			removeCompetencesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 			multiSelect = true;
@@ -277,7 +278,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 		listenTo(addCompetencesCtrl);
 		
 		addCompetencesCallout = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				addCompetencesCtrl.getInitialComponent(), addCompetencesButton.getFormDispatchId(), "", true, "");
+				addCompetencesCtrl.getInitialComponent(), addCompetencesButton, "", true, "");
 		listenTo(addCompetencesCallout);
 		addCompetencesCallout.activate();
 	}

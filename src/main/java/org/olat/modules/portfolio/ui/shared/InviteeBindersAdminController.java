@@ -151,6 +151,7 @@ public class InviteeBindersAdminController extends FormBasicController {
 			FormLink invitationLink = uifactory.addFormLink("invitation_" + (++counter), "invitation", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 			invitationLink.setIconLeftCSS("o_icon o_icon_link o_icon-fw");
 			invitationLink.setTitle(translate("invitation.link.long"));
+			invitationLink.setAriaDialogOpener();
 			row.setInvitationLink(invitationLink);
 			invitationLink.setUserObject(row);	
 		}
@@ -206,7 +207,7 @@ public class InviteeBindersAdminController extends FormBasicController {
 			FormLink link = (FormLink)source;
 			if("invitation".equals(link.getCmd()) && link.getUserObject() instanceof InviteeBinderAdminRow) {
 				InviteeBinderAdminRow row = (InviteeBinderAdminRow)link.getUserObject();
-				doOpenInvitationLink(ureq, link.getFormDispatchId(), row);
+				doOpenInvitationLink(ureq, link, row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -233,14 +234,14 @@ public class InviteeBindersAdminController extends FormBasicController {
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
-	private void doOpenInvitationLink(UserRequest ureq, String elementId, InviteeBinderAdminRow row) {
+	private void doOpenInvitationLink(UserRequest ureq, FormLink link, InviteeBinderAdminRow row) {
 		String url = invitationService.toUrl(row.getInvitation());
 		invitationUrlCtrl = new InvitationURLController(ureq, getWindowControl(), url);
 		listenTo(invitationUrlCtrl);
 
 		String title = translate("invitation.link.long");
 		urlCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				invitationUrlCtrl.getInitialComponent(), elementId, title, true, "");
+				invitationUrlCtrl.getInitialComponent(), link, title, true, "");
 		listenTo(urlCalloutCtrl);
 		urlCalloutCtrl.activate();
 	}

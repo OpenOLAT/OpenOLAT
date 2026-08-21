@@ -138,6 +138,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 
 		addEmailLink = uifactory.addFormLink("add.email", userListBox);
 		addEmailLink.setIconLeftCSS("o_icon o_icon_add");
+		addEmailLink.setAriaDialogOpener();
 
 		subjectElement = uifactory.addTextElement("tsubject", "send.mail.subject", 255, "", formLayout);
 

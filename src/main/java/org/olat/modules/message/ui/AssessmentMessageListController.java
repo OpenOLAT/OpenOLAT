@@ -218,6 +218,7 @@ public class AssessmentMessageListController extends FormBasicController impleme
 		FormLink toolLink = (FormLink)flc.getFormComponent(toolId);
 		if(toolLink == null) {
 			toolLink = uifactory.addFormLink(toolId, "tools", "", tableEl, Link.LINK | Link.NONTRANSLATED);
+			toolLink.setAriaDialogOpener();
 			toolLink.setTranslator(getTranslator());
 			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolLink.setTitle(translate("action.more"));
@@ -404,7 +405,7 @@ public class AssessmentMessageListController extends FormBasicController impleme
 		listenTo(toolsCtrl);
 	
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

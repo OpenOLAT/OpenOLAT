@@ -506,6 +506,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 			FormLink scoreScalingEl = // uifactory.addFormLink("scal_" + (++counter), "scaling", scoreScaling, null, flc, Link.LINK | Link.NONTRANSLATED);
 					uifactory.addFormLink("scal_" + (++counter), "scaling", scoreScaling, tableEl, Link.LINK | Link.NONTRANSLATED);
 			scoreScalingEl.setIconRightCSS("o_icon o_icon_correction");
+			scoreScalingEl.setAriaDialogOpener();
 			row.setScoreScalingEl(scoreScalingEl);
 			scoreScalingEl.setUserObject(row);
 		}
@@ -734,7 +735,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		listenTo(editScoreScalingctrl);
 
 		scoreScalingCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				editScoreScalingctrl.getInitialComponent(), row.getScoreScalingEl().getFormDispatchId(),
+				editScoreScalingctrl.getInitialComponent(), row.getScoreScalingEl(),
 				"", true, "", new CalloutSettings());
 		listenTo(scoreScalingCalloutCtrl);
 		scoreScalingCalloutCtrl.activate();

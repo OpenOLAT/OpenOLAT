@@ -122,6 +122,7 @@ public class ContextualSubscriptionListController extends FormBasicController im
 		FormLink toolsLink = uifactory.addFormLink("toolsLink", "tools", "", null, flc, Link.NONTRANSLATED);
 		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions o_icon-fws");
+		toolsLink.setAriaDialogOpener();
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ContextualSubscriptionListCols.description));
@@ -270,7 +271,7 @@ public class ContextualSubscriptionListController extends FormBasicController im
 			}
 		} else if (source instanceof FormLink link) {
 			if (link.getCmd().equals("tools")) {
-				doOpenTools(ureq, link.getFormDispatchId());
+				doOpenTools(ureq, link);
 			}
 		}
 	}
@@ -312,12 +313,12 @@ public class ContextualSubscriptionListController extends FormBasicController im
 		subscribeToggle.setUserObject(new Subscription(subscribeToggle, subscription.name(), subscription.publisher(), subscriber));
 	}
 
-	private void doOpenTools(UserRequest ureq, String dispatchID) {
+	private void doOpenTools(UserRequest ureq, FormLink link) {
 		ToolsController toolsCtrl = new ToolsController(ureq, getWindowControl());
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), dispatchID, "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

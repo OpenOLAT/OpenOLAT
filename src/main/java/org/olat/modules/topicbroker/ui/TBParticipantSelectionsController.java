@@ -327,7 +327,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		listenTo(selectionToolsCtrl);
 	
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				selectionToolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				selectionToolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

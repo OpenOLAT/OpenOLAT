@@ -314,6 +314,7 @@ public class LearningPathListController extends FormBasicController implements T
 				FormLink progressLink = uifactory.addFormLink("o_progress_" + counter.getAndIncrement(),
 						CMD_RESET_FULLY_ASSESSED, "fully.assessed", tableEl);
 				progressLink.setUserObject(row.getLearningPathNode());
+				progressLink.setAriaDialogOpener();
 				row.setProgressLink(progressLink);
 			}
 		} else if (AssessmentEntryStatus.notReady.equals(row.getStatus())) {
@@ -350,6 +351,7 @@ public class LearningPathListController extends FormBasicController implements T
 			FormLink endDateLink = uifactory.addFormLink("o_end_" + counter.getAndIncrement(), CMD_END_DATE,
 					sb.toString(), null, null, Link.NONTRANSLATED);
 			endDateLink.setUserObject(row.getCourseNode());
+			endDateLink.setAriaDialogOpener();
 			row.setEndDateFormItem(endDateLink);
 		}
 	}
@@ -372,6 +374,7 @@ public class LearningPathListController extends FormBasicController implements T
 			FormLink formLink = uifactory.addFormLink("o_obli_" + counter.getAndIncrement(), CMD_OBLIGATION,
 					sb.toString(), null, null, Link.NONTRANSLATED);
 			formLink.setUserObject(row.getCourseNode());
+			formLink.setAriaDialogOpener();
 			row.setObligationFormItem(formLink);
 		} else {
 			String translatedObligation = null;
@@ -503,7 +506,7 @@ public class LearningPathListController extends FormBasicController implements T
 		
 		CalloutSettings settings = new CalloutSettings();
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), fullyAssessedResetCtrl.getInitialComponent(),
-				link.getFormDispatchId(), "", true, "", settings);
+				link, "", true, "", settings);
 		listenTo(ccwc);
 		ccwc.activate();
 	}
@@ -532,7 +535,7 @@ public class LearningPathListController extends FormBasicController implements T
 		
 		CalloutSettings settings = new CalloutSettings();
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), endDateEditCtrl.getInitialComponent(),
-				link.getFormDispatchId(), "", true, "", settings);
+				link, "", true, "", settings);
 		listenTo(ccwc);
 		ccwc.activate();
 	}
@@ -546,7 +549,7 @@ public class LearningPathListController extends FormBasicController implements T
 		
 		CalloutSettings settings = new CalloutSettings();
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), obligationEditCtrl.getInitialComponent(),
-				link.getFormDispatchId(), "", true, "", settings);
+				link, "", true, "", settings);
 		listenTo(ccwc);
 		ccwc.activate();
 		
@@ -625,7 +628,7 @@ public class LearningPathListController extends FormBasicController implements T
 		listenTo(toolsCtrl);
 
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

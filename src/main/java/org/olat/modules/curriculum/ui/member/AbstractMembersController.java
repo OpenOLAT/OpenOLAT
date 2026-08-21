@@ -44,7 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -214,11 +214,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		initColumns(columnsModel);
 		
 		if(secCallback.canManageCurriculumElementUsers(curriculumElement)) {
-			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(MemberCols.tools);
-			toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
-			toolsColumn.setExportable(false);
-			toolsColumn.setAlwaysVisible(true);
-			columnsModel.addFlexiColumnModel(toolsColumn);
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(MemberCols.tools));
 		}
 
 		tableModel = new MemberManagementTableModel(columnsModel, getTranslator(), getLocale(),
@@ -369,9 +365,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	protected void forgeLinks(MemberRow row) {
 		String id = Integer.toString(++counter);
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 		

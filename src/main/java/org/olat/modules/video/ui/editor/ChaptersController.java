@@ -264,7 +264,7 @@ public class ChaptersController extends FormBasicController {
 		toolsController = new ToolsController(ureq, getWindowControl(), chapterTableRow);
 		listenTo(toolsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), toolsController.getInitialComponent(),
-				chapterTableRow.getToolLink().getFormDispatchId(), "", true, "");
+				chapterTableRow.getToolLink(), "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}

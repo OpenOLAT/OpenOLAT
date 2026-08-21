@@ -132,6 +132,7 @@ public class ContextualSubscriptionController extends BasicController {
 		subscribeButton.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
 		subscribeButton.setElementCssClass("o_noti_subscribe_link");
 		subscribeButton.setGhost(true);
+		subscribeButton.setAriaDialogOpener();
 		
 		toggleSubscriptionIcon();
 
@@ -148,7 +149,7 @@ public class ContextualSubscriptionController extends BasicController {
 		listenTo(contextualSubscriptionListCtrl);
 
 		Component eventCmp = contextualSubscriptionListCtrl.getInitialComponent();
-		eventCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), eventCmp, subscribeButton.getDispatchID(),
+		eventCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), eventCmp, subscribeButton,
 				null, true, "o_sub_event_callout");
 		listenTo(eventCalloutCtrl);
 		eventCalloutCtrl.activate();

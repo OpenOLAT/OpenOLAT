@@ -353,6 +353,7 @@ public class DataCollectionListController extends FormBasicController
 			String text = translate("data.collection.todos.num", String.valueOf(row.getNumToDoTasksDone()), String.valueOf(row.getNumToDoTasksTotal()));
 			
 			FormLink link = uifactory.addFormLink("todos_" + row.getKey(), CMD_TODOS, "", null, null, Link.NONTRANSLATED);
+			link.setAriaDialogOpener();
 			link.setI18nKey(text);
 			link.setUserObject(row);
 			row.setToDosItem(link);
@@ -687,7 +688,7 @@ public class DataCollectionListController extends FormBasicController
 		listenTo(toDosCtrl);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toDosCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toDosCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

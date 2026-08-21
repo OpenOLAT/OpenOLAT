@@ -238,6 +238,7 @@ public class PageMetadataController extends FormBasicController {
 		if(sharedWith > 0) {
 			String sharedWithString = String.valueOf(sharedWith) + " " + translate("page.body.shared.with." + (sharedWith == 1 ? "entry" : "entries"));
 			sharedWithLink = uifactory.addFormLink("sharedWithLink", sharedWithString, null, formLayout, Link.NONTRANSLATED);
+			sharedWithLink.setAriaDialogOpener();
 			formLayout.contextPut("sharedWith", String.valueOf(sharedWith));
 			PageStatus syntheticStatus = page.getBody().getSyntheticStatusEnum();
 			if(syntheticStatus == PageStatus.published || syntheticStatus == PageStatus.closed) {
@@ -408,7 +409,7 @@ public class PageMetadataController extends FormBasicController {
 		} else if(editMetaDataLink == source) {
 			fireEvent(ureq, new EditPageMetadataEvent());
 		} else if (sharedWithLink == source) {
-			doShare(ureq, sharedWithLink.getFormDispatchId());
+			doShare(ureq, sharedWithLink);
 		} else if(statusEl == source) {
 			if(statusEl.isOneSelected()) {
 				doChangeUserStatus(ureq, PageUserStatus.valueOfWithDefault(statusEl.getSelectedKey()));
@@ -479,12 +480,12 @@ public class PageMetadataController extends FormBasicController {
 		}
 	}
 	
-	private void doShare(UserRequest ureq, String dispatchId) {
+	private void doShare(UserRequest ureq, FormLink link) {
 		sharedWithCtrl = new SharedWithController(ureq, getWindowControl());
 		listenTo(sharedWithCtrl);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), sharedWithCtrl.getInitialComponent(),
-				dispatchId, "", true, "", new CalloutSettings(false));
+				link, "", true, "", new CalloutSettings(false));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

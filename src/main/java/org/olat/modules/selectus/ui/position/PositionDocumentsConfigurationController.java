@@ -414,6 +414,7 @@ public class PositionDocumentsConfigurationController extends FormBasicControlle
 		editNameButton.setIconLeftCSS("o_icon o_icon-lg o_icon_language");
 		editNameButton.setUserObject(row);
 		editNameButton.setEnabled(!readOnly);
+		editNameButton.setAriaDialogOpener();
 		row.setEditNameButton(editNameButton);
 	}
 	
@@ -663,7 +664,7 @@ public class PositionDocumentsConfigurationController extends FormBasicControlle
 		listenTo(editDocumentNameCtrl);
 
 		editDocumentNameCallout = new CloseableCalloutWindowController(ureq, getWindowControl(), editDocumentNameCtrl.getInitialComponent(),
-				link.getFormDispatchId(), translate("edit"), true, "");
+				link, translate("edit"), true, "");
 		listenTo(editDocumentNameCallout);
 		editDocumentNameCallout.activate();
 	}

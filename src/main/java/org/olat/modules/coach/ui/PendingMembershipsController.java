@@ -51,7 +51,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
@@ -177,11 +177,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		declineColumn.setAlwaysVisible(false);
 		columnModel.addFlexiColumnModel(declineColumn);
 
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(PendingMembershipsCol.tools);
-		toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
-		toolsColumn.setAlwaysVisible(true);
-		toolsColumn.setExportable(false);
-		columnModel.addFlexiColumnModel(toolsColumn);
+		columnModel.addFlexiColumnModel(new ActionsColumnModel(PendingMembershipsCol.tools));
 
 		tableModel = new PendingMembershipsTableModel(columnModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "list", tableModel, 25, false, getTranslator(), formLayout);
@@ -386,9 +382,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		declineLink.setUserObject(row);
 		row.setDeclineLink(declineLink);
 
-		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}
@@ -473,7 +467,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		listenTo(toolsCtrl);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), toolsCtrl.getInitialComponent(),
-				formLink.getFormDispatchId(), "", true, "");
+				formLink, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

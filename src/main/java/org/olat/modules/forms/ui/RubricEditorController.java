@@ -317,6 +317,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		sliderStepLabelsEditEl.setDomReplacementWrapperRequired(false);
 		sliderStepLabelsEditEl.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
 		sliderStepLabelsEditEl.setTitle(translate("rubric.slider.step.labels.edit"));
+		sliderStepLabelsEditEl.setAriaDialogOpener();
 		sliderStepLabelsEditEl.setUserObject(row);
 		row.setSliderStepLabelsEditEl(sliderStepLabelsEditEl);
 		
@@ -520,7 +521,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		listenTo(sliderStepLabelsEditCtrl);
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				sliderStepLabelsEditCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				sliderStepLabelsEditCtrl.getInitialComponent(), link, "", true, "");
 		calloutCtrl.setCloseBysubmittingForm(true);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();

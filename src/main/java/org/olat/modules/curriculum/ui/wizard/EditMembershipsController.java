@@ -191,6 +191,7 @@ public class EditMembershipsController extends StepFormBasicController {
 	private FormLink forgeLink(CurriculumElementAndRole cell) {
 		String id = "select.status." + (++counter);
 		FormLink link = uifactory.addFormLink(id, CMD_SELECT, "select.next.status", null, flc, Link.BUTTON_XSMALL);
+		link.setAriaDialogOpener();
 		link.setDomReplacementWrapperRequired(false);
 		link.setCustomEnabledLinkCSS("o_labeled_light o_gmembership_status_select");
 		link.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
@@ -200,6 +201,7 @@ public class EditMembershipsController extends StepFormBasicController {
 	
 	private FormLink forgeNoteLink(CurriculumElementAndRole cell) {
 		FormLink noteLink = uifactory.addFormLink("note_" + (++counter), CMD_NOTE, "", null, flc, Link.LINK | Link.NONTRANSLATED);
+		noteLink.setAriaDialogOpener();
 		noteLink.setDomReplacementWrapperRequired(false);
 		noteLink.setIconLeftCSS("o_icon o_icon_notes");
 		noteLink.setTitle(translate("note"));
@@ -344,7 +346,7 @@ public class EditMembershipsController extends StepFormBasicController {
 		
 		String title = translate("change.membership");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				changeMembershipCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "",
+				changeMembershipCtrl.getInitialComponent(), link, title, true, "",
 				new CalloutSettings(true, CalloutOrientation.bottomOrTop, false, title));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
@@ -370,7 +372,7 @@ public class EditMembershipsController extends StepFormBasicController {
 		String title = translate("note");
 		CalloutSettings settings = new CalloutSettings(title);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				noteCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "", settings);
+				noteCtrl.getInitialComponent(), link, title, true, "", settings);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

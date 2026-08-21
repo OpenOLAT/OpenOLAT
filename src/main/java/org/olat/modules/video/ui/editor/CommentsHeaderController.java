@@ -136,12 +136,14 @@ public class CommentsHeaderController extends FormBasicController {
 		addCommentButton = uifactory.addFormLink("addComment", "form.add", "form.add", formLayout, Link.BUTTON);
 		addCommentButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addCommentButton.setIconRightCSS("o_icon o_icon_caret o_video_add_comment");
+		addCommentButton.setAriaDialogOpener();
 
 
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
 		commandsButton.setTitle(translate("action.more"));
+		commandsButton.setAriaDialogOpener();
 	}
 
 	public void setComments(VideoComments comments) {
@@ -256,7 +258,7 @@ public class CommentsHeaderController extends FormBasicController {
 		commandsController = new HeaderCommandsController(ureq, getWindowControl());
 		listenTo(commandsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
-				commandsButton.getFormDispatchId(), "", true, "");
+				commandsButton, "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
 	}
@@ -265,7 +267,7 @@ public class CommentsHeaderController extends FormBasicController {
 		addCommentController = new AddCommentCalloutController(ureq, getWindowControl());
 		listenTo(addCommentController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), addCommentController.getInitialComponent(),
-				addCommentButton.getFormDispatchId(), "", true, "", new CalloutSettings(false));
+				addCommentButton, "", true, "", new CalloutSettings(false));
 		listenTo(ccwc);
 		ccwc.activate();
 	}

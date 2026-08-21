@@ -205,7 +205,7 @@ public class ZoomProfileListController extends FormBasicController {
         toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
         listenTo(toolsCtrl);
 
-        calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+        calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), toolsCtrl.getInitialComponent(), link, "", true, "");
         listenTo(calloutCtrl);
         calloutCtrl.activate();
     }

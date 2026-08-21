@@ -305,6 +305,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		messagesButton.setIconLeftCSS("o_icon o_icon-fw o_infomsg_icon");
 		messagesButton.setTitle(translate("assessment.messages"));
 		messagesButton.setVisible(hasMessages);
+		messagesButton.setAriaDialogOpener();
 		
 		// fetch disclaimer file
 		String sDisclaimer = config.getStringValue(IQEditController.CONFIG_KEY_DISCLAIMER);
@@ -882,7 +883,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		listenTo(messageDisplayCalloutCtrl);
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				messageDisplayCalloutCtrl.getInitialComponent(), link.getDispatchID(), "", true, "");
+				messageDisplayCalloutCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

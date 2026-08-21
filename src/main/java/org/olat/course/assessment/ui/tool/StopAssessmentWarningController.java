@@ -298,7 +298,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 		listenTo(assessmentModeDetailsCtrl);
 
 		Component eventCmp = assessmentModeDetailsCtrl.getInitialComponent();
-		eventCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), eventCmp, infoLink.getDispatchID(),
+		eventCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), eventCmp, infoLink,
 				null, true, "o_cal_event_callout");
 		listenTo(eventCalloutCtrl);
 		eventCalloutCtrl.activate();
@@ -334,6 +334,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 
 		infoLink = LinkFactory.createLink("mode_info", "mode_info", "CMD_SCORE_DESC", "<i class='o_icon o_icon_info_badge'> </i>", null, null, this, Link.NONTRANSLATED);
 		infoLink.setUserObject(Collections.singletonList(mode));
+		infoLink.setAriaDialogOpener();
 		StringOutput status = new StringOutput();
 		ModeStatusCellRenderer modeStatusCellRenderer = new ModeStatusCellRenderer(Util.createPackageTranslator(AssessmentModeListController.class, getLocale()));
 		modeStatusCellRenderer.renderStatus(mode.getStatus(), mode.getEndStatus(), status);
@@ -366,6 +367,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 		warn.contextRemove("title");
 		infoLink = LinkFactory.createLink("mode_info", "mode_info", "CMD_SCORE_DESC", "<i class='o_icon o_icon_info_badge'> </i>", null, null, this, Link.NONTRANSLATED);
 		infoLink.setUserObject(modes);
+		infoLink.setAriaDialogOpener();
 		String assessmentToolUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey() + "/assessmentToolv2/0";
 		String i18nMessagePart1 = "assessment.mode.several.part1";
 		String messagePart1 = translate(i18nMessagePart1);

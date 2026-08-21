@@ -223,6 +223,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private void initStructure() {
 		structureButton = LinkFactory.createCustomLink("structure", "structure", "structure.goto", Link.BUTTON, mainVC, this);
 		structureButton.setIconLeftCSS("o_icon o_icon-fw o_icon_structure");
+		structureButton.setAriaDialogOpener();
 
 		previousButton = LinkFactory.createCustomLink("structure.previous", "previous", "", Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
 		previousButton.setIconLeftCSS("o_icon o_icon-fw o_icon_slide_up");
@@ -853,7 +854,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				curriculumStructureCalloutCtrl.getInitialComponent(), "o_c" + link.getDispatchID(), "", true, "", settings);
+				curriculumStructureCalloutCtrl.getInitialComponent(), link, "", true, "", settings);
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

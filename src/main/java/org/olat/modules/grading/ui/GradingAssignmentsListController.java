@@ -338,6 +338,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		if(secCallback.canReport()) {
 			reportButton = uifactory.addFormLink("report", "assignments.report", null, formLayout, Link.BUTTON);
 			reportButton.setIconLeftCSS("o_icon o_icon_report");
+			reportButton.setAriaDialogOpener();
 		}
 		if(secCallback.canManage()) {
 			assignGraderButton = uifactory.addFormLink("batchAssignGrader", "tool.assign.grader", null, formLayout, Link.BUTTON);
@@ -690,7 +691,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		listenTo(reportCtrl);
 		
 		reportCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				reportCtrl.getInitialComponent(), reportButton.getFormDispatchId(), "", true, "");
+				reportCtrl.getInitialComponent(), reportButton, "", true, "");
 		listenTo(reportCalloutCtrl);
 		reportCalloutCtrl.activate();
 	}
@@ -705,7 +706,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

@@ -316,6 +316,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		toolsLink.setIconRightCSS("o_icon o_icon-fw o_icon-lg o_icon_actions");
 		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
+		toolsLink.setAriaDialogOpener();
 		flc.add(linkName, toolsLink);
 		row.setToolsLink(toolsLink);
 	}

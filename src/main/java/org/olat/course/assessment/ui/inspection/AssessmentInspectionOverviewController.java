@@ -662,7 +662,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		listenTo(toolsCtrl);
 		
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), row.getToolsButton().getFormDispatchId(), "", true, "");
+				toolsCtrl.getInitialComponent(), row.getToolsButton(), "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}

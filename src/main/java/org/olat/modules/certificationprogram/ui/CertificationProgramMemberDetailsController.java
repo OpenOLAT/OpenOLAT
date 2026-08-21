@@ -250,7 +250,7 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink link && toolsCmd.equals(link.getCmd())
 				&& link.getUserObject() instanceof CertificationProgramRecertificationRow selectedRow) {
-			doOpenTools(ureq, selectedRow, link.getFormDispatchId());
+			doOpenTools(ureq, selectedRow, link);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -260,7 +260,7 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 		//
 	}
 	
-	private void doOpenTools(UserRequest ureq, CertificationProgramRecertificationRow row, String targetId) {
+	private void doOpenTools(UserRequest ureq, CertificationProgramRecertificationRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 
@@ -268,7 +268,7 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 		listenTo(toolsCtrl);
 	
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), targetId, "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

@@ -176,6 +176,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 				}
 
 				FormLink contextInfo = uifactory.addFormLink("contextinfo_" + counter.incrementAndGet(), "contextInfo", contentRow.getContext(), null, null, Link.NONTRANSLATED);
+				contextInfo.setAriaDialogOpener();
 				contextInfo.setUserObject(contentRow);
 				contentRow.setContextInfo(contextInfo);
 				
@@ -207,6 +208,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 				}
 				
 				FormLink contextInfo = uifactory.addFormLink("contextinfo_" + counter.incrementAndGet(), "contextInfo", contentRow.getContext(), null, null, Link.NONTRANSLATED);
+				contextInfo.setAriaDialogOpener();
 				contextInfo.setUserObject(contentRow);
 				contentRow.setContextInfo(contextInfo);
 				
@@ -411,7 +413,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 				contextInfoContainer.contextPut("contextInfo", contextInfo);
 				contextInfoContainer.contextPut("row", row);
 
-				pathInfoCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),contextInfoContainer, link.getFormDispatchId(), "", true, "", settings);
+				pathInfoCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),contextInfoContainer, link, "", true, "", settings);
 				listenTo(pathInfoCalloutCtrl);
 				pathInfoCalloutCtrl.activate();
 			}
