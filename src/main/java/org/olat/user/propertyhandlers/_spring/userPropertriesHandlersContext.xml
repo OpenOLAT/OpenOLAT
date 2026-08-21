@@ -183,9 +183,10 @@
 		<property name="group" value="personal" />
 	</bean>
 	
-	<bean id="userPropertyTypeOfUser" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	<bean id="userPropertyTypeOfUser" class="org.olat.user.propertyhandlers.TypeOfUserHandler">
 		<property name="name" value="typeOfUser" />
 		<property name="group" value="person" />
+		<property name="typeOf" value="${user.type.of}" />
 	</bean>
 	
 	<bean id="userPropertySocialSecurityNumber" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
