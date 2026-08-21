@@ -60,6 +60,7 @@
 	<bean id="userPropertyGender" class="org.olat.user.propertyhandlers.GenderPropertyHandler">
 		<property name="name" value="gender" />
 		<property name="group" value="person" />
+		<property name="genders" value="${user.genders}" />
 	</bean>
 	
 	<bean id="userPropertyTelPrivate" class="org.olat.user.propertyhandlers.PhonePropertyHandler">
