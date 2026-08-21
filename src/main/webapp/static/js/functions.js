@@ -1751,11 +1751,12 @@ function o_QRCodePopup(id, text, loc, containerSelector) {
 	// make mouse over link text work again
 	elem.attr('title',elem.attr('data-original-title'));
 }
-function o_QRCode(id, text) {
+function o_QRCode(id, text, size) {
 	// dynamically load qr code library
 	try {
-		 BLoader.loadJS(o_info.o_baseURI + "/js/jquery/qrcodejs/qrcode.min.js", 'utf8', true);
-		 return new QRCode(document.getElementById(id), text);
+		BLoader.loadJS(o_info.o_baseURI + "/js/jquery/qrcodejs/qrcode2.min.js", 'utf8', true);
+		var options = typeof(size) === 'undefined' ? text : {text: text, width: size, height: size};
+		return new QRCode(document.getElementById(id), options);
 	} catch(e) {
 		return null;
 	}

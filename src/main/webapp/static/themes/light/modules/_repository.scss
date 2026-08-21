@@ -81,6 +81,10 @@
 				white-space: normal;
 			}
 		}
+
+		.o_info_page_qrcode {
+			display: none;
+		}
 	}
 
 	// The start/leave/admin buttons are rendered inside the "Get started"
@@ -130,18 +134,18 @@
 	.o_info_page_header { order: 2; }
 	.o_info_page_get_started { order: 3; }
 	.o_info_page_my_course { order: 4; }
-	.o_info_page_events { order: 5; }
-	.o_info_page_benefits { order: 6; }
-	.o_info_page_facts { order: 7; }
-	.o_info_page_sections { order: 8; }
+	.o_info_page_benefits { order: 5; }
+	.o_info_page_facts { order: 6; }
+	.o_info_page_sections { order: 7; }
+	.o_info_page_events { order: 8; }
 	.o_info_page_licence { order: 9; }
 	.o_info_page_rating { order: 10; }
 	.o_info_page_technical { order: 11; }
 
 	.o_info_page_thumbnail {
 		.o_image, img, .o_video, video {
-			width: 100%;
-			max-width: 570px; //570x380
+			width: auto;
+			max-width: 100%;
 			border-radius: $o-repo-info-border-radius;
 		}
 	}
@@ -189,6 +193,72 @@
 		.o_info_page_column_aside {
 			grid-column: 2;
 			grid-row: 1;
+		}
+	}
+
+	// Print / PDF: force the mobile 1-column order regardless of the paper
+	// width, hide the interactive parts, and show the QR code beside the
+	// header instead of the teaser image.
+	@media print {
+		grid-template-columns: 1fr;
+
+		.o_info_page_column_aside,
+		.o_info_page_column_main {
+			display: contents;
+		}
+
+		.o_info_page_item,
+		.o_info_page_header,
+		.o_info_page_thumbnail {
+			grid-column: auto;
+			grid-row: auto;
+			max-width: none;
+		}
+
+		.o_header {
+			.o_lead {
+				flex-direction: row;
+				align-items: flex-start;
+				justify-content: space-between;
+
+				.o_header_actions {
+					display: none;
+				}
+
+				.o_info_page_qrcode {
+					display: block;
+					flex-shrink: 0;
+					margin-left: 20px;
+					text-align: center;
+				}
+			}
+		}
+
+		.o_header_start {
+			display: none;
+		}
+
+		.o_ac_offer_message {
+			display: none;
+		}
+
+		.o_info_page_technical {
+			display: none;
+		}
+
+		&.o_info_page_member .o_info_page_get_started {
+			display: none;
+		}
+
+		.o_info_page_sections .collapse {
+			display: block;
+			height: auto !important;
+		}
+
+		.o_info_page_rating {
+			#o_comments_area {
+				display: none;
+			}
 		}
 	}
 

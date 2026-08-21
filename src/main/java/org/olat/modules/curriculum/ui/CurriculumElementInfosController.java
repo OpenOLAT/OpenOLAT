@@ -23,6 +23,10 @@ package org.olat.modules.curriculum.ui;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
+import org.olat.core.commons.services.pdf.PdfOutputOptions.MediaType;
+import org.olat.core.commons.services.pdf.PdfOutputOptions.Margin;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -30,7 +34,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CorruptedCourseException;
 import org.olat.modules.catalog.ui.BookEvent;
@@ -78,6 +85,8 @@ public class CurriculumElementInfosController extends BasicController {
 	private final CurriculumElement element;
 	private final RepositoryEntry entry;
 	private final Identity bookedIdentity;
+	private final DetailsHeaderConfig headerConfig;
+	private final boolean webPublish;
 
 	@Autowired
 	private CurriculumService curriculumService;
@@ -85,6 +94,8 @@ public class CurriculumElementInfosController extends BasicController {
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private PdfService pdfService;
 
 	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
 			RepositoryEntry entry, DetailsHeaderConfig headerConfig) {
@@ -97,6 +108,8 @@ public class CurriculumElementInfosController extends BasicController {
 		// The translator is explicitly set so that it is also available in the subclasses.
 		this.element = element;
 		this.entry = entry;
+		this.headerConfig = headerConfig;
+		this.webPublish = webPublish;
 		bookedIdentity = headerConfig.getBookedIdentity();
 
 		// Reset the velocity root, so that the children find the template
@@ -155,6 +168,10 @@ public class CurriculumElementInfosController extends BasicController {
 			listenTo(lectureBlocksCtrl);
 			mainVC.put("events", lectureBlocksCtrl.getInitialComponent());
 		}
+
+		boolean isMember = getIdentity() != null
+				&& !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(getIdentity())).isEmpty();
+		mainVC.contextPut("isMember", isMember);
 	}
 
 	@Override
@@ -173,8 +190,23 @@ public class CurriculumElementInfosController extends BasicController {
 			} else if (event instanceof LeavingEvent) {
 				fireEvent(ureq, event);
 			}
+		} else if (source == headerCtrl) {
+			if (event == InfoPageHeaderController.PDF_EVENT) {
+				doExportPdf(ureq);
+			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void doExportPdf(UserRequest ureq) {
+		// The rendered snapshot never triggers doStart(), so the same
+		// constructor arguments reproduce the identical page for the PDF.
+		ControllerCreator printControllerCreator = (lureq, lwControl) ->
+				new CurriculumElementInfosController(lureq, lwControl, element, entry, headerConfig, webPublish);
+		String filename = StringHelper.transformDisplayNameToFileSystemName(element.getDisplayName());
+		PdfOutputOptions options = PdfOutputOptions.valueOf(MediaType.print, Margin.ONE_CM, null);
+		MediaResource resource = pdfService.convert(filename, getIdentity(), printControllerCreator, getWindowControl(), options);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 
 	@Override

@@ -22,10 +22,11 @@
 					</h2>
 				#end
 
-				#if($r.available("mark") || $r.available("share"))
+				#if($r.available("mark") || $r.available("share") || $r.available("pdf"))
 					<div class="o_header_actions">
 						#if($r.available("mark"))$r.render("mark")#end
 						#if($r.available("share"))$r.render("share")#end
+						#if($r.available("pdf"))$r.render("pdf")#end
 					</div>
 				#end
 
@@ -79,5 +80,17 @@
 				#end
 			</div>
 		</div>
+
+		#if($r.isNotEmpty($qrUrl))
+			<div class="o_info_page_qrcode">
+				<div id="o_ip_qr_$r.getCId()" class="o_qrcode"></div>
+			</div>
+			<script>
+				'use strict';
+				jQuery(function() {
+					o_QRCode('o_ip_qr_$r.getCId()', '$r.escapeJavaScript($qrUrl)', 64);
+				});
+			</script>
+		#end
 	</div>
 </div>

@@ -21,6 +21,7 @@ package org.olat.repository.ui.list;
 
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -47,9 +48,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class InfoPageHeaderController extends BasicController {
 
+	public static final Event PDF_EVENT = new Event("details.pdf");
+
 	private static final String CMD_MARK = "mark";
+	private static final String CMD_PDF = "pdf";
 
 	private Link markLink;
+	private Link pdfLink;
 	private ShareLinkController shareCtrl;
 
 	private final InfoPageData data;
@@ -57,11 +62,14 @@ public class InfoPageHeaderController extends BasicController {
 
 	@Autowired
 	private MarkManager markManager;
+	@Autowired
+	private PdfModule pdfModule;
 
 	/**
 	 * @param shareUrl the URL to share for the current entry point, or null to
 	 *            hide the share action (e.g. the curriculum element preview in
-	 *            the editor)
+	 *            the editor). Also used as the target of the print/PDF QR
+	 *            code.
 	 */
 	public InfoPageHeaderController(UserRequest ureq, WindowControl wControl, InfoPageData data, String shareUrl) {
 		super(ureq, wControl);
@@ -95,6 +103,14 @@ public class InfoPageHeaderController extends BasicController {
 			shareCtrl.setShareTitle(data.getTitle());
 			listenTo(shareCtrl);
 			mainVC.put("share", shareCtrl.getInitialComponent());
+
+			mainVC.contextPut("qrUrl", shareUrl);
+		}
+
+		if (pdfModule.isEnabled()) {
+			pdfLink = LinkFactory.createCustomLink(CMD_PDF, CMD_PDF, "details.download.pdf", Link.BUTTON, mainVC, this);
+			pdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
+			pdfLink.setElementCssClass("o_button_ghost");
 		}
 
 		if (data.getEducationalType() != null) {
@@ -123,6 +139,8 @@ public class InfoPageHeaderController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == markLink) {
 			doMark();
+		} else if (source == pdfLink) {
+			fireEvent(ureq, PDF_EVENT);
 		}
 	}
 

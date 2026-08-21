@@ -26,6 +26,10 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
+import org.olat.core.commons.services.pdf.PdfOutputOptions.MediaType;
+import org.olat.core.commons.services.pdf.PdfOutputOptions.Margin;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -33,13 +37,16 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -86,6 +93,9 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private final RepositoryEntry entry;
+	private final DetailsHeaderConfig config;
+	private final String shareUrl;
+	private final boolean isResourceInfoView;
 	private final boolean guestOnly;
 
 	@Autowired
@@ -97,12 +107,17 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 	private CourseModule courseModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private PdfService pdfService;
 
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			DetailsHeaderConfig config, String shareUrl, boolean isResourceInfoView, boolean closeTabOnLeave) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
+		this.config = config;
+		this.shareUrl = shareUrl;
+		this.isResourceInfoView = isResourceInfoView;
 		UserSession usess = ureq.getUserSession();
 		guestOnly = usess.getRoles() == null || usess.getRoles().isGuestOnly();
 
@@ -203,6 +218,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 		if (entry.getEducationalType() != null) {
 			mainVC.contextPut("educationalTypeClass", entry.getEducationalType().getCssClass());
 		}
+		mainVC.contextPut("isMember", isMember);
 
 		if (courseModule.isInfoDetailsEnabled()) {
 			String oInfoCourse = null;
@@ -271,8 +287,24 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 			if (event == InfoPagePublicGetStartedController.START_EVENT) {
 				doStart(ureq);
 			}
+		} else if (source == headerCtrl) {
+			if (event == InfoPageHeaderController.PDF_EVENT) {
+				doExportPdf(ureq);
+			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void doExportPdf(UserRequest ureq) {
+		// The rendered snapshot never triggers doStart()/doBooked(), so any
+		// concrete subclass reproduces the same page for the PDF.
+		ControllerCreator printControllerCreator = isResourceInfoView
+				? (lureq, lwControl) -> new RepositoryEntryPublicInfosController(lureq, lwControl, entry)
+				: (lureq, lwControl) -> new RepositoryEntryInfosController(lureq, lwControl, entry, config, true);
+		String filename = StringHelper.transformDisplayNameToFileSystemName(entry.getDisplayname());
+		PdfOutputOptions options = PdfOutputOptions.valueOf(MediaType.print, Margin.ONE_CM, null);
+		MediaResource resource = pdfService.convert(filename, getIdentity(), printControllerCreator, getWindowControl(), options);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 
 	protected RepositoryEntry getEntry() {
