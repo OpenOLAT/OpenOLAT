@@ -311,13 +311,8 @@
 		}
 	}
 
-	.o_fact_label {
-		font-size: 14px;
-		color: $text-muted;
-	}
-
 	.o_fact_value {
-		font-size: 18px;
+		font-size: $o-fact-value-font-size;
 
 		// A fact value can be a component (link, progress bar, status) instead
 		// of plain text. Its own styling takes over the font size.

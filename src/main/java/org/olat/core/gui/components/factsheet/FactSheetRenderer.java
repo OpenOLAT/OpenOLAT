@@ -75,7 +75,7 @@ public class FactSheetRenderer extends DefaultComponentRenderer {
 		}
 
 		sb.append("<div class=\"o_fact_body\">");
-		sb.append("<div class=\"o_fact_label\">");
+		sb.append("<div class=\"o_fact_label text-muted\">");
 		sb.append(StringHelper.escapeHtml(fact.getLabel()));
 		sb.append("</div>");
 		sb.append("<div class=\"o_fact_value\">");
