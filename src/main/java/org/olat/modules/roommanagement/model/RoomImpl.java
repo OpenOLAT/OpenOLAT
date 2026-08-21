@@ -82,7 +82,7 @@ public class RoomImpl implements Persistable, Room {
 	private String adminInfo;
 
 	@ManyToOne(targetEntity = BuildingImpl.class, fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "fk_building", nullable = false, insertable = true, updatable = false)
+	@JoinColumn(name = "fk_building", nullable = false, insertable = true, updatable = true)
 	private Building building;
 
 	@Override
