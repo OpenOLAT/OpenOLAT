@@ -92,7 +92,7 @@ fieldset.o_validation_result {
 			order: 2;
 
 			display: flex;
-			align-items: baseline;
+			align-items: start;
 			flex-wrap: wrap;
 			@media (min-width: $screen-xs-min) {
 				flex-wrap: nowrap;
