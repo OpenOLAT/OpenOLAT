@@ -77,14 +77,17 @@ public class RoomDAOTest extends OlatTestCase {
 		Room room = roomDAO.create(bld, "UpdateRoom_" + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
 
+		Building otherBld = createBuilding();
 		room.setSeats(30);
 		room.setRoomInfo("Nice room");
+		room.setBuilding(otherBld);
 		Room updated = roomDAO.update(room);
 		dbInstance.commitAndCloseSession();
 
 		Room reloaded = roomDAO.loadByKey(updated);
 		Assert.assertEquals(Integer.valueOf(30), reloaded.getSeats());
 		Assert.assertEquals("Nice room", reloaded.getRoomInfo());
+		Assert.assertEquals(otherBld.getKey(), reloaded.getBuilding().getKey());
 	}
 
 	@Test
