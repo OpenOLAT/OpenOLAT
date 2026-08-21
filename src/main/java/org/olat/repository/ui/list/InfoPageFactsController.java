@@ -34,12 +34,21 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
+import org.olat.course.certificate.ui.CertificatesOptionsController;
+import org.olat.modules.creditpoint.CreditPointFormat;
+import org.olat.modules.creditpoint.CreditPointService;
+import org.olat.modules.creditpoint.CurriculumElementCreditPointConfiguration;
+import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
+import org.olat.modules.creditpoint.ui.CreditPointRepositoryEntryConfigController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -49,10 +58,17 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
  */
 public class InfoPageFactsController extends BasicController {
 
+	@Autowired
+	private CreditPointService creditPointService;
+	@Autowired
+	private CertificatesManager certificatesManager;
+
 	private boolean hasContent;
 
 	public InfoPageFactsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, int numLectureBlocks) {
-		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
+				Util.createPackageTranslator(CreditPointRepositoryEntryConfigController.class, ureq.getLocale(),
+						Util.createPackageTranslator(CertificatesOptionsController.class, ureq.getLocale()))));
 
 		List<Fact> facts = new ArrayList<>();
 		addFact(facts, "o_icon_lifecycle_date", "cif.dates", period(entry.getLifecycle()));
@@ -62,12 +78,37 @@ public class InfoPageFactsController extends BasicController {
 		addFact(facts, "o_icon_language", "cif.mainLanguage", entry.getMainLanguage());
 		addFact(facts, "o_icon_expenditure", "cif.expenditureOfWork", entry.getExpenditureOfWork());
 
+		RepositoryEntryCreditPointConfiguration creditPointConfig = creditPointService.getOrCreateConfiguration(entry);
+		if (creditPointConfig != null && creditPointConfig.isEnabled()) {
+			String amount = CreditPointFormat.format(creditPointConfig.getCreditPoints(), creditPointConfig.getCreditPointSystem());
+			String pointsValidity = null;
+			if (creditPointConfig.getExpiration() != null && creditPointConfig.getExpiration().intValue() > 0) {
+				Integer expiration = creditPointConfig.getExpiration();
+				String unit = translate(creditPointConfig.getExpirationType().i18n(expiration));
+				pointsValidity = translate("details.valid.for", expiration.toString(), unit);
+			}
+			facts.add(creditPointsFact(amount, pointsValidity));
+		}
+
+		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(entry);
+		if (certificateConfig != null && certificateConfig.isCertificateEnabled()) {
+			String certificateValidity = null;
+			int expiration = certificateConfig.getValidityTimelapse();
+			if (expiration >= 0 && certificateConfig.isValidityEnabled() && certificateConfig.getValidityTimelapseUnit() != null) {
+				String unit = translate(certificateConfig.getValidityTimelapseUnit().name());
+				certificateValidity = translate("details.valid.for", Integer.toString(expiration), unit);
+			}
+			facts.add(certificateFact(certificateValidity));
+		}
+
 		init(facts);
 	}
 
 	public InfoPageFactsController(UserRequest ureq, WindowControl wControl, CurriculumElement element, int numLectureBlocks) {
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
-				Util.createPackageTranslator(CurriculumElementInfosController.class, ureq.getLocale())));
+				Util.createPackageTranslator(CurriculumElementInfosController.class, ureq.getLocale(),
+						Util.createPackageTranslator(CreditPointRepositoryEntryConfigController.class, ureq.getLocale(),
+								Util.createPackageTranslator(CertificatesOptionsController.class, ureq.getLocale())))));
 
 		List<Fact> facts = new ArrayList<>();
 		addFact(facts, "o_icon_lifecycle_date", "cif.dates", Formatter.getInstance(getLocale()).formatPeriod(element.getBeginDate(), element.getEndDate()));
@@ -79,7 +120,28 @@ public class InfoPageFactsController extends BasicController {
 		addFact(facts, "o_icon_num_participants", "curriculum.element.participants",
 				CurriculumHelper.getParticipantRange(getTranslator(), null, element.getMaxParticipants(), false));
 
+		if (element.isShowCreditPointsBenefit()) {
+			CurriculumElementCreditPointConfiguration creditPointConfig = creditPointService.getConfiguration(element);
+			if (creditPointConfig.isEnabled()) {
+				String amount = creditPointConfig.getCreditPoints() + " " + creditPointConfig.getCreditPointSystem().getLabel();
+				facts.add(creditPointsFact(amount, null));
+			}
+		}
+
+		if (element.isShowCertificateBenefit()) {
+			facts.add(certificateFact(null));
+		}
+
 		init(facts);
+	}
+
+	private Fact creditPointsFact(String amount, String pointsValidity) {
+		return FactSheetFactory.createFact("o_icon_coins", translate("details.benefits.credit.points"), amount, pointsValidity);
+	}
+
+	private Fact certificateFact(String certificateValidity) {
+		String value = certificateValidity == null ? translate("details.certificate.of.completion") : certificateValidity;
+		return FactSheetFactory.createFact("o_icon_certificate", translate("details.certificate"), value);
 	}
 
 	private String period(RepositoryEntryLifecycle lifecycle) {

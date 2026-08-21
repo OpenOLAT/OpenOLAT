@@ -81,7 +81,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 	private final InfoPageTeaserImageController teaserImageCtrl;
 	private RepositoryEntryInfoPageGetStartedController getStartedCtrl;
 	private InfoPagePublicGetStartedController publicGetStartedCtrl;
-	private final InfoPageBenefitsController benefitsCtrl;
 	private final InfoPageFactsController factsCtrl;
 	private final RepositoryEntryInfoPageSectionsController sectionsCtrl;
 	private LectureBlocksTimelineController lectureBlocksCtrl;
@@ -159,12 +158,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 		listenTo(myCourseCtrl);
 		if (myCourseCtrl.hasContent()) {
 			mainVC.put("myCourse", myCourseCtrl.getInitialComponent());
-		}
-
-		benefitsCtrl = new InfoPageBenefitsController(ureq, wControl, entry);
-		listenTo(benefitsCtrl);
-		if (benefitsCtrl.hasContent()) {
-			mainVC.put("benefits", benefitsCtrl.getInitialComponent());
 		}
 
 		List<LectureBlock> lectureBlocks = lectureService.isRepositoryEntryLectureEnabled(entry)

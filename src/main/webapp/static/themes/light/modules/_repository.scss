@@ -193,6 +193,11 @@
 		.o_info_page_column_aside {
 			grid-column: 2;
 			grid-row: 1;
+			// Without this, a non-shrinkable child (e.g. the teaser video's
+			// fixed pixel width) sets the grid item's automatic minimum size,
+			// pinning this 1fr track wider than its fair share and breaking
+			// the 2:1 column ratio.
+			min-width: 0;
 		}
 	}
 

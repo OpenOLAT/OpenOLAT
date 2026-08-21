@@ -24,8 +24,8 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
-import org.olat.core.commons.services.pdf.PdfOutputOptions.MediaType;
 import org.olat.core.commons.services.pdf.PdfOutputOptions.Margin;
+import org.olat.core.commons.services.pdf.PdfOutputOptions.MediaType;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -54,7 +54,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.list.AbstractInfoPageGetStartedController;
 import org.olat.repository.ui.list.CurriculumElementInfoPageSectionsController;
 import org.olat.repository.ui.list.DetailsHeaderConfig;
-import org.olat.repository.ui.list.InfoPageBenefitsController;
 import org.olat.repository.ui.list.InfoPageData;
 import org.olat.repository.ui.list.InfoPageFactsController;
 import org.olat.repository.ui.list.InfoPageHeaderController;
@@ -77,7 +76,6 @@ public class CurriculumElementInfosController extends BasicController {
 	private final InfoPageHeaderController headerCtrl;
 	private final InfoPageTeaserImageController teaserImageCtrl;
 	private final CurriculumElementInfoPageGetStartedController getStartedCtrl;
-	private final InfoPageBenefitsController benefitsCtrl;
 	private final InfoPageFactsController factsCtrl;
 	private final CurriculumElementInfoPageSectionsController sectionsCtrl;
 	private LectureBlocksTimelineController lectureBlocksCtrl;
@@ -143,12 +141,6 @@ public class CurriculumElementInfosController extends BasicController {
 		listenTo(getStartedCtrl);
 		if (getStartedCtrl.hasContent()) {
 			mainVC.put("getStarted", getStartedCtrl.getInitialComponent());
-		}
-
-		benefitsCtrl = new InfoPageBenefitsController(ureq, wControl, element);
-		listenTo(benefitsCtrl);
-		if (benefitsCtrl.hasContent()) {
-			mainVC.put("benefits", benefitsCtrl.getInitialComponent());
 		}
 
 		factsCtrl = new InfoPageFactsController(ureq, wControl, element, lectureBlocks.size());
