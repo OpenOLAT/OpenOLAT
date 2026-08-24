@@ -98,8 +98,12 @@ public class MapperDispatcher implements Dispatcher {
 		if(mapperService.isSandbox(smappath)) {
 			String secret = hreq.getParameter("token");
 			UserSession usess = sessionManager.getUserSession(hreq);
-			mapperService.reclaimMapperById(usess, smappath, secret);
-			if(usess.getSessionInfo() == null) {
+			Mapper mapper = mapperService.reclaimMapperById(usess, smappath, secret);
+			if(mapper == null) {
+				log.debug("Call to mapped resource, but mapper cannot be reclaimed for path::{}", smappath);
+				hres.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				return;
+			} else if(usess.getSessionInfo() == null) {
 				initSessionInfos(usess, hreq);
 				sessionManager.signOn(usess);
 			}
