@@ -215,7 +215,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 			}
 			scoreWidget.setValue(scoreFormatted);
 			
-			Float maxScore = assessmentConfig.getMaxScore();
+			Float maxScore = assessmentEval.getMaxScore();
 			if (maxScore != null && maxScore > 0) {
 				String scoreDescI18nKey = avgScoreConfig ? "score.of.avg": "score.of";
 				scoreWidget.setDesc(translate(scoreDescI18nKey, AssessmentHelper.getRoundedScore(maxScore)));
