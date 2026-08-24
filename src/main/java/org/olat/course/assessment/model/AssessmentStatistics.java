@@ -38,6 +38,8 @@ public class AssessmentStatistics {
 	private int countScore;
 	private Double averageScore;
 	private BigDecimal maxScore;
+	private BigDecimal maxPossibleScore;
+	private BigDecimal maxPossibleWeightedScore;
 	
 	public int getCountTotal() {
 		return countTotal;
@@ -109,5 +111,21 @@ public class AssessmentStatistics {
 
 	public void setMaxScore(BigDecimal maxScore) {
 		this.maxScore = maxScore;
+	}
+
+	public BigDecimal getMaxPossibleScore() {
+		return maxPossibleScore;
+	}
+
+	public void setMaxPossibleScore(BigDecimal maxPossibleScore) {
+		this.maxPossibleScore = maxPossibleScore;
+	}
+
+	public BigDecimal getMaxPossibleWeightedScore() {
+		return maxPossibleWeightedScore;
+	}
+
+	public void setMaxPossibleWeightedScore(BigDecimal maxPossibleWeightedScore) {
+		this.maxPossibleWeightedScore = maxPossibleWeightedScore;
 	}
 }

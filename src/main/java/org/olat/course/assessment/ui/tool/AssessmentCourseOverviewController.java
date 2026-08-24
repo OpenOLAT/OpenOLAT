@@ -44,10 +44,12 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
+import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.inspection.AssessmentInspectionSmallOverviewController;
 import org.olat.course.assessment.ui.tool.event.AssessmentInspectionSelectionEvent;
@@ -108,6 +110,8 @@ public class AssessmentCourseOverviewController extends BasicController {
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	@Autowired
 	private GradeModule gradeModule;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 	
 	public AssessmentCourseOverviewController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachUserEnv, AssessmentToolSecurityCallback assessmentCallback) {
@@ -165,6 +169,17 @@ public class AssessmentCourseOverviewController extends BasicController {
 			Double maxScore = assessmentConfig.getMaxScore()!= null? Double.valueOf(assessmentConfig.getMaxScore().doubleValue()): null;
 			Double weightedMinScore = assessmentConfig.getWeightedMinScore()!= null? Double.valueOf(assessmentConfig.getWeightedMinScore().doubleValue()): null;
 			Double weightedMaxScore = assessmentConfig.getWeightedMaxScore()!= null? Double.valueOf(assessmentConfig.getWeightedMaxScore().doubleValue()): null;
+
+			// The root node's configured max score is static; prefer the highest max score actually
+			// persisted across assessed identities, which correctly reflects per-identity obligation exceptions.
+			AssessmentStatistics statistics = assessmentToolManager.getStatistics(ureq.getIdentity(), params);
+			if (statistics.getMaxPossibleScore() != null) {
+				maxScore = Double.valueOf(statistics.getMaxPossibleScore().doubleValue());
+			}
+			if (statistics.getMaxPossibleWeightedScore() != null) {
+				weightedMaxScore = Double.valueOf(statistics.getMaxPossibleWeightedScore().doubleValue());
+			}
+
 			boolean scoreScaleEnabled = ScoreScalingHelper.isEnabled(course);
 			scoreStat = ScoreStat.of(minScore, maxScore, weightedMinScore, weightedMaxScore, false, scoreScaleEnabled);
 		}

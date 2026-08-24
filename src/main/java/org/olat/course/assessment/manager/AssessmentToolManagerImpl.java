@@ -260,6 +260,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		QueryBuilder sf = new QueryBuilder();
 		sf.append("select avg(aentry.score) as scoreAverage, ")
 		  .append(" max(aentry.score) as scoreMax,")
+		  .append(" max(aentry.maxScore) as maxPossibleScore,")
+		  .append(" max(aentry.weightedMaxScore) as maxPossibleWeightedScore,")
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
 		  .append(" sum(case when aentry.passed is null then 1 else 0 end) as numOfUndefined,")
@@ -309,15 +311,19 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			Object[] result = results.get(0);
 			Double averageScore = (Double)result[0];
 			BigDecimal maxScore = (BigDecimal)result[1];
-			Long numOfPassed = (Long)result[2];
-			Long numOfFailed = (Long)result[3];
-			Long numOfUndefined = (Long)result[4];
-			Long numDone = (Long)result[5];
-			Long numNotDone = (Long)result[6];
-			Long numNotScores = (Long)result[7];
+			BigDecimal maxPossibleScore = (BigDecimal)result[2];
+			BigDecimal maxPossibleWeightedScore = (BigDecimal)result[3];
+			Long numOfPassed = (Long)result[4];
+			Long numOfFailed = (Long)result[5];
+			Long numOfUndefined = (Long)result[6];
+			Long numDone = (Long)result[7];
+			Long numNotDone = (Long)result[8];
+			Long numNotScores = (Long)result[9];
 			
 			entry.setAverageScore(averageScore);
 			entry.setMaxScore(maxScore);
+			entry.setMaxPossibleScore(maxPossibleScore);
+			entry.setMaxPossibleWeightedScore(maxPossibleWeightedScore);
 			entry.setCountPassed(numOfPassed == null ? 0 : numOfPassed.intValue());
 			entry.setCountFailed(numOfFailed == null ? 0 : numOfFailed.intValue());
 			entry.setCountUndefined(numOfUndefined == null ? 0 : numOfUndefined.intValue());
