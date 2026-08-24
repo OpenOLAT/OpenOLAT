@@ -34,9 +34,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.course.CourseEntryRef;
+import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -77,6 +79,8 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private GradeModule gradeModule;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 
 	public AssessmentCourseNodeStatsController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNode courseNode, AssessmentToolSecurityCallback assessmentCallback, boolean courseInfoLaunch, boolean readOnly) {
@@ -119,6 +123,18 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 			Double maxScore = assessmentConfig.getMaxScore()!= null? Double.valueOf(assessmentConfig.getMaxScore().doubleValue()): null;
 			Double weightedMinScore = assessmentConfig.getWeightedMinScore()!= null? Double.valueOf(assessmentConfig.getWeightedMinScore().doubleValue()): null;
 			Double weightedMaxScore = assessmentConfig.getWeightedMaxScore()!= null? Double.valueOf(assessmentConfig.getWeightedMaxScore().doubleValue()): null;
+
+			// The configured max score is a static, per-node value. Some node types (e.g. Structure nodes
+			// with learning-path obligation exceptions per group) can have a lower, identity-specific achievable max,
+			// so prefer the highest max score actually persisted across the assessed identities in scope.
+			AssessmentStatistics statistics = assessmentToolManager.getStatistics(getIdentity(), params);
+			if (statistics.getMaxPossibleScore() != null) {
+				maxScore = Double.valueOf(statistics.getMaxPossibleScore().doubleValue());
+			}
+			if (statistics.getMaxPossibleWeightedScore() != null) {
+				weightedMaxScore = Double.valueOf(statistics.getMaxPossibleWeightedScore().doubleValue());
+			}
+
 			boolean gradeEnabled = gradeModule.isEnabled() && assessmentConfig.hasGrade();
 			//Show statistics with weighted score only on root node
 			boolean scoreScaleEnabled = courseNode.getParent() == null && ScoreScalingHelper.isEnabled(userCourseEnv);
