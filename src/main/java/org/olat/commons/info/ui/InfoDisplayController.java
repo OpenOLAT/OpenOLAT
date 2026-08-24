@@ -355,10 +355,7 @@ public class InfoDisplayController extends FormBasicController {
 	
 	@Override
 	protected void doDispose() {
-		if(lockEntry != null) {
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
-			lockEntry = null;
-		}
+		releaseLock();
         super.doDispose();
 	}
 
@@ -372,25 +369,29 @@ public class InfoDisplayController extends FormBasicController {
 		if(source == newInfoWizard) {
 			if (event == Event.CANCELLED_EVENT) {
 				getWindowControl().pop();
+				cleanUp();
 			} else if (event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
+				cleanUp();
 				loadMessages();
 			}	else if (event == Event.DONE_EVENT){
 				showError("failed");
 			}
 		} else if(source == editInfoWizard) {
 			if (event == Event.CANCELLED_EVENT) {
+				// cancel button and close icon of the modal window
 				getWindowControl().pop();
+				cleanUp();
 			} else if (event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
+				cleanUp();
 				loadMessages();
 			}	else if (event == Event.DONE_EVENT){
 				showError("failed");
 			}
 			
 			//release lock
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
-			lockEntry = null;
+			releaseLock();
 		} else if(source == confirmDelete) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				InfoMessage msgToDelete = (InfoMessage)confirmDelete.getUserObject();
@@ -404,10 +405,23 @@ public class InfoDisplayController extends FormBasicController {
 			confirmDelete.setUserObject(null);
 			
 			//release lock
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
-			lockEntry = null;
+			releaseLock();
 		} else {
 			super.event(ureq, source, event);
+		}
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(newInfoWizard);
+		removeAsListenerAndDispose(editInfoWizard);
+		newInfoWizard = null;
+		editInfoWizard = null;
+	}
+
+	private void releaseLock() {
+		if(lockEntry != null) {
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
+			lockEntry = null;
 		}
 	}
 
@@ -420,6 +434,8 @@ public class InfoDisplayController extends FormBasicController {
 	}
 
 	private void doCreateNewMessage(UserRequest ureq) {
+		cleanUp();
+
 		InfoMessage msg = infoMessageManager.createInfoMessage(ores, resSubPath, businessPath, getIdentity());
 		start = new CreateInfoStep(ureq, ores, resSubPath, sendSubscriberOption, sendMailOptions, groupsMailOptions, curriculaMailOptions, msg);
 		newInfoWizard = new StepsMainRunController(ureq, getWindowControl(), start, new FinishedCallback(),
@@ -476,8 +492,7 @@ public class InfoDisplayController extends FormBasicController {
 			msg = infoMessageManager.loadInfoMessage(msg.getKey());
 			if(msg == null) {
 				showWarning("already.deleted");
-				CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
-				lockEntry = null;
+				releaseLock();
 				loadMessages();
 			} else {
 				String title = StringHelper.escapeHtml(msg.getTitle());
@@ -497,17 +512,16 @@ public class InfoDisplayController extends FormBasicController {
 			msg = infoMessageManager.loadInfoMessage(msg.getKey());
 			if(msg == null) {
 				showWarning("already.deleted");
-				CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
-				lockEntry = null;
+				releaseLock();
 				loadMessages();
 			} else {
-				removeAsListenerAndDispose(editInfoWizard);
+				cleanUp();
 
 				start = new CreateInfoStep(ureq, ores, resSubPath, sendSubscriberOption, sendMailOptions, groupsMailOptions, curriculaMailOptions, msg);
-				newInfoWizard = new StepsMainRunController(ureq, getWindowControl(), start, new FinishedCallback(),
+				editInfoWizard = new StepsMainRunController(ureq, getWindowControl(), start, new FinishedCallback(),
 						new CancelCallback(), translate("edit.message"), "o_sel_info_messages_create_wizard");
-				listenTo(newInfoWizard);
-				getWindowControl().pushAsModalDialog(newInfoWizard.getInitialComponent());
+				listenTo(editInfoWizard);
+				getWindowControl().pushAsModalDialog(editInfoWizard.getInitialComponent());
 			}
 		} else {
 			showLockError();
