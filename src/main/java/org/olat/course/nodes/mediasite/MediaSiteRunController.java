@@ -247,7 +247,7 @@ public class MediaSiteRunController extends BasicController {
 			deployment = deployments.get(0);
 			baseUrl = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_BASE_URL);
 			if (!StringHelper.containsNonWhitespace(baseUrl)) {
-				showError("err.lti13.not.configured");
+				showError("error.lti13.not.configured");
 				return;
 			}
 		} else {

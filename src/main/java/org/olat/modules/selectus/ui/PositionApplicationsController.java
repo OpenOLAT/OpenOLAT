@@ -94,7 +94,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -216,7 +215,6 @@ import org.olat.modules.selectus.ui.reference.InvitationEmail_0_FilterStep;
 import org.olat.modules.selectus.ui.reference.SendReferencesEmailRunnerCallback;
 import org.olat.modules.selectus.ui.rejection.CEmail_2_OverviewStep;
 import org.olat.modules.selectus.ui.rejection.SendEmailRunnerCallback;
-import org.olat.modules.selectus.ui.rejection.TemplateForEmailController;
 import org.olat.modules.selectus.ui.review.ReviewEditController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -239,6 +237,9 @@ public class PositionApplicationsController extends FormBasicController implemen
 	protected static final String FILTER_WITH_SENT_EMAILS = "fwithSentEmails";
 	protected static final String FILTER_WITHOUT_SENT_EMAILS = "fwithoutSentEmails";
 
+	/**
+	 * Filter empty, - or null
+	 */
 	protected static final String FILTER_NULL_KEY = "NULL";
 	protected static final String FILTER_ABSTAIN_KEY = "ABSTAIN";
 	
@@ -248,7 +249,6 @@ public class PositionApplicationsController extends FormBasicController implemen
 	private Position position;
 	private final OLATResourceable positionOres;
 	private List<ApplicationLight> applications;
-	private final Translator mailTranslator;
 	private final List<Tab> customTabs;
 
 	private FlexiFiltersTab allTab;
@@ -367,8 +367,6 @@ public class PositionApplicationsController extends FormBasicController implemen
 		excludedAttributesList = position.getExcludedAttributesList();
 
 		mailTemplates = mailService.getMailTemplates(position, getLocale());
-		mailTranslator = Util.createPackageTranslator(TemplateForEmailController.class, getLocale(), getTranslator());
-		
 		privateOption = recruitingModule.getApplicationAddressPrivateOption();
 		businessOption = recruitingModule.getApplicationAddressBusinessOption();
 		
@@ -1173,7 +1171,8 @@ public class PositionApplicationsController extends FormBasicController implemen
 		SelectionValues templatesPK = new SelectionValues();
 		if(mailTemplates != null && !mailTemplates.isEmpty()) {
 			for(PositionMailTemplateRef mailTemplate:mailTemplates) {
-				templatesPK.add(SelectionValues.entry(mailTemplate.getName(), mailTemplate.getName()));
+				String identifier = mailTemplate.getKey() == null ? mailTemplate.getId() : mailTemplate.getKey().toString();
+				templatesPK.add(SelectionValues.entry(identifier, StringHelper.escapeHtml(mailTemplate.getName())));
 			}
 		}
 		templatesPK.add(SelectionValues.entry(translate("filter.no.template"), translate("filter.no.template")));
@@ -1521,31 +1520,9 @@ public class PositionApplicationsController extends FormBasicController implemen
 			for(int i=templates.length; i-->0; ) {
 				String template = templates[i];
 				if(StringHelper.containsNonWhitespace(template)) {
-					if("-".equals(template)) {
-						templateNames.add(translate("filter.no.template"));
-					} else if(recruitingModule.isMailTemplateTitle(template)) {
-						String label = mailTranslator.translate("rejection.template.label.".concat(template.toLowerCase()));
-						if(label.length() < 32) {
-							templateNames.add(label);
-						} else {
-							templateNames.add(translate("filter.no.template"));
-						}
-					} else {
-						boolean matched = false;
-						for(PositionMailTemplateRef mailTemplateRef:mailTemplates) {
-							if(mailTemplateRef.match(template)) {
-								templateNames.add(mailTemplateRef.getName());
-								templateNames.add(template);
-								matched = true;
-							}
-						}
-						
-						if(!matched) {
-							templateNames.add(translate("filter.no.template"));
-						}
-					}
+					templateNames.add(template);
 				} else {
-					templateNames.add(translate("filter.no.template"));
+					templateNames.add("-");
 				}
 			}
 			return templateNames.toArray(new String[templateNames.size()]);
@@ -2162,7 +2139,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 							messageI18n, messageArgs, getTranslator(), position, application, rating, getIdentity());
 				} else {
 					String messageI18n = "audit.log.rating.update";
-					String beforeRating = currentRating == null ? "-" : currentRating.toString();
+					String beforeRating = currentRating.toString();
 					String[] messageArgs = new String[] { translateRating(currentRating), translateRating(newRating),
 							salutationGenerator.getTitleFullname(application, getLocale()), application.getId().toString() };
 					auditService.auditRatingLog(Action.update, ActionTarget.rating, beforeRating, Integer.toString(newRating),
