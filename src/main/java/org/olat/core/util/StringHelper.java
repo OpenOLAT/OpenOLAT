@@ -187,7 +187,7 @@ public class StringHelper {
 	}
 	
 	public static String formatLocaleDateFull(ZonedDateTime date, Locale locale) {
-		if (null == null) return "-";
+		if (date == null) return "-";
 		return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale).format(date);
 	}
 

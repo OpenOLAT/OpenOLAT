@@ -753,12 +753,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_teamsmeeting_icon { @include o-add-brand-icon('windows');}
 .o_openmeetings_icon { @include o-add-icon('tv');}
 .o_gotomeeting_icon { @include o-add-icon('tv');}
-.o_card2brain_icon:before, %o_icon_card2brain { content:"\E800"; font-family: openolat; font-size: 120%;}
-.o_edubase_icon:before, %o_icon_edubase { content:"\E885"; font-family: openolat;}
-.o_edusharing_icon:before, %o_icon_edusharing { content:"\E803"; font-family: openolat; font-size: 90%;}
-.o_mediasite_icon:before, %o_icon_mediasite { content:"\E902"; font-family: openolat;}
-.o_opencast_icon:before, %o_icon_opencast { content:"\E804"; font-family: openolat;}
-.o_jupyter_icon:before, %o_icon_jupyter {content:"\E903"; font-family: openolat;}
+.o_card2brain_icon:before, %o_icon_card2brain { content:"\E800"; font-family: openolat; font-weight: 400; font-size: 120%;}
+.o_edubase_icon:before, %o_icon_edubase { content:"\E885"; font-family: openolat; font-weight: 400;}
+.o_edusharing_icon:before, %o_icon_edusharing { content:"\E803"; font-family: openolat; font-weight: 400; font-size: 90%;}
+.o_mediasite_icon:before, %o_icon_mediasite { content:"\E902"; font-family: openolat; font-weight: 400;}
+.o_opencast_icon:before, %o_icon_opencast { content:"\E804"; font-family: openolat; font-weight: 400;}
+.o_jupyter_icon:before, %o_icon_jupyter {content:"\E903"; font-family: openolat; font-weight: 400;}
 .o_livestream_icon { @include o-add-icon('video-camera');}
 .o_unkown_icon { @include o-add-icon('user-secret');}
 
@@ -850,17 +850,17 @@ $fa-css-prefix: "o_icon" !default;
 
 /* drawing tool */
 //TODO: Check if replacable with FA6 icons
-.o_icon_draw_align-bottom:before { content: '\E805'; font-family: openolat;}
-.o_icon_draw_align-left:before { content: '\E806'; font-family: openolat;}
-.o_icon_draw_align-right:before { content: '\E807'; font-family: openolat;}
-.o_icon_draw_align-top:before { content: '\E808'; font-family: openolat;}
-.o_icon_draw_distribute-h:before { content: '\E809'; font-family: openolat;}
-.o_icon_draw_distribute-v:before { content: '\E80a'; font-family: openolat;}
-.o_icon_draw_equal-size:before { content: '\E80b'; font-family: openolat;}
-.o_icon_draw_equal-size-width:before { content: '\e80c'; font-family: openolat;}
-.o_icon_draw_equal-size-height:before { content: '\e80d'; font-family: openolat;} 
-.o_icon_draw_front:before { content: '\E900'; font-family: openolat;}
-.o_icon_draw_back:before { content: '\E901'; font-family: openolat;}
+.o_icon_draw_align-bottom:before { content: '\E805'; font-family: openolat; font-weight: 400;}
+.o_icon_draw_align-left:before { content: '\E806'; font-family: openolat; font-weight: 400;}
+.o_icon_draw_align-right:before { content: '\E807'; font-family: openolat; font-weight: 400;}
+.o_icon_draw_align-top:before { content: '\E808'; font-family: openolat; font-weight: 400;}
+.o_icon_draw_distribute-h:before { content: '\E809'; font-family: openolat; font-weight: 400;}
+.o_icon_draw_distribute-v:before { content: '\E80a'; font-family: openolat; font-weight: 400;}
+.o_icon_draw_equal-size:before { content: '\E80b'; font-family: openolat; font-weight: 400;}
+.o_icon_draw_equal-size-width:before { content: '\e80c'; font-family: openolat; font-weight: 400;}
+.o_icon_draw_equal-size-height:before { content: '\e80d'; font-family: openolat; font-weight: 400;}
+.o_icon_draw_front:before { content: '\E900'; font-family: openolat; font-weight: 400;}
+.o_icon_draw_back:before { content: '\E901'; font-family: openolat; font-weight: 400;}
 .o_icon_draw_ellipse { @include o-add-icon('circle');}
 .o_icon_draw_color { @include o-add-icon('tint');}
 
@@ -1228,14 +1228,14 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 
 /* Licenses */
 .o_icon_lic_add { @include o-add-icon('plus-circle');}
-.o_icon_lic_public_domain:before, %o_icon_lic_public_domain { content:"\E810"; font-family: openolat; font-size: 120%;}
-.o_icon_lic_cc0:before, %o_icon_lic_cc0 { content:"\E811"; font-family: openolat; font-size: 120%;}
-.o_icon_lic_by:before, %o_icon_lic_by { content:"\E812"; font-family: openolat; font-size: 120%;}
-.o_icon_lic_by_sa:before, %o_icon_lic_by_sa { content:"\E813"; font-family: openolat; font-size: 120%;}
-.o_icon_lic_by_nd:before, %o_icon_lic_by_nd { content:"\E814"; font-family: openolat; font-size: 120%;}
-.o_icon_lic_by_nc:before, %o_icon_lic_by_nc { content:"\E815"; font-family: openolat; font-size: 120%;}
-.o_icon_lic_by_nc_sa:before, %o_icon_lic_by_nc_sa { content:"\E817"; font-family: openolat; font-size: 120%;}
-.o_icon_lic_by_nc_nd:before, %o_icon_lic_by_nc_nd { content:"\E819"; font-family: openolat; font-size: 120%;}
+.o_icon_lic_public_domain:before, %o_icon_lic_public_domain { content:"\E810"; font-family: openolat; font-weight: 400; font-size: 120%;}
+.o_icon_lic_cc0:before, %o_icon_lic_cc0 { content:"\E811"; font-family: openolat; font-weight: 400; font-size: 120%;}
+.o_icon_lic_by:before, %o_icon_lic_by { content:"\E812"; font-family: openolat; font-weight: 400; font-size: 120%;}
+.o_icon_lic_by_sa:before, %o_icon_lic_by_sa { content:"\E813"; font-family: openolat; font-weight: 400; font-size: 120%;}
+.o_icon_lic_by_nd:before, %o_icon_lic_by_nd { content:"\E814"; font-family: openolat; font-weight: 400; font-size: 120%;}
+.o_icon_lic_by_nc:before, %o_icon_lic_by_nc { content:"\E815"; font-family: openolat; font-weight: 400; font-size: 120%;}
+.o_icon_lic_by_nc_sa:before, %o_icon_lic_by_nc_sa { content:"\E817"; font-family: openolat; font-weight: 400; font-size: 120%;}
+.o_icon_lic_by_nc_nd:before, %o_icon_lic_by_nc_nd { content:"\E819"; font-family: openolat; font-weight: 400; font-size: 120%;}
 .o_icon_lic_all_rights_reserved { @include o-add-icon('copyright');}
 .o_icon_lic_freetext { @include o-add-icon('copyright');}
 .o_icon_lic_general { @include o-add-icon('copyright');}
