@@ -443,7 +443,8 @@ public class PositionApplicationsDataModel extends DefaultFlexiTableDataModel<Ap
 		if(searchValues == null || searchValues.isEmpty()) return true;
 		
 		Object val = getRawValueAt(row, column);
-		if(val == null) {
+		// - is used to signal not available
+		if(val == null || "-".equals(val)) {
 			return searchValues.contains(PositionApplicationsController.FILTER_NULL_KEY);
 		}
 		if(val instanceof String str) {
