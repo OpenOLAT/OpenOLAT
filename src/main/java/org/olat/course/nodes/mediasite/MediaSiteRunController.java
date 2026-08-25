@@ -223,10 +223,10 @@ public class MediaSiteRunController extends BasicController {
 
 	private void showContentLti13(UserRequest ureq, boolean usesPrivateLogin) {
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-		String subIdent = courseNode.getIdent();
+		String subIdent = showAdministration ? courseNode.getIdent() + "_admin" : courseNode.getIdent();
 
 		LTI13ToolDeployment deployment;
-		String baseUrl;
+		String targetUrl;
 
 		if (usesPrivateLogin) {
 			String courseToolKeyStr = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_TOOL_KEY);
@@ -245,10 +245,11 @@ public class MediaSiteRunController extends BasicController {
 				return;
 			}
 			deployment = deployments.get(0);
-			baseUrl = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_BASE_URL);
-			if (!StringHelper.containsNonWhitespace(baseUrl)) {
-				showError("error.lti13.not.configured");
-				return;
+			if (showAdministration) {
+				targetUrl = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_ADMIN_URL);
+			} else {
+				targetUrl = String.format(config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_BASE_URL),
+						config.getStringValue(MediaSiteCourseNode.CONFIG_ELEMENT_ID));
 			}
 		} else {
 			Long deploymentKey = mediaSiteModule.getLti13DeploymentKey();
@@ -261,14 +262,18 @@ public class MediaSiteRunController extends BasicController {
 				showError("error.lti13.not.configured");
 				return;
 			}
-			baseUrl = mediaSiteModule.getLti13BaseUrl();
-			if (!StringHelper.containsNonWhitespace(baseUrl)) {
-				showError("error.lti13.not.configured");
-				return;
+			if (showAdministration) {
+				targetUrl = mediaSiteModule.getLti13AdminUrl();
+			} else {
+				targetUrl = String.format(mediaSiteModule.getLti13BaseUrl(),
+						config.getStringValue(MediaSiteCourseNode.CONFIG_ELEMENT_ID));
 			}
 		}
 
-		String targetUrl = String.format(baseUrl, config.getStringValue(MediaSiteCourseNode.CONFIG_ELEMENT_ID));
+		if (!StringHelper.containsNonWhitespace(targetUrl)) {
+			showError("error.lti13.not.configured");
+			return;
+		}
 
 		LTI13Context context = lti13Service.getContext(courseEntry, subIdent);
 		if (context == null) {

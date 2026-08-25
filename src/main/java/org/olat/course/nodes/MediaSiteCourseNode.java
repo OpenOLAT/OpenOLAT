@@ -67,6 +67,7 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 	
 	public static final String CONFIG_LTI13_TOOL_KEY		= "lti13ToolKey";
 	public static final String CONFIG_LTI13_BASE_URL		= "lti13BaseUrl";
+	public static final String CONFIG_LTI13_ADMIN_URL		= "lti13AdminUrl";
 	
 	public static final String CONFIG_SUPRESS_AGREEMENT		= "supressDataTransmissionAgreement";
 	public static final String CONFIG_IS_DEBUG				= "isDebug";
