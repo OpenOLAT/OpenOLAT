@@ -2666,6 +2666,20 @@ function o_waitForVisibleThenFocusDialog(topDialog, attempt) {
 	}
 	if (!topDialog.contains(document.activeElement)) {
 		var candidates = topDialog.querySelectorAll('a[href], button, input, select, textarea, [tabindex]');
+		var isClipped = function(el) {
+			for (var anc = el; anc && anc !== topDialog.parentElement; anc = anc.parentElement) {
+				if (anc.offsetWidth <= 1 || anc.offsetHeight <= 1) {
+					return true;
+				}
+			}
+			return false;
+		};
+		var visibleCandidates = Array.prototype.filter.call(candidates, function(candidate) {
+			return !isClipped(candidate);
+		});
+		if (visibleCandidates.length > 0) {
+			candidates = visibleCandidates;
+		}
 		var focused = false;
 		for (var di = 0; di < candidates.length && !focused; di++) {
 			candidates[di].focus({ preventScroll: true });
@@ -3277,7 +3291,7 @@ function o_copyToClipboard(selector) {
 function o_shareCopyLink(text, title, message) {
 	navigator.clipboard.writeText(text).then(function() {
 		showInfoBox(title, message);
-		jQuery('.o_callout_content a.close').last().trigger('click');
+		jQuery('.o_callout_content .close').last().trigger('click');
 	});
 }
 
