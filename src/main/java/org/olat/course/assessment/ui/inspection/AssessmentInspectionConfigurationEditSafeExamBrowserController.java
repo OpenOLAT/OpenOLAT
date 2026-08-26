@@ -51,6 +51,10 @@ public class AssessmentInspectionConfigurationEditSafeExamBrowserController exte
 		initForm(ureq);
 		updateUI();
 	}
+	
+	public AssessmentInspectionConfiguration getConfiguration() {
+		return configuration;
+	}
 
 	@Override
 	protected boolean isEditable() {

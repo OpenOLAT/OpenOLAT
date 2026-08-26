@@ -94,9 +94,9 @@ public class RepositoryEntriesListController extends FormBasicController {
 		if (lifecycleModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LectureRepoCols.lifecycleSoftKey));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleLabel));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleStart));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleEnd));
 		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleStart));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleEnd));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LectureRepoCols.access, new AccessRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LectureRepoCols.numOfParticipants));
 

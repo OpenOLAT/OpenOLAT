@@ -20,6 +20,7 @@
 package org.olat.repository;
 
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +32,7 @@ import org.springframework.stereotype.Service;
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 @Service
-public class LifecycleModule extends AbstractSpringModule {
+public class LifecycleModule extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final String CONFIG_LIFECYCLE_ENABLED = "lifecycle.enabled";
 
@@ -55,6 +56,7 @@ public class LifecycleModule extends AbstractSpringModule {
 		init();
 	}
 
+	@Override
 	public boolean isEnabled() {
 		return enabled;
 	}

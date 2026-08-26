@@ -59,6 +59,10 @@ public class AssessmentInspectionConfigurationEditAccessController extends FormB
 		
 		initForm(ureq);
 	}
+	
+	public AssessmentInspectionConfiguration getConfiguration() {
+		return configuration;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
