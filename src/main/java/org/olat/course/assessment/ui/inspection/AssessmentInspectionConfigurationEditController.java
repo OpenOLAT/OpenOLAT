@@ -94,6 +94,14 @@ public class AssessmentInspectionConfigurationEditController extends BasicContro
 				configuration = generalCtrl.getConfiguration();
 				updateSegments();
 			}
+		} else if(safeExamBrowserCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				configuration = safeExamBrowserCtrl.getConfiguration();
+			}
+		} else if(accessCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				configuration = accessCtrl.getConfiguration();
+			}
 		}
 	}
 
