@@ -201,11 +201,11 @@ public class InPreparationListController extends FormBasicController implements 
 		if (lifecycleModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, InPreparationCols.lifecycleSoftkey));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.lifecycleLabel));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleStart,
-					new DateFlexiCellRenderer(getLocale())));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleEnd,
-					new DateFlexiCellRenderer(getLocale())));
 		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleStart,
+				new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleEnd,
+				new DateFlexiCellRenderer(getLocale())));
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.educationalType,
