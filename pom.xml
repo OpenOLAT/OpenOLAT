@@ -2232,7 +2232,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.18.4</version>
+			<version>1.18.5</version>
 		</dependency>
 		<!-- End Microsoft Graph -->
 		<!-- Lucene dependencies -->

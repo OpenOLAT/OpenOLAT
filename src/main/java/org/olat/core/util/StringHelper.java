@@ -222,9 +222,9 @@ public class StringHelper {
 		return DateFormat.getTimeInstance(DateFormat.SHORT, locale).format(time);
 	}
 	
-	public static String formatLocaleTime(ZonedDateTime time, Locale locale) {
+	public static String formatLocaleDateTime(ZonedDateTime time, Locale locale) {
 		if (time == null) return "-";
-		return DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(locale).format(time);
+		return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withLocale(locale).format(time);
 	}
 
 	/**
