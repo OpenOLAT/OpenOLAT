@@ -330,9 +330,10 @@ public class CatalogEntryListController extends FormBasicController implements A
 		if (lifecycleModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, CatalogEntryCols.lifecycleSoftkey));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.lifecycleLabel));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.lifecycleStart, new DateFlexiCellRenderer(getLocale())));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.lifecycleEnd, new DateFlexiCellRenderer(getLocale())));
 		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.lifecycleStart, new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.lifecycleEnd, new DateFlexiCellRenderer(getLocale())));
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.author));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.mainLanguage));

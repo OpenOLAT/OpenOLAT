@@ -387,17 +387,17 @@ public class CatalogNodeManagerController extends FormBasicController implements
 					sortEnabled, OrderBy.lifecycleLabel.name());
 			leafColumns.add(columnModel);
 			columnsModel.addFlexiColumnModel(columnModel);
-
-			columnModel = new DefaultFlexiColumnModel(true, Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
-					sortEnabled, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale()));
-			leafColumns.add(columnModel);
-			columnsModel.addFlexiColumnModel(columnModel);
-
-			columnModel = new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
-					sortEnabled, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale()));
-			leafColumns.add(columnModel);
-			columnsModel.addFlexiColumnModel(columnModel);
 		}
+
+		columnModel = new DefaultFlexiColumnModel(true, Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
+				sortEnabled, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale()));
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
+
+		columnModel = new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
+				sortEnabled, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale()));
+		leafColumns.add(columnModel);
+		columnsModel.addFlexiColumnModel(columnModel);
 		
 		columnModel = new DefaultFlexiColumnModel(true, Cols.access.i18nKey(), Cols.access.ordinal(),
 				sortEnabled, OrderBy.access.name(), FlexiColumnModel.ALIGNMENT_LEFT, new AccessRenderer(getLocale()));

@@ -160,9 +160,10 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		if (lifecycleModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, RepoCols.lifecycleSoftKey));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.lifecycleLabel));// visible if lifecycle
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.lifecycleStart, new DateFlexiCellRenderer(getLocale())));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.lifecycleEnd, new DateFlexiCellRenderer(getLocale())));
 		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.lifecycleStart, new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.lifecycleEnd, new DateFlexiCellRenderer(getLocale())));
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.runtimeType, new RuntimeTypeRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.author));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.access, new AccessRenderer(getLocale())));
