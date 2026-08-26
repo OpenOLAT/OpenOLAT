@@ -54,6 +54,7 @@ import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.ui.LTI13DisplayController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.mediasite.LtiVersion;
+import org.olat.modules.mediasite.MediaSiteManager;
 import org.olat.modules.mediasite.MediaSiteModule;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
@@ -79,6 +80,8 @@ public class MediaSiteRunController extends BasicController {
 	
 	@Autowired
 	private MediaSiteModule mediaSiteModule;
+	@Autowired
+	private MediaSiteManager mediaSiteManager;
 	@Autowired
 	private LTIManager ltiManager;
 	@Autowired
@@ -277,7 +280,7 @@ public class MediaSiteRunController extends BasicController {
 
 		LTI13Context context = lti13Service.getContext(courseEntry, subIdent);
 		if (context == null) {
-			context = createLti13Context(targetUrl, deployment, courseEntry, subIdent);
+			context = mediaSiteManager.createLti13Context(targetUrl, deployment, courseEntry, subIdent, this);
 		} else if (!targetUrl.equals(context.getTargetUrl())) {
 			context.setTargetUrl(targetUrl);
 			context = lti13Service.updateContext(context);
@@ -291,17 +294,6 @@ public class MediaSiteRunController extends BasicController {
 		}
 		listenTo(lti13Ctrl);
 		mainPanel.setContent(lti13Ctrl.getInitialComponent());
-	}
-
-	private LTI13Context createLti13Context(String targetUrl, LTI13ToolDeployment deployment, 
-											RepositoryEntry courseEntry, String subIdent) {
-		LTI13Context context = lti13Service.createContext(targetUrl, deployment, courseEntry, subIdent, null);
-		context.setSendUserAttributesList(List.of("email", "firstName", "lastName"));
-		context.setSendCustomAttributes("custom_id=$userprops_username");
-		context.setParticipantRoles("Learner");
-		context.setCoachRoles("Instructor,Mentor");
-		context.setAuthorRoles("ContentDeveloper,Instructor,Mentor");
-		return lti13Service.updateContext(context);
 	}
 
 	private boolean checkHasDataExchangeAccepted(String hash) {

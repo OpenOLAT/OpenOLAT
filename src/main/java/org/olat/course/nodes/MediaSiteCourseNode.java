@@ -34,15 +34,21 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.mediasite.MediaSiteEditController;
 import org.olat.course.nodes.mediasite.MediaSiteRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
+import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.mediasite.LtiVersion;
+import org.olat.modules.mediasite.MediaSiteManager;
 import org.olat.modules.mediasite.MediaSiteModule;
 import org.olat.modules.mediasite.ui.MediaSiteAdminController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
  * Initial date: 14.10.2021<br>
@@ -119,6 +125,47 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 		return sd;
 	}
 	
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCourse, context);
+		copyLti13Configuration(sourceCourse, course, getIdent());
+	}
+
+	@Override
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings,
+			CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		copyLti13Configuration(sourceCourse, course, sourceCourseNode.getIdent());
+	}
+
+	private void copyLti13Configuration(ICourse sourceCourse, ICourse targetCourse, String subIdent) {
+		ModuleConfiguration config = getModuleConfiguration();
+		String version = config.getStringValue(CONFIG_LTI_VERSION);
+		if (LtiVersion.lti_1_3.name().equals(version)) {
+			MediaSiteManager mediaSiteManager = CoreSpringFactory.getImpl(MediaSiteManager.class);
+			RepositoryEntry sourceEntry = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			RepositoryEntry targetEntry = targetCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			Long clonedToolKey = mediaSiteManager.copyLti13MediaSiteConfiguration(sourceEntry, targetEntry, subIdent);
+			if (clonedToolKey != null) {
+				config.setStringValue(CONFIG_LTI13_TOOL_KEY, String.valueOf(clonedToolKey));
+			}
+		}
+	}
+	
+	@Override
+	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+
+		ModuleConfiguration config = getModuleConfiguration();
+		String version = config.getStringValue(CONFIG_LTI_VERSION);
+		String toolKeyString = config.getStringValue(CONFIG_LTI13_TOOL_KEY);
+		if (LtiVersion.lti_1_3.name().equals(version) && StringHelper.containsNonWhitespace(toolKeyString)) {
+			MediaSiteManager mediaSiteManager = CoreSpringFactory.getImpl(MediaSiteManager.class);
+			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			mediaSiteManager.deleteLti13MediaSiteConfiguration(entry, getIdent(), Long.valueOf(toolKeyString));
+		}
+	}
+
 	@Override
 	public ConditionAccessEditConfig getAccessEditConfig() {
 		return ConditionAccessEditConfig.regular(false);
