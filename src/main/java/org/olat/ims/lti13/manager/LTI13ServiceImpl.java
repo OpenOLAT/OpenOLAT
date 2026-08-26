@@ -252,6 +252,9 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 				if(deployment.getTool().getToolTypeEnum() == LTI13ToolType.EXTERNAL) {
 					localTools.add(deployment.getTool());
 				}
+				if(deployment.getTool().getToolTypeEnum() == LTI13ToolType.MEDIASITE_COURSE) {
+					localTools.add(deployment.getTool());
+				}
 			}
 		}
 		for(LTI13Tool tool:localTools) {
