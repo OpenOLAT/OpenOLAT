@@ -229,9 +229,9 @@ public class CalendarPrintMapper implements Mapper {
 			if (end == null || end.isAfter(dayEnd)) {
 				end = dayEnd;
 			}
-			sb.append(StringHelper.formatLocaleTime(begin, translator.getLocale()));
+			sb.append(StringHelper.formatLocaleDateTime(begin, translator.getLocale()));
 			sb.append(" - ");
-			sb.append(StringHelper.formatLocaleTime(end, translator.getLocale()));
+			sb.append(StringHelper.formatLocaleDateTime(end, translator.getLocale()));
 		}
 		sb.append("</span></div>\n");
 		
