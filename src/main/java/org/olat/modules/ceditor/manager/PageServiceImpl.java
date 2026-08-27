@@ -265,8 +265,8 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 			if (newPart instanceof GalleryPart galleryPart && part instanceof GalleryPart serializedPart) {
 				importGalleryPart(galleryPart, serializedPart, mediaOwner, storage);
 			}
-			if (newPart instanceof ImageComparisonPart imageComparisonPart) {
-				importImageComparisonPart(imageComparisonPart, mediaOwner, storage);
+			if (newPart instanceof ImageComparisonPart imageComparisonPart && part instanceof ImageComparisonPart serializedImageComparisonPart) {
+				importImageComparisonPart(imageComparisonPart, serializedImageComparisonPart, mediaOwner, storage);
 			}
 			if (newPart instanceof QuizPart quizPart) {
 				importQuizQuestions(quizPart, storage);
@@ -338,8 +338,8 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 		}
 	}
 
-	private void importImageComparisonPart(ImageComparisonPart imageComparisonPart, Identity mediaOwner, ZipFile storage) {
-		for (MediaToPagePart relation : imageComparisonPart.getRelations()) {
+	private void importImageComparisonPart(ImageComparisonPart imageComparisonPart, ImageComparisonPart serializedPart, Identity mediaOwner, ZipFile storage) {
+		for (MediaToPagePart relation : serializedPart.getRelations()) {
 			importRelation(relation, mediaOwner, storage, imageComparisonPart);
 		}
 	}
