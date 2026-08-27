@@ -298,11 +298,11 @@ public class AiFeaturesTestController extends BasicController {
 			AiMCQuestionData q = response.getQuestions().get(0);
 			vc.contextPut("mcData", q);
 		} else {
-			String error = response.getError() != null ? response.getError() : "No questions generated.";
+			String error = response.getError() != null ? response.getError() : translate("ai.feature.mc.question.generator.test.error");
 			vc.contextPut("error", error);
 		}
 
-		showModal(ureq, vc, "MC Question Generator Test");
+		showModal(vc, translate("ai.feature.mc.question.generator.test.title"));
 	}
 
 	/**
@@ -322,14 +322,14 @@ public class AiFeaturesTestController extends BasicController {
 			AiImageDescriptionData data = response.getDescription();
 			vc.contextPut("imgData", data);
 		} else {
-			String error = response.getError() != null ? response.getError() : "No description generated.";
+			String error = response.getError() != null ? response.getError() : translate("ai.feature.image.description.generator.test.error");
 			vc.contextPut("error", error);
 		}
 
-		showModal(ureq, vc, "Image Description Generator Test");
+		showModal(vc, translate("ai.feature.image.description.generator.test.title"));
 	}
 
-	private void showModal(UserRequest ureq, VelocityContainer vc, String title) {
+	private void showModal(VelocityContainer vc, String title) {
 		cleanUp();
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				vc, true, title);
