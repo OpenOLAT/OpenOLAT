@@ -710,7 +710,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 			super(ureq, wControl, configuration);
 			
 			initForm(ureq);
-			updateUI();
+			updateUI(false);
 		}
 
 		@Override
@@ -728,8 +728,8 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		}
 
 		@Override
-		protected void updateUI() {
-			super.updateUI();
+		protected void updateUI(boolean overrideConfiguration) {
+			super.updateUI(overrideConfiguration);
 
 			safeExamBrowserEl.setVisible(false);
 			typeOfUseEl.setVisible(false);

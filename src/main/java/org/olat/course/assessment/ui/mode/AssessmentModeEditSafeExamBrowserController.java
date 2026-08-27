@@ -75,7 +75,7 @@ public class AssessmentModeEditSafeExamBrowserController extends AbstractEditSaf
 			this.assessmentMode = assessmentModeMgr.getAssessmentModeById(assessmentMode.getKey());
 		}
 		initForm(ureq);
-		updateUI();
+		updateUI(false);
 	}
 	
 	public AssessmentMode getAssessmentMode() {

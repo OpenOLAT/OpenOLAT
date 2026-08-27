@@ -49,7 +49,7 @@ public class AssessmentInspectionConfigurationEditSafeExamBrowserController exte
 		this.configuration = configuration;
 		
 		initForm(ureq);
-		updateUI();
+		updateUI(false);
 	}
 	
 	public AssessmentInspectionConfiguration getConfiguration() {

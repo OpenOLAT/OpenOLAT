@@ -626,7 +626,7 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 
 	@Override
 	public String getSafeExamBrowserHint() {
-		if(safeExamBrowserTemplate != null) {
+		if(safeExamBrowserTemplate != null && safeExamBrowserTemplate.getType() == SafeExamBrowserTemplateType.OO_FORM) {
 			return safeExamBrowserTemplate.getSafeExamBrowserHint();
 		}
 		return safeExamBrowserHint;
