@@ -8,7 +8,18 @@
 	#o_im_summary {
 		float: left;
 		position: relative;
-		padding: floor($grid-gutter-width * 0.5) floor($grid-gutter-width * 0.125);
+		/* Align with the navbar links at any base font size. The widgets are as high
+		   as a navbar link ($navbar-height, which the link padding is derived from)
+		   and centre their content. The former vertical padding of
+		   floor($grid-gutter-width * 0.5) was a constant 15px, and the badge inside
+		   sits on vertical-align: middle, which aligns to the baseline plus half the
+		   x-height rather than to the middle of the line box. Both only lined up at
+		   the default $font-size-base; with a larger base size the status dot and the
+		   message badge drifted below the site tabs. */
+		padding: 0 floor($grid-gutter-width * 0.125);
+		height: $navbar-height;
+		display: flex;
+		align-items: center;
 	}
 	#o_im_status, #o_im_message {
 		padding-left: floor($grid-gutter-width * 0.5);

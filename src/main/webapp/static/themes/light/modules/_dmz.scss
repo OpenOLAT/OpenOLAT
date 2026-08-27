@@ -230,13 +230,22 @@ body.o_dmz {
 		p.o_login_username {
 			border: 1px solid $o-login-border-color;
 			cursor: not-allowed;
+			/* The icon and the disabled input share one line. Laid out with flex, so
+			   the icon width does not have to be guessed. The former fixed allowance
+			   of width: calc(100% - 20px) on the input only added up at the default
+			   $font-size-base of 14px. A theme that raises the base size pushed the
+			   input onto a second line, out of its own box. */
+			display: flex;
+			align-items: center;
+			gap: 0.3em;
 		}
 		p.o_login_username input {
 			border: none;
 			background: none;
-			padding-top: 4px;
 			cursor: not-allowed;
-			width: calc(100% - 20px);
+			flex: 1 1 auto;
+			min-width: 0;
+			padding: 0;
 		}
 		
 		.o_login_button_group {
