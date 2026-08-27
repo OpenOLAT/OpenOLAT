@@ -452,11 +452,15 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 			checkDeadline(ureq);
 		} else if (avSubmissionController == source) {
 			if (event instanceof AVDoneEvent avDoneEvent) {
-				updateModel(ureq);
-				updateWarnings();
-				String fileName = avDoneEvent.getRecording().getName();
-				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPLOAD, fileName));
-				gtaManager.markNews(courseEnv, gtaNode);
+				VFSLeaf recording = avDoneEvent.getRecording();
+				if (recording != null && recording.exists()) {
+					updateModel(ureq);
+					updateWarnings();
+					fireEvent(ureq, new SubmitEvent(SubmitEvent.UPLOAD, recording.getName()));
+					gtaManager.markNews(courseEnv, gtaNode);
+				} else {
+					showError("error.recording.failed");
+				}
 			}
 			cmc.deactivate();
 			cleanUp();

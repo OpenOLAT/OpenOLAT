@@ -93,6 +93,7 @@ public class MediaSiteAdminController extends FormBasicController {
 	@Autowired
 	private LTI13Service lti13Service;
 
+	// Used when called from administration
 	public MediaSiteAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
@@ -103,6 +104,7 @@ public class MediaSiteAdminController extends FormBasicController {
 		updateUi();
 	}
 	
+	// Used when called from MediaSite course node configuration
 	public MediaSiteAdminController(UserRequest ureq, WindowControl wControl, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		
@@ -410,7 +412,7 @@ public class MediaSiteAdminController extends FormBasicController {
 						courseTool.setPublicKeyTypeEnum(LTI13Tool.PublicKeyType.URL);
 						courseTool.setPublicKeyUrl(lti13JwksUrlEl.getValue());
 						courseTool = lti13Service.updateTool(courseTool);
-						lti13Service.createToolDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT,
+						lti13Service.createToolDeployment(null, LTI13ToolDeploymentType.MULTIPLE_CONTEXTS,
 								UUID.randomUUID().toString(), courseTool);
 						config.setStringValue(MediaSiteCourseNode.CONFIG_LTI13_TOOL_KEY, String.valueOf(courseTool.getKey()));
 					} else {
