@@ -39,6 +39,7 @@ import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.gta.ui.AVDoneEvent;
 
 /**
@@ -181,7 +182,13 @@ class RichTextElementComponent extends FormBaseComponentImpl implements Controll
 			cleanUp();
 		} else if (source == recordAudioController) {
 			if (event instanceof AVDoneEvent avDoneEvent) {
-				doSendUrlToTiny(ureq, new URLChoosenEvent(avDoneEvent.getRecording().getName()));
+				VFSLeaf recording = avDoneEvent.getRecording();
+				if (recording != null && recording.exists()) {
+					doSendUrlToTiny(ureq, new URLChoosenEvent(recording.getName()));
+				} else {
+					WindowControl wControl = Windows.getWindows(ureq).getWindow(ureq).getWindowBackOffice().getChiefController().getWindowControl();
+					wControl.setError(getTranslator().translate("error.recording.failed"));
+				}
 			}
 			cmc.deactivate();
 			cleanUp();
