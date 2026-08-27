@@ -532,6 +532,8 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 			
 			String templateHint = selectedTemplate.getSafeExamBrowserHint();
 			safeExamBrowserHintEl.setValue(templateHint != null ? templateHint : "");
+
+			passwordToQuitEl.setExampleKey(null, null);
 		} else if(selectedTemplate.getType() == SafeExamBrowserTemplateType.SEB_FILE) {
 			String configPList = selectedTemplate.getSafeExamBrowserConfigPList();
 			String configPListKey = SafeExamBrowserConfigurationSerializer
@@ -553,6 +555,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 					? selectedTemplate.getSafeExamBrowserConfigExitPassword()
 					: configuration.getSafeExamBrowserConfigExitPassword();
 			passwordToQuitEl.setValue(password);
+			passwordToQuitEl.setExampleKey("mode.safeexambrowser.password.exit.hint", null);
 			
 			String templateHint = overrideConfiguration
 					? selectedTemplate.getSafeExamBrowserHint()
@@ -581,6 +584,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 	private void updateConfigurationValues(SafeExamBrowserConfiguration sebConfig) {
 		allowToExitEl.toggle(sebConfig.isAllowQuit());
 		passwordToQuitEl.setValue(sebConfig.getPasswordToExit());
+		passwordToQuitEl.setExampleKey(null, null);
 		String quitLink = sebConfig.getLinkToQuit();
 		linkToQuitEl.select(trueFalseKey(StringHelper.containsNonWhitespace(quitLink)), true);
 		quitUrlConfirmEl.select(trueFalseKey(sebConfig.isQuitURLConfirm()), true);
