@@ -1,6 +1,5 @@
 (function ($) {
     "use strict";
-    
     $.fn.qtiAutosave = function(options) {
     	var settings = $.extend({
     		responseUniqueId: null,
@@ -8,7 +7,8 @@
     		dispIdField: null,//form dispatch id
     		dispId: null,//item id
     		eventIdField: null, // form eventFieldId
-    		csrf: null
+    		csrf: null,
+			errorMessage: null
         }, options );
     	
     	var wrapperId = this.attr('id');
@@ -35,14 +35,19 @@
 	    				cache: false,
 	    				dataType: 'json',
 	    				success: function(responseData, textStatus, jqXHR) {
-	    					var now = new Date();
-	    					var hours = now.getHours();
-	    					var minutes = now.getMinutes()
-	    	    			var lastSaved = hours + ":" + (minutes < 10 ? "0" : "") + minutes;
-	    	    			var containerEl = jQuery('#' + wrapperId).parent().get(0);
-	    	    			jQuery('.o_qti_essay_last_save', containerEl).css('display','block');
-	    	    			jQuery('.o_qti_essay_last_save-time', containerEl).html(lastSaved);
-	    				}
+							let now = new Date();
+							let hours = now.getHours();
+							let minutes = now.getMinutes()
+							let lastSaved = hours + ":" + (minutes < 10 ? "0" : "") + minutes;
+							let containerEl = jQuery('#' + wrapperId).parent().get(0);
+							jQuery('.o_qti_essay_last_save', containerEl).css('display','block');
+							jQuery('.o_qti_essay_last_save-time', containerEl).html(lastSaved);
+	    				},
+						error: function(jqXHR, textStatus, errorThrown) {
+							let containerEl = jQuery('#' + wrapperId).parent().get(0);
+							jQuery('.o_qti_essay_last_save', containerEl).css('display','block');
+							jQuery('.o_qti_essay_last_save-time', containerEl).html(settings.errorMessage);
+						}
 	    			})
 	    		} else {
 	    			periodic.cancel();

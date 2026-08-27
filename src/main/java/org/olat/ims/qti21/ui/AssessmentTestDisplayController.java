@@ -38,6 +38,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
@@ -45,6 +47,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
@@ -61,6 +64,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
@@ -722,6 +726,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		if(testSessionState.isEnded() || testSessionState.isSuspended()) {
 			candidateSession = qtiService.reloadAssessmentTestSession(candidateSession);
 			showWarning("warning.suspended.ended.assessmenttest");
+			
+			String title = testSessionState.isEnded() ? translate("warning.ended.title") : translate("warning.suspended.title");
+			String text = translate("warning.suspended.ended.assessmenttest");
+			qtiWorksCtrl.setRuntimeMessages("<div class='o_warning_with_icon'><h4>" + title + "</h4><p>" + text + "</p></div>");
 			logAudit("Try to work on an ended/suspended test");
 			return true;
 		}
@@ -865,6 +873,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		if(authorMode && qe.getEvent() == QTIWorksAssessmentTestEvent.Event.restart) {
 			restartTest(ureq);
 		} else if(timeLimitBarrier(ureq) || sessionReseted(ureq) || sessionEndedOrSuspended()) {
+			processQTIEventError(ureq, qe);
 			return;
 		}
 		
@@ -942,6 +951,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 		
 		touchResolvedAssessmentTest(ureq);
+	}
+	
+	private void processQTIEventError(UserRequest ureq, QTIWorksAssessmentTestEvent qe) {
+		if(qe.getEvent() == QTIWorksAssessmentTestEvent.Event.tmpResponse
+				|| qe.getEvent() == QTIWorksAssessmentTestEvent.Event.fullTmpResponse) {
+			ureq.getHttpResp().setStatus(HttpServletResponse.SC_CONFLICT);
+		}
 	}
 	
 	private void restartTest(UserRequest ureq) {
@@ -2095,6 +2111,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		private FormLink restartTest;
 		private FormLink chatButton;
 		private FormLink messagesButton;
+		private StaticTextElement runtimeMessages;
 		private final EventBus singleUserEventBus;
 		
 		private String menuWidth;
@@ -2245,6 +2262,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				}
 			}
 			
+			runtimeMessages = uifactory.addStaticTextElement("runtimeMessages", null, null, formLayout);
+			runtimeMessages.setDomWrapperElement(DomWrapperElement.div);
+			runtimeMessages.getComponent().setDomReplacementWrapperRequired(false);
+			runtimeMessages.setVisible(false);
+			
 			messageDisplayCtrl = new AssessmentMessageDisplayController(ureq, getWindowControl(), mainForm, entry, subIdent);
 			listenTo(messageDisplayCtrl);
 			formLayout.add("assessmentMessages", messageDisplayCtrl.getInitialFormItem());
@@ -2359,6 +2381,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		protected boolean validatePresentedItem(TestPlanNodeKey nodeKey) {
 			return qtiEl.validateRequest(nodeKey);
+		}
+		
+		protected void setRuntimeMessages(String message) {
+			qtiWorksCtrl.runtimeMessages.setVisible(true);	
+			qtiWorksCtrl.runtimeMessages.setValue(message);
 		}
 
 		@Override

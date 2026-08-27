@@ -30,6 +30,9 @@
 
 	$r.render("assessmentMessages")
 	$r.render("timer")
+	<div id="o_qti_run_messages">
+		$r.render("runtimeMessages")
+	</div>
 
 	#if (!$qtiWorksStatus.isSurvey() && (($displayScoreProgress && $qtiWorksStatus.hasMaxScore()) || $displayQuestionProgress) && !$r.visible("qtiResults"))
 	<div id="o_qti_run_infos" class="clearfix">
