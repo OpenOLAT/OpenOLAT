@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.gta.ui.AVDoneEvent;
 import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoCommentType;
@@ -313,7 +314,12 @@ public class CommentsHeaderController extends FormBasicController {
 			cleanUp();
 		} else if (recordCommentController == source) {
 			if (event instanceof AVDoneEvent avDoneEvent) {
-				doAddFile(ureq, avDoneEvent.getRecording().getName(), true);
+				VFSLeaf recording = avDoneEvent.getRecording();
+				if (recording != null && recording.exists()) {
+					doAddFile(ureq, recording.getName(), true);
+				} else {
+					showError("error.recording.failed");
+				}
 			}
 			cmc.deactivate();
 			cleanUp();
