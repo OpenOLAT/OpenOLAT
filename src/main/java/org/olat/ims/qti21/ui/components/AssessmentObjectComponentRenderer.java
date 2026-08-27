@@ -1389,6 +1389,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			  .append("  dispId:'").append(component.getQtiItem().getFormDispatchId()).append("',\n")
 			  .append("  eventIdField:'").append(form.getEventFieldId()).append("',\n")
 			  .append("  csrf:'").append(renderer.getRenderer().getCsrfToken()).append("',\n")
+			  .append("  errorMessage:'").append(translator.translate("errot.not.saved")).append("'\n")
 			  .append(" })");
 			if(copyPasteDisabled && !richText) {
 				String errorHeader = translator.translate("essay.copypaste.disabled.header");
