@@ -54,6 +54,7 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 	private Long courseRepoKey;
 	private CertificateLight certificate;
 	private Double completion;
+	private boolean courseExists;
 	
 	private TaxonomyLevel taxonomyLevel;
 	private CurriculumElement parentElement;	// Only used for taxonomy elements
@@ -284,6 +285,14 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 		this.courseRepoKey = courseRepoKey;
 	}
 	
+	public boolean isCourseExists() {
+		return courseExists;
+	}
+
+	public void setCourseExists(boolean courseExists) {
+		this.courseExists = courseExists;
+	}
+
 	public void setIsCurriculumElement(boolean isCurriculumElement) {
 		this.isCurriculumElement = isCurriculumElement;
 	}

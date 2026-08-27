@@ -553,6 +553,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				statementRow.setLastUserModified(efficiencyStatement.getLastUserModified());
 				statementRow.setCourseRepoKey(efficiencyStatement.getCourseRepoKey());
 				statementRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getResourceKey()));
+				boolean courseExists = isCourseExists(efficiencyStatement.getCourseRepoKey(), courseEntryKeyToDisplayName);
+				statementRow.setCourseExists(courseExists);
 				
 				statementRow.setStatement(true);
 				
@@ -567,6 +569,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				parentRow.setLastUserModified(efficiencyStatement.getLastUserModified());
 				parentRow.setCourseRepoKey(efficiencyStatement.getCourseRepoKey());
 				parentRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getResourceKey()));
+				boolean courseExists = isCourseExists(efficiencyStatement.getCourseRepoKey(), courseEntryKeyToDisplayName);
+				parentRow.setCourseExists(courseExists);
 				
 				parentRow.setStatement(true);
 			}
@@ -582,6 +586,17 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			}
 		}
 		return title;
+	}
+	
+	private boolean isCourseExists(Long key, List<RepositoryEntryMyView> entries) {
+		if(key != null && entries != null && !entries.isEmpty()) {
+			for(RepositoryEntryMyView entry:entries) {
+				if(entry.getKey().equals(key)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	private CertificateAndEfficiencyStatementRow forgeRow(CurriculumElement curriculumElement) {
@@ -623,7 +638,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					efficiencyStatement.getTitle());
 			wrapper.setDisplayName(title);
 			wrapper.setPassed(efficiencyStatement.getPassed());
-			Float flatScore = efficiencyStatement.getWeightedScore() != null ? efficiencyStatement.getWeightedScore() : efficiencyStatement.getScore();
+			Float flatScore = efficiencyStatement.getWeightedScore() != null
+					? efficiencyStatement.getWeightedScore()
+					: efficiencyStatement.getScore();
 			wrapper.setScore(flatScore);
 			wrapper.setGrade(GradeUIFactory.translatePerformanceClass(getTranslator(),
 					efficiencyStatement.getPerformanceClassIdent(), efficiencyStatement.getGrade(),
@@ -635,6 +652,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			Double completion = courseEntryKeysToCompletion.get(efficiencyStatement.getCourseRepoKey());
 			wrapper.setCompletion(completion);
 			wrapper.setStatement(true);
+			boolean courseExists = efficiencyStatement.getCourseRepoKey() != null
+					&& courseEntryKeyToDisplayName.containsKey(efficiencyStatement.getCourseRepoKey());
+			wrapper.setCourseExists(courseExists);
 			statments.add(wrapper);
 			
 			resourceKeyToStatments.put(efficiencyStatement.getResourceKey(), wrapper);
@@ -695,11 +715,20 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	}
 	
 	private void forgeToolsLinks(CertificateAndEfficiencyStatementRow row) {
-		if (row.isStatement() && (canLaunchCourse || canModify)) {
+		if (row.isStatement() && (canLaunch(row) || (canDelete(row)))) {
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}
+	}
+	
+	private boolean canLaunch(CertificateAndEfficiencyStatementRow row) {
+		return canLaunchCourse && row.isCourseExists();
+	}
+	
+	private boolean canDelete(CertificateAndEfficiencyStatementRow row) {
+		return canModify && (row.getResourceKey() == null || row.getResourceKey().longValue() <= 0l)
+				&& !CertificateManagedFlag.isManaged(row.getCertificate(), CertificateManagedFlag.delete);
 	}
 
 	@Override
@@ -923,14 +952,13 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			this.row = row;
 			
 			VelocityContainer toolsContainer = createVelocityContainer("tools");	
-			if (canLaunchCourse && row.getResourceKey() != null && row.getResourceKey().longValue() > 0l) {
+			if (canLaunch(row)) {
 				startCourse = LinkFactory.createLink(CMD_LAUNCH_COURSE, getTranslator(), this);
 				startCourse.setIconLeftCSS("o_icon o_icon_fw o_course_icon");
 				toolsContainer.put("startCourse", startCourse);
 			}
 				
-			if (canModify && (row.getResourceKey() == null || row.getResourceKey().longValue() <= 0l)
-					&& !CertificateManagedFlag.isManaged(row.getCertificate(), CertificateManagedFlag.delete)) {
+			if (canDelete(row)) {
 				deleteStatement = LinkFactory.createLink(CMD_DELETE, getTranslator(), this);
 				deleteStatement.setIconLeftCSS("o_icon o_icon_fw o_icon_delete_item");
 				toolsContainer.put("deleteStatement", deleteStatement);
