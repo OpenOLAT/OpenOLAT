@@ -306,11 +306,11 @@ public class AiFeaturesTestController extends BasicController {
 			MCQuestionData q = response.getQuestions().get(0);
 			vc.contextPut("mcData", q);
 		} else {
-			String error = response.getError() != null ? response.getError() : "No questions generated.";
+			String error = response.getError() != null ? response.getError() : translate("ai.feature.mc.question.generator.test.error");
 			vc.contextPut("error", error);
 		}
 
-		showModal(vc, "MC Question Generator Test");
+		showModal(vc, translate("ai.feature.mc.question.generator.test.title"));
 	}
 
 	public void testImgDescGenerator(String spiId, String modelName) {
@@ -324,11 +324,11 @@ public class AiFeaturesTestController extends BasicController {
 			ImageDescriptionData data = response.getDescription();
 			vc.contextPut("imgData", data);
 		} else {
-			String error = response.getError() != null ? response.getError() : "No description generated.";
+			String error = response.getError() != null ? response.getError() : translate("ai.feature.image.description.generator.test.error");
 			vc.contextPut("error", error);
 		}
 
-		showModal(vc, "Image Description Generator Test");
+		showModal(vc, translate("ai.feature.image.description.generator.test.title"));
 	}
 
 	public void testEssayGeneration(UserRequest ureq, String spiId, String modelName) {
