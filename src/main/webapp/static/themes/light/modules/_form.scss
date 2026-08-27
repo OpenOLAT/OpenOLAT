@@ -1473,7 +1473,13 @@ dialog {
 	&.o_selection_display {
 		display: flex;
 		gap: 5px;
+		/* The element is a .btn-default but has to read as a form field, so it
+		   takes both the border and the background from the input palette. Without
+		   the background it falls back to $btn-default-bg, which is #fff in the
+		   light theme but darker in a theme with coloured buttons, and the field
+		   then looks disabled. */
 		border-color: $input-border;
+		background-color: $input-bg;
 		.o_icon {
 			margin: auto 0 auto auto;
 		}
