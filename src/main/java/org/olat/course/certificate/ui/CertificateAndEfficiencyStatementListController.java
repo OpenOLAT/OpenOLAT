@@ -152,7 +152,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private ConfirmDeleteEfficiencyStatementController confirmDeleteCtr;
 	private CloseableCalloutWindowController calloutCtrl;
 	
-	private final boolean canModify;
+	private final boolean canDelete;
 	private final boolean linkToCoachingTool;
 	private final boolean canLaunchCourse;
 	private final Identity assessedIdentity;
@@ -189,10 +189,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	 * @param wControl The window control
 	 */
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, ureq.getUserSession().getIdentity(), false, true, true);
+		this(ureq, wControl, ureq.getUserSession().getIdentity(), false, false, true);
 	}
 	
-	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse) {
+	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity,
+			boolean linkToCoachingTool, boolean canDelete, boolean canLaunchCourse) {
 		super(ureq, wControl, "cert_statement_list");
 
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -201,7 +202,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
-		this.canModify = canModify;
+		this.canDelete = canDelete;
 		this.assessedIdentity = assessedIdentity;
 		this.linkToCoachingTool = linkToCoachingTool;
 		this.canLaunchCourse = canLaunchCourse;
@@ -314,7 +315,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			tableColumnModel.addFlexiColumnModel(portfolioColumn);
 		}
 		
-		if (canLaunchCourse || canModify) {
+		if (canLaunchCourse || canDelete) {
 			tableColumnModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 		}
 		
@@ -701,7 +702,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	}
 	
 	private void forgeToolsLinks(CertificateAndEfficiencyStatementRow row) {
-		if (row.isStatement() && (canLaunchCourse || canModify)) {
+		if (row.isStatement() && (canLaunchCourse || canDelete)) {
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
@@ -933,7 +934,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				toolsContainer.put("startCourse", startCourse);
 			}
 				
-			if (canModify && !CertificateManagedFlag.isManaged(row.getCertificate(), CertificateManagedFlag.delete)) {
+			if (canDelete && !CertificateManagedFlag.isManaged(row.getCertificate(), CertificateManagedFlag.delete)) {
 				deleteStatement = LinkFactory.createLink(CMD_DELETE, getTranslator(), this);
 				deleteStatement.setIconLeftCSS("o_icon o_icon_fw o_icon_delete_item");
 				toolsContainer.put("deleteStatement", deleteStatement);
