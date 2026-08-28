@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
@@ -56,6 +57,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +91,8 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 	private CurriculumService curriculumService;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
+	@Autowired
+	private ACService acService;
 	
 	public RepositoryEntryDetailsTechnicalController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean isOwner) {
 		super(ureq, wControl, "details_technical", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
@@ -114,6 +118,13 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 				String technicalType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(entry.getTechnicalType()), getLocale());
 				layoutCont.contextPut("technicalType", technicalType);
 			}
+			
+			// External link
+			String extLink = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+			layoutCont.contextPut("extLink", extLink);
+			// Guest access uses the same URL with a guest parameter appended
+			boolean guestAllowed = entry.isPublicVisible() && acService.isGuestAccessible(entry, false);
+			layoutCont.contextPut("isGuestAllowed", Boolean.valueOf(guestAllowed));
 			
 			// Owners
 			List<Long> authorKeys = repositoryService.getMemberKeys(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
