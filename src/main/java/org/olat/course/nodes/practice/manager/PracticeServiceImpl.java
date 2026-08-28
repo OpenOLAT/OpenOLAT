@@ -607,7 +607,7 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 			
 			if(!identifiers.contains(identifier) && assessmentItem != null
 					&& isAssessmentItemAllowed(item, assessmentItem)
-					&& SearchPracticeItemHelper.accept(item, searchParams, locale)) {
+					&& SearchPracticeItemHelper.accept(item, searchParams)) {
 
 				String displayName = item.getTitle();
 				if(displayName == null) {
