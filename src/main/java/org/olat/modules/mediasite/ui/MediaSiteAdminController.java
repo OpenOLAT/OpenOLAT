@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.StringHelper;
@@ -289,6 +290,7 @@ public class MediaSiteAdminController extends FormBasicController {
 			updateUi();
 		} else if (source == ltiVersionEl) {
 			updateUi();
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
 	
@@ -338,6 +340,10 @@ public class MediaSiteAdminController extends FormBasicController {
 		supressDataTransmissionEl.select("on", mediaSiteModule.isSupressDataTransmissionAgreement());
 	}
 	
+	public LtiVersion getSelectedLtiVersion() {
+		return LtiVersion.valueOf(ltiVersionEl.getSelectedKey());
+	}
+
 	public void loadFromCourseNodeConfig(ModuleConfiguration config) {
 		lti13ClientIdEl.setValue("");
 		lti13InitiateLoginUrlEl.setValue("");

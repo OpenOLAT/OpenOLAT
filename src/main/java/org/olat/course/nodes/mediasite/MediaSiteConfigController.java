@@ -19,6 +19,10 @@
  */
 package org.olat.course.nodes.mediasite;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -35,15 +39,24 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.MediaSiteCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.ims.lti13.LTI13ContentItem;
+import org.olat.ims.lti13.LTI13Context;
+import org.olat.ims.lti13.LTI13Service;
+import org.olat.ims.lti13.LTI13Tool;
+import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.ui.LTI13ChooseResourceController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.mediasite.LtiVersion;
 import org.olat.modules.mediasite.MediaSiteManager;
 import org.olat.modules.mediasite.MediaSiteModule;
 import org.olat.modules.mediasite.ui.MediaSiteAdminController;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,15 +79,22 @@ public class MediaSiteConfigController extends FormBasicController {
 	private TextElement presentationUrlElement;
 	private FormLink previewLink;
 	private FormLink openMyMediaSiteLink;
+	private FormLink chooseContentLink;
 	
 	private MediaSiteAdminController localConfigurationCtrl;
 	private LayoutMain3ColsPreviewController previewLayoutCtr;
+	private LTI13ChooseResourceController chooseResourceCtrl;
+	private CloseableModalController cmc;
+	private LTI13Context activeLtiContext;
 	
 	@Autowired
 	private MediaSiteModule mediaSiteModule;
 	@Autowired
 	private MediaSiteManager mediaSiteManager;
+	@Autowired
+	private LTI13Service lti13Service;
 	
+	// Main 'MediaSite configuration' tab controller for MediaSite course editor
 	public MediaSiteConfigController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, MediaSiteCourseNode courseNode, ICourse course, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		
@@ -127,6 +147,8 @@ public class MediaSiteConfigController extends FormBasicController {
 		mediaButtonLayout.setRootForm(mainForm);
 		presentationLayout.add(mediaButtonLayout);
 		
+		chooseContentLink = uifactory.addFormLink("choose.content", mediaButtonLayout, Link.BUTTON);
+		chooseContentLink.setVisible(false);
 		previewLink = uifactory.addFormLink("preview.content", mediaButtonLayout, Link.BUTTON);
 		openMyMediaSiteLink = uifactory.addFormLink("open.my.media.site", mediaButtonLayout, Link.BUTTON);
 		
@@ -149,6 +171,7 @@ public class MediaSiteConfigController extends FormBasicController {
 			serverSelection.select(globalConfig, true);
 		} else {
 			localConfigurationCtrl = new MediaSiteAdminController(ureq, getWindowControl(), mainForm);
+			listenTo(localConfigurationCtrl);
 			localConfigurationCtrl.loadFromCourseNodeConfig(config);
 			localConfigurationContainer.add("serverForm", localConfigurationCtrl.getInitialFormItem());
 			
@@ -156,6 +179,7 @@ public class MediaSiteConfigController extends FormBasicController {
 			serverSelection.select(localConfig, true);
 		}  
 		presentationUrlElement.setValue(config.getStringValue(MediaSiteCourseNode.CONFIG_ELEMENT_ID));
+		updateContentSelectionUi();
 	}
 	
 	@Override
@@ -218,18 +242,22 @@ public class MediaSiteConfigController extends FormBasicController {
 		} else if (source == serverSelection) {
 			if (serverSelection.getSelectedKey().equals(localConfig)) {
 				localConfigurationCtrl = new MediaSiteAdminController(ureq, getWindowControl(), mainForm);
+				listenTo(localConfigurationCtrl);
 				localConfigurationContainer.add("serverForm", localConfigurationCtrl.getInitialFormItem());			
 				localConfigurationContainer.setVisible(true);
 				
 				localConfigurationCtrl.loadFromCourseNodeConfig(config);
 			} else {
 				removeAsListenerAndDispose(localConfigurationCtrl);
+				localConfigurationCtrl = null;
 				localConfigurationContainer.remove("serverForm");
 				localConfigurationContainer.setVisible(false);
 			}
-			
+			updateContentSelectionUi();
 		} else if (source == presentationUrlElement) {
 			presentationUrlElement.setValue(mediaSiteManager.parseAlias(presentationUrlElement.getValue()));
+		} else if (source == chooseContentLink) {
+			doChooseContent(ureq);
 		}
 		
 		super.formInnerEvent(ureq, source, event);
@@ -239,12 +267,100 @@ public class MediaSiteConfigController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == previewLayoutCtr) {
 			removeAsListenerAndDispose(previewLayoutCtr);
+		} else if (source == chooseResourceCtrl) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				doApplySelectedContentItem();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == cmc) {
+			cleanUp();
+		} else if (source == localConfigurationCtrl) {
+			if (event == Event.CHANGED_EVENT) {
+				updateContentSelectionUi();
+			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(chooseResourceCtrl);
+		removeAsListenerAndDispose(cmc);
+		chooseResourceCtrl = null;
+		cmc = null;
+		activeLtiContext = null;
 	}
 	
 	protected ModuleConfiguration getUpdatedConfig() {
 		return config;
+	}
+
+	private void updateContentSelectionUi() {
+		chooseContentLink.setVisible(getEffectiveLti13Deployment() != null);
+	}
+
+	/**
+	 * @return the LTI 1.3 tool deployment currently applicable (global or local server,
+	 *         whichever the form is presently set to), or null if none is available yet
+	 *         (e.g. LTI 1.1, or a local LTI 1.3 setup that has not been saved once).
+	 */
+	private LTI13ToolDeployment getEffectiveLti13Deployment() {
+		LTI13Tool tool;
+		if (serverSelection.getSelectedKey().equals(globalConfig)) {
+			if (mediaSiteModule.getLtiVersion() != LtiVersion.lti_1_3 || mediaSiteModule.getLti13ToolKey() == null) {
+				return null;
+			}
+			tool = lti13Service.getToolByKey(mediaSiteModule.getLti13ToolKey());
+		} else {
+			if (localConfigurationCtrl == null || localConfigurationCtrl.getSelectedLtiVersion() != LtiVersion.lti_1_3) {
+				return null;
+			}
+			String courseToolKeyStr = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_TOOL_KEY);
+			if (!StringHelper.containsNonWhitespace(courseToolKeyStr)) {
+				return null;
+			}
+			tool = lti13Service.getToolByKey(Long.valueOf(courseToolKeyStr));
+		}
+		if (tool == null) {
+			return null;
+		}
+		List<LTI13ToolDeployment> deployments = lti13Service.getToolDeploymentByTool(tool);
+		return deployments.isEmpty() ? null : deployments.get(0);
+	}
+
+	private void doChooseContent(UserRequest ureq) {
+		LTI13ToolDeployment deployment = getEffectiveLti13Deployment();
+		if (deployment == null) {
+			return;
+		}
+
+		RepositoryEntry courseEntry = editCourseEnv.getCourseGroupManager().getCourseEntry();
+		String subIdent = courseNode.getIdent();
+		activeLtiContext = lti13Service.getContext(courseEntry, subIdent);
+		if (activeLtiContext == null) {
+			activeLtiContext = mediaSiteManager.createLti13Context("", deployment, courseEntry, subIdent, null);
+		}
+
+		chooseResourceCtrl = new LTI13ChooseResourceController(ureq, getWindowControl(), activeLtiContext, -1);
+		listenTo(chooseResourceCtrl);
+
+		String title = translate("choose.content");
+		cmc = new CloseableModalController(getWindowControl(), "close", chooseResourceCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doApplySelectedContentItem() {
+		List<LTI13ContentItem> items = new ArrayList<>(lti13Service.getContentItems(activeLtiContext));
+		if (items.isEmpty()) {
+			return;
+		}
+		items.sort(Comparator.comparing(LTI13ContentItem::getCreationDate));
+		LTI13ContentItem selected = items.remove(items.size() - 1);
+		items.forEach(lti13Service::deleteContentItem);
+
+		presentationUrlElement.setValue(mediaSiteManager.parseAlias(selected.getUrl()));
+		presentationUrlElement.getComponent().setDirty(true);
 	}
 
 }
