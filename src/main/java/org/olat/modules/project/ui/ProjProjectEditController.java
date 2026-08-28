@@ -189,11 +189,12 @@ public class ProjProjectEditController extends FormBasicController {
 		
 		if (organisationModule.isEnabled()) {
 			if (template) {
+				boolean templateManager = !getManagerOrganisations(ureq).isEmpty();
 				SelectionValues templateSV = new SelectionValues();
 				templateSV.add(SelectionValues.entry(TEMPLATE_KEY, translate("project.template.private")));
 				templateSV.add(SelectionValues.entry(TEMPLATE_PUBLIC_KEY, translate("project.template.public")));
 				templateEl = uifactory.addRadiosHorizontal("project.template.visibility", formLayout, templateSV.keys(), templateSV.values());
-				templateEl.setEnabled(!readOnly);
+				templateEl.setEnabled(!readOnly && templateManager);
 				templateEl.addActionListener(FormEvent.ONCHANGE);
 				if (initialProject != null) {
 					templateEl.select(TEMPLATE_KEY, initialProject.isTemplatePrivate());
@@ -202,6 +203,7 @@ public class ProjProjectEditController extends FormBasicController {
 				if (!templateEl.isOneSelected()) {
 					templateEl.select(TEMPLATE_KEY, true);
 				}
+				templateEl.setVisible(templateManager || (initialProject != null && initialProject.isTemplatePublic()));
 				
 				templateOrgCont = FormLayoutContainer.createVerticalFormLayout("templateOrgCont", getTranslator());
 				templateOrgCont.setRootForm(mainForm);
@@ -281,12 +283,7 @@ public class ProjProjectEditController extends FormBasicController {
 		updateOwnerUI();
 	}
 
-	private void initTemplateOrganisations(UserRequest ureq) {
-		if (templateOrgCont == null) return;
-		
-		boolean manager = true;
-		
-		// If the doer has a manager organisation, use it...
+	private List<Organisation> getManagerOrganisations(UserRequest ureq) {
 		OrganisationRoles[] orgRoles;
 		Set<OrganisationRoles> createRoles = projectModule.getCreateRoles();
 		if (!createRoles.isEmpty()) {
@@ -296,7 +293,16 @@ public class ProjProjectEditController extends FormBasicController {
 		} else {
 			orgRoles = ROLES_PROJECT_MANAGER;
 		}
-		List<Organisation> templateOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(), orgRoles);
+		return organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(), orgRoles);
+	}
+
+	private void initTemplateOrganisations(UserRequest ureq) {
+		if (templateOrgCont == null) return;
+		
+		boolean manager = true;
+		
+		// If the doer has a manager organisation, use it...
+		List<Organisation> templateOrganisations = getManagerOrganisations(ureq);
 		
 		// ... if not, use his user organisation and disable the organisation to change
 		if (templateOrganisations.isEmpty()) {
@@ -341,16 +347,7 @@ public class ProjProjectEditController extends FormBasicController {
 		boolean manager = true;
 		
 		// If the doer has a manager organisation, use it...
-		OrganisationRoles[] orgRoles;
-		Set<OrganisationRoles> createRoles = projectModule.getCreateRoles();
-		if (!createRoles.isEmpty()) {
-			Set<OrganisationRoles> allRoles = new HashSet<>(createRoles);
-			allRoles.addAll(Arrays.asList(ROLES_PROJECT_MANAGER));
-			orgRoles = allRoles.stream().toArray(OrganisationRoles[]::new);
-		} else {
-			orgRoles = ROLES_PROJECT_MANAGER;
-		}
-		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(), orgRoles);
+		List<Organisation> organisations = getManagerOrganisations(ureq);
 		
 		// ... if not, use his user organisation and disable the organisation to change
 		if (organisations.isEmpty()) {
