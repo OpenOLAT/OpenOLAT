@@ -177,10 +177,14 @@ a.input-group-addon {
 .input-group:has(> a.input-group-addon:first-child) .form-control {
 	border-left-color: $btn-default-border;
 }
-/* Text field next to a button/link addon gets the button default background, even when disabled */
+/* Text field next to a button/link addon keeps the input background, also when
+   disabled, so the field never looks greyed out. This must be $input-bg and not
+   $btn-default-bg: both are #fff in the light theme, so the two are
+   indistinguishable here, but a theme that styles default buttons darker turned
+   the whole text field into the button colour. */
 .input-group:has(> .btn.input-group-addon) .form-control,
 .input-group:has(> a.input-group-addon) .form-control {
-	background-color: $btn-default-bg;
+	background-color: $input-bg;
 }
 
 
