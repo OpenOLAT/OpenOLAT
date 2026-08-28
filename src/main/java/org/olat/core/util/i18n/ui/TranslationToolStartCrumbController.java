@@ -439,19 +439,13 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		int bundlesCount = i18nManager.countBundles(null, true);
 		progressBar.setUnitLabel(translate("start.customize.progressBar.unitLabel", bundlesCount + ""));
 		missingTranslateButton.setI18nKey("generic.customize.translateButton");
+		existingTranslateButton.setI18nKey("generic.customize.translateButton");
 		allTranslateButton.setI18nKey("generic.customize.translateButton");
 		searchTranslateButton.setI18nKey("generic.customize.translateButton");
 		
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seeorg.olat.core.gui.components.form.flexible.impl.FormBasicController#
-	 * formInnerEvent(org.olat.core.gui.UserRequest,
-	 * org.olat.core.gui.components.form.flexible.FormItem,
-	 * org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == targetLangSelection) {
 			String langKey = targetLangSelection.getSelectedKey();
@@ -641,13 +635,6 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest
-	 * , org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (event instanceof I18nItemChangedEvent) {
@@ -712,24 +699,12 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		return ArrayHelper.toArray(bundlesListValues);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK
-	 * (org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 	// nothing to do
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seeorg.olat.core.gui.control.generic.breadcrumb.CrumbController#
-	 * getCrumbLinkHooverText()
-	 */
+	@Override
 	public String getCrumbLinkHooverText() {
 		return translate("start.crumb.hoover");
 	}
