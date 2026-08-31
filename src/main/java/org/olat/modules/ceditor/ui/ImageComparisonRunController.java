@@ -168,7 +168,8 @@ public class ImageComparisonRunController extends BasicController implements Pag
 		if (relation.getMediaVersion() != null) {
 			return relation.getMediaVersion();
 		}
-		return relation.getMedia().getVersions().get(0);
+		List<MediaVersion> versions = relation.getMedia().getVersions();
+		return versions != null && !versions.isEmpty() ? versions.get(0) : null;
 	}
 
 	@Override
