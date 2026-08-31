@@ -253,4 +253,67 @@ public class MediaToPagePartDAOTest extends OlatTestCase {
 		Assert.assertTrue(relations.contains(relation2));
 		Assert.assertNotEquals(relation1, relation2);
 	}
+
+	/**
+	 * Regression test for the OO-9264 upgrade migration:
+	 * the query must find relations whose media has a version to backfill, must NOT return relations
+	 * that already have a media version, and must keep making forward progress (via the key cursor)
+	 * even when a relation can never be fixed because its media has no version at all - otherwise
+	 * the migration's batch loop would never terminate.
+	 */
+	@Test
+	public void testLoadRelationsWithoutMediaVersion() {
+		// Arrange
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-1");
+		Media fixableMedia = mediaDao.createMediaAndVersion("Fixable", "", null,
+				"Fixable content", "Image", "[Media:1]", null, 0, id);
+		Media unfixableMedia = mediaDao.createMedia("Unfixable", "", null, null, "Image", "[Media:2]", null, 0, id);
+		Media alreadySetMedia = mediaDao.createMediaAndVersion("Already set", "", null,
+				"Already set content", "Image", "[Media:3]", null, 0, id);
+
+		PageBody page1Body = createBodyWithGalleryPart("Page 1", "");
+		PageBody page2Body = createBodyWithGalleryPart("Page 2", "");
+		PageBody page3Body = createBodyWithGalleryPart("Page 3", "");
+
+		GalleryPart galleryPart1 = (GalleryPart) pageDao.loadPart(page1Body.getParts().get(0));
+		MediaToPagePart fixableRelation = mediaToPagePartDao.persistRelation(galleryPart1, fixableMedia).getRelations().get(0);
+		dbInstance.commitAndCloseSession();
+
+		GalleryPart galleryPart2 = (GalleryPart) pageDao.loadPart(page2Body.getParts().get(0));
+		MediaToPagePart unfixableRelation = mediaToPagePartDao.persistRelation(galleryPart2, unfixableMedia).getRelations().get(0);
+		dbInstance.commitAndCloseSession();
+
+		GalleryPart galleryPart3 = (GalleryPart) pageDao.loadPart(page3Body.getParts().get(0));
+		mediaToPagePartDao.persistRelation(galleryPart3, alreadySetMedia, alreadySetMedia.getVersions().get(0), id);
+		dbInstance.commitAndCloseSession();
+
+		// The DB is shared with other tests in this class (also using the null-mediaVersion
+		// convenience overload), so assert on presence of our own relations rather than exact
+		// page counts/sizes, which would be shared-fixture-dependent and brittle.
+
+		// Act: a page starting right before our own relations finds both, not the one already set
+		Long beforeOurs = Math.min(fixableRelation.getKey(), unfixableRelation.getKey()) - 1;
+		List<MediaToPagePart> firstPage = mediaToPagePartDao.loadRelationsWithoutMediaVersion(beforeOurs, 2);
+
+		// Assert
+		Assert.assertEquals(2, firstPage.size());
+		Assert.assertTrue(firstPage.stream().anyMatch(r -> r.getKey().equals(fixableRelation.getKey())));
+		Assert.assertTrue(firstPage.stream().anyMatch(r -> r.getKey().equals(unfixableRelation.getKey())));
+
+		// Simulate the migration fixing the fixable one and advancing its cursor past both keys
+		mediaToPagePartDao.updateMediaVersion(fixableRelation, fixableMedia.getVersions().get(0), null);
+		dbInstance.commitAndCloseSession();
+		Long lastKey = Math.max(fixableRelation.getKey(), unfixableRelation.getKey());
+
+		// Act: next page, using the cursor, must not repeat either of our own relations -
+		// especially not the unfixable one forever, which would make the migration loop infinitely
+		List<MediaToPagePart> secondPage = mediaToPagePartDao.loadRelationsWithoutMediaVersion(lastKey, 10);
+		Assert.assertTrue(secondPage.stream().noneMatch(r -> r.getKey().equals(fixableRelation.getKey())));
+		Assert.assertTrue(secondPage.stream().noneMatch(r -> r.getKey().equals(unfixableRelation.getKey())));
+
+		// But re-querying from before our relations still finds the permanently unfixable one, not the fixed one
+		List<MediaToPagePart> stillUnfixed = mediaToPagePartDao.loadRelationsWithoutMediaVersion(beforeOurs, 2);
+		Assert.assertTrue(stillUnfixed.stream().anyMatch(r -> r.getKey().equals(unfixableRelation.getKey())));
+		Assert.assertTrue(stillUnfixed.stream().noneMatch(r -> r.getKey().equals(fixableRelation.getKey())));
+	}
 }

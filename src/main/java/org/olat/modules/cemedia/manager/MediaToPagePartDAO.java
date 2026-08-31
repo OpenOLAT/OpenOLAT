@@ -197,6 +197,29 @@ public class MediaToPagePartDAO {
 		return dbInstance.getCurrentEntityManager().find(MediaToPagePartImpl.class, key);
 	}
 
+	/**
+	 * @param lastKey Only relations with a key strictly greater than this are returned.
+	 * @param maxResults The maximum number of relations to return.
+	 * @return Relations without a media version, ordered by key, starting after lastKey.
+	 */
+	public List<MediaToPagePart> loadRelationsWithoutMediaVersion(Long lastKey, int maxResults) {
+		QueryBuilder queryBuilder = new QueryBuilder();
+		queryBuilder
+				.append("select relation from mediatopagepart relation")
+				.append("  inner join fetch relation.media as media")
+				.where()
+				.append("  relation.mediaVersion is null")
+				.append("  and relation.key>:lastKey")
+				.append("  order by relation.key");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(queryBuilder.toString(), MediaToPagePart.class)
+				.setParameter("lastKey", lastKey)
+				.setFirstResult(0)
+				.setMaxResults(maxResults)
+				.getResultList();
+	}
+
 	public MediaToPagePart updateMediaVersion(MediaToPagePart relation, MediaVersion mediaVersion, Identity identity) {
 		MediaToPagePartImpl mediaToPagePart = (MediaToPagePartImpl) relation;
 		mediaToPagePart.setLastModified(new Date());
