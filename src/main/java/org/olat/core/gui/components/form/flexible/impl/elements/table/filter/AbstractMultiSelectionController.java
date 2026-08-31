@@ -26,14 +26,14 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.components.util.SelectionValuesSupplier;
@@ -51,10 +51,8 @@ import org.olat.core.util.Util;
  */
 public abstract class AbstractMultiSelectionController extends FlexiFilterExtendedController {
 
-	private TextElement quickSearchEl;
-	private FormLink quickSearchButton;
-	private FormLink resetQuickSearchButton;
-	
+	private SearchElement searchEl;
+
 	private MultipleSelectionElement listEl;
 	
 	private final Collection<String> preselectedKeys;
@@ -78,20 +76,8 @@ public abstract class AbstractMultiSelectionController extends FlexiFilterExtend
 		String[] keys = availableValues.keys();
 		
 		if(keys.length > 15) {
-			quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
-			quickSearchEl.setPlaceholderKey("enter.search.term", null);
-			quickSearchEl.setDomReplacementWrapperRequired(false);
-			quickSearchEl.addActionListener(FormEvent.ONKEYUP);
-			quickSearchEl.setFocus(true);
-			
-			quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-			quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
-			quickSearchButton.setDomReplacementWrapperRequired(false);
-			
-			resetQuickSearchButton = uifactory.addFormLink("resetQuickSearch", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
-			resetQuickSearchButton.setElementCssClass("btn o_reset_filter_search");
-			resetQuickSearchButton.setIconLeftCSS("o_icon o_icon_remove_filters");
-			resetQuickSearchButton.setDomReplacementWrapperRequired(false);
+			searchEl = uifactory.addSearchElement("quicksearch", SearchVariant.TYPEAHEAD, formLayout);
+			searchEl.setFocus(true);
 		}
 		
 		listEl = uifactory.addCheckboxesVertical("list", null, formLayout, keys, availableValues.values(), availableValues.icons(), 1);
@@ -114,19 +100,19 @@ public abstract class AbstractMultiSelectionController extends FlexiFilterExtend
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(listEl == source) {
 			doSelectItem(ureq);
-		} else if(quickSearchEl == source) {
-			doQuickSearch();
-		} else if(quickSearchButton == source) {
-			doQuickSearch();
-		} else if(resetQuickSearchButton == source) {
-			doResetQuickSearch();
+		} else if(searchEl == source && event instanceof SearchFormEvent sfe) {
+			if(SearchFormEvent.RESET.equals(sfe.getCommand())) {
+				doResetQuickSearch();
+			} else {
+				doQuickSearch();
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	@Override
 	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
-		if(source == listEl || source == quickSearchButton) {
+		if(source == listEl) {
 			super.propagateDirtinessToContainer(source, fe);
 		}
 	}
@@ -138,7 +124,7 @@ public abstract class AbstractMultiSelectionController extends FlexiFilterExtend
 	}
 	
 	private void doSelectItem(UserRequest ureq) {
-		if(quickSearchEl == null || !StringHelper.containsNonWhitespace(quickSearchEl.getValue())) {
+		if(searchEl == null || !StringHelper.containsNonWhitespace(searchEl.getValue())) {
 			selectedKeys.clear();
 		}
 		selectedKeys.addAll(listEl.getSelectedKeys());
@@ -156,26 +142,26 @@ public abstract class AbstractMultiSelectionController extends FlexiFilterExtend
 				listEl.select(selectedKey, true);
 			}
 		}
-		
-		if(quickSearchEl != null) {
-			quickSearchEl.setValue("");
+
+		if(searchEl != null) {
+			searchEl.setValue("");
 		}
+		listEl.getComponent().setDirty(true);
 	}
-	
+
 	@Override
 	public void doClear(UserRequest ureq) {
 		listEl.uncheckAll();
 		listEl.setKeysAndValues(availableValues.keys(), availableValues.values(), null, availableValues.icons());
 		selectedKeys.clear();
-		if(quickSearchEl != null) {
-			quickSearchEl.setValue("");
+		if(searchEl != null) {
+			searchEl.setValue("");
 		}
 		fireEvent(ureq, createChangedEvent(null));
 	}
-	
+
 	private void doQuickSearch() {
-		String searchText = quickSearchEl.getValue().toLowerCase();
-		quickSearchEl.getComponent().setDirty(false);
+		String searchText = searchEl.getValue().toLowerCase();
 
 		String[] keys = availableValues.keys();
 		String[] values = availableValues.values();

@@ -23,11 +23,11 @@ import org.olat.core.commons.services.folder.ui.event.FileBrowserSearchEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
@@ -39,8 +39,7 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class FileBrowserSearchController extends FormBasicController {
 	
-	private TextElement quickSearchEl;
-	private FormLink quickSearchButton;
+	private SearchElement searchEl;
 
 	protected FileBrowserSearchController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "browser_search");
@@ -50,21 +49,12 @@ public class FileBrowserSearchController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
-		quickSearchEl.setDomReplacementWrapperRequired(false);
-		quickSearchEl.setAriaLabel("enter.search.term");
-		
-		quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
-		quickSearchButton.setDomReplacementWrapperRequired(false);
-		quickSearchButton.setTitle(translate("search"));
+		searchEl = uifactory.addSearchElement("quicksearch", SearchVariant.DEFAULT, formLayout);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (quickSearchEl == source) {
-			doQuickSearch(ureq);
-		} else if (quickSearchButton == source) {
+		if (searchEl == source && event instanceof SearchFormEvent) {
 			doQuickSearch(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -76,27 +66,24 @@ public class FileBrowserSearchController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, new FileBrowserSearchEvent(quickSearchEl.getValue()));
+		fireEvent(ureq, new FileBrowserSearchEvent(searchEl.getValue()));
 	}
 
 	public void setVisible(boolean isVisible) {
-		quickSearchEl.setVisible(isVisible);
-		quickSearchButton.setVisible(isVisible);
+		searchEl.setVisible(isVisible);
 		flc.setDirty(true);
 	}
 
 	public void enable(String placeholder) {
-		quickSearchEl.setPlaceholderText(placeholder);
-		quickSearchEl.setAriaLabel(placeholder);
-		quickSearchEl.setEnabled(true);
-		quickSearchButton.setEnabled(true);
+		searchEl.setPlaceholderText(placeholder);
+		searchEl.setAriaLabel(placeholder);
+		searchEl.setEnabled(true);
 	}
 
 	public void disable() {
-		quickSearchEl.setPlaceholderText(translate("search.not.available"));
-		quickSearchEl.setAriaLabel(translate("search.not.available"));
-		quickSearchEl.setEnabled(false);
-		quickSearchButton.setEnabled(false);
+		searchEl.setPlaceholderText(translate("search.not.available"));
+		searchEl.setAriaLabel(translate("search.not.available"));
+		searchEl.setEnabled(false);
 	}
 
 }

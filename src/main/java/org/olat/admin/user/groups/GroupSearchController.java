@@ -36,12 +36,13 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CssCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -82,17 +83,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GroupSearchController extends StepFormBasicController {
 
-	private TextElement search;
-	private FormSubmit searchButton;
+	private SearchElement searchEl;
 	private FormLink saveLink;
-	private FormLink searchLink;
 	private FormItem errorComp;
 	private FlexiTableElement table;
 	private FormLayoutContainer tableCont;
 	private GroupTableDataModel tableDataModel;
 	
 	private String infoMessage;
-	private String lastSearchValue;
 	private GroupChanges groupChanges;
 	private final Collator collator;
 	
@@ -133,15 +131,8 @@ public class GroupSearchController extends StepFormBasicController {
 		
 		formLayout.setElementCssClass("o_sel_groups_search");
 
-		search = uifactory.addTextElement("search.field", "search.field", 100, "", formLayout);
-		
-		if (isUsedInStepWizzard()) {
-			searchLink = uifactory.addFormLink("search", formLayout, Link.BUTTON);
-		} else {
-			searchButton = uifactory.addFormSubmitButton("search", formLayout);
-			uifactory.addSpacerElement("space", formLayout, false);
-		}
-		
+		searchEl = uifactory.addSearchElement("quicksearch", SearchVariant.DEFAULT, formLayout);
+
 		errorComp = uifactory.addErrorText("error", "", formLayout);
 
 		tableCont = FormLayoutContainer.createCustomFormLayout("", getTranslator(), velocity_root + "/resulttable.html");
@@ -189,7 +180,7 @@ public class GroupSearchController extends StepFormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == searchButton || source == searchLink || source == search) {
+		if (searchEl == source && event instanceof SearchFormEvent) {
 			doSearchGroups();
 		} else if(source == saveLink) {
 			if(validateFormLogic(ureq)) {
@@ -201,9 +192,7 @@ public class GroupSearchController extends StepFormBasicController {
 	}
 	
 	private void doSearchGroups() {
-		String searchValue = search.getValue();
-		doSearchGroups(searchValue);
-		lastSearchValue = searchValue;
+		doSearchGroups(searchEl.getValue());
 	}
 
 	/**
@@ -278,18 +267,8 @@ public class GroupSearchController extends StepFormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		String searchValue = search.getValue();
-
 		if (isUsedInStepWizzard()) {
 			return true;
-		}
-		if ((lastSearchValue == null && StringHelper.containsNonWhitespace(searchValue))
-				|| (lastSearchValue != null && !lastSearchValue.equals(searchValue))) {
-			// User pressed enter in input field to search for groups, no group
-			// selected yet. Just search for groups that matches for this input
-			doSearchGroups(searchValue);
-			lastSearchValue = searchValue;
-			return false;
 		}
 		errorComp.clearError();
 	

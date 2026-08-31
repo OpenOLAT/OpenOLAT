@@ -1,7 +1,7 @@
 <div class="o_block">
 #if($r.isNotNull($numOfItems) && $numOfItems > 0)
-	<div class="clearfix">
-		<div class="input-group o_tag_selection_search">$r.render("quicksearch")<div class="input-group-btn">$r.render("resetQuickSearch") $r.render("quickSearchButton")</div></div>
+	<div class="clearfix o_tag_selection_search">
+		$r.render("quicksearch")
 	</div>
 	<div class="clearfix #if($r.isNotNull($numOfItems) && $numOfItems > 15) o_filter_search_list_values #end">
 	$r.render("tags","minimal")

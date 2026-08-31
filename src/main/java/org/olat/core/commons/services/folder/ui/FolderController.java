@@ -101,12 +101,14 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFil
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.DropFileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.UploadFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -227,8 +229,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private FormLink viewFileLink;
 	private FormLink trashLink;
 	private FormLink viewSearchLink;
-	private TextElement quickSearchEl;
-	private FormLink quickSearchButton;
+	private SearchElement searchEl;
 	private FileElement addFileEl;
 	private DropdownItem createDropdown;
 	private FormLink createFolderLink;
@@ -402,15 +403,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		viewSearchLink.setElementCssClass("o_folder_view_search");
 		viewSearchLink.setTitle(translate("view.search.title"));
 		
-		quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
-		quickSearchEl.setPlaceholderKey("enter.search.term", null);
-		quickSearchEl.setDomReplacementWrapperRequired(false);
-		quickSearchEl.setAriaLabel("enter.search.term");
-		
-		quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
-		quickSearchButton.setDomReplacementWrapperRequired(false);
-		quickSearchButton.setTitle(translate("search"));
+		searchEl = uifactory.addSearchElement("quicksearch", SearchVariant.DEFAULT, formLayout);
 		
 		addFileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "add", null, formLayout);
 		addFileEl.addActionListener(FormEvent.ONCHANGE);// Needed for selenium tests
@@ -496,8 +489,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		trashLink.setVisible(canViewTrash());
 		boolean canSearch = canSearch();
 		viewSearchLink.setVisible(canSearch);
-		quickSearchEl.setVisible(canSearch);
-		quickSearchButton.setVisible(canSearch);
+		searchEl.setVisible(canSearch);
 		
 		boolean canEditCurrentContainer = VFSStatus.YES == currentContainer.canWrite();
 		addFileEl.setVisible(canEditCurrentContainer);
@@ -634,9 +626,9 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		flc.contextPut("searchView", FolderView.search == folderView);
 		if (FolderView.search == folderView) {
-			quickSearchEl.setFocus(true);
+			searchEl.setFocus(true);
 		} else {
-			quickSearchEl.setValue(null);
+			searchEl.setValue(null);
 		}
 	}
 
@@ -1280,7 +1272,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		if (FolderView.search == folderView) {
-			String searchValue = quickSearchEl.getValue();
+			String searchValue = searchEl.getValue();
 			if (StringHelper.containsNonWhitespace(searchValue)) {
 				List<String> searchValues = Arrays.stream(searchValue.toLowerCase().split(" ")).filter(StringHelper::containsNonWhitespace).toList();
 				rows.removeIf(row -> 
@@ -1451,9 +1443,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			doOpenView(ureq, FolderView.trash);
 		} else if (viewSearchLink == source) {
 			doOpenView(ureq, FolderView.search);
-		} else if (quickSearchEl == source) {
-			doQuickSearch(ureq);
-		} else if (quickSearchButton == source) {
+		} else if (searchEl == source && event instanceof SearchFormEvent) {
 			doQuickSearch(ureq);
 		} else if (addBrowserLink == source) {
 			doAddFromBrowser(ureq);

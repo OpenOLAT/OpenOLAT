@@ -44,10 +44,11 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -80,7 +81,7 @@ public class ImportExternalUserSearchController extends FormBasicController {
 	public static final int OFFSET_INDEX = 10000;
 	public static final String USER_PROPS = "org.olat.ldap.ui.ImportExternalUserSearchController";
 	
-	private TextElement emailEl;
+	private SearchElement searchEl;
 	private FormLink selectButton;
 	private FlexiTableElement tableEl;
 	private ImportExternalUserSearchDataModel dataModel;
@@ -163,13 +164,10 @@ public class ImportExternalUserSearchController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		emailEl = uifactory.addTextElement("email", "email", 255, "", formLayout);
-		emailEl.setDomReplacementWrapperRequired(false);
-		emailEl.setFocus(true);
-		emailEl.setVisible(withSearchField);
-		
-		FormSubmit searchButton = uifactory.addFormSubmitButton("search", "search", formLayout);
-		searchButton.setVisible(withSearchField);
+		searchEl = uifactory.addSearchElement("email", SearchVariant.DEFAULT, formLayout);
+		searchEl.setLabel("email", null);
+		searchEl.setFocus(true);
+		searchEl.setVisible(withSearchField);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImportCols.username));
@@ -207,38 +205,45 @@ public class ImportExternalUserSearchController extends FormBasicController {
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-		
-		emailEl.clearError();
-		if(emailEl.isVisible() && !StringHelper.containsNonWhitespace(emailEl.getValue())) {
-			emailEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
-		
-		return allOk;
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
 			if(event instanceof SelectionEvent se
 					&& "select".equals(se.getCommand())) {
 				Identity selectedIdentity = dataModel.getObject(se.getIndex()).getIdentity();
 				fireEvent(ureq, new SingleIdentityChosenEvent(selectedIdentity));
-			}	
+			}
 		} else if(selectButton == source) {
 			doMultiSelect(ureq);
+		} else if(searchEl == source && event instanceof SearchFormEvent sfe) {
+			if(SearchFormEvent.RESET.equals(sfe.getCommand())) {
+				doReset();
+			} else {
+				doSearchIfValid(ureq);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String searchString = emailEl.getValue();
+		doSearchIfValid(ureq);
+	}
+
+	private void doSearchIfValid(UserRequest ureq) {
+		searchEl.clearError();
+		String searchString = searchEl.getValue();
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			doSearch(ureq, searchString);
+		} else if(searchEl.isVisible()) {
+			searchEl.setErrorKey("form.legende.mandatory");
 		}
+	}
+
+	private void doReset() {
+		searchEl.clearError();
+		dataModel.setObjects(new ArrayList<>());
+		tableEl.reset(true, true, true);
+		selectButton.setVisible(false);
 	}
 	
 	private void doMultiSelect(UserRequest ureq) {

@@ -27,14 +27,14 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -60,10 +60,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjArtefactSelectionController extends FormBasicController {
 	
-	private TextElement quickSearchEl;
-	private FormLink quickSearchButton;
-	private FormLink resetQuickSearchButton;
-	
+	private SearchElement searchEl;
+
 	private FormLayoutContainer listsCont;
 	private MultipleSelectionElement fileEl;
 	private MultipleSelectionElement toDoEl;
@@ -178,19 +176,8 @@ public class ProjArtefactSelectionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
-		quickSearchEl.setDomReplacementWrapperRequired(false);
-		quickSearchEl.addActionListener(FormEvent.ONKEYUP);
-		
-		quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
-		quickSearchButton.setDomReplacementWrapperRequired(false);
-		
-		resetQuickSearchButton = uifactory.addFormLink("resetQuickSearch", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
-		resetQuickSearchButton.setElementCssClass("btn o_reset_filter_search");
-		resetQuickSearchButton.setIconLeftCSS("o_icon o_icon_remove_filters");
-		resetQuickSearchButton.setDomReplacementWrapperRequired(false);
-		
+		searchEl = uifactory.addSearchElement("quicksearch", SearchVariant.TYPEAHEAD, formLayout);
+
 		listsCont = FormLayoutContainer.createVerticalFormLayout("lists", getTranslator());
 		listsCont.setRootForm(mainForm);
 		formLayout.add("lists", listsCont);
@@ -241,13 +228,6 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	}
 	
 	@Override
-	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
-		if(source != quickSearchEl && source != quickSearchButton && source != resetQuickSearchButton) {
-			super.propagateDirtinessToContainer(source, fe);
-		}
-	}
-	
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (fileEl == source) {
 			doSelectItem(fileEl, fileSelectedKeys);
@@ -259,12 +239,12 @@ public class ProjArtefactSelectionController extends FormBasicController {
 			doSelectItem(noteEl, noteSelectedKeys);
 		} else if (appointmentEl == source) {
 			doSelectItem(appointmentEl, appointmentSelectedKeys);
-		} else if (quickSearchEl == source) {
-			doQuickSearch();
-		} else if (quickSearchButton == source) {
-			doQuickSearch();
-		} else if (resetQuickSearchButton == source) {
-			doResetQuickSearch();
+		} else if (searchEl == source && event instanceof SearchFormEvent sfe) {
+			if (SearchFormEvent.RESET.equals(sfe.getCommand())) {
+				doResetQuickSearch();
+			} else {
+				doQuickSearch();
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -287,16 +267,13 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	}
 	
 	private void doResetQuickSearch() {
-		if (quickSearchEl != null) {
-			quickSearchEl.setValue("");
-		}
+		searchEl.setValue("");
 		doQuickSearch();
 	}
-	
+
 	private void doQuickSearch() {
-		String searchText = quickSearchEl.getValue().toLowerCase();
-		quickSearchEl.getComponent().setDirty(false);
-		
+		String searchText = searchEl.getValue().toLowerCase();
+
 		doQuickSearch(fileEl, fileSV, fileSelectedKeys, searchText);
 		doQuickSearch(toDoEl, toDoSV, toDoSelectedKeys, searchText);
 		doQuickSearch(decisionEl, decisionSV, decisionSelectedKeys, searchText);

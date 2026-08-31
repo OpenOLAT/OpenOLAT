@@ -28,10 +28,12 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -61,7 +63,7 @@ public class SearchApplicationsController extends FormBasicController {
 	
 	private static final String SELECT_APP = "select-app";
 	
-	private TextElement searchTextEl;
+	private SearchElement searchEl;
 	private FlexiTableElement tableEl;
 	private ApplicationResultsDataModel resultsModel;
 	
@@ -92,7 +94,8 @@ public class SearchApplicationsController extends FormBasicController {
 		formLayout.add(searchFieldsLayout);
 		searchFieldsLayout.setRootForm(mainForm);
 		
-		searchTextEl = uifactory.addTextElement("search.text", "search.for", 255, "", searchFieldsLayout);
+		searchEl = uifactory.addSearchElement("search.text", SearchVariant.DEFAULT, searchFieldsLayout);
+		searchEl.setLabel("search.for", null);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ResultsField.firstName, SELECT_APP));
@@ -123,13 +126,19 @@ public class SearchApplicationsController extends FormBasicController {
 					fireEvent(ureq, new SelectApplicationEvent(app));
 				}
 			}
+		} else if(searchEl == source && event instanceof SearchFormEvent) {
+			doSearch(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String text = searchTextEl.getValue();
+		doSearch(ureq);
+	}
+
+	private void doSearch(UserRequest ureq) {
+		String text = searchEl.getValue();
 		Roles roles = ureq.getUserSession().getRoles();
 		List<Application> results = erFrontendManager.searchApplications(text, getIdentity(), roles, filters);
 		resultsModel.setObjects(results);

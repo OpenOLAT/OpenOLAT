@@ -3,10 +3,7 @@
 	#if($r.isNotEmpty($warningToken))
 	<div class="o_warning">$warningToken</div>
 	#end
-	<div class="input-group">
-		$r.render("email")
-		<span class="input-group-btn">$r.render("search")</span>
-	</div>
+	$r.render("email")
 #end
 #if($f.hasError("email"))
 	<div class="">

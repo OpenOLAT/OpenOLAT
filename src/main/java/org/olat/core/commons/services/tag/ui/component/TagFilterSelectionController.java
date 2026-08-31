@@ -33,10 +33,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.ChangeValueEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiFilterExtendedController;
@@ -58,9 +60,7 @@ public class TagFilterSelectionController extends FlexiFilterExtendedController 
 	private static final String CMD_TOGGLE = "toggle";
 
 	private final Comparator<TagItem> comparator;
-	private TextElement quickSearchEl;
-	private FormLink quickSearchButton;
-	private FormLink resetQuickSearchButton;
+	private SearchElement searchEl;
 	private FormLayoutContainer tagsCont;
 	
 	private final FlexiTableTagFilter filter;
@@ -95,19 +95,8 @@ public class TagFilterSelectionController extends FlexiFilterExtendedController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
-		quickSearchEl.setDomReplacementWrapperRequired(false);
-		quickSearchEl.addActionListener(FormEvent.ONKEYUP);
-		
-		quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
-		quickSearchButton.setDomReplacementWrapperRequired(false);
-		
-		resetQuickSearchButton = uifactory.addFormLink("resetQuickSearch", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
-		resetQuickSearchButton.setElementCssClass("btn o_reset_filter_search");
-		resetQuickSearchButton.setIconLeftCSS("o_icon o_icon_remove_filters");
-		resetQuickSearchButton.setDomReplacementWrapperRequired(false);
-		
+		searchEl = uifactory.addSearchElement("quicksearch", SearchVariant.TYPEAHEAD, formLayout);
+
 		((FormLayoutContainer)formLayout).contextPut("numOfItems", Long.valueOf(filter.getAllTags().size()));
 		
 		tagsCont = FormLayoutContainer.createCustomFormLayout("tags", getTranslator(), velocity_root + "/tag_selection_tags.html");
@@ -149,18 +138,13 @@ public class TagFilterSelectionController extends FlexiFilterExtendedController 
 	}
 	
 	@Override
-	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
-		if(source != quickSearchEl && source != quickSearchButton && source != resetQuickSearchButton) {
-			super.propagateDirtinessToContainer(source, fe);
-		}
-	}
-	
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (quickSearchEl == source) {
-			doQuickSearch();
-		} else if (resetQuickSearchButton == source) {
-			doResetQuickSearch();
+		if (searchEl == source && event instanceof SearchFormEvent sfe) {
+			if (SearchFormEvent.RESET.equals(sfe.getCommand())) {
+				doResetQuickSearch();
+			} else {
+				doQuickSearch();
+			}
 		} else if (source instanceof FormLink link) {
 			if (CMD_TOGGLE.equals(link.getCmd())) {
 				doToggleTag(ureq, link);
@@ -181,7 +165,7 @@ public class TagFilterSelectionController extends FlexiFilterExtendedController 
 	public void doClear(UserRequest ureq) {
 		selectedKeys.clear();
 		tagItems.forEach(item -> item.getLink().setVisible(true));
-		quickSearchEl.setValue("");
+		searchEl.setValue("");
 		fireEvent(ureq, new ChangeValueEvent(filter, null));
 	}
 	
@@ -209,9 +193,8 @@ public class TagFilterSelectionController extends FlexiFilterExtendedController 
 	}
 
 	private void doQuickSearch() {
-		String searchText = quickSearchEl.getValue().toLowerCase();
-		quickSearchEl.getComponent().setDirty(false);
-		
+		String searchText = searchEl.getValue().toLowerCase();
+
 		if (StringHelper.containsNonWhitespace(searchText)) {
 			tagItems.forEach(item -> item.getLink().setVisible(item.getDisplayValue().toLowerCase().contains(searchText)));
 		} else {
@@ -222,7 +205,7 @@ public class TagFilterSelectionController extends FlexiFilterExtendedController 
 	}
 
 	private void doResetQuickSearch() {
-		quickSearchEl.setValue("");
+		searchEl.setValue("");
 		doQuickSearch();
 	}
 	

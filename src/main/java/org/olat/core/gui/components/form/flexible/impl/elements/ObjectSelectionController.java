@@ -38,19 +38,18 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.util.StringHelper;
 
@@ -65,8 +64,7 @@ public class ObjectSelectionController extends FormBasicController {
 	
 	private static final int MORE_SIZE = 100;
 
-	private TextElement searchTermEl;
-	private FormLink searchResetLink;
+	private SearchElement searchEl;
 	private FormLink selectAllLink;
 	private FormLink selectionResetLink;
 	private FormExpandButton selectionsExpandButton;
@@ -95,20 +93,9 @@ public class ObjectSelectionController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		flc.contextPut("popupCssClass", StringHelper.containsNonWhitespace(popupCssClass) ? popupCssClass : "");
-		searchTermEl = uifactory.addTextElement("search.term", null, 100, "", formLayout);
-		searchTermEl.setDomReplacementWrapperRequired(false);
-		searchTermEl.setElementCssClass("o_search_term");
-		searchTermEl.setAriaLabel(translate("search.term.aria"));
-		searchTermEl.setAriaRole(TextElement.ARIA_ROLE_SEARCHBOX);
-		searchTermEl.setAutocomplete("off");
-		searchTermEl.addActionListener(FormEvent.ONKEYUP);
-		
-		searchResetLink = uifactory.addFormLink("search.reset", "", null, formLayout, Link.BUTTON_SMALL | Link.NONTRANSLATED);
-		searchResetLink.setDomReplacementWrapperRequired(true);
-		searchResetLink.setElementCssClass("o_reset_search");
-		searchResetLink.setTitle(translate("search.reset"));
-		searchResetLink.setIconLeftCSS("o_icon o_icon_remove_filters");
-		
+		searchEl = uifactory.addSearchElement("search.term", SearchVariant.TYPEAHEAD, formLayout);
+		searchEl.setAriaLabel(translate("search.term.aria"));
+
 		if (multiSelection) {
 			selectAllLink = uifactory.addFormLink("select.all", formLayout);
 			selectAllLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
@@ -179,9 +166,9 @@ public class ObjectSelectionController extends FormBasicController {
 
 		if (!bindings.isEmpty()) {
 			if (multiSelection) {
-				searchTermEl.setAriaControls(bindings.get(0).multiEl.getFormDispatchId());
+				searchEl.setAriaControls(bindings.get(0).multiEl.getFormDispatchId());
 			} else {
-				searchTermEl.setAriaControls(bindings.get(0).singleEl.getFormDispatchId());
+				searchEl.setAriaControls(bindings.get(0).singleEl.getFormDispatchId());
 			}
 		}
 
@@ -190,11 +177,9 @@ public class ObjectSelectionController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (searchTermEl == source) {
+		if (searchEl == source && event instanceof SearchFormEvent) {
 			bindings.forEach(b -> b.optionLimit = MORE_SIZE);
 			doSearch();
-		} else if (searchResetLink == source) {
-			doResetSearch();
 		} else if (selectAllLink == source) {
 			doSelectAll();
 			fireEvent(ureq, new SelectionEvent(selectedKeys));
@@ -237,9 +222,6 @@ public class ObjectSelectionController extends FormBasicController {
 
 	@Override
 	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
-		if (source == searchTermEl) {
-			return;
-		}
 		for (GroupBinding b : bindings) {
 			if (multiSelection && b.multiEl == source) return;
 			if (!multiSelection && b.singleEl == source) return;
@@ -248,7 +230,7 @@ public class ObjectSelectionController extends FormBasicController {
 	}
 
 	private void doSearch() {
-		String searchText = searchTermEl.getValue();
+		String searchText = searchEl.getValue();
 		
 		Predicate<? super ObjectOption> searchFilter;
 		if (StringHelper.containsNonWhitespace(searchText)) {
@@ -321,9 +303,7 @@ public class ObjectSelectionController extends FormBasicController {
 			}
 		}
 
-		searchTermEl.getComponent().setDirty(false);
 		nothingFoundEl.setValue(anyVisible ? "" : "<i>" + translate("options.nothing.found") + "</i>");
-		searchResetLink.setVisible(StringHelper.containsNonWhitespace(searchText));
 	}
 
 	private Predicate<? super ObjectOption> createSearchFilter(Set<String> searchTerms) {
@@ -373,12 +353,9 @@ public class ObjectSelectionController extends FormBasicController {
 	}
 	
 	private void doResetSearch() {
-		searchTermEl.setValue(null);
+		searchEl.setValue(null);
 		bindings.forEach(b -> b.optionLimit = MORE_SIZE);
 		doSearch();
-
-		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), searchTermEl.getForId());
-		mainForm.getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
 
 	private void doSelectAll() {

@@ -29,10 +29,12 @@ import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSe
 import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSelection.AutoCompletionSource.SearchResult;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -52,10 +54,8 @@ public class AutoCompletionController extends FormBasicController {
 	
 	private FormLink clearButton;
 	private FormLink updateButton;
-	private FormLink quickSearchButton;
-	private TextElement quickSearchEl;
-	private FormLink resetQuickSearchButton;
-	
+	private SearchElement searchEl;
+
 	private StaticTextElement selectionNoneEl;
 	private MultipleSelectionElement selectionEl;
 	private StaticTextElement resultsNoneEl;
@@ -77,24 +77,9 @@ public class AutoCompletionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		quickSearchButton.setElementCssClass("o_indicate_search");
-		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
-		quickSearchButton.setEnabled(false);
-		quickSearchButton.setDomReplacementWrapperRequired(false);
-		
-		quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
-		quickSearchEl.setFocus(true);
-		quickSearchEl.setElementCssClass("o_quick_search");
-		quickSearchEl.setDomReplacementWrapperRequired(false);
-		quickSearchEl.setPlaceholderText(searchPlaceholder);
-		quickSearchEl.addActionListener(FormEvent.ONKEYUP);
-		
-		resetQuickSearchButton = uifactory.addFormLink("resetQuickSearch", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		resetQuickSearchButton.setElementCssClass("o_reset_search");
-		resetQuickSearchButton.setIconLeftCSS("o_icon o_icon_remove_filters");
-		resetQuickSearchButton.setDomReplacementWrapperRequired(false);
-		
+		searchEl = uifactory.addSearchElement("quicksearch", SearchVariant.TYPEAHEAD, formLayout);
+		searchEl.setPlaceholderText(searchPlaceholder);
+
 		selectionEl = uifactory.addCheckboxesVertical("autocompletion.selection", formLayout, selectedValues.keys(),
 				selectedValues.values(), selectedValues.icons(), 1);
 		selectionEl.setEscapeHtml(false);
@@ -127,10 +112,12 @@ public class AutoCompletionController extends FormBasicController {
 			doClear(ureq);
 		} else if(updateButton == source) {
 			doUpdate(ureq);
-		} else if(quickSearchEl == source) {
-			doQuickSearch();
-		} else if(resetQuickSearchButton == source) {
-			doResetQuickSearch();
+		} else if(searchEl == source && event instanceof SearchFormEvent sfe) {
+			if(SearchFormEvent.RESET.equals(sfe.getCommand())) {
+				doResetQuickSearch();
+			} else {
+				doQuickSearch();
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -177,9 +164,8 @@ public class AutoCompletionController extends FormBasicController {
 		resultsNoneEl.setVisible(false);
 		resultsMoreEl.setVisible(false);
 		
-		String searchText = quickSearchEl.getValue().toLowerCase();
-		quickSearchEl.getComponent().setDirty(false);
-		
+		String searchText = searchEl.getValue().toLowerCase();
+
 		if (StringHelper.containsNonWhitespace(searchText)) {
 			SearchResult searchResult = source.getSearchResult(searchText);
 			if (searchResult.getCountCurrent() > 0) {
@@ -210,10 +196,12 @@ public class AutoCompletionController extends FormBasicController {
 	}
 	
 	private void doResetQuickSearch() {
-		quickSearchEl.setValue("");
 		resultsNoneEl.setVisible(false);
 		resultsEl.setVisible(false);
 		resultsMoreEl.setVisible(false);
+		resultsNoneEl.getComponent().setDirty(true);
+		resultsEl.getComponent().setDirty(true);
+		resultsMoreEl.getComponent().setDirty(true);
 	}
 	
 	public static class AutoCompletionSelectionEvent extends Event {
