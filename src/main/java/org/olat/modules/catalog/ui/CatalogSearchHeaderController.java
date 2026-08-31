@@ -25,10 +25,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -44,8 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogSearchHeaderController extends FormBasicController {
 	
-	private TextElement searchEl;
-	private FormLink searchLink;
+	private SearchElement searchEl;
 	private FormLink exploreLink;
 	
 	private final CatalogBCFactory bcFactory;
@@ -65,25 +65,9 @@ public class CatalogSearchHeaderController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer searchCont = FormLayoutContainer.createInputGroupLayout("searchWrapper", getTranslator(), null, null);
-		searchCont.contextPut("inputGroupSizeCss", "input-group-lg");
-		formLayout.add("searchWrapper", searchCont);
-		searchCont.setRootForm(mainForm);
-		
-		searchEl = uifactory.addTextElement("search", 100, null, searchCont);
-		searchEl.setPlaceholderText(translate("search.placeholder"));
-		searchEl.setAriaLabel("enter.search.term");
-		searchEl.setDomReplacementWrapperRequired(false);
-		searchEl.setFocus(true);
-		
-		searchLink = uifactory.addFormLink("rightAddOn", "", "", searchCont, Link.NONTRANSLATED);
-		searchLink.setElementCssClass("input-group-addon");
-		searchLink.setCustomEnabledLinkCSS("o_catalog_search_button o_undecorated");
-		searchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
-		String searchLabel = getTranslator().translate("search");
-		searchLink.setLinkTitle(searchLabel);
-		searchLink.setI18nKey(searchLabel);
-		
+		searchEl = uifactory.addSearchElement("searchWrapper", SearchVariant.LARGE, formLayout);
+		searchEl.setPlaceholderKey("search.header.placeholder.learn");
+
 		exploreLink = uifactory.addFormLink("explore", "", "", formLayout, Link.NONTRANSLATED);
 		
 		exploreLink.setUrl(bcFactory.getSearchUrl());
@@ -122,7 +106,7 @@ public class CatalogSearchHeaderController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == searchLink) {
+		if (source == searchEl && event instanceof SearchFormEvent) {
 			fireEvent(ureq, new CatalogSearchEvent(searchEl.getValue()));
 		} else if (source == exploreLink) {
 			fireEvent(ureq, new CatalogSearchEvent(null));

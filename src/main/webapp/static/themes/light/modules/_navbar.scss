@@ -111,7 +111,7 @@ a.o_disabled.navbar-text {
     	}
 	}
 	#o_navbar_tools_personal, #o_navbar_tools_permanent {
-		.o_navbar_tool a {
+		.o_navbar_tool a:not(.o_search_button) {
 			padding-right: 5px;
 		}
 		#o_navbar_my_menu {

@@ -22,12 +22,11 @@ package org.olat.modules.curriculum.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -40,30 +39,18 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class CurriculumSearchHeaderController extends FormBasicController {
 	
-	private TextElement searchEl;
-	private FormLink searchLink;
-	
+	private SearchElement searchEl;
+
 	public CurriculumSearchHeaderController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "manager_search_field");
-		
+
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer searchCont = uifactory.addInputGroupFormLayout("searchWrapper", null, formLayout);
-		formLayout.add("searchWrapper", searchCont);
-
-		searchEl = uifactory.addTextElement("search.text", null, 255, "", searchCont);
-		searchEl.setDomReplacementWrapperRequired(false);
-		searchEl.setPlaceholderKey("search.header.placeholder", null);
-		
-		searchLink = uifactory.addFormLink("rightAddOn", "", null, searchCont, Link.NONTRANSLATED);
-		searchLink.setElementCssClass("input-group-addon");
-		searchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
-		String searchLabel = translate("search");
-		searchLink.setLinkTitle(searchLabel);
-		searchLink.setI18nKey(searchLabel);
+		searchEl = uifactory.addSearchElement("searchWrapper", SearchVariant.LARGE, formLayout);
+		searchEl.setPlaceholderKey("search.header.placeholder.plan");
 	}
 	
 	public String getSearchString() {
@@ -72,7 +59,7 @@ public class CurriculumSearchHeaderController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(searchLink == source) {
+		if(searchEl == source && event instanceof SearchFormEvent) {
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);

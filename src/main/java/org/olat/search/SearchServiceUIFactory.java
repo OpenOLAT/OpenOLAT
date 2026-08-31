@@ -42,8 +42,6 @@ public interface SearchServiceUIFactory {
 
 	public SearchInputController createInputController(UserRequest ureq, WindowControl wControl, DisplayOption displayOption, Form mainForm);
 	
-	public SearchInputController createSearchController(UserRequest ureq, WindowControl wControl);
-	
 	public ResultController createController(UserRequest ureq, WindowControl wControl, Form mainForm, ResultDocument document);
 	
 	public String getBusinessPathLabel(String token, List<String> allTokens, Locale locale);

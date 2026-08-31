@@ -250,7 +250,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<div class='o_table_large_search o_noprint'>");
 		SearchElement searchEl = ftE.getSearchEl();
 		if(searchEl != null) {
-			searchEl.setPlaceholderKey("search.placeholder", null);
 			renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
 		}
 
@@ -325,7 +324,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				&& ftE.getSearchEl() != null) {
 
 			SearchElement searchEl = ftE.getSearchEl();
-			searchEl.setPlaceholderKey(null, null);
 			renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
 			if(ftE.getExtendedSearchButton() != null) {
 				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, null);

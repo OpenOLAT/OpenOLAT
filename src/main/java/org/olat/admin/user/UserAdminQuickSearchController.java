@@ -31,12 +31,11 @@ import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -71,8 +70,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserAdminQuickSearchController extends FormBasicController {
 	
-	private TextElement searchEl;
-	private FormLink searchLink;
+	private SearchElement searchEl;
 	private final List<UserPropertyHandler> userSearchFormPropertyHandlers;
 
 	@Autowired
@@ -100,22 +98,9 @@ public class UserAdminQuickSearchController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer searchCont = FormLayoutContainer.createInputGroupLayout("searchWrapper", getTranslator(), null, null);
-		formLayout.add("searchWrapper", searchCont);
-		searchCont.setRootForm(mainForm);
-		
-		searchEl = uifactory.addTextElement("quick.search", "quick.search", 64, null, searchCont);
-		searchEl.setAriaLabel("quick.search");
-		searchEl.setFocus(true);
-		
-		searchLink = uifactory.addFormLink("rightAddOn", "", "", searchCont, Link.NONTRANSLATED);
-		searchLink.setElementCssClass("input-group-addon");
-		searchLink.setCustomEnabledLinkCSS("o_user_quick_search_button o_undecorated");
-		searchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search");
-		String searchLabel = getTranslator().translate("quick.search");
-		searchLink.setLinkTitle(searchLabel);
-		searchLink.setI18nKey(searchLabel);
-		
+		searchEl = uifactory.addSearchElement("searchWrapper", SearchVariant.DEFAULT, formLayout);
+		searchEl.setSearchButtonLabelVisible(true);
+
 		uifactory.addSpacerElement("searchSpacer", formLayout, false);
 	}
 
@@ -131,7 +116,7 @@ public class UserAdminQuickSearchController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		// Triggered when clicking the quick-search link
-		if (source == searchLink) {
+		if (source == searchEl && event instanceof SearchFormEvent) {
 			String searchValue = searchEl.getValue();
 			if(StringHelper.containsNonWhitespace(searchValue)) {
 				fireEvent(ureq, Event.DONE_EVENT);

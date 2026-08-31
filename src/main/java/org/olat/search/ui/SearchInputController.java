@@ -40,11 +40,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -98,7 +99,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	private DisplayOption displayOption; 
 	
 	protected FormLink searchButton;
-	protected TextElement searchInput;
+	protected SearchElement searchEl;
 	private ResultsSearchController resultCtlr;
 	private CloseableModalController searchDialogBox;
 
@@ -119,7 +120,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	
 	public SearchInputController(UserRequest ureq, WindowControl wControl, String resourceUrl, String customPage) {
 		super(ureq, wControl, customPage);
-		this.displayOption = DisplayOption.STANDARD_TEXT;
+		this.displayOption = DisplayOption.STANDARD;
 		this.resourceUrl = resourceUrl;
 		setSearchStore(ureq);
 		initForm(ureq);
@@ -208,13 +209,13 @@ public class SearchInputController extends FormBasicController implements Generi
 	}
 
 	public String getSearchString() {
-		return searchInput.getValue();
+		return searchEl.getValue();
 	}
 	
 	public void setSearchString(String searchString) {
 		if (StringHelper.containsNonWhitespace(searchString)) {
-			if(searchInput != null) {
-				searchInput.setValue(searchString);
+			if(searchEl != null) {
+				searchEl.setValue(searchString);
 			}
 		}
 	}
@@ -223,35 +224,24 @@ public class SearchInputController extends FormBasicController implements Generi
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		searchClient = (SearchClient)CoreSpringFactory.getBean("searchClient");
 
-		FormItemContainer searchLayout = formLayout;
-		
 		if (displayOption.equals(DisplayOption.STANDARD) || displayOption.equals(DisplayOption.STANDARD_TEXT)) {
-			searchLayout = FormLayoutContainer.createInputGroupLayout("searchWrapper", getTranslator(), null, null);
-			formLayout.add(searchLayout);
-			searchInput = uifactory.addTextElement("search_input", "search.title", 255, "", searchLayout);
-			searchInput.setAriaLabel(translate("search.title"));
-			searchInput.setPlaceholderKey("search", null);
-			searchInput.setFocus(true);
+			boolean large = displayOption.equals(DisplayOption.STANDARD_TEXT);
+			searchEl = uifactory.addSearchElement("search_input",
+					large ? SearchVariant.LARGE : SearchVariant.DEFAULT, formLayout);
+			searchEl.setAriaLabel(translate("search.title"));
+			return;
 		}
-		
-		if (displayOption.equals(DisplayOption.STANDARD) || displayOption.equals(DisplayOption.BUTTON)) {
-			searchButton = uifactory.addFormLink("rightAddOn", "", "", searchLayout, Link.NONTRANSLATED);
+
+		if (displayOption.equals(DisplayOption.BUTTON)) {
+			searchButton = uifactory.addFormLink("rightAddOn", "", "", formLayout, Link.NONTRANSLATED);
 			searchButton.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
 			String searchLabel = getTranslator().translate("search");
 			searchButton.setLinkTitle(searchLabel);
 		} else if (displayOption.equals(DisplayOption.BUTTON_WITH_LABEL)) {
-			searchButton = uifactory.addFormLink("rightAddOn", searchLayout, Link.BUTTON_SMALL);
-		} else if (displayOption.equals(DisplayOption.STANDARD_TEXT)) {
-			String searchLabel = getTranslator().translate("search");
-			searchButton = uifactory.addFormLink("rightAddOn", searchLabel, "", searchLayout, Link.NONTRANSLATED + Link.BUTTON_SMALL);
-			searchButton.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
-		}
-		
-		if(displayOption.equals(DisplayOption.STANDARD) || displayOption.equals(DisplayOption.STANDARD_TEXT)
-				|| displayOption.equals(DisplayOption.BUTTON_WITH_LABEL)) {
+			searchButton = uifactory.addFormLink("rightAddOn", formLayout, Link.BUTTON_SMALL);
 			searchButton.setElementCssClass("input-group-addon");
 		}
-		
+
 		searchButton.setCustomEnabledLinkCSS("o_search");
 		searchButton.setEnabled(true);
 	}
@@ -264,7 +254,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	}
 	
 	protected void setContext(ContextTokens context) {
-		if(!context.isEmpty()) {
+		if(!context.isEmpty() && searchButton != null) {
 			String scope = context.getValueAt(context.getSize() - 1);
 			String tooltip = getTranslator().translate("form.search.label.tooltip", StringHelper.escapeForHtmlAttribute(scope));
 			searchButton.getComponent().setTitle(tooltip);
@@ -296,9 +286,12 @@ public class SearchInputController extends FormBasicController implements Generi
 		if (source == searchButton) {
 			fireEvent(ureq, QuickSearchEvent.QUICKSEARCH_EVENT);
 			doSearch(ureq);
+		} else if (event instanceof SearchFormEvent searchEvent && SearchFormEvent.SEARCH.equals(searchEvent.getCommand())) {
+			fireEvent(ureq, QuickSearchEvent.QUICKSEARCH_EVENT);
+			doSearch(ureq);
 		} else if (didYouMeanLinks != null && didYouMeanLinks.contains(source)) {
 			String didYouMeanWord = (String)source.getUserObject();
-			searchInput.setValue(didYouMeanWord);
+			searchEl.setValue(didYouMeanWord);
 			doSearch(ureq, didYouMeanWord, null, parentContext, documentType, fileType, resourceUrl, 0, RESULT_PER_PAGE, false);
 		}
 	}

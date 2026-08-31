@@ -138,7 +138,7 @@ public class ResultsSearchController extends SearchInputController {
 			doSearch(ureq);
 		} else if (didYouMeanLinks != null && didYouMeanLinks.contains(source)) {
 			String didYouMeanWord = (String)source.getUserObject();
-			searchInput.setValue(didYouMeanWord);
+			searchEl.setValue(didYouMeanWord);
 			advancedSearchController.setSearchString(didYouMeanWord);
 			
 			String key = null;

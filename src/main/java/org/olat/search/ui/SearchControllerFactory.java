@@ -80,16 +80,6 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 		}
 		return searchCtrl;
 	}
-
-	@Override
-	public SearchInputController createSearchController(UserRequest ureq, WindowControl wControl) {
-		String resourceUrl = null;
-		BusinessControl bc = wControl.getBusinessControl();
-		if (bc != null) {
-			resourceUrl = bc.getAsString();
-		}
-		return new ResultsSearchController(ureq, wControl, resourceUrl);
-	}
 	
 	@Override
 	public ResultController createController(UserRequest ureq, WindowControl wControl, Form mainForm, ResultDocument document) {

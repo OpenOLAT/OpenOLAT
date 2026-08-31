@@ -22,11 +22,11 @@ package org.olat.modules.library.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -46,9 +46,8 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class SearchQueryController extends FormBasicController {
 
-	private FormLink searchButton;
-	private TextElement searchInput;
-	
+	private SearchElement searchEl;
+
 	public SearchQueryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "searchbox");
 		initForm(ureq);
@@ -56,21 +55,13 @@ public class SearchQueryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		searchInput = uifactory.addTextElement("search_input", null, 255, "", formLayout);
-		searchInput.setPlaceholderKey("search", null);
-		searchInput.setAriaLabel("search");
-
-		searchButton = uifactory.addFormLink("rightAddOn", "", "", formLayout, Link.NONTRANSLATED);
-		searchButton.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
-		String searchLabel = getTranslator().translate("search");
-		searchButton.setLinkTitle(searchLabel);
-		searchButton.setCustomEnabledLinkCSS("o_search");
-		searchButton.setEnabled(true);
+		searchEl = uifactory.addSearchElement("search_input", SearchVariant.DEFAULT, formLayout);
+		searchEl.setAriaLabel(translate("search"));
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == searchButton) {
+		if(source == searchEl && event instanceof SearchFormEvent) {
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -82,6 +73,6 @@ public class SearchQueryController extends FormBasicController {
 	}
 
 	public String getSearchQuery() {
-		return searchInput.getValue();
+		return searchEl.getValue();
 	}
 }
