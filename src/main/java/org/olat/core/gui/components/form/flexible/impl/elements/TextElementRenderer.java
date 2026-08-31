@@ -110,7 +110,9 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			}
 			
 			//add set dirty form only if enabled
-			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), id);
+			if (te.isDirtyMarkingEnabled()) {
+				FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), id);
+			}
 			if(te.getRootForm().isInlineValidationOn() || te.isInlineValidationOn()) {
 				FormJSHelper.appendValidationListeners(sb, te.getRootForm(), id);
 			}

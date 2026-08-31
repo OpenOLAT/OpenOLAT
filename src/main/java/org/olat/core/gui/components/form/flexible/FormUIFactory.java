@@ -59,6 +59,8 @@ import org.olat.core.gui.components.form.flexible.elements.MemoryElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchVariant;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -97,6 +99,7 @@ import org.olat.core.gui.components.date.RelativeDateContext;
 import org.olat.core.gui.components.date.RelativeDateElement;
 import org.olat.core.gui.components.date.RelativeDateElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SliderElementImpl;
@@ -132,6 +135,7 @@ import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
@@ -847,7 +851,37 @@ public class FormUIFactory {
 		formLayout.add(te);
 		return te;
 	}
-	
+
+	/**
+	 * Adds a unified search field.
+	 *
+	 * @param name The name of the form item, used as component id
+	 * @param variant The variant, see {@link SearchVariant}
+	 * @param formLayout The form layout to add the search field to
+	 * @return The search element
+	 */
+	public SearchElement addSearchElement(String name, SearchVariant variant, FormItemContainer formLayout) {
+		SearchElementImpl se = new SearchElementImpl(null, name, variant, formLayout.getTranslator().getLocale());
+		formLayout.add(se);
+		return se;
+	}
+
+	/**
+	 * Adds a unified search field with typeahead suggestions fetched from the
+	 * given list provider, always {@link SearchVariant#TYPEAHEAD}.
+	 *
+	 * @param name The name of the form item, used as component id
+	 * @param provider The list provider for the typeahead suggestions
+	 * @param usess The user session, needed to register the suggestions mapper
+	 * @param formLayout The form layout to add the search field to
+	 * @return The search element
+	 */
+	public SearchElement addSearchElement(String name, ListProvider provider, UserSession usess, FormItemContainer formLayout) {
+		SearchElementImpl se = new SearchElementImpl(null, name, formLayout.getTranslator().getLocale(), provider, usess);
+		formLayout.add(se);
+		return se;
+	}
+
 	/**
 	 * Add a multi line text element, using the provided name as i18n key for the label, no max length check set, and fits content hight at maximium (100lnes).
 	 * 

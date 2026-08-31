@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.InlineElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchElementImpl;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Disposable;
@@ -450,6 +451,11 @@ public abstract class FormBasicController extends BasicController {
 	 * @param event The form event 
 	 */
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		// A search field handles its own request round trip and must not
+		// trigger the "unsaved changes" dialog of the surrounding form.
+		if(fiSrc instanceof SearchElementImpl searchElement && !searchElement.isPropagateDirtiness()) {
+			return;
+		}
 		// check for InlineElments remove as the tag library has been replaced
 		if(fiSrc instanceof FormLink link) {
 			if(!link.isPopup() && !link.isNewWindow()) {

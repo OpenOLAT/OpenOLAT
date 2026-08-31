@@ -133,6 +133,9 @@ public class GuiDemoFlexiFormMainController extends BasicController {
 		
 		demolinknames.add("guidemo_flexi_form_selectors");
 		demos.put("guidemo_flexi_form_selectors", GuiDemoFlexiSelectorsController::new);
+
+		demolinknames.add("guidemo_flexi_form_search");
+		demos.put("guidemo_flexi_form_search", GuiDemoFlexiSearchController::new);
 	}
 
 	@Override

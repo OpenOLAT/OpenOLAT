@@ -249,6 +249,8 @@ function o_afterserver(responseData) {
 					if(co == 10) {
 						o2c = 1;
 						setFlexiFormDirty(acmd["cda"].dispatchFieldId, acmd["cda"].hideDirtyMarking);
+					} else if(co == 11) {
+						o_ffSetFocus(acmd["cda"].type, acmd["cda"].formName, acmd["cda"].formItemId);
 					}
 				}
 			}

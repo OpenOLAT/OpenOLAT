@@ -71,6 +71,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private boolean checkForCustomItemValidator = false;
 	private boolean preventTrim = false; //OO-31
 	private boolean showHideEye = false;
+	private boolean dirtyMarkingEnabled = true;
 	private String notEmptyErrorKey;
 	private int notLongerLength;
 	protected int displaySize;
@@ -444,6 +445,19 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	@Override
 	public void setShowHideEye(boolean showHideEye) {
 		this.showHideEye = showHideEye;
+	}
+
+	/**
+	 * Whether typing into this field marks the surrounding form's submit
+	 * button dirty client-side. Default is true. A field that handles its own
+	 * request round trip (e.g. a search field) should disable this.
+	 */
+	public boolean isDirtyMarkingEnabled() {
+		return dirtyMarkingEnabled;
+	}
+
+	public void setDirtyMarkingEnabled(boolean dirtyMarkingEnabled) {
+		this.dirtyMarkingEnabled = dirtyMarkingEnabled;
 	}
 
 	@Override
