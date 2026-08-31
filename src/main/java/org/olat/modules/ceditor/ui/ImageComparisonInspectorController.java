@@ -368,6 +368,10 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 				relations = mediaToPagePartDAO.loadRelations(imageComparisonPart);
 			}
 			mediaToPagePartDAO.updateMedia(relations.get(index), media);
+			List<MediaVersion> versions = media.getVersions();
+			if (versions != null && !versions.isEmpty()) {
+				mediaToPagePartDAO.updateMediaVersion(relations.get(index), versions.get(0), getIdentity());
+			}
 			dbInstance.commit();
 			updateUI();
 

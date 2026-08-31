@@ -347,17 +347,38 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 			return;
 		}
 
-		MediaWithVersion mediaWithVersion = importMedia(relation.getMedia(), relation.getMediaVersion(), mediaOwner, storage);
+		MediaWithVersion mediaWithVersion = importMedia(relation.getMedia(), getRelationMediaVersion(relation), mediaOwner, storage);
+		if (mediaWithVersion.version() == null) {
+			return; // no version could be resolved for this relation, nothing to display, skip rather than import a broken placeholder
+		}
 		if (!mediaToPagePartDAO.hasRelation(galleryPart, mediaWithVersion.media(), mediaWithVersion.version())) {
 			mediaToPagePartDAO.persistRelation(galleryPart, mediaWithVersion.media(), mediaWithVersion.version(), mediaOwner);
 		}
 	}
 
 	private void importRelation(MediaToPagePart relation, Identity mediaOwner, ZipFile storage, ImageComparisonPart imageComparisonPart) {
-		MediaWithVersion mediaWithVersion = importMedia(relation.getMedia(), relation.getMediaVersion(), mediaOwner, storage);
+		MediaWithVersion mediaWithVersion = importMedia(relation.getMedia(), getRelationMediaVersion(relation), mediaOwner, storage);
+		if (mediaWithVersion.version() == null) {
+			return; // no version could be resolved for this relation, nothing to display, skip rather than import a broken placeholder
+		}
 		if (!mediaToPagePartDAO.hasRelation(imageComparisonPart, mediaWithVersion.media(), mediaWithVersion.version())) {
 			mediaToPagePartDAO.persistRelation(imageComparisonPart, mediaWithVersion.media(), mediaWithVersion.version(), mediaOwner);
 		}
+	}
+
+	/**
+	 * A relation's media version can be recorded directly on the relation, or only on its
+	 * media's own version list (see the identical fallback in
+	 * {@code PageImportExportHelper.export(MediaToPagePart, ...)} and
+	 * {@code GalleryEditorController.getMediaVersion(...)}) - without this fallback, importing
+	 * such a relation would create a media with no version at all.
+	 */
+	private MediaVersion getRelationMediaVersion(MediaToPagePart relation) {
+		if (relation.getMediaVersion() != null) {
+			return relation.getMediaVersion();
+		}
+		List<MediaVersion> versions = relation.getMedia().getVersions();
+		return versions != null && !versions.isEmpty() ? versions.get(0) : null;
 	}
 
 	private MediaWithVersion importMedia(Media media, MediaVersion mediaVersion, Identity owner, ZipFile storage) {
