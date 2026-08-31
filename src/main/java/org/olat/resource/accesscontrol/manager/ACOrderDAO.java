@@ -446,6 +446,13 @@ public class ACOrderDAO {
 
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			sb.appendOrderBy(allowedOrderBys, orderBy[0]);
+			if("comment".equals(orderBy[0].getKey())) {
+				if(orderBy[0].isAsc()) {
+					sb.append(" nulls first");
+				} else {
+					sb.append(" nulls last");
+				}
+			}
 		}
 
 		Query query = dbInstance.getCurrentEntityManager()

@@ -268,7 +268,7 @@ public abstract class AbstractHistoryController extends FormBasicController {
 			noteLink.setAriaDialogOpener();
 			noteLink.setDomReplacementWrapperRequired(false);
 			noteLink.setIconLeftCSS("o_icon o_icon_notes");
-			noteLink.setTitle(translate("note"));
+			noteLink.setTitle(translate("table.header.note"));
 			noteLink.setUserObject(row);
 			row.setNoteLink(noteLink);
 		}

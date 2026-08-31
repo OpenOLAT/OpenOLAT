@@ -52,10 +52,28 @@ public class MemberManagementTableSortDelegate extends SortableFlexiTableModelDe
 		if(columnIndex < AbsenceNoticesListController.USER_PROPS_OFFSET) {
 			switch(COLS[columnIndex]) {
 				case role: Collections.sort(rows, new RoleComparator()); break;
+				case userComment: Collections.sort(rows, new UserCommentComparator()); break;
 				default: super.sort(rows); break;
 			}
 		} else {
 			super.sort(rows);
+		}
+	}
+	
+	private class UserCommentComparator implements Comparator<MemberRow> {
+		@Override
+		public int compare(MemberRow o1, MemberRow o2) {
+			if(o1 == null || o2 == null) {
+				return compareNullObjects(o1, o2);
+			}
+			
+			String u1 = o1.getUserComment();
+			String u2 = o2.getUserComment();
+			if(u1 == null || u2 == null) {
+				return compareNullObjects(u1, u2);
+			}
+			return compareString(u1, u2);
+			
 		}
 	}
 	
