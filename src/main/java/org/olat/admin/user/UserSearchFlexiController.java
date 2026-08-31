@@ -42,17 +42,17 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompleteFormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -114,7 +114,7 @@ public class UserSearchFlexiController extends FormBasicController {
 	private FormLink searchButton;
 	private FormLink selectUsersButton;
 	private TextElement loginEl;
-	private AutoCompleter completerEl;
+	private SearchElement searchEl;
 	private Map <String,FormItem>propFormItems;
 	private FlexiTableElement tableEl;
 	private UserSearchFlexiTableModel userTableModel;
@@ -215,12 +215,17 @@ public class UserSearchFlexiController extends FormBasicController {
 				quickSearchFormContainer.setRootForm(mainForm);
 				layoutCont.add("quicksearchPanel", quickSearchFormContainer);
 
-				completerEl = uifactory.addTextElementWithAutoCompleter("quick.search", "quick.search", 64, null, quickSearchFormContainer);
-				completerEl.setListProvider(search, ureq.getUserSession());
-				completerEl.setExampleKey("quick.search.help", null);
-				completerEl.setMinLength(3);
-				completerEl.setShowDisplayKey(isAdministrativeUser);
-				completerEl.setFocus(true);
+				searchEl = uifactory.addSearchElement("quick.search", search, ureq.getUserSession(), quickSearchFormContainer);
+				searchEl.setLabel("quick.search", null);
+				searchEl.setExampleKey("quick.search.help", null);
+				searchEl.setMinLength(3);
+				searchEl.setAutoCompleteShowDisplayKey(isAdministrativeUser);
+				searchEl.setFocus(true);
+				searchEl.setAutoCompleteSelectListener((selUreq, key) -> {
+					if(StringHelper.containsNonWhitespace(key)) {
+						doSelect(selUreq, key);
+					}
+				});
 				autofocus = false;
 			}
 
@@ -419,11 +424,9 @@ public class UserSearchFlexiController extends FormBasicController {
 				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 				doSearch(ureq);
 			}
-		} else if(source == completerEl) {
-			if(event instanceof AutoCompleteFormEvent acfe
-					&& StringHelper.containsNonWhitespace(acfe.getKey())) {
-				doSelect(ureq, acfe.getKey());
-			}
+		} else if(source == searchEl && event instanceof SearchFormEvent sfe
+				&& !SearchFormEvent.RESET.equals(sfe.getCommand())) {
+			doSelect(ureq, searchEl.getValue());
 		} else if (source == selectUsersButton) {
 			fireEvent(ureq, new MultiIdentityChosenEvent(userTableModel.getObjects(tableEl.getMultiSelectedIndex())));
 		} else if (tableEl == source) {
@@ -457,13 +460,8 @@ public class UserSearchFlexiController extends FormBasicController {
 	}
 	
 	private String getAutoCompleterSearchValue() {
-		if(completerEl == null || !completerEl.isVisible()) return null;
-		
-		String searchValue = completerEl.getKey();
-		if(!StringHelper.containsNonWhitespace(searchValue)) {
-			searchValue = completerEl.getValue();
-		}
-		return searchValue;
+		if(searchEl == null || !searchEl.isVisible()) return null;
+		return searchEl.getValue();
 	}
 	
 	public List<Identity> getSelectedIdentities() {

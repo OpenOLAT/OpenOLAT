@@ -2737,17 +2737,20 @@ function o_ffSetFocus(type, formId, formItemId) {
 				if(document.activeElement == null
 					|| el.getAttribute('id') !== document.activeElement.getAttribute('id')) {
 					el.focus();
-					// Prefer focus directly after DOM replacement but if it's not successful, delay the focus
+				}
+				// Some widgets initialize asynchronously right after this DOM
+				// update (e.g. typeahead.js re-wrapping its input) and can
+				// silently steal focus back on the next tick. Re-apply once
+				// more after such late re-inits have already run.
+				setTimeout(function() {
+					if (document.activeElement && document.activeElement.closest('dialog[open]')) {
+						return;
+					}
 					if(document.activeElement == null
 						|| el.getAttribute('id') !== document.activeElement.getAttribute('id')) {
-						setTimeout(function() {
-							if (document.activeElement && document.activeElement.closest('dialog[open]')) {
-								return;
-							}
-							el.focus();
-						}, 0);
+						el.focus();
 					}
-				}
+				}, 0);
 				focusApplied = true;
 			}
 		} else {

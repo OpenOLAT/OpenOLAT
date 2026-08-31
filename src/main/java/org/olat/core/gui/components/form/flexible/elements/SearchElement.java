@@ -19,7 +19,11 @@
  */
 package org.olat.core.gui.components.form.flexible.elements;
 
+import java.util.function.BiConsumer;
+
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.elements.SearchFormEvent;
 
 /**
  * A unified search input field. Encapsulates the search term input, the
@@ -67,5 +71,28 @@ public interface SearchElement extends FormItem {
 	 * dialog of the surrounding form.
 	 */
 	void setPropagateDirtiness(boolean propagate);
+
+	/**
+	 * For composites that embed a SearchElement as a child and want to
+	 * intercept search/reset themselves instead of receiving an
+	 * automatically-fired SearchFormEvent on the root form (e.g. a FlexiTable,
+	 * which must translate it into its own event and reload data). Applies
+	 * the value/reset side effects and returns the resulting event, or null
+	 * if this request doesn't target this element. The caller is responsible
+	 * for firing it, or not.
+	 */
+	SearchFormEvent evalLocalDispatch(UserRequest ureq);
+
+	/**
+	 * For composites that embed a SearchElement and want to react to a
+	 * typeahead suggestion being selected, when this element is backed by a
+	 * {@link org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider}:
+	 * called with the selected suggestion's key. Picking a suggestion is a
+	 * component-level dispatch, not a form submit, so it never reaches
+	 * {@link #evalLocalDispatch(UserRequest)}. No-op for a plain text field.
+	 */
+	void setAutoCompleteSelectListener(BiConsumer<UserRequest, String> listener);
+
+	void setAutoCompleteShowDisplayKey(boolean showDisplayKey);
 
 }

@@ -765,7 +765,7 @@ a.o_orderby, a.o_orderby:hover {
 .o_table_search, .o_table_large_search {
 	white-space: nowrap;
 	
-	input[type='text'] {
+	input[type='text']:not(.o_search_input) {
 		max-width: 300px;
 		display: inline-block;
 		border-bottom-right-radius: 0;
@@ -862,7 +862,7 @@ a.o_orderby, a.o_orderby:hover {
 	text-align: center;
 	padding: 15px 20px;
 	
-	input[type='text'] {
+	input[type='text']:not(.o_search_input) {
 		max-width: 400px;
 		width: 90%;
 	}
@@ -994,7 +994,7 @@ a.o_orderby, a.o_orderby:hover {
 		margin-bottom: $line-height-computed;
 	}
 	
-	.o_table_toolbar .o_table_search input[type='text'] {
+	.o_table_toolbar .o_table_search input[type='text']:not(.o_search_input) {
 		max-width: 170px;// iPhone SE
 	}
 	

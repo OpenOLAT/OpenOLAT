@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.SearchElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -246,28 +246,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	private void renderLargeSearch(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult) {
-		
-		Form theForm = ftE.getRootForm();
 
 		sb.append("<div class='o_table_large_search o_noprint'>");
-		TextElement searchEl = ftE.getSearchElement();
-		if(StringHelper.containsNonWhitespace(searchEl.getValue())) {
-			searchEl.setFocus(true);
-		}
-		if(!StringHelper.containsNonWhitespace(searchEl.getPlaceholder())) {
+		SearchElement searchEl = ftE.getSearchEl();
+		if(searchEl != null) {
 			searchEl.setPlaceholderKey("search.placeholder", null);
+			renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
 		}
-		renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
-		renderFormItem(renderer, sb, ftE.getSearchResetButton(), ubu, translator, renderResult, null);
-		renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
-		// Do not trigger form validation if search only
-		String id = ftE.getSearchElement().getFormDispatchId();
-		String searchBtnId = ftE.getSearchButton().getFormDispatchId();
-		sb.append("<script>jQuery('#").append(id).append("').on('keydown', function(e) {")
-		  .append("if(e.which == 13) { e.preventDefault(); e.stopPropagation();")
-		  .append(FormJSHelper.getXHRFnCallFor(theForm, searchBtnId, 1, false, false, true))
-		  .append("; return false; }});</script>");
-		
+
 		// num. of entries
 		if(ftE.isNumOfRowsEnabled()) {
 			sb.append("<div class='o_table_rowcount'>");
@@ -281,7 +267,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		sb.append("</div>");
 	}
-	
+
 	protected void setHeadersRendered(FlexiTableElementImpl ftE) {
 		if(ftE.getCustomButton() != null) {
 			ftE.getCustomButton().getComponent().setDirty(false);
@@ -335,25 +321,15 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		// search
 		sb.append("<div class='o_table_search o_noprint").append(" o_table_search_extended", ftE.getExtendedSearchButton() != null).append("'>");
 		if(!hideSearch && (searchCmp == null || !ftE.isExtendedSearchExpanded())
-				&& !ftE.isSearchLarge() && ftE.isSearchEnabled() && ftE.getSearchElement() != null) {
-			
-			TextElement searchEl = ftE.getSearchElement();
-			if(StringHelper.containsNonWhitespace(searchEl.getPlaceholder())) {
-				searchEl.setPlaceholderKey(null, null);
-			}
+				&& !ftE.isSearchLarge() && ftE.isSearchEnabled()
+				&& ftE.getSearchEl() != null) {
+
+			SearchElement searchEl = ftE.getSearchEl();
+			searchEl.setPlaceholderKey(null, null);
 			renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
-			renderFormItem(renderer, sb, ftE.getSearchResetButton(), ubu, translator, renderResult, null);
-			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
 			if(ftE.getExtendedSearchButton() != null) {
 				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, null);
 			}
-			// Do not trigger form validation if search only
-			String id = ftE.getSearchElement().getFormDispatchId();
-			String searchBtnId = ftE.getSearchButton().getFormDispatchId();
-			sb.append("<script>jQuery('#").append(id).append("').on('keydown', function(e) {")
-			  .append("if(e.which == 13) { e.preventDefault(); e.stopPropagation();")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, searchBtnId, 1, false, false, true))
-			  .append("; return false; }});</script>");
 		}
 		
 		// num. of entries

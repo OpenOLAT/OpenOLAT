@@ -7,28 +7,15 @@
 		width: 100%;
 		vertical-align: middle;
 
-		/* typeahead.js sets an inline style="display:inline-block" on this
-		   span. Inline styles win over any stylesheet rule regardless of
-		   specificity, except one marked !important - this is the one place
-		   in this file that needs it. Inline-block content leaves a few
-		   pixels of baseline descender gap below it inside this block-level
-		   wrapper, which is what actually pushes the row taller than the
-		   icon addon, not a height difference on the input itself. Forcing
-		   block removes that gap outright. */
+		/* flow-root: block-level (no baseline gap) but still its own formatting
+		   context, so .tt-input's margin can't collapse it to height:0 and break
+		   the .tt-menu dropdown position. Overrides typeahead.js's inline style. */
 		.twitter-typeahead {
-			display: block !important;
+			display: flow-root !important;
 			width: 100%;
 		}
 
-		/* .tt-input is the actual field once AutoCompleterImpl's typeahead.js
-		   widget wraps it; AutoCompleterRenderer hardcodes class='form-control'
-		   and never emits our own elementCssClass, so every rule here also
-		   targets .tt-input, not just .o_search_input. The explicit height
-		   matches Bootstrap's own .form-control height: typeahead.js's markup
-		   otherwise ends up a couple of pixels short of the icon addon.
-		   .o_search_large repeats this same "under .o_search_input_wrapper"
-		   nesting for its own override further down so the two rules have
-		   equal specificity and its later position in the file decides. */
+		/* .tt-input is the field once AutoCompleterImpl's typeahead.js wraps it. */
 		.o_search_input,
 		.tt-input {
 			width: 100%;
@@ -37,17 +24,7 @@
 		}
 	}
 
-	/* The input is nested one level inside the input-group cell (wrapped for
-	   the reset-button overlay), so Bootstrap's own rule
-	   ".input-group .form-control:first-child" (a descendant selector, not a
-	   direct-child one) matches it too - it is the first child of the
-	   wrapper - and zeroes its right corners as if it were the group's own
-	   first cell. Nesting under .o_search adds one class of specificity over
-	   that Bootstrap rule, which is enough to win outright without
-	   !important. Restore both corner pairs explicitly for the two shapes
-	   this element actually appears in: preceded by the icon addon (left
-	   corners square, right corners round, no button follows), or preceded
-	   by nothing and followed by the search button (all corners square). */
+	/* Restore corners Bootstrap's .input-group .form-control:first-child zeroes. */
 	.input-group-addon + .o_search_input_wrapper {
 		.o_search_input,
 		.tt-input {
@@ -79,23 +56,9 @@
 	}
 }
 
-/* Large: reuse Bootstrap's own .input-lg / .btn-lg dimensions, applied
-   directly since the input sits inside a wrapper cell rather than being a
-   direct .input-group child (so Bootstrap's own .input-group-lg selectors,
-   which require a direct child, never reach it). Every selector here nests
-   exactly as deep as the rule it overrides above, so the two end up with
-   equal specificity and this later block wins by source order alone -
-   no !important needed. */
+/* Large: reuse Bootstrap's .input-lg / .btn-lg sizing (its .input-group-lg selectors need a direct child, which this isn't). */
 .o_search_large {
 	.o_search_input_wrapper {
-		/* Only the left corners are set here: this input is always the first
-		   thing in the group when no icon addon precedes it (the addon-present
-		   case below overrides these back to square), and whether the right
-		   corners round or stay square depends on whether a search button
-		   follows - both cases are handled by the two rules below, exactly
-		   like the base (non-large) rules above. Setting the shorthand
-		   border-radius here instead would round the right corners even when
-		   a button follows, breaking that join. */
 		.o_search_input,
 		.tt-input {
 			padding: $padding-large-vertical $padding-large-horizontal;
@@ -139,5 +102,41 @@
 .o_search_demo_fixed_width {
 	.o_search {
 		max-width: 300px;
+	}
+}
+
+#o_navbar_search {
+	.o_search {
+		width: 320px;
+	}
+}
+
+.o_table_search {
+	.o_search {
+		max-width: 340px;
+		display: inline-block;
+		vertical-align: middle;
+		margin-right: 15px;
+	}
+}
+
+.o_table_large_search {
+	.o_search {
+		max-width: 450px;
+		width: 90%;
+		display: inline-block;
+		vertical-align: middle;
+	}
+
+	.o_table_rowcount {
+		display: inline-block;
+		vertical-align: middle;
+		margin-left: 15px;
+	}
+}
+
+@media (max-width: 540px) {
+	.o_table_toolbar .o_table_search .o_search {
+		max-width: 170px;
 	}
 }

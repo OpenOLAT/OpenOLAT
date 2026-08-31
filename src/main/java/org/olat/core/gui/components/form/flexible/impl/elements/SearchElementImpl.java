@@ -21,9 +21,11 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BiConsumer;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -35,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Disposable;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.translator.Translator;
@@ -54,7 +57,7 @@ import org.olat.core.util.Util;
  * Initial date: 2026-08-25<br>
  * @author uhensler, https://www.frentix.com
  */
-public class SearchElementImpl extends FormItemImpl implements SearchElement, FormItemCollection, Disposable {
+public class SearchElementImpl extends FormItemImpl implements SearchElement, FormItemCollection, ComponentEventListener, Disposable {
 
 	private final SearchVariant variant;
 	private final AbstractTextElement searchInputEl;
@@ -65,6 +68,7 @@ public class SearchElementImpl extends FormItemImpl implements SearchElement, Fo
 	private boolean propagateDirtiness = false;
 	private boolean searchButtonLabelVisible = false;
 	private int minLength = 0;
+	private BiConsumer<UserRequest, String> autoCompleteSelectListener;
 
 	public SearchElementImpl(String id, String name, SearchVariant variant, Locale locale) {
 		this(id, name, variant, locale, null, null);
@@ -74,7 +78,7 @@ public class SearchElementImpl extends FormItemImpl implements SearchElement, Fo
 		this(id, name, SearchVariant.TYPEAHEAD, locale, provider, usess);
 	}
 
-	private SearchElementImpl(String id, String name, SearchVariant variant, Locale locale,
+	public SearchElementImpl(String id, String name, SearchVariant variant, Locale locale,
 			ListProvider provider, UserSession usess) {
 		super(name);
 		this.variant = variant;
@@ -84,6 +88,7 @@ public class SearchElementImpl extends FormItemImpl implements SearchElement, Fo
 		if (provider != null) {
 			AutoCompleterImpl autoCompleterEl = new AutoCompleterImpl(baseId + "_input", name, locale);
 			autoCompleterEl.setListProvider(provider, usess);
+			autoCompleterEl.getComponent().addListener(this);
 			searchInputEl = autoCompleterEl;
 		} else {
 			searchInputEl = new TextElementImpl(baseId + "_input", name, "");
@@ -131,6 +136,9 @@ public class SearchElementImpl extends FormItemImpl implements SearchElement, Fo
 
 	@Override
 	public void setValue(String value) {
+		if (searchInputEl instanceof AutoCompleterImpl autoCompleterEl) {
+			autoCompleterEl.setKey(null);
+		}
 		searchInputEl.setValue(value);
 	}
 
@@ -183,6 +191,26 @@ public class SearchElementImpl extends FormItemImpl implements SearchElement, Fo
 	}
 
 	@Override
+	public void setAutoCompleteSelectListener(BiConsumer<UserRequest, String> listener) {
+		this.autoCompleteSelectListener = listener;
+	}
+
+	@Override
+	public void setAutoCompleteShowDisplayKey(boolean showDisplayKey) {
+		if (searchInputEl instanceof AutoCompleterImpl autoCompleterEl) {
+			autoCompleterEl.setShowDisplayKey(showDisplayKey);
+		}
+	}
+
+	@Override
+	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
+		if (autoCompleteSelectListener != null && searchInputEl.getComponent() == source
+				&& event instanceof AutoCompleteEvent ace) {
+			autoCompleteSelectListener.accept(ureq, ace.getKey());
+		}
+	}
+
+	@Override
 	public void setFocus(boolean hasFocus) {
 		super.setFocus(hasFocus);
 		searchInputEl.setFocus(hasFocus);
@@ -225,13 +253,6 @@ public class SearchElementImpl extends FormItemImpl implements SearchElement, Fo
 		return resetButtonEl;
 	}
 
-	/**
-	 * Declaring {@link FormItemCollection} lets {@code FormComponentTraverser}
-	 * discover the input, search button and reset button as dispatchable form
-	 * items. Without it, a request whose dispatch id names one of these
-	 * children matches nothing, and {@code Form.evalFormRequest} falls back to
-	 * an implicit full form submit on every keystroke.
-	 */
 	@Override
 	public Iterable<FormItem> getFormItems() {
 		return List.of(searchInputEl, searchButtonEl, resetButtonEl);
@@ -297,43 +318,50 @@ public class SearchElementImpl extends FormItemImpl implements SearchElement, Fo
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
+		SearchFormEvent event = evalLocalDispatch(ureq);
+		if (event != null && !getRootForm().hasAlreadyFired()) {
+			getRootForm().fireFormEvent(ureq, event);
+		}
+	}
+
+	@Override
+	public SearchFormEvent evalLocalDispatch(UserRequest ureq) {
 		searchInputEl.evalFormRequest(ureq);
 		// setValue() marked the input dirty; clear it now so this request's AJAX
 		// response does not replace the input DOM node and drop the next keystroke.
 		searchInputEl.getComponent().setDirty(false);
 
 		if (getRootForm().hasAlreadyFired()) {
-			return;
+			return null;
 		}
 
 		String dispatchuri = getRootForm().getRequestParameter("dispatchuri");
 		if (dispatchuri == null) {
-			return;
+			return null;
 		}
 
 		if (dispatchuri.equals(resetButtonEl.getFormDispatchId())) {
 			reset();
-			getRootForm().fireFormEvent(ureq, new SearchFormEvent(SearchFormEvent.RESET, this, null));
+			return new SearchFormEvent(SearchFormEvent.RESET, this, null);
 		} else if (dispatchuri.equals(searchButtonEl.getFormDispatchId())) {
-			getRootForm().fireFormEvent(ureq, new SearchFormEvent(SearchFormEvent.SEARCH, this, getValue()));
+			return new SearchFormEvent(SearchFormEvent.SEARCH, this, getValue());
 		} else if (dispatchuri.equals(searchInputEl.getFormDispatchId())) {
 			if (searchInputEl instanceof AutoCompleterImpl autoCompleterEl) {
 				autoCompleterEl.dispatchFormRequest(ureq);
 			}
-			if (!getRootForm().hasAlreadyFired() && variant == SearchVariant.TYPEAHEAD) {
-				fireSearchIfAllowed(ureq);
+			if (variant == SearchVariant.TYPEAHEAD) {
+				return searchIfAllowed();
 			}
 		}
+		return null;
 	}
 
-	private void fireSearchIfAllowed(UserRequest ureq) {
+	private SearchFormEvent searchIfAllowed() {
 		String searchText = getValue();
 		boolean allowed = minLength <= 0
 				|| !StringHelper.containsNonWhitespace(searchText)
 				|| searchText.length() >= minLength;
-		if (allowed) {
-			getRootForm().fireFormEvent(ureq, new SearchFormEvent(SearchFormEvent.SEARCH, this, searchText));
-		}
+		return allowed ? new SearchFormEvent(SearchFormEvent.SEARCH, this, searchText) : null;
 	}
 
 	@Override

@@ -97,6 +97,14 @@ public class SearchElementRenderer extends DefaultComponentRenderer {
 	 * Enter triggers the search by XHR instead of a form submit; a form with a
 	 * single text input submits on Enter by browser default otherwise. Escape
 	 * clears the field when the reset button is available.
+	 *
+	 * When backed by a typeahead.js dropdown (AutoCompleterImpl), Enter with a
+	 * suggestion highlighted (.tt-cursor) must be left to typeahead.js's own
+	 * Enter handling, which commits the highlighted suggestion (key + value)
+	 * via its own select dispatch. Intercepting Enter unconditionally here
+	 * would instead search using the raw preview text typeahead.js writes
+	 * into the field while a suggestion is highlighted, which is never a
+	 * valid search term.
 	 */
 	private void appendKeyScript(StringOutput sb, SearchElementComponent cmp, SearchElementImpl searchEl) {
 		String inputId = searchEl.getSearchInput().getFormDispatchId();
@@ -114,7 +122,8 @@ public class SearchElementRenderer extends DefaultComponentRenderer {
 		  .append("})();</script>");
 
 		sb.append("<script>'use strict';jQuery('#").append(inputId).append("').on('keydown', function(e) {")
-		  .append("if(e.which == 13) { e.preventDefault(); e.stopPropagation();")
+		  .append("if(e.which == 13 && jQuery(this).closest('.twitter-typeahead').find('.tt-cursor').length == 0) {")
+		  .append("e.preventDefault(); e.stopPropagation();")
 		  .append(FormJSHelper.getXHRFnCallFor(searchEl.getRootForm(), searchBtnId, 1, false, false, true))
 		  .append("; return false; }");
 
