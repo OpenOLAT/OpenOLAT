@@ -128,8 +128,7 @@ public class ReasonImpl implements Persistable, Reason {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof ReasonImpl) {
-			ReasonImpl reason = (ReasonImpl)obj;
+		if(obj instanceof ReasonImpl reason) {
 			return getKey() != null && getKey().equals(reason.getKey());
 		}
 		return super.equals(obj);
