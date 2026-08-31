@@ -23,6 +23,7 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
@@ -182,12 +183,13 @@ public class OrdersController extends FormBasicController implements Activateabl
 
 		dataSource = new OrdersDataSource(acService, resource, identity, List.of(), null, null, this);
 		dataModel = new OrdersDataModel(dataSource, getLocale(), userManager, columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, true, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
 				.withMessageI18nKey("table.order.empty")
 				.build());
-		tableEl.setAndLoadPersistedPreferences(ureq, settings.getTableId() + "-orders-v1.0");
+		tableEl.setAndLoadPersistedPreferences(ureq, settings.getTableId() + "-orders-v1.1");
+		tableEl.sort(new SortKey(OrderCol.creationDate.sortKey(), false));
 	}
 	
 	@Override
@@ -306,8 +308,9 @@ public class OrdersController extends FormBasicController implements Activateabl
 		commentCtrl = new OrderCommentController(ureq, getWindowControl(), member.getComment());
 		listenTo(commentCtrl);
 
+		String title = translate("table.header.order.comment");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				commentCtrl.getInitialComponent(), id, "", true, "");
+				commentCtrl.getInitialComponent(), id, title, true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

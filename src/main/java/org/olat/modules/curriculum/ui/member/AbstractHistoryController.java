@@ -329,7 +329,7 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		noteCtrl = new NoteCalloutController(ureq, getWindowControl(), note);
 		listenTo(noteCtrl);
 		
-		String title = translate("note");
+		String title = translate("table.header.note");
 		CalloutSettings settings = new CalloutSettings(title);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				noteCtrl.getInitialComponent(), link, title, true, "", settings);

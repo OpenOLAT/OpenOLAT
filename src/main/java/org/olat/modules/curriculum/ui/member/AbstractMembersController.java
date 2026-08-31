@@ -555,8 +555,9 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		commentCtrl = new OrderCommentController(ureq, getWindowControl(), member.getUserComment());
 		listenTo(commentCtrl);
 
+		String title = translate("table.header.order.comment");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				commentCtrl.getInitialComponent(), id, "", true, "");
+				commentCtrl.getInitialComponent(), id, title, true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
