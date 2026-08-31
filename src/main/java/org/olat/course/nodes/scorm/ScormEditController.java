@@ -763,7 +763,7 @@ class VarForm extends FormBasicController {
 			enableEditingLink.setVisible(false);
 		} else {
 			assessmentLockMsgEl.setDomWrapperElement(DomWrapperElement.div);
-			assessmentLockMsgEl.setValue("<div class=\"o_warning_with_icon\">" + translate("assessments.exist.info") + "</div>");
+			assessmentLockMsgEl.setValue("<div class=\"o_info_with_icon\">" + translate("assessments.exist.info") + "</div>");
 			assessmentLockMsgEl.setVisible(true);
 			enableEditingLink.setVisible(true);
 		}
