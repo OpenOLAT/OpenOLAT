@@ -718,6 +718,7 @@ public class LectureBlockDAO {
 		  .append(" inner join tGroup.members membership")
 		  .append(" inner join membership.identity coach")
 		  .append(" inner join fetch coach.user usercoach")
+		  .append(" left join fetch block.reasonEffectiveEnd reason")
 		  .append(" left join block.curriculumElement curEl")
 		  .append(" left join curEl.curriculum cur")
 		  .append(" left join cur.organisation organis")
