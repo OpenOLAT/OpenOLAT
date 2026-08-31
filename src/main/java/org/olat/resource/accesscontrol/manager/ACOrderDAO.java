@@ -446,7 +446,8 @@ public class ACOrderDAO {
 
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			sb.appendOrderBy(allowedOrderBys, orderBy[0]);
-			if("comment".equals(orderBy[0].getKey())) {
+			// MySQL doesn't like it
+			if("comment".equals(orderBy[0].getKey()) && !dbInstance.isMySQL()) {
 				if(orderBy[0].isAsc()) {
 					sb.append(" nulls first");
 				} else {
