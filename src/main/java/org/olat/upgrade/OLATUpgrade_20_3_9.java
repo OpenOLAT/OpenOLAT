@@ -104,9 +104,6 @@ public class OLATUpgrade_20_3_9 extends OLATUpgrade {
 							skipped++;
 						}
 						lastKey = relation.getKey();
-						if ((updated + skipped) % 25 == 0) {
-							dbInstance.commitAndCloseSession();
-						}
 					}
 					dbInstance.commitAndCloseSession();
 					relations = mediaToPagePartDao.loadRelationsWithoutMediaVersion(lastKey, BATCH_SIZE);
