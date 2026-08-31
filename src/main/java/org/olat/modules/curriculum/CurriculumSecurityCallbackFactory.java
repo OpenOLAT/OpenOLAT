@@ -262,7 +262,7 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewRooms() {
-			return admin || principal || !ownedCurriculumKeys.isEmpty() || !ownedElementsKeys.isEmpty();
+			return admin;
 		}
 	}
 }
