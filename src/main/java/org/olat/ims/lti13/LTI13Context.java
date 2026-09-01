@@ -112,7 +112,9 @@ public interface LTI13Context extends CreateInfo, ModifiedInfo {
 	
 	
 	public LTI13ToolDeployment getDeployment();
-	
+
+	public void setDeployment(LTI13ToolDeployment deployment);
+
 	public RepositoryEntry getEntry();
 
 	public String getSubIdent();
