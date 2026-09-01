@@ -50,6 +50,7 @@ import org.olat.ims.lti13.LTI13ToolDeploymentType;
 import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.mediasite.LtiVersion;
+import org.olat.modules.mediasite.MediaSiteManager;
 import org.olat.modules.mediasite.MediaSiteModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -91,6 +92,8 @@ public class MediaSiteAdminController extends FormBasicController {
 	
 	@Autowired
 	private MediaSiteModule mediaSiteModule;
+	@Autowired
+	private MediaSiteManager mediaSiteManager;
 	@Autowired
 	private LTI13Service lti13Service;
 
@@ -374,9 +377,9 @@ public class MediaSiteAdminController extends FormBasicController {
 						lti13InitiateLoginUrlEl.setValue(StringHelper.blankIfNull(courseTool.getInitiateLoginUrl()));
 						lti13RedirectUrlEl.setValue(StringHelper.blankIfNull(courseTool.getRedirectUrl()));
 						lti13JwksUrlEl.setValue(StringHelper.blankIfNull(courseTool.getPublicKeyUrl()));
-						List<LTI13ToolDeployment> deployments = lti13Service.getToolDeploymentByTool(courseTool);
-						if (!deployments.isEmpty()) {
-							lti13DeploymentIdEl.setValue(deployments.get(0).getDeploymentId());
+						LTI13ToolDeployment courseDeployment = mediaSiteManager.resolveCourseDeployment(config, courseTool);
+						if (courseDeployment != null) {
+							lti13DeploymentIdEl.setValue(courseDeployment.getDeploymentId());
 						}
 						lti13BaseUrlEl.setValue(config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_BASE_URL, ""));
 						lti13AdminUrlEl.setValue(config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_ADMIN_URL, ""));
@@ -409,7 +412,7 @@ public class MediaSiteAdminController extends FormBasicController {
 					LTI13Tool courseTool;
 					if (!StringHelper.containsNonWhitespace(courseToolKeyStr)) {
 						courseTool = lti13Service.createExternalTool(
-								mediaSiteModule.getServerName(), 
+								mediaSiteModule.getServerName(),
 								lti13RedirectUrlEl.getValue(),
 								lti13Service.newClientId(),
 								lti13InitiateLoginUrlEl.getValue(),
@@ -418,9 +421,10 @@ public class MediaSiteAdminController extends FormBasicController {
 						courseTool.setPublicKeyTypeEnum(LTI13Tool.PublicKeyType.URL);
 						courseTool.setPublicKeyUrl(lti13JwksUrlEl.getValue());
 						courseTool = lti13Service.updateTool(courseTool);
-						lti13Service.createToolDeployment(null, LTI13ToolDeploymentType.MULTIPLE_CONTEXTS,
+						LTI13ToolDeployment courseDeployment = lti13Service.createToolDeployment(null, LTI13ToolDeploymentType.MULTIPLE_CONTEXTS,
 								UUID.randomUUID().toString(), courseTool);
 						config.setStringValue(MediaSiteCourseNode.CONFIG_LTI13_TOOL_KEY, String.valueOf(courseTool.getKey()));
+						config.setStringValue(MediaSiteCourseNode.CONFIG_LTI13_DEPLOYMENT_KEY, String.valueOf(courseDeployment.getKey()));
 					} else {
 						courseTool = lti13Service.getToolByKey(Long.valueOf(courseToolKeyStr));
 						if (courseTool != null) {
@@ -429,6 +433,15 @@ public class MediaSiteAdminController extends FormBasicController {
 							courseTool.setRedirectUrl(lti13RedirectUrlEl.getValue());
 							courseTool.setPublicKeyUrl(lti13JwksUrlEl.getValue());
 							lti13Service.updateTool(courseTool);
+
+							// Backfill the deployment key for courses configured before it was stored explicitly,
+							// instead of always re-discovering it implicitly via getToolDeploymentByTool(...).get(0).
+							if (!StringHelper.containsNonWhitespace(config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_DEPLOYMENT_KEY))) {
+								LTI13ToolDeployment courseDeployment = mediaSiteManager.resolveCourseDeployment(config, courseTool);
+								if (courseDeployment != null) {
+									config.setStringValue(MediaSiteCourseNode.CONFIG_LTI13_DEPLOYMENT_KEY, String.valueOf(courseDeployment.getKey()));
+								}
+							}
 						}
 					}
 					config.setStringValue(MediaSiteCourseNode.CONFIG_LTI13_BASE_URL, lti13BaseUrlEl.getValue());

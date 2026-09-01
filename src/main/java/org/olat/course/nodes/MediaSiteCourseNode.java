@@ -72,6 +72,7 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_USER_NAME_KEY			= "usernameKey";
 	
 	public static final String CONFIG_LTI13_TOOL_KEY		= "lti13ToolKey";
+	public static final String CONFIG_LTI13_DEPLOYMENT_KEY	= "lti13DeploymentKey";
 	public static final String CONFIG_LTI13_BASE_URL		= "lti13BaseUrl";
 	public static final String CONFIG_LTI13_ADMIN_URL		= "lti13AdminUrl";
 	
@@ -120,9 +121,36 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, null, translPackage);
 			sd.setDescriptionForUnit(getIdent());
 			sd.setActivateableViewIdentifier(MediaSiteEditController.PANE_TAB_VCCONFIG);
+		} else if (isLti13Incomplete(mediaSiteModule, usesPrivateLogin)) {
+			String shortKey = "edit.warning.lti13.not.configured.short";
+			String longKey = "edit.warning.lti13.not.configured";
+			String translPackage = MediaSiteAdminController.class.getPackageName();
+
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, null, translPackage);
+			sd.setDescriptionForUnit(getIdent());
+			sd.setActivateableViewIdentifier(MediaSiteEditController.PANE_TAB_VCCONFIG);
 		}
 
 		return sd;
+	}
+
+	/**
+	 * Checks that the config keys needed to launch LTI 1.3 (see MediaSiteRunController.showContentLti13())
+	 * are present, without resolving them against the database - a course tree with many nodes can call
+	 * isConfigValid() repeatedly, so this stays a cheap, config-only check, same as the equivalent check
+	 * in BasicLTICourseNode.validateInternalConfiguration() for the generic LTI 1.3 course element.
+	 */
+	private boolean isLti13Incomplete(MediaSiteModule mediaSiteModule, boolean usesPrivateLogin) {
+		if (!LtiVersion.lti_1_3.name().equals(getModuleConfiguration().getStringValue(CONFIG_LTI_VERSION))) {
+			return false;
+		}
+		if (usesPrivateLogin) {
+			String toolKey = getModuleConfiguration().getStringValue(CONFIG_LTI13_TOOL_KEY);
+			String baseUrl = getModuleConfiguration().getStringValue(CONFIG_LTI13_BASE_URL);
+			return !StringHelper.isLong(toolKey) || !StringHelper.containsNonWhitespace(baseUrl);
+		}
+		return mediaSiteModule.getLti13DeploymentKey() == null
+				|| !StringHelper.containsNonWhitespace(mediaSiteModule.getLti13BaseUrl());
 	}
 	
 	@Override

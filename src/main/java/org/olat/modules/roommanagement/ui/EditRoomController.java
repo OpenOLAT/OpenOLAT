@@ -20,6 +20,7 @@
 package org.olat.modules.roommanagement.ui;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -66,7 +67,7 @@ public class EditRoomController extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		SearchBuildingParameters params = new SearchBuildingParameters();
 		params.setStatus(List.of(RoomStatus.active));
-		this.buildings = roomManagementService.searchBuildings(params, roles);
+		this.buildings = sortByLabel(roomManagementService.searchBuildings(params, roles));
 		initForm(ureq);
 	}
 
@@ -79,10 +80,18 @@ public class EditRoomController extends FormBasicController {
 		List<Building> activeBuildings = new ArrayList<>(roomManagementService.searchBuildings(params, roles));
 		// Also include the current building if it's inactive (it's already assigned)
 		if (room.getBuilding() != null && activeBuildings.stream().noneMatch(b -> b.getKey().equals(room.getBuilding().getKey()))) {
-			activeBuildings.add(0, room.getBuilding());
+			activeBuildings.add(room.getBuilding());
 		}
-		this.buildings = activeBuildings;
+		this.buildings = sortByLabel(activeBuildings);
 		initForm(ureq);
+	}
+
+	// Sorts by the same label the dropdown displays (external ref if set, else description),
+	// case-insensitively - matches RoomUIHelper.buildBuildingFilterValues()'s sort key.
+	private List<Building> sortByLabel(List<Building> source) {
+		List<Building> sorted = new ArrayList<>(source);
+		sorted.sort(Comparator.comparing(this::buildingLabel, String.CASE_INSENSITIVE_ORDER));
+		return sorted;
 	}
 
 	@Override

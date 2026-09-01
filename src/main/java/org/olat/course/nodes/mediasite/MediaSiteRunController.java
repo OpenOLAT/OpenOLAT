@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes.mediasite;
 
-import java.util.List;
 import java.util.Map;
 
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -242,12 +241,11 @@ public class MediaSiteRunController extends BasicController {
 				showError("error.lti13.not.configured");
 				return;
 			}
-			List<LTI13ToolDeployment> deployments = lti13Service.getToolDeploymentByTool(courseTool);
-			if (deployments.isEmpty()) {
+			deployment = mediaSiteManager.resolveCourseDeployment(config, courseTool);
+			if (deployment == null) {
 				showError("error.lti13.not.configured");
 				return;
 			}
-			deployment = deployments.get(0);
 			if (showAdministration) {
 				targetUrl = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_ADMIN_URL);
 			} else {
