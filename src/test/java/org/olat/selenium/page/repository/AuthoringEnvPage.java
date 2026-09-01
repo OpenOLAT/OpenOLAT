@@ -307,10 +307,10 @@ public class AuthoringEnvPage {
 		By searchPresetBy = By.cssSelector(".o_sel_author_env .o_table_tabs a.o_sel_author_search");
 		OOGraphene.waitElement(searchPresetBy, browser).click();
 		
-		By searchFieldBy = By.cssSelector(".o_sel_author_env .o_table_large_search input[type='text']");
+		By searchFieldBy = By.cssSelector(".o_sel_author_env .o_table_large_search .o_search_default input[type='text']");
 		OOGraphene.waitElement(searchFieldBy, browser).sendKeys(text);
 		
-		By searchButtonBy = By.cssSelector(".o_sel_author_env .o_table_large_search a.o_table_search_button");
+		By searchButtonBy = By.cssSelector(".o_sel_author_env .o_table_large_search .o_search_default a.o_search_button");
 		browser.findElement(searchButtonBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

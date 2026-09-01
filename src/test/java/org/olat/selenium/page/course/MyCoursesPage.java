@@ -95,10 +95,10 @@ public class MyCoursesPage {
 	}
 	
 	public MyCoursesPage extendedSearch(String title) {
-		By titleBy = By.cssSelector(".o_table_large_search input[type='text']");
+		By titleBy = By.cssSelector(".o_table_large_search .o_search_default .o_search_input_wrapper input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
-		By searchButton = By.cssSelector(".o_table_large_search a.o_table_search_button");
+		By searchButton = By.cssSelector(".o_table_large_search .o_search_default a.o_search_button");
 		browser.findElement(searchButton).click();
 		OOGraphene.waitBusy(browser);
 		return this;
