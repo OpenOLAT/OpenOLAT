@@ -106,7 +106,8 @@ public class CatalogSearchHeaderController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == searchEl && event instanceof SearchFormEvent) {
+		if (source == searchEl && event instanceof SearchFormEvent sfe
+				&& (!SearchFormEvent.RESET.equals(sfe.getCommand()) || !exploreLink.isVisible())) {
 			fireEvent(ureq, new CatalogSearchEvent(searchEl.getValue()));
 		} else if (source == exploreLink) {
 			fireEvent(ureq, new CatalogSearchEvent(null));

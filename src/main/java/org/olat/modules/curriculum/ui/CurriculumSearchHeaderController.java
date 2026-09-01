@@ -59,7 +59,8 @@ public class CurriculumSearchHeaderController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(searchEl == source && event instanceof SearchFormEvent) {
+		if(searchEl == source && event instanceof SearchFormEvent sfe
+				&& !SearchFormEvent.RESET.equals(sfe.getCommand())) {
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);

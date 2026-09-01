@@ -72,7 +72,8 @@ public class CoachMainSearchHeaderController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(searchEl == source && event instanceof SearchFormEvent) {
+		if(searchEl == source && event instanceof SearchFormEvent sfe
+				&& !SearchFormEvent.RESET.equals(sfe.getCommand())) {
 			fireEvent(ureq, new SearchEvent(SearchEvent.SEARCH, searchEl.getValue()));
 		} else if(searchUsersLink == source) {
 			fireEvent(ureq, new SearchEvent(SearchEvent.SEARCH_USERS));
