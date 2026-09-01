@@ -38,6 +38,7 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
@@ -69,12 +70,14 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -85,7 +88,10 @@ import org.olat.modules.lecture.model.Reference;
 import org.olat.modules.lecture.ui.AddRoomsRow.RoomAvailability;
 import org.olat.modules.lecture.ui.component.ReferenceRenderer;
 import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.manager.RoomBookingDAO;
+import org.olat.modules.roommanagement.model.RoomBookingRefImpl;
 import org.olat.modules.roommanagement.ui.RoomCalendarRenderer;
+import org.olat.modules.roommanagement.ui.RoomSchedulingBookingCalloutController;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomStatus;
@@ -114,6 +120,10 @@ public class AddRoomsController extends FormBasicController {
 	private AddRoomsDataModel tableModel;
 	private FullCalendarElement calendarEl;
 
+	private CloseableCalloutWindowController bookingCalloutWindowCtrl;
+	private RoomSchedulingBookingCalloutController bookingCalloutCtrl;
+	private final Map<Long, RoomBooking> calendarBookingsByKey = new HashMap<>();
+
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRelevant;
 	private FlexiFiltersTab tabAvailable;
@@ -135,6 +145,8 @@ public class AddRoomsController extends FormBasicController {
 	private CalendarModule calendarModule;
 	@Autowired
 	private ColorService colorService;
+	@Autowired
+	private RoomBookingDAO roomBookingDao;
 
 	public AddRoomsController(UserRequest ureq, WindowControl wControl,
 			Date startDate, Date endDate, List<Room> preSelectedRooms, LectureBlock lectureBlock, int participantCount) {
@@ -447,6 +459,7 @@ public class AddRoomsController extends FormBasicController {
 		List<AddRoomsRow> visibleRows = tableModel.getObjects();
 		if (visibleRows == null || visibleRows.isEmpty()) {
 			calendarEl.setCalendars(List.of());
+			calendarBookingsByKey.clear();
 			return;
 		}
 
@@ -460,6 +473,11 @@ public class AddRoomsController extends FormBasicController {
 		List<RoomBooking> relevant = allBookings.stream()
 				.filter(b -> b.getRoom() != null && visibleRoomKeys.contains(b.getRoom().getKey()))
 				.toList();
+
+		calendarBookingsByKey.clear();
+		for (RoomBooking booking : relevant) {
+			calendarBookingsByKey.put(booking.getKey(), booking);
+		}
 
 		Map<Long, AddRoomsRow> rowByRoomKey = visibleRows.stream()
 				.collect(Collectors.toMap(AddRoomsRow::getKey, r -> r));
@@ -511,7 +529,7 @@ public class AddRoomsController extends FormBasicController {
 		} else {
 			subject = "";
 		}
-		String eventId = CodeHelper.getGlobalForeverUniqueID();
+		String eventId = String.valueOf(booking.getKey());
 		var zStart = DateUtils.toZonedDateTime(booking.getStartDate(), calendarModule.getDefaultZoneId());
 		var zEnd = DateUtils.toZonedDateTime(booking.getEndDate(), calendarModule.getDefaultZoneId());
 		KalendarEvent event = new KalendarEvent(eventId, null, subject, zStart, zEnd);
@@ -536,8 +554,56 @@ public class AddRoomsController extends FormBasicController {
 					loadCalendar();
 				}
 			}
+		} else if (source == calendarEl) {
+			if (event instanceof CalendarGUISelectEvent selectEvent) {
+				doOpenBookingCallout(ureq, selectEvent);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == bookingCalloutWindowCtrl) {
+			cleanUpBookingCallout();
+		} else if (source == bookingCalloutCtrl
+				&& event instanceof RoomSchedulingBookingCalloutController.OpenInCoursePlannerEvent openEvent) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(
+					CommandFactory.createNewWindowRedirectTo(openEvent.getUrl()));
+			if (bookingCalloutWindowCtrl != null) {
+				bookingCalloutWindowCtrl.deactivate();
+			}
+			cleanUpBookingCallout();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void doOpenBookingCallout(UserRequest ureq, CalendarGUISelectEvent selectEvent) {
+		KalendarEvent kalendarEvent = selectEvent.getKalendarEvent();
+		if (kalendarEvent == null || !StringHelper.isLong(kalendarEvent.getID())) return;
+		RoomBooking booking = calendarBookingsByKey.get(Long.valueOf(kalendarEvent.getID()));
+		if (booking == null) return;
+		RoomBooking reloadedBooking = roomBookingDao.loadByKey(new RoomBookingRefImpl(booking.getKey()));
+		
+		cleanUpBookingCallout();
+		bookingCalloutCtrl = new RoomSchedulingBookingCalloutController(ureq, getWindowControl(), reloadedBooking);
+		listenTo(bookingCalloutCtrl);
+		// This controller is always opened nested inside at least one CloseableModalController (the room
+		// browser popup, itself typically opened from an event edit dialog). A plain callout shares the
+		// same modal-layer stack as those dialogs, so use the dedicated "top modal" stack (CalloutSettings
+		// topModal=true) reserved for content that must render above already-open modals.
+		CalloutSettings settings = new CalloutSettings(true, CalloutSettings.CalloutOrientation.bottom, false, null, true);
+		bookingCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				bookingCalloutCtrl.getInitialComponent(), selectEvent.getTargetDomId(), null, true, "", settings);
+		listenTo(bookingCalloutWindowCtrl);
+		bookingCalloutWindowCtrl.activate();
+	}
+
+	private void cleanUpBookingCallout() {
+		removeAsListenerAndDispose(bookingCalloutCtrl);
+		removeAsListenerAndDispose(bookingCalloutWindowCtrl);
+		bookingCalloutCtrl = null;
+		bookingCalloutWindowCtrl = null;
 	}
 
 	@Override
