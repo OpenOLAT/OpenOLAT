@@ -188,4 +188,35 @@ public class LTI13ContextDAOTest extends OlatTestCase {
 			.isNotNull()
 			.containsExactly(ltiContext);
 	}
+
+	/**
+	 * Regression test for OO-9717 ("Stale deployment after a switch between global and course-local
+	 * server"): LTI13ContextImpl.deployment was mapped with a JPA @JoinColumn(updatable=false), so
+	 * Hibernate silently dropped fk_deployment_id from every UPDATE - setDeployment(...) followed by
+	 * updateContext(...) had no effect at all.
+	 */
+	@Test
+	public void updateContextDeployment() {
+		String toolName = "LTI 1.3 context - 5";
+		String toolUrl = "https://www.openolat.com/tool";
+		String clientId = UUID.randomUUID().toString();
+		String initiateLoginUrl = "https://www.openolat.com/lti/api/login_init";
+		String redirectUrl = "https://www.openolat.com/lti/api/login";
+		LTI13Tool tool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, redirectUrl, LTI13ToolType.EXTERNAL);
+
+		LTI13ToolDeployment originalDeployment = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool);
+		LTI13Context context = lti13ContextDao.createContext(null, originalDeployment, null, "2836482", null);
+		dbInstance.commitAndCloseSession();
+
+		LTI13ToolDeployment otherDeployment = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, tool);
+		dbInstance.commitAndCloseSession();
+
+		context.setDeployment(otherDeployment);
+		lti13ContextDao.updateContext(context);
+		dbInstance.commitAndCloseSession();
+
+		LTI13Context reloadedContext = lti13ContextDao.loadContextByContextId(context.getContextId());
+		Assert.assertNotNull(reloadedContext);
+		Assert.assertEquals(otherDeployment, reloadedContext.getDeployment());
+	}
 }

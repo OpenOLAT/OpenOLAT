@@ -106,7 +106,7 @@ public class LTI13ContextImpl implements LTI13Context, Persistable {
     private boolean skipLaunchPage;
     
 	@ManyToOne(targetEntity=LTI13ToolDeploymentImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_deployment_id", nullable=false, insertable=true, updatable=false)
+	@JoinColumn(name="fk_deployment_id", nullable=false, insertable=true, updatable=true)
 	private LTI13ToolDeployment deployment;
    
 	@ManyToOne(targetEntity=RepositoryEntry.class, fetch=FetchType.LAZY, optional=true)
@@ -354,6 +354,7 @@ public class LTI13ContextImpl implements LTI13Context, Persistable {
 		return deployment;
 	}
 
+	@Override
 	public void setDeployment(LTI13ToolDeployment deployment) {
 		this.deployment = deployment;
 	}

@@ -281,9 +281,17 @@ public class MediaSiteRunController extends BasicController {
 		LTI13Context context = lti13Service.getContext(courseEntry, subIdent);
 		if (context == null) {
 			context = mediaSiteManager.createLti13Context(targetUrl, deployment, courseEntry, subIdent, this);
-		} else if (!targetUrl.equals(context.getTargetUrl())) {
-			context.setTargetUrl(targetUrl);
-			context = lti13Service.updateContext(context);
+		} else {
+			boolean targetUrlChanged = !targetUrl.equals(context.getTargetUrl());
+			boolean deploymentChanged = context.getDeployment() == null
+					|| !deployment.getKey().equals(context.getDeployment().getKey());
+			if (targetUrlChanged || deploymentChanged) {
+				context.setTargetUrl(targetUrl);
+				if (deploymentChanged) {
+					context.setDeployment(deployment);
+				}
+				context = lti13Service.updateContext(context);
+			}
 		}
 
 		Controller lti13Ctrl;
