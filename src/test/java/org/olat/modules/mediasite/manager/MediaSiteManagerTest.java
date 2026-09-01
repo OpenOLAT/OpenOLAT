@@ -23,11 +23,17 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
 import org.olat.course.nodes.MediaSiteCourseNode;
+import org.olat.ims.lti13.LTI13ContentItem;
+import org.olat.ims.lti13.LTI13ContentItemTypesEnum;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.LTI13ToolDeploymentType;
 import org.olat.ims.lti13.LTI13ToolType;
+import org.olat.ims.lti13.manager.LTI13ContentItemDAO;
+import org.olat.ims.lti13.manager.LTI13ContextDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
 import org.olat.modules.ModuleConfiguration;
@@ -47,11 +53,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MediaSiteManagerTest extends OlatTestCase {
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private MediaSiteManager mediaSiteManager;
 	@Autowired
 	private LTI13ToolDAO lti13ToolDao;
 	@Autowired
 	private LTI13ToolDeploymentDAO lti13ToolDeploymentDao;
+	@Autowired
+	private LTI13ContextDAO lti13ContextDao;
+	@Autowired
+	private LTI13ContentItemDAO lti13ContentItemDao;
 
 	private LTI13Tool createTool() {
 		String toolUrl = "https://mediasite.example.com/tool";
@@ -103,5 +115,34 @@ public class MediaSiteManagerTest extends OlatTestCase {
 		LTI13ToolDeployment resolved = mediaSiteManager.resolveCourseDeployment(config, tool);
 
 		Assert.assertNull(resolved);
+	}
+
+	/**
+	 * Regression test for OO-9717 review Finding 1: a LTI13ContentItem created via Deep Linking
+	 * (see MediaSiteConfigController.doApplySelectedContentItem()) holds non-nullable, non-cascading
+	 * foreign keys to its context/deployment/tool. deleteLti13MediaSiteConfiguration() must delete
+	 * such content items before deleting the context they reference, or the context deletion violates
+	 * those constraints - exactly the case when a course element is deleted after an author has used
+	 * Deep Linking to select its content at least once.
+	 */
+	@Test
+	public void deleteLti13MediaSiteConfiguration_withContentItem() {
+		LTI13Tool tool = createTool();
+		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.MULTIPLE_CONTEXTS, null, tool);
+		LTI13Context context = lti13ContextDao.createContext(null, deployment, null, "subIdent-" + UUID.randomUUID(), null);
+
+		LTI13ContentItem contentItem = lti13ContentItemDao.createItem(LTI13ContentItemTypesEnum.link, tool, deployment, context);
+		lti13ContentItemDao.persistItem(contentItem);
+		dbInstance.commitAndCloseSession();
+
+		mediaSiteManager.deleteLti13MediaSiteConfiguration(null, "subIdent", tool.getKey());
+		// Force the deletes to actually execute against the database now, rather than possibly
+		// masking an FK violation behind a batched/deferred flush.
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNull(lti13ContentItemDao.loadItemByKey(contentItem.getKey()));
+		Assert.assertNull(lti13ContextDao.loadContextByKey(context.getKey()));
+		Assert.assertNull(lti13ToolDeploymentDao.loadDeploymentByKey(deployment.getKey()));
+		Assert.assertNull(lti13ToolDao.loadToolByKey(tool.getKey()));
 	}
 }

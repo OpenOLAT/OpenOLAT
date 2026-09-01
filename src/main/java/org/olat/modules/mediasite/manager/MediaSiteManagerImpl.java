@@ -27,9 +27,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.MediaSiteCourseNode;
 import org.olat.course.nodes.mediasite.MediaSiteRunController;
 import org.olat.ims.lti13.LTI13Context;
+import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.ims.lti13.manager.LTI13ContentItemDAO;
 import org.olat.ims.lti13.manager.LTI13ContextDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
@@ -52,6 +54,9 @@ public class MediaSiteManagerImpl implements MediaSiteManager {
 	@Autowired
 	private LTI13ContextDAO lti13ContextDao;
 	
+	@Autowired
+	private LTI13ContentItemDAO lti13ContentItemDao;
+
 	@Autowired
 	private LTI13ToolDeploymentDAO lti13ToolDeploymentDao;
 	
@@ -163,6 +168,14 @@ public class MediaSiteManagerImpl implements MediaSiteManager {
 		LTI13ToolDeployment deployment = null;
 		for (LTI13Context context : contexts) {
 			deployment = context.getDeployment();
+			// Content items created via Deep Linking (see MediaSiteConfigController.doApplySelectedContentItem())
+			// hold non-nullable, non-cascading foreign keys to this context/deployment/tool - they must be
+			// deleted first, or deleting the context below violates those constraints. Mirrors the same
+			// order already used by LTI13ServiceImpl.deleteToolsDeploymentsAndContexts().
+			List<LTI13ContentItem> contentItems = lti13ContentItemDao.loadItemByContext(context);
+			for (LTI13ContentItem contentItem : contentItems) {
+				lti13ContentItemDao.deleteItem(contentItem);
+			}
 			lti13ContextDao.deleteContext(context);
 		}
 		if (deployment != null) {
