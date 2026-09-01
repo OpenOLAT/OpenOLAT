@@ -72,6 +72,7 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_USER_NAME_KEY			= "usernameKey";
 	
 	public static final String CONFIG_LTI13_TOOL_KEY		= "lti13ToolKey";
+	public static final String CONFIG_LTI13_DEPLOYMENT_KEY	= "lti13DeploymentKey";
 	public static final String CONFIG_LTI13_BASE_URL		= "lti13BaseUrl";
 	public static final String CONFIG_LTI13_ADMIN_URL		= "lti13AdminUrl";
 	

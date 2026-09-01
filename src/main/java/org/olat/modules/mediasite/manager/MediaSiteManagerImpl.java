@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.olat.core.util.StringHelper;
+import org.olat.course.nodes.MediaSiteCourseNode;
 import org.olat.course.nodes.mediasite.MediaSiteRunController;
 import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Service;
@@ -32,6 +33,7 @@ import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.manager.LTI13ContextDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.mediasite.MediaSiteManager;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -168,5 +170,19 @@ public class MediaSiteManagerImpl implements MediaSiteManager {
 		}
 
 		lti13ToolDao.deleteTool(tool);
+	}
+
+	@Override
+	public LTI13ToolDeployment resolveCourseDeployment(ModuleConfiguration config, LTI13Tool tool) {
+		String deploymentKeyStr = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_DEPLOYMENT_KEY);
+		if (StringHelper.isLong(deploymentKeyStr)) {
+			LTI13ToolDeployment deployment = lti13Service.getToolDeploymentByKey(Long.valueOf(deploymentKeyStr));
+			if (deployment != null) {
+				return deployment;
+			}
+		}
+		// Backward compatibility: courses configured before the deployment key was stored explicitly.
+		List<LTI13ToolDeployment> deployments = lti13Service.getToolDeploymentByTool(tool);
+		return deployments.isEmpty() ? null : deployments.get(0);
 	}
 }

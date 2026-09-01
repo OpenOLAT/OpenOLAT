@@ -21,7 +21,9 @@ package org.olat.modules.mediasite;
 
 import org.olat.course.nodes.mediasite.MediaSiteRunController;
 import org.olat.ims.lti13.LTI13Context;
+import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -55,4 +57,16 @@ public interface MediaSiteManager {
 									String subIdent, MediaSiteRunController mediaSiteRunController);
 
 	void deleteLti13MediaSiteConfiguration(RepositoryEntry entry, String ident, Long toolKey);
+
+	/**
+	 * Resolves the deployment of a course-local (private-login) MediaSite LTI 1.3 tool: the key
+	 * stored explicitly in the course node's module configuration (MediaSiteCourseNode.CONFIG_LTI13_DEPLOYMENT_KEY)
+	 * if present, otherwise falls back to the tool's only/first deployment for courses configured
+	 * before the key was stored explicitly. Never mutates the given configuration.
+	 *
+	 * @param config The course node's module configuration.
+	 * @param tool The course-local LTI 1.3 tool.
+	 * @return The deployment, or null if none can be found.
+	 */
+	LTI13ToolDeployment resolveCourseDeployment(ModuleConfiguration config, LTI13Tool tool);
 }
