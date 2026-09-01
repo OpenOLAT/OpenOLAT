@@ -7,8 +7,8 @@
 
 <h4 style="margin-bottom: 0.5rem;">$r.escapeHtml($referenceLabel)</h4>
 <div style="background: #f5f5f5; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.9em;">
-  <p><strong>Reference excerpt:</strong> $r.escapeHtml($referenceExcerpt)</p>
-  <p><strong>Model answer:</strong> $r.escapeHtml($modelAnswer)</p>
+  <p><strong>$r.translate("ai.feature.essay-grading.test.result.reference.label")</strong> $r.escapeHtml($referenceExcerpt)</p>
+  <p><strong>$r.translate("ai.feature.essay-grading.test.result.modelAnswer.label")</strong> $r.escapeHtml($modelAnswer)</p>
 </div>
 
 <div class="o_form">
@@ -20,12 +20,12 @@
   <hr/>
   <h3 style="margin-bottom: 0.5rem;">$r.translate("ai.feature.essay-grading.test.success.title")</h3>
 
-  <h4 style="margin-bottom: 0.25rem;">Content signals</h4>
+  <h4 style="margin-bottom: 0.25rem;">$r.translate("ai.feature.essay-grading.test.result.contentSignals.title")</h4>
   <table class="table table-condensed table-bordered" style="margin-bottom: 0.75rem;">
-    <tr><td style="width: 180px;"><strong>Key points hit</strong></td>
+    <tr><td style="width: 180px;"><strong>$r.translate("ai.feature.essay-grading.test.result.keyPointsHit.label")</strong></td>
       <td>
         #if($suggestionView.contentSignals.keyPointsHit.isEmpty())
-          <em>none</em>
+          <em>$r.translate("ai.feature.essay-grading.test.result.none")</em>
         #else
           <ul style="margin: 0;">
             #foreach($hit in $suggestionView.contentSignals.keyPointsHit)
@@ -34,10 +34,10 @@
           </ul>
         #end
       </td></tr>
-    <tr><td><strong>Key points missed</strong></td>
+    <tr><td><strong>$r.translate("ai.feature.essay-grading.test.result.keyPointsMissed.label")</strong></td>
       <td>
         #if($suggestionView.contentSignals.keyPointsMissed.isEmpty())
-          <em>none</em>
+          <em>$r.translate("ai.feature.essay-grading.test.result.none")</em>
         #else
           <ul style="margin: 0;">
             #foreach($miss in $suggestionView.contentSignals.keyPointsMissed)
@@ -46,20 +46,20 @@
           </ul>
         #end
       </td></tr>
-    <tr><td><strong>Coherence</strong></td>
-      <td>#if($suggestionView.contentSignals.coherenceNote == "")<em>none</em>#else$r.escapeHtml($suggestionView.contentSignals.coherenceNote)#end</td></tr>
-    <tr><td><strong>Argument</strong></td>
-      <td>#if($suggestionView.contentSignals.argumentNote == "")<em>none</em>#else$r.escapeHtml($suggestionView.contentSignals.argumentNote)#end</td></tr>
-    <tr><td><strong>Relevance</strong></td>
-      <td>#if($suggestionView.contentSignals.relevanceNote == "")<em>none</em>#else$r.escapeHtml($suggestionView.contentSignals.relevanceNote)#end</td></tr>
+    <tr><td><strong>$r.translate("ai.feature.essay-grading.test.result.coherence.label")</strong></td>
+      <td>#if($suggestionView.contentSignals.coherenceNote == "")<em>$r.translate("ai.feature.essay-grading.test.result.none")</em>#else$r.escapeHtml($suggestionView.contentSignals.coherenceNote)#end</td></tr>
+    <tr><td><strong>$r.translate("ai.feature.essay-grading.test.result.argument.label")</strong></td>
+      <td>#if($suggestionView.contentSignals.argumentNote == "")<em>$r.translate("ai.feature.essay-grading.test.result.none")</em>#else$r.escapeHtml($suggestionView.contentSignals.argumentNote)#end</td></tr>
+    <tr><td><strong>$r.translate("ai.feature.essay-grading.test.result.relevance.label")</strong></td>
+      <td>#if($suggestionView.contentSignals.relevanceNote == "")<em>$r.translate("ai.feature.essay-grading.test.result.none")</em>#else$r.escapeHtml($suggestionView.contentSignals.relevanceNote)#end</td></tr>
   </table>
 
-  <h4 style="margin-bottom: 0.25rem;">Language signals</h4>
+  <h4 style="margin-bottom: 0.25rem;">$r.translate("ai.feature.essay-grading.test.result.languageSignals.title")</h4>
   <table class="table table-condensed table-bordered" style="margin-bottom: 0.75rem;">
-    <tr><td style="width: 180px;"><strong>Grammar issues</strong></td>
+    <tr><td style="width: 180px;"><strong>$r.translate("ai.feature.essay-grading.test.result.grammarIssues.label")</strong></td>
       <td>
         #if($suggestionView.languageSignals.grammarIssues.isEmpty())
-          <em>none</em>
+          <em>$r.translate("ai.feature.essay-grading.test.result.none")</em>
         #else
           <ul style="margin: 0;">
             #foreach($g in $suggestionView.languageSignals.grammarIssues)
@@ -68,10 +68,10 @@
           </ul>
         #end
       </td></tr>
-    <tr><td><strong>Spelling issues</strong></td>
+    <tr><td><strong>$r.translate("ai.feature.essay-grading.test.result.spellingIssues.label")</strong></td>
       <td>
         #if($suggestionView.languageSignals.spellingIssues.isEmpty())
-          <em>none</em>
+          <em>$r.translate("ai.feature.essay-grading.test.result.none")</em>
         #else
           <ul style="margin: 0;">
             #foreach($s in $suggestionView.languageSignals.spellingIssues)
@@ -82,27 +82,27 @@
       </td></tr>
   </table>
 
-  <h4 style="margin-bottom: 0.25rem;">Feedback to student</h4>
+  <h4 style="margin-bottom: 0.25rem;">$r.translate("ai.feature.essay-grading.test.result.feedbackToStudent.title")</h4>
   <table class="table table-condensed table-bordered" style="margin-bottom: 0.75rem;">
-    <tr><td style="width: 180px;"><strong>What went well</strong></td>
-      <td>#if($suggestionView.feedbackToStudent.whatWentWell == "")<em>none</em>#else$r.escapeHtml($suggestionView.feedbackToStudent.whatWentWell)#end</td></tr>
-    <tr><td><strong>What is missing</strong></td>
-      <td>#if($suggestionView.feedbackToStudent.whatIsMissing == "")<em>none</em>#else$r.escapeHtml($suggestionView.feedbackToStudent.whatIsMissing)#end</td></tr>
-    <tr><td><strong>Next step</strong></td>
-      <td>#if($suggestionView.feedbackToStudent.nextStep == "")<em>none</em>#else$r.escapeHtml($suggestionView.feedbackToStudent.nextStep)#end</td></tr>
+    <tr><td style="width: 180px;"><strong>$r.translate("ai.feature.essay-grading.test.result.whatWentWell.label")</strong></td>
+      <td>#if($suggestionView.feedbackToStudent.whatWentWell == "")<em>$r.translate("ai.feature.essay-grading.test.result.none")</em>#else$r.escapeHtml($suggestionView.feedbackToStudent.whatWentWell)#end</td></tr>
+    <tr><td><strong>$r.translate("ai.feature.essay-grading.test.result.whatIsMissing.label")</strong></td>
+      <td>#if($suggestionView.feedbackToStudent.whatIsMissing == "")<em>$r.translate("ai.feature.essay-grading.test.result.none")</em>#else$r.escapeHtml($suggestionView.feedbackToStudent.whatIsMissing)#end</td></tr>
+    <tr><td><strong>$r.translate("ai.feature.essay-grading.test.result.nextStep.label")</strong></td>
+      <td>#if($suggestionView.feedbackToStudent.nextStep == "")<em>$r.translate("ai.feature.essay-grading.test.result.none")</em>#else$r.escapeHtml($suggestionView.feedbackToStudent.nextStep)#end</td></tr>
   </table>
 
-  <h4 style="margin-bottom: 0.25rem;">Overall</h4>
+  <h4 style="margin-bottom: 0.25rem;">$r.translate("ai.feature.essay-grading.test.result.overall.title")</h4>
   <table class="table table-condensed table-bordered" style="margin-bottom: 0.75rem;">
-    <tr><td style="width: 180px;"><strong>Overall assessment</strong></td>
-      <td>#if($suggestionView.overallAssessment == "")<em>none</em>#else$r.escapeHtml($suggestionView.overallAssessment)#end</td></tr>
-    <tr><td><strong>Estimated score</strong></td>
+    <tr><td style="width: 180px;"><strong>$r.translate("ai.feature.essay-grading.test.result.overallAssessment.label")</strong></td>
+      <td>#if($suggestionView.overallAssessment == "")<em>$r.translate("ai.feature.essay-grading.test.result.none")</em>#else$r.escapeHtml($suggestionView.overallAssessment)#end</td></tr>
+    <tr><td><strong>$r.translate("ai.feature.essay-grading.test.result.estimatedScore.label")</strong></td>
       <td>$r.escapeHtml($suggestionView.estimatedScorePercent) %</td></tr>
-    <tr><td><strong>Off-topic flag</strong></td>
+    <tr><td><strong>$r.translate("ai.feature.essay-grading.test.result.offTopicFlag.label")</strong></td>
       <td>$r.escapeHtml($suggestionView.offTopicFlag)</td></tr>
-    <tr><td><strong>Confidence</strong></td>
+    <tr><td><strong>$r.translate("ai.feature.essay-grading.test.result.confidence.label")</strong></td>
       <td>$r.escapeHtml($suggestionView.confidence)</td></tr>
-    <tr><td><strong>Feedback to coach</strong></td>
-      <td>#if($suggestionView.feedbackToCoach == "")<em>none</em>#else$r.escapeHtml($suggestionView.feedbackToCoach)#end</td></tr>
+    <tr><td><strong>$r.translate("ai.feature.essay-grading.test.result.feedbackToCoach.label")</strong></td>
+      <td>#if($suggestionView.feedbackToCoach == "")<em>$r.translate("ai.feature.essay-grading.test.result.none")</em>#else$r.escapeHtml($suggestionView.feedbackToCoach)#end</td></tr>
   </table>
 #end

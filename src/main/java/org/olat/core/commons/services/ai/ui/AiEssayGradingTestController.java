@@ -194,10 +194,10 @@ public class AiEssayGradingTestController extends FormBasicController {
 	 * Velocity #foreach, which has been observed to render raw previously.
 	 * Returns null if input is null so the template can branch cleanly.
 	 */
-	private static Map<String, Object> toSuggestionView(GradingSuggestion s) {
+	private Map<String, Object> toSuggestionView(GradingSuggestion s) {
 		if (s == null) return null;
 		Map<String, Object> v = new LinkedHashMap<>();
-		v.put("offTopicFlag", s.offTopicFlag() == null ? "" : s.offTopicFlag().name());
+		v.put("offTopicFlag", s.offTopicFlag() == null ? "" : translate("ai.feature.essay-grading.test.result.offtopic." + s.offTopicFlag().name()));
 		v.put("confidence", s.confidence() == null ? "" : s.confidence().name());
 		v.put("overallAssessment", nullToEmpty(s.overallAssessment()));
 		v.put("estimatedScorePercent", Integer.toString(s.estimatedScorePercent()));
