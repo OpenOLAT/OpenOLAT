@@ -27,8 +27,8 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSe
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
-import org.olat.core.commons.services.pdf.PdfOutputOptions.MediaType;
 import org.olat.core.commons.services.pdf.PdfOutputOptions.Margin;
+import org.olat.core.commons.services.pdf.PdfOutputOptions.MediaType;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -93,7 +93,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private final RepositoryEntry entry;
 	private final DetailsHeaderConfig config;
-	private final String shareUrl;
 	private final boolean isResourceInfoView;
 	private final boolean guestOnly;
 
@@ -115,7 +114,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.config = config;
-		this.shareUrl = shareUrl;
 		this.isResourceInfoView = isResourceInfoView;
 		UserSession usess = ureq.getUserSession();
 		guestOnly = usess.getRoles() == null || usess.getRoles().isGuestOnly();

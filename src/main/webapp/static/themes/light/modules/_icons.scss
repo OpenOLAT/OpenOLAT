@@ -1163,6 +1163,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_filetype_dwb { @include o-add-icon('file', false);}
 
 /* social share icons */
+.o_icon_share_social { @include o-add-icon('share-square');}
 .o_icon_apple { @include o-add-brand-icon('apple');}
 .o_icon_facebook { @include o-add-brand-icon('facebook-square');}
 .o_icon_twitter { @include o-add-brand-icon('square-x-twitter');}

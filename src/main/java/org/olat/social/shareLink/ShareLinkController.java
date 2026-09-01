@@ -100,7 +100,7 @@ public class ShareLinkController extends BasicController {
 		int presentation = iconOnly ? Link.LINK : Link.BUTTON;
 
 		shareLink = LinkFactory.createCustomLink("share", "share", "share.social", presentation, mainVC, this);
-		shareLink.setIconLeftCSS("o_icon o_icon_share o_icon-lg");
+		shareLink.setIconLeftCSS("o_icon o_icon_share_social o_icon-lg");
 		if (iconOnly) {
 			shareLink.setCustomDisplayText("");
 		} else {

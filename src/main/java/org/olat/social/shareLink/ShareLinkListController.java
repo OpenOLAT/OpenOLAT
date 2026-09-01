@@ -39,8 +39,8 @@ import org.olat.core.util.StringHelper;
 /**
  * <h3>Description:</h3>
  * <p>
- * Content of the Share callout: one horizontal row of icon-only links, left
- * to right: copy link, show QR code and the configured social networks.
+ * Content of the Share callout: one horizontal row of icon-only links, in
+ * the order configured for the share link buttons.
  * <p>
  * <h3>Events thrown by this controller:</h3>
  * <p>
@@ -54,7 +54,7 @@ public class ShareLinkListController extends BasicController {
 
 	public static final Event QR_EVENT = new Event("qr");
 
-	private final Link qrLink;
+	private Link qrLink;
 
 	public ShareLinkListController(UserRequest ureq, WindowControl wControl, List<String> enabledLinks, String url, String title) {
 		super(ureq, wControl);
@@ -63,28 +63,26 @@ public class ShareLinkListController extends BasicController {
 		List<String> linkNames = new ArrayList<>();
 		mainVC.contextPut("links", linkNames);
 
-		boolean showCopyAndQr = enabledLinks.contains("link");
-		if (showCopyAndQr) {
-			ExternalLink copyLink = LinkFactory.createExternalLink("copyLink", "copyLink", StringHelper.escapeForHtmlAttribute(url));
-			copyLink.setTarget(null);
-			copyLink.setIconLeftCSS("o_icon o_icon_copy o_icon-lg");
-			copyLink.setTooltip(translate("share.link"));
-			mainVC.put(copyLink.getComponentName(), copyLink);
-			linkNames.add(copyLink.getComponentName());
-			mainVC.contextPut("copyUrl", url);
-			mainVC.contextPut("copyInfoTitle", translate("info.header"));
-			mainVC.contextPut("copyLinkCopiedMessage", translate("share.link.copied"));
+		for (String name : enabledLinks) {
+			if ("link".equals(name)) {
+				ExternalLink copyLink = LinkFactory.createExternalLink("copyLink", "copyLink", StringHelper.escapeForHtmlAttribute(url));
+				copyLink.setTarget(null);
+				copyLink.setIconLeftCSS("o_icon o_icon_copy o_icon-lg");
+				copyLink.setTooltip(translate("share.link"));
+				mainVC.put(copyLink.getComponentName(), copyLink);
+				linkNames.add(copyLink.getComponentName());
+				mainVC.contextPut("copyUrl", url);
+				mainVC.contextPut("copyInfoTitle", translate("info.header"));
+				mainVC.contextPut("copyLinkCopiedMessage", translate("share.link.copied"));
 
-			qrLink = LinkFactory.createCustomLink("qr.link", "qr", "", Link.LINK + Link.NONTRANSLATED, mainVC, this);
-			qrLink.setIconLeftCSS("o_icon o_icon_qrcode o_icon-lg");
-			qrLink.setTitle(translate("share.qrcode"));
-			linkNames.add(qrLink.getComponentName());
-		} else {
-			qrLink = null;
-		}
+				qrLink = LinkFactory.createCustomLink("qr.link", "qr", "", Link.LINK + Link.NONTRANSLATED, mainVC, this);
+				qrLink.setIconLeftCSS("o_icon o_icon_qrcode o_icon-lg");
+				qrLink.setTitle(translate("share.qrcode"));
+				linkNames.add(qrLink.getComponentName());
+				continue;
+			}
 
-		for (String network : enabledLinks) {
-			ExternalLink networkLink = switch (network) {
+			ExternalLink networkLink = switch (name) {
 				case "linkedin" -> createNetworkLink("linkedin", "o_icon_linkedin", "share.linkedin",
 						"https://www.linkedin.com/feed/?shareActive&text=" + encode(title) + "%0A" + encode(url));
 				case "facebook" -> createNetworkLink("facebook", "o_icon_facebook", "share.facebook",
