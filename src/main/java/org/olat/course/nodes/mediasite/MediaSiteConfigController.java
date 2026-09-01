@@ -305,27 +305,25 @@ public class MediaSiteConfigController extends FormBasicController {
 	 *         (e.g. LTI 1.1, or a local LTI 1.3 setup that has not been saved once).
 	 */
 	private LTI13ToolDeployment getEffectiveLti13Deployment() {
-		LTI13Tool tool;
 		if (serverSelection.getSelectedKey().equals(globalConfig)) {
-			if (mediaSiteModule.getLtiVersion() != LtiVersion.lti_1_3 || mediaSiteModule.getLti13ToolKey() == null) {
+			if (mediaSiteModule.getLtiVersion() != LtiVersion.lti_1_3) {
 				return null;
 			}
-			tool = lti13Service.getToolByKey(mediaSiteModule.getLti13ToolKey());
-		} else {
-			if (localConfigurationCtrl == null || localConfigurationCtrl.getSelectedLtiVersion() != LtiVersion.lti_1_3) {
-				return null;
-			}
-			String courseToolKeyStr = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_TOOL_KEY);
-			if (!StringHelper.containsNonWhitespace(courseToolKeyStr)) {
-				return null;
-			}
-			tool = lti13Service.getToolByKey(Long.valueOf(courseToolKeyStr));
+			Long deploymentKey = mediaSiteModule.getLti13DeploymentKey();
+			return deploymentKey == null ? null : lti13Service.getToolDeploymentByKey(deploymentKey);
 		}
-		if (tool == null) {
+
+		if (localConfigurationCtrl == null || localConfigurationCtrl.getSelectedLtiVersion() != LtiVersion.lti_1_3) {
 			return null;
 		}
-		List<LTI13ToolDeployment> deployments = lti13Service.getToolDeploymentByTool(tool);
-		return deployments.isEmpty() ? null : deployments.get(0);
+
+		String courseToolKeyStr = config.getStringValue(MediaSiteCourseNode.CONFIG_LTI13_TOOL_KEY);
+		if (!StringHelper.containsNonWhitespace(courseToolKeyStr)) {
+			return null;
+		}
+
+		LTI13Tool tool = lti13Service.getToolByKey(Long.valueOf(courseToolKeyStr));
+		return tool == null ? null : mediaSiteManager.resolveCourseDeployment(config, tool);
 	}
 
 	private void doChooseContent(UserRequest ureq) {
