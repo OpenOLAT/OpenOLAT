@@ -23,6 +23,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -79,10 +81,10 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
@@ -127,6 +129,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private RoomListDataModel dataModel;
 	private FullCalendarElement calendarEl;
 	private RoomRow expandedRow;
+
+	private CloseableCalloutWindowController bookingCalloutWindowCtrl;
+	private RoomSchedulingBookingCalloutController bookingCalloutCtrl;
+	private final Map<Long, RoomBooking> calendarBookingsByKey = new HashMap<>();
 
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabRelevant;
@@ -520,6 +526,16 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			}
 		} else if (source == toolsCalloutWindowCtrl) {
 			cleanUpToolsCallout();
+		} else if (source == bookingCalloutWindowCtrl) {
+			cleanUpBookingCallout();
+		} else if (source == bookingCalloutCtrl
+				&& event instanceof RoomSchedulingBookingCalloutController.OpenInCoursePlannerEvent openEvent) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(
+					CommandFactory.createNewWindowRedirectTo(openEvent.getUrl()));
+			if (bookingCalloutWindowCtrl != null) {
+				bookingCalloutWindowCtrl.deactivate();
+			}
+			cleanUpBookingCallout();
 		} else if (source == confirmDeactivateDialog) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				RoomRow row = (RoomRow) confirmDeactivateDialog.getUserObject();
@@ -584,6 +600,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 				} else {
 					loadCalendar();
 				}
+			}
+		} else if (source == calendarEl) {
+			if (event instanceof CalendarGUISelectEvent selectEvent) {
+				doOpenBookingCallout(ureq, selectEvent);
 			}
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
@@ -708,6 +728,10 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		List<RoomBooking> visibleBookings = allBookings.stream()
 				.filter(b -> b.getRoom() != null && roomByKey.containsKey(b.getRoom().getKey()))
 				.toList();
+		calendarBookingsByKey.clear();
+		for (RoomBooking booking : visibleBookings) {
+			calendarBookingsByKey.put(booking.getKey(), booking);
+		}
 		Set<Long> bookingKeysWithWarnings = RoomUIHelper.computeBookingKeysWithWarnings(visibleBookings, lectureService);
 
 		// Group bookings by building key
@@ -770,7 +794,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		if (booking.getStartDate() == null || booking.getEndDate() == null) return;
 		Room room = roomByKey.get(booking.getRoom().getKey());
 		String subject = resolveCalendarSubject(booking, room);
-		String eventId = CodeHelper.getGlobalForeverUniqueID();
+		String eventId = String.valueOf(booking.getKey());
 		ZonedDateTime zStart = DateUtils.toZonedDateTime(booking.getStartDate(), calendarModule.getDefaultZoneId());
 		ZonedDateTime zEnd = DateUtils.toZonedDateTime(booking.getEndDate(), calendarModule.getDefaultZoneId());
 		KalendarEvent event = new KalendarEvent(eventId, null, subject, zStart, zEnd);
@@ -875,6 +899,28 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(toolsCalloutWindowCtrl);
 		toolsCalloutWindowCtrl.activate();
+	}
+
+	private void doOpenBookingCallout(UserRequest ureq, CalendarGUISelectEvent selectEvent) {
+		KalendarEvent kalendarEvent = selectEvent.getKalendarEvent();
+		if (kalendarEvent == null || !StringHelper.isLong(kalendarEvent.getID())) return;
+		RoomBooking booking = calendarBookingsByKey.get(Long.valueOf(kalendarEvent.getID()));
+		if (booking == null) return;
+
+		cleanUpBookingCallout();
+		bookingCalloutCtrl = new RoomSchedulingBookingCalloutController(ureq, getWindowControl(), booking);
+		listenTo(bookingCalloutCtrl);
+		bookingCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				bookingCalloutCtrl.getInitialComponent(), selectEvent.getTargetDomId(), null, true, "");
+		listenTo(bookingCalloutWindowCtrl);
+		bookingCalloutWindowCtrl.activate();
+	}
+
+	private void cleanUpBookingCallout() {
+		removeAsListenerAndDispose(bookingCalloutCtrl);
+		removeAsListenerAndDispose(bookingCalloutWindowCtrl);
+		bookingCalloutCtrl = null;
+		bookingCalloutWindowCtrl = null;
 	}
 
 	private void doConfirmDeactivate(UserRequest ureq, RoomRow row) {
