@@ -612,8 +612,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		commentCtrl = new OrderCommentController(ureq, getWindowControl(), member.getComment());
 		listenTo(commentCtrl);
 
+		String title = translate("order.user.comment");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				commentCtrl.getInitialComponent(), id, "", true, "");
+				commentCtrl.getInitialComponent(), id, title, true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
