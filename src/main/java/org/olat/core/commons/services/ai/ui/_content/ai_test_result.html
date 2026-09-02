@@ -18,7 +18,7 @@
     </div>
     #if($mcData.topic)
     <div style="background: #f8f8f8; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 0.75rem;">
-      <strong>$r.translate("ai.test.topic") Topic:</strong> $r.escapeHtml($mcData.topic)
+      <strong>$r.translate("ai.test.topic"):</strong> $r.escapeHtml($mcData.topic)
     </div>
     #end
     #if($mcData.keywords)
@@ -62,12 +62,12 @@
   #if($imgData)
     <h3 style="margin-bottom: 0.5rem;">$r.translate("ai.test.generated.description")</h3>
     <table class="table table-condensed table-bordered" style="margin-bottom: 0.75rem;">
-      <tr><td style="width: 130px;"><strong>Title</strong></td><td>$r.escapeHtml($imgData.title)</td></tr>
-      <tr><td><strong>Description</strong></td><td>$r.escapeHtml($imgData.description)</td></tr>
-      <tr><td><strong>Alt text</strong></td><td>$r.escapeHtml($imgData.altText)</td></tr>
-      <tr><td><strong>Subject</strong></td><td>#if($imgData.subject)<span class="o_tag o_taxonomy" style="margin: 0 2px;">$r.escapeHtml($imgData.subject)</span>#end</td></tr>
-      <tr><td><strong>Orientation</strong></td><td>#if($imgData.orientation)<span class="o_tag" style="margin: 0 2px;">$r.escapeHtml($imgData.orientation)</span>#end</td></tr>
-      <tr><td><strong>Color tags</strong></td><td>
+      <tr><td style="width: 130px;"><strong>$r.translate("ai.test.title")</strong></td><td>$r.escapeHtml($imgData.title)</td></tr>
+      <tr><td><strong>$r.translate("ai.test.description")</strong></td><td>$r.escapeHtml($imgData.description)</td></tr>
+      <tr><td><strong>$r.translate("ai.test.alttext")</strong></td><td>$r.escapeHtml($imgData.altText)</td></tr>
+      <tr><td><strong>$r.translate("ai.test.subject")</strong></td><td>#if($imgData.subject)<span class="o_tag o_taxonomy" style="margin: 0 2px;">$r.escapeHtml($imgData.subject)</span>#end</td></tr>
+      <tr><td><strong>$r.translate("ai.test.orientation")</strong></td><td>#if($imgData.orientation)<span class="o_tag" style="margin: 0 2px;">$r.escapeHtml($imgData.orientation)</span>#end</td></tr>
+      <tr><td><strong>$r.translate("ai.test.colortags")</strong></td><td>
         #foreach($tag in $imgData.colorTags)<span class="o_tag" style="margin: 0 2px;">$r.escapeHtml($tag)</span>#end
       </td></tr>
       <tr><td><strong>$r.translate("ai.test.tags")</strong></td><td>
