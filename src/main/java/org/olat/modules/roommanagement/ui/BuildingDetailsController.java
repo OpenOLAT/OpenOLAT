@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.RoomManagementService;
@@ -120,7 +121,7 @@ public class BuildingDetailsController extends FormBasicController {
 		formLayout.contextPut("inactiveRoomCount", String.valueOf(inactiveCount));
 
 		if (StringHelper.containsNonWhitespace(building.getInfo())) {
-			formLayout.contextPut("additionalInfo", StringHelper.xssScan(building.getInfo()));
+			formLayout.contextPut("additionalInfo", Formatter.escWithBR(StringHelper.xssScan(building.getInfo())));
 		}
 
 		FormLayoutContainer mapCont = FormLayoutContainer.createCustomFormLayout(
