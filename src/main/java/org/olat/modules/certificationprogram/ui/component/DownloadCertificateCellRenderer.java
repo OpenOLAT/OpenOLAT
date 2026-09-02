@@ -69,22 +69,37 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 	
 	private void render(StringOutput sb, Certificate certificate, Identity identity) {
 		String name = getName(certificate, identity, false);
-		sb.append("<a href='").append(getUrl(certificate, identity))
-		  .append("' rel='noopener noreferrer' target='_blank'>");
-		if(CertificateStatus.pending.equals(certificate.getStatus()) || CertificateStatus.rendering.equals(certificate.getStatus())) {
-			renderIcons( sb, "o_icon_certificate_status_pending", "certificate.status.pending");
-		} else if(CertificateStatus.error.equals(certificate.getStatus())) {
-			renderIcons( sb, "o_icon_certificate_status_error", "certificate.status.error");
-		} else if(CertificateStatus.failed.equals(certificate.getStatus())) {
-			renderIcons( sb, "o_icon_certificate_status_failed", "certificate.status.failed");
+		CertificateStatus status = certificate.getStatus();
+		if(CertificateStatus.pending.equals(status) || CertificateStatus.rendering.equals(status)) {
+			renderIcons( sb, name, status, "o_icon_certificate_status_pending", "certificate.status.pending", null);
+		} else if(CertificateStatus.error.equals(status)) {
+			renderIcons( sb, name, status, "o_icon_certificate_status_error", "certificate.status.error", "certificate.status.error.long");
+		} else if(CertificateStatus.failed.equals(status)) {
+			renderIcons( sb, name, status, "o_icon_certificate_status_failed", "certificate.status.failed", null);
 		} else {
-			sb.append("<i class='o_icon o_filetype_pdf'> </i> ");
+			sb.append("<a href='").append(getUrl(certificate, identity))
+			  .append("' rel='noopener noreferrer' target='_blank'>")
+			  .append("<i class='o_icon o_filetype_pdf'> </i> ")
+			  .append(name).append("</a>");
 		}
-		sb.append(name).append("</a>");
 	}
 	
-	private void renderIcons(StringOutput sb, String iconCssClass, String i18nKey) {
-		sb.append("<i class=\"o_icon ").append(iconCssClass).append("\" title=\"").append(translator.translate(i18nKey)).append("\"> </i> ");
+	private void renderIcons(StringOutput sb, String name, CertificateStatus status, String iconCssClass, String i18nKey, String tooltipI18nKey) {
+		sb.append("<span");
+		if(tooltipI18nKey != null) {
+			sb.append(" title=\"").append(translator.translate(tooltipI18nKey)).append("\"");
+		}
+		sb.append("><i class='o_icon o_filetype_pdf'> </i> ")
+		  .append(name);
+		
+		String statusStr = status.name().toLowerCase();
+		sb.append(" <span class=\"").append("o_labeled_light").append(" o_certification_status_")
+		      .append(statusStr).append("\">")
+		      .append("<i class=\"o_icon o_icon-fw ").append(iconCssClass).append("\"> </i> ")
+		      .append(translator.translate(i18nKey))
+		      .append("</span>");
+		
+		sb.append("</span>");
 	}
 	
 	private String getUrl(Certificate certificate, Identity identity) {

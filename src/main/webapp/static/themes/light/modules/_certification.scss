@@ -113,6 +113,24 @@
 		row-gap: 15px;
 	}
 	
+	.o_visual_not_available {
+		height: 172px;
+		width: 172px;
+		background-image:url('#{$o-images-path}no_preview.png');
+		background-color: $o-card-bg-color;
+		background-repeat:no-repeat;
+		background-position:50% 50%;	
+		background-size: contain;
+		border: $o-card-border;
+		border-radius: $o-card-border-radius;
+	}
+	
+	.o_certificate_details_label {
+		position: absolute;
+		margin-top: 7px;
+		margin-left: 10px;
+	}
+	
 	.o_recertification_infos {
 		display: flex;
 		flex-direction: row;
@@ -221,7 +239,9 @@
 		@extend %o_labeled_light_green;
 	}
 	
-	&.o_certification_status_recertifying {
+	&.o_certification_status_recertifying,
+	&.o_certification_status_pending,
+	&.o_certification_status_rendering {
 		font-weight: normal;
 		@extend %o_labeled_light_blue;
 	}
@@ -240,7 +260,8 @@
 		@extend %o_labeled_light_grey;
 	}
 	
-	&.o_certification_status_revoked {
+	&.o_certification_status_revoked,
+	&.o_certification_status_error {
 		font-weight: normal;
 		@extend %o_labeled_light_red;
 	}

@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.assessment.ui.tool.IdentityCertificatesController;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgram;
@@ -80,6 +81,7 @@ public class CertificateDetailsController extends BasicController {
 	private Link startRecertificationButton;
 	private final VelocityContainer mainVC;
 
+	private VFSLeaf thumbnail;
 	private final Certificate certificate;
 	private final RepositoryEntry course;
 	private final Identity assessedIdentity;
@@ -102,11 +104,25 @@ public class CertificateDetailsController extends BasicController {
 		this.assessedIdentity = assessedIdentity;
 		
 		mainVC = createVelocityContainer("certificate_details");
-		String mapperThumbnailUrl = registerCacheableMapper(ureq, CertificatesListOverviewController.THUMBNAIL_MAPPER_ID,
-				new ThumbnailMapper(certificate, certificatesManager, vfsRepositoryService));
-		mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
+		
 		mainVC.contextPut("certificateKey", certificate.getKey());
 		mainVC.contextPut("filename", DownloadCertificateCellRenderer.getName(certificate));
+		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
+		if(certificateLeaf != null) {
+			thumbnail = vfsRepositoryService.getThumbnail(certificateLeaf,
+					CertificatesListOverviewController.THUMBNAIL_SIZE.getWidth(), CertificatesListOverviewController.THUMBNAIL_SIZE.getHeight(), true);
+			if(thumbnail != null) {
+				String mapperThumbnailUrl = registerCacheableMapper(ureq, CertificatesListOverviewController.THUMBNAIL_MAPPER_ID,
+						new ThumbnailMapper(thumbnail));
+				mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
+			}
+		}
+		mainVC.contextPut("thumbnailAvailable", Boolean.valueOf(thumbnail != null));
+		
+		CertificateStatus status = certificate.getStatus();
+		if(status == CertificateStatus.rendering || status == CertificateStatus.pending) {
+			mainVC.contextPut("pending", Boolean.TRUE);
+		}
 		mainVC.contextPut("awardedBy", StringHelper.containsNonWhitespace(certificateRow.getAwardedBy()));
 		mainVC.contextPut("awardedByName", certificateRow.getAwardedBy());
 		mainVC.contextPut("awardedByIconCss", certificateRow.getAwardedByIconCSS());
@@ -120,6 +136,7 @@ public class CertificateDetailsController extends BasicController {
 		downloadButton = LinkFactory.createButton("download.button", mainVC, this);
 		downloadButton.setIconLeftCSS("o_icon o_icon_download");
 		downloadButton.setTarget("_blank");
+		downloadButton.setEnabled(certificateLeaf != null && certificateLeaf.getSize() > 0l);
 		
 		dropdown = new Dropdown("actions", null, false, getTranslator());
 		dropdown.setButton(true);
@@ -376,39 +393,17 @@ public class CertificateDetailsController extends BasicController {
 	
 	private static class ThumbnailMapper implements Mapper {
 		
-		private final Certificate certificate;
-		private final CertificatesManager certificatesManager;
-		private final VFSRepositoryService vfsRepositoryService;
+		private final VFSLeaf thumbnail;
 		
-		public ThumbnailMapper(Certificate certificate, CertificatesManager certificatesManager, VFSRepositoryService vfsRepositoryService) {
-			this.certificate = certificate;
-			this.certificatesManager = certificatesManager;
-			this.vfsRepositoryService = vfsRepositoryService;
+		public ThumbnailMapper(VFSLeaf thumbnail) {
+			this.thumbnail = thumbnail;
 		}
 
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
-			MediaResource mr = null;
-			
-			String row = relPath;
-			if(row.startsWith("/")) {
-				row = row.substring(1, row.length());
-			}
-			int index = row.indexOf("/");
-			if(index > 0) {
-				row = row.substring(0, index);
-				VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
-				if(certificateLeaf != null) {
-					VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(certificateLeaf,
-							CertificatesListOverviewController.THUMBNAIL_SIZE.getWidth(), CertificatesListOverviewController.THUMBNAIL_SIZE.getHeight(),
-							true);
-					if(thumbnail != null) {
-						mr = new VFSMediaResource(thumbnail, ServletUtil.CACHE_ONE_MONTH);
-					}
-				}
-			}
-			
-			return mr == null ? new NotFoundMediaResource() : mr;
+			return thumbnail == null
+					? new NotFoundMediaResource()
+					: new VFSMediaResource(thumbnail, ServletUtil.CACHE_ONE_MONTH);
 		}
 	}
 }

@@ -215,6 +215,7 @@ public class CertificatesDAO {
 				left join fetch certificateentryconfig as certificateConfig on (certificateConfig.entry.key=course.key)
 				left join fetch cer.uploadedBy as uploadedByIdent
 				left join fetch uploadedByIdent.user as uploadedByUser
+				left join fetch cer.metadata as metadata
 				where cer.identity.key=:identityKey and (cer.last=true or cer.statusString=:revokedStatus)
 				order by cer.key desc""";
 		return dbInstance.getCurrentEntityManager()

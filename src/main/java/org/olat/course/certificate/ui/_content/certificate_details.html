@@ -1,7 +1,14 @@
 <div class="o_certificate_details o_lightbox_modal_form">
 	<div class="o_certificate_details_wrapper">
 		<div class="o_certificate_thumbnail">
+			#if($r.isTrue($pending))
+			<div class="o_certificate_details_label o_labeled_light o_certification_status_pending"><i class="o_icon o_icon-fw o_icon_certificate_status_pending"> </i> $r.translate("certificate.status.pending")</div>
+			#end
+			#if($r.isTrue($thumbnailAvailable))
 			<img src="${mapperThumbnailUrl}/${certificateKey}/${filename}.png" alt=""/>
+			#else
+			<div class="o_visual_not_available"></div>
+			#end
 		</div>
 		<div>
 			<div class="o_certificate_infos">
