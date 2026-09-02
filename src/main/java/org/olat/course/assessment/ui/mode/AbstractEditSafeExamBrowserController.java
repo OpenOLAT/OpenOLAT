@@ -426,6 +426,10 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		return configSourceEl.isOneSelected() && configSourceEl.isKeySelected(TEMPLATE_KEY);
 	}
 	
+	private boolean isUseCustom() {
+		return configSourceEl.isOneSelected() && configSourceEl.isKeySelected(CUSTOM_KEY);
+	}
+	
 	private boolean isSEBFileConfig() {
 		boolean inConfig = isInConfig();
 		boolean enabled = safeExamBrowserEl.isOn();
@@ -470,6 +474,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		boolean enabled = safeExamBrowserEl.isOn();
 		boolean inConfig = isInConfig();
 		boolean useTemplate = isUseTemplate();
+		boolean useCustom = isUseCustom();
 		boolean sebFileConfig = false;
 
 		typeOfUseEl.setVisible(enabled);
@@ -484,6 +489,12 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 			} else {
 				removeInformationsForAuthorsEl();
 			}
+		} else if(enabled && inConfig && useCustom) {
+			SafeExamBrowserConfiguration sebConfig = configuration.getSafeExamBrowserConfiguration();
+			if(sebConfig != null) {
+				updateConfigurationValues(sebConfig);
+			}
+			removeInformationsForAuthorsEl();
 		} else {
 			removeInformationsForAuthorsEl();
 		}
