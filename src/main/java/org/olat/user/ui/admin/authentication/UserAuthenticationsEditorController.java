@@ -296,7 +296,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		securityManager.deleteAuthentication(auth);
 		getWindowControl().setInfo(getTranslator().translate("authedit.delete.success", 
 				auth.getProvider(), changeableIdentity.getName()));
-		loadModel();
+		reloadModel();
 	}
 
 	public enum AuthenticationCols implements FlexiSortableColumnDef {
