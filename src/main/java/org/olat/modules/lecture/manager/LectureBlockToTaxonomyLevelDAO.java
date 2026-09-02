@@ -74,16 +74,24 @@ public class LectureBlockToTaxonomyLevelDAO {
 				.getResultList();
 	}
 	
-	public void deleteRelation(LectureBlockRef lectureBlock, TaxonomyLevelRef taxonomyLevel) {
+	public int deleteRelation(LectureBlockRef lectureBlock, TaxonomyLevelRef taxonomyLevel) {
 		String sb = """
 				delete from lectureblocktotaxonomylevel rel
 				where rel.lectureBlock.key=:blockKey and rel.taxonomyLevel.key=:levelKey""";
-		dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("blockKey", lectureBlock.getKey())
 				.setParameter("levelKey", taxonomyLevel.getKey())
 				.executeUpdate();
-
 	}
-
+	
+	public int deleteRelations(LectureBlockRef lectureBlock) {
+		String sb = """
+				delete from lectureblocktotaxonomylevel rel
+				where rel.lectureBlock.key=:blockKey""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("blockKey", lectureBlock.getKey())
+				.executeUpdate();
+	}
 }

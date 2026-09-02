@@ -1101,6 +1101,27 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertNull(deletedBlock);
 	}
 	
+	@Test
+	public void deleteNoticeByLectureBlockWithTaxonomyLevel() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-120", "Leveled taxonomy", null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-10", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-11", random(), "My second taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		dbInstance.commit();
+
+		LectureBlock block = createMinimalLectureBlock(entry);
+		lectureService.updateTaxonomyLevels(block, Set.of(level1.getKey(), level2.getKey()));
+		dbInstance.commitAndCloseSession();
+
+		LectureBlock realodBlock = lectureService.getLectureBlock(block);
+		lectureService.deleteLectureBlock(realodBlock, doer);
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlock deletedBlock = lectureService.getLectureBlock(block);
+		Assert.assertNull(deletedBlock);
+	}
+	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
 		lectureBlock.setStartDate(DateUtils.truncateMilliSeconds(new Date()));
