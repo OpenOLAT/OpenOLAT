@@ -794,11 +794,11 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(templateEl == source || safeExamBrowserEl == source) {
+		if(templateEl == source || safeExamBrowserEl == source || configSourceEl == source) {
 			updateUI(true);
 		} else if(allowToExitEl == source || showAudioOptionsEl == source || showSebTaskListEl == source) {
 			updateUIOptions();
-		} else if(typeOfUseEl == source || configSourceEl == source || templateEl == source) {
+		} else if(typeOfUseEl == source || templateEl == source) {
 			updateUI(false);
 		}
 		super.formInnerEvent(ureq, source, event);
