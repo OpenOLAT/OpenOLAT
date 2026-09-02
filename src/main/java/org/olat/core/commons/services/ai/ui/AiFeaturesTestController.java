@@ -19,8 +19,6 @@
  */
 package org.olat.core.commons.services.ai.ui;
 
-import java.util.Locale;
-
 import org.olat.core.commons.services.ai.AiEssayGenerationService;
 import org.olat.core.commons.services.ai.AiEssayGradingService;
 import org.olat.core.commons.services.ai.AiImageDescriptionService;
@@ -319,7 +317,7 @@ public class AiFeaturesTestController extends BasicController {
 		vc.contextPut("inputImageBase64", IMG_TEST_BASE64);
 
 		AiImageDescriptionResponse response = imageDescriptionService.generateImageDescription(
-				null, IMG_TEST_BASE64, IMG_TEST_MIME_TYPE, Locale.ENGLISH, spiId, modelName);
+				null, IMG_TEST_BASE64, IMG_TEST_MIME_TYPE, getLocale(), spiId, modelName);
 		if (response.isSuccess() && response.getDescription() != null) {
 			ImageDescriptionData data = response.getDescription();
 			vc.contextPut("imgData", data);
