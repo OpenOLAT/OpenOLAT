@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
@@ -158,12 +159,12 @@ public class RoomDetailsController extends FormBasicController {
 
 		// Additional info (room info)
 		if (StringHelper.containsNonWhitespace(room.getRoomInfo())) {
-			formLayout.contextPut("additionalInfo", StringHelper.xssScan(room.getRoomInfo()));
+			formLayout.contextPut("additionalInfo", Formatter.escWithBR(StringHelper.xssScan(room.getRoomInfo())));
 		}
 
 		// Administrative info
 		if (StringHelper.containsNonWhitespace(room.getAdminInfo())) {
-			formLayout.contextPut("adminInfo", StringHelper.xssScan(room.getAdminInfo()));
+			formLayout.contextPut("adminInfo", Formatter.escWithBR(StringHelper.xssScan(room.getAdminInfo())));
 		}
 
 		// Card

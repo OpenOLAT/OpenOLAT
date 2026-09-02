@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
@@ -85,10 +86,10 @@ public class RoomDetailViewController extends FormBasicController {
 		formLayout.contextPut("roomSeats", room.getSeats());
 		
 		if (StringHelper.containsNonWhitespace(room.getRoomInfo())) {
-			formLayout.contextPut("roomInfo", StringHelper.xssScan(room.getRoomInfo()));
+			formLayout.contextPut("roomInfo", Formatter.escWithBR(StringHelper.xssScan(room.getRoomInfo())));
 		}
 		if (building != null && StringHelper.containsNonWhitespace(building.getInfo())) {
-			formLayout.contextPut("buildingInfo", StringHelper.xssScan(building.getInfo()));
+			formLayout.contextPut("buildingInfo", Formatter.escWithBR(StringHelper.xssScan(building.getInfo())));
 		}
 
 		if (building != null && building.getGeoLatitude() != null && building.getGeoLongitude() != null) {
