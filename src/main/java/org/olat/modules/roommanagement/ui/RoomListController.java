@@ -96,6 +96,8 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomRef;
 import org.olat.modules.roommanagement.RoomStatus;
+import org.olat.modules.roommanagement.manager.RoomBookingDAO;
+import org.olat.modules.roommanagement.model.RoomBookingRefImpl;
 import org.olat.modules.roommanagement.model.RoomRefImpl;
 import org.olat.modules.roommanagement.model.SearchBuildingParameters;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
@@ -150,6 +152,8 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 	private RoomManagementService roomManagementService;
 	@Autowired
 	private ColorService colorService;
+	@Autowired
+	private RoomBookingDAO roomBookingDao;
 
 	public RoomListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel) {
 		this(ureq, wControl, stackPanel, false);
@@ -907,8 +911,11 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 		RoomBooking booking = calendarBookingsByKey.get(Long.valueOf(kalendarEvent.getID()));
 		if (booking == null) return;
 
+		RoomBooking reloadedBooking = roomBookingDao.loadByKey(new RoomBookingRefImpl(booking.getKey()));
+		if (reloadedBooking == null) return;
+
 		cleanUpBookingCallout();
-		bookingCalloutCtrl = new RoomSchedulingBookingCalloutController(ureq, getWindowControl(), booking);
+		bookingCalloutCtrl = new RoomSchedulingBookingCalloutController(ureq, getWindowControl(), reloadedBooking);
 		listenTo(bookingCalloutCtrl);
 		bookingCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				bookingCalloutCtrl.getInitialComponent(), selectEvent.getTargetDomId(), null, true, "");

@@ -20,7 +20,9 @@
 package org.olat.modules.roommanagement.ui;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.commons.calendar.CalendarManager;
@@ -30,13 +32,18 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
 import org.olat.commons.calendar.ui.components.FullCalendarViews;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.CodeHelper;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -45,6 +52,8 @@ import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.manager.RoomBookingDAO;
+import org.olat.modules.roommanagement.model.RoomBookingRefImpl;
 import org.olat.modules.roommanagement.model.RoomRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,6 +65,11 @@ public class RoomCalendarController extends FormBasicController {
 
 	private final Room room;
 
+	private FullCalendarElement calendarEl;
+	private CloseableCalloutWindowController bookingCalloutWindowCtrl;
+	private RoomSchedulingBookingCalloutController bookingCalloutCtrl;
+	private final Map<Long, RoomBooking> calendarBookingsByKey = new HashMap<>();
+
 	@Autowired
 	private RoomManagementService roomManagementService;
 	@Autowired
@@ -64,6 +78,8 @@ public class RoomCalendarController extends FormBasicController {
 	private CalendarModule calendarModule;
 	@Autowired
 	private ColorService colorService;
+	@Autowired
+	private RoomBookingDAO roomBookingDao;
 
 	public RoomCalendarController(UserRequest ureq, WindowControl wControl, Room room) {
 		super(ureq, wControl, "room_calendar");
@@ -79,10 +95,12 @@ public class RoomCalendarController extends FormBasicController {
 
 		List<RoomBooking> bookings = roomManagementService.getBookingsForRoom(new RoomRefImpl(room.getKey()), null, null);
 		Set<Long> bookingKeysWithWarnings = RoomUIHelper.computeBookingKeysWithWarnings(bookings, lectureService);
+		calendarBookingsByKey.clear();
 		for (RoomBooking booking : bookings) {
 			if (booking.getStartDate() == null || booking.getEndDate() == null) continue;
+			calendarBookingsByKey.put(booking.getKey(), booking);
 			String subject = resolveSubject(booking);
-			String eventId = CodeHelper.getGlobalForeverUniqueID();
+			String eventId = String.valueOf(booking.getKey());
 			ZonedDateTime zStart = DateUtils.toZonedDateTime(booking.getStartDate(), calendarModule.getDefaultZoneId());
 			ZonedDateTime zEnd = DateUtils.toZonedDateTime(booking.getEndDate(), calendarModule.getDefaultZoneId());
 			KalendarEvent event = new KalendarEvent(eventId, null, subject, zStart, zEnd);
@@ -102,7 +120,7 @@ public class RoomCalendarController extends FormBasicController {
 				? building.getColorCss() : colorService.getDefaultColor();
 		wrapper.setCssClass("o_rm_cal_pastel o_color_border " + colorCss);
 
-		FullCalendarElement calendarEl = new FullCalendarElement(ureq, "roomCalendar", List.of(wrapper), getTranslator());
+		calendarEl = new FullCalendarElement(ureq, "roomCalendar", List.of(wrapper), getTranslator());
 		calendarEl.setView(FullCalendarViews.timeGridWeek);
 		calendarEl.setShowEventDuration(true);
 		formLayout.add(calendarEl);
@@ -120,5 +138,55 @@ public class RoomCalendarController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// read-only calendar
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == calendarEl) {
+			if (event instanceof CalendarGUISelectEvent selectEvent) {
+				doOpenBookingCallout(ureq, selectEvent);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == bookingCalloutWindowCtrl) {
+			cleanUpBookingCallout();
+		} else if (source == bookingCalloutCtrl
+				&& event instanceof RoomSchedulingBookingCalloutController.OpenInCoursePlannerEvent openEvent) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(
+					CommandFactory.createNewWindowRedirectTo(openEvent.getUrl()));
+			if (bookingCalloutWindowCtrl != null) {
+				bookingCalloutWindowCtrl.deactivate();
+			}
+			cleanUpBookingCallout();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void doOpenBookingCallout(UserRequest ureq, CalendarGUISelectEvent selectEvent) {
+		KalendarEvent kalendarEvent = selectEvent.getKalendarEvent();
+		if (kalendarEvent == null || !StringHelper.isLong(kalendarEvent.getID())) return;
+		RoomBooking booking = calendarBookingsByKey.get(Long.valueOf(kalendarEvent.getID()));
+		if (booking == null) return;
+		RoomBooking reloadedBooking = roomBookingDao.loadByKey(new RoomBookingRefImpl(booking.getKey()));
+		if (reloadedBooking == null) return;
+
+		cleanUpBookingCallout();
+		bookingCalloutCtrl = new RoomSchedulingBookingCalloutController(ureq, getWindowControl(), reloadedBooking);
+		listenTo(bookingCalloutCtrl);
+		bookingCalloutWindowCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				bookingCalloutCtrl.getInitialComponent(), selectEvent.getTargetDomId(), null, true, "");
+		listenTo(bookingCalloutWindowCtrl);
+		bookingCalloutWindowCtrl.activate();
+	}
+
+	private void cleanUpBookingCallout() {
+		removeAsListenerAndDispose(bookingCalloutCtrl);
+		removeAsListenerAndDispose(bookingCalloutWindowCtrl);
+		bookingCalloutCtrl = null;
+		bookingCalloutWindowCtrl = null;
 	}
 }
