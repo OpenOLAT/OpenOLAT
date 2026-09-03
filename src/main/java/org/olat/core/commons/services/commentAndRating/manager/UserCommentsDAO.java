@@ -57,6 +57,15 @@ import org.springframework.stereotype.Service;
 @Service("userCommentsDAO")
 public class UserCommentsDAO {
 
+	/**
+	 * Resource names of comments that survive the deletion of their author (OO-9632):
+	 * ePortfolio page comments, current version ("Page") and version 1 ("EPDefaultMap").
+	 * These comments are assessment and feedback, not a side remark, and stay readable
+	 * with an anonymised author. They are only removed when their page, section, binder
+	 * or course is deleted (see {@link #deleteAllComments(OLATResourceable, String)}).
+	 */
+	private static final Set<String> PRESERVED_RES_NAMES = Set.of("Page", "EPDefaultMap");
+
 	@Autowired
 	private DB dbInstance;
 	
@@ -256,19 +265,30 @@ public class UserCommentsDAO {
 	public int deleteAllComments(IdentityRef identity) {
 		Set<Long> commentWithReplyKeys = getCommentKeysWithReply(identity);
 		
-		String query = "select comment.key from usercomment comment where comment.creator.key=:creatorKey";
+		String query = """
+				select comment.key from usercomment comment
+				where comment.creator.key=:creatorKey and comment.resName not in (:preservedResNames)""";
 		List<Long> commentKeys = dbInstance.getCurrentEntityManager()
 				.createQuery(query, Long.class)
 				.setParameter("creatorKey", identity.getKey())
+				.setParameter("preservedResNames", PRESERVED_RES_NAMES)
 				.getResultList();
 
 		int count = 0;
 		for(Long commentKey:commentKeys) {
 			UserComment comment = dbInstance.getCurrentEntityManager()
 					.getReference(UserCommentImpl.class, commentKey);
+			// Read the resource reference before the row is possibly removed and before the
+			// commit below may close the session, otherwise a comment kept for its replies
+			// (which no longer touches the entity, see below) is only a not-yet-initialized
+			// proxy and throws a LazyInitializationException once the session is closed.
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(comment.getResName(), comment.getResId());
+			String resSubPath = comment.getResSubPath();
+
 			if(commentWithReplyKeys.contains(commentKey)) {
-				comment.setComment("User has been deleted");
-				dbInstance.getCurrentEntityManager().merge(comment);
+				// Keep the row and its text (OO-9632, D1/D2): deleting it would orphan its
+				// replies. The identity itself is renamed and emptied elsewhere in the user
+				// deletion process, which already anonymises the creator reference.
 			} else {
 				getCommentContainer(comment).deleteSilently();
 				dbInstance.getCurrentEntityManager().remove(comment);
@@ -280,12 +300,27 @@ public class UserCommentsDAO {
 				dbInstance.commit();
 			}
 
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(comment.getResName(), comment.getResId());
-			updateDelegateRatings(ores, comment.getResSubPath(), false);
+			updateDelegateRatings(ores, resSubPath, false);
 		}
 		return commentKeys.size();
 	}
 	
+	/**
+	 * Number of comments of this identity that {@link #deleteAllComments(IdentityRef)}
+	 * preserves (OO-9632), for the audit log of the caller.
+	 */
+	public int countPreservedComments(IdentityRef identity) {
+		String query = """
+				select count(comment.key) from usercomment comment
+				where comment.creator.key=:creatorKey and comment.resName in (:preservedResNames)""";
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Number.class)
+				.setParameter("creatorKey", identity.getKey())
+				.setParameter("preservedResNames", PRESERVED_RES_NAMES)
+				.getSingleResult();
+		return count == null ? 0 : count.intValue();
+	}
+
 	private Set<Long> getCommentKeysWithReply(IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select comment.key from usercomment as comment")
