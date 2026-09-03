@@ -19,7 +19,6 @@
  */
 package org.olat.repository.ui.author;
 
-import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
@@ -60,6 +59,7 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -156,7 +156,6 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementWithParents;
 import org.olat.modules.lecture.LectureModule;
-import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.quality.QualityDataCollectionLight;
@@ -265,7 +264,6 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FormLink selectButton;
 	private FormLink settingsButton;
 	private FormLink courseArchiveButton;
-	private FormLink indexMetadataButton;
 	private FormLink deleteButton;
 	private FormLink restoreButton;
 	private FormLink sendMailButton;
@@ -319,8 +317,6 @@ public class AuthorListController extends FormBasicController implements Activat
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private NodeAccessService nodeAccessService;
-	@Autowired
-	private OAIPmhModule oaiPmhModule;
 	@Autowired
 	private CourseNodeService courseNodeService;
 	@Autowired
@@ -1325,15 +1321,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
 				doChangeSettings(ureq, rows);
-			} else {
-				showWarning("bulk.update.nothing.selected");
-			}
-		} else if (indexMetadataButton == source) {
-			List<AuthoringEntryRow> rows = getMultiSelectedRows();
-			if (!rows.isEmpty()) {
-				for (AuthoringEntryRow row : rows) {
-					doIndexMetadata(row);
-				}
 			} else {
 				showWarning("bulk.update.nothing.selected");
 			}
@@ -2555,11 +2542,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				if(canClose || !deleteManaged) {
 					addSeparator(links);
 				}
-
-				if (oaiPmhModule.isEnabled()) {
-					addLink("details.index.metadata", "indexMetadata", "o_icon o_icon-fw o_icon_share", null, links);
-					addSeparator(links);
-				}
 				
 				boolean closed = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed;
 				if(closed && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
@@ -2620,8 +2602,6 @@ public class AuthorListController extends FormBasicController implements Activat
 					doMigrationSelection(ureq, row);
 				} else if("download".equals(cmd)) {
 					doDownload(ureq, row);
-				} else if ("indexMetadata".equals(cmd)) {
-					doIndexMetadata(row);
 				} else if("close".equals(cmd)) {
 					doCloseResource(ureq, row);
 				} else if("override-close".equals(cmd)) {
