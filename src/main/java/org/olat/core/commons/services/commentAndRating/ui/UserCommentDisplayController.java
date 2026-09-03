@@ -48,6 +48,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -58,7 +59,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.PortraitSize;
 import org.olat.user.UserInfoMainController;
-import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -104,7 +105,7 @@ public class UserCommentDisplayController extends BasicController {
 	private final PublishingInformations publishingInformations;
 
 	@Autowired
-	private UserManager userManager;
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private FolderModule folderModule;
 	@Autowired
@@ -241,8 +242,21 @@ public class UserCommentDisplayController extends BasicController {
 
 	private void initCreatorInformation() {
 		TextComponent creator = TextFactory.createTextComponentFromI18nKey("creator", null, null, null, true, userCommentDisplayVC);
-		String name = StringHelper.escapeHtml(userManager.getUserDisplayName(userComment.getCreator()));
+		String name = StringHelper.escapeHtml(getCreatorDisplayName(userComment.getCreator()));
 		creator.setText(name);
+	}
+
+	/**
+	 * Display name of a comment's author, anonymised (OO-9632) once the identity
+	 * has been deleted - same representation the rest of OpenOlat uses for a
+	 * deleted user (icon, grey initials, the "unknown user" label).
+	 */
+	private String getCreatorDisplayName(Identity creator) {
+		return userPortraitService.createPortraitUser(getLocale(), creator).getDisplayName();
+	}
+
+	private boolean isDeleted(Identity identity) {
+		return identity != null && identity.getStatus() != null && identity.getStatus() >= Identity.STATUS_DELETED;
 	}
 
 	private void initPortraits(UserRequest ureq) {
@@ -324,14 +338,17 @@ public class UserCommentDisplayController extends BasicController {
 
 	private void createReplyParentLink(UserComment reply) {
 		if (reply.getParent() != null) {
-			String name = StringHelper.escapeHtml(userManager.getUserDisplayName(reply.getParent().getCreator()));
+			Identity parentCreator = reply.getParent().getCreator();
+			String name = StringHelper.escapeHtml(getCreatorDisplayName(parentCreator));
 			Link replyParentUserLink = LinkFactory.createLink("replyTo_" + reply.getParent().getKey(), "replyTo_" + reply.getParent().getKey(),
 					"replyParentUserLink", "@" + name, getTranslator(), userCommentDisplayVC, this, Link.LINK + Link.NONTRANSLATED);
-			replyParentUserLink.setUserObject(reply.getParent().getCreator());
+			replyParentUserLink.setUserObject(parentCreator);
 			replyParentUserLink.setAjaxEnabled(false);
 
 			userCommentDisplayVC.contextPut("parentUserName_" + reply.getParent().getKey(), "@" + name);
-			userCommentDisplayVC.contextPut("parentUserIdentity_" + reply.getParent().getKey(), reply.getParent().getCreator());
+			userCommentDisplayVC.contextPut("parentUserIdentity_" + reply.getParent().getKey(), parentCreator);
+			// The visiting card of a deleted author has no content (OO-9632): don't link to it.
+			userCommentDisplayVC.contextPut("parentUserDeleted_" + reply.getParent().getKey(), Boolean.valueOf(isDeleted(parentCreator)));
 		}
 	}
 
