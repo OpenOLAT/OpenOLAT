@@ -57,6 +57,8 @@ import org.springframework.stereotype.Service;
 @Service("userCommentsDAO")
 public class UserCommentsDAO {
 
+	private static final Set<String> PRESERVED_RES_NAMES = Set.of("Page", "EPDefaultMap");
+
 	@Autowired
 	private DB dbInstance;
 	
@@ -256,10 +258,13 @@ public class UserCommentsDAO {
 	public int deleteAllComments(IdentityRef identity) {
 		Set<Long> commentWithReplyKeys = getCommentKeysWithReply(identity);
 		
-		String query = "select comment.key from usercomment comment where comment.creator.key=:creatorKey";
+		String query = """
+				select comment.key from usercomment comment
+				where comment.creator.key=:creatorKey and comment.resName not in (:preservedResNames)""";
 		List<Long> commentKeys = dbInstance.getCurrentEntityManager()
 				.createQuery(query, Long.class)
 				.setParameter("creatorKey", identity.getKey())
+				.setParameter("preservedResNames", PRESERVED_RES_NAMES)
 				.getResultList();
 
 		int count = 0;
