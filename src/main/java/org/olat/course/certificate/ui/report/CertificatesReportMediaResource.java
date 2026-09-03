@@ -154,7 +154,9 @@ public class CertificatesReportMediaResource extends OpenXMLWorkbookResource {
 		OLATResource resource = entry.getOlatResource();
 		List<CertificateLight> certificates = certificatesManager.getLastCertificates(resource);
 		Map<Long, CertificateLight> certificateMap = certificates.stream()
-				.collect(Collectors.toMap(CertificateLight::getIdentityKey, Function.identity()));
+				.collect(Collectors.toMap(CertificateLight::getIdentityKey, Function.identity(), (u, v) -> {
+					return (u.getCreationDate().after(v.getCreationDate())) ? u : v;
+				}));
 		
 		Map<Long, Date> initialLaunchDates = userInfosMgr
 				.getInitialLaunchDates(resource);
