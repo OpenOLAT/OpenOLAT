@@ -1515,7 +1515,7 @@ I18nManager.getInstance().getLocalizedString(bundleName, key, args, locale, true
 
 ### Glossary
 
-The end-user glossary of product-specific terms lives in the docs repo at `OpenOLAT-docs/sites/manual_user/docs/general/glossary.md` (EN) and `glossary.de.md` (DE). Canonical i18n term mappings across languages live in `doc/i18n-translation-reference.md`.
+The end-user glossary of product-specific terms lives in the docs repo at `OpenOLAT-docs/sites/reference_glossary/docs/glossary.md` (EN) and `glossary.de.md` (DE). Canonical i18n term mappings across languages live in `doc/i18n-translation-reference.yaml`; `doc/i18n-translation-reference.md` is its readable view. Both are generated from the OpenOlat concept map (`fxIntelligence/knowledge/openolat/concept-map/`) and are not edited by hand.
 
 ---
 

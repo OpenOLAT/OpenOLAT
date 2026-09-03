@@ -2215,6 +2215,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		Locale locale = i18nModule.defaultLocale();
 		
 		List<NumberingCurriculumElement> elements = curriculumElementDao.getDescendants(rootElement).stream()
+				.filter(el -> el.getElementStatus() != CurriculumElementStatus.deleted)
 				.map(NumberingCurriculumElement::new)
 				.collect(Collectors.toList());
 		// Build parent line
@@ -2226,9 +2227,15 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			}
 		}
 	
-		// Sort the tree
-		Collections.sort(elements, new CurriculumElementTreeRowComparator(locale));
-		boolean changed = number(null, List.of(), 0, elements);
+		// Sort the tree, if sort fails, don't update numbers
+		boolean changed;
+		try {
+			Collections.sort(elements, new CurriculumElementTreeRowComparator(locale));
+			changed = number(null, List.of(), 0, elements);
+		} catch (Exception e) {
+			log.error("", e);
+			changed = false;
+		}
 		dbInstance.commit();
 		return changed;
 	}

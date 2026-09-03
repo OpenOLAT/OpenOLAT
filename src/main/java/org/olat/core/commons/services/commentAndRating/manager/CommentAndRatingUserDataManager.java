@@ -79,9 +79,10 @@ public class CommentAndRatingUserDataManager implements UserDataDeletable, UserD
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		int rows = userRatingsDao.deleteRatings(identity);
-		log.info(Tracing.M_AUDIT, rows + " rating deleted");
+		log.info(Tracing.M_AUDIT, rows + " rating(s) deleted");
+		int preservedComments = userCommentsDao.countPreservedComments(identity);
 		int comments = userCommentsDao.deleteAllComments(identity);
-		log.info(Tracing.M_AUDIT, comments + " rating erased");
+		log.info(Tracing.M_AUDIT, comments + " comment(s) deleted, " + preservedComments + " comment(s) preserved (ePortfolio)");
 	}
 
 	@Override
