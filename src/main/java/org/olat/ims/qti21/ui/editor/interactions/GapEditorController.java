@@ -61,6 +61,7 @@ import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.Global
 import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.InlineChoiceInteractionEntry;
 import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.NumericalEntry;
 import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.GapAssessmentItemBuilder.TextEntryAlternative;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -312,10 +313,11 @@ public class GapEditorController extends FormBasicController {
 				doGapEntry(ureq, responseIdentifier, selectedText, emptySolution, type, "true".equals(newEntry));
 			} else if("copy-gapentry".equals(cmd)) {
 				String responseIdentifier = ureq.getParameter("responseIdentifier");
+				String sourceResponseIdentifier = ureq.getParameter("sourceResponseIdentifier");
 				String selectedText = ureq.getParameter("selectedText");
 				String type = ureq.getParameter("gapType");
 				doCommitGlobalChoices();
-				doCopyGapEntry(responseIdentifier, selectedText, type);
+				doCopyGapEntry(responseIdentifier, sourceResponseIdentifier, selectedText, type);
 			} else if("inlinechoiceinteraction".equals(qcmd)) {
 				String responseIdentifier = ureq.getParameter("responseIdentifier");
 				String selectedText = ureq.getParameter("selectedText");
@@ -485,10 +487,41 @@ public class GapEditorController extends FormBasicController {
 				itemBuilder.getAssessmentItem(), QTI21QuestionType.gapmixed));
 	}
 	
-	private void doCopyGapEntry(String responseIdentifier, String selectedText, String type) {
+	private void doCopyGapEntry(String responseIdentifier, String sourceResponseIdentifier, String selectedText, String type) {
 		AbstractEntry interaction = itemBuilder.getEntry(responseIdentifier);
 		if(interaction == null) {
-			createEntry(responseIdentifier, selectedText, type, true);
+			AbstractEntry entry = createEntry(responseIdentifier, selectedText, type, true);
+			AbstractEntry sourceInteraction = itemBuilder.getEntry(sourceResponseIdentifier);
+			if(sourceInteraction != null) {
+				entry.setPlaceholder(sourceInteraction.getPlaceholder());
+				entry.setExpectedLength(sourceInteraction.getExpectedLength());
+				entry.setScore(sourceInteraction.getScore());
+				
+				if(sourceInteraction instanceof NumericalEntry sourceEntry) {
+					copy((NumericalEntry)entry, sourceEntry);
+				} else if(sourceInteraction instanceof TextEntry sourceEntry) {
+					copy((TextEntry)entry, sourceEntry);
+				}
+			}
+		}
+	}
+	
+	private void copy(NumericalEntry newEntry, NumericalEntry sourceEntry) {
+		newEntry.setLowerTolerance(sourceEntry.getLowerTolerance());
+		newEntry.setUpperTolerance(sourceEntry.getUpperTolerance());
+		newEntry.setToleranceMode(sourceEntry.getToleranceMode());
+	}
+	
+	private void copy(TextEntry newEntry, TextEntry sourceEntry) {
+		newEntry.setCaseSensitive(sourceEntry.isCaseSensitive());
+		newEntry.setIgnoreSpaces(sourceEntry.isIgnoreSpaces());
+		newEntry.setWildcard(sourceEntry.isWildcard());
+		
+		List<TextEntryAlternative> sourceAlternatives = sourceEntry.getAlternatives();
+		if(sourceAlternatives != null && !sourceAlternatives.isEmpty()) {
+			for(TextEntryAlternative sourceAlternative:sourceAlternatives) {
+				newEntry.addAlternative(sourceAlternative.getAlternative(), sourceAlternative.getScore());
+			}
 		}
 	}
 
