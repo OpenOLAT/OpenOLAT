@@ -717,9 +717,14 @@ public class PageDAOTest extends OlatTestCase {
 		UserComment reply = userCommentsDao.replyTo(comment, replier, "Reply");
 		dbInstance.commitAndCloseSession();
 
-		// force the exact tie a coarser DATETIME column would produce
+		// force the exact tie a coarser DATETIME column would produce. The subquery is wrapped in
+		// an extra derived table ("as parent_row") because MySQL refuses to update a table while
+		// selecting from that same table in a subquery - Postgres has no such restriction, but the
+		// derived-table form is valid on both.
 		dbInstance.getCurrentEntityManager()
-				.createNativeQuery("update o_usercomment set creationdate = (select creationdate from o_usercomment where comment_id = :parentKey) where comment_id = :replyKey")
+				.createNativeQuery("update o_usercomment set creationdate = ("
+						+ "select creationdate from (select creationdate from o_usercomment where comment_id = :parentKey) as parent_row"
+						+ ") where comment_id = :replyKey")
 				.setParameter("parentKey", comment.getKey())
 				.setParameter("replyKey", reply.getKey())
 				.executeUpdate();
