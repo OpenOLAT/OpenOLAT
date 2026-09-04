@@ -67,6 +67,8 @@ public class UserPortraitRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append("<div class=\"o_user_portrait_initials o_user_initials ");
 			sb.append(portraitUser.getInitialsCss());
+			sb.append("\" role=\"img\" aria-label=\"");
+			sb.append(StringHelper.escapeHtml(portraitUser.getDisplayName()));
 			sb.append("\">");
 			sb.append(portraitUser.getInitials());
 			sb.append("</div>");
