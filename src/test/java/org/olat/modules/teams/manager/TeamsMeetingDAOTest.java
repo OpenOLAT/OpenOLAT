@@ -24,11 +24,14 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsRecordingsPublishedRoles;
+import org.olat.modules.teams.model.TeamsMeetingImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -49,6 +52,8 @@ public class TeamsMeetingDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private TeamsMeetingDAO teamsMeetingDao;
+	@Autowired
+	private TeamsCryptoHelper teamsCryptoHelper;
 	
 	@Test
 	public void createMeeting() {
@@ -216,5 +221,102 @@ public class TeamsMeetingDAOTest extends OlatTestCase {
 		Assert.assertTrue(meetings.contains(upcomingMeeting));
 		Assert.assertFalse(meetings.contains(pastMeeting));
 	}
+	
+	@Test
+	public void updateMeetings() {
+		Identity organizer = JunitTestHelper.createAndPersistIdentityAsRndUser("organizer-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String name = "Online-Meeting - 10";
+		String subIdent = UUID.randomUUID().toString();
+		Date start = DateUtils.addDays(new Date(), 2);
+		Date end = DateUtils.addHours(start, 2);
+		TeamsMeeting meeting = teamsMeetingDao.createMeeting(name, start, end,
+				entry, subIdent, null, organizer);
+		dbInstance.commit();
+		
+		TeamsMeetingImpl impl = (TeamsMeetingImpl)meeting;
+		final String token = "real-token";
+		final String organizerId = "teal-id";
+		impl.setOrganizerAzureId(organizerId);
+		String encryptedToken = teamsCryptoHelper.encryptToken(token, impl.getOrganizerAzureId());
+		impl.setOrganizerTokenEncrypted(encryptedToken);
+		impl.setOrganizer(organizer);
+		impl.setRecord(true);
+		impl.setRecordAutoStart(true);
+		impl.setRecordingsPublishingEnum(new TeamsRecordingsPublishedRoles[] { TeamsRecordingsPublishedRoles.coach, TeamsRecordingsPublishedRoles.participant });
+		
+		TeamsMeeting mergedMeeting = teamsMeetingDao.updateMeeting(impl);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mergedMeeting);
+		
+		TeamsMeetingImpl organizedMeeting = (TeamsMeetingImpl)teamsMeetingDao.loadByKey(mergedMeeting.getKey());
+		Assert.assertNotNull(organizedMeeting);
+		Assert.assertEquals(organizer, organizedMeeting.getOrganizer());
+		Assert.assertEquals(organizerId, organizedMeeting.getOrganizerAzureId());
 
+		String decryptedToken = teamsCryptoHelper.decryptToken(organizedMeeting.getOrganizerTokenEncrypted(), organizedMeeting.getOrganizerAzureId());
+		Assert.assertEquals(token, decryptedToken);
+		Assert.assertTrue(organizedMeeting.isRecord());
+		Assert.assertTrue(organizedMeeting.isRecordAutoStart());
+		Assertions.assertThat(organizedMeeting.getRecordingsPublishingEnum())
+			.hasSize(2)
+			.containsExactlyInAnyOrder(TeamsRecordingsPublishedRoles.coach, TeamsRecordingsPublishedRoles.participant);
+	}
+	
+	@Test
+	public void getMeetingsToDownloadRecordings() {
+		Identity organizer = JunitTestHelper.createAndPersistIdentityAsRndUser("organizer-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String name = "Online-Meeting - 11";
+		String subIdent = UUID.randomUUID().toString();
+		Date start = DateUtils.addDays(new Date(), -4);
+		Date end = DateUtils.addHours(start, 2);
+		TeamsMeeting meeting = teamsMeetingDao.createMeeting(name, start, end,
+				entry, subIdent, null, organizer);
+		meeting.setRecord(true);
+		((TeamsMeetingImpl)meeting).setOrganizerAzureId("azure-id");
+		String encryptedToken = teamsCryptoHelper.encryptToken("azure-token", ((TeamsMeetingImpl)meeting).getOrganizerAzureId());
+		((TeamsMeetingImpl)meeting).setOrganizerTokenEncrypted(encryptedToken);
+		meeting = teamsMeetingDao.updateMeeting(meeting);
+		dbInstance.commit();
+
+		Date now = new Date();
+		List<TeamsMeeting> meetings = teamsMeetingDao.getMeetingsToDownloadRecordings(now, 10000);
+		Assertions.assertThat(meetings)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.contains(meeting);
+	}
+	
+	@Test
+	public void updateRefreshToken() {
+		Identity organizer = JunitTestHelper.createAndPersistIdentityAsRndUser("organizer-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String name = "Online-Meeting - 11";
+		String subIdent = UUID.randomUUID().toString();
+		Date start = DateUtils.addDays(new Date(), -4);
+		Date end = DateUtils.addHours(start, 2);
+		TeamsMeeting meeting = teamsMeetingDao.createMeeting(name, start, end,
+				entry, subIdent, null, organizer);
+		meeting.setRecord(true);
+		String organizerId = UUID.randomUUID().toString();
+		String token = "azure-token-uuid";
+		((TeamsMeetingImpl)meeting).setOrganizerAzureId(organizerId);
+		String encryptedToken = teamsCryptoHelper.encryptToken(token, ((TeamsMeetingImpl)meeting).getOrganizerAzureId());
+		((TeamsMeetingImpl)meeting).setOrganizerTokenEncrypted(encryptedToken);
+		teamsMeetingDao.updateMeeting(meeting);
+		dbInstance.commitAndCloseSession();
+
+		String refreshedToken = "new-refreshed-azure-token";
+		String encryptedrefrehsedToken = teamsCryptoHelper.encryptToken(refreshedToken, organizerId);
+		int updated = teamsMeetingDao.updateRefreshToken(organizerId, encryptedrefrehsedToken);
+		Assert.assertEquals(1, updated);
+		dbInstance.commit();
+		
+		TeamsMeeting reloadedMeeting = teamsMeetingDao.loadByKey(meeting.getKey());
+		Assert.assertNotNull(reloadedMeeting);
+		String decryptedToken = teamsCryptoHelper.decryptToken(((TeamsMeetingImpl)reloadedMeeting)
+				.getOrganizerTokenEncrypted(), ((TeamsMeetingImpl)reloadedMeeting).getOrganizerAzureId());
+		Assert.assertEquals(refreshedToken, decryptedToken);
+	}
+	
 }

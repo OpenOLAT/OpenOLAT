@@ -124,7 +124,7 @@ public class MicrosoftGraphDAOTest extends OlatTestCase {
 		// create the online meeting
 		User user = microsoftGraphDao.getMe(oauth2Tokens);				
 		TeamsErrors errors = new TeamsErrors();
-		OnlineMeeting onlineMeeting = microsoftGraphDao.createMeeting(meeting, user, OnlineMeetingRole.Presenter, oauth2Tokens, errors);
+		OnlineMeeting onlineMeeting = microsoftGraphDao.createMeeting(meeting, user, OnlineMeetingRole.Presenter, false, oauth2Tokens, errors);
 		Assert.assertNotNull(onlineMeeting);
 		Assert.assertNotNull(onlineMeeting.getId());
 		Assert.assertNotNull(onlineMeeting.getJoinWebUrl());

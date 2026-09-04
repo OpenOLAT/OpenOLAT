@@ -76,6 +76,8 @@ public enum ActionVerb {
 	prolonge,
 	noshow,
 	
+	join,
+	
 	revoke;
 
 }

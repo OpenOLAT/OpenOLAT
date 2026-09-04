@@ -28,17 +28,18 @@ package org.olat.util.logging.activity;
 
 import java.io.UnsupportedEncodingException;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ILoggingResourceable;
 import org.olat.core.logging.activity.ILoggingResourceableType;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.StringResourceableType;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -53,6 +54,8 @@ import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsRecording;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.repository.RepositoryEntry;
@@ -495,6 +498,18 @@ public class LoggingResourceable implements ILoggingResourceable {
 			if (title.length() > 230) title = title.substring(0, 229);
 			return wrapNonOlatResource(StringResourceableType.feedItem, item.getGuid(), title);
 		}
+	}
+	
+	public static LoggingResourceable wrap(TeamsMeeting meeting) {
+		final String subject = Formatter.truncate(meeting.getSubject(), MAX_NAME_LEN);
+		return new LoggingResourceable(null, OlatResourceableType.teams, "TeamsMeeting",
+				String.valueOf(meeting.getKey()), subject, false);
+	}
+	
+	public static LoggingResourceable wrap(TeamsRecording recording) {
+		final String id = Formatter.truncate(recording.getRecordingId(), MAX_NAME_LEN);
+		return new LoggingResourceable(null, OlatResourceableType.teams, "TeamsRecording",
+				String.valueOf(recording.getKey()), id, false);
 	}
 
 	/**

@@ -28,9 +28,31 @@
 	<div class="o_block_large o_warning">$r.translate("meeting.ended")</div>
 #end
 
-<div class="o_button_group">
+#if($r.visible("meeting.acknowledge.recording"))
+<div class="o_warning_with_icon">
+	<h4>$r.translate("meeting.acknowledge.recording.explain.title")</h4>
+	<p>$r.translate("meeting.acknowledge.recording.explain")</p>
+	$r.render("meeting.acknowledge.recording","minimal")
+</div>
+#end
+
+<div class="o_teams_join">
 #if($r.available("meeting.join.button") && $r.visible("meeting.join.button"))
-	$r.render("meeting.join.button") #if($r.isNotEmpty($asUser)) ($asUser) #end
+	$r.render("meeting.join.button")
+	#if($r.available("start.recording") && $r.visible("start.recording"))
+		$r.render("start.recording","nolayout")
+	#end
+	#if($r.isNotEmpty($asUser))<span>($asUser)</span>#end
 #end
 </div>
+
+#if($r.isTrue($hasRecordings))
+<div class="o_block_large">
+	<fieldset>
+		<legend>$r.translate("recordings")</legend>
+		$r.render("recordings")
+	</fieldset>
+</div>
+#end
+
 </div>

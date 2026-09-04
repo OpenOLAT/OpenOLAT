@@ -41,6 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsRecordingsPublishedRoles;
 import org.olat.modules.teams.manager.MicrosoftGraphDAO;
 import org.olat.repository.RepositoryEntry;
 
@@ -125,6 +126,18 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	@Column(name="t_online_meeting_join_url", nullable=true, insertable=true, updatable=true)
 	private String onlineMeetingJoinUrl;
 	
+	@Column(name="t_organizer_azure_id", nullable=true, insertable=true, updatable=true)
+	private String organizerAzureId;
+	@Column(name="t_organizer_token", nullable=true, insertable=true, updatable=true)
+	private String organizerTokenEncrypted;
+	
+	@Column(name="t_recordings_publishing", nullable=true, insertable=true, updatable=true)
+	private String recordingsPublishing;
+	@Column(name="t_record", nullable=false, insertable=true, updatable=true)
+	private boolean record;
+	@Column(name="t_record_auto_start", nullable=false, insertable=true, updatable=true)
+	private boolean recordAutoStart;
+	
 	@ManyToOne(targetEntity=RepositoryEntry.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_entry_id", nullable=true, insertable=true, updatable=false)
 	private RepositoryEntry entry;
@@ -138,6 +151,9 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_creator_id", nullable=true, insertable=true, updatable=false)
 	private Identity creator;
+	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_organizer_id", nullable=true, insertable=true, updatable=true)
+	private Identity organizer;
 	
 	
 	@Override
@@ -323,6 +339,60 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 		this.onlineMeetingJoinUrl = onlineMeetingJoinUrl;
 	}
 
+	public String getOrganizerAzureId() {
+		return organizerAzureId;
+	}
+
+	public void setOrganizerAzureId(String organizerAzureId) {
+		this.organizerAzureId = organizerAzureId;
+	}
+
+	public String getOrganizerTokenEncrypted() {
+		return organizerTokenEncrypted;
+	}
+
+	public void setOrganizerTokenEncrypted(String encryptedToken) {
+		this.organizerTokenEncrypted = encryptedToken;
+	}
+
+	@Override
+	public TeamsRecordingsPublishedRoles[] getRecordingsPublishingEnum() {
+		return TeamsRecordingsPublishedRoles.toArray(recordingsPublishing);
+	}
+
+	@Override
+	public void setRecordingsPublishingEnum(TeamsRecordingsPublishedRoles[] roles) {
+		this.recordingsPublishing = TeamsRecordingsPublishedRoles.toString(roles);
+	}
+
+	public String getRecordingsPublishing() {
+		return recordingsPublishing;
+	}
+
+	public void setRecordingsPublishing(String recordingsPublishing) {
+		this.recordingsPublishing = recordingsPublishing;
+	}
+
+	@Override
+	public boolean isRecord() {
+		return record;
+	}
+
+	@Override
+	public void setRecord(boolean record) {
+		this.record = record;
+	}
+
+	@Override
+	public boolean isRecordAutoStart() {
+		return recordAutoStart;
+	}
+
+	@Override
+	public void setRecordAutoStart(boolean recordAutoStart) {
+		this.recordAutoStart = recordAutoStart;
+	}
+
 	@Override
 	public String getAllowedPresenters() {
 		return allowedPresenters;
@@ -428,6 +498,15 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 	}
 
 	@Override
+	public Identity getOrganizer() {
+		return organizer;
+	}
+
+	public void setOrganizer(Identity organizer) {
+		this.organizer = organizer;
+	}
+
+	@Override
 	public int hashCode() {
 		return getKey() == null ? -8754546 : getKey().hashCode();
 	}
@@ -437,8 +516,7 @@ public class TeamsMeetingImpl implements Persistable, TeamsMeeting {
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof TeamsMeetingImpl) {
-			TeamsMeetingImpl meeting = (TeamsMeetingImpl)obj;
+		if(obj instanceof TeamsMeetingImpl meeting) {
 			return getKey() != null && getKey().equals(meeting.getKey());
 		}
 		return false;

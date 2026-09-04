@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.olat.basesecurity.OAuth2Tokens;
+import org.olat.core.util.StringHelper;
 
 import com.github.scribejava.core.model.OAuth2AccessToken;
 
@@ -92,6 +93,9 @@ public class OAuth2TokensImpl implements OAuth2Tokens {
 	public void refresh(OAuth2AccessToken oauth2AccessToken) {
 		setAccessToken(oauth2AccessToken.getAccessToken());
 		setExpiresIn(oauth2AccessToken.getExpiresIn());
+		if(StringHelper.containsNonWhitespace(oauth2AccessToken.getRefreshToken())) {
+			setRefreshToken(oauth2AccessToken.getRefreshToken());
+		}
 	}
 
 	@Override

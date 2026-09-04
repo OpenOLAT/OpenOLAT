@@ -19,8 +19,14 @@
  */
 package org.olat.modules.teams;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +41,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
-
+	
+	private static final Logger log = Tracing.createLoggerFor(TeamsModule.class);
+	
 	private static final String PROP_ENABLED = "vc.teams.enabled";
 	private static final String PROP_GROUP_ENABLED = "vc.teams.groups";
 	private static final String PROP_COURSE_ENABLED = "vc.teams.courses";
@@ -44,6 +52,12 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String PROP_LECTURES_ENABLED = "vc.teams.lectures";
 	private static final String PROP_PRODUCER_ID = "vc.teams.producer.id";
 	private static final String PROP_PERMANENT_MEETINGS_ENABLED = "vc.teams.permanent.meetings";
+
+	private static final String PROP_RECORDINGS_ENABLED = "vc.teams.recording";
+	private static final String PROP_RECORDINGS_DEFAULT_ENABLED = "vc.teams.recording.default";
+	private static final String PROP_RECORDINGS_AUTO_START_ENABLED = "vc.teams.recording.auto.start";
+	private static final String PROP_RECORDING_DEFAULT_PUBLICATION_SETTINGS = "vc.teams.recording.default.publication.settings";
+	private static final String PROP_RECORDINGS_DELETION_DAYS = "vc.teams.recording.deletion.days";
 	
 	private static final String MSGRAPH_API_KEY = "vc.teams.api.key";
 	private static final String MSGRAPH_API_SECRET = "vc.teams.api.secret";
@@ -78,6 +92,27 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	@Value("${vc.teams.permanent.meetings:true}")
 	private String permanentMeetingsEnabled;
 	
+	@Value("${vc.teams.recording:true}")
+	private String recordingsEnabled;
+	@Value("${vc.teams.recording.default:false}")
+	private String recordingsDefault;
+	@Value("${vc.teams.recording.auto.start:false}")
+	private String recordingsAutoStart;
+	@Value("${vc.teams.recording.default.publication.settings}")
+	private String recordingsDefaultPublicationSettings;
+	@Value("${vc.teams.recording.deletion.days}")
+	private Integer recordingsDeletionDays;
+	
+	@Value("${vc.teams.recording.dir}")
+	private String recordingsDir;
+	
+	/**
+	 * Deployment only setting, on purpose not a persisted property: it must not be
+	 * editable in the administration.
+	 */
+	@Value("${vc.teams.recording.token.key}")
+	private String recordingTokenKey;
+	
 	@Autowired
 	public TeamsModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -102,6 +137,16 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 		appointmentsEnabled = getStringPropertyValue(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled);
 		lecturesEnabled = getStringPropertyValue(PROP_LECTURES_ENABLED, lecturesEnabled);
 		permanentMeetingsEnabled = getStringPropertyValue(PROP_PERMANENT_MEETINGS_ENABLED, permanentMeetingsEnabled);
+
+		recordingsEnabled = getStringPropertyValue(PROP_RECORDINGS_ENABLED, recordingsEnabled);
+		recordingsDefault = getStringPropertyValue(PROP_RECORDINGS_DEFAULT_ENABLED, recordingsDefault);
+		recordingsAutoStart = getStringPropertyValue(PROP_RECORDINGS_AUTO_START_ENABLED, recordingsAutoStart);
+		recordingsDefaultPublicationSettings = getStringPropertyValue(PROP_RECORDING_DEFAULT_PUBLICATION_SETTINGS, recordingsDefaultPublicationSettings);
+		
+		String recordingsDeletionDaysObj = getStringPropertyValue(PROP_RECORDINGS_DELETION_DAYS, true);
+		if(StringHelper.containsNonWhitespace(recordingsDeletionDaysObj)) {
+			recordingsDeletionDays = Integer.valueOf(recordingsDeletionDaysObj);
+		}
 	}
 
 	@Override
@@ -118,7 +163,6 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 		this.enabled = enabled;
 		setBooleanProperty(PROP_ENABLED, enabled, true);
 	}
-
 
 	public String getApiKey() {
 		return apiKey;
@@ -192,5 +236,77 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setPermanentMeetings(boolean enabled) {
 		permanentMeetingsEnabled = enabled ? "true" : "false";
 		setStringProperty(PROP_PERMANENT_MEETINGS_ENABLED, permanentMeetingsEnabled, true);
+	}
+
+	public boolean isRecordingsEnabled() {
+		return "true".equals(recordingsEnabled);
+	}
+
+	public void setRecordingsEnabled(boolean enabled) {
+		recordingsEnabled = enabled ? "true" : "false";
+		setStringProperty(PROP_RECORDINGS_ENABLED, recordingsEnabled, true);
+	}
+
+	public String getRecordingsDir() {
+		return recordingsDir;
+	}
+
+	public boolean isRecordingsDefaultEnabled() {
+		return "true".equals(recordingsDefault);
+	}
+
+	public void setRecordingsDefaultEnabled(boolean enabled) {
+		recordingsDefault = enabled ? "true" : "false";
+		setStringProperty(PROP_RECORDINGS_DEFAULT_ENABLED, recordingsDefault, true);
+	}
+
+	public boolean isRecordingsAutoStartEnabled() {
+		return "true".equals(recordingsAutoStart);
+	}
+
+	public void setRecordingsAutoStartEnabled(boolean enabled) {
+		recordingsAutoStart = enabled ? "true" : "false";
+		setStringProperty(PROP_RECORDINGS_AUTO_START_ENABLED, recordingsAutoStart, true);
+	}
+	
+	public TeamsRecordingsPublishedRoles[] getRecordingsDefaultPublicationSettings() {
+		if (!StringHelper.containsNonWhitespace(recordingsDefaultPublicationSettings)) {
+			return new TeamsRecordingsPublishedRoles[0];
+		}
+		try {
+			Set<TeamsRecordingsPublishedRoles> roles = Arrays.stream(recordingsDefaultPublicationSettings.split(","))
+					.map(TeamsRecordingsPublishedRoles::secureValueOf)
+					.collect(Collectors.toSet());
+			return roles.toArray(new TeamsRecordingsPublishedRoles[roles.size()]);
+		}  catch (IllegalArgumentException e) {
+			log.error("", e);
+			return new TeamsRecordingsPublishedRoles[0];
+		}
+	}
+
+	public void setRecordingsDefaultPublicationSettings(Set<TeamsRecordingsPublishedRoles> value) {
+		recordingsDefaultPublicationSettings = publicationEnumSetToString(value);
+		setStringProperty(PROP_RECORDING_DEFAULT_PUBLICATION_SETTINGS, recordingsDefaultPublicationSettings, true);
+	}
+	
+	private String publicationEnumSetToString(Set<TeamsRecordingsPublishedRoles> value) {
+		if (value == null || value.isEmpty()) {
+			return "";
+		}
+		return value.stream().map(TeamsRecordingsPublishedRoles::name).collect(Collectors.joining(","));
+	}
+	
+	public Integer getRecordingsDeletionDays() {
+		return recordingsDeletionDays;
+	}
+
+	public void setRecordingsDeletionDays(Integer days) {
+		this.recordingsDeletionDays = days;
+		String value = days != null? days.toString(): null;
+		setStringProperty(PROP_RECORDINGS_DELETION_DAYS, value, true);
+	}
+	
+	public String getRecordingTokenKey() {
+		return recordingTokenKey;
 	}
 }

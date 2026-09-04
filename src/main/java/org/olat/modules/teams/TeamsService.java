@@ -22,8 +22,10 @@ package org.olat.modules.teams;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.core.id.Identity;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.model.TeamsMeetingsSearchParameters;
@@ -68,12 +70,32 @@ public interface TeamsService {
 	
 	public TeamsMeeting getMeeting(String identifier);
 	
+	public boolean getUserConformanceDecisionById(Long meetingKey, Preferences userGuiPreferences);
+
+	public void setUserConformanceDecisionById(Long meetingKey, Preferences userGuiPreferences, boolean isConform);
+	
 	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, boolean guest,
-			OAuth2Tokens oauth2Tokens, TeamsErrors errors);
+			Boolean autoStartRecordings, OAuth2Tokens oauth2Tokens, TeamsErrors errors);
 
 	public int countMeetings(TeamsMeetingsSearchParameters searchParams);
 	
 	public List<TeamsMeeting> searchMeetings(TeamsMeetingsSearchParameters searchParams, int firstResult, int maxResults);
+	
+	TeamsAttendee getAttendee(IdentityRef identity, TeamsMeeting meeting);
+	
+	TeamsRecording getRecording(Long recordingKey);
+	
+	List<TeamsRecording> getRecordings(TeamsMeeting meeting, OAuth2Tokens oauth2Tokens, Identity identity, TeamsErrors errors);
+	
+	TeamsRecording updateRecording(TeamsRecording recording);
+	
+	/**
+	 * The actual file of the recording is deleted but the database entry
+	 * is only marked as deleted.
+	 * 
+	 * @param recording The recording to delete.
+	 */
+	void deleteRecording(TeamsRecording recording);
 	
 	/**
 	 * 
@@ -82,6 +104,6 @@ public interface TeamsService {
 	 * @param errors Wrapper to collect errors
 	 * @return The user or null if not found
 	 */
-	public User lookupMe(Identity identity, OAuth2Tokens oauth2Tokens, TeamsErrors errors);
+	User lookupMe(Identity identity, OAuth2Tokens oauth2Tokens, TeamsErrors errors);
 
 }

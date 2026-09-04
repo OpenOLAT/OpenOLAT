@@ -1565,10 +1565,16 @@ create table o_teams_meeting (
    t_access_level varchar(32) default 'EVERYONE',
    t_entry_exit_announcement bool default true,
    t_lobby_bypass_scope varchar(32) default 'ORGANIZATION_AND_FEDERATED',
+   t_recordings_publishing varchar(64),
+   t_record bool default false not null,
+   t_record_auto_start bool default false not null,
+   t_organizer_azure_id varchar(255),
+   t_organizer_token mediumtext,
    fk_entry_id bigint default null,
    a_sub_ident varchar(64) default null,
    fk_group_id bigint default null,
    fk_creator_id bigint default null,
+   fk_organizer_id bigint,
    primary key (id)
 );
 
@@ -1593,7 +1599,22 @@ create table o_teams_attendee (
    fk_teams_user_id bigint default null,
    fk_meeting_id bigint not null,
    primary key (id)
+);
 
+create table o_teams_recording (
+   id bigint auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   t_recording_id varchar(512),
+   t_start_date datetime,
+   t_end_date datetime,
+   t_status varchar(16) not null,
+   t_permanent bool,
+   t_publish_to varchar(128),
+   t_attempts bigint default 0 not null,
+   fk_recording_metadata_id bigint,
+   fk_meeting_id bigint not null,
+   primary key (id)
 );
 
 -- assessment tables
@@ -6219,6 +6240,7 @@ alter table o_gui_prefs ENGINE = InnoDB;
 alter table o_teams_meeting ENGINE = InnoDB;
 alter table o_teams_user ENGINE = InnoDB;
 alter table o_teams_attendee ENGINE = InnoDB;
+alter table o_teams_recording ENGINE = InnoDB;
 alter table o_im_message ENGINE = InnoDB;
 alter table o_im_notification ENGINE = InnoDB;
 alter table o_im_roster_entry ENGINE = InnoDB;
@@ -6814,12 +6836,17 @@ alter table o_bbb_recording add constraint bbb_record_meet_idx foreign key (fk_m
 alter table o_teams_meeting add constraint teams_meet_entry_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 alter table o_teams_meeting add constraint teams_meet_grp_idx foreign key (fk_group_id) references o_gp_business (group_id);
 alter table o_teams_meeting add constraint teams_meet_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
+alter table o_teams_meeting add constraint teams_org_ident_idx foreign key (fk_organizer_id) references o_bs_identity (id);
 
 alter table o_teams_user add constraint teams_user_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 
 alter table o_teams_attendee add constraint teams_att_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 alter table o_teams_attendee add constraint teams_att_user_idx foreign key (fk_teams_user_id) references o_teams_user (id);
 alter table o_teams_attendee add constraint teams_att_meet_idx foreign key (fk_meeting_id) references o_teams_meeting (id);
+
+alter table o_teams_recording add constraint teams_rec_meet_idx foreign key (fk_meeting_id) references o_teams_meeting (id);
+alter table o_teams_recording add constraint teams_rec_data_idx foreign key (fk_recording_metadata_id) references o_vfs_metadata(id);
+create unique index idx_teams_rec_graph_unique on o_teams_recording (t_recording_id(255), fk_meeting_id);
 
 -- tag
 create unique index idx_tag_name_idx on o_tag_tag (t_display_name);

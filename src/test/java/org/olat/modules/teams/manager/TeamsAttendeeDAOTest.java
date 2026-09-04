@@ -104,6 +104,29 @@ public class TeamsAttendeeDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadAttendee() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("teams-attendee-7");
+		String identifier = UUID.randomUUID().toString();
+		String displayName = "Teams attendee 2";
+		TeamsUser user = teamsUserDao.createUser(id, identifier, displayName);
+
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String name = "Online-Meeting - attendee - 4";
+		String subIdent = UUID.randomUUID().toString();
+		TeamsMeeting meeting = teamsMeetingDao.createMeeting(name, new Date(), new Date(),
+				entry, subIdent, null, id);
+		dbInstance.commitAndCloseSession();
+		
+		TeamsAttendee attendee = teamsAttendeeDao.createAttendee(id, user, "Role", new Date(), meeting);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(attendee);
+		
+		TeamsAttendee reloadedAttendee = teamsAttendeeDao.loadAttendee(id, meeting);
+		Assert.assertNotNull(reloadedAttendee);
+		Assert.assertEquals(attendee, reloadedAttendee);
+	}
+	
+	@Test
 	public void deleteAttendee() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("teams-attendee-4");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("teams-attendee-5");

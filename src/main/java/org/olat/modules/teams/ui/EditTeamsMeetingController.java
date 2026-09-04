@@ -27,8 +27,10 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -45,6 +47,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.teams.TeamsDispatcher;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
+import org.olat.modules.teams.TeamsRecordingsPublishedRoles;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.manager.MicrosoftGraphDAO;
 import org.olat.repository.RepositoryEntry;
@@ -62,7 +65,9 @@ import com.microsoft.graph.models.OnlineMeetingPresenters;
  */
 public class EditTeamsMeetingController extends FormBasicController {
 
-	private static final String[] onKeys = new String[] { "on" };
+	private static final String ON_KEY = "on";
+	private static final String OFF_KEY = "off";
+	private static final String[] onKeys = new String[] { ON_KEY };
 
 	private FormLink openCalLink;
 	private TextElement subjectEl;
@@ -72,10 +77,14 @@ public class EditTeamsMeetingController extends FormBasicController {
 	private DateChooser endDateEl;
 	private TextElement leadTimeEl;
 	private TextElement followupTimeEl;
-	private MultipleSelectionElement participantsOpenEl;
+	private SingleSelection participantsOpenEl;
 	private SingleSelection presentersEl;
 	private MultipleSelectionElement guestEl;
 	private TextElement externalLinkEl;
+	private FormToggle recordingEl;
+	private SpacerElement recordingSpacer;
+	private SingleSelection recordingStartEl;
+	private MultipleSelectionElement publishRecordingsEl;
 	
 	private final String subIdent;
 	private final BusinessGroup group;
@@ -109,6 +118,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 		editable = true;
 		
 		initForm(ureq);
+		updateRecordingsOption();
 	}
 	
 	public EditTeamsMeetingController(UserRequest ureq, WindowControl wControl,
@@ -122,6 +132,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 		editable = TeamsUIHelper.isEditable(meeting);
 		
 		initForm(ureq);
+		updateRecordingsOption();
 	}
 	
 	public TeamsMeeting getMeeting() {
@@ -219,18 +230,58 @@ public class EditTeamsMeetingController extends FormBasicController {
 			followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
 			followupTimeEl.setEnabled(editable);
 		}
+		
+		recordingSpacer = uifactory.addSpacerElement("spacer-recording-1", formLayout, false);
+		
+		recordingEl = uifactory.addToggleButton("meeting.recording", "meeting.recording", translate("on"), translate("off"), formLayout);
+		boolean recordingEnabled = meeting == null
+				? teamsModule.isRecordingsDefaultEnabled()	
+				: meeting.isRecord();
+		recordingEl.toggle(recordingEnabled);
+		recordingEl.setEnabled(editable);
+		
+		SelectionValues startPK = new SelectionValues();
+		startPK.add(SelectionValues.entry(ON_KEY, translate("teams.recordings.auto.start.automatically")));
+		startPK.add(SelectionValues.entry(OFF_KEY, translate("teams.recordings.auto.start.manually")));
+		recordingStartEl = uifactory.addRadiosVertical("meeting.recording.start", formLayout, startPK.keys(), startPK.values());
+		recordingStartEl.setEnabled(editable);
+		String startOption;
+		if(meeting == null) {
+			startOption = teamsModule.isRecordingsAutoStartEnabled() ? ON_KEY : OFF_KEY;
+		} else {
+			startOption = meeting.isRecordAutoStart() ? ON_KEY : OFF_KEY;
+		}
+		recordingStartEl.select(startOption, true);
+		
+		SelectionValues publishingDefaultKV = new SelectionValues();
+		publishingDefaultKV.add(SelectionValues.entry(TeamsRecordingsPublishedRoles.coach.name(), translate("teams.recordings.publish.to.coach")));
+		publishingDefaultKV.add(SelectionValues.entry(TeamsRecordingsPublishedRoles.participant.name(), translate("teams.recordings.publish.to.participant")));
+		publishingDefaultKV.add(SelectionValues.entry(TeamsRecordingsPublishedRoles.all.name(), translate("teams.recordings.publish.to.all")));
+		publishingDefaultKV.add(SelectionValues.entry(TeamsRecordingsPublishedRoles.guest.name(), translate("teams.recordings.publish.to.guest")));
+		publishRecordingsEl = uifactory.addCheckboxesVertical("meeting.recording.publishing", formLayout, publishingDefaultKV.keys(), publishingDefaultKV.values(), 1);
+		publishRecordingsEl.setHelpText(translate("teams.recordings.publishing.hint"));
+		publishRecordingsEl.setEnabled(editable);
+		initPublishRecordingsElement();
+		
+		uifactory.addSpacerElement("spacer-opening-2", formLayout, false);
 
-		String[] onOpenValues = new String[] { translate("meeting.participants.open.on",
-				new String[] {teamsModule.getTenantOrganisation() }) };
-		participantsOpenEl = uifactory.addCheckboxesHorizontal("meeting.participants.open", formLayout, onKeys, onOpenValues);
+		SelectionValues openPK = new SelectionValues();
+		openPK.add(SelectionValues.entry(OFF_KEY, translate("meeting.participants.open.off.title"),
+				translate("meeting.participants.open.off", new String[] {teamsModule.getTenantOrganisation() }), null, null, true));
+		openPK.add(SelectionValues.entry(ON_KEY, translate("meeting.participants.open.on.title"),
+				translate("meeting.participants.open.on", new String[] {teamsModule.getTenantOrganisation() }), null, null, true));
+		participantsOpenEl = uifactory.addCardSingleSelectHorizontal("meeting.participants.open", "meeting.participants.open", formLayout, openPK);
+		participantsOpenEl.setEnabled(editable);
 		participantsOpenEl.setHelpTextKey("meeting.participants.open.hint", null);
 		participantsOpenEl.addActionListener(FormEvent.ONCHANGE);
 		participantsOpenEl.setVisible(StringHelper.containsNonWhitespace(teamsModule.getProducerId()));
 		if(meeting != null && meeting.isParticipantsCanOpen()) {
-			participantsOpenEl.select("on", true);
+			participantsOpenEl.select(ON_KEY, true);
+		} else {
+			participantsOpenEl.select(OFF_KEY, true);
 		}
 
-		SelectionValues presentersKeyValues = getPresenters(participantsOpenEl.isAtLeastSelected(1));
+		SelectionValues presentersKeyValues = getPresenters(participantsOpenEl.isOneSelected() && ON_KEY.equals(participantsOpenEl.getSelectedKey()));
 		presentersEl = uifactory.addDropdownSingleselect("meeting.presenters", formLayout, presentersKeyValues.keys(), presentersKeyValues.values());
 		presentersEl.setMandatory(true);
 		presentersEl.setEnabled(editable);
@@ -243,6 +294,15 @@ public class EditTeamsMeetingController extends FormBasicController {
 			uifactory.addFormSubmitButton("save", buttonLayout);
 		}
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+	}
+	
+	private void initPublishRecordingsElement() {
+		TeamsRecordingsPublishedRoles[] publishingRoles = meeting == null
+				? teamsModule.getRecordingsDefaultPublicationSettings()
+				: meeting.getRecordingsPublishingEnum();
+		for(TeamsRecordingsPublishedRoles publishedRole:publishingRoles) {
+			publishRecordingsEl.select(publishedRole.name(), true);
+		}
 	}
 	
 	private SelectionValues getPresenters(boolean attendee) {
@@ -260,7 +320,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 	}
 
 	private void updateAccessOption() {
-		boolean attendeeMode = participantsOpenEl.isAtLeastSelected(1);
+		boolean attendeeMode = participantsOpenEl.isOneSelected() && ON_KEY.equals(participantsOpenEl.getSelectedKey());
 		
 		String presentersKey = presentersEl.getSelectedKey();
 		SelectionValues presentersKeyValues = getPresenters(attendeeMode);
@@ -271,6 +331,26 @@ public class EditTeamsMeetingController extends FormBasicController {
 			presentersEl.select(OnlineMeetingPresenters.Everyone.name(), true);
 		} else {
 			presentersEl.select(presentersKeyValues.keys()[0], true);
+		}
+	}
+	
+	private void updateRecordingsOption() {
+		boolean recordingsEnabled = teamsModule.isRecordingsEnabled();
+		recordingEl.setVisible(recordingsEnabled);
+		recordingSpacer.setVisible(recordingsEnabled);
+		
+		boolean enabled = recordingsEnabled && recordingEl.isOn();
+		recordingStartEl.setVisible(enabled);
+		boolean previousPublishRecordings = publishRecordingsEl.isVisible();
+		publishRecordingsEl.setVisible(enabled);
+		if(!previousPublishRecordings && publishRecordingsEl.isVisible()) {
+			initPublishRecordingsElement();
+		}
+
+		// If recordings are enabled, the organizer must open the meeting
+		participantsOpenEl.setEnabled(!enabled && editable);
+		if(enabled && participantsOpenEl.isOneSelected() && ON_KEY.equals(participantsOpenEl.getSelectedKey())) {
+			participantsOpenEl.select(OFF_KEY, true);
 		}
 	}
 
@@ -329,6 +409,8 @@ public class EditTeamsMeetingController extends FormBasicController {
 			doOpenCalendar(ureq);
 		} else if(participantsOpenEl == source) {
 			updateAccessOption();
+		} else if(recordingEl == source) {
+			updateRecordingsOption();
 		}
 	}
 
@@ -373,7 +455,24 @@ public class EditTeamsMeetingController extends FormBasicController {
 		meeting.setDescription(descriptionEl.getValue());
 		meeting.setMainPresenter(mainPresenterEl.getValue());
 		meeting.setAllowedPresenters(presentersEl.getSelectedKey());
-		meeting.setParticipantsCanOpen(participantsOpenEl.isAtLeastSelected(1));
+		meeting.setParticipantsCanOpen(participantsOpenEl.isOneSelected()
+				&& ON_KEY.equals(participantsOpenEl.getSelectedKey()));
+		
+		if(recordingEl.isOn()) {
+			meeting.setRecord(true);
+			meeting.setRecordAutoStart(recordingStartEl.isOneSelected()
+					&& ON_KEY.equals(recordingStartEl.getSelectedKey()));
+		
+			if(publishRecordingsEl.isVisible()) {
+				meeting.setRecordingsPublishingEnum(TeamsRecordingsPublishedRoles.toArray(publishRecordingsEl.getSelectedKeys()));
+			} else {
+				meeting.setRecordingsPublishingEnum(null);
+			}
+		} else {
+			meeting.setRecord(false);
+			meeting.setRecordAutoStart(false);
+			meeting.setRecordingsPublishingEnum(null);
+		}
 		
 		meeting = teamsService.updateMeeting(meeting, true);
 		

@@ -19,12 +19,17 @@
  */
 package org.olat.modules.teams.manager;
 
+import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
@@ -34,18 +39,27 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
+import org.olat.modules.teams.TeamsAttendee;
+import org.olat.modules.teams.TeamsLoggingAction;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsMeetingDeletionHandler;
+import org.olat.modules.teams.TeamsRecording;
+import org.olat.modules.teams.TeamsRecordingStatusEnum;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.TeamsUser;
 import org.olat.modules.teams.model.TeamsError;
@@ -53,12 +67,16 @@ import org.olat.modules.teams.model.TeamsErrorCodes;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.model.TeamsMeetingImpl;
 import org.olat.modules.teams.model.TeamsMeetingsSearchParameters;
+import org.olat.modules.teams.model.TeamsRecordingImpl;
+import org.olat.modules.teams.ui.TeamsMeetingController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.microsoft.graph.models.CallRecording;
 import com.microsoft.graph.models.OnlineMeeting;
 import com.microsoft.graph.models.OnlineMeetingRole;
 import com.microsoft.graph.models.User;
@@ -90,9 +108,15 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 	@Autowired
 	private TeamsAttendeeDAO teamsAttendeeDao;
 	@Autowired
+	private TeamsRecordingDAO teamsRecordingDao;
+	@Autowired
+	private TeamsCryptoHelper teamsCryptoHelper;
+	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private TeamsMeetingQueries teamsMeetingQueries;
+	@Autowired
+	private TeamsRecordingStorage teamsRecordingStorage;
 	@Autowired
 	private List<TeamsMeetingDeletionHandler> teamsMeetingDeletionHandlers;
 
@@ -169,6 +193,11 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 				removeCalendarEvent(reloadedMeeting);
 			}
 			teamsAttendeeDao.deleteMeetingsAttendees(reloadedMeeting);
+			List<TeamsRecording> recordings = teamsRecordingDao.getRecordings(reloadedMeeting);
+			for(TeamsRecording recording:recordings) {
+				teamsRecordingStorage.deleteRecording(recording);
+				teamsRecordingDao.deleteRecording(recording);
+			}
 			teamsMeetingDao.deleteMeeting(reloadedMeeting);
 		}
 	}
@@ -206,6 +235,16 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 		}
 		return false;
 	}
+	
+	@Override
+	public boolean getUserConformanceDecisionById(Long meetingKey, Preferences userGuiPreferences) {
+		return userGuiPreferences.get(TeamsMeetingController.class, meetingKey.toString()) instanceof Boolean isConform && isConform;
+	}
+
+	@Override
+	public void setUserConformanceDecisionById(Long meetingKey, Preferences userGuiPreferences, boolean isConform) {
+		userGuiPreferences.putAndSave(TeamsMeetingController.class, meetingKey.toString(), isConform);
+	}
 
 	@Override
 	public boolean isMeetingRunning(TeamsMeeting meeting) {
@@ -214,7 +253,8 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 
 	@Override
 	public TeamsMeeting joinMeeting(TeamsMeeting meeting, Identity identity, boolean presenter, boolean guest,
-			OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
+			Boolean autoStartRecording, OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
+		boolean isStarting = false;
 		OnlineMeetingRole role = (presenter && !guest) ? OnlineMeetingRole.Presenter : OnlineMeetingRole.Attendee;
 		meeting = teamsMeetingDao.loadByKey(meeting.getKey());
 		if(meeting == null) {
@@ -223,7 +263,11 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 			if(presenter || (!guest)) {
 				dbInstance.commitAndCloseSession();
 				User user = lookupMe(identity, oauth2Tokens, errors);
-				meeting = createOnlineMeeting(meeting, user, role, oauth2Tokens, errors);
+				meeting = createOnlineMeeting(meeting, user, identity, role, autoStartRecording, oauth2Tokens, errors);
+				if(meeting != null) {
+					isStarting = true;
+					ThreadLocalUserActivityLogger.log(TeamsLoggingAction.TEAMS_MEETING_START, getClass(), LoggingResourceable.wrap(meeting));
+				}
 			} else {
 				errors.append(new TeamsError(TeamsErrorCodes.presenterMissing));
 			}
@@ -234,6 +278,10 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 				&& !teamsAttendeeDao.hasAttendee(identity, meeting)) {
 			teamsAttendeeDao.createAttendee(identity, null, role.name(), new Date(), meeting);
 		}
+		if(!isStarting && meeting != null) {
+			ThreadLocalUserActivityLogger.log(TeamsLoggingAction.TEAMS_MEETING_JOIN, getClass(), LoggingResourceable.wrap(meeting));
+		}
+		
 		return meeting;
 	}
 	
@@ -252,19 +300,23 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 	 * @param errors The errors object, mandatory
 	 * @return The update meeting.
 	 */
-	private TeamsMeeting createOnlineMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role,
-			OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
+	private TeamsMeeting createOnlineMeeting(TeamsMeeting meeting, User user, Identity identity, OnlineMeetingRole role,
+			Boolean autoStartRecording, OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
 		TeamsMeeting lockedMeeting = null;
 		try {
 			lockedMeeting = teamsMeetingDao.loadForUpdate(meeting);
 			if(lockedMeeting == null) {
 				errors.append(new TeamsError(TeamsErrorCodes.meetingDeleted));
 			} else if(!StringHelper.containsNonWhitespace(lockedMeeting.getOnlineMeetingId())) {
-				OnlineMeeting onlineMeeting = graphDao.createMeeting(lockedMeeting, user, role, oauth2Tokens, errors);
-				if(onlineMeeting != null) {
-					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingId(onlineMeeting.getId());
-					((TeamsMeetingImpl)lockedMeeting).setOnlineMeetingJoinUrl(onlineMeeting.getJoinWebUrl());
-					lockedMeeting = teamsMeetingDao.updateMeeting(lockedMeeting);
+				OnlineMeeting onlineMeeting = graphDao.createMeeting(lockedMeeting, user, role, autoStartRecording, oauth2Tokens, errors);
+				if(onlineMeeting != null && lockedMeeting instanceof TeamsMeetingImpl lockedImpl) {
+					lockedImpl.setOnlineMeetingId(onlineMeeting.getId());
+					lockedImpl.setOnlineMeetingJoinUrl(onlineMeeting.getJoinWebUrl());
+					lockedImpl.setOrganizerAzureId(user.getId());
+					String encryptedToken = teamsCryptoHelper.encryptToken(oauth2Tokens.getRefreshToken(), user.getId());
+					lockedImpl.setOrganizerTokenEncrypted(encryptedToken);
+					lockedImpl.setOrganizer(identity);
+					lockedMeeting = teamsMeetingDao.updateMeeting(lockedImpl);
 				}
 			}
 		} catch (NullPointerException | IllegalArgumentException e) {
@@ -283,6 +335,173 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 	}
 	
 	@Override
+	public TeamsAttendee getAttendee(IdentityRef identity, TeamsMeeting meeting) {
+		return this.teamsAttendeeDao.loadAttendee(identity, meeting);
+	}
+
+	@Override
+	public TeamsRecording getRecording(Long recordingKey) {
+		return teamsRecordingDao.loadRecordingByKey(recordingKey);
+	}
+
+	@Override
+	public TeamsRecording updateRecording(TeamsRecording recording) {
+		return teamsRecordingDao.updateRecording(recording);
+	}
+
+	@Override
+	public void deleteRecording(TeamsRecording recording) {
+		if(recording == null || recording.getKey() == null || recording.getStatus() == TeamsRecordingStatusEnum.DELETED) {
+			return; // Nothing to do
+		}
+		
+		recording.setStatus(TeamsRecordingStatusEnum.DELETED);
+		recording = teamsRecordingDao.updateRecording(recording);
+		// Remove file and metadata
+		teamsRecordingStorage.deleteRecording(recording);
+		recording = teamsRecordingDao.updateRecording(recording);
+		dbInstance.commit();
+	}
+
+	@Override
+	public List<TeamsRecording> getRecordings(TeamsMeeting meeting, OAuth2Tokens oauth2Tokens, Identity identity, TeamsErrors errors) {
+		if(!StringHelper.containsNonWhitespace(meeting.getOnlineMeetingId())) return List.of();
+		
+		List<TeamsRecording> recordings = teamsRecordingDao.getRecordings(meeting);
+		if(oauth2Tokens != null && identity != null && identity.equals(meeting.getOrganizer())) {
+			Map<String,TeamsRecording> recordingsMap = recordings.stream()
+				.filter(rec -> StringHelper.containsNonWhitespace(rec.getRecordingId()))
+				.collect(Collectors.toMap(TeamsRecording::getRecordingId, rec -> rec, (u, v) -> u));
+			
+			try {
+				List<CallRecording> cRecordings = graphDao.getRecordings(meeting.getOnlineMeetingId(), oauth2Tokens);
+				if(cRecordings != null && !cRecordings.isEmpty()) {
+					for(CallRecording cRecording:cRecordings) {
+						if(!recordingsMap.containsKey(cRecording.getId())) {
+							TeamsRecording recording = teamsRecordingDao.createRecording(meeting, cRecording);
+							dbInstance.commit();
+							recordings.add(recording);
+						}
+					}
+				}
+			} catch (Exception e) {
+				errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
+				log.error("", e);
+			}
+		}
+	
+		return recordings;
+	}
+	
+	protected void deleteMeetingsRecordings(LocalDateTime referenceDate) {
+		List<Long> recordingsKeys = teamsRecordingDao.getRecordingsToDelete(referenceDate);
+		for(Long recordingKey:recordingsKeys) {
+			TeamsRecording recording = teamsRecordingDao.loadRecordingByKey(recordingKey);
+			deleteRecording(recording);
+			dbInstance.commitAndCloseSession();
+		}
+	}
+	
+	protected void syncMeetingsRecordings() {
+		Date fifteenMinutes = DateUtils.addMinutes(new Date(), -15);
+		List<TeamsMeeting> meetings = teamsMeetingDao.getMeetingsToDownloadRecordings(fifteenMinutes, 10000);
+
+		OAuth2TokensOffline currentToken = null;
+		for(TeamsMeeting meeting:meetings) {
+			if(currentToken == null || currentToken.getOrganizerId() == null
+					|| !currentToken.getOrganizerId().equals(((TeamsMeetingImpl)meeting).getOrganizerAzureId())) {
+				currentToken = OAuth2TokensOffline.valueOf(meeting);
+			}
+			syncMeetingRecordings(meeting, currentToken);
+		}
+	}
+		
+	private void syncMeetingRecordings(TeamsMeeting meeting, OAuth2TokensOffline oauth2Tokens) {
+		try {
+			boolean stillPending = false;
+			
+			List<TeamsRecording> recordings = teamsRecordingDao.getRecordings(meeting);
+			Map<String,TeamsRecording> recordingsMap = recordings.stream()
+					.filter(rec -> StringHelper.containsNonWhitespace(rec.getRecordingId()))
+					.collect(Collectors.toMap(TeamsRecording::getRecordingId, rec -> rec, (u, v) -> u));
+			
+			List<CallRecording> cRecordings = graphDao.getRecordings(meeting.getOnlineMeetingId(), oauth2Tokens);
+			if(cRecordings != null && !cRecordings.isEmpty()) {
+				for(CallRecording cRecording:cRecordings) {
+					TeamsRecording recording = null;
+					if(!recordingsMap.containsKey(cRecording.getId())) {
+						recording = teamsRecordingDao.createRecording(meeting, cRecording);
+						dbInstance.commit();
+					} else {
+						recording = recordingsMap.get(cRecording.getId());
+					}
+					
+					if(recording != null && recording.getStatus() == TeamsRecordingStatusEnum.PENDING) {
+						recording = loadRecording(meeting, recording, cRecording, oauth2Tokens);
+					}
+					
+					if(recording != null && recording.getStatus() == TeamsRecordingStatusEnum.PENDING) {
+						stillPending = true;
+					}
+				}
+			}
+			dbInstance.commitAndCloseSession();
+		
+			if(oauth2Tokens.hasRefreshTokenChanged()) {
+				String encryptedToken = this.teamsCryptoHelper.encryptToken(oauth2Tokens.getRefreshToken(), oauth2Tokens.getOrganizerId());
+				teamsMeetingDao.updateRefreshToken(oauth2Tokens.getOrganizerId(), encryptedToken);
+				dbInstance.commitAndCloseSession();
+				oauth2Tokens.tokenRefreshed();
+			}
+			
+			Date tokensRetention = DateUtils.addHours(new Date(), -48);
+			if(!stillPending && meeting.getEndDate() != null && meeting.getEndDate().before(tokensRetention)) {
+				((TeamsMeetingImpl)meeting).setOrganizerTokenEncrypted(null);
+				meeting = teamsMeetingDao.updateMeeting(meeting);
+			}
+		} catch (Exception e) {
+			log.error("Error synchronizing meeting with ID: {}", meeting.getKey(), e);
+		}
+	}
+	
+	private TeamsRecording loadRecording(TeamsMeeting meeting, TeamsRecording recording, CallRecording cRecording, OAuth2Tokens oauth2Tokens) {
+		Identity organizer = meeting.getOrganizer();
+		try(InputStream stream = graphDao.downloadRecording(meeting.getOnlineMeetingId(), cRecording.getId(), oauth2Tokens)) {
+			String filename = generateFilename(meeting, recording);
+			VFSLeaf recordingLeaf = teamsRecordingStorage.storeRecording(meeting, filename, organizer, stream);
+			if(recordingLeaf != null) {
+				VFSMetadata recordingMetadata = recordingLeaf.getMetaInfo();
+				recording.setRecordingMetadata(recordingMetadata);
+				recording.setStatus(TeamsRecordingStatusEnum.AVAILABLE);
+			} else if(((TeamsRecordingImpl)recording).getAttempts() > 9) {
+				recording.setStatus(TeamsRecordingStatusEnum.ERROR);
+			}
+		} catch(Exception e) {
+			log.error("", e);
+			if(((TeamsRecordingImpl)recording).getAttempts() > 9) {
+				recording.setStatus(TeamsRecordingStatusEnum.ERROR);
+			}
+		}
+		((TeamsRecordingImpl)recording).setAttempts(((TeamsRecordingImpl)recording).getAttempts() + 1);
+		recording = teamsRecordingDao.updateRecording(recording);
+		dbInstance.commit();
+		return recording;
+	}
+	
+	private String generateFilename(TeamsMeeting meeting, TeamsRecording recording) {
+		String filename = StringHelper.transformDisplayNameToFileSystemName(meeting.getSubject());
+		Date date = recording.getStartDate() == null
+				? meeting.getStartDate()
+				: recording.getStartDate();
+		if(date == null) {
+			filename += "_" + CodeHelper.getRAMUniqueID();
+		} else {
+			filename += "_" + Formatter.formatDatetimeFilesystemSave(date);
+		}
+		return filename + ".mp4";
+	}
+
+	@Override
 	public User lookupMe(Identity identity, OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
 		User oauthUser = oauth2Tokens == null ? null : oauth2Tokens.getUser(User.class);
 		if(oauthUser != null) {
@@ -297,11 +516,13 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 			return user;
 		}
 
-		User user = graphDao.getMe(oauth2Tokens);
-		if(user != null) {
-			teamsUserDao.createUser(identity, user.getId(), user.getDisplayName());
-			dbInstance.commit();
-			return user;
+		if(oauth2Tokens != null) {
+			User user = graphDao.getMe(oauth2Tokens);
+			if(user != null) {
+				teamsUserDao.createUser(identity, user.getId(), user.getDisplayName());
+				dbInstance.commit();
+				return user;
+			}
 		}
 		return null;
 	}

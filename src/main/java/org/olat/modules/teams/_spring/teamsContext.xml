@@ -27,4 +27,36 @@
 		</property>
 	</bean>
 	
+	<!-- Recordings sync/download job -->
+	<bean id="teamsRecordingsSyncTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="teamsRecordingsSyncJob.${cluster.singleton.services}" />
+		<property name="cronExpression" value="20 01 * * * ?" />
+		<property name="startDelay" value="20000" />
+	</bean>
+
+	<bean id="teamsRecordingsSyncJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.modules.teams.manager.TeamsRecordingsSyncJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="teamsRecordingsSyncJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
+	<!-- Recordings retention job -->
+	<bean id="teamsRecordingsRetentionTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="teamsRecordingsRetentionJob.${cluster.singleton.services}" />
+		<property name="cronExpression" value="20 45 2 * * ?" />
+		<property name="startDelay" value="20000" />
+	</bean>
+
+	<bean id="teamsRecordingsRetentionJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.modules.teams.manager.TeamsRecordingsRetentionJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="teamsRecordingsRetentionJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
 </beans>

@@ -1098,7 +1098,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			errors.append(new TeamsError(TeamsErrorCodes.unkown));
 			return null;
 		}
-		return teamsService.joinMeeting(appointment.getTeamsMeeting(), identity, organizer, false, oauth2Tokens, errors);
+		return teamsService.joinMeeting(appointment.getTeamsMeeting(), identity, organizer, false, false, oauth2Tokens, errors);
 	}
 
 }

@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.teams.TeamsRecordingsPublishedRoles;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -51,6 +52,10 @@ public class TeamsRecurringMeetingsContext {
 	private boolean entryExitAnnouncement;
 	private String lobbyBypassScope;
 	private boolean participantsCanOpen;
+	
+	private boolean record;
+	private boolean recordAutoStart;
+	private TeamsRecordingsPublishedRoles[] recordingsPublishing;
 	
 	private List<TeamsRecurringMeeting> meetings = new ArrayList<>();
 	
@@ -193,6 +198,30 @@ public class TeamsRecurringMeetingsContext {
 
 	public void setParticipantsCanOpen(boolean participantsCanOpen) {
 		this.participantsCanOpen = participantsCanOpen;
+	}
+
+	public boolean isRecord() {
+		return record;
+	}
+
+	public void setRecord(boolean record) {
+		this.record = record;
+	}
+
+	public boolean isRecordAutoStart() {
+		return recordAutoStart;
+	}
+
+	public void setRecordAutoStart(boolean recordAutoStart) {
+		this.recordAutoStart = recordAutoStart;
+	}
+
+	public TeamsRecordingsPublishedRoles[] getRecordingsPublishing() {
+		return recordingsPublishing;
+	}
+
+	public void setRecordingsPublishing(TeamsRecordingsPublishedRoles[] recordingsPublishing) {
+		this.recordingsPublishing = recordingsPublishing;
 	}
 
 	public List<TeamsRecurringMeeting> getMeetings() {

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.teams.manager;
 
+import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import com.azure.core.credential.TokenCredential;
 import com.microsoft.graph.models.Application;
 import com.microsoft.graph.models.ApplicationCollectionResponse;
 import com.microsoft.graph.models.BodyType;
+import com.microsoft.graph.models.CallRecording;
 import com.microsoft.graph.models.Identity;
 import com.microsoft.graph.models.IdentitySet;
 import com.microsoft.graph.models.ItemBody;
@@ -117,7 +119,8 @@ public class MicrosoftGraphDAO {
 	 * @param errors Mandatory errors object
 	 * @return An online meeting if successful
 	 */
-	public OnlineMeeting createMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role, OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
+	public OnlineMeeting createMeeting(TeamsMeeting meeting, User user, OnlineMeetingRole role,
+			Boolean autoStartRecording, OAuth2Tokens oauth2Tokens, TeamsErrors errors) {
 		MeetingParticipants participants = new MeetingParticipants();
 		participants.setAttendees(new ArrayList<>());
 		if(user != null) {
@@ -149,6 +152,16 @@ public class MicrosoftGraphDAO {
 		onlineMeeting.setSubject(meeting.getSubject());
 		onlineMeeting.setParticipants(participants);
 		onlineMeeting.setAllowedPresenters(meeting.getAllowedPresentersEnum());
+		
+		if(teamsModule.isRecordingsEnabled() && meeting.isRecord()) {
+			onlineMeeting.setAllowTranscription(Boolean.TRUE);
+			onlineMeeting.setAllowRecording(Boolean.TRUE);
+			if(autoStartRecording == null) {
+				onlineMeeting.setRecordAutomatically(meeting.isRecordAutoStart());
+			} else {
+				onlineMeeting.setRecordAutomatically(autoStartRecording);
+			}	
+		}
 
 		LobbyBypassSettings lobbyBypassSettings = new LobbyBypassSettings();
 		lobbyBypassSettings.setIsDialInBypassEnabled(Boolean.TRUE);
@@ -174,6 +187,31 @@ public class MicrosoftGraphDAO {
 		log.info(Tracing.M_AUDIT, "Online-Meeting created (/communications) with id: {}", onlineMeeting.getId());
 
 		return onlineMeeting;
+	}
+	
+	public List<CallRecording> getRecordings(String onlineMeetingId, OAuth2Tokens oauth2Tokens) {
+		List<CallRecording> recordings = client(oauth2Tokens)
+				.me()
+				.onlineMeetings()
+				.byOnlineMeetingId(onlineMeetingId)
+				.recordings()
+				.get()
+				.getValue();
+		log.debug("Load {} recordings from meeting {}", (recordings == null ? "NULL" : recordings.size()), onlineMeetingId);
+		return recordings;
+	}
+	
+	public InputStream downloadRecording(String onlineMeetingId, String callRecordingId, OAuth2Tokens oauth2Tokens) {
+		if(callRecordingId == null) return null;
+		
+		return client(oauth2Tokens)
+			.me()
+			.onlineMeetings()
+			.byOnlineMeetingId(onlineMeetingId)
+			.recordings()
+			.byCallRecordingId(callRecordingId)
+			.content()
+			.get();
 	}
 
 	/**

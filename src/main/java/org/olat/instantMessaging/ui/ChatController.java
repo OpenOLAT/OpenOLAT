@@ -440,7 +440,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		} else if(im.getTeamsMeeting() != null) {
 			TeamsErrors errors = new TeamsErrors();
 			OAuth2Tokens oauth2Tokens = ureq.getUserSession().getOAuth2Tokens();
-			TeamsMeeting meeting = teamsService.joinMeeting(im.getTeamsMeeting(), getIdentity(), highlightVip, false, oauth2Tokens, errors);
+			TeamsMeeting meeting = teamsService.joinMeeting(im.getTeamsMeeting(), getIdentity(), highlightVip, false, false, oauth2Tokens, errors);
 			redirectTo(meeting, errors);	
 		}
 	}

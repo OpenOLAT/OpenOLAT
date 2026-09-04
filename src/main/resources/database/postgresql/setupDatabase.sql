@@ -1585,10 +1585,16 @@ create table o_teams_meeting (
    t_access_level varchar(32) default 'EVERYONE',
    t_entry_exit_announcement bool default true,
    t_lobby_bypass_scope varchar(32) default 'ORGANIZATION_AND_FEDERATED',
+   t_recordings_publishing varchar(64),
+   t_record bool default false not null,
+   t_record_auto_start bool default false not null,
+   t_organizer_azure_id varchar(255),
+   t_organizer_token text,
    fk_entry_id int8 default null,
    a_sub_ident varchar(64) default null,
    fk_group_id int8 default null,
    fk_creator_id int8 default null,
+   fk_organizer_id int8,
    primary key (id)
 );
 
@@ -1613,7 +1619,22 @@ create table o_teams_attendee (
    fk_teams_user_id int8 default null,
    fk_meeting_id int8 not null,
    primary key (id)
+);
 
+create table o_teams_recording (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   t_recording_id varchar(512),
+   t_start_date timestamp,
+   t_end_date timestamp,
+   t_status varchar(16) not null,
+   t_permanent bool,
+   t_publish_to varchar(128),
+   t_attempts int8 default 0 not null,
+   fk_recording_metadata_id int8,
+   fk_meeting_id int8 not null,
+   primary key (id)
 );
 
 -- efficiency statments
@@ -6623,6 +6644,9 @@ create index idx_teams_meet_grp_idx on o_teams_meeting(fk_group_id);
 alter table o_teams_meeting add constraint teams_meet_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
 create index idx_teams_meet_creator_idx on o_teams_meeting(fk_creator_id);
 
+alter table o_teams_meeting add constraint teams_org_ident_idx foreign key (fk_organizer_id) references o_bs_identity (id);
+create index idx_teams_org_ident_idx on o_teams_meeting(fk_organizer_id);
+
 alter table o_teams_user add constraint teams_user_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_teams_user_ident_idx on o_teams_user(fk_identity_id);
 
@@ -6632,6 +6656,12 @@ alter table o_teams_attendee add constraint teams_att_user_idx foreign key (fk_t
 create index idx_teams_att_user_idx on o_teams_attendee(fk_teams_user_id);
 alter table o_teams_attendee add constraint teams_att_meet_idx foreign key (fk_meeting_id) references o_teams_meeting (id);
 create index idx_teams_att_meet_idx on o_teams_attendee(fk_meeting_id);
+
+alter table o_teams_recording add constraint teams_rec_meet_idx foreign key (fk_meeting_id) references o_teams_meeting (id);
+create index idx_teams_rec_meet_idx on o_teams_recording (fk_meeting_id);
+alter table o_teams_recording add constraint teams_rec_data_idx foreign key (fk_recording_metadata_id) references o_vfs_metadata(id);
+create index idx_teams_rec_data_idx on o_teams_recording (fk_recording_metadata_id);
+create unique index idx_teams_rec_graph_unique on o_teams_recording (t_recording_id, fk_meeting_id);
 
 -- tag
 create unique index idx_tag_name_idx on o_tag_tag (t_display_name);

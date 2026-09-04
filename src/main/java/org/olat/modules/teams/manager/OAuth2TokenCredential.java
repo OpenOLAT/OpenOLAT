@@ -63,13 +63,14 @@ public class OAuth2TokenCredential implements TokenCredential {
 		if(StringHelper.containsNonWhitespace(tokens.getRefreshToken())) {
 			String refreshToken = tokens.getRefreshToken();
 			OAuth2AccessToken newAccessToken = getAccessToken(refreshToken);
-			((OAuth2TokensImpl)tokens).refresh(newAccessToken);
+			if(newAccessToken != null) {
+				((OAuth2TokensImpl)tokens).refresh(newAccessToken);
+			}
 			String accessToken = tokens.getAccessToken();
 			return Mono.just(new AccessToken(accessToken, null));
 		}
 		return Mono.empty(); 
 	}
-	
 	
 	private OAuth2AccessToken getAccessToken(String refreshToken) {
 		try {

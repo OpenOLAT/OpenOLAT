@@ -81,14 +81,15 @@ public class TeamsMeetingDAO {
 	}
 	
 	public TeamsMeeting loadByKey(Long key) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select meeting from teamsmeeting as meeting")
-		  .append(" left join fetch meeting.entry as entry")
-		  .append(" left join fetch meeting.businessGroup as businessGroup")
-		  .append(" where meeting.key=:meetingKey");
+		String query = """
+				select meeting from teamsmeeting as meeting
+				left join fetch meeting.organizer as organizer
+				left join fetch meeting.entry as entry
+				left join fetch meeting.businessGroup as businessGroup
+				where meeting.key=:meetingKey""";
 		
 		List<TeamsMeeting> meetings = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), TeamsMeeting.class)
+				.createQuery(query, TeamsMeeting.class)
 				.setParameter("meetingKey", key)
 				.getResultList();
 		return meetings == null || meetings.isEmpty() ? null : meetings.get(0);
@@ -180,7 +181,8 @@ public class TeamsMeetingDAO {
 	 */
 	public List<TeamsMeeting> getMeetings(RepositoryEntryRef entry) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select meeting from teamsmeeting as meeting");
+		sb.append("select meeting from teamsmeeting as meeting")
+		  .append(" left join fetch meeting.organizer as organizer");
 		if(entry != null) {
 			sb.and().append("meeting.entry.key=:entryKey");
 		}
@@ -192,7 +194,8 @@ public class TeamsMeetingDAO {
 	
 	public List<TeamsMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select meeting from teamsmeeting as meeting");
+		sb.append("select meeting from teamsmeeting as meeting")
+		  .append(" left join fetch meeting.organizer as organizer");
 		if(entry != null) {
 			sb.and().append("meeting.entry.key=:entryKey");
 			if(StringHelper.containsNonWhitespace(subIdent)) {
@@ -223,6 +226,7 @@ public class TeamsMeetingDAO {
 	public List<TeamsMeeting> getUpcomingMeetings(RepositoryEntryRef entry, String subIdent, int maxResults) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select meeting from teamsmeeting as meeting")
+		  .append(" left join fetch meeting.organizer as organizer")
 		  .append(" where meeting.entry.key=:entryKey")
 		  .append(" and meeting.startDate is not null and meeting.endDate is not null");
 		if(StringHelper.containsNonWhitespace(subIdent)) {
@@ -243,6 +247,38 @@ public class TeamsMeetingDAO {
 			query.setParameter("subIdent", subIdent);
 		}
 		return query.getResultList();
+	}
+	
+	public List<TeamsMeeting> getMeetingsToDownloadRecordings(Date windowStart, int maxResults) {
+		String query = """
+			select meeting from teamsmeeting as meeting
+			where meeting.record=true and meeting.organizerAzureId is not null and meeting.organizerTokenEncrypted is not null
+			and (meeting.endDate is null or meeting.endDate<=:startDate)
+			order by meeting.organizerAzureId""";
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query, TeamsMeeting.class)
+			.setFirstResult(0)
+			.setMaxResults(maxResults)
+			.setParameter("startDate", windowStart)
+			.getResultList();
+	}
+	
+	/**
+	 * Refresh the tokens of the specified organizer, but don't add again
+	 * removed tokens.
+	 * 
+	 * @param organizerId The Azure organizer ID
+	 * @param refreshToken The token
+	 * @return Number of rows updated
+	 */
+	public int updateRefreshToken(String organizerId, String refreshToken) {
+		String query = "update teamsmeeting meeting set meeting.organizerTokenEncrypted=:token where meeting.organizerAzureId=:organizerId and meeting.organizerTokenEncrypted is not null";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("token", refreshToken)
+				.setParameter("organizerId", organizerId)
+				.executeUpdate();
 	}
 	
 	public void updateDates(TeamsMeetingImpl meet, Date start, long leadTime, Date end, long followupTime) {

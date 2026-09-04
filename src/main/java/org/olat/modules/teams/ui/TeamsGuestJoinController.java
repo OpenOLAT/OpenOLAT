@@ -254,7 +254,7 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 		}	
 		Identity id = guest ? null : getIdentity();
 		TeamsErrors errors = new TeamsErrors();
-		meeting = teamsService.joinMeeting(meeting, id, false, guest, usess.getOAuth2Tokens(), errors);
+		meeting = teamsService.joinMeeting(meeting, id, false, guest, false, usess.getOAuth2Tokens(), errors);
 		
 		if(StringHelper.containsNonWhitespace(meeting.getOnlineMeetingJoinUrl())) {
 			MediaResource resource = new RedirectMediaResource(meeting.getOnlineMeetingJoinUrl());

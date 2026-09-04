@@ -422,6 +422,7 @@
 		<class>org.olat.modules.teams.model.TeamsMeetingImpl</class>
 		<class>org.olat.modules.teams.model.TeamsUserImpl</class>
 		<class>org.olat.modules.teams.model.TeamsAttendeeImpl</class>
+		<class>org.olat.modules.teams.model.TeamsRecordingImpl</class>
 		<class>org.olat.modules.todo.model.ToDoTaskImpl</class>
 		<class>org.olat.modules.todo.model.ToDoTaskTagImpl</class>
 		<class>org.olat.modules.topicbroker.model.TBAuditLogImpl</class>

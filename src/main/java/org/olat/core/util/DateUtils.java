@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -54,6 +55,11 @@ public class DateUtils {
 		if (localDateTime == null) return null;
 		
 		return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+	}
+	
+	public static Date toDate(OffsetDateTime offsetDateTime) {
+		if (offsetDateTime == null) return null;
+		return Date.from(offsetDateTime.toInstant());
 	}
 	
 	public static Date toDate(ZonedDateTime zonedDateTime) {

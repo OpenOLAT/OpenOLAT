@@ -147,6 +147,18 @@ public interface TeamsMeeting extends ModifiedInfo, CreateInfo {
 	
 	public String getOnlineMeetingJoinUrl();
 	
+	public boolean isRecord();
+
+	public void setRecord(boolean record);
+
+	public boolean isRecordAutoStart();
+
+	public void setRecordAutoStart(boolean recordAutoStart);
+	
+	public TeamsRecordingsPublishedRoles[] getRecordingsPublishingEnum();
+
+	public void setRecordingsPublishingEnum(TeamsRecordingsPublishedRoles[] roles);
+	
 	public String getAllowedPresenters();
 	
 	public void setAllowedPresenters(String allowedPresenters);
@@ -174,5 +186,7 @@ public interface TeamsMeeting extends ModifiedInfo, CreateInfo {
 	public BusinessGroup getBusinessGroup();
 	
 	public Identity getCreator();
+	
+	public Identity getOrganizer();
 
 }

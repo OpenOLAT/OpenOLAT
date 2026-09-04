@@ -27,6 +27,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -44,6 +45,7 @@ import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.ui.TeamsMeetingsRunController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * 
@@ -89,6 +91,9 @@ public class TeamsCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
+		
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(this));
+		
 		// check if user is admin. / moderator of the virtual classroom
 		boolean admin = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 		boolean moderator = userCourseEnv.isAdmin() || userCourseEnv.isCoach();

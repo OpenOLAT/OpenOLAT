@@ -71,6 +71,26 @@ public class TeamsAttendeeDAO {
 				&& attendeeKeys.get(0) != null && attendeeKeys.get(0).longValue() > 0;
 	}
 	
+	public TeamsAttendee loadAttendee(IdentityRef identity, TeamsMeeting meeting) {
+		if(identity == null || meeting == null) return null;
+		
+		String query = """
+				select attendee
+				from teamsattendee as attendee
+				where attendee.identity.key=:identityKey and attendee.meeting.key=:meetingKey""";
+
+		List<TeamsAttendee> attendees = dbInstance.getCurrentEntityManager()
+			.createQuery(query, TeamsAttendee.class)
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("meetingKey", meeting.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return attendees == null || attendees.isEmpty()
+				? null
+				: attendees.get(0);
+	}
+	
 	public void deleteMeetingsAttendees(TeamsMeeting meeting) {
 		String q = "delete teamsattendee where meeting.key=:meetingKey";
 		dbInstance.getCurrentEntityManager().createQuery(q)
