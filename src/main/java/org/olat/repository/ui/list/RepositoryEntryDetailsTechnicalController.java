@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
@@ -109,7 +110,7 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("v", entry);
-			
+
 			Roles roles = ureq.getUserSession().getRoles();
 			layoutCont.contextPut("roles", roles);
 			layoutCont.contextPut("isEntryAuthor", Boolean.valueOf(isOwner));
@@ -173,6 +174,11 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 			OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, entry.getOlatResource().getResourceableId());
 			int numUsers = coordinatorManager.getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
 			layoutCont.contextPut("numUsers",  String.valueOf(numUsers));
+
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			buttonsCont.setRootForm(mainForm);
+			layoutCont.add(buttonsCont);
+			uifactory.addFormCancelButton("close", buttonsCont, ureq, getWindowControl());
 		}
 	}
 	
@@ -237,29 +243,39 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 	protected void formOK(UserRequest ureq) {
 		//
 	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
 	
 	private void doOpenReference(UserRequest ureq, Long entryKey) {
 		String businessPath = "[RepositoryEntry:" + entryKey + "]";
+		fireEvent(ureq, Event.DONE_EVENT);
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doOpenVisitCard(UserRequest ureq, Long ownerKey) {
 		String businessPath = "[HomePage:" + ownerKey + "]";
+		fireEvent(ureq, Event.DONE_EVENT);
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doOpenCurriculum(UserRequest ureq, Curriculum curriculum) {
 		String businessPath = "[CurriculumAdmin:0][Curriculum:" + curriculum.getKey() + "]";
+		fireEvent(ureq, Event.DONE_EVENT);
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doOpenCurriculumElement(UserRequest ureq, CurriculumElement element) {
 		String businessPath = "[CurriculumAdmin:0][Curriculum:" + element.getCurriculum().getKey() + "][CurriculumElement:" + element.getKey() + "]";
+		fireEvent(ureq, Event.DONE_EVENT);
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doOpenCurriculumElementSearch(UserRequest ureq, CurriculumElement element) {
 		String businessPath = "[CurriculumAdmin:0][Curriculum:" + element.getCurriculum().getKey() + "][Search:" + element.getKey() + "]";
+		fireEvent(ureq, Event.DONE_EVENT);
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	

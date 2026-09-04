@@ -711,6 +711,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			initToolsMenuStatistics(toolsDropdown, course, uce);
 			initToolsMenuEdition(toolsDropdown);
 			initToolsMenuCopy(toolsDropdown, course);
+			initToolsMenuAbout(toolsDropdown);
 			initToolsMenuDelete(toolsDropdown);
 		}
 	}

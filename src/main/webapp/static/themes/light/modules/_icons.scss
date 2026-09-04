@@ -13,6 +13,7 @@ $fa-css-prefix: "o_icon" !default;
 @import "../../../font-awesome/scss/brands.scss";
 
 /* OpenOLAT Icons */ 
+.o_icon_about { @include o-add-icon('info');}
 .o_icon_absence { @include o-add-icon('times');}
 .o_icon_absence_authorized { @include o-add-icon('circle-check', false); color: $brand-success;}
 .o_icon_absence_leave { @include o-add-icon('clock', false);}

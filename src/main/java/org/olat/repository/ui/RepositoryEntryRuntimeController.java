@@ -49,6 +49,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
@@ -105,6 +106,7 @@ import org.olat.repository.ui.author.ConfirmRestoreController;
 import org.olat.repository.ui.author.RepositoryMembersController;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
 import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
+import org.olat.repository.ui.list.RepositoryEntryDetailsTechnicalController;
 import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.resource.OLATResource;
@@ -139,6 +141,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private ConfirmRestoreController confirmRestoreCtrl;
 	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
 	private Controller detailsCtrl;
+	private RepositoryEntryDetailsTechnicalController aboutCtrl;
 	private RepositoryMembersController membersEditController;
 	protected RepositoryEntrySettingsController settingsCtrl;
 	
@@ -154,6 +157,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected Link deleteLink;
 	protected Link settingsLink;
 	protected Link restoreLink;
+	protected Link aboutLink;
 	
 	private Dropdown rolesDropdown;
 	private Link ownerLink;
@@ -551,6 +555,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		initToolsMenuEditor(toolsDropdown);
 		initToolsMenuRuntime(toolsDropdown);
 		initToolsMenuEdition(toolsDropdown);
+		initToolsMenuAbout(toolsDropdown);
 		initToolsMenuDelete(toolsDropdown);
 	}
 	
@@ -626,6 +631,22 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
+	protected void initToolsMenuAbout(Dropdown toolsDropdown) {
+		if (reSecurity.isEntryAdmin()) {
+			aboutLink = LinkFactory.createToolLink("about", getAboutTitle(), this, "o_icon o_icon-fw o_icon_about");
+			aboutLink.setElementCssClass("o_sel_repo_about");
+			toolsDropdown.addComponent(aboutLink);
+		}
+	}
+
+	protected final String getAboutTitle() {
+		String title = translate("details.about." + handler.getSupportedType());
+		if (title.startsWith(Translator.NO_TRANSLATION_ERROR_PREFIX)) {
+			title = translate("details.about");
+		}
+		return title;
+	}
+
 	protected final boolean hasCopyPermissions() {
 		return ((isNotEntryAdmin() && reSecurity.isAdministrativeUser() && hasMatchingOrgRole())
 					||
@@ -876,6 +897,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			doDelete(ureq);
 		} else if(restoreLink == source) {
 			doConfirmRestore(ureq);
+		} else if(aboutLink == source) {
+			doAbout(ureq);
 		} else if (ownerLink == source) {
 			doSwitchRole(ureq, Role.owner);
 		} else if (administratorLink == source) {
@@ -988,6 +1011,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				cmc.deactivate();
 				cleanUp();
 			}
+		} else if(aboutCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
 		}
 	}
 	
@@ -1005,6 +1033,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		removeAsListenerAndDispose(detailsCtrl);
 		removeAsListenerAndDispose(editorCtrl);
 		removeAsListenerAndDispose(ordersCtlr);
+		removeAsListenerAndDispose(aboutCtrl);
 		removeAsListenerAndDispose(cmc);
 		
 		membersEditController = null;
@@ -1015,6 +1044,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		detailsCtrl = null;
 		editorCtrl = null;
 		ordersCtlr = null;
+		aboutCtrl = null;
 		cmc = null;
 	}
 	
@@ -1144,6 +1174,17 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		return detailsCtrl instanceof Activateable2 activateable ? activateable : null;
 	}
 	
+	private void doAbout(UserRequest ureq) {
+		if (guardModalController(aboutCtrl)) return;
+
+		aboutCtrl = new RepositoryEntryDetailsTechnicalController(ureq, getWindowControl(), loadRepositoryEntry(), reSecurity.isEntryAdmin());
+		listenTo(aboutCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), aboutCtrl.getInitialComponent(), true, getAboutTitle());
+		listenTo(cmc);
+		cmc.activate();
+	}
+
 	// Perhaps check 
 	private CurriculumElement isInSingleCourseImplementation(RepositoryEntry entry) {
 		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);

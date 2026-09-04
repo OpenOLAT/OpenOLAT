@@ -41,7 +41,6 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -88,7 +87,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 	private final InfoPageMyCourseController myCourseCtrl;
 	private InfoPageRatingController ratingCtrl;
 	private UserCommentsAndRatingsController userCommentsCtrl;
-	private RepositoryEntryDetailsTechnicalController technicalDetailsCtrl;
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private final RepositoryEntry entry;
@@ -194,16 +192,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 		if (repositoryModule.isCommentEnabled()) {
 			userCommentsCtrl = initCommentsCtrl(ureq);
 			mainVC.put("comments", userCommentsCtrl.getInitialComponent());
-		}
-
-		// show technical data only for administrative users or owners, hide from normal users
-		if (ureq.getUserSession().getRoles() != null) {
-			Roles roles = ureq.getUserSession().getRoles();
-			if (isOwner || roles.isAdministrator() || roles.isManager()) {
-				technicalDetailsCtrl = new RepositoryEntryDetailsTechnicalController(ureq, wControl, entry, isOwner);
-				listenTo(technicalDetailsCtrl);
-				mainVC.put("technical", technicalDetailsCtrl.getInitialComponent());
-			}
 		}
 
 		if (entry.getEducationalType() != null) {

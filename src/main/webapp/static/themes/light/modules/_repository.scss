@@ -140,7 +140,6 @@
 	.o_info_page_events { order: 8; }
 	.o_info_page_licence { order: 9; }
 	.o_info_page_rating { order: 10; }
-	.o_info_page_technical { order: 11; }
 
 	.o_info_page_thumbnail {
 		.o_image, img, .o_video, video {
@@ -249,10 +248,6 @@
 		}
 
 		.o_ac_offer_message {
-			display: none;
-		}
-
-		.o_info_page_technical {
 			display: none;
 		}
 
