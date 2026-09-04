@@ -337,12 +337,18 @@ public class UserCommentsDAO {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		// special query when sub path is null
 		List<UserCommentImpl> comments;
+		// Order by key (in addition to creationDate) so that a reply always sorts before the
+		// comment it replies to: a reply can only be created once its parent already exists,
+		// so its key is always greater. creationDate alone is not a reliable tie-breaker across
+		// database vendors - some store it with only second precision, so a comment and a reply
+		// created within the same second can tie, in which case the parent could be removed
+		// before the still-present reply and trigger a TransientPropertyValueException.
 		if (resSubPath == null) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select comment from usercomment comment")
 			  .append(" where resName=:resName and resId=:resId and resSubPath is null")
-			  .append(" order by creationDate desc");
-			
+			  .append(" order by creationDate desc, comment.key desc");
+
 			comments = em.createQuery(sb.toString(), UserCommentImpl.class)
 				.setParameter("resName", ores.getResourceableTypeName())
 				.setParameter("resId", ores.getResourceableId())
@@ -351,8 +357,8 @@ public class UserCommentsDAO {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select comment from usercomment comment")
 			  .append(" where resName=:resName and resId=:resId and resSubPath=:resSubPath")
-			  .append(" order by creationDate desc");
-			
+			  .append(" order by creationDate desc, comment.key desc");
+
 			comments = em.createQuery(sb.toString(), UserCommentImpl.class)
 					.setParameter("resName", ores.getResourceableTypeName())
 					.setParameter("resId", ores.getResourceableId())
@@ -377,9 +383,11 @@ public class UserCommentsDAO {
 	public int deleteAllCommentsIgnoringSubPath(OLATResourceable ores) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		StringBuilder sb = new StringBuilder();
+		// See deleteAllComments(OLATResourceable, String) for why comment.key is needed as a
+		// secondary sort key alongside creationDate.
 		sb.append("select comment from usercomment comment")
 		  .append(" where resName=:resName and resId=:resId")
-		  .append(" order by creationDate desc");
+		  .append(" order by creationDate desc, comment.key desc");
 
 		List<UserCommentImpl> comments = em.createQuery(sb.toString(), UserCommentImpl.class)
 			.setParameter("resName", ores.getResourceableTypeName())

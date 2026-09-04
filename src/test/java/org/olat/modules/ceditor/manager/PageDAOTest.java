@@ -685,6 +685,8 @@ public class PageDAOTest extends OlatTestCase {
 		// deleteAllComments(OLATResourceable, String) was intermittently not persisted by the
 		// subsequent commit in this exact call chain (page + body removal, bulk part/assignment
 		// deletes, then the comment entity remove) - reproduced reliably without this flush.
+		// Separate from the creationDate/key ordering fix above: this is about the flush timing,
+		// not the deletion order.
 		dbInstance.getCurrentEntityManager().flush();
 		dbInstance.commitAndCloseSession();
 
@@ -692,6 +694,44 @@ public class PageDAOTest extends OlatTestCase {
 		Assert.assertNull("The reply is gone once its page is deleted", userCommentsDao.reloadComment(reply));
 		Assert.assertTrue("The attachment folder is gone once its page is deleted",
 				commentAndRatingService.getCommentLeafs(comment).isEmpty());
+	}
+
+	/**
+	 * Some databases (MySQL's DATETIME without explicit fractional-seconds precision, unlike
+	 * Postgres' microsecond-precision timestamp) can give a comment and its reply the exact same
+	 * creationDate when both are created within the same second. deleteAllComments(OLATResourceable,
+	 * String) must not rely on creationDate alone to order deletions - it also needs comment.key as
+	 * a secondary sort, otherwise a parent can be removed while its still-present reply references
+	 * it, throwing a Hibernate TransientPropertyValueException. This test forces that exact tie to
+	 * guard against a regression that Postgres' precision alone would never expose.
+	 */
+	@Test
+	public void deletePageRemovesReplyBeforeParentOnTiedCreationDate() throws IOException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cediting-tied-del");
+		Identity replier = JunitTestHelper.createAndPersistIdentityAsRndUser("cediting-tied-ndel");
+		Page page = pageDao.createAndPersist("Page with a tied-timestamp reply", "A page.", null, null, true, null, null);
+		dbInstance.commitAndCloseSession();
+
+		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
+		UserComment comment = userCommentsDao.createComment(author, pageOres, null, "Parent");
+		UserComment reply = userCommentsDao.replyTo(comment, replier, "Reply");
+		dbInstance.commitAndCloseSession();
+
+		// force the exact tie a coarser DATETIME column would produce
+		dbInstance.getCurrentEntityManager()
+				.createNativeQuery("update o_usercomment set creationdate = (select creationdate from o_usercomment where comment_id = :parentKey) where comment_id = :replyKey")
+				.setParameter("parentKey", comment.getKey())
+				.setParameter("replyKey", reply.getKey())
+				.executeUpdate();
+		dbInstance.commitAndCloseSession();
+
+		Page reloadedPage = pageDao.loadByKey(page.getKey());
+		pageDao.deletePage(reloadedPage);
+		dbInstance.getCurrentEntityManager().flush();
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNull(userCommentsDao.reloadComment(comment));
+		Assert.assertNull(userCommentsDao.reloadComment(reply));
 	}
 
 	@Test
