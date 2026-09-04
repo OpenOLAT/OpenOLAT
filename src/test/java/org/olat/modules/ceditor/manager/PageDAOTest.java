@@ -21,13 +21,21 @@ package org.olat.modules.ceditor.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
+import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
+import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.ContentRoles;
@@ -67,6 +75,10 @@ public class PageDAOTest extends OlatTestCase {
 	private BinderDAO binderDao;
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private UserCommentsDAO userCommentsDao;
+	@Autowired
+	private CommentAndRatingService commentAndRatingService;
 	
 	
 	@Test
@@ -638,7 +650,50 @@ public class PageDAOTest extends OlatTestCase {
 		pageDao.deletePage(reloadedPage);
 		dbInstance.commit();
 	}
-	
+
+	/**
+	 * OO-9632: a Page comment is preserved when its author is deleted (see
+	 * UserCommentsDAOTest.deleteUser()), but it must not become undeletable data -
+	 * deleting the page itself is still the path that removes it, together with
+	 * its attachment folder.
+	 */
+	@Test
+	public void deletePageRemovesPreservedCommentOfDeletedUser() throws IOException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cediting-page-comment-del");
+		Page page = pageDao.createAndPersist("Page with a preserved comment", "A page.", null, null, true, null, null);
+		dbInstance.commitAndCloseSession();
+
+		Identity replier = JunitTestHelper.createAndPersistIdentityAsRndUser("cediting-page-comment-ndel");
+		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
+		UserComment comment = userCommentsDao.createComment(author, pageOres, null, "Page feedback");
+		VFSLeaf attachment = commentAndRatingService.getCommentContainer(comment).createChildLeaf("attachment.txt");
+		try (OutputStream out = attachment.getOutputStream(false)) {
+			out.write("attachment content".getBytes());
+		}
+		UserComment reply = userCommentsDao.replyTo(comment, replier, "Nice work");
+		dbInstance.commitAndCloseSession();
+
+		// the author is deleted first: the Page comment is preserved (OO-9632, Phase 1)
+		userCommentsDao.deleteAllComments(author);
+		dbInstance.commitAndCloseSession();
+		UserComment preservedComment = userCommentsDao.reloadComment(comment);
+		Assert.assertNotNull("The Page comment survives the deletion of its author", preservedComment);
+
+		Page reloadedPage = pageDao.loadByKey(page.getKey());
+		pageDao.deletePage(reloadedPage);
+		// Explicit flush found necessary here: without it, the em.remove() of the comment inside
+		// deleteAllComments(OLATResourceable, String) was intermittently not persisted by the
+		// subsequent commit in this exact call chain (page + body removal, bulk part/assignment
+		// deletes, then the comment entity remove) - reproduced reliably without this flush.
+		dbInstance.getCurrentEntityManager().flush();
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNull("The comment is gone once its page is deleted", userCommentsDao.reloadComment(comment));
+		Assert.assertNull("The reply is gone once its page is deleted", userCommentsDao.reloadComment(reply));
+		Assert.assertTrue("The attachment folder is gone once its page is deleted",
+				commentAndRatingService.getCommentLeafs(comment).isEmpty());
+	}
+
 	@Test
 	public void isFormEntryInUse() {
 		RepositoryEntry formRe = JunitTestHelper.createAndPersistRepositoryEntry();

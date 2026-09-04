@@ -21,14 +21,19 @@ package org.olat.core.commons.services.commentAndRating.manager;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryStatistics;
@@ -56,6 +61,8 @@ public class UserCommentsDAOTest extends OlatTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private UserLifecycleManager userLifecycleManager;
+	@Autowired
+	private CommentAndRatingService commentAndRatingService;
 
 	
 	@Test
@@ -160,8 +167,20 @@ public class UserCommentsDAOTest extends OlatTestCase {
 		// more
 		UserComment comment_del_5 = userCommentsDao.createComment(identToDelete, course, null, "To reply");
 		UserComment comment_ndel_6 = userCommentsDao.replyTo(comment_del_5, ident, "I replied");
+
+		// OO-9632: an ePortfolio page comment of the deleted user, with an attachment and a reply,
+		// must survive the deletion of its author with its text unchanged
+		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance("Page", identToDelete.getKey());
+		UserComment comment_preserved = userCommentsDao.createComment(identToDelete, pageOres, null, "Page feedback");
+		VFSLeaf attachment = commentAndRatingService.getCommentContainer(comment_preserved).createChildLeaf("attachment.txt");
+		try (OutputStream out = attachment.getOutputStream(false)) {
+			out.write("attachment content".getBytes());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		UserComment comment_preserved_reply = userCommentsDao.replyTo(comment_preserved, ident, "Nice work");
 		dbInstance.commitAndCloseSession();
-		
+
 		// delete the first user
 		userLifecycleManager.deleteIdentity(identToDelete, null);
 		dbInstance.commitAndCloseSession();
@@ -181,9 +200,23 @@ public class UserCommentsDAOTest extends OlatTestCase {
 		// 5 has a reply, don't delete it
 		UserComment deletedComment_del_5 = userCommentsDao.reloadComment(comment_del_5);
 		Assert.assertNotNull(deletedComment_del_5);
+		// OO-9632: the row is kept for its reply, but the text is no longer overwritten with a placeholder
+		Assert.assertEquals("To reply", deletedComment_del_5.getComment());
 		UserComment reloadedComment_ndel_6 = userCommentsDao.reloadComment(comment_ndel_6);
 		Assert.assertNotNull(reloadedComment_ndel_6);
-		
+
+		// OO-9632: the preserved Page comment survives the user deletion, with its text unchanged
+		UserComment reloadedPreserved = userCommentsDao.reloadComment(comment_preserved);
+		Assert.assertNotNull("A Page comment must survive the deletion of its author", reloadedPreserved);
+		Assert.assertEquals("Page feedback", reloadedPreserved.getComment());
+		// its attachment stays, and stays reachable via getCommentLeafs()
+		List<VFSLeaf> preservedLeafs = commentAndRatingService.getCommentLeafs(reloadedPreserved);
+		Assert.assertEquals(1, preservedLeafs.size());
+		Assert.assertEquals("attachment.txt", preservedLeafs.get(0).getName());
+		// the reply to the preserved comment stays reachable
+		UserComment reloadedPreservedReply = userCommentsDao.reloadComment(comment_preserved_reply);
+		Assert.assertNotNull("A reply to a preserved comment must stay reachable", reloadedPreservedReply);
+
 		// check repository statistics
 		RepositoryEntry reloadedEntry = repositoryService.loadByKey(course.getKey());
 		RepositoryEntryStatistics entryStatistics = reloadedEntry.getStatistics();
