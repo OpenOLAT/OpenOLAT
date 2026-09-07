@@ -27,6 +27,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.Order;
 
 /**
@@ -42,15 +43,20 @@ public class OrderFormRow implements Persistable {
 	private final EvaluationFormSurvey survey;
 	private final EvaluationFormParticipation participation;
 	private final Order order;
+	private final Offer offer;
+	private final String offerLabel;
 	private EvaluationFormSession session;
 
 	private FormLink viewLink;
 	private FormLink toolsLink;
 
-	public OrderFormRow(EvaluationFormSurvey survey, EvaluationFormParticipation participation, Order order) {
+	public OrderFormRow(EvaluationFormSurvey survey, EvaluationFormParticipation participation, Order order,
+			Offer offer, String offerLabel) {
 		this.survey = survey;
 		this.participation = participation;
 		this.order = order;
+		this.offer = offer;
+		this.offerLabel = offerLabel;
 	}
 
 	@Override
@@ -68,6 +74,14 @@ public class OrderFormRow implements Persistable {
 
 	public Order getOrder() {
 		return order;
+	}
+
+	public Offer getOffer() {
+		return offer;
+	}
+
+	public String getOfferLabel() {
+		return offerLabel;
 	}
 
 	public String getOrderNr() {

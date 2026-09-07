@@ -64,7 +64,6 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.member.CurriculumElementMemberUsersController;
-import org.olat.modules.forms.CoachCandidates;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -73,7 +72,6 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
-import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.UserPropertiesColumns;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -112,7 +110,7 @@ public class OfferSurveyParticipationListController extends FormBasicController 
 	private List<UserPropertyHandler> userPropertyHandlers;
 
 	private CloseableModalController cmc;
-	private EvaluationFormExecutionController executionCtrl;
+	private OfferSurveyExecutionDetailController executionCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ToolsController toolsCtrl;
 
@@ -369,15 +367,16 @@ public class OfferSurveyParticipationListController extends FormBasicController 
 	private void doOpenForm(UserRequest ureq, OfferSurveyParticipationRow row, boolean readOnly) {
 		if (guardModalController(executionCtrl)) return;
 
-		EvaluationFormSession session = row.getSession();
+		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByKey(row.getParticipation());
+		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 		if (session == null) {
-			session = evaluationFormManager.createSession(row.getParticipation());
-		} else {
-			session = evaluationFormManager.loadSessionByKey(session);
+			session = evaluationFormManager.createSession(participation);
 		}
 
 		String titleKey = readOnly ? "offer.survey.participation.view.form" : "offer.survey.participation.edit.form";
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, CoachCandidates.NONE, readOnly, !readOnly, !readOnly, false, null);
+		executionCtrl = new OfferSurveyExecutionDetailController(ureq, getWindowControl(), session, survey,
+				row.getOfferLabel(), row.getOrderNr(), row.getSubmissionDate(), row.getStatus(), row.getExecutor(),
+				readOnly, true, !readOnly, false);
 		listenTo(executionCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), executionCtrl.getInitialComponent(),

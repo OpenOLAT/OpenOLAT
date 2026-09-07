@@ -21,6 +21,7 @@ package org.olat.resource.accesscontrol.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,18 +50,21 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.modules.forms.CoachCandidates;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
-import org.olat.modules.forms.ui.EvaluationFormExecutionController;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.OfferToSurvey;
 import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.ui.OrderFormListTableModel.OrderFormCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,7 +87,7 @@ public class OrderFormListController extends FormBasicController {
 	private FlexiTableElement tableEl;
 
 	private CloseableModalController cmc;
-	private EvaluationFormExecutionController executionCtrl;
+	private OfferSurveyExecutionDetailController executionCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ToolsController toolsCtrl;
 
@@ -92,6 +96,8 @@ public class OrderFormListController extends FormBasicController {
 
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private AccessControlModule acModule;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
@@ -128,16 +134,28 @@ public class OrderFormListController extends FormBasicController {
 
 	private void loadModel() {
 		List<OrderFormRow> rows = new ArrayList<>();
+		Map<Long, List<EvaluationFormSurvey>> surveysByResourceKey = new HashMap<>();
 		Map<Long, List<OfferToSurvey>> offerToSurveysByOfferKey = new HashMap<>();
+		Set<String> seenSurveyOrderKeys = new HashSet<>();
 
 		for (Order order : orders) {
-			for (Offer offer : getOffers(order)) {
-				List<OfferToSurvey> offerToSurveys = offerToSurveysByOfferKey.computeIfAbsent(offer.getKey(),
-						key -> acService.loadOfferToSurveys(offer));
-				for (OfferToSurvey offerToSurvey : offerToSurveys) {
-					EvaluationFormSurvey survey = offerToSurvey.getSurvey();
-					for (EvaluationFormParticipation participation : acService.loadOfferSurveyParticipations(survey, order)) {
-						rows.add(new OrderFormRow(survey, participation, order));
+			List<Offer> offers = getOffers(order);
+			for (Offer offer : offers) {
+				OLATResource resource = offer.getResource();
+				List<EvaluationFormSurvey> surveys = surveysByResourceKey.computeIfAbsent(resource.getKey(),
+						key -> acService.loadOfferSurveys(resource));
+				for (EvaluationFormSurvey survey : surveys) {
+					if (!seenSurveyOrderKeys.add(survey.getKey() + "-" + order.getKey())) {
+						continue;
+					}
+					List<EvaluationFormParticipation> participations = acService.loadOfferSurveyParticipations(survey, order);
+					if (participations.isEmpty()) {
+						continue;
+					}
+					Offer displayOffer = resolveOfferForSurvey(survey, offers, offerToSurveysByOfferKey);
+					String offerLabel = getOfferLabel(displayOffer);
+					for (EvaluationFormParticipation participation : participations) {
+						rows.add(new OrderFormRow(survey, participation, order, displayOffer, offerLabel));
 					}
 				}
 			}
@@ -167,6 +185,34 @@ public class OrderFormListController extends FormBasicController {
 			}
 		}
 		return sessionByParticipationKey;
+	}
+
+	private Offer resolveOfferForSurvey(EvaluationFormSurvey survey, List<Offer> offers,
+			Map<Long, List<OfferToSurvey>> offerToSurveysByOfferKey) {
+		for (Offer offer : offers) {
+			List<OfferToSurvey> offerToSurveys = offerToSurveysByOfferKey.computeIfAbsent(offer.getKey(),
+					key -> acService.loadOfferToSurveys(offer));
+			boolean linked = offerToSurveys.stream().anyMatch(ots -> ots.getSurvey().getKey().equals(survey.getKey()));
+			if (linked) {
+				return offer;
+			}
+		}
+		return offers.isEmpty() ? null : offers.get(0);
+	}
+
+	private String getOfferLabel(Offer offer) {
+		String label = offer.getLabel();
+		if (StringHelper.containsNonWhitespace(label)) {
+			return label;
+		}
+		List<OfferAccess> offerAccesses = acService.getOfferAccess(offer, true);
+		if (!offerAccesses.isEmpty()) {
+			AccessMethodHandler handler = acModule.getAccessMethodHandler(offerAccesses.get(0).getMethod().getType());
+			if (handler != null) {
+				return handler.getMethodName(getLocale());
+			}
+		}
+		return translate("offer.survey.offer.column");
 	}
 
 	private List<Offer> getOffers(Order order) {
@@ -248,13 +294,16 @@ public class OrderFormListController extends FormBasicController {
 	private void doOpenForm(UserRequest ureq, OrderFormRow row, boolean readOnly) {
 		if (guardModalController(executionCtrl)) return;
 
-		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(row.getParticipation());
+		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByKey(row.getParticipation());
+		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 		if (session == null) {
-			session = evaluationFormManager.createSession(row.getParticipation());
+			session = evaluationFormManager.createSession(participation);
 		}
 
 		String titleKey = readOnly ? "offer.survey.participation.view.form" : "offer.survey.participation.edit.form";
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, CoachCandidates.NONE, readOnly, !readOnly, !readOnly, false, null);
+		executionCtrl = new OfferSurveyExecutionDetailController(ureq, getWindowControl(), session, row.getSurvey(),
+				row.getOfferLabel(), row.getOrderNr(), row.getSubmissionDate(), row.getStatus(), participation.getExecutor(),
+				readOnly, true, !readOnly, false);
 		listenTo(executionCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), executionCtrl.getInitialComponent(),

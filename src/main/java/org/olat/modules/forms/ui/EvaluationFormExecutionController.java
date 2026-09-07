@@ -292,14 +292,13 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	}
 
 	private void ajustFromSession() {
-		if (session == null)
+		if (session == null || allowEditDoneSessions) {
 			return;
+		}
 
 		if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
-			if (!allowEditDoneSessions) {
-				readOnly = true;
-				showDoneButton = false;
-			}
+			readOnly = true;
+			showDoneButton = false;
 		} else {
 			Identity executor = null;
 			if (session.getParticipation() != null) {

@@ -34,7 +34,7 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class RepositoryEntryInfoHeaderController extends FormBasicController {
 
-	protected RepositoryEntryInfoHeaderController(UserRequest ureq, WindowControl wControl, Form mainForm) {
+	public RepositoryEntryInfoHeaderController(UserRequest ureq, WindowControl wControl, Form mainForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "repo_info_header", mainForm);
 		initForm(ureq);
 	}
