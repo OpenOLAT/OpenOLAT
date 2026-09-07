@@ -48,6 +48,10 @@ public class SessionFilterFactory {
 		return new ParticipationsFilter(participations);
 	}
 
+	public static SessionFilter createOfParticipations(Collection<? extends EvaluationFormParticipationRef> participations, boolean fetchExecutor) {
+		return new ParticipationsFilter(participations, fetchExecutor);
+	}
+
 	public static SessionFilter create(EvaluationFormSurveyIdentifier surveyIdentitfier) {
 		return new SurveysFilter(surveyIdentitfier);
 	}
@@ -59,6 +63,10 @@ public class SessionFilterFactory {
 	
 	public static SessionFilter create(EvaluationFormSurveyRef survey) {
 		return new SurveysFilter(Collections.singletonList(survey));
+	}
+
+	public static SessionFilter create(EvaluationFormSurveyRef survey, boolean fetchExecutor) {
+		return new SurveysFilter(Collections.singletonList(survey), null, null, null, fetchExecutor);
 	}
 
 	public static SessionFilter createSelectDone(EvaluationFormSurveyRef survey) {

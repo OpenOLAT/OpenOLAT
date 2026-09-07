@@ -374,7 +374,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			ExternalLink catalogLink = LinkFactory.createExternalLink("login.catalog", "", WebCatalogDispatcher.getBaseUrl().toString());
 			catalogLink.setElementCssClass("o_login_catalog_button btn btn-default o_button_primary_light o_login_btn_icon_right");
 			catalogLink.setName(translate("login.catalog.explore"));
-			catalogLink.setIconRightCSS("o_icon o_icon_arrow_right");
+			catalogLink.setIconRightCSS("o_icon o_icon_jump_to");
 			catalogLink.setTarget("_self");
 			contentBorn.put("login.catalog", catalogLink);
 		}
@@ -384,7 +384,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		if(recruitingModule.isEnabled() && recruitingModule.isPositionsLoginEnabled()) {
 			gotoPositionsLink = LinkFactory.createLink("_olat_login_positions", "goto.positions", contentBorn, this);
 			gotoPositionsLink.setElementCssClass("o_login_positions_button btn btn-default o_button_primary_light o_login_btn_icon_right");
-			gotoPositionsLink.setIconRightCSS("o_icon o_icon_arrow_right");
+			gotoPositionsLink.setIconRightCSS("o_icon o_icon_jump_to");
 			
 			String url =  Settings.getServerContextPathURI() + "/positions/0";
 			gotoPositionsLink.setUrl(url);
@@ -399,7 +399,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				loginUrl = helpModule.getManualProvider().getURL(getLocale(), loginUrl);
 			}
 			ExternalLink faqLink = LinkFactory.createExternalLink("faq", translate("login.faq"), loginUrl);
-			faqLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+			faqLink.setIconLeftCSS("o_icon o_icon-fw o_icon_jump_to");
 			faqLink.setName(translate("login.faq"));
 			faqLink.setElementCssClass("o_login_faq");
 			contentBorn.put("faq", faqLink);
@@ -420,12 +420,12 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		if(ldapLoginModule.isLDAPEnabled()) {
 			if(ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 				Link link = LinkFactory.createLink("_ldap_login_change_pwd", "menu.pw", container, this);
-				link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+				link.setIconLeftCSS("o_icon o_icon-fw o_icon_jump_to");
 				link.setElementCssClass("o_login_pwd");
 				changePasswordLink = link;
 			} else if(StringHelper.containsNonWhitespace(ldapLoginModule.getChangePasswordUrl())) {
 				ExternalLink link = new ExternalLink("_ldap_login_change_pwd", "menu.pw");
-				link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+				link.setIconLeftCSS("o_icon o_icon-fw o_icon_jump_to");
 				link.setElementCssClass("o_login_pwd");
 				link.setName(translate("menu.pw"));
 				link.setUrl(ldapLoginModule.getChangePasswordUrl());
@@ -435,7 +435,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			}
 		} else if(userModule.isAnyPasswordChangeAllowed() && loginModule.isAuthenticationProviderEnabled("OLAT")) {
 			Link link = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", container, this);
-			link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+			link.setIconLeftCSS("o_icon o_icon-fw o_icon_jump_to");
 			link.setElementCssClass("o_login_pwd");
 			link.setVisible(!loginModule.isOlatProviderLoginButton());
 			changePasswordLink = link;

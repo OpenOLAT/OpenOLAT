@@ -34,15 +34,26 @@ import org.olat.modules.forms.SessionFilter;
  *
  */
 public class ParticipationsFilter implements SessionFilter {
-	
+
 	private final List<Long> participationsKeys;
-	
+	private final boolean fetchExecutor;
+
 	public ParticipationsFilter(List<Long> participationsKeys) {
-		this.participationsKeys = participationsKeys;
+		this(participationsKeys, false);
 	}
-	
+
+	public ParticipationsFilter(List<Long> participationsKeys, boolean fetchExecutor) {
+		this.participationsKeys = participationsKeys;
+		this.fetchExecutor = fetchExecutor;
+	}
+
 	public ParticipationsFilter(Collection<? extends EvaluationFormParticipationRef> participations) {
+		this(participations, false);
+	}
+
+	public ParticipationsFilter(Collection<? extends EvaluationFormParticipationRef> participations, boolean fetchExecutor) {
 		this.participationsKeys = participations != null? participations.stream().map(EvaluationFormParticipationRef::getKey).toList(): null;
+		this.fetchExecutor = fetchExecutor;
 	}
 
 	@Override
@@ -57,5 +68,10 @@ public class ParticipationsFilter implements SessionFilter {
 	@Override
 	public void addParameters(Query query) {
 		query.setParameter("participationsKeys", participationsKeys);
+	}
+
+	@Override
+	public boolean fetchExecutor() {
+		return fetchExecutor;
 	}
 }

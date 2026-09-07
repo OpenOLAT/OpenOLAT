@@ -81,6 +81,9 @@ import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.curriculum.ui.member.ResourceToRoleKey;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -105,7 +108,9 @@ import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.OfferDateConfig;
 import org.olat.resource.accesscontrol.OfferOrganisationSelection;
 import org.olat.resource.accesscontrol.OfferRef;
+import org.olat.resource.accesscontrol.OfferSurveyParticipationIdentifiers;
 import org.olat.resource.accesscontrol.OfferToOrganisation;
+import org.olat.resource.accesscontrol.OfferToSurvey;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
@@ -164,6 +169,10 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	private ACOfferDAO accessManager;
 	@Autowired
 	private ACOfferToOrganisationDAO offerToOrganisationDAO;
+	@Autowired
+	private ACOfferSurveyDAO offerSurveyDao;
+	@Autowired
+	private ACOfferSurveyParticipationDAO offerSurveyParticipationDao;
 	@Autowired
 	private ACMethodDAO methodManager;
 	@Autowired
@@ -376,7 +385,112 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	public void deleteOffers(OLATResource resource) {
 		accessManager.findOfferByResource(resource, true, null, false, null, null).forEach(offer -> accessManager.deleteOffer(offer));
 	}
-	
+
+	@Override
+	public EvaluationFormSurvey createOfferSurvey(OLATResource resource, RepositoryEntry formEntry, String displayName) {
+		EvaluationFormSurvey survey = offerSurveyDao.createSurvey(resource, formEntry, displayName);
+		log.info(Tracing.M_AUDIT, "Create booking order form: {} ({}) for resource: {}", displayName, formEntry, resource);
+		return survey;
+	}
+
+	@Override
+	public void deleteOfferSurvey(EvaluationFormSurvey survey) {
+		offerSurveyDao.deleteSurvey(survey);
+		log.info(Tracing.M_AUDIT, "Delete booking order form: {}", survey);
+	}
+
+	@Override
+	public List<EvaluationFormSurvey> loadOfferSurveys(OLATResource resource) {
+		return offerSurveyDao.loadSurveys(resource);
+	}
+
+	@Override
+	public OfferToSurvey enableOfferSurvey(Offer offer, EvaluationFormSurvey survey, int pos) {
+		OfferToSurvey offerToSurvey = offerSurveyDao.createOfferToSurvey(offer, survey, pos);
+		backfillOfferSurveyParticipations(offer, survey);
+		log.info(Tracing.M_AUDIT, "Enable booking order form: {} for offer: {}", survey, offer);
+		return offerToSurvey;
+	}
+
+	private void backfillOfferSurveyParticipations(Offer offer, EvaluationFormSurvey survey) {
+		List<Order> orders = orderManager.findOrdersByResource(offer.getResource(), OrderStatus.PAYED).stream()
+				.filter(order -> order.getParts().stream()
+						.flatMap(part -> part.getOrderLines().stream())
+						.anyMatch(line -> offer.getKey().equals(line.getOffer().getKey())))
+				.toList();
+		List<EvaluationFormParticipation> created = offerSurveyParticipationDao.createParticipations(survey, orders);
+		dbInstance.commit();
+		log.info(Tracing.M_AUDIT, "Backfill {} booking order form participation(s) for: {} and offer: {}", created.size(), survey, offer.getKey());
+	}
+
+	@Override
+	public void disableOfferSurvey(OfferToSurvey offerToSurvey) {
+		offerSurveyDao.deleteOfferToSurvey(offerToSurvey);
+		log.info(Tracing.M_AUDIT, "Disable booking order form: {}", offerToSurvey);
+	}
+
+	@Override
+	public OfferToSurvey updateOfferToSurveyPos(OfferToSurvey offerToSurvey, int pos) {
+		offerToSurvey.setPos(pos);
+		return offerSurveyDao.updateOfferToSurvey(offerToSurvey);
+	}
+
+	@Override
+	public List<OfferToSurvey> loadOfferToSurveys(OfferRef offer) {
+		return offerSurveyDao.loadOfferToSurveys(offer);
+	}
+
+	@Override
+	public List<OfferToSurvey> loadOfferToSurveys(EvaluationFormSurvey survey) {
+		return offerSurveyDao.loadOfferToSurveys(survey);
+	}
+
+	@Override
+	public boolean isOfferSurveyUsed(EvaluationFormSurvey survey) {
+		return offerSurveyDao.isSurveyUsed(survey);
+	}
+
+	@Override
+	public EvaluationFormParticipation createOfferSurveyParticipation(EvaluationFormSurvey survey, Order order, Identity executor) {
+		EvaluationFormParticipation participation = offerSurveyParticipationDao.createParticipation(survey, order, executor);
+		log.info(Tracing.M_AUDIT, "Create booking order form participation: {} for order: {} and executor: {}", survey, order.getKey(), executor);
+		return participation;
+	}
+
+	private EvaluationFormParticipation cancelOfferSurveyParticipation(EvaluationFormParticipation participation) {
+		EvaluationFormParticipation canceled = offerSurveyParticipationDao.cancelParticipation(participation);
+		log.info(Tracing.M_AUDIT, "Cancel booking order form participation: {}", participation);
+		return canceled;
+	}
+
+	@Override
+	public boolean hasActiveOfferSurveyParticipation(EvaluationFormSurvey survey, Order order) {
+		return offerSurveyParticipationDao.hasActiveParticipation(survey, order);
+	}
+
+	@Override
+	public List<EvaluationFormParticipation> loadOfferSurveyParticipations(EvaluationFormSurvey survey, Order order) {
+		return offerSurveyParticipationDao.loadParticipations(survey, order);
+	}
+
+	@Override
+	public List<EvaluationFormParticipation> loadOfferSurveyParticipations(EvaluationFormSurvey survey) {
+		return offerSurveyParticipationDao.loadParticipations(survey);
+	}
+
+	@Override
+	public int countCompletedOfferSurveyParticipations(Offer offer, EvaluationFormSurvey survey) {
+		Set<Long> orderKeys = orderManager.findOrdersByResource(offer.getResource()).stream()
+				.filter(order -> order.getParts().stream().flatMap(part -> part.getOrderLines().stream())
+						.anyMatch(line -> offer.getKey().equals(line.getOffer().getKey())))
+				.map(Order::getKey)
+				.collect(Collectors.toSet());
+		return (int) offerSurveyParticipationDao.loadParticipations(survey).stream()
+				.filter(participation -> participation.getStatus() == EvaluationFormParticipationStatus.done)
+				.filter(participation -> orderKeys.contains(OfferSurveyParticipationIdentifiers.getOrderKey(participation.getIdentifier())))
+				.count();
+	}
+
 	@Override
 	public boolean deleteOrganisationData(Organisation organisation, Organisation replacementOrganisation) {
 		List<OfferToOrganisation> offerToOrganisations = offerToOrganisationDAO.loadRelations(null, organisation);
@@ -749,6 +863,7 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 				if(internalDenyAccesToResource(identity, offer, nextStatus, doer, adminNote)) {
 					deniedRessources.add(offer.getResource());
 				}
+				cancelOfferSurveyParticipations(offer, order);
 			}
 		}
 		if (orderFees.getAmount().compareTo(BigDecimal.ZERO) == 0) {
@@ -765,6 +880,16 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 		}
 	}
 	
+	private void cancelOfferSurveyParticipations(Offer offer, Order order) {
+		for(OfferToSurvey offerToSurvey:loadOfferToSurveys(offer)) {
+			for(EvaluationFormParticipation participation:loadOfferSurveyParticipations(offerToSurvey.getSurvey(), order)) {
+				if(participation.getStatus() != EvaluationFormParticipationStatus.canceled) {
+					cancelOfferSurveyParticipation(participation);
+				}
+			}
+		}
+	}
+
 	private void sendMail(Identity delivery, OLATResource resource, Identity doer, MailPackage mailing) {
 		if("CurriculumElement".equals(resource.getResourceableTypeName())) {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);

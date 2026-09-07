@@ -1029,6 +1029,36 @@ div.o_assessment_mini_conditional_overview {
 	padding: 6px 0;
 }
 
+.o_labeled_light {
+	&.o_offer_survey_status_prepared {
+		font-weight: normal;
+		@extend %o_labeled_light_blue;
+	}
+	&.o_offer_survey_status_done {
+		font-weight: normal;
+		@extend %o_labeled_light_green;
+	}
+	&.o_offer_survey_status_canceled {
+		font-weight: normal;
+		@extend %o_labeled_light_red;
+	}
+}
+
+.o_labeled {
+	&.o_offer_survey_status_prepared {
+		font-weight: normal;
+		@extend %o_labeled_blue;
+	}
+	&.o_offer_survey_status_done {
+		font-weight: normal;
+		@extend %o_labeled_green;
+	}
+	&.o_offer_survey_status_canceled {
+		font-weight: normal;
+		@extend %o_labeled_red;
+	}
+}
+
 
 /* BigBlueButton */
 .o_bbb_deleted td {

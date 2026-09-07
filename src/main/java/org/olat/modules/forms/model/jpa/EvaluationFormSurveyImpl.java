@@ -81,6 +81,8 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 	
 	@Column(name="e_public_part_identifier", nullable=true, insertable=true, updatable=true)
 	private String publicParticipationIdentifier;
+	@Column(name="e_display_name", nullable=true, insertable=true, updatable=true)
+	private String displayName;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_form_entry", nullable=false, insertable=true, updatable=true)
@@ -212,6 +214,16 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 
 	public void setPublicParticipationIdentifier(String publicParticipationIdentifier) {
 		this.publicParticipationIdentifier = publicParticipationIdentifier;
+	}
+
+	@Override
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	@Override
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	@Override

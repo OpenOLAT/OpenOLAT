@@ -57,6 +57,7 @@ import org.olat.modules.forms.EvaluationFormDispatcher;
 import org.olat.modules.forms.EvaluationFormEmailExecutor;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationCounts;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -252,6 +253,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public EvaluationFormSurvey updateSurveyDisplayName(EvaluationFormSurvey survey, String displayName) {
+		return evaluationFormSurveyDao.updateDisplayName(survey, displayName);
+	}
+
+	@Override
 	public void deleteAllData(EvaluationFormSurvey survey) {
 		if (survey == null) return;
 		
@@ -313,6 +319,12 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		return createParticipation(survey, identifier, false, 1, null);
 	}
 
+	@Override
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
+			EvaluationFormParticipationIdentifier identifier, Identity executor, int run) {
+		return createParticipation(survey, identifier, false, run, executor);
+	}
+
 	private EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
 			EvaluationFormParticipationIdentifier identifier, boolean anonymous, int run, Identity executor) {
 		if (run > 1) {
@@ -366,6 +378,12 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	public List<EvaluationFormParticipation> loadParticipations(EvaluationFormSurveyRef surveyRef,
 			EvaluationFormParticipationStatus status, boolean emailOnly, boolean fetchExecutor) {
 		return evaluationFormParticipationDao.loadBySurvey(surveyRef, status, emailOnly, fetchExecutor);
+	}
+
+	@Override
+	public Map<Long, EvaluationFormParticipationCounts> loadParticipationCounts(Collection<? extends EvaluationFormSurveyRef> surveys) {
+		List<Long> surveyKeys = surveys.stream().map(EvaluationFormSurveyRef::getKey).toList();
+		return evaluationFormParticipationDao.loadCountsGroupedBySurvey(surveyKeys);
 	}
 
 	@Override

@@ -65,6 +65,10 @@ import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -126,6 +130,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	private ACOrderDAO acOrderDao;
 	@Autowired
 	private ACReservationDAO acReservationDao;
+	@Autowired
+	private EvaluationFormTestsHelper evaluationFormTestsHelper;
 
 	@Test
 	public void testManagers() {
@@ -565,6 +571,45 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Order reloadedOrder = acService.loadOrderByKey(order.getKey());
 		Assert.assertEquals(order, reloadedOrder);
 		Assert.assertNotNull(reloadedOrder.getCancellationFees());
+	}
+
+	@Test
+	public void cancelOrderAlsoCancelsOfferSurveyParticipation() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pay-23");
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("doer-23");
+
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-AC-3", "Curriculum AC 3", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-survey-order", "Element for survey order",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		Offer offer = acService.createOffer(element.getResource(), "Offer with order form");
+		offer = acService.save(offer);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(InvoiceAccessMethod.class);
+		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
+		offerAccess = acService.saveOfferAccess(offerAccess);
+		dbInstance.commitAndCloseSession();
+
+		RepositoryEntry formEntry = evaluationFormTestsHelper.createFormEntry();
+		EvaluationFormSurvey survey = acService.createOfferSurvey(offer.getResource(), formEntry, "Step 1");
+		acService.enableOfferSurvey(offer, survey, 1);
+		dbInstance.commitAndCloseSession();
+
+		AccessResult result = acService.accessResource(id, offerAccess, OrderStatus.PAYED, null, null, doer, null);
+		Assert.assertTrue(result.isAccessible());
+		Order order = result.getOrder();
+		dbInstance.commitAndCloseSession();
+
+		EvaluationFormParticipation participation = acService.createOfferSurveyParticipation(survey, order, id);
+		dbInstance.commitAndCloseSession();
+		assertThat(participation.getStatus()).isEqualTo(EvaluationFormParticipationStatus.prepared);
+
+		acService.cancelOrder(order, doer, "Cancelled", new MailPackage(false));
+		dbInstance.commitAndCloseSession();
+
+		List<EvaluationFormParticipation> participations = acService.loadOfferSurveyParticipations(survey, order);
+		assertThat(participations).extracting(EvaluationFormParticipation::getStatus)
+				.containsExactly(EvaluationFormParticipationStatus.canceled);
 	}
 
 	@Test

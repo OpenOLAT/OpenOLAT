@@ -62,6 +62,11 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 	}
 
 	@Override
+	protected boolean isOfferSurveySupported() {
+		return false;
+	}
+
+	@Override
 	protected void initCustomFormElements(FormItemContainer formLayout) {
 		Price price = null;
 		if(link.getOffer() != null && link.getOffer().getPrice() != null) {

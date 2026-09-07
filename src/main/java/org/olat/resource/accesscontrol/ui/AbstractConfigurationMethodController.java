@@ -20,20 +20,28 @@
 
 package org.olat.resource.accesscontrol.ui;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.OffsetDirection;
 import org.olat.core.gui.components.date.RelativeDateElement;
 import org.olat.core.gui.components.date.RelativeDateSelection;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -42,14 +50,25 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.updown.UpDown;
+import org.olat.core.gui.components.updown.UpDownEvent;
+import org.olat.core.gui.components.updown.UpDownEvent.Direction;
+import org.olat.core.gui.components.updown.UpDownFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.repository.ExecutionPeriodRelativeDateContext;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -59,6 +78,8 @@ import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.OfferDateConfig;
 import org.olat.resource.accesscontrol.OfferDateRef;
 import org.olat.resource.accesscontrol.OfferDateUnit;
+import org.olat.resource.accesscontrol.OfferToSurvey;
+import org.olat.resource.accesscontrol.ui.OfferSurveyOfferListTableModel.OfferSurveyOfferCols;
 import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -95,6 +116,13 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private MultipleSelectionElement catalogEl;
 	protected SingleSelection confirmationByManagerEl;
 	private MultipleSelectionElement confirmationEmailEl;
+	private FormLayoutContainer surveyCont;
+	private FlexiTableElement surveyTableEl;
+	private OfferSurveyOfferListTableModel surveyTableModel;
+	private List<OfferSurveyOfferRow> surveyRows;
+
+	private CloseableModalController cmc;
+	private ConfirmationController disableConfirmationCtrl;
 
 	protected final OfferAccess link;
 	private final boolean offerOrganisationsSupported;
@@ -286,6 +314,10 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 
 		initCustomMembershipElements(membershipCont);
 
+		if (isOfferSurveySupported() && catalogInfo.getOrderFormProvider() != null && link.getOffer() != null) {
+			initOfferSurveyElements(formLayout);
+		}
+
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
 		buttonsWrapperCont.setElementCssClass("o_sel_accesscontrol_buttons");
 		buttonsWrapperCont.setRootForm(mainForm);
@@ -317,6 +349,103 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	protected void initCustomFormElements(FormItemContainer formLayout) {
 		//
 	}
+
+	/**
+	 * @return false to exclude a provider from the booking order forms section (PayPal Checkout)
+	 */
+	protected boolean isOfferSurveySupported() {
+		return true;
+	}
+
+	private void initOfferSurveyElements(FormItemContainer formLayout) {
+		String surveyPage = Util.getPackageVelocityRoot(AbstractConfigurationMethodController.class) + "/offer_survey_offer_list.html";
+		surveyCont = FormLayoutContainer.createCustomFormLayout("surveyCont", getTranslator(), surveyPage);
+		surveyCont.setFormTitle(translate("offer.survey.offer.title"));
+		surveyCont.setFormInfo(translate("offer.survey.offer.hint"));
+		surveyCont.setRootForm(mainForm);
+		formLayout.add(surveyCont);
+
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OfferSurveyOfferCols.upDown));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OfferSurveyOfferCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OfferSurveyOfferCols.reference));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OfferSurveyOfferCols.stepName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OfferSurveyOfferCols.use));
+
+		surveyTableModel = new OfferSurveyOfferListTableModel(columnsModel);
+		surveyTableEl = uifactory.addTableElement(getWindowControl(), "offerSurveyOfferTable", surveyTableModel, 20, false, getTranslator(), surveyCont);
+		surveyTableEl.setExportEnabled(false);
+
+		initOfferSurveyRows();
+	}
+
+	private void initOfferSurveyRows() {
+		Offer offer = link.getOffer();
+		OLATResource resource = offer.getResource();
+		List<EvaluationFormSurvey> surveys = acService.loadOfferSurveys(resource);
+		List<OfferToSurvey> offerToSurveys = offer.getKey() != null? acService.loadOfferToSurveys(offer): List.of();
+		Map<Long, OfferToSurvey> offerToSurveyBySurveyKey = offerToSurveys.stream()
+				.collect(Collectors.toMap(ots -> ots.getSurvey().getKey(), ots -> ots));
+
+		List<OfferToSurvey> sortedOfferToSurveys = new ArrayList<>(offerToSurveys);
+		sortedOfferToSurveys.sort(Comparator.comparingInt(OfferToSurvey::getPos));
+
+		surveyRows = new ArrayList<>(surveys.size());
+		for (OfferToSurvey offerToSurvey : sortedOfferToSurveys) {
+			surveyRows.add(new OfferSurveyOfferRow(offerToSurvey.getSurvey(), offerToSurvey));
+		}
+		List<EvaluationFormSurvey> unusedSurveys = surveys.stream()
+				.filter(survey -> !offerToSurveyBySurveyKey.containsKey(survey.getKey()))
+				.sorted(Comparator.comparing(survey -> survey.getFormEntry().getDisplayname(), String.CASE_INSENSITIVE_ORDER))
+				.toList();
+		for (EvaluationFormSurvey survey : unusedSurveys) {
+			surveyRows.add(new OfferSurveyOfferRow(survey, null));
+		}
+
+		refreshOfferSurveyTable();
+	}
+
+	private void refreshOfferSurveyTable() {
+		List<OfferSurveyOfferRow> used = surveyRows.stream().filter(OfferSurveyOfferRow::isUsed)
+				.collect(Collectors.toCollection(ArrayList::new));
+		List<OfferSurveyOfferRow> unused = surveyRows.stream().filter(row -> !row.isUsed())
+				.sorted(Comparator.comparing(OfferSurveyOfferRow::getTitle, String.CASE_INSENSITIVE_ORDER))
+				.toList();
+		surveyRows = new ArrayList<>(used);
+		surveyRows.addAll(unused);
+
+		for (OfferSurveyOfferRow row : surveyRows) {
+			forgeUseToggle(row);
+			if (row.isUsed()) {
+				forgeUpDown(row, used.size(), used.indexOf(row));
+			} else {
+				row.setUpDown(null);
+			}
+		}
+
+		surveyTableModel.setObjects(surveyRows);
+		surveyTableEl.reset(true, true, true);
+	}
+
+	private void forgeUseToggle(OfferSurveyOfferRow row) {
+		FormToggle useEl = uifactory.addToggleButton("survey_use_" + row.getKey(), null, translate("on"), translate("off"), surveyCont);
+		useEl.toggle(row.isUsed());
+		useEl.addActionListener(FormEvent.ONCHANGE);
+		useEl.setUserObject(row);
+		row.setUseEl(useEl);
+	}
+
+	private void forgeUpDown(OfferSurveyOfferRow row, int usedSize, int usedIndex) {
+		UpDown upDown = UpDownFactory.createUpDown("survey_updown_" + row.getKey(), UpDown.Layout.LINK_HORIZONTAL, flc.getFormItemComponent(), this);
+		upDown.setUserObject(row);
+		if (usedIndex == 0) {
+			upDown.setTopmost(true);
+		}
+		if (usedIndex == usedSize - 1) {
+			upDown.setLowermost(true);
+		}
+		row.setUpDown(upDown);
+	}
 	
 	protected void updateCustomChanges() {
 		//
@@ -344,13 +473,116 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			} else {
 				updateRelDateWarning(untilDateRelEl);
 			}
+		} else if (source instanceof FormToggle toggle && toggle.getUserObject() instanceof OfferSurveyOfferRow row) {
+			doToggleOfferSurvey(ureq, row, toggle);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
-	public void event(UserRequest ureq, Controller source, Event event) {
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (event instanceof UpDownEvent ude && source instanceof UpDown upDown
+				&& upDown.getUserObject() instanceof OfferSurveyOfferRow row) {
+			doMoveOfferSurvey(row, ude.getDirection());
+		}
 		super.event(ureq, source, event);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if (disableConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				((OfferSurveyOfferRow) disableConfirmationCtrl.getUserObject()).setPendingUsed(false);
+			}
+			refreshOfferSurveyTable();
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			refreshOfferSurveyTable();
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(disableConfirmationCtrl);
+		removeAsListenerAndDispose(cmc);
+		disableConfirmationCtrl = null;
+		cmc = null;
+	}
+
+	private void doToggleOfferSurvey(UserRequest ureq, OfferSurveyOfferRow row, FormToggle toggle) {
+		if (toggle.isOn()) {
+			row.setPendingUsed(true);
+			refreshOfferSurveyTable();
+		} else {
+			int completedCount = link.getOffer().getKey() != null
+					? acService.countCompletedOfferSurveyParticipations(link.getOffer(), row.getSurvey())
+					: 0;
+			if (completedCount > 0) {
+				doConfirmDisableOfferSurvey(ureq, row, completedCount);
+			} else {
+				row.setPendingUsed(false);
+				refreshOfferSurveyTable();
+			}
+		}
+	}
+
+	private void doConfirmDisableOfferSurvey(UserRequest ureq, OfferSurveyOfferRow row, int completedCount) {
+		disableConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+				translate("offer.survey.offer.disable.confirmation.message", String.valueOf(completedCount)),
+				"",
+				translate("offer.survey.offer.disable.confirmation.button"), ButtonType.danger);
+		disableConfirmationCtrl.setUserObject(row);
+		listenTo(disableConfirmationCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), disableConfirmationCtrl.getInitialComponent(),
+				true, translate("offer.survey.offer.disable"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doMoveOfferSurvey(OfferSurveyOfferRow row, Direction direction) {
+		List<OfferSurveyOfferRow> used = surveyRows.stream().filter(OfferSurveyOfferRow::isUsed)
+				.collect(Collectors.toCollection(ArrayList::new));
+
+		int index = used.indexOf(row);
+		int swapIndex = Direction.UP == direction ? index - 1 : index + 1;
+		if (index < 0 || swapIndex < 0 || swapIndex >= used.size()) {
+			return;
+		}
+
+		OfferSurveyOfferRow other = used.get(swapIndex);
+		Collections.swap(surveyRows, surveyRows.indexOf(row), surveyRows.indexOf(other));
+
+		refreshOfferSurveyTable();
+	}
+
+	public List<EvaluationFormSurvey> getPendingOfferSurveys() {
+		if (surveyRows == null) {
+			return List.of();
+		}
+		return surveyRows.stream().filter(OfferSurveyOfferRow::isUsed).map(OfferSurveyOfferRow::getSurvey).toList();
+	}
+
+	private void saveOfferSurveyChanges() {
+		if (surveyRows == null || link.getOffer().getKey() == null) {
+			return;
+		}
+		List<OfferSurveyOfferRow> used = surveyRows.stream().filter(OfferSurveyOfferRow::isUsed).toList();
+		for (int i = 0; i < used.size(); i++) {
+			OfferSurveyOfferRow row = used.get(i);
+			if (row.getOfferToSurvey() == null) {
+				acService.enableOfferSurvey(link.getOffer(), row.getSurvey(), i);
+			} else if (row.getOfferToSurvey().getPos() != i) {
+				acService.updateOfferToSurveyPos(row.getOfferToSurvey(), i);
+			}
+		}
+		for (OfferSurveyOfferRow row : surveyRows) {
+			if (!row.isUsed() && row.getOfferToSurvey() != null) {
+				acService.disableOfferSurvey(row.getOfferToSurvey());
+			}
+		}
 	}
 
 	protected void updateUI() {
@@ -573,6 +805,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		link.setValidFrom(validFrom);
 		link.setValidTo(validTo);
 		updateCustomChanges();
+		saveOfferSurveyChanges();
 		return link;
 	}
 

@@ -221,7 +221,7 @@ public class AuthoringEditAccessController extends BasicController {
 	}
 	
 	private void doSaveAccessOffers(UserRequest ureq) {
-		accessOffersCtrl.commitChanges();
+		accessOffersCtrl.commitChanges(ureq);
 		initAccessOverview(ureq, mainVC);
 		
 		// inform anybody interested about this change

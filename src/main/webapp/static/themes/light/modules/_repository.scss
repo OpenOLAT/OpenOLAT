@@ -553,6 +553,31 @@
 	}
 }
 
+.o_offer_survey_participation_details {
+	.o_flex_header {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 20px;
+		align-items: center;
+		min-height: 34px;
+		margin-bottom: 20px;
+
+		.o_offer_survey_title {
+			display: flex;
+			gap: 4px;
+			align-items: baseline;
+
+			h3 {
+				margin: 0;
+			}
+		}
+
+		.o_offer_survey_header_spacer {
+			flex-grow: 1;
+		}
+	}
+}
+
 .o_labeled_light {
 	&.o_ac_offer_pending {
 		@extend %o_labeled_light_blue;

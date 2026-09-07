@@ -276,6 +276,22 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldUpdateDisplayName() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
+		EvaluationFormSurvey survey = sut.createSurvey(ores, random(), random(), formEntry, null);
+		dbInstance.commitAndCloseSession();
+		
+		String displayName = random();
+		sut.updateDisplayName(survey, displayName);
+		dbInstance.commitAndCloseSession();
+		
+		survey = sut.loadSurveyByKey(survey.getKey());
+		
+		assertThat(survey.getDisplayName()).isEqualTo(displayName);
+	}
+	
+	@Test
 	public void shouldLoadByPublicParticipation() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();

@@ -1137,6 +1137,16 @@ create table o_ac_offer_to_organisation (
   primary key (id)
 );
 
+create table o_ac_offer_to_survey (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  a_pos int not null,
+  fk_offer bigint not null,
+  fk_survey bigint not null,
+  primary key (id)
+);
+
 create table if not exists o_ac_method (
     method_id bigint NOT NULL,
     access_method varchar(32),
@@ -3073,6 +3083,7 @@ create table o_eva_form_survey (
    e_series_key bigint,
    e_series_index int,
    e_public_part_identifier varchar(128),
+   e_display_name varchar(255),
    fk_form_entry bigint not null,
    fk_series_previous bigint,
    primary key (id)
@@ -4348,6 +4359,7 @@ create table o_cur_curriculum_element (
   c_max_participants integer,
   c_taught_by varchar(128),
   c_catalog_sort_priority integer,
+  c_order_form_required bool default false not null,
   c_external_id varchar(128),
   c_m_path_keys varchar(255),
   c_managed_flags varchar(255),
@@ -6659,6 +6671,10 @@ create index idx_offer_catalog_open_idx on o_ac_offer (is_valid, open_access, ca
 alter table o_ac_offer_to_organisation add constraint rel_oto_offer_idx foreign key (fk_offer) references o_ac_offer (offer_id);
 alter table o_ac_offer_to_organisation add constraint rel_oto_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_rel_oto_org_offer_idx on o_ac_offer_to_organisation (fk_organisation, fk_offer);
+
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_offer_idx foreign key (fk_offer) references o_ac_offer (offer_id);
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_survey_idx foreign key (fk_survey) references o_eva_form_survey (id);
+create unique index idx_ac_offer_to_survey_uniq_idx on o_ac_offer_to_survey (fk_offer, fk_survey);
 
 alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);
 alter table o_ac_offer_access add constraint off_to_meth_off_ctx foreign key (fk_offer_id) references o_ac_offer (offer_id);

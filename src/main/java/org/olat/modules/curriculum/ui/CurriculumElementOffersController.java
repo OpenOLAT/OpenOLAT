@@ -50,6 +50,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
+import org.olat.resource.accesscontrol.CatalogInfo.OrderFormProvider;
 import org.olat.resource.accesscontrol.CatalogInfo.SortPriorityProvider;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.olat.resource.accesscontrol.ui.AccessSegmentedOverviewController;
@@ -117,7 +118,7 @@ public class CurriculumElementOffersController extends BasicController {
 				editBusinessPath, translate("access.open.metadata"),
 				CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
 				catalogV2Module.isWebPublishEnabled() ? CatalogBCFactory.get(true).getOfferUrl(element.getResource()) : null,
-				taxonomyLevels, true, getSortOrderProvider(element));
+				taxonomyLevels, true, getSortOrderProvider(element), getOrderFormProvider(element));
 
 		accessConfigCtrl = new AccessSegmentedOverviewController(ureq, wControl, element.getResource(),
 				element.getDisplayName(), true, false, false, true, defaultOfferOrganisations, catalogInfo,
@@ -145,7 +146,11 @@ public class CurriculumElementOffersController extends BasicController {
 				? new CurriculumElementCatalogSortPriorityProvider(getIdentity(), element)
 				: null;
 	}
-	
+
+	private CurriculumElementOrderFormProvider getOrderFormProvider(CurriculumElement element) {
+		return new CurriculumElementOrderFormProvider(getIdentity(), element);
+	}
+
 	private static final class CurriculumElementCatalogSortPriorityProvider implements SortPriorityProvider {
 		
 		private final Identity doer;
@@ -173,7 +178,37 @@ public class CurriculumElementOffersController extends BasicController {
 				this.priority = priority;
 			}
 		}
-		
+
+	}
+
+	private static final class CurriculumElementOrderFormProvider implements OrderFormProvider {
+
+		private final Identity doer;
+		private final CurriculumElement element;
+		private boolean orderFormRequired;
+
+		public CurriculumElementOrderFormProvider(Identity doer, CurriculumElement element) {
+			this.doer = doer;
+			this.element = element;
+			this.orderFormRequired = element.isOrderFormRequired();
+		}
+
+		@Override
+		public boolean isOrderFormRequired() {
+			return orderFormRequired;
+		}
+
+		@Override
+		public void setOrderFormRequired(boolean orderFormRequired) {
+			CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(element);
+			if (curriculumElement != null) {
+				curriculumElement.setOrderFormRequired(orderFormRequired);
+				curriculumService.updateCurriculumElement(doer, curriculumElement);
+				this.orderFormRequired = orderFormRequired;
+			}
+		}
+
 	}
 
 }

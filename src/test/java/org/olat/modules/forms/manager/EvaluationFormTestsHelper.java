@@ -101,6 +101,9 @@ public class EvaluationFormTestsHelper {
 				.executeUpdate();
 		// evaluation forms
 		dbInstance.getCurrentEntityManager()
+				.createQuery("delete from offertosurvey")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from evaluationformresponse")
 				.executeUpdate();
 		dbInstance.getCurrentEntityManager()

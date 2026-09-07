@@ -24,6 +24,7 @@ import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -33,6 +34,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormEmailExecutor;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationCounts;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -301,6 +303,53 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		assertThat(loadedParticipation2).isNull();
 		EvaluationFormParticipation loadedOtherParticipation = sut.loadByIdentifier(otherParticipation.getIdentifier());
 		assertThat(loadedOtherParticipation).isEqualTo(otherParticipation);
+	}
+
+	@Test
+	public void shouldLoadCountsGroupedBySurvey() {
+		EvaluationFormSurvey survey1 = evaTestHelper.createSurvey();
+		EvaluationFormParticipation survey1Prepared1 = evaTestHelper.createParticipation(survey1, false);
+		EvaluationFormParticipation survey1Prepared2 = evaTestHelper.createParticipation(survey1, false);
+		EvaluationFormParticipation survey1Done = evaTestHelper.createParticipation(survey1, false);
+		sut.changeStatus(survey1Done, EvaluationFormParticipationStatus.done);
+		EvaluationFormParticipation survey1Canceled = evaTestHelper.createParticipation(survey1, false);
+		sut.changeStatus(survey1Canceled, EvaluationFormParticipationStatus.canceled);
+
+		EvaluationFormSurvey survey2 = evaTestHelper.createSurvey();
+		evaTestHelper.createParticipation(survey2, false);
+
+		EvaluationFormSurvey survey3 = evaTestHelper.createSurvey();
+
+		dbInstance.commitAndCloseSession();
+
+		Map<Long, EvaluationFormParticipationCounts> counts = sut.loadCountsGroupedBySurvey(
+				List.of(survey1.getKey(), survey2.getKey(), survey3.getKey()));
+
+		assertThat(counts.get(survey1.getKey())).isEqualTo(new EvaluationFormParticipationCounts(2, 1, 1));
+		assertThat(counts.get(survey2.getKey())).isEqualTo(new EvaluationFormParticipationCounts(1, 0, 0));
+		assertThat(counts.get(survey3.getKey())).isEqualTo(EvaluationFormParticipationCounts.EMPTY);
+		assertThat(survey1Prepared1).isNotNull();
+		assertThat(survey1Prepared2).isNotNull();
+	}
+
+	@Test
+	public void shouldNotLoadCountsForSurveysNotAsked() {
+		EvaluationFormSurvey survey1 = evaTestHelper.createSurvey();
+		evaTestHelper.createParticipation(survey1, false);
+		EvaluationFormSurvey survey2 = evaTestHelper.createSurvey();
+		evaTestHelper.createParticipation(survey2, false);
+		dbInstance.commitAndCloseSession();
+
+		Map<Long, EvaluationFormParticipationCounts> counts = sut.loadCountsGroupedBySurvey(List.of(survey1.getKey()));
+
+		assertThat(counts).containsOnlyKeys(survey1.getKey());
+	}
+
+	@Test
+	public void shouldLoadNoCountsForEmptyInput() {
+		Map<Long, EvaluationFormParticipationCounts> counts = sut.loadCountsGroupedBySurvey(List.of());
+
+		assertThat(counts).isEmpty();
 	}
 
 }

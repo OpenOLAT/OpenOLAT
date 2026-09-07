@@ -35,6 +35,8 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
@@ -142,9 +144,37 @@ public interface ACService {
 	public void updateRelativeValidDates(Collection<OLATResource> resources, Date beginDate, Date endDate);
 
 	public void deleteOffer(Offer offer);
-	
+
 	public void deleteOffers(OLATResource resource);
-	
+
+	public EvaluationFormSurvey createOfferSurvey(OLATResource resource, RepositoryEntry formEntry, String displayName);
+
+	public void deleteOfferSurvey(EvaluationFormSurvey survey);
+
+	public List<EvaluationFormSurvey> loadOfferSurveys(OLATResource resource);
+
+	public OfferToSurvey enableOfferSurvey(Offer offer, EvaluationFormSurvey survey, int pos);
+
+	public void disableOfferSurvey(OfferToSurvey offerToSurvey);
+
+	public OfferToSurvey updateOfferToSurveyPos(OfferToSurvey offerToSurvey, int pos);
+
+	public List<OfferToSurvey> loadOfferToSurveys(OfferRef offer);
+
+	public List<OfferToSurvey> loadOfferToSurveys(EvaluationFormSurvey survey);
+
+	public boolean isOfferSurveyUsed(EvaluationFormSurvey survey);
+
+	public EvaluationFormParticipation createOfferSurveyParticipation(EvaluationFormSurvey survey, Order order, Identity executor);
+
+	public boolean hasActiveOfferSurveyParticipation(EvaluationFormSurvey survey, Order order);
+
+	public List<EvaluationFormParticipation> loadOfferSurveyParticipations(EvaluationFormSurvey survey, Order order);
+
+	public List<EvaluationFormParticipation> loadOfferSurveyParticipations(EvaluationFormSurvey survey);
+
+	public int countCompletedOfferSurveyParticipations(Offer offer, EvaluationFormSurvey survey);
+
 	/**
 	 * Manages the relation of the offer to the organisations.
 	 * Creates missing relations and deletes unneeded relations.

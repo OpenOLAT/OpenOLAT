@@ -89,7 +89,7 @@ public class BusinessGroupEditAccessController extends BasicController {
 		return new CatalogInfo(false, false, true, false, false, null, null, customPublishedIn,
 				new BusinessGroupStatusEvaluator(businessGroup.getGroupStatus()), periodStatusOption, null,
 				Set.of(BusinessGroupStatusEnum.active.name()),
-				false, null, null, null, null, null, null, null, true, null);
+				false, null, null, null, null, null, null, null, true, null, null);
 	}
 	
 	private static final class BusinessGroupStatusEvaluator implements CatalogStatusEvaluator {
@@ -129,7 +129,7 @@ public class BusinessGroupEditAccessController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == accessCtrl) {
 			if(event == Event.CHANGED_EVENT) {
-				accessCtrl.commitChanges();
+				accessCtrl.commitChanges(ureq);
 			}
 			fireEvent(ureq, event);
 		}

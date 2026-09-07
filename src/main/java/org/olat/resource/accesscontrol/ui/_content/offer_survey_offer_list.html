@@ -1,0 +1,11 @@
+<div>
+	#if ($off_title)
+		<legend>$!off_title</legend>
+	#end
+	#if ($off_info)
+		<div class="clearfix"><div class="col-sm-12">
+			<div class="o_hint">$!off_info</div>
+		</div></div>
+	#end
+	$r.render("offerSurveyOfferTable")
+</div>

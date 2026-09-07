@@ -107,6 +107,10 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	
 	void setCatalogSortPriority(Integer catalogSortPriority);
 
+	boolean isOrderFormRequired();
+
+	void setOrderFormRequired(boolean orderFormRequired);
+
 	/**
 	 * @return true if calendars aggregation is available at this level of the curriculum
 	 */

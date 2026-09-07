@@ -51,6 +51,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.ui.OrderFormListController;
 import org.olat.resource.accesscontrol.ui.OrderModification;
 import org.olat.resource.accesscontrol.ui.OrdersController;
 import org.olat.resource.accesscontrol.ui.OrdersSettings;
@@ -81,6 +82,7 @@ public class MemberDetailsController extends FormBasicController {
 
 	private CloseableModalController cmc;
 	private final OrdersController ordersCtrl;
+	private final OrderFormListController orderFormCtrl;
 	private CancelMembershipsController cancelCtrl;
 	private AcceptDeclineMembershipsController acceptCtrl;
 	private MemberHistoryDetailsController historyDetailsCtrl;
@@ -113,6 +115,10 @@ public class MemberDetailsController extends FormBasicController {
 				settings, rootForm);
 		listenTo(ordersCtrl);
 		ordersCtrl.getInitialFormItem().setVisible(config.withOrders() && rolesDetailsCtrl.hasRoleParticipant());
+
+		List<Order> orders = acService.findOrders(member, selectedCurriculumElement.getResource());
+		orderFormCtrl = new OrderFormListController(ureq, getWindowControl(), rootForm, orders, true);
+		listenTo(orderFormCtrl);
 
 		if(config.withHistory()) {
 			historyDetailsCtrl = new MemberHistoryDetailsController(ureq, getWindowControl(), rootForm,
@@ -188,6 +194,7 @@ public class MemberDetailsController extends FormBasicController {
 		if(ordersCtrl != null) {
 			formLayout.add("orders", ordersCtrl.getInitialFormItem());
 		}
+		formLayout.add("orderForms", orderFormCtrl.getInitialFormItem());
 		if(historyDetailsCtrl != null) {
 			formLayout.add("history", historyDetailsCtrl.getInitialFormItem());
 		}

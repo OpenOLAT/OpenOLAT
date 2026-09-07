@@ -39,6 +39,10 @@ public interface EvaluationFormSurvey extends EvaluationFormSurveyRef, CreateInf
 	 */
 	public RepositoryEntry getFormEntry();
 
+	public String getDisplayName();
+
+	public void setDisplayName(String displayName);
+
 	/**
 	 * Get the key of a series. All surveys with the same series key are together one series.
 	 *

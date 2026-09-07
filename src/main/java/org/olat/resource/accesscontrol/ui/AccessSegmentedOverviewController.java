@@ -120,7 +120,7 @@ public class AccessSegmentedOverviewController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == accessConfigCtrl) {
 			if(event == Event.CHANGED_EVENT) {
-				accessConfigCtrl.commitChanges();
+				accessConfigCtrl.commitChanges(ureq);
 				updateCatalogStatusUI();
 			} else if(event instanceof OpenOrdersEvent ooe) {
 				String path = "[All:0][OfferAccess:" + ooe.getOfferAccess().getKey() + "]";

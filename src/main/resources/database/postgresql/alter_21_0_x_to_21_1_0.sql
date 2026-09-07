@@ -46,3 +46,22 @@ alter table o_teams_recording add constraint teams_rec_data_idx foreign key (fk_
 create index idx_teams_rec_data_idx on o_teams_recording (fk_recording_metadata_id);
 
 create unique index idx_teams_rec_graph_unique on o_teams_recording (t_recording_id, fk_meeting_id);
+
+-- Access control
+alter table o_eva_form_survey add column e_display_name varchar(255);
+
+create table o_ac_offer_to_survey (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  a_pos int4 not null,
+  fk_offer int8 not null,
+  fk_survey int8 not null,
+  primary key (id)
+);
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
+create index idx_ac_offer_to_survey_offer_idx on o_ac_offer_to_survey (fk_offer);
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_survey_idx foreign key (fk_survey) references o_eva_form_survey(id);
+create unique index idx_ac_offer_to_survey_uniq_idx on o_ac_offer_to_survey (fk_offer, fk_survey);
+
+alter table o_cur_curriculum_element add column c_order_form_required bool default false not null;

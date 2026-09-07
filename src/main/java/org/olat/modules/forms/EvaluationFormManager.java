@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
@@ -123,6 +124,8 @@ public interface EvaluationFormManager {
 	public void updatePublicParticipationIdentifier(EvaluationFormSurvey survey, String identifier);
 	
 	public boolean isPublicParticipationIdentifierAvailable(String identifier);
+	
+	public EvaluationFormSurvey updateSurveyDisplayName(EvaluationFormSurvey survey, String displayName);
 
 	/**
 	 * Deletes all data of a survey but not the survey itself. It deletes all
@@ -145,6 +148,9 @@ public interface EvaluationFormManager {
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
 			EvaluationFormParticipationIdentifier identifier);
 	
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
+			EvaluationFormParticipationIdentifier identifier, Identity executor, int run);
+	
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, EvaluationFormEmailExecutor emailExecutor);
 
 	public EvaluationFormParticipation updateParticipation(EvaluationFormParticipation participation);
@@ -153,6 +159,8 @@ public interface EvaluationFormManager {
 
 	public List<EvaluationFormParticipation> loadParticipations(EvaluationFormSurveyRef surveyRef,
 			EvaluationFormParticipationStatus status, boolean emailOnly, boolean fetchExecutor);
+
+	public Map<Long, EvaluationFormParticipationCounts> loadParticipationCounts(Collection<? extends EvaluationFormSurveyRef> surveys);
 
 	public List<EvaluationFormParticipation> loadParticipationByEmails(EvaluationFormSurveyRef surveyRef, Collection<String> emails);
 	

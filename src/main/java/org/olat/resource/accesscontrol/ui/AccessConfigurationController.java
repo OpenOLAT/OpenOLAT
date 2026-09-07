@@ -44,6 +44,8 @@ import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -64,6 +66,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.catalog.ui.SortPriorityEditController;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -98,7 +101,11 @@ public class AccessConfigurationController extends FormBasicController {
 	
 	private static final String ICON_CATALOG_EXTERN = "<i class=\"o_icon o_icon-fw o_icon_catalog_extern\"> </i> ";
 	private static final String ICON_CATALOG_INTERN = "<i class=\"o_icon o_icon-fw o_icon_catalog_intern\"> </i> ";
+	private static final String KEY_ORDER_FORM_NOT_REQUIRED = "not.required";
+	private static final String KEY_ORDER_FORM_REQUIRED = "required";
 	
+	private SingleSelection orderFormRequiredEl;
+	private TextElement sortPriorityEl;
 	private FormLink sortPriorityLink;
 	private FormLink linksLink;
 	private FormLink addButton;
@@ -113,6 +120,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private CloseableModalController cmc;
 	private FormLayoutContainer overviewContainer;
 	private FormLayoutContainer offersContainer;
+	private OfferSurveyListController offerSurveyListCtrl;
 	private OpenAccessOfferController openAccessOfferCtrl;
 	private GuestOfferController guestOfferCtrl;
 	private AbstractConfigurationMethodController newMethodCtrl;
@@ -273,7 +281,13 @@ public class AccessConfigurationController extends FormBasicController {
 		setFormContextHelp(helpUrl);
 		
 		forgeCatalogInfos(formLayout);
-		
+
+		if (catalogInfo.getOrderFormProvider() != null) {
+			offerSurveyListCtrl = new OfferSurveyListController(ureq, getWindowControl(), mainForm, resource, readOnly);
+			listenTo(offerSurveyListCtrl);
+			formLayout.add("bookingOrderForms", offerSurveyListCtrl.getInitialFormItem());
+		}
+
 		String confPage = velocity_root + "/configuration_list.html";
 		offersContainer = FormLayoutContainer.createCustomFormLayout("offers", getTranslator(), confPage);
 		offersContainer.setRootForm(mainForm);
@@ -427,7 +441,8 @@ public class AccessConfigurationController extends FormBasicController {
 			if(event.equals(Event.DONE_EVENT)) {
 				OfferAccess offerAccess = newMethodCtrl.getOfferAccess();
 				List<Organisation> organisations = newMethodCtrl.getOfferOrganisations();
-				addOffer(offerAccess, organisations, 0);
+				AccessInfo infos = addOffer(offerAccess, organisations, 0);
+				infos.setPendingOfferSurveys(newMethodCtrl.getPendingOfferSurveys());
 				updateCatalogOverviewUI();
 				checkOverlap();
 				offersContainer.setDirty(true);
@@ -458,7 +473,7 @@ public class AccessConfigurationController extends FormBasicController {
 		} else if(sortPriorityCtrl == source) {
 			if(event.equals(Event.DONE_EVENT)) {
 				catalogInfo.getSortPriorityProvider().setPriority(sortPriorityCtrl.getSortPriority());
-				updateCatalogOverviewUI();
+				updateSortPriorityUI();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
@@ -495,7 +510,11 @@ public class AccessConfigurationController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == sortPriorityLink) {
+		if (source == orderFormRequiredEl) {
+			catalogInfo.getOrderFormProvider().setOrderFormRequired(orderFormRequiredEl.isOneSelected()
+					&& KEY_ORDER_FORM_REQUIRED.equals(orderFormRequiredEl.getSelectedKey()));
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if (source == sortPriorityLink) {
 			doEditSortPriority(ureq);
 		} else if (source == linksLink) {
 			doOpenLinks(ureq);
@@ -571,9 +590,9 @@ public class AccessConfigurationController extends FormBasicController {
 		checkOverlap();
 	}
 
-	private void addOffer(OfferAccess link, Collection<Organisation> offerOrganisations, int numOfOrders) {
+	private AccessInfo addOffer(OfferAccess link, Collection<Organisation> offerOrganisations, int numOfOrders) {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
-		
+
 		IconPanelItem iconPanel = new IconPanelItem("offer_" + counter++);
 		iconPanel.setElementCssClass("o_block_bottom o_sel_ac_offer");
 		iconPanel.setIconCssClass("o_icon o_icon-fw " + link.getMethod().getMethodCssClass() + "_icon");
@@ -582,23 +601,24 @@ public class AccessConfigurationController extends FormBasicController {
 			iconPanel.setTagline(" \u00B7 " + link.getOffer().getLabel());
 		}
 		offersContainer.add(iconPanel.getName(), iconPanel);
-		
+
 		AccessInfo infos = new AccessInfo(iconPanel, link, handler, numOfOrders);
 		accessInfos.add(infos);
 		FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
 		cont.setRootForm(mainForm);
 		iconPanel.setContent(cont.getComponent());
 		infos.setConfigCont(cont);
-		
+
 		infos.setOfferOrganisations(offerOrganisations);
 		cont.contextPut("offer", infos);
-		
+
 		forgeLinkToOrders(infos);
 		if (!readOnly && !managedBookings) {
 			forgeLinks(infos);
 		}
-		
+
 		offersContainer.setDirty(true);
+		return infos;
 	}
 	
 	private void addOpenAccessOffer(Offer offer, Collection<Organisation> offerOrganisations) {
@@ -673,27 +693,60 @@ public class AccessConfigurationController extends FormBasicController {
 			overviewContainer = FormLayoutContainer.createCustomFormLayout("overview", getTranslator(), overviewPage);
 			overviewContainer.setRootForm(mainForm);
 			formLayout.add(overviewContainer);
-			
-			if (catalogInfo.getSortPriorityProvider() != null) {
-				if (!readOnly) {
-					sortPriorityLink = uifactory.addFormLink("sort.priority", "offer.sort.priority.change", null, overviewContainer, Link.LINK);
-				}
-			}
-			
+
 			if (catalogInfo.isShowDetails()) {
 				overviewContainer.contextPut("detailsLabel", catalogInfo.getDetailsLabel());
 				overviewContainer.contextPut("details", catalogInfo.getDetails());
-				
+
 				if (StringHelper.containsNonWhitespace(catalogInfo.getEditBusinessPath())) {
 					FormLink catEditLink = uifactory.addFormLink("catEdit", "catalog", null, "", overviewContainer, Link.NONTRANSLATED + Link.LINK);
 					catEditLink.setI18nKey(catalogInfo.getEditLabel());
-					catEditLink.setIconLeftCSS("o_icon o_icon_link_extern");
+					catEditLink.setIconLeftCSS("o_icon o_icon_jump_to");
 				}
 			}
-			
+
 			if (StringHelper.containsNonWhitespace(catalogInfo.getCatalogBusinessPath())) {
 				linksLink = uifactory.addFormLink("offer.links", "offer.links", "offer.links.label", overviewContainer, Link.LINK);
 				linksLink.setIconLeftCSS("o_icon o_icon_link");
+			}
+		}
+
+		if (catalogInfo.getOrderFormProvider() != null || catalogInfo.getSortPriorityProvider() != null) {
+			FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
+			settingsCont.setFormTitle(translate("settings"));
+			settingsCont.setFormInfo(translate("offer.settings.hint"));
+			settingsCont.setRootForm(mainForm);
+			formLayout.add(settingsCont);
+
+			CatalogInfo.OrderFormProvider orderFormRequiredProvider = catalogInfo.getOrderFormProvider();
+			if (orderFormRequiredProvider != null) {
+				SelectionValues bookingSV = new SelectionValues();
+				bookingSV.add(SelectionValues.entry(KEY_ORDER_FORM_NOT_REQUIRED, translate("offer.booking.not.required")));
+				bookingSV.add(SelectionValues.entry(KEY_ORDER_FORM_REQUIRED, translate("offer.booking.required")));
+				orderFormRequiredEl = uifactory.addRadiosHorizontal("offer.booking", settingsCont, bookingSV.keys(), bookingSV.values());
+				orderFormRequiredEl.addActionListener(FormEvent.ONCHANGE);
+				orderFormRequiredEl.setEnabled(!readOnly);
+				orderFormRequiredEl.select(orderFormRequiredProvider.isOrderFormRequired() ? KEY_ORDER_FORM_REQUIRED : KEY_ORDER_FORM_NOT_REQUIRED, true);
+			}
+
+			if (catalogInfo.getSortPriorityProvider() != null) {
+				FormLayoutContainer sortPriorityCont = FormLayoutContainer.createInputGroupLayout("sortPriorityCont", getTranslator(), null, null);
+				sortPriorityCont.setLabel("offer.sort.priority", null);
+				sortPriorityCont.setRootForm(mainForm);
+				settingsCont.add(sortPriorityCont);
+
+				String sortPriority = CatalogV2UIFactory.translateSortPriority(getTranslator(), catalogInfo.getSortPriorityProvider().getPriority(), true);
+				sortPriorityEl = uifactory.addTextElement("sort.priority.value", 100, sortPriority, sortPriorityCont);
+				sortPriorityEl.setElementCssClass("o_omit_margin");
+				sortPriorityEl.setAriaLabel(translate("offer.sort.priority"));
+				sortPriorityEl.setEnabled(false);
+				sortPriorityEl.setDomReplacementWrapperRequired(false);
+
+				if (!readOnly) {
+					sortPriorityLink = uifactory.addFormLink("rightAddOn", "sort.priority", "edit", null, sortPriorityCont, Link.BUTTON);
+					sortPriorityLink.setIconLeftCSS("o_icon o_icon_edit");
+					sortPriorityLink.setElementCssClass("input-group-addon");
+				}
 			}
 		}
 	}
@@ -710,11 +763,6 @@ public class AccessConfigurationController extends FormBasicController {
 			String externalCatalog = getExternalCatalogStatus();
 			if (externalCatalog != null) {
 				overviewContainer.contextPut("externalCatalog", externalCatalog);
-			}
-			
-			if (catalogInfo.getSortPriorityProvider() != null) {
-				String sortPriority = CatalogV2UIFactory.translateSortPriority(getTranslator(), catalogInfo.getSortPriorityProvider().getPriority(), true);
-				overviewContainer.contextPut("sortPriority", sortPriority);
 			}
 		} else if (catalogInfo.isPublishedGroupsSupported()) {
 			String status = getCatalogStatus();
@@ -918,7 +966,7 @@ public class AccessConfigurationController extends FormBasicController {
 
 	private void doEditSortPriority(UserRequest ureq) {
 		guardModalController(sortPriorityCtrl);
-		
+
 		removeAsListenerAndDispose(sortPriorityCtrl);
 		sortPriorityCtrl = new SortPriorityEditController(ureq, getWindowControl(), catalogInfo.getSortPriorityProvider().getPriority());
 		listenTo(sortPriorityCtrl);
@@ -926,6 +974,14 @@ public class AccessConfigurationController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), sortPriorityCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
+	}
+
+	private void updateSortPriorityUI() {
+		if (sortPriorityEl == null) {
+			return;
+		}
+		String sortPriority = CatalogV2UIFactory.translateSortPriority(getTranslator(), catalogInfo.getSortPriorityProvider().getPriority(), true);
+		sortPriorityEl.setValue(sortPriority);
 	}
 
 	private void editCatalogInfo(UserRequest ureq) {
@@ -951,7 +1007,7 @@ public class AccessConfigurationController extends FormBasicController {
 		listenTo(cmc);
 	}
 
-	public void commitChanges() {
+	public void commitChanges(UserRequest ureq) {
 		for(AccessInfo info:accessInfos) {
 			if (info.getOffer().isGuestAccess()) {
 				acService.save(info.getOffer());
@@ -965,6 +1021,10 @@ public class AccessConfigurationController extends FormBasicController {
 					acService.updateOfferOrganisations(info.getOffer(), info.getOfferOrganisations());
 				}
 			}
+			int pos = 0;
+			for (EvaluationFormSurvey survey : info.getPendingOfferSurveys()) {
+				acService.enableOfferSurvey(info.getOffer(), survey, pos++);
+			}
 		}
 		accessInfos.clear();
 		
@@ -975,6 +1035,19 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		dbInstance.commit();
 		loadOffers();
+		reloadOfferSurveyList(ureq);
+	}
+
+	private void reloadOfferSurveyList(UserRequest ureq) {
+		if (catalogInfo.getOrderFormProvider() == null) {
+			return;
+		}
+		flc.remove(offerSurveyListCtrl.getInitialFormItem());
+		removeAsListenerAndDispose(offerSurveyListCtrl);
+
+		offerSurveyListCtrl = new OfferSurveyListController(ureq, getWindowControl(), mainForm, resource, readOnly);
+		listenTo(offerSurveyListCtrl);
+		flc.add("bookingOrderForms", offerSurveyListCtrl.getInitialFormItem());
 	}
 	
 	private void checkOverlap() {
@@ -1091,6 +1164,7 @@ public class AccessConfigurationController extends FormBasicController {
 		private AccessMethodHandler handler;
 		private FormLayoutContainer configCont;
 		private FormLink openOrdersLink;
+		private List<EvaluationFormSurvey> pendingOfferSurveys = List.of();
 		
 		public AccessInfo(IconPanelItem iconPanel, int numOfOrders) {
 			this.iconPanel = iconPanel;
@@ -1109,6 +1183,14 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public IconPanelItem getIconPanel() {
 			return iconPanel;
+		}
+
+		public List<EvaluationFormSurvey> getPendingOfferSurveys() {
+			return pendingOfferSurveys;
+		}
+
+		public void setPendingOfferSurveys(List<EvaluationFormSurvey> pendingOfferSurveys) {
+			this.pendingOfferSurveys = pendingOfferSurveys;
 		}
 
 		public OfferCatalogInfo getOfferCatalogInfo() {

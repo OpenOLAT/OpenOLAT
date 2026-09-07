@@ -155,7 +155,9 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	private transient Set<TaughtBy> taughtBys;
 	@Column(name="c_catalog_sort_priority", nullable=true, insertable=true, updatable=true)
 	private Integer catalogSortPriority;
-	
+	@Column(name="c_order_form_required", nullable=false, insertable=true, updatable=true)
+	private boolean orderFormRequired;
+
 	@Column(name="c_external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
 	@Column(name="c_managed_flags", nullable=true, insertable=true, updatable=true)
@@ -583,6 +585,16 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Override
 	public void setCatalogSortPriority(Integer catalogSortPriority) {
 		this.catalogSortPriority = catalogSortPriority;
+	}
+
+	@Override
+	public boolean isOrderFormRequired() {
+		return orderFormRequired;
+	}
+
+	@Override
+	public void setOrderFormRequired(boolean orderFormRequired) {
+		this.orderFormRequired = orderFormRequired;
 	}
 
 	@Override

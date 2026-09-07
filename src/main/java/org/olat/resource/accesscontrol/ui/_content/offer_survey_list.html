@@ -1,0 +1,21 @@
+<div>
+	#if ($off_title)
+		<legend>$!off_title</legend>
+	#end
+	#if ($off_info)
+		<div class="clearfix"><div class="col-sm-12">
+			<div class="o_hint">$!off_info</div>
+		</div></div>
+	#end
+	#if(($r.available("offer.survey.export") && $r.visible("offer.survey.export")) || ($r.available("offer.survey.add") && $r.visible("offer.survey.add")))
+		<div class="o_button_group o_button_group_right o_button_group_top">
+			#if($r.available("offer.survey.export") && $r.visible("offer.survey.export"))
+				$r.render("offer.survey.export")
+			#end
+			#if($r.available("offer.survey.add") && $r.visible("offer.survey.add"))
+				$r.render("offer.survey.add")
+			#end
+		</div>
+	#end
+	$r.render("offerSurveyTable")
+</div>

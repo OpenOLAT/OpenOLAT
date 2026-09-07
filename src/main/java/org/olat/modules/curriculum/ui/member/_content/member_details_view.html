@@ -33,6 +33,12 @@ $r.render("roles")
 </fieldset>
 #end
 
+#if($r.visible("orderForms"))
+<fieldset class="o_block_large_top">
+	$r.render("orderForms")
+</fieldset>
+#end
+
 #if($r.available("history"))
 <fieldset class="o_block_large_top">
 	<legend>$historyTitle</legend>

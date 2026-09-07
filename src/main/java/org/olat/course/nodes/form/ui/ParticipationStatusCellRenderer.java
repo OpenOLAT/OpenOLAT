@@ -51,6 +51,7 @@ public class ParticipationStatusCellRenderer implements FlexiCellRenderer, Custo
 			switch(status) {
 				case prepared: target.append("<i class='o_icon o_icon_status_in_progress o_icon-fw'> </i> ").append(translator.translate("participation.status.inProgress")); break;
 				case done: target.append("<i class='o_icon o_icon_status_done o_icon-fw'> </i> ").append(translator.translate("participation.status.done")); break;
+				case canceled: target.append("<i class='o_icon o_icon_status_not_started o_icon-fw'> </i> ").append(translator.translate("participation.status.canceled")); break;
 			}
 		} else {
 			target.append("<i class='o_icon o_icon_status_not_started o_icon-fw'> </i> ").append(translator.translate("participation.status.notStart"));

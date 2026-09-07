@@ -21,7 +21,9 @@ package org.olat.modules.forms.manager;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
@@ -32,6 +34,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationCounts;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -243,6 +246,45 @@ class EvaluationFormParticipationDAO {
 	
 	private Object getParticipationsKeys(List<? extends EvaluationFormParticipationRef> participationRefs) {
 		return participationRefs.stream().map(EvaluationFormParticipationRef::getKey).collect(Collectors.toList());
+	}
+
+	Map<Long, EvaluationFormParticipationCounts> loadCountsGroupedBySurvey(Collection<Long> surveyKeys) {
+		if (surveyKeys == null || surveyKeys.isEmpty()) return Map.of();
+
+		String query = """
+				select participation.survey.key, participation.status, count(participation)
+				  from evaluationformparticipation as participation
+				 where participation.survey.key in (:surveyKeys)
+				 group by participation.survey.key, participation.status
+				""";
+
+		List<Object[]> rawCounts = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Object[].class)
+				.setParameter("surveyKeys", surveyKeys)
+				.getResultList();
+
+		Map<Long, Long> preparedCounts = new HashMap<>();
+		Map<Long, Long> doneCounts = new HashMap<>();
+		Map<Long, Long> canceledCounts = new HashMap<>();
+		for (Object[] rawCount : rawCounts) {
+			Long surveyKey = (Long) rawCount[0];
+			EvaluationFormParticipationStatus status = (EvaluationFormParticipationStatus) rawCount[1];
+			Long count = (Long) rawCount[2];
+			switch (status) {
+			case prepared -> preparedCounts.put(surveyKey, count);
+			case done -> doneCounts.put(surveyKey, count);
+			case canceled -> canceledCounts.put(surveyKey, count);
+			}
+		}
+
+		Map<Long, EvaluationFormParticipationCounts> counts = new HashMap<>();
+		for (Long surveyKey : surveyKeys) {
+			counts.put(surveyKey, new EvaluationFormParticipationCounts(
+					preparedCounts.getOrDefault(surveyKey, 0L),
+					doneCounts.getOrDefault(surveyKey, 0L),
+					canceledCounts.getOrDefault(surveyKey, 0L)));
+		}
+		return counts;
 	}
 
 }

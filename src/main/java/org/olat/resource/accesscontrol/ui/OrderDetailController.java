@@ -97,6 +97,7 @@ public class OrderDetailController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private TransactionDetailsController detailsCtlr;
+	private OrderFormListController orderFormCtrl;
 	
 	private int counter = 0;
 	private Order order;
@@ -166,9 +167,16 @@ public class OrderDetailController extends FormBasicController {
 		initMetadataForm(formLayout);
 		initDeliveryForm(formLayout, ureq);
 		initItemsForm(formLayout);
+		initOrderFormsForm(formLayout, ureq);
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			initStatus(layoutCont);
 		}
+	}
+
+	private void initOrderFormsForm(FormItemContainer formLayout, UserRequest ureq) {
+		orderFormCtrl = new OrderFormListController(ureq, getWindowControl(), mainForm, List.of(order), false);
+		listenTo(orderFormCtrl);
+		formLayout.add("orderForms", orderFormCtrl.getInitialFormItem());
 	}
 
 	private void initButtonsForm(FormItemContainer formLayout) {

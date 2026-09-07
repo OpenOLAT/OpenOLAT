@@ -46,3 +46,21 @@ create index idx_teams_rec_data_idx on o_teams_recording (fk_recording_metadata_
 
 create unique index idx_teams_rec_graph_unique on o_teams_recording (t_recording_id, fk_meeting_id);
 
+-- Access control
+alter table o_eva_form_survey add e_display_name varchar2(255 char);
+
+create table o_ac_offer_to_survey (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  a_pos number(20) not null,
+  fk_offer number(20) not null,
+  fk_survey number(20) not null,
+  primary key (id)
+);
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_survey_idx foreign key (fk_survey) references o_eva_form_survey(id);
+create unique index idx_ac_offer_to_survey_uniq_idx on o_ac_offer_to_survey (fk_offer, fk_survey);
+
+alter table o_cur_curriculum_element add c_order_form_required number default 0 not null;
+

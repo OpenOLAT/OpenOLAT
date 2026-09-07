@@ -172,17 +172,19 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("</ul>");
 		}
-		sb.append("</div>", dropdown.isEmbbeded());
-		sb.append("</div>", dropdown.getFormItem() != null && "horizontal".equals(layout(dropdown, args)));
-		
 		if (hasComponents) {
 			// Check if dropdown has enough space in center main container, enlarge if necessary
+			// Rendered inside the closing div (not as a trailing sibling) so a dropdown embedded
+			// in a parent .btn-group stays its last element child, keeping CSS structural
+			// selectors like :last-child working for corner rounding.
 			if (dropdown.isExpandContentHeight()) {
 				sb.append("<script>setTimeout(function(){");
 				sb.append("o_adjustContentHeightForAbsoluteElement('#").append(itemsDomID).append("');");
 				sb.append("});</script>");
 			}
 		}
+		sb.append("</div>", dropdown.isEmbbeded());
+		sb.append("</div>", dropdown.getFormItem() != null && "horizontal".equals(layout(dropdown, args)));
 	}
 	
 	private void renderCaret(StringOutput sb, boolean hasComponents, Dropdown dropdown) {

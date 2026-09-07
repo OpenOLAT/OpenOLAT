@@ -29,7 +29,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public class CatalogInfo {
 
 	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, false, false, null, null, null,
-			null, null, null, null, false, null, null, null, null, null, null, null, true, null);
+			null, null, null, null, false, null, null, null, null, null, null, null, true, null, null);
 	public static final TrueStatusEvaluator TRUE_STATUS_EVALUATOR = new TrueStatusEvaluator();
 
 	private final boolean catalogSupported;
@@ -54,6 +54,7 @@ public class CatalogInfo {
 	private final Collection<TaxonomyLevel> microsites;
 	private final boolean showQRCode;
 	private final SortPriorityProvider sortPriorityProvider;
+	private final OrderFormProvider orderFormProvider;
 
 	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, boolean publishedGroupsSupported,
 			boolean autoBookingSupported, boolean showDetails, String detailsLabel, String details,
@@ -61,7 +62,7 @@ public class CatalogInfo {
 			SelectionValues availableStatuses, Set<String> defaultStatuses, boolean fullyBooked,
 			Date startDate, Date endDate, String editBusinessPath, String editLabel,
 			String catalogBusinessPath, String webCatalogBusinessPath, Collection<TaxonomyLevel> microsites,
-			boolean showQRCode, SortPriorityProvider sortPriorityProvider) {
+			boolean showQRCode, SortPriorityProvider sortPriorityProvider, OrderFormProvider orderFormProvider) {
 		this.catalogSupported = catalogSupported;
 		this.webCatalogSupported = webCatalogSupported;
 		this.publishedGroupsSupported = publishedGroupsSupported;
@@ -84,6 +85,7 @@ public class CatalogInfo {
 		this.microsites = microsites;
 		this.showQRCode = showQRCode;
 		this.sortPriorityProvider = sortPriorityProvider;
+		this.orderFormProvider = orderFormProvider;
 	}
 
 	public boolean isCatalogSupported() {
@@ -174,6 +176,10 @@ public class CatalogInfo {
 		return sortPriorityProvider;
 	}
 
+	public OrderFormProvider getOrderFormProvider() {
+		return orderFormProvider;
+	}
+
 	public interface CatalogStatusEvaluator {
 
 		boolean isVisibleStatusNoPeriod();
@@ -197,11 +203,19 @@ public class CatalogInfo {
 	}
 	
 	public interface SortPriorityProvider {
-		
+
 		Integer getPriority();
-		
+
 		void setPriority(Integer priority);
-		
+
+	}
+
+	public interface OrderFormProvider {
+
+		boolean isOrderFormRequired();
+
+		void setOrderFormRequired(boolean orderFormRequired);
+
 	}
 
 }

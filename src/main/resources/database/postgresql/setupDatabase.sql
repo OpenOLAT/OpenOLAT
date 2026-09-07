@@ -1054,6 +1054,16 @@ create table o_ac_offer_to_organisation (
   primary key (id)
 );
 
+create table o_ac_offer_to_survey (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  a_pos int4 not null,
+  fk_offer int8 not null,
+  fk_survey int8 not null,
+  primary key (id)
+);
+
 create table o_ac_method (
     method_id int8 NOT NULL,
     access_method varchar(32),
@@ -2952,6 +2962,7 @@ create table o_eva_form_survey (
    e_series_key bigint,
    e_series_index int,
    e_public_part_identifier varchar(128),
+   e_display_name varchar(255),
    fk_form_entry bigint not null,
    fk_series_previous bigint,
    primary key (id)
@@ -4403,6 +4414,7 @@ create table o_cur_curriculum_element (
   c_max_participants int8,
   c_taught_by varchar(128),
   c_catalog_sort_priority int8,
+  c_order_form_required bool default false not null,
   c_external_id varchar(128),
   c_m_path_keys varchar(255),
   c_managed_flags varchar(255),
@@ -6386,6 +6398,11 @@ alter table o_ac_offer_to_organisation add constraint rel_oto_offer_idx foreign 
 create index idx_rel_oto_offer_idx on o_ac_offer_to_organisation (fk_offer);
 alter table o_ac_offer_to_organisation add constraint rel_oto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
 create index idx_rel_oto_org_offer_idx on o_ac_offer_to_organisation (fk_organisation, fk_offer);
+
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
+create index idx_ac_offer_to_survey_offer_idx on o_ac_offer_to_survey (fk_offer);
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_survey_idx foreign key (fk_survey) references o_eva_form_survey(id);
+create unique index idx_ac_offer_to_survey_uniq_idx on o_ac_offer_to_survey (fk_offer, fk_survey);
 
 alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);
 create index idx_offeracc_method_idx on o_ac_offer_access (fk_method_id);

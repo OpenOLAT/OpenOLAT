@@ -228,6 +228,14 @@ class EvaluationFormSurveyDAO {
 		return survey;
 	}
 	
+	EvaluationFormSurvey updateDisplayName(EvaluationFormSurvey survey, String displayName) {
+		if (survey instanceof EvaluationFormSurveyImpl surveyImpl) {
+			surveyImpl.setDisplayName(displayName);
+			return update(surveyImpl);
+		}
+		return survey;
+	}
+	
 	EvaluationFormSurvey loadSurveyByPublicParticipationIdentifier(String publicParticipationIdentifier) {
 		if (!StringHelper.containsNonWhitespace(publicParticipationIdentifier)) return null;
 		

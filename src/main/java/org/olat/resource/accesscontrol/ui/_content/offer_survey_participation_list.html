@@ -1,0 +1,18 @@
+<div class="o_offer_survey_participation_details">
+	<div class="o_flex_header">
+		<div class="o_offer_survey_title">
+			<h3>$r.escapeHtml($title)</h3>
+			#if($r.isNotEmpty($externalRef))<h3><small> &middot; $r.escapeHtml($externalRef)</small></h3>#end
+		</div>
+		<div class="o_offer_survey_header_spacer"></div>
+		<div class="o_button_group">
+			#if($r.available("offer.survey.open") && $r.visible("offer.survey.open"))
+				$r.render("offer.survey.open")
+			#end
+			#if($r.available("offer.survey.participation.export") && $r.visible("offer.survey.participation.export"))
+				$r.render("offer.survey.participation.export")
+			#end
+		</div>
+	</div>
+	$r.render("offerSurveyParticipationTable")
+</div>

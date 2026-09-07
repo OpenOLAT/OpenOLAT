@@ -1101,6 +1101,16 @@ create table o_ac_offer_to_organisation (
   primary key (id)
 );
 
+create table o_ac_offer_to_survey (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  a_pos number(20) not null,
+  fk_offer number(20) not null,
+  fk_survey number(20) not null,
+  primary key (id)
+);
+
 create table o_ac_method (
   method_id number(20) NOT NULL,
   access_method varchar(32 char),
@@ -2983,6 +2993,7 @@ create table o_eva_form_survey (
    e_series_key number(20),
    e_series_index number(20),
    e_public_part_identifier varchar(128),
+   e_display_name varchar2(255 char),
    fk_form_entry number(20) not null,
    fk_series_previous number(20),
    primary key (id)
@@ -4456,6 +4467,7 @@ create table o_cur_curriculum_element (
   c_max_participants number(20),
   c_taught_by varchar(128),
   c_catalog_sort_priority number(20),
+  c_order_form_required number default 0 not null,
   c_external_id varchar(128),
   c_m_path_keys varchar(255),
   c_managed_flags varchar(255),
@@ -6436,6 +6448,10 @@ alter table o_ac_offer_to_organisation add constraint rel_oto_offer_idx foreign 
 create index idx_rel_oto_offer_idx on o_ac_offer_to_organisation (fk_offer);
 alter table o_ac_offer_to_organisation add constraint rel_oto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
 create index idx_rel_oto_org_offer_idx on o_ac_offer_to_organisation (fk_organisation, fk_offer);
+
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_survey_idx foreign key (fk_survey) references o_eva_form_survey(id);
+create unique index idx_ac_offer_to_survey_uniq_idx on o_ac_offer_to_survey (fk_offer, fk_survey);
 
 alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);
 create index idx_offeracc_method_idx on o_ac_offer_access (fk_method_id);

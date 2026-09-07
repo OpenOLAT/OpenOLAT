@@ -144,7 +144,7 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 			}
 
 			ExternalLink faqLink = LinkFactory.createExternalLink("faq", translate("login.faq"), loginUrl);
-			faqLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+			faqLink.setIconLeftCSS("o_icon o_icon-fw o_icon_jump_to");
 			faqLink.setName(translate("login.faq"));
 			faqLink.setElementCssClass("o_login_faq");
 			loginContent.put("faq", faqLink);
@@ -209,12 +209,12 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 		if (ldapLoginModule.isLDAPEnabled()) {
 			if (ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 				Link link = LinkFactory.createLink("_ldap_login_change_pwd", "menu.pw", container, this);
-				link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+				link.setIconLeftCSS("o_icon o_icon-fw o_icon_jump_to");
 				link.setElementCssClass("o_login_pwd");
 				changePasswordLink = link;
 			} else if (StringHelper.containsNonWhitespace(ldapLoginModule.getChangePasswordUrl())) {
 				ExternalLink link = new ExternalLink("_ldap_login_change_pwd", "menu.pw");
-				link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+				link.setIconLeftCSS("o_icon o_icon-fw o_icon_jump_to");
 				link.setElementCssClass("o_login_pwd");
 				link.setName(translate("menu.pw"));
 				link.setUrl(ldapLoginModule.getChangePasswordUrl());
@@ -224,7 +224,7 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 			}
 		} else if (userModule.isAnyPasswordChangeAllowed()) {
 			Link link = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", container, this);
-			link.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
+			link.setIconLeftCSS("o_icon o_icon-fw o_icon_jump_to");
 			link.setElementCssClass("o_login_pwd");
 			link.setVisible(!loginModule.isOlatProviderLoginButton());
 			changePasswordLink = link;

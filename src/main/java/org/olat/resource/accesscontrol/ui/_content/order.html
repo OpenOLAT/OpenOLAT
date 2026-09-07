@@ -44,6 +44,9 @@
 				$r.render("order-comment","vertical")
 			#end
 			$r.render("orderItemList")
+			#if($r.visible("orderForms"))
+				$r.render("orderForms")
+			#end
 		</div>
 		<div class="o_ac_order_details_content_right">
 			<div class="o_ac_order_user">

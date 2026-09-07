@@ -28,6 +28,7 @@ package org.olat.modules.forms;
 public enum EvaluationFormParticipationStatus {
 	
 	prepared,
-	done
+	done,
+	canceled
 
 }
