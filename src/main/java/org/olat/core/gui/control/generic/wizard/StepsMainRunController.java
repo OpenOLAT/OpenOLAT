@@ -189,10 +189,15 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		finishButton.setLinkTitle(i18nKey);
 	}
 
+	public void setFinishText(String text) {
+		finishButton.getComponent().setCustomDisplayText(text);
+	}
+
 	@Override
 	protected void doDispose() {
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
-        super.doDispose();
+		CachedRunContextController.disposeAll(stepsContext);
+		super.doDispose();
 	}
 
 	@Override
@@ -207,12 +212,21 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	}
 	
 	/**
-	 * The method doesn't propagate onblur events to prevent redraw of the
-	 * whole wizard after a tab key use to move from field to field.
+	 * Only ever propagate dirtiness for the wizard's own navigation chrome
+	 * (title links, prev/next/finish/cancel/close). A step's own content
+	 * shares this wizard's root form, so every inner form event it fires (e.g.
+	 * a field in a sizeable embedded form) is also dispatched here; without
+	 * this guard it would mark the whole wizard dirty and trigger a full
+	 * redraw of the dialog, resetting its scroll position to the top on every
+	 * interaction. The step's own controller already propagates dirtiness for
+	 * its own content independently, so nothing is lost by skipping it here.
 	 */
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
-		if(!"ONBLUR".equals(event.getCommand())) {
+		boolean ownNavigationItem = fiSrc == prevButton || fiSrc == nextButton || fiSrc == finishButton
+				|| fiSrc == cancelButton || fiSrc == closeLink || stepTitleLinks.contains(fiSrc)
+				|| parentToChildrenTitle.containsKey(fiSrc);
+		if (ownNavigationItem) {
 			super.propagateDirtinessToContainer(fiSrc, event);
 		}
 	}

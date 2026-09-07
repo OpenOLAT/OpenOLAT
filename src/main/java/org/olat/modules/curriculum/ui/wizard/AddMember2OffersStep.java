@@ -19,6 +19,9 @@
  */
 package org.olat.modules.curriculum.ui.wizard;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -28,27 +31,38 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
+import org.olat.resource.accesscontrol.OfferToSurvey;
+import org.olat.resource.accesscontrol.ui.wizard.BookingFormStep;
 
 /**
- * 
+ *
  * Initial date: 16 janv. 2025<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public class AddMember2OffersStep extends BasicStep {
-	
+
 	private final MembersContext membersContext;
-	
+
 	public AddMember2OffersStep(UserRequest ureq, MembersContext membersContext) {
 		super(ureq);
 		this.membersContext = membersContext;
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.bookings", null);
-		
+
 		setStepCollection(null);
-		setNextStep(new AddMember3RightsStep(ureq, membersContext));
+		updateNextStep(ureq, List.of());
 	}
-	
+
+	void updateNextStep(UserRequest ureq, List<OfferToSurvey> offerToSurveys) {
+		BasicStep rightsStep = new AddMember3RightsStep(ureq, membersContext);
+		if (offerToSurveys.isEmpty()) {
+			setNextStep(rightsStep);
+		} else {
+			setNextStep(new BookingFormStep(ureq, membersContext.getBookingContext(), new ArrayList<>(offerToSurveys), rightsStep));
+		}
+	}
+
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return PrevNextFinishConfig.BACK_NEXT;
@@ -57,7 +71,7 @@ public class AddMember2OffersStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
-		return new OffersController(ureq, wControl, form, runContext, membersContext);
+		return new OffersController(ureq, wControl, form, runContext, membersContext, this);
 	}
 
 }

@@ -41,10 +41,13 @@ import org.olat.modules.curriculum.ui.wizard.MembersContext.AccessInfos;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureService;
+import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
+import org.olat.resource.accesscontrol.ui.wizard.BookingContext;
+import org.olat.resource.accesscontrol.ui.wizard.BookingWizardHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,13 +57,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class AddMemberFinishCallback extends AbstractMemberCallback {
-	
+
 	private final MembersContext membersContext;
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private BookingWizardHelper bookingWizardHelper;
 
 	public AddMemberFinishCallback(MembersContext membersContext) {
 		super();
@@ -79,10 +84,14 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 		if(offer != null) {
 			OrderStatus orderStatus = getOrderStatus(offer);
 			String adminNote = membersContext.getAdminNote();
+			BookingContext bookingContext = membersContext.getBookingContext();
 			for(Identity identity:identities) {
 				OrderAdditionalInfos orderInfos = membersContext.createOrderInfos(identity, true);
-				acService.accessResource(identity, offer.offerAccess(), orderStatus, orderInfos, mailPackage,
+				AccessResult accessResult = acService.accessResource(identity, offer.offerAccess(), orderStatus, orderInfos, mailPackage,
 						ureq.getIdentity(), adminNote);
+				if (bookingContext != null && accessResult.getOrder() != null) {
+					bookingWizardHelper.saveFormResponses(ureq, runContext, bookingContext, accessResult.getOrder(), identity);
+				}
 			}
 		} else {
 			List<MembershipModification> modifications = membersContext.getModifications();
@@ -97,7 +106,7 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 		}
 		return StepsMainRunController.DONE_MODIFIED;
 	}
-	
+
 	private void addAsTeacher(List<Identity> identities, List<MembershipModification> modifications) {
 		List<CurriculumElement> elements = modifications.stream()
 				.map(MembershipModification::curriculumElement)

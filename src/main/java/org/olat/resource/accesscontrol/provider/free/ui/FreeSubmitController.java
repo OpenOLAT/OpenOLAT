@@ -20,19 +20,28 @@
 
 package org.olat.resource.accesscontrol.provider.free.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OfferToSurvey;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.FormController;
+import org.olat.resource.accesscontrol.ui.wizard.BookingContext;
+import org.olat.resource.accesscontrol.ui.wizard.BookingFormStep;
+import org.olat.resource.accesscontrol.ui.wizard.BookingWizardHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -50,8 +59,12 @@ public class FreeSubmitController extends FormBasicController implements FormCon
 	private final OfferAccess link;
 	private final Identity bookedIdentity;
 
+	private StepsMainRunController bookingWizardCtrl;
+
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private BookingWizardHelper bookingWizardHelper;
 
 	public FreeSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
 		super(ureq, wControl, "submit");
@@ -69,12 +82,46 @@ public class FreeSubmitController extends FormBasicController implements FormCon
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		List<OfferToSurvey> offerToSurveys = bookingWizardHelper.loadOrderedForms(link.getOffer());
+		if (offerToSurveys.isEmpty()) {
+			doAccessResource(ureq);
+		} else {
+			doOpenBookingWizard(ureq, offerToSurveys);
+		}
+	}
+
+	private void doAccessResource(UserRequest ureq) {
 		AccessResult result = acService.accessResource(bookedIdentity, link, OrderStatus.PAYED, null, getIdentity());
-		
+
 		if(result.isAccessible()) {
 			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);
 		} else {
 			fireEvent(ureq, new AccessEvent(AccessEvent.ACCESS_FAILED));
 		}
+	}
+
+	private void doOpenBookingWizard(UserRequest ureq, List<OfferToSurvey> offerToSurveys) {
+		removeAsListenerAndDispose(bookingWizardCtrl);
+		BookingContext bookingContext = bookingWizardHelper.createBookingContext(link, bookedIdentity, getIdentity(),
+				OrderStatus.PAYED, offerToSurveys);
+		BookingFormStep startStep = new BookingFormStep(ureq, bookingContext, new ArrayList<>(offerToSurveys));
+		bookingWizardCtrl = bookingWizardHelper.startBookingWizard(ureq, getWindowControl(), bookingContext, startStep,
+				"wizard.title.free", translate("access.button"));
+		listenTo(bookingWizardCtrl);
+		getWindowControl().pushAsModalDialog(bookingWizardCtrl.getInitialComponent());
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == bookingWizardCtrl) {
+			getWindowControl().pop();
+			AccessEvent accessEvent = bookingWizardHelper.getBookingWizardResult(bookingWizardCtrl, event);
+			if (accessEvent != null) {
+				fireEvent(ureq, accessEvent);
+			}
+			removeAsListenerAndDispose(bookingWizardCtrl);
+			bookingWizardCtrl = null;
+		}
+		super.event(ureq, source, event);
 	}
 }

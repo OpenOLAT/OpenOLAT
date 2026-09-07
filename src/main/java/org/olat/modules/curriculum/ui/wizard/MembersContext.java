@@ -37,6 +37,7 @@ import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
+import org.olat.resource.accesscontrol.ui.wizard.BookingContext;
 
 /**
  * 
@@ -56,6 +57,7 @@ public class MembersContext {
 	
 	private final List<Offer> offers;
 	private AccessInfos selectedOffer;
+	private BookingContext bookingContext;
 	private boolean needBillingAddress;
 	private BillingAddress billingAddress;
 	private Map<Long, BillingAddress> identityKeyToBillingAddress;
@@ -160,6 +162,14 @@ public class MembersContext {
 
 	public void setSelectedOffer(AccessInfos selectedOffer) {
 		this.selectedOffer = selectedOffer;
+	}
+
+	public BookingContext getBookingContext() {
+		return bookingContext;
+	}
+
+	public void setBookingContext(BookingContext bookingContext) {
+		this.bookingContext = bookingContext;
 	}
 
 	public String getPurchaseOrderNumber() {

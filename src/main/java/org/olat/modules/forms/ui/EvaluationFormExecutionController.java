@@ -53,14 +53,15 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.nodes.ms.MSEvaluationBackController;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.ValidatingController;
-import org.olat.modules.ceditor.ui.ValidationMessage.Level;
 import org.olat.modules.ceditor.ui.ValidationMessage;
+import org.olat.modules.ceditor.ui.ValidationMessage.Level;
 import org.olat.modules.ceditor.ui.component.PageFragmentsElementImpl;
 import org.olat.modules.forms.CoachCandidates;
 import org.olat.modules.forms.CoachCandidatesAware;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.AllHandlerPageProvider;
@@ -114,10 +115,12 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private EmptyStateConfig emptyStateConfig;
 	private EmptyState emptyState;
 	private boolean readOnly;
+	private final boolean allowEditDoneSessions;
 	private boolean showDoneButton;
 	private boolean showCancelButton;
 	private final boolean doneSavesOnly;
 	private boolean isRubricAssessment;
+	private boolean keepAliveOnDispose;
 
 	private EvaluationFormSession session;
 	private EvaluationFormResponses responses;
@@ -130,35 +133,72 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			CoachCandidates coachCandidates, EmptyStateConfig emptyStateConfig) {
-		this(ureq, wControl, null, null, session, null, coachCandidates, null, false, true, false, false, emptyStateConfig);
+		this(ureq, wControl, null, null, null, session, null, null, coachCandidates, null, false, false, true, false, false, emptyStateConfig);
 	}
 
 	/**
 	 * Optimized to use already loaded responses and form.
-	 * 
+	 *
 	 */
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			EvaluationFormResponses responses, Form form, DataStorage storage, Component header) {
-		this(ureq, wControl, form, storage, session, null, null, header, false, true, false, false, null);
+		this(ureq, wControl, null, form, storage, session, null, null, null, header, false, false, true, false, false, null);
 		this.responses = responses;
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			CoachCandidates coachCandidates, boolean readOnly, boolean showDoneButton, boolean doneSavesOnly, EmptyStateConfig emptyState) {
-		this(ureq, wControl, null, null, session, null, coachCandidates, null, readOnly, showDoneButton, false, doneSavesOnly, emptyState);
+		this(ureq, wControl, session, coachCandidates, readOnly, false, showDoneButton, doneSavesOnly, emptyState);
+	}
+
+	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
+			CoachCandidates coachCandidates, boolean readOnly, boolean allowEditDoneSessions, boolean showDoneButton,
+			boolean doneSavesOnly, EmptyStateConfig emptyState) {
+		this(ureq, wControl, null, null, null, session, null, null, coachCandidates, null, readOnly, allowEditDoneSessions,
+				showDoneButton, false, doneSavesOnly, emptyState);
+	}
+
+	/**
+	 * Runs as a sub-form of the given rootForm, e.g. as a wizard step. No
+	 * {@link EvaluationFormSession} exists yet, the survey alone is enough to
+	 * load the form. The controller does not show its own save/done/cancel
+	 * buttons, the wizard navigation drives it, see
+	 * {@link #saveResponses(UserRequest, EvaluationFormSession)}.
+	 *
+	 */
+	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl,
+			org.olat.core.gui.components.form.flexible.impl.Form rootForm,
+			EvaluationFormSurvey survey, CoachCandidates coachCandidates, EmptyStateConfig emptyStateConfig) {
+		this(ureq, wControl, rootForm, null, null, null, survey, null, coachCandidates, null, false, false, false, false, true, emptyStateConfig);
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
 			EvaluationFormSession session, ExecutionIdentity executionIdentity, CoachCandidates coachCandidates,
 			Component header, boolean readOnly, boolean showDoneButton, boolean showCancelButton, boolean doneSavesOnly,
 			EmptyStateConfig emptyStateConfig) {
+		this(ureq, wControl, null, form, storage, session, null, executionIdentity, coachCandidates, header, readOnly,
+				false, showDoneButton, showCancelButton, doneSavesOnly, emptyStateConfig);
+	}
+
+	private EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl,
+			org.olat.core.gui.components.form.flexible.impl.Form rootForm, Form form, DataStorage storage,
+			EvaluationFormSession session, EvaluationFormSurvey survey, ExecutionIdentity executionIdentity,
+			CoachCandidates coachCandidates, Component header, boolean readOnly, boolean allowEditDoneSessions,
+			boolean showDoneButton, boolean showCancelButton, boolean doneSavesOnly,
+			EmptyStateConfig emptyStateConfig) {
 		super(ureq, wControl, "execute");
+		if (rootForm != null) {
+			mainForm = rootForm;
+			flc.setRootForm(rootForm);
+			mainForm.addSubFormListener(this);
+		}
 
 		this.session = session;
 		this.coachCandidates = coachCandidates != null? coachCandidates: CoachCandidates.NONE;
 		this.header = header;
 		this.emptyStateConfig = emptyStateConfig != null? emptyStateConfig: EMPTY_STATE_DEFAULTS;
 		this.readOnly = readOnly;
+		this.allowEditDoneSessions = allowEditDoneSessions;
 		this.showDoneButton = showDoneButton;
 		this.showCancelButton = showCancelButton;
 		this.doneSavesOnly = doneSavesOnly;
@@ -167,11 +207,11 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			this.form = form;
 			this.storage = storage;
 		} else {
-			RepositoryEntry formEntry = session.getSurvey().getFormEntry();
+			RepositoryEntry formEntry = (session != null? session.getSurvey(): survey).getFormEntry();
 			this.form = evaluationFormManager.loadForm(formEntry);
 			this.storage = evaluationFormManager.loadStorage(formEntry);
 		}
-		
+
 		if (executionIdentity != null) {
 			this.executionIdentity = executionIdentity;
 		} else {
@@ -196,6 +236,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		this.readOnly = false;
 		this.showDoneButton = false;
 		this.doneSavesOnly = false;
+		this.allowEditDoneSessions = false;
 		this.executionIdentity = ExecutionIdentity.ofIdentity(getIdentity());
 
 		initForm(ureq);
@@ -255,8 +296,10 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			return;
 
 		if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
-			readOnly = true;
-			showDoneButton = false;
+			if (!allowEditDoneSessions) {
+				readOnly = true;
+				showDoneButton = false;
+			}
 		} else {
 			Identity executor = null;
 			if (session.getParticipation() != null) {
@@ -326,8 +369,21 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		cancelLink.setVisible(showCancelButton);
 	}
 
+	/**
+	 * While set, {@link #doDispose()} does nothing. Used by callers that keep
+	 * this controller instance alive across a temporary removal from the GUI
+	 * tree, e.g. a wizard step that gets rebuilt when the user navigates back
+	 * and forward, and that disposes the controller itself on finish or cancel.
+	 *
+	 */
+	public void setKeepAliveOnDispose(boolean keepAliveOnDispose) {
+		this.keepAliveOnDispose = keepAliveOnDispose;
+	}
+
 	@Override
 	protected void doDispose() {
+		if (keepAliveOnDispose) return;
+
 		for (ExecutionFragment fragment : fragments) {
 			fragment.dispose();
 		}
@@ -387,7 +443,14 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	@Override
 	public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
-		areAllResponded(messages);
+		if (session != null) {
+			// Without a session (e.g. embedded in a wizard, before the survey
+			// participation exists) there is nothing to check here: hasResponse()
+			// only looks at persisted responses, so it would always fail. Each
+			// mandatory question's own validateFormLogic() already blocks
+			// progression on its own, live, independent of this method.
+			areAllResponded(messages);
+		}
 		for (ExecutionFragment fragment : fragments) {
 			fragment.validate(ureq, messages);
 		}
@@ -407,16 +470,30 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		}
 	}
 
+	/**
+	 * Saves the current answers into the given session, e.g. from a wizard
+	 * finish callback once the session exists. Does not touch this controller's
+	 * own session field beforehand, unlike {@link #doSaveResponses(UserRequest)}.
+	 *
+	 */
+	public boolean saveResponses(UserRequest ureq, EvaluationFormSession session) {
+		return doSaveResponses(ureq, session);
+	}
+
 	private boolean doSaveResponses(UserRequest ureq) {
-		session = evaluationFormManager.loadSessionByKey(session);
+		return doSaveResponses(ureq, evaluationFormManager.loadSessionByKey(session));
+	}
+
+	private boolean doSaveResponses(UserRequest ureq, EvaluationFormSession session) {
+		this.session = session;
 		if (session == null) {
 			showWarning("error.cannot.save");
 			responses = null; // reload
 			initForm(ureq);
 			return false;
 		}
-		
-		if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
+
+		if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done && !allowEditDoneSessions) {
 			showWarning("error.session.done");
 			responses = null; // reload
 			initForm(ureq);

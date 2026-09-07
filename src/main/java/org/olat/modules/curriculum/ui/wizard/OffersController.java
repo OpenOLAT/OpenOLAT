@@ -62,6 +62,7 @@ import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.BillingAddressSearchParams;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OfferToSurvey;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -70,6 +71,8 @@ import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheck
 import org.olat.resource.accesscontrol.ui.BillingAddressItem;
 import org.olat.resource.accesscontrol.ui.BillingAddressSelectionController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.olat.resource.accesscontrol.ui.wizard.BookingContext;
+import org.olat.resource.accesscontrol.ui.wizard.BookingWizardHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,7 +82,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OffersController extends StepFormBasicController {
-	
+
 	private static final String NO_BOOKING  = "nob";
 	
 	private TextElement commentEl;
@@ -96,21 +99,25 @@ public class OffersController extends StepFormBasicController {
 	private BillingAddressSelectionController addressSelectionCtrl;
 	
 	private final MembersContext membersContext;
+	private final AddMember2OffersStep offersStep;
 	private final List<AccessInfos> validOffers;
 	private boolean allIdentitiesInSameOrganisations;
 	private BillingAddress uniqueUserBillingAddress;
 	private boolean needBillingAddress;
-	
+
 	@Autowired
 	private ACService acService;
 	@Autowired
 	private AccessControlModule acModule;
+	@Autowired
+	private BookingWizardHelper bookingWizardHelper;
 
 	public OffersController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
-			MembersContext membersContext) {
+			MembersContext membersContext, AddMember2OffersStep offersStep) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
 		this.membersContext = membersContext;
+		this.offersStep = offersStep;
 		validOffers = validOffers(membersContext);
 		updateIdentitiesInSameOrganisations();
 		initForm(ureq);
@@ -220,8 +227,10 @@ public class OffersController extends StepFormBasicController {
 			setFormWarning("warning.no.offer.available");
 		}
 
-		bookingPK.add(SelectionValues.entry(NO_BOOKING, translate("booking.no.offer"), translate("booking.no.offer.desc"),
-				"o_icon o_icon_forward", null, true));
+		if (!membersContext.getCurriculumElement().isOrderFormRequired()) {
+			bookingPK.add(SelectionValues.entry(NO_BOOKING, translate("booking.no.offer"), translate("booking.no.offer.desc"),
+					"o_icon o_icon_forward", null, true));
+		}
 		bookingsEl = uifactory.addCardSingleSelectHorizontal("booking.order", "booking.order", formLayout, bookingPK);
 		bookingsEl.addActionListener(FormEvent.ONCHANGE);
 		bookingsEl.select(bookingPK.keys()[0], true);
@@ -390,10 +399,15 @@ public class OffersController extends StepFormBasicController {
 
 	@Override
 	protected void formNext(UserRequest ureq) {
+		AccessInfos previousOffer = membersContext.getSelectedOffer();
+		List<OfferToSurvey> offerToSurveys = List.of();
 		if(bookingsEl.isOneSelected()) {
 			AccessInfos infos = getAccessInfos(bookingsEl.getSelectedKey());
 			membersContext.setSelectedOffer(infos);
-			
+			if (infos != null) {
+				offerToSurveys = bookingWizardHelper.loadOrderedForms(infos.offer());
+			}
+
 			membersContext.setNeedBillingAddress(needBillingAddress);
 			if (needBillingAddress) {
 				if (membersContext.getIdentityKeyToBillingAddress() == null) {
@@ -418,7 +432,29 @@ public class OffersController extends StepFormBasicController {
 				membersContext.setOrderComment(null);
 			}
 		}
+
+		if (!sameOfferAccess(previousOffer, membersContext.getSelectedOffer())) {
+			if (offerToSurveys.isEmpty()) {
+				membersContext.setBookingContext(null);
+			} else {
+				AccessInfos infos = membersContext.getSelectedOffer();
+				BookingContext bookingContext = new BookingContext(infos.offerAccess(), null, ureq.getIdentity(), null, offerToSurveys);
+				membersContext.setBookingContext(bookingContext);
+				addToRunContext(BookingContext.RUN_CONTEXT_KEY, bookingContext);
+			}
+			offersStep.updateNextStep(ureq, offerToSurveys);
+			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+
+	// formNext() fires on every "next" click anywhere in the wizard, not only when leaving this step
+	// (subform listener on the shared root form) -- only rebuild when the offer actually changed.
+	private boolean sameOfferAccess(AccessInfos a, AccessInfos b) {
+		if (a == null || b == null) {
+			return a == b;
+		}
+		return a.offerAccess().getKey().equals(b.offerAccess().getKey());
 	}
 
 	@Override

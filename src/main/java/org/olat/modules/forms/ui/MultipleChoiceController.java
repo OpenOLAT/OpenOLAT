@@ -70,7 +70,7 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	private TextElement otherEl;
 	
 	private MultipleChoice multipleChoice;
-	private List<EvaluationFormResponse> multipleChoiceResponses;
+	private List<EvaluationFormResponse> multipleChoiceResponses = new ArrayList<>();
 	private boolean validationEnabled = true;
 	private boolean readOnly = false;
 	private RulesEngine rulesEngine;

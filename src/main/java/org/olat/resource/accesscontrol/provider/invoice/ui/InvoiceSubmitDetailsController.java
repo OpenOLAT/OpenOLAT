@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -34,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -50,6 +52,7 @@ import org.olat.resource.accesscontrol.ui.BillingAddressController;
 import org.olat.resource.accesscontrol.ui.BillingAddressItem;
 import org.olat.resource.accesscontrol.ui.BillingAddressSelectionController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.olat.resource.accesscontrol.ui.wizard.BookingContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -71,8 +74,9 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 
 	private final OfferAccess link;
 	private final Identity bookedIdentity;
+	private final BookingContext bookingContext;
 	private BillingAddress billingAddress;
-	
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -85,7 +89,18 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(BillingAddressController.class, getLocale(), getTranslator()));
 		this.link = link;
 		this.bookedIdentity = bookedIdentity;
-		
+		this.bookingContext = null;
+
+		initForm(ureq);
+	}
+
+	public InvoiceSubmitDetailsController(UserRequest ureq, WindowControl wControl, BookingContext bookingContext, Form rootForm) {
+		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
+		setTranslator(Util.createPackageTranslator(BillingAddressController.class, getLocale(), getTranslator()));
+		this.link = bookingContext.getOfferAccess();
+		this.bookedIdentity = bookingContext.getBookedIdentity();
+		this.bookingContext = bookingContext;
+
 		initForm(ureq);
 	}
 
@@ -122,10 +137,12 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 			uifactory.addStaticTextElement("price", price, formLayout);
 		}
 		
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("access.button.fee", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		if (bookingContext == null) {
+			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			formLayout.add("buttons", buttonLayout);
+			uifactory.addFormSubmitButton("access.button.fee", buttonLayout);
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		}
 	}
 
 	private void updateBillingAddress(BillingAddress billingAddress) {
@@ -185,6 +202,14 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if (bookingContext != null) {
+			bookingContext.setBillingAddress(billingAddress);
+			bookingContext.setPurchaseOrderNumber(purchseNumberEl.getValue());
+			bookingContext.setComment(commentEl.getValue());
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+			return;
+		}
+
 		AccessResult result = acService.accessResource(bookedIdentity, link, OrderStatus.PREPAYMENT, null, getIdentity());
 		
 		if (result.isAccessible()) {
