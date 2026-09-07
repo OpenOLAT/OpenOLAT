@@ -501,7 +501,7 @@
 			order: 2;
 		}
 		.o_ac_order_details_content_right {
-			margin-right: auto;
+			width: 100%;
 		
 			display: grid;
 			grid-template-columns: 1fr;
@@ -539,7 +539,8 @@
 				order: 2;
 				
 				display: flex;
-				flex-wrap: wrap;
+				flex-direction: column;
+				flex: 0 0 350px;
 				align-content: start;
 				max-width: 350px;
 			}
