@@ -1029,6 +1029,30 @@ div.o_assessment_mini_conditional_overview {
 	padding: 6px 0;
 }
 
+.o_seb_select_or_file_selector {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	column-gap: 5px;
+	
+	.form-group {
+		margin-bottom: 0px;
+	}
+	
+	.input-group > select {
+		border-top-right-radius: 0 !important;
+		border-bottom-right-radius: 0 !important;
+	}
+	
+	.input-group > .o_certificate_preview_button {
+		border-top-right-radius: $btn-border-radius-base;
+		border-bottom-right-radius: $btn-border-radius-base;
+	}
+	.input-group > span > input.o_disabled {
+		border-top-left-radius: $border-radius-base;
+		border-bottom-left-radius: $border-radius-base;
+	}
+}
+
 .o_labeled_light {
 	&.o_offer_survey_status_prepared {
 		font-weight: normal;
@@ -1058,7 +1082,6 @@ div.o_assessment_mini_conditional_overview {
 		@extend %o_labeled_red;
 	}
 }
-
 
 /* BigBlueButton */
 .o_bbb_deleted td {

@@ -59,6 +59,7 @@ import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.SafeExamBrowserEnabled;
 import org.olat.course.assessment.SafeExamBrowserTemplate;
 import org.olat.course.assessment.SafeExamBrowserTemplateSearchParams;
+import org.olat.course.assessment.SafeExamBrowserTemplateType;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -628,7 +629,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 
 		@Override
 		public SafeExamBrowserTemplate getSafeExamBrowserTemplate() {
-			return null;
+			return sebTemplate;
 		}
 
 		@Override
@@ -654,6 +655,21 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		@Override
 		public String getSafeExamBrowserConfigPList() {
 			return sebTemplate.getSafeExamBrowserConfigPList();
+		}
+
+		@Override
+		public String getSafeExamBrowserRawConfigurationPList() {
+			return null;
+		}
+
+		@Override
+		public String getSafeExamBrowserConfigurationPListFilename() {
+			return null;
+		}
+
+		@Override
+		public void setSafeExamBrowserConfigurationPListFilename(String filename) {
+			//
 		}
 
 		@Override
@@ -706,8 +722,11 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		
 		private FormLink closeButton;
 		
+		private SafeExamBrowserEnabled configuration;
+		
 		public SafeExamBrowserConfigurationController(UserRequest ureq, WindowControl wControl, SafeExamBrowserEnabled configuration) {
 			super(ureq, wControl, configuration);
+			this.configuration = configuration;
 			
 			initForm(ureq);
 			updateUI(false);
@@ -728,13 +747,53 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		}
 
 		@Override
+		protected boolean isSEBConfig() {
+			return true;
+		}
+
+		@Override
+		protected boolean isOwn() {
+			return false;
+		}
+
+		@Override
+		protected boolean isSystemTemplate() {
+			return true;
+		}
+
+		@Override
+		protected boolean isCustomTemplate() {
+			return false;
+		}
+
+		@Override
+		protected boolean isSEBFileConfig() {
+			SafeExamBrowserTemplate selectedTemplate = configuration.getSafeExamBrowserTemplate();
+			return selectedTemplate != null && selectedTemplate.getType() == SafeExamBrowserTemplateType.SEB_FILE;
+		}
+
+		@Override
+		protected boolean isFormConfig() {
+			SafeExamBrowserTemplate selectedTemplate = configuration.getSafeExamBrowserTemplate();
+			return selectedTemplate != null && selectedTemplate.getType() == SafeExamBrowserTemplateType.OO_FORM;
+		}
+
+		@Override
 		protected void updateUI(boolean overrideConfiguration) {
 			super.updateUI(overrideConfiguration);
 
 			safeExamBrowserEl.setVisible(false);
 			typeOfUseEl.setVisible(false);
-			configSourceEl.setVisible(false);
+			typeEl.setVisible(false);
 			templateEl.setVisible(false);
+			templateCont.setVisible(false);
+			
+			templateFileEl.setVisible(false);
+			templateTypeEl.setVisible(false);
+			copyTemplateLink.setVisible(false);
+			templateTypeCont.setVisible(false);
+			uploadConfigurationLink.setVisible(false);
+			
 			downloadConfigEl.setEnabled(isEditable());
 			safeExamBrowserHintEl.setEnabled(isEditable());
 			
