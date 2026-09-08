@@ -61,8 +61,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.member.CurriculumElementMemberUsersController;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -74,13 +74,10 @@ import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.forms.ui.UserPropertiesColumns;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Offer;
-import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.OfferSurveyParticipationIdentifiers;
 import org.olat.resource.accesscontrol.OfferToSurvey;
 import org.olat.resource.accesscontrol.Order;
-import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.ui.OfferSurveyParticipationListTableModel.OfferSurveyParticipationCols;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -119,8 +116,6 @@ public class OfferSurveyParticipationListController extends FormBasicController 
 
 	@Autowired
 	private ACService acService;
-	@Autowired
-	private AccessControlModule acModule;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -246,7 +241,7 @@ public class OfferSurveyParticipationListController extends FormBasicController 
 			Long orderKey = OfferSurveyParticipationIdentifiers.getOrderKey(participation.getIdentifier());
 			Order order = acService.loadOrderByKey(orderKey);
 			Offer offer = resolveOffer(order, offerByKey);
-			String offerLabel = offer != null ? getOfferLabel(offer) : null;
+			String offerLabel = offer != null ? OfferSurveyUIFactory.getOfferLabel(offer, getTranslator()) : null;
 			EvaluationFormSession session = sessionByParticipationKey.get(participation.getKey());
 
 			OfferSurveyParticipationRow row = new OfferSurveyParticipationRow(participation, order, offer, offerLabel,
@@ -277,21 +272,6 @@ public class OfferSurveyParticipationListController extends FormBasicController 
 				.filter(Objects::nonNull)
 				.findFirst()
 				.orElse(null);
-	}
-
-	private String getOfferLabel(Offer offer) {
-		String label = offer.getLabel();
-		if (StringHelper.containsNonWhitespace(label)) {
-			return label;
-		}
-		List<OfferAccess> offerAccesses = acService.getOfferAccess(offer, true);
-		if (!offerAccesses.isEmpty()) {
-			AccessMethodHandler handler = acModule.getAccessMethodHandler(offerAccesses.get(0).getMethod().getType());
-			if (handler != null) {
-				return handler.getMethodName(getLocale());
-			}
-		}
-		return translate("offer.survey.offer.column");
 	}
 
 	private void forgeLinks(OfferSurveyParticipationRow row) {
@@ -411,7 +391,11 @@ public class OfferSurveyParticipationListController extends FormBasicController 
 		UserPropertiesColumns userColumns = new UserPropertiesColumns(userPropertyHandlers, getTranslator());
 		EvaluationFormExcelExport export = new EvaluationFormExcelExport(getLocale(), survey.getFormEntry(), form,
 				filter, null, userColumns, survey.getFormEntry().getDisplayname());
-		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
+		
+		MediaResource mediaResource = OfferSurveyExportFactory.createExport(getIdentity(), getWindowControl(),
+				getTranslator(), survey.getFormEntry().getDisplayname(),
+				List.of(new OfferSurveyExportFactory.SurveyExportInfos(survey, form, filter, export, "")));
+		ureq.getDispatchResult().setResultingMediaResource(mediaResource);
 	}
 
 	private class ToolsController extends BasicController {

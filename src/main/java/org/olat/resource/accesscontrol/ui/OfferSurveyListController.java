@@ -19,16 +19,11 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipOutputStream;
 
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -68,10 +63,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.ui.member.CurriculumElementMemberUsersController;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -82,6 +75,7 @@ import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.forms.ui.UserPropertiesColumns;
+import org.olat.resource.accesscontrol.ui.OfferSurveyExportFactory.SurveyExportInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
@@ -91,11 +85,8 @@ import org.olat.repository.ui.author.AuthorListController;
 import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Offer;
-import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.OfferToSurvey;
-import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.ui.OfferSurveyListTableModel.OfferSurveyCols;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -145,8 +136,6 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private AccessControlModule acModule;
-	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private UserManager userManager;
@@ -190,7 +179,7 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 		for (Offer offer : offers) {
 			DefaultFlexiColumnModel offerColumn = new DefaultFlexiColumnModel(
 					"offer.survey.offer.column", offerColumnIndex++, positionRenderer);
-			offerColumn.setHeaderLabel(getOfferLabel(offer));
+			offerColumn.setHeaderLabel(OfferSurveyUIFactory.getOfferLabel(offer, getTranslator()));
 			columnsModel.addFlexiColumnModel(offerColumn);
 		}
 
@@ -263,21 +252,6 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 			positionByOfferKey.put(offerToSurvey.getOffer().getKey(), offerToSurvey.getPos());
 		}
 		return positionByOfferKey;
-	}
-
-	private String getOfferLabel(Offer offer) {
-		String label = offer.getLabel();
-		if (StringHelper.containsNonWhitespace(label)) {
-			return label;
-		}
-		List<OfferAccess> offerAccesses = acService.getOfferAccess(offer, true);
-		if (!offerAccesses.isEmpty()) {
-			AccessMethodHandler handler = acModule.getAccessMethodHandler(offerAccesses.get(0).getMethod().getType());
-			if (handler != null) {
-				return handler.getMethodName(getLocale());
-			}
-		}
-		return translate("offer.survey.offer.column");
 	}
 
 	private boolean isTabMatch(boolean used) {
@@ -443,84 +417,23 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 	private void doExport(UserRequest ureq) {
 		if (surveys.isEmpty()) return;
 
-		if (surveys.size() == 1) {
-			EvaluationFormExcelExport export = createExport(surveys.get(0));
-			ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
-		} else {
-			List<EvaluationFormExcelExport> exports = surveys.stream().map(this::createExport).toList();
-			ureq.getDispatchResult().setResultingMediaResource(new OfferSurveysZipMediaResource(exports));
-		}
+		boolean withPath = surveys.size() > 1;
+		List<SurveyExportInfos> surveyExportInfos = surveys.stream().map(survey -> createExport(survey, withPath)).toList();
+		MediaResource mediaResource = OfferSurveyExportFactory.createExport(getIdentity(), getWindowControl(),
+				getTranslator(), translate("offer.survey.list.title"), surveyExportInfos);
+		ureq.getDispatchResult().setResultingMediaResource(mediaResource);
 	}
 
-	private EvaluationFormExcelExport createExport(EvaluationFormSurvey survey) {
+	private SurveyExportInfos createExport(EvaluationFormSurvey survey, boolean withPath) {
 		org.olat.modules.forms.model.xml.Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 		SessionFilter filter = SessionFilterFactory.create(survey, true);
 		UserPropertiesColumns userColumns = new UserPropertiesColumns(userPropertyHandlers, getTranslator());
 		String stepName = survey.getDisplayName();
 		String fileName = StringHelper.containsNonWhitespace(stepName) ? stepName : survey.getFormEntry().getDisplayname();
-		return new EvaluationFormExcelExport(getLocale(), survey.getFormEntry(), form, filter, null, userColumns, fileName);
-	}
-
-	private class OfferSurveysZipMediaResource implements MediaResource {
-
-		private final List<EvaluationFormExcelExport> exports;
-
-		public OfferSurveysZipMediaResource(List<EvaluationFormExcelExport> exports) {
-			this.exports = exports;
-		}
-
-		@Override
-		public long getCacheControlDuration() {
-			return ServletUtil.CACHE_NO_CACHE;
-		}
-
-		@Override
-		public boolean acceptRanges() {
-			return false;
-		}
-
-		@Override
-		public String getContentType() {
-			return "application/zip";
-		}
-
-		@Override
-		public Long getSize() {
-			return null;
-		}
-
-		@Override
-		public InputStream getInputStream() {
-			return null;
-		}
-
-		@Override
-		public Long getLastModified() {
-			return null;
-		}
-
-		@Override
-		public void prepare(HttpServletResponse hres) {
-			String fileName = StringHelper.transformDisplayNameToFileSystemName(translate("offer.survey.list.title"))
-					+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())) + ".zip";
-			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
-			hres.setHeader("Content-Description", fileName);
-
-			try (ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
-				zout.setLevel(9);
-				for (EvaluationFormExcelExport export : exports) {
-					export.export(zout, "");
-				}
-			} catch (IOException e) {
-				logError("", e);
-			}
-		}
-
-		@Override
-		public void release() {
-			//
-		}
-
+		EvaluationFormExcelExport excelExport = new EvaluationFormExcelExport(getLocale(), survey.getFormEntry(), form,
+				filter, null, userColumns, fileName);
+		String path = withPath ? StringHelper.transformDisplayNameToFileSystemName(fileName) : "";
+		return new SurveyExportInfos(survey, form, filter, excelExport, path);
 	}
 
 	private void doEditStepName(UserRequest ureq, OfferSurveyRow row, FormLink link) {

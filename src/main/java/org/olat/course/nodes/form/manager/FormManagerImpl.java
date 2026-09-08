@@ -43,6 +43,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailHelper;
@@ -62,6 +64,7 @@ import org.olat.course.nodes.form.FormParticipationSearchParams;
 import org.olat.course.nodes.form.model.FormParticipationBundleImpl;
 import org.olat.course.nodes.form.model.FormParticipationImpl;
 import org.olat.course.nodes.form.ui.FormConfigController;
+import org.olat.course.nodes.form.ui.FormParticipationPrintController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -83,6 +86,9 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
+import org.olat.modules.forms.manager.EvaluationFormExportResource;
+import org.olat.modules.forms.manager.EvaluationFormExportResource.FormExportInfos;
+import org.olat.modules.forms.manager.EvaluationFormExportResource.SessionPrintProvider;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
@@ -545,7 +551,16 @@ public class FormManagerImpl implements FormManager {
 		if (fileUploads.isEmpty() && !pdfModule.isEnabled()) {
 			return excelExport.createMediaResource();
 		}
-		return new FormExportResource(wControl, locale, doer, courseEnv, courseNode, filter, excelExport, lastRun == null, fileUploads);
+		
+		String fileName = StringHelper.transformDisplayNameToFileSystemName(nodeName)
+				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date()) + ".zip";
+		SessionPrintProvider printProvider = session -> (lureq, lwControl) -> {
+			UserCourseEnvironment coachedCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
+					session.getParticipation().getExecutor(), courseEnv);
+			return new FormParticipationPrintController(lureq, lwControl, coachedCourseEnv, courseNode, session);
+		};
+		FormExportInfos exportInfos = new FormExportInfos(excelExport, form, filter, "", lastRun == null, printProvider);
+		return new EvaluationFormExportResource(wControl, doer, fileName, List.of(exportInfos));
 	}
 
 	@Override
