@@ -52,6 +52,7 @@ public class BookingDetailsStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext runContext, Form form) {
+		form.setMultipartEnabled(true);
 		return new BookingDetailsStepController(ureq, windowControl, form, runContext, bookingContext);
 	}
 

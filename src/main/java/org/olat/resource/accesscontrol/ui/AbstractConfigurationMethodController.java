@@ -437,6 +437,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 
 	private void forgeUpDown(OfferSurveyOfferRow row, int usedSize, int usedIndex) {
 		UpDown upDown = UpDownFactory.createUpDown("survey_updown_" + row.getKey(), UpDown.Layout.LINK_HORIZONTAL, flc.getFormItemComponent(), this);
+		upDown.setSuppressDirtyFormWarning(true);
 		upDown.setUserObject(row);
 		if (usedIndex == 0) {
 			upDown.setTopmost(true);

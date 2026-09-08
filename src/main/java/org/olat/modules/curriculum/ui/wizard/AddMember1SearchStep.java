@@ -67,6 +67,7 @@ public class AddMember1SearchStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
+		form.setMultipartEnabled(true);
 		return new AddMembersController(ureq, wControl, form, runContext, membersContext);
 	}
 }

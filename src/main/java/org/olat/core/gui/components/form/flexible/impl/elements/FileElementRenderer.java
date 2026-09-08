@@ -285,7 +285,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			sb.append("<div class='o_dnd' aria-hidden='true'>")
 			  .append("<div class='o_dnd_icon'><i class='o_icon o_icon o_icon_upload'></i></div>")
 			  .append("<div class='o_dnd_info'>").append(dndInfo).append("</div>")
-			  .append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'>");
+			  .append("<div class='o_dnd_select'><button type='button' class='btn btn-xs btn-default' tabindex='-1'>");
 			if (hasBtnLabel) {
 				sb.append("<span>").append(buttonLabel).append("</span>");
 			}

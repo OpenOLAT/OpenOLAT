@@ -62,7 +62,6 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
-import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.AllHandlerPageProvider;
 import org.olat.modules.forms.handler.EvaluationFormElementHandler;
@@ -121,6 +120,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private final boolean doneSavesOnly;
 	private boolean isRubricAssessment;
 	private boolean keepAliveOnDispose;
+	private final boolean sessionPending;
 
 	private EvaluationFormSession session;
 	private EvaluationFormResponses responses;
@@ -194,6 +194,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		}
 
 		this.session = session;
+		this.sessionPending = session == null && rootForm != null;
 		this.coachCandidates = coachCandidates != null? coachCandidates: CoachCandidates.NONE;
 		this.header = header;
 		this.emptyStateConfig = emptyStateConfig != null? emptyStateConfig: EMPTY_STATE_DEFAULTS;
@@ -237,6 +238,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		this.showDoneButton = false;
 		this.doneSavesOnly = false;
 		this.allowEditDoneSessions = false;
+		this.sessionPending = false;
 		this.executionIdentity = ExecutionIdentity.ofIdentity(getIdentity());
 
 		initForm(ureq);
@@ -336,11 +338,12 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	}
 	
 	private void loadResponses(UserRequest ureq) {
-		if (session == null) return;
+		if (session == null && !sessionPending) return;
 		
 		if (responses == null) {
-			SessionFilter filter = SessionFilterFactory.create(session);
-			responses = evaluationFormManager.loadResponsesBySessions(filter);
+			responses = session != null
+					? evaluationFormManager.loadResponsesBySessions(SessionFilterFactory.create(session))
+					: new EvaluationFormResponses(List.of());
 		}
 		
 		for (ExecutionFragment fragment : fragments) {

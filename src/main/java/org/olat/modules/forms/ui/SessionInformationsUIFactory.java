@@ -112,6 +112,10 @@ class SessionInformationsUIFactory {
 	}
 	
 	static String getValue(InformationType informationType, EvaluationFormSession session) {
+		if (session == null) {
+			return null;
+		}
+
 		switch (informationType) {
 		case USER_EMAIL:
 			return session.getEmail();

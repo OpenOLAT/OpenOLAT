@@ -123,6 +123,11 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 		return loweremost;
 	}
 
+	public void setSuppressDirtyFormWarning(boolean suppressDirtyFormWarning) {
+		up.setSuppressDirtyFormWarning(suppressDirtyFormWarning);
+		down.setSuppressDirtyFormWarning(suppressDirtyFormWarning);
+	}
+
 	public Object getUserObject() {
 		return userObject;
 	}
