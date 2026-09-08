@@ -410,7 +410,8 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 
 	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {
 		List<Offer> offers = getAvailableOffers();
-		MembersContext membersContex = new MembersContext(role, curriculum, curriculumElement, descendants, offers);
+		CurriculumElement reloadedElement = curriculumService.getCurriculumElement(curriculumElement);
+		MembersContext membersContex = new MembersContext(role, curriculum, reloadedElement, descendants, offers);
 		AddMember1SearchStep step = new AddMember1SearchStep(ureq, membersContex);
 		AddMemberFinishCallback finish = new AddMemberFinishCallback(membersContex);
 		
