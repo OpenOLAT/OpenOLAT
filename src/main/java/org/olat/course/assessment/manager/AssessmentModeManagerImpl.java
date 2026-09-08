@@ -173,6 +173,10 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			SafeExamBrowserTemplate template = assessmentMode.getSafeExamBrowserTemplate();
 			if(template != null) {
 				mode.setSafeExamBrowserTemplate(template);
+			} else if(StringHelper.containsNonWhitespace(assessmentMode.getSafeExamBrowserConfigurationPListFilename())) {
+				mode.setSafeExamBrowserHint(assessmentMode.getSafeExamBrowserHint());
+				mode.setSafeExamBrowserRawConfigurationPList(assessmentMode.getSafeExamBrowserRawConfigurationPList());
+				mode.setSafeExamBrowserConfigurationPListFilename(assessmentMode.getSafeExamBrowserConfigurationPListFilename());
 			} else {
 				mode.setSafeExamBrowserHint(assessmentMode.getSafeExamBrowserHint());
 				mode.setSafeExamBrowserKey(assessmentMode.getSafeExamBrowserKey());

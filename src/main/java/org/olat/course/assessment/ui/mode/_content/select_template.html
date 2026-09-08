@@ -1,0 +1,12 @@
+<div class="o_seb_select_or_file_selector">
+	$r.render("template.type")
+	<div class="form-group">
+		<div class="input-group">
+			#if($r.visible("template.file"))
+				$r.render("template.file")
+			#end
+			$r.render("mode.safeexambrowser.template.select")
+			$r.render("upload")
+		</div>
+	</div>
+</div>

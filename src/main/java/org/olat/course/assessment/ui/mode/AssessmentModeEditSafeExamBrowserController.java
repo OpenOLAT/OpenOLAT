@@ -110,7 +110,8 @@ public class AssessmentModeEditSafeExamBrowserController extends AbstractEditSaf
 		}
 	}
 	
-	protected void initSafeExamBrowserForm(FormLayoutContainer enableCont) {
+	@Override
+	protected void initSafeExamBrowserForm(FormItemContainer enableCont) {
 		enableCont.setElementCssClass("o_sel_assessment_mode_edit_form");
 		setFormContextHelp("manual_user/learningresources/Assessment_mode/");
 		setFormDescription("form.mode.description");
@@ -134,11 +135,6 @@ public class AssessmentModeEditSafeExamBrowserController extends AbstractEditSaf
 		}
 		
 		super.initSafeExamBrowserForm(enableCont);
-
-		boolean managed = AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.safeexambrowser);
-		configSourceEl.setEnabled(!managed);
-		templateEl.setEnabled(!managed);
-		downloadConfigEl.setEnabled(!managed);
 	}
 
 	@Override

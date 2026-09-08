@@ -48,7 +48,25 @@ public interface SafeExamBrowserEnabled {
 	
 	void setSafeExamBrowserConfigurationPList(PList plist);
 	
+	/**
+	 * Return the configuration as a PList. If the configuration is in a system
+	 * template or a custom .seb file, the options allow to exit and password
+	 * to exit are overwriten. 
+	 * 
+	 * @return A SEB configuration in PList format
+	 */
 	String getSafeExamBrowserConfigPList();
+	
+	String getSafeExamBrowserRawConfigurationPList();
+	
+	/**
+	 * The file name marks a custom .seb file.
+	 * 
+	 * @return The file name of a custom .seb template
+	 */
+	String getSafeExamBrowserConfigurationPListFilename();
+	
+	void setSafeExamBrowserConfigurationPListFilename(String filename);
 
 	String getSafeExamBrowserConfigPListKey();
 	

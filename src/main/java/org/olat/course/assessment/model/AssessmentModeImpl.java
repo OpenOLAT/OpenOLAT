@@ -169,6 +169,8 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	private String safeExamBrowserConfigXml;
 	@Column(name="a_safeexambrowserconfig_plist", nullable=true, insertable=true, updatable=true)
 	private String safeExamBrowserConfigPlist;
+	@Column(name="a_safeexambrowserconfig_file", nullable=true, insertable=true, updatable=true)
+	private String safeExamBrowserConfigurationPListFilename;
 	@Column(name="a_safeexambrowserconfig_pkey", nullable=true, insertable=true, updatable=true)
 	private String safeExamBrowserConfigPlistKey;
 	@Column(name="a_safeexambrowserconfig_dload", nullable=true, insertable=true, updatable=true)
@@ -495,7 +497,7 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	public void setSafeExamBrowserTemplate(SafeExamBrowserTemplate template) {
 		if(template != null) {
 			setSafeExamBrowserConfigXml(null);
-			setSafeExamBrowserConfigPList(null);
+			setSafeExamBrowserRawConfigurationPList(null);
 			setSafeExamBrowserConfigPListKey(null);
 		}
 		safeExamBrowserTemplate = template;
@@ -516,7 +518,7 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	public void setSafeExamBrowserConfiguration(SafeExamBrowserConfiguration configuration) {
 		if(configuration == null) {
 			setSafeExamBrowserConfigXml(null);
-			setSafeExamBrowserConfigPList(null);
+			setSafeExamBrowserRawConfigurationPList(null);
 			setSafeExamBrowserConfigPListKey(null);
 		} else {
 			safeExamBrowserTemplate = null;
@@ -524,7 +526,7 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 			String xml = SafeExamBrowserConfigurationSerializer.toXml(configuration);
 			setSafeExamBrowserConfigXml(xml);
 			String plist = SafeExamBrowserConfigurationSerializer.toPList(configuration, assessmentModule);
-			setSafeExamBrowserConfigPList(plist);
+			setSafeExamBrowserRawConfigurationPList(plist);
 			String json = SafeExamBrowserConfigurationSerializer.toJson(configuration, assessmentModule);
 			if(json != null) {
 				setSafeExamBrowserConfigPListKey(Encoder.sha256Exam(json));
@@ -538,7 +540,7 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 			safeExamBrowserTemplate = null;
 			setSafeExamBrowserConfigXml(null);
 			String plistAsString = plist.toPlistString();
-			setSafeExamBrowserConfigPList(plistAsString);
+			setSafeExamBrowserRawConfigurationPList(plistAsString);
 			String json = SafeExamBrowserConfigurationSerializer.toJSON(plist);
 			if(json != null) {
 				setSafeExamBrowserConfigPListKey(Encoder.sha256Exam(json));
@@ -567,12 +569,30 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 				boolean allowExit = getSafeExamBrowserConfigAllowExit() != null && getSafeExamBrowserConfigAllowExit().booleanValue();
 				return SafeExamBrowserConfigurationSerializer.overridePList(plist, allowExit, getSafeExamBrowserConfigExitPassword());
 			}
+		} else if(StringHelper.containsNonWhitespace(safeExamBrowserConfigurationPListFilename)) {
+			boolean allowExit = getSafeExamBrowserConfigAllowExit() != null && getSafeExamBrowserConfigAllowExit().booleanValue();
+			return SafeExamBrowserConfigurationSerializer.overridePList(safeExamBrowserConfigPlist, allowExit, getSafeExamBrowserConfigExitPassword());
 		}
 		return safeExamBrowserConfigPlist;
 	}
 
-	public void setSafeExamBrowserConfigPList(String config) {
+	@Override
+	public String getSafeExamBrowserRawConfigurationPList() {
+		return safeExamBrowserConfigPlist;
+	}
+
+	public void setSafeExamBrowserRawConfigurationPList(String config) {
 		this.safeExamBrowserConfigPlist = config;
+	}
+	
+	@Override
+	public String getSafeExamBrowserConfigurationPListFilename() {
+		return safeExamBrowserConfigurationPListFilename;
+	}
+
+	@Override
+	public void setSafeExamBrowserConfigurationPListFilename(String safeExamBrowserConfigPlistFilename) {
+		this.safeExamBrowserConfigurationPListFilename = safeExamBrowserConfigPlistFilename;
 	}
 
 	@Override
@@ -586,6 +606,9 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 				boolean allowExit = getSafeExamBrowserConfigAllowExit() != null && getSafeExamBrowserConfigAllowExit().booleanValue();
 				return SafeExamBrowserConfigurationSerializer.calculateKey(plist, allowExit, getSafeExamBrowserConfigExitPassword());
 			}
+		} else if(StringHelper.containsNonWhitespace(safeExamBrowserConfigurationPListFilename)) {
+			boolean allowExit = getSafeExamBrowserConfigAllowExit() != null && getSafeExamBrowserConfigAllowExit().booleanValue();
+			return SafeExamBrowserConfigurationSerializer.calculateKey(safeExamBrowserConfigPlist, allowExit, getSafeExamBrowserConfigExitPassword());
 		}
 		return safeExamBrowserConfigPlistKey;
 	}
