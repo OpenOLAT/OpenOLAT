@@ -27,23 +27,29 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import org.olat.modules.roommanagement.RoomBooking;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Initial date: 19 May 2026<br>
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
+@Schema(description = "A room booking of a lecture block. On write, the room is resolved in this order of precedence: roomKey, else externalId, else externalRef.")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "roomBookingVO")
 public class RoomBookingVO {
 
 	private Long key;
+	@Schema(description = "The primary key of the room. Takes precedence over externalId and externalRef.")
 	private Long roomKey;
+	@Schema(description = "The external ID of the room. Used if roomKey is not set. Takes precedence over externalRef.")
 	private String externalId;
+	@Schema(description = "The external reference of the room. Used if neither roomKey nor externalId is set.")
 	private String externalRef;
 	private Long lectureBlockKey;
 	private Date startDate;
 	private Date endDate;
-	private int bufferBeforeMin;
-	private int bufferAfterMin;
+	private Integer bufferBeforeMin;
+	private Integer bufferAfterMin;
 
 	public RoomBookingVO() {
 		//
@@ -54,6 +60,8 @@ public class RoomBookingVO {
 		vo.setKey(booking.getKey());
 		if (booking.getRoom() != null) {
 			vo.setRoomKey(booking.getRoom().getKey());
+			vo.setExternalId(booking.getRoom().getExternalId());
+			vo.setExternalRef(booking.getRoom().getExternalRef());
 		}
 		if (booking.getLectureBlock() != null) {
 			vo.setLectureBlockKey(booking.getLectureBlock().getKey());
@@ -121,19 +129,19 @@ public class RoomBookingVO {
 		this.endDate = endDate;
 	}
 
-	public int getBufferBeforeMin() {
+	public Integer getBufferBeforeMin() {
 		return bufferBeforeMin;
 	}
 
-	public void setBufferBeforeMin(int bufferBeforeMin) {
+	public void setBufferBeforeMin(Integer bufferBeforeMin) {
 		this.bufferBeforeMin = bufferBeforeMin;
 	}
 
-	public int getBufferAfterMin() {
+	public Integer getBufferAfterMin() {
 		return bufferAfterMin;
 	}
 
-	public void setBufferAfterMin(int bufferAfterMin) {
+	public void setBufferAfterMin(Integer bufferAfterMin) {
 		this.bufferAfterMin = bufferAfterMin;
 	}
 }

@@ -139,8 +139,8 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		RoomBookingVO vo = conn.parse(response, RoomBookingVO.class);
 		Assert.assertNotNull(vo);
-		Assert.assertEquals(10, vo.getBufferBeforeMin());
-		Assert.assertEquals(15, vo.getBufferAfterMin());
+		Assert.assertEquals(Integer.valueOf(10), vo.getBufferBeforeMin());
+		Assert.assertEquals(Integer.valueOf(15), vo.getBufferAfterMin());
 		Assert.assertEquals(room.getKey(), vo.getRoomKey());
 	}
 
@@ -438,7 +438,7 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		Assert.assertEquals(200, getResponse.getStatusLine().getStatusCode());
 		RoomBookingVO getResult = conn.parse(getResponse, RoomBookingVO.class);
 		Assert.assertNotNull(getResult);
-		Assert.assertEquals(99, getResult.getBufferBeforeMin());
+		Assert.assertEquals(Integer.valueOf(99), getResult.getBufferBeforeMin());
 		Assert.assertEquals(bookingKey, getResult.getKey());
 	}
 
