@@ -113,7 +113,8 @@ public class RoomBookingDAO {
 
 	public List<RoomBooking> getBookingsForLectureBlock(LectureBlockRef lectureBlock) {
 		return dbInstance.getCurrentEntityManager()
-				.createQuery("select b from rmroombooking b where b.lectureBlock.key=:lbKey order by b.startDate asc", RoomBooking.class)
+				.createQuery("select b from rmroombooking b left join fetch b.room r where b.lectureBlock.key=:lbKey"
+						+ " order by b.startDate asc, r.externalRef asc, b.key asc", RoomBooking.class)
 				.setParameter("lbKey", lectureBlock.getKey())
 				.getResultList();
 	}
@@ -123,7 +124,9 @@ public class RoomBookingDAO {
 			return new ArrayList<>();
 		}
 		return dbInstance.getCurrentEntityManager()
-				.createQuery("select b from rmroombooking b left join fetch b.room where b.lectureBlock.key in :lbKeys order by b.startDate asc", RoomBooking.class)
+				.createQuery("select b from rmroombooking b left join fetch b.room r left join fetch r.building"
+						+ " where b.lectureBlock.key in :lbKeys"
+						+ " order by b.lectureBlock.key asc, b.startDate asc, r.externalRef asc, b.key asc", RoomBooking.class)
 				.setParameter("lbKeys", lectureBlockKeys)
 				.getResultList();
 	}

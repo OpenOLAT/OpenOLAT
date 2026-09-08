@@ -116,6 +116,35 @@ public class RoomBookingDAOTest extends OlatTestCase {
 	}
 
 	@Test
+	public void getBookingsForLectureBlock_stableOrderOnTiedStartDate() {
+		Building bld = createBuilding();
+		Room roomB = createRoom(bld);
+		Room roomA = createRoom(bld);
+		roomA.setExternalRef("A_" + UUID.randomUUID());
+		roomB.setExternalRef("B_" + UUID.randomUUID());
+		roomDAO.update(roomA);
+		roomDAO.update(roomB);
+		LectureBlock lb = createLectureBlock();
+		dbInstance.commitAndCloseSession();
+
+		// Same start/end date for both bookings so the tie-break must be deterministic
+		roomBookingDAO.create(roomB, lb, date(10, 0), date(11, 0));
+		roomBookingDAO.create(roomA, lb, date(10, 0), date(11, 0));
+		dbInstance.commitAndCloseSession();
+
+		List<RoomBooking> firstCall = roomBookingDAO.getBookingsForLectureBlock(lb);
+		List<RoomBooking> secondCall = roomBookingDAO.getBookingsForLectureBlock(lb);
+
+		Assert.assertEquals(2, firstCall.size());
+		Assertions.assertThat(firstCall)
+				.extracting(b -> b.getRoom().getKey())
+				.containsExactly(roomA.getKey(), roomB.getKey());
+		Assertions.assertThat(secondCall)
+				.extracting(b -> b.getRoom().getKey())
+				.containsExactly(roomA.getKey(), roomB.getKey());
+	}
+
+	@Test
 	public void hardOverlap_detected() {
 		Building bld = createBuilding();
 		Room room = createRoom(bld);
