@@ -194,6 +194,7 @@ public class AccessConfigurationController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_CUSTOM, "access_configuration", form);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(CatalogV2UIFactory.class, getLocale(), getTranslator()));
 		this.resource = resource;
 		this.displayName = displayName;
 		this.allowPaymentMethod = allowPaymentMethod;
@@ -203,6 +204,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.defaultOfferOrganisations = defaultOfferOrganisations;
 		this.confirmationByManagerSupported = confirmationByManagerSupported;
 		this.catalogInfo = catalogInfo;
+		this.statusEvaluator = catalogInfo.getStatusEvaluator();
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
 		this.withLinkToOrders = withLinkToOrders;

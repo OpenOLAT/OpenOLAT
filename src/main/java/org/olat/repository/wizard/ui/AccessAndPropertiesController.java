@@ -104,6 +104,7 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 				if (pvw.isPublicVisible()) {
 					accessOffersCtrl.setDefaultOfferOrganisations(accessShareCtrl.getSelectedOrganisations());
 				}
+				flc.setDirty(true);
 			} else if (event instanceof StatusEvent se) {
 				CatalogStatusEvaluator catalogStatusEvaluator = RepositoryCatalogInfoFactory.getCatalogStatusEvaluator(se.getStatus());
 				if (catalogStatusEvaluator != null) {
