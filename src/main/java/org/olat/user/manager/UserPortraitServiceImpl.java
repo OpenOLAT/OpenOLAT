@@ -94,7 +94,7 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 			return createUnknownPortraitUser(locale);
 		}
 		if (identity.getStatus() != null && identity.getStatus() >= Identity.STATUS_DELETED) {
-			return createDeletedPortraitUser(locale);
+			return createDeletedPortraitUser(locale, identity);
 		}
 		
 		String displayName = userManager.getUserDisplayName(identity);
@@ -150,10 +150,36 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 	
 	@Override
 	public PortraitUser createDeletedPortraitUser(Locale locale) {
+		return createDeletedPortraitUser(locale, null);
+	}
+
+	/**
+	 * An identity with an administrative role keeps its first and last name when
+	 * deleted (see UserManagerImpl.deleteUserData(), OO-3476) - shows that name
+	 * instead of the fully anonymous "unknown user" label, so attribution for
+	 * feedback given in an administrative role stays visible (OO-9632). The
+	 * portrait itself still uses the generic deleted-user icon: the identity is
+	 * deleted regardless of role, only the name is preserved.
+	 */
+	private PortraitUser createDeletedPortraitUser(Locale locale, Identity identity) {
 		String initials = "<i class='o_icon o_icon_identity_deleted'> </i>";
 		String initialsCss = "o_user_initials_grey";
-		String displayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.unknown");
-		return new PortraitUserImpl(Long.valueOf(-1), Identity.STATUS_DELETED, false, null, initials, initialsCss, displayName, null);
+		String preservedName = getPreservedName(identity);
+		String displayName = preservedName != null ? preservedName
+				: Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.unknown");
+		Long identityKey = identity != null ? identity.getKey() : Long.valueOf(-1);
+		return new PortraitUserImpl(identityKey, Identity.STATUS_DELETED, false, null, initials, initialsCss, displayName, null);
+	}
+
+	private String getPreservedName(Identity identity) {
+		if (identity == null || identity.getUser() == null) return null;
+		User user = identity.getUser();
+		String firstName = user.getFirstName();
+		String lastName = user.getLastName();
+		if (!StringHelper.containsNonWhitespace(firstName) && !StringHelper.containsNonWhitespace(lastName)) {
+			return null;
+		}
+		return userManager.getUserDisplayName(firstName, lastName);
 	}
 	
 	@Override
