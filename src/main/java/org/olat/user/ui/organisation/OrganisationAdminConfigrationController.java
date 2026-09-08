@@ -48,6 +48,8 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 	private FormToggle emailDomainEnableEl;
 	private FormLayoutContainer legalFolderCont;
 	private FormToggle legalFolderEnableEl;
+	private FormLayoutContainer customerNumberCont;
+	private FormToggle customerNumberEnableEl;
 	private FormLayoutContainer statusCont;
 	private FormLink moveRolesLink;
 
@@ -100,6 +102,16 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 		legalFolderEnableEl.toggle(organisationModule.isLegalFolderEnabled());
 		legalFolderEnableEl.addActionListener(FormEvent.ONCHANGE);
 
+		customerNumberCont = FormLayoutContainer.createDefaultFormLayout("customerNumber", getTranslator());
+		customerNumberCont.setFormTitle(translate("organisation.customer.number"));
+		customerNumberCont.setElementCssClass("o_block_top");
+		customerNumberCont.setRootForm(mainForm);
+		formLayout.add(customerNumberCont);
+
+		customerNumberEnableEl = uifactory.addToggleButton("customer.number", "admin.customer.number.enabled", translate("on"), translate("off"), customerNumberCont);
+		customerNumberEnableEl.toggle(organisationModule.isCustomerNumberEnabled());
+		customerNumberEnableEl.addActionListener(FormEvent.ONCHANGE);
+
 		initStatusCont();
 	}
 
@@ -135,6 +147,7 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 	private void updateUI() {
 		emailDomainCont.setVisible(enableEl.isOn());
 		legalFolderCont.setVisible(enableEl.isOn());
+		customerNumberCont.setVisible(enableEl.isOn());
 	}
 
 	@Override
@@ -153,6 +166,9 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if(legalFolderEnableEl == source) {
 			organisationModule.setLegalFolderEnabled(legalFolderEnableEl.isOn());
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if(customerNumberEnableEl == source) {
+			organisationModule.setCustomerNumberEnabled(customerNumberEnableEl.isOn());
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (moveRolesLink == source) {
 			if (organisationService.moveGlobalRolesToDefault(getIdentity())) {

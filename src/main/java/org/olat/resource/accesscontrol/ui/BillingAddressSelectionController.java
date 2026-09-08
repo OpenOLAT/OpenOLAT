@@ -237,7 +237,7 @@ public class BillingAddressSelectionController extends FormBasicController {
 		return SelectionValues.entry(
 				address.getKey().toString(),
 				StringHelper.escapeHtml(address.getIdentifier()),
-				BillingAddressUIFactory.getFormattedAddress(address),
+				BillingAddressUIFactory.getFormattedAddress(getTranslator(), address),
 				"o_icon o_icon_billing_address",
 				null, true);
 	}

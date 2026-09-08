@@ -39,6 +39,7 @@ public class OrganisationModule extends AbstractSpringModule implements ConfigOn
 	private static final String ORGANISATION_ENABLED = "organisation.enabled";
 	private static final String EMAIL_DOMAIN_ENABLED = "email.domain.enabled";
 	private static final String LEGAL_FOLDER_ENABLED = "legal.folder.enabled";
+	private static final String CUSTOMER_NUMBER_ENABLED = "customer.number.enabled";
 	
 	@Value("${organisation.enabled:true}")
 	private boolean enabled;
@@ -48,6 +49,8 @@ public class OrganisationModule extends AbstractSpringModule implements ConfigOn
 	private boolean emailDomainEnabled;
 	@Value("${organisation.legal.folder.enabled:false}")
 	private boolean legalFolderEnabled;
+	@Value("${organisation.customer.number.enabled:false}")
+	private boolean customerNumberEnabled;
 
 	@Autowired
 	public OrganisationModule(CoordinatorManager coordinatorManager) {
@@ -78,6 +81,11 @@ public class OrganisationModule extends AbstractSpringModule implements ConfigOn
 		String legalFolderEnabledObj = getStringPropertyValue(LEGAL_FOLDER_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(legalFolderEnabledObj)) {
 			legalFolderEnabled = "true".equals(legalFolderEnabledObj);
+		}
+
+		String customerNumberEnabledObj = getStringPropertyValue(CUSTOMER_NUMBER_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(customerNumberEnabledObj)) {
+			customerNumberEnabled = "true".equals(customerNumberEnabledObj);
 		}
 	}
 
@@ -111,6 +119,15 @@ public class OrganisationModule extends AbstractSpringModule implements ConfigOn
 	public void setLegalFolderEnabled(boolean legalFolderEnabled) {
 		this.legalFolderEnabled = legalFolderEnabled;
 		setStringProperty(LEGAL_FOLDER_ENABLED, Boolean.toString(legalFolderEnabled), true);
+	}
+	
+	public boolean isCustomerNumberEnabled() {
+		return customerNumberEnabled;
+	}
+
+	public void setCustomerNumberEnabled(boolean customerNumberEnabled) {
+		this.customerNumberEnabled = customerNumberEnabled;
+		setStringProperty(CUSTOMER_NUMBER_ENABLED, Boolean.toString(customerNumberEnabled), true);
 	}
 	
 }

@@ -65,7 +65,9 @@ public class BillingAddressController extends FormBasicController implements Con
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		billingAddressForm = new BillingAddressForm(ureq, getWindowControl(), mainForm, billingAddress);
+		billingAddressForm = billingAddress != null
+				? new BillingAddressForm(ureq, getWindowControl(), mainForm, billingAddress)
+				: new BillingAddressForm(ureq, getWindowControl(), mainForm, organisation, addressIdentity);
 		listenTo(billingAddressForm);
 		formLayout.add(billingAddressForm.getInitialFormItem());
 		
@@ -90,6 +92,9 @@ public class BillingAddressController extends FormBasicController implements Con
 		}
 		
 		billingAddress.setIdentifier(billingAddressForm.getIdentifier());
+		if (billingAddressForm.isCustomerNumberVisible()) {
+			billingAddress.setCustomerNumber(billingAddressForm.getCustomerNumber());
+		}
 		billingAddress.setNameLine1(billingAddressForm.getNameLine1());
 		billingAddress.setNameLine2(billingAddressForm.getNameLine2());
 		billingAddress.setAddressLine1(billingAddressForm.getAddressLine1());

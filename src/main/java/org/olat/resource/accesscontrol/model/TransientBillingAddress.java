@@ -34,6 +34,7 @@ import org.olat.resource.accesscontrol.BillingAddress;
 public class TransientBillingAddress implements BillingAddress {
 
 	private String identifier;
+	private String customerNumber;
 	private String nameLine1;
 	private String nameLine2;
 	private String addressLine1;
@@ -75,6 +76,16 @@ public class TransientBillingAddress implements BillingAddress {
 	@Override
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
+	}
+
+	@Override
+	public String getCustomerNumber() {
+		return customerNumber;
+	}
+
+	@Override
+	public void setCustomerNumber(String customerNumber) {
+		this.customerNumber = customerNumber;
 	}
 
 	@Override

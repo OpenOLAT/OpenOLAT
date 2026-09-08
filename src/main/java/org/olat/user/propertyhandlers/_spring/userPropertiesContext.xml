@@ -50,6 +50,7 @@
 				<ref bean="userPropertyGenericYear" />
 				<ref bean="userPropertyTypeOfUser" />
 				<ref bean="userPropertySocialSecurityNumber" />
+				<ref bean="userPropertyCustomerNumber" />
 
 				<ref bean="userPropertyRank" />
 			  	<ref bean="userPropertyDegree" />
@@ -133,6 +134,7 @@
 								<ref bean="userPropertyInstitutionalEmail" />
 								<ref bean="userPropertyOrgUnit" />
 								<ref bean="userPropertyStudySubject" />
+								<ref bean="userPropertyCustomerNumber" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
@@ -162,6 +164,7 @@
 									login, not visible for users when logged in
 								-->
 								<ref bean="userPropertyEmailDisabled" />
+								<ref bean="userPropertyCustomerNumber" />
 							</set>
 						</property>
 					</bean>
@@ -1668,6 +1671,7 @@
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyCustomerNumber" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
@@ -2467,6 +2471,7 @@
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyCustomerNumber" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">

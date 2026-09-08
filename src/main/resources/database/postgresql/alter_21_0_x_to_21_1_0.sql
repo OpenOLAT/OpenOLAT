@@ -65,3 +65,7 @@ alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_survey_idx fo
 create unique index idx_ac_offer_to_survey_uniq_idx on o_ac_offer_to_survey (fk_offer, fk_survey);
 
 alter table o_cur_curriculum_element add column c_order_form_required bool default false not null;
+
+alter table o_user add column u_customernumber varchar(255);
+alter table o_org_organisation add column o_customernumber varchar(255);
+alter table o_ac_billing_address add column a_customer_number varchar(255);

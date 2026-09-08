@@ -67,6 +67,8 @@ public class BillingAddressImpl implements Persistable, BillingAddress {
 	
 	@Column(name="a_identifier", nullable=true, insertable=true, updatable=true)
 	private String identifier;
+	@Column(name="a_customer_number", nullable=true, insertable=true, updatable=true)
+	private String customerNumber;
 	@Column(name="a_name_line_1", nullable=true, insertable=true, updatable=true)
 	private String nameLine1;
 	@Column(name="a_name_line_2", nullable=true, insertable=true, updatable=true)
@@ -136,6 +138,16 @@ public class BillingAddressImpl implements Persistable, BillingAddress {
 	@Override
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
+	}
+
+	@Override
+	public String getCustomerNumber() {
+		return customerNumber;
+	}
+
+	@Override
+	public void setCustomerNumber(String customerNumber) {
+		this.customerNumber = customerNumber;
 	}
 
 	@Override

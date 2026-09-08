@@ -50,6 +50,10 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 
 	public void setLocation(String location);
 	
+	public String getCustomerNumber();
+
+	public void setCustomerNumber(String customerNumber);
+
 	public String getCssClass();
 	
 	public void setCssClass(String css);

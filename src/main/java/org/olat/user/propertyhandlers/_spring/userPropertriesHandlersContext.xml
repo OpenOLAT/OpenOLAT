@@ -172,7 +172,7 @@
 		<property name="name" value="studySubject" />
 		<property name="group" value="institute" />
 	</bean>
-	
+
 	<bean id="userPropertyEmailChangedKey" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
 		<property name="name" value="emchangeKey" />
 		<property name="group" value="account" />
@@ -191,6 +191,11 @@
 	
 	<bean id="userPropertySocialSecurityNumber" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
 		<property name="name" value="socialSecurityNumber" />
+		<property name="group" value="institute" />
+	</bean>
+	
+	<bean id="userPropertyCustomerNumber" class="org.olat.user.propertyhandlers.CustomerNumberPropertyHandler">
+		<property name="name" value="customerNumber" />
 		<property name="group" value="institute" />
 	</bean>
 	

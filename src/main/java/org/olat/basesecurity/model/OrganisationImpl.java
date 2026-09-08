@@ -85,6 +85,8 @@ public class OrganisationImpl implements Persistable, Organisation {
 	private String displayName;
 	@Column(name="o_location", nullable=true, insertable=true, updatable=true)
 	private String location;
+	@Column(name="o_customernumber", nullable=true, insertable=true, updatable=true)
+	private String customerNumber;
 	@Column(name="o_description", nullable=true, insertable=true, updatable=true)
 	private String description;
 	@Column(name="o_css_class", nullable=true, insertable=true, updatable=true)
@@ -181,6 +183,16 @@ public class OrganisationImpl implements Persistable, Organisation {
 	@Override
 	public void setLocation(String location) {
 		this.location = location;
+	}
+
+	@Override
+	public String getCustomerNumber() {
+		return customerNumber;
+	}
+
+	@Override
+	public void setCustomerNumber(String customerNumber) {
+		this.customerNumber = customerNumber;
 	}
 
 	@Override

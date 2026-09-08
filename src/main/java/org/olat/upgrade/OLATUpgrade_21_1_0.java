@@ -33,6 +33,10 @@ import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateImpl;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.propertyhandlers.UserPropertyUsageContext;
+import org.olat.user.propertyhandlers.ui.UsrPropCfgManager;
+import org.olat.user.propertyhandlers.ui.UsrPropCfgObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 
@@ -50,6 +54,14 @@ public class OLATUpgrade_21_1_0 extends OLATUpgrade {
 	
 	private static final String MIGRATE_CERTIFICATE_IN_ERROR_STATUS = "MIGRATE CERTIFICATE IN ERROR STATUS";
 	private static final String DISABLE_SSRF_EXISTING_INSTANCE = "DISABLE SSRF EXISTING INSTANCE";
+	private static final String ADD_CUSTOMER_NUMBER_USER_PROPERTY = "ADD CUSTOMER NUMBER USER PROPERTY";
+
+	private static final String CUSTOMER_NUMBER_PROPERTY = "customerNumber";
+	private static final String CUSTOMER_NUMBER_ADMIN_ONLY_CONTEXT = "org.olat.user.ProfileFormController";
+	private static final List<String> CUSTOMER_NUMBER_CONTEXTS = List.of(
+			CUSTOMER_NUMBER_ADMIN_ONLY_CONTEXT,
+			"org.olat.modules.curriculum.ui.member.CurriculumElementMemberUsersController",
+			"org.olat.modules.coach.reports.AbstractReportConfiguration");
 
 	@Autowired
 	private DB dbInstance;
@@ -57,6 +69,8 @@ public class OLATUpgrade_21_1_0 extends OLATUpgrade {
 	private HttpClientModule httpClientModule;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private UsrPropCfgManager usrPropCfgManager;
 
 	@Override
 	public String getVersion() {
@@ -75,6 +89,7 @@ public class OLATUpgrade_21_1_0 extends OLATUpgrade {
 		boolean allOk = true;
 		allOk &= migrateCertificateInErrorStatus(upgradeManager, uhd);
 		allOk &= disableSSRFOnExistingInstances(upgradeManager, uhd);
+		allOk &= addCustomerNumberToUserPropertyContexts(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -87,6 +102,60 @@ public class OLATUpgrade_21_1_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
+	/**
+	 * The customer number is defined in userPropertiesContext.xml, but an instance which
+	 * customized the user properties in the administration overrides the usage contexts of
+	 * the XML with its own persisted list. A new property is never added to such a list, so
+	 * the field stays invisible. Add it to the affected usage contexts, but only when it is
+	 * missing, so an instance without customization keeps its XML configuration.
+	 */
+	private boolean addCustomerNumberToUserPropertyContexts(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(ADD_CUSTOMER_NUMBER_USER_PROPERTY)) {
+			try {
+				UsrPropCfgObject cfgObject = usrPropCfgManager.getUserPropertiesConfigObject();
+				UserPropertyHandler handler = cfgObject.getPropertyHandler(CUSTOMER_NUMBER_PROPERTY);
+				if (handler == null) {
+					log.error("User property {} not found, migration of the usage contexts skipped.", CUSTOMER_NUMBER_PROPERTY);
+					allOk = false;
+				} else {
+					boolean changed = false;
+					if (!cfgObject.isActiveHandler(handler)) {
+						cfgObject.setHandlerAsActive(handler, true);
+						changed = true;
+					}
+
+					for (String contextName : CUSTOMER_NUMBER_CONTEXTS) {
+						UserPropertyUsageContext context = cfgObject.getUsageContexts().get(contextName);
+						if (context == null) {
+							continue;
+						}
+						if (!context.contains(handler)) {
+							context.addPropertyHandler(handler);
+							changed = true;
+						}
+						boolean adminOnly = CUSTOMER_NUMBER_ADMIN_ONLY_CONTEXT.equals(contextName);
+						if (context.isForAdministrativeUserOnly(handler) != adminOnly) {
+							context.setAsAdminstrativeUserOnly(handler, adminOnly);
+							changed = true;
+						}
+					}
+
+					if (changed) {
+						usrPropCfgManager.saveUserPropertiesConfig();
+						log.info(Tracing.M_AUDIT, "User property {} added to the user property usage contexts.", CUSTOMER_NUMBER_PROPERTY);
+					}
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(ADD_CUSTOMER_NUMBER_USER_PROPERTY, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
 	private boolean disableSSRFOnExistingInstances(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(DISABLE_SSRF_EXISTING_INSTANCE)) {

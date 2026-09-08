@@ -65,7 +65,7 @@ public class BillingAddressRenderer extends DefaultComponentRenderer {
 		}
 		
 		sb.append("<div class=\"o_ac_billing_address_address\">");
-		sb.append(BillingAddressUIFactory.getFormattedAddress(billingAddress));
+		sb.append(BillingAddressUIFactory.getFormattedAddress(translator, billingAddress));
 		sb.append("</div>");
 		sb.append("</div>");
 		

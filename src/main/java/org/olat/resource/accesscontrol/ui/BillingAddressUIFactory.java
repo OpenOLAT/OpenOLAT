@@ -19,6 +19,8 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.BillingAddress;
@@ -31,8 +33,12 @@ import org.olat.resource.accesscontrol.BillingAddress;
  */
 public class BillingAddressUIFactory {
 	
-	public static String getFormattedAddress(BillingAddress billingAddress) {
+	public static String getFormattedAddress(Translator translator, BillingAddress billingAddress) {
 		StringBuilder description = new StringBuilder();
+		if (CoreSpringFactory.getImpl(OrganisationModule.class).isCustomerNumberEnabled()
+				&& StringHelper.containsNonWhitespace(billingAddress.getCustomerNumber())) {
+			appendAddressLine(description, translator.translate("billing.address.customer.number") + ": " + billingAddress.getCustomerNumber());
+		}
 		appendAddressLine(description, billingAddress.getNameLine1());
 		appendAddressLine(description, billingAddress.getNameLine2());
 		appendAddressLine(description, billingAddress.getAddressLine1());

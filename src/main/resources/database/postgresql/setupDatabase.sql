@@ -425,6 +425,7 @@ create table o_user (
    u_privateemail varchar(255),
    u_employeenumber varchar(255),
    u_organizationalunit varchar(255),
+   u_customernumber varchar(255),
 
    u_edupersonaffiliation varchar(255),
    u_swissedupersonstaffcategory varchar(255),
@@ -1108,6 +1109,7 @@ create table o_ac_billing_address (
   creationdate timestamp not null,
   lastmodified timestamp not null,
   a_identifier varchar(255),
+  a_customer_number varchar(255),
   a_name_line_1 varchar(255),
   a_name_line_2 varchar(255),
   a_address_line_1 varchar(255),
@@ -4271,6 +4273,7 @@ create table o_org_organisation (
   o_identifier varchar(64),
   o_displayname varchar(255) not null,
   o_location varchar(255),
+  o_customernumber varchar(255),
   o_description text,
   o_m_path_keys varchar(255),
   o_external_id varchar(64),

@@ -64,3 +64,7 @@ create unique index idx_ac_offer_to_survey_uniq_idx on o_ac_offer_to_survey (fk_
 
 alter table o_cur_curriculum_element add c_order_form_required number default 0 not null;
 
+alter table o_user add u_customernumber varchar2(255 char);
+alter table o_org_organisation add o_customernumber varchar2(255 char);
+alter table o_ac_billing_address add a_customer_number varchar2(255 char);
+

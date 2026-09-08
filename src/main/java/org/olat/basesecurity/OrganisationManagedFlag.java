@@ -40,6 +40,7 @@ public enum OrganisationManagedFlag {
 	 location(all),
 	 displayName(all),
 	 description(all),
+	 customerNumber(all),
 	 externalId(all),
 	 type(all),
 	 move(all),

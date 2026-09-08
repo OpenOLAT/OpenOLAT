@@ -87,6 +87,10 @@ public class OrganisationRow implements OrganisationRef, FlexiTreeTableNode {
 		return organisation.getExternalId();
 	}
 
+	public String getCustomerNumber() {
+		return organisation.getCustomerNumber();
+	}
+
 	public Long getTypeKey() {
 		return type == null ? null : type.getKey();
 	}

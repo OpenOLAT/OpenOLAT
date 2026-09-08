@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -128,6 +129,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 
 	@Override
 	protected int generateCustomHeaderColumns(Row header, int pos, Translator translator) {
+		boolean customerNumberEnabled = CoreSpringFactory.getImpl(OrganisationModule.class).isCustomerNumberEnabled();
 		header.addCell(pos++, translator.translate("report.header.membership.status"));
 		header.addCell(pos++, translator.translate("report.header.curriculum"));
 		header.addCell(pos++, translator.translate("report.header.ext.ref"));
@@ -153,6 +155,9 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		header.addCell(pos++, translator.translate("report.header.price"));
 		header.addCell(pos++, translator.translate("report.header.cancellation.fee"));
 		header.addCell(pos++, translator.translate("report.header.billing.address"));
+		if(customerNumberEnabled) {
+			header.addCell(pos++, translator.translate("report.header.billing.address.customer.number"));
+		}
 		header.addCell(pos++, translator.translate("report.header.name.company"));
 		header.addCell(pos++, translator.translate("report.header.addition"));
 		header.addCell(pos++, translator.translate("report.header.address.line", "1"));
@@ -166,6 +171,9 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		header.addCell(pos++, translator.translate("report.header.country"));
 		header.addCell(pos++, translator.translate("report.header.billing.address.org.id"));
 		header.addCell(pos++, translator.translate("report.header.billing.address.org.name"));
+		if(customerNumberEnabled) {
+			header.addCell(pos++, translator.translate("report.header.billing.address.org.customer.number"));
+		}
 		
 		CurriculumModule curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
 		List<String> selectedRights = curriculumModule.getUserOverviewRightList();
@@ -199,6 +207,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		Translator translator = getTranslator(locale);
 		Translator statusTranslator = Util.createPackageTranslator(OrdersDataModel.class, locale);
 		Map<String, String> educationalTypeIdToName = getEducationalTypeIdToName(locale);
+		boolean customerNumberEnabled = CoreSpringFactory.getImpl(OrganisationModule.class).isCustomerNumberEnabled();
 		CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
 		CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
 		searchParams.setIdentity(coach);
@@ -227,7 +236,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		Map<String, String> accessTypeToName = getAccessTypeToName(bookingOrders, locale);
 		for (BookingOrder bookingOrder : bookingOrders) {
 			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, accessTypeToName,
-					educationalTypeIdToName, withProgressAndstatus, withAbsences,
+					educationalTypeIdToName, withProgressAndstatus, withAbsences, customerNumberEnabled,
 					statusTranslator, translator);
 		}
 	}
@@ -287,7 +296,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	private void generateDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet,
 								 List<UserPropertyHandler> userPropertyHandlers, BookingOrder bookingOrder,
 								 Map<String, String> accessTypeToName, Map<String, String> educationalTypeIdToName,
-								 boolean withProgressAndStatus, boolean withAbsences,
+								 boolean withProgressAndStatus, boolean withAbsences, boolean customerNumberEnabled,
 								 Translator statusTranslator, Translator curriculumTranslator) {
 		OpenXMLWorksheet.Row row = sheet.newRow();
 		int pos = 0;
@@ -322,6 +331,9 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		
 		BillingAddress billingAddress = bookingOrder.getBillingAddress();
 		row.addCell(pos++, billingAddress == null ? null : billingAddress.getIdentifier());
+		if(customerNumberEnabled) {
+			row.addCell(pos++, billingAddress == null ? null : billingAddress.getCustomerNumber());
+		}
 		row.addCell(pos++, billingAddress == null ? null : billingAddress.getNameLine1());
 		row.addCell(pos++, billingAddress == null ? null : billingAddress.getNameLine2());
 		row.addCell(pos++, billingAddress == null ? null : billingAddress.getAddressLine1());
@@ -335,6 +347,10 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, billingAddress == null ? null : billingAddress.getCountry());
 		row.addCell(pos++, bookingOrder.getBillingAddressOrgId());
 		row.addCell(pos++, bookingOrder.getBillingAddressOrgName());
+		if(customerNumberEnabled) {
+			row.addCell(pos++, billingAddress == null || billingAddress.getOrganisation() == null
+					? null : billingAddress.getOrganisation().getCustomerNumber());
+		}
 		
 		if(withProgressAndStatus) {
 			pos = generateStatementDataRow(workbook, row, pos, bookingOrder, curriculumTranslator);
@@ -561,6 +577,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 							   Set<CurriculumRef> curriculumsInReport, Set<CurriculumElementRef> implementationsInReport,
 							   Locale locale, OutputStream out) {
 		final CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
+		boolean customerNumberEnabled = CoreSpringFactory.getImpl(OrganisationModule.class).isCustomerNumberEnabled();
 		Translator translator = getTranslator(locale);
 		Translator statusTranslator = Util.createPackageTranslator(OrdersDataModel.class, locale);
 		Map<String, String> educationalTypeIdToName = getEducationalTypeIdToName(locale);
@@ -603,8 +620,8 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 				generateHeader(sheet, userPropertyHandlers, locale);
 	
 				for (BookingOrder bookingOrder : typedBookingOrders) {
-					generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, accessTypeToName, 
-							educationalTypeIdToName, withProgressAndstatus, withAbsences,
+					generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, accessTypeToName,
+							educationalTypeIdToName, withProgressAndstatus, withAbsences, customerNumberEnabled,
 							statusTranslator, translator);
 					
 					if(curriculumsInReport != null && bookingOrder.getCurriculumKey() != null) {

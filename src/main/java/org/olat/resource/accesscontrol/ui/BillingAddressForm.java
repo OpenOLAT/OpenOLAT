@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -31,6 +32,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.model.TransientBillingAddress;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,6 +43,7 @@ import org.olat.resource.accesscontrol.model.TransientBillingAddress;
 public class BillingAddressForm extends FormBasicController implements Controller {
 
 	private TextElement identifierEl;
+	private TextElement customerNumberEl;
 	private TextElement nameLine1El;
 	private TextElement nameLine2El;
 	private TextElement addressLine1El;
@@ -56,6 +59,9 @@ public class BillingAddressForm extends FormBasicController implements Controlle
 	private final BillingAddress billingAddress;
 	private final Organisation addressOrganisation;
 	private final Identity addressIdentitiy;
+
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	public BillingAddressForm(UserRequest ureq, WindowControl wControl, Form form, BillingAddress billingAddress) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, form);
@@ -88,6 +94,11 @@ public class BillingAddressForm extends FormBasicController implements Controlle
 		identifierEl = uifactory.addTextElement("billing.address.identifier", 255, identifier, formLayout);
 		identifierEl.setElementCssClass("o_sel_billing_address_identifier");
 		identifierEl.setMandatory(true);
+
+		String customerNumber = billingAddress != null? billingAddress.getCustomerNumber(): null;
+		customerNumberEl = uifactory.addTextElement("billing.address.customer.number", 255, customerNumber, formLayout);
+		customerNumberEl.setElementCssClass("o_sel_billing_address_customer_number");
+		customerNumberEl.setVisible(organisationModule.isCustomerNumberEnabled() && addressOrganisation != null);
 		
 		String nameLine1 = billingAddress != null? billingAddress.getNameLine1(): null;
 		nameLine1El = uifactory.addTextElement("billing.address.name.line1", 255, nameLine1, formLayout);
@@ -170,6 +181,14 @@ public class BillingAddressForm extends FormBasicController implements Controlle
 		return identifierEl.getValue();
 	}
 
+	public String getCustomerNumber() {
+		return customerNumberEl.getValue();
+	}
+
+	public boolean isCustomerNumberVisible() {
+		return customerNumberEl.isVisible();
+	}
+
 	public String getNameLine1() {
 		return nameLine1El.getValue();
 	}
@@ -217,6 +236,9 @@ public class BillingAddressForm extends FormBasicController implements Controlle
 	public TransientBillingAddress getTransientBillingAddress() {
 		TransientBillingAddress transientAddress = new TransientBillingAddress();
 		transientAddress.setIdentifier(getIdentifier());
+		if (customerNumberEl.isVisible()) {
+			transientAddress.setCustomerNumber(getCustomerNumber());
+		}
 		transientAddress.setNameLine1(getNameLine1());
 		transientAddress.setNameLine2(getNameLine2());
 		transientAddress.setAddressLine1(getAddressLine1());

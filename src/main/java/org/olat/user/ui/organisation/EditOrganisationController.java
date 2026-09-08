@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.OrganisationTypeToType;
@@ -55,6 +56,7 @@ public class EditOrganisationController extends FormBasicController {
 	private RichTextElement descriptionEl;
 	private TextElement identifierEl;
 	private TextElement locationEl;
+	private TextElement customerNumberEl;
 	private TextElement displayNameEl;
 	private SingleSelection organisationTypeEl;
 	
@@ -63,6 +65,8 @@ public class EditOrganisationController extends FormBasicController {
 	
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	public EditOrganisationController(UserRequest ureq, WindowControl wControl, Organisation organisation) {
 		super(ureq, wControl);
@@ -162,6 +166,11 @@ public class EditOrganisationController extends FormBasicController {
 		locationEl = uifactory.addTextElement("organisation.location", "organisation.location", 255, location, formLayout);
 		locationEl.setEnabled(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.location));
 		
+		String customerNumber = organisation == null ? "" : organisation.getCustomerNumber();
+		customerNumberEl = uifactory.addTextElement("organisation.customer.number", "organisation.customer.number", 255, customerNumber, formLayout);
+		customerNumberEl.setEnabled(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.customerNumber));
+		customerNumberEl.setVisible(organisationModule.isCustomerNumberEnabled());
+
 		String description = organisation == null ? "" : organisation.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("organisation.description", "organisation.description", description, 10, 60, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
@@ -244,6 +253,10 @@ public class EditOrganisationController extends FormBasicController {
 				organisation.setLocation(locationEl.getValue());
 				organisation = organisationService.updateOrganisation(organisation);
 			}
+			if (customerNumberEl.isVisible() && StringHelper.containsNonWhitespace(customerNumberEl.getValue())) {
+				organisation.setCustomerNumber(customerNumberEl.getValue());
+				organisation = organisationService.updateOrganisation(organisation);
+			}
 		} else {
 			organisation = organisationService.getOrganisation(organisation);
 			organisation.setIdentifier(identifierEl.getValue());
@@ -251,6 +264,9 @@ public class EditOrganisationController extends FormBasicController {
 			organisation.setDisplayName(displayNameEl.getValue());
 			organisation.setDescription(descriptionEl.getValue());
 			organisation.setType(organisationType);
+			if (customerNumberEl.isVisible()) {
+				organisation.setCustomerNumber(customerNumberEl.getValue());
+			}
 			organisation = organisationService.updateOrganisation(organisation);
 		}
 

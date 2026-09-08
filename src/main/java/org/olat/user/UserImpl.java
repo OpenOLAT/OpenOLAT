@@ -215,6 +215,8 @@ public class UserImpl implements User {
 	private String employeeNumber;
 	@Column(name="u_organizationalunit", nullable=true, insertable=true, updatable=true)
 	private String organizationalUnit;
+	@Column(name="u_customernumber", nullable=true, insertable=true, updatable=true)
+	private String customerNumber;
 	
 	@Column(name="u_genericselectionproperty", nullable=true, insertable=true, updatable=true)
 	private String genericSelectionProperty;
@@ -408,6 +410,14 @@ public class UserImpl implements User {
 		this.initialsCssClass = initialsCssClass;
 	}
 
+	public String getCustomerNumber() {
+		return customerNumber;
+	}
+
+	public void setCustomerNumber(String customerNumber) {
+		this.customerNumber = customerNumber;
+	}
+
 
 	public boolean isWebdav() {
 		return webdav;
@@ -506,6 +516,7 @@ public class UserImpl implements User {
 			case "swissEduPersonStudyBranch1": return swissEduPersonStudyBranch1;
 			case "swissEduPersonStudyBranch2": return swissEduPersonStudyBranch2;
 			case "swissEduPersonStudyBranch3": return swissEduPersonStudyBranch3;
+			case "customerNumber": return customerNumber;
 			default: return null;
 		}
 	}
@@ -585,6 +596,7 @@ public class UserImpl implements User {
 			case "swissEduPersonStudyBranch1": swissEduPersonStudyBranch1 = value; break;
 			case "swissEduPersonStudyBranch2": swissEduPersonStudyBranch2 = value; break;
 			case "swissEduPersonStudyBranch3": swissEduPersonStudyBranch3 = value; break;
+			case "customerNumber": customerNumber = value; break;
 		}
 	}
 

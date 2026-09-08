@@ -38,6 +38,10 @@ public interface BillingAddress extends ModifiedInfo, CreateInfo{
 
 	void setIdentifier(String identifier);
 
+	String getCustomerNumber();
+
+	void setCustomerNumber(String customerNumber);
+
 	String getNameLine1();
 
 	void setNameLine1(String nameLine1);

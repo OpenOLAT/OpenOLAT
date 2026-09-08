@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -88,6 +89,8 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	public OrganisationsStructureAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "organisation_list");
@@ -113,6 +116,9 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.displayName, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.identifier, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrganisationCols.externalId, "select"));
+		if(organisationModule.isCustomerNumberEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrganisationCols.customerNumber));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.typeIdentifier));
 		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("zoom", -1);
 		selectColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "tt-focus", null, "o_icon o_icon-fw o_icon_enlarge", translate("show.suborganisation")));
