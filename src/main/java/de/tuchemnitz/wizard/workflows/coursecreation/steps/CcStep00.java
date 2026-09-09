@@ -35,7 +35,6 @@ package de.tuchemnitz.wizard.workflows.coursecreation.steps;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -140,7 +139,7 @@ public class CcStep00 extends BasicStep {
 			}
 
 			// overlay with configuration of enrollment
-			if (source == editButtonEnrollment) {
+			if (editButtonEnrollment == source) {
 				finishWorkflowItem();
 				formEditEnrol = new EnrollmentEditForm(ureq, getWindowControl(), courseConfig);
 				listenTo(formEditEnrol);
@@ -149,6 +148,8 @@ public class CcStep00 extends BasicStep {
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), formEditEnrol.getInitialComponent(), true, title);
 				listenTo(cmc);
 				cmc.activate();
+			} else if(rightsChooser == source) {
+				fic.setDirty(true);
 			}
 		}
 		
@@ -158,6 +159,8 @@ public class CcStep00 extends BasicStep {
 				cmc.deactivate();
 			}
 		}
+		
+		
 
 		@Override
 		protected void formOK(UserRequest ureq) {
@@ -185,11 +188,10 @@ public class CcStep00 extends BasicStep {
 					"o_icon o_co_icon"
 			};
 			// show checkbox
-			rightsChooser = FormUIFactory.getInstance().addCheckboxesVertical("cce.label", fic, keys, values, iconCSS, 1);
+			rightsChooser = uifactory.addCheckboxesVertical("cce.label", fic, keys, values, iconCSS, 1);
 			rightsChooser.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			// create edit button for enrollment and hide it
-			editButtonEnrollment = FormUIFactory.getInstance().addFormLink("cce.edit", fic);
-			editButtonEnrollment.addActionListener(FormEvent.ONCLICK);
+			editButtonEnrollment = uifactory.addFormLink("cce.edit", fic);
 			editButtonEnrollment.setVisible(false);
 		}
 

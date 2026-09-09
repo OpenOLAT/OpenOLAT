@@ -174,6 +174,7 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 				flc.setElementCssClass("o_validation o_validation_new_code");
 			}
 		}
+		flc.setDirty(true);
 	}
 
 	private void sendValidationToken(UserRequest ureq) {
