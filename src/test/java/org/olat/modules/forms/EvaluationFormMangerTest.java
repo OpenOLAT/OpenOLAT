@@ -61,5 +61,36 @@ public class EvaluationFormMangerTest extends OlatTestCase {
 		assertThat(sut.loadParticipationByKey(participation2).isLastRun()).isTrue();
 	}
 
+	@Test
+	public void shouldCancelParticipationAndSession() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		EvaluationFormSurvey survey = sut.createSurvey(of(formEntry, JunitTestHelper.random()), formEntry);
+		EvaluationFormParticipation participation = sut.createParticipation(survey, executor, false, 1);
+		EvaluationFormSession session = sut.createSession(participation);
+		sut.finishSession(session);
+		dbInstance.commitAndCloseSession();
+
+		EvaluationFormParticipation canceledParticipation = sut.cancelParticipation(participation);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(canceledParticipation.getStatus()).isEqualTo(EvaluationFormParticipationStatus.canceled);
+		assertThat(sut.loadSessionByParticipation(participation).getEvaluationFormSessionStatus()).isEqualTo(EvaluationFormSessionStatus.canceled);
+	}
+
+	@Test
+	public void shouldCancelParticipationWithoutSession() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		EvaluationFormSurvey survey = sut.createSurvey(of(formEntry, JunitTestHelper.random()), formEntry);
+		EvaluationFormParticipation participation = sut.createParticipation(survey, executor, false, 1);
+		dbInstance.commitAndCloseSession();
+
+		EvaluationFormParticipation canceledParticipation = sut.cancelParticipation(participation);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(canceledParticipation.getStatus()).isEqualTo(EvaluationFormParticipationStatus.canceled);
+		assertThat(sut.loadSessionByParticipation(participation)).isNull();
+	}
 
 }

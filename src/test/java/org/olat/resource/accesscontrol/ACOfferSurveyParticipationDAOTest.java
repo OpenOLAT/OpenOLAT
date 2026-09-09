@@ -29,9 +29,13 @@ import java.util.UUID;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -64,6 +68,8 @@ public class ACOfferSurveyParticipationDAOTest extends OlatTestCase {
 
 	@Autowired
 	private ACOfferSurveyParticipationDAO sut;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 
 	private Order createOrder(Identity delivery) {
 		Offer offer = acFrontendManager.createOffer(createRandomResource(), random());
@@ -163,6 +169,60 @@ public class ACOfferSurveyParticipationDAOTest extends OlatTestCase {
 		List<EvaluationFormParticipation> participations = sut.loadParticipations(survey, order1);
 
 		assertThat(participations).containsExactly(participation1);
+	}
+
+	@Test
+	public void shouldCancelSessionWhenParticipationIsCanceled() {
+		EvaluationFormSurvey survey = createSurvey();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
+		Order order = createOrder(executor);
+		dbInstance.commitAndCloseSession();
+		EvaluationFormParticipation participation = sut.createParticipation(survey, order, executor);
+		EvaluationFormSession session = evaluationFormManager.createSession(participation);
+		evaluationFormManager.finishSession(session);
+		dbInstance.commitAndCloseSession();
+
+		sut.cancelParticipation(participation);
+		dbInstance.commitAndCloseSession();
+
+		EvaluationFormSession canceledSession = evaluationFormManager.loadSessionByParticipation(participation);
+		assertThat(canceledSession.getEvaluationFormSessionStatus()).isEqualTo(EvaluationFormSessionStatus.canceled);
+	}
+
+	@Test
+	public void shouldPersistLastRunFalseAfterCancelParticipation() {
+		EvaluationFormSurvey survey = createSurvey();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
+		Order order = createOrder(executor);
+		dbInstance.commitAndCloseSession();
+		EvaluationFormParticipation participation = sut.createParticipation(survey, order, executor);
+		dbInstance.commitAndCloseSession();
+
+		sut.cancelParticipation(participation);
+		dbInstance.commitAndCloseSession();
+
+		EvaluationFormParticipation reloadedParticipation = evaluationFormManager.loadParticipationByKey(participation);
+		assertThat(reloadedParticipation.getStatus()).isEqualTo(EvaluationFormParticipationStatus.canceled);
+		assertThat(reloadedParticipation.isLastRun()).isFalse();
+	}
+
+	@Test
+	public void shouldExcludeCanceledSessionFromExport() {
+		EvaluationFormSurvey survey = createSurvey();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());
+		Order order = createOrder(executor);
+		dbInstance.commitAndCloseSession();
+		EvaluationFormParticipation participation = sut.createParticipation(survey, order, executor);
+		EvaluationFormSession session = evaluationFormManager.createSession(participation);
+		evaluationFormManager.finishSession(session);
+		dbInstance.commitAndCloseSession();
+
+		sut.cancelParticipation(participation);
+		dbInstance.commitAndCloseSession();
+
+		List<EvaluationFormSession> doneSessions = evaluationFormManager
+				.loadSessionsFiltered(SessionFilterFactory.createSelectDone(survey), 0, -1);
+		assertThat(doneSessions).isEmpty();
 	}
 
 }

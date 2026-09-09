@@ -476,6 +476,20 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public EvaluationFormParticipation cancelParticipation(EvaluationFormParticipationRef participationRef) {
+		EvaluationFormParticipation participation = evaluationFormParticipationDao.loadByKey(participationRef);
+		if (participation == null) {
+			return null;
+		}
+		participation = evaluationFormParticipationDao.changeStatus(participation, EvaluationFormParticipationStatus.canceled);
+		EvaluationFormSession session = evaluationFormSessionDao.loadSessionByParticipation(participation);
+		if (session != null) {
+			evaluationFormSessionDao.changeStatus(session, EvaluationFormSessionStatus.canceled);
+		}
+		return participation;
+	}
+
+	@Override
 	public EvaluationFormResponse createFileResponse(String responseIdentifier, EvaluationFormSession session,
 			File file, String filename) throws IOException {
 		Path relativePath = evaluationFormStorage.save(file, filename);

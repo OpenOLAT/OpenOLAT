@@ -28,6 +28,7 @@ package org.olat.modules.forms;
 public enum EvaluationFormSessionStatus {
 	
 	inProgress,
-	done
+	done,
+	canceled
 
 }

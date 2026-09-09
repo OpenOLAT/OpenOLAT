@@ -78,6 +78,8 @@ public class EvaluationFormSessionStatusCellRenderer extends LabelCellRenderer {
 				return "o_icon o_icon-fw o_icon_pencil";
 			} else if(status == EvaluationFormSessionStatus.done) {
 				return "o_icon o_icon-fw o_icon_check";
+			} else if(status == EvaluationFormSessionStatus.canceled) {
+				return "o_icon o_icon-fw o_icon_ban";
 			}
 			return "o_icon o_icon-fw o_icon_circle";
 		}
@@ -105,7 +107,9 @@ public class EvaluationFormSessionStatusCellRenderer extends LabelCellRenderer {
 		if(status == EvaluationFormSessionStatus.inProgress) {
 			return trans.translate("assessment.evaluation.status.inProgress");
 		} else if(status == EvaluationFormSessionStatus.done) {
-			return trans.translate("assessment.evaluation.status.done");	
+			return trans.translate("assessment.evaluation.status.done");
+		} else if(status == EvaluationFormSessionStatus.canceled) {
+			return trans.translate("assessment.evaluation.status.canceled");
 		}
 		return trans.translate("assessment.evaluation.status.open");
 	}

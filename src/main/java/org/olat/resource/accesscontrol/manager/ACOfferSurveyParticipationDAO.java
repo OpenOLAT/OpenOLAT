@@ -90,9 +90,9 @@ public class ACOfferSurveyParticipationDAO {
 
 	public EvaluationFormParticipation cancelParticipation(EvaluationFormParticipation participation) {
 		if (participation instanceof EvaluationFormParticipationImpl impl) {
-			impl.setStatus(EvaluationFormParticipationStatus.canceled);
 			impl.setLastRun(false);
-			return evaluationFormManager.updateParticipation(impl);
+			evaluationFormManager.updateParticipation(impl);
+			return evaluationFormManager.cancelParticipation(impl);
 		}
 		return participation;
 	}

@@ -211,7 +211,15 @@ public interface EvaluationFormManager {
 	 * @return
 	 */
 	public EvaluationFormSession reopenSession(EvaluationFormSession session);
-	
+
+	/**
+	 * Cancel a participation and the correspondent session, if there is one.
+	 *
+	 * @param participationRef
+	 * @return
+	 */
+	public EvaluationFormParticipation cancelParticipation(EvaluationFormParticipationRef participationRef);
+
 	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, boolean withNoResponses, SessionFilter filter, Limit limit);
 
 	public EvaluationFormResponse createStringResponse(String responseIdentifier, EvaluationFormSession session,
