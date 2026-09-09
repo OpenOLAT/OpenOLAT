@@ -25,7 +25,9 @@ import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.DefaultValue;
@@ -124,9 +126,13 @@ public class RoomManagementWebService {
 		}
 
 		Identity identity = getIdentity(httpRequest);
+		// isVisibleBuilding() re-queries the building's organisation restrictions on every call, so
+		// memoize it per building key -- otherwise this becomes one extra statement per booking row.
+		Map<Long, Boolean> visibilityByBuildingKey = new HashMap<>();
 		List<RoomBooking> bookings = roomManagementService.getBookings(keys).stream()
-				.filter(b -> b.getRoom() != null
-						&& roomManagementService.isVisibleBuilding(b.getRoom().getBuilding(), roles, identity))
+				.filter(b -> b.getRoom() != null && b.getRoom().getBuilding() != null
+						&& visibilityByBuildingKey.computeIfAbsent(b.getRoom().getBuilding().getKey(),
+								key -> roomManagementService.isVisibleBuilding(b.getRoom().getBuilding(), roles, identity)))
 				.toList();
 
 		RoomBookingVO[] vos = bookings.stream()
