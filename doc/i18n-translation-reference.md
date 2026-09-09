@@ -27,28 +27,28 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | OpenAI | OpenAI | OpenAI | OpenAI |  | OpenAI |  |
 | Anthropic Claude | Anthropic Claude | Anthropic Claude | Anthropic Claude |  | Anthropic Claude |  |
 | Generic AI Provider | Generischer KI Anbieter | Fournisseur IA générique | Fornitore IA generico |  | Generický poskytovateľ AI |  |
-| ONNX embedding model | ONNX Einbettungsmodell |  |  |  | Embeddingový model ONNX |  |
+| ONNX embedding model | ONNX Einbettungsmodell | Modèle d'embedding ONNX | Modello di embedding ONNX |  | Embeddingový model ONNX |  |
 | Language model | Sprachmodell | Modèle de langage | Modello di linguaggio |  | Jazykový model |  |
-| Embedding model | Einbettungsmodell |  |  |  | Embeddingový model |  |
-| Vision model | Vision Modell |  |  |  | Model vízie |  |
-| AI Feature | KI Funktion |  |  |  | Funkcia AI |  |
+| Embedding model | Einbettungsmodell | Modèle d'embedding | Modello di embedding |  | Embeddingový model |  |
+| Vision model | Vision Modell | Modèle de vision | Modello di visione |  | Model vízie |  |
+| AI Feature | KI Funktion | Fonctionnalité IA | Funzione IA |  | Funkcia AI |  |
 | MC Question Generator | MC Fragen Generator | Générateur de questions à choix multiples | Generatore di domande a scelta multipla |  | Generátor otázok s výberom |  |
-| Essay Question Generator | Essay Fragen Generator |  |  |  | Generátor esejových otázok |  |
-| Essay Grading | Essay Bewertung |  |  |  | Hodnotenie esejových odpovedí |  |
-| Image Description Generator | Bildbeschreibungs-Generator |  |  |  | Generátor popisov obrázkov |  |
-| Taxonomy Matching (Embeddings) | Taxonomie-Zuordnung (Embeddings) |  |  |  | Priraďovanie k taxonómii (embeddingy) |  |
+| Essay Question Generator | Essay Fragen Generator | Générateur de questions à texte libre | Generatore di domande a testo libero |  | Generátor esejových otázok |  |
+| Essay Grading | Essay Bewertung | Évaluation des textes libres | Valutazione dei testi liberi |  | Hodnotenie esejových odpovedí |  |
+| Image Description Generator | Bildbeschreibungs-Generator | Générateur de descriptions d'image | Generatore di descrizioni di immagini |  | Generátor popisov obrázkov |  |
+| Taxonomy Matching (Embeddings) | Taxonomie-Zuordnung (Embeddings) | Correspondance de taxonomie (embeddings) | Mappatura della tassonomia (embedding) |  | Priraďovanie k taxonómii (embeddingy) |  |
 | AI questions | KI Fragen | Questions par IA | Domande IA |  | Otázky AI |  |
-| AI feedback | KI-Feedback |  |  |  | Spätná väzba AI |  |
-| Feedback reliability | Verlässlichkeit Feedback |  |  |  | Spoľahlivosť spätnej väzby |  |
-| Bloom levels | Bloom-Stufen |  |  |  | Bloomove úrovne |  |
+| AI feedback | KI-Feedback | Feedback IA | Feedback IA |  | Spätná väzba AI |  |
+| Feedback reliability | Verlässlichkeit Feedback | Fiabilité du feedback | Affidabilità del feedback |  | Spoľahlivosť spätnej väzby |  |
+| Bloom levels | Bloom-Stufen | Niveaux de Bloom | Livelli di Bloom |  | Bloomove úrovne |  |
 | Target difficulty | Zielschwierigkeit | Difficulté cible | Difficoltà desiderata |  | Cieľová náročnosť |  |
 | Learning objectives (optional) | Lernziele (optional) | Objectifs d'apprentissage (optionnel) | Obiettivi di apprendimento (opzionale) |  | Vzdelávacie ciele (voliteľné) |  |
-| Grading kit (reference + model answer) | Bewertungs-Kit (Referenz + Musterantwort) |  |  |  | Hodnotiaca súprava (referencia a vzorová odpoveď) |  |
-| Rubric criteria | Bewertungskriterien |  |  |  | Kritériá hodnotenia |  |
+| Grading kit (reference + model answer) | Bewertungs-Kit (Referenz + Musterantwort) | Kit d'évaluation (référence + réponse modèle) | Kit di valutazione (riferimento + risposta modello) |  | Hodnotiaca súprava (referencia a vzorová odpoveď) |  |
+| Rubric criteria | Bewertungskriterien | Critères d'évaluation | Criteri di valutazione |  | Kritériá hodnotenia |  |
 | AI processing pool | KI-Verarbeitungs-Pool |  |  |  | Fond spracovania AI |  |
-| Pool "Interactive" (threads) | Pool "Interaktiv" (Threads) |  |  |  | Fond „Interaktívny“ (vlákna) |  |
-| Pool "Batch" (threads) | Pool "Batch" (Threads) |  |  |  | Fond „Dávkový“ (vlákna) |  |
-| Usage log | Nutzungsprotokoll |  |  |  | Protokol používania |  |
+| Pool "Interactive" (threads) | Pool "Interaktiv" (Threads) | Pool "Interactif" (threads) | Pool "Interattivo" (thread) |  | Fond „Interaktívny“ (vlákna) |  |
+| Pool "Batch" (threads) | Pool "Batch" (Threads) | Pool "Batch" (threads) | Pool "Batch" (thread) |  | Fond „Dávkový“ (vlákna) |  |
+| Usage log | Nutzungsprotokoll | Journal d'utilisation | Registro di utilizzo |  | Protokol používania |  |
 | AI call | KI-Aufruf |  |  |  | Volanie AI |  |
 
 ## Assessment (Bewertung)
@@ -101,7 +101,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Roll call | Anwesenheitskontrolle | Contrôle de présence | Controllo delle presenze | Chamada (Roll Call) | Kontrola dochádzky | Yoklama |
 | Auto close period | Sperrfrist | Délai pour bloquer le cours bloc | Periodo di chiusura automatica nei giorni | Encerramento automático em dias | Blokačná lehota | Gün olarak otomatik kapanma süresi |
 | Reminder period | Erinnerungsfrist | Délai de rappel | Periodo di promemoria in giorni | Período de lembrete em dias | Lehota na pripomenutie | Gün olarak hatırlatma süresi |
-| Attendance rate | Anwesenheitsquote | Taux de fréquentation | Attendance rate |  | Miera dochádzky |  |
+| Attendance rate | Anwesenheitsquote | Taux de fréquentation | Tasso di presenza |  | Miera dochádzky |  |
 | Attendance threshold | Schwellwert | Valeur seuil | Tasso | Avaliação | Prahová hodnota | Puanla |
 | Compulsory attendance | Anwesenheit obligatorisch | Présence obligatoire | Obbligatorio | Compulsório | Povinné | Zorunlu |
 | Multi-absence recording | Multi-Absenzenerfassung | Saisie d'absences multiples | Inserire assenze multiple |  | Záznam viacerých neprítomností | Çoklu yokluk kaydı |
@@ -119,14 +119,14 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Dispensation | Dispens | Dispense | Esonero | Dispensa | Oslobodenie | Dağıtım |
 | Appeal | Rekurs | Recours | Appello | Recurso | Odvolanie | Temyiz |
 | Appeal period | Rekursfrist | Délai de recours | Periodo di assenza di appello nei giorni | Prazo para recurso de ausências (em dias) | Lehota na odvolanie | Gün olarak devamsızlık süresine itiraz |
-| Rooms | Räume |  |  |  | Miestnosti |  |
-| Room management | Raumverwaltung |  |  |  | Správa miestností |  |
-| Room | Raum |  |  |  | Miestnosť |  |
-| Building | Gebäude |  |  |  | Budova |  |
-| Room scheduling | Raumplanung |  |  |  | Plánovanie miestností |  |
+| Rooms | Räume | Salles | Aule |  | Miestnosti |  |
+| Room management | Raumverwaltung | Gestion des salles | Gestione delle aule |  | Správa miestností |  |
+| Room | Raum | Salle | Aula |  | Miestnosť |  |
+| Building | Gebäude | Bâtiment | Edificio |  | Budova |  |
+| Room scheduling | Raumplanung | Planification des salles | Pianificazione delle aule |  | Plánovanie miestností |  |
 | Room booking | Raumbuchung |  |  |  | Rezervácia miestnosti |  |
-| Seats | Plätze |  |  |  | Miesta |  |
-| Occupancy rate | Belegung |  |  |  | Obsadenosť |  |
+| Seats | Plätze | Places | Posti |  | Miesta |  |
+| Occupancy rate | Belegung | Taux d'occupation | Occupazione |  | Obsadenosť |  |
 
 ## Content and media (Inhalte und Medien)
 
@@ -145,7 +145,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Container | Container | Conteneur | Conenitore | Recipiente | Kontajner | Kapsayıcı |
 | Gallery | Galerie | Galerie | Galleria |  | Galéria |  |
 | Quiz | Quiz | Quiz | Quiz |  | Kvíz |  |
-| Table of contents | Inhaltsverzeichnis |  |  |  | Obsah |  |
+| Table of contents | Inhaltsverzeichnis | Table des matières | Indice |  | Obsah |  |
 | Image comparison | Bildvergleich | Comparaison d'image | Confronto di immagini |  | Porovnanie obrázkov |  |
 | HTML text code | HTML-Textcode | Code texte HTML | Codice testo HTML | Seção de texto | Zdrojový kód HTML | Metin bölümü |
 | Image | Bild | Choisir une image | Immagine |  | Obrázok |  |
@@ -180,7 +180,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Cost center | Kostenstelle | Centre de coûts | Centro di costo |  | Nákladové stredisko |  |
 | PayPal | PayPal | PayPal | PayPal | PayPal | PayPal | PayPal |
 | Credit points | Kreditpunkte | Crédits | Crediti formativi |  | Kreditné body |  |
-| Credit point system | Kreditpunktesystem |  |  |  | Systém kreditných bodov |  |
+| Credit point system | Kreditpunktesystem | Système de crédit | Sistema di crediti formativi |  | Systém kreditných bodov |  |
 | Credit point balance | Kreditpunkteguthaben | Solde des points de crédit | Bilancio dei crediti formativi |  | Zostatok kreditných bodov |  |
 | Credit | Gutschrift | Crédits | Credito |  | Pripísanie kreditov |  |
 | Debit | Belastung | Charge | Debito |  | Odpísanie kreditov |  |
@@ -192,17 +192,17 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
 |---|---|---|---|---|---|---|
 | Coaching | Coaching | Coaching | Tutoraggio | Coaching | Koučovanie | Koçluk |
-| Overview | Übersicht |  |  |  | Prehľad |  |
-| Courses - As coach | Kurse - Als Betreuer{in} |  |  |  | Kurzy - Ako kouč |  |
+| Overview | Übersicht | Aperçu | Panoramica |  | Prehľad |  |
+| Courses - As coach | Kurse - Als Betreuer{in} | Cours - En tant que coach | Corsi - Come coach |  | Kurzy - Ako kouč |  |
 | Events | Termine | Événements | Eventi |  | Termíny |  |
 | Scope | Fokus |  |  |  | Zameranie |  |
 | Assignments | Aufgaben | Tâches | Compiti |  | Úlohy |  |
 | Communication | Kommunikation | Communication | Comunicazione |  | Komunikácia |  |
-| Coach's notifications | Betreuer{innen} Benachrichtigungen | Notifications de superviseur | Notifiche del supervisore |  | Oznámenia kouča |  |
-| Educational products | Bildungsprodukte |  |  |  | Vzdelávacie produkty |  |
+| Coach's notifications | Betreuer{innen} Benachrichtigungen | Notifications des coaches | Notifiche dei coach |  | Oznámenia kouča |  |
+| Educational products | Bildungsprodukte | Produits éducatifs | Prodotti per l'istruzione |  | Vzdelávacie produkty |  |
 | User relations | Personenbeziehungen | Relations utilisateurs | Relazioni d'utente | Relações com o usuário | Vzťahy s používateľmi | Kullanıcı ilişkileri |
-| Pending confirmations | Ausstehende Bestätigungen |  |  |  | Čakajúce potvrdenia |  |
-| Pending memberships | Ausstehende Mitgliedschaften |  |  |  | Čakajúce členstvá |  |
+| Pending confirmations | Ausstehende Bestätigungen | Confirmations en attente | Conferme in sospeso |  | Čakajúce potvrdenia |  |
+| Pending memberships | Ausstehende Mitgliedschaften | Adhésions en attente | Iscrizioni in sospeso |  | Čakajúce členstvá |  |
 | People | Personen | Personnes | Membri |  | Osoby |  |
 | Courses | Kurse | Mes cours | I miei corsi | Meu curso | Kurzy | Dersler |
 | Groups | Gruppen | Mes groupes | I miei gruppi | Meu grupo | Skupiny | Gruplar |
@@ -249,7 +249,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Import calendar | Kalender importieren | Importer calendrier | Importare calendari | Impotar calendário | Importovať kalendár | Takvimi içe aktar |
 | ICal feed link | iCal Feed-Link | Lien ICal Feed | Feed link iCal | Feed-link Ical | Odkaz na kanál iCal | ICal besleme bağlantısı |
 | Folder | Ordner | Dossier | Cartella | Pasta | Priečinok | Klasör |
-| Files | Dateien | Fichiers | Files |  | Súbory |  |
+| Files | Dateien | Fichiers | File |  | Súbory |  |
 | Notes | Notizen | Mes feuilles de notes | Appunti | Anotações | Poznámky | Notlar |
 | Library | Bibliothek | Bibliothèque | Biblioteca | Biblioteca | Knižnica | Kütüphane |
 | Review | Überprüfen | Vérifier | Revisione | Revisar | Prehľad | Gözden geçir |
@@ -269,7 +269,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Whiteboard | Whiteboard | Tableau blanc | Lavagna |  | Interaktívna tabuľa |  |
 | Timeline | Timeline | Chronologie | Timeline |  | Časová os |  |
 | Schedule | Terminplan | Calendrier | Calendario |  | Harmonogram |  |
-| Files | Dateien | Fichiers | Files |  | Súbory |  |
+| Files | Dateien | Fichiers | File |  | Súbory |  |
 | Activity | Aktivität | Activité | Attività |  | Aktivita |  |
 | Activities | Aktivitäten | Activités | Attività |  | Aktivity |  |
 | Quick start | Schnellzugriff | Accès rapide | Avvio rapido |  | Rýchly štart |  |
@@ -373,7 +373,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Optimization strategy | Optimierungsstrategie | Stratégie d'optimisation | Strategia di ottimizzazione |  | Optimalizačná stratégia |  |
 | Status | Status |  |  |  | Stav |  |
 | Status | Status | Statut | Status |  | Stav |  |
-| Responsible for the topic | Zuständig für dieses Thema |  |  |  | Zodpovedná osoba za tému |  |
+| Responsible for the topic | Zuständig für dieses Thema | Responsable de ce sujet | Responsabile di questo argomento |  | Zodpovedná osoba za tému |  |
 | Participants accepted | Akzeptierte Teilnehmer{innen} | Participants acceptés | Partecipanti accettati | Descrição | Prijatí účastníci | Katılımcılar kabul edildi |
 | Occasion | Anlass | Événement | Occasione | Ocasião | Príležitosť | Etkinlik |
 | Appointment booking | Terminbuchung | Réservation d'un rendezvous | Prenotare appuntamento |  | Rezervácia termínu |  |
@@ -397,9 +397,9 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Complete archive | Gesamtarchiv | Archive complète | Archivio completo |  | Kompletný archív |  |
 | Partial archive | Teilarchiv | Archive partielle | Archivio parziale |  | Čiastočný archív |  |
 | Copy course | Kurs kopieren | Copier un cours | Copiare corso |  | Kopírovať kurz | Kursu kopyala |
-| Save as template | Als Template speichern |  |  |  | Uložiť ako šablónu |  |
+| Save as template | Als Template speichern | Enregistrer comme modèle | Salvare come template |  | Uložiť ako šablónu |  |
 | Check box | Checkbox |  |  |  | Zaškrtávacie políčko |  |
-| Coach files | Unterlagen Betreuer{innen} | Documents pour les coaches | Coach files |  | Súbory kouča | Koç dosyaları |
+| Coach files | Unterlagen Betreuer{innen} | Documents pour les coaches | Documenti dei coach |  | Súbory kouča | Koç dosyaları |
 
 ## Course Planner (Course Planner)
 
@@ -407,22 +407,22 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 |---|---|---|---|---|---|---|
 | Product | Produkt | Produit | Prodotto |  | Produkt |  |
 | Element | Element | Élément | Elemento |  | Prvok |  |
-| Implementation | Durchführung |  |  |  | Realizácia vzdelávania |  |
+| Implementation | Durchführung | Implémentation | Implementazione |  | Realizácia vzdelávania |  |
 | Implementation period | Durchführungszeitraum | Période d'exécution | Periodo di esecuzione | Período de execução | Obdobie vykonávania | Yürütme Süresi |
 | Time period | Zeitabschnitt | Période | Periodo di tempo |  | Časové obdobie |  |
 | Element type | Elementtyp |  |  |  | Typ prvku |  |
-| Content | Inhalt |  |  |  | Obsah |  |
+| Content | Inhalt | Contenu | Contenuto |  | Obsah |  |
 | Reference | Kennzeichen | Référence | Riferimento esterno | Ref. Externa | Označenie | Referans |
 | External ID | Externe ID | Id. externe | ID esterno | ID Externo | Externé ID | Harici kimlik |
 | Membership | Mitgliedschaft | Adhésion | Iscrizione |  | Členstvo |  |
 | Number of participants | Anzahl Teilnehmer{innen} | Nombre de participant{e}s | Numero di partecipanti |  | Počet účastníkov |  |
-| Automation | Automatisierung |  |  |  | Automatizácia |  |
+| Automation | Automatisierung | Automatisation | Automazione |  | Automatizácia |  |
 | Automation rule | Automatisierungsregel |  |  |  | Pravidlo automatizácie |  |
-| Instantiation | Instanziierung |  |  |  | Vytvorenie inštancie |  |
+| Instantiation | Instanziierung | Instanciation | Istanziazione |  | Vytvorenie inštancie |  |
 | Course template | Kurstemplate | Modèle de cours | Modello del corso |  | Template kurzu |  |
 | Timetable | Stundenplan | Calendrier | Agenda | Calendário | Rozvrh hodín | Zaman Çizelgesi |
 | To-do | To-do |  |  |  | Úloha |  |
-| Educational products | Bildungsprodukte |  |  |  | Vzdelávacie produkty |  |
+| Educational products | Bildungsprodukte | Produits éducatifs | Prodotti per l'istruzione |  | Vzdelávacie produkty |  |
 | Course Planner | Course Planner | Planificateur de cours | Pianificatore di corsi |  | Plánovač kurzov |  |
 | Reports | Reports | Rapports | Rapporti |  | Reporty |  |
 
@@ -434,12 +434,12 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Certificate | Zertifikat | Certificat | Certificato |  | Certifikát |  |
 | Certificate template | Zertifikatsvorlage |  |  |  | Šablóna certifikátu |  |
 | Variable | Variable |  |  |  | Premenná |  |
-| Serial number | Seriennummer |  |  |  | Sériové číslo |  |
-| Issued on | Ausgestellt am |  |  |  | Vydané dňa |  |
+| Serial number | Seriennummer | Numéro de série | Numero di serie |  | Sériové číslo |  |
+| Issued on | Ausgestellt am | Délivré le | Rilasciato il |  | Vydané dňa |  |
 | Validity period | Gültigkeitsdauer | Période de validité | Periodo di validità |  | Obdobie platnosti |  |
 | Recertification | Rezertifizierung | Recertification | Ricertificazione |  | Recertifikácia |  |
-| Certification program | Zertifikatsprogramm |  |  |  | Certifikačný program |  |
-| Print template | Druckvorlage |  |  |  | Tlačová šablóna |  |
+| Certification program | Zertifikatsprogramm | Programme de certification | Programma di certificazione |  | Certifikačný program |  |
+| Print template | Druckvorlage | Modèle d'impression | Modello di stampa |  | Tlačová šablóna |  |
 | Membership | Mitgliedschaft |  |  |  | Členstvo v programe |  |
 | Badge | Badge | Badge | Badge |  | Odznak |  |
 | OpenBadges | OpenBadges | OpenBadges | OpenBadges |  | OpenBadges |  |
@@ -542,7 +542,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Forgot password? | Passwort vergessen? | Oubli du mot de passe? | Ho dimenticato la password.? | Esqueceu sua senha? | Zabudli ste heslo? | Şifre unutulmuş? |
 | Password syntax | Passwort-Syntax | Syntaxe des mots de passe | Sintassi della password |  | Syntax hesla |  |
 | Security level | Sicherheitsstufe |  |  |  | Úroveň zabezpečenia |  |
-| One time code | One Time Code |  |  |  | Jednorazový kód |  |
+| One time code | One Time Code | One Time Code | One Time Code |  | Jednorazový kód |  |
 | Self-registration | Selbstregistrierung | Auto-enregistrement | Auto-registrazione | Auto-Inscrição | Samoregistrácia | Kendi kendine kayıt |
 | Registration | Registrierung | Inscription | Registrazione |  | Registrácia |  |
 | Confirmation code | Validierungscode | Code de confirmation | Codice di conferma |  | Overovací kód |  |
@@ -558,7 +558,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Trash | Papierkorb | Corbeille | Cestino |  | Kôš |  |
 | Locked | Gesperrt | Bloqué | Bloccato | Bloqueado | Uzamknuté | Kilitli |
 | Metadata | Metadaten | Méta-données | Metadati | Meta dados | Metadáta | Meta veri |
-| Export | Export |  |  |  | Export |  |
+| Export | Export | Export | Esportazione |  | Export |  |
 | Export history | Exportverlauf | Exporter l'historique | Esportare storia |  | História exportu |  |
 | Home | Home | Home | Home | Home | Domov | Ana sayfa |
 | Courses | Kurse | Cours | Corsi | Cursos | Kurzy | Kurslar |
@@ -604,7 +604,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Security | Sicherheit | Sécurité | Sicurezza | Segurança | Zabezpečenie | Güvenlik |
 | API-Key | API-Key |  |  |  | Kľúč API |  |
 | E-mail inbox and outbox | E-Mail Postfach und Versand | Boîte aux lettres et envois d'e-mails | Posta in arrivo e posta in uscita | Caixa de entrada e de saída de E-mail | E-mailová schránka a odosielanie | E-posta gelen kutusu ve giden kutusu |
-| Dashboard | Dashboard | Dashboard |  |  | Dashboard |  |
+| Dashboard | Dashboard | Dashboard | Dashboard |  | Dashboard |  |
 | Widget | Widget |  |  |  | Miniaplikácia |  |
 | Tags | Tags | Étiquettes | Tags |  | Tagy |  |
 | Terms of use | Nutzungsbedingungen | Conditions d'utilisation | Condizioni d'uso | Termos de uso | Podmienky používania | Kullanım Şartları |
@@ -667,12 +667,12 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Weight | Gewichtung | Pondération | Peso | Peso | Váha | Ağırlıklandırma |
 | Single choice | Einzelauswahl | Choix simple | Scelta singola | Escolha única | Výber jednej možnosti | Tek seçenek |
 | Multiple choice | Mehrfachauswahl | Choix multiple | Scelta multipla | Múltipla escolha | Výber viacerých možností | Çoktan seçmeli |
-| Text block | Textblock |  |  |  | Textové pole |  |
-| Date / Time | Datum / Zeit |  |  |  | Dátum / čas |  |
+| Text block | Textblock | Bloc de texte | Blocco di testo |  | Textové pole |  |
+| Date / Time | Datum / Zeit | Date / Heure | Data / Ora |  | Dátum / čas |  |
 | Upload file | Datei hochladen | Télécharger un fichier | Caricare file | Enviar arquivo | Nahrať súbor | Dosya yükle |
 | Terms of use | Nutzungsbedingungen | Conditions d'utilisation | Condizioni di utilizzo | Termos de uso | Podmienky používania | Kullanım Şartları |
-| Respondent details | Angaben zur befragten Person |  |  |  | Informácie o osobe, s ktorou sa schádzal rozhovor |  |
-| Coach details | Angaben zum{r} Betreuer{in} |  |  |  | Informácie o koučovi |  |
+| Respondent details | Angaben zur befragten Person | Informations sur la personne interrogée | Dati della persona intervistata |  | Informácie o osobe, s ktorou sa schádzal rozhovor |  |
+| Coach details | Angaben zum{r} Betreuer{in} | Informations sur le coach | Dati del coach |  | Informácie o koučovi |  |
 | Key figures | Kennzahlen | Indicateurs | Dati di riferimento | Números-chave | Kľúčové ukazovatele | Şekiller |
 
 ## Learning resources (Lernressourcen)
@@ -719,7 +719,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | PowerPoint | PowerPoint | PowerPoint | PowerPoint | Powerpoint | PowerPoint | PowerPoint |
 | Image | Bild | Image | Immagine | Imagem | Obrázok | Resim |
 | Movie | Film | Film | Video | Filme | Video | Film |
-| Audio | Audio |  |  |  | Zvuk |  |
+| Audio | Audio | Audio | Audio |  | Zvuk |  |
 | Animation | Animation | Animation | Animazione | Animação | Animácia | Animasyon |
 | Other file | Andere Datei | Autres fichiers | Altro file | Outro arquivo | Iný súbor | Diğer dosya |
 | Taxonomy | Taxonomie | Taxonomie | Tassonomia | Taxonomia | Taxonómia | Taksonomi |
@@ -728,7 +728,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Subject | Fachbereich | Sujet | Soggetto | Assunto | Odborná oblasť | Konu |
 | Competence | Kompetenz | Compétence | Competenza | Competência | Kompetencia | Yeterlilik |
 | Lost+found | Lost+found | Lost+found | Lost+found | Achados+Perdidos | Straty a nálezy | Kayıp+Bulundu |
-| Metadata | Metadaten | Métadonnées | Metadata |  | Metadáta |  |
+| Metadata | Metadaten | Métadonnées | Metadati |  | Metadáta |  |
 | Author | Autor | Auteur{rice} | Autore |  | Autor |  |
 | Teaser image | Hintergrundbild | Image de fond | Immagine teaser |  | Ukážkový obrázok | Teaser resmi |
 
@@ -756,38 +756,38 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Absence manager | Absenzenverwalter{in} | Responsable des absences | Responsabile delle assenze |  | Správca absencií |  |
 | Project manager | Projektverwalter{in} | Gestionnaire de projet | Responsabile di progetto |  | Správca projektov |  |
 | Quality manager | Qualitätsverwalter{in} |  |  |  | Správca kvality |  |
-| Selectus manager | Selectusverwalter{in} | Gestionnaire Selectus |  |  | Správca Selectusu |  |
+| Selectus manager | Selectusverwalter{in} | Gestionnaire Selectus | Manager Selectus |  | Správca Selectusu |  |
 | Course planner | Kursplaner{in} | Planificateur de cours | Pianificatore del corso |  | Plánovač kurzov |  |
 | Line manager | Linienvorgesetzte{r} | Line manager | Manager di linea | Gerente de linha | Líniový manažér | Bağlantı yöneticisi |
 | Education manager | Ausbildungsverantwortliche{r} | Responsable de la formation | Responsabile della formazione |  | Manažér školení |  |
 | Principal | Principal | Principal | Principale | Diretor | Riaditeľ | Müdür |
 | Guest | Gast | invité | Ospite | Convidado | Hosť | Konuk |
 | Invitee | Einladung | Invitation | Invitato | Convidado | Pozvaná osoba | Davetli |
-| Coach | Betreuer{in} | Coach | Supervisore | Treinador (Coach) | Kouč | Koç |
+| Coach | Betreuer{in} | Coach | Coach | Treinador (Coach) | Kouč | Koç |
 | Owner | Besitzer{in} | Propriétaire | Proprietari | Proprietário | Vlastník | Sahip |
 | Participant | Teilnehmer{in} | Participant | Partecipante | Participante | Účastník | Katılımcı |
 | Corrector | Korrektor{in} | Correcteur | Correttore | Revisor | Opravovateľ | Not veren kişi |
 | Teacher | Dozent{in} |  |  |  | Lektor |  |
 | Product owner | Produktbesitzer{in} | Propriétaire du produit | Proprietario del prodotto |  | Vlastník produktu |  |
 | Element owner | Elementbesitzer{in} | Propriétaire d'éléments | Proprietario di elementi | Proprietário do elemento | Vlastník prvku | Öğe sahibi |
-| Master coach | Klassenlehrer{in} | Professeur | Master coach | Treinador principal | Hlavný kouč | Uzman grup sorumlusu |
+| Master coach | Klassenlehrer{in} | Maître{sse} de classe | Coordinatore di classe | Treinador principal | Hlavný kouč | Uzman grup sorumlusu |
 | Certification program owner | Zertifikatsprogrammbesitzer{in} |  |  |  | Vlastník certifikačného programu |  |
 | Project office | Projektbüro | Bureau de projets | Ufficio del Progetto |  | Projektová kancelária |  |
 | Steering committee | Lenkungsausschuss | Comité d'orientation | Comitato di orientamento |  | Riadiaci výbor |  |
-| Leader | Leiter{in} | Directeur{rice} | Leader |  | Vedúci |  |
+| Leader | Leiter{in} | Directeur{rice} | Responsabile |  | Vedúci |  |
 | Sponsor / Client | Sponsor{in} / Auftraggeber{in} | Sponsor{e} / commanditaire | Sponsor / Cliente |  | Sponzor / objednávateľ |  |
 | Business analyst / Supplier | Business-Analyst{in} / Lieferant{in} | Analyste d'affaires / fournisseur{se} | Business analyst /fornitore |  | Biznis analytik / dodávateľ |  |
-| Applicant | Bewerber{in} | Candidat{e} |  |  | Uchádzač |  |
-| Staff | Sachbearbeitung | Personnel administratif |  |  | Administratívny pracovník |  |
-| Committee member | Kommissionsmitglied | Membre de la commission |  |  | Člen komisie |  |
-| Head of Committee | Kommissionspräsidium | Présidence de la commission |  |  | Predsedníctvo komisie |  |
-| Secretary | Sekretariat | Secrétariat |  |  | Sekretariát |  |
-| Ex-Officio | Ex-Officio | Ex-officio |  |  | Z titulu funkcie |  |
-| Faculty member | Fakultätsmitglied | Membre de la faculté |  |  | Člen fakulty |  |
-| Referee | Referenzperson | Référent{e} |  |  | Referenčná osoba |  |
-| Expert | Gutachter{in} | Expert{e} |  |  | Posudzovateľ |  |
-| External expert | Externe{r} Gutachter{in} | Expert{e} externe |  |  | Externý posudzovateľ |  |
-| Comparative assessment expert | Vergleichsgutachter{in} | Expert{e} comparatif{ve} |  |  | Porovnávací posudzovateľ |  |
+| Applicant | Bewerber{in} | Candidat{e} | Candidato |  | Uchádzač |  |
+| Staff | Sachbearbeitung | Personnel administratif | Segreteria |  | Administratívny pracovník |  |
+| Committee member | Kommissionsmitglied | Membre de la commission | Membro della commissione |  | Člen komisie |  |
+| Head of Committee | Kommissionspräsidium | Présidence de la commission | Presidenza della commissione |  | Predsedníctvo komisie |  |
+| Secretary | Sekretariat | Secrétariat | Segretariato |  | Sekretariát |  |
+| Ex-Officio | Ex-Officio | Ex-officio | Ex officio |  | Z titulu funkcie |  |
+| Faculty member | Fakultätsmitglied | Membre de la faculté | Membro della facoltà |  | Člen fakulty |  |
+| Referee | Referenzperson | Référent{e} | Referente |  | Referenčná osoba |  |
+| Expert | Gutachter{in} | Expert{e} | Esperto |  | Posudzovateľ |  |
+| External expert | Externe{r} Gutachter{in} | Expert{e} externe | Esperto esterno |  | Externý posudzovateľ |  |
+| Comparative assessment expert | Vergleichsgutachter{in} | Expert{e} comparatif{ve} | Esperto comparativo |  | Porovnávací posudzovateľ |  |
 | Reviewer | Reviewer{in} | Réviseur | Revisore |  | Recenzent{v} |  |
 | Reviewer | Gutachter{in} |  |  |  | Recenzent |  |
 | Home base | Home Base |  |  |  | Domovská organizácia |  |
@@ -801,74 +801,74 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 
 | English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
 |---|---|---|---|---|---|---|
-| Selectus | Selectus | Selectus |  |  | Selectus |  |
-| Decision tool | Entscheidungswerkzeug | Outil de décision |  |  | Nástroj rozhodovania |  |
-| Review tool | Review-Werkzeug | Outil de review |  |  | Nástroj posudzovania |  |
-| Review questionnaire | Review-Fragebogen | Questionnaire de review |  |  | Dotazník posudzovania |  |
-| Review discussion | Review-Diskussion | Discussion de review |  |  | Diskusia k posudku |  |
-| Referee management | Referenzverwaltung | Gestion des références |  |  | Správa referenčných osôb |  |
-| Mail center | Mailcenter | Centre de messagerie |  |  | Centrum e-mailov |  |
-| Reporting | Reporting | Reporting |  |  | Reportovanie |  |
+| Selectus | Selectus | Selectus | Selectus |  | Selectus |  |
+| Decision tool | Entscheidungswerkzeug | Outil de décision | Strumento di decisione |  | Nástroj rozhodovania |  |
+| Review tool | Review-Werkzeug | Outil de review | Strumento di review |  | Nástroj posudzovania |  |
+| Review questionnaire | Review-Fragebogen | Questionnaire de review | Questionario di review |  | Dotazník posudzovania |  |
+| Review discussion | Review-Diskussion | Discussion de review | Discussione di review |  | Diskusia k posudku |  |
+| Referee management | Referenzverwaltung | Gestion des références | Gestione delle referenze |  | Správa referenčných osôb |  |
+| Mail center | Mailcenter | Centre de messagerie | Centro messaggi |  | Centrum e-mailov |  |
+| Reporting | Reporting | Reporting | Reporting |  | Reportovanie |  |
 | Screening | Screening |  |  |  | Screening |  |
-| Rating policy | Beurteilungsrichtlinien | Directives d'appréciation |  |  | Pravidlá hodnotenia |  |
-| Form letter | Serienbrief | Lettre type |  |  | Hromadný list |  |
-| Mail template | E-Mail-Vorlage | Modèle d'e-mail |  |  | E-mailová šablóna |  |
-| Profile paper | Profildokument | Document de profil |  |  | Profilový dokument |  |
-| Organisation unit | Organisationseinheit | unité d'organisation |  |  | Organizačná jednotka |  |
-| Tags | Tags | Tags |  |  | Značky |  |
-| Position | Ausschreibung | Poste |  |  | Pracovná pozícia |  |
-| Committee | Kommission | Commission |  |  | Komisia |  |
-| Application | Bewerbung | Candidature |  |  | Prihláška |  |
-| Committee assignment | Kommissionszuweisung | Attribution à la commission |  |  | Priradenie komisie |  |
-| Rating | Beurteilung | Appréciation |  |  | Hodnotenie |  |
-| Committee rating | Kommissionsbeurteilung | Appréciation de la commission |  |  | Hodnotenie komisie |  |
-| Decision | Entscheid | Décision |  |  | Rozhodnutie |  |
-| Committee decision | Kommissionsentscheid | Décision de la commission |  |  | Rozhodnutie komisie |  |
-| Review | Review | Review |  |  | Review |  |
-| Expert assessment | Gutachten | Expertise |  |  | Odborný posudok |  |
-| Comparative assessment | Vergleichsgutachten | Évaluations comparatives |  |  | Porovnávací posudok |  |
-| Letter of recommendation | Referenzschreiben | Lettre de recommandation |  |  | Odporúčací list |  |
-| List of referees | Referenzenliste | Liste de références |  |  | Zoznam referenčných osôb |  |
-| Faculty feedback | Fakultätsfeedback | Retour de la faculté |  |  | Spätná väzba fakulty |  |
-| Public feedback | Öffentliche Rückmeldung | Retour public |  |  | Verejná spätná väzba |  |
-| Abstention | Enthaltung | Abstention |  |  | Zdržanie sa hlasovania |  |
-| Full professor | Ordentliche Professur | Professorat ordinaire |  |  | Riadna profesúra |  |
-| Assistant professor | Assistenzprofessur | Professorat assistant |  |  | Asistentská profesúra |  |
-| Academical background | Akademischer Hintergrund | Parcours universitaire |  |  | Akademické vzdelanie |  |
-| Academic age | Akademisches Alter | Âge académique |  |  | Akademický vek |  |
-| Highest degree | Höchster Abschluss | Diplôme le plus élevé |  |  | Najvyšší akademický titul |  |
-| Habilitation | Habilitation | Habilitation |  |  | Habilitácia |  |
-| Dissertation | Dissertation | Thèse de doctorat |  |  | Dizertačná práca |  |
-| h-index | h-Index | H-Factor |  |  | h-index |  |
-| First authorships | Erstautorenschaften | Publications en tant que premier(e) auteur(e) |  |  | Prvé autorstvo |  |
-| Last authorships | Letztautorenschaften | Publications en tant que dernier(e) auteur(e) |  |  | Posledné autorstvo |  |
-| Original publications | Originalpublikationen | Publications originales |  |  | Pôvodné publikácie |  |
-| Documents and attachments | Dokumente und Anhänge | Documents et annexes |  |  | Dokumenty a prílohy |  |
-| Covering letter | Anschreiben | Lettre de motivation |  |  | Motivačný list |  |
-| Curriculum vitae | Lebenslauf | Curriculum vitae |  |  | Životopis |  |
-| Research statement | Forschungsziel | Objectifs de recherche |  |  | Koncepcia výskumu |  |
-| Teaching statement | Lehransatz | Objectifs pédagogiques |  |  | Koncepcia výučby |  |
-| Leadership philosophy | Führungsphilosophie | Philosophie en matière de leadership |  |  | Filozofia vedenia |  |
-| Teaching assessment | Lehrbeurteilung | Évaluation de l'enseignement |  |  | Hodnotenie výučby |  |
-| Certificate of Study | Studienbescheinigung | Certificat d'étude |  |  | Potvrdenie o štúdiu |  |
-| Degree certificates | Abschlusszertifikate | Diplômes |  |  | Doklady o dosiahnutom vzdelaní |  |
-| Clinical expertise | Klinische Expertise | Expertise cliniques |  |  | Klinická odbornosť |  |
-| Surgical expertise | Chirurgische Expertise | Expertise chirurgicales |  |  | Chirurgická odbornosť |  |
-| External funding | Drittmittel | Financement externe |  |  | Externé financovanie |  |
-| Reprints up to 5 publications | Sonderdrucke von bis zu 5 Publikationen | Copies d'un maximum de 5 publications |  |  | Separáty najviac 5 publikácií |  |
+| Rating policy | Beurteilungsrichtlinien | Directives d'appréciation | Direttive per il giudizio |  | Pravidlá hodnotenia |  |
+| Form letter | Serienbrief | Lettre type | Lettera circolare |  | Hromadný list |  |
+| Mail template | E-Mail-Vorlage | Modèle d'e-mail | Modello di e-mail |  | E-mailová šablóna |  |
+| Profile paper | Profildokument | Document de profil | Documento di profilo |  | Profilový dokument |  |
+| Organisation unit | Organisationseinheit | unité d'organisation | unità organizzativa |  | Organizačná jednotka |  |
+| Tags | Tags | Tags | Tag |  | Značky |  |
+| Position | Ausschreibung | Poste | Posizione |  | Pracovná pozícia |  |
+| Committee | Kommission | Commission | Commissione |  | Komisia |  |
+| Application | Bewerbung | Candidature | Candidatura |  | Prihláška |  |
+| Committee assignment | Kommissionszuweisung | Attribution à la commission | Assegnazione alla commissione |  | Priradenie komisie |  |
+| Rating | Beurteilung | Appréciation | Giudizio |  | Hodnotenie |  |
+| Committee rating | Kommissionsbeurteilung | Appréciation de la commission | Giudizio della commissione |  | Hodnotenie komisie |  |
+| Decision | Entscheid | Décision | Decisione |  | Rozhodnutie |  |
+| Committee decision | Kommissionsentscheid | Décision de la commission | Decisione della commissione |  | Rozhodnutie komisie |  |
+| Review | Review | Review | Review |  | Review |  |
+| Expert assessment | Gutachten | Expertise | Parere |  | Odborný posudok |  |
+| Comparative assessment | Vergleichsgutachten | Évaluations comparatives | Pareri comparativi |  | Porovnávací posudok |  |
+| Letter of recommendation | Referenzschreiben | Lettre de recommandation | Lettera di referenza |  | Odporúčací list |  |
+| List of referees | Referenzenliste | Liste de références | Elenco delle referenze |  | Zoznam referenčných osôb |  |
+| Faculty feedback | Fakultätsfeedback | Retour de la faculté | Feedback della facoltà |  | Spätná väzba fakulty |  |
+| Public feedback | Öffentliche Rückmeldung | Retour public | Riscontro pubblico |  | Verejná spätná väzba |  |
+| Abstention | Enthaltung | Abstention | Astensione |  | Zdržanie sa hlasovania |  |
+| Full professor | Ordentliche Professur | Professorat ordinaire | Professore ordinario |  | Riadna profesúra |  |
+| Assistant professor | Assistenzprofessur | Professorat assistant | Professore assistente |  | Asistentská profesúra |  |
+| Academical background | Akademischer Hintergrund | Parcours universitaire | Percorso accademico |  | Akademické vzdelanie |  |
+| Academic age | Akademisches Alter | Âge académique | Età accademica |  | Akademický vek |  |
+| Highest degree | Höchster Abschluss | Diplôme le plus élevé | Titolo di studio più alto |  | Najvyšší akademický titul |  |
+| Habilitation | Habilitation | Habilitation | Abilitazione |  | Habilitácia |  |
+| Dissertation | Dissertation | Thèse de doctorat | Tesi di dottorato |  | Dizertačná práca |  |
+| h-index | h-Index | H-Factor | Indice h |  | h-index |  |
+| First authorships | Erstautorenschaften | Publications en tant que premier(e) auteur(e) | Pubblicazioni come primo autore |  | Prvé autorstvo |  |
+| Last authorships | Letztautorenschaften | Publications en tant que dernier(e) auteur(e) | Pubblicazioni come ultimo autore |  | Posledné autorstvo |  |
+| Original publications | Originalpublikationen | Publications originales | Pubblicazioni originali |  | Pôvodné publikácie |  |
+| Documents and attachments | Dokumente und Anhänge | Documents et annexes | Documenti e allegati |  | Dokumenty a prílohy |  |
+| Covering letter | Anschreiben | Lettre de motivation | Lettera di motivazione |  | Motivačný list |  |
+| Curriculum vitae | Lebenslauf | Curriculum vitae | Curriculum vitae |  | Životopis |  |
+| Research statement | Forschungsziel | Objectifs de recherche | Obiettivi di ricerca |  | Koncepcia výskumu |  |
+| Teaching statement | Lehransatz | Objectifs pédagogiques | Obiettivi didattici |  | Koncepcia výučby |  |
+| Leadership philosophy | Führungsphilosophie | Philosophie en matière de leadership | Filosofia di leadership |  | Filozofia vedenia |  |
+| Teaching assessment | Lehrbeurteilung | Évaluation de l'enseignement | Valutazione della didattica |  | Hodnotenie výučby |  |
+| Certificate of Study | Studienbescheinigung | Certificat d'étude | Certificato di studio |  | Potvrdenie o štúdiu |  |
+| Degree certificates | Abschlusszertifikate | Diplômes | Diplomi |  | Doklady o dosiahnutom vzdelaní |  |
+| Clinical expertise | Klinische Expertise | Expertise cliniques | Competenza clinica |  | Klinická odbornosť |  |
+| Surgical expertise | Chirurgische Expertise | Expertise chirurgicales | Competenza chirurgica |  | Chirurgická odbornosť |  |
+| External funding | Drittmittel | Financement externe | Fondi esterni |  | Externé financovanie |  |
+| Reprints up to 5 publications | Sonderdrucke von bis zu 5 Publikationen | Copies d'un maximum de 5 publications | Estratti di massimo 5 pubblicazioni |  | Separáty najviac 5 publikácií |  |
 | Combined document | Kombiniertes Dokument |  |  |  | Kombinovaný dokument |  |
-| Apply | Bewerben | Postuler |  |  | Podať prihlášku |  |
-| Evaluation | Auswertung | Évaluation |  |  | Vyhodnotenie |  |
-| Dashboard | Dashboard | Dashboard |  |  | Prehľad uchádzača |  |
-| Application status | Bewerbungsstatus | Statut de la candidature |  |  | Stav prihlášky |  |
-| Application deadline | Bewerbungsfrist | Délai de candidature |  |  | Termín podania prihlášky |  |
-| Rating deadline | Beurteilungsfrist | Délai d'appréciation |  |  | Termín hodnotenia |  |
-| Submission deadline | Einreichefrist | Délai de soumission |  |  | Termín odovzdania |  |
-| Application form | Bewerbungsformular | Formulaire de candidature |  |  | Formulár prihlášky |  |
-| Other applications | Weitere Bewerbungen | Autres candidatures |  |  | Ďalšie prihlášky |  |
-| Memo | Memo | Mémo |  |  | Poznámka |  |
-| Email log | E-Mail-Protokoll | Journal des e-mails |  |  | Protokol e-mailov |  |
-| Public feedback link | Link für öffentliche Rückmeldungen | Lien de retour public |  |  | Odkaz na verejnú spätnú väzbu |  |
+| Apply | Bewerben | Postuler | Candidarsi |  | Podať prihlášku |  |
+| Evaluation | Auswertung | Évaluation | Analisi |  | Vyhodnotenie |  |
+| Dashboard | Dashboard | Dashboard | Dashboard |  | Prehľad uchádzača |  |
+| Application status | Bewerbungsstatus | Statut de la candidature | Stato della candidatura |  | Stav prihlášky |  |
+| Application deadline | Bewerbungsfrist | Délai de candidature | Termine di candidatura |  | Termín podania prihlášky |  |
+| Rating deadline | Beurteilungsfrist | Délai d'appréciation | Termine per il giudizio |  | Termín hodnotenia |  |
+| Submission deadline | Einreichefrist | Délai de soumission | Termine di presentazione |  | Termín odovzdania |  |
+| Application form | Bewerbungsformular | Formulaire de candidature | Modulo di candidatura |  | Formulár prihlášky |  |
+| Other applications | Weitere Bewerbungen | Autres candidatures | Altre candidature |  | Ďalšie prihlášky |  |
+| Memo | Memo | Mémo | Memo |  | Poznámka |  |
+| Email log | E-Mail-Protokoll | Journal des e-mails | Registro e-mail |  | Protokol e-mailov |  |
+| Public feedback link | Link für öffentliche Rückmeldungen | Lien de retour public | Link per riscontri pubblici |  | Odkaz na verejnú spätnú väzbu |  |
 | Rubric | Rubrik |  |  |  | Hodnotiace kritérium |  |
 | Committee role permissions | Rollenrechte der Kommission |  |  |  | Práva rolí komisie |  |
 
@@ -908,7 +908,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Deadline | Frist |  |  |  | Termín |  |
 | Extend | Verlängern | Prolonger | Estendere | Ampliar | Predĺžiť | Uzat |
 | Late submission | Verspätete Abgabe | Soumission en retard | Consegna in ritardo |  | Neskoré predloženie |  |
-| Assignment coaches/participants | Zuweisung Betreuende/Teilnehmende | Assignation coaches/participants | Assegnazione allenatori/partecipanti |  | Pridelenie koučov a účastníkov |  |
+| Assignment coaches/participants | Zuweisung Betreuende/Teilnehmende | Assignation coaches/participants | Assegnazione coach/partecipanti |  | Pridelenie koučov a účastníkov |  |
 | Assignment | Zuweisung | Assignation | Assegnazione |  | Zadanie |  |
 | Form of the review | Review-Form | Formulaire d'évaluation | Formulario di valutazione |  | Forma preskúmania |  |
 | Quality feedback for reviewer | Qualitäts-Feedback für Reviewer{in} | Feedback sur la qualité pour le réviseur | Feedback di qualità per il recensore |  | Spätná väzba kvality pre recenzenta |  |
@@ -927,9 +927,9 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Answer | Antwort | Réponse | Risposta | Resposta | Odpoveď | Cevap |
 | Correct solution | Korrekte Lösung | Solution correcte | Soluzione corretta | Solução correta | Správne riešenie | Doğru çözüm |
 | Feedback | Feedback | Feedback | Feedback | Feedback | Spätná väzba | Geri bildirim |
-| Shuffle | Zufällige Reihenfolge |  |  |  | Náhodné poradie |  |
+| Shuffle | Zufällige Reihenfolge | Ordre aléatoire | Ordine casuale |  | Náhodné poradie |  |
 | Test Statistics | Test Statistiken | Statistiques des tests | Statistiche test | Estatísticas do teste | Štatistiky testov | Test istatistikleri |
-| Supervisor chat | Betreuer{innen}-Chat | Chat superviseur | Supervisore della chat |  | Chat s koučom |  |
+| Supervisor chat | Betreuer{innen}-Chat | Chat des coaches | Chat dei coach |  | Chat s koučom |  |
 | Single choice | Single Choice | Choix simple | Scelta singola | Escolha única | Výber jednej odpovede | Tek seçenek |
 | Multiple choice | Multiple Choice | Choix multiples | Scelta multipla | Escolha Múltipla | Výber viacerých odpovedí | Çoktan seçmeli |
 | Kprim | Kprim | Kprim | KPrim | Kprim | Kprim | Kprim |
@@ -938,7 +938,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Drag and Drop | Drag and Drop | Drag and Drop | Drag and Drop | Arraste e solte | Drag and Drop | Sürükle ve bırak |
 | Order | Reihenfolge | Ordre | Ordine | Sequência | Zoradenie | Sırala |
 | Gap FIB text | Lückentext | Texte à trou | Lacuna di testo | Lacuna de texto | Text s medzerami | Boşluklu metin |
-| Gap mixed | Lückentext gemischt | Texte à trou mélangé |  |  | Kombinovaný text s medzerami |  |
+| Gap mixed | Lückentext gemischt | Texte à trou mélangé | Lacuna di testo mista |  | Kombinovaný text s medzerami |  |
 | Gap with dropdown | Lückentext mit Dropdown | Texte à trou avec liste déroulante | Spazio con menù a tendina |  | Cvičenie s dopĺňaním prázdnych polí pomocou rozbaľovacej ponuky |  |
 | Gap FIB numerical | Lückentext numerisch | Texte à trou numérique | Inserimento numerico | Entrada numérica | Číselný text s medzerami | Sayısal giriş |
 | Hotspot | Hotspot | Hotspot | Hotspot | Hotspot | Hotspot | Hotspot |

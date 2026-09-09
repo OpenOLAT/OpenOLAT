@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.manager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -314,7 +315,28 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertTrue(elements.contains(element2));
 		Assert.assertFalse(elements.contains(otherElement));
 	}
-	
+
+	@Test
+	public void loadByKeys_moreThanPostgresBindParameterLimit() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-many-keys", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-many-keys", "Element many keys",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumElementRef> refs = new ArrayList<>();
+		// Postgres wire protocol caps bind parameters at 32767 (signed 2-byte int), so a single
+		// "in" clause with more keys than that must be chunked, not sent as one query.
+		for (long key = 1; key <= 40000; key++) {
+			refs.add(new CurriculumElementRefImpl(key));
+		}
+		refs.add(new CurriculumElementRefImpl(element.getKey()));
+
+		List<CurriculumElement> elements = curriculumElementDao.loadByKeys(refs);
+
+		Assert.assertTrue(elements.contains(element));
+	}
+
 	@Test
 	public void loadElements_curricullum() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-6", "Curriculum for element", "Curriculum", false, null);
