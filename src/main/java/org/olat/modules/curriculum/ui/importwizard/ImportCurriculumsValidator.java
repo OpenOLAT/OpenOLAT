@@ -415,7 +415,7 @@ public class ImportCurriculumsValidator {
 						translator.translate("error.not.exist.sheet", sheet));
 			} else if(importedRow.getUserRow().hasValidationErrors()) {
 				importedRow.addValidationError(ImportCurriculumsCols.username, column,
-						null, translator.translate("error.precent.errors", sheet));
+						null, translator.translate("error.percent.errors", sheet));
 			} else if(importedRow.getUserRow().isIgnored()) {
 				importedRow.addValidationError(ImportCurriculumsCols.username, column,
 						null, translator.translate("error.ignored.in.sheet", sheet));
@@ -550,7 +550,7 @@ public class ImportCurriculumsValidator {
 		String column = translate(ImportCurriculumsCols.elementType.i18nHeaderKey());
 		if(!type.isAllowedAsRootElement() && importedRow.type() == CurriculumExportType.IMPL) {
 			importedRow.addValidationError(ImportCurriculumsCols.elementType, column,
-					null, translate("error.impletation.not.allowed"));
+					null, translate("error.implementation.not.allowed"));
 			allOk &= false;
 		} else if(type.getMaxRepositoryEntryRelations() == 0
 				&& importedRow.getNumResources(CurriculumExportType.COURSE) + importedRow.getNumResources(CurriculumExportType.TMPL) > 0) {
@@ -830,7 +830,7 @@ public class ImportCurriculumsValidator {
 			if(importedRow.type() == CurriculumExportType.IMPL) {
 				if(!Objects.equals(importedRow.getImplementationIdentifier(), importedRow.getIdentifier())) {
 					importedRow.addValidationError(ImportCurriculumsCols.implementationIdentifier, translate(ImportCurriculumsCols.implementationIdentifier.i18nHeaderKey()),
-							null, translator.translate("error.impletation.identifiers.doesnt.match", importedRow.getIdentifier()));
+							null, translator.translate("error.implementation.identifiers.doesnt.match", importedRow.getIdentifier()));
 				}
 			} else if(importedRow.getImplementation() == null && importedRow.getImplementationRow() == null) {
 				String column = translate(ImportCurriculumsCols.implementationIdentifier.i18nHeaderKey());
@@ -849,7 +849,7 @@ public class ImportCurriculumsValidator {
 						null, translator.translate("error.not.exist", importedRow.getCurriculumIdentifier()));
 			} else if(importedRow.getCurriculumRow().hasValidationErrors()) {
 				importedRow.addValidationError(ImportCurriculumsCols.curriculumIdentifier, column,
-						null, translator.translate("error.precent.errors", sheet));
+						null, translator.translate("error.percent.errors", sheet));
 			} else if(importedRow.getCurriculumRow().isIgnored()) {
 				importedRow.addValidationError(ImportCurriculumsCols.curriculumIdentifier, column,
 						null, translator.translate("error.ignored.in.sheet", sheet));
@@ -864,7 +864,7 @@ public class ImportCurriculumsValidator {
 						null, translator.translate("error.not.exist", importedRow.getImplementationIdentifier()));
 			} else if(importedRow.getImplementationRow().hasValidationErrors()) {
 				importedRow.addValidationError(ImportCurriculumsCols.implementationIdentifier, column,
-						null, translator.translate("error.precent.errors", sheet));
+						null, translator.translate("error.percent.errors", sheet));
 			} else if(importedRow.getImplementationRow().isIgnored()) {
 				importedRow.addValidationError(ImportCurriculumsCols.implementationIdentifier, column,
 						null, translator.translate("error.ignored.in.sheet", sheet));
@@ -879,7 +879,7 @@ public class ImportCurriculumsValidator {
 						null, translator.translate("error.not.exist", importedRow.getIdentifier()));
 			} else if(importedRow.getElementRow().hasValidationErrors()) {
 				importedRow.addValidationError(ImportCurriculumsCols.identifier, column,
-						null, translator.translate("error.precent.errors", sheet));
+						null, translator.translate("error.percent.errors", sheet));
 			} else if(importedRow.getElementRow().isIgnored()) {
 				importedRow.addValidationError(ImportCurriculumsCols.identifier, column,
 						null, translator.translate("error.ignored.in.sheet", sheet));

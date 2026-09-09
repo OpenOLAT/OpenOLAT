@@ -146,7 +146,7 @@ public class GTACoachPeerReviewListController extends AbstractWorkflowListContro
 			formReviewInfos = translate("peer.review.open.review");
 		}
 		if(StringHelper.containsNonWhitespace(assignmentInfos) && StringHelper.containsNonWhitespace(formReviewInfos)) {
-			String text = translate("workflow.infos.asssignment.type", assignmentInfos, formReviewInfos);
+			String text = translate("workflow.infos.assignment.type", assignmentInfos, formReviewInfos);
 			infos.append("<p><i class='o_icon o_icon-fw o_icon_info_list'> </i> ").append(text).append("</p>");
 		}
 		
