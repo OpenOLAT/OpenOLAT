@@ -23,7 +23,10 @@ import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -556,11 +559,10 @@ public class LectureBlockWebService {
 	
 	@GET
 	@Path("room")
-	@Operation(summary = "Get the room booking of the lecture block", description = "Get the room booking of the lecture block, if any")
-	@ApiResponse(responseCode = "200", description = "The room booking", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = RoomBookingVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = RoomBookingVO.class)) })
-	@ApiResponse(responseCode = "204", description = "The lecture block has no room booking")
+	@Operation(summary = "Get the room bookings of the lecture block", description = "Get all room bookings of the lecture block")
+	@ApiResponse(responseCode = "200", description = "The room bookings", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RoomBookingVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RoomBookingVO.class))) })
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -572,105 +574,110 @@ public class LectureBlockWebService {
 			return Response.status(Status.FORBIDDEN).build();
 		}
 		List<RoomBooking> bookings = roomManagementService.getBookings(lectureBlock);
-		if (bookings == null || bookings.isEmpty()) {
-			return Response.noContent().status(Status.NO_CONTENT).build();
-		}
-		return Response.ok(RoomBookingVO.valueOf(bookings.get(0))).build();
+		return Response.ok(toVoArray(bookings)).build();
 	}
 
 	@PUT
 	@Path("room")
-	@Operation(summary = "Create or update the room booking of the lecture block", description = "Create or replace the room booking of the lecture block. Identifier precedence: roomKey > externalId > externalRef (when unique).")
-	@ApiResponse(responseCode = "200", description = "The created or updated room booking", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = RoomBookingVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = RoomBookingVO.class)) })
-	@ApiResponse(responseCode = "400", description = "No room identifier supplied")
+	@Operation(summary = "Replace the room bookings of the lecture block", description = "Replace all room bookings of the lecture block with the given array, the target state. Identifier precedence per element: roomKey > externalId > externalRef (when unique). An empty array clears all bookings.")
+	@ApiResponse(responseCode = "200", description = "The room bookings after the update", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RoomBookingVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RoomBookingVO.class))) })
+	@ApiResponse(responseCode = "400", description = "The request body is missing, or an array element carries no room identifier")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The room was not found")
-	@ApiResponse(responseCode = "409", description = "The room is inactive and cannot be booked",
+	@ApiResponse(responseCode = "409", description = "A room is inactive and cannot be booked",
 			content = @Content(mediaType = "application/json",
 				schema = @Schema(type = "object", example = "{\"code\":\"room.inactive\"}")))
+	@ApiResponse(responseCode = "409", description = "Two array elements resolve to the same room",
+			content = @Content(mediaType = "application/json",
+				schema = @Schema(type = "object", example = "{\"code\":\"room.duplicate\",\"room\":42}")))
 	@ApiResponse(responseCode = "422", description = "The externalRef is ambiguous (multiple rooms match)",
 			content = @Content(mediaType = "application/json",
 				schema = @Schema(type = "object", example = "{\"code\":\"room.ambiguousExternalRef\",\"matches\":2}")))
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putRoomBooking(RoomBookingVO vo, @Context HttpServletRequest httpRequest) {
+	public Response putRoomBooking(RoomBookingVO[] vos, @Context HttpServletRequest httpRequest) {
 		if (roomManagementModule == null || !roomManagementModule.isEnabled()) {
 			return Response.status(Status.NOT_FOUND).build();
 		}
 		if (!administrator) {
 			return Response.status(Status.FORBIDDEN).build();
 		}
-		if (vo == null) {
+		if (vos == null) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 
-		Room room;
-		if (vo.getRoomKey() != null) {
-			room = roomManagementService.getRoom(() -> vo.getRoomKey());
-			if (room == null) {
-				return Response.status(Status.NOT_FOUND).build();
+		Map<Long, RoomBookingVO> target = new LinkedHashMap<>();
+		Map<Long, Room> resolvedRooms = new LinkedHashMap<>();
+		for (RoomBookingVO vo : vos) {
+			RoomResolution resolution = resolveRoom(vo, httpRequest);
+			if (resolution instanceof RoomResolution.Failed failed) {
+				return failed.response();
 			}
-		} else if (vo.getExternalId() != null && !vo.getExternalId().isBlank()) {
-			SearchRoomParameters idParams = new SearchRoomParameters();
-			idParams.setExactExternalId(vo.getExternalId());
-			idParams.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
-			idParams.setIdentity(getIdentity(httpRequest));
-			List<Room> byId = roomManagementService.searchRooms(idParams, getRoles(httpRequest));
-			if (byId.isEmpty()) {
-				return Response.status(Status.NOT_FOUND).build();
+			Room room = ((RoomResolution.Resolved) resolution).room();
+			if (target.containsKey(room.getKey())) {
+				String body = "{\"code\":\"room.duplicate\",\"room\":" + room.getKey() + "}";
+				return Response.status(Status.CONFLICT).entity(body).type(MediaType.APPLICATION_JSON).build();
 			}
-			room = byId.get(0);
-		} else if (vo.getExternalRef() != null && !vo.getExternalRef().isBlank()) {
-			SearchRoomParameters refParams = new SearchRoomParameters();
-			refParams.setExactExternalRef(vo.getExternalRef());
-			refParams.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
-			refParams.setIdentity(getIdentity(httpRequest));
-			List<Room> byRef = roomManagementService.searchRooms(refParams, getRoles(httpRequest));
-			if (byRef.isEmpty()) {
-				return Response.status(Status.NOT_FOUND).build();
-			}
-			if (byRef.size() > 1) {
-				String body = "{\"code\":\"room.ambiguousExternalRef\",\"matches\":" + byRef.size() + "}";
-				return Response.status(422).entity(body).type(MediaType.APPLICATION_JSON).build();
-			}
-			room = byRef.get(0);
-		} else {
-			return Response.status(Status.BAD_REQUEST).build();
+			target.put(room.getKey(), vo);
+			resolvedRooms.put(room.getKey(), room);
 		}
-
-		if (room.getStatus() != RoomStatus.active) {
-			String body = "{\"code\":\"room.inactive\"}";
-			return Response.status(Status.CONFLICT).entity(body).type(MediaType.APPLICATION_JSON).build();
-		}
-
-		Date startDate = vo.getStartDate() != null ? vo.getStartDate() : lectureBlock.getStartDate();
-		Date endDate = vo.getEndDate() != null ? vo.getEndDate() : lectureBlock.getEndDate();
 
 		Identity doer = getIdentity(httpRequest);
 		List<RoomBooking> existing = roomManagementService.getBookings(lectureBlock);
-		RoomBooking booking;
-		if (existing != null && !existing.isEmpty()) {
-			booking = existing.get(0);
-			booking.setRoom(room);
-			booking.setStartDate(startDate);
-			booking.setEndDate(endDate);
-			booking.setBufferBefore(vo.getBufferBeforeMin());
-			booking.setBufferAfter(vo.getBufferAfterMin());
-			booking = roomManagementService.updateBooking(booking, doer);
-		} else {
-			booking = roomManagementService.bookRoom(room, lectureBlock,
-					startDate, endDate,
-					vo.getBufferBeforeMin(), vo.getBufferAfterMin(), doer);
+		Set<Long> existingRoomKeys = existing.stream()
+				.map(b -> b.getRoom().getKey())
+				.collect(Collectors.toSet());
+
+		for (RoomBooking booking : existing) {
+			RoomBookingVO vo = target.get(booking.getRoom().getKey());
+			if (vo == null) {
+				roomManagementService.deleteBooking(booking, doer);
+				continue;
+			}
+			boolean changed = false;
+			if (vo.getStartDate() != null && !vo.getStartDate().equals(booking.getStartDate())) {
+				booking.setStartDate(vo.getStartDate());
+				changed = true;
+			}
+			if (vo.getEndDate() != null && !vo.getEndDate().equals(booking.getEndDate())) {
+				booking.setEndDate(vo.getEndDate());
+				changed = true;
+			}
+			if (vo.getBufferBeforeMin() != null && !vo.getBufferBeforeMin().equals(booking.getBufferBefore())) {
+				booking.setBufferBefore(vo.getBufferBeforeMin());
+				changed = true;
+			}
+			if (vo.getBufferAfterMin() != null && !vo.getBufferAfterMin().equals(booking.getBufferAfter())) {
+				booking.setBufferAfter(vo.getBufferAfterMin());
+				changed = true;
+			}
+			if (changed) {
+				roomManagementService.updateBooking(booking, doer);
+			}
 		}
-		return Response.ok(RoomBookingVO.valueOf(booking)).build();
+		for (Map.Entry<Long, RoomBookingVO> entry : target.entrySet()) {
+			if (existingRoomKeys.contains(entry.getKey())) {
+				continue;
+			}
+			RoomBookingVO vo = entry.getValue();
+			Room room = resolvedRooms.get(entry.getKey());
+			Date startDate = vo.getStartDate() != null ? vo.getStartDate() : lectureBlock.getStartDate();
+			Date endDate = vo.getEndDate() != null ? vo.getEndDate() : lectureBlock.getEndDate();
+			int before = vo.getBufferBeforeMin() != null ? vo.getBufferBeforeMin() : 0;
+			int after = vo.getBufferAfterMin() != null ? vo.getBufferAfterMin() : 0;
+			roomManagementService.bookRoom(room, lectureBlock, startDate, endDate, before, after, doer);
+		}
+
+		List<RoomBooking> result = roomManagementService.getBookings(lectureBlock);
+		return Response.ok(toVoArray(result)).build();
 	}
 
 	@DELETE
 	@Path("room")
-	@Operation(summary = "Delete the room booking of the lecture block", description = "Delete the room booking of the lecture block (204 if no booking exists)")
-	@ApiResponse(responseCode = "204", description = "Room booking deleted or no booking existed")
+	@Operation(summary = "Delete the room bookings of the lecture block", description = "Delete all room bookings of the lecture block (204 if no booking exists)")
+	@ApiResponse(responseCode = "204", description = "Room bookings deleted or none existed")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not found")
 	public Response deleteRoomBooking(@Context HttpServletRequest httpRequest) {
@@ -680,12 +687,72 @@ public class LectureBlockWebService {
 		if (!administrator) {
 			return Response.status(Status.FORBIDDEN).build();
 		}
+		Identity doer = getIdentity(httpRequest);
 		List<RoomBooking> existing = roomManagementService.getBookings(lectureBlock);
-		if (existing != null && !existing.isEmpty()) {
-			Identity doer = getIdentity(httpRequest);
-			roomManagementService.deleteBooking(existing.get(0), doer);
+		for (RoomBooking booking : existing) {
+			roomManagementService.deleteBooking(booking, doer);
 		}
 		return Response.noContent().build();
+	}
+
+	private RoomBookingVO[] toVoArray(List<RoomBooking> bookings) {
+		RoomBookingVO[] vos = new RoomBookingVO[bookings.size()];
+		for (int i = 0; i < bookings.size(); i++) {
+			vos[i] = RoomBookingVO.valueOf(bookings.get(i));
+		}
+		return vos;
+	}
+
+	private sealed interface RoomResolution {
+		record Resolved(Room room) implements RoomResolution {}
+		record Failed(Response response) implements RoomResolution {}
+	}
+
+	private RoomResolution resolveRoom(RoomBookingVO vo, HttpServletRequest httpRequest) {
+		if (vo == null) {
+			return new RoomResolution.Failed(Response.status(Status.BAD_REQUEST).build());
+		}
+
+		Room room;
+		if (vo.getRoomKey() != null) {
+			room = roomManagementService.getRoom(() -> vo.getRoomKey());
+			if (room == null) {
+				return new RoomResolution.Failed(Response.status(Status.NOT_FOUND).build());
+			}
+		} else if (vo.getExternalId() != null && !vo.getExternalId().isBlank()) {
+			SearchRoomParameters idParams = new SearchRoomParameters();
+			idParams.setExactExternalId(vo.getExternalId());
+			idParams.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
+			idParams.setIdentity(getIdentity(httpRequest));
+			List<Room> byId = roomManagementService.searchRooms(idParams, getRoles(httpRequest));
+			if (byId.isEmpty()) {
+				return new RoomResolution.Failed(Response.status(Status.NOT_FOUND).build());
+			}
+			room = byId.get(0);
+		} else if (vo.getExternalRef() != null && !vo.getExternalRef().isBlank()) {
+			SearchRoomParameters refParams = new SearchRoomParameters();
+			refParams.setExactExternalRef(vo.getExternalRef());
+			refParams.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
+			refParams.setIdentity(getIdentity(httpRequest));
+			List<Room> byRef = roomManagementService.searchRooms(refParams, getRoles(httpRequest));
+			if (byRef.isEmpty()) {
+				return new RoomResolution.Failed(Response.status(Status.NOT_FOUND).build());
+			}
+			if (byRef.size() > 1) {
+				String body = "{\"code\":\"room.ambiguousExternalRef\",\"matches\":" + byRef.size() + "}";
+				return new RoomResolution.Failed(Response.status(422).entity(body).type(MediaType.APPLICATION_JSON).build());
+			}
+			room = byRef.get(0);
+		} else {
+			return new RoomResolution.Failed(Response.status(Status.BAD_REQUEST).build());
+		}
+
+		if (room.getStatus() != RoomStatus.active) {
+			String body = "{\"code\":\"room.inactive\"}";
+			return new RoomResolution.Failed(Response.status(Status.CONFLICT).entity(body).type(MediaType.APPLICATION_JSON).build());
+		}
+
+		return new RoomResolution.Resolved(room);
 	}
 
 	private Response identitiesToResponse(List<Identity> identities) {
