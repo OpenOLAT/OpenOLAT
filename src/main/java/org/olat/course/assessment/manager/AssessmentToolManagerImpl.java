@@ -569,7 +569,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		  .append(" sum(case when aentry.score is not null then 1 else 0 end) as numOfScore,")
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
-		  .append(" sum(case when aentry.passed=null then 1 else 0 end) as numOfUndefined,")
+		  .append(" sum(case when aentry.passed is null then 1 else 0 end) as numOfUndefined,")
 		  .append(" sum(case when aentry.status='").append(AssessmentEntryStatus.done.name()).append("' then 1 else 0 end) as numDone,")
 		  .append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.done.name()).append("')) then 1 else 0 end) as numNotDone,")
 		  .append(" count(aentry.key) as numOfParticipants")
@@ -624,13 +624,13 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			String name = (String)result[1];
 			double averageScore = result[3] == null ? 0.0d : ((Number)result[3]).doubleValue();
 			double averageWeightedScore = result[4] == null ? 0.0d : ((Number)result[4]).doubleValue();
-			int numOfScores = result[4] == null ? 0 : ((Number)result[5]).intValue();
-			int numOfPassed = result[5] == null ? 0 : ((Number)result[6]).intValue();
-			int numOfFailed = result[6] == null ? 0  : ((Number)result[7]).intValue();
-			int numOfUndefined = result[7] == null ? 0 : ((Number)result[8]).intValue();
-			int numDone = result[8] == null ? 0 : ((Number)result[9]).intValue();
-			int numNotDone = result[9] == null ? 0 : ((Number)result[10]).intValue();
-			int numOfParticipants = result[10] == null ? 0 : ((Number)result[11]).intValue();
+			int numOfScores = result[5] == null ? 0 : ((Number)result[5]).intValue();
+			int numOfPassed = result[6] == null ? 0 : ((Number)result[6]).intValue();
+			int numOfFailed = result[7] == null ? 0  : ((Number)result[7]).intValue();
+			int numOfUndefined = result[8] == null ? 0 : ((Number)result[8]).intValue();
+			int numDone = result[9] == null ? 0 : ((Number)result[9]).intValue();
+			int numNotDone = result[10] == null ? 0 : ((Number)result[10]).intValue();
+			int numOfParticipants = result[11] == null ? 0 : ((Number)result[11]).intValue();
 			rows.add(new AssessedBusinessGroup(key, name, averageScore, averageWeightedScore, numOfScores > 0,
 					numOfPassed, numOfFailed, numOfUndefined, numDone, numNotDone, numOfParticipants));
 		}
@@ -645,7 +645,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		  .append(" sum(case when aentry.score is not null then 1 else 0 end) as numOfScore,")
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
-		  .append(" sum(case when aentry.passed=null then 1 else 0 end) as numOfUndefined,")
+		  .append(" sum(case when aentry.passed is null then 1 else 0 end) as numOfUndefined,")
 		  .append(" sum(case when aentry.status='").append(AssessmentEntryStatus.done.name()).append("' then 1 else 0 end) as numDone,")
 		  .append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.done.name()).append("')) then 1 else 0 end) as numNotDone,")
 		  .append(" count(aentry.key) as numOfParticipants")

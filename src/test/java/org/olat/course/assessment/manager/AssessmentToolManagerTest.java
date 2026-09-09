@@ -316,6 +316,91 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getBusinessGroupAndCurriculumElementStatistics() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-author-stats", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-stats", defaultUnitTestOrganisation).getIdentity();
+
+		Identity passedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-passed", defaultUnitTestOrganisation, null);
+		Identity failedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-failed", defaultUnitTestOrganisation, null);
+		Identity undefinedDoneIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-undef-done", defaultUnitTestOrganisation, null);
+		Identity undefinedNotDoneIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-undef-notdone", defaultUnitTestOrganisation, null);
+
+		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "assessment-tool-bg-stats", "assessment-tool-bg-stats-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRelationToResource(group, entry);
+		businessGroupRelationDao.addRole(passedIdentity, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(failedIdentity, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(undefinedDoneIdentity, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(undefinedNotDoneIdentity, group, GroupRoles.participant.name());
+
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, null);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addRepositoryEntry(curriculumElement, entry, false);
+		curriculumService.addMember(curriculumElement, passedIdentity, CurriculumRoles.participant, author);
+		curriculumService.addMember(curriculumElement, failedIdentity, CurriculumRoles.participant, author);
+		curriculumService.addMember(curriculumElement, undefinedDoneIdentity, CurriculumRoles.participant, author);
+		curriculumService.addMember(curriculumElement, undefinedNotDoneIdentity, CurriculumRoles.participant, author);
+
+		dbInstance.commitAndCloseSession();
+
+		AssessmentEntry aePassed = assessmentEntryDao.createAssessmentEntry(passedIdentity, null, entry, subIdent, null, refEntry);
+		aePassed.setScore(BigDecimal.valueOf(8.0));
+		aePassed.setPassed(Boolean.TRUE);
+		aePassed.setAssessmentStatus(AssessmentEntryStatus.done);
+		assessmentEntryDao.updateAssessmentEntry(aePassed);
+
+		AssessmentEntry aeFailed = assessmentEntryDao.createAssessmentEntry(failedIdentity, null, entry, subIdent, null, refEntry);
+		aeFailed.setScore(BigDecimal.valueOf(2.0));
+		aeFailed.setPassed(Boolean.FALSE);
+		aeFailed.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+		assessmentEntryDao.updateAssessmentEntry(aeFailed);
+
+		AssessmentEntry aeUndefinedDone = assessmentEntryDao.createAssessmentEntry(undefinedDoneIdentity, null, entry, subIdent, null, refEntry);
+		aeUndefinedDone.setScore(BigDecimal.valueOf(5.0));
+		aeUndefinedDone.setAssessmentStatus(AssessmentEntryStatus.done);
+		assessmentEntryDao.updateAssessmentEntry(aeUndefinedDone);
+
+		AssessmentEntry aeUndefinedNotDone = assessmentEntryDao.createAssessmentEntry(undefinedNotDoneIdentity, null, entry, subIdent, null, refEntry);
+		aeUndefinedNotDone.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+		assessmentEntryDao.updateAssessmentEntry(aeUndefinedNotDone);
+
+		dbInstance.commitAndCloseSession();
+
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, Set.of(admin));
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
+
+		List<AssessedBusinessGroup> assessedGroups = assessmentToolManager.getBusinessGroupStatistics(admin, params);
+		assertThat(assessedGroups).hasSize(1);
+		AssessedBusinessGroup assessedGroup = assessedGroups.get(0);
+		assertThat(assessedGroup.getNumOfParticipants()).isEqualTo(4);
+		assertThat(assessedGroup.getNumOfPassed()).isEqualTo(1);
+		assertThat(assessedGroup.getNumOfFailed()).isEqualTo(1);
+		assertThat(assessedGroup.getNumOfUndefined()).isEqualTo(2);
+		assertThat(assessedGroup.getNumDone()).isEqualTo(2);
+		assertThat(assessedGroup.getNumNotDone()).isEqualTo(2);
+		assertThat(assessedGroup.getAverageScore()).isEqualTo(5.0d);
+		assertThat(assessedGroup.isHasScore()).isTrue();
+
+		List<AssessedCurriculumElement> assessedCurriculumElements = assessmentToolManager.getCurriculumElementStatistics(admin, params);
+		assertThat(assessedCurriculumElements).hasSize(1);
+		AssessedCurriculumElement assessedCurriculumElement = assessedCurriculumElements.get(0);
+		assertThat(assessedCurriculumElement.getNumOfParticipants()).isEqualTo(4);
+		assertThat(assessedCurriculumElement.getNumOfPassed()).isEqualTo(1);
+		assertThat(assessedCurriculumElement.getNumOfFailed()).isEqualTo(1);
+		assertThat(assessedCurriculumElement.getNumOfUndefined()).isEqualTo(2);
+		assertThat(assessedCurriculumElement.getNumDone()).isEqualTo(2);
+		assertThat(assessedCurriculumElement.getNumNotDone()).isEqualTo(2);
+		assertThat(assessedCurriculumElement.getAverageScore()).isEqualTo(5.0d);
+		assertThat(assessedCurriculumElement.isHasScore()).isTrue();
+	}
+
+	@Test
 	public void assessmentTool_admin() {
 		//course
 		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-1", defaultUnitTestOrganisation).getIdentity();
