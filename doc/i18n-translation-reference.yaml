@@ -103,6 +103,8 @@ terms:
     kind: concept
     de: ONNX Einbettungsmodell
     en: ONNX embedding model
+    fr: Modèle d'embedding ONNX
+    it: Modello di embedding ONNX
     sk_source: proposed
     sk: Embeddingový model ONNX
     keys:
@@ -131,6 +133,8 @@ terms:
     kind: concept
     de: Einbettungsmodell
     en: Embedding model
+    fr: Modèle d'embedding
+    it: Modello di embedding
     sk_source: proposed
     sk: Embeddingový model
     keys:
@@ -143,6 +147,8 @@ terms:
     kind: concept
     de: Vision Modell
     en: Vision model
+    fr: Modèle de vision
+    it: Modello di visione
     sk: Model vízie
     keys:
     - core/commons/services/ai/ui:ai.feature.image-description-generator.model
@@ -151,6 +157,8 @@ terms:
     kind: concept
     de: KI Funktion
     en: AI Feature
+    fr: Fonctionnalité IA
+    it: Funzione IA
     sk_source: proposed
     sk: Funkcia AI
     keys:
@@ -176,6 +184,8 @@ terms:
     kind: concept
     de: Essay Fragen Generator
     en: Essay Question Generator
+    fr: Générateur de questions à texte libre
+    it: Generatore di domande a testo libero
     sk_source: proposed
     sk: Generátor esejových otázok
     keys:
@@ -187,6 +197,8 @@ terms:
     kind: concept
     de: Essay Bewertung
     en: Essay Grading
+    fr: Évaluation des textes libres
+    it: Valutazione dei testi liberi
     sk_source: proposed
     sk: Hodnotenie esejových odpovedí
     keys:
@@ -201,6 +213,8 @@ terms:
     kind: concept
     de: Bildbeschreibungs-Generator
     en: Image Description Generator
+    fr: Générateur de descriptions d'image
+    it: Generatore di descrizioni di immagini
     sk: Generátor popisov obrázkov
     keys:
     - core/commons/services/ai/ui:ai.feature.image-description-generator
@@ -209,6 +223,8 @@ terms:
     kind: concept
     de: Taxonomie-Zuordnung (Embeddings)
     en: Taxonomy Matching (Embeddings)
+    fr: Correspondance de taxonomie (embeddings)
+    it: Mappatura della tassonomia (embedding)
     sk_source: proposed
     sk: Priraďovanie k taxonómii (embeddingy)
     keys:
@@ -236,6 +252,8 @@ terms:
     kind: concept
     de: KI-Feedback
     en: AI feedback
+    fr: Feedback IA
+    it: Feedback IA
     sk_source: proposed
     sk: Spätná väzba AI
     keys:
@@ -248,6 +266,8 @@ terms:
     kind: attribute
     de: Verlässlichkeit Feedback
     en: Feedback reliability
+    fr: Fiabilité du feedback
+    it: Affidabilità del feedback
     sk_source: proposed
     sk: Spoľahlivosť spätnej väzby
     keys:
@@ -260,6 +280,8 @@ terms:
     kind: attribute
     de: Bloom-Stufen
     en: Bloom levels
+    fr: Niveaux de Bloom
+    it: Livelli di Bloom
     sk_source: proposed
     sk: Bloomove úrovne
     keys:
@@ -301,6 +323,8 @@ terms:
     kind: concept
     de: Bewertungs-Kit (Referenz + Musterantwort)
     en: Grading kit (reference + model answer)
+    fr: Kit d'évaluation (référence + réponse modèle)
+    it: Kit di valutazione (riferimento + risposta modello)
     sk_source: proposed
     sk: Hodnotiaca súprava (referencia a vzorová odpoveď)
     keys:
@@ -312,6 +336,8 @@ terms:
     kind: attribute
     de: Bewertungskriterien
     en: Rubric criteria
+    fr: Critères d'évaluation
+    it: Criteri di valutazione
     sk_source: proposed
     sk: Kritériá hodnotenia
     keys:
@@ -334,6 +360,8 @@ terms:
     kind: concept
     de: Pool "Interaktiv" (Threads)
     en: Pool "Interactive" (threads)
+    fr: Pool "Interactif" (threads)
+    it: Pool "Interattivo" (thread)
     sk_source: proposed
     sk: Fond „Interaktívny“ (vlákna)
     keys:
@@ -343,6 +371,8 @@ terms:
     kind: concept
     de: Pool "Batch" (Threads)
     en: Pool "Batch" (threads)
+    fr: Pool "Batch" (threads)
+    it: Pool "Batch" (thread)
     sk_source: proposed
     sk: Fond „Dávkový“ (vlákna)
     keys:
@@ -352,6 +382,8 @@ terms:
     kind: concept
     de: Nutzungsprotokoll
     en: Usage log
+    fr: Journal d'utilisation
+    it: Registro di utilizzo
     sk_source: proposed
     sk: Protokol používania
     keys:
@@ -1109,7 +1141,7 @@ terms:
     de: Anwesenheitsquote
     en: Attendance rate
     fr: Taux de fréquentation
-    it: Attendance rate
+    it: Tasso di presenza
     sk_source: proposed
     sk: Miera dochádzky
     keys:
@@ -1423,6 +1455,8 @@ terms:
     kind: module
     de: Räume
     en: Rooms
+    fr: Salles
+    it: Aule
     sk_source: proposed
     sk: Miestnosti
     keys:
@@ -1442,6 +1476,8 @@ terms:
     kind: area
     de: Raumverwaltung
     en: Room management
+    fr: Gestion des salles
+    it: Gestione delle aule
     sk_source: proposed
     sk: Správa miestností
     keys:
@@ -1456,6 +1492,8 @@ terms:
     kind: concept
     de: Raum
     en: Room
+    fr: Salle
+    it: Aula
     sk_source: proposed
     sk: Miestnosť
     keys:
@@ -1468,6 +1506,8 @@ terms:
     kind: concept
     de: Gebäude
     en: Building
+    fr: Bâtiment
+    it: Edificio
     sk_source: proposed
     sk: Budova
     keys:
@@ -1480,6 +1520,8 @@ terms:
     kind: concept
     de: Raumplanung
     en: Room scheduling
+    fr: Planification des salles
+    it: Pianificazione delle aule
     sk_source: proposed
     sk: Plánovanie miestností
     keys:
@@ -1510,6 +1552,8 @@ terms:
     kind: attribute
     de: Plätze
     en: Seats
+    fr: Places
+    it: Posti
     sk_source: proposed
     sk: Miesta
     keys:
@@ -1523,6 +1567,8 @@ terms:
     kind: attribute
     de: Belegung
     en: Occupancy rate
+    fr: Taux d'occupation
+    it: Occupazione
     sk_source: proposed
     sk: Obsadenosť
     keys:
@@ -1715,6 +1761,8 @@ terms:
     kind: content_element
     de: Inhaltsverzeichnis
     en: Table of contents
+    fr: Table des matières
+    it: Indice
     sk_source: proposed
     sk: Obsah
     keys:
@@ -2148,6 +2196,8 @@ terms:
     kind: concept
     de: Kreditpunktesystem
     en: Credit point system
+    fr: Système de crédit
+    it: Sistema di crediti formativi
     sk: Systém kreditných bodov
     keys:
     - modules/certificationprogram/ui:credit.point.system
@@ -2253,6 +2303,8 @@ terms:
     kind: area
     de: Übersicht
     en: Overview
+    fr: Aperçu
+    it: Panoramica
     sk: Prehľad
     keys:
     - core/gui/control/generic/dashboard:settings.header
@@ -2265,6 +2317,8 @@ terms:
     kind: area
     de: Kurse - Als Betreuer{in}
     en: Courses - As coach
+    fr: Cours - En tant que coach
+    it: Corsi - Come coach
     sk_source: proposed
     sk: Kurzy - Ako kouč
     keys:
@@ -2330,8 +2384,8 @@ terms:
     kind: area
     de: Betreuer{innen} Benachrichtigungen
     en: Coach's notifications
-    fr: Notifications de superviseur
-    it: Notifiche del supervisore
+    fr: Notifications des coaches
+    it: Notifiche dei coach
     sk_source: proposed
     sk: Oznámenia kouča
     keys:
@@ -2344,6 +2398,8 @@ terms:
     kind: area
     de: Bildungsprodukte
     en: Educational products
+    fr: Produits éducatifs
+    it: Prodotti per l'istruzione
     sk: Vzdelávacie produkty
     keys:
     - modules/coach/ui:implementations.menu.title
@@ -2373,6 +2429,8 @@ terms:
     kind: area
     de: Ausstehende Bestätigungen
     en: Pending confirmations
+    fr: Confirmations en attente
+    it: Conferme in sospeso
     sk: Čakajúce potvrdenia
     keys:
     - modules/coach/ui:pending.confirmations
@@ -2383,6 +2441,8 @@ terms:
     kind: concept
     de: Ausstehende Mitgliedschaften
     en: Pending memberships
+    fr: Adhésions en attente
+    it: Iscrizioni in sospeso
     sk: Čakajúce členstvá
     keys:
     - modules/coach/ui:pending.memberships
@@ -3329,7 +3389,7 @@ terms:
     de: Dateien
     en: Files
     fr: Fichiers
-    it: Files
+    it: File
     sk: Súbory
     keys:
     - course/run:command.coursefiles
@@ -3699,7 +3759,7 @@ terms:
     de: Dateien
     en: Files
     fr: Fichiers
-    it: Files
+    it: File
     sk: Súbory
     keys:
     - modules/project/ui:file.all.title
@@ -5523,6 +5583,8 @@ terms:
     kind: concept
     de: Zuständig für dieses Thema
     en: Responsible for the topic
+    fr: Responsable de ce sujet
+    it: Responsabile di questo argomento
     sk_source: proposed
     sk: Zodpovedná osoba za tému
     keys:
@@ -5928,6 +5990,8 @@ terms:
     kind: action
     de: Als Template speichern
     en: Save as template
+    fr: Enregistrer comme modèle
+    it: Salvare come template
     sk_source: proposed
     sk: Uložiť ako šablónu
     keys:
@@ -5953,7 +6017,7 @@ terms:
     de: Unterlagen Betreuer{innen}
     en: Coach files
     fr: Documents pour les coaches
-    it: Coach files
+    it: Documenti dei coach
     sk_source: proposed
     sk: Súbory kouča
     tr: Koç dosyaları
@@ -6003,6 +6067,8 @@ terms:
     kind: concept
     de: Durchführung
     en: Implementation
+    fr: Implémentation
+    it: Implementazione
     sk_source: proposed
     sk: Realizácia vzdelávania
     keys:
@@ -6074,6 +6140,8 @@ terms:
     kind: attribute
     de: Inhalt
     en: Content
+    fr: Contenu
+    it: Contenuto
     sk_source: proposed
     sk: Obsah
     keys:
@@ -6154,6 +6222,8 @@ terms:
     kind: concept
     de: Automatisierung
     en: Automation
+    fr: Automatisation
+    it: Automazione
     sk_source: proposed
     sk: Automatizácia
     keys:
@@ -6176,6 +6246,8 @@ terms:
     kind: concept
     de: Instanziierung
     en: Instantiation
+    fr: Instanciation
+    it: Istanziazione
     sk_source: proposed
     sk: Vytvorenie inštancie
     keys:
@@ -6245,6 +6317,8 @@ terms:
     kind: concept
     de: Bildungsprodukte
     en: Educational products
+    fr: Produits éducatifs
+    it: Prodotti per l'istruzione
     sk_source: proposed
     sk: Vzdelávacie produkty
     keys:
@@ -6379,6 +6453,8 @@ terms:
     kind: attribute
     de: Seriennummer
     en: Serial number
+    fr: Numéro de série
+    it: Numero di serie
     sk_source: proposed
     sk: Sériové číslo
     keys:
@@ -6392,6 +6468,8 @@ terms:
     kind: attribute
     de: Ausgestellt am
     en: Issued on
+    fr: Délivré le
+    it: Rilasciato il
     sk_source: proposed
     sk: Vydané dňa
     keys:
@@ -6430,6 +6508,8 @@ terms:
     kind: module
     de: Zertifikatsprogramm
     en: Certification program
+    fr: Programme de certification
+    it: Programma di certificazione
     sk: Certifikačný program
     keys:
     - modules/curriculum/ui:certification.program
@@ -6448,6 +6528,8 @@ terms:
     kind: attribute
     de: Druckvorlage
     en: Print template
+    fr: Modèle d'impression
+    it: Modello di stampa
     sk_source: proposed
     sk: Tlačová šablóna
     keys:
@@ -8105,6 +8187,8 @@ terms:
     kind: concept
     de: One Time Code
     en: One time code
+    fr: One Time Code
+    it: One Time Code
     sk_source: proposed
     sk: Jednorazový kód
     keys:
@@ -8439,6 +8523,8 @@ terms:
     kind: concept
     de: Export
     en: Export
+    fr: Export
+    it: Esportazione
     sk_source: proposed
     sk: Export
     keys:
@@ -9267,6 +9353,7 @@ terms:
     de: Dashboard
     en: Dashboard
     fr: Dashboard
+    it: Dashboard
     sk_source: proposed
     sk: Dashboard
     keys:
@@ -10210,6 +10297,8 @@ terms:
     kind: content_element
     de: Textblock
     en: Text block
+    fr: Bloc de texte
+    it: Blocco di testo
     sk_source: proposed
     sk: Textové pole
     keys:
@@ -10222,6 +10311,8 @@ terms:
     kind: content_element
     de: Datum / Zeit
     en: Date / Time
+    fr: Date / Heure
+    it: Data / Ora
     sk_source: proposed
     sk: Dátum / čas
     keys:
@@ -10267,6 +10358,8 @@ terms:
     kind: content_element
     de: Angaben zur befragten Person
     en: Respondent details
+    fr: Informations sur la personne interrogée
+    it: Dati della persona intervistata
     sk: Informácie o osobe, s ktorou sa schádzal rozhovor
     keys:
     - modules/forms/ui:add.formrespondentdetails
@@ -10276,6 +10369,8 @@ terms:
     kind: content_element
     de: Angaben zum{r} Betreuer{in}
     en: Coach details
+    fr: Informations sur le coach
+    it: Dati del coach
     sk_source: proposed
     sk: Informácie o koučovi
     keys:
@@ -11224,6 +11319,8 @@ terms:
     kind: resource
     de: Audio
     en: Audio
+    fr: Audio
+    it: Audio
     sk_source: proposed
     sk: Zvuk
     keys:
@@ -11399,7 +11496,7 @@ terms:
     de: Metadaten
     en: Metadata
     fr: Métadonnées
-    it: Metadata
+    it: Metadati
     sk: Metadáta
     keys:
     - core:metadata
@@ -11776,6 +11873,7 @@ terms:
     de: Selectusverwalter{in}
     en: Selectus manager
     fr: Gestionnaire Selectus
+    it: Manager Selectus
     sk_source: proposed
     sk: Správca Selectusu
     keys:
@@ -11893,7 +11991,7 @@ terms:
     de: Betreuer{in}
     en: Coach
     fr: Coach
-    it: Supervisore
+    it: Coach
     jp: チューター
     pt_BR: Treinador (Coach)
     sk_source: proposed
@@ -12043,8 +12141,8 @@ terms:
     kind: role
     de: Klassenlehrer{in}
     en: Master coach
-    fr: Professeur
-    it: Master coach
+    fr: Maître{sse} de classe
+    it: Coordinatore di classe
     pt_BR: Treinador principal
     sk_source: proposed
     sk: Hlavný kouč
@@ -12118,7 +12216,7 @@ terms:
     de: Leiter{in}
     en: Leader
     fr: Directeur{rice}
-    it: Leader
+    it: Responsabile
     sk_source: proposed
     sk: Vedúci
     keys:
@@ -12156,6 +12254,7 @@ terms:
     de: Bewerber{in}
     en: Applicant
     fr: Candidat{e}
+    it: Candidato
     sk_source: proposed
     sk: Uchádzač
     keys:
@@ -12169,6 +12268,7 @@ terms:
     de: Sachbearbeitung
     en: Staff
     fr: Personnel administratif
+    it: Segreteria
     sk_source: proposed
     sk: Administratívny pracovník
     keys:
@@ -12181,6 +12281,7 @@ terms:
     de: Kommissionsmitglied
     en: Committee member
     fr: Membre de la commission
+    it: Membro della commissione
     sk_source: proposed
     sk: Člen komisie
     keys:
@@ -12193,6 +12294,7 @@ terms:
     de: Kommissionspräsidium
     en: Head of Committee
     fr: Présidence de la commission
+    it: Presidenza della commissione
     sk_source: proposed
     sk: Predsedníctvo komisie
     keys:
@@ -12205,6 +12307,7 @@ terms:
     de: Sekretariat
     en: Secretary
     fr: Secrétariat
+    it: Segretariato
     sk_source: proposed
     sk: Sekretariát
     keys:
@@ -12217,6 +12320,7 @@ terms:
     de: Ex-Officio
     en: Ex-Officio
     fr: Ex-officio
+    it: Ex officio
     sk_source: proposed
     sk: Z titulu funkcie
     keys:
@@ -12229,6 +12333,7 @@ terms:
     de: Fakultätsmitglied
     en: Faculty member
     fr: Membre de la faculté
+    it: Membro della facoltà
     sk_source: proposed
     sk: Člen fakulty
     keys:
@@ -12241,6 +12346,7 @@ terms:
     de: Referenzperson
     en: Referee
     fr: Référent{e}
+    it: Referente
     sk_source: proposed
     sk: Referenčná osoba
     keys:
@@ -12255,6 +12361,7 @@ terms:
     de: Gutachter{in}
     en: Expert
     fr: Expert{e}
+    it: Esperto
     sk_source: proposed
     sk: Posudzovateľ
     keys:
@@ -12272,6 +12379,7 @@ terms:
     de: Externe{r} Gutachter{in}
     en: External expert
     fr: Expert{e} externe
+    it: Esperto esterno
     sk_source: proposed
     sk: Externý posudzovateľ
     keys:
@@ -12285,6 +12393,7 @@ terms:
     de: Vergleichsgutachter{in}
     en: Comparative assessment expert
     fr: Expert{e} comparatif{ve}
+    it: Esperto comparativo
     sk_source: proposed
     sk: Porovnávací posudzovateľ
     keys:
@@ -12425,6 +12534,7 @@ terms:
     de: Selectus
     en: Selectus
     fr: Selectus
+    it: Selectus
     sk_source: proposed
     sk: Selectus
     keys:
@@ -12440,6 +12550,7 @@ terms:
     de: Entscheidungswerkzeug
     en: Decision tool
     fr: Outil de décision
+    it: Strumento di decisione
     sk_source: proposed
     sk: Nástroj rozhodovania
     keys:
@@ -12453,6 +12564,7 @@ terms:
     de: Review-Werkzeug
     en: Review tool
     fr: Outil de review
+    it: Strumento di review
     sk_source: proposed
     sk: Nástroj posudzovania
     keys:
@@ -12465,6 +12577,7 @@ terms:
     de: Review-Fragebogen
     en: Review questionnaire
     fr: Questionnaire de review
+    it: Questionario di review
     sk_source: proposed
     sk: Dotazník posudzovania
     keys:
@@ -12477,6 +12590,7 @@ terms:
     de: Review-Diskussion
     en: Review discussion
     fr: Discussion de review
+    it: Discussione di review
     sk_source: proposed
     sk: Diskusia k posudku
     keys:
@@ -12491,6 +12605,7 @@ terms:
     de: Referenzverwaltung
     en: Referee management
     fr: Gestion des références
+    it: Gestione delle referenze
     sk_source: proposed
     sk: Správa referenčných osôb
     keys:
@@ -12503,6 +12618,7 @@ terms:
     de: Mailcenter
     en: Mail center
     fr: Centre de messagerie
+    it: Centro messaggi
     sk_source: proposed
     sk: Centrum e-mailov
     keys:
@@ -12515,6 +12631,7 @@ terms:
     de: Reporting
     en: Reporting
     fr: Reporting
+    it: Reporting
     sk_source: proposed
     sk: Reportovanie
     keys:
@@ -12544,6 +12661,7 @@ terms:
     de: Beurteilungsrichtlinien
     en: Rating policy
     fr: Directives d'appréciation
+    it: Direttive per il giudizio
     sk_source: proposed
     sk: Pravidlá hodnotenia
     keys:
@@ -12556,6 +12674,7 @@ terms:
     de: Serienbrief
     en: Form letter
     fr: Lettre type
+    it: Lettera circolare
     sk_source: proposed
     sk: Hromadný list
     keys:
@@ -12568,6 +12687,7 @@ terms:
     de: E-Mail-Vorlage
     en: Mail template
     fr: Modèle d'e-mail
+    it: Modello di e-mail
     sk_source: proposed
     sk: E-mailová šablóna
     keys:
@@ -12580,6 +12700,7 @@ terms:
     de: Profildokument
     en: Profile paper
     fr: Document de profil
+    it: Documento di profilo
     sk_source: proposed
     sk: Profilový dokument
     keys:
@@ -12592,6 +12713,7 @@ terms:
     de: Organisationseinheit
     en: Organisation unit
     fr: unité d'organisation
+    it: unità organizzativa
     sk_source: proposed
     sk: Organizačná jednotka
     keys:
@@ -12607,6 +12729,7 @@ terms:
     de: Tags
     en: Tags
     fr: Tags
+    it: Tag
     sk_source: proposed
     sk: Značky
     keys:
@@ -12620,6 +12743,7 @@ terms:
     de: Ausschreibung
     en: Position
     fr: Poste
+    it: Posizione
     sk_source: proposed
     sk: Pracovná pozícia
     keys:
@@ -12632,6 +12756,7 @@ terms:
     de: Kommission
     en: Committee
     fr: Commission
+    it: Commissione
     sk_source: proposed
     sk: Komisia
     keys:
@@ -12648,6 +12773,7 @@ terms:
     de: Bewerbung
     en: Application
     fr: Candidature
+    it: Candidatura
     sk_source: proposed
     sk: Prihláška
     keys:
@@ -12658,6 +12784,7 @@ terms:
     de: Kommissionszuweisung
     en: Committee assignment
     fr: Attribution à la commission
+    it: Assegnazione alla commissione
     sk_source: proposed
     sk: Priradenie komisie
     keys:
@@ -12670,6 +12797,7 @@ terms:
     de: Beurteilung
     en: Rating
     fr: Appréciation
+    it: Giudizio
     sk_source: proposed
     sk: Hodnotenie
     keys:
@@ -12689,6 +12817,7 @@ terms:
     de: Kommissionsbeurteilung
     en: Committee rating
     fr: Appréciation de la commission
+    it: Giudizio della commissione
     sk_source: proposed
     sk: Hodnotenie komisie
     keys:
@@ -12701,6 +12830,7 @@ terms:
     de: Entscheid
     en: Decision
     fr: Décision
+    it: Decisione
     sk_source: proposed
     sk: Rozhodnutie
     keys:
@@ -12715,6 +12845,7 @@ terms:
     de: Kommissionsentscheid
     en: Committee decision
     fr: Décision de la commission
+    it: Decisione della commissione
     sk_source: proposed
     sk: Rozhodnutie komisie
     keys:
@@ -12727,6 +12858,7 @@ terms:
     de: Review
     en: Review
     fr: Review
+    it: Review
     sk_source: proposed
     sk: Review
     keys:
@@ -12742,6 +12874,7 @@ terms:
     de: Gutachten
     en: Expert assessment
     fr: Expertise
+    it: Parere
     sk_source: proposed
     sk: Odborný posudok
     keys:
@@ -12759,6 +12892,7 @@ terms:
     de: Vergleichsgutachten
     en: Comparative assessment
     fr: Évaluations comparatives
+    it: Pareri comparativi
     sk_source: proposed
     sk: Porovnávací posudok
     keys:
@@ -12774,6 +12908,7 @@ terms:
     de: Referenzschreiben
     en: Letter of recommendation
     fr: Lettre de recommandation
+    it: Lettera di referenza
     sk_source: proposed
     sk: Odporúčací list
     keys:
@@ -12795,6 +12930,7 @@ terms:
     de: Referenzenliste
     en: List of referees
     fr: Liste de références
+    it: Elenco delle referenze
     sk_source: proposed
     sk: Zoznam referenčných osôb
     keys:
@@ -12805,6 +12941,7 @@ terms:
     de: Fakultätsfeedback
     en: Faculty feedback
     fr: Retour de la faculté
+    it: Feedback della facoltà
     sk_source: proposed
     sk: Spätná väzba fakulty
     keys:
@@ -12818,6 +12955,7 @@ terms:
     de: Öffentliche Rückmeldung
     en: Public feedback
     fr: Retour public
+    it: Riscontro pubblico
     sk_source: proposed
     sk: Verejná spätná väzba
     keys:
@@ -12830,6 +12968,7 @@ terms:
     de: Enthaltung
     en: Abstention
     fr: Abstention
+    it: Astensione
     sk_source: proposed
     sk: Zdržanie sa hlasovania
     keys:
@@ -12842,6 +12981,7 @@ terms:
     de: Ordentliche Professur
     en: Full professor
     fr: Professorat ordinaire
+    it: Professore ordinario
     sk_source: proposed
     sk: Riadna profesúra
     keys:
@@ -12854,6 +12994,7 @@ terms:
     de: Assistenzprofessur
     en: Assistant professor
     fr: Professorat assistant
+    it: Professore assistente
     sk_source: proposed
     sk: Asistentská profesúra
     keys:
@@ -12866,6 +13007,7 @@ terms:
     de: Akademischer Hintergrund
     en: Academical background
     fr: Parcours universitaire
+    it: Percorso accademico
     sk_source: proposed
     sk: Akademické vzdelanie
     keys:
@@ -12876,6 +13018,7 @@ terms:
     de: Akademisches Alter
     en: Academic age
     fr: Âge académique
+    it: Età accademica
     sk_source: proposed
     sk: Akademický vek
     keys:
@@ -12886,6 +13029,7 @@ terms:
     de: Höchster Abschluss
     en: Highest degree
     fr: Diplôme le plus élevé
+    it: Titolo di studio più alto
     sk_source: proposed
     sk: Najvyšší akademický titul
     keys:
@@ -12896,6 +13040,7 @@ terms:
     de: Habilitation
     en: Habilitation
     fr: Habilitation
+    it: Abilitazione
     sk_source: proposed
     sk: Habilitácia
     keys:
@@ -12906,6 +13051,7 @@ terms:
     de: Dissertation
     en: Dissertation
     fr: Thèse de doctorat
+    it: Tesi di dottorato
     sk_source: proposed
     sk: Dizertačná práca
     keys:
@@ -12916,6 +13062,7 @@ terms:
     de: h-Index
     en: h-index
     fr: H-Factor
+    it: Indice h
     sk_source: proposed
     sk: h-index
     keys:
@@ -12930,6 +13077,7 @@ terms:
     de: Erstautorenschaften
     en: First authorships
     fr: Publications en tant que premier(e) auteur(e)
+    it: Pubblicazioni come primo autore
     sk_source: proposed
     sk: Prvé autorstvo
     keys:
@@ -12940,6 +13088,7 @@ terms:
     de: Letztautorenschaften
     en: Last authorships
     fr: Publications en tant que dernier(e) auteur(e)
+    it: Pubblicazioni come ultimo autore
     sk_source: proposed
     sk: Posledné autorstvo
     keys:
@@ -12950,6 +13099,7 @@ terms:
     de: Originalpublikationen
     en: Original publications
     fr: Publications originales
+    it: Pubblicazioni originali
     sk_source: proposed
     sk: Pôvodné publikácie
     keys:
@@ -12960,6 +13110,7 @@ terms:
     de: Dokumente und Anhänge
     en: Documents and attachments
     fr: Documents et annexes
+    it: Documenti e allegati
     sk_source: proposed
     sk: Dokumenty a prílohy
     keys:
@@ -12974,6 +13125,7 @@ terms:
     de: Anschreiben
     en: Covering letter
     fr: Lettre de motivation
+    it: Lettera di motivazione
     sk_source: proposed
     sk: Motivačný list
     keys:
@@ -12984,6 +13136,7 @@ terms:
     de: Lebenslauf
     en: Curriculum vitae
     fr: Curriculum vitae
+    it: Curriculum vitae
     sk_source: proposed
     sk: Životopis
     keys:
@@ -12994,6 +13147,7 @@ terms:
     de: Forschungsziel
     en: Research statement
     fr: Objectifs de recherche
+    it: Obiettivi di ricerca
     sk_source: proposed
     sk: Koncepcia výskumu
     keys:
@@ -13004,6 +13158,7 @@ terms:
     de: Lehransatz
     en: Teaching statement
     fr: Objectifs pédagogiques
+    it: Obiettivi didattici
     sk_source: proposed
     sk: Koncepcia výučby
     keys:
@@ -13014,6 +13169,7 @@ terms:
     de: Führungsphilosophie
     en: Leadership philosophy
     fr: Philosophie en matière de leadership
+    it: Filosofia di leadership
     sk_source: proposed
     sk: Filozofia vedenia
     keys:
@@ -13024,6 +13180,7 @@ terms:
     de: Lehrbeurteilung
     en: Teaching assessment
     fr: Évaluation de l'enseignement
+    it: Valutazione della didattica
     sk_source: proposed
     sk: Hodnotenie výučby
     keys:
@@ -13034,6 +13191,7 @@ terms:
     de: Studienbescheinigung
     en: Certificate of Study
     fr: Certificat d'étude
+    it: Certificato di studio
     sk_source: proposed
     sk: Potvrdenie o štúdiu
     keys:
@@ -13044,6 +13202,7 @@ terms:
     de: Abschlusszertifikate
     en: Degree certificates
     fr: Diplômes
+    it: Diplomi
     sk_source: proposed
     sk: Doklady o dosiahnutom vzdelaní
     keys:
@@ -13054,6 +13213,7 @@ terms:
     de: Klinische Expertise
     en: Clinical expertise
     fr: Expertise cliniques
+    it: Competenza clinica
     sk_source: proposed
     sk: Klinická odbornosť
     keys:
@@ -13066,6 +13226,7 @@ terms:
     de: Chirurgische Expertise
     en: Surgical expertise
     fr: Expertise chirurgicales
+    it: Competenza chirurgica
     sk_source: proposed
     sk: Chirurgická odbornosť
     keys:
@@ -13078,6 +13239,7 @@ terms:
     de: Drittmittel
     en: External funding
     fr: Financement externe
+    it: Fondi esterni
     sk_source: proposed
     sk: Externé financovanie
     keys:
@@ -13090,6 +13252,7 @@ terms:
     de: Sonderdrucke von bis zu 5 Publikationen
     en: Reprints up to 5 publications
     fr: Copies d'un maximum de 5 publications
+    it: Estratti di massimo 5 pubblicazioni
     sk_source: proposed
     sk: Separáty najviac 5 publikácií
     keys:
@@ -13114,6 +13277,7 @@ terms:
     de: Bewerben
     en: Apply
     fr: Postuler
+    it: Candidarsi
     sk_source: proposed
     sk: Podať prihlášku
     keys:
@@ -13125,6 +13289,7 @@ terms:
     de: Auswertung
     en: Evaluation
     fr: Évaluation
+    it: Analisi
     sk_source: proposed
     sk: Vyhodnotenie
     keys:
@@ -13140,6 +13305,7 @@ terms:
     de: Dashboard
     en: Dashboard
     fr: Dashboard
+    it: Dashboard
     sk_source: proposed
     sk: Prehľad uchádzača
     keys:
@@ -13153,6 +13319,7 @@ terms:
     de: Bewerbungsstatus
     en: Application status
     fr: Statut de la candidature
+    it: Stato della candidatura
     sk_source: proposed
     sk: Stav prihlášky
     keys:
@@ -13168,6 +13335,7 @@ terms:
     de: Bewerbungsfrist
     en: Application deadline
     fr: Délai de candidature
+    it: Termine di candidatura
     sk_source: proposed
     sk: Termín podania prihlášky
     keys:
@@ -13182,6 +13350,7 @@ terms:
     de: Beurteilungsfrist
     en: Rating deadline
     fr: Délai d'appréciation
+    it: Termine per il giudizio
     sk_source: proposed
     sk: Termín hodnotenia
     keys:
@@ -13195,6 +13364,7 @@ terms:
     de: Einreichefrist
     en: Submission deadline
     fr: Délai de soumission
+    it: Termine di presentazione
     sk_source: proposed
     sk: Termín odovzdania
     keys:
@@ -13209,6 +13379,7 @@ terms:
     de: Bewerbungsformular
     en: Application form
     fr: Formulaire de candidature
+    it: Modulo di candidatura
     sk_source: proposed
     sk: Formulár prihlášky
     keys:
@@ -13220,6 +13391,7 @@ terms:
     de: Weitere Bewerbungen
     en: Other applications
     fr: Autres candidatures
+    it: Altre candidature
     sk_source: proposed
     sk: Ďalšie prihlášky
     keys:
@@ -13231,6 +13403,7 @@ terms:
     de: Memo
     en: Memo
     fr: Mémo
+    it: Memo
     sk_source: proposed
     sk: Poznámka
     keys:
@@ -13244,6 +13417,7 @@ terms:
     de: E-Mail-Protokoll
     en: Email log
     fr: Journal des e-mails
+    it: Registro e-mail
     sk_source: proposed
     sk: Protokol e-mailov
     keys:
@@ -13256,6 +13430,7 @@ terms:
     de: Link für öffentliche Rückmeldungen
     en: Public feedback link
     fr: Lien de retour public
+    it: Link per riscontri pubblici
     sk_source: proposed
     sk: Odkaz na verejnú spätnú väzbu
     keys:
@@ -13847,7 +14022,7 @@ terms:
     de: Zuweisung Betreuende/Teilnehmende
     en: Assignment coaches/participants
     fr: Assignation coaches/participants
-    it: Assegnazione allenatori/partecipanti
+    it: Assegnazione coach/partecipanti
     sk_source: proposed
     sk: Pridelenie koučov a účastníkov
     keys:
@@ -14127,6 +14302,8 @@ terms:
     kind: attribute
     de: Zufällige Reihenfolge
     en: Shuffle
+    fr: Ordre aléatoire
+    it: Ordine casuale
     sk_source: proposed
     sk: Náhodné poradie
     keys:
@@ -14154,8 +14331,8 @@ terms:
     kind: concept
     de: Betreuer{innen}-Chat
     en: Supervisor chat
-    fr: Chat superviseur
-    it: Supervisore della chat
+    fr: Chat des coaches
+    it: Chat dei coach
     sk_source: proposed
     sk: Chat s koučom
     keys:
@@ -14292,6 +14469,7 @@ terms:
     de: Lückentext gemischt
     en: Gap mixed
     fr: Texte à trou mélangé
+    it: Lacuna di testo mista
     sk_source: proposed
     sk: Kombinovaný text s medzerami
     keys:
