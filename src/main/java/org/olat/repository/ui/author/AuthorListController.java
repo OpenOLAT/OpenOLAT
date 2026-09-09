@@ -662,8 +662,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		if(configuration.isTools()) {
 			DefaultFlexiColumnModel detailsColumn = new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), "details",
-					new StaticFlexiCellRenderer("", "details",  null, "o_icon-lg o_icon_details", translate("details")));
-			detailsColumn.setIconHeader("o_icon o_icon-lg o_icon_details");
+					new StaticFlexiCellRenderer("", "details",  null, "o_icon-lg o_icon_info_page", translate("details")));
+			detailsColumn.setIconHeader("o_icon o_icon-lg o_icon_info_page");
 			detailsColumn.setHeaderLabel(translate("details"));
 			detailsColumn.setAlwaysVisible(true);
 			detailsColumn.setExportable(false);
@@ -2472,7 +2472,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			List<String> links = new ArrayList<>();
 
 			if(isOwner) {
-				addLink("tools.edit.description", "description", "o_icon o_icon-fw o_icon_details", "/Settings/0/Info/0", links);
+				addLink("tools.edit.description", "description", "o_icon o_icon-fw o_icon_info_page", "/Settings/0/Info/0", links);
 				// Selenium for Firefox need this (cannot click reliably the edit button under the sticky action column)
 				EditionSupport editionSupport = handler.supportsEdit(row.getOLATResourceable(), getIdentity(), roles);
 				if((editionSupport == EditionSupport.yes || editionSupport == EditionSupport.embedded)

@@ -535,7 +535,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		initToolsMenu(toolsDropdown);
 
 		detailsLink = LinkFactory.createToolLink("details", translate("details.header"), this, "o_sel_repo_details");
-		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
+		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_info_page");
 		detailsLink.setElementCssClass("o_sel_author_details");
 		detailsLink.setVisible(showDetails);
 		toolbarPanel.addTool(detailsLink);

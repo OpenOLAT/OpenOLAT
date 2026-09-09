@@ -127,7 +127,7 @@ public class MyCoursesPage {
 	 */
 	public MyCoursesPage more(String title) {
 		title = Formatter.truncateOnly(title, 55);
-		By titleBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/h3/a/span[text()[contains(.,'" + title + "')]]]/div/div/a[contains(@class,'o_details')][i[contains(@class,'o_icon_details')]]");
+		By titleBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/h3/a/span[text()[contains(.,'" + title + "')]]]/div/div/a[contains(@class,'o_details')][i[contains(@class,'o_icon_info_page')]]");
 		OOGraphene.waitElement(titleBy, browser).click();
 		return this;
 	}

@@ -367,7 +367,7 @@
 					a {
 						@include text-overflow();
 						
-						.o_icon_details {
+						.o_icon_info_page {
 							display: none;
 						}
 						
@@ -375,14 +375,14 @@
 							span {
 								display: none;
 							}
-							.o_icon_details {
+							.o_icon_info_page {
 								display: inline;
 							}		
 							&.o_in_preparation {
 								> span {
 									display: inline;
 								}
-								.o_icon_details {
+								.o_icon_info_page {
 									display: none;
 								}	
 							}

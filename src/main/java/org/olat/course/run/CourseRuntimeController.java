@@ -1177,7 +1177,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		CourseConfig cc = course.getCourseConfig();
 		if (!assessmentLock && showDetails) {
-			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_details");
+			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_info_page");
 			detailsLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Infos:0]"));
 			toolbarPanel.addTool(detailsLink);

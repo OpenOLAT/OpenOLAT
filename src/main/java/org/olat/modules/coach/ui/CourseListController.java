@@ -313,9 +313,9 @@ public class CourseListController extends FormBasicController implements Activat
 		
 		// Infos
 		DefaultFlexiColumnModel infosCol = new DefaultFlexiColumnModel(Columns.infos, CMD_INFOS,
-				new StaticFlexiCellRenderer("", CMD_INFOS, null, "o_icon-lg o_icon_details", translate("table.header.infos")));
+				new StaticFlexiCellRenderer("", CMD_INFOS, null, "o_icon-lg o_icon_info_page", translate("table.header.infos")));
 		infosCol.setExportable(false);
-		infosCol.setIconHeader("o_icon o_icon-lg o_icon_details");
+		infosCol.setIconHeader("o_icon o_icon-lg o_icon_info_page");
 		columnsModel.addFlexiColumnModel(infosCol);
 		
 		// Tools
@@ -668,7 +668,7 @@ public class CourseListController extends FormBasicController implements Activat
 		
 		FormLink detailsLink = uifactory.addFormLink("infos_".concat(count), CMD_INFOS, "learn.more", tableEl, Link.BUTTON);
 		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details o_button_ghost");
-		detailsLink.setIconRightCSS("o_icon o_icon_details");
+		detailsLink.setIconRightCSS("o_icon o_icon_info_page");
 		detailsLink.setUserObject(row);
 		detailsLink.setGhost(true);
 		row.setInfosLink(detailsLink);
@@ -889,7 +889,7 @@ public class CourseListController extends FormBasicController implements Activat
 			}
 			
 			infosLink = LinkFactory.createLink("infos", "infos", "infos", mainVC, this);
-			infosLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
+			infosLink.setIconLeftCSS("o_icon o_icon-fw o_icon_info_page");
 			
 			String url = BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + row.getKey() + "]");

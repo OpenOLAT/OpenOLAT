@@ -115,7 +115,7 @@ public class ImplementationHeaderController extends FormBasicController {
 			
 			if (withDetailsLink) {
 				detailsLink = uifactory.addFormLink("details_" + row.getOlatResource().getKey(), "details", "learn.more", null, flc, Link.LINK);
-				detailsLink.setIconRightCSS("o_icon o_icon_details");
+				detailsLink.setIconRightCSS("o_icon o_icon_info_page");
 				detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-primary o_details o_in_preparation");
 				detailsLink.setTitle("details");
 				row.setDetailsLink(detailsLink);

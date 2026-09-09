@@ -294,7 +294,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Trash | Papierkorb | Poubelle | Cestino | Lixeira | Kôš | Çöp |
 | Storage folder | Ablageordner | Dossier de stockage | Cartella di archiviazione |  | Úložný priečinok |  |
 | Resource folder | Ressourcenordner | Dossier des ressources | Cartella delle risorse | Pasta de recursos | Priečinok so zdrojmi | Kaynak klasörü |
-| Info page | Infoseite | Page d'information | Pagina di informazioni | Página de detalhes | Informačná stránka | Bilgi sayfası |
+| Info page | Infoseite | Page d'information | Pagina di informazioni | Página de informações | Informačná stránka | Bilgi sayfası |
 | Course reminders | Kurserinnerungen | Rappels du cours | Promemoria corso | Lembretes de curso | Upozornenia na kurzy | Kurs hatırlatıcıları |
 | Reminder | Erinnerung | Rappel | Promemoria | Lembrete | Pripomienka | Hatırlacı |
 | Rule | Bedingung |  |  |  | Pravidlo pripomienky |  |

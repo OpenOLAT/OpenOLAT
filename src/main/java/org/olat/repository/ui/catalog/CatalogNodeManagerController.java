@@ -419,8 +419,11 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.delete.i18nKey(), translate(Cols.delete.i18nKey()), cmdPrefix + "delete"));
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.move.i18nKey(), translate(Cols.move.i18nKey()), cmdPrefix + "move"));
 			}
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), cmdPrefix + "details",
-					new StaticFlexiCellRenderer("", cmdPrefix + "details", null, "o_icon o_icon-lg o_icon_details", translate("details"))));
+			DefaultFlexiColumnModel detailsColumn = new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), cmdPrefix + "details",
+					new StaticFlexiCellRenderer("", cmdPrefix + "details", null, "o_icon o_icon-lg o_icon_info_page", translate("details")));
+			detailsColumn.setIconHeader("o_icon o_icon-lg o_icon_info_page");
+			detailsColumn.setHeaderLabel(translate("details"));
+			columnsModel.addFlexiColumnModel(detailsColumn);
 		}
 		
 		return columnsModel;

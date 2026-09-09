@@ -294,7 +294,7 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		elementStatus("table.header.status"),
 		curriculum("table.header.curriculum"),
 		completion("table.header.completion"),
-		details("table.header.details"),
+		details("details"),
 		start("open"),
 		calendars("table.header.calendars"),
 		beginDate("table.header.begin.date"),

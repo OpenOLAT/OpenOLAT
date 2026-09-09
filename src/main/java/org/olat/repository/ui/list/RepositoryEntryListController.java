@@ -925,7 +925,7 @@ public class RepositoryEntryListController extends FormBasicController
 	public void forgeDetails(RepositoryEntryRow row) {
 		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "learn.more", null, null, Link.LINK);
 		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details o_button_ghost");
-		detailsLink.setIconRightCSS("o_icon o_icon_details");
+		detailsLink.setIconRightCSS("o_icon o_icon_info_page");
 		detailsLink.setTitle("learn.more");
 		detailsLink.setGhost(true);
 		detailsLink.setUserObject(row);

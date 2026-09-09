@@ -416,7 +416,7 @@ public class CoursePageFragment {
 	}
 	
 	public CourseInfoPage infos() {
-		By infosBy = By.xpath("//div[@class='o_tools_container']//li[@class='o_tool']/a[contains(@onclick,'courseconfig')][i[contains(@class,'o_icon_details')]]");
+		By infosBy = By.xpath("//div[@class='o_tools_container']//li[@class='o_tool']/a[contains(@onclick,'courseconfig')][i[contains(@class,'o_icon_info_page')]]");
 		OOGraphene.waitElement(infosBy, browser).click();
 		
 		By detailsBy = By.cssSelector(".o_info_page .o_header .o_meta>h2");

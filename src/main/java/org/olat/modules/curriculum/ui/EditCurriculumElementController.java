@@ -143,7 +143,7 @@ public class EditCurriculumElementController extends BasicController implements 
 		segmentButtonsCmp.addButton(optionsLink, false);
 		
 		previewButton = LinkFactory.createButton("preview.info", mainVC, this);
-		previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
+		previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_info_page");
 		previewButton.setVisible(element != null && element.getParent() == null);
 		
 		updateUI();
