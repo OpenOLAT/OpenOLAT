@@ -45,6 +45,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomStatus;
@@ -54,6 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -70,6 +72,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class RoomManagementWebService {
 
 	private static final String VERSION = "1.0";
+	private static final int MAX_LECTURE_BLOCK_KEYS = 500;
 
 	@Autowired
 	private RoomManagementModule roomManagementModule;
@@ -83,6 +86,53 @@ public class RoomManagementWebService {
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
+	}
+
+	@GET
+	@Operation(summary = "Search room bookings", description = "Search the room bookings of a list of lecture blocks")
+	@ApiResponse(responseCode = "200", description = "An array of room bookings",
+		content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RoomBookingVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RoomBookingVO.class)))
+		})
+	@ApiResponse(responseCode = "400", description = "lectureBlockKeys is missing, blank, fully unparsable, or has more than 500 keys")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not found")
+	@Path("bookings")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getBookings(
+			@QueryParam("lectureBlockKeys")
+			@Parameter(description = "Comma separated list of lecture block keys, at most 500")
+			String lectureBlockKeys,
+			@Context HttpServletRequest httpRequest) {
+
+		if (!roomManagementModule.isEnabled()) {
+			return Response.status(Status.NOT_FOUND).build();
+		}
+		Roles roles = getRoles(httpRequest);
+		if (!isAuthorisedForBookings(roles)) {
+			return Response.status(Status.FORBIDDEN).build();
+		}
+
+		List<Long> keys = parseLectureBlockKeys(lectureBlockKeys);
+		if (keys.isEmpty()) {
+			return Response.status(Status.BAD_REQUEST).build();
+		}
+		if (keys.size() > MAX_LECTURE_BLOCK_KEYS) {
+			String body = "{\"code\":\"lectureBlockKeys.tooMany\",\"max\":" + MAX_LECTURE_BLOCK_KEYS + "}";
+			return Response.status(Status.BAD_REQUEST).entity(body).type(MediaType.APPLICATION_JSON).build();
+		}
+
+		Identity identity = getIdentity(httpRequest);
+		List<RoomBooking> bookings = roomManagementService.getBookings(keys).stream()
+				.filter(b -> b.getRoom() != null
+						&& roomManagementService.isVisibleBuilding(b.getRoom().getBuilding(), roles, identity))
+				.toList();
+
+		RoomBookingVO[] vos = bookings.stream()
+				.map(RoomBookingVO::valueOf)
+				.toArray(RoomBookingVO[]::new);
+		return Response.ok(vos).build();
 	}
 
 	@GET
@@ -298,6 +348,29 @@ public class RoomManagementWebService {
 	private boolean isAuthorised(Roles roles) {
 		return roles.isAdministrator() || roles.isSystemAdmin()
 				|| roles.isLearnResourceManager() || roles.isLectureManager() || roles.isAuthor();
+	}
+
+	private boolean isAuthorisedForBookings(Roles roles) {
+		return roles.isAdministrator() || roles.isSystemAdmin() || roles.isLectureManager();
+	}
+
+	private List<Long> parseLectureBlockKeys(String param) {
+		if (!StringHelper.containsNonWhitespace(param)) {
+			return List.of();
+		}
+		List<Long> keys = new ArrayList<>();
+		for (String s : param.split(",")) {
+			String trimmed = s.trim();
+			try {
+				Long key = Long.valueOf(trimmed);
+				if (!keys.contains(key)) {
+					keys.add(key);
+				}
+			} catch (NumberFormatException e) {
+				// ignore unparsable values, as parseStatus does
+			}
+		}
+		return keys;
 	}
 
 	private List<RoomStatus> parseStatus(String statusParam) {
