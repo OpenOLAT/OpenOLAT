@@ -705,6 +705,9 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		} else if(targetsEl == source || datesEl == source) {
 			updateTargets();
 			updateAnalyseCollision();
+			if(datesEl == source) {
+				datesEl.getComponent().setDirty(false);
+			}
 		} else if(prolongateButton == source) {
 			doProlongate(ureq);
 		} else if(lectureBlocksEl == source) {
