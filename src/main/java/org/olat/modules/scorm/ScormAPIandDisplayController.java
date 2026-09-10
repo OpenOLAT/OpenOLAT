@@ -215,9 +215,15 @@ public class ScormAPIandDisplayController extends BasicController implements Con
 		if(cspModule.isContentSecurityPolicyEnabled() || cspModule.isContentSecurityPolicyReportOnlyEnabled()) {
 			// Most packages need eval()
 			CSPBuilder builder = new CSPBuilder(cspModule);
-			String policy = builder
+			 builder
 				.defaultDirectives()
 				.configurationDirectives()
+				.frameAncestors()
+				.addAdditionalDirectives(Settings.createContentServerURI());
+			builder
+				.frameAncestors()
+				.addAdditionalDirectives(Settings.createServerURI());
+			String policy = builder
 				.scriptSrc()
 				.allowUnsafeEval()
 				.builder()
