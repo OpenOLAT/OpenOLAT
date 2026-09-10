@@ -46,7 +46,7 @@ public class AddMember_1_CourseMemberChoiceStep extends BasicStep {
 		this.role = role;
 		this.entry = entry;
 		setNextStep(new AddMember_2_ConfirmMemberChoiceStep(ureq, binder));
-		setI18nTitleAndDescr("add.confirm.title", "add.confirm.title");
+		setI18nTitleAndDescr("add.choose.title", "add.choose.title");
 	}
 
 	@Override
