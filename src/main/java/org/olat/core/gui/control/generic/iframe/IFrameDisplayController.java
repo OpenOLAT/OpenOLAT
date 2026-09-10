@@ -183,6 +183,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		if(iframeSettings.isIframeResizer()) {
 			JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);
 			myContent.put("js", js);
+			myContent.contextPut("iframeResizer", Boolean.TRUE);
 		}
 
 		String mapperID = VFSManager.getRealPath(rootDir);
