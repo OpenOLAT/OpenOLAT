@@ -1,7 +1,6 @@
 <div class="o_curriculum_title o_curriculum_title_top o_block">
 	<div class="o_curriculum_avatar_title_ref">
 		<div aria-hidden="true" class="o_curriculum_avatar">
-			<span class="o_curriculum_avatar_ref">$r.escapeHtml($curriculumExternalRef)</span>
 			<span class="o_curriculum_avatar_icon">
 			#if($r.isNull($level) || $level == 0) 
 				<i class="o_icon o_icon-lg o_icon_curriculum_implementation_avatar"> </i>
@@ -9,6 +8,7 @@
 				$r.translate("level",$level)
 			#end
 			</span>
+			<span class="o_curriculum_avatar_ref">$r.escapeHtml($curriculumExternalRef)</span>
 		</div>
 		<div class="o_curriculum_title_ref">
 			<div class="o_curriculum_dashboard_title">

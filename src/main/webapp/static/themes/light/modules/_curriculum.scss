@@ -143,10 +143,14 @@ fieldset.o_validation_result {
 
 .o_curriculum_avatar {
 	display: grid;
-	grid-template-columns: 1fr;
 	align-items: center;
-	span {
-		grid-area: 1/1;
+	
+	grid-template-columns: auto 1fr;
+	@media (min-width: $screen-xs-min) {
+		grid-template-columns: 1fr;
+		span {
+			grid-area: 1/1;
+		}
 	}
 	
 	color: $o-curriculum-avatar-color;
@@ -163,10 +167,9 @@ fieldset.o_validation_result {
 	}
 
 	.o_curriculum_avatar_ref {
+		@extend %o_nowrap;
 		font-size: $o-curriculum-avatar-font-size-medium;
-		padding-left: 20px;
-		overflow: hidden;
-		word-break: break-all;
+		max-width: 100%;
 		justify-self: end;
 		@media (min-width: $screen-xs-min) {
 			align-self: start;
@@ -175,6 +178,7 @@ fieldset.o_validation_result {
 	
 	.o_curriculum_avatar_icon {
 		font-size: $o-curriculum-avatar-font-size-large;
+		margin-right: 10px;
 		justify-self: start;
 		@media (min-width: $screen-xs-min) {
 			align-self: end;
