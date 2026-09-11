@@ -95,10 +95,11 @@ public interface CacheWrapper<U, V> {
 	 * 
 	 * @param key The key
 	 * @param value	The value
-	 * @param expirationTime The expiration time in seconds
+	 * @param lifespan The lifespan of the entry.
+	 * @param maxIdleTime Tthe maximum amount of time this key is allowed to be idle for before it is considered as expired.
 	 * @return The value
 	 */
-	public V put(U key, V value, int expirationTime);
+	public V put(U key, V value, int lifespan, int maxIdleTime);
 	
 	
 	public V putIfAbsent(U key, V value);

@@ -48,10 +48,11 @@
 		// Set the iframe id. Important to set before iframe.js is loaded.
 		b_iframeid="$frameId";
 		window.iFrameResizer = {
-			targetOrigin: '$serverUri',
-		}
+			targetOrigin: '$serverUri'
+		};
 	</script>
 	<script src='$r.staticLink("js/iframeResizer/iframeResizer.contentWindow.js")'></script>
+	<link href='$r.staticLink("js/openolat/iFrameResizerHelper.css")' rel="stylesheet">
 
 	#if($showNavButtons)
 		$r.render("scoTopButtons")

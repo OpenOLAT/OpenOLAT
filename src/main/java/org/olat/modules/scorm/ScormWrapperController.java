@@ -74,16 +74,18 @@ public class ScormWrapperController extends MainLayoutBasicController {
 					randomizeDelivery, getDeliveryOptions());
 		};
 		
-		String id = Long.toString(CodeHelper.getForeverUniqueID());
 		ControllerDeliveryMapper mapper = new ControllerDeliveryMapper(getWindowControl(),
 				new ControllerDeliveryCreator(scormDisplayControllerCreator, this));
-		MapperKey mapperKey = registerSandboxedMapper(ureq, "scorm-sandboxed-" + id, mapper);
-		String baseUri = Settings.createContentServerURI() + mapperKey.getUrl();
+		MapperKey mapperKey = registerSandboxedMapper(ureq, mapper);
+		String serverUri = Settings.isContentDomainNameEnabled()
+				? Settings.createContentServerURI()
+				: Settings.createServerURI();
+		String baseUri = serverUri + mapperKey.getUrl();
 		mainVC.contextPut("baseURI", baseUri);
 		mainVC.contextPut("currentURI", "start.html");
 		mainVC.contextPut("token", "?token=" + mapperKey.getToken());
 		mainVC.contextPut("iframeHeight", "100%");
-		mainVC.contextPut("frameId", "scorm_" + id);
+		mainVC.contextPut("frameId", "scorm_" + CodeHelper.getRAMUniqueID());
 		mainVC.contextPut("debug", Boolean.FALSE);
 		
 		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);

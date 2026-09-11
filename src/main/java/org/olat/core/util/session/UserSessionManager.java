@@ -478,6 +478,14 @@ public class UserSessionManager implements GenericEventListener {
 			log.info("UserSession already removed! for [{}]", ident);			
 		}
 		
+		if(usess.getSandboxSessions() != null) {
+			for(UserSession sandboxSession:usess.getSandboxSessions()) {
+				if(sandboxSession.getSessionInfo() != null && sandboxSession.getSessionInfo().getSession() != null) {
+					sandboxSession.getSessionInfo().getSession().invalidate();
+				}
+			}
+		}
+		
 		if (isDebug) log.debug("signOffAndClearWithout() END");
 	}
 	

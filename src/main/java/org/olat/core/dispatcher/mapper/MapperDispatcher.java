@@ -95,11 +95,12 @@ public class MapperDispatcher implements Dispatcher {
 		
 		// e.g. non-cacheable: 	23423
 		// e.g. cacheable: 		my.mapper.path
+		Mapper m;
 		if(mapperService.isSandbox(smappath)) {
 			String secret = hreq.getParameter("token");
 			UserSession usess = sessionManager.getUserSession(hreq);
-			Mapper mapper = mapperService.reclaimMapperById(usess, smappath, secret);
-			if(mapper == null) {
+			m = mapperService.getSandboxMapper(usess, smappath, secret);
+			if(m == null) {
 				log.debug("Call to mapped resource, but mapper cannot be reclaimed for path::{}", smappath);
 				hres.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				return;
@@ -107,17 +108,17 @@ public class MapperDispatcher implements Dispatcher {
 				initSessionInfos(usess, hreq);
 				sessionManager.signOn(usess);
 			}
-		}
-
-		UserSession usess = sessionManager.getUserSession(hreq);
-		Mapper m = mapperService.getMapperById(usess, smappath);
-		if (m == null) {
-			//an anonymous mapper?
-			m = mapperService.getMapperById(null, smappath);
-			if(m == null) {
-				log.debug("Call to mapped resource, but mapper does not exist for path::{}", smappath);
-				hres.setStatus(HttpServletResponse.SC_NOT_FOUND);
-				return;
+		} else {
+			UserSession usess = sessionManager.getUserSession(hreq);
+			m = mapperService.getMapperById(usess, smappath);
+			if (m == null) {
+				//an anonymous mapper?
+				m = mapperService.getMapperById(null, smappath);
+				if(m == null) {
+					log.debug("Call to mapped resource, but mapper does not exist for path::{}", smappath);
+					hres.setStatus(HttpServletResponse.SC_NOT_FOUND);
+					return;
+				}
 			}
 		}
 		String mod = slashPos > 0 ? subInfo.substring(slashPos) : "";

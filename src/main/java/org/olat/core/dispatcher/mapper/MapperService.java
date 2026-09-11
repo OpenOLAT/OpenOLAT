@@ -97,7 +97,7 @@ public interface MapperService {
 	
 	public Mapper getMapperById(UserSession session, String id);
 	
-	public Mapper reclaimMapperById(UserSession newSession, String id, String token);
+	public Mapper getSandboxMapper(UserSession newSession, String id, String token);
 	
 	public void cleanUp(String sessionId);
 

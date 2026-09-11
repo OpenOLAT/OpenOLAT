@@ -439,13 +439,14 @@ public class IFrameDeliveryMapper implements Mapper {
 			}
 			if(iframeResizer) {
 				sb.append("window.iFrameResizer = {\n")
-				  .append(" targetOrigin: '").append(Settings.createServerURI()).append("',\n")
-				  .append("}");
+				  .append(" targetOrigin: '").append(Settings.createServerURI()).append("'\n")
+				  .append("};");
 			}
 			sb.append("\n</script>");
 			sb.appendStaticJs("js/openolat/iframe.js");
 			if(iframeResizer) {
 				sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
+				sb.appendStaticCss("js/openolat/iFrameResizerHelper.css", "iframeresizercss");
 			}
 	
 			if (parser.getHtmlContent().length() > 0) {

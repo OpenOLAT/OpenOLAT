@@ -125,7 +125,7 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 				}
 			}
 		} else if(expirationTime > 0) {
-			mapperCache.put(encryptedMapId, mapper, expirationTime);
+			mapperCache.put(encryptedMapId, mapper, expirationTime, expirationTime);
 		}
 		
 		if(session != null) {
@@ -156,37 +156,40 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 		String encryptedMapId = Encoder.md5hash(mapperId);
 		MapperKey mapperKey = new MapperKey(session, encryptedMapId);
 		mapperKey.setUrl(WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + encryptedMapId);
-		String token = UUID.randomUUID().toString().replace("-", "");
+		String token = UUID.randomUUID().toString();
 		mapperKey.setToken(token);
 		sandboxMapperCache.put(encryptedMapId, new SandboxedMapper(session, mapper, token));
 		return mapperKey;
 	}
 
 	@Override
-	public synchronized Mapper reclaimMapperById(UserSession newSession, String id, String token) {
+	public synchronized Mapper getSandboxMapper(UserSession newSession, String id, String token) {
 		if(sandboxMapperCache.containsKey(id)) {
 			SandboxedMapper sandboxedMapper = sandboxMapperCache.get(id);
-			MapperKey mapperKey = new MapperKey(newSession, id);
 			Mapper mapper = sandboxedMapper.mapper();
 			UserSession parentSession = sandboxedMapper.usess();
 			if(newSession.getIdentity() != null && !newSession.getIdentity().equals(parentSession.getIdentity())) {
 				return null;
 			}
-			if(newSession.getIdentity() == null && (token == null || !token.equals(sandboxedMapper.token()))) {
-				return null;
-			}
+			
+			// Transfer the user session only once
 			if(newSession.getIdentity() == null) {
 				Identity identity = parentSession.getIdentity();
 				Tracing.setIdentity(identity);
 				newSession.setIdentity(identity);
 				newSession.setRoles(parentSession.getRoles());
 				newSession.setLocale(parentSession.getLocale());
-			} 
-			mapperKeyToMapper.computeIfAbsent(mapperKey, key -> mapper);
-			sessionIdToMapperKeys
-				.computeIfAbsent(mapperKey.getSessionId(), sid -> new ArrayList<>())
-				.add(mapperKey);
-			sandboxMapperCache.remove(id);
+				parentSession.addSandboxSession(newSession);
+			}
+			
+			if(token != null && sandboxedMapper.token() != null && token.equals(sandboxedMapper.token())) {
+				MapperKey mapperKey = new MapperKey(newSession, id);
+				mapperKeyToMapper.computeIfAbsent(mapperKey, key -> mapper);
+				sessionIdToMapperKeys
+					.computeIfAbsent(mapperKey.getSessionId(), sid -> new ArrayList<>())
+					.add(mapperKey);
+				sandboxedMapper.consumeToken();
+			}
 			return mapper;
 		}
 		return null;

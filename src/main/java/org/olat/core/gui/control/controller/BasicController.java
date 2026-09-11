@@ -53,6 +53,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -259,9 +260,12 @@ public abstract class BasicController extends DefaultController {
 		return mapperBaseKey.getUrl();
 	}
 
-	protected MapperKey registerSandboxedMapper(UserRequest ureq, String cacheableMapperID, Mapper m) {
+	protected MapperKey registerSandboxedMapper(UserRequest ureq, Mapper m) {
 		UserSession usess = ureq == null ? null : ureq.getUserSession();
-		return mapperService.sandbox(usess, cacheableMapperID, m);
+		String mapperID = CodeHelper.getUniqueID();
+		MapperKey mapperBaseKey = mapperService.sandbox(usess, mapperID, m);
+		registerMapperKey(mapperBaseKey);
+		return mapperBaseKey;
 	}
 	
 	protected final synchronized void registerMapperKey(MapperKey mapperBaseKey) {
