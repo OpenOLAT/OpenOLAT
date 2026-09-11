@@ -19,6 +19,7 @@
  */
 package org.olat.login.oauth.ui;
 
+import org.olat.basesecurity.AuthHelper;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -56,6 +57,9 @@ public class OAuthDisclaimerCreator implements ControllerCreator {
 					.getSession().getAttribute(OAuthConstants.OAUTH_SPI);
 			OAuthRegistration registration = (OAuthRegistration)ureq.getHttpReq()
 					.getSession().getAttribute(OAuthConstants.OAUTH_REGISTRATION_ATTR);
+			if(registration != null) {
+				AuthHelper.initializeLanguage(ureq, registration.getIdentity());
+			}
 			return new OAuthDisclaimerController(ureq, wControl, user, registration, provider);
 		}
 	}

@@ -319,6 +319,18 @@ public class AuthHelper {
 		Identity invitee = invitationService.createIdentityFrom(invitation, locale);
 		return doLogin(invitee, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 	}
+	
+	public static void initializeLanguage(UserRequest ureq, Identity identity) {
+		if(identity == null || ureq == null) return;
+		
+		UserSession usess = ureq.getUserSession();
+		if(usess != null && usess.getIdentityEnvironment() != null) {
+			Locale locale = I18nManager.getInstance().getLocaleOrNull(identity.getUser().getPreferences().getLanguage());
+			if(locale != null) {
+				usess.getIdentityEnvironment().setLocale(locale);
+			}
+		}
+	}
 
 	/**
 	 * ONLY for authentication provider OLAT Authenticate Identity and do the

@@ -28,6 +28,7 @@ package org.olat.login;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.AuthHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -143,6 +144,8 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	}
 	
 	private void postAuthentication(UserRequest ureq) {
+		AuthHelper.initializeLanguage(ureq, authenticatedIdentity);
+		
 		// Check if disclaimer has been accepted
 		if (registrationManager.needsToConfirmDisclaimer(authenticatedIdentity)) {
 			// accept disclaimer first
