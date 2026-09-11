@@ -85,8 +85,12 @@ public class LectureBlocksTimelineController extends BasicController {
 				.sorted(new LectureBlockStartComparator())
 				.limit(showFirstOnly? FIRST_ONLY_LIMIT: 10000)
 				.toList();
-		
-		Date currentDate = lectureBlocks.get(0).getStartDate();
+
+		if (sortedLectureBlocks.isEmpty()) {
+			return;
+		}
+
+		Date currentDate = sortedLectureBlocks.get(0).getStartDate();
 		int currentYear = getYear(currentDate);
 		List<TimelineLectureBlock> timelineLectureBlocks = new ArrayList<>(2);
 		List<TimelineDay> days = new ArrayList<>();
