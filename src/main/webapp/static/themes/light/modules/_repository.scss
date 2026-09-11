@@ -273,9 +273,6 @@
 
 	.o_info_page_rating {
 		@include clearfix();
-		.o_rating_wrapper {
-			float: left;
-		}
 		.o_comments {
 			@extend %o_undecorated;
 			margin-left: 1em;

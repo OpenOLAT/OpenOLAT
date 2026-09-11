@@ -57,9 +57,9 @@
 		#end
 
 		#if($r.available("rating") || $r.available("comments"))
-			<fieldset class="o_info_page_item o_info_page_rating"><legend>$r.translate("ratings")</legend>
+			<fieldset class="o_info_page_item o_info_page_rating"><legend>$r.translate("rating")</legend>
 				#if($r.available("rating")) $r.render("rating") #end
-				#if($r.available("comments")) $r.render("comments") #end
+				#if($r.available("comments"))<div class="o_block"> $r.render("comments")</div>#end
 			</fieldset>
 		#end
 	</div>

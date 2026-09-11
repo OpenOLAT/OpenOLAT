@@ -224,7 +224,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 	private UserCommentsAndRatingsController initCommentsCtrl(UserRequest ureq) {
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, guestOnly);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey());
-		UserCommentsAndRatingsController commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, secCallback, null, secCallback.canViewComments(), true, true);
+		UserCommentsAndRatingsController commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, secCallback, null, secCallback.canViewComments(), false, true);
 		listenTo(commentsCtrl);
 		return commentsCtrl;
 	}
