@@ -12,6 +12,17 @@ $label_right_margin_dialog: 5px;
 	grid-template-areas:
 		"previous-item items next-item space add-item commands"
 ;
+
+	.o_video_common_form_header_items {
+		select {
+			border-radius: 0;
+			border-color: $btn-default-color;
+			box-shadow: none;
+			&:focus {
+				border-color: $input-border-focus;
+			}
+		}
+	}
 }
 
 .o_video_common_form_header_prev {
