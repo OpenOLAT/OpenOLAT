@@ -133,7 +133,9 @@ public class QTI21ResultsExport {
 	private static final AtomicLong counter = new AtomicLong(0l);
 	
 	private static final String DATA = "userdata/";
+	private static final String PDF_FOLDER = "resultspdfs/";
 	private static final String SEP = File.separator;
+	private static final String ANONYM = "anonym";
 	
 	private final SimpleDateFormat assessmentDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private final SimpleDateFormat displayDateFormat;
@@ -145,6 +147,7 @@ public class QTI21ResultsExport {
 	private Translator translator;
 	private RepositoryEntry entry;
 	private final boolean withPdfs;
+	private final boolean withFlatPdfs;
 	private final boolean withEssayPdfs;
 	private final CourseEnvironment courseEnv;
 	private final boolean withNonParticipants;
@@ -170,13 +173,15 @@ public class QTI21ResultsExport {
 	private MapperService mapperService;
 	
 	public QTI21ResultsExport(CourseEnvironment courseEnv, List<Identity> identities, boolean withNonParticipants,
-			boolean withPdfs, boolean withEssayPdfs, QTICourseNode courseNode, String archivePath, Locale locale,
+			boolean withPdfs, boolean withEssayPdfs, boolean withFlatPdfs,
+			QTICourseNode courseNode, String archivePath, Locale locale,
 			Identity identity, WindowControl windowControl) {
 		CoreSpringFactory.autowireObject(this);
 		this.courseNode = courseNode;
 		this.identities = identities;
 		this.courseEnv = courseEnv;
 		this.withPdfs = withPdfs;
+		this.withFlatPdfs = withFlatPdfs;
 		this.withEssayPdfs = withEssayPdfs;
 		this.identity = identity;
 		this.windowControl = windowControl;
@@ -363,7 +368,7 @@ public class QTI21ResultsExport {
 		String firstName = assessedIdentity.getUser().getFirstName();
 		String lastNameOrAnonymous = assessedIdentity.getUser().getLastName();
 		if(!StringHelper.containsNonWhitespace(lastNameOrAnonymous)) {
-			lastNameOrAnonymous = "anonym";
+			lastNameOrAnonymous = ANONYM;
 		}
 		String nameOrAnonymous = lastNameOrAnonymous;
 		if(StringHelper.containsNonWhitespace(firstName)) {
@@ -381,11 +386,14 @@ public class QTI21ResultsExport {
 		if(saveFiles) {
 			createZipDirectory(zout, idDir);
 		}
+		String pdfDir = withFlatPdfs
+				? exportFolderName + "/" + PDF_FOLDER
+				: idDir;
 		
 		//content of single assessed member
 		List<ResultDetail> assessments;
 		if(sessions != null) {
-			assessments = createResultDetail(assessedIdentity, sessions, zout, idDir);
+			assessments = createResultDetail(assessedIdentity, sessions, zout, idDir, pdfDir);
 		} else {
 			assessments = List.of();
 		}
@@ -434,19 +442,36 @@ public class QTI21ResultsExport {
 		return member;
 	}
 	
-	private List<ResultDetail> createResultDetail(Identity assessedIdentity, List<AssessmentTestSession> sessions, ZipOutputStream zout, String idDir) throws IOException {
+	private List<ResultDetail> createResultDetail(Identity assessedIdentity, List<AssessmentTestSession> sessions, ZipOutputStream zout,
+			String idDir, String pdfDir) throws IOException {
 		List<ResultDetail> assessments = new ArrayList<>();
 		for (AssessmentTestSession session : sessions) {
 			Long assessmentID = session.getKey();
-			String idPath = idDir + translator.translate("table.user.attempt") + (sessions.indexOf(session)+1) + SEP;
+			int attempts = sessions.indexOf(session) + 1;
+			
+			String idPath = idDir + translator.translate("table.user.attempt") + attempts + SEP;
+
 			createZipDirectory(zout, idPath);	
 			// content of result table
 			String resultsPath = idPath.replace(idDir, "") + assessmentID;
+			
+			String resultsPdfPath;
+			String resultsPdfLinkPath;
+			if(withFlatPdfs) {
+				String pdfFilename = getResultsPdfFilename(assessedIdentity, session.getKey()) + ".pdf";
+				// jump user directory + userdata directory
+				resultsPdfLinkPath = "../../" + PDF_FOLDER + pdfFilename;
+				resultsPdfPath = pdfDir + pdfFilename;
+			} else {
+				resultsPdfLinkPath = idPath.replace(idDir, "") + assessmentID + ".pdf";
+				resultsPdfPath = idPath + assessmentID + ".pdf";
+			}
+			
 			ResultDetail resultDetail = new ResultDetail(assessmentID.toString(), 
 					assessmentDateFormat.format(session.getCreationDate()),
 					displayDateFormat.format(new Date(session.getDuration())),
 					session.getScore(), session.getManualScore(), createPassedIcons(session.getPassed()),
-					resultsPath + ".html", resultsPath + ".pdf", resultsPath + "_log.xlsx");
+					resultsPath + ".html", resultsPdfLinkPath, resultsPath + "_log.xlsx");
 			
 			assessments.add(resultDetail);
 			//WindowControlMocker needed because this is not a controller
@@ -459,7 +484,7 @@ public class QTI21ResultsExport {
 		
 			String mapperUri = "../../../test" + testEntry.getKey() + "/";//add test repo key
 			String submissionMapperUri = ".";
-			String exportUri = "../" + translator.translate("table.user.attempt") + (sessions.indexOf(session)+1);			
+			String exportUri = "../" + translator.translate("table.user.attempt") + attempts;			
 			Controller assessmentResultController = new AssessmentResultController(ureq, mockwControl, assessedIdentity, false, session,
 					fUnzippedDirRoot, mapperUri, submissionMapperUri,
 					QTI21AssessmentResultsOptions.allOptions(), false, true, false, exportUri);
@@ -472,7 +497,7 @@ public class QTI21ResultsExport {
 			convertToZipEntry(zout, idPath + assessmentID +".xml", resultXML);
 
 			if(withPdfs) {
-				createResultPDF(zout, idPath + assessmentID +".pdf", assessedIdentity, session, fUnzippedDirRoot);
+				createResultPDF(zout, resultsPdfPath, assessedIdentity, session, fUnzippedDirRoot);
 				if (withEssayPdfs) {
 					createEssayPdfs(zout, idPath, assessedIdentity, session, fUnzippedDirRoot);
 				}
@@ -497,6 +522,29 @@ public class QTI21ResultsExport {
 		}
 		dbInstance.commitAndCloseSession();
 		return assessments;
+	}
+	
+	private String getResultsPdfFilename(Identity identity, Long sessionKey) {
+		StringBuilder sb = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(identity.getUser().getLastName())) {
+			sb.append(identity.getUser().getLastName());
+		} else {
+			sb.append(ANONYM);
+		}
+		if(StringHelper.containsNonWhitespace(identity.getUser().getFirstName())) {
+			sb.append("_")
+			  .append(identity.getUser().getFirstName());
+		}
+		
+		sb.append("_")
+		  .append(Formatter.truncateOnly(courseNode.getShortTitle(), 25));
+		sb.append("_")
+		  .append(Formatter.truncateOnly(entry.getDisplayname(), 25));
+
+		sb.append("_")
+		  .append(sessionKey.toString());
+		
+		return StringHelper.transformDisplayNameToFileSystemName(sb.toString());
 	}
 	
 	private void createResultPDF(ZipOutputStream zout, String path, Identity assessedIdentity, AssessmentTestSession candidateSession,

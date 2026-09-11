@@ -70,6 +70,9 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
  */
 public class QTI21NewExportController extends FormBasicController {
 	
+	private static final String ESSAY_OPTION_KEY = "essay.pdf";
+	private static final String FLAT_FILES_OPTION_KEY = "flat.files";
+	
 	private String defaultTitle;
 	private TextElement titleEl;
 	private SingleSelection withPdfEl;
@@ -132,8 +135,9 @@ public class QTI21NewExportController extends FormBasicController {
 		
 		SelectionValues optionsValues = new SelectionValues();
 		if (pdfModule.isEnabled() && isTestWithEssay()) {
-			optionsValues.add(new SelectionValue("essay.pdf", translate("export.options.essay.pdf")));
+			optionsValues.add(new SelectionValue(ESSAY_OPTION_KEY, translate("export.options.essay.pdf")));
 		}
+		optionsValues.add(new SelectionValue(FLAT_FILES_OPTION_KEY, translate("export.options.flat.files")));
 		optionsEl = uifactory.addCheckboxesVertical("export.options", formLayout, optionsValues.keys(), optionsValues.values(), 1);
 		updateUI();
 		
@@ -190,6 +194,7 @@ public class QTI21NewExportController extends FormBasicController {
 		if (!identities.isEmpty()) {
 			boolean withPdfs = isWithPdfs();
 			boolean withEssayPdfs = withPdfs && isEssayPdfs();
+			boolean withFlatPdfs = withPdfs && isFlatPdfs();
 			OLATResource resource = courseEnv.getCourseGroupManager().getCourseResource();
 			RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 			String title = titleEl.getValue();
@@ -198,7 +203,8 @@ public class QTI21NewExportController extends FormBasicController {
 			Date expirationDate = CalendarUtils.endOfDay(DateUtils.addDays(ureq.getRequestTimestamp(), 10));
 	
 			QTI21ResultsExportTask task = new QTI21ResultsExportTask(resource, courseNode, identities.getIdentities(),
-					title, description, identities.isWithNonParticipants(), withPdfs, withEssayPdfs, getLocale());
+					title, description, identities.isWithNonParticipants(), withPdfs, withEssayPdfs, withFlatPdfs,
+					getLocale());
 			
 			exportManager.startExport(task, title, description,
 					filename, ArchiveType.QTI21, expirationDate, false,
@@ -215,7 +221,11 @@ public class QTI21NewExportController extends FormBasicController {
 	}
 	
 	private boolean isEssayPdfs() {
-		return optionsEl.isVisible() && optionsEl.getSelectedKeys().contains("essay.pdf");
+		return optionsEl.isVisible() && optionsEl.isKeySelected(ESSAY_OPTION_KEY);
+	}
+	
+	private boolean isFlatPdfs() {
+		return optionsEl.isVisible() && optionsEl.isKeySelected(FLAT_FILES_OPTION_KEY);
 	}
 	
 	private String getDefaultTitle(UserRequest ureq, boolean withPdf) {
