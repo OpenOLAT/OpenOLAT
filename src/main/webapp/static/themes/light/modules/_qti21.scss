@@ -1703,7 +1703,7 @@ table.o_qti_item_kprim {
 }
 
 /* Correct solution feedback */
-.o_togglebox_wrapper #modal-correct-solution div.o_togglebox_content {
+.o_togglebox_wrapper .o_modal_correct_solution div.o_togglebox_content {
 	background-color: $o-box-warning-bg;
 	border-color: $o-box-warning-color;
 }
