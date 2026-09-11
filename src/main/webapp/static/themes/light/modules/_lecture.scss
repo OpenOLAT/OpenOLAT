@@ -444,20 +444,19 @@ tr.o_rm_room_preselected {
 			.o_lectures_timeline_year {
 				display: flex;
 				align-items: center;
-				margin-left: 1rem;
+				margin-left: -1rem;
 				h5 {
 					font-size: $font-size-h4;
 					font-weight: bold;
 				}
 			}
 			.o_lectures_timeline_day {
-				padding: $o-lm-timeline-row-padding;
+				padding: calc($o-lm-timeline-row-padding + 3px) $o-lm-timeline-row-padding $o-lm-timeline-row-padding $o-lm-timeline-row-padding;
 				min-width: $o-lm-timeline-day-width;
 
 				display: flex;
 				flex-direction: column;
 				align-items: center;
-				justify-content: center;
 
 				.o_lectures_timeline_day_name {
 					font-size: 14px;
@@ -530,7 +529,7 @@ tr.o_rm_room_preselected {
 				flex-direction: column;
 
 				.o_lectures_timeline_lectures_top {
-					height: ($o-lm-timeline-path-top-height - 2px);
+					height: ($o-lm-timeline-path-top-height - 4px);
 				}
 				.o_lectures_timeline_title {
 					font-size: 18px;
