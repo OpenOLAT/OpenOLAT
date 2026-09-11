@@ -329,8 +329,8 @@ public class QuestionsHeaderController extends FormBasicController {
 	}
 
 	private void doNewQuestion(UserRequest ureq, VideoQuestion newQuestion) {
-		Set<Long> usedTimes = questions.getQuestions().stream().map(q -> q.getBegin().getTime() / 1000).collect(Collectors.toSet());
-		long nearestSecond = HeaderHelper.findNearestSecondWithoutEvent((getCurrentTime() + 500) / 1000, videoDurationInSeconds, usedTimes);
+		Set<Long> usedTimesInSeconds = questions.getQuestions().stream().map(q -> q.getBegin().getTime() / 1000).collect(Collectors.toSet());
+		long nearestSecond = HeaderHelper.findNearestSecondWithoutEvent(getCurrentTimeInSeconds(), videoDurationInSeconds, usedTimesInSeconds);
 		newQuestion.setBegin(new Date(nearestSecond * 1000));
 		newQuestion.setStyle(VideoModule.getMarkerStyleFromColor(colorService.getColors().get(0)));
 		questions.getQuestions().add(newQuestion);
@@ -427,10 +427,10 @@ public class QuestionsHeaderController extends FormBasicController {
 		return questions.getQuestions().stream().filter(q -> questionId.equals(q.getId())).findFirst();
 	}
 
-	private long getCurrentTime() {
+	private long getCurrentTimeInSeconds() {
 		long time = 0;
 		if (currentTimeCode != null) {
-			time = Math.round(Double.parseDouble(currentTimeCode)) * 1000L;
+			time = Math.max(Math.round(Double.parseDouble(currentTimeCode)), 0);
 		}
 		return time;
 	}

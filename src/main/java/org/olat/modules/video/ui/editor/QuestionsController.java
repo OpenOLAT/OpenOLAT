@@ -23,7 +23,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
@@ -168,21 +170,24 @@ public class QuestionsController extends BasicController {
 	}
 
 	private void importQuestions(UserRequest ureq, List<QuestionItemView> items) {
+		Set<Long> usedTimesInSeconds = questions.getQuestions().stream().map(q -> q.getBegin().getTime() / 1000).collect(Collectors.toSet());
 		File assessmentDir = videoManager.getAssessmentDirectory(repositoryEntry.getOlatResource());
-		long currentTime = getCurrentTime();
+		long currentTimeInSeconds = getCurrentTimeInSeconds();
 		List<String> colors = colorService.getColors();
 		int colorIndex = 0;
 
 		String questionId = null;
 		for (QuestionItemView item : items) {
-			VideoQuestion question = doCopyQItem(item, assessmentDir, currentTime, colors.get(colorIndex % colors.size()));
+			currentTimeInSeconds = HeaderHelper.findNearestSecondWithoutEvent(currentTimeInSeconds, videoDurationInSeconds, usedTimesInSeconds);
+			usedTimesInSeconds.add(currentTimeInSeconds);
+
+			VideoQuestion question = doCopyQItem(item, assessmentDir, currentTimeInSeconds * 1000, colors.get(colorIndex % colors.size()));
 			if (question == null) {
 				continue;
 			}
 			if (questionId == null) {
 				questionId = question.getId();
 			}
-			currentTime = Math.min(currentTime + 1000, videoDurationInSeconds * 1000);
 			colorIndex++;
 		}
 		videoManager.saveQuestions(questions, repositoryEntry.getOlatResource());
@@ -240,10 +245,16 @@ public class QuestionsController extends BasicController {
 		fireEvent(ureq, RELOAD_QUESTIONS_EVENT);
 	}
 
-	private long getCurrentTime() {
+	/**
+	 * Returns the current time in seconds based on the parsed value of the `currentTimeCode` field. 
+	 * If `currentTimeCode` is null, the method returns 0.
+	 *
+	 * @return The current time in seconds derived from the `currentTimeCode`, or 0 if the code is null.
+	 */
+	private long getCurrentTimeInSeconds() {
 		long time = 0;
 		if (currentTimeCode != null) {
-			time = Math.round(Double.parseDouble(currentTimeCode)) * 1000L;
+			time = Math.max(Math.round(Double.parseDouble(currentTimeCode)), 0);
 		}
 		return time;
 	}
