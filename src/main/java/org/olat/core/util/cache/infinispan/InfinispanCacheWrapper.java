@@ -114,8 +114,8 @@ public class InfinispanCacheWrapper<U,V> implements CacheWrapper<U,V> {
 	}
 
 	@Override
-	public V put(U key, V value, int expirationTime) {
-		return cache.put(key, value, expirationTime, TimeUnit.SECONDS, expirationTime, TimeUnit.SECONDS);
+	public V put(U key, V value, int lifespan, int maxIdleTime) {
+		return cache.put(key, value, lifespan, TimeUnit.SECONDS, maxIdleTime, TimeUnit.SECONDS);
 	}
 
 	@Override

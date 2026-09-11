@@ -106,6 +106,8 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private String csrfToken;
 	private String sessionId;
 	private transient OAuth2Tokens oauth2Tokens;
+	
+	private List<UserSession> sandboxSessions;
 
 	public UserSession() {
 		init();
@@ -255,6 +257,17 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			}
 		}
 		return chats;
+	}
+	
+	public List<UserSession> getSandboxSessions() {
+		return sandboxSessions;
+	}
+
+	public void addSandboxSession(UserSession sandboxSession) {
+		if(sandboxSessions == null) {
+			sandboxSessions = new ArrayList<>();
+		}
+		sandboxSessions.add(sandboxSession);
 	}
 
 	/**

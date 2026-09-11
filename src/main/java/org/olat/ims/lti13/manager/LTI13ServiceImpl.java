@@ -940,7 +940,8 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			OAuth2AccessToken token = service.getApi().getAccessTokenExtractor().extract(response);
 			if(token != null && token.getExpiresIn() != null) {
 				AccessTokenTimed cachedToken = new AccessTokenTimed(token);
-				accessTokensCache.put(tokenKey, cachedToken, token.getExpiresIn().intValue());
+				int expirationTime = token.getExpiresIn().intValue();
+				accessTokensCache.put(tokenKey, cachedToken, expirationTime, expirationTime);
 			}
 			return token;
 		} catch (Exception e) {

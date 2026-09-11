@@ -75,7 +75,7 @@
 		<apache.poi>5.5.1</apache.poi>
 		<apache.log4j>2.26.1</apache.log4j>
 		<org.slf4j>2.0.19</org.slf4j>
-		<org.bouncycastle>1.85.2</org.bouncycastle>
+		<org.bouncycastle>1.86</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.4.3.Final</io.undertow>
 		<io.undertow.ee>2.0.2.Final</io.undertow.ee>
@@ -86,8 +86,8 @@
 		<org.postgresql.version>42.7.13</org.postgresql.version>
 		<org.infinispan.version>16.2.3</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.48.0</version.selenium>
-		<activemq.artemis.version>2.56.0</activemq.artemis.version>
+		<version.selenium>4.49.0</version.selenium>
+		<activemq.artemis.version>2.57.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.5</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
@@ -1802,7 +1802,7 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcjmail-jdk18on</artifactId>
-			<version>1.85</version>
+			<version>${org.bouncycastle}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>

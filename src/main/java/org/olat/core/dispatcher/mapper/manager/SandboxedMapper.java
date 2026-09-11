@@ -28,6 +28,32 @@ import org.olat.core.util.UserSession;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record SandboxedMapper(UserSession usess, Mapper mapper, String token) {
-	//
+public class SandboxedMapper {
+
+	private final Mapper mapper;
+	private final UserSession usess;
+	
+	private String token;
+	
+	public SandboxedMapper(UserSession usess, Mapper mapper, String token) {
+		this.mapper = mapper;
+		this.usess = usess;
+		this.token = token;
+	}
+	
+	public Mapper mapper() {
+		return mapper;
+	}
+	
+	public UserSession usess() {
+		return usess;
+	}
+	
+	public String token() {
+		return token;
+	}
+	
+	public void consumeToken() {
+		token = null;
+	}
 }

@@ -186,23 +186,24 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			myContent.contextPut("iframeResizer", Boolean.TRUE);
 		}
 
-		String mapperID = VFSManager.getRealPath(rootDir);
-		if (mapperID != null) {
-			// Add classname to the file path to remove conflicts with other
-			// usages of the same file path
-			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
-			if(iframeSettings.isRandomizeMapper()) {
-				mapperID += CodeHelper.getRAMUniqueID();
-			}
-		}
-		
 		String token = "";
 		if(iframeSettings != null && iframeSettings.isUseContentDomain() && Settings.isContentDomainNameEnabled()) {
 			contentMapper.setUseContentDomain(true);
-			MapperKey mKey = registerSandboxedMapper(ureq, mapperID, contentMapper);
-			baseURI = Settings.createContentServerURI() + mKey.getUrl();
+			MapperKey mKey = registerSandboxedMapper(ureq, contentMapper);
+			String serverUri = Settings.isContentDomainNameEnabled()
+					? Settings.createContentServerURI()
+					: Settings.createServerURI();
+			baseURI = serverUri + mKey.getUrl();
 			token = "?token=" + mKey.getToken();
 		} else {
+			String mapperID = VFSManager.getRealPath(rootDir);
+			if (mapperID != null) {
+				// Add classname to the file path to remove conflicts with other usages of the same file path
+				mapperID = this.getClass().getSimpleName() + ":" + mapperID;
+				if(iframeSettings.isRandomizeMapper()) {
+					mapperID += CodeHelper.getRAMUniqueID();
+				}
+			}
 			contentMapper.setUseContentDomain(false);
 			baseURI = registerCacheableMapper(ureq, mapperID, contentMapper);
 		}
