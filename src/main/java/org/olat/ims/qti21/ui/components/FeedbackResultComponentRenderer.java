@@ -99,7 +99,7 @@ public class FeedbackResultComponentRenderer extends AssessmentObjectComponentRe
 		}
 
 		sb.append("<h5>").append(StringHelper.escapeHtml(feedbackTitle)).append("</h5>");
-		sb.append("<div id='modal-correct-solution'><div class='o_togglebox_content clearfix'>");
+		sb.append("<div id='modal-correct-solution-").append(component.getDispatchID()).append("' class='o_modal_correct_solution'><div class='o_togglebox_content clearfix'>");
 
 		modalFeedback.getFlowStatics().forEach((flow)
 			-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));

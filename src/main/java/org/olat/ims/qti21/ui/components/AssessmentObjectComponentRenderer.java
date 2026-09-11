@@ -314,8 +314,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			feedbackTitle = translator.translate("correct.solution");
 		}
 
-		sb.append("<h4><a href='#modal-correct-solution' data-toggle='collapse' data-target='#modal-correct-solution' class=\"o_opener\" onclick=\"jQuery(this).toggleClass('o_in'); return false;\"><i class='o_icon o_icon-fw o_icon-lg'> </i> ").append(StringHelper.escapeHtml(feedbackTitle)).append("</a></h4>");
-		sb.append("<div id='modal-correct-solution' class='collapse'><div class='o_togglebox_content clearfix'>");
+		String modalId = "modal-correct-solution-" + component.getDispatchID();
+		sb.append("<h4><a href='#").append(modalId).append("' data-toggle='collapse' data-target='#").append(modalId).append("' class=\"o_opener\" onclick=\"jQuery(this).toggleClass('o_in'); return false;\"><i class='o_icon o_icon-fw o_icon-lg'> </i> ").append(StringHelper.escapeHtml(feedbackTitle)).append("</a></h4>");
+		sb.append("<div id='").append(modalId).append("' class='collapse o_modal_correct_solution'><div class='o_togglebox_content clearfix'>");
 		
 		modalFeedback.getFlowStatics().forEach(flow -> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 
