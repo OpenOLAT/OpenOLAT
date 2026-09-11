@@ -22,7 +22,6 @@ package org.olat.repository.ui.author;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
@@ -30,10 +29,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.handlers.EditionSupport;
-import org.olat.repository.handlers.RepositoryHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 /**
  * 
@@ -45,7 +40,6 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 	
 	private static final Cols[] COLS = Cols.values();
 
-	private final RepositoryHandlerFactory handlerFactory;
 	private Identity identity;
 	private Roles roles;
 	
@@ -54,7 +48,6 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		super(source, columnModel);
 		this.identity = identity;
 		this.roles = roles;
-		handlerFactory = CoreSpringFactory.getImpl(RepositoryHandlerFactory.class);
 	}
 
 	@Override
@@ -100,9 +93,6 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		AuthoringEntryRow row = (AuthoringEntryRow)object;
 		if("select".equals(action)) {
 			return row.getUrl();
-		}
-		if("details".equals(action)) {
-			return row.getUrl().concat("/Infos/0");
 		}
 		if("edit".equals(action)) {
 			return row.getUrl().concat("/Editor/0");
@@ -151,28 +141,13 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 				}
 				return item.getReferencesLink();
 			}	
-			case detailsSupported: {
-				RepositoryHandler handler = handlerFactory.getRepositoryHandler(item.getResourceType());
-				return (handler != null) ? Boolean.TRUE : Boolean.FALSE;
-			}
 			case tools: return item.getToolsLink();
 			case infos: return item.getInfosLink();
 			case details: return item.getDetailsLink();
-			case editionSupported: {
-				RepositoryHandler handler = handlerFactory.getRepositoryHandler(item.getResourceType());
-				if(handler == null) {
-					return Boolean.FALSE;
-				}
-				if(handler.supportsEdit(item.getOLATResourceable(), identity, roles) == EditionSupport.no) {
-					return Boolean.FALSE;
-				}
-				RepositoryEntryStatusEnum status = item.getEntryStatus();
-				if(status.decommissioned()) {
-					return Boolean.FALSE;
-				}
-				return Boolean.TRUE;
-			}
 			case lectureInfos: return item.isLectureEnabled();
+			case settingsAction: return Boolean.TRUE;
+			case membersAction: return Boolean.TRUE;
+			case editContentAction: return item;
 		}
 		return null;
 	}
@@ -204,14 +179,15 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		deletedBy("table.header.deletedby"),
 		deletionDate("table.header.deletiondate"),
 		mark("table.header.mark"),
-		detailsSupported("table.header.details"),
 		tools("action.more"),
-		editionSupported("table.header.edit"),
 		lectureInfos("table.header.lecture.infos"),
 		guests("table.header.guests"),
 		infos("table.header.infos"),
 		details("table.header.details"),
-		runtimeType("table.header.runtime.type");
+		runtimeType("table.header.runtime.type"),
+		settingsAction("details.settings"),
+		membersAction("details.members"),
+		editContentAction("details.editor");
 		
 		private final String i18nKey;
 		private String templateI18nKey;

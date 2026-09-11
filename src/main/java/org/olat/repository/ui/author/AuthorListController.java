@@ -72,7 +72,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -660,25 +659,32 @@ public class AuthorListController extends FormBasicController implements Activat
 			infosColumn.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(infosColumn);
 		}
-		if(configuration.isTools()) {
-			DefaultFlexiColumnModel detailsColumn = new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), "details",
-					new StaticFlexiCellRenderer("", "details",  null, "o_icon-lg o_icon_info_page", translate("details")));
-			detailsColumn.setIconHeader("o_icon o_icon-lg o_icon_info_page");
-			detailsColumn.setHeaderLabel(translate("details"));
-			detailsColumn.setAlwaysVisible(true);
-			detailsColumn.setExportable(false);
-			columnsModel.addFlexiColumnModel(detailsColumn);
-			if(hasAuthorRight) {
-				DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel(Cols.editionSupported.i18nKey(), Cols.editionSupported.ordinal(), "edit",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer("", "edit", null, "o_icon-lg o_icon_edit", translate("edit")), null));
-				editColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_edit");
-				editColumn.setHeaderLabel(translate("edit"));
-				editColumn.setAlwaysVisible(true);
-				editColumn.setExportable(false);
-				columnsModel.addFlexiColumnModel(editColumn);
-				
-				columnsModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
-			}
+		if(configuration.isTools() && hasAuthorRight) {
+			DefaultFlexiColumnModel settingsColumn = new DefaultFlexiColumnModel(false, false, Cols.settingsAction.i18nKey(), null,
+					Cols.settingsAction.ordinal(), "settings", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+					new StaticFlexiCellRenderer("", "settings", null, "o_icon-lg o_icon_settings", translate("details.settings")));
+			settingsColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_settings");
+			settingsColumn.setHeaderLabel(translate("details.settings"));
+			settingsColumn.setExportable(false);
+			columnsModel.addFlexiColumnModel(settingsColumn);
+
+			DefaultFlexiColumnModel membersColumn = new DefaultFlexiColumnModel(false, false, Cols.membersAction.i18nKey(), null,
+					Cols.membersAction.ordinal(), "members", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+					new StaticFlexiCellRenderer("", "members", null, "o_icon-lg o_icon_membersmanagement", translate("details.members")));
+			membersColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_membersmanagement");
+			membersColumn.setHeaderLabel(translate("details.members"));
+			membersColumn.setExportable(false);
+			columnsModel.addFlexiColumnModel(membersColumn);
+
+			DefaultFlexiColumnModel editContentColumn = new DefaultFlexiColumnModel(false, false, Cols.editContentAction.i18nKey(), null,
+					Cols.editContentAction.ordinal(), "edit", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+					new EditContentActionRenderer(repositoryHandlerFactory, getIdentity(), roles));
+			editContentColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_edit");
+			editContentColumn.setHeaderLabel(translate("details.editor"));
+			editContentColumn.setExportable(false);
+			columnsModel.addFlexiColumnModel(editContentColumn);
+
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 		}
 	}
 	
@@ -1385,12 +1391,14 @@ public class AuthorListController extends FormBasicController implements Activat
 			if (event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				AuthoringEntryRow row = model.getObject(se.getIndex());
-				if ("details".equals(cmd)) {
-					launchDetails(ureq, row);
-				} else if ("edit".equals(cmd)) {
+				if ("edit".equals(cmd)) {
 					launchEditor(ureq, row);
 				} else if ("select".equals(cmd)) {
 					launch(ureq, row);
+				} else if ("settings".equals(cmd)) {
+					launchEditDescription(ureq, row);
+				} else if ("members".equals(cmd)) {
+					launchMembers(ureq, row);
 				}
 			} else if (event instanceof FlexiTableFilterTabEvent fte) {
 				doSelectFilterTab(fte.getTab());
@@ -2140,13 +2148,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
-	private void launchDetails(UserRequest ureq, RepositoryEntryRef ref) {
-		String businessPath = "[RepositoryEntry:" + ref.getKey() + "][Infos:0]";
-		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
-			tableEl.reloadData();
-		}
-	}
-	
 	private void launchEditDescription(UserRequest ureq, RepositoryEntry re) {
 		if(re != null) {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(re);
@@ -2472,7 +2473,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			List<String> links = new ArrayList<>();
 
 			if(isOwner) {
-				addLink("tools.edit.description", "description", "o_icon o_icon-fw o_icon_info_page", "/Settings/0/Info/0", links);
+				addLink("details.settings", "description", "o_icon o_icon-fw o_icon_settings", "/Settings/0/Info/0", links);
 				// Selenium for Firefox need this (cannot click reliably the edit button under the sticky action column)
 				EditionSupport editionSupport = handler.supportsEdit(row.getOLATResourceable(), getIdentity(), roles);
 				if((editionSupport == EditionSupport.yes || editionSupport == EditionSupport.embedded)

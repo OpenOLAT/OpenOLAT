@@ -62,7 +62,7 @@ public class AuthorListConfiguration {
 	}
 	
 	public static final AuthorListConfiguration allEnabled() {
-		AuthorListConfiguration config = new AuthorListConfiguration("authors-list-v2");
+		AuthorListConfiguration config = new AuthorListConfiguration("authors-list-v3");
 		config.setI18nKeyTitle("author.title");
 		config.setMoreMenu(true);
 		return config;
