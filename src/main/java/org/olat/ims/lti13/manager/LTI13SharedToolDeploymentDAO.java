@@ -65,22 +65,64 @@ public class LTI13SharedToolDeploymentDAO {
 	}
 	
 	public List<LTI13SharedToolDeployment> getSharedToolDeployment(String deploymentId, LTI13Platform platform) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select deployment from ltisharedtooldeployment deployment")
-		  .append(" inner join fetch deployment.platform platform")
-		  .append(" left join fetch deployment.entry v")
-		  .append(" left join fetch v.olatResource as vOres")
-		  .append(" left join fetch v.statistics as vStatistics")
-		  .append(" left join fetch v.lifecycle as vLifecycle")
-		  .append(" left join fetch deployment.businessGroup bgi")
-		  .append(" left join fetch bgi.baseGroup baseGroup")
-		  .append(" left join fetch bgi.resource resource")
-		  .append(" where deployment.deploymentId=:deploymentId and platform.key=:platformKey");
+		String query = """
+				select deployment from ltisharedtooldeployment deployment
+				inner join fetch deployment.platform platform
+				left join fetch deployment.entry v
+				left join fetch v.olatResource as vOres
+				left join fetch v.statistics as vStatistics
+				left join fetch v.lifecycle as vLifecycle
+				left join fetch deployment.businessGroup bgi
+				left join fetch bgi.baseGroup baseGroup
+				left join fetch bgi.resource resource
+				where deployment.deploymentId=:deploymentId and platform.key=:platformKey""";
 		
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), LTI13SharedToolDeployment.class)
+			.createQuery(query, LTI13SharedToolDeployment.class)
 			.setParameter("deploymentId", deploymentId)
 			.setParameter("platformKey", platform.getKey())
+			.getResultList();
+	}
+	
+	public List<LTI13SharedToolDeployment> getSharedToolDeployments(String deploymentId,
+			RepositoryEntry repositoryEntry, LTI13Platform platform) {
+		String query = """
+				select deployment from ltisharedtooldeployment deployment
+				inner join fetch deployment.platform platform
+				inner join fetch deployment.entry v
+				inner join fetch v.olatResource as vOres
+				left join fetch v.statistics as vStatistics
+				left join fetch v.lifecycle as vLifecycle
+				left join fetch deployment.businessGroup bgi
+				left join fetch bgi.baseGroup baseGroup
+				left join fetch bgi.resource resource
+				where deployment.deploymentId=:deploymentId and platform.key=:platformKey
+				and v.key=:entryKey""";
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query, LTI13SharedToolDeployment.class)
+			.setParameter("deploymentId", deploymentId)
+			.setParameter("platformKey", platform.getKey())
+			.setParameter("entryKey", repositoryEntry.getKey())
+			.getResultList();
+	}
+	
+	public List<LTI13SharedToolDeployment> getSharedToolDeployments(String deploymentId,
+			BusinessGroup businessGroup, LTI13Platform platform) {
+		String query = """
+				select deployment from ltisharedtooldeployment deployment
+				inner join fetch deployment.platform platform
+				inner join fetch deployment.businessGroup bgi
+				inner join fetch bgi.baseGroup baseGroup
+				inner join fetch bgi.resource resource
+				where deployment.deploymentId=:deploymentId and platform.key=:platformKey
+				and bgi.key=:businessGroupKey""";
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query, LTI13SharedToolDeployment.class)
+			.setParameter("deploymentId", deploymentId)
+			.setParameter("platformKey", platform.getKey())
+			.setParameter("businessGroupKey", businessGroup.getKey())
 			.getResultList();
 	}
 	

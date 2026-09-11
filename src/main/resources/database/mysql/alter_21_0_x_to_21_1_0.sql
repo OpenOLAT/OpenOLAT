@@ -64,3 +64,6 @@ alter table o_user add column u_customernumber varchar(255);
 alter table o_org_organisation add column o_customernumber varchar(255);
 alter table o_ac_billing_address add column a_customer_number varchar(255);
 
+-- LTI
+alter table o_lti_shared_tool_deployment drop index unique_deploy_platform;
+

@@ -68,3 +68,5 @@ alter table o_user add u_customernumber varchar2(255 char);
 alter table o_org_organisation add o_customernumber varchar2(255 char);
 alter table o_ac_billing_address add a_customer_number varchar2(255 char);
 
+-- LTI
+alter table o_lti_shared_tool_deployment drop constraint unique_deploy_platform;

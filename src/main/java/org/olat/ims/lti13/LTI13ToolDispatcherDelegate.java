@@ -114,8 +114,8 @@ public class LTI13ToolDispatcherDelegate {
 				DispatcherModule.sendBadRequest(Errors.INVALID_REQUEST, response);
 				return;
 			}
-			
-			LTI13SharedToolDeployment sharedToolDeployment = lti13Service.getSharedToolDeployment(ltiDeploymentId, platform);
+
+			LTI13SharedToolDeployment sharedToolDeployment = lti13Service.getSharedToolDeployment(ltiDeploymentId, targetLinkUri, platform);
 			if(sharedToolDeployment == null) {
 				log.warn("Deployment not found: {} for client: {}", ltiDeploymentId, clientId);
 				DispatcherModule.sendBadRequest(Errors.INVALID_REQUEST, response);

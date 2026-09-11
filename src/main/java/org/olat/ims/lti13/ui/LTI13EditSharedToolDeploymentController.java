@@ -59,8 +59,8 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 	private TextElement publicKeyEl;
 	private StaticTextElement publicKeyUrlEl;
 	
-	private RepositoryEntry entry;
-	private BusinessGroup businessGroup;
+	private final RepositoryEntry entry;
+	private final BusinessGroup businessGroup;
 	private LTI13SharedToolDeployment deployment;
 	private final List<LTI13Platform> platforms;
 
@@ -83,6 +83,8 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 			LTI13SharedToolDeployment deployment) {
 		super(ureq, wControl);
 		this.deployment = deployment;
+		this.entry = deployment.getEntry();
+		this.businessGroup = deployment.getBusinessGroup();
 		platforms = lti13Service.getPlatforms();
 		initForm(ureq);
 		updatePlatformPublicKeys();
@@ -204,7 +206,11 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 			deploymentIdEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!validateUniqueDeployment()) {
-			deploymentIdEl.setErrorKey("error.unique.deployment");
+			if(entry != null) {
+				deploymentIdEl.setErrorKey("error.unique.deployment.entry");
+			} else {
+				deploymentIdEl.setErrorKey("error.unique.deployment.group");
+			}
 			allOk &= false;
 		}
 		
@@ -215,8 +221,17 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		String deploymentId = deploymentIdEl.getValue();
 		LTI13Platform selectedPlatform = getSelectedPlatform();
 		if(selectedPlatform != null) {
-			LTI13SharedToolDeployment savedDeployment = lti13Service.getSharedToolDeployment(deploymentId, selectedPlatform);
-			return savedDeployment == null || savedDeployment.equals(deployment);
+			List<LTI13SharedToolDeployment> deployments;
+			if(entry != null) {
+				deployments = lti13Service.getSharedToolDeployments(deploymentId, entry, selectedPlatform);	
+			} else if(businessGroup != null) {
+				deployments = lti13Service.getSharedToolDeployments(deploymentId, businessGroup, selectedPlatform);
+			} else {
+				return false;
+			}
+			
+			return deployments.isEmpty()
+					|| (deployment != null && deployments.size() == 1 && deployments.contains(deployment));
 		}
 		return true;// no platform makes an error before
 	}

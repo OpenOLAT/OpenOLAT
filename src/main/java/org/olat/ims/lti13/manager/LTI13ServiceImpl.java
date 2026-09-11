@@ -51,10 +51,13 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
@@ -321,7 +324,9 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	@Override
 	public LTI13SharedToolDeployment createSharedToolDeployment(String deploymentId, LTI13Platform platform,
 			RepositoryEntry repositoryEntry, BusinessGroup businessGroup) {
-		List<LTI13SharedToolDeployment> deployments = sharedToolDeploymentDao.getSharedToolDeployment(deploymentId, platform);
+		List<LTI13SharedToolDeployment> deployments = repositoryEntry != null
+				? sharedToolDeploymentDao.getSharedToolDeployments(deploymentId, repositoryEntry, platform)
+				: sharedToolDeploymentDao.getSharedToolDeployments(deploymentId, businessGroup, platform);
 		if(deployments.isEmpty()) {
 			if(repositoryEntry != null && businessGroup == null) {
 				String groupName = "LTI: " + platform.getName();
@@ -337,7 +342,9 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		if(deployments.size() == 1) {
 			return deployments.get(0);
 		}
-		log.error("Shared tool with same deployments: {} {}", platform.getKey(), deploymentId);
+		log.error("Shared tool with same deployments: {} {} repository entry: {} business group: {}",
+				platform.getKey(), deploymentId, (repositoryEntry == null ? null : repositoryEntry.getKey()),
+				(businessGroup == null ? null : businessGroup.getKey()));
 		return null;
 	}
 
@@ -347,16 +354,49 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public LTI13SharedToolDeployment getSharedToolDeployment(String deploymentId, LTI13Platform platform) {
+	public LTI13SharedToolDeployment getSharedToolDeployment(String deploymentId, String targetLinkUri, LTI13Platform platform) {
+		if(!StringHelper.containsNonWhitespace(targetLinkUri)) return null;
+		
 		List<LTI13SharedToolDeployment> deployments = sharedToolDeploymentDao.getSharedToolDeployment(deploymentId, platform);
-		if(deployments.size() == 1) {
-			return deployments.get(0);
+
+		// Remove trailing / for exact matches
+		if(targetLinkUri.endsWith("/")) {
+			targetLinkUri = targetLinkUri.substring(0, targetLinkUri.length() -1);
 		}
-		log.error("Shared tool with problematic deployment: {} {} (num. of deployments: {})", platform.getKey(), deploymentId, deployments.size());
+		
+		List<LTI13SharedToolDeployment> exactMatches = new ArrayList<>();
+		List<LTI13SharedToolDeployment> extendedMatches = new ArrayList<>();
+		for(LTI13SharedToolDeployment deployment:deployments) {
+			OLATResourceable ores;
+			if(deployment.getEntry() != null) {
+				ores = deployment.getEntry();
+			} else if(deployment.getBusinessGroup() != null) {
+				ores = deployment.getBusinessGroup();
+			} else {
+				continue;
+			}
+			
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
+			String authUri = BusinessControlFactory.getInstance().getAsAuthURIString(entries, true);
+			String restUri = BusinessControlFactory.getInstance().getAsRestPart(entries, true);
+			if(targetLinkUri.equals(authUri) || targetLinkUri.equals(restUri)) {
+				exactMatches.add(deployment);
+			} else if(targetLinkUri.startsWith(authUri) || targetLinkUri.startsWith(restUri)) {
+				extendedMatches.add(deployment);
+			}
+		}
+		
+		if(exactMatches.size() == 1) {
+			return exactMatches.get(0);
+		} else if(exactMatches.size() > 1) {
+			log.error("Shared tool with problematic deployment: {} {} for target_link_uri {} (matches deployments: {}) (exact)", platform.getKey(), deploymentId, targetLinkUri, deployments.size());
+		} else if(extendedMatches.size() == 1) {
+			return extendedMatches.get(0);
+		} else if(extendedMatches.size() > 1) {
+			log.error("Shared tool with problematic deployment: {} {} for target_link_uri {} (matches deployments: {}) (extended)", platform.getKey(), deploymentId, targetLinkUri, deployments.size());
+		}
 		return null;
 	}
-	
-	
 
 	@Override
 	public LTI13SharedToolDeployment getSharedToolDeployment(LTI13SharedToolDeployment deployment) {
@@ -364,6 +404,16 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			return null;
 		}
 		return sharedToolDeploymentDao.loadByKey(deployment.getKey());
+	}
+
+	@Override
+	public List<LTI13SharedToolDeployment> getSharedToolDeployments(String deploymentId, RepositoryEntry repositoryEntry, LTI13Platform platform) {
+		 return sharedToolDeploymentDao.getSharedToolDeployments(deploymentId, repositoryEntry, platform);
+	}
+
+	@Override
+	public List<LTI13SharedToolDeployment> getSharedToolDeployments(String deploymentId, BusinessGroup businessGroup, LTI13Platform platform) {
+		return sharedToolDeploymentDao.getSharedToolDeployments(deploymentId, businessGroup, platform);
 	}
 
 	@Override

@@ -32,8 +32,11 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.crypto.CryptoUtil;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.ims.lti13.LTI13Constants.UserSub;
@@ -269,6 +272,60 @@ public class LTI13ServiceTest extends OlatTestCase {
 		Identity identity = lti13Service.matchIdentity(claims, platform);
 		Assert.assertNotEquals(ident.getIdentity(), identity);
 		Assert.assertNull(identity.getUser().getEmail());
+	}
+	
+	@Test
+	public void getSharedToolDeployment() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-1");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		String clientId = UUID.randomUUID().toString();
+		String issuer = "https://m.openolat.com";
+		LTI13Platform platform = createPlatform(issuer, clientId);
+		platform = lti13Service.updatePlatform(platform);
+		String deploymentId = UUID.randomUUID().toString();
+		LTI13SharedToolDeployment deployment = lti13Service.createSharedToolDeployment(deploymentId, platform, entry, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(entry);
+		String targetLinkUri = BusinessControlFactory.getInstance().getAsAuthURIString(entries, true);
+		LTI13SharedToolDeployment foundDeployment = lti13Service.getSharedToolDeployment(deploymentId, targetLinkUri, platform);
+		Assert.assertEquals(deployment, foundDeployment);	
+	}
+	
+	@Test
+	public void getSharedToolDeploymentSharedDeploymentId() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-1");
+		
+		final String clientId = UUID.randomUUID().toString();
+		final String issuer = "https://m.openolat.com";
+		LTI13Platform platform = createPlatform(issuer, clientId);
+		platform = lti13Service.updatePlatform(platform);
+		final String deploymentId = UUID.randomUUID().toString();
+		
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author);
+		
+		LTI13SharedToolDeployment deployment1 = lti13Service.createSharedToolDeployment(deploymentId, platform, entry1, null);
+		LTI13SharedToolDeployment deployment2 = lti13Service.createSharedToolDeployment(deploymentId, platform, entry2, null);
+		dbInstance.commitAndCloseSession();
+		
+		// Target link to entry1
+		List<ContextEntry> entries1 = BusinessControlFactory.getInstance().createCEListFromString(entry1);
+		String targetLinkUri1 = BusinessControlFactory.getInstance().getAsAuthURIString(entries1, true);
+		LTI13SharedToolDeployment foundDeployment1 = lti13Service.getSharedToolDeployment(deploymentId, targetLinkUri1, platform);
+		Assert.assertEquals(deployment1, foundDeployment1);	
+
+		// Target link to entry2
+		List<ContextEntry> entries2 = BusinessControlFactory.getInstance().createCEListFromString(entry2);
+		String targetLinkUri2 = BusinessControlFactory.getInstance().getAsAuthURIString(entries2, true);
+		LTI13SharedToolDeployment foundDeployment2 = lti13Service.getSharedToolDeployment(deploymentId, targetLinkUri2, platform);
+		Assert.assertEquals(deployment2, foundDeployment2);	
+		
+		// Link to nowhere 
+		List<ContextEntry> noEntries = BusinessControlFactory.getInstance().createCEListFromString(OresHelper.createOLATResourceableInstance("RepositoryEntry", 2l));
+		String targetLinkUriToNoWhere = BusinessControlFactory.getInstance().getAsAuthURIString(noEntries, true);
+		LTI13SharedToolDeployment notFoundDeployment = lti13Service.getSharedToolDeployment(deploymentId, targetLinkUriToNoWhere, platform);
+		Assert.assertNull(notFoundDeployment);	
 	}
 	
 	@Test
