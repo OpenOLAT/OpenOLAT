@@ -169,6 +169,13 @@ public interface RepositoryHandler {
 	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles);
 
 	/**
+	 * @return The i18n key of the link that opens the editor for this handler's type.
+	 */
+	public default String getEditorLinkI18nKey() {
+		return "details.editor";
+	}
+
+	/**
 	 * If the resource handler can deliver an assessment details controller, it
 	 * returns true.
 	 * 

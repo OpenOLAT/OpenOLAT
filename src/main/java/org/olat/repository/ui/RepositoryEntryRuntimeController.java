@@ -581,7 +581,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			toolsDropdown.addComponent(new Spacer("editors-tools"));
 			
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
-			editLink = LinkFactory.createToolLink("edit.cmd", translate("details.openeditor"), this, "o_sel_repository_editor");
+			editLink = LinkFactory.createToolLink("edit.cmd", translate(handler.getEditorLinkI18nKey()), this, "o_sel_repository_editor");
 			editLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Editor:0]]"));
 			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");

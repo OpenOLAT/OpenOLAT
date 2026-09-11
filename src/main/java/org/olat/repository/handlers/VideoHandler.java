@@ -112,6 +112,11 @@ public class VideoHandler extends FileHandler {
 	}
 
 	@Override
+	public String getEditorLinkI18nKey() {
+		return "details.editor.video";
+	}
+
+	@Override
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
 			Object createObject, Organisation organisation, Locale locale) {
 		return null;

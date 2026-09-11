@@ -150,7 +150,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			toolsDropdown.addComponent(exportToDocxLink);
 		}
 	}
-
+	
 	@Override
 	protected RepositoryEntrySettingsController createSettingsController(UserRequest ureq, WindowControl bwControl, RepositoryEntry refreshedEntry) {
 		return new QTI21SettingsController(ureq, bwControl, toolbarPanel, refreshedEntry);

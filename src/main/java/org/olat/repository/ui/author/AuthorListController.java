@@ -2477,7 +2477,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				EditionSupport editionSupport = handler.supportsEdit(row.getOLATResourceable(), getIdentity(), roles);
 				if((editionSupport == EditionSupport.yes || editionSupport == EditionSupport.embedded)
 						&& !entry.getEntryStatus().decommissioned()) {
-					addLink("edit", "edit", "o_icon o_icon-fw o_icon_edit", "/Editor/0", links);
+					addLink(handler.getEditorLinkI18nKey(), "edit", "o_icon o_icon-fw o_icon_edit", "/Editor/0", links);
 				}
 				
 				if(repositoryModule.isCatalogEnabled()) {

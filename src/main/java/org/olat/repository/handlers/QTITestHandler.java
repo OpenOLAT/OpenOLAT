@@ -73,6 +73,11 @@ public class QTITestHandler extends QTIHandler {
 	}
 
 	@Override
+	public String getEditorLinkI18nKey() {
+		return "details.editor.test";
+	}
+
+	@Override
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
 			Object createObject, Organisation organisation, Locale locale) {
 		return null;

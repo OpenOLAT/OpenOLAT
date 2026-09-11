@@ -123,7 +123,12 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	public String getCreateLabelI18nKey() {
 		return "new.form";
 	}
-	
+
+	@Override
+	public String getEditorLinkI18nKey() {
+		return "details.editor.form";
+	}
+
 	@Override
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
 			Object createObject, Organisation organisation, Locale locale) {

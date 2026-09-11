@@ -192,6 +192,11 @@ public class CourseHandler implements RepositoryHandler {
 	}
 
 	@Override
+	public String getEditorLinkI18nKey() {
+		return "details.editor.course";
+	}
+
+	@Override
 	public boolean supportImport() {
 		return true;
 	}

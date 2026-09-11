@@ -753,7 +753,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 			boolean readOnly = uce.isCourseReadOnly();
-			editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_icon_courseeditor");
+			editLink = LinkFactory.createToolLink("edit.cmd", translate(handler.getEditorLinkI18nKey()), this, "o_icon_courseeditor");
 			editLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Editor:0]]"));
 			editLink.setElementCssClass("o_sel_course_editor");
