@@ -55,6 +55,10 @@ import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.template.declaration.TemplateDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -241,7 +245,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		renderSectionRubrics(renderer, sb, component, itemRefNode, ubu, translator);
 
 		// test part -> section -> item
-		renderTestItemBody(renderer, sb, component, itemRefNode, ubu, translator, options);
+		AssessmentItem assessmentItem = renderTestItemBody(renderer, sb, component, itemRefNode, ubu, translator, options);
 		
 		//controls
 		sb.append("<div class='o_assessmentitem_controls'>");
@@ -286,7 +290,8 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 		
 		// <xsl:variable name="provideItemSolutionButton" as="xs:boolean" select="$reviewMode and $showSolution and not($solutionMode)"/>
-		if(options.isReviewMode() && effectiveItemSessionControl.isShowSolution() && !options.isSolutionMode()) {
+		if(options.isReviewMode() && effectiveItemSessionControl.isShowSolution()
+				&& !options.isSolutionMode() && canItemShowSolution(assessmentItem)) {
 			String title = translator.translate("assessment.solution.show");
 			renderControl(sb, component, title, null, false, "o_sel_show_solution",
 					new NameValuePair("cid", Event.itemSolution.name()), new NameValuePair("item", key));
@@ -298,6 +303,26 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 		sb.append("</div></div>");//end controls
 		sb.append("</div>");// end assessmentItem
+	}
+	
+	/**
+	 * Drawing, upload file and essay doesn't have a solution.
+	 * 
+	 * @param assessmentItem The assessment item
+	 * @return true if the assessment item has a solution to show
+	 */
+	private boolean canItemShowSolution(AssessmentItem assessmentItem) {
+		if(assessmentItem == null) return false;
+		
+		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		for(Interaction interaction:interactions) {
+			if(!(interaction instanceof DrawingInteraction)
+					&& !(interaction instanceof UploadInteraction)
+					&& !(interaction instanceof ExtendedTextInteraction)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private void renderAttempts(StringOutput sb, ItemProcessingContext itemProcessingContext, ItemSessionState itemSessionState, Translator translator) {
@@ -433,7 +458,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		  .append("</script>");
 	}
 	
-	private void renderTestItemBody(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode,
+	private AssessmentItem renderTestItemBody(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode,
 			URLBuilder ubu, Translator translator, RenderingRequest options) {
 
 		AssessmentItemRef itemRef = component.getResolvedAssessmentTest()
@@ -441,14 +466,14 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		if(itemRef == null) {
 			log.error("Missing assessment item ref: {}", itemNode.getKey());
 			renderMissingItem(sb, translator);
-			return;
+			return null;
 		}
 		ResolvedAssessmentItem resolvedAssessmentItem = component.getResolvedAssessmentTest()
 				.getResolvedAssessmentItem(itemRef);
 		if(resolvedAssessmentItem == null) {
 			log.error("Missing assessment item: {}", itemNode.getKey());
 			renderMissingItem(sb, translator);
-			return;
+			return null;
 		}
 
 		final ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
@@ -485,6 +510,8 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			renderTestItemModalFeedback(renderer, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
 		}
 		sb.append("</div>"); // end wrapper
+		
+		return assessmentItem;
 	}
 	
 	protected void renderMaxScoreItem(StringOutput sb, AssessmentTestComponent component, ItemSessionState itemSessionState, Translator translator) {
