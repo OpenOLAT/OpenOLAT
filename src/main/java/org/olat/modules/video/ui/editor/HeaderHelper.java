@@ -28,6 +28,16 @@ import java.util.Set;
  */
 public class HeaderHelper {
 
+	/**
+	 * Finds the nearest second within a video timeline that does not have an event, starting from a specified time.
+	 * The method searches forward and backward from the given time, respecting certain increments based on video 
+	 * duration.
+	 *
+	 * @param timeInSeconds The starting point in seconds within the video timeline to begin the search.
+	 * @param videoDurationInSeconds The total duration of the video in seconds, which determines the search granularity.
+	 * @param usedTimes A set of seconds in the video timeline that are already associated with events and should be skipped.
+	 * @return The nearest second without an event. If no such second is found, the input starting time is returned.
+	 */
 	public static long findNearestSecondWithoutEvent(long timeInSeconds, long videoDurationInSeconds, Set<Long> usedTimes) {
 
 		if (videoDurationInSeconds >= 600) {
