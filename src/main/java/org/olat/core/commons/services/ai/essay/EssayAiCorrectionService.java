@@ -28,6 +28,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.AiUserPreference;
+import org.olat.core.commons.services.ai.AiUserPreferenceService;
 import org.olat.core.commons.services.ai.manager.AiTaskExecutorService;
 import org.olat.core.commons.services.ai.manager.AiUsageLogDAO;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
@@ -94,6 +96,8 @@ public class EssayAiCorrectionService implements UserDataDeletable {
 	private AiUsageLogDAO aiUsageLogDao;
 	@Autowired
 	private AiTaskExecutorService aiTaskExecutorService;
+	@Autowired
+	private AiUserPreferenceService aiUserPreferenceService;
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
@@ -113,12 +117,16 @@ public class EssayAiCorrectionService implements UserDataDeletable {
 	 *                                 came from; may be {@code null} for
 	 *                                 an in-memory session
 	 * @param identity                 the learner
-	 * @return the newly persisted correction key
+	 * @return the newly persisted correction key, or {@code null} when the
+	 *         feature is not available or the learner switched it off
 	 */
 	public Long submit(String storagePath, String questionId, String studentAnswer,
 			Long assessmentItemSessionKey, Identity identity) {
 		if (identity == null) {
 			throw new IllegalArgumentException("identity must not be null");
+		}
+		if (!isAiCorrectionAllowed(identity)) {
+			return null;
 		}
 		assertQueueNotOverloaded(identity);
 		assertWithinRateLimit(identity);
@@ -369,6 +377,61 @@ public class EssayAiCorrectionService implements UserDataDeletable {
 			throw new AiOverloadedException("AI interactive queue overloaded: waiting="
 					+ stats.waiting() + ", poolSize=" + stats.poolSize());
 		}
+	}
+
+	/**
+	 * Defensive guard: the calling controller already gates the AI correction on
+	 * the choice of the person. This second check protects every other caller of
+	 * {@link #submit(String, String, String, Long, Identity)} and writes a guard
+	 * row so a support case can see the refusal in {@code o_ai_usage_log}.
+	 * <p>
+	 * It refuses on the two states of R-e11 only: an unavailable feature and a
+	 * stored OFF. It must not refuse on DEFAULT. The consent of one run lives on
+	 * QuizRunController and is invisible here, so a refusal on DEFAULT would
+	 * overrule an "Allow once" of a person in an institution whose system default
+	 * is off, which is the case the consent dialog exists for. DEFAULT is covered
+	 * by the gate of the controller and, for every other caller, by the late check
+	 * in {@link EssayFormativeFeedbackService#grade}.
+	 * <p>
+	 * The identity is the owner of the essay, that is the learner whose answer is
+	 * corrected, not the person who happens to run the request.
+	 *
+	 * @param owner the learner whose answer would be corrected
+	 * @return true: the correction may run
+	 */
+	private boolean isAiCorrectionAllowed(Identity owner) {
+		if (!aiUserPreferenceService.isFeatureAvailable(AiFeature.EssayGrading)) {
+			writeConsentGuardLog(owner, "FEATURE_DISABLED");
+			return false;
+		}
+		if (aiUserPreferenceService.get(owner, AiFeature.EssayGrading) == AiUserPreference.OFF) {
+			writeConsentGuardLog(owner, "OPTED_OUT");
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Records a refusal of {@link #isAiCorrectionAllowed(Identity)} in
+	 * {@code o_ai_usage_log}, with the same context pattern as the rate limiter.
+	 * <p>
+	 * The row carries the feature type essay-grading, so
+	 * {@link #assertWithinRateLimit(Identity)} counts it toward the per-minute
+	 * budget of the person. That is accepted: a refused person receives no
+	 * correction anyway, and in the normal flow the gate of QuizRunController
+	 * returns before this guard, so the row is written only for a caller that
+	 * bypasses the gate.
+	 */
+	private void writeConsentGuardLog(Identity owner, String errorCode) {
+		// No identity in the text: the usage log row carries the identity in its own column.
+		String message = "essay AI correction refused: " + errorCode;
+		log.info(message);
+		AiUsageContext usageContext = AiUsageContext.builder()
+				.usageContextType(EssayFormativeFeedbackService.USAGE_CONTEXT_TYPE)
+				.identity(owner)
+				.build();
+		aiUsageLogDao.createGuardLog(AiFeature.EssayGrading.getType(), usageContext,
+				errorCode, message);
 	}
 
 	/** True when the backlog exceeds {@link #OVERLOAD_QUEUE_FACTOR} full pool rounds. */

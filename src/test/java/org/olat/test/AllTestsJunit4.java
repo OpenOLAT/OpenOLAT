@@ -127,6 +127,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.modules.glossary.GlossaryItemManagerTest.class,
 	org.olat.core.commons.services.ai.AiImageHelperTest.class,
 	org.olat.core.commons.services.ai.AiModuleTest.class,
+	org.olat.core.commons.services.ai.AiUserPreferenceServiceTest.class,
 	org.olat.core.commons.services.ai.model.AiModelTest.class,
 	org.olat.core.commons.services.ai.content.AiContentChunkerTest.class,
 	org.olat.core.commons.services.ai.content.AiContentHardenerTest.class,

@@ -29,7 +29,9 @@ import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.AiUserPreferenceService;
 import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.model.ImageDescriptionData;
@@ -113,6 +115,8 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private AiModule aiModule;
+	@Autowired
+	private AiUserPreferenceService aiUserPreferenceService;
 	@Autowired
 	private TaxonomyMatchingService taxonomyMatchingService;
 
@@ -228,11 +232,11 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		processMediaForm();
+		processMediaForm(ureq);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	private void processMediaForm() {
+	private void processMediaForm(UserRequest ureq) {
 		boolean created = false;
 		if (mediaReference == null) {
 			createMediaReference();
@@ -250,9 +254,14 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		// Enrich freshly created image medias with AI metadata in a background
 		// task — the user never waits on the AI provider. Missing metadata is
 		// filled in once the task has run. Skipped when the user already
-		// generated the metadata manually via the AI button in this form.
-		if (created && !aiMetadataGenerated && mediaAiMetadataService.submit(mediaReference, getIdentity(),
-				getLocale(), "mc-upload-image", "MediaCenter", 0L, null, false)) {
+		// generated the metadata manually via the AI button in this form, and
+		// skipped when this person switched the AI image descriptions off. The
+		// explicit AI button in this form stays available in every case.
+		if (created && !aiMetadataGenerated
+				&& aiUserPreferenceService.isActive(ureq.getUserSession().getGuiPreferences(),
+						AiFeature.ImageDescriptionGenerator)
+				&& mediaAiMetadataService.submit(mediaReference, getIdentity(),
+						getLocale(), "mc-upload-image", "MediaCenter", 0L, null, false)) {
 			showInfo("ai.metadata.background");
 		}
 	}

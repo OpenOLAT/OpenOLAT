@@ -26,13 +26,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.AiUserPreference;
+import org.olat.core.commons.services.ai.AiUserPreferenceService;
 import org.olat.core.commons.services.ai.essay.AiOverloadedException;
 import org.olat.core.commons.services.ai.essay.AiRateLimitExceededException;
 import org.olat.core.commons.services.ai.essay.EssayAiGrading;
 import org.olat.core.commons.services.ai.essay.EssayAiGradingFileStore;
 import org.olat.core.commons.services.ai.essay.EssayAiCorrectionService;
 import org.olat.core.commons.services.ai.essay.FormativeFeedback;
+import org.olat.core.commons.services.ai.ui.AiCorrectionConsentController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -47,7 +51,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -150,6 +158,24 @@ public class QuizRunController extends BasicController implements PageRunElement
 	 *  grading is still PENDING/RUNNING, to switch the overlay message. */
 	private boolean aiCorrectionLongHint;
 
+	/**
+	 * The consent dialog of the AI correction and its decision for this run.
+	 * {@code null} means "not asked yet", so the stored preference of the person
+	 * decides. The decision fails closed: it is set to {@code FALSE} before the
+	 * dialog opens and when a synthetic request rebuilds a run that would have
+	 * asked. The three buttons of the dialog overwrite it with the answer of the
+	 * person.
+	 */
+	private AiCorrectionConsentController aiConsentCtrl;
+	private CloseableModalController cmc;
+	private Boolean aiCorrectionAllowedForRun;
+	/**
+	 * The GUI preferences of the session. Kept as a field so that the scan for a
+	 * stored preference, the write of "Always allow" and the gate of every answer
+	 * work on one and the same Preferences object of this session.
+	 */
+	private final Preferences guiPrefs;
+
 	@Autowired
 	private ContentEditorQti contentEditorQti;
 	@Autowired
@@ -165,12 +191,16 @@ public class QuizRunController extends BasicController implements PageRunElement
 	@Autowired
 	private AiModule aiModule;
 	@Autowired
+	private AiUserPreferenceService aiUserPreferenceService;
+	@Autowired
 	private DB db;
 
 	public QuizRunController(UserRequest ureq, WindowControl wControl, QuizPart quizPart, boolean editable,
 							 RepositoryEntry entry, String subIdent) {
 		super(ureq, wControl);
 		this.quizPart = quizPart;
+		UserSession usess = ureq.getUserSession();
+		this.guiPrefs = usess == null ? null : usess.getGuiPreferences();
 		questionIndex = 0;
 		this.editable = editable;
 		this.entry = entry;
@@ -414,9 +444,26 @@ public class QuizRunController extends BasicController implements PageRunElement
 			if (changePartEvent.getElement() instanceof QuizPart updatedQuizPart) {
 				quizPart = updatedQuizPart;
 				setBlockLayoutClass(quizPart.getSettings());
+				// The part changed, the run starts over: ask again.
+				aiCorrectionAllowedForRun = null;
 				reset();
 				updateUI(ureq);
 			}
+		} else if (aiConsentCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+			if (event == AiCorrectionConsentController.ALLOW_ALWAYS_EVENT) {
+				aiUserPreferenceService.set(guiPrefs, AiFeature.EssayGrading, AiUserPreference.ON);
+				aiCorrectionAllowedForRun = Boolean.TRUE;
+			} else if (event == AiCorrectionConsentController.ALLOW_ONCE_EVENT) {
+				aiCorrectionAllowedForRun = Boolean.TRUE;
+			} else {
+				aiCorrectionAllowedForRun = Boolean.FALSE;
+			}
+		} else if (cmc == source) {
+			// Closed with the X or with Escape: counts as "Not now".
+			aiCorrectionAllowedForRun = Boolean.FALSE;
+			cleanUp();
 		} else if (assessmentItemDisplayController == source) {
 			if (event instanceof QTIWorksAssessmentItemEvent qtiWorksAssessmentItemEvent) {
 				if (QTIWorksAssessmentItemEvent.Event.next.name().equals(qtiWorksAssessmentItemEvent.getCommand())) {
@@ -435,6 +482,8 @@ public class QuizRunController extends BasicController implements PageRunElement
 			doStart(ureq);
 			updateUI(ureq);
 		} else if (retryButton == source) {
+			// A retry is a new run: the consent of the previous run does not carry over.
+			aiCorrectionAllowedForRun = null;
 			reset();
 			doStart(ureq);
 			updateUI(ureq);
@@ -639,6 +688,14 @@ public class QuizRunController extends BasicController implements PageRunElement
 					+ " (quiz may have been generated before the file-store refactor — regenerate to enable AI correction)");
 			return;
 		}
+		if (!isAiCorrectionAllowed()) {
+			// Not allowed by the consent dialog of this run or by the preference
+			// of the person. The essay behaves like a manually corrected essay:
+			// no correction row, no overlay, no error card.
+			logDebug("AI correction skipped: not allowed for identity " + getIdentity().getKey()
+					+ " (run decision " + aiCorrectionAllowedForRun + ")");
+			return;
+		}
 		Long itemSessionKey = null;
 		if (assessmentItemDisplayController instanceof QuizAssessmentItemDisplayController quizCtrl) {
 			itemSessionKey = quizCtrl.getItemSessionKey();
@@ -646,6 +703,13 @@ public class QuizRunController extends BasicController implements PageRunElement
 		try {
 			aiCorrectionKey = essayAiCorrectionService.submit(quizPart.getStoragePath(),
 					currentQuizQuestion.getId(), studentAnswer, itemSessionKey, getIdentity());
+			if (aiCorrectionKey == null) {
+				// The defensive guard of the service refused the correction.
+				// Behave like a manual essay, do not open the polling overlay.
+				logDebug("AI correction refused by the service guard for assessmentItemIdentifier="
+						+ currentQuizQuestion.getId());
+				return;
+			}
 			aiCorrectionForQuestionId = currentQuizQuestion.getId();
 			aiCorrectionPollAttempts = 0;
 			aiCorrectionVisible = true;
@@ -688,6 +752,80 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 		initQuestionIndex(questions);
 		doShowQuestion(ureq, questions.get(questionIndex));
+		doAskAiCorrectionConsent(ureq, questions);
+	}
+
+	/**
+	 * Opens the AI consent dialog on top of the already rendered first question
+	 * when this quiz has at least one essay question with an
+	 * {@code ai-grading.json} and the person has not made a choice yet. A stored
+	 * ON or OFF runs the quiz without a dialog. Runs in the event phase only.
+	 */
+	private void doAskAiCorrectionConsent(UserRequest ureq, List<QuizQuestion> questions) {
+		if (aiCorrectionAllowedForRun != null || aiConsentCtrl != null
+				|| !aiUserPreferenceService.isFeatureAvailable(AiFeature.EssayGrading)
+				|| aiUserPreferenceService.hasPreference(guiPrefs, AiFeature.EssayGrading)
+				|| !hasAiGradedEssayQuestion(questions)) {
+			return;
+		}
+		if (ureq instanceof SyntheticUserRequest) {
+			// Rebuilt by a cluster event, not by an action of this person: never push a modal
+			// here. The person cannot answer, so this run fails closed. The next start or
+			// retry asks again.
+			aiCorrectionAllowedForRun = Boolean.FALSE;
+			return;
+		}
+
+		aiConsentCtrl = new AiCorrectionConsentController(ureq, getWindowControl(),
+				aiModule.isUserDefaultOn(AiFeature.EssayGrading));
+		listenTo(aiConsentCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				aiConsentCtrl.getInitialComponent(), true, aiConsentCtrl.getModalTitle());
+		listenTo(cmc);
+		// An answer dispatched behind the open dialog must not be corrected by the AI.
+		// The three buttons of the dialog overwrite this with the answer of the person.
+		aiCorrectionAllowedForRun = Boolean.FALSE;
+		cmc.activate();
+	}
+
+	/**
+	 * @param questions the questions of this quiz
+	 * @return true: at least one essay question carries an {@code ai-grading.json}
+	 */
+	private boolean hasAiGradedEssayQuestion(List<QuizQuestion> questions) {
+		for (QuizQuestion question : questions) {
+			if (question == null
+					|| QTI21QuestionType.safeValueOf(question.getType()) != QTI21QuestionType.essay) {
+				continue;
+			}
+			ContentEditorQti.QuizQuestionStorageInfo storageInfo =
+					contentEditorQti.getStorageInfo(quizPart, question);
+			if (storageInfo != null && storageInfo.questionDirectory() != null
+					&& essayAiGradingFileStore.load(storageInfo.questionDirectory()) != null) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @return true: the AI correction may run for the answer of this person. The
+	 *         decision of the consent dialog wins for this run, otherwise the
+	 *         stored preference and the system default decide.
+	 */
+	private boolean isAiCorrectionAllowed() {
+		if (aiCorrectionAllowedForRun != null) {
+			return aiCorrectionAllowedForRun.booleanValue();
+		}
+		return aiUserPreferenceService.isActive(guiPrefs, AiFeature.EssayGrading);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(aiConsentCtrl);
+		cmc = null;
+		aiConsentCtrl = null;
 	}
 
 	private void initQuestionIndex(List<QuizQuestion> questions) {

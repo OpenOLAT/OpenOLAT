@@ -1,0 +1,14 @@
+<div class="o_ai_consent">
+	<p>$r.translate("ai.consent.text")</p>
+	#if($userDefaultOn)
+		<p>$r.translate("ai.consent.default.on")</p>
+	#else
+		<p>$r.translate("ai.consent.default.off")</p>
+	#end
+	<div class="o_hint">$r.translate("ai.consent.hint")</div>
+	<div class="o_button_group o_button_group_right">
+		$r.render("ai.consent.allow.once")
+		$r.render("ai.consent.allow.always")
+		$r.render("ai.consent.deny")
+	</div>
+</div>

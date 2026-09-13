@@ -32,29 +32,54 @@ import java.util.stream.Collectors;
  */
 public enum AiFeature {
 	
-	MCQuestionGenerator("mc-question-generator"),
-	ImageDescriptionGenerator("image-description-generator"),
-	EssayGeneration("essay-generation"),
-	EssayGrading("essay-grading"),
-	TaxonomyMatching("taxonomy-matching")
+	MCQuestionGenerator("mc-question-generator", false),
+	ImageDescriptionGenerator("image-description-generator", true),
+	EssayGeneration("essay-generation", false),
+	EssayGrading("essay-grading", true),
+	TaxonomyMatching("taxonomy-matching", false)
 	;
 	
 	public static List<AiFeature> VALUES = List.of(values());
 	
 	private final String type;
+	private final boolean userControlled;
 	
-	private AiFeature(String type) {
+	private AiFeature(String type, boolean userControlled) {
 		this.type = type;
+		this.userControlled = userControlled;
 	}
 
 	public String getType() {
 		return type;
 	}
 	
+	/**
+	 * @return true: a person can switch this feature on or off in the user
+	 *         settings, on top of the system default of the administrator
+	 */
+	public boolean isUserControlled() {
+		return userControlled;
+	}
+
 	public String getI18nKey() {
 		return "ai.feature." + type;
 	}
 	
+	/**
+	 * @return the key of the one-sentence description of this feature
+	 */
+	public String getI18nDescriptionKey() {
+		return getI18nKey() + ".desc";
+	}
+
+	/**
+	 * @return the key of the learner-facing name of this feature. The name of
+	 *         {@link #getI18nKey()} names the tool and is used in the administration.
+	 */
+	public String getI18nUserNameKey() {
+		return getI18nKey() + ".user";
+	}
+
 	private final static Map<String, AiFeature> typeToEnum = List.of(values()).stream()
 			.collect(Collectors.toMap(AiFeature::getType, Function.identity()));
 

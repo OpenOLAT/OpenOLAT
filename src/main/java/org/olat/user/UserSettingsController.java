@@ -21,6 +21,9 @@ package org.olat.user;
 
 import java.util.List;
 
+import org.olat.core.commons.services.ai.AiFeature;
+import org.olat.core.commons.services.ai.AiUserPreferenceService;
+import org.olat.core.commons.services.ai.ui.AiUserSettingsController;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -35,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -60,6 +64,7 @@ public class UserSettingsController extends BasicController implements Activatea
 	private Link webdavLink;
 	private Link imLink;
 	private Link disclaimerLink;
+	private Link aiSettingsLink;
 	private final Link userDataLink;
 	private final Link preferencesLink;
 	private final Link guiPreferencesLink;
@@ -72,13 +77,16 @@ public class UserSettingsController extends BasicController implements Activatea
 	private ChangePrefsController preferencesCtrl;
 	private UserDataController userDataCtrl;
 	private GuiPreferencesUserController guiPreferencesUserCtrl;
-	
+	private AiUserSettingsController aiSettingsCtrl;
+
 	@Autowired
 	private WebDAVModule webDAVModule;
 	@Autowired
 	private InstantMessagingModule imModule;
 	@Autowired
 	private RegistrationModule registrationModule;
+	@Autowired
+	private AiUserPreferenceService aiUserPreferenceService;
 
 	/**
 	 * @param ureq
@@ -115,7 +123,13 @@ public class UserSettingsController extends BasicController implements Activatea
 		guiPreferencesLink = LinkFactory.createLink("tab.guiprefs", mainVC, this);
 		guiPreferencesLink.setElementCssClass("o_sel_user_settings_gui_preferences");
 		segmentView.addSegment(guiPreferencesLink, false);
-		
+
+		if (hasAiSettings(ureq)) {
+			aiSettingsLink = LinkFactory.createLink("tab.ai.settings", mainVC, this);
+			aiSettingsLink.setElementCssClass("o_sel_user_settings_ai");
+			segmentView.addSegment(aiSettingsLink, false);
+		}
+
 		mainVC.put("segments", segmentView);
 		doOpenPreferences(ureq);
 		putInitialPanel(mainVC);
@@ -144,6 +158,9 @@ public class UserSettingsController extends BasicController implements Activatea
 		} else if ("GUIPreferences".equalsIgnoreCase(name)) {
 			doOpenGuiPreferencesSettings(ureq);
 			segmentView.select(guiPreferencesLink);
+		} else if ("AiSettings".equalsIgnoreCase(name) && aiSettingsLink != null) {
+			doOpenAiSettings(ureq);
+			segmentView.select(aiSettingsLink);
 		}
 	}
 	
@@ -165,6 +182,8 @@ public class UserSettingsController extends BasicController implements Activatea
 					doOpenUserData(ureq);
 				} else if (clickedLink == guiPreferencesLink) {
 					doOpenGuiPreferencesSettings(ureq);
+				} else if (clickedLink == aiSettingsLink) {
+					doOpenAiSettings(ureq);
 				}
 			}
 		}
@@ -230,9 +249,37 @@ public class UserSettingsController extends BasicController implements Activatea
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("GUIPreferences", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			guiPreferencesUserCtrl = new GuiPreferencesUserController(ureq, bwControl, getIdentity());
-			listenTo(userDataCtrl);
+			listenTo(guiPreferencesUserCtrl);
 		}
 		mainVC.put("segmentCmp", guiPreferencesUserCtrl.getInitialComponent());
 		addToHistory(ureq, guiPreferencesUserCtrl);
+	}
+
+	private void doOpenAiSettings(UserRequest ureq) {
+		if (aiSettingsCtrl == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("AiSettings", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			aiSettingsCtrl = new AiUserSettingsController(ureq, bwControl);
+			listenTo(aiSettingsCtrl);
+		}
+		mainVC.put("segmentCmp", aiSettingsCtrl.getInitialComponent());
+		addToHistory(ureq, aiSettingsCtrl);
+	}
+
+	/**
+	 * The segment is shown to a logged-in person, not to a guest, and only when
+	 * at least one user-controlled AI feature is enabled and configured.
+	 */
+	private boolean hasAiSettings(UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		if (roles == null || roles.isGuestOnly()) {
+			return false;
+		}
+		for (AiFeature feature : AiUserSettingsController.CONTROLLED_FEATURES) {
+			if (aiUserPreferenceService.isFeatureAvailable(feature)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

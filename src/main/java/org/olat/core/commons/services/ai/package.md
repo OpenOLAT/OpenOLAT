@@ -13,6 +13,7 @@ Key features:
 - AI-powered essay question generation from Markdown source (page editor, question pool, legacy drawer)
 - AI-powered formative essay grading with structured feedback and XSS-sanitised student output
 - Per-user, per-feature rate limiting enforced at the submit boundary
+- User control of the automatic features: a system default per feature plus a personal choice in the user settings, enforced at three gates (see section 2.10)
 - Image preprocessing (scaling, base64 encoding) via `AiImageHelper`
 - LangChain4j for chat model abstraction, structured output extraction, and model catalog APIs
 - Singleton LangChain4j AiServices instances via `CachedChatModel`, rebuilt automatically when provider config changes
@@ -31,7 +32,7 @@ Key features:
 | `essay/` | Essay grading + generation domain: services, jobs, sinks, file stores, POJOs, filters, exceptions |
 | `content/` | `AiContentChunker`, `AiContentHardener` |
 | `event/` | OLATResourceable events for config-change notification |
-| `ui/` | Admin controllers for provider config, feature config, and usage log |
+| `ui/` | Admin controllers for provider config, feature config and usage log, plus the two learner-facing controllers `AiUserSettingsController` and `AiCorrectionConsentController` |
 
 ---
 
@@ -43,8 +44,10 @@ Key features:
 |-------|---------------|
 | `AiSPI` | Base interface every provider must implement. Identity, enable/disable, admin UI factory, chat model factory (`buildChatModel`), available models list. |
 | `AiApiKeySPI` | Mixin for API-key-based providers. Enables the reusable `GenericAiApiKeyAdminController`. |
-| `AiModule` | Central module. Merges Spring providers + generic instances. Stores per-feature provider/model config. Provides `resolveProvider()` for service implementations. Holds per-user rate limit thresholds (`getEssayGradingMaxCallsPerMinutePerUser`, `getEssayGenerationMaxCallsPerMinutePerUser`). |
-| `AiFeature` | Enum of all AI features: `MCQuestionGenerator`, `ImageDescriptionGenerator`, `EssayGeneration`, `EssayGrading`. Used as type discriminator on usage-log rows. |
+| `AiModule` | Central module. Merges Spring providers + generic instances. Stores per-feature provider/model config. Provides `resolveProvider()` for service implementations. Holds per-user rate limit thresholds (`getEssayGradingMaxCallsPerMinutePerUser`, `getEssayGenerationMaxCallsPerMinutePerUser`) and the system default of each user-controlled feature (`isUserDefaultOn(AiFeature)`, `setUserDefaultOn(AiFeature, boolean)`). |
+| `AiFeature` | Enum of all AI features: `MCQuestionGenerator`, `ImageDescriptionGenerator`, `EssayGeneration`, `EssayGrading`, `TaxonomyMatching`. Used as type discriminator on usage-log rows. Each constant carries a `userControlled` flag; `isUserControlled()` returns true for `EssayGrading` and `ImageDescriptionGenerator`. `getI18nKey()` names the tool in the administration, `getI18nUserNameKey()` and `getI18nDescriptionKey()` name and explain the feature for the person. |
+| `AiUserPreference` | Enum `DEFAULT / ON / OFF`. The choice of a person for one user-controlled feature. `DEFAULT` means "no choice", so the system default of `AiModule` decides. |
+| `AiUserPreferenceService` | `@Service` that stores and resolves that choice. See section 2.10. |
 | `AiMCQuestionService` | Spring service interface for MC question generation. |
 | `AiImageDescriptionService` | Spring service interface for image description generation. |
 | `AiEssayGradingService` | Spring service interface for essay grading. Returns `GradingRun` (suggestion + usage-log key). |
@@ -104,18 +107,14 @@ Key features:
 | Class | Responsibility |
 |-------|---------------|
 | `EssayFormativeFeedbackService` | Synchronous entry point for the formative-feedback flow. Loads `EssayAiGrading` from `ai-grading.json`, runs pre-filters, invokes the grader under a 30 s hard timeout, sanitises output via OpenOlat's XSS filter, persists essay provenance on the `AiUsageLog` row. |
-| `EssayGenerationService` | Public entry point for AI question generation. Persists an `EssayGenerationJob`, schedules `EssayGenerationLongRunnable` on `TaskExecutorManager`, and dispatches accepted drafts to the configured sink. |
+| `EssayGenerationService` | Public entry point for AI question generation. `submit(GenerationRequest)` schedules one `QtiQuestionGenerationTask`; `runTask(QtiQuestionGenerationTask)` runs it and dispatches accepted drafts to the configured sink. |
 | `EssayGenerationService.GenerationRequest` | Record encapsulating a generation request. Factory methods: `forQuizPart` (page editor), `forPool` (question pool import), `of` (legacy drawer). |
 | `EssayGenerationService.GenerationDestination` | Enum `DRAWER / QUIZ_PART / POOL`. Drives sink selection and usage-context labelling. |
-| `EssayGenerationService.JobStatusView` | Read-only status record returned to the polling drawer UI. |
-| `EssayFeedbackJobService` | Service coordinating async formative-feedback job lifecycle: submit, status, cancellation. |
-| `EssayGenerationJob` | JPA entity (`o_essay_generation_job`). Tracks state (`PENDING / RUNNING / DONE / FAILED / CANCELLED`), progress JSON, and error JSON. |
-| `EssayFeedbackJob` | JPA entity (`o_essay_feedback_job`) tracking async formative-feedback job state. |
-| `EssayGenerationJobDao` | DAO for `EssayGenerationJob`. |
-| `EssayFeedbackJobDao` | DAO for `EssayFeedbackJob`. |
-| `EssayGenerationJobPayloadStore` | Stores and retrieves the serialised `GenerationRequest` payload for a job. |
-| `EssayGenerationLongRunnable` | `PersistentTaskRunnable` scheduled on `TaskExecutorManager`. Delegates to `EssayGenerationService.runJob()`. Cluster-aware: commits on success, rolls back on failure. |
-| `EssayFeedbackLongRunnable` | `PersistentTaskRunnable` for async formative-feedback jobs. |
+| `QtiQuestionGenerationTask` | `LongRunnable` for one question-generation run, persisted in `o_ex_task`. Question-type agnostic: it generates essay and MC items in one task. Self-contained, it carries the complete `GenerationRequest`. |
+| `EssayAiCorrectionService` | Public entry point for the AI correction of one essay answer. `submit(...)` gates on the choice of the person, writes an `EssayAiCorrection` row and schedules an `EssayAiCorrectionTask`. Returns `null` when the feature is unavailable or the person switched it off. |
+| `EssayAiCorrection` | JPA entity (`o_ai_essay_correction`). One correction run: status, result JSON, and the grading-run provenance (content hash at call, prompt template version, tier). It is also the usage context of every `o_ai_usage_log` row of that run. |
+| `EssayAiCorrectionDao` | DAO for `EssayAiCorrection`. Creates the row at submit time and updates it as the task progresses. |
+| `EssayAiCorrectionTask` | `LongRunnable` for one correction run, persisted in `o_ex_task`. Thin: it carries the correction key and calls back into `EssayAiCorrectionService`. |
 | `EssayGenerationQuizPartSink` | Completion-hook sink for the `QUIZ_PART` destination. Attaches accepted drafts as QTI essay items to the page editor QuizPart; interleaves MC and essay questions. |
 | `EssayGenerationPoolSink` | Completion-hook sink for the `POOL` destination. Persists accepted drafts and MC questions as standalone question-pool items owned by the requester. |
 | `EssayAiGrading` | POJO holding grading metadata (reference excerpt, model answer, key points, rubric criteria, content hash, Bloom level). Written to / read from `ai-grading.json`. |
@@ -181,11 +180,11 @@ Integrity is enforced by a SHA-256 prefix hash over the grading-relevant fields 
 
 ### 2.5 Persistent Job + LongRunnable Pattern
 
-Both grading and generation use the OpenOlat persistent task infrastructure: a DB row is written first, then the job is registered on `TaskExecutorManager`, which persists it in `o_ex_task`. On cluster restart, unfinished tasks are picked up automatically. The `PersistentTaskRunnable` subclass manages the DB session lifecycle: commits on success, rolls back on failure, leaving the job in `FAILED` state with an error JSON payload.
+Both correction and generation use the OpenOlat persistent task infrastructure. `AiTaskExecutorService` registers a `LongRunnable` on `TaskExecutorManager`, which persists it in `o_ex_task`. On cluster restart, unfinished tasks are picked up automatically. The correction writes its `EssayAiCorrection` row first and schedules `EssayAiCorrectionTask` with the key; generation carries the whole `GenerationRequest` in `QtiQuestionGenerationTask` and keeps no job row of its own.
 
 ### 2.6 Owner-Checked Status Access
 
-`EssayGenerationService.getStatus(jobKey, Identity)` returns "not found" when the requesting identity does not match the job owner — the same response as for an unknown key. This prevents IDOR: an attacker who guesses a job key cannot determine whether it belongs to another user.
+`EssayAiCorrectionService.getStatus(correctionKey, Identity)` returns "not found" when the requesting identity does not match the owner of the correction, the same response as for an unknown key. This prevents IDOR: an attacker who guesses a correction key cannot determine whether it belongs to another user.
 
 ### 2.7 Per-User Rate Limiting
 
@@ -198,6 +197,33 @@ The AI provider response is passed through OpenOlat's built-in XSS filter with a
 ### 2.9 Usage Logging with Destination-Aware Context
 
 Every provider call writes a row to `o_ai_usage_log`. The `usageContextType` field encodes both the feature and the calling context (e.g. `ai-essay-correction`, `qpool-generate-questions`, `ceditor-quizpart-generate-questions`), and `usageContextId` points at the context entity that the call is about. For essay correction that entity is the `o_ai_essay_correction` row: `usageContextType = ai-essay-correction`, `usageContextId = <correction key>`, so all log rows of one correction (guard, grading, retry) share the same context id and the log stays a generic ledger with no feature-specific columns. The `resourceType` / `resourceId` pair identifies the resource: `RepositoryEntry` for course/page operations, `PoolQPool` for pool operations. The grading-run provenance (content hash, prompt template version, tier) lives on the `o_ai_essay_correction` row, not on the log; deleting a correction therefore drops its provenance while the cost ledger row survives (it keeps the now-stale context id, like any other soft reference).
+
+### 2.10 User Control of an Automatic Feature
+
+A feature that runs without being asked for is user controlled. `AiFeature.isUserControlled()` marks these features; today they are `EssayGrading` and `ImageDescriptionGenerator`. Three values decide whether such a feature runs for one person:
+
+1. The administrator switches the feature on or off in the AI module. An off feature never runs, whatever the person chose.
+2. The administrator sets the system default per feature: `ai.feature.<type>.user.default` in `olat.properties`, editable in the AI features form. `AiModule.isUserDefaultOn(AiFeature)` reads it, `setUserDefaultOn(AiFeature, boolean)` writes it and fires the cluster-wide change event. Both features preset to `true`.
+3. The person overrides the default in the user settings, segment "AI settings" (`AiUserSettingsController`). `AiUserPreferenceService` stores the choice in the GUI preferences, attributed class `AiUserPreferenceService`, key `ai.optout.<feature type>`, value `default`, `on` or `off`.
+
+`AiUserPreferenceService` public methods:
+
+| Method | Purpose |
+|--------|---------|
+| `get(Preferences, AiFeature)` | The stored choice. `DEFAULT` for an absent row and for an unreadable value. |
+| `get(Identity, AiFeature)` | The same, for a caller without a user session. It resolves the persistent `Preferences` through `PreferencesFactory`. A controller uses the `Preferences` variant, so the session copy stays in sync after a write. |
+| `set(Preferences, AiFeature, AiUserPreference)` | Stores the choice. Never writes for a guest: all guests of one language share one identity, so a guest gets transient `RamPreferences` and the call returns without writing. |
+| `hasPreference(Preferences, AiFeature)` | True when the person made a choice, that is a stored `ON` or `OFF`. |
+| `isActive(Preferences, AiFeature)` | The effective answer: feature available, and `ON`, or `DEFAULT` plus a system default of on. Fails closed on a null `Preferences`. |
+| `isFeatureAvailable(AiFeature)` | True when the administrator switched the feature on and a provider is configured. False for a feature that is not user controlled. |
+
+**The three gates.** Each automatic trigger asks once, at the point where the AI call would start.
+
+| Gate | Where | Behaviour |
+|------|-------|-----------|
+| Quiz start dialog | `QuizRunController` with `AiCorrectionConsentController` | Before the first essay answer is corrected. A stored `ON` or `OFF` decides silently. On `DEFAULT` the modal asks: "Allow once" runs this quiz only, "Always allow" writes `ON`, "Not now" and Escape refuse for this run. A refusal skips the correction: no correction row, no overlay, no error card. `EssayAiCorrectionService.submit(...)` repeats the check as a defensive guard for every other caller and returns `null` on an unavailable feature or a stored `OFF`. A run rebuilt by a cluster event (`SyntheticUserRequest`) never opens the modal and fails closed for that run; the next start or retry asks again. |
+| Page editor import toggle | `MarkdownImportController` | The import dialog of a Markdown or Word file shows a toggle, preset with `isActive(...)`. The value travels as `MarkdownImportOptions` into `MarkdownPagePartVisitor`, which submits the AI metadata of the imported images only when it is on. The toggle is valid for this one import and is not stored. |
+| Upload background submit | `MediaUploadController`, `CollectImageMediaController` | The background metadata generation after an image upload runs only when `isActive(...)` is true. The explicit "Generate metadata with AI" buttons are not gated: the person asks for the result. |
 
 ---
 
@@ -265,7 +291,7 @@ if (base64 != null && mimeType != null) {
 
 ## 5. Using the Essay Grading Service
 
-The synchronous path is `EssayFormativeFeedbackService`. In practice the caller is `EssayFeedbackJobService` inside a `PersistentTaskRunnable`, but the direct API is also usable for testing.
+The synchronous path is `EssayFormativeFeedbackService`. In practice the caller is `EssayAiCorrectionService.runCorrection(...)` inside an `EssayAiCorrectionTask`, but the direct API is also usable for testing. A UI opens the flow with `EssayAiCorrectionService.submit(...)` and polls `getStatus(correctionKey, caller)`.
 
 ```java
 @Autowired
@@ -292,7 +318,7 @@ if (grading != null) {
 
 ## 6. Using the Essay Generation Service
 
-The async path is `EssayGenerationService`. The caller builds a `GenerationRequest` using one of the factory methods and calls `submit()`, which returns a job key immediately. The caller polls `getStatus(jobKey, caller)` — the owner check is mandatory; a mismatching caller receives the same "not found" response as an unknown key.
+The async path is `EssayGenerationService`. The caller builds a `GenerationRequest` using one of the factory methods and calls `submit()`, which returns at once. The service schedules one `QtiQuestionGenerationTask` and keeps no job row of its own, so there is no status to poll: the UI waits for the sink to attach the result.
 
 ```java
 @Autowired
@@ -302,20 +328,15 @@ private EssayGenerationService essayGenerationService;
 GenerationRequest request = GenerationRequest.forQuizPart(
         pageMarkdown, repositoryEntryKey, locale, currentIdentity,
         pageKey, quizPartKey, 2 /* essay */, 2 /* mc */);
-Long jobKey = essayGenerationService.submit(request);
-
-// Poll for completion
-EssayGenerationService.JobStatusView status =
-        essayGenerationService.getStatus(jobKey, currentIdentity);
-// status.state() == EssayGenerationJob.State.DONE / FAILED / RUNNING / PENDING
+essayGenerationService.submit(request);
 
 // Question pool flow
 GenerationRequest poolRequest = GenerationRequest.forPool(
         sourceText, null, locale, currentIdentity, 3, 3, taxonomyLevelKey);
-Long poolJobKey = essayGenerationService.submit(poolRequest);
+essayGenerationService.submit(poolRequest);
 ```
 
-When the job completes, `EssayGenerationQuizPartSink` (for `QUIZ_PART`) or `EssayGenerationPoolSink` (for `POOL`) is called automatically. For the legacy `DRAWER` destination, the caller handles the result directly.
+When the task completes, `EssayGenerationQuizPartSink` (for `QUIZ_PART`) or `EssayGenerationPoolSink` (for `POOL`) is called automatically. For the legacy `DRAWER` destination, the caller handles the result directly.
 
 ## 7. Writing a Custom SPI
 
@@ -387,7 +408,7 @@ public class MyAiSPI extends AbstractSpringModule implements AiSPI, AiApiKeySPI 
 4. Define a Spring service interface in the root package (follow `AiMCQuestionService` or `AiEssayGradingService` as a template)
 5. Implement the service in `manager/` using `AiLoggingChatModel` wrapping `AiSPI.buildChatModel` and `AiServices.builder`
 6. Add feature config properties and methods to `AiModule` (follow the essay pattern); add rate limit threshold properties if needed
-7. Add a variant to the `AiFeature` enum
+7. Add a variant to the `AiFeature` enum. Set `userControlled` to true when the feature runs automatically without being asked for; then add the `.user` and `.desc` i18n keys, a case in `AiUserPreferenceService.isFeatureAvailable(...)`, a preset in `AiModule.userDefaultPreset(...)` plus `ai.feature.<type>.user.default` in `olat.properties`, one gate at the point where the AI call starts (section 2.10), and the constant to `AiUserSettingsController.CONTROLLED_FEATURES`, which drives both the rows of the "AI settings" segment and the visibility of the segment link
 8. Add feature UI section to `AiFeaturesAdminController`
 
 ## 9. Configuration
@@ -396,7 +417,7 @@ Each `AbstractSpringModule` persists config to `{userdata}/system/configuration/
 
 | Module | Key properties |
 |--------|---------------|
-| `AiModule` | `ai.feature.mc-question-generator.spi`, `.model`, `ai.feature.image-description-generator.spi`, `.model`, `ai.feature.essay-generation.spi`, `.model`, `ai.feature.essay-grading.spi`, `.model`, `ai.essay.grading.rate.limit.per.user` (default 30/min), `ai.essay.generation.rate.limit.per.user` (default 10/min) |
+| `AiModule` | `ai.feature.mc-question-generator.spi`, `.model`, `ai.feature.image-description-generator.spi`, `.model`, `ai.feature.essay-generation.spi`, `.model`, `ai.feature.essay-grading.spi`, `.model`, `ai.essay.grading.rate.limit.per.user` (default 30/min), `ai.essay.generation.rate.limit.per.user` (default 10/min), `ai.feature.essay-grading.user.default` and `ai.feature.image-description-generator.user.default` (both default `true`) |
 | `OpenAiSPI` | `openai.api.key`, `openai.enabled` |
 | `AnthropicAiSPI` | `anthropic.api.key`, `anthropic.enabled` |
 | `GenericAiSPI` | `generic.instances=1,2`, `generic.{id}.name`, `.base.url`, `.api.key`, `.models`, `.enabled` |
@@ -450,11 +471,18 @@ Every provider call writes a row to `o_ai_usage_log` via `AiUsageLogDAO`. The ro
 | `AiConfigurationAdminController` | Provider configuration panel |
 | `GenericAiApiKeyAdminController` | Reusable form for API-key providers (OpenAI, Anthropic) |
 | `GenericAiSpiAdminController` | Form for generic instances (base URL, models, optional API key) |
-| `AiFeaturesAdminController` | Per-feature SPI + model config; enables/disables each AI use case |
+| `AiFeaturesAdminController` | Per-feature SPI + model config; enables/disables each AI use case; holds the "Default for users" toggle of a user-controlled feature |
 | `AiFeaturesTestController` | Runs feature tests against a specific provider/model and shows results |
 | `AiEssayGradingTestController` | Live test of essay grading structured output via admin UI |
 | `AiEssayGenerationTestController` | Live test of essay generation structured output via admin UI |
 | `AiUsageLogAdminController` | Usage log table with filters |
+
+### 12.1 User UI
+
+| Controller | Purpose |
+|------------|---------|
+| `AiUserSettingsController` | Segment "AI settings" in the user settings (`UserSettingsController`). One row per user-controlled and available feature, with the choice `Default (on)` / `Default (off)`, `On`, `Off`. Hidden for a guest. |
+| `AiCorrectionConsentController` | Modal shown by `QuizRunController` before the first AI correction when the person has no stored choice. Three buttons: "Allow once", "Always allow", "Not now". |
 
 ## 13. i18n Keys
 
@@ -475,3 +503,7 @@ Every provider call writes a row to `o_ai_usage_log` via `AiUsageLogDAO`. The ro
 | `ai.questions.error.ratelimit` | Rate limit exceeded error for question generation |
 | `ai.essay.feedback.error.timeout` | Grading hard-timeout exceeded |
 | `ai.essay.feedback.error.integrity` | Content hash mismatch |
+| `ai.feature.user.default` / `.help` | "Default for users" toggle in the features form |
+| `ai.feature.<type>.user` / `.desc` | Learner-facing name and one-sentence description of a user-controlled feature |
+| `ai.optout.*` | Segment "AI settings" in the user settings: title, description, choices, save message |
+| `ai.consent.*` | Consent modal of the AI correction: title, text, system default note, three buttons, hint |

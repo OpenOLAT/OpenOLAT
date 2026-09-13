@@ -280,4 +280,33 @@ public class AiModuleTest extends OlatTestCase {
 
 		assertTrue(module.getEnabledProviders().isEmpty());
 	}
+
+
+	// ─── user default of a user controlled feature ──────────────────
+
+	@Test
+	public void userDefaultOn_setAndGet_roundTripThroughTheRealKey() {
+		boolean essayOriginal = module.isUserDefaultOn(AiFeature.EssayGrading);
+		boolean imageOriginal = module.isUserDefaultOn(AiFeature.ImageDescriptionGenerator);
+		try {
+			module.setUserDefaultOn(AiFeature.EssayGrading, false);
+			assertFalse(module.isUserDefaultOn(AiFeature.EssayGrading));
+			// the key is per feature, the other feature is not touched
+			assertEquals(imageOriginal, module.isUserDefaultOn(AiFeature.ImageDescriptionGenerator));
+
+			module.setUserDefaultOn(AiFeature.EssayGrading, true);
+			assertTrue(module.isUserDefaultOn(AiFeature.EssayGrading));
+		} finally {
+			// restore, so the persisted module properties are not left changed.
+			// ImageDescriptionGenerator is only read, never written, so it needs no restore.
+			module.setUserDefaultOn(AiFeature.EssayGrading, essayOriginal);
+		}
+	}
+
+	@Test
+	public void userDefaultOn_featureNotUserControlled_isFalse() {
+		assertFalse(module.isUserDefaultOn(AiFeature.MCQuestionGenerator));
+		assertFalse(module.isUserDefaultOn(AiFeature.EssayGeneration));
+		assertFalse(module.isUserDefaultOn(AiFeature.TaxonomyMatching));
+	}
 }

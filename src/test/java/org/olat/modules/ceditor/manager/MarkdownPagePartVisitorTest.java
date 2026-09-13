@@ -66,12 +66,22 @@ public class MarkdownPagePartVisitorTest {
 		// Mirror the service's preprocessing so !!! MkDocs admonitions are handled
 		String preprocessed = MarkdownMkDocsAdmonitionPreprocessor.preprocess(markdown);
 		Node document = MarkdownImportService.buildParser(preprocessed).parse(preprocessed);
-		MarkdownPagePartVisitor visitor = new MarkdownPagePartVisitor(null, null, null, null, null, null, null, mathBlocks, null);
+		MarkdownPagePartVisitor visitor = new MarkdownPagePartVisitor(null, null, null, null, null, null, null, mathBlocks,
+				null, MarkdownImportOptions.NONE);
 		document.accept(visitor);
 		return new VisitorResult(visitor.getParts(), visitor.getWarnings());
 	}
 
 	private record VisitorResult(List<PagePart> parts, List<String> warnings) {}
+
+	/** Runs the visitor with the given import options and returns it, so a test can read its counters. */
+	private MarkdownPagePartVisitor visitWithOptions(String markdown, MarkdownImportOptions options) {
+		Node document = MarkdownImportService.buildParser(markdown).parse(markdown);
+		MarkdownPagePartVisitor visitor = new MarkdownPagePartVisitor(null, null, null, null, null, null, null, Map.of(),
+				null, options);
+		document.accept(visitor);
+		return visitor;
+	}
 
 	// --- Heading tests ---
 
@@ -1325,5 +1335,43 @@ public class MarkdownPagePartVisitorTest {
 		AlertBoxSettings alertBox = settings.getAlertBoxSettings();
 		assertThat(alertBox).isNotNull();
 		assertThat(alertBox.getType()).isEqualTo(AlertBoxType.note);
+	}
+
+	// --- AI image metadata option tests ---
+	//
+	// These tests assert the gate itself through isImageMetadataGenerationOn().
+	// The effect of the gate, an asynchronous job per imported image, needs a
+	// Spring context: the visitor creates the media through ImageHandler and
+	// reaches MediaAiMetadataService through CoreSpringFactory. Both are absent
+	// in this pure unit test, so getAiMetadataJobCount() stays at 0 whatever the
+	// option says. That case belongs in an integration test on
+	// MarkdownImportService.
+
+	@Test
+	public void testMarkdownImportOptionsNoneIsOff() {
+		assertThat(MarkdownImportOptions.NONE.generateImageMetadata()).isFalse();
+	}
+
+	@Test
+	public void testAiImageMetadataGateOffWithNone() {
+		MarkdownPagePartVisitor visitor = visitWithOptions("![Diagram](picture.png)", MarkdownImportOptions.NONE);
+
+		assertThat(visitor.isImageMetadataGenerationOn()).isFalse();
+	}
+
+	@Test
+	public void testAiImageMetadataGateOnWithOptionOn() {
+		MarkdownPagePartVisitor visitor = visitWithOptions("![Diagram](picture.png)",
+				new MarkdownImportOptions(true));
+
+		assertThat(visitor.isImageMetadataGenerationOn()).isTrue();
+	}
+
+	@Test
+	public void testNullOptionsFailClosed() {
+		// A null options object maps to NONE in the constructor.
+		MarkdownPagePartVisitor visitor = visitWithOptions("![Diagram](picture.png)", null);
+
+		assertThat(visitor.isImageMetadataGenerationOn()).isFalse();
 	}
 }

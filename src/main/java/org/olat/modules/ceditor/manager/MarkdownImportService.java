@@ -173,11 +173,12 @@ public class MarkdownImportService {
 	 * @param targetColumn        Column index within the target container (-1 for default behavior)
 	 * @param referenceElementId  Optional element ID for before/after positioning (null for default)
 	 * @param target              Optional position target (above/below relative to referenceElementId)
+	 * @param options             The options of the import dialog, null for no AI usage
 	 * @return MarkdownImportResult with any warnings
 	 */
 	public MarkdownImportResult convertAndPersist(String markdown, Page page, Identity author, OLATResourceable aiOres,
 			String subIdent, File basePath, Locale locale, String targetContainerId, int targetColumn,
-			String referenceElementId, PageElementTarget target) {
+			String referenceElementId, PageElementTarget target, MarkdownImportOptions options) {
 		if (markdown == null || markdown.isBlank()) {
 			return new MarkdownImportResult(List.of(), null, 0, -1, 0);
 		}
@@ -209,7 +210,7 @@ public class MarkdownImportService {
 		// 3. Visit AST
 		Translator translator = Util.createPackageTranslator(PageEditorV2Controller.class, locale);
 		MarkdownPagePartVisitor visitor = new MarkdownPagePartVisitor(author, aiOres, subIdent, basePath, imageHandler,
-				mediaServerModule, httpClientService, preprocessed.mathBlocks(), translator);
+				mediaServerModule, httpClientService, preprocessed.mathBlocks(), translator, options);
 		visitor.setImageDimensions(imageDimensions);
 		document.accept(visitor);
 

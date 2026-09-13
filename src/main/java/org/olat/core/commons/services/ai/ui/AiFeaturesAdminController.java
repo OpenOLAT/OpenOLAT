@@ -100,6 +100,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 	// Image Description Generator elements
 	private FormToggle imgDescEnabledEl;
+	private FormToggle imgDescUserDefaultEl;
 	private SingleSelection imgDescSpiEl;
 	private SingleSelection imgDescModelDropdownEl;
 	private TextElement imgDescModelTextEl;
@@ -132,6 +133,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 	// Essay Grading elements
 	private FormToggle essayGradingEnabledEl;
+	private FormToggle essayGradingUserDefaultEl;
 	private SingleSelection essayGradingSpiEl;
 	private SingleSelection essayGradingModelDropdownEl;
 	private TextElement essayGradingModelTextEl;
@@ -205,6 +207,9 @@ public class AiFeaturesAdminController extends FormBasicController {
 		imgDescEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		imgDescEnabledEl.toggle(imgDescEnabled);
 		imgDescEnabledEl.setEnabled(!readOnly);
+
+		imgDescUserDefaultEl = addUserDefaultToggle("imgDesc.user.default",
+				AiFeature.ImageDescriptionGenerator, formLayout);
 
 		imgDescSpiEl = buildSpiDropdown("imgDesc.spi", aiModule.getImgDescSpiId(), formLayout,
 				aiModule.getEnabledProviders());
@@ -296,6 +301,9 @@ public class AiFeaturesAdminController extends FormBasicController {
 		essayGradingEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		essayGradingEnabledEl.toggle(essayGradingEnabled);
 
+		essayGradingUserDefaultEl = addUserDefaultToggle("essayGrading.user.default",
+				AiFeature.EssayGrading, formLayout);
+
 		essayGradingSpiEl = buildSpiDropdown("essayGrading.spi", aiModule.getEssayGradingSpiId(), formLayout,
 				aiModule.getEnabledProviders());
 		essayGradingSpiEl.setEnabled(!readOnly);
@@ -358,6 +366,19 @@ public class AiFeaturesAdminController extends FormBasicController {
 		configEl.setHelpTextKey(labelKey + ".help", null);
 		configEl.setMandatory(true);
 		return configEl;
+	}
+
+	/**
+	 * The system default of a user-controlled feature. A person can override it
+	 * in the user settings under "AI settings".
+	 */
+	private FormToggle addUserDefaultToggle(String elName, AiFeature feature, FormItemContainer container) {
+		FormToggle userDefaultEl = uifactory.addToggleButton(elName, "ai.feature.user.default",
+				translate("on"), translate("off"), container);
+		userDefaultEl.setHelpTextKey("ai.feature.user.default.help", null);
+		userDefaultEl.toggle(aiModule.isUserDefaultOn(feature));
+		userDefaultEl.setEnabled(!readOnly);
+		return userDefaultEl;
 	}
 
 	private FormLink addTestLink(String elName, FormItemContainer container) {
@@ -534,6 +555,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 	private void updateImgDescVisibility() {
 		boolean on = imgDescEnabledEl.isOn();
+		updateUserDefaultState(imgDescUserDefaultEl, AiFeature.ImageDescriptionGenerator, on);
 		imgDescSpiEl.setVisible(on);
 		setModelVisibility(on, imgDescModelEl, imgDescModelDropdownEl, imgDescModelTextEl);
 		imgDescMaxOutputTokensEl.setVisible(on);
@@ -563,12 +585,29 @@ public class AiFeaturesAdminController extends FormBasicController {
 
 	private void updateEssayGradingVisibility() {
 		boolean on = essayGradingEnabledEl.isOn();
+		updateUserDefaultState(essayGradingUserDefaultEl, AiFeature.EssayGrading, on);
 		essayGradingSpiEl.setVisible(on);
 		setModelVisibility(on, essayGradingModelEl, essayGradingModelDropdownEl, essayGradingModelTextEl);
 		essayGradingMaxInputWordsEl.setVisible(on);
 		essayGradingMaxOutputTokensEl.setVisible(on);
 		essayGradingTimeoutSecondsEl.setVisible(on);
 		essayGradingTestLink.setVisible(on && hasSpiSelected(essayGradingSpiEl) && hasModelValue(essayGradingModelEl));
+	}
+
+	/**
+	 * A disabled feature has no system default: the toggle is disabled and shown
+	 * as off. Enabling the feature again restores the stored value. The stored
+	 * value itself is never touched here, formOK saves the toggle only while the
+	 * feature is enabled.
+	 */
+	private void updateUserDefaultState(FormToggle userDefaultEl, AiFeature feature, boolean on) {
+		boolean wasDisabled = !userDefaultEl.isEnabled();
+		userDefaultEl.setEnabled(!readOnly && on);
+		if (!on) {
+			userDefaultEl.toggle(false);
+		} else if (wasDisabled) {
+			userDefaultEl.toggle(aiModule.isUserDefaultOn(feature));
+		}
 	}
 
 	/** Show only the active model element, and only while the section is enabled. */
@@ -814,6 +853,8 @@ public class AiFeaturesAdminController extends FormBasicController {
 			aiModule.setImgDescMaxOutputTokens(imgDescMaxOutputTokensEl.getIntValue());
 			aiModule.setImgDescTimeoutSeconds(imgDescTimeoutSecondsEl.getIntValue());
 			logAudit("Image description generator configured: provider=" + imgDescSpiId + ", model=" + imgDescModel);
+			saveUserDefault(AiFeature.ImageDescriptionGenerator, imgDescUserDefaultEl,
+					"Image description generator user default");
 		} else {
 			aiModule.setImageDescriptionGeneratorEnabled(false);
 			logAudit("Image description generator disabled");
@@ -842,6 +883,7 @@ public class AiFeaturesAdminController extends FormBasicController {
 			aiModule.setEssayGradingMaxOutputTokens(essayGradingMaxOutputTokensEl.getIntValue());
 			aiModule.setEssayGradingTimeoutSeconds(essayGradingTimeoutSecondsEl.getIntValue());
 			logAudit("Essay grading configured: provider=" + essayGradingSpiId + ", model=" + essayGradingModel);
+			saveUserDefault(AiFeature.EssayGrading, essayGradingUserDefaultEl, "Essay grading user default");
 		} else {
 			aiModule.setEssayGradingEnabled(false);
 			logAudit("Essay grading disabled");
@@ -870,6 +912,15 @@ public class AiFeaturesAdminController extends FormBasicController {
 	}
 
 	// ------ Helpers ------
+
+	/** Writes the system default only when it changed, and audits that change. */
+	private void saveUserDefault(AiFeature feature, FormToggle userDefaultEl, String auditLabel) {
+		boolean on = userDefaultEl.isOn();
+		if (on != aiModule.isUserDefaultOn(feature)) {
+			aiModule.setUserDefaultOn(feature, on);
+			logAudit(auditLabel + " set to " + (on ? "on" : "off"));
+		}
+	}
 
 	private String getSelectedKey(SingleSelection el) {
 		return el.isOneSelected() ? el.getSelectedKey() : null;

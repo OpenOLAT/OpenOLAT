@@ -32,7 +32,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.services.ai.AiEssayGenerationService;
+import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.AiUserPreferenceService;
 import org.olat.core.commons.services.ai.essay.AiBloomLevel;
 import org.olat.core.commons.services.ai.essay.EssayGenerationService;
 import org.olat.core.commons.services.ai.essay.EssayGenerationService.GenerationRequest;
@@ -65,12 +67,14 @@ import org.olat.modules.ceditor.ContentEditorModule;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.manager.EssayGenerationQuizPartSinkImpl;
+import org.olat.modules.ceditor.manager.MarkdownImportOptions;
 import org.olat.modules.ceditor.manager.MarkdownImportResult;
 import org.olat.modules.ceditor.manager.MarkdownImportService;
 import org.olat.modules.ceditor.model.QuizSettings;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.ui.event.MarkdownImportDoneEvent;
+import org.olat.modules.cemedia.manager.MediaAiMetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -111,6 +115,7 @@ public class MarkdownImportController extends FormBasicController {
 	private FileElement fileUploadEl;
 	private TextAreaElement markdownTextEl;
 	private FormToggle aiGenerateEl;
+	private FormToggle aiImageMetadataEl;
 	private IntegerElement aiMcCountEl;
 	private IntegerElement aiEssayCountEl;
 	private MultipleSelectionElement aiBloomEl;
@@ -138,6 +143,10 @@ public class MarkdownImportController extends FormBasicController {
 	private AiEssayGenerationService aiEssayGenerationService;
 	@Autowired
 	private AiModule aiModule;
+	@Autowired
+	private AiUserPreferenceService aiUserPreferenceService;
+	@Autowired
+	private MediaAiMetadataService mediaAiMetadataService;
 
 	public MarkdownImportController(UserRequest ureq, WindowControl wControl, Page page, OLATResourceable aiOres,
 			String subIdent, String targetContainerId, int targetColumn,
@@ -188,7 +197,8 @@ public class MarkdownImportController extends FormBasicController {
 		// Optional: generate AI questions from imported content (MVP toggle).
 		// Toggle + two count fields (MC + essay). Fields are visible only when
 		// the toggle is on; counts default to 2 and are validated on submit.
-		if (isAiQuestionGenerationAvailable()) {
+		boolean aiQuestionGeneration = isAiQuestionGenerationAvailable();
+		if (aiQuestionGeneration) {
 			aiGenerateEl = uifactory.addToggleButton("import.ai.generate", "import.ai.generate.label",
 					translate("on"), translate("off"), formLayout);
 			aiGenerateEl.setHelpText(translate("import.ai.generate.help"));
@@ -196,7 +206,23 @@ public class MarkdownImportController extends FormBasicController {
 			// MVP default: AI question generation is opted-in by default so the
 			// MC + essay count fields render visible from the start.
 			aiGenerateEl.toggleOn();
+		}
 
+		// Optional: generate the metadata of the imported images with AI. The
+		// toggle has its own gate, the image description service, and is offered
+		// wherever that service runs, also where authors must not create quiz
+		// elements. It starts at the AI preference of this person and, without a
+		// stored choice, at the system default. The choice applies to this one
+		// import and is not stored.
+		if (mediaAiMetadataService.isEnabled()) {
+			aiImageMetadataEl = uifactory.addToggleButton("import.ai.imagemeta", "import.ai.imagemeta.label",
+					translate("on"), translate("off"), formLayout);
+			aiImageMetadataEl.setHelpText(translate("import.ai.imagemeta.help"));
+			aiImageMetadataEl.toggle(aiUserPreferenceService.isActive(ureq.getUserSession().getGuiPreferences(),
+					AiFeature.ImageDescriptionGenerator));
+		}
+
+		if (aiQuestionGeneration) {
 			aiMcCountEl = uifactory.addIntegerElement("import.ai.generate.mc.count",
 					"import.ai.generate.mc.count", DEFAULT_AI_MC_COUNT, formLayout);
 			aiMcCountEl.setDisplaySize(3);
@@ -490,8 +516,9 @@ public class MarkdownImportController extends FormBasicController {
 			markdown = markdownTextEl.getValue();
 		}
 
+		MarkdownImportOptions options = new MarkdownImportOptions(aiImageMetadataEl != null && aiImageMetadataEl.isOn());
 		MarkdownImportResult result = markdownImportService.convertAndPersist(markdown, page, getIdentity(), aiOres,
-				subIdent, basePath, getLocale(), targetContainerId, targetColumn, referenceElementId, target);
+				subIdent, basePath, getLocale(), targetContainerId, targetColumn, referenceElementId, target, options);
 
 		// Optional post-step: if the author asked for AI questions, append a
 		// placeholder QuizPart inside the same ContainerPart that wraps the

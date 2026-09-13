@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
+import org.olat.core.commons.services.ai.AiFeature;
 import org.olat.core.commons.services.ai.AiModule;
+import org.olat.core.commons.services.ai.AiUserPreferenceService;
 import org.olat.core.commons.services.ai.model.AiImageDescriptionResponse;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.model.ImageDescriptionData;
@@ -119,6 +121,8 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private AiModule aiModule;
+	@Autowired
+	private AiUserPreferenceService aiUserPreferenceService;
 	@Autowired
 	private TaxonomyMatchingService taxonomyMatchingService;
 
@@ -515,9 +519,14 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		// Enrich freshly created image medias with AI metadata in a background
 		// task — the user never waits on the AI provider. Missing metadata is
 		// filled in once the task has run. Skipped when the user already
-		// generated the metadata manually via the AI button in this form.
-		if (created && !aiMetadataGenerated && mediaAiMetadataService.submit(mediaReference, getIdentity(),
-				getLocale(), "mc-collect-image", "MediaCenter", 0L, null, false)) {
+		// generated the metadata manually via the AI button in this form, and
+		// skipped when this person switched the AI image descriptions off. The
+		// explicit AI button in this form stays available in every case.
+		if (created && !aiMetadataGenerated
+				&& aiUserPreferenceService.isActive(ureq.getUserSession().getGuiPreferences(),
+						AiFeature.ImageDescriptionGenerator)
+				&& mediaAiMetadataService.submit(mediaReference, getIdentity(),
+						getLocale(), "mc-collect-image", "MediaCenter", 0L, null, false)) {
 			showInfo("ai.metadata.background");
 		}
 

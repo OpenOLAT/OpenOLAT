@@ -76,6 +76,9 @@ public class AiModule extends AbstractSpringModule {
 	private static final String AI_MC_GENERATOR_MAX_INPUT_CHARS = "ai.mc.generator.max.input.chars";
 	private static final String AI_ESSAY_GENERATION_MAX_INPUT_CHARS = "ai.essay.generation.max.input.chars";
 	private static final String AI_ESSAY_GRADING_MAX_INPUT_WORDS = "ai.essay.grading.max.input.words";
+	// System default of a user-controlled feature: ai.feature.<type>.user.default
+	private static final String AI_FEATURE_USER_DEFAULT_PREFIX = "ai.feature.";
+	private static final String AI_FEATURE_USER_DEFAULT_SUFFIX = ".user.default";
 
 	// Per-user rate limit defaults (calls / minute / identity). Sized so a
 	// fast-typing learner submitting essay answers across many questions in a
@@ -113,6 +116,8 @@ public class AiModule extends AbstractSpringModule {
 	private String imgDescSpiId;
 	@Value("${ai.feature.image-description-generator.model:}")
 	private String imgDescModel;
+	@Value("${ai.feature.image-description-generator.user.default:true}")
+	private boolean imgDescUserDefaultOn;
 	@Value("${ai.feature.essay-generation.enabled:false}")
 	private boolean essayGenerationEnabled;
 	@Value("${ai.feature.essay-generation.spi:}")
@@ -125,6 +130,8 @@ public class AiModule extends AbstractSpringModule {
 	private String essayGradingSpiId;
 	@Value("${ai.feature.essay-grading.model:}")
 	private String essayGradingModel;
+	@Value("${ai.feature.essay-grading.user.default:true}")
+	private boolean essayGradingUserDefaultOn;
 	@Value("${ai.task.pool.interactive.size:8}")
 	private int aiTaskPoolInteractiveSize;
 	@Value("${ai.task.pool.batch.size:2}")
@@ -698,5 +705,43 @@ public class AiModule extends AbstractSpringModule {
 	 */
 	public int getEssayGenerationMaxCallsPerMinutePerUser() {
 		return DEFAULT_ESSAY_GENERATION_MAX_CALLS_PER_MINUTE_PER_USER;
+	}
+
+	/**
+	 * System default of a user-controlled feature ({@link AiFeature#isUserControlled()}).
+	 * A person can override it in the user settings. The value is read on demand,
+	 * so it needs no cached field and no entry in updateProperties(). Without a
+	 * saved value the preset of olat.properties applies. A feature that is not
+	 * user controlled has no system default and answers false.
+	 *
+	 * @param feature the feature
+	 * @return true: the feature runs for a person without an own preference
+	 */
+	public boolean isUserDefaultOn(AiFeature feature) {
+		return "true".equalsIgnoreCase(getStringPropertyValue(userDefaultKey(feature),
+				Boolean.toString(userDefaultPreset(feature))));
+	}
+
+	/**
+	 * Sets the system default of a user-controlled feature. Writes the properties
+	 * file and fires the cluster-wide change event.
+	 *
+	 * @param feature the feature
+	 * @param on true: the feature runs for a person without an own preference
+	 */
+	public void setUserDefaultOn(AiFeature feature, boolean on) {
+		setStringProperty(userDefaultKey(feature), Boolean.toString(on), true);
+	}
+
+	private boolean userDefaultPreset(AiFeature feature) {
+		return switch (feature) {
+			case ImageDescriptionGenerator -> imgDescUserDefaultOn;
+			case EssayGrading -> essayGradingUserDefaultOn;
+			default -> false;
+		};
+	}
+
+	private static String userDefaultKey(AiFeature feature) {
+		return AI_FEATURE_USER_DEFAULT_PREFIX + feature.getType() + AI_FEATURE_USER_DEFAULT_SUFFIX;
 	}
 }

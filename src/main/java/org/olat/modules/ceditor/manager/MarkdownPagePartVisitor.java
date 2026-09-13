@@ -132,6 +132,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 	private final MediaServerModule mediaServerModule;
 	private final Map<String, String> mathBlocks;
 	private final Translator translator;
+	private final MarkdownImportOptions options;
 	/** Image dimensions extracted before visiting (destination → [width, height]) */
 	private Map<String, int[]> imageDimensions = Map.of();
 
@@ -140,7 +141,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 
 	public MarkdownPagePartVisitor(Identity author, OLATResourceable aiOres, String subIdent, File basePath,
 			ImageHandler imageHandler, MediaServerModule mediaServerModule, HttpClientService httpClientService,
-			Map<String, String> mathBlocks, Translator translator) {
+			Map<String, String> mathBlocks, Translator translator, MarkdownImportOptions options) {
 		this.author = author;
 		this.aiOres = aiOres;
 		this.subIdent = subIdent;
@@ -150,6 +151,7 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 		this.httpClientService = httpClientService;
 		this.mathBlocks = mathBlocks;
 		this.translator = translator;
+		this.options = options != null ? options : MarkdownImportOptions.NONE;
 		this.inlineRenderer = HtmlRenderer.builder()
 			.escapeHtml(true)
 			.sanitizeUrls(true)
@@ -166,6 +168,8 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 	public int getImageCount() { return imageCount; }
 	/** Number of asynchronous AI metadata generation tasks scheduled for imported images. */
 	public int getAiMetadataJobCount() { return aiMetadataJobCount; }
+	/** The state of the AI image metadata gate of this import. A null options object is off. */
+	boolean isImageMetadataGenerationOn() { return options.generateImageMetadata(); }
 
 	// --- Block node visitors ---
 
@@ -701,8 +705,15 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 	 * media. The import itself never waits on an AI provider — the persisted
 	 * background task fills in title, description, alt text, tags and
 	 * taxonomy once it has run.
+	 * <p>
+	 * Does nothing when the author switched the option off in the import
+	 * dialog. The dialog pre-sets the option to the AI preference of the
+	 * author, so an opted-out person gets no task by default.
 	 */
 	private void submitAiMetadataGeneration(Media media) {
+		if (!options.generateImageMetadata()) {
+			return;
+		}
 		try {
 			MediaAiMetadataService aiMetadataService = CoreSpringFactory.getImpl(MediaAiMetadataService.class);
 			Locale locale = translator != null ? translator.getLocale() : Locale.ENGLISH;
