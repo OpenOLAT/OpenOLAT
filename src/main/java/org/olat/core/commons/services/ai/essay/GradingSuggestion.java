@@ -87,6 +87,7 @@ public record GradingSuggestion(
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record KeyPointHit(
+			@JsonProperty(required = true)
 			@Description("Key point id as declared in the item definition (e.g. kp1)")
 			String id,
 			@Description("Short evidence snippet from the student answer supporting this hit (max ~200 chars)")
@@ -94,6 +95,7 @@ public record GradingSuggestion(
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record KeyPointMissed(
+			@JsonProperty(required = true)
 			@Description("Key point id as declared in the item definition (e.g. kp1)")
 			String id,
 			@Description("Short reason why this key point is considered missing (max ~200 chars)")

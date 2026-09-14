@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.olat.core.util.StringHelper;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import dev.langchain4j.model.output.structured.Description;
 
 /**
@@ -35,20 +37,28 @@ import dev.langchain4j.model.output.structured.Description;
  *
  */
 public class ImageDescriptionData {
+	@JsonProperty(required = true)
 	@Description("Short descriptive title, max 10 words")
 	private String title;
+	@JsonProperty(required = true)
 	@Description("2-3 sentences describing the image in detail, suitable for full-text search")
 	private String description;
+	@JsonProperty(required = true)
 	@Description("Accessible description for screen readers, precise and informative, only relevant details, very short, avoids redundancy, does not start with 'Image of' or 'Picture of'")
 	private String altText;
+	@JsonProperty(required = true)
 	@Description("Academic or professional subject area, 1-2 words, e.g. biology, computer science, marketing, history, mathematics, medicine, art")
 	private String subject;
+	@JsonProperty(required = true)
 	@Description("Exactly one of: horizontal, vertical, square")
 	private String orientation;
+	@JsonProperty(required = true)
 	@Description("1-2 dominant colors; use b&w for grayscale; empty list if no clear dominant color")
 	private List<String> colorTags = new ArrayList<>();
+	@JsonProperty(required = true)
 	@Description("1-2 categories describing the image content")
 	private List<String> categoryTags = new ArrayList<>();
+	@JsonProperty(required = true)
 	@Description("1-4 descriptive tags, stock-photo style, singular form (e.g. tree not trees)")
 	private List<String> keywords = new ArrayList<>();
 

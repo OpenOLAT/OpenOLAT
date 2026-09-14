@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.olat.core.util.StringHelper;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import dev.langchain4j.model.output.structured.Description;
 
 /**
@@ -36,18 +38,25 @@ import dev.langchain4j.model.output.structured.Description;
  *
  */
 public class MCQuestionData {
+	@JsonProperty(required = true)
 	@Description("Short descriptive title for the question topic, max 10 words")
 	private String title;
+	@JsonProperty(required = true)
 	@Description("The specific topic within the subject area")
 	private String topic;
+	@JsonProperty(required = true)
 	@Description("The broad subject area the question belongs to")
 	private String subject;
+	@JsonProperty(required = true)
 	@Description("Comma-separated keywords related to the question")
 	private String keywords;
+	@JsonProperty(required = true)
 	@Description("The multiple choice question text, self-contained, no reference to 'the text' or 'the passage'")
 	private String question;
+	@JsonProperty(required = true)
 	@Description("List of correct answer options, each with a text and a one-sentence feedback explaining why this answer is correct")
 	private List<McAnswerOption> correctAnswers = new ArrayList<>();
+	@JsonProperty(required = true)
 	@Description("List of wrong answer options, each with a text and a one-sentence feedback explaining why this answer is incorrect")
 	private List<McAnswerOption> wrongAnswers = new ArrayList<>();
 
@@ -59,8 +68,10 @@ public class MCQuestionData {
 	 * LangChain4j can deserialise the structured AI response.
 	 */
 	public static class McAnswerOption {
+		@JsonProperty(required = true)
 		@Description("The answer text shown to the learner.")
 		private String text;
+		@JsonProperty(required = true)
 		@Description("One-sentence explanation of why this option is correct or wrong, shown as modal feedback when the learner selects this option.")
 		private String feedback;
 
