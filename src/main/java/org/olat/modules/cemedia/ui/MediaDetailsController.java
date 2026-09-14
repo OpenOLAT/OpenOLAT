@@ -116,8 +116,9 @@ public class MediaDetailsController extends BasicController implements Activatea
 		downloadLink.setVisible(editable && currentVersion != null && handler.hasDownload(currentVersion));
 		commandsDropdown.addComponent(downloadLink);
 		
+		boolean isOwnMedia = media.getAuthor() != null && media.getAuthor().getKey().equals(getIdentity().getKey());
 		deleteLink = LinkFactory.createToolLink("delete", translate("delete"), this, "o_icon o_icon-lg o_icon_delete_item");
-		deleteLink.setVisible(editable);
+		deleteLink.setVisible(editable && isOwnMedia);
 		commandsDropdown.addComponent(deleteLink);
 		
 		tabbedPane = new TabbedPane("pane", getLocale());

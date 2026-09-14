@@ -52,6 +52,6 @@ public record MediaCenterConfig(boolean withSelect, boolean withAddMedias, boole
 	}
 	
 	public static final MediaCenterConfig managementConfig() {
-		return new MediaCenterConfig(false, false, true, false, true, true, true, false, null, null, MediaCenterController.ALL_TAB_ID, Access.INDIRECT, null);
+		return new MediaCenterConfig(false, false, true, false, true, false, false, false, null, null, MediaCenterController.ALL_TAB_ID, Access.INDIRECT, null);
 	}
 }
