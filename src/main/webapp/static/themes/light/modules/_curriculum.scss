@@ -127,6 +127,7 @@ fieldset.o_validation_result {
 	}
 	
 	.o_title_cmds .o_curriculum_title_actions {
+		position: relative;
 		display: flex;
 		gap: 5px;
 		.btn-group {
