@@ -92,6 +92,9 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	
 	private static final int picUploadlimitKB = 5120;
 	private static final int movieUploadlimitKB = 102400;
+	private static final int MAX_LENGTH_AUTHORS = 2000;
+	private static final int MAX_LENGTH_LANGUAGE = 16;
+	private static final int MAX_LENGTH_EXPENDITURE_OF_WORK = 255;
 
 	private static final String EVENTS_KEY = "events";
 	private static final String MEET_TEACHERS_KEY = "meetteachers";
@@ -106,10 +109,11 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	private FileElement fileUpload;
 	private FormToggle withMovieEl;
 	private FileElement movieUpload;
-	private TextElement externalRef;
-	private TextElement displayName;
 	private TextElement teaser;
 	private RichTextElement description;
+	private TextElement authors;
+	private TextElement language;
+	private TextElement expenditureOfWork;
 	private MultipleSelectionElement showInfoEl;
 	private MultipleSelectionElement taughtByEl;
 	private RichTextElement objectives;
@@ -155,23 +159,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		UserSession usess = ureq.getUserSession();
 		setFormContextHelp("manual_user/learningresources/Course_Settings_Info/");
 		formLayout.setElementCssClass("o_sel_edit_repositoryentry");
-		setFormTitle("details.info.title");
-
-		displayName = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, repositoryEntry.getDisplayname(), formLayout);
-		displayName.setDisplaySize(30);
-		displayName.setMandatory(true);
-		displayName.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.title) && !readOnly);
-
-		String extRef = repositoryEntry.getExternalRef();
-		if(StringHelper.containsNonWhitespace(repositoryEntry.getManagedFlagsString()) || readOnly) {
-			if(StringHelper.containsNonWhitespace(extRef)) {
-				uifactory.addStaticTextElement("cif.externalref", extRef, formLayout);
-			}
-		} else {
-			externalRef = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, extRef, formLayout);
-			externalRef.setHelpText(translate("cif.externalref.hover"));
-			externalRef.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Info/");
-		}
+		setFormTitle("cif.content.data");
 
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 
@@ -228,6 +216,20 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		description.getEditorConfiguration().setPathInStatusBar(false);
 		EdusharingProvider provider = new RepositoryEdusharingProvider(repositoryEntry, "repository-info");
 		description.getEditorConfiguration().enableEdusharing(getIdentity(), provider);
+
+		FormSection factsCont = uifactory.addFormSection("facts", translate("details.facts"), formLayout, FormSection.Level.SUB_TITLE);
+
+		authors = uifactory.addTextElement("cif.authors", "cif.authors", MAX_LENGTH_AUTHORS, repositoryEntry.getAuthors(), factsCont);
+		authors.setElementCssClass("o_sel_repo_authors");
+		authors.setDisplaySize(60);
+		authors.setEnabled(!readOnly);
+
+		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", MAX_LENGTH_LANGUAGE, repositoryEntry.getMainLanguage(), factsCont);
+		language.setEnabled(!readOnly);
+
+		expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", MAX_LENGTH_EXPENDITURE_OF_WORK, repositoryEntry.getExpenditureOfWork(), factsCont);
+		expenditureOfWork.setExampleKey("details.expenditureOfWork.example", null);
+		expenditureOfWork.setEnabled(!readOnly);
 
 		if(CourseModule.getCourseTypeName().equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
 			initCourse(formLayout, usess, ureq);
@@ -331,13 +333,14 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		allOk &= RepositoyUIFactory.validateTextElement(displayName, true, 110);
 		allOk &= RepositoyUIFactory.validateTextElement(description, false, 80000);
 		allOk &= RepositoyUIFactory.validateTextElement(objectives, false, 2000);
 		allOk &= RepositoyUIFactory.validateTextElement(requirements, false, 2000);
 		allOk &= RepositoyUIFactory.validateTextElement(credits, false, 2000);
-		allOk &= RepositoyUIFactory.validateTextElement(externalRef, false, 255);
 		allOk &= RepositoyUIFactory.validateTextElement(teaser, false, 200);
+		allOk &= RepositoyUIFactory.validateTextElement(language, false, MAX_LENGTH_LANGUAGE);
+		allOk &= RepositoyUIFactory.validateTextElement(expenditureOfWork, false, MAX_LENGTH_EXPENDITURE_OF_WORK);
+		allOk &= RepositoyUIFactory.validateTextElement(authors, false, MAX_LENGTH_AUTHORS);
 
 		if(taughtByEl != null) {
 			taughtByEl.clearError();
@@ -431,14 +434,6 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			}
 		}
 
-		String displayname = displayName.getValue().trim();
-		repositoryEntry.setDisplayname(displayname);
-
-		if(externalRef != null && externalRef.isEnabled()) {
-			String ref = externalRef.getValue().trim();
-			repositoryEntry.setExternalRef(ref);
-		}
-		
 		repositoryEntry.setTeaser(teaser.getValue());
 		
 		String desc = description.getValue().trim();
@@ -455,6 +450,22 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		if(credits != null) {
 			String cred = credits.getValue().trim();
 			repositoryEntry.setCredits(cred);
+		}
+
+		String mainLanguage = language.getValue();
+		if(StringHelper.containsNonWhitespace(mainLanguage)) {
+			repositoryEntry.setMainLanguage(mainLanguage);
+		} else {
+			repositoryEntry.setMainLanguage(null);
+		}
+
+		if(authors != null) {
+			String auth = authors.getValue().trim();
+			repositoryEntry.setAuthors(auth);
+		}
+		if(expenditureOfWork != null) {
+			String exp = expenditureOfWork.getValue().trim();
+			repositoryEntry.setExpenditureOfWork(exp);
 		}
 
 		repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,

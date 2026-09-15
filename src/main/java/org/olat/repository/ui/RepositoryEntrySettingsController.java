@@ -183,13 +183,13 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	}
 	
 	protected void initInfos() {
-		infoLink = LinkFactory.createLink("details.info", getTranslator(), this);
-		infoLink.setElementCssClass("o_sel_infos");
-		buttonsGroup.addButton(infoLink, false);
-		
 		metadataLink = LinkFactory.createLink("details.metadata", getTranslator(), this);
 		metadataLink.setElementCssClass("o_sel_metadata");
 		buttonsGroup.addButton(metadataLink, false);
+
+		infoLink = LinkFactory.createLink("details.info", getTranslator(), this);
+		infoLink.setElementCssClass("o_sel_infos");
+		buttonsGroup.addButton(infoLink, false);
 	}
 	
 	protected void initAccessAndBooking() {
@@ -236,7 +236,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			doOpenInfos(ureq);
+			doOpenMetadata(ureq);
 		} else {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Info".equalsIgnoreCase(type)) {

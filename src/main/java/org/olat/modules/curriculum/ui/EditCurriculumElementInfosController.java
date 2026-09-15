@@ -153,11 +153,10 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("curriculum.element.infos");
-		setFormInfo("curriculum.element.infos.desc");
-		
+		setFormTitle("cif.content.data");
+
 		UserSession usess = ureq.getUserSession();
-		
+
 		imageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "rentry.pic", "rentry.pic", formLayout);
 		imageEl.setExampleKey("rentry.pic.example", new String[] {RepositoryManager.PICTURE_WIDTH + "x" + (RepositoryManager.PICTURE_HEIGHT)});
 		imageEl.limitToMimeType(imageMimeTypes, "error.mimetype", new String[]{ imageMimeTypes.toString()} );
@@ -205,7 +204,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			descriptionEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.description));
 			descriptionEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
-			
+
 			FormSection factsCont = uifactory.addFormSection("facts", translate("details.facts"), formLayout, FormSection.Level.SUB_TITLE);
 
 			authorsEl = uifactory.addTextElement("cif.authors", "cif.authors", 150, element.getAuthors(), factsCont);

@@ -22,10 +22,13 @@
 			<tr><th scope="row">$r.translate("orderby.lastModified")</th><td>$r.formatDateAndTime($v.getLastModified())</td></tr>
 
 			#if ($isEntryAuthor || $roles.isAdministrator() || $roles.isAuthor() || $roles.isLearnResourceManager())
+				#if ($r.isNotEmpty($resourceType))
+					<tr><th scope="row">$r.translate("cif.type")</th><td>$r.escapeHtml($resourceType)</td></tr>
+				#end
 				#if ($r.isNotEmpty($technicalType))
 					<tr><th scope="row">$r.translate("cif.technical.type")</th><td>$r.escapeHtml($technicalType)</td></tr>
 				#end
-				<tr><th scope="row">$r.translate("cif.initialAuthor")</th><td>$r.escapeHtml($v.getInitialAuthor())</td></tr>
+				<tr><th scope="row">$r.translate("cif.initialAuthor")</th><td>$r.escapeHtml($initialAuthor)</td></tr>
 				<tr>
 					<th scope="row">$r.translate("cif.owners")</th>
 					<td><ul class="list-unstyled">

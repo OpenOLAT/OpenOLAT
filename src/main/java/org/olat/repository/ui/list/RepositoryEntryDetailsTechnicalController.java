@@ -115,11 +115,26 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 			layoutCont.contextPut("roles", roles);
 			layoutCont.contextPut("isEntryAuthor", Boolean.valueOf(isOwner));
 			
+			String typeName = entry.getOlatResource() == null ? null : entry.getOlatResource().getResourceableTypeName();
+			if (StringHelper.containsNonWhitespace(typeName)) {
+				layoutCont.contextPut("resourceType", NewControllerFactory.translateResourceableTypeName(typeName, getLocale()));
+			}
+
 			if (StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
 				String technicalType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(entry.getTechnicalType()), getLocale());
 				layoutCont.contextPut("technicalType", technicalType);
 			}
-			
+
+			String initialAuthor = entry.getInitialAuthor();
+			String creator = initialAuthor;
+			if (StringHelper.containsNonWhitespace(initialAuthor)) {
+				String displayName = userManager.getUserDisplayName(initialAuthor);
+				if (StringHelper.containsNonWhitespace(displayName) && !displayName.equals(initialAuthor)) {
+					creator = displayName + " (" + initialAuthor + ")";
+				}
+			}
+			layoutCont.contextPut("initialAuthor", creator == null ? "" : creator);
+
 			// External link
 			String extLink = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 			layoutCont.contextPut("extLink", extLink);

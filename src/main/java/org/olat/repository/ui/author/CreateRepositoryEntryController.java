@@ -249,6 +249,15 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 			initLifecycle(generalCont);
 		}
 		
+		if (hasEducationalType()) {
+			SelectionValues educationalTypeKV = new SelectionValues();
+			repositoryManager.getAllEducationalTypes()
+					.forEach(type -> educationalTypeKV.add(entry(type.getIdentifier(), translate(RepositoyUIFactory.getI18nKey(type)))));
+			educationalTypeKV.sort(SelectionValues.VALUE_ASC);
+			educationalTypeEl = uifactory.addDropdownSingleselect("cif.educational.type", generalCont, educationalTypeKV.keys(), educationalTypeKV.values());
+			educationalTypeEl.enableNoneSelection();
+		}
+
 		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
 		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
 			String labelI18nKey = catalogModule.isEnabled()? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
@@ -261,16 +270,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
 			}
 		}
-		
-		if (hasEducationalType()) {
-			SelectionValues educationalTypeKV = new SelectionValues();
-			repositoryManager.getAllEducationalTypes()
-					.forEach(type -> educationalTypeKV.add(entry(type.getIdentifier(), translate(RepositoyUIFactory.getI18nKey(type)))));
-			educationalTypeKV.sort(SelectionValues.VALUE_ASC);
-			educationalTypeEl = uifactory.addDropdownSingleselect("cif.educational.type", generalCont, educationalTypeKV.keys(), educationalTypeKV.values());
-			educationalTypeEl.enableNoneSelection();
-		}
-		
+
 		organisationEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), generalCont, uifactory,
 				organisationModule, organisations, defaultOrganisations);
 		

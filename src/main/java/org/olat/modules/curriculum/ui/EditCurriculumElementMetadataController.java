@@ -156,7 +156,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("curriculum.element.metadata");
+		setFormTitle("cif.basic.data");
 		formLayout.setElementCssClass("o_sel_curriculum_element_metadata");
 		
 		if(curriculum == null && (element == null || element.getKey() == null)) {

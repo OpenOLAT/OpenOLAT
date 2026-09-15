@@ -75,7 +75,6 @@ import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.resource.OLATResource;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,8 +86,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryEntryMetadataController extends FormBasicController {
 	
 	private static final int MAX_LENGTH_AUTHORS = 2000;
-	private static final int MAX_LENGTH_LANGUAGE = 16;
-	private static final int MAX_LENGTH_EXPENDITURE_OF_WORK = 255;
 
 	private final boolean readOnly;
 	private final boolean showHeading;
@@ -97,16 +94,14 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	private RepositoryEntry repositoryEntry;
 
 	private TextElement authors;
-	private TextElement language;
+	private TextElement displayName;
+	private TextElement externalRef;
 	private SingleSelection educationalTypeEl;
 	private TextElement licensorEl;
-	private TextElement expenditureOfWork;
 	private TextAreaElement licenseFreetextEl;
 	private SingleSelection licenseEl;
 	private ObjectSelectionElement taxonomyLevelEl;
 
-	@Autowired
-	private UserManager userManager;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
 	@Autowired
@@ -179,7 +174,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_repo_metadata");
 		if (showHeading) {
 			setFormContextHelp("manual_user/learningresources/Course_Settings_Metadata/");
-			setFormTitle("details.metadata.title");
+			setFormTitle("cif.basic.data");
 		}
 		
 		// Add resource type
@@ -196,45 +191,30 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		}
 		
 		if (!usedInWizard) {
-			
+			displayName = uifactory.addTextElement("cif.displayname", "cif.title", 100, repositoryEntry.getDisplayname(), formLayout);
+			displayName.setDisplaySize(30);
+			displayName.setMandatory(true);
+			displayName.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.title) && !readOnly);
+
+			String extRef = repositoryEntry.getExternalRef();
+			if(StringHelper.containsNonWhitespace(repositoryEntry.getManagedFlagsString()) || readOnly) {
+				if(StringHelper.containsNonWhitespace(extRef)) {
+					uifactory.addStaticTextElement("cif.externalref", extRef, formLayout);
+				}
+			} else {
+				externalRef = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, extRef, formLayout);
+				externalRef.setHelpText(translate("cif.externalref.hover"));
+				externalRef.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Metadata/");
+			}
+
 			uifactory.addStaticTextElement("cif.type", typeDisplay, formLayout);
-	
-			String id = repositoryEntry.getResourceableId() == null ? "-" : repositoryEntry.getResourceableId().toString();
-			uifactory.addStaticTextElement("cif.id", id, formLayout);
-			
-			String externalId = repositoryEntry.getExternalId();
-			if(StringHelper.containsNonWhitespace(externalId)) {
-				uifactory.addStaticTextElement("cif.externalid", externalId, formLayout);
-			}
-	
-			String initalAuthor = repositoryEntry.getInitialAuthor() == null ? "-" : repositoryEntry.getInitialAuthor();
-			if(repositoryEntry.getInitialAuthor() != null) {
-				initalAuthor = userManager.getUserDisplayName(initalAuthor);
-			}
-			initalAuthor = StringHelper.escapeHtml(initalAuthor);
-			uifactory.addStaticTextElement("cif.initialAuthor", initalAuthor, formLayout);
-	
-			uifactory.addSpacerElement("spacer1", formLayout, false);
+		} else {
+			authors = uifactory.addTextElement("cif.authors", "cif.authors", MAX_LENGTH_AUTHORS, repositoryEntry.getAuthors(), formLayout);
+			authors.setElementCssClass("o_sel_repo_authors");
+			authors.setDisplaySize(60);
+			authors.setEnabled(!readOnly);
 		}
 
-		authors = uifactory.addTextElement("cif.authors", "cif.authors", MAX_LENGTH_AUTHORS, repositoryEntry.getAuthors(), formLayout);
-		authors.setElementCssClass("o_sel_repo_authors");
-		authors.setDisplaySize(60);
-		authors.setEnabled(!readOnly);
-		
-		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
-		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
-			String labelI18nKey = catalogModule.isEnabled()? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
-			ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
-					repositoryService.getTaxonomy(repositoryEntry),
-					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
-					translate(labelI18nKey));
-			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, formLayout, getWindowControl(), true, source);
-			if (catalogModule.isEnabled()) {
-				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
-			}
-		}
-		
 		if (!usedInWizard && CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
 			SelectionValues educationalTypeKV = new SelectionValues();
 			repositoryManager.getAllEducationalTypes()
@@ -248,18 +228,20 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			}
 			educationalTypeEl.setEnabled(!readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.educationalType));
 		}
-		
-		if (!usedInWizard) {
-			language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", MAX_LENGTH_LANGUAGE, repositoryEntry.getMainLanguage(), formLayout);
-			language.setEnabled(!readOnly);
-		
-			expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", MAX_LENGTH_EXPENDITURE_OF_WORK, repositoryEntry.getExpenditureOfWork(), formLayout);
-			expenditureOfWork.setExampleKey("details.expenditureOfWork.example", null);
-			expenditureOfWork.setEnabled(!readOnly);
-			
-			uifactory.addSpacerElement("spacer2", formLayout, false);
+
+		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
+		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
+			String labelI18nKey = catalogModule.isEnabled()? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
+			ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+					repositoryService.getTaxonomy(repositoryEntry),
+					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
+					translate(labelI18nKey));
+			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, formLayout, getWindowControl(), true, source);
+			if (catalogModule.isEnabled()) {
+				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
+			}
 		}
-		
+
 		if (licenseModule.isEnabled(licenseHandler)) {
 			license = licenseService.loadOrCreateLicense(res);
 
@@ -329,8 +311,8 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		allOk &= RepositoyUIFactory.validateTextElement(language, false, MAX_LENGTH_LANGUAGE);
-		allOk &= RepositoyUIFactory.validateTextElement(expenditureOfWork, false, MAX_LENGTH_EXPENDITURE_OF_WORK);
+		allOk &= RepositoyUIFactory.validateTextElement(displayName, true, 110);
+		allOk &= RepositoyUIFactory.validateTextElement(externalRef, false, 255);
 		allOk &= RepositoyUIFactory.validateTextElement(authors, false, MAX_LENGTH_AUTHORS);
 
 		if (licenseEl != null) {
@@ -381,23 +363,15 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 				RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(identifier);
 				repositoryEntry.setEducationalType(educationalType);
 			}
-	
-			String mainLanguage = language.getValue();
-			if(StringHelper.containsNonWhitespace(mainLanguage)) {
-				repositoryEntry.setMainLanguage(mainLanguage);
-			} else {
-				repositoryEntry.setMainLanguage(null);
+
+			String displayname = displayName.getValue().trim();
+			repositoryEntry.setDisplayname(displayname);
+
+			if(externalRef != null && externalRef.isEnabled()) {
+				String ref = externalRef.getValue().trim();
+				repositoryEntry.setExternalRef(ref);
 			}
-	
-			if(authors != null) {
-				String auth = authors.getValue().trim();
-				repositoryEntry.setAuthors(auth);
-			}
-			if(expenditureOfWork != null) {
-				String exp = expenditureOfWork.getValue().trim();
-				repositoryEntry.setExpenditureOfWork(exp);
-			}
-			
+
 			// Taxonomy levels
 			Set<TaxonomyLevel> taxonomyLevels = taxonomyLevelEl != null
 					? Set.copyOf(taxonomyService.getTaxonomyLevelsByRefs(TaxonomyLevelSelectionSource.toRefs(taxonomyLevelEl.getSelectedKeys())))

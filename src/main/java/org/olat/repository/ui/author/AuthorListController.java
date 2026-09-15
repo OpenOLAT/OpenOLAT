@@ -2152,16 +2152,16 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(re != null) {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(re);
 			if(handler != null) {
-				String businessPath = "[RepositoryEntry:" + re.getKey() + "][EditDescription:0]";
+				String businessPath = "[RepositoryEntry:" + re.getKey() + "][EditDescription:0][Info:0]";
 				if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
 					tableEl.reloadData();
 				}
 			}
 		}
 	}
-	
+
 	private void launchEditDescription(UserRequest ureq, RepositoryEntryRef re) {
-		String businessPath = "[RepositoryEntry:" + re.getKey() + "][EditDescription:0]";
+		String businessPath = "[RepositoryEntry:" + re.getKey() + "][EditDescription:0][Info:0]";
 		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
 			tableEl.reloadData();
 		}
