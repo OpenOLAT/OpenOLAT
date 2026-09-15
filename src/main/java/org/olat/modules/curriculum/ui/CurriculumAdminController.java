@@ -45,30 +45,34 @@ public class CurriculumAdminController extends BasicController {
 	
 	private final Link configurationLink;
 	private final Link curriculumElementTypeListLink;
+	private final Link curriculumPlannerLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-	
+
 	private CurriculumAdminConfigurationController configurationCtrl;
 	private CurriculumElementTypesEditController elementTypeListCtrl;
-	
+	private CurriculumPlannerRightsController plannerRightsCtrl;
+
 	@Autowired
 	private CurriculumModule curriculumModule;
-	
+
 	public CurriculumAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
+
 		mainVC = createVelocityContainer("curriculum_admin");
-		
+
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
-		configurationLink = LinkFactory.createLink("curriculum.configuration", mainVC, this);
+		configurationLink = LinkFactory.createLink("curriculum.admin.settings", mainVC, this);
 		segmentView.addSegment(configurationLink, true);
 		curriculumElementTypeListLink = LinkFactory.createLink("curriculum.element.types", mainVC, this);
+		curriculumPlannerLink = LinkFactory.createLink("curriculum.admin.planner", mainVC, this);
 		doOpenConfiguration(ureq);
+		segmentView.addSegment(curriculumPlannerLink, false);
 		if(curriculumModule.isEnabled()) {
 			segmentView.addSegment(curriculumElementTypeListLink, false);
 		}
-		
+
 		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());
 		putInitialPanel(mainVC);
 
@@ -97,6 +101,8 @@ public class CurriculumAdminController extends BasicController {
 					doOpenConfiguration(ureq);
 				} else if (clickedLink == curriculumElementTypeListLink){
 					doOpenCurriculumElementTypes(ureq);
+				} else if (clickedLink == curriculumPlannerLink) {
+					doOpenCurriculumPlanner(ureq);
 				}
 			}
 		}
@@ -120,6 +126,16 @@ public class CurriculumAdminController extends BasicController {
 		}
 		addToHistory(ureq, elementTypeListCtrl);
 		mainVC.put("segmentCmp", elementTypeListCtrl.getInitialComponent());
+	}
+
+	private void doOpenCurriculumPlanner(UserRequest ureq) {
+		if(plannerRightsCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Planner"), null);
+			plannerRightsCtrl = new CurriculumPlannerRightsController(ureq, bwControl);
+			listenTo(plannerRightsCtrl);
+		}
+		addToHistory(ureq, plannerRightsCtrl);
+		mainVC.put("segmentCmp", plannerRightsCtrl.getInitialComponent());
 	}
 
 }

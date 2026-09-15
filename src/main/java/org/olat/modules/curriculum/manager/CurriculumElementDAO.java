@@ -111,9 +111,6 @@ public class CurriculumElementDAO {
 		element.setCalendars(calendars);
 		element.setLectures(lectures);
 		element.setLearningProgress(learningProgress);
-		element.setShowOutline(true);
-		element.setShowLectures(true);
-		element.setTaughtBys(new HashSet<>());
 		element.setTaxonomyLevels(new HashSet<>());
 		element.setChildren(new ArrayList<>());
 		if(status == null) {

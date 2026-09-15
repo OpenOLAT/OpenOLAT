@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -54,7 +55,12 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String USER_OVERVIEW_RIGHTS = "curriculum.user.overview.rights";
 	private static final String LINKED_TAXONOMIES = "curriculum.linked.taxonomies";
 	private static final String DEFAULT_COURSE_RUNTIME_TYPE = "curriculum.default.course.runtime.type";
-	
+	private static final String DEFAULT_SHOW_OUTLINE = "curriculum.default.show.outline";
+	private static final String DEFAULT_SHOW_LECTURES = "curriculum.default.show.lectures";
+	private static final String DEFAULT_SHOW_CERTIFICATE = "curriculum.default.show.certificate";
+	private static final String DEFAULT_SHOW_CREDITPOINTS = "curriculum.default.show.creditpoints";
+	private static final String DEFAULT_TAUGHT_BY = "curriculum.default.taught.by";
+
 	@Value("${curriculum.enabled:true}")
 	private boolean enabled;
 	@Value("${curriculum.in.my.courses.enabled:true}")
@@ -68,6 +74,16 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	private List<TaxonomyRef> taxonomyRefs;
 	@Value("${curriculum.default.course.runtime.type}")
 	private String defaultCourseRuntimeType;
+	@Value("${curriculum.default.show.outline:true}")
+	private boolean defaultShowOutline;
+	@Value("${curriculum.default.show.lectures:true}")
+	private boolean defaultShowLectures;
+	@Value("${curriculum.default.show.certificate:true}")
+	private boolean defaultShowCertificate;
+	@Value("${curriculum.default.show.creditpoints:true}")
+	private boolean defaultShowCreditPoints;
+	@Value("${curriculum.default.taught.by:teachers,coaches}")
+	private String defaultTaughtByValue;
 	@Value("${reports.accounting.fiscal.year.start.day:1}")
 	private int reportsAccountingFiscalYearStartDay;
 	@Value("${reports.accounting.fiscal.year.start.month:1}")
@@ -111,6 +127,28 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 		userOverviewRights = getStringPropertyValue(USER_OVERVIEW_RIGHTS, userOverviewRights);
 
 		defaultCourseRuntimeType = getStringPropertyValue(DEFAULT_COURSE_RUNTIME_TYPE, defaultCourseRuntimeType);
+
+		String defaultShowOutlineObj = getStringPropertyValue(DEFAULT_SHOW_OUTLINE, true);
+		if(StringHelper.containsNonWhitespace(defaultShowOutlineObj)) {
+			defaultShowOutline = "true".equals(defaultShowOutlineObj);
+		}
+
+		String defaultShowLecturesObj = getStringPropertyValue(DEFAULT_SHOW_LECTURES, true);
+		if(StringHelper.containsNonWhitespace(defaultShowLecturesObj)) {
+			defaultShowLectures = "true".equals(defaultShowLecturesObj);
+		}
+
+		String defaultShowCertificateObj = getStringPropertyValue(DEFAULT_SHOW_CERTIFICATE, true);
+		if(StringHelper.containsNonWhitespace(defaultShowCertificateObj)) {
+			defaultShowCertificate = "true".equals(defaultShowCertificateObj);
+		}
+
+		String defaultShowCreditPointsObj = getStringPropertyValue(DEFAULT_SHOW_CREDITPOINTS, true);
+		if(StringHelper.containsNonWhitespace(defaultShowCreditPointsObj)) {
+			defaultShowCreditPoints = "true".equals(defaultShowCreditPointsObj);
+		}
+
+		defaultTaughtByValue = getStringPropertyValue(DEFAULT_TAUGHT_BY, defaultTaughtByValue);
 	}
 	
 	@Override
@@ -210,6 +248,58 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	public void setDefaultCourseRuntimeType(RepositoryEntryRuntimeType value) {
 		defaultCourseRuntimeType = value.name();
 		setStringProperty(DEFAULT_COURSE_RUNTIME_TYPE, defaultCourseRuntimeType, true);
+	}
+
+	public boolean isDefaultShowOutline() {
+		return defaultShowOutline;
+	}
+
+	public void setDefaultShowOutline(boolean defaultShowOutline) {
+		this.defaultShowOutline = defaultShowOutline;
+		setStringProperty(DEFAULT_SHOW_OUTLINE, Boolean.toString(defaultShowOutline), true);
+	}
+
+	public boolean isDefaultShowLectures() {
+		return defaultShowLectures;
+	}
+
+	public void setDefaultShowLectures(boolean defaultShowLectures) {
+		this.defaultShowLectures = defaultShowLectures;
+		setStringProperty(DEFAULT_SHOW_LECTURES, Boolean.toString(defaultShowLectures), true);
+	}
+
+	public boolean isDefaultShowCertificate() {
+		return defaultShowCertificate;
+	}
+
+	public void setDefaultShowCertificate(boolean defaultShowCertificate) {
+		this.defaultShowCertificate = defaultShowCertificate;
+		setStringProperty(DEFAULT_SHOW_CERTIFICATE, Boolean.toString(defaultShowCertificate), true);
+	}
+
+	public boolean isDefaultShowCreditPoints() {
+		return defaultShowCreditPoints;
+	}
+
+	public void setDefaultShowCreditPoints(boolean defaultShowCreditPoints) {
+		this.defaultShowCreditPoints = defaultShowCreditPoints;
+		setStringProperty(DEFAULT_SHOW_CREDITPOINTS, Boolean.toString(defaultShowCreditPoints), true);
+	}
+
+	public Set<TaughtBy> getDefaultTaughtBys() {
+		return TaughtBy.split(defaultTaughtByValue);
+	}
+
+	public void setDefaultTaughtBys(Set<TaughtBy> taughtBys) {
+		String value = TaughtBy.join(taughtBys);
+		if(!StringHelper.containsNonWhitespace(value)) {
+			// TaughtBy.join(empty set) returns null, and setStringProperty(key, null, ...) removes the
+			// property instead of storing it, which would make an explicit empty selection indistinguishable
+			// from never configured. Store a sentinel instead, same trick as userOverviewRights above.
+			value = "oo_empty_oo";
+		}
+		defaultTaughtByValue = value;
+		setStringProperty(DEFAULT_TAUGHT_BY, value, true);
 	}
 
 	public int getReportsAccountingFiscalYearStartDay() {

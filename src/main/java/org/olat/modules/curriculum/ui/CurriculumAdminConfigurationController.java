@@ -20,25 +20,31 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.olat.basesecurity.RightProvider;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.TaughtBy;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntryRuntimeType;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -48,92 +54,101 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CurriculumAdminConfigurationController extends FormBasicController {
-	
+
 	private static final String[] onKeys = new String[] { "on" };
-	
-	private MultipleSelectionElement enableEl;
+	private static final String OUTLINE_KEY = "outline";
+	private static final String EVENTS_KEY = "events";
+	private static final String MEET_TEACHERS_KEY = "meetteachers";
+	private static final String CERTIFICATE_KEY = "certificate";
+	private static final String CREDIT_POINTS_KEY = "creditpoints";
+
+	private FormToggle enableEl;
 	private MultipleSelectionElement curriculumMyCoursesEl;
-	private MultipleSelectionElement curriculumUserOverviewEl;
 	private MultipleSelectionElement linkedTaxonomiesEl;
+	private FormSection configurationCont;
+	private FormSection defaultSettingsCont;
 	private SingleSelection defaultCourseRuntimeEl;
+	private MultipleSelectionElement defaultShowInfoEl;
+	private MultipleSelectionElement defaultTaughtByEl;
 
 	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
 
-	@Autowired
-	private List<RightProvider> relationRights;
-
 	public CurriculumAdminConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(CoreSpringFactory.class, getLocale(), getTranslator()));
+
 		initForm(ureq);
 		update();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("admin.description");
+		setFormTitle("module.settings");
 		setFormContextHelp("manual_admin/administration/Modules_Course_Planner/");
-		
-		String[] onValues = new String[] { translate("on") };
-		enableEl = uifactory.addCheckboxesHorizontal("curriculum.admin.enabled", formLayout, onKeys, onValues);
+
+		enableEl = uifactory.addToggleButton("curriculum.admin.module", "curriculum.admin.module",
+				translate("on"), translate("off"), formLayout);
 		enableEl.addActionListener(FormEvent.ONCHANGE);
-		if(curriculumModule.isEnabled()) {
-			enableEl.select(onKeys[0], true);
-		}
-		
-		curriculumMyCoursesEl = uifactory.addCheckboxesHorizontal("curriculum.in.my.courses.enabled", formLayout, onKeys, onValues);
+		enableEl.toggle(curriculumModule.isEnabled());
+
+		String[] onValues = new String[] { translate("curriculum.in.my.courses.enabled") };
+		curriculumMyCoursesEl = uifactory.addCheckboxesHorizontal("curriculum.admin.enable.option", formLayout, onKeys, onValues);
 		curriculumMyCoursesEl.addActionListener(FormEvent.ONCHANGE);
 		if(curriculumModule.isCurriculumInMyCourses()) {
 			curriculumMyCoursesEl.select(onKeys[0], true);
 		}
-		
-		relationRights.sort(Comparator.comparing(RightProvider::getUserRelationsPosition));
 
-		String[] cssClasses = new String[relationRights.size()];
-		SelectionValues rightsKeyValues = new SelectionValues();
-		for(int i=0; i < relationRights.size(); i++) {
-			RightProvider provider = relationRights.get(i);
-			if (provider.getParent() != null) {
-				cssClasses[i] = "o_checkbox_indented";
-			}
-			String val = provider.getTranslatedName(getLocale());
-			rightsKeyValues.add(SelectionValues.entry(provider.getRight(), val));
-		}
+		configurationCont = uifactory.addFormSection("configuration", translate("configuration"), formLayout, FormSection.Level.SUB_TITLE);
 
-		curriculumUserOverviewEl = uifactory.addCheckboxesVertical("curriculum.user.rights.overview", "curriculum.user.rights.overview", formLayout,
-				rightsKeyValues.keys(), rightsKeyValues.values(), cssClasses, null, 1);
-		curriculumUserOverviewEl.addActionListener(FormEvent.ONCHANGE);
-		List<String> selectedRights = curriculumModule.getUserOverviewRightList();
-		for(String selectedRight:selectedRights) {
-			if(rightsKeyValues.containsKey(selectedRight)) {
-				curriculumUserOverviewEl.select(selectedRight, true);
-			}
-		}
-		
 		List<Taxonomy> taxonomies = taxonomyService.getTaxonomyList();
 		String[] taxonomyKeys = taxonomies.stream().map(taxonomy -> taxonomy.getKey().toString()).toArray(String[]::new);
 		String[] taxonomyNames = taxonomies.stream().map(Taxonomy::getDisplayName).toArray(String[]::new);
-		
-		linkedTaxonomiesEl = uifactory.addCheckboxesVertical("taxonomy.linked.elements", formLayout, taxonomyKeys, taxonomyNames, 1);
+
+		linkedTaxonomiesEl = uifactory.addCheckboxesVertical("taxonomy.linked.elements", configurationCont, taxonomyKeys, taxonomyNames, 1);
 		curriculumModule.getTaxonomyRefs().stream().forEach(taxonomy -> linkedTaxonomiesEl.select(taxonomy.getKey().toString(), true));
 		linkedTaxonomiesEl.addActionListener(FormEvent.ONCHANGE);
 
-		SelectionValues runtimeTypeKV = new SelectionValues();
-		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(),
+		defaultSettingsCont = uifactory.addFormSection("defaultSettings", translate("default.settings"), formLayout, FormSection.Level.SUB_TITLE);
+
+		String[] runtimeTypeKeys = new String[] { RepositoryEntryRuntimeType.standalone.name(), RepositoryEntryRuntimeType.curricular.name() };
+		String[] runtimeTypeValues = new String[] {
 				translate("curriculum.runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".title"),
-				translate("curriculum.runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"), "o_icon o_icon_people",
-				null, true));
-		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.curricular.name(),
-				translate("curriculum.runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".title"),
-				translate("curriculum.runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".desc"), "o_icon o_icon_curriculum",
-				null, true));
-		defaultCourseRuntimeEl = uifactory.addCardSingleSelectHorizontal("curriculum.default.course.runtime.type",
-				"curriculum.default.course.runtime.type", formLayout, runtimeTypeKV);
+				translate("curriculum.runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".title") };
+		defaultCourseRuntimeEl = uifactory.addRadiosVertical("curriculum.default.course.runtime.type",
+				"curriculum.default.course.runtime.type", defaultSettingsCont, runtimeTypeKeys, runtimeTypeValues);
 		defaultCourseRuntimeEl.select(curriculumModule.getDefaultCourseRuntimeType().name(), true);
 		defaultCourseRuntimeEl.addActionListener(FormEvent.ONCHANGE);
+
+		uifactory.addSpacerElement("defaultSettingsSpacer", defaultSettingsCont, false);
+
+		SelectionValues showInfoPK = new SelectionValues();
+		showInfoPK.add(SelectionValues.entry(OUTLINE_KEY, translate("infos.outline")));
+		showInfoPK.add(SelectionValues.entry(EVENTS_KEY, translate("cif.events")));
+		showInfoPK.add(SelectionValues.entry(MEET_TEACHERS_KEY, translate("cif.meet.your.teachers")));
+		showInfoPK.add(SelectionValues.entry(CERTIFICATE_KEY, translate("details.certificate")));
+		showInfoPK.add(SelectionValues.entry(CREDIT_POINTS_KEY, translate("details.benefits.credit.points")));
+		defaultShowInfoEl = uifactory.addCheckboxesVertical("default.show.info", "cif.display.on.info.page", defaultSettingsCont,
+				showInfoPK.keys(), showInfoPK.values(), 1);
+		defaultShowInfoEl.setHelpText(translate("cif.display.on.info.page.help"));
+		defaultShowInfoEl.addActionListener(FormEvent.ONCHANGE);
+		defaultShowInfoEl.select(OUTLINE_KEY, curriculumModule.isDefaultShowOutline());
+		defaultShowInfoEl.select(EVENTS_KEY, curriculumModule.isDefaultShowLectures());
+		defaultShowInfoEl.select(MEET_TEACHERS_KEY, !curriculumModule.getDefaultTaughtBys().isEmpty());
+		defaultShowInfoEl.select(CERTIFICATE_KEY, curriculumModule.isDefaultShowCertificate());
+		defaultShowInfoEl.select(CREDIT_POINTS_KEY, curriculumModule.isDefaultShowCreditPoints());
+
+		SelectionValues taughtByPK = new SelectionValues();
+		TaughtBy.ALL.forEach(taughtBy -> taughtByPK.add(SelectionValues.entry(taughtBy.name(), translate("cif.role." + taughtBy.name()))));
+		defaultTaughtByEl = uifactory.addCheckboxesVertical("default.taught.by", "cif.taught.by", defaultSettingsCont,
+				taughtByPK.keys(), taughtByPK.values(), 1);
+		defaultTaughtByEl.setHelpText(translate("cif.taught.by.help"));
+		defaultTaughtByEl.addActionListener(FormEvent.ONCHANGE);
+		curriculumModule.getDefaultTaughtBys().forEach(taughtBy -> defaultTaughtByEl.select(taughtBy.name(), true));
+		defaultTaughtByEl.setVisible(!curriculumModule.getDefaultTaughtBys().isEmpty());
 	}
 
 	@Override
@@ -144,27 +159,39 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enableEl == source) {
-			curriculumModule.setEnabled(enableEl.isAtLeastSelected(1));
+			curriculumModule.setEnabled(enableEl.isOn());
 			update();
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if(curriculumMyCoursesEl == source) {
 			curriculumModule.setCurriculumInMyCourses(curriculumMyCoursesEl.isAtLeastSelected(1));
-		} else if(curriculumUserOverviewEl == source) {
-			Collection<String> selectedKeys = curriculumUserOverviewEl.getSelectedKeys();
-			curriculumModule.setUserOverviewRightList(selectedKeys);
 		} else if (linkedTaxonomiesEl == source) {
 			curriculumModule.setLinkedTaxonomies(linkedTaxonomiesEl.getSelectedKeys());
 		} else if (defaultCourseRuntimeEl == source) {
 			RepositoryEntryRuntimeType runtimeType = RepositoryEntryRuntimeType.valueOf(defaultCourseRuntimeEl.getSelectedKey());
 			curriculumModule.setDefaultCourseRuntimeType(runtimeType);
+		} else if (defaultShowInfoEl == source) {
+			Collection<String> selectedInfo = defaultShowInfoEl.getSelectedKeys();
+			curriculumModule.setDefaultShowOutline(selectedInfo.contains(OUTLINE_KEY));
+			curriculumModule.setDefaultShowLectures(selectedInfo.contains(EVENTS_KEY));
+			curriculumModule.setDefaultShowCertificate(selectedInfo.contains(CERTIFICATE_KEY));
+			curriculumModule.setDefaultShowCreditPoints(selectedInfo.contains(CREDIT_POINTS_KEY));
+			boolean meetTeachers = selectedInfo.contains(MEET_TEACHERS_KEY);
+			defaultTaughtByEl.setVisible(meetTeachers);
+			if(!meetTeachers) {
+				TaughtBy.ALL.forEach(taughtBy -> defaultTaughtByEl.select(taughtBy.name(), false));
+				curriculumModule.setDefaultTaughtBys(Set.of());
+			}
+		} else if (defaultTaughtByEl == source) {
+			curriculumModule.setDefaultTaughtBys(defaultTaughtByEl.getSelectedKeys().stream()
+					.map(TaughtBy::valueOf).collect(Collectors.toSet()));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	private void update() {
-		boolean enabled = enableEl.isAtLeastSelected(1);
+		boolean enabled = enableEl.isOn();
 		curriculumMyCoursesEl.setVisible(enabled);
-		linkedTaxonomiesEl.setVisible(enabled);
-		defaultCourseRuntimeEl.setVisible(enabled);
+		configurationCont.setVisible(enabled);
+		defaultSettingsCont.setVisible(enabled);
 	}
 }

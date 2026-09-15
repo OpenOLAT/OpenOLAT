@@ -109,6 +109,7 @@ import org.olat.modules.curriculum.CurriculumElementTypeStatus;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -202,6 +203,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CoachingDAO coachingDao;
 	@Autowired
 	private CurriculumDAO curriculumDao;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	@Autowired
 	private CurriculumAutomationService curriculumAutomationService;
 	@Autowired
@@ -563,6 +566,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		CurriculumElement element = curriculumElementDao.createCurriculumElement(identifier, displayName, status,
 				beginDate, endDate, parentRef, elementType, calendars, lectures, learningProgress, curriculum);
+		element.setShowOutline(curriculumModule.isDefaultShowOutline());
+		element.setShowLectures(curriculumModule.isDefaultShowLectures());
+		element.setShowCertificateBenefit(curriculumModule.isDefaultShowCertificate());
+		element.setShowCreditPointsBenefit(curriculumModule.isDefaultShowCreditPoints());
+		element.setTaughtBys(curriculumModule.getDefaultTaughtBys());
 		if(element.getParent() != null) {
 			Group organisationGroup = element.getGroup();
 			List<GroupMembership> memberships = groupDao.getMemberships(element.getParent().getGroup(),
