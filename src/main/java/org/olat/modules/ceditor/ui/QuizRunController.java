@@ -678,6 +678,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 		}
 		removeAsListenerAndDispose(assessmentItemDisplayController);
 		assessmentItemDisplayController = null;
+		currentQuizQuestion = null;
 		questionIndex = 0;
 		state = State.intro;
 	}
