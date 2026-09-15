@@ -105,6 +105,14 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 		component.setEnableAlwaysSkip(enable);
 	}
 	
+	public void setBackButtonText(String text) {
+		component.setBackButtonText(text);
+	}
+
+	public void setRetryButtonText(String text) {
+		component.setRetryButtonText(text);
+	}
+
 	public boolean isHideFeedbacks() {
 		return component.isHideFeedbacks();
 	}

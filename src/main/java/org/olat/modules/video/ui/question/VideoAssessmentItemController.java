@@ -35,6 +35,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.ims.qti21.AssessmentItemSession;
@@ -51,6 +53,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoQuestion;
+import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,6 +75,9 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 	private VideoAssessmentItemsDisplayController assessmentItemCtrl;
 	private final AssessmentSessionAuditLogger candidateAuditLogger = new DefaultAssessmentSessionAuditLogger();
 	
+	// This controller's own package has no _i18n bundle: it uses VideoDisplayController's
+	// (org.olat.modules.video.ui) for its own labels
+	private final Translator videoTranslator;
 	private final VelocityContainer mainVC;
 	private final List<VideoQuestion> answerededQuestions = new ArrayList<>();
 	// Each question runs in its own, isolated AssessmentTestSession (OO-9764), so a question
@@ -102,6 +108,7 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		this.courseNode = courseNode;
 		this.authorMode = authorMode;
 		this.entry = entry == null ? videoEntry : entry;
+		videoTranslator = Util.createPackageTranslator(VideoDisplayController.class, getLocale());
 		
 		mainVC = createVelocityContainer("item_wrapper");
 		mainVC.contextPut("videoElementId", videoElementId);
@@ -149,6 +156,8 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		if(!authorMode) {
 			assessmentItemCtrl.setTimeLimit(question.getTimeLimit());
 		}
+		assessmentItemCtrl.setBackButtonText(videoTranslator.translate("question.button.watchAgain"));
+		assessmentItemCtrl.setRetryButtonText(videoTranslator.translate("question.button.tryAgain"));
 		listenTo(assessmentItemCtrl);
 		
 		double completion = (assessmentEntry.getCompletion() == null ? 0.0d : assessmentEntry.getCompletion().doubleValue());
@@ -271,6 +280,14 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 			qtiWorksCtrl.setTimeLimit(seconds);
 		}
 		
+		public void setBackButtonText(String text) {
+			qtiWorksCtrl.setBackButtonText(text);
+		}
+
+		public void setRetryButtonText(String text) {
+			qtiWorksCtrl.setRetryButtonText(text);
+		}
+
 		public void updateCompletion(double completion) {
 			double completionInPercent = completion * 100.0d;
 			if(completionInPercent < 0.0d) {

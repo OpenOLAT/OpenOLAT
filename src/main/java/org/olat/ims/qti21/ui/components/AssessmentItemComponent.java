@@ -49,6 +49,8 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 	private boolean enableResetSoft;
 	private boolean enableSkip;
 	private boolean enableAlwaysSkip;
+	private String backButtonText;
+	private String retryButtonText;
 	
 	private int questionLevel;
 	private int maxQuestionLevel = 5;
@@ -98,6 +100,22 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 
 	public void setEnableAlwaysSkip(boolean enableAlwaysSkip) {
 		this.enableAlwaysSkip = enableAlwaysSkip;
+	}
+
+	public String getBackButtonText() {
+		return backButtonText;
+	}
+
+	public void setBackButtonText(String backButtonText) {
+		this.backButtonText = backButtonText;
+	}
+
+	public String getRetryButtonText() {
+		return retryButtonText;
+	}
+
+	public void setRetryButtonText(String retryButtonText) {
+		this.retryButtonText = retryButtonText;
 	}
 
 	public int getQuestionLevel() {

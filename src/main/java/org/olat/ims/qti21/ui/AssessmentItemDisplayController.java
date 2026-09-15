@@ -1165,6 +1165,14 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			qtiEl.getSubmitButton().setI18nKey(i18nKey, null);
 		}
 		
+		public void setBackButtonText(String text) {
+			qtiEl.setBackButtonText(text);
+		}
+
+		public void setRetryButtonText(String text) {
+			qtiEl.setRetryButtonText(text);
+		}
+
 		public void setEnableAlwaysSkip(boolean enable) {
 			qtiEl.setEnableAlwaysSkip(enable);
 		}

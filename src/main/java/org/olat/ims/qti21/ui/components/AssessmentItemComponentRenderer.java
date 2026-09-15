@@ -237,14 +237,17 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 				}
 				
 				if(component.isEnableBack()) {
-					String title = translator.translate("back.item");
+					String title = component.getBackButtonText() != null
+							? component.getBackButtonText() : translator.translate("back.item");
 					renderControl(sb, component, title, false, "o_sel_back_question", new NameValuePair("cid", Event.back.name()));
 				}
 				if(component.isEnableResetHard()) {
-					String title = translator.translate("retry.item");
+					String title = component.getRetryButtonText() != null
+							? component.getRetryButtonText() : translator.translate("retry.item");
 					renderControl(sb, component, title, false, "o_sel_reset_question", new NameValuePair("cid", Event.resethard.name()));
 				} else if(component.isEnableResetSoft()) {
-					String title = translator.translate("retry.item");
+					String title = component.getRetryButtonText() != null
+							? component.getRetryButtonText() : translator.translate("retry.item");
 					renderControl(sb, component, title, false, "o_sel_reset_question", new NameValuePair("cid", Event.resetsoft.name()));
 				}
 				if(component.isEnableSkip()) {
