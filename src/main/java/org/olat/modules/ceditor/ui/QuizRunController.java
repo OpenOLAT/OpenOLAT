@@ -295,6 +295,10 @@ public class QuizRunController extends BasicController implements PageRunElement
 		if (entry != null && StringHelper.containsNonWhitespace(subIdent)) {
 			qtiService.deleteAssessmentTestSession(List.of(getIdentity()), entry, entry, subIdent);
 		}
+		removeAsListenerAndDispose(assessmentItemDisplayController);
+		assessmentItemDisplayController = null;
+		questionIndex = 0;
+		state = State.intro;
 	}
 
 	private void doStart(UserRequest ureq) {
