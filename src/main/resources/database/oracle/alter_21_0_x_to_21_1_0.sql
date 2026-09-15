@@ -70,3 +70,9 @@ alter table o_ac_billing_address add a_customer_number varchar2(255 char);
 
 -- LTI
 alter table o_lti_shared_tool_deployment drop constraint unique_deploy_platform;
+
+-- Course info page display settings
+alter table o_repositoryentry add show_lectures number default 0 not null;
+alter table o_repositoryentry add show_certificate number default 1 not null;
+alter table o_repositoryentry add show_creditpoints number default 1 not null;
+alter table o_repositoryentry add taught_by varchar2(255 char);

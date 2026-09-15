@@ -20,21 +20,31 @@
 package org.olat.repository.ui.settings;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -49,9 +59,15 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseModule;
+import org.olat.modules.creditpoint.CreditPointService;
+import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
+import org.olat.modules.curriculum.TaughtBy;
 import org.olat.modules.edusharing.EdusharingProvider;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -77,16 +93,25 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	private static final int picUploadlimitKB = 5120;
 	private static final int movieUploadlimitKB = 102400;
 
+	private static final String EVENTS_KEY = "events";
+	private static final String MEET_TEACHERS_KEY = "meetteachers";
+	private static final String CERTIFICATE_KEY = "certificate";
+	private static final String CREDIT_POINTS_KEY = "creditpoints";
+
 	private final boolean readOnly;
 	private VFSContainer mediaContainer;
 	private RepositoryEntry repositoryEntry;
+	private boolean creditPointsAvailable;
 
 	private FileElement fileUpload;
+	private FormToggle withMovieEl;
 	private FileElement movieUpload;
 	private TextElement externalRef;
 	private TextElement displayName;
 	private TextElement teaser;
 	private RichTextElement description;
+	private MultipleSelectionElement showInfoEl;
+	private MultipleSelectionElement taughtByEl;
 	private RichTextElement objectives;
 	private RichTextElement requirements;
 	private RichTextElement credits;
@@ -97,6 +122,10 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
+	@Autowired
+	private CreditPointService creditPointService;
+	@Autowired
+	private LectureService lectureService;
 
 
 	/**
@@ -132,7 +161,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		displayName.setDisplaySize(30);
 		displayName.setMandatory(true);
 		displayName.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.title) && !readOnly);
-		
+
 		String extRef = repositoryEntry.getExternalRef();
 		if(StringHelper.containsNonWhitespace(repositoryEntry.getManagedFlagsString()) || readOnly) {
 			if(StringHelper.containsNonWhitespace(extRef)) {
@@ -143,37 +172,15 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			externalRef.setHelpText(translate("cif.externalref.hover"));
 			externalRef.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Info/");
 		}
-		
-		teaser = uifactory.addTextElement("cif.teaser", "cif.teaser", 150, repositoryEntry.getTeaser(), formLayout);
-		teaser.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.teaser) && !readOnly);
-		
-		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(repositoryEntry);
-		mediaContainer = handler.getMediaContainer(repositoryEntry);
-		if(mediaContainer != null && mediaContainer.getName().equals("media")) {
-			mediaContainer = mediaContainer.getParentContainer();
-			mediaContainer.setDefaultItemFilter(new MediaContainerFilter(mediaContainer));
-		}
-		
-		String desc = (repositoryEntry.getDescription() != null ? repositoryEntry.getDescription() : " ");
-		description = uifactory.addRichTextElementForStringData("cif.description", "cif.description",
-				desc, 10, -1, false, mediaContainer, null, formLayout, usess, getWindowControl());
-		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description) && !readOnly);
-		description.getEditorConfiguration().setFileBrowserUploadRelPath("media");
-		description.getEditorConfiguration().setPathInStatusBar(false);
-		EdusharingProvider provider = new RepositoryEdusharingProvider(repositoryEntry, "repository-info");
-		description.getEditorConfiguration().enableEdusharing(getIdentity(), provider);
 
-		if(CourseModule.getCourseTypeName().equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
-			initCourse(formLayout, usess);
-		}
-		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
-		
+
 		VFSLeaf img = repositoryManager.getImage(repositoryEntry);
 		fileUpload = uifactory.addFileElement(getWindowControl(), getIdentity(), "rentry.pic", "rentry.pic", formLayout);
 		fileUpload.setExampleKey("rentry.pic.example", new String[] {RepositoryManager.PICTURE_WIDTH + "x" + (RepositoryManager.PICTURE_HEIGHT)});
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		fileUpload.setPreview(usess, true);
+		fileUpload.setShowInputIfFileUploaded(false);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
 		fileUpload.setDeleteEnabled(!managed);
 		if(img instanceof LocalFileImpl) {
@@ -184,18 +191,47 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		fileUpload.limitToMimeType(imageMimeTypes, "error.mimetype", new String[]{ imageMimeTypes.toString()} );
 
 		VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
+		withMovieEl = uifactory.addToggleButton("with.teaser.movie", "cif.with.teaser.movie", translate("on"), translate("off"), formLayout);
+		withMovieEl.setEnabled(!managed && !readOnly);
+		withMovieEl.addActionListener(FormEvent.ONCHANGE);
+		withMovieEl.toggle(movie != null);
+
 		movieUpload = uifactory.addFileElement(getWindowControl(), getIdentity(), "rentry.movie", "rentry.movie", formLayout);
 		movieUpload.setExampleKey("rentry.movie.example", new String[] {"3:2"});
 		movieUpload.setMaxUploadSizeKB(movieUploadlimitKB, null, null);
 		movieUpload.setPreview(usess, true);
+		movieUpload.setShowInputIfFileUploaded(false);
 		movieUpload.addActionListener(FormEvent.ONCHANGE);
 		movieUpload.setDeleteEnabled(!managed);
 		if(movie instanceof LocalFileImpl) {
 			movieUpload.setPreview(usess, true);
 			movieUpload.setInitialFile(((LocalFileImpl)movie).getBasefile());
 		}
-		movieUpload.setVisible(!managed && !readOnly);
+		movieUpload.setVisible(!managed && !readOnly && withMovieEl.isOn());
 		movieUpload.limitToMimeType(videoMimeTypes, "error.mimetype", new String[]{ videoMimeTypes.toString()} );
+
+		teaser = uifactory.addTextElement("cif.teaser", "cif.teaser", 150, repositoryEntry.getTeaser(), formLayout);
+		teaser.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.teaser) && !readOnly);
+
+		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(repositoryEntry);
+		mediaContainer = handler.getMediaContainer(repositoryEntry);
+		if(mediaContainer != null && mediaContainer.getName().equals("media")) {
+			mediaContainer = mediaContainer.getParentContainer();
+			mediaContainer.setDefaultItemFilter(new MediaContainerFilter(mediaContainer));
+		}
+
+		String desc = (repositoryEntry.getDescription() != null ? repositoryEntry.getDescription() : " ");
+		description = uifactory.addRichTextElementForStringData("cif.description", "cif.description",
+				desc, 10, -1, false, mediaContainer, null, formLayout, usess, getWindowControl());
+		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description) && !readOnly);
+		description.getEditorConfiguration().setFileBrowserUploadRelPath("media");
+		description.getEditorConfiguration().setPathInStatusBar(false);
+		EdusharingProvider provider = new RepositoryEdusharingProvider(repositoryEntry, "repository-info");
+		description.getEditorConfiguration().enableEdusharing(getIdentity(), provider);
+
+		if(CourseModule.getCourseTypeName().equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+			initCourse(formLayout, usess, ureq);
+		}
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
@@ -206,32 +242,89 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
 	
-	private void initCourse(FormItemContainer formLayout, UserSession usess) {
+	private void initCourse(FormItemContainer formLayout, UserSession usess, UserRequest ureq) {
+		FormSection displayCont = uifactory.addFormSection("display", translate("cif.display.settings"), formLayout, FormSection.Level.SUB_TITLE);
+
+		SelectionValues showInfoPK = new SelectionValues();
+		showInfoPK.add(SelectionValues.entry(EVENTS_KEY, translate("cif.events")));
+		showInfoPK.add(SelectionValues.entry(MEET_TEACHERS_KEY, translate("cif.meet.your.teachers")));
+		showInfoPK.add(SelectionValues.entry(CERTIFICATE_KEY, translate("details.certificate")));
+		RepositoryEntryCreditPointConfiguration creditPointConfig = creditPointService.getConfiguration(repositoryEntry);
+		creditPointsAvailable = creditPointConfig != null && creditPointConfig.isEnabled();
+		if(creditPointsAvailable) {
+			showInfoPK.add(SelectionValues.entry(CREDIT_POINTS_KEY, translate("details.benefits.credit.points")));
+		}
+		showInfoEl = uifactory.addCheckboxesVertical("show.info", "cif.display.on.info.page", displayCont,
+				showInfoPK.keys(), showInfoPK.values(), 1);
+		showInfoEl.setHelpText(translate("cif.display.on.info.page.help"));
+		showInfoEl.addActionListener(FormEvent.ONCLICK);
+		showInfoEl.setEnabled(EVENTS_KEY, !readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.showLectures));
+		showInfoEl.setEnabled(MEET_TEACHERS_KEY, !readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.taughtBy));
+		showInfoEl.setEnabled(CERTIFICATE_KEY, !readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.showCertificate));
+		if(creditPointsAvailable) {
+			showInfoEl.setEnabled(CREDIT_POINTS_KEY, !readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.showCreditPoints));
+		}
+		boolean meetTeachers = !repositoryEntry.getTaughtBys().isEmpty();
+		showInfoEl.select(EVENTS_KEY, repositoryEntry.isShowLectures());
+		showInfoEl.select(MEET_TEACHERS_KEY, meetTeachers);
+		showInfoEl.select(CERTIFICATE_KEY, repositoryEntry.isShowCertificateBenefit());
+		if(creditPointsAvailable) {
+			showInfoEl.select(CREDIT_POINTS_KEY, repositoryEntry.isShowCreditPointsBenefit());
+		}
+
+		List<LectureBlock> lectureBlocks = lectureService.isRepositoryEntryLectureEnabled(repositoryEntry)
+				? lectureService.getLectureBlocks(repositoryEntry) : List.of();
+		Map<TaughtBy,Integer> taughtByCounts = getTaughtByCounts(lectureBlocks);
+		SelectionValues taughtBySV = new SelectionValues();
+		TaughtBy.ALL.forEach(taughtBy -> taughtBySV.add(SelectionValues.entry(
+				taughtBy.name(),
+				translate("cif.taught.by." + taughtBy.name(), String.valueOf(taughtByCounts.getOrDefault(taughtBy, Integer.valueOf(0)))))));
+		taughtByEl = uifactory.addCheckboxesVertical("taught.by", "cif.taught.by", displayCont, taughtBySV.keys(), taughtBySV.values(), 1);
+		taughtByEl.setHelpText(translate("cif.taught.by.help"));
+		taughtByEl.setEnabled(!readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.taughtBy));
+		repositoryEntry.getTaughtBys().forEach(taughtBy -> taughtByEl.select(taughtBy.name(), true));
+		taughtByEl.setVisible(meetTeachers);
+
+		FormSection detailsCont = uifactory.addFormSection("details", translate("cif.details"), formLayout, FormSection.Level.SUB_TITLE);
+		detailsCont.setCollapsible(true);
+		detailsCont.setCollapsed(true);
+		detailsCont.setPersistedStatusId(ureq, "repositoryentry.infos.details");
+
 		String obj = (repositoryEntry.getObjectives() != null ? repositoryEntry.getObjectives() : " ");
 		objectives = uifactory.addRichTextElementForStringData("cif.objectives", "cif.objectives",
-				obj, 10, -1, false, mediaContainer, null, formLayout, usess, getWindowControl());
+				obj, 10, -1, false, mediaContainer, null, detailsCont, usess, getWindowControl());
 		objectives.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.objectives));
 		objectives.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		objectives.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		objectives.setEnabled(!readOnly);
-		
+
 		String req = (repositoryEntry.getRequirements() != null ? repositoryEntry.getRequirements() : " ");
 		requirements = uifactory.addRichTextElementForStringData("cif.requirements", "cif.requirements",
-				req, 10, -1,  false, mediaContainer, null, formLayout, usess, getWindowControl());
+				req, 10, -1,  false, mediaContainer, null, detailsCont, usess, getWindowControl());
 		requirements.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.requirements));
 		requirements.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		requirements.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		requirements.setMaxLength(2000);
 		requirements.setEnabled(!readOnly);
-		
+
 		String cred = (repositoryEntry.getCredits() != null ? repositoryEntry.getCredits() : " ");
 		credits = uifactory.addRichTextElementForStringData("cif.credits", "cif.credits",
-				cred, 10, -1,  false, mediaContainer, null, formLayout, usess, getWindowControl());
+				cred, 10, -1,  false, mediaContainer, null, detailsCont, usess, getWindowControl());
 		credits.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.credits));
 		credits.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		credits.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		credits.setMaxLength(2000);
 		credits.setEnabled(!readOnly);
+	}
+
+	private Map<TaughtBy, Integer> getTaughtByCounts(List<LectureBlock> lectureBlocks) {
+		Map<TaughtBy, Integer> taughtByCount = new HashMap<>(TaughtBy.ALL.size());
+		taughtByCount.put(TaughtBy.coaches, Integer.valueOf(
+				repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.coach.name()).size()));
+		taughtByCount.put(TaughtBy.owners, Integer.valueOf(
+				repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name()).size()));
+		taughtByCount.put(TaughtBy.teachers, Integer.valueOf(lectureService.getTeachers(lectureBlocks).size()));
+		return taughtByCount;
 	}
 
 	@Override
@@ -246,12 +339,24 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		allOk &= RepositoyUIFactory.validateTextElement(externalRef, false, 255);
 		allOk &= RepositoyUIFactory.validateTextElement(teaser, false, 200);
 
+		if(taughtByEl != null) {
+			taughtByEl.clearError();
+			if(taughtByEl.isVisible() && taughtByEl.isEnabled() && taughtByEl.getSelectedKeys().isEmpty()) {
+				taughtByEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+		}
+
 		return allOk;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == fileUpload) {
+		if (source == showInfoEl) {
+			taughtByEl.setVisible(showInfoEl.getSelectedKeys().contains(MEET_TEACHERS_KEY));
+		} else if (source == withMovieEl) {
+			movieUpload.setVisible(withMovieEl.isOn());
+		} else if (source == fileUpload) {
 			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				fileUpload.clearError();
 				VFSLeaf img = repositoryManager.getImage(repositoryEntry);
@@ -306,16 +411,23 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			tmpContainer.deleteSilently();
 		}
 
-		File uploadedMovie = movieUpload.getUploadFile();
-		if(uploadedMovie != null && uploadedMovie.exists()) {
-			VFSContainer m = (VFSContainer)mediaContainer.resolve("media");
-			VFSLeaf newFile = movieUpload.moveUploadFileTo(m);
-			if (newFile == null) {
-				showWarning("cif.error.movie");
-			} else {
-				String filename = movieUpload.getUploadFileName();
-				String extension = FileUtils.getFileSuffix(filename);
-				newFile.rename(repositoryEntry.getKey() + "." + extension);
+		if(!withMovieEl.isOn()) {
+			VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
+			if(movie != null) {
+				movie.deleteSilently();
+			}
+		} else {
+			File uploadedMovie = movieUpload.getUploadFile();
+			if(uploadedMovie != null && uploadedMovie.exists()) {
+				VFSContainer m = (VFSContainer)mediaContainer.resolve("media");
+				VFSLeaf newFile = movieUpload.moveUploadFileTo(m);
+				if (newFile == null) {
+					showWarning("cif.error.movie");
+				} else {
+					String filename = movieUpload.getUploadFileName();
+					String extension = FileUtils.getFileSuffix(filename);
+					newFile.rename(repositoryEntry.getKey() + "." + extension);
+				}
 			}
 		}
 
@@ -355,6 +467,17 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			showWarning("repositoryentry.not.existing");
 			fireEvent(ureq, Event.CLOSE_EVENT);
 		} else {
+			if(showInfoEl != null) {
+				Collection<String> selectedInfo = showInfoEl.getSelectedKeys();
+				String taughtByValue = selectedInfo.contains(MEET_TEACHERS_KEY)
+						? TaughtBy.join(taughtByEl.getSelectedKeys().stream().map(TaughtBy::valueOf).collect(Collectors.toSet()))
+						: null;
+				boolean showCreditPoints = creditPointsAvailable
+						? selectedInfo.contains(CREDIT_POINTS_KEY)
+						: repositoryEntry.isShowCreditPointsBenefit();
+				repositoryEntry = repositoryManager.setInfoPageSettings(repositoryEntry, selectedInfo.contains(EVENTS_KEY),
+						selectedInfo.contains(CERTIFICATE_KEY), showCreditPoints, taughtByValue);
+			}
 			fireEvent(ureq, new ReloadSettingsEvent(false, false, false, true));
 			MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, getIdentity(), Change.modifiedDescription, "authoring");
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()

@@ -59,6 +59,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.TaughtBy;
 import org.olat.repository.model.RepositoryEntryEducationalTypeImpl;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryStatistics;
@@ -166,7 +167,17 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private String credits;
 	@Column(name="expenditureofwork", nullable=true, insertable=true, updatable=true)
 	private String expenditureOfWork;
-	
+
+	@Column(name="show_lectures", nullable=true, insertable=true, updatable=true)
+	private boolean showLectures;
+	@Column(name="show_certificate", nullable=true, insertable=true, updatable=true)
+	private boolean showCertificateBenefit;
+	@Column(name="show_creditpoints", nullable=true, insertable=true, updatable=true)
+	private boolean showCreditPointsBenefit;
+	@Column(name="taught_by", nullable=true, insertable=true, updatable=true)
+	private String taughtByValue;
+	private transient Set<TaughtBy> taughtBys;
+
 	@Column(name="external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
 	@Column(name="external_ref", nullable=true, insertable=true, updatable=true)
@@ -330,6 +341,51 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	public void setExpenditureOfWork(String expenditureOfWork) {
 		this.expenditureOfWork = expenditureOfWork;
+	}
+
+	public boolean isShowLectures() {
+		return showLectures;
+	}
+
+	public void setShowLectures(boolean showLectures) {
+		this.showLectures = showLectures;
+	}
+
+	public boolean isShowCertificateBenefit() {
+		return showCertificateBenefit;
+	}
+
+	public void setShowCertificateBenefit(boolean showCertificateBenefit) {
+		this.showCertificateBenefit = showCertificateBenefit;
+	}
+
+	public boolean isShowCreditPointsBenefit() {
+		return showCreditPointsBenefit;
+	}
+
+	public void setShowCreditPointsBenefit(boolean showCreditPointsBenefit) {
+		this.showCreditPointsBenefit = showCreditPointsBenefit;
+	}
+
+	public String getTaughtByValue() {
+		return taughtByValue;
+	}
+
+	public void setTaughtByValue(String taughtByValue) {
+		this.taughtByValue = taughtByValue;
+		this.taughtBys = null;
+	}
+
+	public Set<TaughtBy> getTaughtBys() {
+		if (taughtBys == null) {
+			taughtBys = TaughtBy.split(taughtByValue);
+		}
+		return taughtBys;
+	}
+
+	public void setTaughtBys(Set<TaughtBy> taughtBys) {
+		this.taughtBys = taughtBys;
+		this.taughtByValue = TaughtBy.join(taughtBys);
 	}
 
 	/**

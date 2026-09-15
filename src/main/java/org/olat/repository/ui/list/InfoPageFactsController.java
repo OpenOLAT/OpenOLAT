@@ -79,7 +79,7 @@ public class InfoPageFactsController extends BasicController {
 		addFact(facts, "o_icon_expenditure", "cif.expenditureOfWork", entry.getExpenditureOfWork());
 
 		RepositoryEntryCreditPointConfiguration creditPointConfig = creditPointService.getOrCreateConfiguration(entry);
-		if (creditPointConfig != null && creditPointConfig.isEnabled()) {
+		if (creditPointConfig != null && creditPointConfig.isEnabled() && entry.isShowCreditPointsBenefit()) {
 			String amount = CreditPointFormat.format(creditPointConfig.getCreditPoints(), creditPointConfig.getCreditPointSystem());
 			String pointsValidity = null;
 			if (creditPointConfig.getExpiration() != null && creditPointConfig.getExpiration().intValue() > 0) {
@@ -91,7 +91,7 @@ public class InfoPageFactsController extends BasicController {
 		}
 
 		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(entry);
-		if (certificateConfig != null && certificateConfig.isCertificateEnabled()) {
+		if (certificateConfig != null && certificateConfig.isCertificateEnabled() && entry.isShowCertificateBenefit()) {
 			String certificateValidity = null;
 			int expiration = certificateConfig.getValidityTimelapse();
 			if (expiration >= 0 && certificateConfig.isValidityEnabled() && certificateConfig.getValidityTimelapseUnit() != null) {

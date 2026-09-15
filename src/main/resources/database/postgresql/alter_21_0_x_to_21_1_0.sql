@@ -72,3 +72,9 @@ alter table o_ac_billing_address add column a_customer_number varchar(255);
 
 -- LTI
 alter table o_lti_shared_tool_deployment drop constraint if exists unique_deploy_platform;
+
+-- Course info page display settings
+alter table o_repositoryentry add column show_lectures bool default false not null;
+alter table o_repositoryentry add column show_certificate bool default true not null;
+alter table o_repositoryentry add column show_creditpoints bool default true not null;
+alter table o_repositoryentry add column taught_by varchar(255);

@@ -165,13 +165,13 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 			mainVC.put("facts", factsCtrl.getInitialComponent());
 		}
 
-		sectionsCtrl = new RepositoryEntryInfoPageSectionsController(ureq, wControl, entry);
+		sectionsCtrl = new RepositoryEntryInfoPageSectionsController(ureq, wControl, entry, lectureBlocks);
 		listenTo(sectionsCtrl);
 		if (sectionsCtrl.hasContent()) {
 			mainVC.put("sections", sectionsCtrl.getInitialComponent());
 		}
 
-		if (!lectureBlocks.isEmpty()) {
+		if (entry.isShowLectures() && !lectureBlocks.isEmpty()) {
 			lectureBlocksCtrl = new LectureBlocksTimelineController(ureq, wControl, lectureBlocks, true);
 			listenTo(lectureBlocksCtrl);
 			mainVC.put("events", lectureBlocksCtrl.getInitialComponent());

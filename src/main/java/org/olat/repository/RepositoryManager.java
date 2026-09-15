@@ -960,6 +960,23 @@ public class RepositoryManager {
 		return updatedRe;
 	}
 	
+	public RepositoryEntry setInfoPageSettings(final RepositoryEntry re, boolean showLectures,
+			boolean showCertificateBenefit, boolean showCreditPointsBenefit, String taughtByValue) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+
+		reloadedRe.setShowLectures(showLectures);
+		reloadedRe.setShowCertificateBenefit(showCertificateBenefit);
+		reloadedRe.setShowCreditPointsBenefit(showCreditPointsBenefit);
+		reloadedRe.setTaughtByValue(taughtByValue);
+
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		dbInstance.commit();
+		return updatedRe;
+	}
+
 	public RepositoryEntry setDisplayNameAndExternalRef(final RepositoryEntry re, String displayName, String externalRef) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {

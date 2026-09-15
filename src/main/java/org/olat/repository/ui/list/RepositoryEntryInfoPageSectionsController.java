@@ -20,9 +20,12 @@
 package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -33,14 +36,19 @@ import org.olat.core.gui.components.sections.SectionsFactory;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
+import org.olat.modules.curriculum.TaughtBy;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -58,14 +66,20 @@ public class RepositoryEntryInfoPageSectionsController extends BasicController {
 
 	private static final String CMD_CATEGORY = "category";
 
+	private InfoTaughtByController taughtByCtrl;
+
 	private final boolean hasContent;
 
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private LectureService lectureService;
+	@Autowired
 	private CatalogManager catalogManager;
 
-	public RepositoryEntryInfoPageSectionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public RepositoryEntryInfoPageSectionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, List<LectureBlock> lectureBlocks) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
@@ -77,6 +91,16 @@ public class RepositoryEntryInfoPageSectionsController extends BasicController {
 
 		List<Section> sections = new ArrayList<>();
 		addTextSection(sections, "description", "cif.description", entry.getDescription(), baseUrl);
+
+		if (!entry.getTaughtBys().isEmpty()) {
+			Set<Identity> taughtBys = loadTaughtBys(entry, lectureBlocks);
+			taughtByCtrl = new InfoTaughtByController(ureq, wControl, taughtBys);
+			listenTo(taughtByCtrl);
+			if (!taughtByCtrl.isEmpty()) {
+				sections.add(SectionsFactory.createSection("taughtby", translate("cif.meet.your.teachers"), taughtByCtrl.getInitialComponent()));
+			}
+		}
+
 		addTextSection(sections, "objectives", "cif.objectives", entry.getObjectives(), baseUrl);
 		addTextSection(sections, "requirements", "cif.requirements", entry.getRequirements(), baseUrl);
 		addTextSection(sections, "credits", "cif.credits", entry.getCredits(), baseUrl);
@@ -89,6 +113,26 @@ public class RepositoryEntryInfoPageSectionsController extends BasicController {
 		Sections sectionsCmp = SectionsFactory.createSections("sections", null);
 		sectionsCmp.setSections(sections);
 		putInitialPanel(sectionsCmp);
+	}
+
+	private Set<Identity> loadTaughtBys(RepositoryEntry entry, List<LectureBlock> lectureBlocks) {
+		Set<Identity> taughtBys = new HashSet<>();
+
+		List<String> roles = new ArrayList<>(2);
+		if (entry.getTaughtBys().contains(TaughtBy.coaches)) {
+			roles.add(GroupRoles.coach.name());
+		}
+		if (entry.getTaughtBys().contains(TaughtBy.owners)) {
+			roles.add(GroupRoles.owner.name());
+		}
+		if (!roles.isEmpty()) {
+			taughtBys.addAll(repositoryService.getMembers(entry, RepositoryEntryRelationType.all, roles.toArray(new String[0])));
+		}
+
+		if (entry.getTaughtBys().contains(TaughtBy.teachers) && lectureBlocks != null && !lectureBlocks.isEmpty()) {
+			taughtBys.addAll(lectureService.getTeachers(lectureBlocks));
+		}
+		return taughtBys;
 	}
 
 	private void addCategoriesSection(List<Section> sections, List<CatalogEntry> categories) {
