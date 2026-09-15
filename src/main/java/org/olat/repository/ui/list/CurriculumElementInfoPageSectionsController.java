@@ -88,7 +88,7 @@ public class CurriculumElementInfoPageSectionsController extends BasicController
 			taughtByCtrl = new CurriculumElementInfoTaughtByController(ureq, wControl, element, lectureBlocks);
 			listenTo(taughtByCtrl);
 			if (!taughtByCtrl.isEmpty()) {
-				sections.add(SectionsFactory.createSection("taughtby", translate("infos.taughtby"), taughtByCtrl.getInitialComponent()));
+				sections.add(SectionsFactory.createSection("taughtby", translate("cif.meet.your.teachers"), taughtByCtrl.getInitialComponent()));
 			}
 		}
 

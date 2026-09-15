@@ -103,20 +103,22 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			}
 			
 			// Add example text and  max upload size
-			if(fileElem.getExampleText() != null) {
-				sb.append("<div class='help-block'>")
-				  .append(fileElem.getExampleText());
-				if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
+			if (showInput) {
+				if(fileElem.getExampleText() != null) {
+					sb.append("<div class='help-block'>")
+					  .append(fileElem.getExampleText());
+					if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
+						String maxUpload = Formatter.formatKBytes(fileElem.getMaxUploadSizeKB());
+						sb.append(" ")
+						  .append(trans.translate("file.element.select.maxsize", maxUpload));
+					}
+					sb.append("</div>");
+				} else if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
 					String maxUpload = Formatter.formatKBytes(fileElem.getMaxUploadSizeKB());
-					sb.append(" ")
-					  .append(trans.translate("file.element.select.maxsize", maxUpload));
+					sb.append("<div class='help-block o_maxsize'>")
+					  .append(trans.translate("file.element.select.maxsize", maxUpload))
+					  .append("</div>");
 				}
-				sb.append("</div>");	
-			} else if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
-				String maxUpload = Formatter.formatKBytes(fileElem.getMaxUploadSizeKB());
-				sb.append("<div class='help-block o_maxsize'>")
-				  .append(trans.translate("file.element.select.maxsize", maxUpload))
-				  .append("</div>");	
 			}
 			
 			// Add set dirty form on change

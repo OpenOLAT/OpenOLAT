@@ -61,6 +61,8 @@ public enum CurriculumElementManagedFlag {
 	 learningProgress(all),
 	 showOutline(all),
 	 showLectures(all),
+	 showCertificate(all),
+	 showCreditPoints(all),
 	 members(all),
 	 resources(all),
 	 move(all),

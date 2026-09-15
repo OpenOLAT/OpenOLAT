@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -85,19 +86,21 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	private static final int picUploadlimitKB = 5120;
 	private static final int movieUploadlimitKB = 102400;
 	
+	private static final String OUTLINE_KEY = "outline";
+	private static final String EVENTS_KEY = "events";
+	private static final String MEET_TEACHERS_KEY = "meetteachers";
 	private static final String CERTIFICATE_KEY = "certificate";
 	private static final String CREDIT_POINTS_KEY = "creditpoints";
-	
+
 	private TextElement teaserEl;
 	private FileElement imageEl;
+	private FormToggle withMovieEl;
 	private RichTextElement descriptionEl;
 	private TextElement authorsEl;
-	private MultipleSelectionElement taughtByEl;
 	private TextElement mainLanguageEl;
 	private TextElement expenditureOfWorkEl;
-	private FormToggle showOutlineEl;
-	private FormToggle showLecturesEl;
-	private MultipleSelectionElement showBenefitsEl;
+	private MultipleSelectionElement showInfoEl;
+	private MultipleSelectionElement taughtByEl;
 	private TextElement creditPointsEl;
 	private SingleSelection creditPointSystemEl;
 	private FormLayoutContainer creditPointCont;
@@ -155,16 +158,12 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		
 		UserSession usess = ureq.getUserSession();
 		
-		if (isRootElement) {
-			teaserEl = uifactory.addTextElement("cif.teaser", "cif.teaser", 150, element.getTeaser(), formLayout);
-			teaserEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.teaser));
-		}
-		
 		imageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "rentry.pic", "rentry.pic", formLayout);
 		imageEl.setExampleKey("rentry.pic.example", new String[] {RepositoryManager.PICTURE_WIDTH + "x" + (RepositoryManager.PICTURE_HEIGHT)});
 		imageEl.limitToMimeType(imageMimeTypes, "error.mimetype", new String[]{ imageMimeTypes.toString()} );
 		imageEl.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		imageEl.setPreview(usess, true);
+		imageEl.setShowInputIfFileUploaded(false);
 		imageEl.addActionListener(FormEvent.ONCHANGE);
 		VFSLeaf imageLeaf = curriculumService.getCurriculumElemenFile(element, CurriculumElementFileType.teaserImage);
 		if (imageLeaf instanceof LocalFileImpl imageFile) {
@@ -173,8 +172,33 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		}
 		imageEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.image));
 		imageEl.setDeleteEnabled(imageEl.isEnabled());
-	
+
 		if (isRootElement) {
+			VFSLeaf videoLeaf = curriculumService.getCurriculumElemenFile(element, CurriculumElementFileType.teaserVideo);
+
+			withMovieEl = uifactory.addToggleButton("with.teaser.movie", "cif.with.teaser.movie", translate("on"), translate("off"), formLayout);
+			withMovieEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.video));
+			withMovieEl.addActionListener(FormEvent.ONCHANGE);
+			withMovieEl.toggle(videoLeaf != null);
+
+			videoEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "rentry.movie", "rentry.movie", formLayout);
+			videoEl.setExampleKey("rentry.movie.example", new String[] {"3:2"});
+			videoEl.limitToMimeType(videoMimeTypes, "error.mimetype", new String[]{ videoMimeTypes.toString()} );
+			videoEl.setMaxUploadSizeKB(movieUploadlimitKB, null, null);
+			videoEl.setPreview(usess, true);
+			videoEl.setShowInputIfFileUploaded(false);
+			videoEl.addActionListener(FormEvent.ONCHANGE);
+			if(videoLeaf instanceof LocalFileImpl videoFile) {
+				videoEl.setPreview(usess, true);
+				videoEl.setInitialFile(videoFile.getBasefile());
+			}
+			videoEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.video));
+			videoEl.setDeleteEnabled(videoEl.isEnabled());
+			videoEl.setVisible(withMovieEl.isOn());
+
+			teaserEl = uifactory.addTextElement("cif.teaser", "cif.teaser", 150, element.getTeaser(), formLayout);
+			teaserEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.teaser));
+
 			String desc = element.getDescription() != null ? element.getDescription() : "";
 			descriptionEl = uifactory.addRichTextElementForStringData("cif.description", "cif.description",
 					desc, 10, -1, false, mediaContainer, null, formLayout, usess, getWindowControl());
@@ -182,61 +206,68 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			descriptionEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 			
-			uifactory.addSpacerElement("spacer1", formLayout, false);
-			
-			authorsEl = uifactory.addTextElement("cif.authors", "cif.authors", 150, element.getAuthors(), formLayout);
+			FormSection factsCont = uifactory.addFormSection("facts", translate("details.facts"), formLayout, FormSection.Level.SUB_TITLE);
+
+			authorsEl = uifactory.addTextElement("cif.authors", "cif.authors", 150, element.getAuthors(), factsCont);
 			authorsEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.authors));
-			
+
+			mainLanguageEl = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 150, element.getMainLanguage(), factsCont);
+			mainLanguageEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.mainLanguage));
+
+			expenditureOfWorkEl = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork",150, element.getExpenditureOfWork(), factsCont);
+			expenditureOfWorkEl.setExampleKey("details.expenditureOfWork.example", null);
+			expenditureOfWorkEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.expenditureOfWork));
+
+			FormSection displayCont = uifactory.addFormSection("display", translate("cif.display.settings"), formLayout, FormSection.Level.SUB_TITLE);
+
+			SelectionValues showInfoPK = new SelectionValues();
+			showInfoPK.add(SelectionValues.entry(OUTLINE_KEY, translate("infos.outline")));
+			showInfoPK.add(SelectionValues.entry(EVENTS_KEY, translate("cif.events")));
+			showInfoPK.add(SelectionValues.entry(MEET_TEACHERS_KEY, translate("cif.meet.your.teachers")));
+			showInfoPK.add(SelectionValues.entry(CERTIFICATE_KEY, translate("details.certificate")));
+			if(creditPointModule.isEnabled()) {
+				showInfoPK.add(SelectionValues.entry(CREDIT_POINTS_KEY, translate("details.benefits.credit.points")));
+			}
+			showInfoEl = uifactory.addCheckboxesVertical("show.info", "cif.display.on.info.page", displayCont,
+					showInfoPK.keys(), showInfoPK.values(), 1);
+			showInfoEl.setHelpText(translate("cif.display.on.info.page.help"));
+			showInfoEl.addActionListener(FormEvent.ONCLICK);
+			showInfoEl.setEnabled(canEdit);
+			showInfoEl.setEnabled(OUTLINE_KEY, canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showOutline));
+			showInfoEl.setEnabled(EVENTS_KEY, canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showLectures));
+			showInfoEl.setEnabled(MEET_TEACHERS_KEY, canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.taughtBy));
+			showInfoEl.setEnabled(CERTIFICATE_KEY, canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showCertificate));
+			showInfoEl.setEnabled(CREDIT_POINTS_KEY, canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showCreditPoints));
+			boolean showCertificate = element.isShowCertificateBenefit();
+			boolean showCreditPoints = element.isShowCreditPointsBenefit();
+			boolean meetTeachers = !element.getTaughtBys().isEmpty();
+			showInfoEl.select(OUTLINE_KEY, element.isShowOutline());
+			showInfoEl.select(EVENTS_KEY, element.isShowLectures());
+			showInfoEl.select(MEET_TEACHERS_KEY, meetTeachers);
+			showInfoEl.select(CERTIFICATE_KEY, showCertificate);
+			if(creditPointModule.isEnabled()) {
+				showInfoEl.select(CREDIT_POINTS_KEY, showCreditPoints);
+			}
+
 			Map<TaughtBy,Integer> taughtByCounts = getTaughtByCounts();
 			SelectionValues taughtBySV = new SelectionValues();
 			TaughtBy.ALL.forEach(taughtBy -> taughtBySV.add(SelectionValues.entry(
 					taughtBy.name(),
-					translate("curruculum.element.taught.by." + taughtBy.name() + ".num", String.valueOf(taughtByCounts.getOrDefault(taughtBy, Integer.valueOf(0)))))));
-			taughtByEl = uifactory.addCheckboxesVertical("curruculum.element.taught.by", formLayout, taughtBySV.keys(), taughtBySV.values(), 1);
+					translate("cif.taught.by." + taughtBy.name(), String.valueOf(taughtByCounts.getOrDefault(taughtBy, Integer.valueOf(0)))))));
+			taughtByEl = uifactory.addCheckboxesVertical("taught.by", "cif.taught.by", displayCont, taughtBySV.keys(), taughtBySV.values(), 1);
+			taughtByEl.setHelpText(translate("cif.taught.by.help"));
 			taughtByEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.taughtBy));
 			element.getTaughtBys().forEach(taughtBy -> taughtByEl.select(taughtBy.name(), true));
-			
-			mainLanguageEl = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 150, element.getMainLanguage(), formLayout);
-			mainLanguageEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.mainLanguage));
-			
-			expenditureOfWorkEl = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork",150, element.getExpenditureOfWork(), formLayout);
-			expenditureOfWorkEl.setExampleKey("details.expenditureOfWork.example", null);
-			expenditureOfWorkEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.expenditureOfWork));
-			
-			showOutlineEl = uifactory.addToggleButton("show.outline", "curriculum.element.show.outline", translate("on"), translate("off"), formLayout);
-			showOutlineEl.setHelpText(translate("curriculum.element.show.outline.help"));
-			showOutlineEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showOutline));
-			showOutlineEl.toggle(element == null || element.isShowOutline());
-			
-			showLecturesEl = uifactory.addToggleButton("show.lectures", "curriculum.element.show.lectures", translate("on"), translate("off"), formLayout);
-			showLecturesEl.setHelpText(translate("curriculum.element.show.lectures.help"));
-			showLecturesEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showLectures));
-			showLecturesEl.toggle(element == null || element.isShowLectures());
-			
-			SelectionValues benefitsPK = new SelectionValues();
-			benefitsPK.add(SelectionValues.entry(CERTIFICATE_KEY, translate("curriculum.element.show.benefits.certificate")));
-			if(creditPointModule.isEnabled()) {
-				benefitsPK.add(SelectionValues.entry(CREDIT_POINTS_KEY, translate("curriculum.element.show.benefits.creditpoints")));
-			}
-			showBenefitsEl = uifactory.addCheckboxesVertical("show.benefits", "curriculum.element.show.benefits", formLayout,
-					benefitsPK.keys(), benefitsPK.values(), 1);
-			showBenefitsEl.addActionListener(FormEvent.ONCLICK);
-			showBenefitsEl.setEnabled(canEdit);
-			boolean showCertificate = element !=null && element.isShowCertificateBenefit();
-			showBenefitsEl.select(CERTIFICATE_KEY, showCertificate);
-			boolean showCreditPoints = element != null && element.isShowCreditPointsBenefit();
-			if(creditPointModule.isEnabled()) {
-				showBenefitsEl.select(CREDIT_POINTS_KEY, showCreditPoints);
-			}
-			
+			taughtByEl.setVisible(meetTeachers);
+
 			// Credit points
-			creditPointCont = uifactory.addInlineFormLayout("curriculum.element.credit.points", "curriculum.element.credit.points", formLayout);
+			creditPointCont = uifactory.addInlineFormLayout("details.benefits.credit.points", "details.benefits.credit.points", displayCont);
 			creditPointCont.setMandatory(true);
 			String points = creditPointConfig == null || creditPointConfig.getCreditPoints() == null
 					? null
 					: creditPointConfig.getCreditPoints().toString();
 			creditPointsEl = uifactory.addTextElement("credit.points", null, 6, points, creditPointCont);
-			
+
 			SelectionValues systemPK = new SelectionValues();
 			CreditPointSystem selectedSystem = creditPointConfig == null ? null : creditPointConfig.getCreditPointSystem();
 			for(CreditPointSystem system:systems) {
@@ -250,48 +281,37 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 				creditPointSystemEl.select(creditPointConfig.getCreditPointSystem().getKey().toString(), true);
 			}
 			creditPointCont.setVisible(creditPointModule.isEnabled() && showCreditPoints);
-			
-			uifactory.addSpacerElement("spacer2", formLayout, false);
-			
+
+			FormSection detailsCont = uifactory.addFormSection("details", translate("cif.details"), formLayout, FormSection.Level.SUB_TITLE);
+			detailsCont.setCollapsible(true);
+			detailsCont.setCollapsed(true);
+			detailsCont.setPersistedStatusId(ureq, "curriculum.element.infos.details");
+
 			String obj = element.getObjectives() != null ? element.getObjectives() : "";
 			objectivesEl = uifactory.addRichTextElementForStringData("cif.objectives", "cif.objectives",
-					obj, 10, -1, false, mediaContainer, null, formLayout, usess, getWindowControl());
+					obj, 10, -1, false, mediaContainer, null, detailsCont, usess, getWindowControl());
 			objectivesEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.objectives));
 			objectivesEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			objectivesEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 			objectivesEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.objectives));
-			
+
 			String req = element.getRequirements() != null ? element.getRequirements() : "";
 			requirementsEl = uifactory.addRichTextElementForStringData("cif.requirements", "cif.requirements",
-					req, 10, -1,  false, mediaContainer, null, formLayout, usess, getWindowControl());
+					req, 10, -1,  false, mediaContainer, null, detailsCont, usess, getWindowControl());
 			requirementsEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.requirements));
 			requirementsEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			requirementsEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 			requirementsEl.setMaxLength(2000);
 			requirementsEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.requirements));
-			
+
 			String cred = element.getCredits() != null ? element.getCredits() : "";
 			creditsEl = uifactory.addRichTextElementForStringData("cif.credits", "cif.credits",
-					cred, 10, -1,  false, mediaContainer, null, formLayout, usess, getWindowControl());
+					cred, 10, -1,  false, mediaContainer, null, detailsCont, usess, getWindowControl());
 			creditsEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.credits));
 			creditsEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			creditsEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 			creditsEl.setMaxLength(2000);
 			creditsEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.credits));
-			
-			videoEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "rentry.movie", "rentry.movie", formLayout);
-			videoEl.setExampleKey("rentry.movie.example", new String[] {"3:2"});
-			videoEl.limitToMimeType(videoMimeTypes, "error.mimetype", new String[]{ videoMimeTypes.toString()} );
-			videoEl.setMaxUploadSizeKB(movieUploadlimitKB, null, null);
-			videoEl.setPreview(usess, true);
-			videoEl.addActionListener(FormEvent.ONCHANGE);
-			VFSLeaf videoLeaf = curriculumService.getCurriculumElemenFile(element, CurriculumElementFileType.teaserVideo);
-			if(videoLeaf instanceof LocalFileImpl videoFile) {
-				videoEl.setPreview(usess, true);
-				videoEl.setInitialFile(videoFile.getBasefile());
-			}
-			videoEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.video));
-			videoEl.setDeleteEnabled(videoEl.isEnabled());
 		}
 		
 		if (canEdit) {
@@ -318,41 +338,49 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			allOk &= CurriculumHelper.validateIntegerElement(creditPointsEl, true);
 			allOk &= CurriculumHelper.validateElement(creditPointSystemEl);
 		}
-		
+
+		if(taughtByEl != null) {
+			taughtByEl.clearError();
+			if(taughtByEl.isVisible() && taughtByEl.isEnabled() && taughtByEl.getSelectedKeys().isEmpty()) {
+				taughtByEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+		}
+
 		return allOk;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(showBenefitsEl == source) {
-			creditPointCont.setVisible(showBenefitsEl.getSelectedKeys().contains(CREDIT_POINTS_KEY));
+		if(showInfoEl == source) {
+			Collection<String> selectedInfo = showInfoEl.getSelectedKeys();
+			taughtByEl.setVisible(selectedInfo.contains(MEET_TEACHERS_KEY));
+			creditPointCont.setVisible(selectedInfo.contains(CREDIT_POINTS_KEY));
+		} else if (source == withMovieEl) {
+			videoEl.setVisible(withMovieEl.isOn());
 		} else if (source == imageEl) {
-			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
-				if (DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
-					imageEl.setInitialFile(null);
-					if (imageEl.getUploadFile() != null) {
-						imageEl.reset();
-					}
-					imageEl.clearError();
-					markDirty();
-				} else if (imageEl.isUploadSuccess()) {
-					imageEl.clearError();
-					markDirty();
+			if (DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
+				imageEl.setInitialFile(null);
+				if (imageEl.getUploadFile() != null) {
+					imageEl.reset();
 				}
+				imageEl.clearError();
+				markDirty();
+			} else if (imageEl.isUploadSuccess()) {
+				imageEl.clearError();
+				markDirty();
 			}
 		} else if (source == videoEl) {
-			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
-				if (DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
-					videoEl.setInitialFile(null);
-					if (videoEl.getUploadFile() != null) {
-						videoEl.reset();
-					}
-					videoEl.clearError();
-					markDirty();
-				} else if (videoEl.isUploadSuccess()) {
-					videoEl.clearError();
-					markDirty();
+			if (DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
+				videoEl.setInitialFile(null);
+				if (videoEl.getUploadFile() != null) {
+					videoEl.reset();
 				}
+				videoEl.clearError();
+				markDirty();
+			} else if (videoEl.isUploadSuccess()) {
+				videoEl.clearError();
+				markDirty();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -368,15 +396,19 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			element.setAuthors(authorsEl.getValue());
 			element.setMainLanguage(mainLanguageEl.getValue());
 			element.setExpenditureOfWork(expenditureOfWorkEl.getValue());
-			element.setShowOutline(showOutlineEl.isOn());
-			element.setShowLectures(showLecturesEl.isOn());
-			Collection<String> selectedBenefits = showBenefitsEl.getSelectedKeys();
-			element.setShowCertificateBenefit(selectedBenefits.contains(CERTIFICATE_KEY));
-			element.setShowCreditPointsBenefit(selectedBenefits.contains(CREDIT_POINTS_KEY));
+			Collection<String> selectedInfo = showInfoEl.getSelectedKeys();
+			element.setShowOutline(selectedInfo.contains(OUTLINE_KEY));
+			element.setShowLectures(selectedInfo.contains(EVENTS_KEY));
+			element.setShowCertificateBenefit(selectedInfo.contains(CERTIFICATE_KEY));
+			element.setShowCreditPointsBenefit(creditPointModule.isEnabled()
+					? selectedInfo.contains(CREDIT_POINTS_KEY)
+					: element.isShowCreditPointsBenefit());
 			element.setObjectives(objectivesEl.getValue());
 			element.setRequirements(requirementsEl.getValue());
 			element.setCredits(creditsEl.getValue());
-			element.setTaughtBys(taughtByEl.getSelectedKeys().stream().map(TaughtBy::valueOf).collect(Collectors.toSet()));
+			element.setTaughtBys(selectedInfo.contains(MEET_TEACHERS_KEY)
+					? taughtByEl.getSelectedKeys().stream().map(TaughtBy::valueOf).collect(Collectors.toSet())
+					: Set.of());
 			element = curriculumService.updateCurriculumElement(getIdentity(), element);
 			
 			commitCreditPointConfiguration();
@@ -389,7 +421,9 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		}
 		
 		if (isRootElement) {
-			if (videoEl.getUploadFile() != null) {
+			if (!withMovieEl.isOn()) {
+				curriculumService.deleteCurriculumElemenFile(element, CurriculumElementFileType.teaserVideo);
+			} else if (videoEl.getUploadFile() != null) {
 				curriculumService.storeCurriculumElemenFile(element, CurriculumElementFileType.teaserVideo, videoEl.getUploadFile(), videoEl.getUploadFileName(), getIdentity());
 			} else if (videoEl.getInitialFile() == null) {
 				curriculumService.deleteCurriculumElemenFile(element, CurriculumElementFileType.teaserVideo);
