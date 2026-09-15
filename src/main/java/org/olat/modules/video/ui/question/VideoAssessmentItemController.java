@@ -74,6 +74,11 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 	
 	private final VelocityContainer mainVC;
 	private final List<VideoQuestion> answerededQuestions = new ArrayList<>();
+	// Each question runs in its own, isolated AssessmentTestSession (OO-9764), so a question
+	// answered earlier in this viewing is no longer visible through the current candidateSession.
+	// Track every question's own outcome here as soon as it is known, and aggregate from this map
+	// instead of re-deriving it from the (now single-question) session on every call.
+	private final Map<String, BigDecimal> answeredQuestionScores = new HashMap<>();
 	
 	private final RepositoryEntry entry;
 	private final RepositoryEntry videoEntry;
@@ -181,10 +186,29 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 
 	@Override
 	public void outcomes(String resultIdentifier, AssessmentTestSession candidateSession, Float score, Boolean pass, SessionStatus sessionStatus) {
-		List<AssessmentItemSession> itemSessions = qtiService.getAssessmentItemSessions(candidateSession);
-		Map<String,AssessmentItemSession> itemSessionMap = new HashMap<>();
-		for(AssessmentItemSession itemSession:itemSessions) {
-			itemSessionMap.put(itemSession.getAssessmentItemIdentifier(), itemSession);
+		// Record the current question's own outcome using the score just computed in-memory by jqtiplus
+		// (the score/sessionStatus parameters), not a fresh DB read of the item session: re-querying
+		// qtiService.getAssessmentItemSessions(candidateSession) here can see the item's score column
+		// before it is flushed, silently dropping the question's contribution.
+		VideoQuestion currentVideoQuestion = getCurrentQuestion();
+		if(currentVideoQuestion != null) {
+			String currentIdentifier = currentVideoQuestion.getAssessmentItemIdentifier();
+			Double questionScore = currentVideoQuestion.getMaxScore();
+			if(score != null && questionScore != null
+					&& Math.abs(score.doubleValue() - questionScore.doubleValue()) < 0.00001) {
+				answeredQuestionScores.put(currentIdentifier, BigDecimal.valueOf(score.doubleValue()));
+			} else if(score == null && (questionScore == null || questionScore.doubleValue() == 0.0d)) {
+				List<AssessmentItemSession> itemSessions = qtiService.getAssessmentItemSessions(candidateSession);
+				for(AssessmentItemSession itemSession : itemSessions) {
+					if(currentIdentifier.equals(itemSession.getAssessmentItemIdentifier())) {
+						ItemSessionState sessionState = qtiService.loadItemSessionState(candidateSession, itemSession);
+						if(sessionState != null && sessionState.isResponded()) {
+							answeredQuestionScores.putIfAbsent(currentIdentifier, BigDecimal.ZERO);
+						}
+						break;
+					}
+				}
+			}
 		}
 
 		String subIdent = courseNode == null ? null : courseNode.getIdent();
@@ -197,22 +221,11 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		
 		for(VideoQuestion videoQuestion: allQuestions) {
 			String assessmentItemIdentifier = videoQuestion.getAssessmentItemIdentifier();
-			AssessmentItemSession itemSession = itemSessionMap.get(assessmentItemIdentifier);
-			if(itemSession == null) {
-				continue;
-			}
-			
-			Double questionScore = videoQuestion.getMaxScore();
-			if(itemSession.getScore() != null && questionScore != null
-					&& Math.abs(itemSession.getScore().doubleValue() - questionScore.doubleValue()) < 0.00001) {
+			BigDecimal questionScoreAchieved = answeredQuestionScores.get(assessmentItemIdentifier);
+			if(questionScoreAchieved != null) {
 				itemsCompleted++;
-				totalScore = totalScore.add(itemSession.getScore());
-			} else if(itemSession.getScore() == null && (questionScore == null || questionScore.doubleValue() == 0.0d)) {
-				ItemSessionState sessionState = qtiService.loadItemSessionState(candidateSession, itemSession);
-				if(sessionState != null && sessionState.isResponded()) {
-					itemsCompleted++;
-				}
-			}	
+				totalScore = totalScore.add(questionScoreAchieved);
+			}
 		}
 		
 		assessmentEntry.setScore(totalScore);
@@ -284,12 +297,10 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		@Override
 		protected AssessmentTestSession initOrResumeAssessmentTestSession(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry,
 				AssessmentEntry assessmentEntry, boolean author) {
-			AssessmentTestSession lastSession = qtiService.getResumableAssessmentItemsSession(getIdentity(), null, courseEntry, subIdent, testEntry, author);
-			if(lastSession == null) {
-				candidateSession = qtiService.createAssessmentTestSession(getIdentity(), null, assessmentEntry, courseEntry, subIdent, testEntry, null, author);
-				return candidateSession;
-			}
-			return lastSession;
+			// OO-9764: never resume a prior session. Each video quiz question must start fresh every time
+			// it is shown, independent of earlier answers in this or an earlier viewing of the video.
+			candidateSession = qtiService.createAssessmentTestSession(getIdentity(), null, assessmentEntry, courseEntry, subIdent, testEntry, null, author);
+			return candidateSession;
 		}
 
 		@Override
@@ -306,6 +317,9 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 									Map<Identifier,ResponseInput> fileResponseMap, String candidateComment,
 									FormItem source) {
 			super.handleResponses(ureq, stringResponseMap, fileResponseMap, candidateComment, null);
+			// Question answered: stop the timer instead of leaving it enabled to reset and restart
+			// on the next server round-trip (e.g. when the "Continue" feedback view renders)
+			setTimeLimit(0);
 		}
 		
 		@Override
