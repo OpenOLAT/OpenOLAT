@@ -34,8 +34,7 @@ public class QuestionTableModel extends DefaultFlexiTableDataModel<VideoQuestion
 
 	public enum QuestionColDef implements FlexiSortableColumnDef {
 		question("form.question.table.question"),
-		type("form.question.table.type"),
-		score("form.question.table.score");
+		type("form.question.table.type");
 
 		private final String i18nKey;
 
@@ -72,8 +71,6 @@ public class QuestionTableModel extends DefaultFlexiTableDataModel<VideoQuestion
 				return question.getTitle();
 			case type:
 				return QTI21QuestionType.safeValueOf(question.getType());
-			case score:
-				return question.getMaxScore();
 			default:
 				return "ERROR";
 		}

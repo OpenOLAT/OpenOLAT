@@ -146,7 +146,6 @@ public class QuestionController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionTableModel.QuestionColDef.question));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionTableModel.QuestionColDef.type,
 				new QuestionTypeFlexiCellRenderer(assessmentTranslator)));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionTableModel.QuestionColDef.score));
 		
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
 		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, EDIT_ACTION, null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
