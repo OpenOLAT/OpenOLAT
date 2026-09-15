@@ -184,6 +184,9 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		mainVC.contextPut("curriculumDisplayName", curriculum.getDisplayName());
 		if(StringHelper.containsNonWhitespace(curriculum.getIdentifier())) {
 			mainVC.contextPut("curriculumExternalRef", curriculum.getIdentifier());
+			mainVC.contextPut("curriculumAvatarTitle", curriculum.getDisplayName() + " · " + curriculum.getIdentifier());
+		} else {
+			mainVC.contextPut("curriculumAvatarTitle", curriculum.getDisplayName());
 		}
 	}
 

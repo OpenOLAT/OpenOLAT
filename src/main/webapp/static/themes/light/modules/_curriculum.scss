@@ -187,6 +187,20 @@ fieldset.o_validation_result {
 	}
 }
 
+.o_curriculum_avatar_link > span {
+	display: contents;
+}
+
+.o_curriculum_avatar_link,
+.o_curriculum_avatar_link:hover,
+.o_curriculum_avatar_link:focus {
+	color: $o-curriculum-avatar-color;
+}
+
+.o_curriculum_avatar_link:focus-visible {
+	outline-offset: 2px;
+}
+
 .o_curriculum_el_lectures li .o_labeled_light {
 	text-transform: uppercase;
 }

@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -127,6 +128,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private Link structureButton;
 	private Link nextImplementationButton;
 	private Link previousImplementationButton;
+	private Link curriculumAvatarLink;
 	private TabbedPane tabPane;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
@@ -389,7 +391,6 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	}
 
 	private void updateMetadataUI() {
-		mainVC.contextPut("level", getLevel());
 		mainVC.contextPut("displayName", curriculumElement.getDisplayName());
 		if(StringHelper.containsNonWhitespace(curriculumElement.getIdentifier())) {
 			mainVC.contextPut("externalRef", curriculumElement.getIdentifier());
@@ -397,12 +398,22 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		if(curriculum != null) {
 			String avatar;
+			String title;
 			if(StringHelper.containsNonWhitespace(curriculum.getIdentifier())) {
 				avatar = curriculum.getIdentifier();
+				title = curriculum.getDisplayName() + " · " + curriculum.getIdentifier();
 			} else {
 				avatar = curriculum.getDisplayName();
+				title = curriculum.getDisplayName();
 			}
-			mainVC.contextPut("curriculumExternalRef", avatar);
+
+			curriculumAvatarLink = LinkFactory.createCustomLink("curriculum.avatar", "curriculum.avatar",
+					null, Link.NONTRANSLATED | Link.LINK, mainVC, this);
+			curriculumAvatarLink.setCustomDisplayText(getAvatarMarkup(avatar));
+			curriculumAvatarLink.setElementCssClass("o_curriculum_avatar o_curriculum_avatar_link");
+			curriculumAvatarLink.setTitle(title);
+			String businessPath = CurriculumHelper.getCurriculumBusinessPath(curriculum.getKey());
+			curriculumAvatarLink.setUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath));
 		}
 
 		if(curriculumElement.getType() != null) {
@@ -478,6 +489,15 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	
 	private String getLevel() {
 		return curriculumElement.getParent() == null ? null : curriculumElement.getNumberImpl();
+	}
+
+	private String getAvatarMarkup(String avatar) {
+		String level = getLevel();
+		String icon = StringHelper.containsNonWhitespace(level)
+				? translate("level", level)
+				: "<i class=\"o_icon o_icon-lg o_icon_curriculum_implementation_avatar\"> </i>";
+		return "<span class=\"o_curriculum_avatar_icon\">" + icon + "</span>"
+				+ "<span class=\"o_curriculum_avatar_ref\">" + StringHelper.escapeHtml(avatar) + "</span>";
 	}
 
 	private void initTabPane(UserRequest ureq) {
@@ -756,6 +776,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
 		} else if(nextImplementationButton == source && nextImplementationButton.getUserObject() instanceof CurriculumElement el) {
 			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
+		} else if(curriculumAvatarLink == source) {
+			String businessPath = CurriculumHelper.getCurriculumBusinessPath(curriculum.getKey());
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} else if (source instanceof Link link) {
 			if ("status".equals(link.getCommand())) {
 				if (link.getUserObject() instanceof CurriculumElementStatus status) {
