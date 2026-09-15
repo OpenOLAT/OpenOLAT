@@ -169,7 +169,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 		WindowControl windowControl = getSubWindowControl("Editor");
 		videoEditorController = new VideoEditorController(ureq, addToHistory(ureq, windowControl), repositoryEntry);
 		listenTo(videoEditorController);
-		pushController(ureq, translate("tab.video.editor.breadcrumb"), videoEditorController);
+		pushController(ureq, translate(handler.getEditorLinkI18nKey()), videoEditorController);
 		currentToolCtr = videoEditorController;
 		setActiveTool(editVideoLink);
 		toolbarPanel.setToolbarEnabled(false);

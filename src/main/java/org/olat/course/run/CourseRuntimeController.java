@@ -2222,7 +2222,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					toolbarPanel, getRepositoryEntry(), currentCourseNode);
 			//user activity logger which was initialized with course run
 			if(ctrl != null){
-				editorCtrl = pushController(ureq, "Editor", ctrl);
+				editorCtrl = pushController(ureq, translate(handler.getEditorLinkI18nKey()), ctrl);
 				listenTo(editorCtrl);
 				setIsInEditor(true);
 				currentToolCtr = editorCtrl;

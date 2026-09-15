@@ -150,6 +150,11 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	}
 
 	@Override
+	public String getEditorLinkI18nKey() {
+		return "details.editor.test";
+	}
+
+	@Override
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
 			Object createObject, Organisation organisation, Locale locale) {
 		ImsQTI21Resource ores = new ImsQTI21Resource();
