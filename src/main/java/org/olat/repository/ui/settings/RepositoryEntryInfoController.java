@@ -159,7 +159,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		UserSession usess = ureq.getUserSession();
 		setFormContextHelp("manual_user/learningresources/Course_Settings_Info/");
 		formLayout.setElementCssClass("o_sel_edit_repositoryentry");
-		setFormTitle("cif.content.data");
+		setFormTitle("details.info.title");
 
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 

@@ -174,7 +174,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_repo_metadata");
 		if (showHeading) {
 			setFormContextHelp("manual_user/learningresources/Course_Settings_Metadata/");
-			setFormTitle("cif.basic.data");
+			setFormTitle("details.metadata.title");
 		}
 		
 		// Add resource type

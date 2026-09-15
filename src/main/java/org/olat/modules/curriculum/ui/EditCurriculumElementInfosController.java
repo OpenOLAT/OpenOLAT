@@ -153,7 +153,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("cif.content.data");
+		setFormTitle("curriculum.element.infos");
 
 		UserSession usess = ureq.getUserSession();
 
