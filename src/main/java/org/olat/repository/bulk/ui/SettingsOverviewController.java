@@ -186,7 +186,23 @@ public class SettingsOverviewController extends StepFormBasicController {
 			OverviewStep step = new OverviewStep(translate("settings.bulk.metadata.title"), fields);
 			overviewSteps.add(step);
 		}
-		
+
+		if (steps.contains(Step.info)) {
+			List<OverviewField> fields = new ArrayList<>(7);
+			addInfoField(fields, SettingsBulkEditable.infoEvents, context.getInfoEvents(), "settings.bulk.info.events");
+			addInfoField(fields, SettingsBulkEditable.infoMeetTeachers, context.getInfoMeetTeachers(), "settings.bulk.info.meet.teachers");
+			addInfoField(fields, SettingsBulkEditable.infoCertificate, context.getInfoCertificate(), "settings.bulk.info.certificate");
+			addInfoField(fields, SettingsBulkEditable.infoCreditPoints, context.getInfoCreditPoints(), "settings.bulk.info.credit.points");
+			addInfoField(fields, SettingsBulkEditable.infoTaughtByTeachers, context.getInfoTaughtByTeachers(), "settings.bulk.info.taught.by.teachers");
+			addInfoField(fields, SettingsBulkEditable.infoTaughtByCoaches, context.getInfoTaughtByCoaches(), "settings.bulk.info.taught.by.coaches");
+			addInfoField(fields, SettingsBulkEditable.infoTaughtByOwners, context.getInfoTaughtByOwners(), "settings.bulk.info.taught.by.owners");
+			if (fields.isEmpty()) {
+				fields.add(new OverviewField(translate("settings.bulk.overview.none"), null));
+			}
+			OverviewStep step = new OverviewStep(translate("settings.bulk.info.title"), fields);
+			overviewSteps.add(step);
+		}
+
 		if (steps.contains(Step.taxonomy)) {
 			List<OverviewField> fields = new ArrayList<>();
 			if (context.isSelected(SettingsBulkEditable.taxonomyLevelsAdd)) {
@@ -433,6 +449,17 @@ public class SettingsOverviewController extends StepFormBasicController {
 		return linkName;
 	}
 	
+	private void addInfoField(List<OverviewField> fields, SettingsBulkEditable editable, Boolean value, String i18nKey) {
+		if (context.isSelected(editable) && value != null) {
+			String text = value.booleanValue()
+					? translate("settings.bulk.overview.info.on", translate(i18nKey))
+					: translate("settings.bulk.overview.info.off", translate(i18nKey));
+			List<RepositoryEntry> changes = editables.getChanges(context, editable);
+			String resourceItemName = createResourceLink(changes);
+			fields.add(new OverviewField(text, resourceItemName));
+		}
+	}
+
 	private void addToolbarField(List<OverviewField> fields, SettingsBulkEditable editable, boolean on, String i18nKey) {
 		if (context.isSelected(editable)) {
 			String text = on

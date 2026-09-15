@@ -243,6 +243,7 @@ import org.junit.runners.Suite;
 	org.olat.repository.RepositoryManagerTest.class,
 	org.olat.repository.RepositoryEntryImportExportTest.class,
 	org.olat.repository.wizard.RepositoryWizardServiceTest.class,
+	org.olat.repository.bulk.manager.RepositoryBulkServiceTest.class,
 	org.olat.instantMessaging.InstantMessageDAOTest.class,
 	org.olat.instantMessaging.InstantMessageNotificationDAOTest.class,
 	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,

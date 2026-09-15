@@ -51,6 +51,7 @@ public class RepositoryBulkUIFactory {
 		SettingsSteps.Step nextStep = steps.getNext(currentStep);
 		switch (nextStep) {
 		case metadata: return new MetadataStep(ureq, steps);
+		case info: return new InfoStep(ureq, steps);
 		case taxonomy: return new TaxonomyStep(ureq, steps);
 		case organisation: return new OrganisationStep(ureq, steps);
 		case authorRights: return new AuthorRightsStep(ureq, steps);

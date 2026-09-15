@@ -28,6 +28,13 @@ package org.olat.repository.bulk;
 public enum SettingsBulkEditable {
 	
 	authors,
+	infoEvents,
+	infoMeetTeachers,
+	infoCertificate,
+	infoCreditPoints,
+	infoTaughtByTeachers,
+	infoTaughtByCoaches,
+	infoTaughtByOwners,
 	educationalType,
 	mainLanguage,
 	expenditureOfWork,

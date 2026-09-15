@@ -42,6 +42,13 @@ public class SettingsContext {
 	private final List<RepositoryEntry> repositoryEntries;
 	private final Set<SettingsBulkEditable> editables = new HashSet<>();
 	private String authors;
+	private Boolean infoEvents;
+	private Boolean infoMeetTeachers;
+	private Boolean infoCertificate;
+	private Boolean infoCreditPoints;
+	private Boolean infoTaughtByTeachers;
+	private Boolean infoTaughtByCoaches;
+	private Boolean infoTaughtByOwners;
 	private Long educationalTypeKey;
 	private String mainLanguage;
 	private String expenditureOfWork;
@@ -105,6 +112,62 @@ public class SettingsContext {
 
 	public void setAuthors(String authors) {
 		this.authors = authors;
+	}
+
+	public Boolean getInfoEvents() {
+		return infoEvents;
+	}
+
+	public void setInfoEvents(Boolean infoEvents) {
+		this.infoEvents = infoEvents;
+	}
+
+	public Boolean getInfoMeetTeachers() {
+		return infoMeetTeachers;
+	}
+
+	public void setInfoMeetTeachers(Boolean infoMeetTeachers) {
+		this.infoMeetTeachers = infoMeetTeachers;
+	}
+
+	public Boolean getInfoCertificate() {
+		return infoCertificate;
+	}
+
+	public void setInfoCertificate(Boolean infoCertificate) {
+		this.infoCertificate = infoCertificate;
+	}
+
+	public Boolean getInfoCreditPoints() {
+		return infoCreditPoints;
+	}
+
+	public void setInfoCreditPoints(Boolean infoCreditPoints) {
+		this.infoCreditPoints = infoCreditPoints;
+	}
+
+	public Boolean getInfoTaughtByTeachers() {
+		return infoTaughtByTeachers;
+	}
+
+	public void setInfoTaughtByTeachers(Boolean infoTaughtByTeachers) {
+		this.infoTaughtByTeachers = infoTaughtByTeachers;
+	}
+
+	public Boolean getInfoTaughtByCoaches() {
+		return infoTaughtByCoaches;
+	}
+
+	public void setInfoTaughtByCoaches(Boolean infoTaughtByCoaches) {
+		this.infoTaughtByCoaches = infoTaughtByCoaches;
+	}
+
+	public Boolean getInfoTaughtByOwners() {
+		return infoTaughtByOwners;
+	}
+
+	public void setInfoTaughtByOwners(Boolean infoTaughtByOwners) {
+		this.infoTaughtByOwners = infoTaughtByOwners;
 	}
 
 	public Long getEducationalTypeKey() {

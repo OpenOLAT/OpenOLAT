@@ -115,6 +115,9 @@ public class SettingsStepsStep extends BasicStep {
 			if (editables.isEditable(Step.metadata)) {
 				stepsKV.add(entry(SettingsSteps.Step.metadata.name(), translate("settings.bulk.metadata.title")));
 			}
+			if (editables.isEditable(Step.info)) {
+				stepsKV.add(entry(SettingsSteps.Step.info.name(), translate("settings.bulk.info.title")));
+			}
 			if (editables.isEditable(Step.taxonomy)) {
 				String taxonomyI18nKey = catalogModule.isEnabled()? "settings.bulk.taxonomy.title.catalog": "settings.bulk.taxonomy.title";
 				stepsKV.add(entry(SettingsSteps.Step.taxonomy.name(), translate(taxonomyI18nKey)));

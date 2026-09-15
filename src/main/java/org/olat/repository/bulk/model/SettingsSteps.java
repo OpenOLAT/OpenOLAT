@@ -38,6 +38,7 @@ public class SettingsSteps {
 	public enum Step {
 		steps,
 		metadata,
+		info,
 		taxonomy,
 		organisation,
 		authorRights,
@@ -56,6 +57,14 @@ public class SettingsSteps {
 			SettingsBulkEditable.expenditureOfWork,
 			SettingsBulkEditable.license,
 			SettingsBulkEditable.oerPub);
+	private static final Set<SettingsBulkEditable> EDITABLES_INFO = Set.of(
+			SettingsBulkEditable.infoEvents,
+			SettingsBulkEditable.infoMeetTeachers,
+			SettingsBulkEditable.infoCertificate,
+			SettingsBulkEditable.infoCreditPoints,
+			SettingsBulkEditable.infoTaughtByTeachers,
+			SettingsBulkEditable.infoTaughtByCoaches,
+			SettingsBulkEditable.infoTaughtByOwners);
 	private static final Set<SettingsBulkEditable> EDITABLES_TAXONOMY = Set.of(
 			SettingsBulkEditable.taxonomyLevelsAdd,
 			SettingsBulkEditable.taxonomyLevelsRemove);
@@ -87,6 +96,7 @@ public class SettingsSteps {
 	public static Set<SettingsBulkEditable> getEditables(Step step) {
 		switch (step) {
 		case metadata: return EDITABLES_METADATA;
+		case info: return EDITABLES_INFO;
 		case taxonomy: return EDITABLES_TAXONOMY;
 		case organisation: return EDITABLES_ORAGANISATION;
 		case authorRights: return EDITABLES_AUTHOR_RIGHTS;

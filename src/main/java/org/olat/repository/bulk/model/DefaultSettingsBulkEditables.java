@@ -33,6 +33,7 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.id.Organisation;
 import org.olat.course.CourseModule;
 import org.olat.course.config.CourseConfig;
+import org.olat.modules.curriculum.TaughtBy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -78,6 +79,9 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		steps = new ArrayList<>(SettingsSteps.SELECTABLE_STEPS_SIZE);
 		if (isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.metadata))) {
 			steps.add((SettingsSteps.Step.metadata));
+		}
+		if (courseSelected && isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.info))) {
+			steps.add(SettingsSteps.Step.info);
 		}
 		if (taxonomyEnabled && isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.taxonomy))) {
 			steps.add(SettingsSteps.Step.taxonomy);
@@ -149,7 +153,20 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		switch (editable) {
 		case authors:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
-		case educationalType: 
+		case infoEvents:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.showLectures)
+					&& isCourse(repositoryEntry);
+		case infoMeetTeachers, infoTaughtByTeachers, infoTaughtByCoaches, infoTaughtByOwners:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.taughtBy)
+					&& isCourse(repositoryEntry);
+		case infoCertificate:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.showCertificate)
+					&& isCourse(repositoryEntry);
+		case infoCreditPoints:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.showCreditPoints)
+					&& isCourse(repositoryEntry)
+					&& reKeyToInfo.get(repositoryEntry.getKey()).isCreditPointsEnabled();
+		case educationalType:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.educationalType)
 					&& isCourse(repositoryEntry);
 		case mainLanguage:
@@ -247,7 +264,25 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		switch (editable) {
 		case authors:
 			return !Objects.equals(context.getAuthors(), repositoryEntry.getAuthors());
-		case educationalType: 
+		case infoEvents:
+			return context.getInfoEvents() != null
+					&& context.getInfoEvents().booleanValue() != repositoryEntry.isShowLectures();
+		case infoMeetTeachers:
+			return context.getInfoMeetTeachers() != null
+					&& context.getInfoMeetTeachers().booleanValue() != !repositoryEntry.getTaughtBys().isEmpty();
+		case infoCertificate:
+			return context.getInfoCertificate() != null
+					&& context.getInfoCertificate().booleanValue() != repositoryEntry.isShowCertificateBenefit();
+		case infoCreditPoints:
+			return context.getInfoCreditPoints() != null
+					&& context.getInfoCreditPoints().booleanValue() != repositoryEntry.isShowCreditPointsBenefit();
+		case infoTaughtByTeachers:
+			return hasTaughtByChange(repositoryEntry, context, TaughtBy.teachers, context.getInfoTaughtByTeachers());
+		case infoTaughtByCoaches:
+			return hasTaughtByChange(repositoryEntry, context, TaughtBy.coaches, context.getInfoTaughtByCoaches());
+		case infoTaughtByOwners:
+			return hasTaughtByChange(repositoryEntry, context, TaughtBy.owners, context.getInfoTaughtByOwners());
+		case educationalType:
 			return !Objects.equals(context.getEducationalTypeKey(), getEducationalTypeKey(repositoryEntry));
 		case mainLanguage:
 			return !Objects.equals(context.getMainLanguage(), repositoryEntry.getMainLanguage());
@@ -307,6 +342,16 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 			break;
 		}
 		return false;
+	}
+
+	private boolean hasTaughtByChange(RepositoryEntry repositoryEntry, SettingsContext context, TaughtBy taughtBy, Boolean contextValue) {
+		boolean targetMeetTeachers = context.getInfoMeetTeachers() != null
+				? context.getInfoMeetTeachers().booleanValue()
+				: !repositoryEntry.getTaughtBys().isEmpty();
+		if (!targetMeetTeachers) {
+			return false;
+		}
+		return contextValue != null && contextValue.booleanValue() != repositoryEntry.getTaughtBys().contains(taughtBy);
 	}
 
 	private Long getEducationalTypeKey(RepositoryEntry repositoryEntry) {

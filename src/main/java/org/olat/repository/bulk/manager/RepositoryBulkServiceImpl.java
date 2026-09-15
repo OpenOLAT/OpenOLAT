@@ -61,6 +61,10 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.creditpoint.CreditPointModule;
+import org.olat.modules.creditpoint.CreditPointService;
+import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
+import org.olat.modules.curriculum.TaughtBy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -132,6 +136,10 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private ZoomModule zoomModule;
+	@Autowired
+	private CreditPointModule creditPointModule;
+	@Autowired
+	private CreditPointService creditPointService;
 	
 
 	@Override
@@ -172,6 +180,10 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 				reKeyToInfo.get(repositoryEntry.getKey()).setCourseLocked(locked);
 				ICourse course = CourseFactory.loadCourse(resource);
 				reKeyToInfo.get(repositoryEntry.getKey()).setCourseConfig(course.getCourseConfig());
+				if (creditPointModule.isEnabled()) {
+					RepositoryEntryCreditPointConfiguration creditPointConfig = creditPointService.getConfiguration(repositoryEntry);
+					reKeyToInfo.get(repositoryEntry.getKey()).setCreditPointsEnabled(creditPointConfig != null && creditPointConfig.isEnabled());
+				}
 			}
 		}
 		
@@ -240,6 +252,7 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 			RepositoryEntry updatedEntry = updateRepositoryEntry(identity, context, editables, repositoryEntry,
 					educationalType, taxonomyLevelsAdd, organisationsAdd, publicLifecycle);
 			updatedEntry = updateRepositoryEntryAccess(context, editables, updatedEntry);
+			updatedEntry = updateInfoPage(identity, context, editables, updatedEntry);
 			updateLicense(context, editables, updatedEntry, licenseType);
 			updateCourse(window, identity, context, editables, updatedEntry, verifiedBlogSoftKey, verifiedWikiSoftKey);
 			dbInstance.commit();
@@ -371,6 +384,70 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 					repositoryEntry.getAllowToLeaveOption(), canCopy, canReference, canDownload, canIndexMetadata, null);
 		}
 		return repositoryEntry;
+	}
+
+	private RepositoryEntry updateInfoPage(Identity identity, SettingsContext context, SettingsBulkEditables editables,
+			RepositoryEntry repositoryEntry) {
+		boolean changed = false;
+
+		boolean showLectures = repositoryEntry.isShowLectures();
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.infoEvents, repositoryEntry)) {
+			showLectures = context.getInfoEvents().booleanValue();
+			changed = true;
+		}
+		boolean showCertificateBenefit = repositoryEntry.isShowCertificateBenefit();
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.infoCertificate, repositoryEntry)) {
+			showCertificateBenefit = context.getInfoCertificate().booleanValue();
+			changed = true;
+		}
+		boolean showCreditPointsBenefit = repositoryEntry.isShowCreditPointsBenefit();
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.infoCreditPoints, repositoryEntry)) {
+			showCreditPointsBenefit = context.getInfoCreditPoints().booleanValue();
+			changed = true;
+		}
+
+		String taughtByValue = repositoryEntry.getTaughtByValue();
+		boolean meetTeachersChanged = isSelectedAndChanged(context, editables, SettingsBulkEditable.infoMeetTeachers, repositoryEntry);
+		boolean taughtByChanged = isSelectedAndChanged(context, editables, SettingsBulkEditable.infoTaughtByTeachers, repositoryEntry)
+				|| isSelectedAndChanged(context, editables, SettingsBulkEditable.infoTaughtByCoaches, repositoryEntry)
+				|| isSelectedAndChanged(context, editables, SettingsBulkEditable.infoTaughtByOwners, repositoryEntry);
+		if (meetTeachersChanged || taughtByChanged) {
+			boolean targetMeetTeachers = context.getInfoMeetTeachers() != null
+					? context.getInfoMeetTeachers().booleanValue()
+					: !repositoryEntry.getTaughtBys().isEmpty();
+			if (targetMeetTeachers) {
+				Set<TaughtBy> taughtBys = new HashSet<>(repositoryEntry.getTaughtBys());
+				updateTaughtBy(taughtBys, TaughtBy.teachers, context.getInfoTaughtByTeachers());
+				updateTaughtBy(taughtBys, TaughtBy.coaches, context.getInfoTaughtByCoaches());
+				updateTaughtBy(taughtBys, TaughtBy.owners, context.getInfoTaughtByOwners());
+				// Meet your teachers needs at least one member type.
+				if (!taughtBys.isEmpty()) {
+					taughtByValue = TaughtBy.join(taughtBys);
+					changed = true;
+				}
+			} else {
+				taughtByValue = null;
+				changed = true;
+			}
+		}
+
+		if (changed) {
+			repositoryEntry = repositoryManager.setInfoPageSettings(repositoryEntry, showLectures,
+					showCertificateBenefit, showCreditPointsBenefit, taughtByValue);
+			MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, identity, Change.modifiedDescription, "authoring");
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
+		}
+		return repositoryEntry;
+	}
+
+	private void updateTaughtBy(Set<TaughtBy> taughtBys, TaughtBy taughtBy, Boolean value) {
+		if (value != null) {
+			if (value.booleanValue()) {
+				taughtBys.add(taughtBy);
+			} else {
+				taughtBys.remove(taughtBy);
+			}
+		}
 	}
 
 	private void updateLicense(SettingsContext context, SettingsBulkEditables editables,

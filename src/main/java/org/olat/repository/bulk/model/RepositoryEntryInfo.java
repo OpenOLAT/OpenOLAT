@@ -44,6 +44,7 @@ public class RepositoryEntryInfo implements RepositoryEntryRef {
 	private Set<Long> organisationKeys;
 	private Set<Organisation> organisations;
 	private boolean courseLocked;
+	private boolean creditPointsEnabled;
 	private CourseConfig courseConfig;
 	
 	public RepositoryEntryInfo(Long key) {
@@ -95,6 +96,14 @@ public class RepositoryEntryInfo implements RepositoryEntryRef {
 
 	public void setCourseLocked(boolean courseLocked) {
 		this.courseLocked = courseLocked;
+	}
+
+	public boolean isCreditPointsEnabled() {
+		return creditPointsEnabled;
+	}
+
+	public void setCreditPointsEnabled(boolean creditPointsEnabled) {
+		this.creditPointsEnabled = creditPointsEnabled;
 	}
 
 	public CourseConfig getCourseConfig() {
