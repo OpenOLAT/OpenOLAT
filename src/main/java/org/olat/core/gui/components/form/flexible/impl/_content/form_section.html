@@ -1,0 +1,25 @@
+<fieldset #if(!$!f.domReplacementWrapperRequired && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="o_form_section #if($off_css_class) $off_css_class #end $f.getContainerCssClass()">
+#if ($off_title)
+	#if($sec_subTitle)
+		$r.sectionHeader("$r.getCId()_content", $off_title, true, $sec_collapsible, !$sec_collapsed)
+	#else
+		<legend>$r.sectionHeader("$r.getCId()_content", $off_title, false, $sec_collapsible, !$sec_collapsed)</legend>
+	#end
+#end
+<div id="$r.getCId()_content" class="#if($sec_collapsible)collapse o_section_content#if(!$sec_collapsed) in#end#end">
+#foreach ($item in $formitemnames)
+	$r.render(${item}, "3_9", "form")
+#end
+</div>
+#if($sec_collapsible && $sec_persisted)
+<script>
+"use strict";
+jQuery('#$r.getCId()_content').on('shown.bs.collapse', function() {
+	$r.backgroundCommand("expanded");
+});
+jQuery('#$r.getCId()_content').on('hidden.bs.collapse', function() {
+	$r.backgroundCommand("collapsed");
+});
+</script>
+#end
+</fieldset>

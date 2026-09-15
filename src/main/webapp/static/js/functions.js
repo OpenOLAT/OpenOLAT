@@ -3545,4 +3545,26 @@ jQuery( document ).on('keyup', function(event) {
     }
 });
 
+// Section header (org.olat.core.gui.components.sections.Sections and FormSection):
+// a titled, optionally collapsible group of content. Delegated on document so it
+// keeps working after AJAX partial re-renders, no per-instance script needed.
+jQuery(document).on('click.oSection keydown.oSection', '.o_section_toggle', function(event) {
+	if (event.type === 'keydown') {
+		triggerClick(event, true, true);
+		return;
+	}
+	jQuery('#' + jQuery(this).data('target')).collapse('toggle');
+});
+
+jQuery(document).on('show.bs.collapse.oSection hide.bs.collapse.oSection', '.o_section_content', function(event) {
+	var expanding = event.type === 'show';
+	var toggle = jQuery('.o_section_toggle[data-target="' + event.target.id + '"]');
+	var toggler = jQuery('#' + event.target.id + '_toggler');
+	var togglerLabel = jQuery('#' + event.target.id + '_togglerLabel');
+	toggle.attr('aria-expanded', expanding ? 'true' : 'false');
+	toggle.toggleClass('collapsed', !expanding);
+	toggler.toggleClass('o_icon_close_togglebox', expanding).toggleClass('o_icon_open_togglebox', !expanding);
+	togglerLabel.text(toggle.data(expanding ? 'labelCollapse' : 'labelExpand'));
+});
+
 

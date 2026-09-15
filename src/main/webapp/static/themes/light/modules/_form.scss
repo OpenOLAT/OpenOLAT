@@ -801,6 +801,36 @@ form.o_dnd_over {
 	margin-bottom: 5px;
 	font-weight: 700;
 }
+.o_form_section {
+	margin-top: 20px;
+	.o_section_toggle {
+		cursor: pointer;
+	}
+	.o_section_sub_title {
+		display: flex;
+		align-items: center;
+		min-height: $input-height-base;
+		margin-bottom: $line-height-computed;
+		font-size: $o-font-size-section-title;
+		font-weight: 700;
+		&::after {
+			content: "";
+			flex: 1 1 auto;
+			height: 1px;
+			margin-left: 1em;
+			background-color: $hr-border;
+		}
+		@media (max-width: $screen-xs-max) {
+			flex-direction: column;
+			align-items: flex-start;
+			&::after {
+				width: 100%;
+				margin-left: 0;
+				margin-top: 0.5em;
+			}
+		}
+	}
+}
 
 /* day chooser with previous next */
 .o_day_chooser {

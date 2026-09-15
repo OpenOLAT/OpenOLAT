@@ -37,6 +37,9 @@ import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.commons.services.tag.ui.component.TagSelectionImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentEventListener;
+import org.olat.core.gui.components.date.RelativeDateContext;
+import org.olat.core.gui.components.date.RelativeDateElement;
+import org.olat.core.gui.components.date.RelativeDateElementImpl;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.emptystate.EmptyStateItem;
@@ -72,6 +75,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleTextItem;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErrorTextItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.AddRemoveElementImpl;
@@ -95,9 +99,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.MemoryElementImp
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElementImpl;
-import org.olat.core.gui.components.date.RelativeDateContext;
-import org.olat.core.gui.components.date.RelativeDateElement;
-import org.olat.core.gui.components.date.RelativeDateElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.SearchElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
@@ -742,7 +743,14 @@ public class FormUIFactory {
 		formLayout.add(spacer);
 		return spacer;
 	}
-	 
+
+	public FormSection addFormSection(String name, String title, FormItemContainer formLayout, FormSection.Level level) {
+		FormSection section = FormSection.create(name, formLayout.getTranslator());
+		section.setLevel(level);
+		section.setFormTitle(title);
+		formLayout.add(section);
+		return section;
+	}
 	/**
 	 * adds a given text formatted in example style as part of the form.
 	 * @param name

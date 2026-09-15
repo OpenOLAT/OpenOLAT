@@ -21,6 +21,7 @@ package org.olat.core.gui.components.sections;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.sections.SectionHeaderRenderer.Level;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -46,6 +47,9 @@ public class SectionsRenderer extends DefaultComponentRenderer {
 		}
 
 		String rootId = "o_sections_" + sections.getDispatchID();
+		// Sections never has its own translator assigned by callers; fall back to
+		// the renderer's root translator, which is always available.
+		Translator headerTranslator = translator != null ? translator : renderer.getTranslator();
 
 		sb.append("<div id=\"").append(rootId).append("\" class=\"o_sections");
 		if (StringHelper.containsNonWhitespace(sections.getElementCssClass())) {
@@ -54,55 +58,30 @@ public class SectionsRenderer extends DefaultComponentRenderer {
 		sb.append("\">");
 
 		for (Section section : sections.getSections()) {
-			renderSection(renderer, sb, rootId, section, args);
+			renderSection(renderer, sb, rootId, section, headerTranslator, args);
 		}
 
 		sb.append("</div>");
-
-		renderScript(sb, rootId);
 	}
 
-	private void renderSection(Renderer renderer, StringOutput sb, String rootId, Section section, String[] args) {
+	private void renderSection(Renderer renderer, StringOutput sb, String rootId, Section section,
+			Translator translator, String[] args) {
 		String collapseId = rootId + "_" + section.getId();
 
 		sb.append("<div class=\"o_section\">");
-		sb.append("<fieldset><legend>");
-		sb.append("<h4 class=\"o_section_toggle\" data-target=\"").append(collapseId).append("\" tabindex=\"0\" role=\"button\"");
-		sb.append(" aria-controls=\"").append(collapseId).append("\"");
-		sb.append(" aria-expanded=\"").append(section.isInitiallyOpen()).append("\">");
-		sb.append("<i id=\"").append(collapseId).append("_toggler\" aria-hidden=\"true\" class=\"o_icon o_icon-fw ");
-		sb.append(section.isInitiallyOpen() ? "o_icon_close_togglebox" : "o_icon_open_togglebox");
-		sb.append("\"> </i> ");
-		sb.append(StringHelper.escapeHtml(section.getTitle()));
-		sb.append("</h4>");
-		sb.append("</legend></fieldset>");
-		sb.append("<div id=\"").append(collapseId).append("\" class=\"collapse");
+		sb.append("<fieldset>");
+		sb.append("<legend>");
+		SectionHeaderRenderer.render(sb, collapseId, section.getTitle(), Level.TITLE, true, section.isInitiallyOpen(), translator);
+		sb.append("</legend>");
+		sb.append("<div id=\"").append(collapseId).append("\" class=\"collapse o_section_content");
 		if (section.isInitiallyOpen()) {
 			sb.append(" in");
 		}
 		sb.append("\">");
 		renderer.render(section.getContent(), sb, args);
 		sb.append("</div>");
+		sb.append("</fieldset>");
 		sb.append("</div>");
-	}
-
-	private void renderScript(StringOutput sb, String rootId) {
-		sb.append("<script>")
-			.append("\"use strict\";")
-			.append("jQuery(function() {")
-			.append("var root = jQuery('#").append(rootId).append("');")
-			.append("root.off('.oSections').on('click.oSections keydown.oSections', '.o_section_toggle', function(event) {")
-			.append("if (event.type === 'keydown') { triggerClick(event, true, true); return; }")
-			.append("jQuery('#' + jQuery(this).data('target')).collapse('toggle');")
-			.append("});")
-			.append("root.off('.oSectionsCollapse').on('hide.bs.collapse.oSectionsCollapse show.bs.collapse.oSectionsCollapse', '.collapse', function(e) {")
-			.append("var toggler = jQuery('#' + e.target.id + '_toggler');")
-			.append("var toggle = jQuery('[data-target=\"' + e.target.id + '\"]');")
-			.append("if (e.type === 'hide') { toggler.removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox'); toggle.attr('aria-expanded', 'false'); }")
-			.append("else { toggler.removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox'); toggle.attr('aria-expanded', 'true'); }")
-			.append("});")
-			.append("});")
-			.append("</script>");
 	}
 
 }

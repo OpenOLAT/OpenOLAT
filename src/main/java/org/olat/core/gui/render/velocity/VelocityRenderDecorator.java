@@ -44,6 +44,8 @@ import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.sections.SectionHeaderRenderer;
+import org.olat.core.gui.components.sections.SectionHeaderRenderer.Level;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.Renderer;
@@ -505,6 +507,23 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @param page Help page name
 	 * @return
 	 */
+	/**
+	 * Renders the header row of a titled, optionally collapsible section, see
+	 * {@link org.olat.core.gui.components.sections.SectionHeaderRenderer}.
+	 *
+	 * @param id id of the collapsible content element this header controls
+	 * @param title the already translated title
+	 * @param subTitle true: sub-title heading style, false: legend heading style
+	 * @param collapsible whether the header is a toggle or plain text
+	 * @param expanded initial state, ignored if not collapsible
+	 */
+	public StringOutput sectionHeader(String id, String title, boolean subTitle, boolean collapsible, boolean expanded) {
+		StringOutput sb = new StringOutput(192);
+		Level level = subTitle ? Level.SUB_TITLE : Level.TITLE;
+		SectionHeaderRenderer.render(sb, id, title, level, collapsible, expanded, renderer.getTranslator());
+		return sb;
+	}
+
 	public StringOutput contextHelpWithWrapper(String page) {
 		StringOutput sb = new StringOutput(192);
 		if (getHelpModule().isManualEnabled()) {

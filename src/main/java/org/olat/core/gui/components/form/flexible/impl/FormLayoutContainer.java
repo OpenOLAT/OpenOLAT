@@ -156,12 +156,12 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		this(null, name, formTranslator, layout.layout(), layout.page(), layout.domWrapperRequired(), postAddFormItem);
 	}
 
-	private FormLayoutContainer(String id, String name, Translator formTranslator, String layout, String page, boolean domWrapperRequired, Consumer<FormItem> postAddFormItem) {
+	protected FormLayoutContainer(String id, String name, Translator formTranslator, String layout, String page, boolean domWrapperRequired, Consumer<FormItem> postAddFormItem) {
 		super(id, name, false);
 		this.layout = layout;
 		this.postAddFormItem = postAddFormItem;
 		
-		formLayoutContainer = new FormVelocityContainer(id == null ? null : id + "_VC", name, page, this, formTranslator);
+		formLayoutContainer = createFormVelocityContainer(id == null ? null : id + "_VC", name, page, formTranslator);
 		formLayoutContainer.setDomReplacementWrapperRequired(domWrapperRequired);
 
 		translator = formTranslator;
@@ -172,6 +172,14 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formComponentsNames = new ArrayList<>(5);
 		formLayoutContainer.contextPut("formitemnames", formComponentsNames);
 		formComponents = new HashMap<>();
+	}
+
+	/**
+	 * Factory hook so subclasses can back this container with a specialized
+	 * {@link FormVelocityContainer}, e.g. one that reacts to background commands.
+	 */
+	protected FormVelocityContainer createFormVelocityContainer(String id, String name, String page, Translator formTranslator) {
+		return new FormVelocityContainer(id, name, page, this, formTranslator);
 	}
 
 	@Override

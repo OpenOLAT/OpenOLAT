@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -112,6 +113,12 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		// More form items: Date, link and file selector
 		addDateLinkAndFileItems(formLayout, ureq.getUserSession());
 
+		SliderElement sliderElement = uifactory.addSliderElement("guidemo.form.slider", "guidemo.form.slider", formLayout);
+		sliderElement.setMinValue(0);
+		sliderElement.setMaxValue(100);
+		sliderElement.setElementCssClass("o_super_slider");
+		sliderElement.setDomReplacementWrapperRequired(false);
+
 		// Separator with line
 		uifactory.addSpacerElement("spacer", formLayout, false);
 
@@ -120,29 +127,33 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		
 		// Separator without line
 		uifactory.addSpacerElement("spacernoline", formLayout, true);
-
-		// Sublayout (shown if no is selected)
-		subLayout = FormLayoutContainer.createDefaultFormLayout("why_not_form", getTranslator());
-		formLayout.add(subLayout);
-		// Add a text element
-		uifactory.addTextElement("why_not", "advanced_form.why_not?", 512, null, subLayout);
+		
+		FormSection collapsibleSection = uifactory.addFormSection("why_not_section", translate("guidemo.form.section.collapsible"), formLayout, FormSection.Level.SUB_TITLE);
+		collapsibleSection.setCollapsible(true);
+		collapsibleSection.setCollapsed(true);
 
 		// Here's a text area
-		uifactory.addTextAreaElement("guidemo.form.textarea", 0, 2, null, formLayout);
+		uifactory.addTextAreaElement("guidemo.form.textarea", "guidemo.form.textarea", -1, 5, 2, false, false, null, collapsibleSection);
 
 		// Add some rich text elements
-		richTextElement = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple", "guidemo.form.richtext.simple", "click <i>to</i> <b>edit</b>. This one has an event listener and an <b>external menu with auto hide</b>", -1, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		richTextElement = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple", "guidemo.form.richtext.simple", "click <i>to</i> <b>edit</b>. This one has an event listener and an <b>external menu with auto hide</b>", -1, -1, false, null, null, collapsibleSection, ureq.getUserSession(), getWindowControl());
 		
-		uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple2", null, "one <i>with</i> <b>height</b> and <span style='color:red'>no</span> event listener and an <b>internal</b> menu", 10, 40, true, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple2", null, "one <i>with</i> <b>height</b> and <span style='color:red'>no</span> event listener and an <b>internal</b> menu", 10, 40, true, null, null, collapsibleSection, ureq.getUserSession(), getWindowControl());
 
-		TextElement disabledRichTextElement = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple3", "guidemo.form.richtext.simple", "this <i>is</i> <b>disabled</b>", -1, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		TextElement disabledRichTextElement = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple3", "guidemo.form.richtext.simple", "this <i>is</i> <b>disabled</b>", -1, -1, false, null, null, collapsibleSection, ureq.getUserSession(), getWindowControl());
 		disabledRichTextElement.setEnabled(false);
 
-		SliderElement sliderElement = uifactory.addSliderElement("guidemo.form.slider", "guidemo.form.slider", formLayout);
-		sliderElement.setMinValue(0);
-		sliderElement.setMaxValue(100);
-		sliderElement.setElementCssClass("o_super_slider");
-		sliderElement.setDomReplacementWrapperRequired(false);
+		// FormSection collapsed by default: checks that a RichTextElement laid out
+		// inside a collapsed (display:none) section still comes up at full height
+		// once expanded.
+		FormSection collapsibleSectionLayout = uifactory.addFormSection("collapsibleSection", translate("guidemo.form.section.other.layout"), formLayout, FormSection.Level.SUB_TITLE);
+		collapsibleSectionLayout.setCollapsible(true);
+		collapsibleSectionLayout.setCollapsed(true);
+		collapsibleSectionLayout.setPersistedStatusId(ureq, "guidemo.form.section.collapsible");
+		FormLayoutContainer richTextCont = FormLayoutContainer.createVerticalFormLayout("richTextCont", getTranslator());
+		richTextCont.setFormLayout("nolayout");
+		collapsibleSectionLayout.add(richTextCont);
+		uifactory.addRichTextElementForStringData("guidemo.form.section.collapsible.richtext", "guidemo.form.section.collapsible.richtext", "this rich text editor lives <i>inside</i> a collapsed <b>FormSection</b>", -1, -1, false, null, null, richTextCont, ureq.getUserSession(), getWindowControl());
 
 		// Button layout
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
@@ -222,7 +233,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		String[] dropdownKeys = new String[] { "a", "b", SingleSelection.SEPARATOR, "c" };
 		String[] dropdownOptions = new String[] { "A", "B", SingleSelection.SEPARATOR, "C" };
 		uifactory.addDropdownSingleselect("guidemo.form.pulldown", form, dropdownKeys, dropdownOptions, null);
-
+		
 		// vertical radio buttons
 		verticalRadioButtons = uifactory.addRadiosVertical("guidemo.form.radio1", form, keys, options);
 		// As an example on how to use the formInnerEvent method we'll catch events
@@ -269,7 +280,14 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 				yesOrNoOptions);
 		// A default value is needed for show/hide rules
 		horizontalRadioButtons.select(yesOrNoKeys[0], true);
-		horizontalRadioButtons.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+		horizontalRadioButtons.addActionListener(FormEvent.ONCLICK);
+		
+		// Sublayout (shown if no is selected)
+		subLayout = FormLayoutContainer.createDefaultFormLayout("why_not_form", getTranslator());
+		form.add(subLayout);
+		// Add a text element
+		uifactory.addTextElement("why_not", "advanced_form.why_not?", 512, null, subLayout);
+		
 		// Radio cards
 		// For card buttons
 		String[] descs = new String[] { "Yes means yes, really!", "No does not necessarily mean no, it could also be yes." };
