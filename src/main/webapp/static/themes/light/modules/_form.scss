@@ -812,7 +812,6 @@ form.o_dnd_over {
 		min-height: $input-height-base;
 		margin-bottom: $line-height-computed;
 		font-size: $o-font-size-section-title;
-		font-weight: 700;
 		&::after {
 			content: "";
 			flex: 1 1 auto;
