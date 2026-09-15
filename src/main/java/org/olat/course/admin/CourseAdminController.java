@@ -75,6 +75,7 @@ public class CourseAdminController extends BasicController implements Activateab
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CourseModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessableCourseNodeAdminController.class, getLocale(), getTranslator()));
 		
 		mainVC = createVelocityContainer("admin");
 		

@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment;
 
+import java.util.Collection;
+
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -29,13 +31,14 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
-import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
+import org.olat.modules.curriculum.ui.CurriculumAdminConfigurationController;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
@@ -45,96 +48,86 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class AssessableCourseNodeAdminController extends FormBasicController {
-	
+
 	private static final String[] onKeys = new String[]{ "on" };
-	private final String[] onValues;
+	private static final String INFO_BOX_KEY = "infobox";
+	private static final String CHANGE_LOG_KEY = "changelog";
+	private static final String ON_KEY = "on";
+	private static final String OFF_KEY = "off";
+	private static final String[] onOffKeys = new String[]{ ON_KEY, OFF_KEY };
 
 	private SingleSelection courseExecEl;
 	private SingleSelection designEl;
-	private MultipleSelectionElement infoBoxEl;
-	private MultipleSelectionElement changeLogEl;
+	private MultipleSelectionElement assessmentOptionsEl;
 	private MultipleSelectionElement disclaimerEnabledEl;
-	private MultipleSelectionElement efficiencyStatementEnabledEl;
-	
+	private SingleSelection efficiencyStatementEnabledEl;
+	private FormSection defaultSettingsCont;
+	private FormSection courseRelatedConfigCont;
+
 	private FormLink inviteeLink;
+	private FormLink usageLink;
 
 	@Autowired
 	private CourseModule courseModule;
-	
-	public AssessableCourseNodeAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
-		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		
-		onValues = new String[]{ translate("on") };
 
+	public AssessableCourseNodeAdminController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(CurriculumAdminConfigurationController.class, getLocale(), getTranslator()));
+		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer courseExecCont = FormLayoutContainer.createDefaultFormLayout("courseExec", getTranslator());
-		courseExecCont.setRootForm(mainForm);
-		courseExecCont.setFormTitle(translate("course.execution.period"));
-		courseExecCont.setFormContextHelp("manual_admin/administration/Modules_Course/");
-		formLayout.add(courseExecCont);
-		initCourseExecPeriodOptions(courseExecCont);
+		setFormTitle("module.settings");
+		setFormContextHelp("manual_admin/administration/Modules_Course/");
 
-		FormLayoutContainer courseSettings = FormLayoutContainer.createVerticalFormLayout("courseSettings", getTranslator());
-		courseSettings.setFormTitle(translate("admin.course.design.settings"));
-		courseSettings.setRootForm(mainForm);
-		formLayout.add(courseSettings);
-		
+		String[] enableCourseOptionValues = new String[]{ translate("admin.disclaimer.enabled") };
+		disclaimerEnabledEl = uifactory.addCheckboxesHorizontal("admin.enable.course.option", formLayout, onKeys, enableCourseOptionValues);
+		disclaimerEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		if (courseModule.isDisclaimerEnabled()) {
+			disclaimerEnabledEl.select(onKeys[0], true);
+		}
+
+		SelectionValues assessmentOptionsPK = new SelectionValues();
+		assessmentOptionsPK.add(SelectionValues.entry(INFO_BOX_KEY, translate("admin.info.box")));
+		assessmentOptionsPK.add(SelectionValues.entry(CHANGE_LOG_KEY, translate("admin.user.changelog")));
+		assessmentOptionsEl = uifactory.addCheckboxesVertical("admin.enable.assessment.option", "admin.enable.assessment.option",
+				formLayout, assessmentOptionsPK.keys(), assessmentOptionsPK.values(), 1);
+		assessmentOptionsEl.addActionListener(FormEvent.ONCHANGE);
+		assessmentOptionsEl.select(INFO_BOX_KEY, courseModule.isDisplayInfoBox());
+		assessmentOptionsEl.select(CHANGE_LOG_KEY, courseModule.isDisplayChangeLog());
+
+		defaultSettingsCont = uifactory.addFormSection("defaultSettings", translate("default.settings"), formLayout, FormSection.Level.SUB_TITLE);
+
+		initCourseExecPeriodOptions(defaultSettingsCont);
+
 		SelectionValues designKV = new SelectionValues();
-		designKV.add(new SelectionValue(CourseModule.COURSE_TYPE_PATH, translate("course.design.path"), translate("course.design.path.desc"),"o_course_design_path_icon", null, true));
-		designKV.add(new SelectionValue(CourseModule.COURSE_TYPE_PROGRESS, translate("course.design.progress"), translate("course.design.progress.desc"),"o_course_design_progress_icon", null, true));
-		designKV.add(new SelectionValue(CourseModule.COURSE_TYPE_CLASSIC, translate("course.design.classic"), translate("course.design.classic.desc"),"o_course_design_classic_icon", null, true));
-		designEl = uifactory.addCardSingleSelectHorizontal("course.design", "admin.course.design.default", formLayout, designKV);
-		designEl.setElementCssClass("o_course_design");
+		designKV.add(SelectionValues.entry(CourseModule.COURSE_TYPE_PATH, translate("course.design.path")));
+		designKV.add(SelectionValues.entry(CourseModule.COURSE_TYPE_PROGRESS, translate("course.design.progress")));
+		designKV.add(SelectionValues.entry(CourseModule.COURSE_TYPE_CLASSIC, translate("course.design.classic")));
+		designEl = uifactory.addRadiosVertical("course.design", "admin.course.design.default", defaultSettingsCont,
+				designKV.keys(), designKV.values());
 		designEl.addActionListener(FormEvent.ONCHANGE);
 		String defaultCourseType = courseModule.getCourseTypeDefault();
 		if (!designEl.containsKey(defaultCourseType)) {
 			defaultCourseType = CourseModule.COURSE_TYPE_PATH;
 		}
 		designEl.select(defaultCourseType, true);
-		
-		
-		// Assessable course node settings
-		FormLayoutContainer assessableCourseNodeSettings = FormLayoutContainer.createDefaultFormLayout("assessableCourseNodeSettings", getTranslator());
-		assessableCourseNodeSettings.setRootForm(mainForm);
-		assessableCourseNodeSettings.setFormTitle(translate("admin.assessable.coursenode"));
-		assessableCourseNodeSettings.setElementCssClass("o_block_top");
-		
-		infoBoxEl = uifactory.addCheckboxesHorizontal("admin.info.box", assessableCourseNodeSettings, onKeys, onValues);
-		infoBoxEl.addActionListener(FormEvent.ONCHANGE);
-		if (courseModule.isDisplayInfoBox()) {
-			infoBoxEl.select(onKeys[0], true);
-		}
-		
-		changeLogEl = uifactory.addCheckboxesHorizontal("admin.user.changelog", assessableCourseNodeSettings, onKeys, onValues);
-		changeLogEl.addActionListener(FormEvent.ONCHANGE);
-		if (courseModule.isDisplayChangeLog()) {
-			changeLogEl.select(onKeys[0], true);
-		}
-		
-		disclaimerEnabledEl = uifactory.addCheckboxesHorizontal("admin.disclaimer.enabled", assessableCourseNodeSettings, onKeys, onValues);
-		disclaimerEnabledEl.addActionListener(FormEvent.ONCHANGE);
-		if (courseModule.isDisclaimerEnabled()) {
-			disclaimerEnabledEl.select(onKeys[0], true);
-		}
 
-		efficiencyStatementEnabledEl = uifactory.addCheckboxesHorizontal("admin.efficiency.statement.enabled", assessableCourseNodeSettings, onKeys, onValues);
+		uifactory.addSpacerElement("defaultSettingsSpacer", defaultSettingsCont, false);
+
+		efficiencyStatementEnabledEl = uifactory.addRadiosHorizontal("admin.efficiency.statement.enabled", "admin.efficiency.statement.enabled",
+				defaultSettingsCont, onOffKeys, new String[]{ translate("on"), translate("off") });
 		efficiencyStatementEnabledEl.addActionListener(FormEvent.ONCHANGE);
-		if (courseModule.isEfficiencyStatementEnabled()) {
-			efficiencyStatementEnabledEl.select(onKeys[0], true);
-		}
-		
-		formLayout.add(assessableCourseNodeSettings);
-		
-		// Links to other settings
-		FormLayoutContainer otherSettings = FormLayoutContainer.createDefaultFormLayout("otherSettings", getTranslator());
-		otherSettings.setFormTitle(translate("admin.assessable.other.settings"));
-		formLayout.add(otherSettings);
-		inviteeLink = uifactory.addFormLink("course.login", "course.login.invitee", "course.login", otherSettings, Link.LINK);
+		efficiencyStatementEnabledEl.select(courseModule.isEfficiencyStatementEnabled() ? ON_KEY : OFF_KEY, true);
+
+		courseRelatedConfigCont = uifactory.addFormSection("courseRelatedConfig", translate("admin.assessable.other.settings"), formLayout, FormSection.Level.SUB_TITLE);
+		inviteeLink = uifactory.addFormLink("admin.link.invitation", "admin.link.invitation.path", "admin.link.invitation", courseRelatedConfigCont, Link.LINK);
+		inviteeLink.setIconLeftCSS("o_icon o_icon_jump_to o_icon-fw");
+		usageLink = uifactory.addFormLink("admin.link.usage", "admin.link.usage.path", "curriculum.default.course.runtime.type", courseRelatedConfigCont, Link.LINK);
+		usageLink.setIconLeftCSS("o_icon o_icon_jump_to o_icon-fw");
 	}
 
 	private void initCourseExecPeriodOptions(FormLayoutContainer formLayoutContainer) {
@@ -153,19 +146,22 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == infoBoxEl) {
-			courseModule.setDisplayInfoBox(infoBoxEl.isSelected(0));
-		} else if (source == changeLogEl) {
-			courseModule.setDisplayChangeLog(changeLogEl.isSelected(0));
+		if (source == assessmentOptionsEl) {
+			Collection<String> selectedOptions = assessmentOptionsEl.getSelectedKeys();
+			courseModule.setDisplayInfoBox(selectedOptions.contains(INFO_BOX_KEY));
+			courseModule.setDisplayChangeLog(selectedOptions.contains(CHANGE_LOG_KEY));
 		} else if (source == disclaimerEnabledEl) {
 			courseModule.setDisclaimerEnabled(disclaimerEnabledEl.isSelected(0));
 		} else if (source == efficiencyStatementEnabledEl) {
-			courseModule.setEfficiencyStatementEnabled(efficiencyStatementEnabledEl.isSelected(0));
+			courseModule.setEfficiencyStatementEnabled(ON_KEY.equals(efficiencyStatementEnabledEl.getSelectedKey()));
 		} else if (source == designEl) {
 			courseModule.setCourseTypeDefault(designEl.getSelectedKey());
 		} else if (inviteeLink == source) {
 			String invitationSettingsPath = "[AdminSite:0][loginadmin:0][Invitation:0]";
 			NewControllerFactory.getInstance().launch(invitationSettingsPath, ureq, getWindowControl());
+		} else if (usageLink == source) {
+			String usageSettingsPath = "[AdminSite:0][curriculum:0]";
+			NewControllerFactory.getInstance().launch(usageSettingsPath, ureq, getWindowControl());
 		} else if (source == courseExecEl) {
 			courseModule.setCourseExecutionDefault(courseExecEl.getSelectedKey());
 		}
