@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -1644,6 +1645,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 				}
 			}
 		}
+		notificationIntervals.sort(Comparator.comparingInt(INTERVAL_DEF_MAP::get));
 	}
 
 	/**

@@ -32,6 +32,7 @@ import org.olat.core.commons.services.ai.model.AiMCQuestionsResponse;
 import org.olat.core.commons.services.ai.model.AiUsageContext;
 import org.olat.core.commons.services.ai.service.MCQuestionAiService;
 import org.olat.core.commons.services.text.TextService;
+import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -126,6 +127,8 @@ public class AiMCQuestionServiceImpl implements AiMCQuestionService {
 			MCQuestionAiService service = builder.build();
 
 			service.generateQuestions(number, 2, 3, language, bloomLevelsStr, targetDifficultyStr, objectives, input)
+					.stream()
+					.filter(question -> StringHelper.containsNonWhitespace(question.getQuestion()))
 					.forEach(response::addQuestion);
 
 		} catch (Exception e) {

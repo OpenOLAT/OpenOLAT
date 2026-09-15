@@ -42,6 +42,7 @@ import dev.langchain4j.model.output.structured.Description;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record EssayItemDraft(
+		@JsonProperty(required = true)
 		@Description("Self-contained essay question stimulus / task statement for the student")
 		String stimulus,
 		@JsonProperty(required = true)
@@ -64,22 +65,26 @@ public record EssayItemDraft(
 		@JsonProperty(required = true)
 		@Description("Concise learning objective this question tests")
 		String learningObjective,
+		@JsonProperty(required = true)
 		@Description("BCP-47 language tag of the question (e.g. \"en\", \"de\", \"de-CH\", \"fr\")")
 		String languageTag,
 		@JsonProperty(required = true)
 		@Description("Short verbatim excerpt from the source material the question is derived from")
 		String referenceExcerpt,
+		@JsonProperty(required = true)
 		@Description("Approximate output token budget for a good student answer (10–500)")
 		int tokenEstimate,
 		@Description("Short authoring hint for the downstream grader: what to watch for, common pitfalls; empty string if none")
 		String gradingHints,
 		@Description("Common misconceptions or typical wrong-answer patterns the grader should be aware of; empty list if none")
 		List<String> commonMisconceptions,
+		@JsonProperty(required = true)
 		@Description("Estimated difficulty on a 1 (easy) to 5 (hard) scale, from the perspective of the target audience")
 		int difficulty) {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record KeyPoint(
+			@JsonProperty(required = true)
 			@Description("Stable short id, e.g. kp1, kp2 — referenced by the grader response")
 			String id,
 			@JsonProperty(required = true)
@@ -106,6 +111,7 @@ public record EssayItemDraft(
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record RubricCriterion(
+			@JsonProperty(required = true)
 			@Description("Stable short id, e.g. c1, c2")
 			String id,
 			@JsonProperty(required = true)
