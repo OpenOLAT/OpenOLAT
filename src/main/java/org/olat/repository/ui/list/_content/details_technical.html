@@ -28,15 +28,6 @@
 				#if ($r.isNotEmpty($technicalType))
 					<tr><th scope="row">$r.translate("cif.technical.type")</th><td>$r.escapeHtml($technicalType)</td></tr>
 				#end
-				<tr><th scope="row">$r.translate("cif.initialAuthor")</th><td>$r.escapeHtml($initialAuthor)</td></tr>
-				<tr>
-					<th scope="row">$r.translate("cif.owners")</th>
-					<td><ul class="list-unstyled">
-						#foreach($authorlinkname in $authorlinknames)
-							<li>$r.render($authorlinkname)</li>
-						#end
-					</ul></td>
-				</tr>
 			#end
 			#if($r.isNotEmpty($organisations))
 				<tr>
@@ -62,6 +53,10 @@
 		</tbody></table>
 	</div>
 </div>
+
+#if ($r.available("responsiblePersons"))
+	$r.render("responsiblePersons")
+#end
 
 #if (($referenceLinks && $referenceLinks.size() > 0))
 	<div class="panel panel-default o_usagepanel">

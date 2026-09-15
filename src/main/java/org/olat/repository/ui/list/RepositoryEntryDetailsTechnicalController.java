@@ -21,11 +21,9 @@ package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.restapi.RestapiAdminController;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
@@ -55,12 +53,10 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.references.ReferenceManager;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,8 +72,8 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 	private final RepositoryEntry entry;
 	private final boolean isCurriculumManager;
 
-	@Autowired
-	private UserManager userManager;
+	private RepositoryEntryDetailsResponsiblePersonsController responsiblePersonsCtrl;
+
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -125,16 +121,6 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 				layoutCont.contextPut("technicalType", technicalType);
 			}
 
-			String initialAuthor = entry.getInitialAuthor();
-			String creator = initialAuthor;
-			if (StringHelper.containsNonWhitespace(initialAuthor)) {
-				String displayName = userManager.getUserDisplayName(initialAuthor);
-				if (StringHelper.containsNonWhitespace(displayName) && !displayName.equals(initialAuthor)) {
-					creator = displayName + " (" + initialAuthor + ")";
-				}
-			}
-			layoutCont.contextPut("initialAuthor", creator == null ? "" : creator);
-
 			// External link
 			String extLink = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 			layoutCont.contextPut("extLink", extLink);
@@ -142,22 +128,12 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 			boolean guestAllowed = entry.isPublicVisible() && acService.isGuestAccessible(entry, false);
 			layoutCont.contextPut("isGuestAllowed", Boolean.valueOf(guestAllowed));
 			
-			// Owners
-			List<Long> authorKeys = repositoryService.getMemberKeys(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
-			List<String> authorLinkNames = new ArrayList<>(authorKeys.size());
-			Map<Long, String> authorNames = userManager.getUserDisplayNamesByKey(authorKeys);
-			int counter = 0;
-			for(Map.Entry<Long, String> author:authorNames.entrySet()) {
-				Long authorKey = author.getKey();
-				String authorName = StringHelper.escapeHtml(author.getValue());
-				
-				FormLink authorLink = uifactory.addFormLink("owner-" + ++counter, "owner", authorName, null, formLayout, Link.NONTRANSLATED | Link.LINK);
-				authorLink.setUserObject(authorKey);
-				authorLinkNames.add(authorLink.getComponent().getComponentName());
-			}
-			layoutCont.contextPut("authorlinknames", authorLinkNames);
-			
-			// Organisations 
+			// Responsible persons
+			responsiblePersonsCtrl = new RepositoryEntryDetailsResponsiblePersonsController(ureq, getWindowControl(), entry, isOwner);
+			listenTo(responsiblePersonsCtrl);
+			layoutCont.put("responsiblePersons", responsiblePersonsCtrl.getInitialComponent());
+
+			// Organisations
 			if(organisationModule.isEnabled()) {
 				String organisations = getOrganisationsToString();
 				layoutCont.contextPut("organisations", organisations);
@@ -239,9 +215,7 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if("owner".equals(cmd)) {
-				doOpenVisitCard(ureq, (Long)link.getUserObject());
-			} else if("ref".equals(cmd)) {
+			if("ref".equals(cmd)) {
 				doOpenReference(ureq, (Long)link.getUserObject());
 			} else if("curriculum".equals(cmd) && link.getUserObject() instanceof Curriculum curriculum) {
 				doOpenCurriculum(ureq, curriculum);
@@ -252,6 +226,14 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == responsiblePersonsCtrl && event == Event.DONE_EVENT) {
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -266,12 +248,6 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 	
 	private void doOpenReference(UserRequest ureq, Long entryKey) {
 		String businessPath = "[RepositoryEntry:" + entryKey + "]";
-		fireEvent(ureq, Event.DONE_EVENT);
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-	}
-	
-	private void doOpenVisitCard(UserRequest ureq, Long ownerKey) {
-		String businessPath = "[HomePage:" + ownerKey + "]";
 		fireEvent(ureq, Event.DONE_EVENT);
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}

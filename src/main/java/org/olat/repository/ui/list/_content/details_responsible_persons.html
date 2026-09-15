@@ -1,0 +1,22 @@
+#if ($visible)
+	<div class="panel panel-default o_responsiblepanel">
+		<div class="panel-heading">
+			<h3 class="panel-title">
+				$r.translate("details.responsible.persons")
+			</h3>
+		</div>
+		<div class="panel-body">
+			<table class="table table-condensed table-striped"><tbody>
+				<tr><th scope="row">$r.translate("details.responsible.creator")</th><td>$r.escapeHtml($creator)</td></tr>
+				<tr>
+					<th scope="row">$r.translate("cif.owners")</th>
+					<td><ul class="list-unstyled">
+						#foreach($ownerlinkname in $ownerlinknames)
+							<li>$r.render($ownerlinkname)</li>
+						#end
+					</ul></td>
+				</tr>
+			</tbody></table>
+		</div>
+	</div>
+#end
