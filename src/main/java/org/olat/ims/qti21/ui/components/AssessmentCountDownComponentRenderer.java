@@ -41,17 +41,23 @@ public class AssessmentCountDownComponentRenderer extends DefaultComponentRender
 			RenderResult renderResult, String[] args) {
 		
 		AssessmentCountDownComponent cmp = (AssessmentCountDownComponent)source;
+		// Always render the wrapper with the id, even when disabled (empty): this is the only element ever
+		// carrying id 'o_c<dispatchId>', and the AJAX component-update mechanism replaces it by that id.
+		// If it is ever omitted (e.g. while the timer is disabled after a submit), the id-bearing node is
+		// removed from the DOM for good, and a later re-enable (e.g. on retry) has nothing left to replace,
+		// so the timer never becomes visible again.
+		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("'>");
 		if(cmp.isEnabled()) {
 			AssessmentCountDownFormItem atf = cmp.getFormItem();
 			AssessmentObjectFormItem qtiRun = atf.getQtiRun();
 			Form form = atf.getRootForm();
 			
 			if(cmp.isAlreadyEnded()) {
-				sb.append("<div id='o_c").append(cmp.getDispatchID()).append("'><div id='o_qti_assessment_test_timer' class='clearfix'><i class='o_icon o_icon_timelimit'> </i> ")
+				sb.append("<div id='o_qti_assessment_test_timer' class='clearfix'><i class='o_icon o_icon_timelimit'> </i> ")
 				  .append("<span class='o_qti_times_up'>").append(translator.translate("timelimit.finished")).append("</span>")
 				  .append("</div>");
 			} else {
-				sb.append("<div id='o_c").append(cmp.getDispatchID()).append("'><div id='o_qti_assessment_test_timer' class='clearfix'><i class='o_icon o_icon_timelimit'> </i> ");
+				sb.append("<div id='o_qti_assessment_test_timer' class='clearfix'><i class='o_icon o_icon_timelimit'> </i> ");
 				String[] attrs = new String[] {
 						"<span class='o_qti_timer'></span>",			// 0 The count down place holder
 						"<span class='o_qti_timer_duration'></span>",	// 1 Test time limit
@@ -72,9 +78,9 @@ public class AssessmentCountDownComponentRenderer extends DefaultComponentRender
 				  .append("  })\n")
 				  .append("});\n")
 				  .append("/* ]]> */\n")
-				  .append("</script>\n")
-				  .append("</div>");
+				  .append("</script>\n");
 			}
 		}
+		sb.append("</div>");
 	}
 }

@@ -334,11 +334,41 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 									Map<Identifier,ResponseInput> fileResponseMap, String candidateComment,
 									FormItem source) {
 			super.handleResponses(ureq, stringResponseMap, fileResponseMap, candidateComment, null);
+
+			// This single-item controller runs with maxAttempts=10 (see createNewItemSessionStateAndController),
+			// so jqtiplus never auto-closes the item session after a response: without this, the interaction
+			// and "Submit answer" stay live until the (now-stopped) timer would otherwise have ended it via
+			// timesUp -> next() -> endItem(). Freeze the item to read-only immediately instead (OO-9764).
+			ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
+			if(!itemSessionState.isEnded()) {
+				itemSessionController.endItem(ureq.getRequestTimestamp());
+			}
+
 			// Question answered: stop the timer instead of leaving it enabled to reset and restart
 			// on the next server round-trip (e.g. when the "Continue" feedback view renders)
 			setTimeLimit(0);
 		}
 		
+		@Override
+		public void handleResetSoft(UserRequest ureq) {
+			super.handleResetSoft(ureq);
+			// "Try again" reopens the question: re-arm the timer with a fresh, full time budget
+			// instead of leaving it disabled from the previous submit (OO-9764)
+			if(!authorMode) {
+				setTimeLimit(currentQuestion.getTimeLimit());
+			}
+		}
+
+		@Override
+		public void handleResetHard(UserRequest ureq) {
+			super.handleResetHard(ureq);
+			// "Try again" reopens the question: re-arm the timer with a fresh, full time budget
+			// instead of leaving it disabled from the previous submit (OO-9764)
+			if(!authorMode) {
+				setTimeLimit(currentQuestion.getTimeLimit());
+			}
+		}
+
 		@Override
 	    protected AssessmentResult updateSessionFinishedStatus(UserRequest ureq) {
 	        // we don't close the candidate session
