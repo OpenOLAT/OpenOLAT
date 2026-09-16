@@ -633,6 +633,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void initToolsMenuAbout(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin()) {
+			toolsDropdown.addComponent(new Spacer("about-tools"));
+
 			aboutLink = LinkFactory.createToolLink("about", getAboutTitle(), this, "o_icon o_icon-fw o_icon_about");
 			aboutLink.setElementCssClass("o_sel_repo_about");
 			toolsDropdown.addComponent(aboutLink);
