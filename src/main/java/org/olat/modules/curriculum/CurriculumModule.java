@@ -58,7 +58,6 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String DEFAULT_SHOW_OUTLINE = "curriculum.default.show.outline";
 	private static final String DEFAULT_SHOW_LECTURES = "curriculum.default.show.lectures";
 	private static final String DEFAULT_SHOW_CERTIFICATE = "curriculum.default.show.certificate";
-	private static final String DEFAULT_SHOW_CREDITPOINTS = "curriculum.default.show.creditpoints";
 	private static final String DEFAULT_TAUGHT_BY = "curriculum.default.taught.by";
 
 	@Value("${curriculum.enabled:true}")
@@ -80,8 +79,6 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	private boolean defaultShowLectures;
 	@Value("${curriculum.default.show.certificate:true}")
 	private boolean defaultShowCertificate;
-	@Value("${curriculum.default.show.creditpoints:true}")
-	private boolean defaultShowCreditPoints;
 	@Value("${curriculum.default.taught.by:teachers,coaches}")
 	private String defaultTaughtByValue;
 	@Value("${reports.accounting.fiscal.year.start.day:1}")
@@ -141,11 +138,6 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 		String defaultShowCertificateObj = getStringPropertyValue(DEFAULT_SHOW_CERTIFICATE, true);
 		if(StringHelper.containsNonWhitespace(defaultShowCertificateObj)) {
 			defaultShowCertificate = "true".equals(defaultShowCertificateObj);
-		}
-
-		String defaultShowCreditPointsObj = getStringPropertyValue(DEFAULT_SHOW_CREDITPOINTS, true);
-		if(StringHelper.containsNonWhitespace(defaultShowCreditPointsObj)) {
-			defaultShowCreditPoints = "true".equals(defaultShowCreditPointsObj);
 		}
 
 		defaultTaughtByValue = getStringPropertyValue(DEFAULT_TAUGHT_BY, defaultTaughtByValue);
@@ -275,15 +267,6 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	public void setDefaultShowCertificate(boolean defaultShowCertificate) {
 		this.defaultShowCertificate = defaultShowCertificate;
 		setStringProperty(DEFAULT_SHOW_CERTIFICATE, Boolean.toString(defaultShowCertificate), true);
-	}
-
-	public boolean isDefaultShowCreditPoints() {
-		return defaultShowCreditPoints;
-	}
-
-	public void setDefaultShowCreditPoints(boolean defaultShowCreditPoints) {
-		this.defaultShowCreditPoints = defaultShowCreditPoints;
-		setStringProperty(DEFAULT_SHOW_CREDITPOINTS, Boolean.toString(defaultShowCreditPoints), true);
 	}
 
 	public Set<TaughtBy> getDefaultTaughtBys() {

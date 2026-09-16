@@ -60,7 +60,6 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 	private static final String EVENTS_KEY = "events";
 	private static final String MEET_TEACHERS_KEY = "meetteachers";
 	private static final String CERTIFICATE_KEY = "certificate";
-	private static final String CREDIT_POINTS_KEY = "creditpoints";
 
 	private FormToggle enableEl;
 	private MultipleSelectionElement curriculumMyCoursesEl;
@@ -98,6 +97,7 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 		String[] onValues = new String[] { translate("curriculum.in.my.courses.enabled") };
 		curriculumMyCoursesEl = uifactory.addCheckboxesHorizontal("curriculum.admin.enable.option", formLayout, onKeys, onValues);
 		curriculumMyCoursesEl.addActionListener(FormEvent.ONCHANGE);
+		curriculumMyCoursesEl.setEvaluationOnlyVisible(true);
 		if(curriculumModule.isCurriculumInMyCourses()) {
 			curriculumMyCoursesEl.select(onKeys[0], true);
 		}
@@ -111,6 +111,7 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 		linkedTaxonomiesEl = uifactory.addCheckboxesVertical("taxonomy.linked.elements", configurationCont, taxonomyKeys, taxonomyNames, 1);
 		curriculumModule.getTaxonomyRefs().stream().forEach(taxonomy -> linkedTaxonomiesEl.select(taxonomy.getKey().toString(), true));
 		linkedTaxonomiesEl.addActionListener(FormEvent.ONCHANGE);
+		linkedTaxonomiesEl.setEvaluationOnlyVisible(true);
 
 		defaultSettingsCont = uifactory.addFormSection("defaultSettings", translate("default.settings"), formLayout, FormSection.Level.SUB_TITLE);
 
@@ -130,16 +131,15 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 		showInfoPK.add(SelectionValues.entry(EVENTS_KEY, translate("cif.events")));
 		showInfoPK.add(SelectionValues.entry(MEET_TEACHERS_KEY, translate("cif.meet.your.teachers")));
 		showInfoPK.add(SelectionValues.entry(CERTIFICATE_KEY, translate("details.certificate")));
-		showInfoPK.add(SelectionValues.entry(CREDIT_POINTS_KEY, translate("details.benefits.credit.points")));
 		defaultShowInfoEl = uifactory.addCheckboxesVertical("default.show.info", "cif.display.on.info.page", defaultSettingsCont,
 				showInfoPK.keys(), showInfoPK.values(), 1);
 		defaultShowInfoEl.setHelpText(translate("cif.display.on.info.page.help"));
 		defaultShowInfoEl.addActionListener(FormEvent.ONCHANGE);
+		defaultShowInfoEl.setEvaluationOnlyVisible(true);
 		defaultShowInfoEl.select(OUTLINE_KEY, curriculumModule.isDefaultShowOutline());
 		defaultShowInfoEl.select(EVENTS_KEY, curriculumModule.isDefaultShowLectures());
 		defaultShowInfoEl.select(MEET_TEACHERS_KEY, !curriculumModule.getDefaultTaughtBys().isEmpty());
 		defaultShowInfoEl.select(CERTIFICATE_KEY, curriculumModule.isDefaultShowCertificate());
-		defaultShowInfoEl.select(CREDIT_POINTS_KEY, curriculumModule.isDefaultShowCreditPoints());
 
 		SelectionValues taughtByPK = new SelectionValues();
 		TaughtBy.ALL.forEach(taughtBy -> taughtByPK.add(SelectionValues.entry(taughtBy.name(), translate("cif.role." + taughtBy.name()))));
@@ -147,8 +147,8 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 				taughtByPK.keys(), taughtByPK.values(), 1);
 		defaultTaughtByEl.setHelpText(translate("cif.taught.by.help"));
 		defaultTaughtByEl.addActionListener(FormEvent.ONCHANGE);
+		defaultTaughtByEl.setEvaluationOnlyVisible(true);
 		curriculumModule.getDefaultTaughtBys().forEach(taughtBy -> defaultTaughtByEl.select(taughtBy.name(), true));
-		defaultTaughtByEl.setVisible(!curriculumModule.getDefaultTaughtBys().isEmpty());
 	}
 
 	@Override
@@ -174,7 +174,6 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 			curriculumModule.setDefaultShowOutline(selectedInfo.contains(OUTLINE_KEY));
 			curriculumModule.setDefaultShowLectures(selectedInfo.contains(EVENTS_KEY));
 			curriculumModule.setDefaultShowCertificate(selectedInfo.contains(CERTIFICATE_KEY));
-			curriculumModule.setDefaultShowCreditPoints(selectedInfo.contains(CREDIT_POINTS_KEY));
 			boolean meetTeachers = selectedInfo.contains(MEET_TEACHERS_KEY);
 			defaultTaughtByEl.setVisible(meetTeachers);
 			if(!meetTeachers) {
@@ -193,5 +192,8 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 		curriculumMyCoursesEl.setVisible(enabled);
 		configurationCont.setVisible(enabled);
 		defaultSettingsCont.setVisible(enabled);
+		linkedTaxonomiesEl.setVisible(enabled);
+		defaultShowInfoEl.setVisible(enabled);
+		defaultTaughtByEl.setVisible(enabled && !curriculumModule.getDefaultTaughtBys().isEmpty());
 	}
 }
