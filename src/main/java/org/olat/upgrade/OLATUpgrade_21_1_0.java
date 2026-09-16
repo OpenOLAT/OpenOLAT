@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.admin.landingpages.LandingPagesModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -55,6 +56,7 @@ public class OLATUpgrade_21_1_0 extends OLATUpgrade {
 	private static final String MIGRATE_CERTIFICATE_IN_ERROR_STATUS = "MIGRATE CERTIFICATE IN ERROR STATUS";
 	private static final String DISABLE_SSRF_EXISTING_INSTANCE = "DISABLE SSRF EXISTING INSTANCE";
 	private static final String ADD_CUSTOMER_NUMBER_USER_PROPERTY = "ADD CUSTOMER NUMBER USER PROPERTY";
+	private static final String INIT_LANDING_PAGE_DEFAULTS = "INIT LANDING PAGE DEFAULTS";
 
 	private static final String CUSTOMER_NUMBER_PROPERTY = "customerNumber";
 	private static final String CUSTOMER_NUMBER_ADMIN_ONLY_CONTEXT = "org.olat.user.ProfileFormController";
@@ -71,6 +73,8 @@ public class OLATUpgrade_21_1_0 extends OLATUpgrade {
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private UsrPropCfgManager usrPropCfgManager;
+	@Autowired
+	private LandingPagesModule landingPagesModule;
 
 	@Override
 	public String getVersion() {
@@ -90,6 +94,7 @@ public class OLATUpgrade_21_1_0 extends OLATUpgrade {
 		allOk &= migrateCertificateInErrorStatus(upgradeManager, uhd);
 		allOk &= disableSSRFOnExistingInstances(upgradeManager, uhd);
 		allOk &= addCustomerNumberToUserPropertyContexts(upgradeManager, uhd);
+		allOk &= initLandingPageDefaults(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -151,6 +156,31 @@ public class OLATUpgrade_21_1_0 extends OLATUpgrade {
 				allOk = false;
 			}
 			uhd.setBooleanDataValue(ADD_CUSTOMER_NUMBER_USER_PROPERTY, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
+	/**
+	 * An installation that never configured landing page rules already gets the same four default
+	 * rules from LandingPagesModule.init() at every startup, but only in memory: nothing is persisted
+	 * until an administrator opens the settings and saves. Persist them explicitly here so they show
+	 * up in Administration > Landing pages right away (OO-9777). An installation that has ever saved
+	 * a "rules" property (including a deliberately empty list) is left untouched.
+	 */
+	private boolean initLandingPageDefaults(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(INIT_LANDING_PAGE_DEFAULTS)) {
+			try {
+				if (!landingPagesModule.hasConfiguredRules()) {
+					landingPagesModule.setRules(LandingPagesModule.createDefaultRules());
+					log.info(Tracing.M_AUDIT, "Landing page default rules initialized.");
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(INIT_LANDING_PAGE_DEFAULTS, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
