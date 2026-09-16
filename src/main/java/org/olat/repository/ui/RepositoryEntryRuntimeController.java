@@ -49,7 +49,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
@@ -642,8 +641,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 
 	protected final String getAboutTitle() {
-		String title = translate("details.about." + handler.getSupportedType());
-		if (title.startsWith(Translator.NO_TRANSLATION_ERROR_PREFIX)) {
+		String i18nKey = "details.about." + handler.getSupportedType();
+		String title = getTranslator().translate(i18nKey, null, 0, true);
+		if (title == null || i18nKey.equals(title) || title.indexOf("OLATRuntimeException: transl dummy") > 0) {
 			title = translate("details.about");
 		}
 		return title;
