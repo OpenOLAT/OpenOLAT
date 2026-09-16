@@ -86,6 +86,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	private final String mapperUri;
 	
 	private boolean pushUpdate = false;
+	private boolean authorizedSebVersion = false;
 	private List<TransientAssessmentMode> modes;
 	
 	private final ResourceGuards guards = new ResourceGuards();
@@ -270,15 +271,19 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			allowed &= safeExamCheck;
 		}
 		
+		// Only need to authorized the version once. 
 		if(assessmentModule.isSafeExamBrowserEnforceMinimalVersion()
-				&& (StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey()) || StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList()))) {
+				&& (StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey()) || StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList()))
+				&& !authorizedSebVersion) {
 			String browserVersion = ureq.getParameter("browserVersion");
 			SafeExamBrowserVersion versionInfos = SafeExamBrowserVersion.valueOf(browserVersion);
 			if(versionInfos == null && !allowed) {
 				// Don't write message twice
 			} else {
 				boolean authorizedVersion = isVersionAllowed(ureq, versionInfos);
-				if(!authorizedVersion) {
+				if(authorizedVersion) {
+					authorizedSebVersion = true;
+				} else {
 					sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
 					sb.append(translate("error.safe.exam.version"));
 					sb.append("</h4>");
