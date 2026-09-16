@@ -1,4 +1,4 @@
-<fieldset #if(!$!f.domReplacementWrapperRequired && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="o_form_section #if($off_css_class) $off_css_class #end $f.getContainerCssClass()">
+<fieldset id="$r.getCId()" class="o_form_section #if($off_css_class) $off_css_class #end $f.getContainerCssClass()">
 #if ($off_title)
 	#if($sec_subTitle)
 		$r.sectionHeader("$r.getCId()_content", $off_title, true, $sec_collapsible, !$sec_collapsed)

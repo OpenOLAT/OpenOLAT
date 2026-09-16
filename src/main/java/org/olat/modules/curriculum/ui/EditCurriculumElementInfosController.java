@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
@@ -46,6 +47,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -99,6 +101,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	private TextElement authorsEl;
 	private TextElement mainLanguageEl;
 	private TextElement expenditureOfWorkEl;
+	private FormSection displayCont;
 	private MultipleSelectionElement showInfoEl;
 	private MultipleSelectionElement taughtByEl;
 	private TextElement creditPointsEl;
@@ -217,7 +220,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			expenditureOfWorkEl.setExampleKey("details.expenditureOfWork.example", null);
 			expenditureOfWorkEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.expenditureOfWork));
 
-			FormSection displayCont = uifactory.addFormSection("display", translate("cif.display.settings"), formLayout, FormSection.Level.SUB_TITLE);
+			displayCont = uifactory.addFormSection("display", translate("cif.display.settings"), formLayout, FormSection.Level.SUB_TITLE);
 
 			SelectionValues showInfoPK = new SelectionValues();
 			showInfoPK.add(SelectionValues.entry(OUTLINE_KEY, translate("infos.outline")));
@@ -383,6 +386,18 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(fiSrc == showInfoEl) {
+			displayCont.setDirty(true);
+			Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);
+			getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
+			markDirtinessToContainer(fiSrc, event);
+		} else {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
 	}
 
 	@Override
