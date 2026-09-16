@@ -60,7 +60,7 @@ public class CurriculumPlannerRightsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		uifactory.addStaticTextElement("role.identifier", "role.identifier", translate("curriculum.admin.planner"), formLayout);
+		uifactory.addStaticTextElement("role.identifier", "curriculum.admin.organisation.role", translate("curriculum.admin.planner"), formLayout);
 
 		relationRights.sort(Comparator.comparing(RightProvider::getUserRelationsPosition));
 
