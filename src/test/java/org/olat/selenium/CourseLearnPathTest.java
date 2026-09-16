@@ -374,7 +374,7 @@ public class CourseLearnPathTest extends Deployments {
 		
 		RepositorySettingsPage settings = new RepositorySettingsPage(browser);
 		settings
-			.assertOnInfos();
+			.assertOnMetadata();
 		settings	
 			.back();
 		

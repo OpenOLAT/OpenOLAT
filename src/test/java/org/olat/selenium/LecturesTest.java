@@ -118,7 +118,7 @@ public class LecturesTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		//set access
@@ -265,7 +265,7 @@ public class LecturesTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		//set access
@@ -405,7 +405,7 @@ public class LecturesTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 
 		CoursePageFragment course = new CoursePageFragment(browser);
@@ -531,7 +531,7 @@ public class LecturesTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		//set access
@@ -662,7 +662,7 @@ public class LecturesTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		CoursePageFragment course = new CoursePageFragment(browser);

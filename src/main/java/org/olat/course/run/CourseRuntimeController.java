@@ -2951,7 +2951,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void launchCreateCourseEditDescription(UserRequest ureq, RepositoryEntry createdRepositoryEntry) {
-		String businessPath = "[RepositoryEntry:" + createdRepositoryEntry.getKey() + "][EditDescription:0][Info:0]";
+		String businessPath = "[RepositoryEntry:" + createdRepositoryEntry.getKey() + "][EditDescription:0][Metadata:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 
 		EntryChangedEvent e = new EntryChangedEvent(createdRepositoryEntry, getIdentity(), Change.added, "runtime");

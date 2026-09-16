@@ -372,7 +372,7 @@ public class VariousTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, true)
-			.assertOnInfos()
+			.assertOnMetadata()
 			//from description editor, back to the course
 			.clickToolbarBack();
 		
@@ -454,7 +454,7 @@ public class VariousTest extends Deployments {
 			.clickCreate(ResourceType.wiki)
 			.fillCreateForm(title);
 		settings
-			.assertOnInfos();
+			.assertOnMetadata();
 		settings
 			.accessConfiguration()
 			.setMetadataIndex()

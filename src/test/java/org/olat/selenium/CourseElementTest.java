@@ -160,7 +160,7 @@ public class CourseElementTest extends Deployments {
 		navBar
 			.openAuthoringEnvironment()
 			.createCP(cpTitle)
-			.assertOnInfos();
+			.assertOnMetadata();
 		
 		navBar.openCourse(courseTitle);
 		
@@ -570,7 +570,7 @@ public class CourseElementTest extends Deployments {
 		navBar
 			.openAuthoringEnvironment()
 			.createWiki(wikiTitle)
-			.assertOnInfos();
+			.assertOnMetadata();
 		
 		navBar.openCourse(courseTitle);
 		
@@ -1087,7 +1087,7 @@ public class CourseElementTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		String infoNodeTitle = "Infos - News";
@@ -1194,7 +1194,7 @@ public class CourseElementTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		//add a participant
@@ -1326,7 +1326,7 @@ public class CourseElementTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		//add 2 participants
@@ -1606,7 +1606,7 @@ public class CourseElementTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		String participantFolderTitle = "ParticipantList";
@@ -2604,7 +2604,7 @@ public class CourseElementTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(courseTitle, true)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		//add a participant
@@ -2710,7 +2710,7 @@ public class CourseElementTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(courseTitle, true)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 
 		String pageNodeTitle = "Page";
@@ -2779,7 +2779,7 @@ public class CourseElementTest extends Deployments {
 		navBar
 			.openAuthoringEnvironment()
 			.createSurvey(surveyTitle)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		EvaluationFormPage survey = EvaluationFormPage
@@ -3698,7 +3698,7 @@ public class CourseElementTest extends Deployments {
 		 navBar
 		 	.openAuthoringEnvironment()
 		 	.createCourse(courseTitle, true)
-		 	.assertOnInfos();
+		 	.assertOnMetadata();
 		
 		String nodeTitle = "Jupyter Lab";
 		CoursePageFragment course = new CoursePageFragment(browser);
@@ -3762,7 +3762,7 @@ public class CourseElementTest extends Deployments {
 		 navBar
 		 	.openAuthoringEnvironment()
 		 	.createCourse(courseTitle, true)
-		 	.assertOnInfos();
+		 	.assertOnMetadata();
 		
 		String nodeTitle = "Zoom meeting";
 		CoursePageFragment course = new CoursePageFragment(browser);

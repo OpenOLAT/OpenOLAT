@@ -991,7 +991,18 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(newElementCtrl == source || newSubElementCtrl == source || bulkChangeTypeCtrl == source
+		if(newElementCtrl == source) {
+			CurriculumElement newElement = newElementCtrl.getCurriculumElement();
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+			if(event == Event.DONE_EVENT && rootElement == null && newElement != null) {
+				List<ContextEntry> settings = BusinessControlFactory.getInstance().createCEListFromString("[Metadata:0]");
+				doOpenCurriculumElementDetails(ureq, newElement, settings);
+			}
+		} else if(newSubElementCtrl == source || bulkChangeTypeCtrl == source
 				|| moveElementCtrl == source || confirmDeleteCtrl == source
 				|| bulkDeleteConfirmationCtrl == source || bulkCreateToDoCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {

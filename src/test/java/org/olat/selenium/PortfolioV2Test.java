@@ -311,7 +311,7 @@ public class PortfolioV2Test extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.wiki)
 			.fillCreateForm(title)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		//create a page in the wiki

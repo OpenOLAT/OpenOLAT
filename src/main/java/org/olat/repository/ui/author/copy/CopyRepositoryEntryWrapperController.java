@@ -118,7 +118,7 @@ public class CopyRepositoryEntryWrapperController extends BasicController {
 	}
 	
 	private void launchCopiedCourse(UserRequest ureq, RepositoryEntryRef copy) {
-		String businessPath = "[RepositoryEntry:" + copy.getKey() + "][EditDescription:0][Info:0]";
+		String businessPath = "[RepositoryEntry:" + copy.getKey() + "][EditDescription:0][Metadata:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		
 		EntryChangedEvent e = new EntryChangedEvent(repositoryEntry, getIdentity(), Change.added, "runtime");

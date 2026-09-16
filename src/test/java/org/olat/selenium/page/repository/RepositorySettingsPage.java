@@ -37,10 +37,9 @@ public class RepositorySettingsPage {
 		this.browser = browser;
 	}
 	
-	public RepositoryEditDescriptionPage assertOnInfos() {
-		By infosBy = By.cssSelector("fieldset.o_sel_edit_repositoryentry");
-		OOGraphene.waitElement(infosBy, browser);
-		OOGraphene.waitTinymce(browser);
+	public RepositoryEditDescriptionPage assertOnMetadata() {
+		By metadataBy = By.cssSelector("fieldset.o_sel_repo_metadata");
+		OOGraphene.waitElement(metadataBy, browser);
 		return new RepositoryEditDescriptionPage(browser);
 	}
 	

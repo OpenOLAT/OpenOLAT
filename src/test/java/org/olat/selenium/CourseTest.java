@@ -131,7 +131,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			//from description editor, back to the course
 			.clickToolbarBack();
 		
@@ -198,7 +198,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			//from description editor, back to the course
 			.clickToolbarBack();
 		
@@ -278,7 +278,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos();
+			.assertOnMetadata();
 		
 		//from description editor, back to the course
 		editDescription
@@ -340,7 +340,7 @@ public class CourseTest extends Deployments {
 		RepositorySettingsPage settings = new RepositorySettingsPage(browser);
 		//from description editor, back to details and launch the course
 		settings
-			.assertOnInfos();
+			.assertOnMetadata();
 		settings	
 			.back();
 
@@ -428,7 +428,7 @@ public class CourseTest extends Deployments {
 		
 		RepositorySettingsPage settings = new RepositorySettingsPage(browser);
 		settings
-			.assertOnInfos();
+			.assertOnMetadata();
 		settings	
 			.back();
 		
@@ -502,7 +502,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		//add a second owner
 		MembersPage members = new CoursePageFragment(browser)
@@ -1157,7 +1157,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos();
+			.assertOnMetadata();
 
 		//open course editor
 		CoursePageFragment course = new CoursePageFragment(browser);
@@ -1254,7 +1254,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos();
+			.assertOnMetadata();
 
 		String infoMessageTitle = "Some informations";
 		//open course editor
@@ -1356,7 +1356,7 @@ public class CourseTest extends Deployments {
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false);
 		settings
-			.assertOnInfos();
+			.assertOnMetadata();
 		settings
 			.metadata()
 			.setLicense()
@@ -1464,7 +1464,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, false)
-			.assertOnInfos()
+			.assertOnMetadata()
 			.clickToolbarBack();
 		
 		String infoTitle = "Info - " + UUID.randomUUID();

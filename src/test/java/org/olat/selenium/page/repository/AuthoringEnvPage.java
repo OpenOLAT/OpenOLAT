@@ -45,7 +45,7 @@ import org.openqa.selenium.support.ui.Select;
 public class AuthoringEnvPage {
 	
 	public static final By createMenuBy = By.cssSelector("ul.o_sel_author_create");
-	public static final By generaltabBy = By.className("o_sel_edit_repositoryentry");
+	public static final By generaltabBy = By.className("o_sel_repo_metadata");
 	
 	private WebDriver browser;
 	
@@ -91,7 +91,7 @@ public class AuthoringEnvPage {
 		openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateCourseForm(title, learnPath)
-			.assertOnInfos();
+			.assertOnMetadata();
 		return new CourseSettingsPage(browser);
 	}
 	
@@ -99,21 +99,21 @@ public class AuthoringEnvPage {
 		return openCreateDropDown()
 			.clickCreate(ResourceType.portfolio)
 			.fillCreateForm(title)
-			.assertOnInfos();
+			.assertOnMetadata();
 	}
 	
 	public RepositoryEditDescriptionPage createQTI21Test(String title) {
 		return openCreateDropDown()
 			.clickCreate(ResourceType.qti21Test)
 			.fillCreateForm(title)
-			.assertOnInfos();
+			.assertOnMetadata();
 	}
 	
 	public RepositoryEditDescriptionPage createSharedFolder(String title) {
 		return openCreateDropDown()
 			.clickCreate(ResourceType.sharedFolder)
 			.fillCreateForm(title)
-			.assertOnInfos();
+			.assertOnMetadata();
 	}
 	
 	/**
@@ -157,10 +157,9 @@ public class AuthoringEnvPage {
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitElement(generaltabBy, browser);
-		OOGraphene.waitTinymce(browser);
 		return new RepositorySettingsPage(browser);
 	}
-	
+
 	/**
 	 * Fill the create form and submit
 	 * @param displayName The name of the course
@@ -184,7 +183,6 @@ public class AuthoringEnvPage {
 		OOGraphene.click(submitBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitElement(generaltabBy, browser);
-		OOGraphene.waitTinymce(browser);
 		return new RepositorySettingsPage(browser);
 	}
 	
@@ -224,7 +222,7 @@ public class AuthoringEnvPage {
 		RepositoryEditDescriptionPage editDescription = openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnInfos();
+			.assertOnMetadata();
 			
 		//from description editor, back to details and launch the course
 		editDescription
@@ -261,7 +259,6 @@ public class AuthoringEnvPage {
 			OOGraphene.waitElement(saveBy, browser).click();
 			OOGraphene.waitModalDialogDisappears(browser);
 			OOGraphene.waitElement(generaltabBy, browser);
-			OOGraphene.waitTinymce(browser);
 		} else {
 			By saveDisabledBy = By.xpath("//div[contains(@class,'o_sel_repo_save_details')]//button[contains(@class,'btn-primary')][contains(@class,'o_disabled')]");
 			OOGraphene.waitElement(saveDisabledBy, browser);
