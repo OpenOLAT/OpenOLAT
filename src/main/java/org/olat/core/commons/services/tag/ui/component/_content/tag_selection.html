@@ -1,13 +1,7 @@
 <div class="o_tag_selection">
 	<div class="o_tag_selection_header">
-		<div class="input-group o_tag_selection_search">
-			<div class="input-group">
-				<span class="input-group-addon"><i class="o_icon o_icon-fw o_icon_search"> </i></span>
-				<div class="o_search_field">
-					$r.render("search.term", "barebone", "form")
-					$r.render("search.reset", "barebone")
-				</div>
-			</div>
+		<div class="o_tag_selection_search">
+			$r.render("quicksearch")
 		</div>
 	</div>
 	$r.render("tags")
