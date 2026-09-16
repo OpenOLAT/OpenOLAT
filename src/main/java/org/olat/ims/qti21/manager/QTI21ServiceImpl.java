@@ -849,6 +849,11 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
+	public List<AssessmentItemSession> getAssessmentItemSessions(RepositoryEntryRef courseEntry, String subIdent, Identity assessedIdentity) {
+		return itemSessionDao.getAssessmentItemSessions(courseEntry, subIdent, assessedIdentity);
+	}
+
+	@Override
 	public AssessmentItemSession getAssessmentItemSession(AssessmentItemSessionRef candidateSession) {
 		if(candidateSession == null) return null;
 		return itemSessionDao.loadByKey(candidateSession.getKey());

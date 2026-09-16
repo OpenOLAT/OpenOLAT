@@ -78,7 +78,8 @@ public interface QTI21StatisticsManager {
 	public StatisticsPart getAssessmentPartStatistics(double maxScore,
 			QTI21StatisticSearchParams searchParams, TestPart testPart, List<AssessmentSection> sections);
 	
-	public StatisticsItem getAssessmentItemStatistics(String itemRefIdent, double maxScore, QTI21StatisticSearchParams searchParams);
+	public StatisticsItem getAssessmentItemStatistics(String itemRefIdent, double maxScore, QTI21StatisticSearchParams searchParams,
+			AssessmentItem assessmentItem);
 	
 	public List<ChoiceStatistics> getChoiceInteractionStatistics(String itemRefIdent,
 			AssessmentItem assessmentItem, ChoiceInteraction choiceInteraction, QTI21StatisticSearchParams searchParams);

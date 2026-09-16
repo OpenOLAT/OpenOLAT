@@ -56,7 +56,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class CorrectionIdentityAssessmentItemPrintController extends FormBasicController implements Controller {
+public class CorrectionIdentityAssessmentItemPrintController extends FormBasicController {
 
 	private final RepositoryEntry courseEntry;
 	private final QTICourseNode courseNode;

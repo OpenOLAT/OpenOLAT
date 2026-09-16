@@ -50,6 +50,16 @@
 			<tr><th scope="row">$r.translate("fig.averagedur")</th>
 				<td>$averageDuration</td></tr>
 			#end
+			#if($numOfAdjustements)
+			<tr><th scope="row">$r.translate("fig.numofadjustements")</th>
+				<td>$numOfAdjustements</td></tr>
+			#end
+			#if($averageAdjustement)
+			<tr><th scope="row">$r.translate("fig.averageadjustement")</th>
+				<td>$averageAdjustement</td></tr>
+			#end
+			
+			
 		</tbody>
 	</table>
 

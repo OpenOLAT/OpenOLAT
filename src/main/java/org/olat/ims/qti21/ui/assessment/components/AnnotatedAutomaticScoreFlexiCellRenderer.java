@@ -32,22 +32,32 @@ import org.olat.ims.qti21.ui.assessment.model.CorrectionIdentityAssessmentItemRo
 
 /**
  * 
- * Initial date: 20 nov. 2023<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 14 sept. 2026<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class AnnotatedScoreFlexiCellRenderer implements FlexiCellRenderer {
+public class AnnotatedAutomaticScoreFlexiCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		Object obj = source.getFormItem().getTableDataModel().getObject(row);
 		if(obj instanceof CorrectionIdentityAssessmentItemRow itemRow) {
-			BigDecimal score = itemRow.getFinalScore();
-			if(score != null) {
-				target.append(AssessmentHelper.getRoundedScore(score));
-				if(itemRow.getManualScore() != null && itemRow.getScore() != null) {
-					target.append(" ( <span class='o_deleted'>").append(AssessmentHelper.getRoundedScore(itemRow.getScore())).append("</span> )");	
+			BigDecimal score = itemRow.getScore();
+			if(score == null) {
+				score = BigDecimal.ZERO;
+			}
+			
+			target.append(AssessmentHelper.getRoundedScore(score));
+			if(!itemRow.isManualCorrection() && itemRow.getManualScore() != null) {
+				BigDecimal diff = itemRow.getManualScore().subtract(score);
+				int comparison = diff.compareTo(BigDecimal.ZERO);
+				if(comparison != 0) {
+					target.append(" (");
+					if(comparison > 0) {
+						target.append("+");
+					}
+					target.append(AssessmentHelper.getRoundedScore(diff)).append(")");	
 				}
 			}
 		}

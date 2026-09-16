@@ -40,6 +40,7 @@ public class CorrectionAssessmentItemRow extends CorrectionRow {
 	private final ManifestMetadataBuilder metadata;
 	
 	private final FormLink toolsLink;
+	private FormLink notCorrectedLink;
 	
 	public CorrectionAssessmentItemRow(AssessmentItemRef itemRef, AssessmentItem item, ManifestMetadataBuilder metadata, FormLink toolsLink) {
 		this.item = item;
@@ -73,6 +74,14 @@ public class CorrectionAssessmentItemRow extends CorrectionRow {
 		return toolsLink;
 	}
 	
+	public FormLink getNotCorrectedLink() {
+		return notCorrectedLink;
+	}
+
+	public void setNotCorrectedLink(FormLink notCorrectedLink) {
+		this.notCorrectedLink = notCorrectedLink;
+	}
+
 	/**
 	 * @return The metadata or null
 	 */
@@ -94,8 +103,7 @@ public class CorrectionAssessmentItemRow extends CorrectionRow {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CorrectionAssessmentItemRow) {
-			CorrectionAssessmentItemRow row = (CorrectionAssessmentItemRow)obj;
+		if(obj instanceof CorrectionAssessmentItemRow row) {
 			return itemRef.equals(row.itemRef);
 		}
 		return false;

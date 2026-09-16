@@ -145,8 +145,7 @@ public class AssessmentItemListEntry {
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof AssessmentItemListEntry) {
-			AssessmentItemListEntry entry = (AssessmentItemListEntry)obj;
+		if(obj instanceof AssessmentItemListEntry entry) {
 			return assessedIdentity.equals(entry.assessedIdentity)
 					&& itemRef.getIdentifier().equals(entry.itemRef.getIdentifier());
 		}

@@ -19,8 +19,6 @@
  */
 package org.olat.ims.qti21.model.jpa;
 
-import java.math.BigDecimal;
-
 import org.olat.ims.qti21.AssessmentTestSession;
 
 /**
@@ -29,6 +27,6 @@ import org.olat.ims.qti21.AssessmentTestSession;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record AssessmentTestSessionStatistics(AssessmentTestSession testSession, int numOfCorrectedItems, BigDecimal automaticScore) {
+public record AssessmentTestSessionStatistics(AssessmentTestSession testSession) {
 	//
 }

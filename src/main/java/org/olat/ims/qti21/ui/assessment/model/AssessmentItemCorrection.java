@@ -113,4 +113,8 @@ public class AssessmentItemCorrection {
 	public boolean isResponded() {
 		return itemSessionState != null && itemSessionState.isResponded();
 	}
+	
+	public boolean isPresented() {
+		return itemSessionState != null && itemSessionState.isPresented();
+	}
 }

@@ -48,8 +48,8 @@ public class CorrectionAssessmentItemTableSort extends SortableFlexiTableModelDe
 		ItemCols column = ItemCols.values()[columnIndex];
 		switch(column) {
 			case itemType:Collections.sort(rows, new QuestionTypeComparator()); break;
-			case corrected: Collections.sort(rows, new CorrectedComparator()); break;
 			case notCorrected: Collections.sort(rows, new NotCorrectedComparator()); break;
+			case toReview: Collections.sort(rows, new ToReviewComparator()); break;
 			default: super.sort(rows);
 		}
 	}
@@ -78,10 +78,13 @@ public class CorrectionAssessmentItemTableSort extends SortableFlexiTableModelDe
 		}
 	}
 	
-	private class CorrectedComparator implements Comparator<CorrectionAssessmentItemRow> {
+	private class ToReviewComparator implements Comparator<CorrectionAssessmentItemRow> {
 		@Override
 		public int compare(CorrectionAssessmentItemRow o1, CorrectionAssessmentItemRow o2) {
-			int c = Integer.compare(o1.getNumCorrected(), o2.getNumCorrected());
+			int r1 = o1.getNumToReview();
+			int r2 = o2.getNumToReview();
+			
+			int c = Integer.compare(r1, r2);
 			if(c == 0) {
 				c = compareString(o1.getItemTitle(), o2.getItemTitle());
 			}

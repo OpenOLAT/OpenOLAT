@@ -29,6 +29,8 @@ public abstract class CorrectionRow {
 	
 	private int numCorrected = 0;
 	private int numAutoCorrected = 0;
+	private int numManuallyCorrected = 0;
+	private int numAdjusted = 0;
 	private int numToReview = 0;
 	private int numNotCorrected = 0;
 	private int numOfSessions = 0;
@@ -43,6 +45,24 @@ public abstract class CorrectionRow {
 	public int addAutoCorrected() {
 		numAutoCorrected++;
 		return numAutoCorrected;
+	}
+	
+	public int getNumManuallyCorrected() {
+		return numManuallyCorrected;
+	}
+	
+	public int addManuallyCorrected() {
+		numManuallyCorrected++;
+		return numManuallyCorrected;
+	}
+	
+	public int getNumOfAdjusted() {
+		return numAdjusted;
+	}
+	
+	public int addAdjusted() {
+		numAdjusted++;
+		return numAdjusted;
 	}
 	
 	public int getNumCorrected() {

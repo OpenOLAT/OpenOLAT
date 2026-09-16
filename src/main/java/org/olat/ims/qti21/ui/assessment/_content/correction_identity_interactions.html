@@ -3,7 +3,9 @@
 	#if ($off_warn)
 	<p>$off_warn</p>
 	#end
-	#if(!${interactionWrapper.isItemSessionStateFinal()})
+	#if(!${interactionWrapper.isItemSessionPresented()})
+	<p>$r.translate("warning.not.presented")</p>
+	#elseif(!${interactionWrapper.isItemSessionStateFinal()})
 	<p>$r.translate("warning.not.submitted") #if($r.isTrue($autoSaved))<br>$r.translate("warning.not.submitted.autosave")#end</p>
 	#end
 </div>

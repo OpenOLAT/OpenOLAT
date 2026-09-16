@@ -25,52 +25,29 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.ims.qti21.ui.assessment.model.CorrectionIdentityAssessmentItemRow;
+import org.olat.ims.qti21.ui.assessment.model.CorrectionAssessmentItemRow;
 import org.olat.ims.qti21.ui.assessment.model.CorrectionIdentityRow;
-import org.olat.ims.qti21.ui.assessment.model.CorrectionRow;
 
 /**
  * 
- * Initial date: 8 mars 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 14 sept. 2026<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class AutoCorrectedFlexiCellRenderer implements FlexiCellRenderer {
+public class AnsweredFlexiCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		Object obj = source.getFormItem().getTableDataModel().getObject(row);
-		if(obj instanceof CorrectionIdentityRow) {
-			render(target, (CorrectionIdentityRow)obj);
-		} else if(obj instanceof CorrectionRow) {
-			render(target, (CorrectionRow)obj);
-		} else if(obj instanceof CorrectionIdentityAssessmentItemRow) {
-			render(target, (CorrectionIdentityAssessmentItemRow)obj);
+		if(obj instanceof CorrectionAssessmentItemRow itemRow) {
+			render(target, itemRow.getNumOfSessions(), itemRow.getNumAnswered());
+		} else if(obj instanceof CorrectionIdentityRow itemRow) {
+			render(target, itemRow.getNumOfSessions(), itemRow.getNumAnswered());
 		}
 	}
 	
-	public void render(StringOutput target, CorrectionRow itemRow) {
-		if(!itemRow.isManualCorrection() && itemRow.getNumAutoCorrected() > 0) {
-			target.append(itemRow.getNumAutoCorrected());
-			if(itemRow.getNumCorrected() + itemRow.getNumAutoCorrected() >= itemRow.getNumOfSessions()) {
-				target.append(" <i class='o_icon o_icon_fw o_icon_ok'> </i> ");
-			} else {
-				target.append(" <i class='o_icon o_icon_fw o_icon_warn'> </i> ");
-			}
-		}
-	}
-
-	private void render(StringOutput target, CorrectionIdentityRow identityRow) {
-		target.append(identityRow.getNumAutoCorrected());
-		if(identityRow.getNumAutoCorrectedNotAnswered() == 0) {
-			target.append(" <i class='o_icon o_icon_fw o_icon_ok'> </i> ");
-		}
-	}
-	
-	private void render(StringOutput target, CorrectionIdentityAssessmentItemRow itemRow) {
-		if(!itemRow.isManualCorrection() && itemRow.getManualScore() == null) {
-			target.append(" <i class='o_icon o_icon_fw o_icon_ok'> </i>");
-		}
+	private void render(StringOutput target, int numOfSessions, int numOfAnswered) {
+		target.append(numOfAnswered).append("/").append(numOfSessions);
 	}
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -146,7 +147,21 @@ public class AssessmentTestHelper {
 				&& resolvedAssessmentItem.getItemLookup() != null
 				&& resolvedAssessmentItem.getItemLookup().getRootNodeHolder() != null) {
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+			return needManualCorrection(assessmentItem);
+		}
+		return false;
+	}
+	
+	public static boolean needManualCorrection(AssessmentItem assessmentItem) {
+		if(assessmentItem != null) {
 			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+			return needManualCorrection(interactions);
+		}
+		return false;
+	}
+	
+	public static boolean needManualCorrection(List<Interaction> interactions) {
+		if(interactions != null) {
 			for(Interaction interaction:interactions) {
 				if(interaction instanceof UploadInteraction
 						|| interaction instanceof DrawingInteraction
@@ -156,6 +171,21 @@ public class AssessmentTestHelper {
 			}
 		}
 		return false;
+	}
+	
+	public static BigDecimal calculateAdjustement(BigDecimal manualScore, BigDecimal score) {
+		if(score == null) {
+			score = BigDecimal.ZERO;
+		}
+		
+		BigDecimal adjustmentScore = null;
+		if(manualScore != null) {
+			adjustmentScore = manualScore.subtract(score);
+			if(adjustmentScore.compareTo(BigDecimal.ZERO) == 0) {
+				adjustmentScore = null;
+			}
+		}
+		return adjustmentScore;
 	}
 	
 	/**

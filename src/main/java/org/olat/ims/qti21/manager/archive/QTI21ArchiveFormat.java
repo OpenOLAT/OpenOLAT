@@ -1,6 +1,4 @@
 /**
-
-
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -68,6 +66,7 @@ import org.olat.course.properties.IdentityAnonymizerCallback;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
+import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentItemSessionDAO;
@@ -361,7 +360,7 @@ public class QTI21ArchiveFormat {
 
 		// test points, passed and dates
 		header1Row.addCell(col++, translator.translate("archive.table.header.test"), headerStyle);
-		col += 7;
+		col += 9;
 		
 		List<AbstractInfos> infos = getItemInfos();
 		for(int i=0; i<infos.size(); i++) {
@@ -381,6 +380,9 @@ public class QTI21ArchiveFormat {
 				}
 				if (exportConfig.isPointCol()) {
 					col++;
+					if(!AssessmentTestHelper.needManualCorrection(item.getInteractions())) {
+						col++;
+					}
 				}
 				if (exportConfig.isCommentCol()) {
 					col++;
@@ -413,9 +415,11 @@ public class QTI21ArchiveFormat {
 			header2Row.addCell(col++, translator.translate("archive.table.header.node.passed"), headerStyle);
 		}
 		
-		header2Row.addCell(col++, translator.translate("archive.table.header.points"), headerStyle);
-		header2Row.addCell(col++, translator.translate("archive.table.header.manual.points"), headerStyle);
 		header2Row.addCell(col++, translator.translate("archive.table.header.final.points"), headerStyle);
+		header2Row.addCell(col++, translator.translate("archive.table.header.auto.points"), headerStyle);
+		header2Row.addCell(col++, translator.translate("archive.table.header.adjustement.plus"), headerStyle);
+		header2Row.addCell(col++, translator.translate("archive.table.header.adjustement.minus"), headerStyle);
+		header2Row.addCell(col++, translator.translate("archive.table.header.manual.points"), headerStyle);
 		header2Row.addCell(col++, translator.translate("column.header.passed"), headerStyle);
 		if (anonymizerCallback == null){
 			header2Row.addCell(col++, translator.translate("column.header.date"), headerStyle);
@@ -440,6 +444,9 @@ public class QTI21ArchiveFormat {
 				}
 				if (exportConfig.isPointCol()) {
 					header2Row.addCell(col++, translator.translate("item.score"), headerStyle);
+					if(!AssessmentTestHelper.needManualCorrection(item.getInteractions())) {
+						header2Row.addCell(col++, translator.translate("item.adjustement"), headerStyle);
+					}
 				}
 				if (exportConfig.isCommentCol()) {
 					header2Row.addCell(col++, translator.translate("item.comment"), headerStyle);
@@ -519,6 +526,8 @@ public class QTI21ArchiveFormat {
 			for(AssessmentItemSession itemSession:itemSessions) {
 				sessionResponses.addItemSession(itemSession);
 			}
+
+			sessionResponses.evaluateScoresAndAdjustements(getItemInfos());
 			
 			writeDataRow(i + 1, sessionResponses, exportSheet, workbook);	
 			DBFactory.getInstance().commitAndCloseSession();
@@ -550,22 +559,20 @@ public class QTI21ArchiveFormat {
 			}
 		}
 		
+		final List<AbstractInfos> infos = getItemInfos();
+		
 		//assesspoints, passed, ipaddress, date, duration
-		if(testSession.getScore() != null) {
-			dataRow.addCell(col++, testSession.getScore(), null);
-		} else {
-			col++;
-		}
-		if(testSession.getManualScore() != null) {
-			dataRow.addCell(col++, testSession.getManualScore(), null);
-		} else {
-			col++;
-		}
-		if(testSession.getFinalScore() != null) {
-			dataRow.addCell(col++, testSession.getFinalScore(), null);
-		} else {
-			col++;
-		}
+		BigDecimal finalScore = testSession.getFinalScore();
+		dataRow.addCell(col++, finalScore, null);
+		BigDecimal automaticScore = responses.getAutomaticScore();
+		dataRow.addCell(col++, automaticScore, null);
+		BigDecimal adjustementPlus = responses.getAdjustementPlus();
+		dataRow.addCell(col++, adjustementPlus, null);
+		BigDecimal adjustementMinus = responses.getAdjustementMinus();
+		dataRow.addCell(col++, adjustementMinus, null);
+		BigDecimal manualScore = responses.getManualScore();
+		dataRow.addCell(col++, manualScore, null);
+		
 		if(testSession.getPassed() != null) {
 			dataRow.addCell(col++, testSession.getPassed().toString(), null);
 		} else {
@@ -588,13 +595,13 @@ public class QTI21ArchiveFormat {
 			col++;
 		}
 		
-		List<AbstractInfos> infos = getItemInfos();
 		for(int i=0; i<infos.size(); i++) {
 			AbstractInfos info = infos.get(i);
 			if(info instanceof ItemInfos item) {
 				AssessmentItemRef itemRef = item.getAssessmentItemRef();
 				String itemRefIdentifier = itemRef.getIdentifier().toString();
 				AssessmentItemSession itemSession = responses.getItemSession(itemRefIdentifier);
+				boolean manualCorrection = AssessmentTestHelper.needManualCorrection(item.getInteractions());
 				
 				if (exportConfig.isResponseCols()) {
 					List<Interaction> interactions = item.getInteractions();
@@ -611,6 +618,9 @@ public class QTI21ArchiveFormat {
 				if (itemSession == null) {
 					if (exportConfig.isPointCol()) {
 						col++;
+						if(!manualCorrection) {
+							col++;//Adjustement
+						}
 					}
 					if (exportConfig.isCommentCol()) {
 						col++;
@@ -624,6 +634,11 @@ public class QTI21ArchiveFormat {
 							dataRow.addCell(col++, itemSession.getManualScore(), null);
 						} else {
 							dataRow.addCell(col++, itemSession.getScore(), null);
+						}
+						if(!manualCorrection) {
+							BigDecimal adjustement = AssessmentTestHelper
+									.calculateAdjustement(itemSession.getManualScore(), itemSession.getScore());
+							dataRow.addCell(col++, adjustement, null);
 						}
 					}
 					if (exportConfig.isCommentCol()) {
@@ -991,12 +1006,78 @@ public class QTI21ArchiveFormat {
 		private final Map<String,AssessmentItemSession> itemSessionsMap = new HashMap<>();
 		private final Map<String,List<AssessmentResponse>> responsesMap = new HashMap<>();
 		
+		private BigDecimal automaticScore;
+		private BigDecimal adjustementPlus;
+		private BigDecimal adjustementMinus;
+		private BigDecimal manualScore;
+		
 		public SessionResponses(AssessmentTestSession testSession) {
 			this.testSession = testSession;
 		}
 		
 		public AssessmentTestSession getTestSession() {
 			return testSession;
+		}
+		
+		public void evaluateScoresAndAdjustements(List<AbstractInfos> itemInfos) {
+			BigDecimal totalManualScore = BigDecimal.ZERO;
+			BigDecimal totalAutomaticScore = BigDecimal.ZERO;
+			BigDecimal totalAdjustementPlus = BigDecimal.ZERO;
+			BigDecimal totalAdjustementMinus = BigDecimal.ZERO;
+
+			boolean hasManual = false;
+			boolean hasAutomatic = false;
+			for(AbstractInfos infos:itemInfos) {
+				if(infos instanceof ItemInfos item) {
+					AssessmentItemSession itemSession = itemSessionsMap.get(item.getAssessmentItemRef().getIdentifier().toString());
+					if(itemSession == null) continue;
+					
+					boolean manualCorrection = item.needManualCorrection();
+					if(manualCorrection) {
+						hasManual = true;
+						if(itemSession.getManualScore() != null) {
+							totalManualScore = totalManualScore.add(itemSession.getManualScore());
+						}
+					} else {
+						hasAutomatic = true;
+						if(itemSession.getScore() != null) {
+							totalAutomaticScore = totalAutomaticScore.add(itemSession.getScore());
+						}
+						
+						
+						BigDecimal adjustement = AssessmentTestHelper.calculateAdjustement(itemSession.getManualScore(), itemSession.getScore());
+						if(adjustement != null) {
+							int diff = adjustement.compareTo(BigDecimal.ZERO);
+							if(diff > 0) {
+								totalAdjustementPlus = totalAdjustementPlus.add(adjustement);
+							} else if(diff < 0) {
+								totalAdjustementMinus = totalAdjustementMinus.add(adjustement);
+							}
+						}
+					}
+				}
+			}
+			
+			automaticScore = hasAutomatic ? totalAutomaticScore : null;
+			adjustementPlus = totalAdjustementPlus.compareTo(BigDecimal.ZERO) > 0 ? totalAdjustementPlus : null;
+			adjustementMinus = totalAdjustementMinus.compareTo(BigDecimal.ZERO) < 0 ? totalAdjustementMinus : null;
+			manualScore = hasManual ? totalManualScore : null;
+		}
+		
+		public BigDecimal getAutomaticScore() {
+			return automaticScore;
+		}
+		
+		public BigDecimal getAdjustementPlus() {
+			return adjustementPlus;
+		}
+		
+		public BigDecimal getAdjustementMinus() {
+			return adjustementMinus;
+		}
+		
+		public BigDecimal getManualScore() {
+			return manualScore;
 		}
 		
 		public AssessmentResponse getResponse(String itemRefIdentifier, Identifier responseIdentifier) {
@@ -1083,6 +1164,10 @@ public class QTI21ArchiveFormat {
 		
 		public ManifestMetadataBuilder getMetadata() {
 			return metadata;
+		}
+		
+		public boolean needManualCorrection() {
+			return AssessmentTestHelper.needManualCorrection(interactions);
 		}
 	}
 }

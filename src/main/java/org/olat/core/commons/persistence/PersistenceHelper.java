@@ -27,6 +27,7 @@
 package org.olat.core.commons.persistence;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -470,6 +471,18 @@ public class PersistenceHelper {
 		if(results == null || pos >= results.length) return 0l;
 		Object obj = results[pos];
 		return obj == null ? 0l : ((Number)obj).doubleValue();
+	}
+	
+	public static BigDecimal extractBigDecimal(Object[] results, int pos, BigDecimal defaultValue) {
+		if(results == null || pos >= results.length) return defaultValue;
+		Object obj = results[pos];
+		if(obj == null) {
+			return defaultValue;
+		}
+		if(obj instanceof BigDecimal bigD) {
+			return bigD;
+		}
+		return new BigDecimal(((Number)obj).doubleValue());
 	}
 	
 	public static String extractString(Object[] results, int pos) {

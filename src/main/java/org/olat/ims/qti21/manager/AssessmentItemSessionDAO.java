@@ -25,6 +25,7 @@ import java.util.List;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -135,6 +136,30 @@ public class AssessmentItemSessionDAO {
 		}
 		if(itemRef != null) {
 			query.setParameter("itemRef", itemRef);
+		}
+		return query.getResultList();
+	}
+	
+	public List<AssessmentItemSession> getAssessmentItemSessions(RepositoryEntryRef entry, String subIdent, IdentityRef assessedIdentity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select itemSession from qtiassessmentitemsession itemSession")
+		  .append(" inner join itemSession.assessmentTestSession testSession")
+		  .append(" where testSession.repositoryEntry.key=:entryKey")
+		  .append(" and testSession.identity.key=:assessedIdentityKey");
+
+		if(subIdent != null) {
+			sb.append(" and testSession.subIdent=:subIdent");
+		} else {
+			sb.append(" and testSession.subIdent is null");
+		}
+		
+		TypedQuery<AssessmentItemSession> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AssessmentItemSession.class)
+			.setParameter("entryKey", entry.getKey())
+			.setParameter("assessedIdentityKey", assessedIdentity.getKey());
+		
+		if(subIdent != null) {
+			query.setParameter("subIdent", subIdent);
 		}
 		return query.getResultList();
 	}

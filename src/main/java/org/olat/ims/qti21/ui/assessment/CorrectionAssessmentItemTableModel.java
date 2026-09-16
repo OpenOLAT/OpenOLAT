@@ -19,11 +19,20 @@
  */
 package org.olat.ims.qti21.ui.assessment;
 
+import static org.olat.ims.qti21.ui.assessment.CorrectionAssessmentItemListController.FILTER_ADJUSTED;
+import static org.olat.ims.qti21.ui.assessment.CorrectionAssessmentItemListController.FILTER_MANUAL;
+import static org.olat.ims.qti21.ui.assessment.CorrectionAssessmentItemListController.FILTER_TO_CORRECT;
+import static org.olat.ims.qti21.ui.assessment.CorrectionAssessmentItemListController.FILTER_TO_REVIEW;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -36,9 +45,11 @@ import org.olat.ims.qti21.ui.assessment.model.CorrectionAssessmentItemRow;
  *
  */
 public class CorrectionAssessmentItemTableModel extends DefaultFlexiTableDataModel<CorrectionAssessmentItemRow>
-implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
+implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow>, FilterableFlexiTableModel {
 
 	private final Locale locale;
+	
+	private List<CorrectionAssessmentItemRow> backupList;
 	
 	public CorrectionAssessmentItemTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
@@ -52,6 +63,59 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
 			super.setObjects(rows);
 		}
 	}
+		
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		if (filters != null && !filters.isEmpty()) {
+			List<CorrectionAssessmentItemRow> filteredRows = new ArrayList<>();
+		
+			boolean toCorrect = isFilterSelected(filters, FILTER_TO_CORRECT);
+			boolean toReview = isFilterSelected(filters, FILTER_TO_REVIEW);
+			boolean manual = isFilterSelected(filters, FILTER_MANUAL);
+			boolean adjusted = isFilterSelected(filters, FILTER_ADJUSTED);
+			
+			for (CorrectionAssessmentItemRow row : backupList) {
+				if (acceptToCorrect(toCorrect, row)
+						&& acceptToReview(toReview, row)
+						&& acceptManual(manual, row)
+						&& acceptAdjusted(adjusted, row)) {
+					filteredRows.add(row);
+				}
+			}
+			super.setObjects(filteredRows);
+		} else {
+			super.setObjects(backupList);
+		}
+	}
+	
+	private boolean acceptToCorrect(boolean toCorrect, CorrectionAssessmentItemRow row) {
+		if(!toCorrect) return true;
+		return row.isManualCorrection() && row.getNumNotCorrected() > 0;
+	}
+	
+	private boolean acceptToReview(boolean toReview, CorrectionAssessmentItemRow row) {
+		if(!toReview) return true;
+		return row.getNumToReview() > 0;
+	}
+	
+	private boolean acceptManual(boolean manual, CorrectionAssessmentItemRow row) {
+		if(!manual) return true;
+		return row.isManualCorrection();
+	}
+	
+	private boolean acceptAdjusted(boolean toReview, CorrectionAssessmentItemRow row) {
+		if(!toReview) return true;
+		return !row.isManualCorrection() && row.getNumOfAdjusted() > 0;
+	}
+	
+	private boolean isFilterSelected(List<FlexiTableFilter> filters, String id) {
+		FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, id);
+		if (filter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)filter).getValues();
+			return filterValues != null && filterValues.contains(id);
+		}
+		return false;
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
@@ -61,20 +125,26 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
 
 	@Override
 	public Object getValueAt(CorrectionAssessmentItemRow row, int col) {
-		switch(ItemCols.values()[col]) {
-			case section: return row.getSectionTitle();
-			case itemTitle: return row.getItemTitle();
-			case itemKeywords: return row.getKeywords();
-			case itemType: return row.getItemType();
-			case answered: return row.getNumAnswered();
-			case notAnswered: return row.getNumNotAnswered();
-			case autoCorrected:
-			case corrected:
-			case notCorrected: return row;
-			case toReview: return row.getNumToReview();
-			case tools: return row.getToolsLink();
-			default: return "ERROR";
-		}
+		return switch(ItemCols.values()[col]) {
+			case section -> row.getSectionTitle();
+			case itemTitle -> row.getItemTitle();
+			case itemKeywords -> row.getKeywords();
+			case itemType -> row.getItemType();
+			case answered -> row.getNumAnswered();
+			case autoCorrected -> row.isManualCorrection() ? null : row.getNumAutoCorrected();
+			case manuallyCorrected -> row.isManualCorrection() ? row.getNumManuallyCorrected() : null;
+			case adjusted -> row.isManualCorrection() || row.getNumOfAdjusted() <= 0 ? null : row.getNumOfAdjusted();
+			case notCorrected -> row.getNotCorrectedLink();
+			case toReview -> row.getNumToReview();
+			case tools -> row.getToolsLink();
+			default -> "ERROR";
+		};
+	}
+
+	@Override
+	public void setObjects(List<CorrectionAssessmentItemRow> objects) {
+		this.backupList = objects;
+		super.setObjects(objects);
 	}
 
 	public enum ItemCols implements FlexiSortableColumnDef {
@@ -83,10 +153,10 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
 		itemKeywords("table.header.item.keywords"),
 		itemType("table.header.item.type"),
 		answered("table.header.answered"),
-		notAnswered("table.header.notAnswered"),
-		autoCorrected("table.header.autoCorrected"),
-		corrected("table.header.corrected"),
-		notCorrected("table.header.not.corrected"),
+		autoCorrected("table.header.auto.corrected"),
+		manuallyCorrected("table.header.manually.corrected"),
+		adjusted("table.header.adjusted"),
+		notCorrected("table.header.to.correct"),
 		toReview("table.header.to.review"),
 		tools("action.more");
 		

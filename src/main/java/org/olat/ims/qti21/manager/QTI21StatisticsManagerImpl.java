@@ -43,6 +43,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistics;
@@ -498,7 +499,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 
 	@Override
 	public StatisticsItem getAssessmentItemStatistics(String itemIdent, double maxScore,
-			QTI21StatisticSearchParams searchParams) {
+			QTI21StatisticSearchParams searchParams, AssessmentItem assessmentItem) {
 		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select isession.score, isession.manualScore, count(isession.key), avg(isession.duration) from qtiassessmentitemsession isession ")
@@ -518,11 +519,15 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		int totalResults = 0;
 		double totalScore = 0.0;
 		double totalDuration = 0.0;
+		long numOfAdjustements = 0;
 		long numOfCorrectAnswers = 0;
 		long numOfIncorrectAnswers = 0;
+		double totalAdjustements = 0.0;
+		final boolean manualCorrection = AssessmentTestHelper.needManualCorrection(assessmentItem);
 		
 		for(Object[] result:results) {
 			BigDecimal score = (BigDecimal)result[0];
+			BigDecimal initialScore = score;
 			BigDecimal manualScore = (BigDecimal)result[1];
 			if(score == null) {
 				score = manualScore;
@@ -531,6 +536,15 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			}
 			
 			long numOfResults = ((Number)result[2]).longValue();
+			
+			if(!manualCorrection && manualScore != null) {
+				numOfAdjustements += numOfResults;
+				
+				BigDecimal aScore = initialScore == null ? BigDecimal.ZERO : initialScore;
+				BigDecimal diff = manualScore.subtract(aScore);
+				totalAdjustements = totalAdjustements + (diff.doubleValue() * numOfResults);
+			}
+			
 			double averageDuration = ((Number)result[3]).doubleValue();
 			
 			//average
@@ -559,6 +573,10 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		stats.setDifficulty(difficulty);
 		stats.setNumOfCorrectAnswers(numOfCorrectAnswers);
 		stats.setNumOfIncorrectAnswers(numOfIncorrectAnswers);
+		stats.setNumOfAdjustements(numOfAdjustements);
+		if(numOfAdjustements > 0) {
+			stats.setAverageAdjustement(totalAdjustements / numOfAdjustements);
+		}
 		return stats;
 	}
 	

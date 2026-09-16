@@ -243,7 +243,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		AssessmentTestSessionStatistics sessionStatistics = sessionsStatistics.get(0);
 		Assert.assertNotNull(sessionStatistics.testSession());
 		Assert.assertEquals(testSession, sessionStatistics.testSession());
-		Assert.assertEquals(2, sessionStatistics.numOfCorrectedItems());
+		Assert.assertEquals(courseEntry, sessionStatistics.testSession().getRepositoryEntry());
 	}
 	
 	@Test

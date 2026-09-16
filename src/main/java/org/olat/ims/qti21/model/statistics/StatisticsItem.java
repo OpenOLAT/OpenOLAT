@@ -29,8 +29,10 @@ public class StatisticsItem {
 	private double averageScore;
 	private long averageDuration;
 	private double difficulty;
+	private long numOfAdjustements;
 	private long numOfCorrectAnswers;
 	private long numOfIncorrectAnswers = 0;
+	private double averageAdjustement;
 	
 	public int getNumOfResults() {
 		return numOfResults;
@@ -85,6 +87,20 @@ public class StatisticsItem {
 	public void setNumOfIncorrectAnswers(long numOfIncorrectAnswers) {
 		this.numOfIncorrectAnswers = numOfIncorrectAnswers;
 	}
-	
-	
+
+	public long getNumOfAdjustements() {
+		return numOfAdjustements;
+	}
+
+	public void setNumOfAdjustements(long numOfAdjustements) {
+		this.numOfAdjustements = numOfAdjustements;
+	}
+
+	public double getAverageAdjustement() {
+		return averageAdjustement;
+	}
+
+	public void setAverageAdjustement(double averageAdjustement) {
+		this.averageAdjustement = averageAdjustement;
+	}
 }

@@ -927,6 +927,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_assessment_inspection_cancelled { @include o-add-icon('circle-stop'); }
 .o_icon_assessment_inspection_withdrawn { @include o-add-icon('ban'); }
 
+/* Correction */
+.o_icon_correction_auto { @include o-add-icon('wand-magic-sparkles');}
+.o_icon_correction_adjusted { @include o-add-icon('pen');}
+.o_icon_correction_manual { @include o-add-icon('hand-point-up');}
+.o_icon_correction_to_correct { @include o-add-icon('highlighter'); color: $brand-danger; }
+
 /* SEB template status */
 .o_icon_seb_template_status_active { @include o-add-icon('check'); }
 .o_icon_seb_template_status_inactive { @include o-add-icon('ban'); }

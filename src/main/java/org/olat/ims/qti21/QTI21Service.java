@@ -435,6 +435,8 @@ public interface QTI21Service {
 	
 	public List<AssessmentItemSession> getAssessmentItemSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, String itemRef);
 	
+	public List<AssessmentItemSession> getAssessmentItemSessions(RepositoryEntryRef courseEntry, String subIdent, Identity assessedIdentity);
+	
 	public AssessmentItemSession updateAssessmentItemSession(AssessmentItemSession itemSession);
 	
 	public AssessmentResponse createAssessmentResponse(AssessmentTestSession candidateSession, AssessmentItemSession assessmentItemSession,

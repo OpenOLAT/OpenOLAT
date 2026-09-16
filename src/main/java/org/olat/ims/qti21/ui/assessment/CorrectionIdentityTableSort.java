@@ -33,10 +33,12 @@ import org.olat.ims.qti21.ui.assessment.model.CorrectionIdentityRow;
 /**
  * 
  * Initial date: 5 mars 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CorrectionIdentityTableSort extends SortableFlexiTableModelDelegate<CorrectionIdentityRow> {
+	
+	private final static IdentityCols[] COLS = IdentityCols.values();
 	
 	public CorrectionIdentityTableSort(SortKey orderBy, CorrectionIdentityTableModel model, Locale locale) {
 		super(orderBy, model, locale);
@@ -46,10 +48,11 @@ public class CorrectionIdentityTableSort extends SortableFlexiTableModelDelegate
 	protected void sort(List<CorrectionIdentityRow> rows) {
 		int columnIndex = getColumnIndex();
 		if(columnIndex < CorrectionIdentityListController.USER_PROPS_OFFSET) {
-			IdentityCols column = IdentityCols.values()[columnIndex];
+			IdentityCols column = COLS[columnIndex];
 			switch(column) {
 				case corrected: Collections.sort(rows, new CorrectedComparator()); break;
 				case notCorrected: Collections.sort(rows, new NotCorrectedComparator()); break;
+				case toReview: Collections.sort(rows, new ToReviewComparator()); break;
 				default: super.sort(rows);
 			}
 		} else {
@@ -92,6 +95,17 @@ public class CorrectionIdentityTableSort extends SortableFlexiTableModelDelegate
 		@Override
 		public int compare(CorrectionIdentityRow o1, CorrectionIdentityRow o2) {
 			int c = Integer.compare(o1.getNumNotCorrected(), o2.getNumNotCorrected());
+			if(c == 0) {
+				c = compareIdentity(o1, o2);
+			}
+			return c;
+		}
+	}
+	
+	private class ToReviewComparator implements Comparator<CorrectionIdentityRow> {
+		@Override
+		public int compare(CorrectionIdentityRow o1, CorrectionIdentityRow o2) {
+			int c = Integer.compare(o1.getNumToReview(), o2.getNumToReview());
 			if(c == 0) {
 				c = compareIdentity(o1, o2);
 			}

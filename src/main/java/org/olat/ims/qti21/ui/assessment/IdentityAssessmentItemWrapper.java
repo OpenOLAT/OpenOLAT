@@ -89,6 +89,10 @@ public class IdentityAssessmentItemWrapper {
 		return itemInfos.isItemSessionStatusFinal();
 	}
 	
+	public boolean isItemSessionPresented() {
+		return itemInfos.isPresented();
+	}
+	
 	public String getItemSessionStatus() {
 		return itemInfos.getItemSessionStatus();
 	}

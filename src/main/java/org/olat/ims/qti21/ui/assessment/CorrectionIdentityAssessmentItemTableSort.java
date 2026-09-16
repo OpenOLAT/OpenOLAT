@@ -50,8 +50,7 @@ public class CorrectionIdentityAssessmentItemTableSort extends SortableFlexiTabl
 		switch(column) {
 			case score:Collections.sort(rows, new FinalScoreComparator()); break;
 			case itemType:Collections.sort(rows, new QuestionTypeComparator()); break;
-			case corrected: Collections.sort(rows, new CorrectedComparator()); break;
-			case notCorrected: Collections.sort(rows, new NotCorrectedComparator()); break;
+			case toCorrect: Collections.sort(rows, new ToCorrectComparator()); break;
 			default: super.sort(rows);
 		}
 	}
@@ -104,18 +103,7 @@ public class CorrectionIdentityAssessmentItemTableSort extends SortableFlexiTabl
 		}
 	}
 	
-	private class CorrectedComparator implements Comparator<CorrectionIdentityAssessmentItemRow> {
-		@Override
-		public int compare(CorrectionIdentityAssessmentItemRow o1, CorrectionIdentityAssessmentItemRow o2) {
-			int c = Boolean.compare(o1.isCorrected(), o2.isCorrected());
-			if(c == 0) {
-				c = compareItemTitle(o1, o2);
-			}
-			return c;
-		}
-	}
-	
-	private class NotCorrectedComparator implements Comparator<CorrectionIdentityAssessmentItemRow> {
+	private class ToCorrectComparator implements Comparator<CorrectionIdentityAssessmentItemRow> {
 		@Override
 		public int compare(CorrectionIdentityAssessmentItemRow o1, CorrectionIdentityAssessmentItemRow o2) {
 			boolean m1 = o1.isManualCorrection();

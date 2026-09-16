@@ -895,11 +895,29 @@ body>li.o_assessmentitem_order_item  {
 			background-color: $o-qti-status-review-color;
 			opacity: 0.7;
 		}
-		&:not(.answered):not(.notAnswered) {
-			i:before {
-				color: #fff;
-			}
-		}
+	}
+}
+
+.o_labeled_light.o_assessmentitem_status {
+	&.answered {
+		font-weight: normal;
+		@extend %o_labeled_light_blue
+	}
+	&.notAnswered {
+		font-weight: normal;
+		@extend %o_labeled_light_orange
+	}
+	&.notPresented {
+		font-weight: normal;
+		@extend %o_labeled_light_grey
+	}
+	&.toCorrect {
+		font-weight: normal;
+		@extend %o_labeled_light_red
+	}
+	&.adjusted, &.auto, &.manual {
+		font-weight: normal;
+		@extend %o_labeled_light_green
 	}
 }
 
@@ -1011,6 +1029,10 @@ body>li.o_assessmentitem_order_item  {
 	margin-top: 0;
 	margin-bottom: 0;
 	padding: $padding-small-vertical $padding-small-horizontal;
+	
+	.o_labeled_light.o_assessmentitem_status {
+		margin-left: 0;
+	}
 }
 .o_assessmentitem_scoring_buttons {
 	background: $o-qti-item-controls-bg;
@@ -1021,10 +1043,6 @@ body>li.o_assessmentitem_order_item  {
 	margin-bottom: $padding-large-horizontal;
 	padding: $padding-small-vertical $padding-small-horizontal;
 }
-.o_assessmentitem_scoring_override_window {
-	width: 300px;
-}
-
 
 .itemPrompt {
 	margin: 1.5em 0;

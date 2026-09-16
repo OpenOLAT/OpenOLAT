@@ -43,14 +43,11 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.CodeHelper;
@@ -121,8 +118,10 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	private TextElement scoreEl;
 	private RichTextElement commentEl;
 	private StaticTextElement statusEl;
+	private StaticTextElement scoreAutoEl;
 	private FormLink viewSolutionButton;
-	private FormLink overrideScoreButton;
+	private FormLink adjustScoreButton;
+	private FormLink resetAdjustementButton;
 	private FormLink viewCorrectSolutionButton;
 	private FileElement uploadDocsEl;
 	private ItemBodyResultFormItem solutionItem;
@@ -133,8 +132,6 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	private FormLayoutContainer scoreCont;
 
 	private DialogBoxController confirmDeleteDocCtrl;
-	private OverrideScoreController overrideScoreCtrl;
-	private CloseableCalloutWindowController overrideScoreCalloutCtrl;
 	
 	private final String mapperUri;
 	private final URI assessmentObjectUri;
@@ -148,7 +145,6 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private final Map<Long, File> submissionDirectoryMaps;
 	
-	private BigDecimal overrideAutoScore;
 	private boolean manualScore = false;
 	private final boolean readOnly;
 	private final boolean downloadEnabled;
@@ -240,11 +236,9 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		}
 
 		String score = "";
-		String fmScore = "";
 		String coachComment = "";
 		if(itemSession != null) {
 			score = score(itemSession);
-			fmScore = formattedScore(itemSession);
 			coachComment = itemSession.getCoachComment();
 		}
 		
@@ -256,25 +250,36 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		statusEl.setValue(getStatus());
 		
 		String fullname = userManager.getUserDisplayName(correction.getAssessedIdentity());
-		if(manualScore) {
+		if(manualScore || correction.getItemSessionState() == null || !correction.getItemSessionState().isPresented()) {
 			scoreEl = uifactory.addTextElement("scoreItem", "score", 6, score, scoreCont);
-			scoreEl.setElementCssClass("o_sel_assessment_item_score");
-			scoreEl.setEnabled(!readOnly);
 		} else {
-			overrideAutoScore = itemSession == null ? null : itemSession.getManualScore();
-			
 			String page = velocity_root + "/override_score.html";
-			overrideScoreCont = FormLayoutContainer.createCustomFormLayout("extra.score", getTranslator(), page);
-			overrideScoreCont.setRootForm(mainForm);
-			scoreCont.add(overrideScoreCont);
-			overrideScoreCont.setLabel("score", null);
-			overrideScoreCont.contextPut("score", fmScore);
+			overrideScoreCont = uifactory.addCustomFormLayout("extra.score", "score", page, scoreCont);
+			scoreEl = uifactory.addTextElement("score", "score", 6, score, overrideScoreCont);
+
+			adjustScoreButton = uifactory.addFormLink("adjust.score", overrideScoreCont, Link.BUTTON);
+			adjustScoreButton.setIconLeftCSS("o_icon o_icon_overridden");
+			adjustScoreButton.setDomReplacementWrapperRequired(false);
+			adjustScoreButton.setElementCssClass("input-group-addon");
+			adjustScoreButton.setVisible(!readOnly && itemSession != null && itemSession.getManualScore() == null);
 			
-			overrideScoreButton = uifactory.addFormLink("override.score", overrideScoreCont, Link.BUTTON_SMALL);
-			overrideScoreButton.setDomReplacementWrapperRequired(false);
-			overrideScoreButton.setAriaDialogOpener();
-			overrideScoreButton.setVisible(!readOnly);
+			resetAdjustementButton = uifactory.addFormLink("reset.adjustement", overrideScoreCont, Link.BUTTON);
+			resetAdjustementButton.setIconLeftCSS("o_icon o_icon_reset_data");
+			resetAdjustementButton.setDomReplacementWrapperRequired(false);
+			resetAdjustementButton.setElementCssClass("input-group-addon");
+			resetAdjustementButton.setVisible(!readOnly && itemSession != null && itemSession.getManualScore() != null);
+			
+			scoreAutoEl = uifactory.addStaticTextElement("annotated.score.auto", "annotated.score.auto", "", scoreCont);
+			String annotatedScore = getAnnotatedScoreAuto();
+			scoreAutoEl.setValue(annotatedScore);
+			scoreAutoEl.setVisible(StringHelper.containsNonWhitespace(annotatedScore));
 		}
+		
+		scoreEl.setElementCssClass("o_sel_assessment_item_score");
+		scoreEl.setMaxLength(8);
+		scoreEl.setDisplaySize(8);
+		scoreEl.setEnabled(!readOnly);
+		
 		commentEl = uifactory.addRichTextElementForStringData("commentItem", "comment", coachComment, 8, -1,
 				false, null, null, null, scoreCont, ureq.getUserSession(), getWindowControl());
 		commentEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
@@ -332,6 +337,22 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 				setFormWarning("warning.duplicate.not.allowed");
 			}
 			
+		}
+	}
+	
+	private void updateScoreUI() {
+		AssessmentItemSession itemSession = correction.getItemSession();
+		if(adjustScoreButton != null) {
+			adjustScoreButton.setVisible(!readOnly && itemSession != null && itemSession.getManualScore() == null);
+		}
+		if(resetAdjustementButton != null) {
+			resetAdjustementButton.setVisible(!readOnly && itemSession != null && itemSession.getManualScore() != null);
+		}
+		statusEl.setValue(getStatus());
+		if(scoreAutoEl != null) {
+			String scoreAuto = getAnnotatedScoreAuto();
+			scoreAutoEl.setValue(scoreAuto);
+			scoreAutoEl.setVisible(StringHelper.containsNonWhitespace(scoreAuto));
 		}
 	}
 	
@@ -485,32 +506,84 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	
 	protected String getStatus() {
 		AssessmentItemSession itemSession = correction.getItemSession();
-		StringBuilder sb = new StringBuilder();
-		if(itemSession != null) {
-			if(itemSession.getManualScore() != null) {
-				sb.append("<i class='o_icon o_icon_ok'> </i>");
-			} else if(!correction.isItemSessionStatusFinal()) {
-				sb.append("<i class='o_icon o_icon_warn'> </i> ").append(translate("warning.not.submitted"));
-			} else if(manualScore) {
-				sb.append("<i class='o_icon o_icon_warn'> </i>");
-			} else {
-				sb.append("<i class='o_icon o_icon_ok'> </i> <span class='badge'>").append(translate("correction.auto")).append("</span>");
-			} 
+		
+		String status;
+		String statusCssClass;
+		String iconCssClass;
+		if(itemSession == null
+				|| correction.getItemSessionState() == null 
+				|| !correction.getItemSessionState().isResponded()
+				|| !correction.isItemSessionStatusFinal()) {
+			status = "status.not.answered";
+			statusCssClass = "notAnswered";
+			iconCssClass = "o_icon_warning";
 		} else {
-			sb.append("<i class='o_icon o_icon_warn'> </i> ").append(translate("warning.not.submitted"));
+			if(manualScore) {
+				if(itemSession.getManualScore() == null) {
+					status = "status.to.correct";
+					statusCssClass = "toCorrect";
+					iconCssClass = "o_icon_correction_to_correct";
+				} else {
+					status = "status.manual";
+					statusCssClass = "manual";
+					iconCssClass = "o_icon_correction_manual";
+				}
+			} else if(itemSession.getManualScore() != null) {
+				status = "status.adjusted";
+				statusCssClass = "adjusted";
+				iconCssClass = "o_icon_correction_adjusted";
+			} else {
+				status = "status.auto";
+				statusCssClass = "auto";
+				iconCssClass = "o_icon_correction_auto";
+			}
 		}
+		
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("<span class=\"o_labeled_light o_assessmentitem_status ").append(statusCssClass).append("\">")
+		  .append("<i class=\"o_icon o_icon-fw ").append(iconCssClass).append("\"> </i> ").append(translate(status)).append("</span>");
 		return sb.toString();
 	}
 	
+	protected String getAnnotatedScoreAuto() {
+		AssessmentItemSession itemSession = correction.getItemSession();
+		if(itemSession != null && itemSession.getManualScore() != null) {
+			StringBuilder sb = new StringBuilder();
+			BigDecimal score = itemSession.getScore();
+			if(score == null) {
+				score = BigDecimal.ZERO;
+			}
+			sb.append(AssessmentHelper.getRoundedScore(score));
+			
+			BigDecimal diff = itemSession.getManualScore().subtract(score);
+			int comparison = diff.compareTo(BigDecimal.ZERO);
+			if(comparison != 0) {
+				sb.append(" (");
+				if(comparison > 0) {
+					sb.append("+");
+				}
+				sb.append(AssessmentHelper.getRoundedScore(diff)).append(")");	
+			}
+			return sb.toString();
+		}
+		
+		return null;
+	}
+	
 	protected BigDecimal getManualScore() {
-		if(scoreEl == null) {
-			return overrideAutoScore;
-		} else if (StringHelper.containsNonWhitespace(scoreEl.getValue())) {
+		if(StringHelper.containsNonWhitespace(scoreEl.getValue())) {
 			String mScore = scoreEl.getValue();
 			if(mScore.indexOf(',') >= 0) {
 				mScore = mScore.replace(",", ".");
 			}
-			return new BigDecimal(mScore);
+			// If the field has exactly the score, it's not a manually set score
+			BigDecimal bScore = new BigDecimal(mScore);
+			if(!manualScore && correction.getItemSession() != null
+					&& correction.getItemSession().getScore() != null
+					&& bScore.compareTo(correction.getItemSession().getScore()) == 0) {
+				return null;
+			}
+			return bScore;
 		}
 		return null;
 	}
@@ -536,8 +609,12 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == downlaodPdfButton) {
 			fireEvent(ureq, DOWNLOAD_PDF);
-		} else if(overrideScoreButton == source) {
-			doOverrideScore(ureq);
+		} else if(adjustScoreButton == source) {
+			if(validateFormLogic(ureq)) {
+				doAdjustScore(ureq);
+			}
+		} else if(resetAdjustementButton == source) {
+			doResetAdjustement(ureq);
 		} else if(viewSolutionButton == source) {
 			doToggleSolution();
 		} else if(viewCorrectSolutionButton == source) {
@@ -561,16 +638,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(overrideScoreCtrl == source) {
-			if(event == Event.CHANGED_EVENT) {
-				doSetOverridenScore(overrideScoreCtrl.getNewScore());
-			}
-			overrideScoreCalloutCtrl.deactivate();
-			cleanUp();
-		} else if(overrideScoreCalloutCtrl == source) {
-			overrideScoreCalloutCtrl.deactivate();
-			cleanUp();
-		} else if(source == confirmDeleteDocCtrl) {
+		if(source == confirmDeleteDocCtrl) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				File documentToDelete = (File)confirmDeleteDocCtrl.getUserObject();
 				doDeleteAssessmentDocument(documentToDelete);
@@ -578,13 +646,6 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			}
 		}
 		super.event(ureq, source, event);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(overrideScoreCalloutCtrl);
-		removeAsListenerAndDispose(overrideScoreCtrl);
-		overrideScoreCalloutCtrl = null;
-		overrideScoreCtrl = null;
 	}
 
 	@Override
@@ -737,29 +798,21 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			correctSolutionItem.setVisible(true);
 		}
 	}
-	
-	private void doSetOverridenScore(BigDecimal newScore) {
-		overrideAutoScore = newScore;
-		if(newScore == null) {
-			AssessmentItemSession itemSession = correction.getItemSession();
-			String score = itemSession == null ? "" : AssessmentHelper.getRoundedScore(itemSession.getScore());
-			overrideScoreCont.contextPut("score", score);
-		} else {
-			overrideScoreCont.contextPut("score", AssessmentHelper.getRoundedScore(newScore));
-		}
-		markDirty();
+
+	private void doAdjustScore(UserRequest ureq) {
+		fireEvent(ureq, Event.CHANGED_EVENT);
+		updateScoreUI();
 	}
-
-	private void doOverrideScore(UserRequest ureq) {
-		if(overrideScoreCtrl != null) return;
-
-		overrideScoreCtrl = new OverrideScoreController(ureq, getWindowControl());
-		listenTo(overrideScoreCtrl);
-
-		overrideScoreCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				overrideScoreCtrl.getInitialComponent(), overrideScoreButton, "", true, "o_assessmentitem_scoring_override_window");
-		listenTo(overrideScoreCalloutCtrl);
-		overrideScoreCalloutCtrl.activate();
+	
+	private void doResetAdjustement(UserRequest ureq) {
+		BigDecimal score = correction.getItemSession().getScore();
+		if(score != null) {
+			scoreEl.setValue(AssessmentHelper.getRoundedScore(score));
+		} else {
+			scoreEl.setValue("");
+		}
+		fireEvent(ureq, Event.CHANGED_EVENT);
+		updateScoreUI();
 	}
 	
 	private String score(AssessmentItemSession itemSession) {
@@ -767,70 +820,6 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			return AssessmentHelper.getRoundedScore(itemSession.getManualScore());
 		} 
 		return AssessmentHelper.getRoundedScore(itemSession.getScore());
-	}
-	
-	private String formattedScore(AssessmentItemSession itemSession) {
-		StringBuilder sb = new StringBuilder();
-		if(itemSession.getManualScore() != null) {
-			sb.append(AssessmentHelper.getRoundedScore(itemSession.getManualScore()));
-			if(itemSession.getScore() != null) {
-				sb.append(" ( <span class='o_deleted'>").append(AssessmentHelper.getRoundedScore(itemSession.getScore())).append("</span> )");	
-			}
-		} else {
-			sb.append(AssessmentHelper.getRoundedScore(itemSession.getScore()));
-		}
-		return sb.toString();
-	}
-	
-	public class OverrideScoreController  extends FormBasicController {
-		
-		private TextElement newScoreEl;
-		
-		public OverrideScoreController(UserRequest ureq, WindowControl wControl) {
-			super(ureq, wControl);
-			initForm(ureq);
-		}
-		
-		public BigDecimal getNewScore() {
-			String mScore = newScoreEl.getValue();
-			if(StringHelper.containsNonWhitespace(mScore)) {
-				if(mScore.indexOf(',') >= 0) {
-					mScore = mScore.replace(",", ".");
-				}
-				return new BigDecimal(mScore);
-			}
-			return null;
-		}
-
-		@Override
-		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			String maScore = overrideAutoScore == null ? "" : AssessmentHelper.getRoundedScore(overrideAutoScore);
-			newScoreEl = uifactory.addTextElement("new.score", "score", 6, maScore, formLayout);
-			
-			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttonsCont", getTranslator());
-			formLayout.add(buttonsCont);
-			FormCancel cancel = uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-			cancel.setElementCssClass("btn-xs");
-			FormSubmit submit = uifactory.addFormSubmitButton("override.score", buttonsCont);
-			submit.setElementCssClass("btn-xs");
-		}
-
-		@Override
-		protected boolean validateFormLogic(UserRequest ureq) {
-			boolean allOk = super.validateFormLogic(ureq);
-			allOk &= validateScore(newScoreEl);
-			return allOk;
-		}
-
-		@Override
-		protected void formOK(UserRequest ureq) {
-			fireEvent(ureq, Event.CHANGED_EVENT);
-		}
-
-		@Override
-		protected void formCancelled(UserRequest ureq) {
-			fireEvent(ureq, Event.CANCELLED_EVENT);
-		}
 	}
 	
 	public static class DocumentWrapper {

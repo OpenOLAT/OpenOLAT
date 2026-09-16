@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.util.Formatter;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController.AssessmentTestSessionDetailsComparator;
 
@@ -67,11 +66,12 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 			case test -> session.getTestSession().getTestEntry().getDisplayname();
 			case testEntry -> session.getTestSession().getTestEntry();
 			case numOfItemSessions -> session.getNumOfItems();
+			case answersToCorrect -> session.getToCorrectLink();
+			case answersToReview -> session.getToReviewLink();
 			case responded -> session.getNumOfItemsResponded();
-			case corrected -> session.getNumOfItemsCorrected();
-			case score -> getScore(session);
+			case autoScore -> session.getAutomaticScore();
 			case manualScore -> session.getTestSession().getFinishTime() != null
-					? session.getTestSession().getManualScore() : null;
+					? session.getManualScore() : null;
 			case finalScore -> session.getTestSession().getFinishTime() != null
 					?  session.getTestSession().getFinalScore() : null;
 			case results -> Boolean.valueOf(!isTestSessionRunning(session));
@@ -87,19 +87,6 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 			return Formatter.formatDuration(session.getTestSession().getDuration().longValue());
 		}
 		return null;
-	}
-	
-	private String getScore(QTI21AssessmentTestSessionDetails session) {
-		StringBuilder sb = new StringBuilder(32);
-		if(session.getTestSession().getFinishTime() != null) {
-			if(session.hasManualScore()) {
-				sb.append("<span class='o_deleted'>")
-				  .append(AssessmentHelper.getRoundedScore(session.getAutomaticScore()))
-				  .append("</span> ");	
-			}
-			sb.append(AssessmentHelper.getRoundedScore(session.getScore()));
-		}
-		return sb.toString();
 	}
 	
 	protected Boolean isCorrectionAllowed(QTI21AssessmentTestSessionDetails session) {
@@ -144,10 +131,9 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		test("table.header.test"),
 		numOfItemSessions("table.header.itemSessions"),
 		responded("table.header.responded"),
-		corrected("table.header.corrected"),
-		score("table.header.score"),
-		manualScore("table.header.manualScore"),
-		finalScore("table.header.finalScore"),
+		autoScore("table.header.automatic.score"),
+		manualScore("table.header.manual.score"),
+		finalScore("table.header.score"),
 		results("table.header.results.report"),
 		correct("table.header.correct"),
 		tools("action.more"),
@@ -156,6 +142,8 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		run("table.header.run"),
 		status("table.header.status"),
 		testEntry("table.header.test.entry"),
+		answersToCorrect("table.header.to.correct"),
+		answersToReview("table.header.to.review")
 		;
 		
 		private final String i18nKey;

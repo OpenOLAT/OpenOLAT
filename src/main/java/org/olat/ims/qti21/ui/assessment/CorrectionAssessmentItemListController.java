@@ -32,6 +32,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -40,11 +42,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsCol
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -72,9 +81,7 @@ import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.resultexport.EssaysPdfMediaResource;
 import org.olat.ims.qti21.ui.assessment.BulkScoreController.Mode;
 import org.olat.ims.qti21.ui.assessment.CorrectionAssessmentItemTableModel.ItemCols;
-import org.olat.ims.qti21.ui.assessment.components.AutoCorrectedFlexiCellRenderer;
-import org.olat.ims.qti21.ui.assessment.components.CorrectedFlexiCellRenderer;
-import org.olat.ims.qti21.ui.assessment.components.NotCorrectedFlexiCellRenderer;
+import org.olat.ims.qti21.ui.assessment.components.AnsweredFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.QuestionTypeFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.components.ToReviewFlexiCellRenderer;
 import org.olat.ims.qti21.ui.assessment.event.SelectAssessmentItemEvent;
@@ -109,13 +116,35 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  *
  */
 public class CorrectionAssessmentItemListController extends FormBasicController {
-
+	
+	public static final String FILTER_TO_CORRECT = "tocorrect";
+	public static final String FILTER_TO_REVIEW = "toreview";
+	public static final String FILTER_MANUAL = "manual";
+	public static final String FILTER_ADJUSTED = "adjusted";
+	
+	private static final String ALL_TAB = "All";
+	private static final String TO_REVIEW_TAB = "ToReview";
+	private static final String TO_CORRECT_TAB = "ToCorrect";
+	private static final String MANUAL_TAB = "Manual";
+	private static final String ADJUSTED_TAB = "Adjusted";
+	
+	private static final String CMD_AUTO_CORRECTED = "autocorrected";
+	private static final String CMD_MANUALLY_CORRECTED = "manuallycorrected";
+	private static final String CMD_NOT_CORRECTED = "notcorrected";
+	private static final String CMD_ADJUSTED = "adjusted";
+	private static final String CMD_TO_REVIEW = "toReview";
+	private static final String CMD_SELECT = "select";
+	
 	private final TooledStackedPanel stackPanel;
 	
 	private FormLink saveTestsButton;
 	private FlexiTableElement tableEl;
 	private CorrectionAssessmentItemTableModel tableModel;
 
+	private FlexiFiltersTab allTab;
+	private DefaultFlexiColumnModel notCorrectedCol;
+	private DefaultFlexiColumnModel manuallyCorrectedCol;
+	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private BulkScoreController bulkPointsCtrl;
@@ -123,6 +152,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CorrectionIdentityAssessmentItemNavigationController identityItemCtrl;
 
+	private int count = 0;
 	private LockResult lockResult;
 	private final boolean anonymous;
 	private final CorrectionOverviewModel model;
@@ -157,26 +187,91 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.section));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.itemTitle, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ItemCols.itemKeywords, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.itemTitle, CMD_SELECT));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ItemCols.itemKeywords, CMD_SELECT));
 		Translator qti21Translator = Util.createPackageTranslator(AssessmentTestComposerController.class, getLocale());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.itemType, new QuestionTypeFlexiCellRenderer(qti21Translator)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.answered, "answered"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.notAnswered, "notAnswered"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.autoCorrected, "autoCorrected", new AutoCorrectedFlexiCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.corrected, "corrected", new CorrectedFlexiCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.notCorrected, "notCorrected", new NotCorrectedFlexiCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.toReview, "toReview", new ToReviewFlexiCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.itemType,
+				new QuestionTypeFlexiCellRenderer(qti21Translator)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.answered,
+				new AnsweredFlexiCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.autoCorrected, CMD_AUTO_CORRECTED));
+		manuallyCorrectedCol = new DefaultFlexiColumnModel(ItemCols.manuallyCorrected, CMD_MANUALLY_CORRECTED);
+		columnsModel.addFlexiColumnModel(manuallyCorrectedCol);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.adjusted, CMD_ADJUSTED));
+		notCorrectedCol = new DefaultFlexiColumnModel(ItemCols.notCorrected);
+		columnsModel.addFlexiColumnModel(notCorrectedCol);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.toReview, CMD_TO_REVIEW,
+				new ToReviewFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(ItemCols.tools));
 		
 		tableModel = new CorrectionAssessmentItemTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_sel_correction_assessment_items_list");
 		tableEl.setExportEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "corr-assessment-item-list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "corr-assessment-item-list-v2.0");
 		
 		saveTestsButton = uifactory.addFormLink("save.tests", formLayout, Link.BUTTON);
 		saveTestsButton.setElementCssClass("o_sel_correction_save_tests");
+		
+		initFilters();
+		initFilterPresets();
+		tableEl.setSelectedFilterTab(ureq, allTab);
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+
+		SelectionValues toCorrectPK = new SelectionValues();
+		toCorrectPK.add(SelectionValues.entry(FILTER_TO_CORRECT, translate("filter.to.correct")));
+		FlexiTableOneClickSelectionFilter toCorrectFilter = new FlexiTableOneClickSelectionFilter(translate("filter.to.correct"),
+				FILTER_TO_CORRECT, toCorrectPK, true);
+		filters.add(toCorrectFilter);
+		
+		SelectionValues toReviewPK = new SelectionValues();
+		toReviewPK.add(SelectionValues.entry(FILTER_TO_REVIEW, translate("filter.to.review")));
+		FlexiTableOneClickSelectionFilter toReviewFilter = new FlexiTableOneClickSelectionFilter(translate("filter.to.review"),
+				FILTER_TO_REVIEW, toReviewPK, true);
+		filters.add(toReviewFilter);
+		
+		SelectionValues manualPK = new SelectionValues();
+		manualPK.add(SelectionValues.entry(FILTER_MANUAL, translate("filter.manual")));
+		FlexiTableOneClickSelectionFilter manualFilter = new FlexiTableOneClickSelectionFilter(translate("filter.manual"),
+				FILTER_MANUAL, manualPK, true);
+		filters.add(manualFilter);
+		
+		SelectionValues adjustedPK = new SelectionValues();
+		adjustedPK.add(SelectionValues.entry(FILTER_ADJUSTED, translate("filter.adjusted")));
+		FlexiTableOneClickSelectionFilter adjustedFilter = new FlexiTableOneClickSelectionFilter(translate("filter.adjusted"),
+				FILTER_ADJUSTED, adjustedPK, true);
+		filters.add(adjustedFilter);
+		
+		tableEl.setFilters(true, filters, true, false);
+	}
+	
+	private void initFilterPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB, translate("filter.all"),
+				TabSelectionBehavior.reloadData, List.of());
+		tabs.add(allTab);
+		
+		FlexiFiltersTab toCorrectTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TO_CORRECT_TAB, translate("filter.to.correct"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_TO_CORRECT, FILTER_TO_CORRECT)));
+		tabs.add(toCorrectTab);
+		
+		FlexiFiltersTab toReviewTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TO_REVIEW_TAB, translate("filter.to.review"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_TO_REVIEW, FILTER_TO_REVIEW)));
+		tabs.add(toReviewTab);
+		
+		FlexiFiltersTab manualTab = FlexiFiltersTabFactory.tabWithImplicitFilters(MANUAL_TAB, translate("filter.manual"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_MANUAL, FILTER_MANUAL)));
+		tabs.add(manualTab);
+		
+		FlexiFiltersTab adjustedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ADJUSTED_TAB, translate("filter.adjusted"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FILTER_ADJUSTED, FILTER_ADJUSTED)));
+		tabs.add(adjustedTab);
+		
+		tableEl.setFilterTabs(true, tabs);
 	}
 	
 	public String getErrorMessage() {
@@ -242,9 +337,52 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 				}
 			}
 		}
+		
+		boolean hasManualCorrection = false;
+		for(CorrectionAssessmentItemRow itemRow:itemRows) {
+			forgeRow(itemRow);
+			hasManualCorrection |= itemRow.isManualCorrection();
+		}
 
 		tableModel.setObjects(itemRows);
 		tableEl.reset(reset, reset, true);
+		
+		setColumnVisible(notCorrectedCol, hasManualCorrection);
+		setColumnVisible(manuallyCorrectedCol, hasManualCorrection);
+	}
+	
+	private void setColumnVisible(DefaultFlexiColumnModel col, boolean manualCorrections) {
+		if(col == null) return;
+		col.setAlwaysVisible(manualCorrections);
+		col.setDefaultVisible(manualCorrections);
+		tableEl.setColumnModelVisible(col, manualCorrections);
+	}
+	
+	private void filterModel() {
+		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+		tableEl.reset(true, true, true);
+	}
+	
+	private void forgeRow(CorrectionAssessmentItemRow itemRow) {
+		String val;
+		String iconCssClass;
+		String ariaTitle;
+		boolean toCorrect = itemRow.isManualCorrection() && itemRow.getNumNotCorrected() > 0;
+		if(toCorrect) {
+			iconCssClass = "o_icon o_icon-fw o_icon_correction_to_correct";
+			val = Integer.toString(itemRow.getNumNotCorrected());
+			ariaTitle = translate("filter.to.correct");
+		} else {
+			iconCssClass = "o_icon o_icon-fw o_icon_ok";
+			val = "";
+			ariaTitle = translate("corrected");
+		}
+		FormLink notCorrected = uifactory.addFormLink("notcorrected_" + (count++), CMD_NOT_CORRECTED, val, tableEl, Link.LINK | Link.NONTRANSLATED);
+		notCorrected.setIconLeftCSS(iconCssClass);
+		notCorrected.setEnabled(toCorrect);
+		notCorrected.setTitle(ariaTitle);
+		itemRow.setNotCorrectedLink(notCorrected);
+		notCorrected.setUserObject(itemRow);
 	}
 	
 	private void appendStatistics(CorrectionAssessmentItemRow row, AssessmentItemSession itemSession, ItemSessionState itemSessionState) {
@@ -266,13 +404,14 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		boolean manualCorrection = model.isManualCorrection(row.getItemRef());
 		row.setManualCorrection(manualCorrection);
 		if(manualCorrection) {
+			row.addManuallyCorrected();
 			if(manualScore == null) {
 				row.addNotCorrected();
 			} else {
 				row.addCorrected();
 			}
 		} else if(manualScore != null) {
-			row.addCorrected();
+			row.addAdjusted();
 		} else {
 			row.addAutoCorrected();
 		}
@@ -298,6 +437,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 				PopEvent pe = (PopEvent)event;
 				if(pe.getController() == identityItemCtrl) {
 					loadModel(false, true);
+					filterModel();
 				}
 			}
 		}
@@ -310,6 +450,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			if(event == Event.CANCELLED_EVENT || event == Event.BACK_EVENT) {
 				doUnlock();
 				loadModel(false, true);
+				filterModel();
 				stackPanel.popController(identityItemCtrl);
 			} else if(event instanceof SelectAssessmentItemEvent) {
 				stackPanel.popController(identityItemCtrl);
@@ -327,6 +468,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		} else if(bulkPointsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(false, false);
+				filterModel();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -360,32 +502,30 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				CorrectionAssessmentItemRow row = tableModel.getObject(se.getIndex());
-				if("select".equals(cmd)) {
+				if(CMD_SELECT.equals(cmd)) {
 					doSelect(ureq, row, r -> true);// accept all
-				} else if("answered".equals(cmd)) {
-					doSelect(ureq, row, new ResponsedPredicate(row, true));// accept all
-				} else if("notAnswered".equals(cmd)) {
-					doSelect(ureq, row, new ResponsedPredicate(row, false));// accept all
-				} else if("autoCorrected".equals(cmd)) {
-					doSelect(ureq, row, entry -> !row.isManualCorrection() && entry.getManualScore() == null);
-				}  else if("corrected".equals(cmd)) {
-					doSelect(ureq, row, entry -> entry.getManualScore() != null);
-				} else if("notCorrected".equals(cmd)) {
-					doSelect(ureq, row, entry -> row.isManualCorrection() && entry.getManualScore() == null);
-				} else if("toReview".equals(cmd)) {
+				} else if(CMD_TO_REVIEW.equals(cmd)) {
 					doSelect(ureq, row, AssessmentItemListEntry::isToReview);
+				} else if(CMD_AUTO_CORRECTED.equals(cmd)) {
+					doSelect(ureq, row, entry -> !row.isManualCorrection() && entry.getManualScore() == null);
+				} else if(CMD_MANUALLY_CORRECTED.equals(cmd)) {
+					doSelect(ureq, row, entry -> row.isManualCorrection());
+				} else if(CMD_ADJUSTED.equals(cmd)) {
+					doSelect(ureq, row, entry -> !row.isManualCorrection() && entry.getManualScore() != null);
 				}
+			} else if(event instanceof FlexiTableFilterTabEvent || event instanceof FlexiTableSearchEvent) {
+				filterModel();
 			}
 		} else if(saveTestsButton == source) {
 			doConfirmSaveTests(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if("tools".equals(link.getCmd())) {
-				doOpenTools(ureq, (CorrectionAssessmentItemRow)link.getUserObject(), link);
+		} else if(source instanceof FormLink link) {
+			if("tools".equals(link.getCmd()) && link.getUserObject() instanceof CorrectionAssessmentItemRow row) {
+				doOpenTools(ureq, row, link);
+			} else if(CMD_NOT_CORRECTED.equals(link.getCmd()) && link.getUserObject() instanceof CorrectionAssessmentItemRow row) {
+				doSelect(ureq, row, entry -> entry.getManualScore() == null);	
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -565,29 +705,6 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	private void doExportEssayPdfs(UserRequest ureq, CorrectionAssessmentItemRow row) {
 		MediaResource resource = new EssaysPdfMediaResource(model, row.getItemRef(), anonymous, getLocale(), getIdentity(), getWindowControl());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
-	}
-	
-	private final class ResponsedPredicate implements Predicate<AssessmentItemListEntry> {
-		
-		private final boolean responded;
-		private final CorrectionAssessmentItemRow row;
-		
-		public ResponsedPredicate(CorrectionAssessmentItemRow row, boolean responded) {
-			this.row = row;
-			this.responded = responded;
-		}
-
-		@Override
-		public boolean test(AssessmentItemListEntry t) {
-			TestSessionState testSessionState = model.getTestSessionStates().get(t.getAssessedIdentity());
-			List<TestPlanNode> nodes = testSessionState.getTestPlan().getNodes(row.getItemRef().getIdentifier());
-			if(!nodes.isEmpty()) {
-				TestPlanNode itemNode = nodes.get(0);
-				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(itemNode.getKey());
-				return itemSessionState != null && responded == itemSessionState.isResponded();
-			}
-			return false;
-		}
 	}
 	
 	private class ToolsController extends BasicController {

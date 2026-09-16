@@ -20,7 +20,6 @@
 package org.olat.ims.qti21.manager;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -490,13 +489,7 @@ public class AssessmentTestSessionDAO {
 	public List<AssessmentTestSessionStatistics> getUserTestSessionsStatistics(RepositoryEntryRef courseEntry, String courseSubIdent,
 			IdentityRef identity, boolean onlyValid) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select session,")
-		  .append(" (select count(itemSession.key) from qtiassessmentitemsession itemSession")
-		  .append("   where itemSession.assessmentTestSession.key=session.key and itemSession.manualScore is not null")
-		  .append(" ) as correctItems,")
-		  .append(" (select sum(itemSession.score) from qtiassessmentitemsession itemSession")
-		  .append("   where itemSession.assessmentTestSession.key=session.key and itemSession.score is not null")
-		  .append(" ) as automaticScore")
+		sb.append("select session")
 		  .append(" from qtiassessmenttestsession session")
 		  .append(" left join fetch session.testEntry testEntry")
 		  .append(" left join fetch testEntry.olatResource testResource")
@@ -512,23 +505,16 @@ public class AssessmentTestSessionDAO {
 		}
 		sb.append(" order by session.creationDate desc");
 		
-		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
+		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
 				.setParameter("repositoryEntryKey", courseEntry.getKey())
 				.setParameter("identityKey", identity.getKey());
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			query.setParameter("subIdent", courseSubIdent);
 		}
-		List<Object[]> raws = query.getResultList();
-		List<AssessmentTestSessionStatistics> stats = new ArrayList<>(raws.size());
-		for(Object[] raw:raws) {
-			AssessmentTestSession testSession = (AssessmentTestSession)raw[0];
-			int numOfCorrectedItems = (raw[1] == null ? 0 : ((Number)raw[1]).intValue());
-			BigDecimal automaticScore = (raw[2] == null ? BigDecimal.ZERO : new BigDecimal(((Number)raw[2]).doubleValue()));
-			stats.add(new AssessmentTestSessionStatistics(testSession, numOfCorrectedItems, automaticScore));
-		}
-		
-		return stats;
+		return query.getResultList().stream()
+				.map(AssessmentTestSessionStatistics::new)
+				.collect(Collectors.toList());
 	}
 	
 	/**

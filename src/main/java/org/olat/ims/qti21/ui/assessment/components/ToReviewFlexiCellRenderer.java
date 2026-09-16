@@ -29,7 +29,7 @@ import org.olat.core.gui.translator.Translator;
 /**
  * 
  * Initial date: 26 févr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ToReviewFlexiCellRenderer implements FlexiCellRenderer {
@@ -37,14 +37,13 @@ public class ToReviewFlexiCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof Integer) {
-			Integer toReview = (Integer)cellValue;
+		if(cellValue instanceof Integer toReview) {
 			if(toReview.intValue() > 0) {
-				target.append(toReview)
-				      .append(" <i class='o_icon o_icon_fw o_icon_warn'> </i>");
+				target.append("<span><i class='o_icon o_icon-fw o_icon_warn'> </i> ")
+				      .append(toReview).append("</span>");
 			}
-		} else if(cellValue instanceof Boolean && ((Boolean)cellValue).booleanValue()) {
-			target.append("<i class='o_icon o_icon_fw o_icon_warn'> </i>");
+		} else if(cellValue instanceof Boolean toReview && toReview.booleanValue()) {
+			target.append("<span><i class='o_icon o_icon-fw o_icon_warn'> </i></span>");
 		}
 	}
 }

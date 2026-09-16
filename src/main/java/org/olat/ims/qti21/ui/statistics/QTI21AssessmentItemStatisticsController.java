@@ -34,6 +34,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -229,7 +231,7 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		}
 
 		StatisticsItem itemStats = qtiStatisticsManager
-				.getAssessmentItemStatistics(itemRef.getIdentifier().toString(), maxScore, searchParams);
+				.getAssessmentItemStatistics(itemRef.getIdentifier().toString(), maxScore, searchParams, item);
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 		
 		long rightAnswers = itemStats.getNumOfCorrectAnswers();
@@ -244,6 +246,18 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		mainVC.contextPut("averageScore", formatTwo(itemStats.getAverageScore()));
 		mainVC.contextPut("numOfParticipants", numOfParticipants);
 		mainVC.contextPut("averageDuration", duration(itemStats.getAverageDuration()));
+		
+		boolean manualCorrection = AssessmentTestHelper.needManualCorrection(item);
+		if(!manualCorrection) {
+			mainVC.contextPut("numOfAdjustements", itemStats.getNumOfAdjustements());
+			if(itemStats.getNumOfAdjustements() > 0) {
+				String averageAdjustement = AssessmentHelper.getRoundedScore(itemStats.getAverageAdjustement());
+				if(itemStats.getAverageAdjustement() > 0.0d) {
+					averageAdjustement = "+" + averageAdjustement;
+				}
+				mainVC.contextPut("averageAdjustement", averageAdjustement);
+			}
+		}
 		return itemStats;
 	}
 

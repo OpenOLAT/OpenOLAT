@@ -27,7 +27,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.ims.qti21.ui.assessment.model.CorrectionIdentityAssessmentItemRow;
 import org.olat.ims.qti21.ui.assessment.model.CorrectionIdentityRow;
-import org.olat.ims.qti21.ui.assessment.model.CorrectionRow;
 
 /**
  * 
@@ -35,40 +34,36 @@ import org.olat.ims.qti21.ui.assessment.model.CorrectionRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CorrectedFlexiCellRenderer implements FlexiCellRenderer {
+public class ToCorrectFlexiCellRenderer implements FlexiCellRenderer {
+	
+	private final Translator translator;
+	
+	public ToCorrectFlexiCellRenderer(Translator translator) {
+		this.translator = translator;
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
+		
 		Object obj = source.getFormItem().getTableDataModel().getObject(row);
-		if(obj instanceof CorrectionIdentityRow) {
-			render(target, (CorrectionIdentityRow)obj);
-		} else if(obj instanceof CorrectionRow) {
-			render(target, (CorrectionRow)obj);
-		} else if(obj instanceof CorrectionIdentityAssessmentItemRow) {
-			render(target, (CorrectionIdentityAssessmentItemRow)obj);
-		} 
-	}
-	
-	public void render(StringOutput target, CorrectionRow itemRow) {
-		target.append(itemRow.getNumCorrected());
-		if(!itemRow.isManualCorrection()) {
-			if(itemRow.getNumCorrected() + itemRow.getNumAutoCorrected() >= itemRow.getNumOfSessions()) {
-				target.append(" <i class='o_icon o_icon_fw o_icon_ok'> </i>");
-			} 
+		if(obj instanceof CorrectionIdentityAssessmentItemRow itemRow) {
+			if(itemRow.isManualCorrection()) {
+				target.append("<span title=\"").append(translator.translate("status.to.correct")).append("\"><i class='o_icon o_icon-fw o_icon_correction_to_correct'> </i></span>");
+			} else {
+				renderOk(target);
+			}
+		} else if(obj instanceof CorrectionIdentityRow itemRow) {
+			if(itemRow.getNumNotCorrected() > 0) {
+				target.append("<span title=\"").append(translator.translate("status.to.correct")).append("\"><i class='o_icon o_icon-fw o_icon_correction_to_correct'> </i> ")
+				      .append(itemRow.getNumNotCorrected()).append("</span>");
+			} else {
+				renderOk(target);
+			}
 		}
 	}
 	
-	private void render(StringOutput target, CorrectionIdentityRow identityRow) {
-		target.append(identityRow.getNumCorrected());
-		if(identityRow.getNumNotCorrected() == 0) {
-			target.append(" <i class='o_icon o_icon_fw o_icon_ok'> </i>");
-		}
-	}
-	
-	private void render(StringOutput target, CorrectionIdentityAssessmentItemRow itemRow) {
-		if(itemRow.getManualScore() != null) {
-			target.append(" <i class='o_icon o_icon_fw o_icon_ok'> </i>");
-		}
+	private void renderOk(StringOutput target) {
+		target.append("<span><i class='o_icon o_icon-fw o_icon_ok'> </i></span>");
 	}
 }

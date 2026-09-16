@@ -164,6 +164,21 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 			if(StringHelper.containsNonWhitespace(assessmentEntry.getTitleCssClass())) {
 				layoutCont.contextPut("titleCssClass", assessmentEntry.getTitleCssClass());
 			}
+			
+			String status = "";
+			String statusCssClass = "";
+			if(itemCorrection.getItemSessionState() == null || !itemCorrection.getItemSessionState().isPresented()) {
+				status = translate("status.not.presented");
+				statusCssClass = "notPresented";
+			} else if(itemCorrection.getItemSessionState().isResponded()) {
+				status = translate("status.answered");
+				statusCssClass = "answered";
+			} else if(itemCorrection.getItemSessionState().isPresented()) {
+				status = translate("status.not.answered");
+				statusCssClass = "notAnswered";
+			}
+			layoutCont.contextPut("status", status);
+			layoutCont.contextPut("statusCssClass", statusCssClass);
 		}
 		
 		boolean downloadEnabled = pdfModule.isEnabled()
@@ -218,6 +233,10 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		if (source == identityInteractionsCtrl) {
 			if (event == CorrectionIdentityInteractionsController.DOWNLOAD_PDF) {
 				doDownloadPdf(ureq);
+			} else if(event == Event.CHANGED_EVENT) {
+				if(validateFormLogic(ureq)) {
+					doSave();
+				}
 			}
 		}
 		super.event(ureq, source, event);

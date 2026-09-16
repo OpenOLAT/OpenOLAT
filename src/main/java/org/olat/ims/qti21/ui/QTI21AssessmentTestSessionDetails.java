@@ -36,23 +36,36 @@ public class QTI21AssessmentTestSessionDetails {
 	private final boolean error;
 	private final int numOfItems;
 	private final int numOfItemsResponded;
-	private final int numOfItemsCorrected;
+	private final int numOfItemsToCorrect;
+	private final int numOfItemsToReview;
+
+	private final BigDecimal manualScore;
 	private final BigDecimal automaticScore;
+	private final BigDecimal adjustmentPlusScore;
+	private final BigDecimal adjustmentMinusScore;
 	private final AssessmentTestSession testSession;
 	private final SessionStatus sessionStatus;
 	
 	private FormLink toolsLink;
+	private FormLink toCorrectLink;
+	private FormLink toReviewLink;
 	
 	public QTI21AssessmentTestSessionDetails(AssessmentTestSession testSession,
-			int numOfItems, int numOfItemsResponded, int numOfItemsCorrected, BigDecimal automaticScore,
+			int numOfItems, int numOfItemsResponded, int numOfItemsToCorrect,
+			int numOfItemsToReview, BigDecimal automaticScore,
+			BigDecimal manualScore, BigDecimal adjustmentPlusScore, BigDecimal adjustmentMinusScore,
 			SessionStatus sessionStatus, boolean error, int run) {
 		this.run = run;
 		this.error = error;
 		this.testSession = testSession;
 		this.numOfItems = numOfItems;
 		this.numOfItemsResponded = numOfItemsResponded;
-		this.numOfItemsCorrected = numOfItemsCorrected;
+		this.numOfItemsToCorrect = numOfItemsToCorrect;
+		this.numOfItemsToReview = numOfItemsToReview;
+		this.manualScore = manualScore;
 		this.automaticScore = automaticScore;
+		this.adjustmentPlusScore = adjustmentPlusScore;
+		this.adjustmentMinusScore = adjustmentMinusScore;
 		this.sessionStatus = sessionStatus;
 	}
 	
@@ -64,29 +77,36 @@ public class QTI21AssessmentTestSessionDetails {
 		return numOfItems;
 	}
 	
-	public int getNumOfItemsCorrected() {
-		return numOfItemsCorrected;
-	}
-	
 	public int getNumOfItemsResponded() {
 		return numOfItemsResponded;
 	}
 	
+	public int getNumOfItemsToCorrect() {
+		return numOfItemsToCorrect;
+	}
+
+	public int getNumOfItemsToReview() {
+		return numOfItemsToReview;
+	}
+
 	public BigDecimal getAutomaticScore() {
 		return automaticScore;
 	}
 	
+	public BigDecimal getAdjustmentPlusScore() {
+		return adjustmentPlusScore;
+	}
+
+	public BigDecimal getAdjustmentMinusScore() {
+		return adjustmentMinusScore;
+	}
+
 	public BigDecimal getScore() {
 		return testSession.getScore();
 	}
 	
-	public boolean hasManualScore() {
-		BigDecimal s = testSession.getManualScore();
-		return s != null && s.compareTo(BigDecimal.ZERO) > 0;
-	}
-	
 	public BigDecimal getManualScore() {
-		return testSession.getManualScore();
+		return manualScore;
 	}
 	
 	public AssessmentTestSession getTestSession() {
@@ -99,6 +119,22 @@ public class QTI21AssessmentTestSessionDetails {
 
 	public SessionStatus getSessionStatus() {
 		return sessionStatus;
+	}
+
+	public FormLink getToCorrectLink() {
+		return toCorrectLink;
+	}
+
+	public void setToCorrectLink(FormLink toCorrectLink) {
+		this.toCorrectLink = toCorrectLink;
+	}
+
+	public FormLink getToReviewLink() {
+		return toReviewLink;
+	}
+
+	public void setToReviewLink(FormLink toReviewLink) {
+		this.toReviewLink = toReviewLink;
 	}
 
 	public FormLink getToolsLink() {
