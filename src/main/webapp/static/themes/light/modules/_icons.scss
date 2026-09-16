@@ -664,7 +664,7 @@ $fa-css-prefix: "o_icon" !default;
 /* repository type icons */
 .o_BinderTemplate_icon { @include o-add-icon('briefcase');}
 .o_CourseModule_icon, .o_course_icon { @include o-add-icon('cube');}
-.o_FileResource-BLOG_icon { @include o-add-icon('bullhorn');}
+.o_FileResource-BLOG_icon { @include o-add-icon('blog');}
 .o_FileResource-IMSCP_icon { @include o-add-icon('archive');}
 .o_FileResource-FORM_icon { @include o-add-icon('sliders');}
 .o_FileResource-PODCAST_icon { @include o-add-icon('podcast');}
@@ -719,14 +719,14 @@ $fa-css-prefix: "o_icon" !default;
 .o_en_icon { @include o-add-icon('sign-in');}
 .o_fo_icon { @include o-add-icon('comments', false);}
 .o_co_icon { @include o-add-icon('envelope', false);}
-.o_infomsg_icon { @include o-add-icon('info-circle');}
+.o_infomsg_icon { @include o-add-icon('bullhorn');}
 .o_cal_icon { @include o-add-icon('calendar-days', false);}
 .o_wiki_icon { @include o-add-icon('globe');}
 .o_podcast_icon { @include o-add-icon('podcast');}
 .o_page_icon { @include o-add-icon('file-text');}
 .o_pf_icon { @include o-add-icon('inbox');}
 .o_practice_icon { @include o-add-icon('soccer-ball', false);}
-.o_blog_icon { @include o-add-icon('bullhorn');}
+.o_blog_icon { @include o-add-icon('blog');}
 .o_ep_icon { @include o-add-icon('briefcase');}
 .o_iqtest_icon { @include o-add-icon('pencil-square');}
 .o_iqself_icon { @include o-add-icon('pencil-square');}
