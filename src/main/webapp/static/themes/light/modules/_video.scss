@@ -219,8 +219,22 @@
 	
 	#o_qti_container {
 		background-color: white;
-		padding: 5px;
-		border-radius: $border-radius-small;
+		padding: $padding-base-horizontal $padding-base-horizontal;
+		border-radius: $border-radius-base;
+		
+		.o_assessmentitem_wrapper {
+			.o_qti_item_meta {
+				margin: 0;
+
+				.o_assessmentitem_status {
+					&:not(.answered):not(.notAnswered) {
+						i:before {
+							color: #fff;
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	.o_sel_additional_feedback {

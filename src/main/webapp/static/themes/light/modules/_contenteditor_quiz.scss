@@ -175,6 +175,11 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 					&.incorrect {
 						border-color: darken($o-qti-status-incorrect-color, 10%);
 					}
+					&:not(.answered):not(.notAnswered) {
+						i:before {
+							color: #fff;
+						}
+					}
 				}
 			}
 
