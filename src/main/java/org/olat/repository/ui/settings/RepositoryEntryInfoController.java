@@ -61,6 +61,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseModule;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
 import org.olat.modules.curriculum.TaughtBy;
@@ -106,6 +107,8 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	private final boolean readOnly;
 	private VFSContainer mediaContainer;
 	private RepositoryEntry repositoryEntry;
+	private boolean lecturesAvailable;
+	private boolean certificateAvailable;
 	private boolean creditPointsAvailable;
 
 	private FileElement fileUpload;
@@ -133,6 +136,8 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	private CreditPointService creditPointService;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private CertificatesManager certificatesManager;
 
 
 	/**
@@ -251,9 +256,15 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		displayCont = uifactory.addFormSection("display", translate("cif.display.settings"), formLayout, FormSection.Level.SUB_TITLE);
 
 		SelectionValues showInfoPK = new SelectionValues();
-		showInfoPK.add(SelectionValues.entry(EVENTS_KEY, translate("cif.events")));
+		lecturesAvailable = lectureService.isRepositoryEntryLectureEnabled(repositoryEntry);
+		if(lecturesAvailable) {
+			showInfoPK.add(SelectionValues.entry(EVENTS_KEY, translate("cif.events")));
+		}
 		showInfoPK.add(SelectionValues.entry(MEET_TEACHERS_KEY, translate("cif.meet.your.teachers")));
-		showInfoPK.add(SelectionValues.entry(CERTIFICATE_KEY, translate("details.certificate")));
+		certificateAvailable = certificatesManager.isCertificateEnabled(repositoryEntry);
+		if(certificateAvailable) {
+			showInfoPK.add(SelectionValues.entry(CERTIFICATE_KEY, translate("details.certificate")));
+		}
 		RepositoryEntryCreditPointConfiguration creditPointConfig = creditPointService.getConfiguration(repositoryEntry);
 		creditPointsAvailable = creditPointConfig != null && creditPointConfig.isEnabled();
 		if(creditPointsAvailable) {
@@ -263,21 +274,29 @@ public class RepositoryEntryInfoController extends FormBasicController {
 				showInfoPK.keys(), showInfoPK.values(), 1);
 		showInfoEl.setHelpText(translate("cif.display.on.info.page.help"));
 		showInfoEl.addActionListener(FormEvent.ONCLICK);
-		showInfoEl.setEnabled(EVENTS_KEY, !readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.showLectures));
+		if(lecturesAvailable) {
+			showInfoEl.setEnabled(EVENTS_KEY, !readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.showLectures));
+		}
 		showInfoEl.setEnabled(MEET_TEACHERS_KEY, !readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.taughtBy));
-		showInfoEl.setEnabled(CERTIFICATE_KEY, !readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.showCertificate));
+		if(certificateAvailable) {
+			showInfoEl.setEnabled(CERTIFICATE_KEY, !readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.showCertificate));
+		}
 		if(creditPointsAvailable) {
 			showInfoEl.setEnabled(CREDIT_POINTS_KEY, !readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.showCreditPoints));
 		}
 		boolean meetTeachers = !repositoryEntry.getTaughtBys().isEmpty();
-		showInfoEl.select(EVENTS_KEY, repositoryEntry.isShowLectures());
+		if(lecturesAvailable) {
+			showInfoEl.select(EVENTS_KEY, repositoryEntry.isShowLectures());
+		}
 		showInfoEl.select(MEET_TEACHERS_KEY, meetTeachers);
-		showInfoEl.select(CERTIFICATE_KEY, repositoryEntry.isShowCertificateBenefit());
+		if(certificateAvailable) {
+			showInfoEl.select(CERTIFICATE_KEY, repositoryEntry.isShowCertificateBenefit());
+		}
 		if(creditPointsAvailable) {
 			showInfoEl.select(CREDIT_POINTS_KEY, repositoryEntry.isShowCreditPointsBenefit());
 		}
 
-		List<LectureBlock> lectureBlocks = lectureService.isRepositoryEntryLectureEnabled(repositoryEntry)
+		List<LectureBlock> lectureBlocks = lecturesAvailable
 				? lectureService.getLectureBlocks(repositoryEntry) : List.of();
 		Map<TaughtBy,Integer> taughtByCounts = getTaughtByCounts(lectureBlocks);
 		SelectionValues taughtBySV = new SelectionValues();
@@ -286,6 +305,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 				translate("cif.taught.by." + taughtBy.name(), String.valueOf(taughtByCounts.getOrDefault(taughtBy, Integer.valueOf(0)))))));
 		taughtByEl = uifactory.addCheckboxesVertical("taught.by", "cif.taught.by", displayCont, taughtBySV.keys(), taughtBySV.values(), 1);
 		taughtByEl.setHelpText(translate("cif.taught.by.help"));
+		taughtByEl.setMandatory(true);
 		taughtByEl.setEnabled(!readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.taughtBy));
 		repositoryEntry.getTaughtBys().forEach(taughtBy -> taughtByEl.select(taughtBy.name(), true));
 		taughtByEl.setVisible(meetTeachers);
@@ -498,11 +518,17 @@ public class RepositoryEntryInfoController extends FormBasicController {
 				String taughtByValue = selectedInfo.contains(MEET_TEACHERS_KEY)
 						? TaughtBy.join(taughtByEl.getSelectedKeys().stream().map(TaughtBy::valueOf).collect(Collectors.toSet()))
 						: null;
+				boolean showLectures = lecturesAvailable
+						? selectedInfo.contains(EVENTS_KEY)
+						: repositoryEntry.isShowLectures();
+				boolean showCertificate = certificateAvailable
+						? selectedInfo.contains(CERTIFICATE_KEY)
+						: repositoryEntry.isShowCertificateBenefit();
 				boolean showCreditPoints = creditPointsAvailable
 						? selectedInfo.contains(CREDIT_POINTS_KEY)
 						: repositoryEntry.isShowCreditPointsBenefit();
-				repositoryEntry = repositoryManager.setInfoPageSettings(repositoryEntry, selectedInfo.contains(EVENTS_KEY),
-						selectedInfo.contains(CERTIFICATE_KEY), showCreditPoints, taughtByValue);
+				repositoryEntry = repositoryManager.setInfoPageSettings(repositoryEntry, showLectures,
+						showCertificate, showCreditPoints, taughtByValue);
 			}
 			fireEvent(ureq, new ReloadSettingsEvent(false, false, false, true));
 			MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, getIdentity(), Change.modifiedDescription, "authoring");

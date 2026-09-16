@@ -115,6 +115,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	private final boolean canEdit;
 	private CurriculumElement element;
 	private final boolean isRootElement;
+	private boolean hasChildren;
 	private final List<CreditPointSystem> systems;
 	private CurriculumElementCreditPointConfiguration creditPointConfig;
 	private VFSContainer mediaContainer;
@@ -223,7 +224,10 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			displayCont = uifactory.addFormSection("display", translate("cif.display.settings"), formLayout, FormSection.Level.SUB_TITLE);
 
 			SelectionValues showInfoPK = new SelectionValues();
-			showInfoPK.add(SelectionValues.entry(OUTLINE_KEY, translate("infos.outline")));
+			hasChildren = curriculumService.hasCurriculumElementChildren(element);
+			if(hasChildren) {
+				showInfoPK.add(SelectionValues.entry(OUTLINE_KEY, translate("infos.outline")));
+			}
 			showInfoPK.add(SelectionValues.entry(EVENTS_KEY, translate("cif.events")));
 			showInfoPK.add(SelectionValues.entry(MEET_TEACHERS_KEY, translate("cif.meet.your.teachers")));
 			showInfoPK.add(SelectionValues.entry(CERTIFICATE_KEY, translate("details.certificate")));
@@ -235,7 +239,9 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			showInfoEl.setHelpText(translate("cif.display.on.info.page.help"));
 			showInfoEl.addActionListener(FormEvent.ONCLICK);
 			showInfoEl.setEnabled(canEdit);
-			showInfoEl.setEnabled(OUTLINE_KEY, canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showOutline));
+			if(hasChildren) {
+				showInfoEl.setEnabled(OUTLINE_KEY, canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showOutline));
+			}
 			showInfoEl.setEnabled(EVENTS_KEY, canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showLectures));
 			showInfoEl.setEnabled(MEET_TEACHERS_KEY, canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.taughtBy));
 			showInfoEl.setEnabled(CERTIFICATE_KEY, canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showCertificate));
@@ -243,7 +249,9 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			boolean showCertificate = element.isShowCertificateBenefit();
 			boolean showCreditPoints = element.isShowCreditPointsBenefit();
 			boolean meetTeachers = !element.getTaughtBys().isEmpty();
-			showInfoEl.select(OUTLINE_KEY, element.isShowOutline());
+			if(hasChildren) {
+				showInfoEl.select(OUTLINE_KEY, element.isShowOutline());
+			}
 			showInfoEl.select(EVENTS_KEY, element.isShowLectures());
 			showInfoEl.select(MEET_TEACHERS_KEY, meetTeachers);
 			showInfoEl.select(CERTIFICATE_KEY, showCertificate);
@@ -258,6 +266,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 					translate("cif.taught.by." + taughtBy.name(), String.valueOf(taughtByCounts.getOrDefault(taughtBy, Integer.valueOf(0)))))));
 			taughtByEl = uifactory.addCheckboxesVertical("taught.by", "cif.taught.by", displayCont, taughtBySV.keys(), taughtBySV.values(), 1);
 			taughtByEl.setHelpText(translate("cif.taught.by.help"));
+			taughtByEl.setMandatory(true);
 			taughtByEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.taughtBy));
 			element.getTaughtBys().forEach(taughtBy -> taughtByEl.select(taughtBy.name(), true));
 			taughtByEl.setVisible(meetTeachers);
@@ -411,7 +420,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			element.setMainLanguage(mainLanguageEl.getValue());
 			element.setExpenditureOfWork(expenditureOfWorkEl.getValue());
 			Collection<String> selectedInfo = showInfoEl.getSelectedKeys();
-			element.setShowOutline(selectedInfo.contains(OUTLINE_KEY));
+			element.setShowOutline(hasChildren ? selectedInfo.contains(OUTLINE_KEY) : element.isShowOutline());
 			element.setShowLectures(selectedInfo.contains(EVENTS_KEY));
 			element.setShowCertificateBenefit(selectedInfo.contains(CERTIFICATE_KEY));
 			element.setShowCreditPointsBenefit(creditPointModule.isEnabled()
