@@ -563,6 +563,16 @@ tr.o_rm_room_preselected {
 				}
 			}
 		}
+		// Show a short path if there is only a single event in the whole timeline
+		&.o_lectures_timeline_complete >.o_lectures_timeline_row:last-child:nth-child(2) {
+			.o_lectures_timeline_path_lecture:last-child:only-child {
+				.o_lectures_timeline_path {
+					.o_lectures_timeline_path_bottom {
+						border-left: $o-lm-timeline-path-stroke-width solid $o-lm-timeline-path-color;
+					}
+				}
+			}
+		}
 	}
 }
 
