@@ -69,6 +69,7 @@ public class InfoController extends StepFormBasicController {
 	private SingleSelection taughtByOwnersEl;
 	private final List<SingleSelection> displayEls = new ArrayList<>(4);
 	private final List<SingleSelection> taughtByEls = new ArrayList<>(3);
+	private FormLayoutContainer infoCont;
 
 	private final SettingsContext context;
 	private final SettingsBulkEditables editables;
@@ -88,7 +89,7 @@ public class InfoController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer infoCont = FormLayoutContainer.createDefaultFormLayout("infoCont", getTranslator());
+		infoCont = FormLayoutContainer.createDefaultFormLayout("infoCont", getTranslator());
 		infoCont.setFormTitle(translate("settings.bulk.info.title"));
 		infoCont.setFormInfo(RepositoryBulkUIFactory.getSettingsDescription(getTranslator(), context.getRepositoryEntries(), "settings.bulk.change.fields"));
 		infoCont.setRootForm(mainForm);
@@ -163,11 +164,13 @@ public class InfoController extends StepFormBasicController {
 	private void updateDisplayUI() {
 		boolean visible = displayChangeEl.isAtLeastSelected(1);
 		displayEls.forEach(el -> el.setVisible(visible));
+		infoCont.setDirty(true);
 	}
 
 	private void updateTaughtByUI() {
 		boolean visible = taughtByChangeEl.isAtLeastSelected(1);
 		taughtByEls.forEach(el -> el.setVisible(visible));
+		infoCont.setDirty(true);
 	}
 
 	@Override
