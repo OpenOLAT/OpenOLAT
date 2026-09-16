@@ -118,6 +118,8 @@ public class SearchElementImpl extends FormItemImpl implements SearchElement, Fo
 		resetButtonEl.setGhost(true);
 
 		component = new SearchElementComponent(this, baseId + "_cmp");
+
+		setTranslator(Util.createPackageTranslator(SearchElementImpl.class, locale));
 	}
 
 	@Override
