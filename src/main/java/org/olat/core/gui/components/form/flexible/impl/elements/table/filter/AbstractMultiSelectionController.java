@@ -171,7 +171,7 @@ public abstract class AbstractMultiSelectionController extends FlexiFilterExtend
 			for(int i=0; i<keys.length; i++) {
 				String value = values[i].toLowerCase();
 				if(value.contains(searchText)) {
-					String icon = icons == null || icons.length >= i ? null : icons[i];
+					String icon = icons != null && icons.length > i ? icons[i] : null;
 					filtered.add(new SelectionValue(keys[i], values[i], null, icon, null, true));
 				}
 			}
