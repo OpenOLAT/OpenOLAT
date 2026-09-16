@@ -20,6 +20,8 @@
 package org.olat.course.assessment;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
@@ -38,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
+import org.olat.modules.curriculum.TaughtBy;
 import org.olat.modules.curriculum.ui.CurriculumAdminConfigurationController;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +55,9 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String INFO_BOX_KEY = "infobox";
 	private static final String CHANGE_LOG_KEY = "changelog";
+	private static final String EVENTS_KEY = "events";
+	private static final String MEET_TEACHERS_KEY = "meetteachers";
+	private static final String CERTIFICATE_KEY = "certificate";
 	private static final String ON_KEY = "on";
 	private static final String OFF_KEY = "off";
 	private static final String[] onOffKeys = new String[]{ ON_KEY, OFF_KEY };
@@ -61,6 +67,8 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 	private MultipleSelectionElement assessmentOptionsEl;
 	private MultipleSelectionElement disclaimerEnabledEl;
 	private SingleSelection efficiencyStatementEnabledEl;
+	private MultipleSelectionElement defaultShowInfoEl;
+	private MultipleSelectionElement defaultTaughtByEl;
 	private FormSection defaultSettingsCont;
 	private FormSection courseRelatedConfigCont;
 
@@ -123,6 +131,29 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		efficiencyStatementEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		efficiencyStatementEnabledEl.select(courseModule.isEfficiencyStatementEnabled() ? ON_KEY : OFF_KEY, true);
 
+		uifactory.addSpacerElement("infoPageSpacer", defaultSettingsCont, false);
+
+		SelectionValues showInfoPK = new SelectionValues();
+		showInfoPK.add(SelectionValues.entry(EVENTS_KEY, translate("cif.events")));
+		showInfoPK.add(SelectionValues.entry(MEET_TEACHERS_KEY, translate("cif.meet.your.teachers")));
+		showInfoPK.add(SelectionValues.entry(CERTIFICATE_KEY, translate("details.certificate")));
+		defaultShowInfoEl = uifactory.addCheckboxesVertical("default.show.info", "cif.display.on.info.page", defaultSettingsCont,
+				showInfoPK.keys(), showInfoPK.values(), 1);
+		defaultShowInfoEl.setHelpText(translate("cif.display.on.info.page.help"));
+		defaultShowInfoEl.addActionListener(FormEvent.ONCHANGE);
+		defaultShowInfoEl.select(EVENTS_KEY, courseModule.isDefaultShowLectures());
+		defaultShowInfoEl.select(MEET_TEACHERS_KEY, !courseModule.getDefaultTaughtBys().isEmpty());
+		defaultShowInfoEl.select(CERTIFICATE_KEY, courseModule.isDefaultShowCertificate());
+
+		SelectionValues taughtByPK = new SelectionValues();
+		TaughtBy.ALL.forEach(taughtBy -> taughtByPK.add(SelectionValues.entry(taughtBy.name(), translate("cif.role." + taughtBy.name()))));
+		defaultTaughtByEl = uifactory.addCheckboxesVertical("default.taught.by", "cif.taught.by", defaultSettingsCont,
+				taughtByPK.keys(), taughtByPK.values(), 1);
+		defaultTaughtByEl.setHelpText(translate("cif.taught.by.help"));
+		defaultTaughtByEl.addActionListener(FormEvent.ONCHANGE);
+		courseModule.getDefaultTaughtBys().forEach(taughtBy -> defaultTaughtByEl.select(taughtBy.name(), true));
+		defaultTaughtByEl.setVisible(!courseModule.getDefaultTaughtBys().isEmpty());
+
 		courseRelatedConfigCont = uifactory.addFormSection("courseRelatedConfig", translate("admin.assessable.other.settings"), formLayout, FormSection.Level.SUB_TITLE);
 		inviteeLink = uifactory.addFormLink("admin.link.invitation", "admin.link.invitation.path", "admin.link.invitation", courseRelatedConfigCont, Link.LINK);
 		inviteeLink.setIconLeftCSS("o_icon o_icon_jump_to o_icon-fw");
@@ -164,6 +195,19 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 			NewControllerFactory.getInstance().launch(usageSettingsPath, ureq, getWindowControl());
 		} else if (source == courseExecEl) {
 			courseModule.setCourseExecutionDefault(courseExecEl.getSelectedKey());
+		} else if (source == defaultShowInfoEl) {
+			Collection<String> selectedInfo = defaultShowInfoEl.getSelectedKeys();
+			courseModule.setDefaultShowLectures(selectedInfo.contains(EVENTS_KEY));
+			courseModule.setDefaultShowCertificate(selectedInfo.contains(CERTIFICATE_KEY));
+			boolean meetTeachers = selectedInfo.contains(MEET_TEACHERS_KEY);
+			defaultTaughtByEl.setVisible(meetTeachers);
+			if (!meetTeachers) {
+				TaughtBy.ALL.forEach(taughtBy -> defaultTaughtByEl.select(taughtBy.name(), false));
+				courseModule.setDefaultTaughtBys(Set.of());
+			}
+		} else if (source == defaultTaughtByEl) {
+			courseModule.setDefaultTaughtBys(defaultTaughtByEl.getSelectedKeys().stream()
+					.map(TaughtBy::valueOf).collect(Collectors.toSet()));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

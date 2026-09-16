@@ -689,6 +689,7 @@ public class CoursesWebService {
 			OLATResource resource = olatResourceManager.createOLATResourceInstance(CourseModule.class);
 			RepositoryEntry addedEntry = repositoryService.create(initialAuthor, null, "-", reDisplayName, null,
 					resource, status, RepositoryEntryRuntimeType.standalone, organisation);
+			CoreSpringFactory.getImpl(CourseModule.class).applyInfoPageDefaults(addedEntry);
 			if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 				addedEntry.setSoftkey(softKey);
 			}

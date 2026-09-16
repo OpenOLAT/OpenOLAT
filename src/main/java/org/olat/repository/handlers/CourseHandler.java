@@ -172,6 +172,7 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryEntryRuntimeType runtimeType = repositoryService.getDefaultRuntimeType(resource);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
 						RepositoryEntryStatusEnum.preparation, runtimeType, organisation);
+		CoreSpringFactory.getImpl(CourseModule.class).applyInfoPageDefaults(re);
 		DBFactory.getInstance().commit();
 
 		ICourse course = CourseFactory.createCourse(re, null, displayname);
@@ -278,6 +279,7 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, newCourseResource,
 				RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.standalone, organisation);
+		CoreSpringFactory.getImpl(CourseModule.class).applyInfoPageDefaults(re);
 		DBFactory.getInstance().commit();
 		
 		NodeAccessType nodeAccessType = course.getCourseConfig().getNodeAccessType();

@@ -46,6 +46,8 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.style.ImageSourceType;
 import org.olat.course.style.TeaserImageStyle;
+import org.olat.modules.curriculum.TaughtBy;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,6 +73,9 @@ public class CourseModule extends AbstractSpringModule {
 	private static final String COURSE_DISCLAIMER_ENABLED = "course.disclaimer.enabled";
 	private static final String COURSE_TYPE_DEFAULT = "course.type.default";
 	private static final String COURSE_EXECUTION_DEFAULT = "course.execution.default";
+	private static final String COURSE_DEFAULT_SHOW_LECTURES = "course.default.show.lectures";
+	private static final String COURSE_DEFAULT_SHOW_CERTIFICATE = "course.default.show.certificate";
+	private static final String COURSE_DEFAULT_TAUGHT_BY = "course.default.taught.by";
 	private static final String COURSE_STYLE_TEASER_IMAGE_SOURCE_TYPE = "course.style.teaser.image.source.type";
 	private static final String COURSE_STYLE_TEASER_IMAGE_FILENAME = "course.style.teaser.image.filename";
 	private static final String COURSE_STYLE_TEASER_IMAGE_STYLE = "course.style.teaser.image.style";
@@ -95,6 +100,12 @@ public class CourseModule extends AbstractSpringModule {
 	private String courseTypeDefault;
 	@Value("${course.execution.default}")
 	private String courseExecutionDefault;
+	@Value("${course.default.show.lectures:true}")
+	private boolean defaultShowLectures;
+	@Value("${course.default.show.certificate:true}")
+	private boolean defaultShowCertificate;
+	@Value("${course.default.taught.by:teachers,coaches}")
+	private String defaultTaughtByValue;
 	@Value("${course.archive.log.table.on.delete:true}")
 	private String archiveLogTableOnDelete;
 	@Value("${course.info.details.enabled:false}")
@@ -153,6 +164,18 @@ public class CourseModule extends AbstractSpringModule {
 		if (StringHelper.containsNonWhitespace(courseExecutionDefaultObj)) {
 			courseExecutionDefault = courseExecutionDefaultObj;
 		}
+
+		String defaultShowLecturesObj = getStringPropertyValue(COURSE_DEFAULT_SHOW_LECTURES, true);
+		if (StringHelper.containsNonWhitespace(defaultShowLecturesObj)) {
+			defaultShowLectures = "true".equals(defaultShowLecturesObj);
+		}
+
+		String defaultShowCertificateObj = getStringPropertyValue(COURSE_DEFAULT_SHOW_CERTIFICATE, true);
+		if (StringHelper.containsNonWhitespace(defaultShowCertificateObj)) {
+			defaultShowCertificate = "true".equals(defaultShowCertificateObj);
+		}
+
+		defaultTaughtByValue = getStringPropertyValue(COURSE_DEFAULT_TAUGHT_BY, defaultTaughtByValue);
 		
 		String teaserImageSourceTypeObj = getStringPropertyValue(COURSE_STYLE_TEASER_IMAGE_SOURCE_TYPE, true);
 		if (StringHelper.containsNonWhitespace(teaserImageSourceTypeObj)) {
@@ -322,6 +345,39 @@ public class CourseModule extends AbstractSpringModule {
 	public void setCourseExecutionDefault(String courseExecutionDefault) {
 		this.courseExecutionDefault = courseExecutionDefault;
 		setStringProperty(COURSE_EXECUTION_DEFAULT, courseExecutionDefault, true);
+	}
+
+	public boolean isDefaultShowLectures() {
+		return defaultShowLectures;
+	}
+
+	public void setDefaultShowLectures(boolean defaultShowLectures) {
+		this.defaultShowLectures = defaultShowLectures;
+		setStringProperty(COURSE_DEFAULT_SHOW_LECTURES, Boolean.toString(defaultShowLectures), true);
+	}
+
+	public boolean isDefaultShowCertificate() {
+		return defaultShowCertificate;
+	}
+
+	public void setDefaultShowCertificate(boolean defaultShowCertificate) {
+		this.defaultShowCertificate = defaultShowCertificate;
+		setStringProperty(COURSE_DEFAULT_SHOW_CERTIFICATE, Boolean.toString(defaultShowCertificate), true);
+	}
+
+	public Set<TaughtBy> getDefaultTaughtBys() {
+		return TaughtBy.split(defaultTaughtByValue);
+	}
+
+	public void setDefaultTaughtBys(Set<TaughtBy> taughtBys) {
+		defaultTaughtByValue = TaughtBy.join(taughtBys);
+		setStringProperty(COURSE_DEFAULT_TAUGHT_BY, defaultTaughtByValue, true);
+	}
+
+	public void applyInfoPageDefaults(RepositoryEntry entry) {
+		entry.setShowLectures(defaultShowLectures);
+		entry.setShowCertificateBenefit(defaultShowCertificate);
+		entry.setTaughtBys(getDefaultTaughtBys());
 	}
 
 	public boolean isArchiveLogTableOnDelete() {
