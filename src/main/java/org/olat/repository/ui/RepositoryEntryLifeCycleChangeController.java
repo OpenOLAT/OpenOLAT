@@ -45,7 +45,6 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
-import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.ui.author.ConfirmDeleteSoftlyController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -78,7 +77,7 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 	@Autowired
 	private RepositoryModule repositoryModule;
 	
-	public RepositoryEntryLifeCycleChangeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RepositoryEntrySecurity reSecurity, RepositoryHandler handler) {
+	public RepositoryEntryLifeCycleChangeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RepositoryEntrySecurity reSecurity) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.re = re;
@@ -90,8 +89,6 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 		boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
 		if (!deleteManaged) {
 			deleteLink = LinkFactory.createButton("delete", lifeCycleVC, this);
-			String type = translate(handler.getSupportedType());
-			deleteLink.setCustomDisplayText(translate("details.delete.alt", new String[]{ type }));
 			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			deleteLink.setElementCssClass("o_sel_repo_close");
 			

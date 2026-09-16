@@ -701,9 +701,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				restoreLink.setElementCssClass("o_sel_repo_restore");
 				toolsDropdown.addComponent(restoreLink);
 			} else {
-				String type = translate(handler.getSupportedType());
-				String deleteTitle = translate("details.delete.alt", new String[]{ type });
-				deleteLink = LinkFactory.createToolLink("delete", deleteTitle, this, "o_icon o_icon-fw o_icon_delete_item");
+				deleteLink = LinkFactory.createToolLink("delete", translate("delete"), this, "o_icon o_icon-fw o_icon_delete_item");
 				deleteLink.setElementCssClass("o_sel_repo_close");
 				toolsDropdown.addComponent(deleteLink);
 			}

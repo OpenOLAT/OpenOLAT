@@ -2344,7 +2344,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if (lastCrumb == null || lastCrumb.getController() != lifeCycleChangeCtr) {
 			// only create and add to stack if not already there
 			lifeCycleChangeCtr = new RepositoryEntryLifeCycleChangeController(ureq, getWindowControl(),
-					getRepositoryEntry(), reSecurity, handler);
+					getRepositoryEntry(), reSecurity);
 			listenTo(lifeCycleChangeCtr);
 			currentToolCtr = lifeCycleChangeCtr;
 			toolbarPanel.pushController(translate("details.lifecycle.change"), lifeCycleChangeCtr);
