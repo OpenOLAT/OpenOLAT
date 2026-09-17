@@ -15,6 +15,7 @@
 			#if($v.getExternalId())
 				<tr><th scope="row">$r.translate("cif.externalid")</th><td>$r.escapeHtml($v.getExternalId())</td></tr>
 			#end
+			<tr><th scope="row">$r.translate("cif.title")</th><td>$r.escapeHtml($v.getDisplayname())</td></tr>
 			#if($v.getExternalRef())
 				<tr><th scope="row">$r.translate("cif.externalref")</th><td>$r.escapeHtml($v.getExternalRef())</td></tr>
 			#end
