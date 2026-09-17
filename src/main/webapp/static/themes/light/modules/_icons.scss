@@ -932,6 +932,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_correction_adjusted { @include o-add-icon('pen');}
 .o_icon_correction_manual { @include o-add-icon('hand-point-up');}
 .o_icon_correction_to_correct { @include o-add-icon('highlighter'); color: $brand-danger; }
+.o_icon_correction_not_corrected { @include o-add-icon('highlighter'); }
 
 /* SEB template status */
 .o_icon_seb_template_status_active { @include o-add-icon('check'); }

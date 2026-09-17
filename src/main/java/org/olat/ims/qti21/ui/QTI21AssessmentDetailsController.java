@@ -119,6 +119,7 @@ import org.olat.ims.qti21.ui.components.AnnotatedAutomaticScoreFlexiCellRenderer
 import org.olat.ims.qti21.ui.components.AssessmentTestEntryRenderer;
 import org.olat.ims.qti21.ui.components.AssessmentTestSessionDetailsNumberRenderer;
 import org.olat.ims.qti21.ui.components.AssessmentTestSessionStatusRenderer;
+import org.olat.ims.qti21.ui.components.IconNumberCellRenderer;
 import org.olat.ims.qti21.ui.logviewer.LogViewerController;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
@@ -289,13 +290,16 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.autoScore,
 				new AnnotatedAutomaticScoreFlexiCellRenderer()));
-		manualScoreCol = new DefaultFlexiColumnModel(TSCols.manualScore, new ScoreCellRenderer());
+		manualScoreCol = new DefaultFlexiColumnModel(TSCols.manualScore,
+				new ScoreCellRenderer());
 		columnsModel.addFlexiColumnModel(manualScoreCol);
 
 		if(!readOnly) {
-			toCorrectCol = new DefaultFlexiColumnModel(TSCols.answersToCorrect);
+			toCorrectCol = new DefaultFlexiColumnModel(TSCols.answersToCorrect,
+					new IconNumberCellRenderer("o_icon_correction_not_corrected"));
 			columnsModel.addFlexiColumnModel(toCorrectCol);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.answersToReview));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.answersToReview,
+					new IconNumberCellRenderer("o_icon_warning")));
 			
 			DefaultFlexiColumnModel correctionCol = new DefaultFlexiColumnModel(TSCols.correct, "correction");
 			correctionCol.setIconHeader("o_icon o_icon_correction");
@@ -340,7 +344,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		
 		List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService.getAssessmentTestSessionsStatistics(entry, subIdent, assessedIdentity, false);
 		Collections.sort(sessionsStatistics, new AssessmentTestSessionStatisticsCreationDateComparator());
-		
+		AssessmentTestSession lastSession = getLastSession(sessionsStatistics);
+
 		List<AssessmentItemSession> itemSessions = qtiService.getAssessmentItemSessions(entry, subIdent, assessedIdentity);
 		
 		int pos = 1;
@@ -348,13 +353,15 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		Map<RepositoryEntry, ResolvedAssessmentTest> resolvedAssessmentTestsMap = new HashMap<>();
 		final Map<RepositoryEntry,Boolean> manualCorrectionsMap = new HashMap<>();
 		for(AssessmentTestSessionStatistics sessionStatistics:sessionsStatistics) {
-			RepositoryEntry testEntry = sessionStatistics.testSession().getTestEntry();
+			AssessmentTestSession testSession = sessionStatistics.testSession();
+			RepositoryEntry testEntry = testSession.getTestEntry();
+			boolean last = testSession.equals(lastSession);
 			if(!grading) {
 				manualCorrections = manualCorrections || manualCorrectionsMap
 						.computeIfAbsent(testEntry, re -> qtiService.needManualCorrection(re))
 						.booleanValue();
 			}
-			infos.add(forgeDetailsRow(sessionStatistics, pos++, itemSessions, resolvedAssessmentTestsMap));
+			infos.add(forgeDetailsRow(sessionStatistics, pos++, last, itemSessions, resolvedAssessmentTestsMap));
 		}
 
 		setColumnVisible(manualScoreCol, manualCorrections);
@@ -372,6 +379,18 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 	}
 	
+	private AssessmentTestSession getLastSession(List<AssessmentTestSessionStatistics> sessionsStatistics) {
+		AssessmentTestSession lastSession = null;
+		for(AssessmentTestSessionStatistics sessionStatistics:sessionsStatistics) {
+			AssessmentTestSession testSession = sessionStatistics.testSession();
+			if(testSession != null && !testSession.isCancelled() && !testSession.isExploded()
+					&& (lastSession == null || lastSession.getCreationDate().before(testSession.getCreationDate()))) {
+				lastSession = testSession;
+			}
+		}
+		return lastSession;
+	}
+	
 	private void setColumnVisible(DefaultFlexiColumnModel col, boolean manualCorrections) {
 		if(col == null) return;
 		col.setAlwaysVisible(manualCorrections);
@@ -379,7 +398,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		tableEl.setColumnModelVisible(col, manualCorrections);
 	}
 	
-	private QTI21AssessmentTestSessionDetails forgeDetailsRow(AssessmentTestSessionStatistics sessionStatistics, int pos,
+	private QTI21AssessmentTestSessionDetails forgeDetailsRow(AssessmentTestSessionStatistics sessionStatistics, int pos, boolean lastSession,
 			List<AssessmentItemSession> itemSessions, Map<RepositoryEntry,ResolvedAssessmentTest> resolvedAssessmentTests) {
 		AssessmentTestSession testSession = sessionStatistics.testSession();
 		RepositoryEntry testEntry = testSession.getTestEntry();
@@ -470,16 +489,16 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		QTI21AssessmentTestSessionDetails row = new QTI21AssessmentTestSessionDetails(testSession,
 				numOfItems, responded, numOfItemsToCorrect, numOfItemsToReview,
 				automaticScore, manualScore, adjustmentPlusScore, adjustmentMinusScore,
-				status, error, pos);
+				status, error, pos, lastSession);
 		
-		if(numOfItemsToCorrect > 0) {
+		if(numOfItemsToCorrect > 0 && lastSession) {
 			FormLink toCorrect = uifactory.addFormLink("correct_" + (count++), CMD_TO_CORRECT, Integer.toString(numOfItemsToCorrect), tableEl, Link.LINK | Link.NONTRANSLATED);
 			toCorrect.setIconLeftCSS("o_icon o_icon-fw o_icon_correction_to_correct");
 			toCorrect.setUserObject(row);
 			row.setToCorrectLink(toCorrect);
 		}
 		
-		if(numOfItemsToReview > 0) {
+		if(numOfItemsToReview > 0 && lastSession) {
 			FormLink toReview = uifactory.addFormLink("review_" + (count++), CMD_TO_REVIEW, Integer.toString(numOfItemsToReview), tableEl, Link.LINK | Link.NONTRANSLATED);
 			toReview.setIconLeftCSS("o_icon o_icon-fw o_icon_warn");
 			toReview.setUserObject(row);
@@ -633,7 +652,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				}
 			}
 		} else if(source instanceof FormLink link) {
-			if(link.getCmd().startsWith("tools") && link.getUserObject() instanceof QTI21AssessmentTestSessionDetails row) {
+			if(link.getCmd().startsWith("tools")
+					&& link.getUserObject() instanceof QTI21AssessmentTestSessionDetails row) {
 				doTools(ureq, link, row);
 			} else if(link.getCmd().startsWith(CMD_TO_CORRECT)
 					&& link.getUserObject() instanceof QTI21AssessmentTestSessionDetails row) {
@@ -876,11 +896,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		listenTo(cmc);
 	}
 	
-	private void confirmInvalidateTestSession(UserRequest ureq, AssessmentTestSession session) {
+	private void confirmInvalidateTestSession(UserRequest ureq, QTI21AssessmentTestSessionDetails row) {
 		if(guardModalController(invalidateConfirmationCtr)) return;
 		
-		AssessmentTestSession lastSession = tableModel.getLastTestSession();
-		boolean isLastSession = session.equals(lastSession);
+		AssessmentTestSession session = row.getTestSession();
+		boolean isLastSession = row.isLastSession();
 		if(courseNode == null) {
 			invalidateConfirmationCtr = new ConfirmAssessmentTestSessionInvalidationController(ureq, getWindowControl(),
 				session, isLastSession, session.getTestEntry(), assessedIdentity);
@@ -1050,13 +1070,15 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			logViewerLink = LinkFactory.createLink("open.log.viewer", mainVC, this);
 			logViewerLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
 			
-			Boolean correction = tableModel.isCorrectionAllowed(row);
-			if(correction != null && correction.booleanValue() && !readOnly) {
-				correctionLink = LinkFactory.createLink("correct", mainVC, this);
-				correctionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
-			} else if(correction != null && !correction.booleanValue()) {
-				previewLink = LinkFactory.createLink("preview", mainVC, this);
-				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
+			if(row.isLastSession()) {
+				boolean correction = tableModel.isCorrectionAllowed(row);
+				if(correction && !readOnly) {
+					correctionLink = LinkFactory.createLink("correct", mainVC, this);
+					correctionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
+				} else if(!correction) {
+					previewLink = LinkFactory.createLink("preview", mainVC, this);
+					previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
+				}
 			}
 			
 			if(row.getTestSession().getFinishTime() != null || row.getTestSession().getTerminationTime() != null) {
@@ -1088,7 +1110,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			} else if(logLink == source) {
 				doDownloadLog(ureq, row.getTestSession());
 			} else if(invalidateLink == source) { 
-				confirmInvalidateTestSession(ureq, row.getTestSession());
+				confirmInvalidateTestSession(ureq, row);
 			} else if(revalidateLink == source) {
 				confirmRevalidateTestSession(ureq, row.getTestSession());
 			} else if(logViewerLink == source) {

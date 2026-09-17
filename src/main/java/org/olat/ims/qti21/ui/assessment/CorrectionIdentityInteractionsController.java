@@ -260,6 +260,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			String page = velocity_root + "/override_score.html";
 			overrideScoreCont = uifactory.addCustomFormLayout("extra.score", "score", page, scoreCont);
 			scoreEl = uifactory.addTextElement("score", "score", 6, score, overrideScoreCont);
+			scoreEl.setEnabled(false);
 
 			adjustScoreButton = uifactory.addFormLink("adjust.score", overrideScoreCont, Link.BUTTON);
 			adjustScoreButton.setIconLeftCSS("o_icon o_icon_overridden");
@@ -278,15 +279,15 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			String annotatedScore = getAnnotatedScoreAuto();
 			scoreAutoEl.setValue(annotatedScore);
 			scoreAutoEl.setVisible(StringHelper.containsNonWhitespace(annotatedScore));
+			scoreEl.setEnabled(false);
 		}
 
 		statusEl.setElementCssClass("o_sel_assessment_item_status");
 		statusEl.setValue(getStatus());// Need override score
 		
-		scoreEl.setElementCssClass("o_sel_assessment_item_score");
+		scoreEl.setElementCssClass("o_assessment_item_score o_sel_assessment_item_score");
 		scoreEl.setMaxLength(8);
 		scoreEl.setDisplaySize(8);
-		scoreEl.setEnabled(false);
 		
 		commentEl = uifactory.addRichTextElementForStringData("commentItem", "comment", coachComment, 8, -1,
 				false, null, null, null, scoreCont, ureq.getUserSession(), getWindowControl());
@@ -578,7 +579,10 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	}
 	
 	protected BigDecimal getManualScore() {
-		if(StringHelper.containsNonWhitespace(scoreEl.getValue())) {
+		if(overrideAutoScore != null) {
+			return overrideAutoScore;
+		}
+		if(scoreEl.isEnabled() && StringHelper.containsNonWhitespace(scoreEl.getValue())) {
 			String mScore = scoreEl.getValue();
 			if(mScore.indexOf(',') >= 0) {
 				mScore = mScore.replace(",", ".");

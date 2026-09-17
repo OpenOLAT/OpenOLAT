@@ -19,17 +19,13 @@
  */
 package org.olat.ims.qti21.ui;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.util.Formatter;
 import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController.AssessmentTestSessionDetailsComparator;
 
 /**
  * 
@@ -40,15 +36,9 @@ import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController.AssessmentTestSess
 public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataModel<QTI21AssessmentTestSessionDetails> {
 	
 	private static final TSCols[] COLS = TSCols.values();
-	
-	private AssessmentTestSession lastSession;
-	
+
 	public QTI21AssessmentTestSessionTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
-	}
-	
-	public AssessmentTestSession getLastTestSession() {
-		return lastSession;
 	}
 
 	@Override
@@ -66,8 +56,10 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 			case test -> session.getTestSession().getTestEntry().getDisplayname();
 			case testEntry -> session.getTestSession().getTestEntry();
 			case numOfItemSessions -> session.getNumOfItems();
-			case answersToCorrect -> session.getToCorrectLink();
-			case answersToReview -> session.getToReviewLink();
+			case answersToCorrect -> isCorrectionAllowed(session)
+					? session.getToCorrectLink() : session.getNumOfItemsToCorrect();
+			case answersToReview -> isCorrectionAllowed(session)
+					? session.getToReviewLink() : session.getNumOfItemsToReview();
 			case responded -> session.getNumOfItemsResponded();
 			case autoScore -> session.getAutomaticScore();
 			case manualScore -> session.getTestSession().getFinishTime() != null
@@ -75,7 +67,7 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 			case finalScore -> session.getTestSession().getFinishTime() != null
 					?  session.getTestSession().getFinalScore() : null;
 			case results -> Boolean.valueOf(!isTestSessionRunning(session));
-			case correct -> isCorrectionAllowed(session);
+			case correct -> session.isLastSession() ? Boolean.valueOf(isCorrectionAllowed(session)) : null;
 			case invalidate -> isTestSessionTerminated(session) && !session.getTestSession().isCancelled() && !session.getTestSession().isExploded();
 			case tools -> session.getToolsLink();
 			default -> "ERROR";
@@ -89,12 +81,9 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		return null;
 	}
 	
-	protected Boolean isCorrectionAllowed(QTI21AssessmentTestSessionDetails session) {
+	protected boolean isCorrectionAllowed(QTI21AssessmentTestSessionDetails session) {
 		AssessmentTestSession testSession = session.getTestSession();
-		if(lastSession != null && lastSession.equals(testSession)) {
-			return Boolean.valueOf(testSession.getTerminationTime() != null);
-		}
-		return null;
+		return session.isLastSession() && testSession.getTerminationTime() != null;
 	}
 	
 	private boolean isTestSessionRunning(QTI21AssessmentTestSessionDetails session) {
@@ -105,22 +94,6 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 	private boolean isTestSessionTerminated(QTI21AssessmentTestSessionDetails session) {
 		Date terminated = session.getTestSession().getTerminationTime();
 		return terminated != null;
-	}
-
-	@Override
-	public void setObjects(List<QTI21AssessmentTestSessionDetails> objects) {
-		super.setObjects(objects);
-		lastSession = null;
-		
-		List<QTI21AssessmentTestSessionDetails> sessions = new ArrayList<>(objects);
-		Collections.sort(sessions, new AssessmentTestSessionDetailsComparator());
-		for(QTI21AssessmentTestSessionDetails session:sessions) {
-			AssessmentTestSession testSession = session.getTestSession();
-			if(testSession != null && !testSession.isCancelled() && !testSession.isExploded()) {
-				lastSession = session.getTestSession();
-				break;
-			}
-		}
 	}
 
 	public enum TSCols implements FlexiSortableColumnDef {

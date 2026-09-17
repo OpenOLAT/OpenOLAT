@@ -34,6 +34,8 @@ public class QTI21AssessmentTestSessionDetails {
 	
 	private final int run;
 	private final boolean error;
+	private final boolean lastSession;
+	
 	private final int numOfItems;
 	private final int numOfItemsResponded;
 	private final int numOfItemsToCorrect;
@@ -54,9 +56,10 @@ public class QTI21AssessmentTestSessionDetails {
 			int numOfItems, int numOfItemsResponded, int numOfItemsToCorrect,
 			int numOfItemsToReview, BigDecimal automaticScore,
 			BigDecimal manualScore, BigDecimal adjustmentPlusScore, BigDecimal adjustmentMinusScore,
-			SessionStatus sessionStatus, boolean error, int run) {
+			SessionStatus sessionStatus, boolean error, int run, boolean lastSession) {
 		this.run = run;
 		this.error = error;
+		this.lastSession = lastSession;
 		this.testSession = testSession;
 		this.numOfItems = numOfItems;
 		this.numOfItemsResponded = numOfItemsResponded;
@@ -71,6 +74,10 @@ public class QTI21AssessmentTestSessionDetails {
 	
 	public int getRun() {
 		return run;
+	}
+	
+	public boolean isLastSession() {
+		return lastSession;
 	}
 
 	public int getNumOfItems() {
