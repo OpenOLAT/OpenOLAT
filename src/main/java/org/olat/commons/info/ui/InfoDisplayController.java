@@ -343,7 +343,7 @@ public class InfoDisplayController extends FormBasicController {
 		newMsgsLink.setElementCssClass("o_sel_course_info_new_msgs");
 
 		emptyState = EmptyStateFactory.create("emptyState", flc.getFormItemComponent(), this);
-		emptyState.setIconCss("o_icon_news");
+		emptyState.setIconCss("o_infomsg_icon");
 		emptyState.setMessageI18nKey("display.no_messages");
 		if (secCallback.canAdd()) {
 			emptyState.setHintI18nKey("display.no_messages.hint");
