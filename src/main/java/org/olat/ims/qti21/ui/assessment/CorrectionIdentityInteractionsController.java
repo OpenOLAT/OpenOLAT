@@ -48,6 +48,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.CodeHelper;
@@ -114,7 +115,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	public static final Event DOWNLOAD_PDF = new Event("download.pdf");
 	private static final String[] onKeys = new String[] { "on" };
 
-	private FormLink downlaodPdfButton;
+	private FormLink downloadPdfButton;
 	private TextElement scoreEl;
 	private RichTextElement commentEl;
 	private StaticTextElement statusEl;
@@ -132,6 +133,8 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	private FormLayoutContainer scoreCont;
 
 	private DialogBoxController confirmDeleteDocCtrl;
+	private AdjustmentScoreController adjustCtrl;
+	private CloseableCalloutWindowController adjustScoreCalloutCtrl;
 	
 	private final String mapperUri;
 	private final URI assessmentObjectUri;
@@ -144,7 +147,8 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private final Map<Long, File> submissionDirectoryMaps;
-	
+
+	private BigDecimal overrideAutoScore;
 	private boolean manualScore = false;
 	private final boolean readOnly;
 	private final boolean downloadEnabled;
@@ -189,9 +193,9 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		downlaodPdfButton = uifactory.addFormLink("download.as.pdf", formLayout, Link.BUTTON);
-		downlaodPdfButton.setIconLeftCSS("o_icon o_icon_lg o_icon_download");
-		downlaodPdfButton.setVisible(downloadEnabled);
+		downloadPdfButton = uifactory.addFormLink("download.as.pdf", formLayout, Link.BUTTON);
+		downloadPdfButton.setIconLeftCSS("o_icon o_icon_lg o_icon_download");
+		downloadPdfButton.setVisible(downloadEnabled);
 		
 		TestPlanNode node = correction.getItemNode();
 		TestPlanNodeKey testPlanNodeKey = node.getKey();
@@ -246,13 +250,13 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		formLayout.add("score.container", scoreCont);
 		
 		statusEl = uifactory.addStaticTextElement("status", "status", "", scoreCont);
-		statusEl.setElementCssClass("o_sel_assessment_item_status");
-		statusEl.setValue(getStatus());
 		
 		String fullname = userManager.getUserDisplayName(correction.getAssessedIdentity());
 		if(manualScore || correction.getItemSessionState() == null || !correction.getItemSessionState().isPresented()) {
 			scoreEl = uifactory.addTextElement("scoreItem", "score", 6, score, scoreCont);
 		} else {
+			overrideAutoScore = itemSession == null ? null : itemSession.getManualScore();
+			
 			String page = velocity_root + "/override_score.html";
 			overrideScoreCont = uifactory.addCustomFormLayout("extra.score", "score", page, scoreCont);
 			scoreEl = uifactory.addTextElement("score", "score", 6, score, overrideScoreCont);
@@ -262,6 +266,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			adjustScoreButton.setDomReplacementWrapperRequired(false);
 			adjustScoreButton.setElementCssClass("input-group-addon");
 			adjustScoreButton.setVisible(!readOnly && itemSession != null && itemSession.getManualScore() == null);
+			adjustScoreButton.setAriaDialogOpener();
 			
 			resetAdjustementButton = uifactory.addFormLink("reset.adjustement", overrideScoreCont, Link.BUTTON);
 			resetAdjustementButton.setIconLeftCSS("o_icon o_icon_reset_data");
@@ -274,11 +279,14 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			scoreAutoEl.setValue(annotatedScore);
 			scoreAutoEl.setVisible(StringHelper.containsNonWhitespace(annotatedScore));
 		}
+
+		statusEl.setElementCssClass("o_sel_assessment_item_status");
+		statusEl.setValue(getStatus());// Need override score
 		
 		scoreEl.setElementCssClass("o_sel_assessment_item_score");
 		scoreEl.setMaxLength(8);
 		scoreEl.setDisplaySize(8);
-		scoreEl.setEnabled(!readOnly);
+		scoreEl.setEnabled(false);
 		
 		commentEl = uifactory.addRichTextElementForStringData("commentItem", "comment", coachComment, 8, -1,
 				false, null, null, null, scoreCont, ureq.getUserSession(), getWindowControl());
@@ -341,12 +349,11 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	}
 	
 	private void updateScoreUI() {
-		AssessmentItemSession itemSession = correction.getItemSession();
 		if(adjustScoreButton != null) {
-			adjustScoreButton.setVisible(!readOnly && itemSession != null && itemSession.getManualScore() == null);
+			adjustScoreButton.setVisible(!readOnly && overrideAutoScore == null);
 		}
 		if(resetAdjustementButton != null) {
-			resetAdjustementButton.setVisible(!readOnly && itemSession != null && itemSession.getManualScore() != null);
+			resetAdjustementButton.setVisible(!readOnly && overrideAutoScore != null);
 		}
 		statusEl.setValue(getStatus());
 		if(scoreAutoEl != null) {
@@ -528,7 +535,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 					statusCssClass = "manual";
 					iconCssClass = "o_icon_correction_manual";
 				}
-			} else if(itemSession.getManualScore() != null) {
+			} else if(overrideAutoScore != null) {
 				status = "status.adjusted";
 				statusCssClass = "adjusted";
 				iconCssClass = "o_icon_correction_adjusted";
@@ -547,7 +554,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	
 	protected String getAnnotatedScoreAuto() {
 		AssessmentItemSession itemSession = correction.getItemSession();
-		if(itemSession != null && itemSession.getManualScore() != null) {
+		if(overrideAutoScore != null) {
 			StringBuilder sb = new StringBuilder();
 			BigDecimal score = itemSession.getScore();
 			if(score == null) {
@@ -555,7 +562,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			}
 			sb.append(AssessmentHelper.getRoundedScore(score));
 			
-			BigDecimal diff = itemSession.getManualScore().subtract(score);
+			BigDecimal diff = overrideAutoScore.subtract(score);
 			int comparison = diff.compareTo(BigDecimal.ZERO);
 			if(comparison != 0) {
 				sb.append(" (");
@@ -599,6 +606,13 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	protected void updateStatus() {
 		statusEl.setValue(getStatus());
 	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(adjustScoreCalloutCtrl);
+		removeAsListenerAndDispose(adjustCtrl);
+		adjustScoreCalloutCtrl = null;
+		adjustCtrl = null;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -607,14 +621,12 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == downlaodPdfButton) {
+		if (source == downloadPdfButton) {
 			fireEvent(ureq, DOWNLOAD_PDF);
 		} else if(adjustScoreButton == source) {
-			if(validateFormLogic(ureq)) {
-				doAdjustScore(ureq);
-			}
+			doOpenAdjustment(ureq);
 		} else if(resetAdjustementButton == source) {
-			doResetAdjustement(ureq);
+			doResetAdjustement();
 		} else if(viewSolutionButton == source) {
 			doToggleSolution();
 		} else if(viewCorrectSolutionButton == source) {
@@ -638,7 +650,16 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == confirmDeleteDocCtrl) {
+		if(adjustCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				doAdjustScore(adjustCtrl.getNewScore());
+			}
+			adjustScoreCalloutCtrl.deactivate();
+			cleanUp();
+		} else if(adjustScoreCalloutCtrl == source) {
+			adjustScoreCalloutCtrl.deactivate();
+			cleanUp();
+		} else if(source == confirmDeleteDocCtrl) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				File documentToDelete = (File)confirmDeleteDocCtrl.getUserObject();
 				doDeleteAssessmentDocument(documentToDelete);
@@ -799,19 +820,39 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		}
 	}
 
-	private void doAdjustScore(UserRequest ureq) {
-		fireEvent(ureq, Event.CHANGED_EVENT);
+	private void doOpenAdjustment(UserRequest ureq) {
+		if(adjustCtrl != null) return;
+
+		adjustCtrl = new AdjustmentScoreController(ureq, getWindowControl());
+		listenTo(adjustCtrl);
+
+		adjustScoreCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				adjustCtrl.getInitialComponent(), adjustScoreButton, "", true, "o_assessmentitem_scoring_override_window");
+		listenTo(adjustScoreCalloutCtrl);
+		adjustScoreCalloutCtrl.activate();
+	}
+	
+	private void doAdjustScore(BigDecimal newScore) {
+		overrideAutoScore = newScore;
+		String score;
+		if(newScore == null) {
+			AssessmentItemSession itemSession = correction.getItemSession();
+			score = itemSession == null ? "" : AssessmentHelper.getRoundedScore(itemSession.getScore());
+		} else {
+			score = AssessmentHelper.getRoundedScore(newScore);
+		}
+		scoreEl.setValue(score);
 		updateScoreUI();
 	}
 	
-	private void doResetAdjustement(UserRequest ureq) {
+	private void doResetAdjustement() {
+		overrideAutoScore = null;
 		BigDecimal score = correction.getItemSession().getScore();
 		if(score != null) {
 			scoreEl.setValue(AssessmentHelper.getRoundedScore(score));
 		} else {
 			scoreEl.setValue("");
 		}
-		fireEvent(ureq, Event.CHANGED_EVENT);
 		updateScoreUI();
 	}
 	
@@ -820,6 +861,54 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			return AssessmentHelper.getRoundedScore(itemSession.getManualScore());
 		} 
 		return AssessmentHelper.getRoundedScore(itemSession.getScore());
+	}
+	
+	public class AdjustmentScoreController extends FormBasicController {
+		
+		private TextElement newScoreEl;
+		
+		public AdjustmentScoreController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl, LAYOUT_VERTICAL);
+			initForm(ureq);
+		}
+		
+		public BigDecimal getNewScore() {
+			String mScore = newScoreEl.getValue();
+			if(StringHelper.containsNonWhitespace(mScore)) {
+				if(mScore.indexOf(',') >= 0) {
+					mScore = mScore.replace(",", ".");
+				}
+				return new BigDecimal(mScore);
+			}
+			return null;
+		}
+
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			String maScore = overrideAutoScore == null ? "" : AssessmentHelper.getRoundedScore(overrideAutoScore);
+			newScoreEl = uifactory.addTextElement("new.score", "score", 6, maScore, formLayout);
+			
+			FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttonscont", null, formLayout);
+			uifactory.addFormSubmitButton("adjust.score", buttonsCont);
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		}
+
+		@Override
+		protected boolean validateFormLogic(UserRequest ureq) {
+			boolean allOk = super.validateFormLogic(ureq);
+			allOk &= validateScore(newScoreEl);
+			return allOk;
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		}
+
+		@Override
+		protected void formCancelled(UserRequest ureq) {
+			fireEvent(ureq, Event.CANCELLED_EVENT);
+		}
 	}
 	
 	public static class DocumentWrapper {

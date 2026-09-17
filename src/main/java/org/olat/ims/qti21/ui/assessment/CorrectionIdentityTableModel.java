@@ -158,7 +158,7 @@ implements SortableFlexiTableDataModel<CorrectionIdentityRow>, FilterableFlexiTa
 		user("table.header.user.identifier"),
 		lastSession("table.header.run.id"),
 		score("table.header.score"),
-		answered("table.header.answered"),
+		answered("table.header.num.answered"),
 		notAnswered("table.header.notAnswered"),
 		autoCorrected("table.header.auto.corrected"),
 		corrected("table.header.manually.corrected"),

@@ -114,13 +114,11 @@ public class CorrectionOverviewController extends BasicController implements Too
 
 		mainVC = createVelocityContainer("overview_corrections");
 		
-		if(courseNode != null) {
-			referencesHistoryCtrl = new ReferenceHistoryFilterController(ureq, getWindowControl(),
-					courseEntry, courseNode, testEntry);
-			listenTo(referencesHistoryCtrl);
-			mainVC.put("referencesHistory", referencesHistoryCtrl.getInitialComponent());
-		}
-	
+		referencesHistoryCtrl = new ReferenceHistoryFilterController(ureq, getWindowControl(),
+				courseEntry, courseNode, testEntry);
+		listenTo(referencesHistoryCtrl);
+		mainVC.put("referencesHistory", referencesHistoryCtrl.getInitialComponent());
+
 		putInitialPanel(mainVC);
 		doOpenAssessmentItemList(ureq);
 	}

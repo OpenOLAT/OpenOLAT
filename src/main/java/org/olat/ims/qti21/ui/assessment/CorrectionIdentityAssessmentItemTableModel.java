@@ -162,8 +162,8 @@ implements SortableFlexiTableDataModel<CorrectionIdentityAssessmentItemRow>, Fil
 			case itemType -> row.getItemType();
 			case itemKeywords -> row.getKeywords();
 			case score -> row.getFinalScore();
-			case autoScore -> row.getScore();
-			case manualScore -> row.getManualScore();
+			case autoScore -> !row.isManualCorrection() ? null : row.getScore();
+			case manualScore -> row.isManualCorrection() ? row.getManualScore() : null;
 			case answered -> row.isAnswered();
 			case toCorrect -> row;
 			case toReview -> row.isToReview();

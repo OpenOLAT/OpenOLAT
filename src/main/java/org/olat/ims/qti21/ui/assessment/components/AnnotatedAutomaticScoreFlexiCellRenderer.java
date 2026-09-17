@@ -42,7 +42,7 @@ public class AnnotatedAutomaticScoreFlexiCellRenderer implements FlexiCellRender
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		Object obj = source.getFormItem().getTableDataModel().getObject(row);
-		if(obj instanceof CorrectionIdentityAssessmentItemRow itemRow) {
+		if(obj instanceof CorrectionIdentityAssessmentItemRow itemRow && !itemRow.isManualCorrection()) {
 			BigDecimal score = itemRow.getScore();
 			if(score == null) {
 				score = BigDecimal.ZERO;

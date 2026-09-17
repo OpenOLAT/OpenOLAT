@@ -152,7 +152,7 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow>, FilterableF
 		itemTitle("table.header.item.title"),
 		itemKeywords("table.header.item.keywords"),
 		itemType("table.header.item.type"),
-		answered("table.header.answered"),
+		answered("table.header.num.answered"),
 		autoCorrected("table.header.auto.corrected"),
 		manuallyCorrected("table.header.manually.corrected"),
 		adjusted("table.header.adjusted"),

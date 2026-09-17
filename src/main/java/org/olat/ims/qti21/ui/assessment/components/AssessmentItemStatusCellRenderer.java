@@ -47,18 +47,17 @@ public class AssessmentItemStatusCellRenderer implements FlexiCellRenderer {
 		Object obj = source.getFormItem().getTableDataModel().getObject(row);
 		if(obj instanceof CorrectionIdentityAssessmentItemRow itemRow) {
 			if(itemRow.isAnswered()) {
-				render(target, "status.answered", "answered", "o_icon_qti_answered");
+				render(target, "status.answered", "answered");
 			} else if(itemRow.isEntered()) {
-				render(target, "status.not.answered", "notAnswered", "o_icon_qti_notAnswered");
+				render(target, "status.not.answered", "notAnswered");
 			} else {
-				render(target, "status.not.presented", "notPresented", "o_icon_qti_notPresented");
+				render(target, "status.not.presented", "notPresented");
 			}
 		}
 	}
 
-	private void render(StringOutput target, String i18nKey, String cssClass, String iconClass) {
+	private void render(StringOutput target, String i18nKey, String cssClass) {
 		target.append("<span class='o_labeled_light o_assessmentitem_status ").append(cssClass).append("'>")
-		      .append("<i class='o_icon o_icon-fw ").append(iconClass).append("'> </i> ")
 		      .append(translator.translate(i18nKey)).append("</span>");
 	}
 }
