@@ -52,6 +52,15 @@ public class RepositorySettingsPage {
 		return new RepositoryMetadataPage(browser);
 	}
 	
+	public RepositoryInfosPage infos() {
+		By accessSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_infos");
+		OOGraphene.waitElement(accessSegmentBy, browser).click();
+		
+		By accessConfigurationBy = By.cssSelector("fieldset.o_sel_repo_infos");
+		OOGraphene.waitElement(accessConfigurationBy, browser);
+		return new RepositoryInfosPage(browser);
+	}
+	
 	public RepositoryExecutionSettingsPage execution() {
 		By executionSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_execution");
 		OOGraphene.waitElement(executionSegmentBy, browser).click();

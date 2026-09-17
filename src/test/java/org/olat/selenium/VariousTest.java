@@ -412,6 +412,9 @@ public class VariousTest extends Deployments {
 		settings
 			.metadata()
 			.setLicense()
+			.save();
+		settings
+			.infos()
 			.setAuthors("Dr Johns")
 			.save();
 		settings
