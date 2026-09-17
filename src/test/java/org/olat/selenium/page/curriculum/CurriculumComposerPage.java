@@ -69,6 +69,12 @@ public class CurriculumComposerPage {
 		return this;
 	}
 	
+	public CurriculumElementPage assertOnCurriculumElementMetadata(String name) {
+		By elementBy = By.xpath("//fieldset[contains(@class,'o_sel_curriculum_element_metadata')]//input[contains(@value,'" + name + "')]");
+		OOGraphene.waitElement(elementBy, browser);
+		return new CurriculumElementPage(browser);
+	}
+	
 	public CurriculumComposerPage assertOnCurriculumElementInTable(String name) {
 		By elementBy = By.xpath("//div[contains(@class,'o_curriculum_el_listing')]//table//td/a[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(elementBy, browser);

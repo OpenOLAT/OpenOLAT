@@ -128,11 +128,10 @@ public class CoursePlannerTest extends Deployments {
 		String elementIdentifier = "ELC-1 " + eid;
 		CurriculumComposerPage curriculumComposer = curriculumPage
 			.openImplementationsTab()
-			.addCurriculumElement(elementName, elementIdentifier, type.getDisplayName())
-			.assertOnCurriculumElementInTable(elementName);
+			.addCurriculumElement(elementName, elementIdentifier, type.getDisplayName());
 		
 		CurriculumElementPage courseElementPage = curriculumComposer
-			.selectCurriculumElementInTable(elementName)
+			.assertOnCurriculumElementMetadata(elementName)
 			.assertOnImplementationDetails();
 		
 		// Add a course
@@ -211,11 +210,10 @@ public class CoursePlannerTest extends Deployments {
 		String elementIdentifier = "PREP-1 " + eid;
 		CurriculumComposerPage curriculumComposer = curriculumPage
 			.openImplementationsTab()
-			.addCurriculumElement(elementName, elementIdentifier, type.getDisplayName())
-			.assertOnCurriculumElementInTable(elementName);
+			.addCurriculumElement(elementName, elementIdentifier, type.getDisplayName());
 		
 		CurriculumElementPage courseElementPage = curriculumComposer
-			.selectCurriculumElementInTable(elementName)
+			.assertOnCurriculumElementMetadata(elementName)
 			.assertOnImplementationDetails();
 		
 		// Add a member
@@ -311,11 +309,10 @@ public class CoursePlannerTest extends Deployments {
 		String elementIdentifier = "INV-3 " + eid;
 		CurriculumComposerPage curriculumComposer = curriculumPage
 			.openImplementationsTab()
-			.addCurriculumElement(elementName, elementIdentifier, type.getDisplayName())
-			.assertOnCurriculumElementInTable(elementName);
+			.addCurriculumElement(elementName, elementIdentifier, type.getDisplayName());
 		
 		CurriculumElementPage courseElementPage = curriculumComposer
-			.selectCurriculumElementInTable(elementName)
+			.assertOnCurriculumElementMetadata(elementName)
 			.assertOnImplementationDetails();
 		
 		// Configure invoice
@@ -419,11 +416,10 @@ public class CoursePlannerTest extends Deployments {
 		String elementIdentifier = "FREE-4 " + eid;
 		CurriculumComposerPage curriculumComposer = curriculumPage
 			.openImplementationsTab()
-			.addCurriculumElement(elementName, elementIdentifier, type.getDisplayName())
-			.assertOnCurriculumElementInTable(elementName);
+			.addCurriculumElement(elementName, elementIdentifier, type.getDisplayName());
 		
 		CurriculumElementPage courseElementPage = curriculumComposer
-			.selectCurriculumElementInTable(elementName)
+			.assertOnCurriculumElementMetadata(elementName)
 			.assertOnImplementationDetails();
 		
 		// Add course to element
