@@ -85,7 +85,7 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 	}
 	
 	private void renderIcons(StringOutput sb, String name, CertificateStatus status, String iconCssClass, String i18nKey, String tooltipI18nKey) {
-		sb.append("<span");
+		sb.append("<span class='o_certification_file'");
 		if(tooltipI18nKey != null) {
 			sb.append(" title=\"").append(translator.translate(tooltipI18nKey)).append("\"");
 		}

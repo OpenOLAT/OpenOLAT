@@ -120,7 +120,8 @@ public class CertificateDetailsController extends BasicController {
 		mainVC.contextPut("thumbnailAvailable", Boolean.valueOf(thumbnail != null));
 		
 		CertificateStatus status = certificate.getStatus();
-		if(status == CertificateStatus.rendering || status == CertificateStatus.pending) {
+		if((status == CertificateStatus.rendering || status == CertificateStatus.pending)
+				|| (getIdentity().equals(assessedIdentity) && (status == CertificateStatus.error || status == CertificateStatus.failed))) {
 			mainVC.contextPut("pending", Boolean.TRUE);
 		}
 		mainVC.contextPut("awardedBy", StringHelper.containsNonWhitespace(certificateRow.getAwardedBy()));
