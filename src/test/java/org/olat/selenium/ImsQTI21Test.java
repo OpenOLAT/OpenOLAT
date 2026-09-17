@@ -1298,11 +1298,11 @@ public class ImsQTI21Test extends Deployments {
 		QTI21CorrectionPage correction = new QTI21CorrectionPage(browser);
 		correction
 			.startTestCorrection()
-			.assertOnAssessmentItemError("Essay", 1)
+			.assertOnAssessmentItemToCorrect("Essay", 1)
 			.selectAssessmentItem("Essay")
 			.setScore("1.0")
 			.save()
-			.assertOnStatusOk()
+			.assertOnManuallyAssessed()
 			.back()
 			.publishAll()
 			.confirmDialog();
@@ -1461,7 +1461,7 @@ public class ImsQTI21Test extends Deployments {
 			.selectAssessmentItem("Essay")
 			.setScore("1.0")
 			.save()
-			.assertOnStatusOk()
+			.assertOnManuallyAssessed()
 			.back()
 			.publish()
 			.confirmDialog();
@@ -1650,7 +1650,7 @@ public class ImsQTI21Test extends Deployments {
 			.selectAssessmentItem("Essay")
 			.setScore("1.0")
 			.save()
-			.assertOnStatusOk()
+			.assertOnManuallyAssessed()
 			.back()
 			.publish()
 			.confirmDialog();

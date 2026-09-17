@@ -64,8 +64,8 @@ public class QTI21CorrectionPage {
 	 * @param numberOfErrors The number of errors
 	 * @return
 	 */
-	public QTI21CorrectionPage assertOnAssessmentItemError(String questionTitle, int numberOfErrors) {
-		By questionBy = By.xpath("//div[contains(@class,'o_sel_correction_assessment_items_list')]//tr[td/a[text()[contains(.,'" + questionTitle + "')]]]/td/a[text()[contains(.,'" + numberOfErrors + "')]]/i[contains(@class,'o_icon_error')]");
+	public QTI21CorrectionPage assertOnAssessmentItemToCorrect(String questionTitle, int numberOfErrors) {
+		By questionBy = By.xpath("//div[contains(@class,'o_sel_correction_assessment_items_list')]//tr[td/a[text()[contains(.,'" + questionTitle + "')]]]/td/div/a[span[text()[contains(.,'" + numberOfErrors + "')]]]/i[contains(@class,'o_icon_correction_to_correct')]");
 		OOGraphene.waitElement(questionBy, browser);
 		return this;
 	}
@@ -78,7 +78,7 @@ public class QTI21CorrectionPage {
 	 * @return
 	 */
 	public QTI21CorrectionPage assertOnAssessmentItemNotCorrected(String questionTitle, int numberOfPoints) {
-		By questionBy = By.xpath("//div[contains(@class,'o_sel_correction_assessment_items_list')]//tr[td/a[text()[contains(.,'" + questionTitle + "')]]][td[text()[contains(.,'" + numberOfPoints + "')]]]/td/a/i[contains(@class,'o_icon_error')]");
+		By questionBy = By.xpath("//div[contains(@class,'o_sel_correction_assessment_items_list')]//tr[td/a[text()[contains(.,'" + questionTitle + "')]]][td[text()[contains(.,'" + numberOfPoints + "')]]]/td/a/span/i[contains(@class,'o_icon_correction_to_correct')]");
 		OOGraphene.waitElement(questionBy, browser);
 		return this;
 	}
@@ -89,8 +89,8 @@ public class QTI21CorrectionPage {
 		return this;
 	}
 	
-	public QTI21CorrectionPage assertOnStatusOk() {
-		By scoreBy = By.cssSelector("div.o_assessmentitem_wrapper .o_sel_assessment_item_status i.o_icon_ok");
+	public QTI21CorrectionPage assertOnManuallyAssessed() {
+		By scoreBy = By.cssSelector("div.o_assessmentitem_wrapper .o_sel_assessment_item_status .o_assessmentitem_status.manual");
 		OOGraphene.waitElement(scoreBy, browser);
 		return this;
 	}
