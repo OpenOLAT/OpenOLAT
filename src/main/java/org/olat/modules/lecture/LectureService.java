@@ -226,11 +226,17 @@ public interface LectureService {
 	public List<LectureBlock> getLectureBlocks(List<Long> keys);
 	
 	/**
-	 * Make a copy of the specified lecture block.
-	 * @param block
-	 * @return
+	 * Make a copy of the specified lecture block, always carrying over all its attributes
+	 * (location, online meeting URL, recording URL, subjects, teachers), and, if persist is
+	 * true, the room bookings as well.
+	 *
+	 * @param newTitle The title of the copy
+	 * @param newExternalRef The reference of the copy (optional)
+	 * @param block The lecture block to copy
+	 * @param persist Whether to persist the copy immediately
+	 * @return The new lecture block
 	 */
-	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block, boolean persist);
+	public LectureBlock copyLectureBlock(String newTitle, String newExternalRef, LectureBlock block, boolean persist);
 	
 	/**
 	 * Copy the specified lecture block with some customization and link it

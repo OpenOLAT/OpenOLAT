@@ -1053,7 +1053,7 @@ public class LectureServiceTest extends OlatTestCase {
 		roomManagementService.bookRoom(room, original, original.getStartDate(), original.getEndDate(), 0, 0, doer);
 		dbInstance.commitAndCloseSession();
 
-		LectureBlock copy = lectureService.copyLectureBlock(original.getTitle() + "_copy", original, true);
+		LectureBlock copy = lectureService.copyLectureBlock(original.getTitle() + "_copy", original.getExternalRef(), original, true);
 		dbInstance.commitAndCloseSession();
 
 		List<RoomBooking> bookings = roomManagementService.getBookings(copy);

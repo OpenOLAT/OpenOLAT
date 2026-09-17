@@ -165,6 +165,10 @@ public class EditLectureBlockController extends FormBasicController {
 	private final boolean embedded;
 	private RepositoryEntry entry;
 	private LectureBlock lectureBlock;
+	// The block being copied from, when lectureBlock is a fresh, unpersisted copy (OO-9744): used only
+	// to pre-select teachers/rooms in the form, since a live query for those against the (keyless)
+	// lectureBlock itself would find nothing. Null for a plain edit or a brand-new lecture block.
+	private final LectureBlock copySource;
 	private TeamsMeeting teamsMeeting;
 	private StepsListener stepsListener;
 	private AddLectureContext addLectureCtxt;
@@ -226,17 +230,27 @@ public class EditLectureBlockController extends FormBasicController {
 
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			LectureBlock lectureBlock, boolean readOnly) {
-		this(ureq, wControl, entry, null, lectureBlock, readOnly);
+		this(ureq, wControl, entry, lectureBlock, null, readOnly);
 	}
-	
+
+	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+			LectureBlock lectureBlock, LectureBlock copySource, boolean readOnly) {
+		this(ureq, wControl, entry, null, lectureBlock, copySource, readOnly);
+	}
+
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement,
 			LectureBlock lectureBlock, boolean readOnly) {
-		this(ureq, wControl, null, curriculumElement, lectureBlock, readOnly);
+		this(ureq, wControl, curriculumElement, lectureBlock, null, readOnly);
 	}
-	
+
+	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement,
+			LectureBlock lectureBlock, LectureBlock copySource, boolean readOnly) {
+		this(ureq, wControl, null, curriculumElement, lectureBlock, copySource, readOnly);
+	}
+
 	private EditLectureBlockController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, CurriculumElement curriculumElement,
-			LectureBlock lectureBlock, boolean readOnly) {
+			LectureBlock lectureBlock, LectureBlock copySource, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -244,8 +258,9 @@ public class EditLectureBlockController extends FormBasicController {
 		this.entry = entry;
 		this.readOnly = readOnly;
 		this.lectureBlock = lectureBlock;
+		this.copySource = copySource;
 		this.curriculumElement = curriculumElement;
-		
+
 		locations = getLocations(ureq);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		if(lectureBlock != null && lectureBlock.getKey() != null) {
@@ -256,14 +271,27 @@ public class EditLectureBlockController extends FormBasicController {
 			if(lectureBlock.getTeamsMeeting() != null) {
 				teamsMeeting = teamsService.getMeeting(lectureBlock.getTeamsMeeting());
 			}
+		} else if(copySource != null) {
+			teachers = lectureService.getTeachers(copySource);
 		} else {
 			teachers = List.of();
 		}
-		
+
 		initForm(ureq);
+
+		if(copySource != null && lectureBlock != null && lectureBlock.getKey() == null) {
+			// The transient taxonomy-level relations copyLectureBlock(...) attached to this still-
+			// unpersisted copy were only needed for the subjects picker above to pre-select them; left
+			// in place, Hibernate would try to cascade-check them the moment this entity is actually
+			// persisted (on save), and throw a TransientPropertyValueException since they were never
+			// meant to be saved as-is (only whatever ends up selected in the form is, via
+			// updateTaxonomyLevels(...)) (OO-9744).
+			lectureBlock.getTaxonomyLevels().clear();
+		}
+
 		updateUI();
 	}
-	
+
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			AddLectureContext addLecture, StepsListener stepsListener) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
@@ -273,6 +301,7 @@ public class EditLectureBlockController extends FormBasicController {
 		entry = addLecture.getEntry();
 		readOnly = false;
 		lectureBlock = null;
+		copySource = null;
 		this.addLectureCtxt = addLecture;
 		this.stepsListener = stepsListener;
 		curriculumElement = addLecture.getCurriculumElement() != null ? addLecture.getCurriculumElement() : addLecture.getRootElement();
@@ -311,11 +340,13 @@ public class EditLectureBlockController extends FormBasicController {
 			titleEl.setFocus(true);
 		}
 
-		String externalRef = null;
-		if(lectureBlock == null || lectureBlock.getKey() == null) {
-			externalRef = curriculumElement == null ? null : curriculumElement.getIdentifier();
-		} else {
+		String externalRef;
+		if(lectureBlock != null && (lectureBlock.getKey() != null || copySource != null)) {
+			// An existing lecture block, or a fresh (unpersisted) copy (OO-9744).
 			externalRef = lectureBlock.getExternalRef();
+		} else {
+			// A brand-new lecture block: suggest the curriculum element's identifier.
+			externalRef = curriculumElement == null ? null : curriculumElement.getIdentifier();
 		}
 		externalRefEl = uifactory.addTextElement("externalref", "lecture.external.ref", 128, externalRef, formLayout);
 		externalRefEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.externalRef));
@@ -480,7 +511,9 @@ public class EditLectureBlockController extends FormBasicController {
 				}
 			}
 		} 
-		if(!found && !teachersPK.isEmpty() && (lectureBlock == null || lectureBlock.getKey() == null)) {
+		if(!found && !teachersPK.isEmpty() && copySource == null && (lectureBlock == null || lectureBlock.getKey() == null)) {
+			// Only for a brand-new lecture block: a copy with no teachers should stay
+			// without any pre-selected teacher, not default to "everyone" (OO-9744).
 			teacherEl.selectAll();
 		}
 
@@ -525,6 +558,13 @@ public class EditLectureBlockController extends FormBasicController {
 					.map(RoomBooking::getRoom)
 					.forEach(preSelectedRooms::add);
 			participantCount = lectureService.getParticipants(lectureBlock).size();
+		} else if (copySource != null) {
+			// The copy has no bookings of its own yet (OO-9744): pre-select the source's rooms so they
+			// are carried over once the form is actually saved (via the normal syncRoomBookings(...) path).
+			roomManagementService.getBookings(copySource).stream()
+					.map(RoomBooking::getRoom)
+					.forEach(preSelectedRooms::add);
+			participantCount = lectureService.getParticipants(copySource).size();
 		}
 
 		Date start = lectureBlock == null ? null : lectureBlock.getStartDate();

@@ -1747,15 +1747,24 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private void doEditLectureBlock(UserRequest ureq, LectureBlock block, boolean canEdit) {
+		doEditLectureBlock(ureq, block, null, canEdit);
+	}
+
+	/**
+	 * @param copySource When block is a freshly copied, still unpersisted lecture block (OO-9744),
+	 *                    the block it was copied from, so its teachers/rooms can be pre-selected in
+	 *                    the form. Null for a plain edit of an existing lecture block.
+	 */
+	private void doEditLectureBlock(UserRequest ureq, LectureBlock block, LectureBlock copySource, boolean canEdit) {
 		boolean readOnly = lectureManagementManaged || !canEdit;
 		if(entry != null) {
-			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block, readOnly);
+			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block, copySource, readOnly);
 		} else if(curriculumElement != null) {
-			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), curriculumElement, block, readOnly);
+			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), curriculumElement, block, copySource, readOnly);
 		} else if(block.getEntry() != null) {
-			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), block.getEntry(), block, readOnly);
+			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), block.getEntry(), block, copySource, readOnly);
 		} else if(block.getCurriculumElement() != null) {
-			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), block.getCurriculumElement(), block, readOnly);
+			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), block.getCurriculumElement(), block, copySource, readOnly);
 		} else {
 			showWarning("error.no.entry.curriculum");
 			return;
@@ -1888,12 +1897,14 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		} else if(selectedBlocks.size() == 1) {
 			LectureBlock block = selectedBlocks.get(0);
 			String newTitle = translate("lecture.block.copy", block.getTitle());
-			LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, block, false);
-			doEditLectureBlock(ureq, copiedBlock, true);
+			String newExternalRef = copyExternalRef(block);
+			LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, newExternalRef, block, false);
+			doEditLectureBlock(ureq, copiedBlock, block, true);
 		} else {
 			for(LectureBlock block:selectedBlocks) {
 				String newTitle = translate("lecture.block.copy", block.getTitle());
-				lectureService.copyLectureBlock(newTitle, block, true);
+				String newExternalRef = copyExternalRef(block);
+				lectureService.copyLectureBlock(newTitle, newExternalRef, block, true);
 				dbInstance.commitAndCloseSession();
 				count++;
 			}
@@ -1912,8 +1923,18 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private void doCopy(UserRequest ureq, LectureBlockRow row) {
 		LectureBlock block = lectureService.getLectureBlock(row);
 		String newTitle = translate("lecture.block.copy", block.getTitle());
-		LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, block, false);
-		doEditLectureBlock(ureq, copiedBlock, true);
+		String newExternalRef = copyExternalRef(block);
+		LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, newExternalRef, block, false);
+		doEditLectureBlock(ureq, copiedBlock, block, true);
+	}
+
+	/**
+	 * Returns the external reference with a copy suffix.
+	 */
+	private String copyExternalRef(LectureBlock block) {
+		return StringHelper.containsNonWhitespace(block.getExternalRef())
+				? translate("lecture.block.copy", block.getExternalRef())
+				: block.getExternalRef();
 	}
 	
 	private void doConfirmBulkDelete(UserRequest ureq) {

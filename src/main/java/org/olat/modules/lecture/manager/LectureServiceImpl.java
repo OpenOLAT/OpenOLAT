@@ -114,6 +114,7 @@ import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockRollCallAndCoach;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
+import org.olat.modules.lecture.model.LectureBlockToTaxonomyLevelImpl;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
 import org.olat.modules.lecture.model.LectureBlockWithNotice;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
@@ -468,9 +469,49 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block, boolean persist) {
-		return copyLectureBlock(block, newTitle, block.getExternalRef(), block.getStartDate(), block.getEndDate(),
+	public LectureBlock copyLectureBlock(String newTitle, String newExternalRef, LectureBlock block, boolean persist) {
+		LectureBlock copy = copyLectureBlock(block, newTitle, newExternalRef, block.getStartDate(), block.getEndDate(),
 				block.getEntry(), block.getCurriculumElement(), persist, persist);
+
+		copy.setMeetingTitle(block.getMeetingTitle());
+		copy.setMeetingUrl(block.getMeetingUrl());
+		copy.setRecordingUrl(block.getRecordingUrl());
+
+		if(persist) {
+			// The call above already persisted the copy once, before the online meeting fields set
+			// just now were set. Persist those, then attach subjects and teachers, which both require
+			// an already-persisted target (a Group, respectively a lecture block key, to attach to).
+			copy = lectureBlockDao.update(copy);
+
+			// Add the newly created relations into the existing (Hibernate-managed, orphanRemoval=true)
+			// taxonomyLevels collection in place, rather than replacing it with a new Set: swapping in a
+			// fresh collection instance after the entity is already persisted makes Hibernate see the old
+			// managed collection as "dereferenced", which orphanRemoval explicitly forbids and throws on.
+			for(TaxonomyLevel level : lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(block)) {
+				copy.getTaxonomyLevels().add(lectureBlockToTaxonomyLevelDao.createRelation(copy, level));
+			}
+
+			for(Identity teacher : getTeachers(block)) {
+				addTeacher(copy, teacher);
+			}
+		} else {
+			// Not persisted (OO-9744): a caller that opens an edit dialog for review before saving must
+			// not have the copy be indistinguishable from a real, live lecture block in the meantime -
+			// scheduled jobs (e.g. the lecture auto-close job) operate on any PERSISTED, open lecture
+			// block whose dates match, regardless of whether a human ever confirmed the copy. Subjects
+			// are pre-populated here as plain, never-persisted relation objects purely so the edit dialog
+			// displays them correctly; the actual save persists whatever ends up selected in the form via
+			// updateTaxonomyLevels(...), not these objects. Teachers and room bookings must instead be
+			// pre-selected by the caller from the source block (see EditLectureBlockController), for the
+			// same reason: the normal save flow persists whatever ends up selected there.
+			for(TaxonomyLevel level : lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(block)) {
+				LectureBlockToTaxonomyLevelImpl transientRelation = new LectureBlockToTaxonomyLevelImpl();
+				transientRelation.setLectureBlock(copy);
+				transientRelation.setTaxonomyLevel(level);
+				copy.getTaxonomyLevels().add(transientRelation);
+			}
+		}
+		return copy;
 	}
 
 	@Override
