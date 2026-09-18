@@ -203,14 +203,14 @@ public class FolderUIFactory {
 			}
 			return vfsLeaf.getSize();
 		}
-		return 0l;
+		return null;
 	}
 
 	public static String getTranslatedSize(Translator translator, VFSItem vfsItem, Long size) {
 		if (size != null) {
-			if (vfsItem instanceof VFSContainer vfsContainer) {
+			if (vfsItem instanceof VFSContainer) {
 				return translator.translate("elements", String.valueOf(size));
-			} else if (vfsItem instanceof VFSLeaf vfsLeaf) {
+			} else if (vfsItem instanceof VFSLeaf) {
 				return Formatter.formatBytes(size);
 				}
 			}
