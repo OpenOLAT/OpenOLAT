@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -101,11 +102,7 @@ public class ACReservationDAO {
 		
 		TypedQuery<ResourceReservation> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), ResourceReservation.class);
-		
-		if(searchParams.getResources() != null && !searchParams.getResources().isEmpty()) {
-			List<Long> resourceKeys = PersistenceHelper.toKeys(searchParams.getResources());
-			query.setParameter("resourceKey", resourceKeys);
-		}
+
 		if(searchParams.getIdentities() != null && !searchParams.getIdentities().isEmpty()) {
 			query.setParameter("identityKeys", searchParams.getIdentities().stream().map(IdentityRef::getKey).toList());
 		}
@@ -116,7 +113,15 @@ public class ACReservationDAO {
 				query.setParameter("confirmableBy", ConfirmationByEnum.PAYMENT_PROCESSOR);
 			}
 		}
-		
+
+		if(searchParams.getResources() != null && !searchParams.getResources().isEmpty()) {
+			List<Long> resourceKeys = PersistenceHelper.toKeys(searchParams.getResources());
+			List<ResourceReservation> reservations = new ArrayList<>(resourceKeys.size());
+			for(List<Long> chunkOfKeys : PersistenceHelper.collectionOfChunks(resourceKeys)) {
+				reservations.addAll(query.setParameter("resourceKey", chunkOfKeys).getResultList());
+			}
+			return reservations;
+		}
 		return query.getResultList();
 	}
 	

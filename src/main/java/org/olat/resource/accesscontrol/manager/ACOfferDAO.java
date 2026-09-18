@@ -191,13 +191,16 @@ public class ACOfferDAO {
 		
 		List<Long> resourceKeys = resources.stream().map(OLATResource::getKey).toList();
 		TypedQuery<OLATResource> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), OLATResource.class)
-				.setParameter("resourceKeys", resourceKeys);
+				.createQuery(sb.toString(), OLATResource.class);
 		if (organisations != null && !organisations.isEmpty()) {
 			query.setParameter("organisationKeys", organisations.stream().map(OrganisationRef::getKey).toList());
 		}
-		
-		return query.getResultList();
+
+		List<OLATResource> accessibleResources = new ArrayList<>(resourceKeys.size());
+		for (List<Long> chunkOfKeys : PersistenceHelper.collectionOfChunks(resourceKeys)) {
+			accessibleResources.addAll(query.setParameter("resourceKeys", chunkOfKeys).getResultList());
+		}
+		return accessibleResources;
 	}
 	
 	public boolean isGuestAccessible(OLATResource olatResource) {
