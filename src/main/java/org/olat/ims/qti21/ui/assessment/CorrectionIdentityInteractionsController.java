@@ -252,24 +252,23 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		statusEl = uifactory.addStaticTextElement("status", "status", "", scoreCont);
 		
 		String fullname = userManager.getUserDisplayName(correction.getAssessedIdentity());
-		if(manualScore || correction.getItemSessionState() == null || !correction.getItemSessionState().isPresented()) {
+		if(manualScore) {
 			scoreEl = uifactory.addTextElement("scoreItem", "score", 6, score, scoreCont);
 		} else {
 			overrideAutoScore = itemSession == null ? null : itemSession.getManualScore();
 			
-			String page = velocity_root + "/override_score.html";
-			overrideScoreCont = uifactory.addCustomFormLayout("extra.score", "score", page, scoreCont);
+			overrideScoreCont = uifactory.addInputGroupFormLayout("extra.score", "score", scoreCont);
 			scoreEl = uifactory.addTextElement("score", "score", 6, score, overrideScoreCont);
 			scoreEl.setEnabled(false);
 
-			adjustScoreButton = uifactory.addFormLink("adjust.score", overrideScoreCont, Link.BUTTON);
+			adjustScoreButton = uifactory.addFormLink("rightAddOn", "adjust.score", "adjust.score", overrideScoreCont, Link.BUTTON);
 			adjustScoreButton.setIconLeftCSS("o_icon o_icon_overridden");
 			adjustScoreButton.setDomReplacementWrapperRequired(false);
 			adjustScoreButton.setElementCssClass("input-group-addon");
 			adjustScoreButton.setVisible(!readOnly && itemSession != null && itemSession.getManualScore() == null);
 			adjustScoreButton.setAriaDialogOpener();
 			
-			resetAdjustementButton = uifactory.addFormLink("reset.adjustement", overrideScoreCont, Link.BUTTON);
+			resetAdjustementButton = uifactory.addFormLink("rightAddOn2", "reset.adjustement", "reset.adjustement", overrideScoreCont, Link.BUTTON);
 			resetAdjustementButton.setIconLeftCSS("o_icon o_icon_reset_data");
 			resetAdjustementButton.setDomReplacementWrapperRequired(false);
 			resetAdjustementButton.setElementCssClass("input-group-addon");
@@ -846,7 +845,9 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			score = AssessmentHelper.getRoundedScore(newScore);
 		}
 		scoreEl.setValue(score);
+		overrideScoreCont.setDirty(true);
 		updateScoreUI();
+		markDirty();
 	}
 	
 	private void doResetAdjustement() {
@@ -858,6 +859,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			scoreEl.setValue("");
 		}
 		updateScoreUI();
+		markDirty();
 	}
 	
 	private String score(AssessmentItemSession itemSession) {

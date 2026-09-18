@@ -48,7 +48,7 @@ public class ToCorrectFlexiCellRenderer implements FlexiCellRenderer {
 		
 		Object obj = source.getFormItem().getTableDataModel().getObject(row);
 		if(obj instanceof CorrectionIdentityAssessmentItemRow itemRow) {
-			if(itemRow.isManualCorrection()) {
+			if(itemRow.isManualCorrection() && itemRow.getManualScore() == null) {
 				target.append("<span title=\"").append(translator.translate("status.to.correct")).append("\"><i class='o_icon o_icon-fw o_icon_correction_to_correct'> </i></span>");
 			} else {
 				renderOk(target);

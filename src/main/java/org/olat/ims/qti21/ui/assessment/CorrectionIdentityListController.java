@@ -39,7 +39,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
@@ -59,6 +58,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.AssessmentHelper;
@@ -174,7 +174,9 @@ public class CorrectionIdentityListController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(anonymous) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.user, "select"));
+			DefaultFlexiColumnModel identifierCol = new DefaultFlexiColumnModel(IdentityCols.user, "select");
+			identifierCol.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(identifierCol);
 		} else {
 			int colPos = USER_PROPS_OFFSET;
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -183,7 +185,10 @@ public class CorrectionIdentityListController extends FormBasicController {
 				String propName = userPropertyHandler.getName();
 				boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
 
-				FlexiColumnModel col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, "select", true, propName);
+				DefaultFlexiColumnModel col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, "select", true, propName);
+				if(UserConstants.LASTNAME.equals(propName)) {
+					col.setDefaultVisible(true);
+				}
 				columnsModel.addFlexiColumnModel(col);
 				colPos++;
 			}

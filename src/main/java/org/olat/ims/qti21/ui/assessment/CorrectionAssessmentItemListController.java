@@ -187,7 +187,10 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.section));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.itemTitle, CMD_SELECT));
+		
+		DefaultFlexiColumnModel questionTitleCol = new DefaultFlexiColumnModel(ItemCols.itemTitle, CMD_SELECT);
+		questionTitleCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(questionTitleCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ItemCols.itemKeywords, CMD_SELECT));
 		Translator qti21Translator = Util.createPackageTranslator(AssessmentTestComposerController.class, getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.itemType,
@@ -353,7 +356,6 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	
 	private void setColumnVisible(DefaultFlexiColumnModel col, boolean manualCorrections) {
 		if(col == null) return;
-		col.setAlwaysVisible(manualCorrections);
 		col.setDefaultVisible(manualCorrections);
 		tableEl.setColumnModelVisible(col, manualCorrections);
 	}

@@ -236,15 +236,19 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.section));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.itemTitle, CMD_SELECT));
+		DefaultFlexiColumnModel questionCol = new DefaultFlexiColumnModel(IdentityItemCols.itemTitle, CMD_SELECT);
+		questionCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(questionCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityItemCols.itemKeywords, CMD_SELECT));
 		Translator qti21Translator = Util.createPackageTranslator(AssessmentTestComposerController.class, getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.itemType,
 				new QuestionTypeFlexiCellRenderer(qti21Translator)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.answered,
 				new AssessmentItemStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.score,
-				new ScoreCellRenderer()));
+		DefaultFlexiColumnModel scoreCol = new DefaultFlexiColumnModel(IdentityItemCols.score,
+				new ScoreCellRenderer());
+		scoreCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(scoreCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityItemCols.autoScore,
 				new AnnotatedAutomaticScoreFlexiCellRenderer()));
 		manualScoreCol = new DefaultFlexiColumnModel(IdentityItemCols.manualScore, new ScoreCellRenderer());
@@ -396,7 +400,6 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	
 	private void setColumnVisible(DefaultFlexiColumnModel col, boolean manualCorrections) {
 		if(col == null) return;
-		col.setAlwaysVisible(manualCorrections);
 		col.setDefaultVisible(manualCorrections);
 		tableEl.setColumnModelVisible(col, manualCorrections);
 	}
@@ -558,6 +561,9 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 					.getParentSection(itemNode.getKey(), testSessionState, model.getResolvedAssessmentTest());
 			reloadItemSession = qtiService
 					.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier, itemRef.getIdentifier().toString());
+		} else {
+			logError("Nodes is empty", null);
+			return;
 		}
 		
 		// lock on item, need to check the lock on identity / test

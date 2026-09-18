@@ -921,11 +921,6 @@ body>li.o_assessmentitem_order_item  {
 	}
 }
 
-.input-group input.o_disabled.o_assessment_item_score {
-	border-top-left-radius: $input-border-radius;
-	border-bottom-left-radius: $input-border-radius;
-}
-
 .o_assessmentitem_controls {
 	display: grid;
 	grid-template-columns: 1fr;

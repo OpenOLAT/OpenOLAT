@@ -271,7 +271,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.run));
+		DefaultFlexiColumnModel runCol = new DefaultFlexiColumnModel(TSCols.run);
+		runCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(runCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TSCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TSCols.startTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.terminationTime));
@@ -286,8 +288,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.responded,
 				new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.finalScore,
-				new ScoreCellRenderer()));
+		DefaultFlexiColumnModel scoreCol = new DefaultFlexiColumnModel(TSCols.finalScore,
+				new ScoreCellRenderer());
+		scoreCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(scoreCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.autoScore,
 				new AnnotatedAutomaticScoreFlexiCellRenderer()));
 		manualScoreCol = new DefaultFlexiColumnModel(TSCols.manualScore,
@@ -330,7 +334,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				deleteButton.setIconLeftCSS("o_icon o_icon_delete_item"); 
 			}
 		}
-		tableEl.setAndLoadPersistedPreferences(ureq, "qti-details-v2.3-" + entry.getKey() + "-" + subIdent);
+		tableEl.setAndLoadPersistedPreferences(ureq, "qti-details-v2.4-" + entry.getKey() + "-" + subIdent);
 	}
 	
 	protected void updateModel() {
@@ -393,7 +397,6 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private void setColumnVisible(DefaultFlexiColumnModel col, boolean manualCorrections) {
 		if(col == null) return;
-		col.setAlwaysVisible(manualCorrections);
 		col.setDefaultVisible(manualCorrections);
 		tableEl.setColumnModelVisible(col, manualCorrections);
 	}

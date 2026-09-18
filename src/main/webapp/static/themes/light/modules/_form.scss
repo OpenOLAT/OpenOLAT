@@ -130,6 +130,11 @@ form .o_form, form.o_form {
 		margin-left: 25px;
 	}
 	
+	.input-group input.o_disabled {
+		border-top-left-radius: $input-border-radius;
+		border-bottom-left-radius: $input-border-radius;
+	}
+	
 	.input-group.o_date_picker {
 		width: 11em;
 	}
