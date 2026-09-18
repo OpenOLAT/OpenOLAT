@@ -2193,7 +2193,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>10.9.1</version>		
+			<version>10.10</version>		
 		</dependency>
 		<dependency>
 			<groupId>com.neemsoft</groupId>
@@ -2206,7 +2206,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.69.0</version>
+			<version>6.70.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
