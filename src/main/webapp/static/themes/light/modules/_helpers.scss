@@ -221,6 +221,11 @@
 	&.open {
 		position: relative;
 	}
+	
+	&.compact {
+		margin-top: $padding-small-vertical;
+		margin-bottom: $padding-small-vertical;
+	}
 }
 /* use together with o_button_group to have buttons left or right aligned */
 .o_button_group_left {
