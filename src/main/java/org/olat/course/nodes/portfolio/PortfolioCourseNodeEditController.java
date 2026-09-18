@@ -84,7 +84,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		
 		scoringContent = createVelocityContainer("edit_scoring");
 		scoringContent.put("assessmentform", scoringController.getInitialComponent());
-		enableEditingLink = LinkFactory.createButtonSmall("enable.editing", scoringContent, this);
+		enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", scoringContent, this);
 		enableEditingLink.setPrimary(true);
 		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
 

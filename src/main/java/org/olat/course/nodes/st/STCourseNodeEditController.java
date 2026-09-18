@@ -220,7 +220,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 			scoreVc = createVelocityContainer("edit_score");
 			scoreVc.put("scoreform", conventionalAssessmentConfigCtrl.getInitialComponent());
-			enableEditingLink = LinkFactory.createButtonSmall("enable.editing", scoreVc, this);
+			enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", scoreVc, this);
 			enableEditingLink.setPrimary(true);
 			enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
 

@@ -691,7 +691,7 @@ class VarForm extends FormBasicController {
 		formLayout.setFormTitle(translate("grading.configuration.title"));
 		
 		assessmentLockMsgEl = uifactory.addStaticTextElement("assessments.lock.msg", null, "", formLayout);
-		enableEditingLink = uifactory.addFormLink("enable.editing", formLayout, Link.BUTTON_SMALL);
+		enableEditingLink = uifactory.addFormLink("enable.edit.mode", formLayout, Link.BUTTON_SMALL);
 		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
 		updateAssessmentLockUI();
 

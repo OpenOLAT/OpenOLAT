@@ -325,7 +325,7 @@ public class IQConfigurationController extends BasicController implements Refere
 
 			mod21ConfigVC = createVelocityContainer("edit_test_config");
 			mod21ConfigVC.put("assessmentform", mod21ConfigForm.getInitialComponent());
-			enableEditingLink = LinkFactory.createButtonSmall("enable.editing", mod21ConfigVC, this);
+			enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", mod21ConfigVC, this);
 			enableEditingLink.setPrimary(true);
 			enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
 			mod21ConfigVC.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));

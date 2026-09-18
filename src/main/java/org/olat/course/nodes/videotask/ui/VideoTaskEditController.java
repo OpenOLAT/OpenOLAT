@@ -159,7 +159,7 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 
 		assessmentVC = createVelocityContainer("edit_assessment");
 		assessmentVC.put("assessmentform", assessmentCtrl.getInitialComponent());
-		enableEditingLink = LinkFactory.createButtonSmall("enable.editing", assessmentVC, this);
+		enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", assessmentVC, this);
 		enableEditingLink.setPrimary(true);
 		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
 

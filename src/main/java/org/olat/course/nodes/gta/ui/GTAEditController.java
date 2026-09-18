@@ -286,7 +286,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private VelocityContainer wrapAssessmentCtrl() {
 		VelocityContainer vc = createVelocityContainer("edit_grading");
 		vc.put("assessmentform", assessmentCtrl.getInitialComponent());
-		enableEditingLink = LinkFactory.createButtonSmall("enable.editing", vc, this);
+		enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", vc, this);
 		enableEditingLink.setPrimary(true);
 		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
 

@@ -256,7 +256,9 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 
 		// Scoring config		
 		editScoring = this.createVelocityContainer("editScoring");
-		editScoringConfigButton = LinkFactory.createButtonSmall("enable.editing", editScoring, this);
+		editScoringConfigButton = LinkFactory.createButtonSmall("enable.edit.mode", editScoring, this);
+		editScoringConfigButton.setPrimary(true);
+		editScoringConfigButton.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
 
 		scoringController = new MSEditFormController(ureq, wControl, course, node, NodeAccessType.of(course));
 		listenTo(scoringController);

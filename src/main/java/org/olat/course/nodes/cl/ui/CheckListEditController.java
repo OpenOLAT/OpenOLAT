@@ -92,7 +92,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 		
 		configurationVC = createVelocityContainer("edit_clconfig");
 		configurationVC.put("assessmentform", configurationCtrl.getInitialComponent());
-		enableEditingLink = LinkFactory.createButtonSmall("enable.editing", configurationVC, this);
+		enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", configurationVC, this);
 		enableEditingLink.setPrimary(true);
 		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
 

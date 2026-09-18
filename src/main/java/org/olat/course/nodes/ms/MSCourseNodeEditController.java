@@ -88,7 +88,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		this.course = course;
 		
 		configurationVC = createVelocityContainer("edit");
-		enableEditingLink = LinkFactory.createButtonSmall("enable.editing", configurationVC, this);
+		enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", configurationVC, this);
 		enableEditingLink.setPrimary(true);
 		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
 		
