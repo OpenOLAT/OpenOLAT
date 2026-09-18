@@ -325,12 +325,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			wrapper.setMinScoreVal(minScore);
 			wrapper.setMaxScoreVal(maxScore);
 			
-			if(scoreEl != null) {
-				scoreEl.setExampleKey("correction.min.max.score", new String[]{ wrapper.getMinScore(), wrapper.getMaxScore() });
-			}
-			if(overrideScoreCont != null) {
-				overrideScoreCont.setExampleKey("correction.min.max.score", new String[]{ wrapper.getMinScore(), wrapper.getMaxScore() });
-			}
+			scoreEl.setExampleKey("correction.min.max.score", new String[]{ wrapper.getMinScore(), wrapper.getMaxScore() });
 		}
 		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {

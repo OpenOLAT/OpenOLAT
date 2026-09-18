@@ -198,7 +198,9 @@ public class CorrectionIdentityListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.answered,
 				new AnsweredFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCols.notAnswered));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.score, new ScoreCellRenderer()));
+		DefaultFlexiColumnModel scoreCol = new DefaultFlexiColumnModel(IdentityCols.score, new ScoreCellRenderer());
+		scoreCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(scoreCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.autoCorrected));
 		correctedCol = new DefaultFlexiColumnModel(IdentityCols.corrected);
 		columnsModel.addFlexiColumnModel(correctedCol);
@@ -357,7 +359,6 @@ public class CorrectionIdentityListController extends FormBasicController {
 	
 	private void setColumnVisible(DefaultFlexiColumnModel col, boolean manualCorrections) {
 		if(col == null) return;
-		col.setAlwaysVisible(manualCorrections);
 		col.setDefaultVisible(manualCorrections);
 		tableEl.setColumnModelVisible(col, manualCorrections);
 	}
