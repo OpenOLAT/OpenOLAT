@@ -21,9 +21,11 @@ package org.olat.modules.curriculum.ui.importwizard;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Objects;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.dhatim.fastexcel.reader.ReadableWorkbook;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -49,6 +51,7 @@ public class ImportCurriculumsFileController extends StepFormBasicController {
 	
 	private FileElement importFileEl;
 	
+	private File validatedFile;
 	private final ImportCurriculumsContext context;
 	
 	public ImportCurriculumsFileController(UserRequest ureq, WindowControl wControl, Form rootForm,
@@ -87,6 +90,16 @@ public class ImportCurriculumsFileController extends StepFormBasicController {
 		if(importFileEl.getUploadFile() == null) {
 			importFileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
+		} else if(!Objects.equals(validatedFile, importFileEl.getUploadFile())) {
+			File file = importFileEl.getUploadFile();
+			try(ReadableWorkbook wb = new ReadableWorkbook(file)) {
+				wb.getFirstSheet();
+				validatedFile = file;
+			} catch(Exception e) {
+				logError("Cannot read file to import curriculum", e);
+				importFileEl.setErrorKey("error.file");
+				allOk &= false;
+			}
 		}
 		
 		return allOk;
