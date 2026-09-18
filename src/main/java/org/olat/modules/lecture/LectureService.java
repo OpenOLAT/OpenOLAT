@@ -29,6 +29,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.lecture.model.AbsenceNoticeInfos;
@@ -125,6 +126,11 @@ public interface LectureService {
 	 * @return The merged block
 	 */
 	public LectureBlock save(LectureBlock lectureBlock, List<Group> groups);
+	
+	/**
+	 * @param meeting
+	 */
+	public void removeRelationToLectureBlock(BigBlueButtonMeeting meeting);
 	
 	/**
 	 * The method will set the status of the lecture block and 

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -74,6 +75,7 @@ import org.olat.modules.bigbluebutton.ui.recurring.RecurringMeeting1Step;
 import org.olat.modules.bigbluebutton.ui.recurring.RecurringMeetingsContext;
 import org.olat.modules.bigbluebutton.ui.recurring.RecurringMeetingsContext.RecurringMode;
 import org.olat.modules.gotomeeting.ui.GoToMeetingTableModel.MeetingsCols;
+import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +111,11 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private final BusinessGroup businessGroup;
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
@@ -473,8 +479,10 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private void doDelete(List<BigBlueButtonMeeting> meetings) {
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		for(BigBlueButtonMeeting meeting:meetings) {
+			lectureService.removeRelationToLectureBlock(meeting);// Security for REST enthusiast
 			bigBlueButtonManager.deleteMeeting(meeting, errors);
 		}
+		dbInstance.commit();
 		updateModel();
 		if(errors.hasErrors()) {
 			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));
@@ -485,7 +493,9 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	
 	private void doDelete(BigBlueButtonMeeting meeting) {
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
+		lectureService.removeRelationToLectureBlock(meeting);// Security for REST enthusiast
 		bigBlueButtonManager.deleteMeeting(meeting, errors);
+		dbInstance.commit();
 		updateModel();
 		if(errors.hasErrors()) {
 			getWindowControl().setError(BigBlueButtonErrorHelper.formatErrors(getTranslator(), errors));

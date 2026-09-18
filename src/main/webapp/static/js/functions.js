@@ -2204,30 +2204,36 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	// The window.suppressOlatOnUnloadOnce works only once (needed in SCORM).
 	// o_beforeserver();
 	
-	let data = new Object();
+	let data = [];
 	if(submit) {
+		// Explicit parameters override form fields with the same name, but duplicates
+		// within the form itself (e.g. checkbox groups) must all be sent.
+		let overridden = ['dispatchuri', 'dispatchevent'];
+		for(let k=9; k<arguments.length; k=k+2) {
+			overridden[overridden.length] = arguments[k];
+		}
 		let form = jQuery('#' + formNam);
 		let formData = form.serializeArray();
 		let formLength = formData.length;
 		for(let i=0; i<formLength; i++) {
-			let nameValue = formData[i];//dispatchuri and dispatchevent will be overriden
-			if(nameValue.name != 'dispatchuri' && nameValue.name != 'dispatchevent') {
-				data[nameValue.name] = nameValue.value;
+			let nameValue = formData[i];
+			if(overridden.indexOf(nameValue.name) < 0) {
+				data[data.length] = {name: nameValue.name, value: nameValue.value};
 			}
 		}
 	} else {
-		data['_csrf'] = jQuery('#' + formNam + " input[name='_csrf']").val();
+		data[data.length] = {name: '_csrf', value: jQuery('#' + formNam + " input[name='_csrf']").val()};
 	}
 	
 	let openInNewWindow = false;
 	let openInNewWindowTarget = "_blank";
-	data['dispatchuri'] = dispId;
-	data['dispatchevent'] = eventInt;
+	data[data.length] = {name: 'dispatchuri', value: dispId};
+	data[data.length] = {name: 'dispatchevent', value: eventInt};
 	if(arguments.length > 9) {
 		let argLength = arguments.length;
 		for(let j=9; j<argLength; j=j+2) {
 			if(argLength > j+1) {
-				data[arguments[j]] = arguments[j+1];
+				data[data.length] = {name: arguments[j], value: arguments[j+1]};
 				if(arguments[j] == "oo-opennewwindow-oo") {
 					openInNewWindow = true;
 				} else if(arguments[j] == "oo-opennewwindow-target") {
@@ -2273,20 +2279,20 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 }
 
 function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
-	let data = new Object();
-	data['dispatchuri'] = dispId;
-	data['dispatchevent'] = eventInt;
-	
+	let data = [];
+	data[data.length] = {name: 'dispatchuri', value: dispId};
+	data[data.length] = {name: 'dispatchevent', value: eventInt};
+
 	let csrfEl = jQuery('#' + formNam + " input[name='_csrf']");
 	if(csrfEl != null && csrfEl.length > 0) {
-		data['_csrf'] = csrfEl.val();
+		data[data.length] = {name: '_csrf', value: csrfEl.val()};
 	}
-	
+
 	if(arguments.length > 5) {
 		let argLength = arguments.length;
 		for(let i=5; i<argLength; i=i+2) {
 			if(argLength > i+1) {
-				data[arguments[i]] = arguments[i+1];
+				data[data.length] = {name: arguments[i], value: arguments[i+1]};
 			}
 		}
 	}

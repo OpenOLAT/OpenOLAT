@@ -159,8 +159,9 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 
 	private Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			ToDoTask sourceToDoTask, boolean showContext) {
+		Identity identity = ureq.getIdentity();
 		ToDoTaskSearchParams tagInfoSearchParams = new ToDoTaskSearchParams();
-		tagInfoSearchParams.setAssigneeOrDelegatee(ureq.getIdentity());
+		tagInfoSearchParams.setAssigneeOrDelegatee(identity);
 
 		ToDoTask sourceOrCurrent = toDoTask != null ? toDoTask : sourceToDoTask;
 		ToDoTaskMembers members = toDoService.getToDoTaskMembers(sourceOrCurrent, ToDoRole.ALL);
@@ -181,8 +182,8 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 		} else if (ToDoModule.PERSONAL_CANDIDATE_BUDDIES.equals(assigneeModuleConfig)) {
 			assigneeSource = new IdentitySelectionSource(ureq.getLocale(),
 					currentAssignees,
-					() -> getMemberCandidates(ureq.getIdentity()),
-					ureq.getIdentity());
+					() -> getMemberCandidates(identity),
+					identity);
 			assigneeMemberConfig = ToDoTaskMemberConfig.editable(assigneeSource, true);
 		} else {
 			assigneeSource = new IdentitySelectionSource(ureq.getLocale(),
@@ -204,8 +205,8 @@ public class PersonalToDoProvider implements ToDoProvider, ToDoContextFilter {
 		} else if (ToDoModule.PERSONAL_CANDIDATE_BUDDIES.equals(delegateeModuleConfig)) {
 			delegateeSource = new IdentitySelectionSource(ureq.getLocale(),
 					currentDelegatees,
-					() -> getMemberCandidates(ureq.getIdentity()), 
-					ureq.getIdentity());
+					() -> getMemberCandidates(identity),
+					identity);
 			delegateeMemberConfig = ToDoTaskMemberConfig.editable(delegateeSource, false);
 		} else {
 			delegateeSource = new IdentitySelectionSource(ureq.getLocale(),
