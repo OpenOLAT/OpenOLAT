@@ -36,10 +36,13 @@ import org.olat.core.gui.components.ComponentRenderer;
  */
 public class FactSheet extends AbstractComponent implements ComponentCollection {
 
+	public static final String CSS_FOOTER_LINK_FULL_WIDTH = "o_fact_sheet_footer_full";
+
 	private static final ComponentRenderer RENDERER = new FactSheetRenderer();
 
 	private String title;
 	private List<Fact> facts = new ArrayList<>();
+	private List<Component> footerLinks = new ArrayList<>();
 
 	protected FactSheet(String name) {
 		super(name);
@@ -73,12 +76,20 @@ public class FactSheet extends AbstractComponent implements ComponentCollection 
 		setDirty(true);
 	}
 
+	public List<Component> getFooterLinks() {
+		return footerLinks;
+	}
+
+	public void setFooterLinks(List<Component> footerLinks) {
+		this.footerLinks = footerLinks == null ? new ArrayList<>() : footerLinks;
+		setDirty(true);
+	}
+
 	@Override
 	public Component getComponent(String name) {
-		for (Fact fact : facts) {
-			Component valueComponent = fact.getValueComponent();
-			if (valueComponent != null && name.equals(valueComponent.getComponentName())) {
-				return valueComponent;
+		for (Component component : getComponents()) {
+			if (name.equals(component.getComponentName())) {
+				return component;
 			}
 		}
 		return null;
@@ -86,14 +97,15 @@ public class FactSheet extends AbstractComponent implements ComponentCollection 
 
 	@Override
 	public Iterable<Component> getComponents() {
-		List<Component> valueComponents = new ArrayList<>(facts.size());
+		List<Component> components = new ArrayList<>(facts.size() + footerLinks.size());
 		for (Fact fact : facts) {
 			Component valueComponent = fact.getValueComponent();
 			if (valueComponent != null) {
-				valueComponents.add(valueComponent);
+				components.add(valueComponent);
 			}
 		}
-		return valueComponents;
+		components.addAll(footerLinks);
+		return components;
 	}
 
 }

@@ -60,6 +60,14 @@ public class FactSheetRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("</div>");
 
+		if (!factSheet.getFooterLinks().isEmpty()) {
+			sb.append("<div class=\"o_fact_sheet_footer\"><div class=\"o_fact_sheet_footer_buttons\">");
+			for (Component footerLink : factSheet.getFooterLinks()) {
+				renderer.render(footerLink, sb, args);
+			}
+			sb.append("</div></div>");
+		}
+
 		sb.append("</div>");
 	}
 

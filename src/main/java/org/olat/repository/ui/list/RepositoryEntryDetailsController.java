@@ -143,14 +143,14 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 				mainVC.put("getStarted", publicGetStartedCtrl.getInitialComponent());
 			}
 		} else {
-			getStartedCtrl = new RepositoryEntryInfoPageGetStartedController(ureq, wControl, entry, closeTabOnLeave, config);
+			getStartedCtrl = new RepositoryEntryInfoPageGetStartedController(ureq, wControl, entry, config);
 			listenTo(getStartedCtrl);
 			if (getStartedCtrl.hasContent()) {
 				mainVC.put("getStarted", getStartedCtrl.getInitialComponent());
 			}
 		}
 
-		myCourseCtrl = new InfoPageMyCourseController(ureq, wControl, entry, isMember, guestOnly);
+		myCourseCtrl = new InfoPageMyCourseController(ureq, wControl, entry, isMember, guestOnly, closeTabOnLeave, config);
 		listenTo(myCourseCtrl);
 		if (myCourseCtrl.hasContent()) {
 			mainVC.put("myCourse", myCourseCtrl.getInitialComponent());
@@ -254,8 +254,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 				fireEvent(ureq, new BookedEvent(entry));
 			} else if (event instanceof BookEvent) {
 				fireEvent(ureq, event);
-			} else if (event instanceof LeavingEvent) {
-				fireEvent(ureq, event);
 			} else if (event == AccessEvent.ACCESS_OK_EVENT) {
 				doBooked(ureq);
 				fireEvent(ureq, new BookedEvent(entry));
@@ -265,6 +263,10 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 		} else if (source == publicGetStartedCtrl) {
 			if (event == InfoPagePublicGetStartedController.START_EVENT) {
 				doStart(ureq);
+			}
+		} else if (source == myCourseCtrl) {
+			if (event instanceof LeavingEvent) {
+				fireEvent(ureq, event);
 			}
 		} else if (source == headerCtrl) {
 			if (event == InfoPageHeaderController.PDF_EVENT) {

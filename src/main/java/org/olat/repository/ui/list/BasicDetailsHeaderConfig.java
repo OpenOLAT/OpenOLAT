@@ -52,7 +52,9 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	protected boolean finishedNoAccessMessage = false;
 	protected boolean leaveAvailable = false;
 	protected boolean leaveEnabled = false;
-	protected boolean leaveWithCancellationFee = false;
+	protected boolean cancelAvailable = false;
+	protected boolean cancelEnabled = false;
+	protected boolean cancelWithFee = false;
 
 	public BasicDetailsHeaderConfig(Identity identity) {
 		this.identity = identity;
@@ -163,8 +165,18 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	}
 
 	@Override
-	public boolean isLeaveWithCancellationFee() {
-		return leaveWithCancellationFee;
+	public boolean isCancelAvailable() {
+		return cancelAvailable;
+	}
+
+	@Override
+	public boolean isCancelEnabled() {
+		return cancelEnabled;
+	}
+
+	@Override
+	public boolean isCancelWithFee() {
+		return cancelWithFee;
 	}
 
 	@Override

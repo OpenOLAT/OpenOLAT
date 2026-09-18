@@ -57,8 +57,12 @@ public interface DetailsHeaderConfig {
 
 	boolean isLeaveEnabled();
 
-	boolean isLeaveWithCancellationFee();
-	
+	boolean isCancelAvailable();
+
+	boolean isCancelEnabled();
+
+	boolean isCancelWithFee();
+
 	ParticipantsAvailabilityNum getParticipantsAvailabilityNum();
 	
 	boolean isNotPublishedYetMessage();

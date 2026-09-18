@@ -77,7 +77,7 @@ public class CurriculumElementInfoPageGetStartedController extends AbstractInfoP
 	}
 
 	@Override
-	protected String getLeaveText(boolean withFee) {
+	protected String getCancelText(boolean withFee) {
 		return withFee ? translate("leave.cancel.fee") : translate("leave.cancel");
 	}
 
@@ -94,7 +94,7 @@ public class CurriculumElementInfoPageGetStartedController extends AbstractInfoP
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == startCtrl) {
-			if (event == LEAVE_EVENT) {
+			if (event == CANCEL_EVENT) {
 				doConfirmLeave(ureq);
 			}
 		} else if (leaveConfirmationCtrl == source) {

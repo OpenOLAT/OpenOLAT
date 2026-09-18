@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.factsheet.Fact;
@@ -32,11 +33,15 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.util.ComponentList;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -47,13 +52,16 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.leave.ConfirmLeaveController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,7 +74,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class InfoPageMyCourseController extends BasicController {
 
 	private static final String CMD_GROUP = "group";
+	private static final String CMD_LEAVE = "leave";
 
+	private Link leaveLink;
+	private CloseableModalController cmc;
+	private ConfirmLeaveController leaveDialogBox;
+
+	private final RepositoryEntry entry;
+	private final DetailsHeaderConfig config;
+	private final boolean closeTabOnLeave;
 	private boolean hasContent;
 
 	@Autowired
@@ -75,11 +91,16 @@ public class InfoPageMyCourseController extends BasicController {
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	public InfoPageMyCourseController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean isMember, boolean guestOnly) {
+			boolean isMember, boolean guestOnly, boolean closeTabOnLeave, DetailsHeaderConfig config) {
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
 				Util.createPackageTranslator(GradeUIFactory.class, ureq.getLocale())));
+		this.entry = entry;
+		this.config = config;
+		this.closeTabOnLeave = closeTabOnLeave;
 
 		List<Fact> facts = new ArrayList<>();
 		if (!guestOnly && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
@@ -196,21 +217,87 @@ public class InfoPageMyCourseController extends BasicController {
 	}
 
 	private void init(List<Fact> facts) {
-		hasContent = !facts.isEmpty();
+		hasContent = !facts.isEmpty() || config.isLeaveAvailable();
 		if (!hasContent) {
 			putInitialPanel(new Panel("empty"));
-		} else {
-			FactSheet factSheet = FactSheetFactory.createFactSheet("factSheet", null);
-			factSheet.setTitle(translate("details.my.course"));
-			factSheet.setFacts(facts);
-			putInitialPanel(factSheet);
+			return;
+		}
+
+		FactSheet factSheet = FactSheetFactory.createFactSheet("factSheet", null);
+		factSheet.setTitle(translate("details.my.course"));
+		factSheet.setFacts(facts);
+		putInitialPanel(factSheet);
+		if (config.isLeaveAvailable()) {
+			String typeName = translate(entry.getOlatResource().getResourceableTypeName());
+			leaveLink = LinkFactory.createCustomLink(CMD_LEAVE, CMD_LEAVE, translate("sign.out.type", typeName),
+					Link.BUTTON | Link.NONTRANSLATED, null, this);
+			leaveLink.setElementCssClass("o_sign_out btn-danger " + FactSheet.CSS_FOOTER_LINK_FULL_WIDTH);
+			leaveLink.setIconLeftCSS("o_icon o_icon_sign_out");
+			leaveLink.setGhost(true);
+			leaveLink.setEnabled(config.isLeaveEnabled());
+			factSheet.setFooterLinks(List.of(leaveLink));
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source instanceof Link link && CMD_GROUP.equals(link.getCommand())) {
+		if (source == leaveLink) {
+			doConfirmLeave(ureq);
+		} else if (source instanceof Link link && CMD_GROUP.equals(link.getCommand())) {
 			doOpenGroup(ureq, (Long) link.getUserObject());
+		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (leaveDialogBox == source) {
+			if (event.equals(Event.DONE_EVENT)) {
+				doLeave(ureq);
+				fireEvent(ureq, new LeavingEvent(entry));
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(leaveDialogBox);
+		removeAsListenerAndDispose(cmc);
+		leaveDialogBox = null;
+		cmc = null;
+	}
+
+	private void doConfirmLeave(UserRequest ureq) {
+		if (guardModalController(leaveDialogBox)) return;
+
+		String title = translate("sign.out.type", translate(entry.getOlatResource().getResourceableTypeName()));
+		leaveDialogBox = new ConfirmLeaveController(ureq, getWindowControl(), entry);
+		listenTo(leaveDialogBox);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doLeave(UserRequest ureq) {
+		MailerResult result = new MailerResult();
+		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), true);
+		LeavingStatusList status = new LeavingStatusList();
+		repositoryManager.leave(getIdentity(), entry, status, reMailing);
+		businessGroupService.leave(getIdentity(), entry, status, reMailing);
+		DBFactory.getInstance().commit();
+
+		if (status.isWarningManagedGroup() || status.isWarningManagedCourse()) {
+			showWarning("sign.out.warning.managed");
+		} else if (status.isWarningGroupWithMultipleResources()) {
+			showWarning("sign.out.warning.mutiple.resources");
+		} else {
+			showInfo("sign.out.success", new String[]{ StringHelper.escapeHtml(entry.getDisplayname()) });
+			if (closeTabOnLeave) {
+				getWindowControl().getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, entry.getOlatResource(), null);
+			}
 		}
 	}
 

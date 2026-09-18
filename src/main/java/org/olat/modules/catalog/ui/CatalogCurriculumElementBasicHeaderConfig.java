@@ -87,7 +87,7 @@ public class CatalogCurriculumElementBasicHeaderConfig extends BasicDetailsHeade
 		}
 	}
 
-	protected void initLeave() {
+	protected void initCancel() {
 		if (!isParticipant && !isReservationAvailable) {
 			return;
 		}
@@ -105,11 +105,11 @@ public class CatalogCurriculumElementBasicHeaderConfig extends BasicDetailsHeade
 		if (!acService.isCancellingEnabled(curriculumElement.getResource(), orders)) {
 			return;
 		}
-		leaveAvailable = true;
-		leaveEnabled = true;
+		cancelAvailable = true;
+		cancelEnabled = true;
 		Price cancellationFee = acService.getCancellationFee(curriculumElement.getResource(), curriculumElement.getBeginDate(), orders);
 		if (cancellationFee != null) {
-			leaveWithCancellationFee = true;
+			cancelWithFee = true;
 		}
 	}
 

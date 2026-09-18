@@ -138,7 +138,17 @@ public class PreviewCurriculumElementHeaderConfig implements DetailsHeaderConfig
 	}
 
 	@Override
-	public boolean isLeaveWithCancellationFee() {
+	public boolean isCancelAvailable() {
+		return false;
+	}
+
+	@Override
+	public boolean isCancelEnabled() {
+		return false;
+	}
+
+	@Override
+	public boolean isCancelWithFee() {
 		return false;
 	}
 

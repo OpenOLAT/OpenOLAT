@@ -705,7 +705,7 @@ public class RepositoryEntryListController extends FormBasicController
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == detailsCtrl) {
-			if (event instanceof BookedEvent) {
+			if (event instanceof BookedEvent || event instanceof LeavingEvent) {
 				doCloseDetails(true);
 			}
 		}

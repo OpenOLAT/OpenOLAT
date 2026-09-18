@@ -101,7 +101,7 @@
 				max-width: $o-ac-offers-container-max-width;
 				margin-bottom: math.div($o-radio-cards-gap, 2);
 			}
-			// Open/leave/admin always stacked, one below the other.
+			// Open/cancel/admin always stacked, one below the other.
 			.o_start_inner {
 				display: flex;
 				flex-direction: column;
@@ -112,7 +112,7 @@
 					margin-top: 0;
 				}
 
-				.o_leave_space {
+				.o_cancel_space {
 					display: none;
 				}
 			}

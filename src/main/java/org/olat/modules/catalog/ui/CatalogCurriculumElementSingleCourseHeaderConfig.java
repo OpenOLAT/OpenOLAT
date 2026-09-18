@@ -61,7 +61,7 @@ public class CatalogCurriculumElementSingleCourseHeaderConfig extends CatalogCur
 		
 		initOpenBookOffers();
 		initAdminAccess();
-		initLeave();
+		initCancel();
 	}
 	
 	private void initOpenBookOffers() {

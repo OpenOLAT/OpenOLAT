@@ -41,7 +41,7 @@ import org.olat.resource.accesscontrol.ui.OffersController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * The booking/start/leave half of what {@code AbstractDetailsHeaderController}
+ * The booking/start/cancel half of what {@code AbstractDetailsHeaderController}
  * does today - display concerns (title, teaser, ...) stay in
  * {@link InfoPageHeaderController} / {@link InfoPageData}.
  *
@@ -53,7 +53,7 @@ public abstract class AbstractInfoPageGetStartedController extends BasicControll
 
 	public static final Event START_EVENT = new Event("details.start");
 	public static final Event START_ADMIN_EVENT = new Event("details.start.admin");
-	public static final Event LEAVE_EVENT = new Event("details.leave");
+	public static final Event CANCEL_EVENT = new Event("details.cancel");
 	public static final Event RESERVATION_CONFIRMATION_EVENT = new Event("reservation.confirmation");
 
 	private final VelocityContainer mainVC;
@@ -89,8 +89,14 @@ public abstract class AbstractInfoPageGetStartedController extends BasicControll
 	}
 
 	protected abstract String getStartLinkText();
-	protected abstract String getLeaveText(boolean withFee);
 	protected abstract OLATResource getResource();
+
+	/**
+	 * @param withFee  
+	 */
+	protected String getCancelText(boolean withFee) {
+		return null;
+	}
 
 	public boolean hasContent() {
 		return hasContent;
@@ -154,11 +160,11 @@ public abstract class AbstractInfoPageGetStartedController extends BasicControll
 			}
 		}
 
-		// Leave
-		if (config.isLeaveAvailable()) {
-			startCtrl.getLeaveLink().setVisible(true);
-			startCtrl.getLeaveLink().setEnabled(config.isLeaveEnabled());
-			startCtrl.getLeaveLink().setCustomDisplayText(getLeaveText(config.isLeaveWithCancellationFee()));
+		// Cancel
+		if (config.isCancelAvailable()) {
+			startCtrl.getCancelLink().setVisible(true);
+			startCtrl.getCancelLink().setEnabled(config.isCancelEnabled());
+			startCtrl.getCancelLink().setCustomDisplayText(getCancelText(config.isCancelWithFee()));
 		}
 
 		// Administrative access
@@ -174,7 +180,7 @@ public abstract class AbstractInfoPageGetStartedController extends BasicControll
 		}
 
 		boolean startCtrlVisible = startCtrl.getStartLink().isVisible()
-				|| startCtrl.getLeaveLink().isVisible();
+				|| startCtrl.getCancelLink().isVisible();
 		startCtrl.getInitialComponent().setVisible(startCtrlVisible);
 		hasContent = hasContent || startCtrlVisible;
 	}

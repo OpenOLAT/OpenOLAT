@@ -48,7 +48,7 @@ public class CatalogCurriculumElementStructuredHeaderConfig extends CatalogCurri
 		
 		participantsAvailability = PARTICIPANTS_AVAILABILITY_NUM;
 		initOpenBookOffers();
-		initLeave();
+		initCancel();
 	}
 	
 	private void initOpenBookOffers() {

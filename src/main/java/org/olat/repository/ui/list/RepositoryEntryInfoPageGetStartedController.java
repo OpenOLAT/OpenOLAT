@@ -19,22 +19,10 @@
  */
 package org.olat.repository.ui.list;
 
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.mail.MailerResult;
-import org.olat.course.run.leave.ConfirmLeaveController;
-import org.olat.group.BusinessGroupService;
-import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -44,29 +32,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryInfoPageGetStartedController extends AbstractInfoPageGetStartedController {
 
-	private CloseableModalController cmc;
-	private ConfirmLeaveController leaveDialogBox;
-
 	private final RepositoryEntry entry;
-	private final boolean closeTabOnLeave;
-
-	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 
 	public RepositoryEntryInfoPageGetStartedController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean closeTabOnLeave, DetailsHeaderConfig config) {
+			DetailsHeaderConfig config) {
 		super(ureq, wControl, config);
 		this.entry = entry;
-		this.closeTabOnLeave = closeTabOnLeave;
 
 		init(ureq);
-	}
-
-	@Override
-	protected String getLeaveText(boolean withFee) {
-		return translate("sign.out.type", translate(entry.getOlatResource().getResourceableTypeName()));
 	}
 
 	@Override
@@ -77,63 +50,6 @@ public class RepositoryEntryInfoPageGetStartedController extends AbstractInfoPag
 	@Override
 	protected OLATResource getResource() {
 		return entry.getOlatResource();
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == startCtrl) {
-			if (event == AbstractInfoPageGetStartedController.LEAVE_EVENT) {
-				doConfirmLeave(ureq);
-			}
-		} else if (leaveDialogBox == source) {
-			if (event.equals(Event.DONE_EVENT)) {
-				doLeave(ureq);
-				if (!closeTabOnLeave) {
-					fireEvent(ureq, new LeavingEvent(entry));
-				}
-			}
-			cmc.deactivate();
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(leaveDialogBox);
-		removeAsListenerAndDispose(cmc);
-		leaveDialogBox = null;
-		cmc = null;
-	}
-
-	private void doConfirmLeave(UserRequest ureq) {
-		if (guardModalController(leaveDialogBox)) return;
-
-		String title = translate("sign.out.type", translate(entry.getOlatResource().getResourceableTypeName()));
-		leaveDialogBox = new ConfirmLeaveController(ureq, getWindowControl(), entry);
-		listenTo(leaveDialogBox);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-
-	private void doLeave(UserRequest ureq) {
-		MailerResult result = new MailerResult();
-		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), true);
-		LeavingStatusList status = new LeavingStatusList();
-		repositoryManager.leave(getIdentity(), entry, status, reMailing);
-		businessGroupService.leave(getIdentity(), entry, status, reMailing);
-		DBFactory.getInstance().commit();
-
-		if (status.isWarningManagedGroup() || status.isWarningManagedCourse()) {
-			showWarning("sign.out.warning.managed");
-		} else if (status.isWarningGroupWithMultipleResources()) {
-			showWarning("sign.out.warning.mutiple.resources");
-		} else {
-			showInfo("sign.out.success", new String[]{ StringHelper.escapeHtml(entry.getDisplayname()) });
-			if (closeTabOnLeave) {
-				getWindowControl().getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, entry.getOlatResource(), null);
-			}
-		}
 	}
 
 }

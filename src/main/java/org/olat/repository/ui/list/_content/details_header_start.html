@@ -1,5 +1,5 @@
 <div class="o_header_start o_block_top">
-	#if($r.visible("start") || $r.visible("start.guest") || $r.visible("leave") || $r.visible("start.admin"))
+	#if($r.visible("start") || $r.visible("start.guest") || $r.visible("cancel") || $r.visible("start.admin"))
 		<div class="o_start_wrapper">
 			#if($r.isNotEmpty($warning))
 				<div class="o_start_message o_warning_line">
@@ -21,10 +21,10 @@
 					$r.render("start.admin")
 					#set($adminOpenRendered = 0)
 				#end
-				#if($r.available("leave") && $r.visible("leave"))
-					$r.render("leave")
+				#if($r.available("cancel") && $r.visible("cancel"))
+					$r.render("cancel")
 				#else
-					<span class="o_leave_space"></span>
+					<span class="o_cancel_space"></span>
 				#end
 				#if($adminOpenNotRendered && $r.available("start.admin") && $r.visible("start.admin"))
 					$r.render("start.admin")

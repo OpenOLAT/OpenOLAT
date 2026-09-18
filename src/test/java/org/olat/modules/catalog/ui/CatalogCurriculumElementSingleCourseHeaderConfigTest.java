@@ -96,8 +96,8 @@ public class CatalogCurriculumElementSingleCourseHeaderConfigTest extends OlatTe
 		softly.assertThat(sut.isOffersWebPublish()).isFalse();
 		softly.assertThat(sut.isOffersAvailable()).isTrue();
 		softly.assertThat(sut.getAvailableMethods()).hasSize(1);
-		softly.assertThat(sut.isLeaveAvailable()).isFalse();
-		softly.assertThat(sut.isLeaveWithCancellationFee()).isFalse();
+		softly.assertThat(sut.isCancelAvailable()).isFalse();
+		softly.assertThat(sut.isCancelWithFee()).isFalse();
 		softly.assertThat(sut.getParticipantsAvailabilityNum().availability()).isEqualTo(ParticipantsAvailability.manyLeft);
 		softly.assertThat(sut.getParticipantsAvailabilityNum().numAvailable()).isGreaterThan(10000);
 		softly.assertThat(sut.isNotPublishedYetMessage()).isFalse();
@@ -131,8 +131,8 @@ public class CatalogCurriculumElementSingleCourseHeaderConfigTest extends OlatTe
 		softly.assertThat(sut.isOffersWebPublish()).isFalse();
 		softly.assertThat(sut.isOffersAvailable()).isFalse();
 		softly.assertThat(sut.getAvailableMethods()).isNullOrEmpty();
-		softly.assertThat(sut.isLeaveAvailable()).isFalse();
-		softly.assertThat(sut.isLeaveWithCancellationFee()).isFalse();
+		softly.assertThat(sut.isCancelAvailable()).isFalse();
+		softly.assertThat(sut.isCancelWithFee()).isFalse();
 		softly.assertThat(sut.getParticipantsAvailabilityNum().availability()).isEqualTo(ParticipantsAvailability.manyLeft);
 		softly.assertThat(sut.getParticipantsAvailabilityNum().numAvailable()).isGreaterThan(10000);
 		softly.assertThat(sut.isNotPublishedYetMessage()).isFalse();
@@ -881,8 +881,8 @@ public class CatalogCurriculumElementSingleCourseHeaderConfigTest extends OlatTe
 			softly.assertThat(sut.isOffersAvailable()).isFalse();
 			softly.assertThat(sut.getAvailableMethods()).isNullOrEmpty();
 		}
-		//softly.assertThat(sut.isLeaveAvailable()).isTrue();
-		softly.assertThat(sut.isLeaveWithCancellationFee()).isFalse();
+		//softly.assertThat(sut.isCancelAvailable()).isTrue();
+		softly.assertThat(sut.isCancelWithFee()).isFalse();
 		if (fullyBookedMessage) {
 			softly.assertThat(sut.getParticipantsAvailabilityNum().availability()).isEqualTo(ParticipantsAvailability.fullyBooked);
 			softly.assertThat(sut.getParticipantsAvailabilityNum().numAvailable()).isEqualTo(0);
@@ -919,8 +919,8 @@ public class CatalogCurriculumElementSingleCourseHeaderConfigTest extends OlatTe
 			softly.assertThat(sut.isOffersAvailable()).isFalse();
 			softly.assertThat(sut.getAvailableMethods()).isNullOrEmpty();
 		}
-		//softly.assertThat(sut.isLeaveAvailable()).isTrue();
-		softly.assertThat(sut.isLeaveWithCancellationFee()).isFalse();
+		//softly.assertThat(sut.isCancelAvailable()).isTrue();
+		softly.assertThat(sut.isCancelWithFee()).isFalse();
 		if (fullyBookedMessage) {
 			softly.assertThat(sut.getParticipantsAvailabilityNum().availability()).isEqualTo(ParticipantsAvailability.fullyBooked);
 			softly.assertThat(sut.getParticipantsAvailabilityNum().numAvailable()).isEqualTo(0);

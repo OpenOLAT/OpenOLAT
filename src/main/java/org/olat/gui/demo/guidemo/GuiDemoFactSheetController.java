@@ -53,6 +53,27 @@ public class GuiDemoFactSheetController extends BasicController {
 		FactSheet factSheet = FactSheetFactory.createFactSheet("factSheet", mainVC);
 		factSheet.setTitle(translate("factsheet.sheet.title"));
 		factSheet.setFacts(createFacts());
+
+		FactSheet planetSheet = FactSheetFactory.createFactSheet("planetSheet", mainVC);
+		planetSheet.setTitle(translate("factsheet.planets.title"));
+		planetSheet.setFacts(createPlanetFacts());
+		planetSheet.setFooterLinks(createPlanetFooterLinks());
+	}
+
+	private List<Fact> createPlanetFacts() {
+		List<Fact> facts = new ArrayList<>();
+		for (int i = 1; i <= 8; i++) {
+			facts.add(FactSheetFactory.createFact("o_icon_globe", translate("factsheet.planets.label"),
+					translate("select." + i)));
+		}
+		return facts;
+	}
+
+	private List<Component> createPlanetFooterLinks() {
+		Link orbitLink = LinkFactory.createCustomLink("orbit", "planet", translate("factsheet.planets.link.orbit"), Link.BUTTON | Link.NONTRANSLATED, null, this);
+		Link moonsLink = LinkFactory.createCustomLink("moons", "planet", translate("factsheet.planets.link.moons"), Link.BUTTON | Link.NONTRANSLATED, null, this);
+		moonsLink.setPrimary(true);
+		return List.of(orbitLink, moonsLink);
 	}
 
 	private List<Fact> createFacts() {
@@ -104,6 +125,8 @@ public class GuiDemoFactSheetController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link link && "group".equals(link.getCommand())) {
 			showInfo("factsheet.fact.groups.clicked");
+		} else if (source instanceof Link link && "planet".equals(link.getCommand())) {
+			showInfo("factsheet.planets.clicked");
 		}
 	}
 
