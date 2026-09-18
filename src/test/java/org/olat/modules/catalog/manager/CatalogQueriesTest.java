@@ -58,6 +58,7 @@ import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
@@ -87,6 +88,8 @@ public class CatalogQueriesTest extends OlatTestCase {
 	private ACService acService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -119,7 +122,19 @@ public class CatalogQueriesTest extends OlatTestCase {
 		
 		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
-	
+
+	@Test
+	public void shouldLoadRepositoryEntries_exclude_private_with_stale_offer() {
+		TestCatalogItem catalogItem = createCatalogItem(true);
+		RepositoryEntry repositoryEntry = catalogItem.getRepositoryEntry();
+
+		repositoryEntry.setPublicVisible(false);
+		repositoryService.update(repositoryEntry);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
+	}
+
 	@Test
 	public void shouldLoadRepositoryEntries_exclude_notInCatalog() {
 		TestCatalogItem catalogItem = createCatalogItem(true);
