@@ -67,7 +67,7 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>7.0.9</org.springframework.version>
-		<org.hibernate.version>7.4.8.Final</org.hibernate.version>
+		<org.hibernate.version>7.4.9.Final</org.hibernate.version>
 		<org.hibernate.validator.version>9.1.3.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.9</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.2.3</apache.cxf>
@@ -2197,7 +2197,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>10.9.1</version>		
+			<version>10.10</version>		
 		</dependency>
 		<dependency>
 			<groupId>com.neemsoft</groupId>
@@ -2210,7 +2210,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.69.0</version>
+			<version>6.70.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>

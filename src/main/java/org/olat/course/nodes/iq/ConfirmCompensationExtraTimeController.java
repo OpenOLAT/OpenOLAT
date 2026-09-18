@@ -205,6 +205,7 @@ public class ConfirmCompensationExtraTimeController  extends FormBasicController
 			disadvantageCompensationService.auditLog(Action.create, null, afterXml, compensation, getIdentity());
 			logLockActivity(ureq, AssessmentLoggingAction.DISADVANTAGE_COMPENSATION_ADD);
 		} else {
+			compensation = disadvantageCompensationService.loadDisadvantageCompensation(compensation);
 			String beforeXml = disadvantageCompensationService.toXml(compensation);
 			
 			compensation.setApproval(approval);

@@ -509,8 +509,8 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 		Page reloadedPage = pageDao.loadByKey(pageKey);
 		if(reloadedPage != null) {
 			pageReferenceDao.deleteReferences(reloadedPage);
-			pageDao.deletePage(reloadedPage);
 			pageUserInfosDao.delete(reloadedPage);
+			pageDao.deletePage(reloadedPage);
 		}
 	}
 	

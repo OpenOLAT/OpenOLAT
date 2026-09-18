@@ -778,8 +778,8 @@ public class BinderDAO {
 		//delete pages
 		for(Page page:pages) {
 			if(page != null) {
-				pageDao.deletePage(page);
 				pageUserInfosDao.delete(page);
+				pageDao.deletePage(page);
 				section.getPages().remove(page);
 			}
 		}

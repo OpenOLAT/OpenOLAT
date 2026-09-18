@@ -592,7 +592,7 @@ $o-coursesite-rowelem-hover-box-shadow	: inset 0 1px 4px rgba($brand-primary, 0.
 $o-coursesite-rowelem-hover-visual-transform	: scale(1.02) !default;
 $o-coursesite-catalog-space 		: $padding-large-vertical * 2 !default;
 $o-coursesite-catalog-space-sm 		: $padding-large-vertical !default;
-$o-coursesite-catalog-space-xs 		: $padding-xs-vertical !default;
+$o-coursesite-catalog-space-xs 		: ceil($padding-large-vertical * 0.5) !default;
 $o-coursesite-catalog-border 		: $o-coursesite-rowelem-border !default;
 $o-coursesite-meta-title-color		: $o-content-header-base-color !default;
 $o-coursesite-meta-author-color		: $text-color !default;
