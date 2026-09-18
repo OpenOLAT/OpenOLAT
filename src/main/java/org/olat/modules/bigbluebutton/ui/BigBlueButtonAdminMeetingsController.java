@@ -60,6 +60,7 @@ import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingAdminInfos;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingDataModel.SoMeetingsCols;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingTableModel.BMeetingsCols;
 import org.olat.modules.gotomeeting.ui.GoToMeetingTableModel.MeetingsCols;
+import org.olat.modules.lecture.LectureService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -78,6 +79,8 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 	private DialogBoxController confirmDelete;
 	private DialogBoxController confirmBatchDelete;
 
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
@@ -224,6 +227,7 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		meeting = bigBlueButtonManager.getMeeting(meeting);
 		if(meeting != null) {
+			lectureService.removeRelationToLectureBlock(meeting);
 			bigBlueButtonManager.deleteMeeting(meeting, errors);
 		}
 		reloadRows();
@@ -274,6 +278,7 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 			BigBlueButtonMeeting meeting = meetingInfos.getMeeting();
 			meeting = bigBlueButtonManager.getMeeting(meeting);
 			if(meeting != null) {
+				lectureService.removeRelationToLectureBlock(meeting);
 				bigBlueButtonManager.deleteMeeting(meeting, errors);
 			}
 		}
