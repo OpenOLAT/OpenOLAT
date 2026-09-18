@@ -73,7 +73,7 @@ public class InfoPageFactsController extends BasicController {
 		List<Fact> facts = new ArrayList<>();
 		addFact(facts, "o_icon_lifecycle_date", "cif.dates", period(entry.getLifecycle()));
 		addEventsFact(facts, numLectureBlocks);
-		addFact(facts, "o_icon_location", "cif.location", entry.getLocation());
+		addFact(facts, "o_icon_location", "cif.location.short", entry.getLocation());
 		addFact(facts, "o_icon_graduate", "cif.authors", entry.getAuthors());
 		addFact(facts, "o_icon_language", "cif.mainLanguage", entry.getMainLanguage());
 		addFact(facts, "o_icon_expenditure", "cif.expenditureOfWork", entry.getExpenditureOfWork());
@@ -87,7 +87,7 @@ public class InfoPageFactsController extends BasicController {
 				String unit = translate(creditPointConfig.getExpirationType().i18n(expiration));
 				pointsValidity = translate("details.valid.for", expiration.toString(), unit);
 			}
-			facts.add(creditPointsFact(amount, pointsValidity));
+			facts.add(creditPointsFact(amount, creditPointConfig.getCreditPointSystem().getName(), pointsValidity));
 		}
 
 		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(entry);
@@ -113,7 +113,7 @@ public class InfoPageFactsController extends BasicController {
 		List<Fact> facts = new ArrayList<>();
 		addFact(facts, "o_icon_lifecycle_date", "cif.dates", Formatter.getInstance(getLocale()).formatPeriod(element.getBeginDate(), element.getEndDate()));
 		addEventsFact(facts, numLectureBlocks);
-		addFact(facts, "o_icon_location", "cif.location", element.getLocation());
+		addFact(facts, "o_icon_location", "cif.location.short", element.getLocation());
 		addFact(facts, "o_icon_graduate", "cif.authors", element.getAuthors());
 		addFact(facts, "o_icon_language", "cif.mainLanguage", element.getMainLanguage());
 		addFact(facts, "o_icon_expenditure", "cif.expenditureOfWork", element.getExpenditureOfWork());
@@ -124,7 +124,7 @@ public class InfoPageFactsController extends BasicController {
 			CurriculumElementCreditPointConfiguration creditPointConfig = creditPointService.getConfiguration(element);
 			if (creditPointConfig.isEnabled()) {
 				String amount = creditPointConfig.getCreditPoints() + " " + creditPointConfig.getCreditPointSystem().getLabel();
-				facts.add(creditPointsFact(amount, null));
+				facts.add(creditPointsFact(amount, creditPointConfig.getCreditPointSystem().getName(), null));
 			}
 		}
 
@@ -135,8 +135,9 @@ public class InfoPageFactsController extends BasicController {
 		init(facts);
 	}
 
-	private Fact creditPointsFact(String amount, String pointsValidity) {
-		return FactSheetFactory.createFact("o_icon_coins", translate("details.benefits.credit.points"), amount, pointsValidity);
+	private Fact creditPointsFact(String amount, String systemName, String pointsValidity) {
+		String subValue = pointsValidity == null ? systemName : systemName + ", " + pointsValidity;
+		return FactSheetFactory.createFact("o_icon_coins", translate("details.benefits.credit.points"), amount, subValue);
 	}
 
 	private Fact certificateFact(String certificateValidity) {

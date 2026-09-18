@@ -398,7 +398,7 @@ public class Formatter {
 		endCal.setTime(end);
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(dayOfWeekShort(begin)).append(' ').append(beginCal.get(Calendar.DAY_OF_MONTH));
+		sb.append(formatPeriodDay(begin, beginCal));
 		boolean sameMonth = beginCal.get(Calendar.MONTH) == endCal.get(Calendar.MONTH)
 				&& beginCal.get(Calendar.YEAR) == endCal.get(Calendar.YEAR);
 		if (!sameMonth) {
@@ -413,7 +413,14 @@ public class Formatter {
 	private String formatPeriodFull(Date date) {
 		Calendar cal = Calendar.getInstance(locale);
 		cal.setTime(date);
-		return dayOfWeekShort(date) + " " + cal.get(Calendar.DAY_OF_MONTH) + " " + formatMonthLong(date) + " " + cal.get(Calendar.YEAR);
+		return formatPeriodDay(date, cal) + " " + formatMonthLong(date) + " " + cal.get(Calendar.YEAR);
+	}
+
+	private String formatPeriodDay(Date date, Calendar cal) {
+		if ("de".equals(locale.getLanguage())) {
+			return dayOfWeekShort(date) + ", " + cal.get(Calendar.DAY_OF_MONTH) + ".";
+		}
+		return dayOfWeekShort(date) + " " + cal.get(Calendar.DAY_OF_MONTH);
 	}
 	
 	/**

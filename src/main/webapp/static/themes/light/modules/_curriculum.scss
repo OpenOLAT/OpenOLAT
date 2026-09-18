@@ -729,9 +729,11 @@ fieldset.o_validation_result {
 }
 
 .o_curriculum_element_taughtbys {
-	display: flex;
-	flex-direction: column;
-	gap: 15px;
+	display: grid;
+	// No box padding here, unlike .o_fact_sheet. Adding the padding to the
+	// minimum width makes 1 and 2 columns break at the same page width.
+	grid-template-columns: repeat(auto-fill, minmax($o-fact-min-width + $o-fact-sheet-padding, 1fr));
+	gap: $o-fact-sheet-gap;
 
 	.o_curriculum_element_taughtby {
 		display: flex;
