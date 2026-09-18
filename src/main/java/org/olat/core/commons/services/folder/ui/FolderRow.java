@@ -256,6 +256,10 @@ public class FolderRow {
 		this.size = size;
 	}
 
+	public Long getSortSize() {
+		return size != null ? size : Long.valueOf(0);
+	}
+
 	public String getTranslatedSize() {
 		return translatedSize;
 	}

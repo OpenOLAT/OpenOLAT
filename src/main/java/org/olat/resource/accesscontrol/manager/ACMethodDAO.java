@@ -35,6 +35,7 @@ import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -295,9 +296,6 @@ public class ACMethodDAO {
 			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
 
-		if(resourceKeys != null && !resourceKeys.isEmpty()) {
-			query.setParameter("resourceKeys", resourceKeys);
-		}
 		if(StringHelper.containsNonWhitespace(resourceType)) {
 			query.setParameter("resourceType", resourceType);
 		}
@@ -309,9 +307,21 @@ public class ACMethodDAO {
 			query.setParameter("offerOrganisationKeys", organisationKeys);
 		}
 
-		List<Object[]> rawResults = query.getResultList();
-
 		Map<Long,OLATResourceAccess> rawResultsMap = new HashMap<>();
+		if(resourceKeys != null && !resourceKeys.isEmpty()) {
+			for(List<Long> chunkOfKeys : PersistenceHelper.collectionOfChunks(new ArrayList<>(resourceKeys))) {
+				List<Object[]> rawResults = query.setParameter("resourceKeys", chunkOfKeys).getResultList();
+				fillRawResultsMap(rawResultsMap, rawResults);
+			}
+		} else {
+			List<Object[]> rawResults = query.getResultList();
+			fillRawResultsMap(rawResultsMap, rawResults);
+		}
+
+		return new ArrayList<>(rawResultsMap.values());
+	}
+
+	private void fillRawResultsMap(Map<Long,OLATResourceAccess> rawResultsMap, List<Object[]> rawResults) {
 		for(Object[] rawResult:rawResults) {
 			AccessMethod method = (AccessMethod)rawResult[0];
 			OLATResource resource = (OLATResource)rawResult[1];
@@ -327,8 +337,6 @@ public class ACMethodDAO {
 				rawResultsMap.put(resource.getKey(), new OLATResourceAccess(resource, price, method, autoBooking));
 			}
 		}
-
-		return new ArrayList<>(rawResultsMap.values());
 	}
 
 	public OfferAccess createOfferAccess(Offer offer, AccessMethod method) {

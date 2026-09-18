@@ -160,6 +160,7 @@ public class CatalogQueries {
 			if (or) {
 				sb.append(" or ");
 			}
+			sb.append(" (v.publicVisible = true and (");
 			if (offerValidAt != null) {
 				// Offers without validity period
 				sb.append(" (exists (");
@@ -183,6 +184,7 @@ public class CatalogQueries {
 				appendMethodOfferSubSelect(sb, webPublish, offerOrganisations, addParams);
 				sb.append("  ))");
 			}
+			sb.append(" ))");
 		}
 
 		sb.append(")");

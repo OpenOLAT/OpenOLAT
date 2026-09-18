@@ -23,7 +23,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSThumbnailMetadata;
@@ -108,13 +111,17 @@ public class VFSThumbnailDAO {
 				where meta.relativePath in (:relativePaths)
 				and (meta.cannotGenerateThumbnails is null or meta.cannotGenerateThumbnails=false) """;
 
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<VFSThumbnailInfos> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(query, VFSThumbnailInfos.class)
-				.setParameter("relativePaths", relativePaths)
 				.setParameter("maxWidth", Integer.valueOf(maxWidth))
 				.setParameter("maxHeight", Integer.valueOf(maxHeight))
-				.setParameter("fill", Boolean.valueOf(fill))
-				.getResultList();
+				.setParameter("fill", Boolean.valueOf(fill));
+
+		List<VFSThumbnailInfos> infos = new ArrayList<>(relativePaths.size());
+		for(List<String> chunkOfPaths : PersistenceHelper.collectionOfChunks(relativePaths)) {
+			infos.addAll(dbQuery.setParameter("relativePaths", chunkOfPaths).getResultList());
+		}
+		return infos;
 	}
 	
 	
