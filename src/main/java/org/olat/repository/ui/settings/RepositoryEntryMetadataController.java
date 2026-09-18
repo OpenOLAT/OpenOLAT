@@ -37,6 +37,7 @@ import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -47,10 +48,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
@@ -74,6 +78,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.olat.repository.ui.list.RepositoryEntryDetailsTechnicalController;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -101,6 +106,10 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	private TextAreaElement licenseFreetextEl;
 	private SingleSelection licenseEl;
 	private ObjectSelectionElement taxonomyLevelEl;
+	private FormLink aboutLink;
+
+	private CloseableModalController cmc;
+	private RepositoryEntryDetailsTechnicalController aboutCtrl;
 
 	@Autowired
 	private TaxonomyModule taxonomyModule;
@@ -206,8 +215,17 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 				externalRef.setHelpText(translate("cif.externalref.hover"));
 				externalRef.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Metadata/");
 			}
-
-			uifactory.addStaticTextElement("cif.type", typeDisplay, formLayout);
+			
+			FormLayoutContainer typeCont = FormLayoutContainer.createInlineFormLayout("typeinput_" + CodeHelper.getRAMUniqueID(), getTranslator());
+			typeCont.setElementCssClass("o_inline_cont");
+			typeCont.setLabel("cif.type", null);
+			typeCont.setRootForm(mainForm);
+			formLayout.add(typeCont);
+			uifactory.addStaticTextElement("cif.type", null, typeDisplay, typeCont);
+			aboutLink = uifactory.addFormLink("about", getAboutTitle(), null, typeCont, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
+			aboutLink.setGhost(true);
+			aboutLink.setIconLeftCSS("o_icon o_icon-fw o_icon_about");
+			aboutLink.setElementCssClass("o_sel_repo_about");
 		} else {
 			authors = uifactory.addTextElement("cif.authors", "cif.authors", MAX_LENGTH_AUTHORS, repositoryEntry.getAuthors(), formLayout);
 			authors.setElementCssClass("o_sel_repo_authors");
@@ -327,11 +345,53 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (aboutCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
+		} else if (cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(aboutCtrl);
+		removeAsListenerAndDispose(cmc);
+		aboutCtrl = null;
+		cmc = null;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == licenseEl) {
 			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
+		} else if (source == aboutLink) {
+			doAbout(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doAbout(UserRequest ureq) {
+		if (guardModalController(aboutCtrl)) return;
+
+		aboutCtrl = new RepositoryEntryDetailsTechnicalController(ureq, getWindowControl(), repositoryEntry, !readOnly);
+		listenTo(aboutCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), aboutCtrl.getInitialComponent(), true, getAboutTitle());
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private String getAboutTitle() {
+		String i18nKey = "details.about." + repositoryHandlerFactory.getRepositoryHandler(repositoryEntry).getSupportedType();
+		String title = getTranslator().translate(i18nKey, null, 0, true);
+		if (title == null || i18nKey.equals(title) || title.indexOf("OLATRuntimeException: transl dummy") > 0) {
+			title = translate("details.about");
+		}
+		return title;
 	}
 
 	@Override
