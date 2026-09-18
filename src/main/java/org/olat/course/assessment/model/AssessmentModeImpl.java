@@ -71,7 +71,12 @@ import org.olat.repository.RepositoryEntry;
  */
 @Entity(name="courseassessmentmode")
 @Table(name="o_as_mode_course")
-@NamedQuery(name="assessmentModeById", query="select mode from courseassessmentmode mode where mode.key=:modeKey")
+@NamedQuery(name="assessmentModeById", query="""
+		select mode from courseassessmentmode mode
+		inner join fetch mode.repositoryEntry as v
+		inner join fetch v.olatResource as res
+		left join fetch mode.safeExamBrowserTemplate as sebtemplate
+		where mode.key=:modeKey""")
 @NamedQuery(name="assessmentModeByRepoEntry", query="select mode from courseassessmentmode mode inner join fetch mode.repositoryEntry v inner join fetch v.olatResource res where mode.repositoryEntry.key=:entryKey order by mode.begin desc")
 public class AssessmentModeImpl implements Persistable, AssessmentMode {
 
