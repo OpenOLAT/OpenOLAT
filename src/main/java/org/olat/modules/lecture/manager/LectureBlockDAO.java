@@ -47,6 +47,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -153,6 +154,17 @@ public class LectureBlockDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, LectureBlock.class)
 				.setParameter("externalRef", externalRef)
+				.getResultList();
+	}
+	
+	public List<LectureBlock> loadLectureBlocksByMeeting(BigBlueButtonMeeting meeting) {
+		String query = """
+				select block from lectureblock block
+				where block.bbbMeeting.key=:meetingKey""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, LectureBlock.class)
+				.setParameter("meetingKey", meeting.getKey())
 				.getResultList();
 	}
 	

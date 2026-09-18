@@ -74,6 +74,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.manager.BigBlueButtonMeetingDAO;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
@@ -335,6 +336,17 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		dbInstance.commit();
 		recalculateSummary(block.getEntry());
 		return block;
+	}
+
+	@Override
+	public void removeRelationToLectureBlock(BigBlueButtonMeeting meeting) {
+		if(meeting == null || meeting.getKey() == null) return;
+		
+		List<LectureBlock> lectureBlocks = lectureBlockDao.loadLectureBlocksByMeeting(meeting);
+		for(LectureBlock lectureBlock:lectureBlocks) {
+			lectureBlock.setBBBMeeting(null);
+			lectureBlockDao.update(lectureBlock);
+		}
 	}
 
 	@Override

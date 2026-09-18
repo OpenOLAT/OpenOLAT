@@ -44,6 +44,8 @@ import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.manager.BigBlueButtonMeetingDAO;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -100,6 +102,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	private OrganisationService organisationService;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
+	@Autowired
+	private BigBlueButtonMeetingDAO bigBlueButtonMeetingDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
@@ -287,6 +291,44 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertNotNull(loadedBlocks);
 		Assert.assertEquals(1, loadedBlocks.size());
 		Assert.assertEquals(lectureBlock, loadedBlocks.get(0));
+	}
+	
+	@Test
+	public void loadLectureBlocksByExternalRef() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello reference of block");
+		String externalReference = UUID.randomUUID().toString();
+		lectureBlock.setExternalRef(externalReference);
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		List<LectureBlock> loadedBlocks = lectureBlockDao.loadLectureBlocksByExternalRef(externalReference);
+		
+		Assertions.assertThat(loadedBlocks)
+			.hasSize(1)
+			.containsExactly(lectureBlock);
+	}
+	
+	@Test
+	public void loadLectureBlocksByMeeting() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Lecture", entry, null, null, null);
+		
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello BigBlueButton");
+		lectureBlock.setBBBMeeting(meeting);
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		List<LectureBlock> loadedBlocks = lectureBlockDao.loadLectureBlocksByMeeting(meeting);
+		Assertions.assertThat(loadedBlocks)
+			.hasSize(1)
+			.containsExactly(lectureBlock);
 	}
 	
 	/**

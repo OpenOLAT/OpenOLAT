@@ -46,6 +46,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingDefaultConfiguration;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
+import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -143,11 +144,14 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		BigBlueButtonManager bigBlueButtonManager = CoreSpringFactory.getImpl(BigBlueButtonManager.class);
+		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
+		
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(courseEntry, getIdent(), null, false);
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		for(BigBlueButtonMeeting meeting:meetings) {
-			CoreSpringFactory.getImpl(BigBlueButtonManager.class).deleteMeeting(meeting, errors);
+			lectureService.removeRelationToLectureBlock(meeting);
+			bigBlueButtonManager.deleteMeeting(meeting, errors);
 		}
 		super.cleanupOnDelete(course);
 	}
