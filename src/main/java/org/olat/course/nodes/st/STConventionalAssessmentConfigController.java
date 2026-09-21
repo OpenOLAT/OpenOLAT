@@ -151,9 +151,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
-		generalCont.setFormTitle(translate("score.fieldset.title"));
 		generalCont.setElementCssClass("o_sel_structure_score");
-		generalCont.setFormContextHelp("manual_user/learningresources/Course_Element_Structure/#score");
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
 		
@@ -345,10 +343,25 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		Map<String, FormItem> formItems = flc.getFormComponents();
 		for (String formItemName : formItems.keySet()) {
 			formItems.get(formItemName).setEnabled(!displayOnly);
+			if (formItems.get(formItemName) instanceof FormLayoutContainer container) {
+				setDisplayOnly(displayOnly, container);
+			}
+		}
+		if (scoreConfigCont.isVisible()) {
+			scoreConfigCont.contextPut("displayOnly", displayOnly);
+		}
+		if (passedConfigCont.isVisible()) {
+			passedConfigCont.contextPut("displayOnly", displayOnly);
 		}
 		buttonWrapperCont.setVisible(!displayOnly);
 		if (!displayOnly) {
 			updateConfigUI();
+		}
+	}
+
+	private void setDisplayOnly(boolean displayOnly, FormLayoutContainer container) {
+		for (FormItem formItem : container.getFormItems()) {
+			formItem.setLabelIconCss(displayOnly ? "o_icon o_icon-fw o_icon_locked text-primary" : null);
 		}
 	}
 

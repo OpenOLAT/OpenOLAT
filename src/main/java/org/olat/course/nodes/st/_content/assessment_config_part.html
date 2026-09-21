@@ -1,12 +1,13 @@
-<fieldset>
+<fieldset class="o_form_section">
 	#if ($off_title)
-		<legend>
-			$!off_title
-		</legend>
+	    <div class="o_section_sub_title"><span class="o_section_title_text">$!off_title</span></div>
 	#end
 	#if($r.available("expert.mode.show"))
 		<div class="o_st_config_toggle o_toggle o_small">
 			<div>
+				#if($displayOnly)
+					<i class="o_icon o_icon-fw o_icon_locked text-primary"> </i>
+				#end
 			#if(${r.getComponent("expert.mode.show").isOn()})
 				<span>$r.translate("expert.mode.hide")</span>
 			#else
