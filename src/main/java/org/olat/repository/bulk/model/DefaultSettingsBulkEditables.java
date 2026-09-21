@@ -80,7 +80,7 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		if (isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.metadata))) {
 			steps.add((SettingsSteps.Step.metadata));
 		}
-		if (courseSelected && isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.info))) {
+		if (isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.info))) {
 			steps.add(SettingsSteps.Step.info);
 		}
 		if (taxonomyEnabled && isOneEditable(SettingsSteps.getEditables(SettingsSteps.Step.taxonomy))) {

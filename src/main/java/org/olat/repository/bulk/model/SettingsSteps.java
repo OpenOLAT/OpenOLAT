@@ -51,13 +51,13 @@ public class SettingsSteps {
 	private static final List<Step> DEFAULT_STEPS = List.of(Step.steps, Step.overview);
 	public static final int SELECTABLE_STEPS_SIZE = Step.values().length - DEFAULT_STEPS.size();
 	private static final Set<SettingsBulkEditable> EDITABLES_METADATA = Set.of(
-			SettingsBulkEditable.authors,
 			SettingsBulkEditable.educationalType,
+			SettingsBulkEditable.license);
+	private static final Set<SettingsBulkEditable> EDITABLES_INFO = Set.of(
+			SettingsBulkEditable.authors,
 			SettingsBulkEditable.mainLanguage,
 			SettingsBulkEditable.expenditureOfWork,
-			SettingsBulkEditable.license,
-			SettingsBulkEditable.oerPub);
-	private static final Set<SettingsBulkEditable> EDITABLES_INFO = Set.of(
+			SettingsBulkEditable.oerPub,
 			SettingsBulkEditable.infoEvents,
 			SettingsBulkEditable.infoMeetTeachers,
 			SettingsBulkEditable.infoCertificate,

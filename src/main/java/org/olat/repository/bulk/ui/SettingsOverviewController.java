@@ -127,31 +127,13 @@ public class SettingsOverviewController extends StepFormBasicController {
 		
 		List<OverviewStep> overviewSteps = new ArrayList<>((int)steps.size());
 		if (steps.contains(Step.metadata)) {
-			List<OverviewField> fields = new ArrayList<>(4);
-			if (context.isSelected(SettingsBulkEditable.authors)) {
-				String text = translate("settings.bulk.overview.authors", context.getAuthors());
-				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.authors);
-				String resourceItemName = createResourceLink(changes);
-				fields.add(new OverviewField(text, resourceItemName));
-			}
+			List<OverviewField> fields = new ArrayList<>(2);
 			if (context.isSelected(SettingsBulkEditable.educationalType)) {
 				RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(context.getEducationalTypeKey());
 				String text = educationalType == null
 						? translate("settings.bulk.overview.educational.type.none")
 						: translate("settings.bulk.overview.educational.type", StringHelper.escapeHtml(translate(RepositoyUIFactory.getI18nKey(educationalType))));
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.educationalType);
-				String resourceItemName = createResourceLink(changes);
-				fields.add(new OverviewField(text, resourceItemName));
-			}
-			if (context.isSelected(SettingsBulkEditable.mainLanguage)) {
-				String text = translate("settings.bulk.overview.mainLanguage", context.getMainLanguage());
-				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.mainLanguage);
-				String resourceItemName = createResourceLink(changes);
-				fields.add(new OverviewField(text, resourceItemName));
-			}
-			if (context.isSelected(SettingsBulkEditable.expenditureOfWork)) {
-				String text = translate("settings.bulk.overview.expenditureOfWork", context.getExpenditureOfWork());
-				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.expenditureOfWork);
 				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
@@ -171,15 +153,6 @@ public class SettingsOverviewController extends StepFormBasicController {
 				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
-			if (context.isSelected(SettingsBulkEditable.oerPub)) {
-				String text = context.isCanIndexMetadata()
-						? translate("settings.bulk.oer.on")
-						: translate("settings.bulk.oer.off");
-				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.oerPub);
-				String resourceItemName = createResourceLink(changes);
-				fields.add(new OverviewField(text, resourceItemName));
-			}
-
 			if (fields.isEmpty()) {
 				fields.add(new OverviewField(translate("settings.bulk.overview.none"), null));
 			}
@@ -188,7 +161,25 @@ public class SettingsOverviewController extends StepFormBasicController {
 		}
 
 		if (steps.contains(Step.info)) {
-			List<OverviewField> fields = new ArrayList<>(7);
+			List<OverviewField> fields = new ArrayList<>(11);
+			if (context.isSelected(SettingsBulkEditable.authors)) {
+				String text = translate("settings.bulk.overview.authors", context.getAuthors());
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.authors);
+				String resourceItemName = createResourceLink(changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
+			if (context.isSelected(SettingsBulkEditable.mainLanguage)) {
+				String text = translate("settings.bulk.overview.mainLanguage", context.getMainLanguage());
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.mainLanguage);
+				String resourceItemName = createResourceLink(changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
+			if (context.isSelected(SettingsBulkEditable.expenditureOfWork)) {
+				String text = translate("settings.bulk.overview.expenditureOfWork", context.getExpenditureOfWork());
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.expenditureOfWork);
+				String resourceItemName = createResourceLink(changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
 			addInfoField(fields, SettingsBulkEditable.infoEvents, context.getInfoEvents(), "settings.bulk.info.events");
 			addInfoField(fields, SettingsBulkEditable.infoMeetTeachers, context.getInfoMeetTeachers(), "settings.bulk.info.meet.teachers");
 			addInfoField(fields, SettingsBulkEditable.infoCertificate, context.getInfoCertificate(), "settings.bulk.info.certificate");
@@ -196,6 +187,14 @@ public class SettingsOverviewController extends StepFormBasicController {
 			addInfoField(fields, SettingsBulkEditable.infoTaughtByTeachers, context.getInfoTaughtByTeachers(), "settings.bulk.info.taught.by.teachers");
 			addInfoField(fields, SettingsBulkEditable.infoTaughtByCoaches, context.getInfoTaughtByCoaches(), "settings.bulk.info.taught.by.coaches");
 			addInfoField(fields, SettingsBulkEditable.infoTaughtByOwners, context.getInfoTaughtByOwners(), "settings.bulk.info.taught.by.owners");
+			if (context.isSelected(SettingsBulkEditable.oerPub)) {
+				String text = context.isCanIndexMetadata()
+						? translate("settings.bulk.oer.on")
+						: translate("settings.bulk.oer.off");
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.oerPub);
+				String resourceItemName = createResourceLink(changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
 			if (fields.isEmpty()) {
 				fields.add(new OverviewField(translate("settings.bulk.overview.none"), null));
 			}

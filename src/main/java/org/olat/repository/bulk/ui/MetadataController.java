@@ -48,7 +48,6 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
-import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.bulk.SettingsBulkEditable;
@@ -70,14 +69,10 @@ public class MetadataController extends StepFormBasicController {
 	
 	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>(6);
 	private final Map<MultipleSelectionElement, FormLayoutContainer> checkboxContainer = new HashMap<>(checkboxSwitch.size());
-	private TextElement authorsEl;
 	private SingleSelection educationalTypeEl;
 	private StaticTextElement educationalTypeInfoEl;
-	private TextElement languageEl;
-	private TextElement expenditureOfWorkEl;
 	private TextElement licensorEl;
 	private SingleSelection licenseEl;
-	private SingleSelection oerPubEl;
 	private TextAreaElement licenseFreetextEl;
 	
 	private final SettingsContext context;
@@ -90,9 +85,7 @@ public class MetadataController extends StepFormBasicController {
 	private LicenseService licenseService;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
-	@Autowired
-	private OAIPmhModule oaiPmhModule;
-	
+
 	public MetadataController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
@@ -110,10 +103,7 @@ public class MetadataController extends StepFormBasicController {
 		metadataCont.setFormInfo(RepositoryBulkUIFactory.getSettingsDescription(getTranslator(), context.getRepositoryEntries(), "settings.bulk.change.fields"));
 		metadataCont.setRootForm(mainForm);
 		formLayout.add(metadataCont);
-		
-		authorsEl = uifactory.addTextElement("settings.bulk.authors", 255, context.getAuthors(), metadataCont);
-		decorate(authorsEl, metadataCont, SettingsBulkEditable.authors);
-		
+
 		if (editables.isEducationalTypeEnabled()) {
 			SelectionValues educationalTypeKV = new SelectionValues();
 			repositoryManager.getAllEducationalTypes()
@@ -133,14 +123,7 @@ public class MetadataController extends StepFormBasicController {
 			educationalTypeInfoEl.setElementCssClass("o_form_explanation");
 			educationalTypeInfoEl.setVisible(context.isSelected(SettingsBulkEditable.educationalType));
 		}
-		
-		languageEl = uifactory.addTextElement("settings.bulk.mainLanguage", null, 16, context.getMainLanguage(), metadataCont);
-		decorate(languageEl, metadataCont, SettingsBulkEditable.mainLanguage);
-	
-		expenditureOfWorkEl = uifactory.addTextElement("settings.bulk.expenditureOfWork", null, 100, context.getExpenditureOfWork(), metadataCont);
-		expenditureOfWorkEl.setExampleKey("details.expenditureOfWork.example", null);
-		decorate(expenditureOfWorkEl, metadataCont, SettingsBulkEditable.expenditureOfWork);
-		
+
 		if (editables.isLicensesEnabled()) {
 			LicenseType licenseType = licenseService.loadLicenseTypeByKey(context.getLicenseTypeKey());
 			
@@ -161,16 +144,6 @@ public class MetadataController extends StepFormBasicController {
 			licensorEl = uifactory.addTextElement("settings.bulk.licensor", 1000, context.getLicensor(), metadataCont);
 			
 			updateLicenseUI();
-		}
-
-		SelectionValues oerPubElSV = new SelectionValues();
-		oerPubElSV.add(entry("on", translate("on")));
-		oerPubElSV.add(entry("off", translate("off")));
-		oerPubEl = uifactory.addRadiosHorizontal("settings.bulk.oer", metadataCont, oerPubElSV.keys(), oerPubElSV.values());
-		if (oaiPmhModule.isEnabled()) {
-			decorate(oerPubEl, metadataCont, SettingsBulkEditable.oerPub);
-		} else {
-			oerPubEl.setVisible(false);
 		}
 	}
 	
@@ -229,32 +202,12 @@ public class MetadataController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		context.select(SettingsBulkEditable.authors, authorsEl.isVisible());
-		if (authorsEl.isVisible()) {
-			context.setAuthors(authorsEl.getValue().trim());
-		}
-		
 		context.select(SettingsBulkEditable.educationalType, educationalTypeEl != null && educationalTypeEl.isVisible());
 		if (educationalTypeEl != null && educationalTypeEl.isVisible()) {
 			Long educationalTypeKey = educationalTypeEl.isOneSelected()? Long.valueOf(educationalTypeEl.getSelectedKey()): null;
 			context.setEducationalTypeKey(educationalTypeKey);
 		}
-		
-		context.select(SettingsBulkEditable.mainLanguage, languageEl.isVisible());
-		if (languageEl.isVisible()) {
-			context.setMainLanguage(languageEl.getValue().trim());
-		}
 
-		context.select(SettingsBulkEditable.oerPub, oerPubEl.isVisible());
-		if (oerPubEl.isVisible()) {
-			context.setCanIndexMetadata(oerPubEl.isKeySelected("on"));
-		}
-		
-		context.select(SettingsBulkEditable.expenditureOfWork, expenditureOfWorkEl.isVisible());
-		if (expenditureOfWorkEl.isVisible()) {
-			context.setExpenditureOfWork(expenditureOfWorkEl.getValue().trim());
-		}
-		
 		context.select(SettingsBulkEditable.license, licenseEl != null && licenseEl.isVisible());
 		if (licenseEl != null && licenseEl.isVisible()) {
 			context.setLicenseTypeKey(licenseEl.getSelectedKey());

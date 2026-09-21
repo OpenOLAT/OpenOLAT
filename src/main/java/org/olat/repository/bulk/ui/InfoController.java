@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -40,10 +41,12 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
+import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.bulk.SettingsBulkEditable;
 import org.olat.repository.bulk.SettingsBulkEditables;
 import org.olat.repository.bulk.model.SettingsContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -58,6 +61,11 @@ public class InfoController extends StepFormBasicController {
 	private static final String ON_KEY = "on";
 	private static final String OFF_KEY = "off";
 
+	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>(4);
+	private TextElement authorsEl;
+	private TextElement languageEl;
+	private TextElement expenditureOfWorkEl;
+	private SingleSelection oerPubEl;
 	private MultipleSelectionElement displayChangeEl;
 	private SingleSelection eventsEl;
 	private SingleSelection meetTeachersEl;
@@ -74,6 +82,9 @@ public class InfoController extends StepFormBasicController {
 	private final SettingsContext context;
 	private final SettingsBulkEditables editables;
 	private final String[] changeValues;
+
+	@Autowired
+	private OAIPmhModule oaiPmhModule;
 
 	public InfoController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
@@ -94,6 +105,18 @@ public class InfoController extends StepFormBasicController {
 		infoCont.setFormInfo(RepositoryBulkUIFactory.getSettingsDescription(getTranslator(), context.getRepositoryEntries(), "settings.bulk.change.fields"));
 		infoCont.setRootForm(mainForm);
 		formLayout.add(infoCont);
+
+		authorsEl = uifactory.addTextElement("settings.bulk.authors", 255, context.getAuthors(), infoCont);
+		decorate(authorsEl, SettingsBulkEditable.authors);
+
+		languageEl = uifactory.addTextElement("settings.bulk.mainLanguage", null, 16, context.getMainLanguage(), infoCont);
+		decorate(languageEl, SettingsBulkEditable.mainLanguage);
+
+		expenditureOfWorkEl = uifactory.addTextElement("settings.bulk.expenditureOfWork", null, 100, context.getExpenditureOfWork(), infoCont);
+		expenditureOfWorkEl.setExampleKey("details.expenditureOfWork.example", null);
+		decorate(expenditureOfWorkEl, SettingsBulkEditable.expenditureOfWork);
+
+		uifactory.addSpacerElement("course.only.spacer", infoCont, false);
 
 		String courseOnlyInfo = "<i class='o_icon o_icon_warn'> </i> " + translate("settings.bulk.course.only.multi");
 		StaticTextElement courseOnlyEl = uifactory.addStaticTextElement("course.only.info", null, courseOnlyInfo, infoCont);
@@ -131,6 +154,40 @@ public class InfoController extends StepFormBasicController {
 				|| context.isSelected(SettingsBulkEditable.infoTaughtByCoaches)
 				|| context.isSelected(SettingsBulkEditable.infoTaughtByOwners);
 		taughtByChangeEl.select(taughtByChangeEl.getKey(0), taughtBySelected);
+
+		uifactory.addSpacerElement("oer.spacer", infoCont, false);
+
+		SelectionValues oerPubElSV = new SelectionValues();
+		oerPubElSV.add(entry(ON_KEY, translate("on")));
+		oerPubElSV.add(entry(OFF_KEY, translate("off")));
+		oerPubEl = uifactory.addRadiosHorizontal("settings.bulk.oer", infoCont, oerPubElSV.keys(), oerPubElSV.values());
+		if (oaiPmhModule.isEnabled()) {
+			if (context.isCanIndexMetadata()) {
+				oerPubEl.select(ON_KEY, true);
+			} else {
+				oerPubEl.select(OFF_KEY, true);
+			}
+			decorate(oerPubEl, SettingsBulkEditable.oerPub);
+		} else {
+			oerPubEl.setVisible(false);
+		}
+	}
+
+	private void decorate(FormItem item, SettingsBulkEditable editable) {
+		boolean selected = context.isSelected(editable);
+		String itemName = item.getName();
+		MultipleSelectionElement checkbox = uifactory.addCheckboxesHorizontal("cbx_" + itemName, itemName, infoCont, CHANGE_KEYS, changeValues);
+		checkbox.select(checkbox.getKey(0), selected);
+		checkbox.setEnabled(editables.isEditable(editable));
+		checkbox.addActionListener(FormEvent.ONCLICK);
+		checkbox.setUserObject(item);
+		checkboxSwitch.add(checkbox);
+
+		item.setLabel(null, null);
+		item.setVisible(selected);
+		item.setUserObject(checkbox);
+
+		infoCont.moveBefore(checkbox, item);
 	}
 
 	private SingleSelection addInfoRadios(String i18nLabel, FormLayoutContainer formLayout, SettingsBulkEditable editable,
@@ -179,6 +236,11 @@ public class InfoController extends StepFormBasicController {
 			updateDisplayUI();
 		} else if (source == taughtByChangeEl) {
 			updateTaughtByUI();
+		} else if (checkboxSwitch.contains(source)) {
+			MultipleSelectionElement checkbox = (MultipleSelectionElement)source;
+			FormItem item = (FormItem)checkbox.getUserObject();
+			item.setVisible(checkbox.isAtLeastSelected(1));
+			infoCont.setDirty(true);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -208,6 +270,26 @@ public class InfoController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		context.select(SettingsBulkEditable.authors, authorsEl.isVisible());
+		if (authorsEl.isVisible()) {
+			context.setAuthors(authorsEl.getValue().trim());
+		}
+
+		context.select(SettingsBulkEditable.mainLanguage, languageEl.isVisible());
+		if (languageEl.isVisible()) {
+			context.setMainLanguage(languageEl.getValue().trim());
+		}
+
+		context.select(SettingsBulkEditable.expenditureOfWork, expenditureOfWorkEl.isVisible());
+		if (expenditureOfWorkEl.isVisible()) {
+			context.setExpenditureOfWork(expenditureOfWorkEl.getValue().trim());
+		}
+
+		context.select(SettingsBulkEditable.oerPub, oerPubEl.isVisible());
+		if (oerPubEl.isVisible()) {
+			context.setCanIndexMetadata(oerPubEl.isKeySelected(ON_KEY));
+		}
+
 		context.setInfoEvents(applyRadios(eventsEl, SettingsBulkEditable.infoEvents));
 		context.setInfoMeetTeachers(applyRadios(meetTeachersEl, SettingsBulkEditable.infoMeetTeachers));
 		context.setInfoCertificate(applyRadios(certificateEl, SettingsBulkEditable.infoCertificate));
