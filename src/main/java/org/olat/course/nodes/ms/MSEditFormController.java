@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -45,7 +46,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -131,6 +131,8 @@ public class MSEditFormController extends FormBasicController {
 	private final String helpUrl;
 	private GradeScale gradeScale;
 	private final boolean scoreScalingEnabled;
+	private FormSection assessmentFormCont;
+	private FormLayoutContainer buttonLayout;
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
@@ -286,26 +288,31 @@ public class MSEditFormController extends FormBasicController {
 		
 		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
 		
-		// Create the "individual comment" dropdown.
-		commentFlag = uifactory.addCheckboxesHorizontal("form.comment", formLayout, new String[]{"xx"}, new String[]{null});
-		Boolean cf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
-		if (cf == null) cf = Boolean.TRUE;
-		commentFlag.select("xx", cf.booleanValue());
+		initAssessmentForm(formLayout);
 		
-		individualAssessmentDocsFlag = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", formLayout, new String[]{"xx"}, new String[]{null});
-		boolean docsCf = modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
-		if(docsCf) {
-			individualAssessmentDocsFlag.select("xx", true);
-		}
-
 		// Create submit and cancel buttons
-		final FormLayoutContainer buttonLayout = uifactory.addButtonsFormLayout("buttonLayout", null, formLayout);
+		buttonLayout = uifactory.addButtonsFormLayout("buttonLayout", null, formLayout);
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		
 		update(ureq);
 	}
-	
+
+	private void initAssessmentForm(FormItemContainer formLayout) {
+		assessmentFormCont = uifactory.addFormSection("assessment.form", translate("assessment.form"), formLayout, FormSection.Level.SUB_TITLE);
+		
+		commentFlag = uifactory.addCheckboxesHorizontal("form.comment", assessmentFormCont, new String[]{"xx"}, new String[]{null});
+		Boolean cf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
+		if (cf == null) cf = Boolean.TRUE;
+		commentFlag.select("xx", cf.booleanValue());
+
+		individualAssessmentDocsFlag = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", assessmentFormCont, new String[]{"xx"}, new String[]{null});
+		boolean docsCf = modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+		if(docsCf) {
+			individualAssessmentDocsFlag.select("xx", true);
+		}
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		 if (gradeScaleCtrl == source) {
@@ -441,18 +448,17 @@ public class MSEditFormController extends FormBasicController {
 	public void setDisplayOnly(boolean displayOnly) {
 		Map<String, FormItem> formItems = flc.getFormComponents();
 		for (String formItemName : formItems.keySet()) {
-			formItems.get(formItemName).setEnabled(!displayOnly);
+			FormItem formItem = formItems.get(formItemName);
+			if (formItem != assessmentFormCont && formItem != buttonLayout) {
+				formItem.setEnabled(!displayOnly);
+				formItem.setLabelIconCss(displayOnly ? "o_icon o_icon-fw o_icon_locked text-primary" : null);
+			}
 		}
 		if (gradeScaleCont != null) {
-			gradeScaleCont.setVisible(!displayOnly);
+			gradeScaleCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isOn() && !displayOnly);
 		}
 	}
 	
-	public void setMinMax(Float min, Float max) {
-		minVal.setValue(AssessmentHelper.getRoundedScore(min));
-		maxVal.setValue(AssessmentHelper.getRoundedScore(max));
-	}
-
 	public void updateModuleConfiguration(ModuleConfiguration moduleConfiguration) {
 		// mandatory score flag
 		Boolean sf = Boolean.valueOf(scoreGranted.isOn());

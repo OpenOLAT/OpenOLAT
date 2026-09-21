@@ -78,8 +78,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		
 		configForm = new PortfolioConfigForm(ureq, wControl, stackPanel, course, node);
 		listenTo(configForm);
-		scoringController = new MSEditFormController(ureq, wControl, course, node, NodeAccessType.of(course),
-				translate("grading.configuration.title"), "manual_user/learningresources/Portfolio_assignment_Grading/");
+		scoringController = new MSEditFormController(ureq, wControl, course, node, NodeAccessType.of(course), null, null);
 		listenTo(scoringController);
 		
 		scoringContent = createVelocityContainer("edit_scoring");
