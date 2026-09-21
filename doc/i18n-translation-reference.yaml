@@ -7459,7 +7459,7 @@ terms:
   platform.user_management:
     domain: platform
     kind: site
-    de: Kontoverwaltung
+    de: Benutzerverwaltung
     en: User management
     ar: إدارة المستخدم
     bg: Мениджмънт на потребител
@@ -7490,12 +7490,13 @@ terms:
     - admin/user:content.usermgmt.title
     - user/ui/admin:menu.useradmin
     - user/ui/organisation:organisation.user.management
-    note: 'Drei deutsche Wörter für denselben Bereich. Entscheidung Florian 2026-09-21: Kontoverwaltung,
-      Singular, passend zu Kontotyp und Kontoablauf; die Konto-Regel gilt (siehe _rules.md). Bis 21.0
-      sagten der Bereich, die Hauptnavigation und die Seitenüberschrift Benutzerverwaltung, das Menü der
-      Kontoverwaltung und der Organisationstab Kontenverwaltung; auf master sind alle fünf Beschriftungen
-      auf Kontoverwaltung gesetzt. Der einzige Schlüssel, der Kontoverwaltung schon sagte, admin:menu.umgmt,
-      war seit 2012 im Code nicht referenziert und ist entfernt.'
+    note: 'Drei deutsche Wörter für denselben Bereich. Entscheid Florian 2026-09-21: der Bereich und die
+      Rolle heissen Benutzerverwaltung, so wie die Site, die Hauptnavigation und die Seitenüberschrift
+      es sagen. Die Konto-Regel gilt für das Objekt Konto (Kontotyp, Kontoablauf), nicht für den Namen
+      des Bereichs. Das Menü in der Benutzerverwaltung und der Organisationstab sagen Kontenverwaltung,
+      das bleibt vorerst. Der Schlüssel admin:menu.umgmt mit dem Wert Kontoverwaltung war seit 2012 im
+      Code nicht referenziert und ist auf master entfernt; seine 22 Übersetzungen sind in die lebenden
+      Schlüssel übernommen, wo sie dort fehlten.'
   platform.organisation:
     domain: platform
     kind: concept

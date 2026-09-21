@@ -507,7 +507,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | User type | Kontotyp | Type d'utilisateur | Tipo d'utente | Tipo de usuário | Typ používateľa | Kullanıcı tipi |
 | User status | Kontostatus | Status utilisateur | Status utente | Status do usuário | Stav používateľa | Kullanıcı durumu |
 | Account expiration | Kontoablauf | Expiration compte | Scadenza account | Validade da conta | Platnosť účtu | Hesap sona erme |
-| User management | Kontoverwaltung | Utilisateurs | Gestione degli utenti | Administração de usuários | Správa používateľov | Kullanıcı yönetimi |
+| User management | Benutzerverwaltung | Utilisateurs | Gestione degli utenti | Administração de usuários | Správa používateľov | Kullanıcı yönetimi |
 | Organisation | Organisation | Organisation | Organizzazione |  | Organizácia |  |
 | Visiting card | Visitenkarte | Carte de visite | Biglietto da visita | Cartão de visitas | Návštevná karta | Ziyaret Kartı |
 | Configuration | Konfiguration | Configuration | Configurazione | Configuração | Konfigurácia | Yapılandırma |
