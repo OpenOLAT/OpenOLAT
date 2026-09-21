@@ -3936,7 +3936,8 @@ public class ImsQTI21EditorTest extends Deployments {
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.assertOnAssessmentItem()
-				.edit();
+				.edit()
+				.assertOnAssessmentItemEditor();
 		//customize the section
 		qtiEditor
 			.selectSection()

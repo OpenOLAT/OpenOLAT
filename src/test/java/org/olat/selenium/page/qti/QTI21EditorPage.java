@@ -49,6 +49,13 @@ public class QTI21EditorPage {
 		return this;
 	}
 	
+	public QTI21EditorPage assertOnAssessmentItemEditor() {
+		By itemEditorBy = By.cssSelector(".o_assessment_test_editor_and_composer .o_sel_assessment_item_title");
+		OOGraphene.waitElement(itemEditorBy, browser);
+		OOGraphene.waitTinymce(browser);
+		return this;
+	}
+	
 	public QTI21CSVImportWizard importTable() {
 		openElementsMenu();
 		

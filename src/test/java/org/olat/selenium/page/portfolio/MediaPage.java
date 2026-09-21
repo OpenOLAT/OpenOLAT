@@ -62,9 +62,8 @@ public class MediaPage {
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_pf_collect_media_form button.btn-primary");
-		WebElement submitButton = browser.findElement(submitBy);
-		submitButton.click();
-		OOGraphene.waitBusy(browser);
+		browser.findElement(submitBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 
