@@ -68,8 +68,8 @@ public class CurriculumAdminController extends BasicController {
 		curriculumElementTypeListLink = LinkFactory.createLink("curriculum.element.types", mainVC, this);
 		curriculumPlannerLink = LinkFactory.createLink("curriculum.admin.planner", mainVC, this);
 		doOpenConfiguration(ureq);
-		segmentView.addSegment(curriculumPlannerLink, false);
 		if(curriculumModule.isEnabled()) {
+			segmentView.addSegment(curriculumPlannerLink, false);
 			segmentView.addSegment(curriculumElementTypeListLink, false);
 		}
 
@@ -82,8 +82,10 @@ public class CurriculumAdminController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(configurationCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
+				segmentView.removeSegment(curriculumPlannerLink);
 				segmentView.removeSegment(curriculumElementTypeListLink);
 				if(curriculumModule.isEnabled()) {
+					segmentView.addSegment(curriculumPlannerLink, false);
 					segmentView.addSegment(curriculumElementTypeListLink, false);
 				}
 			}
