@@ -716,7 +716,6 @@ public class AccessConfigurationController extends FormBasicController {
 		if (catalogInfo.getOrderFormProvider() != null || catalogInfo.getSortPriorityProvider() != null) {
 			FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
 			settingsCont.setFormTitle(translate("settings"));
-			settingsCont.setFormInfo(translate("offer.settings.hint"));
 			settingsCont.setRootForm(mainForm);
 			formLayout.add(settingsCont);
 
@@ -727,6 +726,7 @@ public class AccessConfigurationController extends FormBasicController {
 				bookingSV.add(SelectionValues.entry(KEY_ORDER_FORM_REQUIRED, translate("offer.booking.required")));
 				orderFormRequiredEl = uifactory.addRadiosHorizontal("offer.booking", settingsCont, bookingSV.keys(), bookingSV.values());
 				orderFormRequiredEl.addActionListener(FormEvent.ONCHANGE);
+				orderFormRequiredEl.setHelpTextKey("offer.booking.hint", null);
 				orderFormRequiredEl.setEnabled(!readOnly);
 				orderFormRequiredEl.select(orderFormRequiredProvider.isOrderFormRequired() ? KEY_ORDER_FORM_REQUIRED : KEY_ORDER_FORM_NOT_REQUIRED, true);
 			}
@@ -734,6 +734,7 @@ public class AccessConfigurationController extends FormBasicController {
 			if (catalogInfo.getSortPriorityProvider() != null) {
 				FormLayoutContainer sortPriorityCont = FormLayoutContainer.createInputGroupLayout("sortPriorityCont", getTranslator(), null, null);
 				sortPriorityCont.setLabel("offer.sort.priority", null);
+				sortPriorityCont.setHelpTextKey("offer.sort.priority.hint", null);
 				sortPriorityCont.setRootForm(mainForm);
 				settingsCont.add(sortPriorityCont);
 
