@@ -111,15 +111,8 @@ public class OfferSurveyExecutionInfoCardController extends FormBasicController 
 			String formattedDate = Formatter.getInstance(getLocale()).formatDateAndTime(submissionDate);
 			uifactory.addStaticTextElement("offer.survey.participation.submission.date", formattedDate, itemsCont);
 		}
-		uifactory.addStaticTextElement("offer.survey.participation.status", translate(statusI18nKey()), itemsCont);
-	}
-
-	private String statusI18nKey() {
-		return switch (status) {
-			case prepared -> "offer.survey.participation.status.prepared";
-			case done -> "offer.survey.participation.status.done";
-			case canceled -> "offer.survey.participation.status.canceled";
-		};
+		String statusLabel = new OfferSurveyParticipationStatusCellRenderer(true).render(getTranslator(), status);
+		uifactory.addStaticTextElement("offer.survey.participation.status", statusLabel, itemsCont);
 	}
 
 	@Override

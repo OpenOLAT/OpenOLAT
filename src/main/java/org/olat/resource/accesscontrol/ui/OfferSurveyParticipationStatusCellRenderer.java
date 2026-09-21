@@ -31,6 +31,21 @@ import org.olat.modules.forms.EvaluationFormParticipationStatus;
  */
 public class OfferSurveyParticipationStatusCellRenderer extends LabelCellRenderer {
 
+	private final boolean light;
+
+	public OfferSurveyParticipationStatusCellRenderer() {
+		this(false);
+	}
+
+	public OfferSurveyParticipationStatusCellRenderer(boolean light) {
+		this.light = light;
+	}
+
+	@Override
+	protected boolean isLabelLight() {
+		return !light;
+	}
+
 	@Override
 	protected String getCellValue(Object val, Translator translator) {
 		if (val instanceof EvaluationFormParticipationStatus status) {

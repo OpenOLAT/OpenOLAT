@@ -72,7 +72,6 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
-import org.olat.modules.forms.ui.UserPropertiesColumns;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferSurveyParticipationIdentifiers;
@@ -388,7 +387,7 @@ public class OfferSurveyParticipationListController extends FormBasicController 
 		SessionFilter filter = SessionFilterFactory.createOfParticipations(participations, true);
 		org.olat.modules.forms.model.xml.Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 
-		UserPropertiesColumns userColumns = new UserPropertiesColumns(userPropertyHandlers, getTranslator());
+		OfferSurveyUserColumns userColumns = new OfferSurveyUserColumns(userPropertyHandlers, getTranslator());
 		EvaluationFormExcelExport export = new EvaluationFormExcelExport(getLocale(), survey.getFormEntry(), form,
 				filter, null, userColumns, survey.getFormEntry().getDisplayname());
 		

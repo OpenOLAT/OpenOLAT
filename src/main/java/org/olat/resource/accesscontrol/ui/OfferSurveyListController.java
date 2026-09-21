@@ -74,7 +74,6 @@ import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
-import org.olat.modules.forms.ui.UserPropertiesColumns;
 import org.olat.resource.accesscontrol.ui.OfferSurveyExportFactory.SurveyExportInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -427,7 +426,7 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 	private SurveyExportInfos createExport(EvaluationFormSurvey survey, boolean withPath) {
 		org.olat.modules.forms.model.xml.Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 		SessionFilter filter = SessionFilterFactory.create(survey, true);
-		UserPropertiesColumns userColumns = new UserPropertiesColumns(userPropertyHandlers, getTranslator());
+		OfferSurveyUserColumns userColumns = new OfferSurveyUserColumns(userPropertyHandlers, getTranslator());
 		String stepName = survey.getDisplayName();
 		String fileName = StringHelper.containsNonWhitespace(stepName) ? stepName : survey.getFormEntry().getDisplayname();
 		EvaluationFormExcelExport excelExport = new EvaluationFormExcelExport(getLocale(), survey.getFormEntry(), form,
