@@ -180,6 +180,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		// Read-only text field
 		final TextElement readOnly = uifactory.addTextElement("readOnly", "guidemo.form.readonly", 256, "forever", form);
 		readOnly.setEnabled(false);
+		readOnly.setLabelIconCss("o_icon o_icon-fw o_icon_locked");
 	}
 
 	public void addColorPickerElement(FormItemContainer form) {
