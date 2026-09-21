@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -72,29 +73,30 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	
 	public static final String ASSESSMENT_AUTO = "auto";
 	public static final String ASSESSMENT_MANUAL = "manual";
+	private static final String ON_KEY = "on";
 	
 	private FormToggle scoreEl;
 	private TextElement minEl;
 	private TextElement maxEl;
 	private SingleSelection roundingEl;
-	private FormToggle incorporateInCourseAssessmentEl;
 	private TextElement scoreScalingEl;
-	private SpacerElement scoreSpacer;
+	private SpacerElement spacerBeforeGrade;
 	private FormToggle gradeEnabledEl;
 	private SingleSelection gradeAutoEl;
 	private TextElement gradeScaleEl;
-	private SpacerElement gradingSpacer;
 	private FormLayoutContainer gradeScaleCont;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement gradePassedEl;
-	private SpacerElement passedSpacer;
+	private SpacerElement spacerBeforePassed;
 	private FormToggle passedEl;
 	private SingleSelection passedTypeEl;
 	private TextElement cutEl;
 	private SingleSelection weightingEl;
-	private SpacerElement ignoreSpacer;
-	private MultipleSelectionElement individualAssessmentEl;
-	private SelectionValues individualAssessmentKV;
+	private SpacerElement spacerBeforeIncludeInCourseAssessment;
+	private FormToggle incorporateInCourseAssessmentEl;
+	private FormSection assessmentFormCont;
+	private MultipleSelectionElement individualCommentEl;
+	private MultipleSelectionElement individualAssessmentDocumentsEl;
 	private FormLayoutContainer buttonsCont;
 
 	private GradeScale gradeScale;
@@ -131,8 +133,6 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("grading.configuration.title");
-		
 		scoreEl = uifactory.addToggleButton("form.score", "form.score", translate("on"), translate("off"), formLayout);
 		scoreEl.addActionListener(FormEvent.ONCHANGE);
 		String scoreEnabled = config.getStringValue(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
@@ -143,17 +143,17 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		}
 		
 		initFormScore(formLayout);
-		scoreSpacer = uifactory.addSpacerElement("score-spacer", formLayout, false);
 
 		if (gradeModule.isEnabled()) {
+			spacerBeforeGrade = uifactory.addSpacerElement("spacer-before-score", formLayout, false);
 			initFormGrading(formLayout);
-			gradingSpacer = uifactory.addSpacerElement("grading-spacer", formLayout, false);
 		}
-		
+
+		spacerBeforePassed = uifactory.addSpacerElement("spacer-before-passed", formLayout, false);
 		initFormPassed(formLayout);
-		passedSpacer = uifactory.addSpacerElement("passed-spacer", formLayout, false);
 
 		// Negative form: label is ignore course assessment
+		spacerBeforeIncludeInCourseAssessment = uifactory.addSpacerElement("spacer-before-include", formLayout, false);
 		SelectionValues assessmentValues = new SelectionValues();
 		assessmentValues.add(SelectionValues.entry("true", translate("yes")));
 		assessmentValues.add(SelectionValues.entry("false", translate("no")));
@@ -167,24 +167,22 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, formLayout);
 		scoreScalingEl.setExampleKey("score.scaling.example", null);
 
-		ignoreSpacer = uifactory.addSpacerElement("ignore-spacer", formLayout, false);
+		initAssessmentForm(formLayout);
 
-		individualAssessmentKV = new SelectionValues();
-		individualAssessmentKV.add(SelectionValues.entry("individualComment", translate("form.individualComment")));
-		individualAssessmentKV.add(SelectionValues.entry("individualAssessmentDocuments", translate("form.individualAssessmentDocuments")));
-		individualAssessmentEl = uifactory.addCheckboxesVertical("form.individualAssessment", formLayout, individualAssessmentKV.keys(),
-				individualAssessmentKV.values(), 1);
-		boolean hasIndividualComment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, true);
-		if (hasIndividualComment) {
-			individualAssessmentEl.select(individualAssessmentKV.keys()[0], true);
-		}
-		boolean hasIndividualAssessmentDocuments = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS);
-		if (hasIndividualAssessmentDocuments) {
-			individualAssessmentEl.select(individualAssessmentKV.keys()[1], true);
-		}
-	
 		buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
+
+	private void initAssessmentForm(FormItemContainer formLayout) {
+		assessmentFormCont = uifactory.addFormSection("assessment.form", translate("assessment.form"), formLayout, FormSection.Level.SUB_TITLE);
+
+		individualCommentEl = uifactory.addCheckboxesHorizontal("form.individualComment", assessmentFormCont, new String[]{ON_KEY}, new String[]{translate("on")});
+		boolean hasIndividualComment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, true);
+		individualCommentEl.select(ON_KEY, hasIndividualComment);
+
+		boolean hasIndividualAssessmentDocuments = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS);
+		individualAssessmentDocumentsEl = uifactory.addCheckboxesHorizontal("form.individualAssessmentDocuments", assessmentFormCont, new String[]{ON_KEY}, new String[]{translate("on")});
+		individualAssessmentDocumentsEl.select(ON_KEY, hasIndividualAssessmentDocuments);
 	}
 
 	/**
@@ -194,9 +192,11 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	public void setDisplayOnly(boolean displayOnly) {
 		Map<String, FormItem> formItems = flc.getFormComponents();
 		for (FormItem formItem : formItems.values()) {
-			formItem.setEnabled(!displayOnly);
+			if (formItem != assessmentFormCont && formItem != buttonsCont) {
+				formItem.setEnabled(!displayOnly);
+				formItem.setLabelIconCss(displayOnly ? "o_icon o_icon-fw o_icon_locked text-primary" : null);
+			}
 		}
-		buttonsCont.setVisible(!displayOnly);
 		if (!displayOnly) {
 			updateUI();
 		}
@@ -327,9 +327,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		minEl.setVisible(scoreEnabled);
 		maxEl.setVisible(scoreEnabled);
 		roundingEl.setVisible(scoreEnabled);
-		scoreSpacer.setVisible(true);
 		if(gradeEnabledEl != null) {
-			gradingSpacer.setVisible(scoreEnabled);
+			spacerBeforeGrade.setVisible(scoreEnabled);
 			gradeEnabledEl.setVisible(scoreEnabled);
 			
 			boolean gradeEnabled = gradeEnabledEl.isOn();
@@ -349,7 +348,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		}
 		
 		// passed
-		passedSpacer.setVisible(true);
+		spacerBeforePassed.setVisible(true);
 		passedEl.setVisible(true);
 		boolean passedTypeVisible = passedEl.isOn();
 		passedTypeEl.setVisible(passedTypeVisible);
@@ -369,8 +368,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		// ignore in course assessment
 		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
 				&& (scoreEnabled || passedEl.isOn());
+		spacerBeforeIncludeInCourseAssessment.setVisible(ignoreInScoreVisible);
 		incorporateInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
-		ignoreSpacer.setVisible(ignoreInScoreVisible);
 
 		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
 				&& incorporateInCourseAssessmentEl.isOn()
@@ -522,9 +521,9 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 			config.setStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, scoreScalingEl.getValue());
 		}
 
-		boolean hasIndividualComment = individualAssessmentEl.isKeySelected(individualAssessmentKV.keys()[0]);
+		boolean hasIndividualComment = individualCommentEl.isKeySelected(ON_KEY);
 		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, hasIndividualComment);
-		boolean hasIndividualAssessmentDocuments = individualAssessmentEl.isKeySelected(individualAssessmentKV.keys()[1]);
+		boolean hasIndividualAssessmentDocuments = individualAssessmentDocumentsEl.isKeySelected(ON_KEY);
 		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, hasIndividualAssessmentDocuments);
 	}
 	

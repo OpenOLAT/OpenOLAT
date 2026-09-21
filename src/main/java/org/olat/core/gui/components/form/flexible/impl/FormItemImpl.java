@@ -283,7 +283,6 @@ public abstract class FormItemImpl implements InlineElement {
 
 	@Override
 	public void setLabelIconCss(String labelIconCss) {
-		System.err.println("labelKey: " + labelKey);
 		this.labelIconCss = labelIconCss;
 	}
 
