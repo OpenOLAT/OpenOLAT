@@ -457,14 +457,14 @@ public class QTI21ResultsExport {
 			
 			String resultsPdfPath;
 			String resultsPdfLinkPath;
+			String pdfFilename = getResultsPdfFilename(assessedIdentity, session.getKey()) + ".pdf";
 			if(withFlatPdfs) {
-				String pdfFilename = getResultsPdfFilename(assessedIdentity, session.getKey()) + ".pdf";
 				// jump user directory + userdata directory
 				resultsPdfLinkPath = "../../" + PDF_FOLDER + pdfFilename;
 				resultsPdfPath = pdfDir + pdfFilename;
 			} else {
-				resultsPdfLinkPath = idPath.replace(idDir, "") + assessmentID + ".pdf";
-				resultsPdfPath = idPath + assessmentID + ".pdf";
+				resultsPdfLinkPath = idPath.replace(idDir, "") + pdfFilename;
+				resultsPdfPath = idPath + pdfFilename;
 			}
 			
 			ResultDetail resultDetail = new ResultDetail(assessmentID.toString(), 
