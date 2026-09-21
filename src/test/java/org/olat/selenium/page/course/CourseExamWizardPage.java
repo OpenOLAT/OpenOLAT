@@ -81,6 +81,7 @@ public class CourseExamWizardPage {
 	public CourseExamWizardPage nextInfosMetadata() {
 		OOGraphene.nextStep(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_course_metadata"), browser);
+		OOGraphene.waitTinymce(browser);
 		return this;
 	}
 	

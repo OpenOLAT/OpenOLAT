@@ -1077,9 +1077,7 @@ public class QTI21Page {
 		By editBy = By.xpath("//ul[contains(@class,'o_sel_repository_tools')]//a[contains(@onclick,'edit.cmd')]");
 		browser.findElement(editBy).click();
 		OOGraphene.waitBusy(browser);
-		QTI21EditorPage editor = new QTI21EditorPage(browser);
-		editor.assertOnEditor();
-		return editor;
+		return new QTI21EditorPage(browser).assertOnEditor();
 	}
 	
 	public QTI21SettingsPage settings() {
