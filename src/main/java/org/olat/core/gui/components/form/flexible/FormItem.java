@@ -278,6 +278,21 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	public void setMandatory(boolean isMandatory);
 	
 	/**
+	 * @return The CSS class (e.g. "o_icon o_icon_locked") of the icon shown next to this form item's
+	 *         label, or null if none is set.
+	 */
+	public String getLabelIconCss();
+
+	/**
+	 * Shows an icon next to this form item's label (e.g. a lock icon for a field disabled because it
+	 * is read-only). This is only a GUI cue, independent of {@link #setMandatory(boolean)} and of
+	 * {@link #setEnabled(boolean)}.
+	 *
+	 * @param labelIconCss The icon CSS class (e.g. "o_icon o_icon_locked"), or null to remove it.
+	 */
+	public void setLabelIconCss(String labelIconCss);
+
+	/**
 	 * @return The translated error text
 	 */
 	public String getErrorText();

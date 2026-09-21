@@ -381,9 +381,16 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			String hover = translator.translate("form.mandatory.hover");
 			sb.append("<i class='o_icon o_icon_mandatory' title='").append(hover).append("' aria-hidden='true'></i> ");
 		}
+		String labelIconCss = component.getFormItem().getLabelIconCss();
+		if (StringHelper.containsNonWhitespace(labelIconCss)) {
+			sb.append("<i class='").append(labelIconCss).append("' aria-hidden='true'></i> ");
+		}
 		
 		String text = component.getFormItem().getLabelText();
 		if (StringHelper.containsNonWhitespace(text)) {
+			if ("Rubric assessment".equals(text)) {
+				System.err.println("labelIconCss: " + labelIconCss);
+			}
 			sb.append(text);
 		}
 		

@@ -87,6 +87,7 @@ public abstract class FormItemImpl implements InlineElement {
 	private Component inlineEditingComponent;
 	private String i18nKey4EmptyText="inline.empty.click.for.edit";
 	private String elementCssClass;
+	private String labelIconCss;
 
 	/**
 	 * 
@@ -273,6 +274,17 @@ public abstract class FormItemImpl implements InlineElement {
 	@Override
 	public void setMandatory(boolean isMandatory) {
 		componentIsMandatory = isMandatory;
+	}
+	
+	@Override
+	public String getLabelIconCss() {
+		return labelIconCss;
+	}
+
+	@Override
+	public void setLabelIconCss(String labelIconCss) {
+		System.err.println("labelKey: " + labelKey);
+		this.labelIconCss = labelIconCss;
 	}
 
 	@Override
