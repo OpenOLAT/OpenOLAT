@@ -24,6 +24,7 @@ import java.io.InputStream;
 import jakarta.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -33,7 +34,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
-import org.olat.modules.teams.TeamsRecording;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -78,10 +78,10 @@ public class TeamsRecordingStorage {
 		return null;
 	}
 	
-	protected void deleteRecording(TeamsRecording recording) {
-		if(recording.getRecordingMetadata() == null) return;
+	protected void deleteRecording(VFSMetadata metadata) {
+		if(metadata == null) return;
 		
-		VFSItem item = vfsRepositoryService.getItemFor(recording.getRecordingMetadata());
+		VFSItem item = vfsRepositoryService.getItemFor(metadata);
 		if(item != null) {
 			VFSContainer container = item.getParentContainer();
 			item.deleteSilently();
@@ -89,7 +89,6 @@ public class TeamsRecordingStorage {
 				container.deleteSilently();
 			}
 		}
-		recording.setRecordingMetadata(null);
 	}
 
 	protected VFSLeaf storeRecording(TeamsMeeting meeting, String filename, Identity savedBy, InputStream stream) {

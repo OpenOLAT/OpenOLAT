@@ -195,8 +195,9 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 			teamsAttendeeDao.deleteMeetingsAttendees(reloadedMeeting);
 			List<TeamsRecording> recordings = teamsRecordingDao.getRecordings(reloadedMeeting);
 			for(TeamsRecording recording:recordings) {
-				teamsRecordingStorage.deleteRecording(recording);
+				VFSMetadata recordingMetadata = recording.getRecordingMetadata();
 				teamsRecordingDao.deleteRecording(recording);
+				teamsRecordingStorage.deleteRecording(recordingMetadata);
 			}
 			teamsMeetingDao.deleteMeeting(reloadedMeeting);
 		}
@@ -356,9 +357,11 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 		}
 		
 		recording.setStatus(TeamsRecordingStatusEnum.DELETED);
+		VFSMetadata recordingMetadata = recording.getRecordingMetadata();
+		recording.setRecordingMetadata(null);
 		recording = teamsRecordingDao.updateRecording(recording);
 		// Remove file and metadata
-		teamsRecordingStorage.deleteRecording(recording);
+		teamsRecordingStorage.deleteRecording(recordingMetadata);
 		recording = teamsRecordingDao.updateRecording(recording);
 		dbInstance.commit();
 	}

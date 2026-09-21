@@ -265,11 +265,14 @@ public class EditTeamsMeetingController extends FormBasicController {
 		
 		uifactory.addSpacerElement("spacer-opening-2", formLayout, false);
 
+		String onValue = StringHelper.containsNonWhitespace(teamsModule.getTenantOrganisation())
+				? translate("meeting.participants.open.on", teamsModule.getTenantOrganisation())
+				: translate("meeting.participants.open.on.no.organisation");
 		SelectionValues openPK = new SelectionValues();
 		openPK.add(SelectionValues.entry(OFF_KEY, translate("meeting.participants.open.off.title"),
-				translate("meeting.participants.open.off", new String[] {teamsModule.getTenantOrganisation() }), null, null, true));
+				translate("meeting.participants.open.off"), null, null, true));
 		openPK.add(SelectionValues.entry(ON_KEY, translate("meeting.participants.open.on.title"),
-				translate("meeting.participants.open.on", new String[] {teamsModule.getTenantOrganisation() }), null, null, true));
+				onValue, null, null, true));
 		participantsOpenEl = uifactory.addCardSingleSelectHorizontal("meeting.participants.open", "meeting.participants.open", formLayout, openPK);
 		participantsOpenEl.setEnabled(editable);
 		participantsOpenEl.setHelpTextKey("meeting.participants.open.hint", null);

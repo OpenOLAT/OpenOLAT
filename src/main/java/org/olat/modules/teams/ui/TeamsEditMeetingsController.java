@@ -295,8 +295,11 @@ public class TeamsEditMeetingsController extends FormBasicController {
 			editMeetingCtlr = new EditTeamsMeetingController(ureq, getWindowControl(), meeting);
 			listenTo(editMeetingCtlr);
 			
+			String title = TeamsUIHelper.isEditable(meeting)
+					? translate("edit.meeting")
+					: translate("view.meeting");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), editMeetingCtlr.getInitialComponent(),
-					true, translate("edit.meeting"));
+					true, title);
 			cmc.activate();
 			listenTo(cmc);
 		}

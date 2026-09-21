@@ -73,7 +73,7 @@ public class LightboxController extends BasicController {
 
 	private void init(Component content) {
 		final Panel guiMsgPlace = new Panel("guimessage_place");
-		mainVC = new VelocityContainer("lightbox", VELOCITY_ROOT + "/lightbox.html", null, this) {
+		mainVC = new VelocityContainer("lightbox", VELOCITY_ROOT + "/lightbox.html", getTranslator(), this) {
 			@Override
 			public void validate(UserRequest ureq, ValidationResult vr) {
 				super.validate(ureq, vr);

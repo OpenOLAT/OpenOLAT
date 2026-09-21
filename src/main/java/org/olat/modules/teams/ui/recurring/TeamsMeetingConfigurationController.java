@@ -58,7 +58,6 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 
 	private static final String ON_KEY = "on";
 	private static final String OFF_KEY = "off";
-	private static final String[] onKeys = new String[] { ON_KEY };
 	
 	private TextElement nameEl;
 	private TextElement descriptionEl;
@@ -70,7 +69,7 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 	private DateChooser endRecurringDateEl;
 	private DateChooser startRecurringDateEl;
 	private SingleSelection presentersEl;
-	private MultipleSelectionElement participantsOpenEl;
+	private SingleSelection participantsOpenEl;
 	private FormToggle recordingEl;
 	private SpacerElement recordingSpacer;
 	private SingleSelection recordingStartEl;
@@ -127,14 +126,11 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		String leadtime = Long.toString(meetingsContext.getLeadTime());
 		leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, leadtime, formLayout);
 		
-		Date endDate = null;
-		if (endDate == null && startDate != null) {
-			// set meeting time default to 1 hour
-			Calendar calendar = Calendar.getInstance();
-		    calendar.setTime(startDate);
-		    calendar.add(Calendar.HOUR_OF_DAY, 1);
-		    endDate = calendar.getTime();
-		}
+		// set meeting time default to 1 hour
+		Calendar calendar = Calendar.getInstance();
+	    calendar.setTime(startDate);
+	    calendar.add(Calendar.HOUR_OF_DAY, 1);
+	    Date endDate = calendar.getTime();
 		endTimeEl = uifactory.addDateChooser("meeting.end", "meeting.end", endDate, formLayout);
 		endTimeEl.setMandatory(true);
 		endTimeEl.setDefaultValue(startTimeEl);
@@ -171,11 +167,19 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		
 		uifactory.addSpacerElement("spacer-opening-2", formLayout, false);
 		
-		String[] onOpenValues = new String[] { translate("meeting.participants.open.on",
-				new String[] {teamsModule.getTenantOrganisation() }) };
-		participantsOpenEl = uifactory.addCheckboxesHorizontal("meeting.participants.open", formLayout, onKeys, onOpenValues);
+		String onValue = StringHelper.containsNonWhitespace(teamsModule.getTenantOrganisation())
+				? translate("meeting.participants.open.on", teamsModule.getTenantOrganisation())
+				: translate("meeting.participants.open.on.no.organisation");
+		SelectionValues openPK = new SelectionValues();
+		openPK.add(SelectionValues.entry(OFF_KEY, translate("meeting.participants.open.off.title"),
+				translate("meeting.participants.open.off"), null, null, true));
+		openPK.add(SelectionValues.entry(ON_KEY, translate("meeting.participants.open.on.title"),
+				onValue, null, null, true));
+		participantsOpenEl = uifactory.addCardSingleSelectHorizontal("meeting.participants.open", "meeting.participants.open", formLayout, openPK);
 		participantsOpenEl.setHelpTextKey("meeting.participants.open.hint", null);
+		participantsOpenEl.addActionListener(FormEvent.ONCHANGE);
 		participantsOpenEl.setVisible(StringHelper.containsNonWhitespace(teamsModule.getProducerId()));
+		participantsOpenEl.select(OFF_KEY, true);
 		
 		SelectionValues presentersKeyValues = new SelectionValues();
 		presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.RoleIsPresenter.name(), translate("meeting.presenters.role")));
@@ -313,9 +317,10 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		
 		// If recordings are enabled, the organizer must open the meeting
 		participantsOpenEl.setEnabled(!enabled);
-		if(enabled && participantsOpenEl.isAtLeastSelected(1)) {
-			participantsOpenEl.uncheckAll();
+		if(enabled && participantsOpenEl.isOneSelected() && ON_KEY.equals(participantsOpenEl.getSelectedKey())) {
+			participantsOpenEl.select(OFF_KEY, true);
 		}
+		flc.setDirty(true);
 	}
 	
 	private void initPublishRecordingsElement() {
@@ -352,7 +357,8 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		meetingsContext.setEndRecurringDate(endRecurringDateEl.getDate());
 		
 		meetingsContext.setAllowedPresenters(presentersEl.getSelectedKey());
-		meetingsContext.setParticipantsCanOpen(participantsOpenEl.isAtLeastSelected(1));
+		meetingsContext.setParticipantsCanOpen(participantsOpenEl.isOneSelected()
+				&& ON_KEY.equals(participantsOpenEl.getSelectedKey()));
 		
 		if(recordingEl.isOn()) {
 			meetingsContext.setRecord(true);

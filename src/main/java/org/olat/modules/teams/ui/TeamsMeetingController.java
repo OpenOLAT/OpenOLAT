@@ -241,9 +241,14 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeamsRecordingsCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeamsRecordingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeamsRecordingsCols.end));
+		if(administrator && teamsModule.getRecordingsDeletionDays() != null && teamsModule.getRecordingsDeletionDays().intValue() > 0) {
+			DefaultFlexiColumnModel permanentCol = new DefaultFlexiColumnModel(TeamsRecordingsCols.permanent,
+					new TeasmPermanentRecordingCellRenderer(getTranslator()));
+			permanentCol.setIconHeader("o_icon o_icon-fw o_icon_locked");
+			columnsModel.addFlexiColumnModel(permanentCol);
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.recording.open", TeamsRecordingsCols.open.ordinal(), CMD_OPEN_RECORDINGS,
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.recording.open"), CMD_OPEN_RECORDINGS, true, true), null)));
-		
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.recording.open"), CMD_OPEN_RECORDINGS, false, false), null)));
 		if(administrator) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeamsRecordingsCols.publish));
 			withPublish = true;

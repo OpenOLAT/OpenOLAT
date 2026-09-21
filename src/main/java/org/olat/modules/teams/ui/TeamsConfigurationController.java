@@ -193,8 +193,15 @@ public class TeamsConfigurationController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(moduleEnabled == source || recordingsEnabledEl == source) {
+		if(moduleEnabled == source) {
 			updateUI();
+		} else if(recordingsEnabledEl == source) {
+			updateUI();
+			if(recordingsEnabledEl.isOn()) {
+				for (TeamsRecordingsPublishedRoles publishedRole : teamsModule.getRecordingsDefaultPublicationSettings()) {
+					publishRecordingsEl.select(publishedRole.name(), true);
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
