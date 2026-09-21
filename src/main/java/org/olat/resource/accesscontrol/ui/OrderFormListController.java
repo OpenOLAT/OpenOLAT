@@ -243,7 +243,8 @@ public class OrderFormListController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink link && link.getUserObject() instanceof OrderFormRow row) {
+		if (source instanceof FormLink link && link.getUserObject() instanceof OrderFormRow row
+				&& flc.getFormComponent(link.getName()) == link) {
 			if (CMD_VIEW.equals(link.getCmd())) {
 				doOpenForm(ureq, row, true);
 			} else if (CMD_TOOLS.equals(link.getCmd())) {
