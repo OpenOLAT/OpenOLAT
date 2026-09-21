@@ -5,6 +5,10 @@
   <DisplayName>Glossar</DisplayName>
   <Description></Description>
   <InitialAuthor>jeremy</InitialAuthor>
+  <showLectures>true</showLectures>
+  <showCertificateBenefit>true</showCertificateBenefit>
+  <showCreditPointsBenefit>true</showCreditPointsBenefit>
+  <taughtByValue>John Doe</taughtByValue>
   <outer-class>
     <propertiesLoaded>false</propertiesLoaded>
     <re>

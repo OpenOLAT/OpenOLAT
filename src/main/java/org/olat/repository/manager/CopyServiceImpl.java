@@ -183,6 +183,10 @@ public class CopyServiceImpl implements CopyService {
 		target.setEducationalType(sourceEntry.getEducationalType());
 		target.setExternalRef(context.getExternalRef());
 		target.setAuthors(context.getAuthors());
+		target.setShowLectures(sourceEntry.isShowLectures());
+		target.setShowCertificateBenefit(sourceEntry.isShowCertificateBenefit());
+		target.setShowCreditPointsBenefit(sourceEntry.isShowCreditPointsBenefit());
+		target.setTaughtByValue(sourceEntry.getTaughtByValue());
 		
 		// Copy taxonomy levels
 		if (context.getTaxonomyLevels() != null) {

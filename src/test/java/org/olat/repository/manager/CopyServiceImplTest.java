@@ -442,7 +442,24 @@ public class CopyServiceImplTest extends OlatTestCase {
 		Assert.assertEquals(dateDifference, targetCycle.getValidFrom().getTime() - sourceCycle.getValidFrom().getTime());
 		Assert.assertEquals(dateDifference, targetCycle.getValidTo().getTime() - sourceCycle.getValidTo().getTime());
 	}
-	
+
+	@Test
+	public void copyMetadataFlags() {
+		source.setShowLectures(true);
+		source.setShowCertificateBenefit(true);
+		source.setShowCreditPointsBenefit(true);
+		source.setTaughtByValue("John Doe");
+		source = repositoryService.update(source);
+
+		CopyCourseContext context = createContext();
+		target = copyService.copyLearningPathCourse(context);
+
+		Assert.assertTrue(target.isShowLectures());
+		Assert.assertTrue(target.isShowCertificateBenefit());
+		Assert.assertTrue(target.isShowCreditPointsBenefit());
+		Assert.assertEquals("John Doe", target.getTaughtByValue());
+	}
+
 	@Test
 	public void copyLectureBlocks() {
 		createLectureBlocks();

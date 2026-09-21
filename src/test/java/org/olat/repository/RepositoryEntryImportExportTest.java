@@ -66,5 +66,26 @@ public class RepositoryEntryImportExportTest {
 		Assert.assertEquals("Glossar", impExp.getDisplayname());
 		Assert.assertEquals(Long.valueOf(86114306l), impExp.getKey());
 		Assert.assertEquals("sropenpg_1_91372670216461", impExp.getSoftkey());
+		Assert.assertTrue(impExp.isShowLectures());
+		Assert.assertTrue(impExp.isShowCertificateBenefit());
+		Assert.assertTrue(impExp.isShowCreditPointsBenefit());
+		Assert.assertEquals("John Doe", impExp.getTaughtByValue());
+	}
+
+	/**
+	 * Read a XML without the new metadata properties, they must default to false / null.
+	 *
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void readRepoXmlMetadataFlagsDefault() throws URISyntaxException {
+		URL repoUrl = RepositoryEntryImportExportTest.class.getResource("repo_glossary_reduced.xml");
+		File repoFile = new File(repoUrl.toURI());
+		RepositoryEntryImport impExp = RepositoryEntryImportExport.readFromXml(repoFile);
+		Assert.assertNotNull(impExp);
+		Assert.assertFalse(impExp.isShowLectures());
+		Assert.assertFalse(impExp.isShowCertificateBenefit());
+		Assert.assertFalse(impExp.isShowCreditPointsBenefit());
+		Assert.assertNull(impExp.getTaughtByValue());
 	}
 }

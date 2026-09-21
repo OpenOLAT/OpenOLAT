@@ -533,6 +533,11 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		re = repositoryManager.setDescriptionAndName(re, re.getDisplayname(), "Ext-REF", "Auth",
 				"RE description", "RE teaser", "RE objectives", "RE requirements", "RE credits", "DE", "Zurich", "3 days",
 				null, null, null, educationalType);
+		re.setShowLectures(true);
+		re.setShowCertificateBenefit(true);
+		re.setShowCreditPointsBenefit(true);
+		re.setTaughtByValue("John Doe");
+		re = repositoryService.update(re);
 		dbInstance.commitAndCloseSession();
 
 		//remove the owner
@@ -560,7 +565,11 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("DE", metadataVo.getMainLanguage());
 		Assert.assertEquals("Zurich", metadataVo.getLocation());
 		Assert.assertEquals("3 days", metadataVo.getExpenditureOfWork());
-		
+		Assert.assertTrue(metadataVo.isShowLectures());
+		Assert.assertTrue(metadataVo.isShowCertificateBenefit());
+		Assert.assertTrue(metadataVo.isShowCreditPointsBenefit());
+		Assert.assertEquals("John Doe", metadataVo.getTaughtByValue());
+
 		RepositoryEntryEducationalTypeVO educationTypeVo = metadataVo.getEducationalType();
 		Assert.assertNotNull(educationTypeVo);
 		Assert.assertEquals(educationalType.getKey(), educationTypeVo.getKey());
@@ -775,7 +784,11 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		metadataVo.setMainLanguage("French");
 		metadataVo.setObjectives("Our objectives");
 		metadataVo.setRequirements("Their requirements");
-		
+		metadataVo.setShowLectures(true);
+		metadataVo.setShowCertificateBenefit(true);
+		metadataVo.setShowCreditPointsBenefit(true);
+		metadataVo.setTaughtByValue("John Doe");
+
 		List<RepositoryEntryEducationalType> educationalTypes = repositoryManager.getAllEducationalTypes();
 		RepositoryEntryEducationalType educationalType = educationalTypes.get(0);
 		metadataVo.setEducationalType(RepositoryEntryEducationalTypeVO.valueOf(educationalType));
@@ -801,7 +814,11 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("French", updatedMetadataVo.getMainLanguage());
 		Assert.assertEquals("Biel/Bienne", updatedMetadataVo.getLocation());
 		Assert.assertEquals("4 weeks", updatedMetadataVo.getExpenditureOfWork());
-		
+		Assert.assertTrue(updatedMetadataVo.isShowLectures());
+		Assert.assertTrue(updatedMetadataVo.isShowCertificateBenefit());
+		Assert.assertTrue(updatedMetadataVo.isShowCreditPointsBenefit());
+		Assert.assertEquals("John Doe", updatedMetadataVo.getTaughtByValue());
+
 		RepositoryEntryEducationalTypeVO educationTypeVo = updatedMetadataVo.getEducationalType();
 		Assert.assertNotNull(educationTypeVo);
 		Assert.assertEquals(educationalType.getKey(), educationTypeVo.getKey());
@@ -820,6 +837,10 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("Biel/Bienne", updatedRe.getLocation());
 		Assert.assertEquals("4 weeks", updatedRe.getExpenditureOfWork());
 		Assert.assertEquals(educationalType, updatedRe.getEducationalType());
+		Assert.assertTrue(updatedRe.isShowLectures());
+		Assert.assertTrue(updatedRe.isShowCertificateBenefit());
+		Assert.assertTrue(updatedRe.isShowCreditPointsBenefit());
+		Assert.assertEquals("John Doe", updatedRe.getTaughtByValue());
 	}
 	
 	

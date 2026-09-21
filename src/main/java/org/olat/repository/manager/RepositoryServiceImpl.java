@@ -352,7 +352,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		copyEntry.setObjectives(sourceEntry.getObjectives());
 		copyEntry.setRequirements(sourceEntry.getRequirements());
 		copyEntry.setEducationalType(sourceEntry.getEducationalType());
-		
+		copyEntry.setShowLectures(sourceEntry.isShowLectures());
+		copyEntry.setShowCertificateBenefit(sourceEntry.isShowCertificateBenefit());
+		copyEntry.setShowCreditPointsBenefit(sourceEntry.isShowCreditPointsBenefit());
+		copyEntry.setTaughtByValue(sourceEntry.getTaughtByValue());
+
 		List<TaxonomyLevel> taxonomyLevels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(sourceEntry);
 		for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
 			RepositoryEntryToTaxonomyLevel relation = repositoryEntryToTaxonomyLevelDao.createRelation(copyEntry, taxonomyLevel);

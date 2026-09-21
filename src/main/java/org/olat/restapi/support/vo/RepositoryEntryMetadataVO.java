@@ -51,6 +51,10 @@ public class RepositoryEntryMetadataVO {
 	private String requirements;
 	private String credits;
 	private String expenditureOfWork;
+	private boolean showLectures;
+	private boolean showCertificateBenefit;
+	private boolean showCreditPointsBenefit;
+	private String taughtByValue;
 	private String authors;
 	private String location;
 	private String technicalType;
@@ -84,6 +88,10 @@ public class RepositoryEntryMetadataVO {
 		vo.setRequirements(entry.getRequirements());
 		vo.setExpenditureOfWork(entry.getExpenditureOfWork());
 		vo.setMainLanguage(entry.getMainLanguage());
+		vo.setShowLectures(entry.isShowLectures());
+		vo.setShowCertificateBenefit(entry.isShowCertificateBenefit());
+		vo.setShowCreditPointsBenefit(entry.isShowCreditPointsBenefit());
+		vo.setTaughtByValue(entry.getTaughtByValue());
 		
 		RepositoryEntryEducationalType educationalType = entry.getEducationalType();
 		if(educationalType != null) {
@@ -198,6 +206,38 @@ public class RepositoryEntryMetadataVO {
 
 	public void setExpenditureOfWork(String expenditureOfWork) {
 		this.expenditureOfWork = expenditureOfWork;
+	}
+
+	public boolean isShowLectures() {
+		return showLectures;
+	}
+
+	public void setShowLectures(boolean showLectures) {
+		this.showLectures = showLectures;
+	}
+
+	public boolean isShowCertificateBenefit() {
+		return showCertificateBenefit;
+	}
+
+	public void setShowCertificateBenefit(boolean showCertificateBenefit) {
+		this.showCertificateBenefit = showCertificateBenefit;
+	}
+
+	public boolean isShowCreditPointsBenefit() {
+		return showCreditPointsBenefit;
+	}
+
+	public void setShowCreditPointsBenefit(boolean showCreditPointsBenefit) {
+		this.showCreditPointsBenefit = showCreditPointsBenefit;
+	}
+
+	public String getTaughtByValue() {
+		return taughtByValue;
+	}
+
+	public void setTaughtByValue(String taughtByValue) {
+		this.taughtByValue = taughtByValue;
 	}
 
 	public String getAuthors() {

@@ -1201,7 +1201,13 @@ public class RepositoryEntryWebService {
 		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(entry, metadataVo.getDisplayname(), metadataVo.getExternalRef(), metadataVo.getAuthors(),
 				metadataVo.getDescription(), metadataVo.getTeaser(), metadataVo.getObjectives(), metadataVo.getRequirements(), metadataVo.getCredits(), metadataVo.getMainLanguage(),
 				metadataVo.getLocation(), metadataVo.getExpenditureOfWork(), lifecycle, null, null, educationalType);
-		
+
+		reloaded.setShowLectures(metadataVo.isShowLectures());
+		reloaded.setShowCertificateBenefit(metadataVo.isShowCertificateBenefit());
+		reloaded.setShowCreditPointsBenefit(metadataVo.isShowCreditPointsBenefit());
+		reloaded.setTaughtByValue(metadataVo.getTaughtByValue());
+		reloaded = repositoryService.update(reloaded);
+
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(reloaded, getUserRequest(request).getIdentity(), Change.modifiedDescription, "rest");
 		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 		

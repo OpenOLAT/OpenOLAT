@@ -355,12 +355,18 @@ public class RepositoryEntryImportExport {
 			newEntry = repositoryManager.setRuntimeType(newEntry, RepositoryEntryRuntimeType.secureValueOf(repositoryProperties.getRuntimeType(), RepositoryEntryRuntimeType.standalone));
 		}
 		
-		return repositoryManager.setDescriptionAndName(newEntry, newEntry.getDisplayname(), null,
+		newEntry = repositoryManager.setDescriptionAndName(newEntry, newEntry.getDisplayname(), null,
 				repositoryProperties.getAuthors(), repositoryProperties.getDescription(), repositoryProperties.getTeaser(),
 				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),
 				repositoryProperties.getCredits(), repositoryProperties.getMainLanguage(),
 				repositoryProperties.getLocation(), repositoryProperties.getExpenditureOfWork(), null, null, null,
 				educationalType);
+
+		newEntry.setShowLectures(repositoryProperties.isShowLectures());
+		newEntry.setShowCertificateBenefit(repositoryProperties.isShowCertificateBenefit());
+		newEntry.setShowCreditPointsBenefit(repositoryProperties.isShowCreditPointsBenefit());
+		newEntry.setTaughtByValue(repositoryProperties.getTaughtByValue());
+		return CoreSpringFactory.getImpl(RepositoryService.class).update(newEntry);
 	}
 
 	private void importLicense(RepositoryEntry newEntry) {
@@ -565,6 +571,10 @@ public class RepositoryEntryImportExport {
 		private String expenditureOfWork;
 		private String location;
 		private String educationalTypeIdentifier;
+		private boolean showLectures;
+		private boolean showCertificateBenefit;
+		private boolean showCreditPointsBenefit;
+		private String taughtByValue;
 		
 		private String movieName;
 		private String imageName;
@@ -599,6 +609,10 @@ public class RepositoryEntryImportExport {
 			requirements = re.getRequirements();
 			credits = re.getCredits();
 			expenditureOfWork = re.getExpenditureOfWork();
+			showLectures = re.isShowLectures();
+			showCertificateBenefit = re.isShowCertificateBenefit();
+			showCreditPointsBenefit = re.isShowCreditPointsBenefit();
+			taughtByValue = re.getTaughtByValue();
 		}
 		
 		public Long getKey() {
@@ -767,6 +781,38 @@ public class RepositoryEntryImportExport {
 
 		public void setExpenditureOfWork(String expenditureOfWork) {
 			this.expenditureOfWork = expenditureOfWork;
+		}
+
+		public boolean isShowLectures() {
+			return showLectures;
+		}
+
+		public void setShowLectures(boolean showLectures) {
+			this.showLectures = showLectures;
+		}
+
+		public boolean isShowCertificateBenefit() {
+			return showCertificateBenefit;
+		}
+
+		public void setShowCertificateBenefit(boolean showCertificateBenefit) {
+			this.showCertificateBenefit = showCertificateBenefit;
+		}
+
+		public boolean isShowCreditPointsBenefit() {
+			return showCreditPointsBenefit;
+		}
+
+		public void setShowCreditPointsBenefit(boolean showCreditPointsBenefit) {
+			this.showCreditPointsBenefit = showCreditPointsBenefit;
+		}
+
+		public String getTaughtByValue() {
+			return taughtByValue;
+		}
+
+		public void setTaughtByValue(String taughtByValue) {
+			this.taughtByValue = taughtByValue;
 		}
 
 		public String getLicenseTypeKey() {
