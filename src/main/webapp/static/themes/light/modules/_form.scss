@@ -121,7 +121,13 @@ form .o_form, form.o_form {
 			display: inline-block;
 		}
 	}
-	
+
+	.o_inline_cont.o_inline_cont_gap.form-inline {
+		> * {
+			margin-right: 1em;
+		}
+	}
+
 	.has-feedback .o_date.form-inline .form-control.o_date_ms {
 		padding-right: 0;
 	}

@@ -217,7 +217,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			}
 			
 			FormLayoutContainer typeCont = FormLayoutContainer.createInlineFormLayout("typeinput_" + CodeHelper.getRAMUniqueID(), getTranslator());
-			typeCont.setElementCssClass("o_inline_cont");
+			typeCont.setElementCssClass("o_inline_cont o_inline_cont_gap");
 			typeCont.setLabel("cif.type", null);
 			typeCont.setRootForm(mainForm);
 			formLayout.add(typeCont);
