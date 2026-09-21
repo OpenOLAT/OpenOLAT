@@ -20,7 +20,6 @@
 package org.olat.course.assessment;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -152,7 +151,6 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		defaultTaughtByEl.setHelpText(translate("cif.taught.by.help"));
 		defaultTaughtByEl.addActionListener(FormEvent.ONCHANGE);
 		courseModule.getDefaultTaughtBys().forEach(taughtBy -> defaultTaughtByEl.select(taughtBy.name(), true));
-		defaultTaughtByEl.setVisible(!courseModule.getDefaultTaughtBys().isEmpty());
 
 		courseRelatedConfigCont = uifactory.addFormSection("courseRelatedConfig", translate("admin.assessable.other.settings"), formLayout, FormSection.Level.SUB_TITLE);
 		inviteeLink = uifactory.addFormLink("admin.link.invitation", "admin.link.invitation.path", "admin.link.invitation", courseRelatedConfigCont, Link.LINK);
@@ -199,12 +197,6 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 			Collection<String> selectedInfo = defaultShowInfoEl.getSelectedKeys();
 			courseModule.setDefaultShowLectures(selectedInfo.contains(EVENTS_KEY));
 			courseModule.setDefaultShowCertificate(selectedInfo.contains(CERTIFICATE_KEY));
-			boolean meetTeachers = selectedInfo.contains(MEET_TEACHERS_KEY);
-			defaultTaughtByEl.setVisible(meetTeachers);
-			if (!meetTeachers) {
-				TaughtBy.ALL.forEach(taughtBy -> defaultTaughtByEl.select(taughtBy.name(), false));
-				courseModule.setDefaultTaughtBys(Set.of());
-			}
 		} else if (source == defaultTaughtByEl) {
 			courseModule.setDefaultTaughtBys(defaultTaughtByEl.getSelectedKeys().stream()
 					.map(TaughtBy::valueOf).collect(Collectors.toSet()));

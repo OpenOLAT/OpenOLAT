@@ -21,7 +21,6 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
@@ -174,12 +173,6 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 			curriculumModule.setDefaultShowOutline(selectedInfo.contains(OUTLINE_KEY));
 			curriculumModule.setDefaultShowLectures(selectedInfo.contains(EVENTS_KEY));
 			curriculumModule.setDefaultShowCertificate(selectedInfo.contains(CERTIFICATE_KEY));
-			boolean meetTeachers = selectedInfo.contains(MEET_TEACHERS_KEY);
-			defaultTaughtByEl.setVisible(meetTeachers);
-			if(!meetTeachers) {
-				TaughtBy.ALL.forEach(taughtBy -> defaultTaughtByEl.select(taughtBy.name(), false));
-				curriculumModule.setDefaultTaughtBys(Set.of());
-			}
 		} else if (defaultTaughtByEl == source) {
 			curriculumModule.setDefaultTaughtBys(defaultTaughtByEl.getSelectedKeys().stream()
 					.map(TaughtBy::valueOf).collect(Collectors.toSet()));
@@ -194,6 +187,6 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 		defaultSettingsCont.setVisible(enabled);
 		linkedTaxonomiesEl.setVisible(enabled);
 		defaultShowInfoEl.setVisible(enabled);
-		defaultTaughtByEl.setVisible(enabled && !curriculumModule.getDefaultTaughtBys().isEmpty());
+		defaultTaughtByEl.setVisible(enabled);
 	}
 }

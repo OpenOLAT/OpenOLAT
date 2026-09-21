@@ -63,6 +63,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.TaughtBy;
@@ -130,6 +131,8 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	private CreditPointModule creditPointModule;
 	@Autowired
 	private CreditPointService creditPointService;
+	@Autowired
+	private CurriculumModule curriculumModule;
 
 	public EditCurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
 			CurriculumSecurityCallback secCallback) {
@@ -365,7 +368,14 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(showInfoEl == source) {
 			Collection<String> selectedInfo = showInfoEl.getSelectedKeys();
-			taughtByEl.setVisible(selectedInfo.contains(MEET_TEACHERS_KEY));
+			boolean meetTeachers = selectedInfo.contains(MEET_TEACHERS_KEY);
+			if(meetTeachers) {
+				TaughtBy.ALL.forEach(taughtBy -> taughtByEl.select(taughtBy.name(), false));
+				curriculumModule.getDefaultTaughtBys().forEach(taughtBy -> taughtByEl.select(taughtBy.name(), true));
+			} else {
+				TaughtBy.ALL.forEach(taughtBy -> taughtByEl.select(taughtBy.name(), false));
+			}
+			taughtByEl.setVisible(meetTeachers);
 			creditPointCont.setVisible(selectedInfo.contains(CREDIT_POINTS_KEY));
 		} else if (source == withMovieEl) {
 			videoEl.setVisible(withMovieEl.isOn());
