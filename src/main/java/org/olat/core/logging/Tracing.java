@@ -68,8 +68,11 @@ public class Tracing {
 
 	private static final String N_A = "n/a";
 	private static final String AUDIT = "AUDIT";
+	private static final String REST = "REST";
 
 	public static final Marker M_AUDIT = MarkerManager.getMarker(AUDIT);
+	/** Marks the access lines of the REST API */
+	public static final Marker M_REST = MarkerManager.getMarker(REST);
 
 	private Tracing() {
 		//
@@ -124,6 +127,22 @@ public class Tracing {
 	
 	public static void setUuid(String uuid) {
 		ThreadContext.put("ref", uuid == null ? N_A : uuid);
+	}
+	
+	/**
+	 * Adds the method and the URI of the request to the thread local data store,
+	 * used by the access log of the REST API.
+	 * 
+	 * @param method The HTTP method of the request
+	 * @param uri The URI of the request
+	 */
+	public static void setRequest(String method, String uri) {
+		ThreadContext.put("method", method == null ? N_A : method);
+		ThreadContext.put("uri", uri == null ? N_A : uri);
+	}
+	
+	public static void setAuthProvider(String authProvider) {
+		ThreadContext.put("authProvider", authProvider == null ? N_A : authProvider);
 	}
 	
 	public static void clearHttpRequest() {

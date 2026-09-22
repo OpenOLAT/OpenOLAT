@@ -21,7 +21,9 @@ package org.olat.restapi.security;
 
 import java.io.IOException;
 
+import jakarta.annotation.Priority;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
@@ -41,6 +43,7 @@ import org.olat.core.util.i18n.I18nManager;
  *
  */
 @Provider
+@Priority(Priorities.USER)
 @Consumes(MediaType.WILDCARD) 
 @Produces(MediaType.WILDCARD)
 public class OpenOLATContainerResponseFilter implements ContainerResponseFilter {

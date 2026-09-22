@@ -5997,6 +5997,30 @@ create table o_rm_module_log (
     primary key (id)
 );
 
+-- REST API audit log
+create table o_api_audit_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   a_channel varchar(16) not null,
+   a_login_attempt varchar(128),
+   a_auth_provider varchar(32),
+   a_ip varchar(64),
+   a_user_agent varchar(255),
+   a_method varchar(8) not null,
+   a_path varchar(1024) not null,
+   a_query varchar(1024),
+   a_resource_class varchar(255),
+   a_resource_method varchar(128),
+   a_path_params mediumtext,
+   a_status int not null,
+   a_duration_ms bigint,
+   a_request_body mediumtext,
+   a_ref varchar(64),
+   a_node_id int,
+   fk_identity bigint,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -6479,6 +6503,7 @@ alter table o_rm_building_to_org ENGINE = InnoDB;
 alter table o_rm_room ENGINE = InnoDB;
 alter table o_rm_room_booking ENGINE = InnoDB;
 alter table o_rm_module_log ENGINE = InnoDB;
+alter table o_api_audit_log ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -7819,6 +7844,12 @@ alter table o_rm_module_log add constraint rm_log_to_room_idx foreign key (fk_ro
 alter table o_rm_module_log add constraint rm_log_to_book_idx foreign key (fk_booking) references o_rm_room_booking(id);
 alter table o_rm_module_log add constraint rm_log_to_lb_idx foreign key (fk_lecture_block) references o_lecture_block(id);
 create index idx_rm_log_room_date on o_rm_module_log(fk_room, creationdate);
+
+-- REST API audit log
+alter table o_api_audit_log add constraint api_audit_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_api_audit_creation_idx on o_api_audit_log (creationdate);
+create index idx_api_audit_status_idx on o_api_audit_log (a_status);
+create index idx_api_audit_resclass_idx on o_api_audit_log (a_resource_class);
 
 -- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );

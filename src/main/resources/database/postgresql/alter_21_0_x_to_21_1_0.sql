@@ -78,3 +78,33 @@ alter table o_repositoryentry add column show_lectures bool default false not nu
 alter table o_repositoryentry add column show_certificate bool default true not null;
 alter table o_repositoryentry add column show_creditpoints bool default true not null;
 alter table o_repositoryentry add column taught_by varchar(255);
+
+-- REST API audit log
+create table o_api_audit_log (
+   id bigserial,
+   creationdate timestamp not null,
+   a_channel varchar(16) not null,
+   a_login_attempt varchar(128),
+   a_auth_provider varchar(32),
+   a_ip varchar(64),
+   a_user_agent varchar(255),
+   a_method varchar(8) not null,
+   a_path varchar(1024) not null,
+   a_query varchar(1024),
+   a_resource_class varchar(255),
+   a_resource_method varchar(128),
+   a_path_params text,
+   a_status int4 not null,
+   a_duration_ms int8,
+   a_request_body text,
+   a_ref varchar(64),
+   a_node_id int4,
+   fk_identity int8,
+   primary key (id)
+);
+
+alter table o_api_audit_log add constraint api_audit_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_api_audit_ident_idx on o_api_audit_log (fk_identity);
+create index idx_api_audit_creation_idx on o_api_audit_log (creationdate);
+create index idx_api_audit_status_idx on o_api_audit_log (a_status);
+create index idx_api_audit_resclass_idx on o_api_audit_log (a_resource_class);

@@ -67,6 +67,7 @@
 	<jaxrs:server address="/" basePackages="org.olat">
 		<jaxrs:providers>
 			<bean class="com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider"/>
+			<bean class="org.olat.restapi.audit.ApiAuditResponseFilter" />
 			<bean class="org.olat.restapi.security.OpenOLATContainerResponseFilter" />
 		</jaxrs:providers>
 		<jaxrs:features>
@@ -128,6 +129,20 @@
 		<property name="jobClass" value="org.olat.restapi.security.RestTokenJob" />
 	</bean>
 	<bean id="restTokenJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
+	<!-- Retention of the API audit log -->
+	<bean id="apiAuditRetentionTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="apiAuditRetentionJob.${cluster.singleton.services}" />
+  	<!--  every day at 1:41 -->
+		<property name="cronExpression" value="0 41 1 * * ?" />
+		<property name="startDelay" value="90000" />
+	</bean>
+	<bean id="apiAuditRetentionJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.restapi.audit.manager.ApiAuditLogRetentionJob" />
+	</bean>
+	<bean id="apiAuditRetentionJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 

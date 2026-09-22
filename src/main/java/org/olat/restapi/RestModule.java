@@ -48,6 +48,11 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String ENABLED = "enabled";
 	private static final String API_ACCESS = "restapi.api.access";
 	private static final String USER_ALLOWED_GENERATE_APIKEY = "restapi.user.generate.apikey";
+	private static final String AUDITLOG_ENABLED = "restapi.auditlog.enabled";
+	private static final String AUDITLOG_READS = "restapi.auditlog.reads";
+	private static final String AUDITLOG_BODY = "restapi.auditlog.body";
+	private static final String AUDITLOG_BODY_MAXSIZE = "restapi.auditlog.body.maxsize";
+	private static final String AUDITLOG_RETENTION_DAYS = "restapi.auditlog.retention.days";
 
 	@Value("${restapi.enable:false}")
 	private boolean enabled;
@@ -57,8 +62,16 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean userAllowedGenerateApiKey;
 	@Value("${restapi.api.access:all}")
 	private String apiAccess;
-	
-	
+	@Value("${restapi.auditlog.enabled:true}")
+	private String auditLogEnabled;
+	@Value("${restapi.auditlog.reads:false}")
+	private String auditLogReads;
+	@Value("${restapi.auditlog.body:true}")
+	private String auditLogBody;
+	@Value("${restapi.auditlog.body.maxsize:16384}")
+	private int auditLogBodyMaxSize;
+	@Value("${restapi.auditlog.retention.days:365}")
+	private int auditLogRetentionDays;
 
 	@Autowired
 	public RestModule(CoordinatorManager coordinatorManager) {
@@ -80,6 +93,12 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 		if(!ApiAccess.isValue(apiAccess)) {
 			apiAccess = ApiAccess.all.name();
 		}
+		
+		auditLogEnabled = getStringPropertyValue(AUDITLOG_ENABLED, auditLogEnabled );
+		auditLogReads = getStringPropertyValue(AUDITLOG_READS, auditLogReads);
+		auditLogBody = getStringPropertyValue(AUDITLOG_BODY, auditLogBody);
+		auditLogBodyMaxSize = getIntPropertyValue(AUDITLOG_BODY_MAXSIZE, auditLogBodyMaxSize);
+		auditLogRetentionDays = getIntPropertyValue(AUDITLOG_RETENTION_DAYS, auditLogRetentionDays);
 	}
 
 	@Override
@@ -106,6 +125,66 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 		userAllowedGenerateApiKey = enable;
 		String enabledStr = enable ? "enabled" : "disabled";
 		setStringProperty(USER_ALLOWED_GENERATE_APIKEY, enabledStr, true);
+	}
+
+	/**
+	 * @return true if the REST API writes a row per write and per denied call in o_api_audit_log
+	 */
+	public boolean isAuditLogEnabled() {
+		return "true".equals(auditLogEnabled);
+	}
+
+	public void setAuditLogEnabled(boolean enable) {
+		auditLogEnabled = enable ? "true" : "false";
+		setStringProperty(AUDITLOG_ENABLED, auditLogEnabled, true);
+	}
+
+	/**
+	 * @return true if read requests (GET, HEAD) which succeed are logged too. High volume.
+	 */
+	public boolean isAuditLogReads() {
+		return "true".equals(auditLogReads);
+	}
+
+	public void setAuditLogReads(boolean enable) {
+		auditLogReads = enable ? "true" : "false";
+		setStringProperty(AUDITLOG_READS, auditLogReads, true);
+	}
+
+	/**
+	 * @return true if the JSON request body is stored, with masked secrets
+	 */
+	public boolean isAuditLogBody() {
+		return "true".equals(auditLogBody);
+	}
+
+	public void setAuditLogBody(boolean enable) {
+		auditLogBody = enable ? "true" : "false";
+		setStringProperty(AUDITLOG_BODY, auditLogBody, true);
+	}
+
+	/**
+	 * @return the maximum number of bytes of the request body which are stored, larger bodies are truncated
+	 */
+	public int getAuditLogBodyMaxSize() {
+		return auditLogBodyMaxSize;
+	}
+
+	public void setAuditLogBodyMaxSize(int maxSize) {
+		auditLogBodyMaxSize = maxSize;
+		setIntProperty(AUDITLOG_BODY_MAXSIZE, maxSize, true);
+	}
+
+	/**
+	 * @return the number of days the rows are kept, 0 keeps all rows
+	 */
+	public int getAuditLogRetentionDays() {
+		return auditLogRetentionDays;
+	}
+
+	public void setAuditLogRetentionDays(int days) {
+		auditLogRetentionDays = days;
+		setIntProperty(AUDITLOG_RETENTION_DAYS, days, true);
 	}
 
 	public ApiAccess getApiAccess() {

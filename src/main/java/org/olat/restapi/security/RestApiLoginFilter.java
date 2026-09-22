@@ -42,6 +42,7 @@ import jakarta.servlet.http.HttpSession;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -68,6 +69,10 @@ import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.RestModule.ApiAccess;
+import org.olat.restapi.audit.ApiAuditChannel;
+import org.olat.restapi.audit.ApiAuditEntry;
+import org.olat.restapi.audit.ApiAuditLogService;
+import org.olat.restapi.audit.CachedBodyHttpServletRequest;
 
 /**
  *
@@ -110,10 +115,26 @@ public class RestApiLoginFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 	throws ServletException {
 
-		if(request instanceof HttpServletRequest httpRequest && response instanceof HttpServletResponse httpResponse) {
+		if(request instanceof HttpServletRequest originalRequest && response instanceof HttpServletResponse httpResponse) {
+			RestModule restModule = CoreSpringFactory.getImpl(RestModule.class);
+			SessionStatsManager statsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
+			ApiAuditLogService auditLogService = CoreSpringFactory.getImpl(ApiAuditLogService.class);
+
+			// keep a copy of the body of a write call for the audit log
+			HttpServletRequest httpRequest = originalRequest;
+			if(restModule != null && restModule.isAuditLogEnabled() && restModule.isAuditLogBody()
+					&& CachedBodyHttpServletRequest.shouldWrap(originalRequest.getMethod(), originalRequest.getContentType())) {
+				httpRequest = new CachedBodyHttpServletRequest(originalRequest, restModule.getAuditLogBodyMaxSize());
+				// the JAX-RS filter sees a proxy of the request, not the wrapper itself
+				httpRequest.setAttribute(ApiAuditLogService.REQ_ATTR_CACHED_REQUEST, httpRequest);
+			}
+			httpRequest.setAttribute(ApiAuditLogService.REQ_ATTR_START_NANOS, Long.valueOf(System.nanoTime()));
+			httpRequest.setAttribute(ApiAuditLogService.REQ_ATTR_AUTH_PROVIDER, ApiAuditLogService.AUTH_NONE);
+			statsManager.incrementRequest();
+			statsManager.incrementConcurrentCounter();
+
 			try {
 				String requestURI = getRequestURI(httpRequest);
-				RestModule restModule = CoreSpringFactory.getImpl(RestModule.class);
 				if(restModule == null || !restModule.isEnabled() && !isRequestURIAlwaysEnabled(requestURI)) {
 					httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
 					return;
@@ -121,6 +142,7 @@ public class RestApiLoginFilter implements Filter {
 
 				// initialize tracing with request, this allows debugging information as IP, User-Agent.
 				Tracing.setHttpRequest(httpRequest);
+				Tracing.setRequest(httpRequest.getMethod(), requestURI);
 				I18nManager.attachI18nInfoToThread(httpRequest);
 				ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(httpRequest);
 
@@ -155,7 +177,7 @@ public class RestApiLoginFilter implements Filter {
 
 						followToken(token, httpRequest, httpResponse, chain);
 					} else if (isBasicAuthenticated(httpRequest, httpResponse, requestURI)) {
-						followBasicAuthenticated(request, response, chain);
+						followBasicAuthenticated(httpRequest, httpResponse, chain);
 					} else  {
 						sendUnauthorized(httpResponse);
 					}
@@ -170,11 +192,38 @@ public class RestApiLoginFilter implements Filter {
 			} finally {
 				ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
 				I18nManager.remove18nInfoFromThread();
-				Tracing.clearHttpRequest();
 				DBFactory.getInstance().commitAndCloseSession();
+				auditAfterRequest(httpRequest, httpResponse, auditLogService);
+				Tracing.clearHttpRequest();
+				statsManager.decrementConcurrentCounter();
 			}
 		} else {
 			throw new ServletException("Only accept HTTP Request");
+		}
+	}
+	
+	/**
+	 * Writes the row of a request which did not reach a web service, or which the
+	 * JAX-RS filter could not write itself. Runs after the commit of the request,
+	 * the service opens a transaction of its own.
+	 * 
+	 * @param request The request
+	 * @param response The response with the final status
+	 * @param auditLogService The service
+	 */
+	private void auditAfterRequest(HttpServletRequest request, HttpServletResponse response, ApiAuditLogService auditLogService) {
+		try {
+			Object pending = request.getAttribute(ApiAuditLogService.REQ_ATTR_PENDING);
+			if(pending instanceof ApiAuditEntry entry) {
+				// the change was rolled back, the row of the JAX-RS filter was lost
+				auditLogService.logInNewTransaction(entry);
+			} else if(request.getAttribute(ApiAuditLogService.REQ_ATTR_DONE) == null) {
+				// denied, rejected or failed before a web service was reached
+				auditLogService.logInNewTransaction(
+						ApiAuditEntry.valueOf(request, response.getStatus(), ApiAuditChannel.rest));
+			}
+		} catch (Exception e) {
+			log.error("", e);
 		}
 	}
 	
@@ -234,6 +283,7 @@ public class RestApiLoginFilter implements Filter {
 		// Block login after 5x failed
 		final LoginModule loginModule = CoreSpringFactory.getImpl(LoginModule.class);
 		if(loginModule.isLoginBlocked(username)) {
+			request.setAttribute(ApiAuditLogService.REQ_ATTR_LOGIN_ATTEMPT, username);
 			return AuthHelper.LOGIN_DENIED;
 		}
 				
@@ -244,18 +294,21 @@ public class RestApiLoginFilter implements Filter {
 		
 		int loginStatus = -1;
 		Identity identity = null;
+		String auditAuthProvider = ApiAuditLogService.AUTH_NONE;
 		Authentication clientAuthentication = authentication.getAuthentication(username, RestModule.RESTAPI_AUTH, BaseSecurity.DEFAULT_ISSUER);
 		if(clientAuthentication == null) {
 			if(restModule.getApiAccess() == ApiAccess.all) {
 				OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
 				identity = olatAuthenticationSpi.authenticate(null, username, pwd, new AuthenticationStatus());
 				loginStatus = doHeadlessLogin(request, response, requestURI, identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+				auditAuthProvider = ApiAuditLogService.AUTH_PASSWORD;
 			} else {
 				loginStatus = AuthHelper.LOGIN_DENIED;
 			}
 		} else if(securityManager.checkCredentials(clientAuthentication, pwd)) {
 			identity = clientAuthentication.getIdentity();
 			loginStatus = doHeadlessLogin(request, response, requestURI, identity, RestModule.RESTAPI_AUTH);
+			auditAuthProvider = ApiAuditLogService.AUTH_API_KEY;
 		}
 		
 		if (loginStatus == AuthHelper.LOGIN_OK && identity != null) {
@@ -263,11 +316,25 @@ public class RestApiLoginFilter implements Filter {
 			//Forge a new security token
 			String token = securityBean.generateToken(identity, request.getSession());
 			response.setHeader(RestSecurityHelper.SEC_TOKEN, token);
+			auditAuthentication(request, auditAuthProvider);
+			Tracing.setIdentity(identity);
 		} else {
 			loginModule.registerFailedLoginAttempt(username);
+			request.setAttribute(ApiAuditLogService.REQ_ATTR_LOGIN_ATTEMPT, username);
 		}
 		
 		return loginStatus;	
+	}
+	
+	/**
+	 * Remembers how the request was authenticated, for the audit log and the access log.
+	 * 
+	 * @param request The request
+	 * @param authProvider One of the AUTH constants of the audit log service
+	 */
+	private void auditAuthentication(HttpServletRequest request, String authProvider) {
+		request.setAttribute(ApiAuditLogService.REQ_ATTR_AUTH_PROVIDER, authProvider);
+		Tracing.setAuthProvider(authProvider);
 	}
 	
 	private int doHeadlessLogin(HttpServletRequest request, HttpServletResponse response, String requestURI, Identity identity, String provider) {
@@ -411,6 +478,7 @@ public class RestApiLoginFilter implements Filter {
 			sinfo.setWebModeFromUreq(null);
 			// set session info for this session
 			usess.setSessionInfo(sinfo);
+			auditAuthentication(request, ApiAuditLogService.AUTH_IP);
 		}
 
 		UserRequest ureq = null;
@@ -447,6 +515,8 @@ public class RestApiLoginFilter implements Filter {
 			Identity identity = securityBean.getIdentity(token);
 			int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 			if(loginStatus == AuthHelper.LOGIN_OK) {
+				auditAuthentication(request, ApiAuditLogService.AUTH_TOKEN);
+				Tracing.setUserSession(uress);
 				String renewedToken = securityBean.renewToken(token);
 				if(renewedToken != null) {
 					response.setHeader(RestSecurityHelper.SEC_TOKEN, renewedToken);
@@ -472,6 +542,11 @@ public class RestApiLoginFilter implements Filter {
 				return;
 			}
 			request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
+			if(ApiAuditLogService.AUTH_NONE.equals(request.getAttribute(ApiAuditLogService.REQ_ATTR_AUTH_PROVIDER))) {
+				// authenticated by the session cookie, the other branches set their own provider
+				auditAuthentication(request, ApiAuditLogService.AUTH_SESSION);
+			}
+			Tracing.setUserSession(uress);
 			synchronized(uress) {
 				try {
 					chain.doFilter(request, response);

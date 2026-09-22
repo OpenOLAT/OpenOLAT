@@ -40,6 +40,13 @@
 		-->
 	</Appenders>
 	<Loggers>
+		<!-- Access log of the REST API, one line per request, marker REST.
+		     warn = denied and failed calls (401, 403, 429, 5xx), info = writes, debug = reads.
+		     The request body is never part of the line, it is only stored in o_api_audit_log.
+		<Logger name="org.olat.restapi.access" additivity="false" level="info">
+			<AppenderRef ref="Console" />
+		</Logger>
+		-->
 		<Logger name="org.apache.commons.httpclient" additivity="false" level="warn">
             <AppenderRef ref="Console" />
         </Logger>

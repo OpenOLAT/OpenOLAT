@@ -76,3 +76,33 @@ alter table o_repositoryentry add show_lectures number default 0 not null;
 alter table o_repositoryentry add show_certificate number default 1 not null;
 alter table o_repositoryentry add show_creditpoints number default 1 not null;
 alter table o_repositoryentry add taught_by varchar2(255 char);
+
+-- REST API audit log
+create table o_api_audit_log (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate timestamp not null,
+   a_channel varchar2(16) not null,
+   a_login_attempt varchar(128),
+   a_auth_provider varchar(32),
+   a_ip varchar(64),
+   a_user_agent varchar(255),
+   a_method varchar(8) not null,
+   a_path varchar(1024) not null,
+   a_query varchar(1024),
+   a_resource_class varchar(255),
+   a_resource_method varchar(128),
+   a_path_params clob,
+   a_status number(20) not null,
+   a_duration_ms number(20),
+   a_request_body clob,
+   a_ref varchar(64),
+   a_node_id number(20),
+   fk_identity number(20),
+   primary key (id)
+);
+
+alter table o_api_audit_log add constraint api_audit_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_api_audit_ident_idx on o_api_audit_log (fk_identity);
+create index idx_api_audit_creation_idx on o_api_audit_log (creationdate);
+create index idx_api_audit_status_idx on o_api_audit_log (a_status);
+create index idx_api_audit_resclass_idx on o_api_audit_log (a_resource_class);

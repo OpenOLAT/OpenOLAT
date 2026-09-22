@@ -479,7 +479,7 @@
 		<property name="navigationKey" value="restapi" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.admin.restapi.RestapiAdminController"/>
+				<property name="className" value="org.olat.admin.restapi.RestapiAdminMainController"/>
 			</bean>
 		</property>
 		<property name="i18nActionKey" value="menu.restapi"/>

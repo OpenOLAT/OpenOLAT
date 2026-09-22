@@ -1110,6 +1110,22 @@ div.o_assessment_mini_conditional_overview {
 	min-height: 60em;
 }
 
+/* REST */
+.o_labeled_light {
+	&.o_http_code_success {
+		font-weight: normal;
+		@extend %o_labeled_light_green;
+	}
+	&.o_http_code_warning {
+		font-weight: normal;
+		@extend %o_labeled_light_orange;
+	}
+	&.o_http_code_error {
+		font-weight: normal;
+		@extend %o_labeled_light_red;
+	}
+}
+
 /* Reminders rules */
 .o_reminder_rule {
 	padding: 5px 0;
