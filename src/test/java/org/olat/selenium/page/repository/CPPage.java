@@ -78,9 +78,8 @@ public class CPPage {
 		}
 
 		By editBy = By.xpath("//ul[contains(@class,'o_sel_repository_tools')]//a[contains(@onclick,'edit.cmd')]");
-		browser.findElement(editBy).click();
-		OOGraphene.waitBusy(browser);
-		return new CPEditorPage(browser);
+		OOGraphene.waitElement(editBy, browser).click();
+		return new CPEditorPage(browser).assertOnEditor();
 	}
 
 	/**

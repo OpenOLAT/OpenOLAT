@@ -88,11 +88,16 @@
 		// save object model and png
 		const save = function() {
 			try {
-				var objects = canvas.getObjects();
-				var image = canvas.toDataURL('png');
-  				jQuery('#op_' + inputHolderId + '_png').val(image);
-  				var json = JSON.stringify(canvas);
-  				jQuery('#op_' + inputHolderId + '_json').val("data:application/json;base64," + json);
+				let objects = canvas.getObjects();
+				if(objects == null || objects.length == 0) {
+					jQuery('#op_' + inputHolderId + '_png').val("");
+					jQuery('#op_' + inputHolderId + '_json').val("");
+				} else {
+					let image = canvas.toDataURL('png');
+					jQuery('#op_' + inputHolderId + '_png').val(image);
+	  				let json = JSON.stringify(canvas);
+					jQuery('#op_' + inputHolderId + '_json').val("data:application/json;base64," + json);
+				}
 			} catch(e) {
 				if(window.console) console.log(e);
 			}
