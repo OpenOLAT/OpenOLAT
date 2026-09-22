@@ -1199,6 +1199,15 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
+	public boolean supportsSubElements(CurriculumElement element) {
+		CurriculumElementType type = element.getType();
+		if(type != null && type.isSingleElement()) {
+			return hasCurriculumElementChildren(element);
+		}
+		return true;
+	}
+
+	@Override
 	public List<CurriculumElement> getCurriculumElementsDescendants(CurriculumElement parentElement) {
 		return curriculumElementDao.getDescendants(parentElement);
 	}

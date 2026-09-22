@@ -183,7 +183,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		this.curriculumElement = curriculumElement;
 		this.lecturesSecCallback = lecturesSecCallback;
 		this.certificationSecCallback = certificationSecCallback;
-		canChildren = canChildren(curriculumElement);
+		canChildren = curriculumService.supportsSubElements(curriculumElement);
 		canRepositoryEntries = canRepositoryEntries(curriculumElement);
 		implementationElement = getRootElement();
 		
@@ -196,14 +196,6 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		mainVC.put("tabs", tabPane);
 		putInitialPanel(mainVC);
-	}
-	
-	private boolean canChildren(CurriculumElement element) {
-		CurriculumElementType type = element.getType();
-		if(type != null && type.isSingleElement()) {
-			return curriculumService.hasCurriculumElementChildren(element);
-		}
-		return true;
 	}
 	
 	private boolean canRepositoryEntries(CurriculumElement element) {

@@ -355,7 +355,15 @@ public interface CurriculumService {
 	 * @return
 	 */
 	public boolean hasCurriculumElementChildren(CurriculumElementRef parentElement);
-	
+
+	/**
+	 * A curriculum element can have sub elements if its type allows it, or if it
+	 * is a single element type which already has children (backward compatibility).
+	 *
+	 * @param element The curriculum element
+	 * @return true if sub elements are allowed
+	 */
+	public boolean supportsSubElements(CurriculumElement element);
 
 	public List<CurriculumElement> getCurriculumElementsDescendants(CurriculumElement parentElement);
 	
