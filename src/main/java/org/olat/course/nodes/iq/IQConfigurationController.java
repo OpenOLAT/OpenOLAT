@@ -30,8 +30,6 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.IconPanelLabelTextContent;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -113,8 +111,6 @@ public class IQConfigurationController extends BasicController implements Refere
 	private ConfirmChangeResourceController confirmChangeResourceCtrl;
 	
 	private QTI21EditForm mod21ConfigForm;
-	private VelocityContainer mod21ConfigVC;
-	private Link enableEditingLink;
 	private boolean hasAssessments;
 	
 	private final ICourse course;
@@ -322,18 +318,9 @@ public class IQConfigurationController extends BasicController implements Refere
 			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			hasAssessments = QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type)
 					&& assessmentService.hasAssessments(courseEntry, courseNode.getIdent());
+			mod21ConfigForm.setHasAssessments(hasAssessments);
 
-			mod21ConfigVC = createVelocityContainer("edit_test_config");
-			mod21ConfigVC.put("assessmentform", mod21ConfigForm.getInitialComponent());
-			enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", mod21ConfigVC, this);
-			enableEditingLink.setPrimary(true);
-			enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
-			mod21ConfigVC.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));
-			if (hasAssessments) {
-				mod21ConfigForm.setDisplayOnly(true);
-			}
-
-			myContent.put("iqeditform", mod21ConfigVC);
+			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
 		} else {
 			myContent.remove("iqeditform");
 			showError("error.qti12");
@@ -396,9 +383,6 @@ public class IQConfigurationController extends BasicController implements Refere
 					cleanUpQti21PreviewSession();
 				}
 			}
-		} else if (source == enableEditingLink) {
-			mod21ConfigForm.setDisplayOnly(false);
-			mod21ConfigVC.contextPut("isOverwriting", Boolean.TRUE);
 		}
 	}
 	
