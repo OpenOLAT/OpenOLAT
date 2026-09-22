@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -136,6 +137,7 @@ public class MSConfigController extends FormBasicController {
 	private MinMax formMinMax;
 	private GradeScale gradeScale;
 	private EvaluationFormProvider evaluationFormProvider;
+	private FormSection assessmentFormCont;
 	
 	@Autowired
 	private MSService msService;
@@ -326,22 +328,27 @@ public class MSConfigController extends FormBasicController {
 		
 		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
 
-		// Comments
-		commentFlagEl = uifactory.addCheckboxesHorizontal("form.comment", formLayout, ENABLED_KEYS,
-				translateAll(getTranslator(), ENABLED_KEYS));
-		Boolean commentField = config.getBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
-		commentFlagEl.select(ENABLED_KEYS[0], commentField.booleanValue());
-		
-		individualAssessmentDocsFlagEl = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", formLayout, ENABLED_KEYS,
-				translateAll(getTranslator(), ENABLED_KEYS));
-		Boolean docsCf = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
-		individualAssessmentDocsFlagEl.select(ENABLED_KEYS[0], docsCf);
+		initAssessmentForm(formLayout);
 
 		uifactory.addFormSubmitButton("save", formLayout);
 		
 		updateUI();
 	}
 	
+	private void initAssessmentForm(FormItemContainer formLayout) {
+		assessmentFormCont = uifactory.addFormSection("assessment.form", translate("assessment.form"), formLayout, FormSection.Level.SUB_TITLE);
+
+		commentFlagEl = uifactory.addCheckboxesHorizontal("form.comment", formLayout, ENABLED_KEYS,
+				translateAll(getTranslator(), ENABLED_KEYS));
+		Boolean commentField = config.getBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
+		commentFlagEl.select(ENABLED_KEYS[0], commentField.booleanValue());
+
+		individualAssessmentDocsFlagEl = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", formLayout, ENABLED_KEYS,
+				translateAll(getTranslator(), ENABLED_KEYS));
+		Boolean docsCf = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+		individualAssessmentDocsFlagEl.select(ENABLED_KEYS[0], docsCf);
+	}
+
 	private void updateUI() {
 		boolean scoreEnabled = scoreEnableEl.isOn();
 		boolean formEnabled = evaluationFormEnabledEl.isOn();

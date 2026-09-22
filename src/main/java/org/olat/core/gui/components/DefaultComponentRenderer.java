@@ -388,9 +388,6 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		
 		String text = component.getFormItem().getLabelText();
 		if (StringHelper.containsNonWhitespace(text)) {
-			if ("Rubric assessment".equals(text)) {
-				System.err.println("labelIconCss: " + labelIconCss);
-			}
 			sb.append(text);
 		}
 		
