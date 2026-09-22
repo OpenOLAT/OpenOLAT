@@ -24,8 +24,6 @@
 */
 package org.olat.admin.notifications;
 
-import java.util.List;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -39,8 +37,6 @@ import org.quartz.CronTrigger;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -54,12 +50,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class NotificationsEmailAdminController extends BasicController {
 	private static final String TRIGGER_NOTIFY = "notification.start.button";
 	
-	private final JobKey notificationsJobKey = new JobKey("org.olat.notifications.job.enabled", Scheduler.DEFAULT_GROUP);
+	private JobKey notificationsJobKey;
 
 	private Link startNotifyButton;
-	
-	@Autowired
-	private Scheduler scheduler;
 
 	public NotificationsEmailAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -67,14 +60,13 @@ public class NotificationsEmailAdminController extends BasicController {
 		boolean enabled;
 		String cronExpression = "";
 		try {
-			CoreSpringFactory.getBean("org.olat.notifications.job.enabled");
-			enabled = true;
-			List<? extends Trigger> triggers = scheduler.getTriggersOfJob(notificationsJobKey);
-			if(triggers.size() == 1 && triggers.get(0) instanceof CronTrigger) {
-				cronExpression = ((CronTrigger)triggers.get(0)).getCronExpression();
-			}
+			CronTrigger trigger = (CronTrigger)CoreSpringFactory.getBean("sendNotificationsEmailTrigger");
+			notificationsJobKey = trigger.getJobKey();
+			enabled = notificationsJobKey.getName().equals("org.olat.notifications.job.enabled");
+			cronExpression = trigger.getCronExpression();
 		} catch (Exception e) {
 			enabled = false;
+			logError("", e);
 		}
 		content.contextPut("status", getTranslator().translate("notification.status", new String[]{ String.valueOf(enabled), cronExpression }));
 		startNotifyButton = LinkFactory.createButton(TRIGGER_NOTIFY, content, this);
