@@ -48,12 +48,12 @@ public class MediaPage {
 	}
 	
 	private MediaPage fillStandardMedia(String title, String description) {
-		if(StringHelper.containsNonWhitespace(title)) {
-			By titleBy = By.cssSelector(".o_sel_pf_collect_media_title input[type='text']");
-			WebElement titleEl = browser.findElement(titleBy);
-			titleEl.clear();
-			titleEl.sendKeys(title);
-		}
+		OOGraphene.waitTinymce(browser);
+		
+		By titleBy = By.cssSelector(".o_sel_pf_collect_media_title input[type='text']");
+		WebElement titleEl = OOGraphene.waitElement(titleBy, browser);
+		titleEl.clear();
+		titleEl.sendKeys(title);
 		
 		if(StringHelper.containsNonWhitespace(description)) {
 			String cssSelector = ".o_sel_pf_collect_media_description";

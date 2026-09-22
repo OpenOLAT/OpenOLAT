@@ -42,6 +42,13 @@ public class CPEditorPage {
 		this.browser = browser;
 	}
 	
+	public CPEditorPage assertOnEditor() {
+		By rootBy = By.cssSelector(".o_edit_mode .o_toolbar");
+		OOGraphene.waitElement(rootBy, browser);
+		OOGraphene.waitTinymce(browser);
+		return this;
+	}
+	
 	public CPEditorPage clickRoot() {
 		By rootBy = By.cssSelector("ul.o_tree_l0 span.o_tree_link.o_tree_l0 a");
 		browser.findElement(rootBy).click();
@@ -78,7 +85,7 @@ public class CPEditorPage {
 	
 	public CPEditorPage editMetadata(String title) {
 		By metadataBy = By.cssSelector("a.o_sel_cp_edit_metadata");
-		browser.findElement(metadataBy).click();
+		OOGraphene.waitElement(metadataBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return fillMetadataForm(title);
 	}
