@@ -43,8 +43,6 @@ import org.olat.restapi.audit.ApiAuditLog;
 
 /**
  * The rows are written once and never updated, all columns are not updatable.
- * There is no foreign key on fk_identity: the table holds a high volume of rows
- * and the actor key must survive the anonymisation of an identity.
  * 
  * Initial date: 16 sept. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
@@ -276,7 +274,7 @@ public class ApiAuditLogImpl implements ApiAuditLog, Persistable {
 
 	@Override
 	public int hashCode() {
-		return key == null ? 2650937 : key.hashCode();
+		return getKey() == null ? 2650937 : getKey().hashCode();
 	}
 
 	@Override
@@ -285,7 +283,7 @@ public class ApiAuditLogImpl implements ApiAuditLog, Persistable {
 			return true;
 		}
 		if(obj instanceof ApiAuditLogImpl log) {
-			return key != null && key.equals(log.key);
+			return getKey() != null && getKey().equals(log.getKey());
 		}
 		return false;
 	}
