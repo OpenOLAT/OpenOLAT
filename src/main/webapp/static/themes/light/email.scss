@@ -121,6 +121,13 @@
 
 /*** To-dos ***/
 .o_email_body {
+	.o_email_box {
+		margin: 5px 0;
+	}
+	.o_email_todo_more {
+		color: $o-box-info-color;
+		margin: 0 0 5px 0;
+	}
 	tr.o_email_todo_row {
 		td:first-child {
 			padding-right: 20px;

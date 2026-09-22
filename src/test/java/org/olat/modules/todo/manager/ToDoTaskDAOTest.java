@@ -71,6 +71,8 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	@Autowired
 	private ToDoService toDoService;
 	@Autowired
+	private ToDoAssignedMailSender toDoAssignedMailSender;
+	@Autowired
 	private TagService tagService;
 	
 	@Autowired
@@ -431,11 +433,11 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		ToDoTask toDoTask1 = createRandomToDoTask();
-		toDoService.updateMember(identity1, toDoTask1, List.of(identity1, identity2), List.of());
+		toDoService.updateMember(identity1, toDoTask1, List.of(identity1, identity2), List.of(), toDoAssignedMailSender);
 		ToDoTask toDoTask2 =  createRandomToDoTask();
-		toDoService.updateMember(identity1, toDoTask2, List.of(), List.of(identity1));
+		toDoService.updateMember(identity1, toDoTask2, List.of(), List.of(identity1), toDoAssignedMailSender);
 		ToDoTask toDoTask3 =  createRandomToDoTask();
-		toDoService.updateMember(identity1, toDoTask3, List.of(), List.of(identity2));
+		toDoService.updateMember(identity1, toDoTask3, List.of(), List.of(identity2), toDoAssignedMailSender);
 		
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
 		searchParams.setToDoTasks(List.of(toDoTask1, toDoTask2, toDoTask3));
@@ -472,12 +474,12 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		Identity delegatee = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 
 		ToDoTask withAssignee = createRandomToDoTask();
-		toDoService.updateMember(assignee, withAssignee, List.of(assignee), List.of());
+		toDoService.updateMember(assignee, withAssignee, List.of(assignee), List.of(), toDoAssignedMailSender);
 
 		ToDoTask noMembers = createRandomToDoTask();
 
 		ToDoTask onlyDelegatee = createRandomToDoTask();
-		toDoService.updateMember(assignee, onlyDelegatee, List.of(), List.of(delegatee));
+		toDoService.updateMember(assignee, onlyDelegatee, List.of(), List.of(delegatee), toDoAssignedMailSender);
 
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
 		searchParams.setToDoTasks(List.of(withAssignee, noMembers, onlyDelegatee));

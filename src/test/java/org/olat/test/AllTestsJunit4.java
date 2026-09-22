@@ -608,6 +608,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.taxonomy.matching.manager.TaxonomyMatchingServiceTest.class,
 	org.olat.modules.todo.manager.ToDoTaskDAOTest.class,
 	org.olat.modules.todo.manager.ToDoTaskTagDAOTest.class,
+	org.olat.modules.todo.ToDoAssignedMailBatchTest.class,
 	org.olat.modules.todo.ToDoServiceTest.class,
 	org.olat.modules.sharepoint.manager.SharePointDAOTest.class,
 	org.olat.modules.teams.manager.TeamsMeetingDAOTest.class,

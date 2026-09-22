@@ -42,6 +42,7 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.id.Identity;
 import org.olat.core.util.date.DateModule;
+import org.olat.modules.todo.ToDoAssignedMailer;
 import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoProvider;
@@ -139,7 +140,6 @@ public class ToDoServiceImpl implements ToDoService {
 	@Override
 	public ToDoTask update(Identity doer, ToDoTask toDoTask, ToDoStatus previousStatus) {
 		ToDoProvider provider = getProvider(toDoTask.getType());
-		provider.getToDoMailRule(toDoTask).isSendDoneEmail();
 		if (provider.getToDoMailRule(toDoTask).isSendDoneEmail()) {
 			if (ToDoStatus.done != previousStatus && ToDoStatus.done == toDoTask.getStatus()) {
 				List<Identity> members = groupDao.getMembers(List.of(toDoTask.getBaseGroup()), ToDoRole.CREATOR_ASSIGNEE_DELEGATEE_NAMES);
@@ -225,7 +225,7 @@ public class ToDoServiceImpl implements ToDoService {
 	}
 	
 	@Override
-	public void updateMember(Identity doer, ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees) {
+	public void updateMember(Identity doer, ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees, ToDoAssignedMailer mailer) {
 		Map<Long, Set<ToDoRole>> identityKeyToRoles = new HashMap<>();
 		
 		for (IdentityRef identityRef : assignees) {
@@ -246,10 +246,10 @@ public class ToDoServiceImpl implements ToDoService {
 		}
 		
 		identityKeyToRoles.entrySet().forEach(identityToRole -> updateMember(doer, toDoTask,
-				new IdentityRefImpl(identityToRole.getKey()), identityToRole.getValue()));
+				new IdentityRefImpl(identityToRole.getKey()), identityToRole.getValue(), mailer));
 	}
 	
-	private void updateMember(Identity doer, ToDoTask toDoTask, IdentityRef identity, Set<ToDoRole> roles) {
+	private void updateMember(Identity doer, ToDoTask toDoTask, IdentityRef identity, Set<ToDoRole> roles, ToDoAssignedMailer mailer) {
 		Group group = toDoTask.getBaseGroup();
 		
 		List<ToDoRole> currentRoles = groupDao.getMemberships(group, identity).stream()
@@ -273,8 +273,7 @@ public class ToDoServiceImpl implements ToDoService {
 				roles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)),
 				currentRoles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)));
 		if (sendAssignmentEmail) {
-			Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
-			toDoMailing.sendAssignedEmail(doer, reloadedIdentity, toDoTask, provider);
+			mailer.onAssigned(doer, identity, toDoTask, provider);
 		}
 		
 		// Delete membership of old roles. Creators are never removed

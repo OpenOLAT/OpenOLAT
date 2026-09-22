@@ -63,6 +63,8 @@ import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumElementContextPicker;
 import org.olat.modules.curriculum.ui.CurriculumElementToDoMemberController;
 import org.olat.modules.curriculum.ui.CurriculumUIFactory;
+import org.olat.modules.todo.ToDoAssignedMailBatch;
+import org.olat.modules.todo.ToDoAssignedMailer;
 import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoDateUnit;
@@ -304,6 +306,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			Collection<? extends IdentityRef> assignees,
 			Collection<? extends IdentityRef> delegatees,
 			List<String> tagDisplayNames) {
+		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch();
 		int count = 0;
 		for (CurriculumElement element : elements) {
 			ToDoTask task = toDoService.createToDoTask(doer, TYPE,
@@ -321,7 +324,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			task.setContentModifiedDate(new Date());
 			task = toDoService.update(doer, task, null);
 			if ((assignees != null && !assignees.isEmpty()) || (delegatees != null && !delegatees.isEmpty())) {
-				toDoService.updateMember(doer, task, assignees, delegatees);
+				toDoService.updateMember(doer, task, assignees, delegatees, batch);
 			}
 			if (tagDisplayNames != null && !tagDisplayNames.isEmpty()) {
 				toDoService.updateTags(task, tagDisplayNames);
@@ -330,6 +333,8 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 				dbInstance.intermediateCommit();
 			}
 		}
+		dbInstance.commit();
+		batch.sendMails();
 	}
 
 	public List<TagInfo> getTagInfos() {
@@ -636,7 +641,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 	}
 	
 	public void copyToDoTasks(CurriculumElement source, CurriculumElement target,
-			boolean copyAssignments, Set<Long> includedTaskKeys, Identity doer) {
+			boolean copyAssignments, Set<Long> includedTaskKeys, Identity doer, ToDoAssignedMailer mailer) {
 		if (source == null || target == null
 				|| source.getCurriculum() == null || target.getCurriculum() == null) {
 			return;
@@ -693,7 +698,8 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 				if (members != null) {
 					toDoService.updateMember(doer, copy,
 							members.getMembers(ToDoRole.assignee),
-							members.getMembers(ToDoRole.delegatee));
+							members.getMembers(ToDoRole.delegatee),
+							mailer);
 				}
 			}
 

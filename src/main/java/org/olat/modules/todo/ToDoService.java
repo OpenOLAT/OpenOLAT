@@ -66,7 +66,7 @@ public interface ToDoService {
 	
 	public ToDoTaskStatusStats getToDoTaskStatusStats(ToDoTaskSearchParams searchParams);
 
-	public void updateMember(Identity doer, ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees);
+	public void updateMember(Identity doer, ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees, ToDoAssignedMailer mailer);
 	
 	public Map<Long, ToDoTaskMembers> getToDoTaskGroupKeyToMembers(Collection<ToDoTask> toDoTasks, Collection<ToDoRole> roles);
 

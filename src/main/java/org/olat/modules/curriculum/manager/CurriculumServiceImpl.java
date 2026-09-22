@@ -153,6 +153,7 @@ import org.olat.modules.lecture.manager.LectureBlockDAO;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.todo.ToDoAssignedMailBatch;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryMyView;
@@ -587,7 +588,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public CurriculumElement copyCurriculumElement(Curriculum curriculum, CurriculumElement parentElement,
 			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity doer) {
-		CurriculumElement copy = copyCurriculumElementRec(curriculum, parentElement, elementToClone, settings, doer, 0);
+		ToDoAssignedMailBatch toDoMailBatch = new ToDoAssignedMailBatch();
+		CurriculumElement copy = copyCurriculumElementRec(curriculum, parentElement, elementToClone, settings, doer, 0, toDoMailBatch);
 		dbInstance.commit();
 		
 		// Recalculate the numbering under this implementation / root element
@@ -599,11 +601,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		// Reload the numbered copy
 		copy = curriculumElementDao.loadByKey(copy.getKey());
+		toDoMailBatch.sendMails();
 		return copy;
 	}
 	
 	private CurriculumElement copyCurriculumElementRec(Curriculum curriculum, CurriculumElement parentElement,
-			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity doer, int depth) {
+			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity doer, int depth,
+			ToDoAssignedMailBatch toDoMailBatch) {
 		
 		CopyElementSetting elementSetting = settings.getCopyElementSetting(elementToClone);
 		
@@ -777,12 +781,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(copyToDos == CopyToDos.todos || copyToDos == CopyToDos.todosWithAssignments) {
 			Set<Long> includedTaskKeys = settings.getSelectedToDoTaskKeys(elementToClone.getKey());
 			curriculumElementToDoProvider.copyToDoTasks(elementToClone, clone,
-					copyToDos == CopyToDos.todosWithAssignments, includedTaskKeys, doer);
+					copyToDos == CopyToDos.todosWithAssignments, includedTaskKeys, doer, toDoMailBatch);
 		}
 
 		List<CurriculumElement> childrenToClone = getCurriculumElementsChildren(elementToClone);
 		for(CurriculumElement childToClone:childrenToClone) {
-			copyCurriculumElementRec(curriculum, clone, childToClone, settings, doer, depth);
+			copyCurriculumElementRec(curriculum, clone, childToClone, settings, doer, depth, toDoMailBatch);
 		}
 		return clone;
 	}

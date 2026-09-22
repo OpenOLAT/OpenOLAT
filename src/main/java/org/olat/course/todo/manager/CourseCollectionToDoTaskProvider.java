@@ -65,6 +65,7 @@ import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
+import org.olat.modules.todo.manager.ToDoAssignedMailSender;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoTaskListController;
 import org.olat.modules.todo.ui.ToDoUIFactory;
@@ -92,6 +93,8 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 	private CourseToDoService courseToDoService;
 	@Autowired
 	private ToDoService toDoService;
+	@Autowired
+	private ToDoAssignedMailSender toDoAssignedMailSender;
 	@Autowired
 	private CourseToDoContextFilter contextFilter;
 	@Autowired
@@ -360,7 +363,7 @@ public class CourseCollectionToDoTaskProvider implements ToDoProvider {
 				repositoryEntry.getKey(), null, repositoryEntry.getDisplayname(), null, collection);
 		mapToDoTask(toDoTask, collection);
 		toDoTask = toDoService.update(doer, toDoTask, status);
-		toDoService.updateMember(doer, toDoTask, List.of(assignee), List.of());
+		toDoService.updateMember(doer, toDoTask, List.of(assignee), List.of(), toDoAssignedMailSender);
 		if (tagDisplayNames != null && !tagDisplayNames.isEmpty()) {
 			toDoService.updateTags(toDoTask, tagDisplayNames);
 		}

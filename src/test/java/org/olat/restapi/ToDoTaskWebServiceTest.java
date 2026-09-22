@@ -44,6 +44,7 @@ import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.manager.PersonalToDoProvider;
+import org.olat.modules.todo.manager.ToDoAssignedMailSender;
 import org.olat.modules.todo.restapi.ToDoStatusVO;
 import org.olat.modules.todo.restapi.ToDoTaskVO;
 import org.olat.modules.todo.restapi.ToDoTaskVOes;
@@ -63,6 +64,8 @@ public class ToDoTaskWebServiceTest extends OlatRestTestCase {
 	private DB dbInstance;
 	@Autowired
 	private ToDoService toDoService;
+	@Autowired
+	private ToDoAssignedMailSender toDoAssignedMailSender;
 	
 	@Test
 	public void getMyToDoTasks() throws IOException, URISyntaxException {
@@ -80,15 +83,15 @@ public class ToDoTaskWebServiceTest extends OlatRestTestCase {
 		ToDoTask toDoTask2 = toDoService.createToDoTask(doer, PersonalToDoProvider.TYPE);
 		toDoTask2.setAssigneeRights(new ToDoRight[] {ToDoRight.edit});
 		toDoService.update(doer, toDoTask2, ToDoStatus.open);
-		toDoService.updateMember(doer, toDoTask2, List.of(assignee), List.of());
+		toDoService.updateMember(doer, toDoTask2, List.of(assignee), List.of(), toDoAssignedMailSender);
 		// OK
 		ToDoTask toDoTask3 = toDoService.createToDoTask(doer, PersonalToDoProvider.TYPE);
 		toDoTask3.setAssigneeRights(new ToDoRight[] {ToDoRight.view});
 		toDoService.update(doer, toDoTask3, ToDoStatus.open);
-		toDoService.updateMember(doer, toDoTask3, List.of(), List.of(assignee));
+		toDoService.updateMember(doer, toDoTask3, List.of(), List.of(assignee), toDoAssignedMailSender);
 		// No assignee rights
 		ToDoTask toDoTask4 = toDoService.createToDoTask(doer, PersonalToDoProvider.TYPE);
-		toDoService.updateMember(doer, toDoTask4, List.of(), List.of(assignee));
+		toDoService.updateMember(doer, toDoTask4, List.of(), List.of(assignee), toDoAssignedMailSender);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection(assigneeName, assigneePw);
@@ -118,7 +121,7 @@ public class ToDoTaskWebServiceTest extends OlatRestTestCase {
 		
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ToDoTask toDoTask = toDoService.createToDoTask(doer, GeneralToDoTaskProvider.TYPE);
-		toDoService.updateMember(doer, toDoTask, List.of(assignee), List.of());
+		toDoService.updateMember(doer, toDoTask, List.of(assignee), List.of(), toDoAssignedMailSender);
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection(assigneeName, assigneePw);
