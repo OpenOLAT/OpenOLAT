@@ -27,10 +27,7 @@ package org.olat.course.nodes.ms;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -60,14 +57,10 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	private final MSCourseNode msNode;
 	private final ICourse course;
-	private VelocityContainer configurationVC;
 	private MSConfigController configController;
 	private HighScoreEditController highScoreNodeConfigController;
 
 	private TabbedPane myTabbedPane;
-	
-	private boolean hasAssessments;
-	private Link enableEditingLink;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -87,34 +80,20 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		this.msNode = msNode;
 		this.course = course;
 		
-		configurationVC = createVelocityContainer("edit");
-		enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", configurationVC, this);
-		enableEditingLink.setPrimary(true);
-		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
-		
 		configController = new MSConfigController(ureq, wControl, course, msNode);
 		listenTo(configController);
-		configurationVC.put("mseditform", configController.getInitialComponent());
-		
+
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		boolean hasAssessments = assessmentService.hasAssessments(courseEntry, msNode.getIdent());
+		configController.setHasAssessments(hasAssessments);
+
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, msNode.getModuleConfiguration(), course);
 		listenTo(highScoreNodeConfigController);
-		
-		// if there are already assessments, make read only
-		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		hasAssessments = assessmentService.hasAssessments(courseEntry, msNode.getIdent());
-		configurationVC.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));
-		if (hasAssessments) {
-			configController.setDisplayOnly(true);
-		}
-		configurationVC.contextPut("isOverwriting", Boolean.valueOf(false));
 	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == enableEditingLink) {
-			configController.setDisplayOnly(false);
-			configurationVC.contextPut("isOverwriting", Boolean.TRUE);
-		}
+		//
 	}
 
 	@Override
@@ -143,7 +122,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CONFIGURATION), configurationVC);
+		tabbedPane.addTab(translate(PANE_TAB_CONFIGURATION), configController.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();
 

@@ -25,11 +25,11 @@ import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FIL
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -137,7 +138,9 @@ public class MSConfigController extends FormBasicController {
 	private MinMax formMinMax;
 	private GradeScale gradeScale;
 	private EvaluationFormProvider evaluationFormProvider;
-	private FormSection assessmentFormCont;
+	private FormLayoutContainer titleWarningCont;
+	private Link enableEditingLink;
+	private FormLayoutContainer gradingCont;
 	
 	@Autowired
 	private MSService msService;
@@ -154,7 +157,7 @@ public class MSConfigController extends FormBasicController {
 
 	public MSConfigController(UserRequest ureq, WindowControl wControl, ICourse course,
 			MSCourseNode courseNode) {
-		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
+		super(ureq, wControl, FormBasicController.LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		this.config = courseNode.getModuleConfiguration();
 		courseEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
@@ -172,54 +175,84 @@ public class MSConfigController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	public void setDisplayOnly(boolean displayOnly) {
-		Map<String, FormItem> formItems = flc.getFormComponents();
-		for (String formItemName : formItems.keySet()) {
-			formItems.get(formItemName).setEnabled(!displayOnly);
-		}
-		if (gradeScaleCont != null) {
-			gradeScaleCont.setVisible(!displayOnly);
+	private void setDisplayOnly(boolean displayOnly) {
+		FormItem assessmentFormItems[] = {evaluationFormEnabledEl, evaluationFormNotChoosen, evaluationFormLink, 
+				chooseLink, replaceLink, editLink, scoreEnableEl,scoreTypeEl,scaleEl,minEl, maxEl,gradeEnabledEl, 
+				gradeAutoEl, gradeScaleCont, gradePassedEl, passedEl, passedTypeEl, cutEl, 
+				incorporateInCourseAssessmentEl, scoreScalingEl
+		};
+		
+		for (FormItem formItem : assessmentFormItems) {
+			if (formItem != null) {
+				formItem.setEnabled(!displayOnly);
+				formItem.setLabelIconCss(displayOnly ? "o_icon o_icon-fw o_icon_locked text-primary" : null);
+			}
 		}
 		if (!displayOnly) {
 			updateUI();
 		}
+	}
+
+	public void setHasAssessments(boolean hasAssessments) {
+		enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", titleWarningCont.getFormItemComponent(), this);
+		enableEditingLink.setPrimary(true);
+		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
+		titleWarningCont.contextPut("hasAssessments", hasAssessments);
+
+		setDisplayOnly(hasAssessments);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Initial status
 		if (showInitialStatus) {
+			FormLayoutContainer assessmentConfigurationCont = FormLayoutContainer.createDefaultFormLayout("assessment.configuration", getTranslator());
+			assessmentConfigurationCont.setFormTitle(translate("assessment.configuration"));
+			assessmentConfigurationCont.setFormContextHelp("manual_user/learningresources/Course_Element_Assessment");
+			formLayout.add(assessmentConfigurationCont);
+			
 			initialStatusEl = uifactory.addToggleButton("form.initial.status", "form.initial.status",
-					translate("on"), translate("off"), formLayout);
+					translate("on"), translate("off"), assessmentConfigurationCont);
 			initialStatusEl.setHelpText(translate("form.initial.status.help"));
 			String initialStatus = config.getStringValue(MSCourseNode.CONFIG_KEY_INITIAL_STATUS);
 			initialStatusEl.toggle(AssessmentEntryStatus.inReview.name().equals(initialStatus));
-			uifactory.addSpacerElement("spacerzero", formLayout, false);
 		}
 		
+		titleWarningCont = FormLayoutContainer.createCustomFormLayout("titleWarningCont", getTranslator(),
+				velocity_root + "/assessment_title_warning.html");
+		titleWarningCont.setRootForm(mainForm);
+		formLayout.add(titleWarningCont);
+		if (!showInitialStatus) {
+			titleWarningCont.contextPut("showHelpLink", true);
+		}
+		
+		gradingCont = FormLayoutContainer.createDefaultFormLayout("gradingCont", getTranslator());
+		gradingCont.setRootForm(mainForm);
+		formLayout.add(gradingCont);
+
 		// Evaluation Form
 		evaluationFormEnabledEl = uifactory.addToggleButton("form.evaluation.enabled", "form.evaluation.enabled",
-				translate("on"), translate("off"), formLayout);
+				translate("on"), translate("off"), gradingCont);
 		evaluationFormEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		Boolean evalFormEnabled = config.getBooleanEntry(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
 		evaluationFormEnabledEl.toggle(evalFormEnabled != null && evalFormEnabled.booleanValue());
 		
 		evaluationFormNotChoosen = uifactory.addStaticTextElement("form.evaluation.not.choosen", "form.evaluation",
-				translate("form.evaluation.not.choosen"), formLayout);
-		evaluationFormLink = uifactory.addFormLink("form.evaluation", "", translate("form.evaluation"), formLayout,
+				translate("form.evaluation.not.choosen"), gradingCont);
+		evaluationFormLink = uifactory.addFormLink("form.evaluation", "", translate("form.evaluation"), gradingCont,
 				Link.NONTRANSLATED);
 		evaluationFormLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		
-		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, gradingCont);
 		chooseLink = uifactory.addFormLink("form.evaluation.choose", buttonsCont, Link.BUTTON_XSMALL);
 		replaceLink = uifactory.addFormLink("form.evaluation.replace", buttonsCont, Link.BUTTON_XSMALL);
 		editLink = uifactory.addFormLink("form.evaluation.edit", buttonsCont, Link.BUTTON_XSMALL);
 		
-		uifactory.addSpacerElement("spacerone", formLayout, false);
+		uifactory.addSpacerElement("spacerone", gradingCont, false);
 		
 		String scoreKey = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
 		// Points
-		scoreEnableEl = uifactory.addToggleButton("form.score", "form.score", translate("on"), translate("off"), formLayout);
+		scoreEnableEl = uifactory.addToggleButton("form.score", "form.score", translate("on"), translate("off"), gradingCont);
 		scoreEnableEl.setElementCssClass("o_sel_course_ms_score");
 		scoreEnableEl.addActionListener(FormEvent.ONCHANGE);
 		if(MSCourseNode.CONFIG_VALUE_SCORE_NONE.equals(scoreKey)) {
@@ -232,7 +265,7 @@ public class MSConfigController extends FormBasicController {
 		scoreKV.add(entry(MSCourseNode.CONFIG_VALUE_SCORE_MANUAL, translate("form.score.manual")));
 		scoreKV.add(entry(MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM, translate("form.score.eval.sum")));
 		scoreKV.add(entry(MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG, translate("form.score.eval.avg")));
-		scoreTypeEl = uifactory.addDropdownSingleselect("form.score.type", formLayout, scoreKV.keys(), scoreKV.values());
+		scoreTypeEl = uifactory.addDropdownSingleselect("form.score.type", gradingCont, scoreKV.keys(), scoreKV.values());
 		scoreTypeEl.addActionListener(FormEvent.ONCHANGE);
 		if(scoreKV.containsKey(scoreKey)) {
 			scoreTypeEl.select(scoreKey, true);
@@ -240,27 +273,27 @@ public class MSConfigController extends FormBasicController {
 		
 		// Scale
 		String scale = config.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE);
-		scaleEl = uifactory.addTextElement("form.scale", "form.scale", 8, scale, formLayout);
+		scaleEl = uifactory.addTextElement("form.scale", "form.scale", 8, scale, gradingCont);
 		scaleEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// Minimum
 		Float min = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 		min = min != null? min: MSCourseNode.CONFIG_DEFAULT_SCORE_MIN;
-		minEl = uifactory.addTextElement("form.min", "form.min", 8, min.toString(), formLayout);
+		minEl = uifactory.addTextElement("form.min", "form.min", 8, min.toString(), gradingCont);
 		minEl.setElementCssClass("o_sel_course_ms_min");
 		minEl.setMandatory(true);
 		
 		// Maximim
 		Float max = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		max = max != null? max: MSCourseNode.CONFIG_DEFAULT_SCORE_MAX;
-		maxEl = uifactory.addTextElement("form.max", "form.max", 8, max.toString(), formLayout);
+		maxEl = uifactory.addTextElement("form.max", "form.max", 8, max.toString(), gradingCont);
 		maxEl.setElementCssClass("o_sel_course_ms_max");
 		maxEl.setMandatory(true);
 		
 		if (gradeModule.isEnabled()) {
-			gradeSpacer = uifactory.addSpacerElement("spacertwo", formLayout, false);
+			gradeSpacer = uifactory.addSpacerElement("spacertwo", gradingCont, false);
 			
-			gradeEnabledEl = uifactory.addToggleButton("node.grade.enabled", "node.grade.enabled", translate("on"), translate("off"), formLayout);
+			gradeEnabledEl = uifactory.addToggleButton("node.grade.enabled", "node.grade.enabled", translate("on"), translate("off"), gradingCont);
 			gradeEnabledEl.setElementCssClass("o_sel_course_ms_grade");
 			gradeEnabledEl.addActionListener(FormEvent.ONCLICK);
 			boolean gradeEnabled = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
@@ -269,7 +302,7 @@ public class MSConfigController extends FormBasicController {
 			SelectionValues autoSV = new SelectionValues();
 			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
 			autoSV.add(new SelectionValue(Boolean.TRUE.toString(), translate("node.grade.auto.auto"), translate("node.grade.auto.auto.desc"), null, null, true));
-			gradeAutoEl = uifactory.addCardSingleSelectHorizontal("node.grade.auto", formLayout, autoSV.keys(), autoSV.values(), autoSV.descriptions(), autoSV.icons());
+			gradeAutoEl = uifactory.addCardSingleSelectHorizontal("node.grade.auto", gradingCont, autoSV.keys(), autoSV.values(), autoSV.descriptions(), autoSV.icons());
 			gradeAutoEl.setElementCssClass("o_sel_course_ms_grade_mode");
 			gradeAutoEl.select(Boolean.toString(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO)), true);
 			
@@ -277,7 +310,7 @@ public class MSConfigController extends FormBasicController {
 			gradeScaleCont = FormLayoutContainer.createInputGroupLayout("gradeScaleCont", getTranslator(), null, null);
 			gradeScaleCont.setLabel("grade.scale", null);
 			gradeScaleCont.setRootForm(mainForm);
-			formLayout.add(gradeScaleCont);
+			gradingCont.add(gradeScaleCont);
 			gradeScaleEl = uifactory.addTextElement("node.grade.scale.not", null, 255, "", gradeScaleCont);
 			gradeScaleEl.setEnabled(false);
 			gradeScaleEl.setDomReplacementWrapperRequired(false);
@@ -286,19 +319,19 @@ public class MSConfigController extends FormBasicController {
 			gradeScaleEditLink = uifactory.addFormLink("rightAddOn", "grade.scale.edit", "grade.scale.edit", null, gradeScaleCont, Link.BUTTON);
 			gradeScaleEditLink.setElementCssClass("input-group-addon o_sel_grade_edit_scale");
 			
-			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "grade.success.criterion", "", formLayout);
+			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "grade.success.criterion", "", gradingCont);
 		}
 		
-		passedSpacer = uifactory.addSpacerElement("spacerthree", formLayout, false);
+		passedSpacer = uifactory.addSpacerElement("spacerthree", gradingCont, false);
 		
 		// display passed / failed
-		passedEl = uifactory.addToggleButton("form.passed", "form.passed", translate("on"), translate("off"), formLayout);
+		passedEl = uifactory.addToggleButton("form.passed", "form.passed", translate("on"), translate("off"), gradingCont);
 		passedEl.addActionListener(FormEvent.ONCHANGE);
 		Boolean passedField = config.getBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
 		passedEl.toggle(passedField);
 
 		// passed/failed manually or automatically
-		passedTypeEl = uifactory.addRadiosVertical("form.passed.type", formLayout, trueFalseKeys, passedTypeValues);
+		passedTypeEl = uifactory.addRadiosVertical("form.passed.type", gradingCont, trueFalseKeys, passedTypeValues);
 		passedTypeEl.addActionListener(FormEvent.ONCLICK);
 		passedTypeEl.setElementCssClass("o_sel_course_ms_display_type");
 
@@ -311,41 +344,43 @@ public class MSConfigController extends FormBasicController {
 		}
 
 		// Passing grade cut value
-		cutEl = uifactory.addTextElement("form.cut", "form.cut", 8, cut.toString(), formLayout);
+		cutEl = uifactory.addTextElement("form.cut", "form.cut", 8, cut.toString(), gradingCont);
 		cutEl.setElementCssClass("o_sel_course_ms_cut");
 
-		uifactory.addSpacerElement("spacer2", formLayout, false);
+		uifactory.addSpacerElement("spacer2", gradingCont, false);
 		
 		// Ignore in course assessment
 		incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
-				translate("on"), translate("off"), formLayout);
+				translate("on"), translate("off"), gradingCont);
 		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
 		incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
 		
 		String scaling = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE_SCALING, MSCourseNode.CONFIG_DEFAULT_SCORE_SCALING);
-		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, formLayout);
+		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, gradingCont);
 		scoreScalingEl.setExampleKey("score.scaling.example", null);
 		
-		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
+		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", gradingCont, false);
 
-		initAssessmentForm(formLayout);
+		initAssessmentForm(gradingCont);
 
-		uifactory.addFormSubmitButton("save", formLayout);
+		FormLayoutContainer saveButtonCont = uifactory.addButtonsFormLayout("saveButtonCont", null, gradingCont);
+		uifactory.addFormSubmitButton("save", saveButtonCont);
 		
 		updateUI();
 	}
 	
 	private void initAssessmentForm(FormItemContainer formLayout) {
-		assessmentFormCont = uifactory.addFormSection("assessment.form", translate("assessment.form"), formLayout, FormSection.Level.SUB_TITLE);
+		FormSection assessmentFormCont = uifactory.addFormSection("assessment.form", 
+				translate("assessment.form"), formLayout, FormSection.Level.SUB_TITLE);
 
-		commentFlagEl = uifactory.addCheckboxesHorizontal("form.comment", formLayout, ENABLED_KEYS,
+		commentFlagEl = uifactory.addCheckboxesHorizontal("form.comment", assessmentFormCont, ENABLED_KEYS,
 				translateAll(getTranslator(), ENABLED_KEYS));
 		Boolean commentField = config.getBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
-		commentFlagEl.select(ENABLED_KEYS[0], commentField.booleanValue());
+		commentFlagEl.select(ENABLED_KEYS[0], commentField);
 
-		individualAssessmentDocsFlagEl = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", formLayout, ENABLED_KEYS,
+		individualAssessmentDocsFlagEl = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", assessmentFormCont, ENABLED_KEYS,
 				translateAll(getTranslator(), ENABLED_KEYS));
-		Boolean docsCf = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+		boolean docsCf = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
 		individualAssessmentDocsFlagEl.select(ENABLED_KEYS[0], docsCf);
 	}
 
@@ -471,6 +506,15 @@ public class MSConfigController extends FormBasicController {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == enableEditingLink) {
+			setDisplayOnly(false);
+			titleWarningCont.contextPut("isOverwriting", Boolean.TRUE);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

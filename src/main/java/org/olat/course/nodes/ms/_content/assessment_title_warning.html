@@ -1,7 +1,9 @@
 <fieldset class="o_sel_course_ms">
 	<legend>
 		$r.translate("grading.configuration.title")
+		#if ($showHelpLink)
 		$r.contextHelpWithWrapper("manual_user/learningresources/Course_Element_Assessment/")
+		#end
 	</legend>
 	
 	#if ($hasAssessments)
@@ -18,5 +20,4 @@
 			</div>
 		#end
 	#end
-	$r.render("mseditform")
 </fieldset>
