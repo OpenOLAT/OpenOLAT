@@ -308,6 +308,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		taughtByEl = uifactory.addCheckboxesVertical("taught.by", "cif.taught.by", displayCont, taughtBySV.keys(), taughtBySV.values(), 1);
 		taughtByEl.setHelpText(translate("cif.taught.by.help"));
 		taughtByEl.setMandatory(true);
+		taughtByEl.setEvaluationOnlyVisible(true);
 		taughtByEl.setEnabled(!readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.taughtBy));
 		repositoryEntry.getTaughtBys().forEach(taughtBy -> taughtByEl.select(taughtBy.name(), true));
 		taughtByEl.setVisible(meetTeachers);
@@ -382,11 +383,8 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == showInfoEl) {
 			boolean meetTeachers = showInfoEl.getSelectedKeys().contains(MEET_TEACHERS_KEY);
-			if(meetTeachers) {
-				TaughtBy.ALL.forEach(taughtBy -> taughtByEl.select(taughtBy.name(), false));
+			if(meetTeachers && taughtByEl.getSelectedKeys().isEmpty()) {
 				courseModule.getDefaultTaughtBys().forEach(taughtBy -> taughtByEl.select(taughtBy.name(), true));
-			} else {
-				TaughtBy.ALL.forEach(taughtBy -> taughtByEl.select(taughtBy.name(), false));
 			}
 			taughtByEl.setVisible(meetTeachers);
 		} else if (source == withMovieEl) {
