@@ -52,10 +52,11 @@ public class BookingFormStepController extends StepFormBasicController {
 	public BookingFormStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
 			BookingContext bookingContext, OfferToSurvey offerToSurvey) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		executionCtrl = CachedRunContextController.of(runContext, "form." + offerToSurvey.getSurvey().getKey(),
+		executionCtrl = CachedRunContextController.of(runContext, "form." + offerToSurvey.getSurvey().getKey(), rootForm,
 				() -> new EvaluationFormExecutionController(ureq, wControl, rootForm,
 						bookingContext.reload(offerToSurvey.getSurvey()), CoachCandidates.NONE, null),
 				this);
+		executionCtrl.get().setValidationEnabled(true);
 
 		initForm(ureq);
 	}
@@ -95,6 +96,7 @@ public class BookingFormStepController extends StepFormBasicController {
 
 	@Override
 	protected void doDispose() {
+		executionCtrl.get().setValidationEnabled(false);
 		executionCtrl.release(this);
 		super.doDispose();
 	}

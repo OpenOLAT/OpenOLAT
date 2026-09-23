@@ -364,6 +364,12 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			fragment.setReadOnly(readOnly);
 		}
 	}
+	
+	public void setValidationEnabled(boolean validationEnabled) {
+		for (ExecutionFragment fragment : fragments) {
+			fragment.setValidationEnabled(validationEnabled);
+		}
+	}
 
 	private void showHideButtons() {
 		saveLink.setVisible(!readOnly && !doneSavesOnly && session != null);

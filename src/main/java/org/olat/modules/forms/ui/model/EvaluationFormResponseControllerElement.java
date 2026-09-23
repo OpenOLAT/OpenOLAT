@@ -47,7 +47,8 @@ public class EvaluationFormResponseControllerElement
 	
 	private final EvaluationFormResponseController controller;
 	private boolean visible = true;
-	
+	private boolean validationEnabled = true;
+
 	public EvaluationFormResponseControllerElement(EvaluationFormResponseController controller) {
 		this.controller = controller;
 	}
@@ -86,7 +87,13 @@ public class EvaluationFormResponseControllerElement
 	public void setVisible(boolean visible) {
 		this.visible = visible;
 		controller.getInitialFormItem().setVisible(visible);
-		controller.setValidationEnabled(visible);
+		controller.setValidationEnabled(visible && validationEnabled);
+	}
+
+	@Override
+	public void setValidationEnabled(boolean validationEnabled) {
+		this.validationEnabled = validationEnabled;
+		controller.setValidationEnabled(visible && validationEnabled);
 	}
 	
 	@Override

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -36,6 +37,13 @@ import org.olat.core.gui.control.ControllerEventListener;
  * disposed and rebuilt on every visit; it is only added and removed as a raw
  * controller listener here, never disposed by the step itself.
  *
+ * The controller is also added and removed as a subform listener on the
+ * shared wizard root form for the duration of each visit only. Otherwise it
+ * would stay registered for the whole wizard run and its validateFormLogic()
+ * (e.g. mandatory field checks) would keep blocking "next"/"finish" on every
+ * other step, even while its own step is not the active one and its form is
+ * not shown.
+ *
  * Initial date: 3 Sep 2026<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
@@ -44,9 +52,11 @@ public final class CachedRunContextController<T extends FormBasicController> {
 
 	private static final String REGISTRY_KEY = "cachedRunContextControllers";
 
+	private final Form rootForm;
 	private final T controller;
 
-	private CachedRunContextController(T controller) {
+	private CachedRunContextController(Form rootForm, T controller) {
+		this.rootForm = rootForm;
 		this.controller = controller;
 	}
 
@@ -54,19 +64,24 @@ public final class CachedRunContextController<T extends FormBasicController> {
 	 * Returns the controller cached under cacheKey, creating it with factory
 	 * on the first call. Registers listener as a raw controller listener on
 	 * it, so the step controller is notified of its events without cascading
-	 * dispose to it.
+	 * dispose to it. Also (re-)registers the controller as a subform listener
+	 * on rootForm for this visit, see {@link #release(ControllerEventListener)}.
 	 */
 	public static <T extends FormBasicController> CachedRunContextController<T> of(StepsRunContext runContext,
-			String cacheKey, Supplier<T> factory, ControllerEventListener listener) {
+			String cacheKey, Form rootForm, Supplier<T> factory, ControllerEventListener listener) {
 		@SuppressWarnings("unchecked")
 		T controller = (T) runContext.get(cacheKey);
 		if (controller == null) {
 			controller = factory.get();
 			runContext.put(cacheKey, controller);
 			register(runContext, controller);
+			// factory already registered controller as a subform listener via
+			// its own constructor (built with rootForm)
+		} else {
+			rootForm.addSubFormListener(controller);
 		}
 		controller.addControllerListener(listener);
-		return new CachedRunContextController<>(controller);
+		return new CachedRunContextController<>(rootForm, controller);
 	}
 
 	private static void register(StepsRunContext runContext, Controller controller) {
@@ -89,6 +104,7 @@ public final class CachedRunContextController<T extends FormBasicController> {
 
 	public void release(ControllerEventListener listener) {
 		controller.removeControllerListener(listener);
+		rootForm.removeSubFormListener(controller);
 	}
 
 	/**

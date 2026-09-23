@@ -41,7 +41,9 @@ public interface EvaluationFormExecutionElement extends PageRunElement {
 	public void initRulesEngine(RulesEngine rulesEngine);
 
 	public void setVisible(boolean visible);
-	
+
+	public void setValidationEnabled(boolean validationEnabled);
+
 	public void setReadOnly(boolean readOnly);
 	
 	public boolean hasResponse();

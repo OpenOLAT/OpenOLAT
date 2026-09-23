@@ -75,6 +75,11 @@ public class EvaluationFormComponentElement implements EvaluationFormExecutionEl
 	}
 
 	@Override
+	public void setValidationEnabled(boolean validationEnabled) {
+		//
+	}
+
+	@Override
 	public void setReadOnly(boolean readOnly) {
 		getComponent().setEnabled(readOnly);
 	}

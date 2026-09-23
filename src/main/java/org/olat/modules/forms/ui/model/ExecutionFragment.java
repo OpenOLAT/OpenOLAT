@@ -56,6 +56,10 @@ public class ExecutionFragment extends PageFragment {
 	public void setVisible(boolean visible) {
 		executionElement.setVisible(visible);
 	}
+
+	public void setValidationEnabled(boolean validationEnabled) {
+		executionElement.setValidationEnabled(validationEnabled);
+	}
 	
 	public void setReadOnly(boolean readOnly) {
 		executionElement.setReadOnly(readOnly);

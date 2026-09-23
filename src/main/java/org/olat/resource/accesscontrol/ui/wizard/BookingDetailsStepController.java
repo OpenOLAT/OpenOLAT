@@ -48,7 +48,7 @@ public class BookingDetailsStepController extends StepFormBasicController {
 	public BookingDetailsStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
 			BookingContext bookingContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		detailsCtrl = CachedRunContextController.of(runContext, CACHE_KEY,
+		detailsCtrl = CachedRunContextController.of(runContext, CACHE_KEY, rootForm,
 				() -> new InvoiceSubmitDetailsController(ureq, wControl, bookingContext, rootForm), this);
 
 		initForm(ureq);
