@@ -270,6 +270,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			taughtByEl = uifactory.addCheckboxesVertical("taught.by", "cif.taught.by", displayCont, taughtBySV.keys(), taughtBySV.values(), 1);
 			taughtByEl.setHelpText(translate("cif.taught.by.help"));
 			taughtByEl.setMandatory(true);
+			taughtByEl.setEvaluationOnlyVisible(true);
 			taughtByEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.taughtBy));
 			element.getTaughtBys().forEach(taughtBy -> taughtByEl.select(taughtBy.name(), true));
 			taughtByEl.setVisible(meetTeachers);
@@ -369,11 +370,8 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		if(showInfoEl == source) {
 			Collection<String> selectedInfo = showInfoEl.getSelectedKeys();
 			boolean meetTeachers = selectedInfo.contains(MEET_TEACHERS_KEY);
-			if(meetTeachers) {
-				TaughtBy.ALL.forEach(taughtBy -> taughtByEl.select(taughtBy.name(), false));
+			if(meetTeachers && taughtByEl.getSelectedKeys().isEmpty()) {
 				curriculumModule.getDefaultTaughtBys().forEach(taughtBy -> taughtByEl.select(taughtBy.name(), true));
-			} else {
-				TaughtBy.ALL.forEach(taughtBy -> taughtByEl.select(taughtBy.name(), false));
 			}
 			taughtByEl.setVisible(meetTeachers);
 			creditPointCont.setVisible(selectedInfo.contains(CREDIT_POINTS_KEY));
