@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -157,17 +159,17 @@ public class EvaluationFormExcelExport {
 
 	public void createWorkbook(OutputStream out) {
 		List<String> sheetNames = getWorksheetNames();
+		List<ResponseSheet> responseSheets = getResponseSheets();
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, sheetNames.size(), sheetNames)) {
-			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
-			
-			mergedElementIds.clear();
-			addHeader(workbook, exportSheet);
-			addContent(workbook, exportSheet);
-			if (sheetNames.size() > 1) {
-				for (int i = 1; i < sheetNames.size() - 1; i++) {
-					exportSheet = workbook.nextWorksheet();
-					addCustomWorksheet(workbook, exportSheet, i);
-				}
+			for (ResponseSheet responseSheet : responseSheets) {
+				OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
+				mergedElementIds.clear();
+				addHeader(workbook, exportSheet);
+				addContent(workbook, exportSheet, responseSheet.filter());
+			}
+			for (int i = responseSheets.size(); i < sheetNames.size() - 1; i++) {
+				OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
+				addCustomWorksheet(workbook, exportSheet, i - responseSheets.size() + 1);
 			}
 			
 			OpenXMLWorksheet metadataSheet = workbook.nextWorksheet();
@@ -179,8 +181,18 @@ public class EvaluationFormExcelExport {
 		}
 	}
 
+	/**
+	 * The response sheets come first, the metadata sheet last. Custom sheets are in between.
+	 */
 	protected List<String> getWorksheetNames() {
-		return List.of("response", "metadata");
+		return Stream.concat(getResponseSheets().stream().map(ResponseSheet::name), Stream.of("metadata")).toList();
+	}
+	
+	/**
+	 * One sheet with the header and the responses per entry. The filter selects the sessions of the sheet.
+	 */
+	protected List<ResponseSheet> getResponseSheets() {
+		return List.of(new ResponseSheet("response", session -> true));
 	}
 	
 	/**
@@ -277,8 +289,11 @@ public class EvaluationFormExcelExport {
 		}
 	}
 
-	private void addContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+	private void addContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, Predicate<EvaluationFormSession> filter) {
 		for (EvaluationFormSession session: sessions) {
+			if (!filter.test(session)) {
+				continue;
+			}
 			Row row = exportSheet.newRow();
 			AtomicInteger col = new AtomicInteger();
 			userColumns.addColumns(session, row, col, workbook.getStyles());
@@ -580,6 +595,9 @@ public class EvaluationFormExcelExport {
 	
 	protected Figures getCustomFigures() {
 		return null;
+	}
+
+	public record ResponseSheet(String name, Predicate<EvaluationFormSession> filter) {
 	}
 
 	public interface UserColumns {

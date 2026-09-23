@@ -429,7 +429,7 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 		OfferSurveyUserColumns userColumns = new OfferSurveyUserColumns(userPropertyHandlers, getTranslator());
 		String stepName = survey.getDisplayName();
 		String fileName = StringHelper.containsNonWhitespace(stepName) ? stepName : survey.getFormEntry().getDisplayname();
-		EvaluationFormExcelExport excelExport = new EvaluationFormExcelExport(getLocale(), survey.getFormEntry(), form,
+		EvaluationFormExcelExport excelExport = new OfferSurveyExcelExport(getLocale(), survey.getFormEntry(), form,
 				filter, null, userColumns, fileName);
 		String path = withPath ? StringHelper.transformDisplayNameToFileSystemName(fileName) : "";
 		return new SurveyExportInfos(survey, form, filter, excelExport, path);

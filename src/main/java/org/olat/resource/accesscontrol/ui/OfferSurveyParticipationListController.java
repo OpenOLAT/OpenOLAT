@@ -388,7 +388,7 @@ public class OfferSurveyParticipationListController extends FormBasicController 
 		org.olat.modules.forms.model.xml.Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 
 		OfferSurveyUserColumns userColumns = new OfferSurveyUserColumns(userPropertyHandlers, getTranslator());
-		EvaluationFormExcelExport export = new EvaluationFormExcelExport(getLocale(), survey.getFormEntry(), form,
+		EvaluationFormExcelExport export = new OfferSurveyExcelExport(getLocale(), survey.getFormEntry(), form,
 				filter, null, userColumns, survey.getFormEntry().getDisplayname());
 		
 		MediaResource mediaResource = OfferSurveyExportFactory.createExport(getIdentity(), getWindowControl(),
