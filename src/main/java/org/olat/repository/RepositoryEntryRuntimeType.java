@@ -38,6 +38,15 @@ public enum RepositoryEntryRuntimeType {
 	private RepositoryEntryRuntimeType() {
 		//
 	}
+
+	public String getIconCss() {
+		return switch(this) {
+			case standalone -> "o_icon_people";
+			case curricular -> "o_icon_curriculum";
+			case embedded -> "o_icon_link";
+			case template -> "o_icon_template";
+		};
+	}
 	
 	public static final RepositoryEntryRuntimeType[] ORDERED = {
 			RepositoryEntryRuntimeType.standalone,

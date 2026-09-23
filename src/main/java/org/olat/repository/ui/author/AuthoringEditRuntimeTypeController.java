@@ -72,13 +72,7 @@ public class AuthoringEditRuntimeTypeController extends FormBasicController {
 		FormLayoutContainer changeRuntimeCont = uifactory.addCustomFormLayout("runtime", "change.runtime.type.label", page, formLayout);
 		
 		RepositoryEntryRuntimeType type = entry.getRuntimeType() == null ? RepositoryEntryRuntimeType.standalone : entry.getRuntimeType();
-		String iconCss = switch (type) {
-			case standalone -> "o_icon_people";
-			case curricular -> "o_icon_curriculum";
-			case embedded -> "o_icon_link";
-			case template -> "o_icon_template";
-		};
-		changeRuntimeCont.contextPut("iconCss", iconCss);
+		changeRuntimeCont.contextPut("iconCss", type.getIconCss());
 		changeRuntimeCont.contextPut("title", translate("runtime.type." + type + ".title"));
 		changeRuntimeCont.contextPut("text", translate("runtime.type." + type + ".desc"));
 		

@@ -69,7 +69,7 @@ public class ModifyRuntimeTypeController extends FormBasicController {
 	private RepositoryService repositoryService;
 
 	public ModifyRuntimeTypeController(UserRequest ureq, WindowControl wControl, List<RepositoryEntry> entries) {
-		super(ureq, wControl, "editruntimetype");
+		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator()));
 		this.entries = entries;
 		initForm(ureq);
@@ -78,10 +78,6 @@ public class ModifyRuntimeTypeController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_edit_runtime_type_form");
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("r_info", translate("change.runtime.type.info.select"));
-			layoutCont.contextPut("r_info_help_url", "manual_user/learningresources/Course_Settings_Share/#section_usage");
-		}
 
 		Set<RepositoryEntryRuntimeType> runtimeTypes = repositoryService.getPossibleRuntimeTypes(entries);
 		if (allEntriesHaveTheSameRuntimeType()) {
@@ -92,26 +88,32 @@ public class ModifyRuntimeTypeController extends FormBasicController {
 		if (runtimeTypes.contains(RepositoryEntryRuntimeType.embedded)) {
 			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.embedded.name(),
 					translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".title"),
-					translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".desc"), "o_icon o_icon_link", null, true));
+					translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".desc"),
+					"o_icon " + RepositoryEntryRuntimeType.embedded.getIconCss(), null, true));
 		}
 		if (runtimeTypes.contains(RepositoryEntryRuntimeType.standalone)) {
 			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(),
 					translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".title"),
-					translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"), "o_icon o_icon_people", null, true));
+					translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"),
+					"o_icon " + RepositoryEntryRuntimeType.standalone.getIconCss(), null, true));
 		}
 		if (runtimeTypes.contains(RepositoryEntryRuntimeType.curricular)) {
 			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.curricular.name(),
 					translate("runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".title"),
-					translate("runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".desc"), "o_icon o_icon_curriculum", null, false));
+					translate("runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".desc"),
+					"o_icon " + RepositoryEntryRuntimeType.curricular.getIconCss(), null, false));
 		}
 
 		if (runtimeTypes.contains(RepositoryEntryRuntimeType.template)) {
 			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.template.name(),
 					translate("runtime.type." + RepositoryEntryRuntimeType.template.name() + ".title"),
-					translate("runtime.type." + RepositoryEntryRuntimeType.template.name() + ".desc"), "o_icon o_icon_template", null, false));
+					translate("runtime.type." + RepositoryEntryRuntimeType.template.name() + ".desc"),
+					"o_icon " + RepositoryEntryRuntimeType.template.getIconCss(), null, false));
 		}
 
-		runtimeTypeEl = uifactory.addCardSingleSelectHorizontal("cif.runtime.type", "cif.runtime.type", formLayout, runtimeTypeKV);
+		runtimeTypeEl = uifactory.addCardSingleSelectHorizontal("cif.runtime.type", "change.runtime.type.to", formLayout, runtimeTypeKV);
+		runtimeTypeEl.setHelpTextKey("change.runtime.type.to.help", null);
+		runtimeTypeEl.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Share/#section_usage");
 		if (allEntriesHaveTheSameRuntimeType()) {
 			runtimeTypeEl.select(entries.get(0).getRuntimeType().name(), true);
 		}
