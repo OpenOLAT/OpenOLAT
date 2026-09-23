@@ -72,6 +72,15 @@
 	</div>
 #end
 
+#if($offer.guestUrl)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_guest_url_${offer.offer.key}">$r.translate("access.info.external.link.guest")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_guest_url_${offer.offer.key}">
+		$offer.guestUrl
+	</div>
+#end
+
 <div class="o_cmds pull-right">
 	#if($r.available($offer.editButton.component.componentName))
 		$r.render($offer.editButton)

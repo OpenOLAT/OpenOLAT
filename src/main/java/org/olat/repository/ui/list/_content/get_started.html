@@ -26,6 +26,11 @@
 	#end
 
 	<div class="o_header_offers">
+		#if($r.available("details"))
+			<div class="o_block_bottom">
+				$r.render("details")
+			</div>
+		#end
 		#if($r.available("offers") && $r.visible("offers"))
 			$r.render("offers")
 		#elseif($r.isNotEmpty($catalogBookable))

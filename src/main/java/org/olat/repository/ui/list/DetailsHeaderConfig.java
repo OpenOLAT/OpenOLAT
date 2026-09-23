@@ -22,6 +22,7 @@ package org.olat.repository.ui.list;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
@@ -36,6 +37,8 @@ public interface DetailsHeaderConfig {
 	Identity getBookedIdentity();
 	
 	String getGuestStartUrl();
+	
+	Offer getGuestOffer();
 
 	boolean isOpenAvailable();
 

@@ -45,11 +45,13 @@ public class OfferDetailsController extends BasicController {
 	private AccessControlModule acModule;
 
 	public OfferDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess offerAccess) {
+		this(ureq, wControl, offerAccess.getOffer());
+	}
+
+	public OfferDetailsController(UserRequest ureq, WindowControl wControl, Offer offer) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("offer_details");
 		putInitialPanel(mainVC);
-		
-		Offer offer = offerAccess.getOffer();
 		
 		Price price = offer.getPrice();
 		if (price != null && !price.isEmpty()) {

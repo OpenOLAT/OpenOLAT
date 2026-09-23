@@ -30,6 +30,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.list.DetailsHeaderConfig;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
@@ -81,6 +82,11 @@ public class PreviewCurriculumElementHeaderConfig implements DetailsHeaderConfig
 
 	@Override
 	public String getGuestStartUrl() {
+		return null;
+	}
+
+	@Override
+	public Offer getGuestOffer() {
 		return null;
 	}
 

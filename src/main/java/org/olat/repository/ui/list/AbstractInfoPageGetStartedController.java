@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -37,6 +38,7 @@ import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.ui.OfferDetailsController;
 import org.olat.resource.accesscontrol.ui.OffersController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -103,8 +105,14 @@ public abstract class AbstractInfoPageGetStartedController extends BasicControll
 	}
 
 	private void initByConfig(UserRequest ureq) {
+		if (config.getGuestOffer() != null) {
+			OfferDetailsController detailsCtrl = new OfferDetailsController(ureq, getWindowControl(), config.getGuestOffer());
+			listenTo(detailsCtrl);
+			mainVC.put("details", detailsCtrl.getInitialComponent());
+		}
+		
 		// Guest start
-		if (org.olat.core.util.StringHelper.containsNonWhitespace(config.getGuestStartUrl())) {
+		if (StringHelper.containsNonWhitespace(config.getGuestStartUrl())) {
 			startCtrl.getInitialComponent().setVisible(true);
 			startCtrl.getStartLink().setVisible(false);
 			startCtrl.getGuestStartLink().setVisible(true);

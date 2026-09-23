@@ -56,6 +56,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
@@ -68,6 +69,8 @@ import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.catalog.ui.SortPriorityEditController;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -671,6 +674,8 @@ public class AccessConfigurationController extends FormBasicController {
 	private void addGuestOffer(Offer offer) {
 		for(AccessInfo accessInfo : accessInfos) {
 			if (accessInfo.getOffer().equals(offer)) {
+				accessInfo.setOffer(offer);
+				offersContainer.setDirty(true);
 				return;
 			}
 		}
@@ -689,6 +694,8 @@ public class AccessConfigurationController extends FormBasicController {
 		infos.setConfigCont(cont);
 		
 		infos.setOffer(offer);
+		infos.setGuestUrl(getGuestUrl());
+		cont.contextPut("offer", infos);
 		
 		if (!readOnly) {
 			forgeLinks(infos);
@@ -696,6 +703,14 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		offersContainer.setDirty(true);
 		updateAddUI();
+	}
+
+	private String getGuestUrl() {
+		RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(resource, false);
+		if (entry == null) {
+			return null;
+		}
+		return BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]") + "?guest=true";
 	}
 
 	private void forgeCatalogInfos(FormItemContainer formLayout) {
@@ -1170,6 +1185,7 @@ public class AccessConfigurationController extends FormBasicController {
 		private Offer offer;
 		private OfferCatalogInfo offerCatalogInfo;
 		private String dates;
+		private String guestUrl;
 		private final int numOfOrders;
 		private Collection<Organisation> offerOrganisations;
 		private OfferAccess link;
@@ -1229,6 +1245,14 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		public String getDates() {
 			return dates;
+		}
+
+		public String getGuestUrl() {
+			return guestUrl;
+		}
+
+		public void setGuestUrl(String guestUrl) {
+			this.guestUrl = guestUrl;
 		}
 
 		private void initDates() {

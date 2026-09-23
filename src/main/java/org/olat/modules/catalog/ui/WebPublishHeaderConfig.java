@@ -26,6 +26,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.Offer;
 
 /**
  *
@@ -43,6 +44,9 @@ public class WebPublishHeaderConfig extends BasicDetailsHeaderConfig {
 		if (acService.isGuestAccessible(entry, true)) {
 			String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
 			guestStartUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath) + "?guest=true";
+			guestOffer = acService.getOffers(entry, true, true, null, false, Boolean.TRUE, null).stream()
+					.filter(Offer::isGuestAccess)
+					.findFirst().orElse(null);
 		} else if (entry.isPublicVisible()) {
 			AccessResult acResult = acService.isAccessible(entry, null, Boolean.FALSE, false, Boolean.TRUE, false);
 			if (acResult.isAccessible()) {

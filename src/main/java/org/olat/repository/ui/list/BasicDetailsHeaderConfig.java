@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.course.run.leave.LeaveCourseStatus;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
@@ -36,6 +37,7 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 
 	protected final Identity identity;
 	protected String guestStartUrl;
+	protected Offer guestOffer;
 	protected ParticipantsAvailabilityNum participantsAvailability;
 	protected boolean openAvailable = false;
 	protected boolean openEnabled = false;
@@ -112,6 +114,11 @@ public class BasicDetailsHeaderConfig implements DetailsHeaderConfig {
 	@Override
 	public String getGuestStartUrl() {
 		return guestStartUrl;
+	}
+	
+	@Override
+	public Offer getGuestOffer() {
+		return guestOffer;
 	}
 
 	@Override

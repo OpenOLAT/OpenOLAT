@@ -24,6 +24,7 @@ import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.Offer;
 
 /**
  *
@@ -37,10 +38,13 @@ public class GuestHeaderConfig extends BasicDetailsHeaderConfig {
 		super(identity);
 		
 		if (entry.isPublicVisible()) {
-			AccessResult acResult = CoreSpringFactory.getImpl(ACService.class)
-					.isAccessible(entry, identity, Boolean.FALSE, true, null, false);
+			ACService acService = CoreSpringFactory.getImpl(ACService.class);
+			AccessResult acResult = acService.isAccessible(entry, identity, Boolean.FALSE, true, null, false);
 			if (acResult.isAccessible()) {
 				openEnabled();
+				guestOffer = acService.getOffers(entry, true, true, null, false, null, null).stream()
+						.filter(Offer::isGuestAccess)
+						.findFirst().orElse(null);
 			}
 		}
 	}
