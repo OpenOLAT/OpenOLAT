@@ -53,6 +53,10 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String AUDITLOG_BODY = "restapi.auditlog.body";
 	private static final String AUDITLOG_BODY_MAXSIZE = "restapi.auditlog.body.maxsize";
 	private static final String AUDITLOG_RETENTION_DAYS = "restapi.auditlog.retention.days";
+	private static final String RATELIMIT_ENABLED = "restapi.ratelimit.enabled";
+	private static final String RATELIMIT_REQUESTS_PER_MINUTE = "restapi.ratelimit.requests.per.minute";
+	private static final String RATELIMIT_MAX_PARALLEL = "restapi.ratelimit.max.parallel";
+	private static final String RATELIMIT_ANONYMOUS_REQUESTS_PER_MINUTE = "restapi.ratelimit.anonymous.requests.per.minute";
 
 	@Value("${restapi.enable:false}")
 	private boolean enabled;
@@ -72,6 +76,14 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	private int auditLogBodyMaxSize;
 	@Value("${restapi.auditlog.retention.days:365}")
 	private int auditLogRetentionDays;
+	@Value("${restapi.ratelimit.enabled:false}")
+	private String rateLimitEnabled;
+	@Value("${restapi.ratelimit.requests.per.minute:600}")
+	private int rateLimitRequestsPerMinute;
+	@Value("${restapi.ratelimit.max.parallel:4}")
+	private int rateLimitMaxParallel;
+	@Value("${restapi.ratelimit.anonymous.requests.per.minute:60}")
+	private int rateLimitAnonymousRequestsPerMinute;
 
 	@Autowired
 	public RestModule(CoordinatorManager coordinatorManager) {
@@ -99,6 +111,11 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 		auditLogBody = getStringPropertyValue(AUDITLOG_BODY, auditLogBody);
 		auditLogBodyMaxSize = getIntPropertyValue(AUDITLOG_BODY_MAXSIZE, auditLogBodyMaxSize);
 		auditLogRetentionDays = getIntPropertyValue(AUDITLOG_RETENTION_DAYS, auditLogRetentionDays);
+		
+		rateLimitEnabled = getStringPropertyValue(RATELIMIT_ENABLED, rateLimitEnabled);
+		rateLimitRequestsPerMinute = getIntPropertyValue(RATELIMIT_REQUESTS_PER_MINUTE, rateLimitRequestsPerMinute);
+		rateLimitMaxParallel = getIntPropertyValue(RATELIMIT_MAX_PARALLEL, rateLimitMaxParallel);
+		rateLimitAnonymousRequestsPerMinute = getIntPropertyValue(RATELIMIT_ANONYMOUS_REQUESTS_PER_MINUTE, rateLimitAnonymousRequestsPerMinute);
 	}
 
 	@Override
@@ -185,6 +202,54 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setAuditLogRetentionDays(int days) {
 		auditLogRetentionDays = days;
 		setIntProperty(AUDITLOG_RETENTION_DAYS, days, true);
+	}
+
+	/**
+	 * @return true if the requests above the limits are rejected with the status 429
+	 */
+	public boolean isRateLimitEnabled() {
+		return "true".equals(rateLimitEnabled);
+	}
+
+	public void setRateLimitEnabled(boolean enable) {
+		rateLimitEnabled = enable ? "true" : "false";
+		setStringProperty(RATELIMIT_ENABLED, rateLimitEnabled, true);
+	}
+
+	/**
+	 * @return the number of requests per minute of an authenticated user, counted per node
+	 */
+	public int getRateLimitRequestsPerMinute() {
+		return rateLimitRequestsPerMinute;
+	}
+
+	public void setRateLimitRequestsPerMinute(int requestsPerMinute) {
+		rateLimitRequestsPerMinute = requestsPerMinute;
+		setIntProperty(RATELIMIT_REQUESTS_PER_MINUTE, requestsPerMinute, true);
+	}
+
+	/**
+	 * @return the number of parallel requests of an authenticated user, counted per node
+	 */
+	public int getRateLimitMaxParallel() {
+		return rateLimitMaxParallel;
+	}
+
+	public void setRateLimitMaxParallel(int maxParallel) {
+		rateLimitMaxParallel = maxParallel;
+		setIntProperty(RATELIMIT_MAX_PARALLEL, maxParallel, true);
+	}
+
+	/**
+	 * @return the number of requests per minute of an unauthenticated client IP, counted per node
+	 */
+	public int getRateLimitAnonymousRequestsPerMinute() {
+		return rateLimitAnonymousRequestsPerMinute;
+	}
+
+	public void setRateLimitAnonymousRequestsPerMinute(int requestsPerMinute) {
+		rateLimitAnonymousRequestsPerMinute = requestsPerMinute;
+		setIntProperty(RATELIMIT_ANONYMOUS_REQUESTS_PER_MINUTE, requestsPerMinute, true);
 	}
 
 	public ApiAccess getApiAccess() {

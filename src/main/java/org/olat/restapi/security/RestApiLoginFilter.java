@@ -39,6 +39,7 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
@@ -63,6 +64,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.ratelimit.RateLimitDecision;
+import org.olat.core.util.ratelimit.RequestRateLimiter;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationStatus;
@@ -89,11 +92,20 @@ public class RestApiLoginFilter implements Filter {
 
 	private static final String BASIC_AUTH_REALM = "OLAT Rest API";
 	public static final String SYSTEM_MARKER = UUID.randomUUID().toString();
+	
+	public static final String HEADER_RETRY_AFTER = "Retry-After";
+	public static final String HEADER_RATELIMIT_LIMIT = "X-RateLimit-Limit";
+	public static final String HEADER_RATELIMIT_REMAINING = "X-RateLimit-Remaining";
+	public static final String HEADER_RATELIMIT_RESET = "X-RateLimit-Reset";
 
 	private static List<String> openUrls;
 	private static List<String> alwaysEnabledUrls;
 	private static List<String> ipProtectedUrls;
+	private static List<String> rateLimitExemptUrls;
 	private static String LOGIN_URL;
+	
+	private RestModule restModule;
+	private RequestRateLimiter requestRateLimiter;
 
 	/**
 	 * The survive time of the session used by token based authentication. For every request
@@ -110,13 +122,27 @@ public class RestApiLoginFilter implements Filter {
 	public void destroy() {
 		//
 	}
+	
+	private RestModule getRestModule() {
+		if(restModule == null) {
+			restModule = CoreSpringFactory.getImpl(RestModule.class);
+		}
+		return restModule;
+	}
+	
+	private RequestRateLimiter getLimiter() {
+		if(requestRateLimiter == null) {
+			requestRateLimiter = CoreSpringFactory.getImpl(RequestRateLimiter.class);
+		}
+		return requestRateLimiter;
+	}
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 	throws ServletException {
 
 		if(request instanceof HttpServletRequest originalRequest && response instanceof HttpServletResponse httpResponse) {
-			RestModule restModule = CoreSpringFactory.getImpl(RestModule.class);
+			RestModule restModule = getRestModule();
 			SessionStatsManager statsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
 			ApiAuditLogService auditLogService = CoreSpringFactory.getImpl(ApiAuditLogService.class);
 
@@ -230,6 +256,97 @@ public class RestApiLoginFilter implements Filter {
 	private void sendUnauthorized(HttpServletResponse httpResponse) {
 		httpResponse.setHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\"");
 		httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	}
+	
+	/**
+	 * The only way to the filter chain. Takes a slot for a parallel request,
+	 * counts the request in the window of the subject and follows the chain.
+	 * A request above a limit is rejected at once with the status 429, it never
+	 * waits. The check runs outside of the lock of the user session.<br>
+	 * The warn line of the access log and the row of the audit log are written
+	 * by the audit of the request, as for every request rejected by this filter.
+	 * 
+	 * @param request The request
+	 * @param response The response
+	 * @param call The call of the filter chain
+	 */
+	private void limitAndFollow(HttpServletRequest request, HttpServletResponse response, ChainCall call)
+	throws IOException, ServletException {
+		RestModule restModule = getRestModule();
+		if(!restModule.isRateLimitEnabled() || isRateLimitExempt(getRequestURI(request), request, restModule)) {
+			call.proceed();
+			return;
+		}
+		
+		RateLimitSubject subject = getRateLimitSubject(request, restModule);
+		RequestRateLimiter limiter = getLimiter();
+		if(!limiter.acquire(subject.key(), restModule.getRateLimitMaxParallel())) {
+			log.debug("Rate limit of parallel requests reached: {} {}", subject.key(), request.getRequestURI());
+			sendTooManyRequests(response, 1);
+			return;
+		}
+		
+		try {
+			RateLimitDecision decision = limiter.check(subject.key(), subject.limitPerMinute());
+			response.setHeader(HEADER_RATELIMIT_LIMIT, Integer.toString(decision.limit()));
+			response.setHeader(HEADER_RATELIMIT_REMAINING, Integer.toString(decision.remaining()));
+			response.setHeader(HEADER_RATELIMIT_RESET, Long.toString(decision.resetEpochSeconds()));
+			if(decision.allowed()) {
+				call.proceed();
+			} else {
+				log.debug("Rate limit of requests per minute reached: {} {}", subject.key(), request.getRequestURI());
+				sendTooManyRequests(response, decision.retryAfterSeconds());
+			}
+		} finally {
+			limiter.release(subject.key());
+		}
+	}
+	
+	/**
+	 * An authenticated user is limited by its identity, all other
+	 * requests by the IP of the client with the limit for anonymous requests.
+	 * 
+	 * @param request The request
+	 * @param restModule The module with the limits
+	 * @return The subject
+	 */
+	private RateLimitSubject getRateLimitSubject(HttpServletRequest request, RestModule restModule) {
+		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(request);
+		if(usess != null && usess.isAuthenticated() && usess.getIdentity() != null) {
+			return new RateLimitSubject("rest:id:" + usess.getIdentity().getKey(), restModule.getRateLimitRequestsPerMinute());
+		}
+		return new RateLimitSubject("rest:ip:" + request.getRemoteAddr(), restModule.getRateLimitAnonymousRequestsPerMinute());
+	}
+	
+	/**
+	 * /ping and /i18n are never limited, /system only if the IP of the
+	 * client has access to the system informations.
+	 */
+	private boolean isRateLimitExempt(String requestURI, HttpServletRequest request, RestModule restModule) {
+		List<String> uris = getRateLimitExemptURIs();
+		if(uris != null) {
+			for(String uri:uris) {
+				if(requestURI.startsWith(uri)) {
+					return true;
+				}
+			}
+		}
+		return isRequestURIInIPProtectedSpace(requestURI, request, restModule);
+	}
+	
+	/**
+	 * Send the status 429 with the header Retry-After and a JSON body. The
+	 * message is not translated and contains no user input.
+	 * 
+	 * @param response The response
+	 * @param retryAfterSeconds The seconds to wait
+	 */
+	private void sendTooManyRequests(HttpServletResponse response, int retryAfterSeconds) throws IOException {
+		response.setStatus(Status.TOO_MANY_REQUESTS.getStatusCode());
+		response.setHeader(HEADER_RETRY_AFTER, Integer.toString(retryAfterSeconds));
+		response.setContentType("application/json;charset=utf-8");
+		response.getWriter().write("{\"code\":429,\"message\":\"Too many requests, retry after "
+				+ retryAfterSeconds + " seconds\"}");
 	}
 	
 	/**
@@ -350,9 +467,9 @@ public class RestApiLoginFilter implements Filter {
 		return AuthHelper.doHeadlessLogin(identity, provider, ureq, true);
 	}
 
-	private void followBasicAuthenticated(ServletRequest request, ServletResponse response, FilterChain chain)
+	private void followBasicAuthenticated(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 	throws ServletException, IOException {
-		chain.doFilter(request, response);
+		limitAndFollow(request, response, () -> chain.doFilter(request, response));
 	}
 
 	private boolean isRequestTokenValid(HttpServletRequest request) {
@@ -421,7 +538,7 @@ public class RestApiLoginFilter implements Filter {
 		}
 
 		request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
-		chain.doFilter(request, response);
+		limitAndFollow(request, response, () -> chain.doFilter(request, response));
 	}
 
 	private void followWithoutAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -453,7 +570,7 @@ public class RestApiLoginFilter implements Filter {
 		request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
 
 		//no authentication, but no authentication needed, go further
-		chain.doFilter(request, response);
+		limitAndFollow(request, response, () -> chain.doFilter(request, response));
 	}
 
 	private void upgradeIpAuthentication(HttpServletRequest request, HttpServletResponse response)
@@ -520,9 +637,11 @@ public class RestApiLoginFilter implements Filter {
 				String renewedToken = securityBean.renewToken(token);
 				if(renewedToken != null) {
 					response.setHeader(RestSecurityHelper.SEC_TOKEN, renewedToken);
-					synchronized(uress) {
-						chain.doFilter(request, response);
-					}
+					limitAndFollow(request, response, () -> {
+						synchronized(uress) {
+							chain.doFilter(request, response);
+						}
+					});
 				} else response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			} else response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		} else response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -547,13 +666,15 @@ public class RestApiLoginFilter implements Filter {
 				auditAuthentication(request, ApiAuditLogService.AUTH_SESSION);
 			}
 			Tracing.setUserSession(uress);
-			synchronized(uress) {
-				try {
-					chain.doFilter(request, response);
-				} catch (Exception e) {
-					log.error("", e);
+			limitAndFollow(request, response, () -> {
+				synchronized(uress) {
+					try {
+						chain.doFilter(request, response);
+					} catch (Exception e) {
+						log.error("", e);
+					}
 				}
-			}
+			});
 		} else {
 			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		}
@@ -648,6 +769,17 @@ public class RestApiLoginFilter implements Filter {
 		return openUrls;
 	}
 
+	private List<String> getRateLimitExemptURIs() {
+		if(rateLimitExemptUrls == null && isWebappHelperInitiated()) {
+			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);
+			List<String> urls = new ArrayList<>();
+			urls.add(context + "/ping");
+			urls.add(context + "/i18n");
+			rateLimitExemptUrls = urls;
+		}
+		return rateLimitExemptUrls;
+	}
+
 	private List<String> getIPProtectedURIs() {
 		if(ipProtectedUrls == null && isWebappHelperInitiated()) {
 			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);
@@ -656,5 +788,18 @@ public class RestApiLoginFilter implements Filter {
 			ipProtectedUrls = urls;
 		}
 		return ipProtectedUrls;
+	}
+	
+	/**
+	 * The call of the filter chain. Two callers wrap it in a synchronized
+	 * block, the limit is checked outside of it.
+	 */
+	@FunctionalInterface
+	private interface ChainCall {
+		void proceed() throws IOException, ServletException;
+	}
+	
+	private record RateLimitSubject(String key, int limitPerMinute) {
+		//
 	}
 }

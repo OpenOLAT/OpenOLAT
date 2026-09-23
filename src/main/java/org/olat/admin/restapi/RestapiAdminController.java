@@ -81,6 +81,12 @@ public class RestapiAdminController extends FormBasicController {
 	private MultipleSelectionElement managedAssessmentModeEl;
 	private FormLayoutContainer docLinkFlc;
 	
+	private FormLayoutContainer rateLimitCont;
+	private FormToggle rateLimitEnabledEl;
+	private IntegerElement rateLimitRequestsPerMinuteEl;
+	private IntegerElement rateLimitMaxParallelEl;
+	private IntegerElement rateLimitAnonymousRequestsPerMinuteEl;
+	
 	private FormLayoutContainer auditCont;
 	private FormToggle auditEnabledEl;
 	private MultipleSelectionElement auditReadsEl;
@@ -119,6 +125,7 @@ public class RestapiAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initRestForm(formLayout);
+		initRateLimitForm(formLayout);
 		initAuditForm(formLayout);
 		initManagedForm(formLayout);
 	}
@@ -159,6 +166,36 @@ public class RestapiAdminController extends FormBasicController {
 		docLinkFlc.contextPut("openApiLink", openApiLink);
 		String swaggerUiUrl = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/api-docs/";
 		docLinkFlc.contextPut("swaggerUiLink", swaggerUiUrl);
+	}
+
+	private void initRateLimitForm(FormItemContainer formLayout) {
+		rateLimitCont = uifactory.addDefaultFormLayout("rateLimitCont", null, formLayout);
+		rateLimitCont.setFormTitle(translate("ratelimit.title"));
+		rateLimitCont.setFormInfo(translate("ratelimit.intro"));
+		rateLimitCont.setFormContextHelp("manual_admin/administration/REST_API/#rate-limit");
+		rateLimitCont.setVisible(restModule.isEnabled());
+		
+		rateLimitEnabledEl = uifactory.addToggleButton("ratelimit.enabled", "ratelimit.enabled", translate("on"), translate("off"), rateLimitCont);
+		rateLimitEnabledEl.toggle(restModule.isRateLimitEnabled());
+		
+		rateLimitRequestsPerMinuteEl = uifactory.addIntegerElement("ratelimit.requests.per.minute", "ratelimit.requests.per.minute",
+				restModule.getRateLimitRequestsPerMinute(), rateLimitCont);
+		rateLimitRequestsPerMinuteEl.setMinValueCheck(1, "form.error.positive.integer");
+		rateLimitRequestsPerMinuteEl.setExampleKey("ratelimit.per.node.hint", null);
+		rateLimitRequestsPerMinuteEl.setDisplaySize(6);
+		
+		rateLimitMaxParallelEl = uifactory.addIntegerElement("ratelimit.max.parallel", "ratelimit.max.parallel",
+				restModule.getRateLimitMaxParallel(), rateLimitCont);
+		rateLimitMaxParallelEl.setMinValueCheck(1, "form.error.positive.integer");
+		rateLimitMaxParallelEl.setExampleKey("ratelimit.per.node.hint", null);
+		rateLimitMaxParallelEl.setDisplaySize(6);
+		
+		rateLimitAnonymousRequestsPerMinuteEl = uifactory.addIntegerElement("ratelimit.anonymous.requests.per.minute", "ratelimit.anonymous.requests.per.minute",
+				restModule.getRateLimitAnonymousRequestsPerMinute(), rateLimitCont);
+		rateLimitAnonymousRequestsPerMinuteEl.setMinValueCheck(1, "form.error.positive.integer");
+		rateLimitAnonymousRequestsPerMinuteEl.setExampleKey("ratelimit.per.node.hint", null);
+		rateLimitAnonymousRequestsPerMinuteEl.setDisplaySize(6);
+		updateRateLimitEnabled();
 	}
 
 	private void initAuditForm(FormItemContainer formLayout) {
@@ -255,16 +292,21 @@ public class RestapiAdminController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		auditBodyMaxSizeEl.clearError();
-		if(auditBodyMaxSizeEl.isVisible() && !auditBodyMaxSizeEl.validateIntValue()) {
+		allOk &= validateIntegerLimit(rateLimitRequestsPerMinuteEl);
+		allOk &= validateIntegerLimit(rateLimitMaxParallelEl);
+		allOk &= validateIntegerLimit(rateLimitAnonymousRequestsPerMinuteEl);
+		allOk &= validateIntegerLimit(auditBodyMaxSizeEl);
+		allOk &= validateIntegerLimit(auditRetentionDaysEl);
+		
+		return allOk;
+	}
+	
+	private boolean validateIntegerLimit(IntegerElement element) {
+		boolean allOk = true;
+		element.clearError();
+		if(element.isVisible() && !element.validateIntValue()) {
 			allOk &= false;
 		}
-		
-		auditRetentionDaysEl.clearError();
-		if(auditRetentionDaysEl.isVisible() && !auditRetentionDaysEl.validateIntValue()) {
-			allOk &= false;
-		}
-		
 		return allOk;
 	}
 
@@ -276,6 +318,8 @@ public class RestapiAdminController extends FormBasicController {
 			if (!managedCalendarEl.isAtLeastSelected(1)) {
 				doConfirmCalendarDisabled(ureq);
 			}
+		} else if(source == rateLimitEnabledEl) {
+			updateRateLimitEnabled();
 		} else if(source == auditEnabledEl || source == auditBodyEl) {
 			updateAuditVisibility();
 		}
@@ -294,6 +338,14 @@ public class RestapiAdminController extends FormBasicController {
 				restModule.setApiAccess(ApiAccess.valueOf(accessApiEl.getSelectedKey()));
 			}
 
+			boolean rateLimitEnabled = rateLimitEnabledEl.isOn();
+			restModule.setRateLimitEnabled(rateLimitEnabled);
+			if(rateLimitEnabled) {
+				restModule.setRateLimitRequestsPerMinute(rateLimitRequestsPerMinuteEl.getIntValue());
+				restModule.setRateLimitMaxParallel(rateLimitMaxParallelEl.getIntValue());
+				restModule.setRateLimitAnonymousRequestsPerMinute(rateLimitAnonymousRequestsPerMinuteEl.getIntValue());
+			}
+
 			restModule.setAuditLogEnabled(auditEnabledEl.isOn());
 			restModule.setAuditLogReads(auditReadsEl.isAtLeastSelected(1));
 			restModule.setAuditLogBody(auditBodyEl.isAtLeastSelected(1));
@@ -301,6 +353,7 @@ public class RestapiAdminController extends FormBasicController {
 			restModule.setAuditLogRetentionDays(auditRetentionDaysEl.getIntValue());
 			
 		} else {
+			restModule.setRateLimitEnabled(false);
 			restModule.setAuditLogEnabled(false);
 		}
 		
@@ -323,17 +376,31 @@ public class RestapiAdminController extends FormBasicController {
 		docLinkFlc.setVisible(restEnabled);
 		generateApiKeyEl.setVisible(restEnabled);
 		accessApiEl.setVisible(restEnabled);
+		rateLimitCont.setVisible(restEnabled);
 		auditCont.setVisible(restEnabled);
 		
 		// Set default values by on and off
 		accessApiEl.select(ApiAccess.apikey.name(), true);
 		generateApiKeyEl.uncheckAll();
 		
+		if(restEnabled && !restModule.isRateLimitEnabled()) {
+			// switch the rate limit on with the configured values
+			rateLimitEnabledEl.toggleOn();
+			updateRateLimitEnabled();
+		}
+		
 		if(restEnabled && !restModule.isAuditLogEnabled()) {
 			// an open API is only auditable with the audit log switched on
 			auditEnabledEl.toggleOn();
 			updateAuditVisibility();
 		}
+	}
+	
+	private void updateRateLimitEnabled() {
+		boolean visible = enabledButton.isOn() && rateLimitEnabledEl.isOn();
+		rateLimitRequestsPerMinuteEl.setVisible(visible);
+		rateLimitMaxParallelEl.setVisible(visible);
+		rateLimitAnonymousRequestsPerMinuteEl.setVisible(visible);
 	}
 	
 	private void updateAuditVisibility() {
