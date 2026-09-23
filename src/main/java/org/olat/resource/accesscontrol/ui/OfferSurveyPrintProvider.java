@@ -76,7 +76,7 @@ public class OfferSurveyPrintProvider implements SessionPrintProvider {
 		
 		return (lureq, lwControl) -> new OfferSurveyExecutionDetailController(lureq, lwControl, session, survey,
 				offerLabel, orderNr, session.getSubmissionDate(), participation.getStatus(),
-				participation.getExecutor(), true, false, false, false);
+				participation.getExecutor(), true, false, false);
 	}
 	
 	private Order loadOrder(EvaluationFormParticipation participation) {

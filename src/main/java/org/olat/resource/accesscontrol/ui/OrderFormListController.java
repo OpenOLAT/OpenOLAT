@@ -308,7 +308,7 @@ public class OrderFormListController extends FormBasicController {
 		String titleKey = readOnly ? "offer.survey.participation.view.form" : "offer.survey.participation.edit.form";
 		executionCtrl = new OfferSurveyExecutionDetailController(ureq, getWindowControl(), session, row.getSurvey(),
 				row.getOfferLabel(), row.getOrderNr(), row.getSubmissionDate(), row.getStatus(), participation.getExecutor(),
-				readOnly, true, !readOnly, false);
+				readOnly, true, !readOnly);
 		listenTo(executionCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), executionCtrl.getInitialComponent(),

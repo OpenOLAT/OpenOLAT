@@ -30,11 +30,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.CoachCandidates;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.user.UserPropertiesInfoController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -45,12 +47,17 @@ import org.olat.user.UserPropertiesInfoController;
 public class OfferSurveyExecutionDetailController extends BasicController {
 
 	private final EvaluationFormExecutionController executionCtrl;
+	private final EvaluationFormSession session;
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 
 	public OfferSurveyExecutionDetailController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			EvaluationFormSurvey survey, String offerLabel, String orderNr, Date submissionDate,
 			EvaluationFormParticipationStatus status, Identity executor,
-			boolean readOnly, boolean allowEditDoneSessions, boolean showDoneButton, boolean doneSavesOnly) {
+			boolean readOnly, boolean allowEditDoneSessions, boolean showDoneButton) {
 		super(ureq, wControl);
+		this.session = session;
 
 		VelocityContainer mainVC = createVelocityContainer("offer_survey_execution_detail");
 		putInitialPanel(mainVC);
@@ -65,7 +72,7 @@ public class OfferSurveyExecutionDetailController extends BasicController {
 		mainVC.put("implementation", infoCtrl.getInitialComponent());
 
 		executionCtrl = new EvaluationFormExecutionController(ureq, wControl, session, CoachCandidates.NONE, readOnly,
-				allowEditDoneSessions, showDoneButton, doneSavesOnly, null);
+				allowEditDoneSessions, showDoneButton, showDoneButton, true, null);
 		listenTo(executionCtrl);
 		mainVC.put("evaluationForm", executionCtrl.getInitialComponent());
 	}
@@ -73,7 +80,12 @@ public class OfferSurveyExecutionDetailController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == executionCtrl) {
-			fireEvent(ureq, event);
+			if (event == Event.CHANGED_EVENT) {
+				evaluationFormManager.finishSession(session);
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else {
+				fireEvent(ureq, event);
+			}
 		}
 		super.event(ureq, source, event);
 	}

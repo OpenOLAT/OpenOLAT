@@ -148,14 +148,14 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			CoachCandidates coachCandidates, boolean readOnly, boolean showDoneButton, boolean doneSavesOnly, EmptyStateConfig emptyState) {
-		this(ureq, wControl, session, coachCandidates, readOnly, false, showDoneButton, doneSavesOnly, emptyState);
+		this(ureq, wControl, session, coachCandidates, readOnly, false, showDoneButton, false, doneSavesOnly, emptyState);
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			CoachCandidates coachCandidates, boolean readOnly, boolean allowEditDoneSessions, boolean showDoneButton,
-			boolean doneSavesOnly, EmptyStateConfig emptyState) {
+			boolean showCancelButton, boolean doneSavesOnly, EmptyStateConfig emptyState) {
 		this(ureq, wControl, null, null, null, session, null, null, coachCandidates, null, readOnly, allowEditDoneSessions,
-				showDoneButton, false, doneSavesOnly, emptyState);
+				showDoneButton, showCancelButton, doneSavesOnly, emptyState);
 	}
 
 	/**
@@ -444,8 +444,12 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		if (!doneLink.isVisible()) return;
 		
 		boolean responsesSaved = doSaveResponses(ureq);
-		if (responsesSaved && !doneSavesOnly) {
-			doConfirmDone(ureq);
+		if (responsesSaved) {
+			if (doneSavesOnly) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else {
+				doConfirmDone(ureq);
+			}
 		}
 	}
 
