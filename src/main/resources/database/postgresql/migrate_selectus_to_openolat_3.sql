@@ -329,6 +329,7 @@ create table o_repositoryentry (
    teaser varchar(255),
    initialauthor varchar(128) not null,
    allowtoleave varchar(16),
+   finished_access varchar(32),
    candownload bool not null,
    cancopy bool not null,
    canreference bool not null,
@@ -1387,9 +1388,12 @@ create table o_as_mode_course (
    a_ips varchar(32000),
    a_safeexambrowser bool not null default false,
    a_safeexambrowserkey varchar(32000),
+   a_safeexambrowser_exit_password varchar(255),
+   a_safeexambrowser_allow_exit bool,
    a_safeexambrowserconfig_xml text,
    a_safeexambrowserconfig_plist text,
    a_safeexambrowserconfig_pkey varchar(255),
+   a_safeexambrowserconfig_file varchar(255),
    a_safeexambrowserconfig_dload bool default true not null,
    a_safeexambrowserhint text,
    a_applysettingscoach bool not null default false,
@@ -1428,10 +1432,16 @@ create table o_as_seb_template (
    a_active bool not null default true,
    a_default bool not null default false,
    a_name varchar(255),
+   a_type varchar(16) default 'OO_FORM' not null,
+   a_download bool,
+   a_exit_password varchar(255),
+   a_allow_exit bool,
+   a_config_filename varchar(255),
    a_safeexambrowserconfig_xml text,
    a_safeexambrowserconfig_plist text,
    a_safeexambrowserconfig_pkey varchar(255),
    a_safeexambrowserhint text,
+   a_safeexambrowserauthorhint text,
    primary key (id)
 );
 
@@ -1447,8 +1457,11 @@ create table o_as_inspection_configuration (
    a_ips varchar(32000),
    a_safeexambrowser bool not null default false,
    a_safeexambrowserkey varchar(32000),
+   a_safeexambrowser_exit_password varchar(255),
+   a_safeexambrowser_allow_exit bool,
    a_safeexambrowserconfig_xml text,
    a_safeexambrowserconfig_plist text,
+   a_safeexambrowserconfig_file varchar(255),
    a_safeexambrowserconfig_pkey varchar(255),
    a_safeexambrowserconfig_dload bool default true not null,
    a_safeexambrowserhint text,
@@ -1536,11 +1549,13 @@ create table o_cer_certificate (
    c_uuid varchar(36) not null,
    c_external_id varchar(64),
    c_managed_flags varchar(255),
+   c_serial_number varchar(255),
    c_next_recertification timestamp,
    c_recertification_count int8,
    c_recertification_win_date timestamp,
    c_recertification_paused bool default false not null,
    c_path varchar(1024),
+   c_print_path varchar(1024),
    c_last bool default true not null,
    c_revocation_date timestamp,
    c_removal_date timestamp,
@@ -1549,6 +1564,7 @@ create table o_cer_certificate (
    fk_olatresource int8,
    fk_identity int8 not null,
    fk_metadata int8,
+   fk_print_metadata int8,
    fk_certification_program int8,
    fk_uploaded_by int8,
    primary key (id)
@@ -1563,6 +1579,10 @@ create table o_cer_entry_config (
   c_cer_custom_1 varchar(4000),
   c_cer_custom_2 varchar(4000),
   c_cer_custom_3 varchar(4000),
+  c_sn_enabled bool default false not null,
+  c_sn_format varchar(255),
+  c_sn_start_number int8 default 1 not null,
+  c_sn_counter int8 default 0 not null,
   c_validity_enabled bool default false not null,
   c_validity_timelapse int8 default 0 not null,
   c_validity_timelapse_unit varchar(32),
@@ -1597,9 +1617,15 @@ create table o_cer_program (
    c_cer_custom_1 varchar(4000),
    c_cer_custom_2 varchar(4000),
    c_cer_custom_3 varchar(4000),
+   c_sn_enabled bool default false not null,
+   c_sn_format varchar(255),
+   c_sn_start_number int8 default 1 not null,
+   c_sn_counter int8 default 0 not null,
+   c_print_template_enabled bool default false not null,
    fk_credit_point_system int8,
    fk_group int8 not null,
    fk_template int8,
+   fk_print_template int8,
    fk_resource int8,
    primary key (id)
 );
@@ -2760,6 +2786,10 @@ create table o_qp_item (
    q_editor varchar(256),
    q_editor_version varchar(256),
    q_format varchar(32) not null,
+   q_ai_unsupervised_generated bool default null,
+   q_ai_supervised_by varchar(255) default null,
+   q_ai_provider varchar(255) default null,
+   q_ai_model varchar(255) default null,
    q_max_score decimal default null,
    q_creator varchar(1024),
    creationdate timestamp not null,
@@ -3677,6 +3707,42 @@ create table o_tax_competence_audit_log (
   primary key (id)
 );
 
+-- Taxonomy matching embeddings
+create table o_tax_level_embedding (
+  id bigserial primary key,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  t_text_variant varchar(16) not null,
+  t_locale varchar(10) not null,
+  t_embedding_text text not null,
+  t_model_id varchar(128) not null,
+  t_model_version varchar(64),
+  t_vector_json text,
+  fk_level int8 not null,
+  fk_taxonomy int8 not null,
+  constraint fk_tax_emb_level foreign key (fk_level)
+    references o_tax_taxonomy_level(id),
+  constraint fk_tax_emb_taxonomy foreign key (fk_taxonomy)
+    references o_tax_taxonomy(id)
+);
+
+-- Taxonomy level index state (durable async indexing queue)
+create table o_tax_level_index_state (
+  id bigserial primary key,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  t_status varchar(16) not null,
+  t_attempt_count int4 not null default 0,
+  t_last_error text,
+  t_indexed_model_id varchar(128),
+  t_indexed_model_version varchar(64),
+  t_last_index_date timestamp,
+  fk_level int8 not null,
+  constraint fk_tax_idx_state_level foreign key (fk_level)
+    references o_tax_taxonomy_level(id),
+  constraint uq_tax_idx_state_level unique (fk_level)
+);
+
 -- dialog elements
 create table o_dialog_element (
   id bigserial,
@@ -3804,6 +3870,8 @@ create table o_cur_element_type (
   c_single_element bool default false not null,
   c_max_repo_entries int8 default -1 not null,
   c_allow_as_root bool default true not null,
+  c_impl_only bool default false not null,
+  c_status varchar(32) default 'active' not null,
   c_css_class varchar(64),
   primary key (id)
 );
@@ -3858,14 +3926,6 @@ create table o_cur_curriculum_element (
   c_learning_progress varchar(16),
   c_show_outline bool default true not null,
   c_show_lectures bool default true not null,
-  c_auto_instantiation int8,
-  c_auto_instantiation_unit varchar(16),
-  c_auto_access_coach int8,
-  c_auto_access_coach_unit varchar(16),
-  c_auto_published int8,
-  c_auto_published_unit varchar(16),
-  c_auto_closed int8,
-  c_auto_closed_unit varchar(16),
   c_show_certificate bool default false,
   c_show_creditpoints bool default false,
   fk_group int8 not null,
@@ -3904,6 +3964,44 @@ create table o_cur_audit_log (
   fk_identity int8,
   fk_curriculum int8,
   fk_curriculum_element int8,
+  primary key (id)
+);
+
+create table o_cur_automation_config (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  c_enabled bool not null,
+  fk_rule int8,
+  fk_element_type int8,
+  fk_curriculum_element int8,
+  primary key (id)
+);
+
+create table o_cur_automation_rule (
+  id bigserial,
+  creationdate timestamp not null,
+  c_context varchar(32),
+  c_automation_type varchar(32),
+  c_target_status varchar(32),
+  c_depending_on varchar(32),
+  c_reference varchar(16),
+  c_value integer,
+  c_unit varchar(32),
+  c_direction varchar(16),
+  c_depending_on_status varchar(1024),
+  c_only_when_status varchar(1024),
+  primary key (id)
+);
+
+create table o_cur_automation_execution (
+  id bigserial,
+  creationdate timestamp not null,
+  c_execution_date timestamp not null,
+  c_result varchar(32) not null,
+  fk_rule int8,
+  fk_element_type int8,
+  fk_curriculum_element int8 not null,
   primary key (id)
 );
 
@@ -4006,6 +4104,27 @@ create table o_grad_configuration (
    g_second_reminder_subject varchar(255),
    g_second_reminder_body text,
    fk_entry int8 not null,
+   primary key (id)
+);
+
+create table o_grad_assignment_log (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_closed timestamp,
+   g_status varchar(16),
+   g_deleted bool default false not null,
+   g_reference_entry_id int8 not null,
+   g_reference_entry_displayname varchar(110),
+   g_reference_entry_external_ref varchar(255),
+   g_entry_id int8 not null,
+   g_entry_displayname varchar(110),
+   g_entry_external_ref varchar(255),
+   g_time int8 default 0 not null,
+   g_metadata_time int8 default 0 not null,
+   g_assignment_id int8 not null,
+   fk_grader int8 not null,
+   fk_assignee int8 not null,
    primary key (id)
 );
 
@@ -4622,6 +4741,25 @@ create table o_tb_audit_log (
 );
 
 -- AI
+create table o_ai_essay_correction (
+  id                   bigserial,
+  creationdate         timestamp not null,
+  lastmodified         timestamp not null,
+  fk_identity          int8 not null,
+  a_item_session_key   int8,
+  a_storage_path       varchar(1024),
+  a_question_id        varchar(64),
+  a_content_hash_at_call varchar(64),
+  a_prompt_template_version varchar(40),
+  a_tier               varchar(16),
+  a_student_answer     text not null,
+  a_status             varchar(24) not null,
+  a_feedback_json      text,
+  a_error_message      varchar(2048),
+  a_completed          timestamp,
+  primary key (id)
+);
+
 create table o_ai_usage_log (
    id bigserial,
    creationdate timestamp not null,
@@ -5131,6 +5269,17 @@ create index idx_exp_meta_to_cur_el_idx on o_ex_export_metadata_to_cur_el (fk_el
 alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_curel_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
 create index idx_exp_meta_cur_el_to_meta_idx on o_ex_export_metadata_to_cur_el (fk_metadata);
 
+alter table o_cur_automation_config add constraint cur_auto_cfg_type_idx foreign key (fk_element_type) references o_cur_element_type (id);
+create index idx_cur_auto_cfg_type_idx on o_cur_automation_config (fk_element_type);
+alter table o_cur_automation_config add constraint cur_auto_cfg_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
+create index idx_cur_auto_cfg_el_idx on o_cur_automation_config (fk_curriculum_element);
+alter table o_cur_automation_config add constraint cur_auto_cfg_rule_idx foreign key (fk_rule) references o_cur_automation_rule (id);
+create index idx_cur_auto_cfg_rule_idx on o_cur_automation_config (fk_rule);
+
+alter table o_cur_automation_execution add constraint cur_auto_exec_rule_idx foreign key (fk_rule) references o_cur_automation_rule (id);
+create index idx_cur_auto_exec_rule_idx on o_cur_automation_execution (fk_rule);
+create index idx_cur_auto_exec_el_idx on o_cur_automation_execution (fk_curriculum_element);
+
 -- checklist
 alter table o_cl_check add constraint check_identity_ctx foreign key (fk_identity_id) references o_bs_identity (id);
 create index check_to_identity_idx on o_cl_check (fk_identity_id);
@@ -5364,7 +5513,7 @@ create index idx_as_entry_to_coach_idx on o_as_entry (fk_coach);
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 create index idx_as_entry_start_idx on o_as_entry (a_date_start) where a_date_start is not null;
 create index idx_as_entry_root_id_idx on o_as_entry (id) where a_entry_root=true;
-create index idx_as_entry_root_fk_idx on o_as_entry (fk_entry, fk_identity) where a_entry_root=true;
+create index idx_as_entry_root_cov_idx on o_as_entry (fk_entry, fk_identity) include (a_subident, a_passed, a_completion) where a_entry_root=true;
 create index idx_as_entry_subident_idx on o_as_entry(a_subident, fk_entry, fk_identity);
 create index idx_as_entry_re_status_idx on o_as_entry(fk_entry, a_status);
 
@@ -5749,6 +5898,7 @@ create index idx_qm_audit_doer_idx on o_qual_audit_log (fk_doer);
 create index idx_qm_audit_dc_idx on o_qual_audit_log (fk_data_collection);
 create index idx_qm_audit_todo_idx on o_qual_audit_log (fk_todo_task);
 create index idx_qm_audit_ident_idx on o_qual_audit_log (fk_identity);
+create index idx_as_entry_release_todo_idx on o_as_entry (fk_entry) where a_status='done' and a_user_visibility=false;
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);
@@ -5884,6 +6034,8 @@ alter table o_cer_certificate add constraint cer_to_resource_idx foreign key (fk
 create index cer_resource_idx on o_cer_certificate (fk_olatresource);
 alter table o_cer_certificate add constraint certificate_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
 create index idx_certificate_metadata_idx on o_cer_certificate (fk_metadata);
+alter table o_cer_certificate add constraint certificate_printdata_idx foreign key (fk_print_metadata) references o_vfs_metadata(id);
+create index idx_certificate_printdata_idx on o_cer_certificate (fk_print_metadata);
 
 create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource_id);
 create index cer_uuid_idx on o_cer_certificate (c_uuid);
@@ -5906,9 +6058,12 @@ create index idx_cer_progr_to_credsys_idx on o_cer_program (fk_credit_point_syst
 
 alter table o_cer_program add constraint cer_progr_to_template_idx foreign key (fk_template) references o_cer_template (id);
 create index idx_cer_progr_to_template_idx on o_cer_program(fk_template);
+alter table o_cer_program add constraint cer_progr_to_prtemplate_idx foreign key (fk_print_template) references o_cer_template (id);
+create index idx_cer_progr_to_prtemplate_idx on o_cer_program(fk_print_template);
 
 alter table o_cer_program add constraint cer_progr_to_resource_idx foreign key (fk_resource) references o_olatresource (resource_id);
 create index idx_cer_progr_to_resource_idx on o_cer_program (fk_resource);
+
 
 alter table o_cer_program_to_organisation add constraint cer_prog_to_prog_idx foreign key (fk_program) references o_cer_program (id);
 create index idx_cer_prog_to_prog_idx on o_cer_program_to_organisation (fk_program);
@@ -6084,6 +6239,15 @@ create index idx_tax_comp_to_tax_level_idx on o_tax_taxonomy_competence (fk_leve
 alter table o_tax_taxonomy_competence add constraint tax_level_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_tax_level_to_ident_idx on o_tax_taxonomy_competence (fk_identity);
 
+-- Taxonomy matching embeddings
+create index idx_tax_emb_level on o_tax_level_embedding(fk_level);
+create index idx_tax_emb_taxonomy on o_tax_level_embedding(fk_taxonomy);
+create unique index idx_tax_emb_unique on o_tax_level_embedding(fk_level, t_locale, t_model_id, t_text_variant);
+
+-- Taxonomy level index state (durable async indexing queue)
+create index idx_tax_lvl_idx_state_level on o_tax_level_index_state(fk_level);
+create index idx_tax_lvl_idx_state_status on o_tax_level_index_state(t_status);
+
 -- dialog elements
 alter table o_dialog_element add constraint dial_el_author_idx foreign key (fk_author) references o_bs_identity (id);
 create index idx_dial_el_author_idx on o_dialog_element (fk_author);
@@ -6195,6 +6359,15 @@ create index idx_grad_time_to_grader_idx on o_grad_time_record (fk_grader);
 
 alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_grad_config_to_entry_idx on o_grad_configuration (fk_entry);
+
+create index idx_grad_assign_log_ent_idx on o_grad_assignment_log (g_entry_id);
+create index idx_grad_assign_log_idx on o_grad_assignment_log (g_assignment_id);
+create index idx_grad_assign_log_ref_idx on o_grad_assignment_log (g_reference_entry_id);
+
+alter table o_grad_assignment_log add constraint grad_assign_log_grad_idx foreign key (fk_grader) references o_bs_identity (id);
+create index idx_grad_assign_log_grad_idx on o_grad_assignment_log (fk_grader);
+alter table o_grad_assignment_log add constraint grad_assign_log_assign_idx foreign key (fk_assignee) references o_bs_identity (id);
+create index idx_grad_assign_log_assign_idx on o_grad_assignment_log (fk_assignee);
 
 -- Course
 alter table o_course_element add constraint courseele_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
@@ -6417,6 +6590,11 @@ create index idx_tb_audit_topic_idx on o_tb_audit_log (fk_topic);
 create index idx_tb_audit_part_idx on o_tb_audit_log (fk_participant);
 
 -- AI
+alter table o_ai_essay_correction add constraint ai_essay_corr_ident_fk foreign key (fk_identity) references o_bs_identity (id);
+create index idx_ai_essay_corr_ident on o_ai_essay_correction (fk_identity);
+create index idx_ai_essay_corr_item_session on o_ai_essay_correction (a_item_session_key);
+create index idx_ai_essay_corr_question on o_ai_essay_correction (a_storage_path, a_question_id);
+
 create index idx_ai_log_creation_idx on o_ai_usage_log (creationdate);
 
 -- feed tags
