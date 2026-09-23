@@ -441,6 +441,11 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	}
 
 	@Override
+	public List<OfferToSurvey> loadOfferToSurveys(OLATResource resource) {
+		return offerSurveyDao.loadOfferToSurveys(resource);
+	}
+
+	@Override
 	public List<OfferToSurvey> loadOfferToSurveys(EvaluationFormSurvey survey) {
 		return offerSurveyDao.loadOfferToSurveys(survey);
 	}

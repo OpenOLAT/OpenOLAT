@@ -19,9 +19,15 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  *
@@ -29,12 +35,22 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class OrderFormListTableModel extends DefaultFlexiTableDataModel<OrderFormRow> {
+public class OrderFormListTableModel extends DefaultFlexiTableDataModel<OrderFormRow>
+		implements SortableFlexiTableDataModel<OrderFormRow> {
 
 	private static final OrderFormCols[] COLS = OrderFormCols.values();
 
-	public OrderFormListTableModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+
+	public OrderFormListTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
+	}
+
+	@Override
+	public void sort(SortKey orderBy) {
+		List<OrderFormRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		super.setObjects(rows);
 	}
 
 	@Override
@@ -43,6 +59,7 @@ public class OrderFormListTableModel extends DefaultFlexiTableDataModel<OrderFor
 		return getValueAt(formRow, col);
 	}
 
+	@Override
 	public Object getValueAt(OrderFormRow row, int col) {
 		switch (COLS[col]) {
 		case title: return row.getTitle();
@@ -57,7 +74,7 @@ public class OrderFormListTableModel extends DefaultFlexiTableDataModel<OrderFor
 		}
 	}
 
-	public enum OrderFormCols implements FlexiColumnDef {
+	public enum OrderFormCols implements FlexiSortableColumnDef {
 		title("offer.survey.title"),
 		reference("offer.survey.reference"),
 		stepName("offer.survey.step.name"),
@@ -71,6 +88,16 @@ public class OrderFormListTableModel extends DefaultFlexiTableDataModel<OrderFor
 
 		private OrderFormCols(String i18nKey) {
 			this.i18nKey = i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return this != view && this != tools;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 
 		@Override

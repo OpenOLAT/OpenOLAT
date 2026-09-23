@@ -121,6 +121,32 @@ public class ACOfferSurveyDAOTest extends OlatTestCase {
 	}
 
 	@Test
+	public void shouldLoadOfferToSurveysByResource() {
+		OLATResource resource = createRandomResource();
+		OLATResource otherResource = createRandomResource();
+		RepositoryEntry formEntry = evaluationFormTestsHelper.createFormEntry();
+		EvaluationFormSurvey survey1 = sut.createSurvey(resource, formEntry, "Step 1");
+		EvaluationFormSurvey survey2 = sut.createSurvey(resource, formEntry, "Step 2");
+		Offer offer1 = acFrontendManager.save(acFrontendManager.createOffer(resource, random()));
+		Offer offer2 = acFrontendManager.save(acFrontendManager.createOffer(resource, random()));
+		Offer otherOffer = acFrontendManager.save(acFrontendManager.createOffer(otherResource, random()));
+		dbInstance.commitAndCloseSession();
+
+		OfferToSurvey offerToSurvey12 = sut.createOfferToSurvey(offer1, survey2, 2);
+		OfferToSurvey offerToSurvey11 = sut.createOfferToSurvey(offer1, survey1, 1);
+		OfferToSurvey offerToSurvey21 = sut.createOfferToSurvey(offer2, survey1, 1);
+		sut.createOfferToSurvey(otherOffer, survey1, 1);
+		dbInstance.commitAndCloseSession();
+
+		List<OfferToSurvey> offerToSurveys = sut.loadOfferToSurveys(resource);
+
+		assertThat(offerToSurveys).containsExactlyInAnyOrder(offerToSurvey11, offerToSurvey12, offerToSurvey21);
+		assertThat(offerToSurveys.stream().filter(ots -> ots.getOffer().getKey().equals(offer1.getKey())))
+				.containsExactly(offerToSurvey11, offerToSurvey12);
+		assertThat(offerToSurveys.get(0).getSurvey().getFormEntry().getDisplayname()).isEqualTo(formEntry.getDisplayname());
+	}
+
+	@Test
 	public void shouldLoadOfferToSurveysBySurvey() {
 		OLATResource resource = createRandomResource();
 		RepositoryEntry formEntry = evaluationFormTestsHelper.createFormEntry();

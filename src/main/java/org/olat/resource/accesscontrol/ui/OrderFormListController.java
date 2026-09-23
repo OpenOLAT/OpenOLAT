@@ -27,11 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -127,9 +129,10 @@ public class OrderFormListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(viewColumn);
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(OrderFormCols.tools));
 
-		tableModel = new OrderFormListTableModel(columnsModel);
+		tableModel = new OrderFormListTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "orderFormTable", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(false);
+		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(OrderFormCols.submissionDate.name(), false)));
 	}
 
 	private void loadModel() {
@@ -237,6 +240,7 @@ public class OrderFormListController extends FormBasicController {
 		row.setViewLink(viewLink);
 
 		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
+		flc.add(toolsLink);
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

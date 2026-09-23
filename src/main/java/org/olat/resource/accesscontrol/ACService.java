@@ -161,6 +161,8 @@ public interface ACService {
 
 	public List<OfferToSurvey> loadOfferToSurveys(OfferRef offer);
 
+	public List<OfferToSurvey> loadOfferToSurveys(OLATResource resource);
+
 	public List<OfferToSurvey> loadOfferToSurveys(EvaluationFormSurvey survey);
 
 	public boolean isOfferSurveyUsed(EvaluationFormSurvey survey);

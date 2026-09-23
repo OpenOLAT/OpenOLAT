@@ -76,6 +76,7 @@ import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OfferToSurvey;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -456,7 +457,7 @@ public class AccessConfigurationController extends FormBasicController {
 			if(event.equals(Event.DONE_EVENT)) {
 				OfferAccess newLink = editMethodCtrl.getOfferAccess();
 				List<Organisation> organisations = editMethodCtrl.getOfferOrganisations();
-				replace(newLink, organisations);
+				replace(newLink, organisations, editMethodCtrl.getPendingOfferSurveys());
 				updateCatalogOverviewUI();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -568,17 +569,25 @@ public class AccessConfigurationController extends FormBasicController {
 				addOffer(offerAndAccess.offerAccess(), offerOrganisations, offerAndAccess.numOfOrders());
 			}
 		}
+		Map<Long, List<EvaluationFormSurvey>> formsByOfferKey = acService.loadOfferToSurveys(resource).stream()
+				.collect(Collectors.groupingBy(ots -> ots.getOffer().getKey(), Collectors.mapping(OfferToSurvey::getSurvey, Collectors.toList())));
+		for (AccessInfo accessInfo : accessInfos) {
+			if (accessInfo.getOffer() != null) {
+				accessInfo.setForms(formsByOfferKey.getOrDefault(accessInfo.getOffer().getKey(), List.of()));
+			}
+		}
 		
 		checkOverlap();
 	}
 
-	private void replace(OfferAccess link, Collection<Organisation> offerOrganisations) {
+	private void replace(OfferAccess link, Collection<Organisation> offerOrganisations, List<EvaluationFormSurvey> forms) {
 		boolean updated = false;
 		int currentNumOfOrders = -1;
 		for(AccessInfo accessInfo : accessInfos) {
 			if(accessInfo.getLink() != null && accessInfo.getLink().equals(link)) {
 				accessInfo.setLink(link);
 				accessInfo.setOfferOrganisations(offerOrganisations);
+				accessInfo.setForms(forms);
 				currentNumOfOrders = accessInfo.getNumberOfOrders();
 				updated = true;
 			}
@@ -1168,6 +1177,7 @@ public class AccessConfigurationController extends FormBasicController {
 		private FormLayoutContainer configCont;
 		private FormLink openOrdersLink;
 		private List<EvaluationFormSurvey> pendingOfferSurveys = List.of();
+		private List<EvaluationFormSurvey> forms = List.of();
 		
 		public AccessInfo(IconPanelItem iconPanel, int numOfOrders) {
 			this.iconPanel = iconPanel;
@@ -1194,6 +1204,15 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public void setPendingOfferSurveys(List<EvaluationFormSurvey> pendingOfferSurveys) {
 			this.pendingOfferSurveys = pendingOfferSurveys;
+			this.forms = pendingOfferSurveys;
+		}
+
+		public List<EvaluationFormSurvey> getForms() {
+			return forms;
+		}
+
+		public void setForms(List<EvaluationFormSurvey> forms) {
+			this.forms = forms;
 		}
 
 		public OfferCatalogInfo getOfferCatalogInfo() {

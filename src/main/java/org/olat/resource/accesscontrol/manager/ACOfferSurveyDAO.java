@@ -107,6 +107,19 @@ public class ACOfferSurveyDAO {
 				.getResultList();
 	}
 
+	public List<OfferToSurvey> loadOfferToSurveys(OLATResource resource) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ots from offertosurvey ots");
+		sb.append(" inner join fetch ots.survey survey");
+		sb.append(" inner join fetch survey.formEntry formEntry");
+		sb.and().append("ots.offer.resource.key=:resourceKey");
+		sb.append(" order by ots.pos asc");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), OfferToSurvey.class)
+				.setParameter("resourceKey", resource.getKey())
+				.getResultList();
+	}
+
 	public List<OfferToSurvey> loadOfferToSurveys(EvaluationFormSurvey survey) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ots from offertosurvey ots");
