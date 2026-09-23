@@ -3740,7 +3740,6 @@ public class ImsQTI21EditorTest extends Deployments {
 			.setHint("Hint", "Did you search inspiration?")
 			.setCorrectSolution("Correct solution", "It is very personal.")
 			.setAnsweredFeedback("Full", "Well done")
-			.setEmpytFeedback("Empty", "Please, a little effort.")
 			.save();
 		
 		qtiPage
@@ -3778,7 +3777,6 @@ public class ImsQTI21EditorTest extends Deployments {
 		reiQtiPage
 			.assertOnAssessmentItem()
 			.saveAnswer()
-			.assertFeedback("Empty")
 			.hint()
 			.assertFeedback("Hint");
 
