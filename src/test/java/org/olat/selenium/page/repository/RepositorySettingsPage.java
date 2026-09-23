@@ -58,6 +58,7 @@ public class RepositorySettingsPage {
 		
 		By accessConfigurationBy = By.cssSelector("fieldset.o_sel_repo_infos");
 		OOGraphene.waitElement(accessConfigurationBy, browser);
+		OOGraphene.waitTinymce(browser);
 		return new RepositoryInfosPage(browser);
 	}
 	
