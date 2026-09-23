@@ -413,7 +413,7 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	}
 
 	private void backfillOfferSurveyParticipations(Offer offer, EvaluationFormSurvey survey) {
-		List<Order> orders = orderManager.findOrdersByResource(offer.getResource(), OrderStatus.PAYED).stream()
+		List<Order> orders = orderManager.findOrdersByResource(offer.getResource(), OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED).stream()
 				.filter(order -> order.getParts().stream()
 						.flatMap(part -> part.getOrderLines().stream())
 						.anyMatch(line -> offer.getKey().equals(line.getOffer().getKey())))

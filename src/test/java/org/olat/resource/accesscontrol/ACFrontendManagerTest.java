@@ -574,6 +574,39 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	}
 
 	@Test
+	public void enableOfferSurveyBackfillsPrepaymentOrders() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pay-24");
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("doer-24");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-AC-4", "Curriculum AC 4", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-backfill", "Element for backfill",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Offer offer = acService.createOffer(element.getResource(), "Invoice offer with order form");
+		offer = acService.save(offer);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(InvoiceAccessMethod.class);
+		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
+		offerAccess = acService.saveOfferAccess(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		AccessResult result = acService.accessResource(id, offerAccess, OrderStatus.PREPAYMENT, null, null, doer, null);
+		Assert.assertTrue(result.isAccessible());
+		Order order = result.getOrder();
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntry formEntry = evaluationFormTestsHelper.createFormEntry();
+		EvaluationFormSurvey survey = acService.createOfferSurvey(offer.getResource(), formEntry, "Step 1");
+		acService.enableOfferSurvey(offer, survey, 1);
+		dbInstance.commitAndCloseSession();
+		
+		List<EvaluationFormParticipation> participations = acService.loadOfferSurveyParticipations(survey, order);
+		assertThat(participations).hasSize(1);
+		assertThat(participations.get(0).getExecutor()).isEqualTo(id);
+		assertThat(participations.get(0).getStatus()).isEqualTo(EvaluationFormParticipationStatus.prepared);
+	}
+	
+	@Test
 	public void cancelOrderAlsoCancelsOfferSurveyParticipation() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pay-23");
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("doer-23");
