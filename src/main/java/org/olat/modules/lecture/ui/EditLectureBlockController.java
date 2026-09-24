@@ -265,16 +265,22 @@ public class EditLectureBlockController extends FormBasicController {
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		if(lectureBlock != null && lectureBlock.getKey() != null) {
 			teachers = lectureService.getTeachers(lectureBlock);
-			if(lectureBlock.getBBBMeeting() != null) {
-				bigBlueButtonMeeting = bigBlueButtonManager.getMeeting(lectureBlock.getBBBMeeting());
-			}
-			if(lectureBlock.getTeamsMeeting() != null) {
-				teamsMeeting = teamsService.getMeeting(lectureBlock.getTeamsMeeting());
-			}
 		} else if(copySource != null) {
 			teachers = lectureService.getTeachers(copySource);
 		} else {
 			teachers = List.of();
+		}
+		if(lectureBlock != null && lectureBlock.getBBBMeeting() != null) {
+			// A copy (OO-9744) already carries its own, still-transient (unpersisted) BBBMeeting: use it
+			// directly rather than reloading by key, which would find nothing for it yet.
+			bigBlueButtonMeeting = lectureBlock.getBBBMeeting().getKey() == null
+					? lectureBlock.getBBBMeeting()
+					: bigBlueButtonManager.getMeeting(lectureBlock.getBBBMeeting());
+		}
+		if(lectureBlock != null && lectureBlock.getTeamsMeeting() != null) {
+			teamsMeeting = lectureBlock.getTeamsMeeting().getKey() == null
+					? lectureBlock.getTeamsMeeting()
+					: teamsService.getMeeting(lectureBlock.getTeamsMeeting());
 		}
 
 		initForm(ureq);

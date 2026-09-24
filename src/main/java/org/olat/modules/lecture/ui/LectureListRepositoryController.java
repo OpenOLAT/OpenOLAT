@@ -1898,13 +1898,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			LectureBlock block = selectedBlocks.get(0);
 			String newTitle = translate("lecture.block.copy", block.getTitle());
 			String newExternalRef = copyExternalRef(block);
-			LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, newExternalRef, block, false);
+			LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, newExternalRef, block, getIdentity(), false);
 			doEditLectureBlock(ureq, copiedBlock, block, true);
 		} else {
 			for(LectureBlock block:selectedBlocks) {
 				String newTitle = translate("lecture.block.copy", block.getTitle());
 				String newExternalRef = copyExternalRef(block);
-				lectureService.copyLectureBlock(newTitle, newExternalRef, block, true);
+				lectureService.copyLectureBlock(newTitle, newExternalRef, block, getIdentity(), true);
 				dbInstance.commitAndCloseSession();
 				count++;
 			}
@@ -1924,7 +1924,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		LectureBlock block = lectureService.getLectureBlock(row);
 		String newTitle = translate("lecture.block.copy", block.getTitle());
 		String newExternalRef = copyExternalRef(block);
-		LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, newExternalRef, block, false);
+		LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, newExternalRef, block, getIdentity(), false);
 		doEditLectureBlock(ureq, copiedBlock, block, true);
 	}
 

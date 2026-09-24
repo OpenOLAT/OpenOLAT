@@ -80,6 +80,28 @@ public class TeamsMeetingDAO {
 		return meeting;
 	}
 	
+	public TeamsMeeting copyMeeting(String subject, TeamsMeeting meeting, Date start, Date end, Identity creator) {
+		TeamsMeetingImpl copy = (TeamsMeetingImpl)createMeeting(subject, null, null,
+				meeting.getEntry(), meeting.getSubIdent(), meeting.getBusinessGroup(), creator);
+
+		copy.setDescription(meeting.getDescription());
+		copy.setPermanent(meeting.isPermanent());
+		copy.setGuest(meeting.isGuest());
+		copy.setMainPresenter(meeting.getMainPresenter());
+		copy.setAllowedPresenters(meeting.getAllowedPresenters());
+		copy.setAccessLevel(meeting.getAccessLevel());
+		copy.setLobbyBypassScope(meeting.getLobbyBypassScope());
+		copy.setEntryExitAnnouncement(meeting.isEntryExitAnnouncement());
+		copy.setParticipantsCanOpen(meeting.isParticipantsCanOpen());
+		copy.setRecordingsPublishingEnum(meeting.getRecordingsPublishingEnum());
+		copy.setRecord(meeting.isRecord());
+		copy.setRecordAutoStart(meeting.isRecordAutoStart());
+
+		updateDates(copy, start, meeting.getLeadTime(), end, meeting.getFollowupTime());
+
+		return copy;
+	}
+
 	public TeamsMeeting loadByKey(Long key) {
 		String query = """
 				select meeting from teamsmeeting as meeting

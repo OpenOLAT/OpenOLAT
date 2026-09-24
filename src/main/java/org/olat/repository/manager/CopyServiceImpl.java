@@ -66,6 +66,8 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.group.ui.main.BGTableItem;
 import org.olat.ims.lti13.LTI13Service;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.manager.BigBlueButtonMeetingDAO;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
@@ -77,6 +79,8 @@ import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.manager.TeamsMeetingDAO;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.CopyService;
 import org.olat.repository.RepositoryEntry;
@@ -145,6 +149,10 @@ public class CopyServiceImpl implements CopyService {
 	private RoomManagementModule roomManagementModule;
 	@Autowired
 	private RoomManagementService roomManagementService;
+	@Autowired
+	private BigBlueButtonMeetingDAO bigBlueButtonMeetingDao;
+	@Autowired
+	private TeamsMeetingDAO teamsMeetingDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDAO;
 	@Autowired
@@ -726,6 +734,24 @@ public class CopyServiceImpl implements CopyService {
 		
 		copy.setReasonEffectiveEnd(original.getReasonEffectiveEnd());
 		
+		copy.setMeetingTitle(original.getMeetingTitle());
+		copy.setMeetingUrl(original.getMeetingUrl());
+		copy.setRecordingUrl(original.getRecordingUrl());
+		if (original.getBBBMeeting() != null) {
+			// A new, independent meeting (own room/identifiers), not a shared reference to the
+			// original's live meeting - two different events must not end up joining the exact same
+			// room (OO-9744).
+			BigBlueButtonMeeting bbbCopy = bigBlueButtonMeetingDao.copyMeeting(copy.getTitle(), original.getBBBMeeting(),
+					copy.getStartDate(), copy.getEndDate(), context.getExecutingIdentity());
+			bbbCopy = bigBlueButtonMeetingDao.updateMeeting(bbbCopy);
+			copy.setBBBMeeting(bbbCopy);
+		} else if (original.getTeamsMeeting() != null) {
+			TeamsMeeting teamsCopy = teamsMeetingDao.copyMeeting(copy.getTitle(), original.getTeamsMeeting(),
+					copy.getStartDate(), copy.getEndDate(), context.getExecutingIdentity());
+			teamsCopy = teamsMeetingDao.updateMeeting(teamsCopy);
+			copy.setTeamsMeeting(teamsCopy);
+		}
+
 		copy = (LectureBlockImpl) lectureService.save(copy, null);
 		if (roomManagementModule.isEnabled()) {
 			roomManagementService.copyBookingsForLectureBlock(original, copy, context.getExecutingIdentity());

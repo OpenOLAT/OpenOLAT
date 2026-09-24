@@ -136,6 +136,7 @@ import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.manager.TeamsMeetingDAO;
 import org.olat.modules.teams.model.TeamsMeetingImpl;
 import org.olat.repository.RepositoryEntry;
@@ -481,13 +482,34 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public LectureBlock copyLectureBlock(String newTitle, String newExternalRef, LectureBlock block, boolean persist) {
+	public LectureBlock copyLectureBlock(String newTitle, String newExternalRef, LectureBlock block, Identity doer, boolean persist) {
 		LectureBlock copy = copyLectureBlock(block, newTitle, newExternalRef, block.getStartDate(), block.getEndDate(),
 				block.getEntry(), block.getCurriculumElement(), persist, persist);
 
 		copy.setMeetingTitle(block.getMeetingTitle());
 		copy.setMeetingUrl(block.getMeetingUrl());
 		copy.setRecordingUrl(block.getRecordingUrl());
+
+		if(block.getBBBMeeting() != null) {
+			// A new, independent meeting (own room/identifiers), not a shared reference to the source's
+			// live meeting - two different events must not end up joining the exact same room (OO-9744).
+			BigBlueButtonMeeting bbbCopy = bigBlueButtonMeetingDao.copyMeeting(newTitle, block.getBBBMeeting(),
+					copy.getStartDate(), copy.getEndDate(), doer);
+			if(persist) {
+				bbbCopy = bigBlueButtonMeetingDao.updateMeeting(bbbCopy);
+			}
+			copy.setBBBMeeting(bbbCopy);
+		} else if(block.getTeamsMeeting() != null) {
+			// Unlike BBB, TeamsMeetingDAO.createMeeting() (called internally by copyMeeting()) already
+			// calls persist() on the new meeting before configuring it, same as when a user manually
+			// configures one on a brand-new lecture block. Call updateMeeting() explicitly regardless,
+			// rather than relying on the entity still being managed (and its subsequent field changes
+			// still pending flush) all the way to whatever later commit finally saves them.
+			TeamsMeeting teamsCopy = teamsMeetingDao.copyMeeting(newTitle, block.getTeamsMeeting(),
+					copy.getStartDate(), copy.getEndDate(), doer);
+			teamsCopy = teamsMeetingDao.updateMeeting(teamsCopy);
+			copy.setTeamsMeeting(teamsCopy);
+		}
 
 		if(persist) {
 			// The call above already persisted the copy once, before the online meeting fields set
