@@ -32,6 +32,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -137,7 +139,8 @@ public class EvaluationFormEditorController extends BasicController implements T
 		
 		fireContainerRuleLinkEvent(ureq);
 		
-		putInitialPanel(pageEditCtrl.getInitialComponent());
+		StackedPanel initialPanel = putInitialPanel(new SimpleStackedPanel("editorPanel", "o_edit_mode"));
+		initialPanel.setContent(pageEditCtrl.getInitialComponent());
 	}
 	
 	@Override
