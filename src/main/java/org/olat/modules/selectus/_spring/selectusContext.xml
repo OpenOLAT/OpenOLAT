@@ -146,14 +146,19 @@
 	  <property name="jobClass" value="org.olat.modules.selectus.manager.CloseReferencesStatusJob" />
 	</bean>
 	
-	<bean id="sendNotificationsEmailTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-	    <property name="jobDetail" ref="org.olat.notifications.job" />
+	<bean id="sendSelectusNotificationsEmailTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+	    <property name="jobDetail" ref="org.olat.module.selectus.notifications.job.${cluster.singleton.services}" />
 	    <property name="cronExpression" value="${recruiting.notification.cronjob.expression}" />
-	    <property name="startDelay" value="10000" />
+	    <property name="startDelay" value="30000" />
 	</bean>
 	
-	<bean id="org.olat.notifications.job" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+	<bean id="org.olat.module.selectus.notifications.job.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 	  <property name="jobClass" value="org.olat.modules.selectus.manager.EmailNotificationJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="org.olat.module.selectus.notifications.job.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 	
 	<!-- User tools -->
