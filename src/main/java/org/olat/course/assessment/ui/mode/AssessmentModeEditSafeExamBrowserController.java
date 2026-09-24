@@ -113,8 +113,6 @@ public class AssessmentModeEditSafeExamBrowserController extends AbstractEditSaf
 	@Override
 	protected void initSafeExamBrowserForm(FormItemContainer enableCont) {
 		enableCont.setElementCssClass("o_sel_assessment_mode_edit_form");
-		setFormContextHelp("manual_user/learningresources/Assessment_mode/");
-		setFormDescription("form.mode.description");
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		if(StringHelper.containsNonWhitespace(assessmentMode.getStartElement())) {
