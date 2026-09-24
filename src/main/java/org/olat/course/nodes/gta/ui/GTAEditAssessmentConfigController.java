@@ -25,7 +25,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -42,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.IconPanelLabelTextContent;
@@ -124,7 +124,6 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	private MultipleSelectionElement individualAssessmentDocsFlag;
 	
 	private FormToggle incorporateInCourseAssessmentEl;
-	private SpacerElement incorporateInCourseAssessmentSpacer;
 	/** Grade */
 	private SpacerElement gradeSpacer;
 	private FormToggle gradeEnabledEl;
@@ -138,7 +137,6 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	private ComponentWrapperElement referenceEl;
 	private IconPanelLabelTextContent iconPanelContent;
 	private IconPanelLabelTextContent iconPanelSettings;
-	private FormLayoutContainer buttonsCont;
 
 	private GradeScale gradeScale;
 	private GTACourseNode gtaNode;
@@ -163,6 +161,10 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	private GradeScaleEditController gradeScaleCtrl;
 	private EvaluationFormExecutionController previewCtr;
 	private RepositoryEntryReferenceController referenceCtrl;
+	private FormLayoutContainer gradingCont;
+	private FormLayoutContainer evaluationFormContainer;
+	private FormLayoutContainer evaluationReferenceContainer;
+	private SpacerElement preIncludeInCourseAssessmentSpacer;
 	
 	@Autowired
 	private MSService msService;
@@ -202,36 +204,44 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer evaluationFormContainer = uifactory.addDefaultFormLayout("enable.evaluation", null, formLayout);
-		evaluationFormContainer.setFormTitle(translate("form.evalutation.title"));
-		evaluationFormContainer.setFormContextHelp("manual_user/learningresources/Course_Element_Task/#grading");
+
+		// Rubric assessment
+		evaluationFormContainer = uifactory.addDefaultFormLayout("enable.evaluation", null, formLayout);
 		initEvaluationFormForm(evaluationFormContainer);
 		evaluationFormContainer.setVisible(individualTask);
 
-		FormLayoutContainer evaluationReferenceContainer = uifactory.addVerticalFormLayout("evaluation.form.entry", null, formLayout);
+		evaluationReferenceContainer = uifactory.addVerticalFormLayout("evaluation.form.entry", null, formLayout);
 		initReferenceForm(evaluationReferenceContainer, ureq);
 		evaluationReferenceContainer.setVisible(individualTask);
 		
-		FormLayoutContainer assessmentContainer = uifactory.addDefaultFormLayout("assessment.form", null, formLayout);
-		assessmentContainer.setFormTitle(translate("grading.configuration.title"));
-		assessmentContainer.setElementCssClass("o_sel_course_ms_form");
-		initAssessmentForm(assessmentContainer, ureq);
+		// Score / levels / passed
+		gradingCont = uifactory.addDefaultFormLayout("grading", null, formLayout);
+		gradingCont.setElementCssClass("o_sel_course_ms_form");
+		initGrading(gradingCont);
 		
-		buttonsCont = uifactory.addButtonsFormLayout("buttons", null, assessmentContainer);
+		// Assessment form
+		FormLayoutContainer assessmentFormCont = uifactory.addFormSection("assessment.form",
+				translate("assessment.form"), formLayout, FormSection.Level.SUB_TITLE);
+		initAssessmentForm(assessmentFormCont);
+		update(ureq);
+
+		// Buttons
+		FormLayoutContainer footerCont = uifactory.addDefaultFormLayout("footer", null, formLayout);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, footerCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
-	/**
-	 * Disables (or re-enables) every form item and hides the submit/cancel buttons, used to make
-	 * the assessment configuration read-only once assessments already exist for this node.
-	 */
 	public void setDisplayOnly(boolean displayOnly) {
-		Map<String, FormItem> formItems = flc.getFormComponents();
-		for (FormItem formItem : formItems.values()) {
+		setDisplayOnly(evaluationFormContainer.getFormItems(), displayOnly);
+		setDisplayOnly(evaluationReferenceContainer.getFormItems(), displayOnly);
+		setDisplayOnly(gradingCont.getFormItems(), displayOnly);
+	}
+
+	private void setDisplayOnly(Iterable<FormItem> formItems, boolean displayOnly) {
+		for (FormItem formItem : formItems) {
 			formItem.setEnabled(!displayOnly);
+			formItem.setLabelIconCss(displayOnly ? "o_icon o_icon-fw o_icon_locked text-primary" : null);
 		}
-		buttonsCont.setVisible(!displayOnly);
 	}
 
 	private void initEvaluationFormForm(FormItemContainer formLayout) {
@@ -263,7 +273,9 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		formLayout.add(referenceEl);
 	}
 	
-	private void initAssessmentForm(FormLayoutContainer formLayout, UserRequest ureq) {
+	private void initGrading(FormLayoutContainer formLayout) {
+		uifactory.addSpacerElement("preGradingSpacer", formLayout, false);
+
 		// Create the "score granted" field...
 		scoreGranted = uifactory.addToggleButton("form.score", "form.score", translate("on"), translate("off"), formLayout);
 		scoreGranted.addActionListener(FormEvent.ONCHANGE);
@@ -400,7 +412,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		cutVal.setRegexMatchCheck(scoreRex, "form.error.wrongFloat");
 		cutVal.setElementCssClass("o_sel_course_ms_cut_val");
 
-		uifactory.addSpacerElement("spacer2", formLayout, false);
+		preIncludeInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer2", formLayout, false);
 		
 		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
 		incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
@@ -412,10 +424,9 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, formLayout);
 		scoreScalingEl.setExampleKey("score.scaling.example", null);
 		scoreScalingEl.addActionListener(FormEvent.ONCHANGE);
-		
-		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
-		
-		// Create the "individual comment" dropdown.
+	}
+
+	private void initAssessmentForm(FormLayoutContainer formLayout) {
 		commentFlag = uifactory.addCheckboxesHorizontal("form.comment", formLayout, new String[]{"xx"}, new String[]{null});
 		Boolean cf = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
 		if (cf == null) cf = Boolean.TRUE;
@@ -426,8 +437,6 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		if(docsCf) {
 			individualAssessmentDocsFlag.select("xx", true);
 		}
-
-		update(ureq);
 	}
 	
 	private SelectionValues getScoreSumsOptions() {
@@ -457,6 +466,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		peerReviewEnabled = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
 		
 		boolean evaluationEnabled = evaluationFormEnabledEl.isVisible() && evaluationFormEnabledEl.isOn();
+		evaluationReferenceContainer.setVisible(evaluationEnabled);
 		referenceCtrl.getInitialComponent().setVisible(evaluationEnabled);
 
 		boolean scoreEnable = scoreGranted.isOn();
@@ -544,8 +554,9 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		
 		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
 				&& (scoreGranted.isOn() || displayPassed.isOn());
+		
+		preIncludeInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
 		incorporateInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
-		incorporateInCourseAssessmentSpacer.setVisible(ignoreInScoreVisible);
 		
 		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible()
 				&& incorporateInCourseAssessmentEl.isOn()
