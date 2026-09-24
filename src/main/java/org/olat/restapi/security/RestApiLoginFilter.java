@@ -775,6 +775,10 @@ public class RestApiLoginFilter implements Filter {
 			List<String> urls = new ArrayList<>();
 			urls.add(context + "/ping");
 			urls.add(context + "/i18n");
+			urls.add(context + "/openmeetings");
+			urls.add(context + "/drawio");
+			urls.add(context + "/onlyoffice");
+			urls.add(context + "/office365");
 			rateLimitExemptUrls = urls;
 		}
 		return rateLimitExemptUrls;
