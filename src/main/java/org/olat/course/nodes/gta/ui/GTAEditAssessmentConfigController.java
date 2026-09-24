@@ -233,8 +233,10 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 
 	public void setDisplayOnly(boolean displayOnly) {
 		setDisplayOnly(evaluationFormContainer.getFormItems(), displayOnly);
-		setDisplayOnly(evaluationReferenceContainer.getFormItems(), displayOnly);
 		setDisplayOnly(gradingCont.getFormItems(), displayOnly);
+
+		boolean evaluationEnabled = evaluationFormEnabledEl.isVisible() && evaluationFormEnabledEl.isOn();
+		evaluationReferenceContainer.setVisible(!displayOnly && individualTask && evaluationEnabled);
 	}
 
 	private void setDisplayOnly(Iterable<FormItem> formItems, boolean displayOnly) {
