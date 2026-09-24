@@ -109,12 +109,16 @@ public class NewAssessmentModeController extends FormBasicController {
 		leadTimeEl = uifactory.addIntegerElement("mode.leadTime", leadTime, datesCont);
 		leadTimeEl.setElementCssClass("o_sel_assessment_mode_leadtime o_form_number");
 		leadTimeEl.setExampleKey("mode.minutes", null);
+		leadTimeEl.setMinValueCheck(0, null);
+		leadTimeEl.setMandatory(true);
 		leadTimeEl.setDisplaySize(3);
 		
 		int followUp = assessmentModeToCopy == null ? 10 : assessmentModeToCopy.getFollowupTime();
 		followupTimeEl = uifactory.addIntegerElement("mode.followupTime", followUp, datesCont);
 		followupTimeEl.setElementCssClass("o_sel_assessment_mode_followuptime o_form_number");
 		followupTimeEl.setExampleKey("mode.minutes", null);
+		followupTimeEl.setMinValueCheck(0, "form.error.positive.integer");
+		followupTimeEl.setMandatory(true);
 		followupTimeEl.setDisplaySize(3);
 		
 		SelectionValues startModePK = new SelectionValues();
@@ -169,6 +173,23 @@ public class NewAssessmentModeController extends FormBasicController {
 				&& beginEl.getDate().compareTo(endEl.getDate()) >= 0) {
 			beginEl.setErrorKey("error.begin.after.end");
 			endEl.setErrorKey("error.begin.after.end");
+			allOk &= false;
+		}
+		
+		allOk &= validateIntegerElement(followupTimeEl);
+		allOk &= validateIntegerElement(leadTimeEl);
+		
+		return allOk;
+	}
+	
+	private boolean validateIntegerElement(IntegerElement element) {
+		boolean allOk = true;
+		
+		element.clearError();
+		if(!StringHelper.containsNonWhitespace(element.getValue())) {
+			element.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		} else if(!element.validate()) {
 			allOk &= false;
 		}
 		
