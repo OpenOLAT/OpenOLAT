@@ -56,6 +56,15 @@ public class ApiAuditMaskingTest {
 	}
 	
 	@Test
+	public void maskJsonSharedSecret() {
+		String masked = ApiAuditMasking.maskJson("{\"token\":\"p\",\"sharedSecret\":\"c\"}");
+		Assertions.assertThat(masked)
+			.doesNotContain("\"p\"").doesNotContain("\"c\"")
+			.contains("\"token\":\"***\"")
+			.contains("\"sharedSecret\":\"***\"");
+	}
+	
+	@Test
 	public void maskJsonInvalidJsonUsesRegexFallback() {
 		String truncated = "{\"login\":\"alice\",\"password\":\"s3cret\",\"desc\":\"lo...[truncated]";
 		String masked = ApiAuditMasking.maskJson(truncated);
@@ -63,6 +72,15 @@ public class ApiAuditMaskingTest {
 			.doesNotContain("s3cret")
 			.contains("\"password\":\"***\"")
 			.contains("...[truncated]");
+	}
+	
+	@Test
+	public void maskJsonSharedSecretUsesRegexFallback() {
+		String masked = ApiAuditMasking.maskJson("{\"token\":\"p\",\"sharedSecret\":\"c\",\"desc\":\"c");
+		Assertions.assertThat(masked)
+			.doesNotContain("\"p\"").doesNotContain("\"c\"")
+			.contains("\"token\":\"***\"")
+			.contains("\"sharedSecret\":\"***\"");
 	}
 	
 	@Test

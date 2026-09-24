@@ -163,6 +163,7 @@ public class RestApiLoginFilter implements Filter {
 				String requestURI = getRequestURI(httpRequest);
 				if(restModule == null || !restModule.isEnabled() && !isRequestURIAlwaysEnabled(requestURI)) {
 					httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+					skipAudit(httpRequest);
 					return;
 				}
 

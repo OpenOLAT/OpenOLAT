@@ -41,12 +41,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class ApiAuditMasking {
 	
 	public static final String MASK = "***";
-	public static final Set<String> SECRET_KEYS = Set.of("password", "credential", "secret", "clientsecret");
+	public static final Set<String> SECRET_KEYS = Set.of("password", "credential", "secret", "clientsecret", "token", "sharedsecret");
 	
 	private static final ObjectMapper mapper = new ObjectMapper();
 	/** Used when the body is not valid JSON, typically because it was truncated */
 	private static final Pattern secretPattern = Pattern.compile(
-			"\"(password|credential|secret|clientSecret)\"\\s*:\\s*\"(?:[^\"\\\\]|\\\\.)*\"", Pattern.CASE_INSENSITIVE);
+			"\"(password|credential|secret|clientSecret|token|sharedSecret)\"\\s*:\\s*\"(?:[^\"\\\\]|\\\\.)*\"", Pattern.CASE_INSENSITIVE);
 	
 	private ApiAuditMasking() {
 		//
