@@ -104,9 +104,9 @@ public class AssessmentCEConfigurationPage {
 	 * @return
 	 */
 	public AssessmentCEConfigurationPage setScore(float minVal, float maxVal, float cutVal) {
-		By scoreBy = By.cssSelector("fieldset.o_sel_course_ms");
+		By scoreBy = By.cssSelector("fieldset.o_sel_course_ms_grading_form");
 		OOGraphene.waitElement(scoreBy, browser);
-		OOGraphene.toggle("fieldset.o_sel_course_ms div.o_sel_course_ms_score button.o_sel_course_ms_score", true, false, browser);
+		OOGraphene.toggle("fieldset.o_sel_course_ms_grading_form div.o_sel_course_ms_score button.o_sel_course_ms_score", true, false, browser);
 		
 		By minValBy = By.cssSelector(".o_sel_course_ms_min input[type='text']");
 		WebElement minValEl = OOGraphene.waitElement(minValBy, browser);
@@ -142,7 +142,7 @@ public class AssessmentCEConfigurationPage {
 	}
 	
 	public AssessmentCEConfigurationPage save() {
-		By saveBy = By.cssSelector(".o_sel_course_ms button.btn.btn-primary");
+		By saveBy = By.cssSelector(".o_sel_course_ms_buttons button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitBusy(browser);
 		OOGraphene.scrollTop(browser);

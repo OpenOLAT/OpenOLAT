@@ -227,6 +227,7 @@ public class MSConfigController extends FormBasicController {
 		}
 		
 		gradingCont = FormLayoutContainer.createDefaultFormLayout("gradingCont", getTranslator());
+		gradingCont.setElementCssClass("o_sel_course_ms_grading_form");
 		gradingCont.setRootForm(mainForm);
 		formLayout.add(gradingCont);
 
@@ -364,6 +365,7 @@ public class MSConfigController extends FormBasicController {
 		initAssessmentForm(gradingCont);
 
 		FormLayoutContainer saveButtonCont = uifactory.addButtonsFormLayout("saveButtonCont", null, gradingCont);
+		saveButtonCont.setElementCssClass("o_sel_course_ms_buttons");
 		uifactory.addFormSubmitButton("save", saveButtonCont);
 		
 		updateUI();

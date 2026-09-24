@@ -50,7 +50,7 @@ public class RepositoryAccessPage {
 		OOGraphene.waitElement(runtimeTypeBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
-		By typeBy = By.xpath("//div[@id='o_cocif_runtime_type']/fieldset//label/input[@name='cif.runtime.type' and @value='" + type + "']");
+		By typeBy = By.xpath("//fieldset[@id='o_cocif_runtime_type']//label/input[@name='cif.runtime.type' and @value='" + type + "']");
 		browser.findElement(typeBy).click();
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_edit_runtime_type_form button.btn.btn-primary");
