@@ -27,10 +27,12 @@ package org.olat.core.util.ratelimit;
  * @param remaining The requests left in the current window, never negative
  * @param resetEpochSeconds The start of the next window in epoch seconds
  * @param retryAfterSeconds The seconds until the next window, 0 if allowed
+ * @param firstRejection true only for the first rejected request of the window
  *
  * Initial date: 23 sept. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
-public record RateLimitDecision(boolean allowed, int limit, int remaining, long resetEpochSeconds, int retryAfterSeconds) {
+public record RateLimitDecision(boolean allowed, int limit, int remaining, long resetEpochSeconds, int retryAfterSeconds,
+		boolean firstRejection) {
 	//
 }

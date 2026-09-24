@@ -70,6 +70,7 @@ public class RestApiRateLimitTest extends OlatRestTestCase {
 	public void burstOverLimit() throws IOException, URISyntaxException {
 		int currentRateLimit = restModule.getRateLimitRequestsPerMinute();
 		final int LIMIT = 5;
+		final int REJECTED = 65;
 		restModule.setRateLimitRequestsPerMinute(LIMIT);
 		waitMessageAreConsumed();
 		waitForFreshWindow();
@@ -86,7 +87,7 @@ public class RestApiRateLimitTest extends OlatRestTestCase {
 			EntityUtils.consume(response.getEntity());
 		}
 
-		for(int i=0; i<2; i++) {
+		for(int i=0; i<REJECTED; i++) {
 			HttpResponse rejected = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
 			Assert.assertEquals(SC_TOO_MANY_REQUESTS, rejected.getStatusLine().getStatusCode());
 			Assert.assertNotNull(rejected.getFirstHeader(RestApiLoginFilter.HEADER_RETRY_AFTER));
@@ -97,10 +98,10 @@ public class RestApiRateLimitTest extends OlatRestTestCase {
 		conn.shutdown();
 		dbInstance.commitAndCloseSession();
 
-		// one row per rejected request
+		// only the first rejected request of the window is audited
 		List<ApiAuditLog> rows = rowsOf(id);
 		Assertions.assertThat(rows)
-			.hasSize(2)
+			.hasSize(1)
 			.allSatisfy(row -> {
 				Assert.assertEquals(ApiAuditChannel.rest, row.getChannel());
 				Assert.assertEquals("GET", row.getMethod());

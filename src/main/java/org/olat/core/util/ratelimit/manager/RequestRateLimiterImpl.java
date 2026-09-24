@@ -89,7 +89,15 @@ public class RequestRateLimiterImpl implements RequestRateLimiter {
 		boolean allowed = count <= limitPerMinute;
 		int remaining = Math.max(0, limitPerMinute - count);
 		int retryAfterSeconds = allowed ? 0 : (int)Math.max(1l, resetEpochSeconds - now);
-		return new RateLimitDecision(allowed, limitPerMinute, remaining, resetEpochSeconds, retryAfterSeconds);
+		// incrementAndGet is atomic, only one thread per window sees limit + 1
+		boolean firstRejection = count == limitPerMinute + 1;
+		return new RateLimitDecision(allowed, limitPerMinute, remaining, resetEpochSeconds, retryAfterSeconds, firstRejection);
+	}
+
+	@Override
+	public boolean markParallelRejection(String key) {
+		long windowIndex = clock.getAsLong() / WINDOW_SECONDS;
+		return windowCache.putIfAbsent(key + "#par#" + windowIndex, new AtomicInteger(1)) == null;
 	}
 
 	@Override

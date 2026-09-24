@@ -108,6 +108,51 @@ public class RequestRateLimiterTest {
 	}
 
 	@Test
+	public void checkFirstRejection() {
+		for(int i=0; i<3; i++) {
+			Assert.assertFalse(limiter.check("rest:id:12", 3).firstRejection());
+		}
+		Assert.assertTrue(limiter.check("rest:id:12", 3).firstRejection());
+		for(int i=0; i<5; i++) {
+			RateLimitDecision decision = limiter.check("rest:id:12", 3);
+			Assert.assertFalse(decision.allowed());
+			Assert.assertFalse(decision.firstRejection());
+		}
+
+		// again in the next window
+		now += 60;
+		for(int i=0; i<3; i++) {
+			limiter.check("rest:id:12", 3);
+		}
+		Assert.assertTrue(limiter.check("rest:id:12", 3).firstRejection());
+	}
+
+	@Test
+	public void checkFirstRejectionParallel() throws Exception {
+		AtomicInteger firstRejections = new AtomicInteger(0);
+		runInParallel(40, () -> {
+			if(limiter.check("rest:id:13", 10).firstRejection()) {
+				firstRejections.incrementAndGet();
+			}
+		});
+		Assert.assertEquals(1, firstRejections.get());
+	}
+
+	@Test
+	public void markParallelRejection() {
+		Assert.assertTrue(limiter.markParallelRejection("rest:id:14"));
+		Assert.assertFalse(limiter.markParallelRejection("rest:id:14"));
+		Assert.assertFalse(limiter.markParallelRejection("rest:id:14"));
+		// other key
+		Assert.assertTrue(limiter.markParallelRejection("rest:id:15"));
+		// the marker doesn't count as request
+		Assert.assertTrue(limiter.check("rest:id:14", 1).allowed());
+
+		now += 60;
+		Assert.assertTrue(limiter.markParallelRejection("rest:id:14"));
+	}
+
+	@Test
 	public void acquireAndRelease() {
 		Assert.assertTrue(limiter.acquire("rest:id:7", 2));
 		Assert.assertTrue(limiter.acquire("rest:id:7", 2));

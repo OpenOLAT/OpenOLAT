@@ -38,6 +38,15 @@ public interface RequestRateLimiter {
 	boolean acquire(String key, int maxParallel);
 	
 	/**
+	 * Marks a request rejected by the guard of the parallel requests
+	 * in the current window of the key.
+	 *
+	 * @param key The key of the subject
+	 * @return true only for the first rejection of the window
+	 */
+	boolean markParallelRejection(String key);
+	
+	/**
 	 * Counts the request in the current window of the key. A rejected
 	 * request counts too.
 	 *

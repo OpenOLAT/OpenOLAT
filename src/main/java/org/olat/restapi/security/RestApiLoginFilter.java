@@ -264,7 +264,9 @@ public class RestApiLoginFilter implements Filter {
 	 * A request above a limit is rejected at once with the status 429, it never
 	 * waits. The check runs outside of the lock of the user session.<br>
 	 * The warn line of the access log and the row of the audit log are written
-	 * by the audit of the request, as for every request rejected by this filter.
+	 * by the audit of the request, but only for the first rejection of a subject
+	 * per window and guard. A client which ignores the 429 cannot move the load
+	 * to the database.
 	 * 
 	 * @param request The request
 	 * @param response The response
@@ -282,6 +284,9 @@ public class RestApiLoginFilter implements Filter {
 		RequestRateLimiter limiter = getLimiter();
 		if(!limiter.acquire(subject.key(), restModule.getRateLimitMaxParallel())) {
 			log.debug("Rate limit of parallel requests reached: {} {}", subject.key(), request.getRequestURI());
+			if(!limiter.markParallelRejection(subject.key())) {
+				skipAudit(request);
+			}
 			sendTooManyRequests(response, 1);
 			return;
 		}
@@ -295,11 +300,24 @@ public class RestApiLoginFilter implements Filter {
 				call.proceed();
 			} else {
 				log.debug("Rate limit of requests per minute reached: {} {}", subject.key(), request.getRequestURI());
+				if(!decision.firstRejection()) {
+					skipAudit(request);
+				}
 				sendTooManyRequests(response, decision.retryAfterSeconds());
 			}
 		} finally {
 			limiter.release(subject.key());
 		}
+	}
+	
+	/**
+	 * Marks the request as audited, the audit after the request
+	 * writes neither the row nor the warn line.
+	 * 
+	 * @param request The request
+	 */
+	private void skipAudit(HttpServletRequest request) {
+		request.setAttribute(ApiAuditLogService.REQ_ATTR_DONE, Boolean.TRUE);
 	}
 	
 	/**
