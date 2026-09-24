@@ -280,11 +280,15 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		nameEl.setEnabled(false);
 		descriptionEl.setEnabled(false);
 		enableEl.setEnabled(false);
+		rolesEl.setEnabled(false);
+		externalEl.setEnabled(false);
 		recordEl.setEnabled(false);
 		muteOnStartEl.setEnabled(false);
 		maxConcurrentMeetingsEl.setEnabled(false);
 		maxParticipantsEl.setEnabled(false);
 		maxDurationEl.setEnabled(false);
+		joinPolicyEl.setEnabled(false);
+		breakoutEl.setEnabled(false);
 		autoStartRecordingEl.setEnabled(false);
 		allowStartStopRecordingEl.setEnabled(false);
 		webcamsOnlyForModeratorEl.setEnabled(false);
