@@ -29,7 +29,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.Formatter;
 import org.olat.course.learningpath.ui.CurriculumElementLearningPathListController;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -57,13 +56,7 @@ public class CurriculumElementLearningPathController extends BasicController {
 		
 		mainVC.contextPut("elementName", element.getDisplayName());
 		mainVC.contextPut("elementIdentifier", element.getIdentifier());
-		Formatter formatter = Formatter.getInstance(getLocale());
-		if(element.getBeginDate() != null) {
-			mainVC.contextPut("elementBegin", formatter.formatDate(element.getBeginDate()));
-		}
-		if(element.getEndDate() != null) {
-			mainVC.contextPut("elementEnd", formatter.formatDate(element.getEndDate()));
-		}
+		mainVC.contextPut("elementPeriod", CurriculumUIFactory.formatExecutionPeriod(getTranslator(), element));
 		
 		Curriculum curriculum = element.getCurriculum();
 		mainVC.contextPut("curriculumName", curriculum.getDisplayName());

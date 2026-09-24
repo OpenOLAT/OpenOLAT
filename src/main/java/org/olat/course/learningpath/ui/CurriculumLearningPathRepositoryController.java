@@ -30,12 +30,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementLearningPathController;
+import org.olat.modules.curriculum.ui.CurriculumUIFactory;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,13 +66,7 @@ public class CurriculumLearningPathRepositoryController extends BasicController 
 		
 		mainVC.contextPut("elementName", element.getDisplayName());
 		mainVC.contextPut("elementIdentifier", element.getIdentifier());
-		Formatter formatter = Formatter.getInstance(getLocale());
-		if(element.getBeginDate() != null) {
-			mainVC.contextPut("elementBegin", formatter.formatDate(element.getBeginDate()));
-		}
-		if(element.getEndDate() != null) {
-			mainVC.contextPut("elementEnd", formatter.formatDate(element.getEndDate()));
-		}
+		mainVC.contextPut("elementPeriod", CurriculumUIFactory.formatExecutionPeriod(getTranslator(), element));
 		
 		Curriculum curriculum = element.getCurriculum();
 		mainVC.contextPut("curriculumName", curriculum.getDisplayName());

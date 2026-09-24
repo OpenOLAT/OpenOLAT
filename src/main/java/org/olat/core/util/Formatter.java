@@ -379,6 +379,9 @@ public class Formatter {
 	 * same as on the end date. Either date may be null.
 	 */
 	public String formatPeriod(Date begin, Date end) {
+		if (begin != null && end != null && DateUtils.isSameDay(begin, end)) {
+			return formatPeriodFull(begin);
+		}
 		if (begin != null && end != null) {
 			return formatPeriodBegin(begin, end) + " – " + formatPeriodFull(end);
 		}

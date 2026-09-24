@@ -67,6 +67,7 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
@@ -307,7 +308,8 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 			Formatter formatter = Formatter.getInstance(getLocale());
 			// start- & endDate is available
 			if (entry.getLifecycle().getValidFrom() != null
-					&& entry.getLifecycle().getValidTo() != null) {
+					&& entry.getLifecycle().getValidTo() != null
+					&& !DateUtils.isSameDay(entry.getLifecycle().getValidFrom(), entry.getLifecycle().getValidTo())) {
 				String startDate = formatter.formatDate(entry.getLifecycle().getValidFrom());
 				String endDate = formatter.formatDate(entry.getLifecycle().getValidTo());
 				String startDayOfWeek = "";

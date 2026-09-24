@@ -48,6 +48,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -259,7 +260,9 @@ public class OverviewRepositoryListController extends BasicController implements
 		String end = formatter.formatDate(implementation.getEndDate());
 		
 		String hint;
-		if(begin != null && end != null) {
+		if(begin != null && DateUtils.isSameDay(implementation.getBeginDate(), implementation.getEndDate())) {
+			hint = begin;
+		} else if(begin != null && end != null) {
 			hint = translate("search.implementations.dates", begin, end);
 		} else if(begin != null) {
 			hint = translate("search.implementations.begin", begin);

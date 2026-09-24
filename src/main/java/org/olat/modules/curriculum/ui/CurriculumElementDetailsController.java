@@ -67,6 +67,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -417,7 +418,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		if(curriculumElement.getBeginDate() != null) {
 			dates.append(formatter.formatDate(curriculumElement.getBeginDate()));
 		}
-		if(curriculumElement.getEndDate() != null) {
+		if(curriculumElement.getEndDate() != null && !DateUtils.isSameDay(curriculumElement.getBeginDate(), curriculumElement.getEndDate())) {
 			if(!dates.isEmpty()) dates.append(" \u2013 ");
 			dates.append(formatter.formatDate(curriculumElement.getEndDate()));
 		}

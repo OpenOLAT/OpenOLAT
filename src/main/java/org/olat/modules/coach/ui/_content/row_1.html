@@ -62,7 +62,7 @@
 							#end
 						#else
 							#if($row.lifecycleStart) $r.formatDate($row.lifecycleStart) #end
-							#if($row.lifecycleEnd) - $r.formatDate($row.lifecycleEnd) #end
+							#if($row.lifecycleEnd && !$row.isLifecycleOneDay()) - $r.formatDate($row.lifecycleEnd) #end
 						#end</div>
 					#end
 					#if($row.location  && !${row.location.isEmpty()})

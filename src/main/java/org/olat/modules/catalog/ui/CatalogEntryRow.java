@@ -203,6 +203,10 @@ public class CatalogEntryRow {
 		return lifecycleEnd;
 	}
 
+	public boolean isLifecycleOneDay() {
+		return lifecycleStart != null && lifecycleEnd != null && DateUtils.isSameDay(lifecycleStart, lifecycleEnd);
+	}
+
 	public Long getCurriculumKey() {
 		return curriculumKey;
 	}

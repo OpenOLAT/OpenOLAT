@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
@@ -223,6 +224,10 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 
 	public void setLifecycleEnd(Date lifecycleEnd) {
 		this.lifecycleEnd = lifecycleEnd;
+	}
+
+	public boolean isLifecycleOneDay() {
+		return lifecycleStart != null && lifecycleEnd != null && DateUtils.isSameDay(lifecycleStart, lifecycleEnd);
 	}
 	
 	public boolean isActive() {

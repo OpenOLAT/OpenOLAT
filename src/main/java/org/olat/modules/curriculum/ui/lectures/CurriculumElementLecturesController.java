@@ -34,13 +34,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
+import org.olat.modules.curriculum.ui.CurriculumUIFactory;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRateWarning;
 import org.olat.modules.lecture.LectureService;
@@ -147,13 +147,7 @@ public class CurriculumElementLecturesController extends BasicController {
 		
 		mainVC.contextPut("elementName", element.getDisplayName());
 		mainVC.contextPut("elementIdentifier", element.getIdentifier());
-		Formatter formatter = Formatter.getInstance(getLocale());
-		if(element.getBeginDate() != null) {
-			mainVC.contextPut("elementBegin", formatter.formatDate(element.getBeginDate()));
-		}
-		if(element.getEndDate() != null) {
-			mainVC.contextPut("elementEnd", formatter.formatDate(element.getEndDate()));
-		}
+		mainVC.contextPut("elementPeriod", CurriculumUIFactory.formatExecutionPeriod(getTranslator(), element));
 	}
 	
 	private void calculateWarningRates(List<LectureBlockIdentityStatistics> rawStatistics, List<LectureBlockIdentityStatistics> aggregatedStatistics) {

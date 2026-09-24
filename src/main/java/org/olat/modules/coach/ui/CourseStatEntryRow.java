@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.coach.model.CourseStatEntry;
@@ -185,6 +186,10 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 
 	public Date getLifecycleEnd() {
 		return entry.getLifecycleEndDate();
+	}
+	
+	public boolean isLifecycleOneDay() {
+		return getLifecycleStart() != null && getLifecycleEnd() != null && DateUtils.isSameDay(getLifecycleStart(), getLifecycleEnd());
 	}
 	
 	public String getAuthors() {

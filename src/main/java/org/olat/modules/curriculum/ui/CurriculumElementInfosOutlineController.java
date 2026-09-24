@@ -36,6 +36,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -134,7 +135,7 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 			if (row.getBeginDate() != null) {
 				dates.append(formatter.formatDate(row.getBeginDate()));
 			}
-			if (row.getEndDate() != null) {
+			if (row.getEndDate() != null && !DateUtils.isSameDay(row.getBeginDate(), row.getEndDate())) {
 				if (!dates.isEmpty()) dates.append(" \u2013 ");
 				dates.append(formatter.formatDate(row.getEndDate()));
 			}

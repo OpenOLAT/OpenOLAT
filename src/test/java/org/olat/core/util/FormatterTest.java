@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.test.OlatTestCase;
@@ -226,6 +227,8 @@ public class FormatterTest extends OlatTestCase {
 		Assert.assertEquals("Mon 21 \u2013 Thu 24 September 2026", en.formatPeriod(date(2026, 9, 21), date(2026, 9, 24)));
 		Assert.assertEquals("Mon 28 December 2026 \u2013 Fri 8 January 2027", en.formatPeriod(date(2026, 12, 28), date(2027, 1, 8)));
 		Assert.assertEquals("Thu 24 September 2026", en.formatPeriod(null, date(2026, 9, 24)));
+		Assertions.assertThat(de.formatPeriod(date(2026, 9, 21), date(2026, 9, 21))).isEqualTo("Mo, 21. September 2026");
+		Assertions.assertThat(en.formatPeriod(date(2026, 9, 21), date(2026, 9, 21))).isEqualTo("Mon 21 September 2026");
 	}
 	
 	private Date date(int year, int month, int day) {

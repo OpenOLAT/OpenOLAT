@@ -70,6 +70,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
+import org.olat.repository.ui.ExecutionPeriodHelper;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,7 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 	private SingleSelection executionPeriodEl;
 	private SingleSelection publicDatesEl;
 	private DateChooser privateDatesEl;
+	private final ExecutionPeriodHelper.ExecutionPeriodCache privateDatesCache = new ExecutionPeriodHelper.ExecutionPeriodCache();
 	private ObjectSelectionElement subjectsEl;
 	private SingleSelection implementationFormatEl;
 	private ObjectSelectionElement administrativeAccessEl;
@@ -175,15 +177,17 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 		SelectionValues executionPeriodKV =  new SelectionValues();
 		
 		executionPeriodKV.add(SelectionValues.entry("none", translate("cif.dates.none")));
-		executionPeriodKV.add(SelectionValues.entry("private", translate("cif.dates.private")));
 		if (lifecycleModule.isEnabled()) {
 			executionPeriodKV.add(SelectionValues.entry("public", translate("cif.dates.public")));
 		}
+		executionPeriodKV.add(SelectionValues.entry("private", translate("cif.dates.private")));
+		executionPeriodKV.add(SelectionValues.entry("oneday", translate("cif.dates.oneday")));
 
 		executionPeriodEl = uifactory.addRadiosVertical("cif.dates", formLayout, executionPeriodKV.keys(),
 				executionPeriodKV.values());
 		executionPeriodEl.setHelpText(translate("cif.dates.help"));
-		executionPeriodEl.select(courseModule.getCourseExecutionDefault(), true);
+		String defaultType = courseModule.getCourseExecutionDefault();
+		executionPeriodEl.select(executionPeriodKV.containsKey(defaultType) ? defaultType : "none", true);
 		executionPeriodEl.addActionListener(FormEvent.ONCHANGE);
 
 		List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
@@ -268,25 +272,20 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == executionPeriodEl) {
+			restoreOrCachePrivateDates();
 			updateExecutionPeriodVisibility();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	private void updateExecutionPeriodVisibility() {
-		if (executionPeriodEl.isOneSelected()) {
-			String type =  executionPeriodEl.getSelectedKey();
-			if ("none".equals(type)) {
-				publicDatesEl.setVisible(false);
-				privateDatesEl.setVisible(false);
-			} else if("public".equals(type)) {
-				publicDatesEl.setVisible(true);
-				privateDatesEl.setVisible(false);
-			} else if("private".equals(type)) {
-				publicDatesEl.setVisible(false);
-				privateDatesEl.setVisible(true);
-			}
-		}
+		String type = executionPeriodEl.isOneSelected() ? executionPeriodEl.getSelectedKey() : "none";
+		ExecutionPeriodHelper.updateVisibility(type, privateDatesEl, publicDatesEl);
+	}
+
+	private void restoreOrCachePrivateDates() {
+		String type = executionPeriodEl.isOneSelected() ? executionPeriodEl.getSelectedKey() : "none";
+		privateDatesCache.restoreOrCache(privateDatesEl, type);
 	}
 
 	@Override
@@ -356,7 +355,7 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 		}
 		if (privateDatesEl != null) {
 			privateDatesEl.clearError();
-			if (privateDatesEl.isEnabled() && privateDatesEl.isVisible()
+			if (privateDatesEl.isEnabled() && privateDatesEl.isVisible() && privateDatesEl.isSecondDate()
 					&& privateDatesEl.getDate() != null && privateDatesEl.getSecondDate() != null && privateDatesEl.getDate().after(privateDatesEl.getSecondDate())) {
 				privateDatesEl.setErrorKey("form.error.first.after.second.date");
 				allOk &= false;
@@ -391,10 +390,10 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 				if (publicDatesEl.isOneSelected()) {
 					lifecycle = lifecycleDao.loadById(Long.parseLong(publicDatesEl.getSelectedKey()));
 				}
-			} else if ("private".equals(type)) {
+			} else if ("private".equals(type) || "oneday".equals(type)) {
 				String softKey = "lf_" + entry.getSoftkey();
 				Date startDate = privateDatesEl.getDate();
-				Date endDate = privateDatesEl.getSecondDate();
+				Date endDate = "oneday".equals(type) ? startDate : privateDatesEl.getSecondDate();
 				lifecycle = lifecycleDao.create(title, softKey, true, startDate, endDate);
 			}
 		}

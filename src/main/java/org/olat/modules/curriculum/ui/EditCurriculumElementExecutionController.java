@@ -23,11 +23,15 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -43,6 +47,7 @@ import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.ui.ExecutionPeriodHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -53,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditCurriculumElementExecutionController extends FormBasicController {
 	
+	private SingleSelection dateTypesEl;
 	private DateChooser periodEl;
 	private TextElement locationEl;
 	private FormLayoutContainer participantsCont;
@@ -61,6 +67,7 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 	
 	private CurriculumElement element;
 	private final CurriculumSecurityCallback secCallback;
+	private final ExecutionPeriodHelper.ExecutionPeriodCache periodDatesCache = new ExecutionPeriodHelper.ExecutionPeriodCache();
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -85,17 +92,29 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 		setFormTitle("curriculum.element.execution");
 		
 		boolean canEdit = element == null || secCallback.canEditCurriculumElementSettings(element);
+		boolean datesManaged = CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates);
 		
-		periodEl = uifactory.addDateChooser("cif.dates", "cif.dates", null, formLayout);
-		periodEl.setHelpText(translate("curriculum.element.period.help"));
+		SelectionValues dateKV = new SelectionValues();
+		dateKV.add(SelectionValues.entry("none", translate("cif.dates.none")));
+		dateKV.add(SelectionValues.entry("private", translate("cif.dates.private")));
+		dateKV.add(SelectionValues.entry("oneday", translate("cif.dates.oneday")));
+		dateTypesEl = uifactory.addRadiosVertical("cif.dates", formLayout, dateKV.keys(), dateKV.values());
+		dateTypesEl.setHelpText(translate("curriculum.element.period.help"));
+		dateTypesEl.addActionListener(FormEvent.ONCHANGE);
+		dateTypesEl.setEnabled(canEdit && !datesManaged);
+		String initialType = element == null ? "none" : ExecutionPeriodHelper.getDatesType(element.getBeginDate(), element.getEndDate());
+		dateTypesEl.select(initialType, true);
+		
+		periodEl = uifactory.addDateChooser("date.period", "cif.date", null, formLayout);
 		periodEl.setSecondDate(true);
 		periodEl.setSeparator("to.separator");
-		periodEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates));
+		periodEl.setEnabled(canEdit && !datesManaged);
 		periodEl.setDefaultValue(periodEl);
 		if (element != null) {
 			periodEl.setDate(element.getBeginDate());
 			periodEl.setSecondDate(element.getEndDate());
 		}
+		updatePeriodVisibility();
 		
 		locationEl = uifactory.addTextElement("cif.location", "cif.location", 150, element.getLocation(), formLayout);
 		locationEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.location));
@@ -131,6 +150,25 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 		}
 	}
 	
+	private void updatePeriodVisibility() {
+		String type = dateTypesEl.isOneSelected() ? dateTypesEl.getSelectedKey() : "none";
+		ExecutionPeriodHelper.updateVisibility(type, periodEl, null);
+	}
+
+	private void restoreOrCachePeriodDates() {
+		String type = dateTypesEl.isOneSelected() ? dateTypesEl.getSelectedKey() : "none";
+		periodDatesCache.restoreOrCache(periodEl, type);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == dateTypesEl) {
+			restoreOrCachePeriodDates();
+			updatePeriodVisibility();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
@@ -138,7 +176,8 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 		allOk &= CurriculumHelper.validateTextElement(locationEl, false, 200);
 		
 		periodEl.clearError();
-		if (periodEl.getDate() != null && periodEl.getSecondDate() != null && periodEl.getDate().after(periodEl.getSecondDate())) {
+		if (periodEl.isVisible() && periodEl.isSecondDate()
+				&& periodEl.getDate() != null && periodEl.getSecondDate() != null && periodEl.getDate().after(periodEl.getSecondDate())) {
 			periodEl.setErrorKey("form.error.first.after.second.date");
 			allOk &= false;
 		}
@@ -187,9 +226,13 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 		Date currentBeginDate = element.getBeginDate();
 		Date currentEndDate = element.getEndDate();
 		
+		String type = dateTypesEl.isOneSelected() ? dateTypesEl.getSelectedKey() : "none";
+		Date beginDate = "none".equals(type) ? null : periodEl.getDate();
+		Date endDate = "oneday".equals(type) ? beginDate : "none".equals(type) ? null : periodEl.getSecondDate();
+
 		element = curriculumService.getCurriculumElement(element);
-		element.setBeginDate(periodEl.getDate());
-		element.setEndDate(periodEl.getSecondDate());
+		element.setBeginDate(beginDate);
+		element.setEndDate(endDate);
 		element.setLocation(locationEl.getValue());
 		
 		if (minParticipantsEl != null) {

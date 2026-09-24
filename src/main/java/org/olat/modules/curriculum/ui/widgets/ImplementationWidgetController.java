@@ -63,6 +63,7 @@ import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -374,7 +375,9 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 		}
 
 		String executionPeriod = "";
-		if (curriculumElement.getBeginDate() != null && curriculumElement.getEndDate() != null) {
+		if (curriculumElement.getBeginDate() != null && DateUtils.isSameDay(curriculumElement.getBeginDate(), curriculumElement.getEndDate())) {
+			executionPeriod = formatter.formatDate(curriculumElement.getBeginDate());
+		} else if (curriculumElement.getBeginDate() != null && curriculumElement.getEndDate() != null) {
 			executionPeriod = formatter.formatDate(curriculumElement.getBeginDate())
 					+ " - "
 					+ formatter.formatDate(curriculumElement.getEndDate());

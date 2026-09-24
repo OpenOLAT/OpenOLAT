@@ -26,9 +26,12 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.components.date.OffsetDirection;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.modules.curriculum.AutomationDependingOn;
 import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.repository.RepositoryEntryStatusEnum;
 
@@ -42,6 +45,22 @@ public class CurriculumUIFactory {
 	
 	private CurriculumUIFactory() {
 		//
+	}
+	
+	public static String formatExecutionPeriod(Translator translator, CurriculumElement element) {
+		Formatter formatter = Formatter.getInstance(translator.getLocale());
+		String begin = element.getBeginDate() == null ? null : formatter.formatDate(element.getBeginDate());
+		String end = element.getEndDate() == null ? null : formatter.formatDate(element.getEndDate());
+		if(begin != null && DateUtils.isSameDay(element.getBeginDate(), element.getEndDate())) {
+			return begin;
+		}
+		if(begin != null && end != null) {
+			return translator.translate("curriculum.element.from.to", begin, end);
+		}
+		if(begin != null) {
+			return translator.translate("curriculum.element.from", begin);
+		}
+		return end == null ? null : translator.translate("curriculum.element.to", end);
 	}
 	
 	public static final String getMembershipLabelCssClass(GroupMembershipStatus status) {

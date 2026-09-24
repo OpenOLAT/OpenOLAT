@@ -4,18 +4,10 @@
 		<div class="o_warning_with_icon o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
 	#end
 	<table class="table"><tbody>
-		#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)
+		#if($r.isNotEmpty($lifecycle))
 		<tr>
 			<th scope="row">$r.translateInAttribute("cif.dates")</th>
-			<td><i class="o_icon o_icon_lifecycle_date"> </i> 
-				#if(!$v.lifecycle.privateCycle)
-					#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty()) $r.escapeHtml($v.lifecycle.softKey)
-					#else $r.escapeHtml($v.lifecycle.label) #end
-				#else
-					#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
-					#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
-				#end
-			</td>
+			<td><i class="o_icon o_icon_lifecycle_date"> </i> $r.escapeHtml($lifecycle)</td>
 		</tr>
 		#end
 		#if($r.isNotEmpty($v.mainLanguage))

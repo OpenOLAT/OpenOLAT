@@ -84,6 +84,7 @@ import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
+import org.olat.repository.ui.ExecutionPeriodHelper;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.wizard.RepositoryWizardProvider;
 import org.olat.repository.wizard.RepositoryWizardService;
@@ -107,6 +108,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private SingleSelection dateTypesEl;
 	private SingleSelection publicDatesEl;
 	private DateChooser privateDatesEl;
+	private final ExecutionPeriodHelper.ExecutionPeriodCache privateDatesCache = new ExecutionPeriodHelper.ExecutionPeriodCache();
 	private ObjectSelectionElement taxonomyLevelEl;
 	private SingleSelection educationalTypeEl;
 	private ObjectSelectionElement organisationEl;
@@ -297,32 +299,17 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	}
 	
 	private void initLifecycle(FormItemContainer formLayout) {
-		String[] dateValues;
-		String[] dateKeys;
+		SelectionValues dateKV = new SelectionValues();
+		dateKV.add(SelectionValues.entry("none", translate("cif.dates.none")));
 		if (lifecycleModule.isEnabled()) {
-			dateKeys = new String[]{
-					"none",
-					"private",
-					"public"
-			};
-			dateValues = new String[]{
-					translate("cif.dates.none"),
-					translate("cif.dates.private"),
-					translate("cif.dates.public")
-			};
-		} else {
-			dateKeys = new String[]{
-					"none",
-					"private",
-			};
-			dateValues = new String[]{
-					translate("cif.dates.none"),
-					translate("cif.dates.private")
-			};
+			dateKV.add(SelectionValues.entry("public", translate("cif.dates.public")));
 		}
-		dateTypesEl = uifactory.addRadiosVertical("cif.dates", formLayout, dateKeys, dateValues);
+		dateKV.add(SelectionValues.entry("private", translate("cif.dates.private")));
+		dateKV.add(SelectionValues.entry("oneday", translate("cif.dates.oneday")));
+		dateTypesEl = uifactory.addRadiosVertical("cif.dates", formLayout, dateKV.keys(), dateKV.values());
 		dateTypesEl.setHelpText(translate("cif.dates.help"));
-		dateTypesEl.select(courseModule.getCourseExecutionDefault(), true);
+		String defaultType = courseModule.getCourseExecutionDefault();
+		dateTypesEl.select(dateKV.containsKey(defaultType) ? defaultType : "none", true);
 		dateTypesEl.addActionListener(FormEvent.ONCHANGE);
 
 		List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
@@ -374,19 +361,13 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	}
 
 	private void updateDatesVisibility() {
-		if(dateTypesEl.isOneSelected()) {
-			String type = dateTypesEl.getSelectedKey();
-			if("none".equals(type)) {
-				publicDatesEl.setVisible(false);
-				privateDatesEl.setVisible(false);
-			} else if("public".equals(type)) {
-				publicDatesEl.setVisible(true);
-				privateDatesEl.setVisible(false);
-			} else if("private".equals(type)) {
-				publicDatesEl.setVisible(false);
-				privateDatesEl.setVisible(true);
-			}
-		}
+		String type = dateTypesEl.isOneSelected() ? dateTypesEl.getSelectedKey() : "none";
+		ExecutionPeriodHelper.updateVisibility(type, privateDatesEl, publicDatesEl);
+	}
+
+	private void restoreOrCachePrivateDates() {
+		String type = dateTypesEl.isOneSelected() ? dateTypesEl.getSelectedKey() : "none";
+		privateDatesCache.restoreOrCache(privateDatesEl, type);
 	}
 
 	@Override
@@ -410,6 +391,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == dateTypesEl) {
+			restoreOrCachePrivateDates();
 			updateDatesVisibility();
 		} else if(createWizardButton == source) {
 			doOpenWizardCallout(ureq, createWizardButton);
@@ -462,7 +444,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		}
 		if (privateDatesEl != null) {
 			privateDatesEl.clearError();
-			if (privateDatesEl.isEnabled() && privateDatesEl.isVisible()
+			if (privateDatesEl.isEnabled() && privateDatesEl.isVisible() && privateDatesEl.isSecondDate()
 					&& privateDatesEl.getDate() != null && privateDatesEl.getSecondDate() != null && privateDatesEl.getDate().after(privateDatesEl.getSecondDate())) {
 				privateDatesEl.setErrorKey("form.error.first.after.second.date");
 				allOk &= false;
@@ -566,9 +548,9 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 					RepositoryEntryLifecycle cycle = lifecycleDao.loadById(cycleKey);
 					repositoryEntry.setLifecycle(cycle);
 				}
-			} else if("private".equals(type)) {
+			} else if("private".equals(type) || "oneday".equals(type)) {
 				Date start = privateDatesEl.getDate();
-				Date end = privateDatesEl.getSecondDate();
+				Date end = "oneday".equals(type) ? start : privateDatesEl.getSecondDate();
 				RepositoryEntryLifecycle cycle = repositoryEntry.getLifecycle();
 				if(cycle == null || !cycle.isPrivateCycle()) {
 					String softKey = "lf_" + repositoryEntry.getSoftkey();

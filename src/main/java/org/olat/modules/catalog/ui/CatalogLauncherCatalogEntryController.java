@@ -44,6 +44,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -226,7 +227,7 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 				if (entry.getLifecycleStart() != null) {
 					executionPeriod = Formatter.getInstance(getLocale()).formatDate(entry.getLifecycleStart());
 				}
-				if (entry.getLifecycleEnd() != null) {
+				if (entry.getLifecycleEnd() != null && !DateUtils.isSameDay(entry.getLifecycleStart(), entry.getLifecycleEnd())) {
 					if (StringHelper.containsNonWhitespace(executionPeriod)) {
 						executionPeriod += " - ";
 					}

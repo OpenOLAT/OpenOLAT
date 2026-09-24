@@ -31,6 +31,7 @@ import org.olat.core.commons.fullWebApp.SeoMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -274,7 +275,7 @@ public class ResourceInfoHelper {
 	private static void appendDates(StringBuilder sb, Formatter formatter, Date from, Date to) {
 		if (from != null || to != null) {
 			appendSeparator(sb);
-			if (from != null && to != null) {
+			if (from != null && to != null && !DateUtils.isSameDay(from, to)) {
 				sb.append(formatter.formatDate(from)).append(" - ").append(formatter.formatDate(to));
 			} else if (from != null) {
 				sb.append(formatter.formatDate(from));

@@ -160,11 +160,12 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 	}
 
 	private void initCourseExecPeriodOptions(FormLayoutContainer formLayoutContainer) {
-		String[] dateKeys = new String[]{ "none", "private", "public"};
+		String[] dateKeys = new String[]{ "none", "public", "private", "oneday"};
 		String[] dateValues = new String[] {
 				translate("cif.dates.none"),
+				translate("cif.dates.public"),
 				translate("cif.dates.private"),
-				translate("cif.dates.public")
+				translate("cif.dates.oneday")
 		};
 
 		courseExecEl = uifactory.addRadiosVertical("cif.dates", "cif.dates", formLayoutContainer, dateKeys, dateValues);

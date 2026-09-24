@@ -7,16 +7,8 @@
 				/ $r.escapeHtml($parent.displayName) #if($r.isNotEmpty($parent.identifier))<small>$r.escapeHtml($parent.identifier)</small>#end
 			#end
 		</div>
-		#if($r.isNotNull($elementBegin) || $r.isNotNull($elementEnd))
-		<div class="o_date text-muted"><i class="o_icon o_icon-fw o_icon_calendar"> </i>
-			#if($r.isNotNull($elementBegin) && $r.isNotNull($elementEnd))
-				$r.translate("curriculum.element.from.to", $elementBegin, $elementEnd)
-			#elseif($r.isNotNull($elementBegin))
-				$r.translate("curriculum.element.from", $elementBegin)
-			#else
-				$r.translate("curriculum.element.to", $elementEnd)
-			#end
-		</div>
+		#if($r.isNotEmpty($elementPeriod))
+		<div class="o_date text-muted"><i class="o_icon o_icon-fw o_icon_calendar"> </i> $elementPeriod</div>
 		#end
 	</div>
 	$r.render("list")

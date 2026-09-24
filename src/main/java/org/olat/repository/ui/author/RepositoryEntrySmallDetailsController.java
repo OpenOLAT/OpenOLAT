@@ -30,12 +30,15 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
@@ -67,6 +70,22 @@ public class RepositoryEntrySmallDetailsController extends FormBasicController {
 		initForm(ureq);
 	}
 
+	private String formatLifecycle(RepositoryEntryLifecycle lifecycle) {
+		if(lifecycle == null) {
+			return null;
+		}
+		if(!lifecycle.isPrivateCycle()) {
+			return StringHelper.containsNonWhitespace(lifecycle.getSoftKey()) ? lifecycle.getSoftKey() : lifecycle.getLabel();
+		}
+		Formatter formatter = Formatter.getInstance(getLocale());
+		String from = lifecycle.getValidFrom() == null ? null : formatter.formatDate(lifecycle.getValidFrom());
+		if(lifecycle.getValidTo() == null || DateUtils.isSameDay(lifecycle.getValidFrom(), lifecycle.getValidTo())) {
+			return from;
+		}
+		String to = formatter.formatDate(lifecycle.getValidTo());
+		return from == null ? to : from + " - " + to;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
@@ -78,6 +97,7 @@ public class RepositoryEntrySmallDetailsController extends FormBasicController {
 			layoutCont.contextPut("cssClass", cssClass);
 			layoutCont.contextPut("displayName", entry.getDisplayname());
 			layoutCont.contextPut("description", entry.getDescription());
+			layoutCont.contextPut("lifecycle", formatLifecycle(entry.getLifecycle()));
 			
 			List<Identity> owners = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
 			List<String> ownerNames = new ArrayList<>(owners.size());
