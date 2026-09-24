@@ -77,6 +77,7 @@ import org.olat.repository.RepositoryEntry;
 		left join fetch block.entry entry
 		left join fetch block.curriculumElement element
 		left join fetch block.bbbMeeting bbbMeeting
+		left join fetch block.teamsMeeting teamsMeeting
 		where block.key=:blockKey""")
 public class LectureBlockImpl implements Persistable, LectureBlock {
 

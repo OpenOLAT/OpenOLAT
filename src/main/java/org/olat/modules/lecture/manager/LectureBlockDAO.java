@@ -839,8 +839,8 @@ public class LectureBlockDAO {
 		  .append(" left join curEl.curriculum cur")
 		  .append(" left join cur.organisation organis")
 		  .append(" left join lectureentryconfig as config on (config.entry.key=entry.key)")
-		  .append(" left join block.teamsMeeting teamsMeeting")
-		  .append(" left join block.bbbMeeting bbbMeeting");
+		  .append(" left join fetch block.teamsMeeting teamsMeeting")
+		  .append(" left join fetch block.bbbMeeting bbbMeeting");
 		addSearchParametersToQuery(sc, searchParams);
 
 		//get all, it's quick

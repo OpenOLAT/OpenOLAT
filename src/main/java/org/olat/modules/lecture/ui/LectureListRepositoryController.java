@@ -1902,6 +1902,14 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			doEditLectureBlock(ureq, copiedBlock, block, true);
 		} else {
 			for(LectureBlock block:selectedBlocks) {
+				// Reload (OO-9744): commitAndCloseSession() below closes the session after every
+				// iteration, leaving the lazy associations (e.g. teamsMeeting/bbbMeeting) of every block
+				// loaded before this loop started stale from the second iteration onward, causing a
+				// LazyInitializationException as soon as copyLectureBlock(...) touches one of them.
+				block = lectureService.getLectureBlock(block);
+				if(block == null) {
+					continue;
+				}
 				String newTitle = translate("lecture.block.copy", block.getTitle());
 				String newExternalRef = copyExternalRef(block);
 				lectureService.copyLectureBlock(newTitle, newExternalRef, block, getIdentity(), true);
