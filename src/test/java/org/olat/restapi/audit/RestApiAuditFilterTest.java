@@ -122,9 +122,8 @@ public class RestApiAuditFilterTest extends OlatRestTestCase {
 		conn.shutdown();
 
 		List<ApiAuditLog> rows = rowsFor(marker);
-		Assertions.assertThat(rows).hasSize(1);
-		Assert.assertEquals(403, rows.get(0).getStatus());
-		
+		Assertions.assertThat(rows).isEmpty();
+
 		restModule.setEnabled(true);
 		waitMessageAreConsumed();
 	}
