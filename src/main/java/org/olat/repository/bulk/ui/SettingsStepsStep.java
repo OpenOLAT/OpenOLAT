@@ -122,14 +122,14 @@ public class SettingsStepsStep extends BasicStep {
 				String taxonomyI18nKey = catalogModule.isEnabled()? "settings.bulk.taxonomy.title.catalog": "settings.bulk.taxonomy.title";
 				stepsKV.add(entry(SettingsSteps.Step.taxonomy.name(), translate(taxonomyI18nKey)));
 			}
+			if (editables.isEditable(Step.execution)) {
+				stepsKV.add(entry(SettingsSteps.Step.execution.name(), translate("settings.bulk.execution.title")));
+			}
 			if (editables.isEditable(Step.organisation)) {
 				stepsKV.add(entry(SettingsSteps.Step.organisation.name(), translate("settings.bulk.organisation.title")));
 			}
 			if (editables.isEditable(Step.authorRights)) {
 				stepsKV.add(entry(SettingsSteps.Step.authorRights.name(), translate("settings.bulk.author.rights.title")));
-			}
-			if (editables.isEditable(Step.execution)) {
-				stepsKV.add(entry(SettingsSteps.Step.execution.name(), translate("settings.bulk.execution.title")));
 			}
 			if (editables.isEditable(Step.toolbar)) {
 				stepsKV.add(entry(SettingsSteps.Step.toolbar.name(), translate("settings.bulk.toolbar.title")));

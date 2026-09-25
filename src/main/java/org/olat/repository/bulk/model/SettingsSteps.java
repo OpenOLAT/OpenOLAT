@@ -40,9 +40,9 @@ public class SettingsSteps {
 		metadata,
 		info,
 		taxonomy,
+		execution,
 		organisation,
 		authorRights,
-		execution,
 		toolbar,
 		options,
 		overview

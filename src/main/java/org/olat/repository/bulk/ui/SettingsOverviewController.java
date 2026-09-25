@@ -233,6 +233,49 @@ public class SettingsOverviewController extends StepFormBasicController {
 			overviewSteps.add(step);
 		}
 		
+		if (steps.contains(Step.execution)) {
+			List<OverviewField> fields = new ArrayList<>(3);
+			if (context.isSelected(SettingsBulkEditable.lifecycleType)) {
+				String text;
+				switch (context.getLifecycleType()) {
+				case none: text = translate("settings.bulk.execution.period.none");
+					break;
+				case publicCycle:
+					RepositoryEntryLifecycle lifecycle = lifecycleDao.loadById(context.getLifecyclePublicKey());
+					String lifecycleName = lifecycle != null? lifecycle.getLabel(): "-";
+					text = translate("settings.bulk.overview.execution.public", lifecycleName);
+					break;
+				case privateCycle:
+					String from = context.getLifecycleValidFrom() != null
+							? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidFrom())
+							: "-";
+					String to = context.getLifecycleValidTo() != null
+							? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidTo())
+							: "-";
+					text = translate("settings.bulk.overview.execution.private", from, to);
+					break;
+				default:
+					text = "-";
+					break;
+				}
+				text = translate("settings.bulk.overview.execution.period", text);
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecycleType);
+				String resourceItemName = createResourceLink(changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
+			if (context.isSelected(SettingsBulkEditable.location)) {
+				String text = translate("settings.bulk.overview.location", context.getLocation());
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.location);
+				String resourceItemName = createResourceLink(changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
+			if (fields.isEmpty()) {
+				fields.add(new OverviewField(translate("settings.bulk.overview.none"), null));
+			}
+			OverviewStep step = new OverviewStep(translate("settings.bulk.execution.title"), fields);
+			overviewSteps.add(step);
+		}
+
 		if (steps.contains(Step.organisation)) {
 			List<OverviewField> fields = new ArrayList<>();
 			if (context.isSelected(SettingsBulkEditable.organisationsAdd)) {
@@ -294,49 +337,6 @@ public class SettingsOverviewController extends StepFormBasicController {
 				fields.add(new OverviewField(translate("settings.bulk.overview.none"), null));
 			}
 			OverviewStep step = new OverviewStep(translate("settings.bulk.author.rights.title"), fields);
-			overviewSteps.add(step);
-		}
-		
-		if (steps.contains(Step.execution)) {
-			List<OverviewField> fields = new ArrayList<>(3);
-			if (context.isSelected(SettingsBulkEditable.lifecycleType)) {
-				String text;
-				switch (context.getLifecycleType()) {
-				case none: text = translate("settings.bulk.execution.period.none");
-					break;
-				case publicCycle: 
-					RepositoryEntryLifecycle lifecycle = lifecycleDao.loadById(context.getLifecyclePublicKey());
-					String lifecycleName = lifecycle != null? lifecycle.getLabel(): "-";
-					text = translate("settings.bulk.overview.execution.public", lifecycleName);
-					break;
-				case privateCycle: 
-					String from = context.getLifecycleValidFrom() != null
-							? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidFrom())
-							: "-";
-					String to = context.getLifecycleValidTo() != null
-							? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidTo())
-							: "-";
-					text = translate("settings.bulk.overview.execution.private", from, to);
-					break;
-				default:
-					text = "-";
-					break;
-				}
-				text = translate("settings.bulk.overview.execution.period", text);
-				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecycleType);
-				String resourceItemName = createResourceLink(changes);
-				fields.add(new OverviewField(text, resourceItemName));
-			}
-			if (context.isSelected(SettingsBulkEditable.location)) {
-				String text = translate("settings.bulk.overview.location", context.getLocation());
-				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.location);
-				String resourceItemName = createResourceLink(changes);
-				fields.add(new OverviewField(text, resourceItemName));
-			}
-			if (fields.isEmpty()) {
-				fields.add(new OverviewField(translate("settings.bulk.overview.none"), null));
-			}
-			OverviewStep step = new OverviewStep(translate("settings.bulk.execution.title"), fields);
 			overviewSteps.add(step);
 		}
 		

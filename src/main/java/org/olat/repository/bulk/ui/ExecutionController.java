@@ -54,6 +54,7 @@ import org.olat.repository.bulk.model.SettingsContext;
 import org.olat.repository.bulk.model.SettingsContext.LifecycleType;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.ui.ExecutionPeriodHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -71,9 +72,9 @@ public class ExecutionController extends StepFormBasicController {
 	private MultipleSelectionElement dateTypeCheckboxEl;
 	private SingleSelection dateTypesEl;
 	private SingleSelection publicDatesEl;
-	private DateChooser startDateEl;
-	private DateChooser endDateEl;
+	private DateChooser privateDatesEl;
 	private TextElement locationEl;
+	private FormLayoutContainer executionCont;
 	
 	private final SettingsContext context;
 	private final SettingsBulkEditables editables;
@@ -96,7 +97,7 @@ public class ExecutionController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer executionCont = FormLayoutContainer.createDefaultFormLayout("executionCont", getTranslator());
+		executionCont = FormLayoutContainer.createDefaultFormLayout("executionCont", getTranslator());
 		executionCont.setFormTitle(translate("settings.bulk.execution.title"));
 		executionCont.setFormInfo(RepositoryBulkUIFactory.getSettingsDescription(getTranslator(), context.getRepositoryEntries(), "settings.bulk.change.fields"));
 		executionCont.setRootForm(mainForm);
@@ -107,16 +108,19 @@ public class ExecutionController extends StepFormBasicController {
 		courseOnlyEl.setElementCssClass("o_form_explanation");
 		
 		SelectionValues dateTypeSV = new SelectionValues();
-		dateTypeSV.add(entry(LifecycleType.none.name(), translate("settings.bulk.execution.period.none")));
-		dateTypeSV.add(entry(LifecycleType.privateCycle.name(), translate("settings.bulk.execution.period.private")));
-		dateTypeSV.add(entry(LifecycleType.publicCycle.name(), translate("settings.bulk.execution.period.public")));
+		dateTypeSV.add(entry("none", translate("settings.bulk.execution.period.none")));
+		dateTypeSV.add(entry("public", translate("settings.bulk.execution.period.public")));
+		dateTypeSV.add(entry("private", translate("settings.bulk.execution.period.private")));
+		dateTypeSV.add(entry("oneday", translate("settings.bulk.execution.period.oneday")));
 		dateTypesEl = uifactory.addRadiosVertical("settings.bulk.execution.period", executionCont, dateTypeSV.keys(), dateTypeSV.values());
 		dateTypesEl.addActionListener(FormEvent.ONCHANGE);
 		dateTypesEl.setHelpText(translate("cif.dates.help"));
-		if (context.getLifecycleType() != null) {
-			dateTypesEl.select(context.getLifecycleType().name(), true);
+		if (context.getLifecycleType() == LifecycleType.publicCycle) {
+			dateTypesEl.select("public", true);
+		} else if (context.getLifecycleType() == LifecycleType.privateCycle) {
+			dateTypesEl.select(ExecutionPeriodHelper.getDatesType(context.getLifecycleValidFrom(), context.getLifecycleValidTo()), true);
 		} else {
-			dateTypesEl.select(LifecycleType.none.name(), true);
+			dateTypesEl.select("none", true);
 		}
 		dateTypeCheckboxEl = decorate(dateTypesEl, executionCont, SettingsBulkEditable.lifecycleType);
 
@@ -153,9 +157,10 @@ public class ExecutionController extends StepFormBasicController {
 			publicDatesEl.select(context.getLifecyclePublicKey().toString(), true);
 		}
 		
-		startDateEl = uifactory.addDateChooser("settings.bulk.execution.from", context.getLifecycleValidFrom(), executionCont);
-		
-		endDateEl = uifactory.addDateChooser("settings.bulk.execution.to", context.getLifecycleValidTo(), executionCont);
+		privateDatesEl = uifactory.addDateChooser("date.start", "cif.private.dates", context.getLifecycleValidFrom(), executionCont);
+		privateDatesEl.setSecondDate(true);
+		privateDatesEl.setSeparator("to.separator");
+		privateDatesEl.setSecondDate(context.getLifecycleValidTo());
 		
 		locationEl = uifactory.addTextElement("settings.bulk.location", 255, context.getLocation(), executionCont);
 		decorate(locationEl, executionCont, SettingsBulkEditable.location);
@@ -181,18 +186,12 @@ public class ExecutionController extends StepFormBasicController {
 	}
 
 	private void updateLifecycleUI() {
-		publicDatesEl.setVisible(false);
-		startDateEl.setVisible(false);
-		endDateEl.setVisible(false);
-		
+		String type = "none";
 		if (dateTypeCheckboxEl.isAtLeastSelected(1) && dateTypesEl.isOneSelected()) {
-			if (LifecycleType.publicCycle.name().equals(dateTypesEl.getSelectedKey())) {
-				publicDatesEl.setVisible(true);
-			} else if (LifecycleType.privateCycle.name().equals(dateTypesEl.getSelectedKey())) {
-				startDateEl.setVisible(true);
-				endDateEl.setVisible(true);
-			}
+			type = dateTypesEl.getSelectedKey();
 		}
+		ExecutionPeriodHelper.updateVisibility(type, privateDatesEl, publicDatesEl);
+		executionCont.setDirty(true);
 	}
 	
 	@Override
@@ -221,7 +220,14 @@ public class ExecutionController extends StepFormBasicController {
 		
 		context.select(SettingsBulkEditable.lifecycleType, dateTypesEl.isVisible() && dateTypesEl.isOneSelected());
 		if (dateTypesEl.isVisible() && dateTypesEl.isOneSelected()) {
-			context.setLifecycleType(LifecycleType.valueOf(dateTypesEl.getSelectedKey()));
+			String type = dateTypesEl.getSelectedKey();
+			if ("public".equals(type)) {
+				context.setLifecycleType(LifecycleType.publicCycle);
+			} else if ("private".equals(type) || "oneday".equals(type)) {
+				context.setLifecycleType(LifecycleType.privateCycle);
+			} else {
+				context.setLifecycleType(LifecycleType.none);
+			}
 		}
 		
 		if (publicDatesEl.isVisible() && publicDatesEl.isOneSelected()) {
@@ -230,12 +236,9 @@ public class ExecutionController extends StepFormBasicController {
 			context.setLifecyclePublicKey(null);
 		}
 		
-		if (startDateEl.isVisible()) {
-			context.setLifecycleValidFrom(startDateEl.getDate());
-		}
-		
-		if (endDateEl.isVisible()) {
-			context.setLifecycleValidTo(endDateEl.getDate());
+		if (privateDatesEl.isVisible()) {
+			context.setLifecycleValidFrom(privateDatesEl.getDate());
+			context.setLifecycleValidTo("oneday".equals(dateTypesEl.getSelectedKey()) ? privateDatesEl.getDate() : privateDatesEl.getSecondDate());
 		}
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
