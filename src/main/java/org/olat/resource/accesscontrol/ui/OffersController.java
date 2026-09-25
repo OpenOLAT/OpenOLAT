@@ -56,6 +56,8 @@ public class OffersController extends BasicController {
 	private OfferDetailsController detailsCtrl;
 	private Controller accessCtrl;
 	private Identity bookedIdentity;
+	private OfferAccess selectedOffer;
+	private final List<OfferAccess> offers;
 
 	private final boolean webCatalog;
 	private final boolean preview;
@@ -69,6 +71,7 @@ public class OffersController extends BasicController {
 		this.webCatalog = webCatalog;
 		this.bookedIdentity = bookedIdentity;
 		this.preview = preview;
+		this.offers = offers;
 		mainVC = createVelocityContainer("offers");
 		putInitialPanel(mainVC);
 		
@@ -98,6 +101,22 @@ public class OffersController extends BasicController {
 
 	public Link getStartAdminLink() {
 		return startAdminLink;
+	}
+
+	public OfferAccess getSelectedOffer() {
+		return selectedOffer;
+	}
+
+	public void selectOffer(UserRequest ureq, Long offerAccessKey) {
+		offers.stream()
+				.filter(offer -> offer.getKey().equals(offerAccessKey))
+				.findFirst()
+				.ifPresent(offer -> {
+					if (offerSelectionCtrl != null) {
+						offerSelectionCtrl.select(offer);
+					}
+					updateOfferUI(ureq, offer);
+				});
 	}
 
 	@Override
@@ -132,6 +151,7 @@ public class OffersController extends BasicController {
 	}
 
 	private void updateOfferUI(UserRequest ureq, OfferAccess offerAccess) {
+		selectedOffer = offerAccess;
 		removeAsListenerAndDispose(detailsCtrl);
 		removeAsListenerAndDispose(accessCtrl);
 		

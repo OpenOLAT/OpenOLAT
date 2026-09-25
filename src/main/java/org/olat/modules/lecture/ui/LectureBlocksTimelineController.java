@@ -79,6 +79,7 @@ public class LectureBlocksTimelineController extends BasicController {
 		
 		boolean timelineComplete = !showFirstOnly || lectureBlocks.size() <= FIRST_ONLY_LIMIT;
 		mainVC.contextPut("timelineComplete", timelineComplete);
+		mainVC.contextPut("printTables", createPrintTables(formatter));
 		
 		List<LectureBlock> sortedLectureBlocks = lectureBlocks.stream()
 				.filter(lb -> lb.getStartDate() != null)
@@ -118,6 +119,21 @@ public class LectureBlocksTimelineController extends BasicController {
 		years.add(createYear(currentYear, days));
 		days.add(createDay(formatter, currentDate, timelineLectureBlocks));
 		mainVC.contextPut("years", years);
+	}
+
+	private List<List<PrintLectureBlock>> createPrintTables(Formatter formatter) {
+		List<PrintLectureBlock> printLectureBlocks = lectureBlocks.stream()
+				.filter(lb -> lb.getStartDate() != null)
+				.sorted(new LectureBlockStartComparator())
+				.map(lb -> new PrintLectureBlock(formatter.formatDateWithDay(lb.getStartDate()), lb.getTitle(), formatTimePeriod(formatter, lb)))
+				.toList();
+		int numOfTables = printLectureBlocks.size() > FIRST_ONLY_LIMIT ? 2 : 1;
+		int rowsPerTable = (int) Math.ceil(printLectureBlocks.size() / (double) numOfTables);
+		List<List<PrintLectureBlock>> printTables = new ArrayList<>(numOfTables);
+		for (int i = 0; i < printLectureBlocks.size(); i += rowsPerTable) {
+			printTables.add(printLectureBlocks.subList(i, Math.min(i + rowsPerTable, printLectureBlocks.size())));
+		}
+		return printTables;
 	}
 
 	private TimelineYear createYear(int currentYear, List<TimelineDay> days) {
@@ -268,6 +284,10 @@ public class LectureBlocksTimelineController extends BasicController {
 		
 	}
 	
+	public record PrintLectureBlock(String date, String title, String timePeriod) {
+		//
+	}
+
 	public class LectureBlockStartComparator implements Comparator<LectureBlock> {
 
 		@Override

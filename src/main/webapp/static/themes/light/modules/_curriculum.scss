@@ -726,6 +726,19 @@ fieldset.o_validation_result {
 			display: none;
 		}
 	}
+	// print: A4 is narrower than the tablet breakpoint, still show all columns
+	@media print {
+		grid-template-columns: 1fr max-content max-content;
+		.o_curriculum_element_outline_lead {
+			border-top-right-radius: 0;
+			border-bottom-right-radius: 0;
+			border-right: none;
+		}
+		.o_curriculum_element_outline_events,
+		.o_curriculum_element_outline_period {
+			display: flex;
+		}
+	}
 }
 
 .o_curriculum_element_taughtbys {

@@ -7,6 +7,24 @@
 		#end
 	</script>
 
+	<div id="o_print_brand" class="o_info_page_print_header">
+		<span class="o_navbar-brand"></span>
+	</div>
+	<script>
+		'use strict';
+		jQuery(function() {
+			var imgUrl = jQuery("#o_print_brand .o_navbar-brand").css("background-image");
+			if(typeof imgUrl !== "undefined" && imgUrl != "none") {
+				imgUrl = imgUrl.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
+			}
+			if(imgUrl && imgUrl.length > 12) {
+				jQuery("#o_print_brand").empty().append(jQuery('<img src="' + imgUrl + '" alt=""/>'));
+			} else {
+				jQuery("#o_print_brand").remove();
+			}
+		});
+	</script>
+
 	<div class="o_info_page_column_aside">
 		#if($r.available("thumbnail"))
 			<div class="o_info_page_item o_info_page_thumbnail">
@@ -63,4 +81,20 @@
 			</fieldset>
 		#end
 	</div>
+
+	#if($r.isNotEmpty($qrUrl))
+		<div class="o_info_page_print_qrcode">
+			<div id="o_ip_print_qr_$r.getCId()" class="o_qrcode"></div>
+			<fieldset>
+				<legend>$r.translate("details.print.offer")</legend>
+				<a href="$qrUrl">$r.escapeHtml($qrUrl)</a>
+			</fieldset>
+		</div>
+		<script>
+			'use strict';
+			jQuery(function() {
+				o_QRCode('o_ip_print_qr_$r.getCId()', '$r.escapeJavaScript($qrUrl)');
+			});
+		</script>
+	#end
 </div>

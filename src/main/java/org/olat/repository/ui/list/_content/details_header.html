@@ -80,17 +80,5 @@
 				#end
 			</div>
 		</div>
-
-		#if($r.isNotEmpty($qrUrl))
-			<div class="o_info_page_qrcode">
-				<div id="o_ip_qr_$r.getCId()" class="o_qrcode"></div>
-			</div>
-			<script>
-				'use strict';
-				jQuery(function() {
-					o_QRCode('o_ip_qr_$r.getCId()', '$r.escapeJavaScript($qrUrl)');
-				});
-			</script>
-		#end
 	</div>
 </div>

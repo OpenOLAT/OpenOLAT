@@ -129,6 +129,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 		headerCtrl = new InfoPageHeaderController(ureq, wControl, data, shareUrl);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
+		mainVC.contextPut("qrUrl", shareUrl);
 
 		teaserImageCtrl = new InfoPageTeaserImageController(ureq, wControl, data);
 		listenTo(teaserImageCtrl);
@@ -279,13 +280,24 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 	private void doExportPdf(UserRequest ureq) {
 		// The rendered snapshot never triggers doStart()/doBooked(), so any
 		// concrete subclass reproduces the same page for the PDF.
-		ControllerCreator printControllerCreator = isResourceInfoView
-				? (lureq, lwControl) -> new RepositoryEntryPublicInfosController(lureq, lwControl, entry)
-				: (lureq, lwControl) -> new RepositoryEntryInfosController(lureq, lwControl, entry, config, true);
+		Long selectedOfferAccessKey = getStartedCtrl != null ? getStartedCtrl.getSelectedOfferAccessKey() : null;
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+			RepositoryEntryDetailsController printCtrl = isResourceInfoView
+					? new RepositoryEntryPublicInfosController(lureq, lwControl, entry)
+					: new RepositoryEntryInfosController(lureq, lwControl, entry, config, true);
+			printCtrl.selectOffer(lureq, selectedOfferAccessKey);
+			return printCtrl;
+		};
 		String filename = StringHelper.transformDisplayNameToFileSystemName(entry.getDisplayname());
 		PdfOutputOptions options = PdfOutputOptions.valueOf(MediaType.print, Margin.ONE_CM, null);
 		MediaResource resource = pdfService.convert(filename, getIdentity(), printControllerCreator, getWindowControl(), options);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+
+	private void selectOffer(UserRequest ureq, Long offerAccessKey) {
+		if (getStartedCtrl != null) {
+			getStartedCtrl.selectOffer(ureq, offerAccessKey);
+		}
 	}
 
 	protected RepositoryEntry getEntry() {

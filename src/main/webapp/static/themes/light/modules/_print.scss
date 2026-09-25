@@ -40,6 +40,12 @@
 		display: none !important;
 	} 
 	
+	/* Collapsible sections: no open/close carets */
+	.o_section_toggle .o_icon_open_togglebox,
+	.o_section_toggle .o_icon_close_togglebox {
+		display: none;
+	}
+
 	/* Do not use bootstrap size width. It is too small for landscape layout */
 	.o_container_offcanvas {
 		max-width: 100%;

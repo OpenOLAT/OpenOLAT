@@ -51,6 +51,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureBlocksTimelineController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.list.AbstractInfoPageGetStartedController;
 import org.olat.repository.ui.list.CurriculumElementInfoPageSectionsController;
 import org.olat.repository.ui.list.DetailsHeaderConfig;
@@ -102,7 +103,8 @@ public class CurriculumElementInfosController extends BasicController {
 
 	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
 			RepositoryEntry entry, DetailsHeaderConfig headerConfig, boolean webPublish) {
-		super(ureq, wControl, Util.createPackageTranslator(CurriculumElementInfosController.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(CurriculumElementInfosController.class, ureq.getLocale(),
+				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale())));
 		// The translator is explicitly set so that it is also available in the subclasses.
 		this.element = element;
 		this.entry = entry;
@@ -130,6 +132,7 @@ public class CurriculumElementInfosController extends BasicController {
 		headerCtrl = new InfoPageHeaderController(ureq, wControl, data, shareUrl);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
+		mainVC.contextPut("qrUrl", shareUrl);
 
 		teaserImageCtrl = new InfoPageTeaserImageController(ureq, wControl, data);
 		listenTo(teaserImageCtrl);
@@ -193,8 +196,12 @@ public class CurriculumElementInfosController extends BasicController {
 	private void doExportPdf(UserRequest ureq) {
 		// The rendered snapshot never triggers doStart(), so the same
 		// constructor arguments reproduce the identical page for the PDF.
-		ControllerCreator printControllerCreator = (lureq, lwControl) ->
-				new CurriculumElementInfosController(lureq, lwControl, element, entry, headerConfig, webPublish);
+		Long selectedOfferAccessKey = getStartedCtrl.getSelectedOfferAccessKey();
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+			CurriculumElementInfosController printCtrl = new CurriculumElementInfosController(lureq, lwControl, element, entry, headerConfig, webPublish);
+			printCtrl.getStartedCtrl.selectOffer(lureq, selectedOfferAccessKey);
+			return printCtrl;
+		};
 		String filename = StringHelper.transformDisplayNameToFileSystemName(element.getDisplayName());
 		PdfOutputOptions options = PdfOutputOptions.valueOf(MediaType.print, Margin.ONE_CM, null);
 		MediaResource resource = pdfService.convert(filename, getIdentity(), printControllerCreator, getWindowControl(), options);

@@ -68,8 +68,7 @@ public class InfoPageHeaderController extends BasicController {
 	/**
 	 * @param shareUrl the URL to share for the current entry point, or null to
 	 *            hide the share action (e.g. the curriculum element preview in
-	 *            the editor). Also used as the target of the print/PDF QR
-	 *            code.
+	 *            the editor)
 	 */
 	public InfoPageHeaderController(UserRequest ureq, WindowControl wControl, InfoPageData data, String shareUrl) {
 		super(ureq, wControl);
@@ -103,8 +102,6 @@ public class InfoPageHeaderController extends BasicController {
 			shareCtrl.setShareTitle(data.getTitle());
 			listenTo(shareCtrl);
 			mainVC.put("share", shareCtrl.getInitialComponent());
-
-			mainVC.contextPut("qrUrl", shareUrl);
 		}
 
 		if (pdfModule.isEnabled()) {

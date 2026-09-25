@@ -104,6 +104,16 @@ public abstract class AbstractInfoPageGetStartedController extends BasicControll
 		return hasContent;
 	}
 
+	public Long getSelectedOfferAccessKey() {
+		return offersCtrl != null && offersCtrl.getSelectedOffer() != null ? offersCtrl.getSelectedOffer().getKey() : null;
+	}
+
+	public void selectOffer(UserRequest ureq, Long offerAccessKey) {
+		if (offersCtrl != null && offerAccessKey != null) {
+			offersCtrl.selectOffer(ureq, offerAccessKey);
+		}
+	}
+
 	private void initByConfig(UserRequest ureq) {
 		if (config.getGuestOffer() != null) {
 			OfferDetailsController detailsCtrl = new OfferDetailsController(ureq, getWindowControl(), config.getGuestOffer());

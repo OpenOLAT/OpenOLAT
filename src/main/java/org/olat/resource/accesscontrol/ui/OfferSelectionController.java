@@ -123,6 +123,10 @@ public class OfferSelectionController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 
+	public void select(OfferAccess offer) {
+		offersEl.select(offer.getKey().toString(), true);
+	}
+
 	private void doSelectOffer(UserRequest ureq) {
 		if (offersEl.isOneSelected()) {
 			String selectedKey = offersEl.getSelectedKey();

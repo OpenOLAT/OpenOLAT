@@ -81,10 +81,6 @@
 				white-space: normal;
 			}
 		}
-
-		.o_info_page_qrcode {
-			display: none;
-		}
 	}
 
 	// The start/leave/admin buttons are rendered inside the "Get started"
@@ -141,6 +137,11 @@
 	.o_info_page_licence { order: 9; }
 	.o_info_page_rating { order: 10; }
 
+	.o_info_page_print_header,
+	.o_info_page_print_qrcode {
+		display: none;
+	}
+
 	.o_info_page_thumbnail {
 		.o_image, img, .o_video, video {
 			width: auto;
@@ -151,8 +152,9 @@
 
 	// Tablet width: still a single overall column (aside/main stacked), but
 	// wide enough to put the thumbnail next to the title again, as before
-	// the redesign moved it into its own grid item.
-	@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
+	// the redesign moved it into its own grid item. Print / PDF (A4 minus
+	// margins is narrower than the tablet breakpoint) uses the same layout.
+	@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max), print {
 		grid-template-columns: 1fr auto;
 
 		.o_info_page_item {
@@ -200,57 +202,76 @@
 		}
 	}
 
-	// Print / PDF: force the mobile 1-column order regardless of the paper
-	// width, hide the interactive parts, and show the QR code beside the
-	// header instead of the teaser image.
+	// Print / PDF: hide the interactive parts, add the logo header and the
+	// QR code footer.
 	@media print {
-		grid-template-columns: 1fr;
-
-		.o_info_page_column_aside,
-		.o_info_page_column_main {
-			display: contents;
+		.o_info_page_print_header {
+			display: block;
+			width: 100%;
+			grid-column: 1 / -1;
+			grid-row: 1;
+			margin-bottom: 20px;
 		}
 
-		.o_info_page_item,
 		.o_info_page_header,
 		.o_info_page_thumbnail {
-			grid-column: auto;
-			grid-row: auto;
-			max-width: none;
+			grid-row: 2;
 		}
 
-		.o_header {
-			.o_lead {
-				flex-direction: row;
-				align-items: flex-start;
-				justify-content: space-between;
+		.o_info_page_print_header {
 
-				.o_header_actions {
-					display: none;
-				}
-
-				.o_info_page_qrcode {
-					display: block;
-					flex-shrink: 0;
-					margin-left: 20px;
-					text-align: center;
-
-					.o_qrcode {
-						width: 128px;
-						height: 128px;
-					}
-				}
+			img {
+				max-height: $o-repo-info-print-logo-height;
+				max-width: 100%;
 			}
+		}
+
+		.o_info_page_print_qrcode {
+			display: flex;
+			align-items: center;
+			gap: 20px;
+			order: 11;
+
+			.o_qrcode {
+				width: 128px;
+				height: 128px;
+				flex-shrink: 0;
+			}
+
+			legend {
+				margin-bottom: 5px;
+				border-bottom: none;
+			}
+		}
+
+		.o_header .o_header_actions {
+			display: none;
 		}
 
 		.o_header_start {
 			display: none;
 		}
 
-		.o_ac_offer_message {
-			display: none;
+		// Get started: only the details of the selected offer. Without any
+		// details the whole card is hidden.
+		.o_get_started {
+			.o_ac_offers_container {
+				max-width: none;
+			}
+
+			.o_info_with_icon,
+			.o_warning_with_icon,
+			.o_ac_offer_selection,
+			.o_ac_offer_message,
+			.o_ac_offer_custom,
+			.o_ac_start_admin,
+			.o_header_offers > .btn,
+			.o_header_offers > p {
+				display: none;
+			}
 		}
 
+		.o_info_page_get_started:not(:has(.o_ac_offer_details > *)),
 		&.o_info_page_member .o_info_page_get_started {
 			display: none;
 		}

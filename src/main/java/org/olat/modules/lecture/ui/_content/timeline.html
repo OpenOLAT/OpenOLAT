@@ -1,5 +1,27 @@
 <div class="o_lectures_timeline o_fact_sheet o_lightbox_modal_form">
 	<h3 class="o_fact_sheet_title">$r.translate("events")</h3>
+	<div class="o_lectures_timeline_print">
+		#foreach($table in $printTables)
+			<table class="table table-condensed table-striped">
+				<thead>
+					<tr>
+						<th>$r.translate("table.header.date")</th>
+						<th>$r.translate("table.header.lecture.block")</th>
+						<th>$r.translate("table.header.times")</th>
+					</tr>
+				</thead>
+				<tbody>
+					#foreach($block in $table)
+						<tr>
+							<td class="o_nowrap">$block.date()</td>
+							<td>$r.escapeHtml($block.title())</td>
+							<td class="o_nowrap">$block.timePeriod()</td>
+						</tr>
+					#end
+				</tbody>
+			</table>
+		#end
+	</div>
 	<div class="o_lectures_timeline_rows #if($timelineComplete)o_lectures_timeline_complete #end">
 		#foreach($year in $years)
 			<div class="o_lectures_timeline_row">

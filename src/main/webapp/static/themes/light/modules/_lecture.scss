@@ -574,6 +574,28 @@ tr.o_rm_room_preselected {
 			}
 		}
 	}
+
+	.o_lectures_timeline_print {
+		display: none;
+	}
+
+	@media print {
+		.o_lectures_timeline_rows,
+		.o_button_group {
+			display: none;
+		}
+
+		.o_lectures_timeline_print {
+			display: flex;
+			align-items: flex-start;
+			gap: 20px;
+
+			table {
+				flex: 1;
+				margin-bottom: 0;
+			}
+		}
+	}
 }
 
 

@@ -643,6 +643,7 @@ $o-repo-info-border-radius				: 4px !default;
 $o-repo-info-padding					: 20px 20px 5px 20px !default;
 $o-repo-info-header-size-small			: 16px !default;
 $o-repo-info-separator-border			: 1px solid #d4d4d4 !default;
+$o-repo-info-print-logo-height			: $o-navbar-brand-height !default;
 
 /* Access control */
 $o-ac-offers-container-max-width		: math.div($o-page-width-max, 3) !default;
