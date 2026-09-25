@@ -300,10 +300,12 @@ public class I18nTest extends OlatTestCase {
 	}
 	
 	//remove after execution!
+	/* All, Alles is translated todo in Spanish which breaks the test
 	@Test
 	public void testRemoveTodoKeyTask(){
 		tDMgr.removeTodoKeysTask(false);
 	}
+	*/
 	
 	//remove after execution!
 	@Test
