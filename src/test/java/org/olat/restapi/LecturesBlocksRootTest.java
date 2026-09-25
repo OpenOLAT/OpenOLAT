@@ -38,6 +38,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
@@ -63,6 +70,8 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 	private DB dbInstance;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	/**
 	 * Only administrator and lecture managers have access to this REST API
@@ -165,6 +174,47 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		Assert.assertEquals(entry.getKey(), lectureBlockVo.getRepoEntryKey());
 	}
 	
+	/**
+	 * OO-9734, finding 2: a lecture block on a curriculum element without a course must be returned
+	 * too, not just lecture blocks tied to a repository entry.
+	 *
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void getLecturesBlock_curriculumElementWithoutCourse()
+	throws IOException, URISyntaxException {
+		Curriculum curriculum = curriculumService.createCurriculum("lect-root-cur", "Lecture root curriculum REST", "",
+				false, JunitTestHelper.getDefaultOrganisation());
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("lect-root-cur-el",
+				"Lecture root curriculum element", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		LectureBlock block = createLectureBlock(curriculumElement);
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<LectureBlockVO> voList = parseLectureBlockArray(response.getEntity().getContent());
+		Assert.assertNotNull(voList);
+
+		LectureBlockVO lectureBlockVo = null;
+		for(LectureBlockVO vo:voList) {
+			if(vo.getKey().equals(block.getKey())) {
+				lectureBlockVo = vo;
+			}
+		}
+
+		Assert.assertNotNull("Lecture block on a curriculum element without a course must be returned", lectureBlockVo);
+		Assert.assertEquals(block.getKey(), lectureBlockVo.getKey());
+		Assert.assertEquals(curriculumElement.getKey(), lectureBlockVo.getCurriculumElementKey());
+	}
+
 	private RepositoryEntry deployCourseWithLecturesEnabled(Identity author) {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
@@ -183,6 +233,15 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		return lectureService.save(lectureBlock, null);
 	}
 	
+	private LectureBlock createLectureBlock(CurriculumElement curriculumElement) {
+		LectureBlock lectureBlock = lectureService.createLectureBlock(curriculumElement, null);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello curriculum lecturers");
+		lectureBlock.setPlannedLecturesNumber(4);
+		return lectureService.save(lectureBlock, null);
+	}
+
 	protected List<LectureBlockVO> parseLectureBlockArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 

@@ -19,7 +19,6 @@
  */
 package org.olat.modules.lecture.restapi;
 
-import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.parseDate;
 
@@ -90,8 +89,13 @@ public class LectureBlocksRootWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
+		// Include lecture blocks on curriculum elements without a course too (OO-9734): the caller is
+		// already restricted to administrator/lecture manager above, so there is no need to also
+		// require a per-course/curriculum membership row via setManager(...) - that would only exclude
+		// results for a privileged caller whose role is granted at a parent/root organisation instead
+		// of directly on the block's own course/curriculum/organisation group.
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
-		searchParams.setLectureConfiguredRepositoryEntry(true);
+		searchParams.setLectureConfiguredRepositoryEntry(false);
 		if(date != null) {
 			Date d = parseDate(date, Locale.ENGLISH);
 			Date startDate = CalendarUtils.removeTime(d);
@@ -99,7 +103,6 @@ public class LectureBlocksRootWebService {
 			searchParams.setStartDate(startDate);
 			searchParams.setEndDate(endDate);
 		}
-		searchParams.setManager(getIdentity(httpRequest));
 		List<LectureBlock> blockList = lectureService.getLectureBlocks(searchParams, -1, null);
 		LectureBlockVO[] voes = new LectureBlockVO[blockList.size()];
 		for(int i=blockList.size(); i-->0; ) {
