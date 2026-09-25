@@ -69,15 +69,6 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 	}
 	
 	@Override
-	public boolean isOverlapAllowed(AccessMethodHandler handler) {
-		if(handler instanceof PaypalCheckoutAccessHandler) {
-			PaypalCheckoutModule paypalModule = CoreSpringFactory.getImpl(PaypalCheckoutModule.class);
-			return !paypalModule.isSmartButtons();
-		}
-		return true;
-	}
-
-	@Override
 	public String getType() {
 		return METHOD_TYPE;
 	}

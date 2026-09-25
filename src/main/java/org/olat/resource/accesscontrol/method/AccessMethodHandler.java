@@ -55,12 +55,6 @@ public interface AccessMethodHandler {
 	
 	public boolean isPaymentMethod();
 	
-	/**
-	 * 
-	 * @return true if it is technically possible to have 2 methods overlap
-	 */
-	public boolean isOverlapAllowed(AccessMethodHandler handler);
-	
 	public String getType();
 	
 	public String getMethodName(Locale locale);

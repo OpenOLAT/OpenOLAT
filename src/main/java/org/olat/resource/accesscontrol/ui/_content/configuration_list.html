@@ -1,9 +1,3 @@
-#if($r.isTrue($overlappingErrorConfigs))
-	<div class="o_block"><div class="o_error_with_icon" role="alert">$r.translate("accesscontrol.overlap.error")</div></div>
-#elseif($r.isTrue($overlappingConfigs))
-	<div class="o_block"><div class="o_warning_with_icon">$r.translate("accesscontrol.overlap.found")</div></div>
-#end
-
 #if ($offers && $offers.size() > 0)
 	#foreach($offer in $offers)
 		$r.render($offer.iconPanel)

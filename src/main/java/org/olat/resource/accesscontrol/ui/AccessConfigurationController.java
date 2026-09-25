@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -450,7 +449,6 @@ public class AccessConfigurationController extends FormBasicController {
 				AccessInfo infos = addOffer(offerAccess, organisations, 0);
 				infos.setPendingOfferSurveys(newMethodCtrl.getPendingOfferSurveys());
 				updateCatalogOverviewUI();
-				checkOverlap();
 				offersContainer.setDirty(true);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -534,7 +532,6 @@ public class AccessConfigurationController extends FormBasicController {
 			String cmd = button.getCmd();
 			if("delete".equals(cmd) && source.getUserObject() instanceof AccessInfo infos) {
 				removeOffer(infos);
-				checkOverlap();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if("edit".equals(cmd) && source.getUserObject() instanceof AccessInfo infos) {
 				editOffer(ureq, infos);
@@ -580,7 +577,6 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 		}
 		
-		checkOverlap();
 	}
 
 	private void replace(OfferAccess link, Collection<Organisation> offerOrganisations, List<EvaluationFormSurvey> forms) {
@@ -601,7 +597,6 @@ public class AccessConfigurationController extends FormBasicController {
 		} else {
 			offersContainer.setDirty(true);
 		}
-		checkOverlap();
 	}
 
 	private AccessInfo addOffer(OfferAccess link, Collection<Organisation> offerOrganisations, int numOfOrders) {
@@ -951,7 +946,6 @@ public class AccessConfigurationController extends FormBasicController {
 			listenTo(cmc);
 		} else {
 			addOffer(link, defaultOfferOrganisations, 0);
-			checkOverlap();
 		}
 	}
 	
@@ -1076,92 +1070,6 @@ public class AccessConfigurationController extends FormBasicController {
 		listenTo(offerSurveyListCtrl);
 		flc.add("bookingOrderForms", offerSurveyListCtrl.getInitialFormItem());
 	}
-	
-	private void checkOverlap() {
-		Map<Long, List<AccessInfo>> organisationKeyToAccessInfo = new HashMap<>(1);
-		if (organisationModule.isEnabled()) {
-			for (AccessInfo accessInfo : accessInfos) {
-				if (accessInfo.getOfferOrganisations() != null && !accessInfo.getOfferOrganisations().isEmpty()) {
-					for (Organisation organisation : accessInfo.getOfferOrganisations()) {
-						organisationKeyToAccessInfo.computeIfAbsent(organisation.getKey(), key -> new ArrayList<>(2)).add(accessInfo);
-					}
-				} else {
-					organisationKeyToAccessInfo.computeIfAbsent(-1l, key -> new ArrayList<>(2)).add(accessInfo);
-				}
-			}
-		} else {
-			organisationKeyToAccessInfo.put(-1l, accessInfos);
-		}
-		
-		boolean overlap = false;
-		boolean overlapAllowed = true;
-		for (List<AccessInfo> accessInfosToCheck : organisationKeyToAccessInfo.values()) {
-			OverlapCheckResult checkResult = checkOverlap(accessInfosToCheck);
-			if (checkResult.overlap) {
-				overlap = checkResult.overlap;
-				overlapAllowed = checkResult.overlapAllowed;
-				break;
-			}
-		}
-		
-		// Display a warning
-		offersContainer.contextPut("overlappingConfigs", overlap);
-		offersContainer.contextPut("overlappingErrorConfigs", !overlapAllowed);
-		offersContainer.setDirty(true);
-	}
-	
-	private OverlapCheckResult checkOverlap(List<AccessInfo> accessInfosToCheck) {
-		boolean overlap = false;
-		boolean overlapAllowed = true;
-		
-		// Take a controller from the list
-		for (AccessInfo confControllerA : accessInfosToCheck) {
-			if (confControllerA.getLink() == null) continue;
-			// Compare it to every other from the list
-			for (AccessInfo confControllerB : accessInfosToCheck) {
-				if (confControllerB.getLink() == null) continue;
-				// Don't compare a confController with itself
-				if (!confControllerA.equals(confControllerB)) {
-					Date aFrom = confControllerA.getLink().getValidFrom();
-					Date aTo = confControllerA.getLink().getValidTo();
-					Date bFrom = confControllerB.getLink().getValidFrom();
-					Date bTo = confControllerB.getLink().getValidTo();
-
-					// One unlimited booking method and another
-					if (aFrom == null && aTo == null) {
-						overlap |= true;
-						overlapAllowed &= confControllerA.isOverlapAllowed(confControllerB);
-					} 
-					// Start and end overlap
-					else if (aTo != null && bFrom != null && aTo.compareTo(bFrom) >= 0){
-						// Exclude not overlapping methods
-						// Negate condition for no overlap => condition for overlap
-						if (!(aFrom != null && bTo != null && aFrom.compareTo(bTo) > 0)) {
-							overlap |= true; 
-						}
-					} 
-					// Two booking methods without start date
-					else if (aFrom == null && bFrom == null) {
-						overlap |= true;
-						overlapAllowed &= confControllerA.isOverlapAllowed(confControllerB);
-					} 
-					// Two booking methods without end date
-					else if (aTo == null && bTo == null) {
-						overlap |= true;
-						overlapAllowed &= confControllerA.isOverlapAllowed(confControllerB);
-					}
-				}
-			}
-			// If there is an overlap, don't go for extra checks
-			if (overlap) {
-				return new OverlapCheckResult(overlap, overlapAllowed);
-			}
-		}
-		
-		return new OverlapCheckResult(overlap, overlapAllowed);
-	}
-	
-	private record OverlapCheckResult(boolean overlap, boolean overlapAllowed) {}
 	
 	public interface OfferWithOrganisation {
 		
@@ -1340,10 +1248,6 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public boolean isPaymentMethod() {
 			return handler != null? handler.isPaymentMethod(): false;
-		}
-		
-		public boolean isOverlapAllowed(AccessInfo info) {
-			return handler != null? handler.isOverlapAllowed(info.handler): false;
 		}
 		
 		public String getLabel() {

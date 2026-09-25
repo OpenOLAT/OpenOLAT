@@ -67,11 +67,6 @@ public abstract class AutoAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public boolean isOverlapAllowed(AccessMethodHandler handler) {
-		return true;
-	}
-
-	@Override
 	public AccessMethodSecurityCallback getSecurityCallback(OLATResource resource, Identity identity, Roles roles) {
 		return NotAvailableACSecurityCallback.get();
 	}
