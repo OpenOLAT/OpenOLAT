@@ -252,6 +252,7 @@ public class MatchEditorController extends FormBasicController {
 		FormLink deleteButton = uifactory.addFormLink("del_" + (count++), "delete", "delete", null, answersCont, Link.NONTRANSLATED);
 		deleteButton.setIconLeftCSS("o_icon o_icon_delete_item");
 		deleteButton.setVisible(!restrictedEdit && !readOnly);
+		deleteButton.setTitle(translate("delete"));
 		deleteButton.setI18nKey("");
 		
 		MatchWrapper wrapper = new MatchWrapper(choice, choiceEl, choiceReadOnlyEl, deleteButton);
@@ -331,9 +332,12 @@ public class MatchEditorController extends FormBasicController {
 			recalculateDeleteButtons();
 		} else if(singleMultiEl == source) {
 			commitTemporaryAssociations(ureq);
-			doSwitchMatchMax();
-		} else if(source instanceof FormLink) {
-			FormLink button = (FormLink)source;
+			if(validateFormLogic(ureq)) {
+				// Match max is recalculated in builder
+				doSwitchMatchMax();
+			}
+			markDirty();
+		} else if(source instanceof FormLink button) {
 			if("delete".equals(button.getCmd())) {
 				commitTemporaryAssociations(ureq);
 				MatchWrapper associationWrapper = (MatchWrapper)button.getUserObject();
