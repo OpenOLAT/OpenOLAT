@@ -25,6 +25,8 @@
       <a href="../openolat-frontend.html">Frontend</a>
       <span class="sep">|</span>
       <a href="index.html" class="active">Component Library</a>
+      <span class="sep">|</span>
+      <a href="../i18n-translation-reference.md">Translation Reference</a>
     </nav>
   </div>
   <div class="header-rule"></div>
@@ -53,6 +55,8 @@
   <a href="feedback.html">Feedback &amp; Status</a>
   <a href="layout.html">Layout &amp; Containers</a>
   <a href="data-display.html">Data Display</a>
+  <a href="ai-ui.html">AI UI</a>
+  <a href="room-management.html">Room Management</a>
 </nav>
 
 <main class="cl-main">
@@ -330,10 +334,10 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Table Widget</h3>
-      <p>Widget containing a small summary table with a "Show all" link. Uses the standard widget header structure with <code>o_widget_title</code> and <code>o_widget_icon</code>, plus a <code>o_widget_footer</code> for actions.</p>
+      <p>Widget containing a small summary table with a "Show all" link. Uses the standard widget header structure with <code>o_widget_title</code> and <code>o_widget_icon</code>, plus an <code>o_widget_additional</code> area for actions.</p>
       <div class="cl-classes">
         <code>o_widgets</code> <code>o_widget</code> <code>o_widget_header</code> <code>o_widget_title</code> <code>o_flex_item_max</code>
-        <code>o_widget_icon</code> <code>o_widget_content</code> <code>o_widget_footer</code>
+        <code>o_widget_icon</code> <code>o_widget_content</code> <code>o_widget_additional</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -356,7 +360,7 @@
                   </tbody>
                 </table>
               </div>
-              <div class="o_widget_footer" style="text-align:center;padding:8px;">
+              <div class="o_widget_additional" style="text-align:center;padding:8px;">
                 <a href="#" class="btn btn-default btn-sm" onclick="return false">Show all</a>
               </div>
             </div>
@@ -374,7 +378,7 @@
     &lt;div class="o_widget_content"&gt;
       &lt;table class="table table-condensed"&gt;...&lt;/table&gt;
     &lt;/div&gt;
-    &lt;div class="o_widget_footer"&gt;
+    &lt;div class="o_widget_additional"&gt;
       &lt;a href="#" class="btn btn-default btn-sm"&gt;Show all&lt;/a&gt;
     &lt;/div&gt;
   &lt;/div&gt;
@@ -391,21 +395,21 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Icon Panel</h3>
-      <p>Panel with a large icon header, title, and content. Used for feature overviews or detail views.</p>
+      <p><code>IconPanel</code> (<code>IconPanelRenderer</code>) renders a two-column grid: an icon column (<code>o_icon_panel_icon_col</code>) and a content column with header, message, content and links. Empty slots render as empty <code>&lt;div&gt;</code> so the grid stays predictable. Styles: <code>_various_modules.scss</code>.</p>
       <div class="cl-classes">
-        <code>o_icon_panel</code> <code>o_icon_panel_header</code> <code>o_icon_panel_content</code>
+        <code>o_icon_panel</code> <code>o_icon_panel_icon_col</code> <code>o_icon_panel_content_col</code> <code>o_icon_panel_header</code> <code>o_icon_panel_title_label</code> <code>o_icon_panel_message</code> <code>o_icon_panel_content</code> <code>o_icon_panel_links</code> <code>o_with_additional_content</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
-          <div class="o_icon_panel" style="border:1px solid #ddd;border-radius:4px;padding:20px;">
-            <div class="o_icon_panel_header" style="text-align:center;margin-bottom:16px;">
-              <i class="o_icon o_icon_courseareas" style="font-size:48px;color:#337ab7;"></i>
-              <h3>Course Areas</h3>
-            </div>
-            <div class="o_icon_panel_content">
-              <p>Panel content with description text or form elements goes here.</p>
+          <div class="o_icon_panel">
+            <div class="o_icon_panel_icon_col"><h4><i class="o_icon o_icon-fw o_icon_courseareas"> </i></h4></div>
+            <div class="o_icon_panel_content_col">
+              <div class="o_icon_panel_header"><h4>Course areas</h4><small class="text-muted">3 areas</small></div>
+              <div class="o_icon_panel_message"></div>
+              <div class="o_icon_panel_content"><p>Areas group the course groups. Use them for rights and visibility rules.</p></div>
+              <div class="o_icon_panel_links"><a class="btn btn-default" href="#" onclick="return false" role="button"><span>Manage areas</span></a></div>
             </div>
           </div>
         </div>
@@ -413,50 +417,47 @@
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
         <pre>&lt;div class="o_icon_panel"&gt;
-  &lt;div class="o_icon_panel_header"&gt;
-    &lt;i class="o_icon o_icon_courseareas" style="font-size:48px"&gt;&lt;/i&gt;
-    &lt;h3&gt;Title&lt;/h3&gt;
-  &lt;/div&gt;
-  &lt;div class="o_icon_panel_content"&gt;
-    &lt;p&gt;Content here.&lt;/p&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</pre>
+            &lt;div class="o_icon_panel_icon_col"&gt;&lt;h4&gt;&lt;i class="o_icon o_icon-fw o_icon_courseareas"&gt; &lt;/i&gt;&lt;/h4&gt;&lt;/div&gt;
+            &lt;div class="o_icon_panel_content_col"&gt;
+              &lt;div class="o_icon_panel_header"&gt;&lt;h4&gt;Course areas&lt;/h4&gt;&lt;small class="text-muted"&gt;3 areas&lt;/small&gt;&lt;/div&gt;
+              &lt;div class="o_icon_panel_message"&gt;&lt;/div&gt;
+              &lt;div class="o_icon_panel_content"&gt;&lt;p&gt;Areas group the course groups. Use them for rights and visibility rules.&lt;/p&gt;&lt;/div&gt;
+              &lt;div class="o_icon_panel_links"&gt;&lt;a class="btn btn-default" href="#" onclick="return false" role="button"&gt;&lt;span&gt;Manage areas&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;</pre>
       </div>
     </div>
   </div>
-
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Info Panel</h3>
-      <p>Informational panel with label-value pairs. Used for displaying metadata or summary information.</p>
+      <p><code>InfoPanel</code> (<code>InfoPanelRenderer</code>) renders an info box with icon (<code>o_info_with_icon</code>), an optional <code>h4</code> title and the information text or a component. With <code>setCollapsible(true)</code> the title becomes <code>a.o_collapse_title</code> with <code>role="button"</code>, <code>aria-expanded</code> and <code>aria-controls</code>, and the text is in a Bootstrap <code>collapse</code>. A small script swaps <code>o_icon_details_expand</code> and <code>o_icon_details_collaps</code>.</p>
       <div class="cl-classes">
-        <code>o_info_panel</code>
+        <code>o_info_with_icon</code> <code>o_collapse_title</code> <code>collapse</code> <code>in</code> <code>o_icon_details_expand</code> <code>o_icon_details_collaps</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
-          <div class="o_info_panel" style="background:#f8f9fa;border:1px solid #ddd;border-radius:4px;padding:16px;">
-            <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 16px;">
-              <strong>Title:</strong> <span>Introduction to OpenOlat</span>
-              <strong>Author:</strong> <span>John Doe</span>
-              <strong>Created:</strong> <span>12.03.2026</span>
-              <strong>Status:</strong> <span class="o_labeled o_labeled_light o_labeled_green">Published</span>
+          <div id="o_c42" class="o_info_with_icon">
+            <a id="o_c42_button" class="o_collapse_title" role="button" data-toggle="collapse" data-target="#o_c42_infos" aria-expanded="true" aria-controls="o_c42_infos"><h4>How grading works</h4> <i class="o_icon o_icon_lg o_icon_details_collaps"> </i></a>
+            <div id="o_c42_infos" class="collapse in" aria-expanded="true">
+              <p>The coach grades each submission. The result is visible after the release date.</p>
             </div>
           </div>
         </div>
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;div class="o_info_panel"&gt;
-  &lt;strong&gt;Title:&lt;/strong&gt; &lt;span&gt;Introduction to OpenOlat&lt;/span&gt;
-  &lt;strong&gt;Author:&lt;/strong&gt; &lt;span&gt;John Doe&lt;/span&gt;
-  ...
-&lt;/div&gt;</pre>
+        <pre>&lt;div id="o_c42" class="o_info_with_icon"&gt;
+            &lt;a id="o_c42_button" class="o_collapse_title" role="button" data-toggle="collapse" data-target="#o_c42_infos" aria-expanded="true" aria-controls="o_c42_infos"&gt;&lt;h4&gt;How grading works&lt;/h4&gt; &lt;i class="o_icon o_icon_lg o_icon_details_collaps"&gt; &lt;/i&gt;&lt;/a&gt;
+            &lt;div id="o_c42_infos" class="collapse in" aria-expanded="true"&gt;
+              &lt;p&gt;The coach grades each submission. The result is visible after the release date.&lt;/p&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;</pre>
       </div>
     </div>
   </div>
-
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Bootstrap Panel</h3>
@@ -505,78 +506,178 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Repository Entry Card</h3>
-      <p>Card view for learning resources (courses, tests, etc.) in the catalog and course overview. Features image, title, metadata, and action buttons.</p>
+      <p>One entry of the course list in the list view (FlexiTable render type CUSTOM). Markup read from "Courses" on localhost. The course type class (<code>o_standard_course</code>, <code>o_exam_course</code>, ...) sits on <code>o_repo_entry_list_item</code>. Without a teaser image <code>o_visual</code> shows <code>o_visual_not_available</code>. The rating stars (<code>o_repo_rating</code>) are left out in the example.</p>
       <div class="cl-classes">
-        <code>o_card</code> <code>o_card_header</code> <code>o_card_body</code>
-        <code>o_card_footer</code> <code>o_card_image</code>
+        <code>o_repo_entry_list_item</code> <code>o_standard_course</code> <code>o_visual</code> <code>o_visual_not_available</code> <code>o_meta</code> <code>o_ext_ref</code> <code>o_technical_type</code> <code>o_title</code> <code>o_education</code> <code>o_performance</code> <code>o_access</code> <code>o_social_actions</code> <code>o_actions</code> <code>o_details</code> <code>o_start</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
-            <!-- Card 1 -->
-            <div style="border:1px solid #ddd;border-radius:4px;overflow:hidden;">
-              <div style="height:120px;background:linear-gradient(135deg,#337ab7,#5bc0de);"></div>
-              <div style="padding:12px;">
-                <div style="font-size:12px;color:#999;">Course</div>
-                <h4 style="margin:4px 0 8px;font-size:16px;">Introduction to Physics</h4>
-                <div class="o_rating_items" style="margin-bottom:8px;">
-                  <i class="o_icon o_icon_rating_on"></i>
-                  <i class="o_icon o_icon_rating_on"></i>
-                  <i class="o_icon o_icon_rating_on"></i>
-                  <i class="o_icon o_icon_rating_on"></i>
-                  <i class="o_icon o_icon_rating_off"></i>
-                </div>
-              </div>
-              <div style="padding:0 12px 12px;display:flex;justify-content:space-between;align-items:center;">
-                <a href="#" onclick="return false" style="font-size:13px;">Details</a>
-                <a href="#" class="btn btn-primary btn-sm" onclick="return false">Open <i class="o_icon o_icon_start"></i></a>
+          <div class="o_table_wrapper o_table_flexi o_coursetable o_rendertype_custom"><div class="o_table_body"><div class="o_table_row row">
+          <div class="o_repo_entry_list_item o_standard_course">
+            <div class="o_visual"><a href="#" onclick="return false" title="Introduction to astronomy"><div class="o_visual_not_available"></div></a></div>
+            <div class="o_meta">
+              <div class="o_go_xs visible-xs"><i class="o_icon o_icon-fw o_icon_start o_icon-lg"></i></div>
+              <div class="o_ext_ref"><span class="o_technical_type">Learning path</span></div>
+              <h3 class="o_title"><a href="#" onclick="return false"><span>Introduction to astronomy</span></a></h3>
+              <div class="o_flex_block_one_line_left o_education"></div>
+              <div class="o_flex_block_one_line_left o_flex_block_last">
+                <div class="o_performance o_flex_item_max"><span class="o_spacer">&middot;</span> <span><span class="o_progress"><span class="progress o_progress-sm" style="width:100px;"><span class="progress-bar progress-bar-neutral" style="width:40px" title="40%"></span></span></span> 40%</span></div>
               </div>
             </div>
-            <!-- Card 2 -->
-            <div style="border:1px solid #ddd;border-radius:4px;overflow:hidden;">
-              <div style="height:120px;background:linear-gradient(135deg,#5cb85c,#3d8b3d);"></div>
-              <div style="padding:12px;">
-                <div style="font-size:12px;color:#999;">Learning path</div>
-                <h4 style="margin:4px 0 8px;font-size:16px;">Advanced Mathematics</h4>
-                <span class="label label-info">Seminar</span>
+            <div class="o_access">
+              <div class="o_social_actions">
+                <div class="o_spacer">|</div>
+                <a href="#" onclick="return false"><i class="o_icon o_icon_bookmark_add" aria-hidden="true" title="Set bookmark"></i> <span><span class="sr-only">Set bookmark</span></span></a>
               </div>
-              <div style="padding:0 12px 12px;display:flex;justify-content:space-between;align-items:center;">
-                <a href="#" onclick="return false" style="font-size:13px;">Details</a>
-                <a href="#" class="btn btn-primary btn-sm" onclick="return false">Open <i class="o_icon o_icon_start"></i></a>
+              <div class="o_actions">
+                <a class="btn btn-sm btn-default o_details o_button_ghost" href="#" onclick="return false"><span>Learn more</span> <i class="o_icon o_icon_info_page" aria-hidden="true"></i></a>
+                <a class="btn btn-sm btn-primary o_start" href="#" onclick="return false"><span>Open</span> <i class="o_icon o_icon_start" aria-hidden="true"></i></a>
               </div>
             </div>
-            <!-- Card 3 -->
-            <div style="border:1px solid #ddd;border-radius:4px;overflow:hidden;">
-              <div style="height:120px;background:linear-gradient(135deg,#f0ad4e,#ec971f);"></div>
-              <div style="padding:12px;">
-                <div style="font-size:12px;color:#999;">Course</div>
-                <h4 style="margin:4px 0 8px;font-size:16px;">History of Art</h4>
-                <span class="o_labeled o_labeled_light o_labeled_green"><i class="o_icon o_icon_passed"></i> Passed</span>
+          </div>
+          </div></div></div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;div class="o_table_wrapper o_table_flexi o_coursetable o_rendertype_custom"&gt;&lt;div class="o_table_body"&gt;&lt;div class="o_table_row row"&gt;
+          &lt;div class="o_repo_entry_list_item o_standard_course"&gt;
+            &lt;div class="o_visual"&gt;&lt;a href="#" onclick="return false" title="Introduction to astronomy"&gt;&lt;div class="o_visual_not_available"&gt;&lt;/div&gt;&lt;/a&gt;&lt;/div&gt;
+            &lt;div class="o_meta"&gt;
+              &lt;div class="o_go_xs visible-xs"&gt;&lt;i class="o_icon o_icon-fw o_icon_start o_icon-lg"&gt;&lt;/i&gt;&lt;/div&gt;
+              &lt;div class="o_ext_ref"&gt;&lt;span class="o_technical_type"&gt;Learning path&lt;/span&gt;&lt;/div&gt;
+              &lt;h3 class="o_title"&gt;&lt;a href="#" onclick="return false"&gt;&lt;span&gt;Introduction to astronomy&lt;/span&gt;&lt;/a&gt;&lt;/h3&gt;
+              &lt;div class="o_flex_block_one_line_left o_education"&gt;&lt;/div&gt;
+              &lt;div class="o_flex_block_one_line_left o_flex_block_last"&gt;
+                &lt;div class="o_performance o_flex_item_max"&gt;&lt;span class="o_spacer"&gt;&amp;middot;&lt;/span&gt; &lt;span&gt;&lt;span class="o_progress"&gt;&lt;span class="progress o_progress-sm" style="width:100px;"&gt;&lt;span class="progress-bar progress-bar-neutral" style="width:40px" title="40%"&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt; 40%&lt;/span&gt;&lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="o_access"&gt;
+              &lt;div class="o_social_actions"&gt;
+                &lt;div class="o_spacer"&gt;|&lt;/div&gt;
+                &lt;a href="#" onclick="return false"&gt;&lt;i class="o_icon o_icon_bookmark_add" aria-hidden="true" title="Set bookmark"&gt;&lt;/i&gt; &lt;span&gt;&lt;span class="sr-only"&gt;Set bookmark&lt;/span&gt;&lt;/span&gt;&lt;/a&gt;
+              &lt;/div&gt;
+              &lt;div class="o_actions"&gt;
+                &lt;a class="btn btn-sm btn-default o_details o_button_ghost" href="#" onclick="return false"&gt;&lt;span&gt;Learn more&lt;/span&gt; &lt;i class="o_icon o_icon_info_page" aria-hidden="true"&gt;&lt;/i&gt;&lt;/a&gt;
+                &lt;a class="btn btn-sm btn-primary o_start" href="#" onclick="return false"&gt;&lt;span&gt;Open&lt;/span&gt; &lt;i class="o_icon o_icon_start" aria-hidden="true"&gt;&lt;/i&gt;&lt;/a&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== PAGE PATTERN: INFO PAGE (21.1) ==================== -->
+<section class="cl-section" id="info-page">
+  <h2>Page Pattern: Info Page <span class="version-badge">New in 21.1.0</span></h2>
+
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Info Page (Course and Implementation) <span class="version-badge">New in 21.1.0</span></h3>
+      <p>The redesigned info page of courses and implementations (template <code>repository/ui/list/_content/info_page.html</code>, styles <code>.o_info_page</code> in <code>_repository.scss</code>). Structure read from localhost. Two column wrappers hold the items: <code>o_info_page_column_aside</code> (thumbnail, get started, my course, events) and <code>o_info_page_column_main</code> (header, facts, sections, licence, rating). Each item has <code>o_info_page_item</code> plus its own class. The page reuses <code>FactSheet</code> (facts, "My course") and <code>Sections</code> (description blocks).</p>
+      <p>Layout: below <code>$screen-sm-min</code> the page is a one-column grid, the column wrappers get <code>display: contents</code>, and <code>order</code> sorts the items: thumbnail 1, header 2, get started 3, my course 4, benefits 5, facts 6, sections 7, events 8, licence 9, rating 10. On tablet width (sm) the thumbnail sits next to the header. From <code>$screen-md-min</code> the grid is <code>2fr 1fr</code>: main column left, aside right. In print the page falls back to the one-column order and shows <code>o_info_page_qrcode</code> next to the header. For members (<code>o_info_page_member</code>) the "get started" block is reduced.</p>
+      <p>Accessibility: the title is the page <code>h2</code>, fact sheet and section titles are <code>h3</code>/<code>h4</code>, the rating block is a <code>fieldset</code> with <code>legend</code>. The share button is a dialog opener (<code>aria-haspopup="dialog"</code>). The example uses the real theme grid; at the width of this page it shows the two-column desktop layout.</p>
+      <div class="cl-classes">
+        <code>o_info_page</code> <code>o_info_page_member</code> <code>o_info_page_column_aside</code> <code>o_info_page_column_main</code> <code>o_info_page_item</code> <code>o_info_page_thumbnail</code> <code>o_info_page_get_started</code> <code>o_info_page_my_course</code> <code>o_info_page_events</code> <code>o_info_page_header</code> <code>o_info_page_facts</code> <code>o_info_page_sections</code> <code>o_info_page_licence</code> <code>o_info_page_rating</code> <code>o_info_page_qrcode</code> <code>o_header</code> <code>o_header_actions</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="o_info_page o_info_page_member" style="max-width:100%">
+            <div class="o_info_page_column_aside">
+              <div class="o_info_page_item o_info_page_my_course">
+                <div class="o_fact_sheet"><h3 class="o_fact_sheet_title">My course</h3><div class="o_facts"><div class="o_fact"><div class="o_fact_icon"><i class="o_icon o_icon_progress"> </i></div><div class="o_fact_body"><div class="o_fact_label text-muted">Progress</div><div class="o_fact_value">40%</div></div></div></div><div class="o_fact_sheet_footer"><div class="o_fact_sheet_footer_buttons"><a class="btn btn-default o_button_ghost o_sign_out btn-danger o_fact_sheet_footer_full" href="#" onclick="return false" role="button"><i class="o_icon o_icon_sign_out" aria-hidden="true"></i> <span>Leave course</span></a></div></div></div>
               </div>
-              <div style="padding:0 12px 12px;display:flex;justify-content:space-between;align-items:center;">
-                <a href="#" onclick="return false" style="font-size:13px;">Details</a>
-                <a href="#" class="btn btn-primary btn-sm" onclick="return false">Open <i class="o_icon o_icon_start"></i></a>
+            </div>
+            <div class="o_info_page_column_main">
+              <div class="o_info_page_item o_info_page_header">
+                <div class="o_header"><div class="o_lead"><div class="o_meta_wrapper"><div class="o_meta">
+                  <div class="o_ext_ref o_nowrap"><span class="o_technical_type">Learning path</span></div>
+                  <h2><i class="o_icon o_icon-lg o_CourseModule_icon"> </i> Introduction to astronomy</h2>
+                  <div class="o_header_actions"><a class="btn btn-default o_button_ghost" href="#" onclick="return false" role="button"><i class="o_icon o_icon_bookmark_add o_icon-lg" aria-hidden="true"></i> <span>Set bookmark</span></a> <a class="btn btn-default o_button_ghost" href="#" onclick="return false" role="button" aria-haspopup="dialog" aria-expanded="false"><i class="o_icon o_icon_share_social o_icon-lg" aria-hidden="true"></i> <span>Share</span></a></div>
+                </div></div></div></div>
               </div>
+              <div class="o_info_page_item o_info_page_facts">
+                <div class="o_fact_sheet"><h3 class="o_fact_sheet_title">Facts</h3><div class="o_facts"><div class="o_fact"><div class="o_fact_icon"><i class="o_icon o_icon_lifecycle_date"> </i></div><div class="o_fact_body"><div class="o_fact_label text-muted">Execution period</div><div class="o_fact_value">01.09.2026 &ndash; 31.01.2027</div></div></div><div class="o_fact"><div class="o_fact_icon"><i class="o_icon o_icon_language"> </i></div><div class="o_fact_body"><div class="o_fact_label text-muted">Language</div><div class="o_fact_value">German</div></div></div></div></div>
+              </div>
+              <div class="o_info_page_item o_info_page_sections">
+                <div class="o_sections"><div class="o_section"><fieldset><legend><h4 class="o_section_title o_section_toggle o_link_plain" role="button" tabindex="0" aria-expanded="true"><span class="o_section_title_text"><i aria-hidden="true" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>Objectives <span class="sr-only">collapse</span></span></h4></legend><div class="collapse o_section_content in"><p>After this course you can plan an observation night.</p></div></fieldset></div></div>
+              </div>
+              <fieldset class="o_info_page_item o_info_page_rating"><legend>Rating</legend><p class="o_muted">Rating stars and comments</p></fieldset>
             </div>
           </div>
         </div>
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;div class="o_card"&gt;
-  &lt;div class="o_card_header"&gt;
-    &lt;div class="o_card_image" style="background-image:url(...)"&gt;&lt;/div&gt;
+        <pre>&lt;div class="o_info_page [o_seminar_course ...] [o_info_page_member]"&gt;
+  &lt;div class="o_info_page_column_aside"&gt;
+    &lt;div class="o_info_page_item o_info_page_thumbnail"&gt;...&lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_get_started"&gt;...offers, start button...&lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_my_course"&gt;...FactSheet "My course"...&lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_events"&gt;...dates / lecture blocks...&lt;/div&gt;
   &lt;/div&gt;
-  &lt;div class="o_card_body"&gt;
-    &lt;div class="o_card_type"&gt;Course&lt;/div&gt;
-    &lt;h4&gt;Course Title&lt;/h4&gt;
-    &lt;div class="o_rating_items"&gt;...stars...&lt;/div&gt;
+  &lt;div class="o_info_page_column_main"&gt;
+    &lt;div class="o_info_page_item o_info_page_header"&gt;
+      &lt;div class="o_header"&gt;...title, o_header_actions, o_header_offers...
+        &lt;div class="o_info_page_qrcode"&gt;...&lt;/div&gt;  &lt;!-- only visible in print --&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_facts"&gt;...FactSheet...&lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_sections"&gt;...Sections...&lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_licence"&gt;...&lt;/div&gt;
+    &lt;fieldset class="o_info_page_item o_info_page_rating"&gt;&lt;legend&gt;Rating&lt;/legend&gt;...&lt;/fieldset&gt;
   &lt;/div&gt;
-  &lt;div class="o_card_footer"&gt;
-    &lt;a href="#"&gt;Details&lt;/a&gt;
-    &lt;a href="#" class="btn btn-primary btn-sm"&gt;Open&lt;/a&gt;
+&lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTIONS (21.1) ==================== -->
+<section class="cl-section" id="sections">
+  <h2>Collapsible Sections <span class="version-badge">New in 21.1.0</span></h2>
+
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Sections <span class="version-badge">New in 21.1.0</span></h3>
+      <p>The <code>Sections</code> component (<code>org.olat.core.gui.components.sections</code>, <code>SectionsFactory</code>) renders a list of titled, collapsible blocks outside of forms. The info page of courses and implementations uses it for the description sections. Each section is a <code>div.o_section &gt; fieldset</code> with a <code>legend</code> header and a Bootstrap <code>collapse</code> body. The header markup is the same as in the collapsible <code>FormSection</code> (<code>SectionHeaderRenderer</code>): <code>h4.o_section_title.o_section_toggle</code> with <code>role="button"</code>, <code>tabindex="0"</code>, <code>aria-controls</code>, <code>aria-expanded</code> and an <code>sr-only</code> "expand"/"collapse" label. <code>functions.js</code> handles click, Enter and Space with one delegated listener, so no script per instance is needed after AJAX updates. An open section has a bottom margin of 1em.</p>
+      <div class="cl-classes">
+        <code>o_sections</code> <code>o_section</code> <code>o_section_title</code> <code>o_section_toggle</code> <code>o_section_title_text</code> <code>o_section_content</code> <code>collapse</code> <code>in</code> <code>o_icon_open_togglebox</code> <code>o_icon_close_togglebox</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="o_sections">
+            <div class="o_section"><fieldset><legend><h4 class="o_section_title o_section_toggle o_link_plain" role="button" tabindex="0" aria-expanded="true"><span class="o_section_title_text"><i aria-hidden="true" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>Objectives <span class="sr-only">collapse</span></span></h4></legend><div class="collapse o_section_content in"><p>After this course you can plan and run an observation night.</p></div></fieldset></div>
+            <div class="o_section"><fieldset><legend><h4 class="o_section_title o_section_toggle o_link_plain collapsed" role="button" tabindex="0" aria-expanded="false"><span class="o_section_title_text"><i aria-hidden="true" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>Requirements <span class="sr-only">expand</span></span></h4></legend><div class="collapse o_section_content"></div></fieldset></div>
+          </div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;div id="o_sections_42" class="o_sections"&gt;
+  &lt;div class="o_section"&gt;
+    &lt;fieldset&gt;
+      &lt;legend&gt;
+        &lt;h4 class="o_section_title o_section_toggle o_link_plain" id="o_sections_42_obj_toggle"
+            role="button" tabindex="0" data-target="o_sections_42_obj"
+            aria-controls="o_sections_42_obj" aria-expanded="true"&gt;
+          &lt;span class="o_section_title_text"&gt;
+            &lt;i id="o_sections_42_obj_toggler" aria-hidden="true"
+               class="o_icon o_icon-fw o_icon_close_togglebox"&gt; &lt;/i&gt;Objectives
+            &lt;span id="o_sections_42_obj_togglerLabel" class="sr-only"&gt;collapse&lt;/span&gt;
+          &lt;/span&gt;
+        &lt;/h4&gt;
+      &lt;/legend&gt;
+      &lt;div id="o_sections_42_obj" class="collapse o_section_content in"&gt;...&lt;/div&gt;
+    &lt;/fieldset&gt;
   &lt;/div&gt;
 &lt;/div&gt;</pre>
       </div>
@@ -591,36 +692,24 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Assistance Accordion</h3>
-      <p>Expandable FAQ-style accordion for help/assistance content. Each item has a clickable title that reveals content.</p>
+      <p>Expandable FAQ-style accordion for help content (GUI demo "Assistance Accordion", markup read from localhost). Each <code>o_item</code> has a toggle link with <code>role="button"</code>, <code>aria-controls</code> and <code>aria-expanded</code>, and a Bootstrap <code>collapse</code> body <code>o_item_content</code>. The theme shows <code>o_icon_details_expand</code> or <code>o_icon_details_collaps</code> depending on the <code>collapsed</code> class. The AI essay feedback reuses this markup for its detailed feedback.</p>
       <div class="cl-classes">
-        <code>o_assistance_accordion</code> <code>o_assistance_accordion_item</code>
-        <code>o_collapse_title</code>
+        <code>o_assistance_accordion</code> <code>o_title</code> <code>o_items</code> <code>o_item</code> <code>o_expand_collapse</code> <code>o_item_content</code> <code>o_text_block</code> <code>collapsed</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
           <div class="o_assistance_accordion">
-            <h4>Assistance</h4>
-            <div class="o_assistance_accordion_item" style="border-bottom:1px solid #eee;padding:8px 0;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <a href="#" onclick="return false" style="color:#337ab7;">How do I create a new course?</a>
-                <i class="o_icon o_icon_details_expand"></i>
+            <div class="o_title"><h4>Assistance</h4></div>
+            <div class="o_items">
+              <div class="o_item">
+                <div class="o_expand_collapse"><a href="#cl_aa_0" role="button" data-toggle="collapse" aria-controls="cl_aa_0" aria-expanded="true"><span> Zoom meeting cannot be started <i class="o_icon o_icon-2x o_icon-fw o_icon_details_expand" title="Show more" aria-hidden="true"> </i><span class="sr-only">Show more</span> <i class="o_icon o_icon-2x o_icon-fw o_icon_details_collaps" title="Show less" aria-hidden="true"> </i><span class="sr-only">Show less</span></span></a></div>
+                <div class="o_item_content collapse in" id="cl_aa_0" aria-expanded="true"><div class="o_text_block">Open Zoom in a separate browser window if you have a problem starting a meeting.</div></div>
               </div>
-            </div>
-            <div class="o_assistance_accordion_item" style="border-bottom:1px solid #eee;padding:8px 0;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <a href="#" onclick="return false" style="color:#337ab7;">What is a learning path?</a>
-                <i class="o_icon o_icon_details_expand"></i>
-              </div>
-            </div>
-            <div class="o_assistance_accordion_item" style="border-bottom:1px solid #eee;padding:8px 0;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <a href="#" onclick="return false" style="color:#337ab7;">How can I enroll students?</a>
-                <i class="o_icon o_icon_details_expand"></i>
-              </div>
-              <div style="padding:12px 0;color:#555;">
-                You can enroll students manually via the members management or set up a self-enrollment course element in the course editor.
+              <div class="o_item">
+                <div class="o_expand_collapse"><a href="#cl_aa_1" role="button" data-toggle="collapse" aria-controls="cl_aa_1" aria-expanded="false" class="collapsed"><span> Zoom displays an error message <i class="o_icon o_icon-2x o_icon-fw o_icon_details_expand" title="Show more" aria-hidden="true"> </i><span class="sr-only">Show more</span> <i class="o_icon o_icon-2x o_icon-fw o_icon_details_collaps" title="Show less" aria-hidden="true"> </i><span class="sr-only">Show less</span></span></a></div>
+                <div class="o_item_content collapse" id="cl_aa_1" aria-expanded="false"><div class="o_text_block">Ask an administrator to configure and test the integration.</div></div>
               </div>
             </div>
           </div>
@@ -629,14 +718,18 @@
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
         <pre>&lt;div class="o_assistance_accordion"&gt;
-  &lt;h4&gt;Assistance&lt;/h4&gt;
-  &lt;div class="o_assistance_accordion_item"&gt;
-    &lt;a href="#"&gt;Question title&lt;/a&gt;
-    &lt;i class="o_icon o_icon_details_expand"&gt;&lt;/i&gt;
-    &lt;!-- Expanded content --&gt;
-    &lt;div&gt;Answer content...&lt;/div&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</pre>
+            &lt;div class="o_title"&gt;&lt;h4&gt;Assistance&lt;/h4&gt;&lt;/div&gt;
+            &lt;div class="o_items"&gt;
+              &lt;div class="o_item"&gt;
+                &lt;div class="o_expand_collapse"&gt;&lt;a href="#cl_aa_0" role="button" data-toggle="collapse" aria-controls="cl_aa_0" aria-expanded="true"&gt;&lt;span&gt; Zoom meeting cannot be started &lt;i class="o_icon o_icon-2x o_icon-fw o_icon_details_expand" title="Show more" aria-hidden="true"&gt; &lt;/i&gt;&lt;span class="sr-only"&gt;Show more&lt;/span&gt; &lt;i class="o_icon o_icon-2x o_icon-fw o_icon_details_collaps" title="Show less" aria-hidden="true"&gt; &lt;/i&gt;&lt;span class="sr-only"&gt;Show less&lt;/span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;
+                &lt;div class="o_item_content collapse in" id="cl_aa_0" aria-expanded="true"&gt;&lt;div class="o_text_block"&gt;Open Zoom in a separate browser window if you have a problem starting a meeting.&lt;/div&gt;&lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="o_item"&gt;
+                &lt;div class="o_expand_collapse"&gt;&lt;a href="#cl_aa_1" role="button" data-toggle="collapse" aria-controls="cl_aa_1" aria-expanded="false" class="collapsed"&gt;&lt;span&gt; Zoom displays an error message &lt;i class="o_icon o_icon-2x o_icon-fw o_icon_details_expand" title="Show more" aria-hidden="true"&gt; &lt;/i&gt;&lt;span class="sr-only"&gt;Show more&lt;/span&gt; &lt;i class="o_icon o_icon-2x o_icon-fw o_icon_details_collaps" title="Show less" aria-hidden="true"&gt; &lt;/i&gt;&lt;span class="sr-only"&gt;Show less&lt;/span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;
+                &lt;div class="o_item_content collapse" id="cl_aa_1" aria-expanded="false"&gt;&lt;div class="o_text_block"&gt;Ask an administrator to configure and test the integration.&lt;/div&gt;&lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;</pre>
       </div>
     </div>
   </div>

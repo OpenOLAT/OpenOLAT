@@ -101,6 +101,7 @@ tr:hover td { background: #fafafa; }
 .diagram-box svg { max-width: 100%; height: auto; }
 .diagram-caption { font-size: 12px; color: #64748b; margin-top: 10px; font-style: italic; }
 hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+.version-badge { display:inline-block; font-size:10.5px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; color:#135e5f; background:#e6f4f4; border:1px solid #9fd3d4; border-radius:3px; padding:1px 7px; margin-left:8px; vertical-align:middle; } .version-badge.changed { color:#7c4a03; background:#fff4e5; border-color:#f5c98a; }
 @media (max-width: 1100px) { .side-nav { display: none; } .main-content { padding: 24px 16px 40px; } .doc-header { padding: 20px 16px 24px; } .doc-header h1 { font-size: 22px; } }
 @media print { .side-nav { display: none; } .doc-header { display: none; } body { background: white; } .diagram-box, table, pre { box-shadow: none; } }
 </style>
@@ -116,14 +117,14 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
       </div>
     </div>
     <nav class="header-nav">
-      <a href="../../../../../../../doc/openolat-architecture.html">Architecture</a>
+      <a href="../../../../../../../../../doc/openolat-architecture.html">Architecture</a>
       <span class="sep">|</span>
       <a href="#" class="active">AI Service</a>
     </nav>
   </div>
   <div class="header-rule"></div>
   <h1>AI Service Architecture</h1>
-  <div class="subtitle">Pluggable multi-provider AI framework with essay grading, generation, and MC question generation</div>
+  <div class="subtitle">Pluggable multi-provider AI framework with essay grading, generation, MC question generation, image metadata and user control</div>
   <div class="meta">
     <span>Java 17+</span>
     <span>LangChain4j</span>
@@ -137,83 +138,128 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <div class="nav-title">AI Service</div>
   <div class="nav-group">
     <div class="nav-group-label">Overview</div>
-    <a href="#overview">Overview &amp; Package Structure</a>
+    <a href="#overview">Overview</a>
+    <a href="#package-structure">Package Structure</a>
     <a href="#class-diagram">Class Relationship Diagram</a>
   </div>
   <div class="nav-group">
     <div class="nav-group-label">Class Reference</div>
-    <a href="#root-package">Root Package</a>
-    <a href="#spi-package">SPI Layer</a>
-    <a href="#manager-package">Manager Layer</a>
-    <a href="#service-package">LangChain4j AiServices</a>
-    <a href="#model-package">Model / Response</a>
-    <a href="#essay-package">Essay Domain</a>
-    <a href="#content-package">Content Helpers</a>
+    <a href="#root-package">1.1 Root package</a>
+    <a href="#spi-provider-implementations">1.2 spi/ — provider implementations</a>
+    <a href="#manager-service-implementations">1.3 manager/ — service implementations</a>
+    <a href="#service-langchain4j-aiservice-interfaces">1.4 service/ — LangChain4j AiService interfaces</a>
+    <a href="#model-structured-output-and-response-models">1.5 model/ — structured output and response models</a>
+    <a href="#essay-essay-grading-and-generation-domain">1.6 essay/ — essay grading and generation domain</a>
+    <a href="#content-content-preparation-helpers">1.7 content/ — content preparation helpers</a>
   </div>
   <div class="nav-group">
-    <div class="nav-group-label">Runtime Flows</div>
+    <div class="nav-group-label">Flows</div>
     <a href="#grading-flow">Grading Pipeline</a>
     <a href="#generation-flow">Generation Pipeline</a>
   </div>
   <div class="nav-group">
     <div class="nav-group-label">Patterns</div>
-    <a href="#patterns">Important Patterns</a>
+    <a href="#important-patterns">2. Important Patterns</a>
+    <a href="#provider-spi-abstraction">2.1 Provider SPI Abstraction</a>
+    <a href="#pre-filter-chain-pattern">2.2 Pre-filter Chain Pattern</a>
+    <a href="#tier-based-prompt-routing">2.3 Tier-Based Prompt Routing</a>
+    <a href="#file-based-companion-pattern">2.4 File-Based Companion Pattern</a>
+    <a href="#persistent-job-longrunnable-pattern">2.5 Persistent Job + LongRunnable Pattern</a>
+    <a href="#owner-checked-status-access">2.6 Owner-Checked Status Access</a>
+    <a href="#per-user-rate-limiting">2.7 Per-User Rate Limiting</a>
+    <a href="#sanitisation-pipeline-for-student-facing-output">2.8 Sanitisation Pipeline for Student-Facing Output</a>
+    <a href="#usage-logging-with-destination-aware-context">2.9 Usage Logging with Destination-Aware Context</a>
+    <a href="#user-control-of-an-automatic-feature">2.10 User Control of an Automatic Feature</a>
+    <a href="#http-protection-profile">2.11 HTTP Protection Profile</a>
   </div>
   <div class="nav-group">
-    <div class="nav-group-label">Usage Examples</div>
-    <a href="#use-mc">MC Question Generator</a>
-    <a href="#use-image">Image Description</a>
-    <a href="#use-grading">Essay Grading</a>
-    <a href="#use-generation">Essay Generation</a>
-    <a href="#custom-spi">Writing a Custom SPI</a>
-    <a href="#new-feature">Adding a New Feature</a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-group-label">Reference</div>
-    <a href="#configuration">Configuration</a>
-    <a href="#file-storage">File Storage</a>
-    <a href="#usage-logging">Usage Logging</a>
-    <a href="#admin-ui">Admin UI</a>
-    <a href="#i18n">i18n Keys</a>
+    <div class="nav-group-label">Usage &amp; Reference</div>
+    <a href="#using-the-mc-question-generator">3. Using the MC Question Generator</a>
+    <a href="#using-the-image-description-generator">4. Using the Image Description Generator</a>
+    <a href="#using-the-essay-grading-service">5. Using the Essay Grading Service</a>
+    <a href="#using-the-essay-generation-service">6. Using the Essay Generation Service</a>
+    <a href="#writing-a-custom-spi">7. Writing a Custom SPI</a>
+    <a href="#adding-a-new-ai-feature">8. Adding a New AI Feature</a>
+    <a href="#configuration">9. Configuration</a>
+    <a href="#file-storage">10. File Storage</a>
+    <a href="#ai-usage-logging">11. AI Usage Logging</a>
+    <a href="#admin-ui">12. Admin UI</a>
+    <a href="#i18n-keys">13. i18n Keys</a>
   </div>
 </nav>
 
 <main class="main-content">
 
-<!-- ===== OVERVIEW ===== -->
-<h2 id="overview">Overview &amp; Package Structure</h2>
-
-<p>The <code>ai</code> service package provides a pluggable, multi-provider generative AI framework for OpenOlat. It uses a two-level abstraction: a Spring <strong>service layer</strong> that owns all feature-specific prompt construction and result handling, and an <strong>SPI layer</strong> that supplies only a configured <code>ChatModel</code> and a list of model names. Multiple providers (OpenAI, Anthropic, generic OpenAI-compatible endpoints) can be active simultaneously; each AI feature is independently mapped to a provider and model via the admin UI.</p>
-
+<h2 id="overview">Overview</h2>
+<p>Pluggable multi-provider AI framework for OpenOlat. Uses a two-level abstraction: a Spring <strong>service layer</strong> that owns all feature-specific prompt construction and result handling, and an <strong>SPI layer</strong> that supplies only a configured <code>ChatModel</code> and a list of model names. Multiple providers (OpenAI, Anthropic, generic OpenAI-compatible endpoints) can be active simultaneously; each AI feature is independently mapped to a provider and model via the admin UI.</p>
+<p>Key features:</p>
 <ul>
-  <li>Multi-provider support: OpenAI, Anthropic Claude, and any OpenAI-compatible server (vLLM, Ollama, LiteLLM, etc.)</li>
-  <li>Per-feature provider + model configuration via <code>AiModule</code></li>
-  <li>AI-powered MC question generation from text</li>
-  <li>AI-powered image description (title, alt text, tags, keywords) with vision models</li>
-  <li>AI-powered essay question generation from Markdown source (page editor, question pool, legacy drawer)</li>
-  <li>AI-powered formative essay grading with structured feedback and XSS-sanitised student output</li>
-  <li>Per-user, per-feature rate limiting enforced at the submit boundary</li>
-  <li>LangChain4j for chat model abstraction, structured output extraction, and model catalog APIs</li>
-  <li>Singleton LangChain4j AiServices instances via <code>CachedChatModel</code>, rebuilt on config change</li>
-  <li>AI usage logging to <code>o_ai_usage_log</code> with token counts, timing and error (generic, no feature-specific columns)</li>
-  <li>Async persistent job execution via <code>TaskExecutorManager</code> + <code>o_ex_task</code> (cluster-aware crash recovery)</li>
+<li>Multi-provider support (OpenAI, Anthropic Claude, generic OpenAI-compatible servers — vLLM, Ollama, LiteLLM, etc.)</li>
+<li>Embedding models for taxonomy matching through <code>AiEmbeddingSPI</code>: OpenAI, generic instances, and the in-process <code>LocalOnnxSPI</code> (uploaded ONNX model)</li>
+<li>Per-feature provider + model configuration via <code>AiModule</code></li>
+<li>AI-powered MC question generation from text input</li>
+<li>AI-powered image description generation (title, alt text, tags, keywords) with vision models; media metadata enrichment runs asynchronously via <code>MediaAiMetadataService</code> (in <code>org.olat.modules.cemedia.manager</code>), one persisted task per image</li>
+<li>AI-powered essay question generation from Markdown source (page editor, question pool, legacy drawer)</li>
+<li>AI-powered formative essay grading with structured feedback and XSS-sanitised student output</li>
+<li>Per-user, per-feature rate limiting enforced at the submit boundary</li>
+<li>Per-feature output token cap, provider timeout and input size limit, configurable in the AI features form</li>
+<li>Two dedicated task pools (<code>aiInteractive</code>, <code>aiBatch</code>) with configurable size; an overloaded interactive pool refuses new essay corrections</li>
+<li><span class="version-badge" style="margin-left:0">New in 21.1.0</span> User control of the automatic features: a system default per feature plus a personal choice in the user settings, enforced at three gates (see section 2.10)</li>
+<li><span class="version-badge" style="margin-left:0">New in 21.1.0</span> Read-only AI administration for a person without the administrator or system administrator role (see section 12)</li>
+<li><span class="version-badge" style="margin-left:0">New in 21.1.0</span> Provider calls use the <code>CONFIGURED</code> HTTP protection profile, so the SSRF filter does not block an administrator-configured provider URL (see section 2.11)</li>
+<li>Image preprocessing (scaling, base64 encoding) via <code>AiImageHelper</code></li>
+<li>LangChain4j for chat model abstraction, structured output extraction, and model catalog APIs</li>
+<li>Singleton LangChain4j AiServices instances via <code>CachedChatModel</code>, rebuilt automatically when provider config changes</li>
+<li>AI usage logging to <code>o_ai_usage_log</code> with token counts, timing and error (generic, no feature-specific columns)</li>
+<li>Async persistent job execution via <code>TaskExecutorManager</code> + <code>o_ex_task</code> (cluster-aware crash recovery)</li>
 </ul>
-
-<h3>Package Structure</h3>
+<h2 id="package-structure">Package Structure</h2>
 <table>
-  <tr><th>Directory</th><th>Purpose</th></tr>
-  <tr><td><code>ai/</code> (root)</td><td>Service interfaces, <code>AiModule</code>, <code>AiSPI</code>, <code>AiFeature</code>, usage-log interface and enums</td></tr>
-  <tr><td><code>spi/</code></td><td>Provider implementations: <code>OpenAiSPI</code>, <code>AnthropicAiSPI</code>, <code>GenericAiSPI</code>/<code>GenericAiSpiInstance</code></td></tr>
-  <tr><td><code>manager/</code></td><td>Service implementations, <code>AiLoggingChatModel</code>, <code>CachedChatModel</code>, <code>AiUsageLogDAO</code></td></tr>
-  <tr><td><code>service/</code></td><td>LangChain4j <code>@AiServices</code> declarative interfaces (prompt templates + structured output)</td></tr>
-  <tr><td><code>model/</code></td><td>Structured output POJOs, response wrappers, JPA entity, usage context value object</td></tr>
-  <tr><td><code>essay/</code></td><td>Essay grading + generation domain: services, jobs, sinks, file stores, POJOs, filters, exceptions</td></tr>
-  <tr><td><code>content/</code></td><td><code>AiContentChunker</code>, <code>AiContentHardener</code></td></tr>
-  <tr><td><code>event/</code></td><td>OLATResourceable events for config-change notification</td></tr>
-  <tr><td><code>ui/</code></td><td>Admin controllers for provider config, feature config, and usage log</td></tr>
+<thead>
+<tr>
+<th>Directory</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ai/</code> (root)</td>
+<td>Service interfaces, <code>AiModule</code>, <code>AiSPI</code>, <code>AiEmbeddingSPI</code>, <code>AiFeature</code>, usage-log interface and enums</td>
+</tr>
+<tr>
+<td><code>spi/</code></td>
+<td>Provider implementations in sub-packages: <code>openAI/OpenAiSPI</code>, <code>anthropic/AnthropicAiSPI</code>, <code>generic/GenericAiSPI</code> + <code>GenericAiSpiInstance</code> + <code>GenericAiSpiAdminController</code>, <code>localonnx/LocalOnnxSPI</code> + <code>QwenOnnxEmbeddingModel</code> + <code>ui/LocalOnnxModelAdminController</code></td>
+</tr>
+<tr>
+<td><code>manager/</code></td>
+<td>Service implementations, <code>AiLoggingChatModel</code>, <code>AiLoggingEmbeddingModel</code>, <code>CachedChatModel</code>, <code>AiUsageLogDAO</code>, <code>AiTaskExecutorService</code>, HTTP client adapters</td>
+</tr>
+<tr>
+<td><code>service/</code></td>
+<td>LangChain4j <code>@AiServices</code> declarative interfaces (prompt templates + structured output)</td>
+</tr>
+<tr>
+<td><code>model/</code></td>
+<td>Structured output POJOs, response wrappers, JPA entity, usage context value object</td>
+</tr>
+<tr>
+<td><code>essay/</code></td>
+<td>Essay grading + generation domain: services, jobs, sinks, file stores, POJOs, filters, exceptions</td>
+</tr>
+<tr>
+<td><code>content/</code></td>
+<td><code>AiContentChunker</code>, <code>AiContentHardener</code></td>
+</tr>
+<tr>
+<td><code>event/</code></td>
+<td><code>AiQuestionItemsCreatedEvent</code>, <code>AiServiceFailedEvent</code>: event classes from the first MC generator version. No code outside the package uses them.</td>
+</tr>
+<tr>
+<td><code>ui/</code></td>
+<td>Admin controllers for providers, features, task pools and usage log, plus the two learner-facing controllers <code>AiUserSettingsController</code> and <code>AiCorrectionConsentController</code><span class="version-badge">New in 21.1.0</span></td>
+</tr>
+</tbody>
 </table>
-
-<!-- ===== CLASS DIAGRAM ===== -->
 <h2 id="class-diagram">Class Relationship Diagram</h2>
 
 <p>The diagram below shows all major layers and how they connect. Boxes group classes by layer; arrows indicate dependency or delegation direction.</p>
@@ -305,7 +351,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <rect x="166" y="364" width="122" height="22" rx="4" fill="#a7f3d0" stroke="#059669" stroke-width="1"/>
   <text x="227" y="379" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#064e3b">EssayGenerationService</text>
   <rect x="296" y="364" width="118" height="22" rx="4" fill="#a7f3d0" stroke="#059669" stroke-width="1"/>
-  <text x="355" y="379" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#064e3b">EssayFeedbackJobService</text>
+  <text x="355" y="379" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#064e3b">EssayAiCorrectionService</text>
 
   <!-- Filters row -->
   <rect x="20" y="393" width="80" height="22" rx="4" fill="#d1fae5" stroke="#059669" stroke-width="1"/>
@@ -319,13 +365,13 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
   <!-- Jobs + sinks row -->
   <rect x="20" y="422" width="100" height="22" rx="4" fill="#d1fae5" stroke="#059669" stroke-width="1"/>
-  <text x="70" y="437" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#064e3b">EssayFeedbackJob</text>
+  <text x="70" y="437" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#064e3b">EssayAiCorrection</text>
   <rect x="126" y="422" width="110" height="22" rx="4" fill="#d1fae5" stroke="#059669" stroke-width="1"/>
-  <text x="181" y="437" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#064e3b">EssayGenerationJob</text>
+  <text x="181" y="437" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#064e3b">EssayAiCorrectionDao</text>
   <rect x="242" y="422" width="122" height="22" rx="4" fill="#d1fae5" stroke="#059669" stroke-width="1"/>
-  <text x="303" y="437" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#064e3b">EssayFeedbackLongRunnable</text>
+  <text x="303" y="437" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#064e3b">EssayAiCorrectionTask</text>
   <rect x="370" y="422" width="130" height="22" rx="4" fill="#d1fae5" stroke="#059669" stroke-width="1"/>
-  <text x="435" y="437" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#064e3b">EssayGenerationLongRunnable</text>
+  <text x="435" y="437" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#064e3b">QtiQuestionGenerationTask</text>
 
   <!-- File stores + POJOs row -->
   <rect x="20" y="451" width="120" height="22" rx="4" fill="#d1fae5" stroke="#059669" stroke-width="1"/>
@@ -386,120 +432,432 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 <div class="diagram-caption">Figure 1: Layer architecture of the AI service package. Arrows show dependency direction. Dashed arrows indicate indirect delegation.</div>
 </div>
 
-<!-- ===== CLASS REFERENCE ===== -->
-<h2 id="root-package">Root Package</h2>
+<hr />
+<h2 id="class-overview">1. Class Overview</h2>
+<h3 id="root-package">1.1 Root package</h3>
 <table>
-  <tr><th>Class</th><th>Responsibility</th></tr>
-  <tr><td><code>AiSPI</code></td><td>Base interface every provider must implement. Identity, enable/disable, admin UI factory, chat model factory (<code>buildChatModel</code>), available models list.</td></tr>
-  <tr><td><code>AiApiKeySPI</code></td><td>Mixin for API-key-based providers. Enables the reusable <code>GenericAiApiKeyAdminController</code>.</td></tr>
-  <tr><td><code>AiModule</code></td><td>Central module. Merges Spring providers and generic instances. Stores per-feature provider/model config. Provides <code>resolveProvider()</code> for service implementations. Holds per-user rate limit thresholds.</td></tr>
-  <tr><td><code>AiFeature</code></td><td>Enum of all AI features: <code>MCQuestionGenerator</code>, <code>ImageDescriptionGenerator</code>, <code>EssayGeneration</code>, <code>EssayGrading</code>. Used as type discriminator on usage-log rows.</td></tr>
-  <tr><td><code>AiMCQuestionService</code></td><td>Spring service interface for MC question generation.</td></tr>
-  <tr><td><code>AiImageDescriptionService</code></td><td>Spring service interface for image description generation.</td></tr>
-  <tr><td><code>AiEssayGradingService</code></td><td>Spring service interface for essay grading. Returns <code>GradingRun</code> (suggestion + usage-log key).</td></tr>
-  <tr><td><code>AiEssayGenerationService</code></td><td>Spring service interface for essay question generation. Returns <code>List&lt;EssayItemDraft&gt;</code>.</td></tr>
-  <tr><td><code>AiUsageLog</code></td><td>JPA interface for the <code>o_ai_usage_log</code> table. Holds context type/id, resource type/id, token counts, timing, status and error. Generic ledger, no feature-specific columns.</td></tr>
-  <tr><td><code>AiUsageLogSearchParams</code></td><td>Search parameter object for usage-log queries.</td></tr>
-  <tr><td><code>AiUsageLogStatus</code></td><td>Enum: <code>SUCCESS</code>, <code>ERROR</code>.</td></tr>
-  <tr><td><code>AiImageHelper</code></td><td><code>@Service</code> that scales images to max 1024px and base64-encodes them for vision API calls.</td></tr>
+<thead>
+<tr>
+<th>Class</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AiSPI</code></td>
+<td>Base interface every provider must implement. Identity, enable/disable, admin UI factory (<code>createAdminController</code>), chat model factory (<code>buildChatModel</code>, with an optional per-call timeout), available models list. <span class="version-badge changed">Changed in 21.1.0</span> <code>createAdminController(UserRequest, WindowControl, boolean readOnly)</code> takes a read-only flag.</td>
+</tr>
+<tr>
+<td><code>AiEmbeddingSPI</code></td>
+<td>Extends <code>AiSPI</code> for providers that can build a LangChain4j <code>EmbeddingModel</code>: <code>isEmbeddingEnabled()</code>, <code>buildEmbeddingModel(modelName)</code>, <code>getAvailableEmbeddingModels()</code>, <code>getEmbeddingDimension(modelName)</code>. Implemented by <code>OpenAiSPI</code>, <code>GenericAiSpiInstance</code> and <code>LocalOnnxSPI</code>. Used by taxonomy matching (<code>TaxonomyMatchingServiceImpl</code> in <code>org.olat.modules.taxonomy.matching.manager</code>).</td>
+</tr>
+<tr>
+<td><code>AiApiKeySPI</code></td>
+<td>Mixin for API-key-based providers. Enables the reusable <code>GenericAiApiKeyAdminController</code>.</td>
+</tr>
+<tr>
+<td><code>AiModule</code></td>
+<td>Central module. Merges Spring providers + generic instances. Stores per-feature provider/model config. Provides <code>resolveProvider()</code> for service implementations. Holds per-feature limits (output tokens, timeout, input size), the task pool sizes, the per-user rate limit thresholds (<code>getEssayGradingMaxCallsPerMinutePerUser</code>, <code>getEssayGenerationMaxCallsPerMinutePerUser</code>) and the system default of each user-controlled feature (<code>isUserDefaultOn(AiFeature)</code>, <code>setUserDefaultOn(AiFeature, boolean)</code>). <span class="version-badge">New in 21.1.0</span> the user default methods and the constant <code>PROTECTION_PROFILE</code>.</td>
+</tr>
+<tr>
+<td><code>AiFeature</code></td>
+<td>Enum of all AI features: <code>MCQuestionGenerator</code>, <code>ImageDescriptionGenerator</code>, <code>EssayGeneration</code>, <code>EssayGrading</code>, <code>TaxonomyMatching</code>. Used as type discriminator on usage-log rows. <span class="version-badge">New in 21.1.0</span> each constant carries a <code>userControlled</code> flag; <code>isUserControlled()</code> returns true for <code>EssayGrading</code> and <code>ImageDescriptionGenerator</code>. <code>getI18nKey()</code> names the tool in the administration, <code>getI18nUserNameKey()</code> and <code>getI18nDescriptionKey()</code> name and explain the feature for the person.</td>
+</tr>
+<tr>
+<td><code>AiUserPreference</code></td>
+<td><span class="version-badge" style="margin-left:0">New in 21.1.0</span> Enum <code>DEFAULT / ON / OFF</code>. The choice of a person for one user-controlled feature. <code>DEFAULT</code> means "no choice", so the system default of <code>AiModule</code> decides.</td>
+</tr>
+<tr>
+<td><code>AiUserPreferenceService</code></td>
+<td><span class="version-badge" style="margin-left:0">New in 21.1.0</span> <code>@Service</code> that stores and resolves that choice. See section 2.10.</td>
+</tr>
+<tr>
+<td><code>AiMCQuestionService</code></td>
+<td>Spring service interface for MC question generation.</td>
+</tr>
+<tr>
+<td><code>AiImageDescriptionService</code></td>
+<td>Spring service interface for image description generation.</td>
+</tr>
+<tr>
+<td><code>AiEssayGradingService</code></td>
+<td>Spring service interface for essay grading. Returns <code>GradingRun</code> (suggestion + usage-log key).</td>
+</tr>
+<tr>
+<td><code>AiEssayGenerationService</code></td>
+<td>Spring service interface for essay question generation. Returns <code>List&lt;EssayItemDraft&gt;</code>.</td>
+</tr>
+<tr>
+<td><code>AiUsageLog</code></td>
+<td>JPA interface for the <code>o_ai_usage_log</code> table. Holds context type/id, resource type/id, token counts, timing, status and error. Generic ledger, no feature-specific columns.</td>
+</tr>
+<tr>
+<td><code>AiUsageLogSearchParams</code></td>
+<td>Search parameter object for usage-log queries.</td>
+</tr>
+<tr>
+<td><code>AiUsageLogStatus</code></td>
+<td>Enum: <code>SUCCESS</code>, <code>ERROR</code>.</td>
+</tr>
+<tr>
+<td><code>AiImageHelper</code></td>
+<td><code>@Service</code> that scales images to max 1024px and base64-encodes them for vision API calls.</td>
+</tr>
+</tbody>
 </table>
-
-<h2 id="spi-package"><code>spi/</code> — Provider Implementations</h2>
+<h3 id="spi-provider-implementations">1.2 <code>spi/</code> — provider implementations</h3>
 <table>
-  <tr><th>Class</th><th>Responsibility</th></tr>
-  <tr><td><code>OpenAiSPI</code></td><td>OpenAI provider. <code>@Service</code> extending <code>AbstractSpringModule</code>. Uses <code>OpenAiChatModel</code> and <code>OpenAiModelCatalog</code>.</td></tr>
-  <tr><td><code>AnthropicAiSPI</code></td><td>Anthropic Claude provider. Same pattern as <code>OpenAiSPI</code>.</td></tr>
-  <tr><td><code>GenericAiSPI</code></td><td>Factory/registry for generic OpenAI-compatible instances. Stores config as numbered properties. Not an <code>AiSPI</code> itself.</td></tr>
-  <tr><td><code>GenericAiSpiInstance</code></td><td>Single generic provider instance. Uses <code>OpenAiChatModel</code> with custom <code>baseUrl</code>. Created by <code>GenericAiSPI</code>.</td></tr>
+<thead>
+<tr>
+<th>Class</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OpenAiSPI</code></td>
+<td>OpenAI provider. <code>@Service</code> extending <code>AbstractSpringModule</code>, implements <code>AiEmbeddingSPI</code> and <code>AiApiKeySPI</code>. Uses <code>OpenAiChatModel</code> and <code>OpenAiModelCatalog</code>.</td>
+</tr>
+<tr>
+<td><code>AnthropicAiSPI</code></td>
+<td>Anthropic Claude provider. Same pattern as <code>OpenAiSPI</code>, but chat only: it does not implement <code>AiEmbeddingSPI</code>.</td>
+</tr>
+<tr>
+<td><code>GenericAiSPI</code></td>
+<td>Factory/registry for generic OpenAI-compatible instances. Stores config as numbered properties. Not an <code>AiSPI</code> itself.</td>
+</tr>
+<tr>
+<td><code>GenericAiSpiInstance</code></td>
+<td>Single generic provider instance. Uses <code>OpenAiChatModel</code> with custom <code>baseUrl</code>. Created by <code>GenericAiSPI</code>. Implements <code>AiEmbeddingSPI</code>.</td>
+</tr>
+<tr>
+<td><code>GenericAiSpiAdminController</code></td>
+<td>Admin form of one generic instance (base URL, models, optional API key).</td>
+</tr>
+<tr>
+<td><code>LocalOnnxSPI</code></td>
+<td><code>@Service("localOnnxSPI")</code>, id <code>LocalOnnx</code>. Embedding-only SPI that runs an ONNX embedding model in-process. The administrator uploads <code>model.onnx</code> and <code>tokenizer.json</code>; the model is not bundled in the WAR. Chat methods are not supported.</td>
+</tr>
+<tr>
+<td><code>QwenOnnxEmbeddingModel</code></td>
+<td>LangChain4j <code>EmbeddingModel</code> for the uploaded Qwen ONNX model.</td>
+</tr>
+<tr>
+<td><code>LocalOnnxModelAdminController</code></td>
+<td>Admin form for the upload of the local ONNX model.</td>
+</tr>
+</tbody>
 </table>
-
-<h2 id="manager-package"><code>manager/</code> — Service Implementations</h2>
+<h3 id="manager-service-implementations">1.3 <code>manager/</code> — service implementations</h3>
 <table>
-  <tr><th>Class</th><th>Responsibility</th></tr>
-  <tr><td><code>AiMCQuestionServiceImpl</code></td><td>MC question generation. Uses <code>MCQuestionAiService</code> (LangChain4j) via <code>CachedChatModel</code>.</td></tr>
-  <tr><td><code>AiImageDescriptionServiceImpl</code></td><td>Image description generation. Uses <code>ImageDescriptionAiService</code> (LangChain4j) via <code>CachedChatModel</code>.</td></tr>
-  <tr><td><code>AiEssayGradingServiceImpl</code></td><td>Essay grading. Resolves provider via <code>AiModule</code>, wraps the <code>ChatModel</code> in <code>AiLoggingChatModel</code>, invokes the <code>EssayGradingAiService</code> LangChain4j proxy.</td></tr>
-  <tr><td><code>AiEssayGenerationServiceImpl</code></td><td>Essay question generation. Same pattern; uses <code>EssayGenerationAiService</code>.</td></tr>
-  <tr><td><code>AiUsageLogDAO</code></td><td>DAO for <code>o_ai_usage_log</code>. Writes and queries usage rows; <code>createGuardLog</code> records non-LLM refusals. Exposes <code>countByIdentityFeatureSince</code> for rate-limit checks. Grading provenance lives on <code>o_ai_essay_correction</code>, not the log.</td></tr>
-  <tr><td><code>AiLoggingChatModel</code></td><td>Decorator that wraps any <code>ChatModel</code> and writes an <code>AiUsageLog</code> row on each call.</td></tr>
-  <tr><td><code>CachedChatModel</code></td><td>Immutable record caching a LangChain4j <code>AiServices</code> proxy keyed by (spiId, modelName). Rebuilt on config change.</td></tr>
-  <tr><td><code>LangChain4jHttpClientBuilder</code></td><td>Adapts OpenOlat's <code>HttpClientService</code> to LangChain4j's <code>HttpClientBuilder</code>.</td></tr>
+<thead>
+<tr>
+<th>Class</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AiMCQuestionServiceImpl</code></td>
+<td>MC question generation. Uses <code>MCQuestionAiService</code> (LangChain4j) via <code>CachedChatModel</code>.</td>
+</tr>
+<tr>
+<td><code>AiImageDescriptionServiceImpl</code></td>
+<td>Image description generation. Uses <code>ImageDescriptionAiService</code> (LangChain4j) via <code>CachedChatModel</code>.</td>
+</tr>
+<tr>
+<td><code>AiEssayGradingServiceImpl</code></td>
+<td>Essay grading. Resolves provider via <code>AiModule</code>, wraps the <code>ChatModel</code> in <code>AiLoggingChatModel</code>, invokes the <code>EssayGradingAiService</code> LangChain4j proxy.</td>
+</tr>
+<tr>
+<td><code>AiEssayGenerationServiceImpl</code></td>
+<td>Essay question generation. Same pattern; uses <code>EssayGenerationAiService</code>.</td>
+</tr>
+<tr>
+<td><code>AiUsageLogDAO</code></td>
+<td>DAO for <code>o_ai_usage_log</code>. Writes and queries usage rows; <code>createGuardLog</code> records non-LLM refusals. Exposes <code>countByIdentityFeatureSince</code> for rate-limit checks. Grading provenance lives on <code>o_ai_essay_correction</code>, not the log.</td>
+</tr>
+<tr>
+<td><code>AiLoggingChatModel</code></td>
+<td>Decorator that wraps any <code>ChatModel</code> and writes an <code>AiUsageLog</code> row on each call.</td>
+</tr>
+<tr>
+<td><code>AiLoggingEmbeddingModel</code></td>
+<td>Same decorator for an <code>EmbeddingModel</code> (taxonomy matching).</td>
+</tr>
+<tr>
+<td><code>AiUsageLoggedException</code></td>
+<td>Wraps an exception that was already written to the usage log.</td>
+</tr>
+<tr>
+<td><code>AiJsonParseFailure</code></td>
+<td>Package-private helper. Walks a cause chain and detects a truncated provider response.</td>
+</tr>
+<tr>
+<td><code>AiTaskExecutorService</code></td>
+<td>Owns the two AI thread pools (<code>aiInteractive</code>, <code>aiBatch</code> queues of <code>TaskExecutorManager</code>), resizes them from <code>AiModule</code> and reports running and waiting jobs (<code>getInteractiveStats()</code>, <code>getBatchStats()</code>).</td>
+</tr>
+<tr>
+<td><code>CachedChatModel</code></td>
+<td>Immutable record caching a LangChain4j <code>AiServices</code> proxy keyed by (spiId, modelName). Rebuilt on config change.</td>
+</tr>
+<tr>
+<td><code>LangChain4jHttpClientBuilder</code></td>
+<td>Adapts OpenOlat's <code>HttpClientService</code> to LangChain4j's <code>HttpClientBuilder</code>.</td>
+</tr>
+<tr>
+<td><code>LangChain4jHttpClient</code></td>
+<td>LangChain4j <code>HttpClient</code> built by <code>LangChain4jHttpClientBuilder</code>. <span class="version-badge changed">Changed in 21.1.0</span> it creates the Apache client with <code>HttpClientService.createHttpClient(AiModule.PROTECTION_PROFILE)</code>.</td>
+</tr>
+</tbody>
 </table>
-
-<h2 id="service-package"><code>service/</code> — LangChain4j AiService Interfaces</h2>
+<h3 id="service-langchain4j-aiservice-interfaces">1.4 <code>service/</code> — LangChain4j AiService interfaces</h3>
 <table>
-  <tr><th>Class</th><th>Responsibility</th></tr>
-  <tr><td><code>MCQuestionAiService</code></td><td>LangChain4j <code>AiServices</code> interface. Defines MC question prompt via <code>@SystemMessage</code>/<code>@UserMessage</code>. Returns <code>List&lt;MCQuestionData&gt;</code>.</td></tr>
-  <tr><td><code>ImageDescriptionAiService</code></td><td>LangChain4j <code>AiServices</code> interface. Defines image description prompt via <code>@SystemMessage</code>. Returns <code>ImageDescriptionData</code>.</td></tr>
-  <tr><td><code>EssayGradingAiService</code></td><td>LangChain4j <code>AiServices</code> interface for essay grading. Returns a structured <code>GradingSuggestion</code>.</td></tr>
-  <tr><td><code>EssayGenerationAiService</code></td><td>LangChain4j <code>AiServices</code> interface for essay question generation. Returns <code>List&lt;EssayItemDraft&gt;</code>.</td></tr>
+<thead>
+<tr>
+<th>Class</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AiPromptRules</code></td>
+<td>Shared compile-time prompt fragments. <code>OUTPUT_STYLE_RULES</code> (no em/en dashes; Swiss German: ss instead of ß, real umlauts instead of ae/oe/ue) is appended to every generative <code>@SystemMessage</code>.</td>
+</tr>
+<tr>
+<td><code>MCQuestionAiService</code></td>
+<td>LangChain4j <code>AiServices</code> interface. Defines the MC question prompt via <code>@SystemMessage</code>/<code>@UserMessage</code>. Returns <code>List&lt;MCQuestionData&gt;</code>.</td>
+</tr>
+<tr>
+<td><code>ImageDescriptionAiService</code></td>
+<td>LangChain4j <code>AiServices</code> interface. Defines the image description prompt via <code>@SystemMessage</code>. Returns <code>ImageDescriptionData</code>.</td>
+</tr>
+<tr>
+<td><code>EssayGradingAiService</code></td>
+<td>LangChain4j <code>AiServices</code> interface for essay grading. Returns a structured <code>GradingSuggestion</code>.</td>
+</tr>
+<tr>
+<td><code>EssayGenerationAiService</code></td>
+<td>LangChain4j <code>AiServices</code> interface for essay question generation. Returns <code>List&lt;EssayItemDraft&gt;</code>.</td>
+</tr>
+</tbody>
 </table>
-
-<h2 id="model-package"><code>model/</code> — Structured Output and Response Models</h2>
+<h3 id="model-structured-output-and-response-models">1.5 <code>model/</code> — structured output and response models</h3>
 <table>
-  <tr><th>Class</th><th>Responsibility</th></tr>
-  <tr><td><code>MCQuestionData</code></td><td>Structured output for one MC question. LangChain4j <code>@Description</code> annotations guide extraction.</td></tr>
-  <tr><td><code>ImageDescriptionData</code></td><td>Structured output for image metadata.</td></tr>
-  <tr><td><code>AiMCQuestionsResponse</code></td><td>Response wrapper for MC question generation. Extends <code>AiResponse</code>.</td></tr>
-  <tr><td><code>AiImageDescriptionResponse</code></td><td>Response wrapper for image description. Extends <code>AiResponse</code>.</td></tr>
-  <tr><td><code>AiResponse</code></td><td>Base response class. Holds error string; <code>isSuccess()</code> returns true when error is null.</td></tr>
-  <tr><td><code>AiUsageContext</code></td><td>Value object carrying usage context type, identity, locale, resource type/id, and resource sub-id. Built via <code>AiUsageContext.builder()</code>.</td></tr>
-  <tr><td><code>AiUsageLogImpl</code></td><td>JPA entity implementing <code>AiUsageLog</code>. Maps to <code>o_ai_usage_log</code>.</td></tr>
-  <tr><td><code>AiUsageLogStats</code></td><td>Read-only projection for aggregated usage statistics.</td></tr>
+<thead>
+<tr>
+<th>Class</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MCQuestionData</code></td>
+<td>Structured output for one MC question. LangChain4j <code>@Description</code> annotations guide extraction.</td>
+</tr>
+<tr>
+<td><code>ImageDescriptionData</code></td>
+<td>Structured output for image metadata. Same pattern as <code>MCQuestionData</code>.</td>
+</tr>
+<tr>
+<td><code>AiMCQuestionsResponse</code></td>
+<td>Response wrapper for MC question generation. Extends <code>AiResponse</code>.</td>
+</tr>
+<tr>
+<td><code>AiImageDescriptionResponse</code></td>
+<td>Response wrapper for image description. Extends <code>AiResponse</code>.</td>
+</tr>
+<tr>
+<td><code>AiResponse</code></td>
+<td>Base response class. Holds error string; <code>isSuccess()</code> returns true when error is null.</td>
+</tr>
+<tr>
+<td><code>AiUsageContext</code></td>
+<td>Value object carrying usage context type, identity, locale, resource type/id, and resource sub-id. Built via <code>AiUsageContext.builder()</code>.</td>
+</tr>
+<tr>
+<td><code>AiUsageLogImpl</code></td>
+<td>JPA entity implementing <code>AiUsageLog</code>. Maps to <code>o_ai_usage_log</code>.</td>
+</tr>
+<tr>
+<td><code>AiUsageLogStats</code></td>
+<td>Read-only projection for aggregated usage statistics.</td>
+</tr>
+</tbody>
 </table>
-
-<h2 id="essay-package"><code>essay/</code> — Essay Grading and Generation Domain</h2>
+<h3 id="essay-essay-grading-and-generation-domain">1.6 <code>essay/</code> — essay grading and generation domain</h3>
 <table>
-  <tr><th>Class</th><th>Responsibility</th></tr>
-  <tr><td><code>EssayFormativeFeedbackService</code></td><td>Synchronous entry point for formative feedback. Loads <code>EssayAiGrading</code>, runs pre-filters, invokes the grader under a 30 s hard timeout, sanitises output via XSS filter, persists essay provenance on the usage-log row.</td></tr>
-  <tr><td><code>EssayGenerationService</code></td><td>Public entry point for AI question generation. Persists an <code>EssayGenerationJob</code>, schedules <code>EssayGenerationLongRunnable</code> on <code>TaskExecutorManager</code>, and dispatches accepted drafts to the configured sink.</td></tr>
-  <tr><td><code>EssayGenerationService.GenerationRequest</code></td><td>Record encapsulating a generation request. Factory methods: <code>forQuizPart</code>, <code>forPool</code>, <code>of</code> (legacy drawer).</td></tr>
-  <tr><td><code>EssayGenerationService.GenerationDestination</code></td><td>Enum <code>DRAWER / QUIZ_PART / POOL</code>. Drives sink selection and usage-context labelling.</td></tr>
-  <tr><td><code>EssayGenerationService.JobStatusView</code></td><td>Read-only status record returned to the polling drawer UI.</td></tr>
-  <tr><td><code>EssayFeedbackJobService</code></td><td>Coordinates async formative-feedback job lifecycle: submit, status, cancellation.</td></tr>
-  <tr><td><code>EssayGenerationJob</code></td><td>JPA entity (<code>o_essay_generation_job</code>). State: <code>PENDING / RUNNING / DONE / FAILED / CANCELLED</code>.</td></tr>
-  <tr><td><code>EssayFeedbackJob</code></td><td>JPA entity (<code>o_essay_feedback_job</code>) tracking async formative-feedback job state.</td></tr>
-  <tr><td><code>EssayGenerationJobDao</code></td><td>DAO for <code>EssayGenerationJob</code>.</td></tr>
-  <tr><td><code>EssayFeedbackJobDao</code></td><td>DAO for <code>EssayFeedbackJob</code>.</td></tr>
-  <tr><td><code>EssayGenerationJobPayloadStore</code></td><td>Stores and retrieves the serialised <code>GenerationRequest</code> payload for a job.</td></tr>
-  <tr><td><code>EssayGenerationLongRunnable</code></td><td><code>PersistentTaskRunnable</code> for generation jobs. Delegates to <code>EssayGenerationService.runJob()</code>. Cluster-aware.</td></tr>
-  <tr><td><code>EssayFeedbackLongRunnable</code></td><td><code>PersistentTaskRunnable</code> for async formative-feedback jobs.</td></tr>
-  <tr><td><code>EssayGenerationQuizPartSink</code></td><td>Completion-hook sink for <code>QUIZ_PART</code>. Attaches accepted drafts as QTI essay items to the page editor QuizPart.</td></tr>
-  <tr><td><code>EssayGenerationPoolSink</code></td><td>Completion-hook sink for <code>POOL</code>. Persists accepted drafts as standalone question-pool items.</td></tr>
-  <tr><td><code>EssayAiGrading</code></td><td>POJO: reference excerpt, model answer, key points, rubric criteria, content hash, Bloom level. Written to <code>ai-grading.json</code>.</td></tr>
-  <tr><td><code>EssayAiGradingFileStore</code></td><td>Reads/writes <code>ai-grading.json</code>. Stable canonical JSON (sorted keys, ISO-8601 dates).</td></tr>
-  <tr><td><code>AiSourceCompanion</code></td><td>POJO for <code>ai-source.json</code>. Source provenance for MC and source-only items.</td></tr>
-  <tr><td><code>AiSourceCompanionFileStore</code></td><td>Reads/writes <code>ai-source.json</code> next to the QTI item XML.</td></tr>
-  <tr><td><code>EssayItemDraft</code></td><td>Structured output for one AI-generated essay question (text, model answer, key points, rubric, Bloom level, learning objective, token estimate).</td></tr>
-  <tr><td><code>GradingSuggestion</code></td><td>Structured output for one grading result (signals, off-topic flag, confidence, student/coach feedback, score percent).</td></tr>
-  <tr><td><code>FormativeFeedback</code></td><td>Result of <code>EssayFormativeFeedbackService.grade()</code>. Wraps tier, <code>GradingSuggestion</code>, warnings, and the usage-log key.</td></tr>
-  <tr><td><code>AiGradingTier</code></td><td>Enum <code>SHORT / MEDIUM / LONG</code>. Classifies student answers by word count (CJK-aware). Routes to different <code>max_tokens</code> caps and prompt template versions.</td></tr>
-  <tr><td><code>AiBloomLevel</code></td><td>Bloom taxonomy enum used when requesting essay generation.</td></tr>
-  <tr><td><code>LengthPreFilter</code></td><td>Rejects answers that are too short or too long before a provider call.</td></tr>
-  <tr><td><code>GibberishPreFilter</code></td><td>Blocks low-information text (repeated characters, random noise).</td></tr>
-  <tr><td><code>LanguagePreFilter</code></td><td>Warns (non-fatal) when answer language does not match the expected language.</td></tr>
-  <tr><td><code>GeneratedItemValidator</code></td><td>Validates an <code>EssayItemDraft</code> for required fields before it is accepted into a job's result set.</td></tr>
-  <tr><td><code>AiRateLimitExceededException</code></td><td>Thrown when the per-user, per-minute quota is exceeded.</td></tr>
-  <tr><td><code>EssayGradingTimeoutException</code></td><td>Thrown when the 30 s hard timeout expires.</td></tr>
-  <tr><td><code>EssayGradingIntegrityException</code></td><td>Thrown when the content hash on <code>EssayAiGrading</code> does not match a freshly computed hash.</td></tr>
-  <tr><td><code>EssayGradingPreFilterException</code></td><td>Thrown when a pre-filter rejects a student answer.</td></tr>
-  <tr><td><code>RejectionReason</code></td><td>Value record returned by pre-filters. Carries an i18n message key and a developer-facing detail string.</td></tr>
-  <tr><td><code>AiEssayGradingException</code></td><td>Unchecked exception for grading service failures.</td></tr>
-  <tr><td><code>AiEssayGenerationException</code></td><td>Unchecked exception for generation service failures.</td></tr>
-  <tr><td><code>AiContentChunk</code></td><td>Single content chunk produced by <code>AiContentChunker</code>.</td></tr>
+<thead>
+<tr>
+<th>Class</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EssayFormativeFeedbackService</code></td>
+<td>Synchronous grading step of the formative-feedback flow. Takes the loaded <code>EssayAiGrading</code>, verifies the content hash, runs pre-filters, invokes the grader with the provider timeout of the feature (<code>ai.essay.grading.timeout.seconds</code>), sanitises output via OpenOlat's XSS filter, and records the grading-run provenance on the <code>o_ai_essay_correction</code> row.</td>
+</tr>
+<tr>
+<td><code>EssayGenerationService</code></td>
+<td>Public entry point for AI question generation. <code>submit(GenerationRequest)</code> schedules one <code>QtiQuestionGenerationTask</code>; <code>runTask(QtiQuestionGenerationTask)</code> runs it and dispatches accepted drafts to the configured sink.</td>
+</tr>
+<tr>
+<td><code>EssayGenerationService.GenerationRequest</code></td>
+<td>Record encapsulating a generation request. Factory methods: <code>forQuizPart</code> (page editor), <code>forPool</code> (question pool import), <code>of</code> (legacy drawer).</td>
+</tr>
+<tr>
+<td><code>EssayGenerationService.GenerationDestination</code></td>
+<td>Enum <code>DRAWER / QUIZ_PART / POOL</code>. Drives sink selection and usage-context labelling.</td>
+</tr>
+<tr>
+<td><code>QtiQuestionGenerationTask</code></td>
+<td><code>LongRunnable</code> for one question-generation run, persisted in <code>o_ex_task</code>. Question-type agnostic: it generates essay and MC items in one task. Self-contained, it carries the complete <code>GenerationRequest</code>.</td>
+</tr>
+<tr>
+<td><code>EssayAiCorrectionService</code></td>
+<td>Public entry point for the AI correction of one essay answer. <code>submit(storagePath, questionId, studentAnswer, assessmentItemSessionKey, identity)</code> checks the queue load and the per-user rate limit, gates on the choice of the person<span class="version-badge">New in 21.1.0</span>, writes an <code>EssayAiCorrection</code> row and schedules an <code>EssayAiCorrectionTask</code>. Returns the correction key, or <code>null</code> when the feature is unavailable or the person switched it off.</td>
+</tr>
+<tr>
+<td><code>EssayAiCorrection</code></td>
+<td>JPA entity (<code>o_ai_essay_correction</code>). One correction run: status, result JSON, and the grading-run provenance (content hash at call, prompt template version, tier). It is also the usage context of every <code>o_ai_usage_log</code> row of that run.</td>
+</tr>
+<tr>
+<td><code>EssayAiCorrectionDao</code></td>
+<td>DAO for <code>EssayAiCorrection</code>. Creates the row at submit time and updates it as the task progresses.</td>
+</tr>
+<tr>
+<td><code>EssayAiCorrectionTask</code></td>
+<td><code>LongRunnable</code> for one correction run, persisted in <code>o_ex_task</code>. Thin: it carries the correction key and calls back into <code>EssayAiCorrectionService</code>.</td>
+</tr>
+<tr>
+<td><code>EssayGenerationQuizPartSink</code></td>
+<td>Completion-hook sink for the <code>QUIZ_PART</code> destination. Attaches accepted drafts as QTI essay items to the page editor QuizPart; interleaves MC and essay questions.</td>
+</tr>
+<tr>
+<td><code>EssayGenerationPoolSink</code></td>
+<td>Completion-hook sink for the <code>POOL</code> destination. Persists accepted drafts and MC questions as standalone question-pool items owned by the requester.</td>
+</tr>
+<tr>
+<td><code>EssayAiGrading</code></td>
+<td>POJO holding grading metadata (reference excerpt, model answer, key points, rubric criteria, content hash, Bloom level). Written to / read from <code>ai-grading.json</code>.</td>
+</tr>
+<tr>
+<td><code>EssayAiGradingFileStore</code></td>
+<td><code>@Service</code>. Reads and writes <code>ai-grading.json</code> next to the QTI essay item XML. Stable canonical JSON (sorted keys, ISO-8601 dates).</td>
+</tr>
+<tr>
+<td><code>AiSourceCompanion</code></td>
+<td>POJO for the AI-source companion file (<code>ai-source.json</code>). Holds source provenance for MC and source-only items.</td>
+</tr>
+<tr>
+<td><code>AiSourceCompanionFileStore</code></td>
+<td><code>@Service</code>. Reads and writes <code>ai-source.json</code> next to the QTI item XML.</td>
+</tr>
+<tr>
+<td><code>EssayItemDraft</code></td>
+<td>Structured output record for one AI-generated essay question (question text, model answer, key points, rubric criteria, Bloom level, learning objective, token estimate).</td>
+</tr>
+<tr>
+<td><code>GradingSuggestion</code></td>
+<td>Structured output record for one grading result (content signals, language signals, off-topic flag, confidence, student feedback, coach feedback, overall assessment, estimated score percent).</td>
+</tr>
+<tr>
+<td><code>FormativeFeedback</code></td>
+<td>Result returned by <code>EssayFormativeFeedbackService.grade()</code>. Wraps tier, <code>GradingSuggestion</code>, warnings, and the usage-log key.</td>
+</tr>
+<tr>
+<td><code>AiGradingTier</code></td>
+<td>Enum <code>SHORT / MEDIUM / LONG</code>. Classifies student answers by word count (CJK-aware). Routes to different <code>max_tokens</code> caps and prompt template versions.</td>
+</tr>
+<tr>
+<td><code>AiBloomLevel</code></td>
+<td>Enum of Bloom taxonomy levels used when requesting essay generation.</td>
+</tr>
+<tr>
+<td><code>AiContentChunk</code></td>
+<td>Single content chunk produced by <code>AiContentChunker</code>.</td>
+</tr>
+<tr>
+<td><code>LengthPreFilter</code></td>
+<td>Rejects answers that are too short or too long before a provider call is made.</td>
+</tr>
+<tr>
+<td><code>GibberishPreFilter</code></td>
+<td>Blocks low-information text (repeated characters, random noise) before a provider call.</td>
+</tr>
+<tr>
+<td><code>LanguagePreFilter</code></td>
+<td>Warns (non-fatal) when the student answer language does not match the expected language.</td>
+</tr>
+<tr>
+<td><code>GeneratedItemValidator</code></td>
+<td>Validates an <code>EssayItemDraft</code> for required fields before the draft is accepted into a job's result set.</td>
+</tr>
+<tr>
+<td><code>AiRateLimitExceededException</code></td>
+<td>Thrown by <code>EssayAiCorrectionService.submit(...)</code> and <code>EssayGenerationService.submit()</code> when the per-user, per-minute quota is exceeded.</td>
+</tr>
+<tr>
+<td><code>AiOverloadedException</code></td>
+<td>Thrown by <code>EssayAiCorrectionService.submit(...)</code> when more than two full pool rounds wait in the interactive queue. The refusal writes no guard row, so it does not count against the rate limit of the person.</td>
+</tr>
+<tr>
+<td><code>AiEssayResponseTruncatedException</code>, <code>AiEssayGenerationResponseTruncatedException</code></td>
+<td>Thrown when the provider reply was cut off (typically at the output token cap) and cannot be parsed. Grading turns it into a rejection card with <code>ai.essay.error.response.truncated</code>.</td>
+</tr>
+<tr>
+<td><code>AnnotatedParagraph</code>, <code>AnnotatedSpan</code>, <code>MarkKind</code></td>
+<td>Structured output of the inline annotation view of the student answer. <code>MarkKind</code> is <code>CORRECT</code>, <code>AMBIGUOUS</code>, <code>WRONG</code> or <code>NEUTRAL</code>.</td>
+</tr>
+<tr>
+<td><code>AiEssayGradingException</code></td>
+<td>Unchecked exception for grading service failures.</td>
+</tr>
+<tr>
+<td><code>AiEssayGenerationException</code></td>
+<td>Unchecked exception for generation service failures.</td>
+</tr>
+<tr>
+<td><code>EssayGradingTimeoutException</code></td>
+<td>Thrown when the provider HTTP timeout of essay grading expires.</td>
+</tr>
+<tr>
+<td><code>EssayGradingIntegrityException</code></td>
+<td>Thrown when the content hash on <code>EssayAiGrading</code> does not match a freshly computed hash.</td>
+</tr>
+<tr>
+<td><code>EssayGradingPreFilterException</code></td>
+<td>Thrown when a pre-filter rejects a student answer.</td>
+</tr>
+<tr>
+<td><code>RejectionReason</code></td>
+<td>Value record returned by pre-filters. Carries an i18n message key and a developer-facing detail string.</td>
+</tr>
+</tbody>
 </table>
-
-<h2 id="content-package"><code>content/</code> — Content Preparation Helpers</h2>
+<h3 id="content-content-preparation-helpers">1.7 <code>content/</code> — content preparation helpers</h3>
 <table>
-  <tr><th>Class</th><th>Responsibility</th></tr>
-  <tr><td><code>AiContentChunker</code></td><td>CommonMark-aware Markdown chunker. Splits source text into semantically coherent <code>AiContentChunk</code> list for the generation pipeline.</td></tr>
-  <tr><td><code>AiContentHardener</code></td><td>Scrubs Markdown source for prompt-injection imperatives (<code>ignore previous instructions</code>, etc.), chat-template tokens (<code>&lt;|im_start|&gt;</code>, <code>[INST]</code>, etc.), and dangerous inline HTML before the text is fed to the generator.</td></tr>
+<thead>
+<tr>
+<th>Class</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AiContentChunker</code></td>
+<td>CommonMark-aware Markdown chunker. Splits source text into semantically coherent <code>AiContentChunk</code> list for the generation pipeline.</td>
+</tr>
+<tr>
+<td><code>AiContentHardener</code></td>
+<td>Scrubs Markdown source for prompt-injection imperatives (<code>ignore previous instructions</code>, etc.), chat-template tokens (<code>&lt;|im_start|&gt;</code>, <code>[INST]</code>, etc.), and dangerous inline HTML (<code>javascript:</code> URLs, <code>&lt;script&gt;</code>, <code>&lt;iframe&gt;</code>) before the text is fed to the essay generator.</td>
+</tr>
+</tbody>
 </table>
-
-<!-- ===== GRADING FLOW ===== -->
 <h2 id="grading-flow">Grading Pipeline</h2>
 
-<p>The grading flow is triggered after a student submits an essay answer. It is asynchronous at the persistence level (persistent job) but synchronous at the AI call level (30 s hard timeout inside the runnable).</p>
+<p>The grading flow starts when a learner submits an essay answer. <code>QuizRunController</code> first resolves the AI choice of the person (see User Control). <code>EssayAiCorrectionService.submit(...)</code> writes the <code>o_ai_essay_correction</code> row and schedules an <code>EssayAiCorrectionTask</code> on the <code>aiInteractive</code> queue. The provider call inside the task is synchronous and uses the timeout <code>ai.essay.grading.timeout.seconds</code>.</p>
 
 <div class="diagram-box">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 520" width="860" height="520">
@@ -518,22 +876,22 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <!-- 2 -->
   <rect x="10" y="100" width="160" height="44" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
   <text x="90" y="118" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#0c4a6e">QuizRunController</text>
-  <text x="90" y="132" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#0c4a6e">triggerAiCorrection...</text>
+  <text x="90" y="132" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#0c4a6e">consent + triggerAiCorrection</text>
 
   <!-- 3 -->
   <rect x="10" y="180" width="160" height="44" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
-  <text x="90" y="198" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#0c4a6e">EssayFeedbackJobService</text>
+  <text x="90" y="198" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#0c4a6e">EssayAiCorrectionService</text>
   <text x="90" y="212" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#0c4a6e">.submit()</text>
 
   <!-- 4 -->
   <rect x="10" y="260" width="160" height="44" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
-  <text x="90" y="278" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#451a03">o_essay_feedback_job row</text>
+  <text x="90" y="278" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#451a03">o_ai_essay_correction row</text>
   <text x="90" y="292" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#451a03">+ o_ex_task (persistent)</text>
 
   <!-- 5 -->
   <rect x="10" y="340" width="160" height="44" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
-  <text x="90" y="358" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#451a03">EssayFeedbackLongRunnable</text>
-  <text x="90" y="372" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#451a03">PersistentTaskRunnable</text>
+  <text x="90" y="358" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#451a03">EssayAiCorrectionTask</text>
+  <text x="90" y="372" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#451a03">LongRunnable, aiInteractive</text>
 
   <!-- 6 -->
   <rect x="10" y="420" width="160" height="44" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
@@ -592,8 +950,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
   <!-- Usage log update -->
   <rect x="650" y="20" width="120" height="44" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
-  <text x="710" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#450a0a">AiUsageLogDAO</text>
-  <text x="710" y="52" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#450a0a">.updateEssayFields()</text>
+  <text x="710" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#450a0a">EssayAiCorrectionDao</text>
+  <text x="710" y="52" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#450a0a">.update() result + provenance</text>
   <line x1="710" y1="110" x2="710" y2="64" stroke="#475569" stroke-width="1.5" marker-end="url(#garr)"/>
 
   <!-- Frontend poll -->
@@ -606,10 +964,9 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 <div class="diagram-caption">Figure 2: Grading pipeline — from student submission to sanitised feedback returned to the frontend.</div>
 </div>
 
-<!-- ===== GENERATION FLOW ===== -->
 <h2 id="generation-flow">Generation Pipeline</h2>
 
-<p>The generation flow is fully asynchronous. The author triggers generation from one of three entry points; the job runs on a cluster-aware persistent task; when done, a destination-specific sink handles the output.</p>
+<p>The generation flow is fully asynchronous. The author triggers generation from one of three entry points. One <code>QtiQuestionGenerationTask</code> runs on the <code>aiBatch</code> queue, and a destination-specific sink handles the output.</p>
 
 <div class="diagram-box">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 540" width="860" height="540">
@@ -648,16 +1005,16 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <text x="185" y="195" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#451a03">countByIdentityFeatureSince</text>
   <line x1="185" y1="130" x2="185" y2="165" stroke="#475569" stroke-width="1.5" marker-end="url(#garr2)"/>
 
-  <!-- Persist job row -->
+  <!-- Persist task -->
   <rect x="110" y="238" width="150" height="40" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
-  <text x="185" y="254" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#451a03">o_essay_generation_job</text>
-  <text x="185" y="268" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#451a03">+ o_ex_task (persistent)</text>
+  <text x="185" y="254" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#451a03">QtiQuestionGenerationTask</text>
+  <text x="185" y="268" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#451a03">in o_ex_task (aiBatch)</text>
   <line x1="185" y1="205" x2="185" y2="238" stroke="#475569" stroke-width="1.5" marker-end="url(#garr2)"/>
 
   <!-- LongRunnable -->
   <rect x="110" y="312" width="150" height="40" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
-  <text x="185" y="328" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#451a03">EssayGenerationLong</text>
-  <text x="185" y="342" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#451a03">Runnable → runJob()</text>
+  <text x="185" y="328" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" font-weight="600" fill="#451a03">EssayGenerationService</text>
+  <text x="185" y="342" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#451a03">.runTask()</text>
   <line x1="185" y1="278" x2="185" y2="312" stroke="#475569" stroke-width="1.5" marker-end="url(#garr2)"/>
 
   <!-- Content hardening + chunking -->
@@ -707,51 +1064,111 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <line x1="110" y1="185" x2="100" y2="185" stroke="#dc2626" stroke-width="1.2" marker-end="url(#garr2)" stroke-dasharray="3,2"/>
 
 </svg>
-<div class="diagram-caption">Figure 3: Generation pipeline — from author trigger through persistent job execution to sink and companion file write.</div>
+<div class="diagram-caption">Figure 3: Generation pipeline — from author trigger through persistent task execution to sink and companion file write.</div>
 </div>
 
-<!-- ===== PATTERNS ===== -->
-<h2 id="patterns">Important Patterns</h2>
-
-<h3>1. Provider SPI Abstraction</h3>
-<p>The SPI contract is deliberately thin: <code>AiSPI.buildChatModel(modelName, maxTokens)</code> returns a LangChain4j <code>ChatModel</code>, and <code>getAvailableModels()</code> returns the model name list. All feature-specific prompt construction, structured-output schema definition, and JSON validation live in the service and LangChain4j AiService layers, never in the SPI. This means adding a new provider requires no knowledge of any AI feature.</p>
-<p>Structured output is declared with LangChain4j <code>@Description</code> annotations on the return type POJOs and relies on <code>RESPONSE_FORMAT_JSON_SCHEMA</code> capability. The <code>CachedChatModel</code> record holds a pre-built LangChain4j proxy keyed by (spiId, modelName); the proxy is rebuilt automatically when <code>AiModule</code> fires a config-change event.</p>
-
-<h3>2. Pre-filter Chain Pattern</h3>
-<p>Before any provider call, <code>EssayFormativeFeedbackService.grade()</code> runs three sequential filters. Order matters:</p>
+<hr />
+<h2 id="important-patterns">2. Important Patterns</h2>
+<h3 id="provider-spi-abstraction">2.1 Provider SPI Abstraction</h3>
+<p>The SPI contract is deliberately thin: <code>AiSPI.buildChatModel(modelName, maxTokens)</code> returns a LangChain4j <code>ChatModel</code>, and <code>getAvailableModels()</code> returns the model name list. All feature-specific prompt construction, structured-output schema definition (via LangChain4j <code>@Description</code> annotations + <code>RESPONSE_FORMAT_JSON_SCHEMA</code> capability), and JSON validation live in the service and <code>service/</code> layers, never in the SPI. Adding a new provider requires no knowledge of any AI feature.</p>
+<p>The <code>CachedChatModel</code> record holds a pre-built LangChain4j <code>AiServices</code> proxy keyed by (spiId, modelName). The proxy is rebuilt automatically when <code>AiModule</code> fires a config-change event.</p>
+<h3 id="pre-filter-chain-pattern">2.2 Pre-filter Chain Pattern</h3>
+<p>Before any provider call, <code>EssayFormativeFeedbackService.grade(...)</code> runs three sequential filters. Order matters:</p>
 <ol>
-  <li><code>LengthPreFilter</code> — rejects answers below or above the configured word-count bounds. This is the cheapest check and runs first.</li>
-  <li><code>GibberishPreFilter</code> — blocks low-information text (repeated characters, random noise). Runs second to catch keyboard-spam that slips through the length gate.</li>
-  <li><code>LanguagePreFilter</code> — non-fatal; warns when the detected language does not match the item's expected language, but does not reject. The warning surfaces in <code>FormativeFeedback.warnings()</code>.</li>
+<li><code>LengthPreFilter</code>: rejects answers below or above the word-count bounds. The upper bound is <code>ai.essay.grading.max.input.words</code> (default 400). Cheapest check, runs first.</li>
+<li><code>GibberishPreFilter</code> — blocks low-information text (repeated characters, random noise). Catches keyboard-spam that slips through the length gate.</li>
+<li><code>LanguagePreFilter</code> — non-fatal; warns when the detected language does not match the item's expected language. The warning surfaces in <code>FormativeFeedback.warnings()</code>.</li>
 </ol>
-<p>Each rejecting filter throws <code>EssayGradingPreFilterException</code> carrying a <code>RejectionReason</code> (i18n key + developer detail). The controller catches this and shows a localised message to the student without logging a usage row.</p>
-
-<h3>3. Tier-Based Prompt Routing</h3>
+<p>Rejecting filters throw <code>EssayGradingPreFilterException</code> carrying a <code>RejectionReason</code> (i18n key + developer detail). The controller catches this and shows a localised message to the student without logging a usage row.</p>
+<h3 id="tier-based-prompt-routing">2.3 Tier-Based Prompt Routing</h3>
 <p><code>AiGradingTier.classify(wordCount)</code> maps the student answer length (CJK-aware word count) to <code>SHORT</code>, <code>MEDIUM</code>, or <code>LONG</code>. Each tier routes to a different <code>max_tokens</code> cap and a different prompt template version string. The selected tier and prompt template version are stamped on the <code>o_ai_essay_correction</code> row (via <code>EssayFormativeFeedbackService.recordProvenance</code>), enabling retrospective analysis of grading quality per tier.</p>
-
-<h3>4. File-Based Companion Pattern</h3>
-<p>AI grading configuration and source provenance are stored as JSON files next to the QTI assessment item XML, not in the database. <code>EssayAiGradingFileStore</code> writes <code>ai-grading.json</code> and <code>AiSourceCompanionFileStore</code> writes <code>ai-source.json</code>. Serialisation uses sorted map keys and ISO-8601 dates for stable hashing.</p>
+<h3 id="file-based-companion-pattern">2.4 File-Based Companion Pattern</h3>
+<p>AI grading configuration and source provenance are stored as JSON files next to the QTI assessment item XML. <code>EssayAiGradingFileStore</code> writes <code>ai-grading.json</code>; <code>AiSourceCompanionFileStore</code> writes <code>ai-source.json</code>. Serialisation uses sorted map keys and ISO-8601 dates for stable, diff-friendly output.</p>
 <p>Integrity is enforced by a SHA-256 prefix hash over the grading-relevant fields of <code>EssayAiGrading</code>, computed by <code>EssayFormativeFeedbackService.computeContentHash()</code>. A mismatch at grading time raises <code>EssayGradingIntegrityException</code> and refuses to grade, preventing grading against a tampered rubric.</p>
 <p><code>AssessmentItemAiGradingMarker</code> (in <code>org.olat.ims.qti21.model.xml</code>) injects a <code>&lt;ooExt:aiGrading&gt;</code> element into the QTI XML carrying the content hash, a stable <code>kitId</code>, generation timestamp, and schema version. The marker survives QTI export/import; on pool import the hash is re-verified before the marker is removed.</p>
-
-<h3>5. Persistent Job + LongRunnable Pattern</h3>
-<p>Both grading and generation use the OpenOlat persistent task infrastructure: a DB row (<code>o_essay_feedback_job</code> or <code>o_essay_generation_job</code>) is written first, then the job is registered on <code>TaskExecutorManager</code> which persists it in <code>o_ex_task</code>. On cluster restart, unfinished tasks are picked up automatically. The <code>PersistentTaskRunnable</code> subclass (<code>EssayFeedbackLongRunnable</code>, <code>EssayGenerationLongRunnable</code>) manages the DB session lifecycle: it commits on success and rolls back on failure, leaving the job in <code>FAILED</code> state with an error JSON payload.</p>
-
-<h3>6. Owner-Checked Status Access</h3>
-<p><code>EssayGenerationService.getStatus(jobKey, Identity)</code> returns "not found" when the requesting identity does not match the job owner, producing the same response as an unknown job key. This prevents IDOR: an attacker who knows or guesses a job key cannot determine whether it belongs to another user. The same pattern applies to cancellation.</p>
-
-<h3>7. Per-User Rate Limiting</h3>
-<p>Before accepting a submit, both <code>EssayFormativeFeedbackService</code> and <code>EssayGenerationService</code> call <code>AiUsageLogDAO.countByIdentityFeatureSince(identity, feature, since)</code> to count calls within the rolling time window. The limit thresholds are stored in <code>AiModule</code> (<code>getEssayGradingMaxCallsPerMinutePerUser()</code>, <code>getEssayGenerationMaxCallsPerMinutePerUser()</code>). Exceeding the limit throws <code>AiRateLimitExceededException</code>, which the controller catches and translates to a localised error message.</p>
-
-<h3>8. Sanitisation Pipeline for Student-Facing Output</h3>
-<p>The AI provider response contains free-text HTML generated by the model. Before storing or displaying this text, <code>EssayFormativeFeedbackService</code> passes it through OpenOlat's built-in XSS filter with a restricted tag whitelist. Only safe formatting tags (paragraphs, lists, inline emphasis) are allowed; all script, iframe, and event-handler attributes are stripped. This prevents stored XSS if a provider returns malicious content.</p>
-
-<h3>9. Usage Logging with Destination-Aware Context</h3>
-<p>Every provider call writes a row to <code>o_ai_usage_log</code>. The <code>usageContextType</code> field encodes both the feature and the calling context (e.g. <code>ai-essay-correction</code>, <code>qpool-generate-questions</code>, <code>ceditor-quizpart-generate-questions</code>), and <code>usageContextId</code> points at the context entity the call is about. For essay correction that entity is the <code>o_ai_essay_correction</code> row (<code>usageContextType = ai-essay-correction</code>, <code>usageContextId = &lt;correction key&gt;</code>), so all log rows of one correction (guard, grading, retry) share the same context id and the log stays a generic ledger with no feature-specific columns. The <code>resourceType</code> / <code>resourceId</code> pair identifies the resource: <code>RepositoryEntry</code> for course/page operations, <code>PoolQPool</code> for pool operations. The grading-run provenance (content hash, prompt template version, tier) lives on the <code>o_ai_essay_correction</code> row, not on the log. Because the link is a soft string reference, deleting a correction drops its provenance while the cost-ledger row survives with a now-stale context id; the log is never cascade-deleted.</p>
-
-<!-- ===== USAGE EXAMPLES ===== -->
-<h2 id="use-mc">Using the MC Question Generator</h2>
-
+<h3 id="persistent-job-longrunnable-pattern">2.5 Persistent Job + LongRunnable Pattern</h3>
+<p>Both correction and generation use the OpenOlat persistent task infrastructure. <code>TaskExecutorManager</code> persists each <code>LongRunnable</code> in <code>o_ex_task</code> and runs it on one of the two AI queues: <code>aiInteractive</code> for the essay correction a learner waits for, <code>aiBatch</code> for generation and image metadata. <code>AiTaskExecutorService</code> sizes the two pools from <code>ai.task.pool.interactive.size</code> (default 8) and <code>ai.task.pool.batch.size</code> (default 2) per node. On cluster restart, unfinished tasks are picked up automatically. The correction writes its <code>EssayAiCorrection</code> row first and schedules <code>EssayAiCorrectionTask</code> with the key; generation carries the whole <code>GenerationRequest</code> in <code>QtiQuestionGenerationTask</code> and keeps no job row of its own.</p>
+<h3 id="owner-checked-status-access">2.6 Owner-Checked Status Access</h3>
+<p><code>EssayAiCorrectionService.getStatus(correctionKey, Identity)</code> returns "not found" when the requesting identity does not match the owner of the correction, the same response as for an unknown key. This prevents IDOR: an attacker who guesses a correction key cannot determine whether it belongs to another user.</p>
+<h3 id="per-user-rate-limiting">2.7 Per-User Rate Limiting</h3>
+<p>Before accepting a submit, both <code>EssayAiCorrectionService</code> and <code>EssayGenerationService</code> call <code>AiUsageLogDAO.countByIdentityFeatureSince(identityKey, feature, since)</code> to count calls within the last 60 seconds. The thresholds are constants in <code>AiModule</code> (30 per minute for grading, 10 for generation). A refusal writes a guard row with <code>createGuardLog</code>, so it counts toward the limit too. Exceeding the limit throws <code>AiRateLimitExceededException</code>, which the controller translates to a localised error message.</p>
+<h3 id="sanitisation-pipeline-for-student-facing-output">2.8 Sanitisation Pipeline for Student-Facing Output</h3>
+<p>The AI provider response is passed through OpenOlat's built-in XSS filter with a restricted tag whitelist before storage or display. Only safe formatting tags are allowed; all script, iframe, and event-handler attributes are stripped.</p>
+<h3 id="usage-logging-with-destination-aware-context">2.9 Usage Logging with Destination-Aware Context</h3>
+<p>Every provider call writes a row to <code>o_ai_usage_log</code>. The <code>usageContextType</code> field encodes both the feature and the calling context (e.g. <code>ai-essay-correction</code>, <code>qpool-generate-questions</code>, <code>ceditor-quizpart-generate-questions</code>), and <code>usageContextId</code> points at the context entity that the call is about. For essay correction that entity is the <code>o_ai_essay_correction</code> row: <code>usageContextType = ai-essay-correction</code>, <code>usageContextId = &lt;correction key&gt;</code>, so all log rows of one correction (guard, grading, retry) share the same context id and the log stays a generic ledger with no feature-specific columns. The <code>resourceType</code> / <code>resourceId</code> pair identifies the resource: <code>RepositoryEntry</code> for course/page operations, <code>PoolQPool</code> for pool operations. The grading-run provenance (content hash, prompt template version, tier) lives on the <code>o_ai_essay_correction</code> row, not on the log; deleting a correction therefore drops its provenance while the cost ledger row survives (it keeps the now-stale context id, like any other soft reference).</p>
+<h3 id="user-control-of-an-automatic-feature">2.10 User Control of an Automatic Feature<span class="version-badge">New in 21.1.0</span></h3>
+<p>A feature that runs without being asked for is user controlled. <code>AiFeature.isUserControlled()</code> marks these features; today they are <code>EssayGrading</code> and <code>ImageDescriptionGenerator</code>. Three values decide whether such a feature runs for one person:</p>
+<ol>
+<li>The administrator switches the feature on or off in the AI module. An off feature never runs, whatever the person chose.</li>
+<li>The administrator sets the system default per feature: <code>ai.feature.&lt;type&gt;.user.default</code> in <code>olat.properties</code>, editable in the AI features form. <code>AiModule.isUserDefaultOn(AiFeature)</code> reads it, <code>setUserDefaultOn(AiFeature, boolean)</code> writes it and fires the cluster-wide change event. Both features preset to <code>true</code>.</li>
+<li>The person overrides the default in the user settings, segment "AI settings" (<code>AiUserSettingsController</code>). <code>AiUserPreferenceService</code> stores the choice in the GUI preferences, attributed class <code>AiUserPreferenceService</code>, key <code>ai.optout.&lt;feature type&gt;</code>, value <code>default</code>, <code>on</code> or <code>off</code>.</li>
+</ol>
+<p><code>AiUserPreferenceService</code> public methods:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get(Preferences, AiFeature)</code></td>
+<td>The stored choice. <code>DEFAULT</code> for an absent row and for an unreadable value.</td>
+</tr>
+<tr>
+<td><code>get(Identity, AiFeature)</code></td>
+<td>The same, for a caller without a user session. It resolves the persistent <code>Preferences</code> through <code>PreferencesFactory</code>. A controller uses the <code>Preferences</code> variant, so the session copy stays in sync after a write.</td>
+</tr>
+<tr>
+<td><code>set(Preferences, AiFeature, AiUserPreference)</code></td>
+<td>Stores the choice. Never writes for a guest: all guests of one language share one identity, so a guest gets transient <code>RamPreferences</code> and the call returns without writing.</td>
+</tr>
+<tr>
+<td><code>hasPreference(Preferences, AiFeature)</code></td>
+<td>True when the person made a choice, that is a stored <code>ON</code> or <code>OFF</code>.</td>
+</tr>
+<tr>
+<td><code>isActive(Preferences, AiFeature)</code></td>
+<td>The effective answer: feature available, and <code>ON</code>, or <code>DEFAULT</code> plus a system default of on. Fails closed on a null <code>Preferences</code>.</td>
+</tr>
+<tr>
+<td><code>isFeatureAvailable(AiFeature)</code></td>
+<td>True when the administrator switched the feature on and a provider is configured. False for a feature that is not user controlled.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The three gates.</strong> Each automatic trigger asks once, at the point where the AI call would start.</p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Where</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quiz start dialog</td>
+<td><code>QuizRunController</code> with <code>AiCorrectionConsentController</code></td>
+<td>Before the first essay answer is corrected. A stored <code>ON</code> or <code>OFF</code> decides silently. On <code>DEFAULT</code> the modal asks: "Allow once" runs this quiz only, "Always allow" writes <code>ON</code>, "Not now" and Escape refuse for this run. A refusal skips the correction: no correction row, no overlay, no error card. <code>EssayAiCorrectionService.submit(...)</code> repeats the check as a defensive guard for every other caller and returns <code>null</code> on an unavailable feature or a stored <code>OFF</code>. A run rebuilt by a cluster event (<code>SyntheticUserRequest</code>) never opens the modal and fails closed for that run; the next start or retry asks again.</td>
+</tr>
+<tr>
+<td>Page editor import toggle</td>
+<td><code>MarkdownImportController</code></td>
+<td>The import dialog of a Markdown or Word file shows a toggle, preset with <code>isActive(...)</code>. The value travels as <code>MarkdownImportOptions</code> into <code>MarkdownPagePartVisitor</code>, which submits the AI metadata of the imported images only when it is on. The toggle is valid for this one import and is not stored.</td>
+</tr>
+<tr>
+<td>Upload background submit</td>
+<td><code>MediaUploadController</code>, <code>CollectImageMediaController</code></td>
+<td>The background metadata generation after an image upload runs only when <code>isActive(...)</code> is true. The explicit "Generate metadata with AI" buttons are not gated: the person asks for the result.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="http-protection-profile">2.11 HTTP Protection Profile<span class="version-badge">New in 21.1.0</span></h3>
+<p>All provider calls go through <code>LangChain4jHttpClient</code>, which asks <code>HttpClientService.createHttpClient(AiModule.PROTECTION_PROFILE)</code> for the Apache client. <code>AiModule.PROTECTION_PROFILE</code> is <code>ProtectionProfile.CONFIGURED</code>: the administrator configured the provider URL, so the SSRF filter of <code>HttpClientService</code> does not apply. The filter applies only to the profile <code>USER_PROVIDED</code> and only when <code>http.ssrf.protection.enabled=true</code>. A generic instance on an internal address, for example a local vLLM server, therefore stays reachable.</p>
+<hr />
+<h2 id="using-the-mc-question-generator">3. Using the MC Question Generator</h2>
 <pre><code><span class="ann">@Autowired</span>
 <span class="kw">private</span> <span class="typ">AiMCQuestionService</span> aiMCQuestionService;
 
@@ -759,17 +1176,35 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
     showAiButton();
 }
 
-<span class="typ">AiMCQuestionsResponse</span> response = aiMCQuestionService.generateMCQuestionsResponse(inputText, <span class="num">5</span>);
+<span class="typ">AiUsageContext</span> usageContext = <span class="typ">AiUsageContext</span>.builder()
+        .usageContextType(<span class="str">"my-usage-context-type"</span>)
+        .identity(identity)
+        .locale(locale)
+        .build();
+<span class="typ">AiMCQuestionsResponse</span> response = aiMCQuestionService.generateMCQuestionsResponse(usageContext, inputText, <span class="num">5</span>);
 <span class="kw">if</span> (response.isSuccess()) {
     <span class="kw">for</span> (<span class="typ">MCQuestionData</span> q : response.getQuestions()) {
-        <span class="cmt">// q.getTitle(), q.getQuestion(), q.getCorrectAnswers(), q.getWrongAnswers()</span>
+        <span class="cmt">// q.getTitle(), q.getQuestion(), q.getCorrectAnswers(), q.getWrongAnswers() (List&lt;McAnswerOption&gt;)</span>
     }
 } <span class="kw">else</span> {
     showError(response.getError());
 }</code></pre>
+<p>Two further overloads exist: <code>generateMCQuestionsResponse(usageContext, input, number, bloomLevels, targetDifficulty, learningObjectives)</code> for the essay generation pipeline, and <code>generateMCQuestionsResponse(usageContext, input, number, spiId, modelName)</code> for the admin feature test.</p>
+<h2 id="using-the-image-description-generator">4. Using the Image Description Generator</h2>
+<p>The synchronous API is <code>AiImageDescriptionService.generateImageDescription(...)</code>. It is used directly only where the caller genuinely waits for the result: the admin feature test and the explicit "Generate metadata with AI" buttons in <code>CollectImageMediaController</code> and <code>MediaUploadController</code> (via <code>MediaAiMetadataService.generateNow(...)</code>), which overwrite the open form so the user can review before saving. All automatic enrichment flows (Markdown/Word import in the content editor, media center upload, collect-image save) go through the <strong>asynchronous</strong> <code>MediaAiMetadataService</code> in <code>org.olat.modules.cemedia.manager</code> instead — the user never waits on a provider round-trip:</p>
+<pre><code><span class="ann">@Autowired</span>
+<span class="kw">private</span> <span class="typ">MediaAiMetadataService</span> mediaAiMetadataService;
 
-<h2 id="use-image">Using the Image Description Generator</h2>
-
+<span class="cmt">// After the media has been created and committed:</span>
+<span class="cmt">// overwrite = true replaces machine-generated values (import flows),</span>
+<span class="cmt">// overwrite = false fills only empty fields (form flows)</span>
+<span class="kw">boolean</span> scheduled = mediaAiMetadataService.submit(media, requester, locale,
+        <span class="str">"my-usage-context-type"</span>, resourceType, resourceId, resourceSubId, <span class="kw">false</span>);
+<span class="kw">if</span> (scheduled) {
+    showInfo(<span class="str">"ai.metadata.background"</span>);
+}</code></pre>
+<p><code>submit()</code> is a no-op returning <code>false</code> when the feature is disabled or the media is not a supported raster image. It schedules one <code>MediaAiMetadataGenerationTask</code> (<code>LongRunnable</code>, <code>Queue.aiBatch</code>, persisted in <code>o_ex_task</code>, cluster-aware crash recovery) per media. The task re-resolves the image from the media storage, calls the vision model plus the optional taxonomy matching, and applies the result defensively: title only when empty or filename-like, description/alt text only when empty, tags and taxonomy only when none are assigned — a user editing the media before the task runs is never overwritten. The last argument <code>overwrite</code> relaxes this rule: with <code>true</code> the AI values replace existing machine-generated title and alt text, for example Word auto alt texts. The Markdown/Word import passes <code>true</code>, the form flows pass <code>false</code>.</p>
+<p>Direct synchronous use for testing:</p>
 <pre><code><span class="ann">@Autowired</span>
 <span class="kw">private</span> <span class="typ">AiImageDescriptionService</span> aiImageDescriptionService;
 <span class="ann">@Autowired</span>
@@ -778,8 +1213,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 <span class="typ">String</span> base64 = aiImageHelper.prepareImageBase64(imageFile, <span class="str">"jpg"</span>);
 <span class="typ">String</span> mimeType = aiImageHelper.getMimeType(<span class="str">"jpg"</span>);
 <span class="kw">if</span> (base64 != <span class="kw">null</span> &amp;&amp; mimeType != <span class="kw">null</span>) {
-    <span class="typ">AiImageDescriptionResponse</span> response =
-            aiImageDescriptionService.generateImageDescription(base64, mimeType, locale);
+    <span class="typ">AiImageDescriptionResponse</span> response = aiImageDescriptionService.generateImageDescription(usageContext, base64, mimeType, locale);
     <span class="kw">if</span> (response.isSuccess()) {
         <span class="typ">ImageDescriptionData</span> data = response.getDescription();
         <span class="cmt">// data.getTitle(), data.getDescription(), data.getAltText()</span>
@@ -788,90 +1222,74 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
         showError(response.getError());
     }
 }</code></pre>
-
-<p><code>AiImageHelper</code> handles scaling (max 1024 px) and base64 encoding. Supports JPEG, PNG, GIF, and WebP.</p>
-
-<h2 id="use-grading">Using the Essay Grading Service</h2>
-
-<p>The synchronous path is <code>EssayFormativeFeedbackService</code>. In practice the caller is <code>EssayFeedbackJobService</code> inside a <code>PersistentTaskRunnable</code>, but the direct API is also usable for testing.</p>
-
+<p><code>AiImageHelper</code> handles scaling (max 1024px) and base64 encoding. Supports JPEG, PNG, GIF, and WebP.</p>
+<h2 id="using-the-essay-grading-service">5. Using the Essay Grading Service</h2>
+<p>The synchronous path is <code>EssayFormativeFeedbackService</code>. In practice the caller is <code>EssayAiCorrectionService.runCorrection(...)</code> inside an <code>EssayAiCorrectionTask</code>, but the direct API is also usable for testing. A UI opens the flow with <code>EssayAiCorrectionService.submit(...)</code> and polls <code>getStatus(correctionKey, caller)</code>. The rate limit (<code>AiRateLimitExceededException</code>) and the queue overload (<code>AiOverloadedException</code>) are checked in <code>submit(...)</code>, not in <code>grade(...)</code>. <code>QuizRunController</code> shows <code>ai.essay.feedback.error.ratelimit</code>, <code>ai.essay.correction.overloaded</code> and <code>ai.essay.correction.timeout</code> for these cases.</p>
 <pre><code><span class="ann">@Autowired</span>
 <span class="kw">private</span> <span class="typ">EssayFormativeFeedbackService</span> feedbackService;
 <span class="ann">@Autowired</span>
 <span class="kw">private</span> <span class="typ">EssayAiGradingFileStore</span> gradingStore;
 
-<span class="cmt">// gradingDir is the VFS directory containing the QTI essay item XML</span>
-<span class="typ">EssayAiGrading</span> grading = gradingStore.load(gradingDir);
+<span class="cmt">// questionDir is the directory (java.io.File) that contains the QTI essay item XML</span>
+<span class="typ">EssayAiGrading</span> grading = gradingStore.load(questionDir);
 <span class="kw">if</span> (grading != <span class="kw">null</span>) {
     <span class="kw">try</span> {
+        <span class="cmt">// correctionKey may be null for a preview or test call without a correction row</span>
         <span class="typ">FormativeFeedback</span> feedback = feedbackService.grade(
-                grading, studentAnswer, itemSession, student, locale);
+                correctionKey, grading, studentAnswer, itemSession, student, locale);
         <span class="cmt">// feedback.tier(), feedback.suggestion(), feedback.warnings()</span>
-    } <span class="kw">catch</span> (<span class="typ">AiRateLimitExceededException</span> e) {
-        showError(<span class="str">"ai.essay.feedback.error.ratelimit"</span>);
     } <span class="kw">catch</span> (<span class="typ">EssayGradingTimeoutException</span> e) {
-        showError(<span class="str">"ai.essay.feedback.error.timeout"</span>);
+        <span class="cmt">// provider HTTP timeout (ai.essay.grading.timeout.seconds)</span>
     } <span class="kw">catch</span> (<span class="typ">EssayGradingIntegrityException</span> e) {
-        showError(<span class="str">"ai.essay.feedback.error.integrity"</span>);
+        <span class="cmt">// content hash of ai-grading.json does not match</span>
     }
 }</code></pre>
-
-<h2 id="use-generation">Using the Essay Generation Service</h2>
-
-<p>The async path is <code>EssayGenerationService</code>. <code>submit()</code> returns a job key immediately. The caller polls <code>getStatus(jobKey, caller)</code> — the owner check is mandatory; a mismatching caller receives the same "not found" response as an unknown key.</p>
-
+<h2 id="using-the-essay-generation-service">6. Using the Essay Generation Service</h2>
+<p>The async path is <code>EssayGenerationService</code>. The caller builds a <code>GenerationRequest</code> using one of the factory methods and calls <code>submit()</code>, which returns at once. The service schedules one <code>QtiQuestionGenerationTask</code> and keeps no job row of its own, so there is no status to poll: the UI waits for the sink to attach the result.</p>
 <pre><code><span class="ann">@Autowired</span>
 <span class="kw">private</span> <span class="typ">EssayGenerationService</span> essayGenerationService;
 
 <span class="cmt">// Page editor (QuizPart) flow</span>
 <span class="typ">GenerationRequest</span> request = <span class="typ">GenerationRequest</span>.forQuizPart(
         pageMarkdown, repositoryEntryKey, locale, currentIdentity,
-        pageKey, quizPartKey, <span class="num">2</span> <span class="cmt">/* essay */</span>, <span class="num">2</span> <span class="cmt">/* mc */</span>);
-<span class="typ">Long</span> jobKey = essayGenerationService.submit(request);
-
-<span class="cmt">// Poll for completion</span>
-<span class="typ">EssayGenerationService.JobStatusView</span> status =
-        essayGenerationService.getStatus(jobKey, currentIdentity);
-<span class="cmt">// status.state() == EssayGenerationJob.State.DONE / FAILED / RUNNING / PENDING</span>
+        pageKey, quizPartKey, <span class="num">2</span> /* essay */, <span class="num">2</span> /* mc */);
+essayGenerationService.submit(request);
 
 <span class="cmt">// Question pool flow</span>
 <span class="typ">GenerationRequest</span> poolRequest = <span class="typ">GenerationRequest</span>.forPool(
         sourceText, <span class="kw">null</span>, locale, currentIdentity, <span class="num">3</span>, <span class="num">3</span>, taxonomyLevelKey);
-<span class="typ">Long</span> poolJobKey = essayGenerationService.submit(poolRequest);</code></pre>
-
-<p>When the job completes, <code>EssayGenerationQuizPartSink</code> (for <code>QUIZ_PART</code>) or <code>EssayGenerationPoolSink</code> (for <code>POOL</code>) is called automatically. For the legacy <code>DRAWER</code> destination, the caller handles the result directly.</p>
-
-<h2 id="custom-spi">Writing a Custom SPI</h2>
-
-<p>Extend <code>AbstractSpringModule</code> and implement <code>AiSPI</code>. If your provider uses an API key, also implement <code>AiApiKeySPI</code> to get the reusable <code>GenericAiApiKeyAdminController</code> for free. The service layer handles all prompt construction and response parsing — the SPI only needs to supply a <code>ChatModel</code> and the list of available model names.</p>
-
+essayGenerationService.submit(poolRequest);</code></pre>
+<p>When the task completes, <code>EssayGenerationQuizPartSink</code> (for <code>QUIZ_PART</code>) or <code>EssayGenerationPoolSink</code> (for <code>POOL</code>) is called automatically. For the legacy <code>DRAWER</code> destination, the caller handles the result directly.</p>
+<h2 id="writing-a-custom-spi">7. Writing a Custom SPI</h2>
+<p>Extend <code>AbstractSpringModule</code> and implement <code>AiSPI</code>. If your provider uses an API key, also implement <code>AiApiKeySPI</code> to get the reusable <code>GenericAiApiKeyAdminController</code> for free. If your provider can build embedding models, implement <code>AiEmbeddingSPI</code> instead of <code>AiSPI</code>. The Spring service layer handles all feature-specific prompt construction and response parsing — the SPI only needs to supply a <code>ChatModel</code> and the list of available model names.</p>
+<p><span class="version-badge changed" style="margin-left:0">Changed in 21.1.0</span> <code>createAdminController</code> receives a <code>readOnly</code> flag. The admin form must disable every input and hide every save, add and delete action when the flag is true. <code>GenericAiApiKeyAdminController</code> takes the flag as its fourth constructor argument.</p>
 <pre><code><span class="ann">@Service</span>
-<span class="kw">public class</span> <span class="typ">MyAiSPI</span> <span class="kw">extends</span> <span class="typ">AbstractSpringModule</span>
-        <span class="kw">implements</span> <span class="typ">AiSPI</span>, <span class="typ">AiApiKeySPI</span> {
+<span class="kw">public</span> <span class="kw">class</span> <span class="typ">MyAiSPI</span> <span class="kw">extends</span> <span class="typ">AbstractSpringModule</span> <span class="kw">implements</span> <span class="typ">AiSPI</span>, <span class="typ">AiApiKeySPI</span> {
 
-    <span class="kw">private static final</span> <span class="typ">String</span> MY_API_KEY = <span class="str">"myai.api.key"</span>;
-    <span class="kw">private static final</span> <span class="typ">String</span> MY_ENABLED  = <span class="str">"myai.enabled"</span>;
+    <span class="kw">private</span> <span class="kw">static</span> <span class="kw">final</span> <span class="typ">String</span> MY_API_KEY = <span class="str">"myai.api.key"</span>;
+    <span class="kw">private</span> <span class="kw">static</span> <span class="kw">final</span> <span class="typ">String</span> MY_ENABLED = <span class="str">"myai.enabled"</span>;
 
-    <span class="kw">private</span> <span class="typ">String</span>  apiKey;
-    <span class="kw">private boolean</span> enabled;
+    <span class="kw">private</span> <span class="typ">String</span> apiKey;
+    <span class="kw">private</span> <span class="kw">boolean</span> enabled;
 
     <span class="ann">@Autowired</span>
-    <span class="kw">public</span> <span class="typ">MyAiSPI</span>(<span class="typ">CoordinatorManager</span> cm) { <span class="kw">super</span>(cm); }
+    <span class="kw">public</span> <span class="typ">MyAiSPI</span>(<span class="typ">CoordinatorManager</span> coordinatorManager) {
+        <span class="kw">super</span>(coordinatorManager);
+    }
 
-    <span class="ann">@Override</span> <span class="kw">public void</span> init() {
-        apiKey  = getStringPropertyValue(MY_API_KEY, apiKey);
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="kw">void</span> init() {
+        apiKey = getStringPropertyValue(MY_API_KEY, apiKey);
         enabled = getBooleanPropertyValue(MY_ENABLED);
     }
-    <span class="ann">@Override</span> <span class="kw">protected void</span> initFromChangedProperties() { init(); }
 
-    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span>  getId()      { <span class="kw">return</span> <span class="str">"MyAI"</span>; }
-    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span>  getName()    { <span class="kw">return</span> <span class="str">"My AI Provider"</span>; }
-    <span class="ann">@Override</span> <span class="kw">public boolean</span> isEnabled()  { <span class="kw">return</span> enabled; }
-    <span class="ann">@Override</span> <span class="kw">public void</span>    setEnabled(<span class="kw">boolean</span> e) {
-        enabled = e; setBooleanProperty(MY_ENABLED, e, <span class="kw">true</span>);
-    }
-    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">Controller</span> createAdminController(<span class="typ">UserRequest</span> ureq, <span class="typ">WindowControl</span> wc) {
-        <span class="kw">return new</span> <span class="typ">GenericAiApiKeyAdminController</span>(ureq, wc, <span class="kw">this</span>);
+    <span class="ann">@Override</span> <span class="kw">protected</span> <span class="kw">void</span> initFromChangedProperties() { init(); }
+
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getId() { <span class="kw">return</span> <span class="str">"MyAI"</span>; }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getName() { <span class="kw">return</span> <span class="str">"My AI Provider"</span>; }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="kw">boolean</span> isEnabled() { <span class="kw">return</span> enabled; }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="kw">void</span> setEnabled(<span class="kw">boolean</span> e) { enabled = e; setBooleanProperty(MY_ENABLED, e, <span class="kw">true</span>); }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">Controller</span> createAdminController(<span class="typ">UserRequest</span> ureq, <span class="typ">WindowControl</span> wc, <span class="kw">boolean</span> readOnly) {
+        <span class="kw">return</span> <span class="kw">new</span> <span class="typ">GenericAiApiKeyAdminController</span>(ureq, wc, <span class="kw">this</span>, readOnly);
     }
 
     <span class="ann">@Override</span>
@@ -892,122 +1310,275 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
     <span class="cmt">// AiApiKeySPI</span>
     <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getApiKey() { <span class="kw">return</span> apiKey; }
-    <span class="ann">@Override</span> <span class="kw">public void</span>   setApiKey(<span class="typ">String</span> k) {
-        apiKey = k; setStringProperty(MY_API_KEY, k, <span class="kw">true</span>);
-    }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="kw">void</span> setApiKey(<span class="typ">String</span> k) { apiKey = k; setStringProperty(MY_API_KEY, k, <span class="kw">true</span>); }
     <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">List</span>&lt;<span class="typ">String</span>&gt; verifyApiKey(<span class="typ">String</span> k) <span class="kw">throws</span> <span class="typ">Exception</span> {
         <span class="kw">return</span> <span class="typ">List</span>.of(<span class="str">"my-model-v1"</span>, <span class="str">"my-model-v2"</span>);
     }
     <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getAdminTitleI18nKey() { <span class="kw">return</span> <span class="str">"ai.myai.title"</span>; }
-    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getAdminDescI18nKey()  { <span class="kw">return</span> <span class="str">"ai.myai.desc"</span>; }
-    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getAdminApiKeyI18nKey(){ <span class="kw">return</span> <span class="str">"ai.myai.apikey"</span>; }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getAdminDescI18nKey() { <span class="kw">return</span> <span class="str">"ai.myai.desc"</span>; }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getAdminApiKeyI18nKey() { <span class="kw">return</span> <span class="str">"ai.myai.apikey"</span>; }
 }</code></pre>
-
-<h2 id="new-feature">Adding a New AI Feature</h2>
+<h2 id="adding-a-new-ai-feature">8. Adding a New AI Feature</h2>
 <ol>
-  <li>Define a LangChain4j AiService interface in <code>service/</code> with <code>@SystemMessage</code>/<code>@UserMessage</code> prompt templates and a structured return type.</li>
-  <li>Define the structured output POJO in <code>model/</code> with LangChain4j <code>@Description</code> annotations.</li>
-  <li>Define a response wrapper in <code>model/</code> extending <code>AiResponse</code> (synchronous) or use a <code>record</code> return type (async/streaming).</li>
-  <li>Define a Spring service interface in the root package (follow <code>AiMCQuestionService</code> or <code>AiEssayGradingService</code>).</li>
-  <li>Implement the service in <code>manager/</code> using <code>AiLoggingChatModel</code> wrapping <code>AiSPI.buildChatModel</code> and <code>AiServices.builder</code>.</li>
-  <li>Add feature config properties and methods to <code>AiModule</code> (follow the essay pattern); add rate limit threshold properties if needed.</li>
-  <li>Add a variant to the <code>AiFeature</code> enum.</li>
-  <li>Add a feature UI section to <code>AiFeaturesAdminController</code>.</li>
+<li>Define a LangChain4j AiService interface in <code>service/</code> with <code>@SystemMessage</code>/<code>@UserMessage</code> prompt templates and a structured return type; append <code>AiPromptRules.OUTPUT_STYLE_RULES</code> to the <code>@SystemMessage</code> (house typography rules: no em/en dashes, Swiss German spelling)</li>
+<li>Define a structured output model in <code>model/</code> with LangChain4j <code>@Description</code> annotations</li>
+<li>Define a response wrapper in <code>model/</code> extending <code>AiResponse</code> (synchronous features) or a <code>record</code> return type (async/streaming features)</li>
+<li>Define a Spring service interface in the root package (follow <code>AiMCQuestionService</code> or <code>AiEssayGradingService</code> as a template)</li>
+<li>Implement the service in <code>manager/</code> using <code>AiLoggingChatModel</code> wrapping <code>AiSPI.buildChatModel</code> and <code>AiServices.builder</code></li>
+<li>Add feature config properties and methods to <code>AiModule</code> (follow the essay pattern); add rate limit threshold properties if needed</li>
+<li>Add a variant to the <code>AiFeature</code> enum. <span class="version-badge">New in 21.1.0</span> Set <code>userControlled</code> to true when the feature runs automatically without being asked for; then add the <code>.user</code> and <code>.desc</code> i18n keys, a case in <code>AiUserPreferenceService.isFeatureAvailable(...)</code>, a preset in <code>AiModule.userDefaultPreset(...)</code> plus <code>ai.feature.&lt;type&gt;.user.default</code> in <code>olat.properties</code>, one gate at the point where the AI call starts (section 2.10), and the constant to <code>AiUserSettingsController.CONTROLLED_FEATURES</code>, which drives both the rows of the "AI settings" segment and the visibility of the segment link</li>
+<li>Add feature UI section to <code>AiFeaturesAdminController</code>; respect its <code>readOnly</code> flag<span class="version-badge">New in 21.1.0</span></li>
 </ol>
-
-<!-- ===== CONFIGURATION ===== -->
-<h2 id="configuration">Configuration</h2>
-
+<h2 id="configuration">9. Configuration</h2>
 <p>Each <code>AbstractSpringModule</code> persists config to <code>{userdata}/system/configuration/{FQCN}.properties</code>.</p>
-
 <table>
-  <tr><th>Module</th><th>Key properties</th></tr>
-  <tr><td><code>AiModule</code></td><td><code>ai.feature.mc-question-generator.spi</code>, <code>.model</code>, <code>ai.feature.image-description-generator.spi</code>, <code>.model</code>, <code>ai.feature.essay-generation.spi</code>, <code>.model</code>, <code>ai.feature.essay-grading.spi</code>, <code>.model</code>, <code>ai.essay.grading.rate.limit.per.user</code> (default 30/min), <code>ai.essay.generation.rate.limit.per.user</code> (default 10/min)</td></tr>
-  <tr><td><code>OpenAiSPI</code></td><td><code>openai.api.key</code>, <code>openai.enabled</code></td></tr>
-  <tr><td><code>AnthropicAiSPI</code></td><td><code>anthropic.api.key</code>, <code>anthropic.enabled</code></td></tr>
-  <tr><td><code>GenericAiSPI</code></td><td><code>generic.instances=1,2</code>, <code>generic.{id}.name</code>, <code>.base.url</code>, <code>.api.key</code>, <code>.models</code>, <code>.enabled</code></td></tr>
+<thead>
+<tr>
+<th>Module</th>
+<th>Key properties</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AiModule</code></td>
+<td>Per feature <code>ai.feature.&lt;type&gt;.enabled</code> (default <code>false</code>), <code>.spi</code>, <code>.model</code> for <code>mc-question-generator</code>, <code>image-description-generator</code>, <code>essay-generation</code>, <code>essay-grading</code>. Output token caps <code>ai.mc.generator.max.output.tokens</code> (16384), <code>ai.img.desc.max.output.tokens</code> (8192), <code>ai.essay.generation.max.output.tokens</code> (16384), <code>ai.essay.grading.max.output.tokens</code> (16384). Provider timeouts <code>ai.mc.generator.timeout.seconds</code> (180), <code>ai.img.desc.timeout.seconds</code> (180), <code>ai.essay.generation.timeout.seconds</code> (180), <code>ai.essay.grading.timeout.seconds</code> (600). Input limits <code>ai.mc.generator.max.input.chars</code> (60000), <code>ai.essay.generation.max.input.chars</code> (60000), <code>ai.essay.grading.max.input.words</code> (400). Task pools <code>ai.task.pool.interactive.size</code> (8), <code>ai.task.pool.batch.size</code> (2). <span class="version-badge">New in 21.1.0</span> <code>ai.feature.essay-grading.user.default</code> and <code>ai.feature.image-description-generator.user.default</code> (both default <code>true</code>)</td>
+</tr>
+<tr>
+<td><code>OpenAiSPI</code></td>
+<td><code>openai.api.key</code>, <code>openai.enabled</code></td>
+</tr>
+<tr>
+<td><code>AnthropicAiSPI</code></td>
+<td><code>anthropic.api.key</code>, <code>anthropic.enabled</code></td>
+</tr>
+<tr>
+<td><code>GenericAiSPI</code></td>
+<td><code>generic.instances=1,2</code>, <code>generic.{id}.name</code>, <code>.base.url</code>, <code>.api.key</code>, <code>.models</code>, <code>.enabled</code></td>
+</tr>
+<tr>
+<td><code>TaxonomyMatchingModule</code> (<code>org.olat.modules.taxonomy.matching</code>)</td>
+<td><code>taxonomy.matching.enabled</code>, <code>.spi</code>, <code>.model</code>, <code>.min.score</code>, <code>.local.model.dir</code> and further embedding settings of the <code>TaxonomyMatching</code> feature</td>
+</tr>
+</tbody>
 </table>
-
-<p>Defaults in <code>olat.properties</code>: <code>ai.openai.enabled=false</code>, <code>ai.openai.api.key=</code>, <code>ai.anthropic.enabled=false</code>, <code>ai.anthropic.api.key=</code>.</p>
-<div class="info"><strong>Note:</strong> Rate limit defaults are hard-coded in <code>AiModule</code>; there is no admin UI exposure yet.</div>
-
-<!-- ===== FILE STORAGE ===== -->
-<h2 id="file-storage">File Storage</h2>
-
-<p>Two JSON companion files live next to the QTI assessment item XML in the item directory:</p>
-
+<p>Defaults in <code>olat.properties</code>: <code>ai.openai.enabled=false</code>, <code>ai.openai.api.key=</code>, <code>ai.anthropic.enabled=false</code>, <code>ai.anthropic.api.key=</code>, plus a preset generic instance <code>ai.generic.preset.enabled</code>, <code>.name</code>, <code>.base.url</code>, <code>.api.key</code>, <code>.models</code> (persisted under <code>generic.0.*</code>).</p>
+<p>The per-user rate limits are constants in <code>AiModule</code> (<code>DEFAULT_ESSAY_GRADING_MAX_CALLS_PER_MINUTE_PER_USER = 30</code>, <code>DEFAULT_ESSAY_GENERATION_MAX_CALLS_PER_MINUTE_PER_USER = 10</code>). No property and no admin UI changes them.</p>
+<h2 id="file-storage">10. File Storage</h2>
+<p>Two JSON companion files live next to the QTI item XML in the assessment item directory:</p>
 <table>
-  <tr><th>File</th><th>Store class</th><th>Contents</th></tr>
-  <tr><td><code>ai-grading.json</code></td><td><code>EssayAiGradingFileStore</code></td><td><code>EssayAiGrading</code> POJO: reference excerpt, model answer, key points, rubric criteria, content hash, Bloom level, generator provenance.</td></tr>
-  <tr><td><code>ai-source.json</code></td><td><code>AiSourceCompanionFileStore</code></td><td><code>AiSourceCompanion</code> POJO: source provenance for MC and source-only items.</td></tr>
+<thead>
+<tr>
+<th>File</th>
+<th>Store class</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ai-grading.json</code></td>
+<td><code>EssayAiGradingFileStore</code></td>
+<td><code>EssayAiGrading</code> POJO: reference excerpt, model answer, key points, rubric criteria, content hash, Bloom level, generator provenance.</td>
+</tr>
+<tr>
+<td><code>ai-source.json</code></td>
+<td><code>AiSourceCompanionFileStore</code></td>
+<td><code>AiSourceCompanion</code> POJO: source provenance for MC and source-only items.</td>
+</tr>
+</tbody>
 </table>
-
 <p>The <code>EssayAiGrading</code> content hash is a SHA-256 prefix over the grading-relevant fields, computed by <code>EssayFormativeFeedbackService.computeContentHash()</code>. A mismatch at grading time raises <code>EssayGradingIntegrityException</code> and refuses to grade.</p>
-
-<h3>QTI Marker</h3>
-<p><code>AssessmentItemAiGradingMarker</code> (in <code>org.olat.ims.qti21.model.xml</code>) injects a <code>&lt;ooExt:aiGrading&gt;</code> element into the QTI assessment item XML. The marker carries the content hash, a stable <code>kitId</code>, generation timestamp, and schema version.</p>
+<h3 id="qti-marker">10.1 QTI Marker</h3>
+<p><code>AssessmentItemAiGradingMarker</code> (in <code>org.olat.ims.qti21.model.xml</code>) injects a <code>&lt;ooExt:aiGrading&gt;</code> element into the QTI assessment item XML. The marker carries the content hash, a stable <code>kitId</code>, the generation timestamp, and the schema version.</p>
 <ul>
-  <li><code>inject(Document, Marker)</code> — called by the export pipeline after regenerating the marker.</li>
-  <li><code>extract(Document)</code> — called by the import pipeline to retrieve the marker.</li>
-  <li><code>remove(Document)</code> — strips the marker after it has been verified against the companion file.</li>
+<li><code>inject(Document, Marker)</code> — called by the export pipeline after regenerating the marker.</li>
+<li><code>extract(Document)</code> — called by the import pipeline to retrieve the marker.</li>
+<li><code>remove(Document)</code> — strips the marker after it has been verified against the companion file.</li>
 </ul>
 <p>The marker survives QTI export/import. On pool import the hash is re-verified before the marker is removed.</p>
-
-<!-- ===== USAGE LOGGING ===== -->
-<h2 id="usage-logging">AI Usage Logging</h2>
-
+<h2 id="ai-usage-logging">11. AI Usage Logging</h2>
 <p>Every provider call writes a row to <code>o_ai_usage_log</code> via <code>AiUsageLogDAO</code>. The row captures:</p>
 <ul>
-  <li><code>usageContextType</code> — e.g. <code>essay-grading</code>, <code>qpool-generate-questions</code>, <code>ceditor-quizpart-generate-questions</code></li>
-  <li><code>resourceType</code> / <code>resourceId</code> — <code>RepositoryEntry</code> (course/page) or <code>PoolQPool</code> (pool)</li>
-  <li>Token counts, duration, status (<code>SUCCESS</code>/<code>ERROR</code>), error message</li>
-  <li>No feature-specific columns; grading-run provenance (content hash, prompt template version, tier) lives on <code>o_ai_essay_correction</code>, linked from the log via <code>usageContextType=ai-essay-correction</code> + <code>usageContextId=&lt;correction key&gt;</code></li>
+<li><code>usageContextType</code> — e.g. <code>essay-grading</code>, <code>qpool-generate-questions</code>, <code>ceditor-quizpart-generate-questions</code></li>
+<li><code>resourceType</code> / <code>resourceId</code> — <code>RepositoryEntry</code> (course/page) or <code>PoolQPool</code> (pool)</li>
+<li>Token counts, duration, status, error</li>
+<li>The log carries no feature-specific columns; grading-run provenance (content hash, prompt template version, tier) lives on <code>o_ai_essay_correction</code>, linked from the log via <code>usageContextType=ai-essay-correction</code> + <code>usageContextId=&lt;correction key&gt;</code></li>
 </ul>
-
-<!-- ===== ADMIN UI ===== -->
-<h2 id="admin-ui">Admin UI</h2>
-
-<p><code>AiAdminController</code> orchestrates four sections:</p>
+<h2 id="admin-ui">12. Admin UI</h2>
+<p><code>AiAdminController</code> is a segmented view with four segments:</p>
 <ol>
-  <li><strong>Add Provider dropdown</strong> — OpenAI/Anthropic greyed out when already configured. Generic instances always available, multiple instances supported.</li>
-  <li><strong>Per-provider forms</strong> — enable/disable toggle, config fields (API key, base URL, models), delete with confirmation dialog.</li>
-  <li><strong>Features form</strong> (<code>AiFeaturesAdminController</code>) — per-feature provider + model selection. Models loaded live from provider API; free-text fallback when API is unreachable. Test button per feature.</li>
-  <li><strong>Usage log</strong> (<code>AiUsageLogAdminController</code>) — tabular view of <code>o_ai_usage_log</code> rows with filters.</li>
+<li><strong>Providers</strong> (<code>AiProvidersAdminController</code>): "Add AI provider" dropdown: OpenAI/Anthropic greyed out when already configured, generic always available with multiple instances. Below it the per-provider forms: enable/disable toggle, config fields (API key, base URL, models), delete with confirmation dialog.</li>
+<li><strong>Features</strong> (<code>AiFeaturesAdminController</code>): per-feature provider + model selection, output token cap, timeout and input limit. Models loaded live from provider API; free-text fallback when API unreachable. Test button for each feature.</li>
+<li><strong>Processing pools</strong> (<code>AiTaskPoolAdminController</code>): size of the <code>aiInteractive</code> and <code>aiBatch</code> pools per node, with a live snapshot of running and waiting jobs.</li>
+<li><strong>Usage log</strong> (<code>AiUsageLogAdminController</code>): tabular view of <code>o_ai_usage_log</code> rows.</li>
 </ol>
-
+<p><span class="version-badge" style="margin-left:0">New in 21.1.0</span> <code>AiAdminController</code> opens the configuration read-only when the person has neither the administrator nor the system administrator role. It passes the <code>readOnly</code> flag to the providers, features and pools segments and to every <code>AiSPI.createAdminController(...)</code>. In read-only mode the "Add AI provider" dropdown is hidden and all inputs are disabled; the providers form shows the description key <code>ai.providers.fx</code> with the support mail address instead of <code>ai.providers.desc</code>. The usage log stays available.</p>
 <table>
-  <tr><th>Controller</th><th>Purpose</th></tr>
-  <tr><td><code>AiAdminController</code></td><td>Main page, orchestrates all sections</td></tr>
-  <tr><td><code>AiConfigurationAdminController</code></td><td>Provider configuration panel</td></tr>
-  <tr><td><code>GenericAiApiKeyAdminController</code></td><td>Reusable form for API-key providers (OpenAI, Anthropic)</td></tr>
-  <tr><td><code>GenericAiSpiAdminController</code></td><td>Form for generic instances (base URL, models, optional API key)</td></tr>
-  <tr><td><code>AiFeaturesAdminController</code></td><td>Per-feature SPI + model config; enables/disables grading, generation, MC</td></tr>
-  <tr><td><code>AiFeaturesTestController</code></td><td>Runs feature tests against a specific provider/model</td></tr>
-  <tr><td><code>AiEssayGradingTestController</code></td><td>Live test of essay grading structured output</td></tr>
-  <tr><td><code>AiEssayGenerationTestController</code></td><td>Live test of essay generation structured output</td></tr>
-  <tr><td><code>AiUsageLogAdminController</code></td><td>Usage log table with filters</td></tr>
+<thead>
+<tr>
+<th>Controller</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AiAdminController</code></td>
+<td>Main page, orchestrates all sections</td>
+</tr>
+<tr>
+<td><code>AiProvidersAdminController</code></td>
+<td>Providers segment: add dropdown and the admin form of each provider. <span class="version-badge changed">Changed in 21.1.0</span> replaces <code>AiConfigurationAdminController</code>, which was removed.</td>
+</tr>
+<tr>
+<td><code>AiTaskPoolAdminController</code></td>
+<td>Processing pools segment: pool sizes and live queue statistics</td>
+</tr>
+<tr>
+<td><code>GenericAiApiKeyAdminController</code></td>
+<td>Reusable form for API-key providers (OpenAI, Anthropic)</td>
+</tr>
+<tr>
+<td><code>GenericAiSpiAdminController</code></td>
+<td>Form for generic instances (base URL, models, optional API key)</td>
+</tr>
+<tr>
+<td><code>LocalOnnxModelAdminController</code></td>
+<td>Upload form of the local ONNX embedding model</td>
+</tr>
+<tr>
+<td><code>AiFeaturesAdminController</code></td>
+<td>Per-feature SPI + model config; enables/disables each AI use case; holds the "Default for users" toggle of a user-controlled feature</td>
+</tr>
+<tr>
+<td><code>AiFeaturesTestController</code></td>
+<td>Runs feature tests against a specific provider/model and shows results</td>
+</tr>
+<tr>
+<td><code>AiEssayGradingTestController</code></td>
+<td>Live test of essay grading structured output via admin UI</td>
+</tr>
+<tr>
+<td><code>AiEssayGenerationTestController</code></td>
+<td>Live test of essay generation structured output via admin UI</td>
+</tr>
+<tr>
+<td><code>AiUsageLogAdminController</code></td>
+<td>Usage log table with filters (<code>AiUsageLogDataSource</code>, <code>AiUsageLogTableModel</code>, <code>AiFeatureCellRenderer</code>, <code>AiStatusCellRenderer</code>)</td>
+</tr>
+</tbody>
 </table>
-
-<!-- ===== i18n ===== -->
-<h2 id="i18n">i18n Keys</h2>
-
+<h3 id="user-ui">12.1 User UI<span class="version-badge">New in 21.1.0</span></h3>
 <table>
-  <tr><th>Key</th><th>Usage</th></tr>
-  <tr><td><code>ai.apikey.check</code></td><td>"Check API key" button</td></tr>
-  <tr><td><code>ai.apikey.not.set</code></td><td>Warning when API key is missing ({0} = provider name)</td></tr>
-  <tr><td><code>ai.apikey.verify.success</code></td><td>Success message ({0} = provider, {1} = model count)</td></tr>
-  <tr><td><code>ai.apikey.verify.error</code></td><td>Error message ({0} = provider name)</td></tr>
-  <tr><td><code>ai.spi.enabled</code></td><td>Enable/disable toggle label</td></tr>
-  <tr><td><code>ai.add.provider</code></td><td>"Add AI provider" dropdown button</td></tr>
-  <tr><td><code>ai.delete.config</code></td><td>"Delete configuration" link</td></tr>
-  <tr><td><code>ai.delete.confirm.title/text</code></td><td>Delete confirmation dialog</td></tr>
-  <tr><td><code>ai.features.title/desc</code></td><td>Features section heading</td></tr>
-  <tr><td><code>ai.feature.spi</code> / <code>ai.feature.model</code></td><td>Provider/model dropdown labels</td></tr>
-  <tr><td><code>ai.generic.*</code></td><td>Generic provider form labels</td></tr>
-  <tr><td><code>ai.essay.feedback.error.ratelimit</code></td><td>Rate limit exceeded error for essay grading</td></tr>
-  <tr><td><code>ai.questions.error.ratelimit</code></td><td>Rate limit exceeded error for question generation</td></tr>
-  <tr><td><code>ai.essay.feedback.error.timeout</code></td><td>Grading hard-timeout exceeded</td></tr>
-  <tr><td><code>ai.essay.feedback.error.integrity</code></td><td>Content hash mismatch</td></tr>
+<thead>
+<tr>
+<th>Controller</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AiUserSettingsController</code></td>
+<td>Segment "AI settings" in the user settings (<code>UserSettingsController</code>). One row per user-controlled and available feature, with the choice <code>Default (on)</code> / <code>Default (off)</code>, <code>On</code>, <code>Off</code>. Hidden for a guest.</td>
+</tr>
+<tr>
+<td><code>AiCorrectionConsentController</code></td>
+<td>Modal shown by <code>QuizRunController</code> before the first AI correction when the person has no stored choice. Three buttons: "Allow once", "Always allow", "Not now".</td>
+</tr>
+</tbody>
+</table>
+<h2 id="i18n-keys">13. i18n Keys</h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ai.apikey.check</code></td>
+<td>"Check API key" button</td>
+</tr>
+<tr>
+<td><code>ai.apikey.not.set</code></td>
+<td>Warning when API key is missing ({0} = provider name)</td>
+</tr>
+<tr>
+<td><code>ai.apikey.verify.success</code></td>
+<td>Success message ({0} = provider, {1} = model count)</td>
+</tr>
+<tr>
+<td><code>ai.apikey.verify.error</code></td>
+<td>Error message ({0} = provider name)</td>
+</tr>
+<tr>
+<td><code>ai.spi.enabled</code></td>
+<td>Enable/disable toggle label</td>
+</tr>
+<tr>
+<td><code>ai.add.provider</code></td>
+<td>"Add AI provider" dropdown button</td>
+</tr>
+<tr>
+<td><code>ai.delete.config</code></td>
+<td>"Delete configuration" link</td>
+</tr>
+<tr>
+<td><code>ai.delete.confirm.title/text</code></td>
+<td>Delete confirmation dialog</td>
+</tr>
+<tr>
+<td><code>ai.features.title/desc</code></td>
+<td>Features section heading</td>
+</tr>
+<tr>
+<td><code>ai.feature.spi</code> / <code>ai.feature.model</code></td>
+<td>Provider/model dropdown labels</td>
+</tr>
+<tr>
+<td><code>ai.generic.*</code></td>
+<td>Generic provider form labels</td>
+</tr>
+<tr>
+<td><code>ai.essay.feedback.error.ratelimit</code></td>
+<td>Rate limit exceeded error for essay grading</td>
+</tr>
+<tr>
+<td><code>ai.questions.error.ratelimit</code></td>
+<td>Rate limit exceeded error for question generation</td>
+</tr>
+<tr>
+<td><code>ai.essay.correction.timeout</code></td>
+<td>Grading timeout exceeded (ceditor bundle)</td>
+</tr>
+<tr>
+<td><code>ai.essay.correction.overloaded</code></td>
+<td>Interactive AI queue overloaded (ceditor bundle)</td>
+</tr>
+<tr>
+<td><code>ai.essay.error.response.truncated</code></td>
+<td>Provider reply cut off (ceditor bundle)</td>
+</tr>
+<tr>
+<td><code>ai.providers.fx</code></td>
+<td><span class="version-badge" style="margin-left:0">New in 21.1.0</span> Description of the read-only providers form ({0} = support mail address)</td>
+</tr>
+<tr>
+<td><code>ai.feature.user.default</code> / <code>.help</code></td>
+<td><span class="version-badge" style="margin-left:0">New in 21.1.0</span> "Default for users" toggle in the features form</td>
+</tr>
+<tr>
+<td><code>ai.feature.&lt;type&gt;.user</code> / <code>.desc</code></td>
+<td><span class="version-badge" style="margin-left:0">New in 21.1.0</span> Learner-facing name and one-sentence description of a user-controlled feature</td>
+</tr>
+<tr>
+<td><code>ai.optout.*</code></td>
+<td><span class="version-badge" style="margin-left:0">New in 21.1.0</span> Segment "AI settings" in the user settings: title, description, choices, save message</td>
+</tr>
+<tr>
+<td><code>ai.consent.*</code></td>
+<td><span class="version-badge" style="margin-left:0">New in 21.1.0</span> Consent modal of the AI correction: title, text, system default note, three buttons, hint</td>
+</tr>
+</tbody>
 </table>
 
 </main>

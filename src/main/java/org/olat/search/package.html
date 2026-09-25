@@ -10,7 +10,6 @@ Overview description of full text search package.
 
 <h3>Use Cases</h3>
 <p>
-<img src="doc-files/UseCases.png">
 
 <!-- ### Use Case 1: BUILD FULL INDEX ### -->
 <table>
@@ -136,48 +135,11 @@ Overview description of full text search package.
  </tr>
 </table>
 <br>
-<!-- ### Use Case 3: UPDATE INDEX ### -->
-<table>
- <tr>
-   <th>Use Case</th>
-   <th>Update OLAT Resource / Upate index</th>
- </tr>
- <tr>
-   <td>Description</td>
-   <td>The index date will be updated because a OLAT user changed something.</td>
- </tr>
- <tr>
-   <td>Trigger</td>
-   <td>A OLAT user updated a searchable resource. 
-   </td>
- </tr>
- <tr>
-   <td>Input</td>
-   <td>documentId of the changed document.<br>
-       New documents has no documentId. 
-   </td>
- </tr>
- <tr>
-   <td>Output</td>
-   <td>Index will be updated in backgroud.
-   </td>
- </tr>
- <tr>
-   <td>Sequence</td>
-   <td>The index will not be updated immediately, update goes into q asynchron queue. 
-   </td>
- </tr>
- <tr>
-   <td>Notes</td>
-   <td>-
-   </td>
- </tr>
-</table>
 
 </p>
 
 <h3>Search Component Overview Diagram</h3>
-The search-service has four main components :<br>
+The search-service has three main components :<br>
 <b>Full-Indexer Component</b><br>
 The full-indexer generates a new index. The full-indexer runs in seperate thread. 
 It can be startet scheduled via config or manually via Admin. see : {@link org.olat.search.service.indexer}<br>
@@ -185,10 +147,8 @@ It can be startet scheduled via config or manually via Admin. see : {@link org.o
 Controls the live index file. Copy new index file from full-indexer.<br>
 <b>Search Component</b><br>
 Handles all search queries.<br>
-<b>Updater Component</b><br>
-Update current live index. The updater runs in a own thread scheduled in the config.<br>
 <br>
-The <a href="http://lucene.apache.org">Apache-Lucene</a> is used as full text search engine library .   
+The <a href="https://lucene.apache.org">Apache-Lucene</a> is used as full text search engine library .   
 The index data will be stored in a file on the filesystem. 
 <br>
 <br>
@@ -201,6 +161,5 @@ Each search-result has a link to the resource in OLAT. The user can jump from th
 to the correspending resource in OLAT. The indexer stores for each indexed element a resource-URL e.g.
 '[BusinessGroup:435678][Forum:456789]'. In this example the BusinessGroup with ID '435678' will be open
 and afterwards the Forum with ID '456789' will be open (in context of BusinessGroup 435678).
-<img src="doc-files/JumpIn.png"/>
 </body>
 </html>

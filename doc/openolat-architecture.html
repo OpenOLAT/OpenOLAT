@@ -33,7 +33,7 @@
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-h2[id] { scroll-margin-top: 1rem; }
+h2[id], h3[id] { scroll-margin-top: 1rem; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 14px;
@@ -107,6 +107,7 @@ body {
   line-height: 1.5;
 }
 .side-nav a:hover { color: var(--link-hover); background: rgba(22,121,124,0.06); }
+.side-nav a.sub { padding-left: 2rem; font-size: 11.5px; }
 .side-nav a.active {
   color: var(--link);
   border-left-color: var(--heading);
@@ -198,6 +199,7 @@ tr:hover td { background: #fafafa; }
 }
 .diagram-box svg { max-width: 100%; height: auto; }
 .diagram-caption { font-size: 12px; color: #64748b; margin-top: 10px; font-style: italic; }
+.version-badge { display:inline-block; font-size:10.5px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; color:#135e5f; background:#e6f4f4; border:1px solid #9fd3d4; border-radius:3px; padding:1px 7px; margin-left:8px; vertical-align:middle; } .version-badge.changed { color:#7c4a03; background:#fff4e5; border-color:#f5c98a; }
 
 hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
@@ -241,9 +243,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
       <span class="sep">|</span>
       <a href="component-library/index.html">Component Library</a>
       <span class="sep">|</span>
-      <a href="openolat-glossary.html">Glossary</a>
-      <span class="sep">|</span>
-      <a href="openolat-glossary-translations.html">Translations</a>
+      <a href="i18n-translation-reference.md">Translation Reference</a>
     </nav>
   </div>
   <div class="header-rule"></div>
@@ -255,6 +255,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
     <span>Spring 7</span>
     <span>Velocity</span>
     <span>Hibernate 7 / JPA</span>
+    <span>Release 21.1.0</span>
+    <span>Updated 2026-09-25</span>
   </div>
 </header>
 
@@ -277,9 +279,13 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 <a href="#events">Event System</a>
 <a href="#velocity">Velocity Templating</a>
 <a href="#flexiform">FlexiForm System</a>
+<a href="#flexiform-sections" class="sub">Form Sections</a>
+<a href="#flexiform-search" class="sub">Search Element</a>
 <a href="#flexitable">FlexiTable</a>
+<a href="#wizards">Wizards</a>
 <a href="#ajax">AJAX Update Cycle</a>
 <a href="#mappers">Mapper Infrastructure</a>
+<a href="#mappers-sandbox" class="sub">Sandboxed Mappers</a>
 <a href="#businesspath">Business Path &amp; Deep Linking</a>
 <a href="#dispose">Controller Disposal</a>
 <a href="#a11y">Accessibility</a>
@@ -291,31 +297,44 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 <a href="#hibernate">Hibernate Session</a>
 <a href="#vfs">Virtual File System</a>
 <a href="#spring">Spring &amp; DI</a>
+<a href="#modules">Module Configuration</a>
+<a href="#spring-ai" class="sub">AI Services</a>
 <a href="#scheduler">Scheduler &amp; Background Tasks</a>
+<a href="#longtasks">Persisted Long-Running Tasks</a>
 <a href="#upgrades">Upgrade Infrastructure</a>
 <a href="#guiprefs">GUI Preferences</a>
 <a href="#i18n">Internationalization</a>
 <a href="#theming">Theming &amp; CSS</a>
 <a href="#caching">Caching</a>
+<a href="#clustering">Clustering</a>
 <a href="#logging">Logging</a>
+<a href="#logging-rest" class="sub">REST API Access Log</a>
 <a href="#utilities">Utility Classes</a>
+<a href="#ai">AI Framework</a>
 </div>
 
 <div class="nav-group">
 <div class="nav-group-label">Security &amp; Identity</div>
 <a href="#identity">Identity &amp; Organisations</a>
 <a href="#userprops">User Properties &amp; Profile</a>
+<a href="#secarch">Security Architecture</a>
 <a href="#security">XSS &amp; Security</a>
+<a href="#security-ssrf" class="sub">SSRF Protection</a>
 </div>
 
 <div class="nav-group">
 <div class="nav-group-label">Best Practices &amp; Testing</div>
 <a href="#httpclient">HTTP Client Service</a>
+<a href="#httpclient-profiles" class="sub">Protection Profiles</a>
 <a href="#patterns">Patterns &amp; Best Practices</a>
+<a href="#patterns-rest" class="sub">REST API Conventions</a>
+<a href="#patterns-rest-audit" class="sub">REST API Audit Log</a>
+<a href="#patterns-rest-ratelimit" class="sub">REST API Rate Limiting</a>
 <a href="#testing">Testing Infrastructure</a>
 </div>
 <div class="nav-group">
 <a href="#about">About</a>
+<a href="#about-doc" class="sub">About This Document</a>
 </div>
 </nav>
 
@@ -323,6 +342,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
 <h1>OpenOlat Architecture Reference</h1>
 <p>A comprehensive guide to the architecture, design patterns, and internal workings of the OpenOlat Learning Management System.</p>
+<p><strong>Covers release:</strong> OpenOlat 21.1.0 &middot; <strong>Document version:</strong> 2.0 &middot; <strong>Last updated:</strong> 2026-09-25</p>
+<div class="aside"><strong>Version markers:</strong> <span class="version-badge">New in 21.1.0</span> after a heading marks a new mechanism. <span class="version-badge">New in 21.1.0</span> or <span class="version-badge changed">Changed in 21.1.0</span> at the start of a paragraph marks a change inside a section. Mechanisms that shipped with 21.0.x carry no marker, except where the reader needs the version. See <a href="#about">section 39</a> for the list of changes in this revision.</div>
 
 <!-- ============================================================ -->
 <h2 id="overview">1. Overview &amp; Project Structure</h2>
@@ -333,14 +354,38 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
 <h3>Technology Stack</h3>
 <ul>
-<li><strong>Build</strong>: Maven (<code>mvn compile -pl :openolat-lms -q</code>)</li>
+<li><strong>Build</strong>: Maven (<code>mvn compile -pl :openolat-lms -q</code>), Java 17 target (<code>targetJdk</code> in <code>pom.xml</code>)</li>
 <li><strong>Dependency Injection</strong>: Spring Framework 7 (XML + annotation-based)</li>
 <li><strong>ORM</strong>: Hibernate 7 / JPA via Jakarta Persistence</li>
 <li><strong>Templating</strong>: Apache Velocity (server-side rendering)</li>
 <li><strong>Frontend</strong>: Server-rendered HTML + custom AJAX partial update protocol</li>
 <li><strong>CSS</strong>: SASS-based theming with Bootstrap integration</li>
 <li><strong>Databases</strong>: MySQL, PostgreSQL, Oracle</li>
+<li><strong>AI</strong>: LangChain4j (chat and embedding models, see <a href="#spring">section 19</a>)</li>
 </ul>
+
+<p>Key library versions on the 21.1.0 code line (from <code>pom.xml</code> properties):</p>
+
+<table>
+<thead><tr><th>Library</th><th>Version</th><th>Property</th></tr></thead>
+<tbody>
+<tr><td>Spring Framework</td><td>7.0.9</td><td><code>org.springframework.version</code></td></tr>
+<tr><td>Hibernate ORM</td><td>7.4.10.Final</td><td><code>org.hibernate.version</code></td></tr>
+<tr><td>Hibernate Validator</td><td>9.1.4.Final</td><td><code>org.hibernate.validator.version</code></td></tr>
+<tr><td>Infinispan</td><td>16.2.3</td><td><code>org.infinispan.version</code></td></tr>
+<tr><td>Apache CXF (REST)</td><td>4.2.3</td><td><code>apache.cxf</code></td></tr>
+<tr><td>Jackson</td><td>2.22.3</td><td><code>jackson.version</code></td></tr>
+<tr><td>Undertow core / Undertow EE servlet (test scope)</td><td>2.4.3.Final / 2.0.2.Final</td><td><code>io.undertow</code> / <code>io.undertow.ee</code></td></tr>
+<tr><td>LangChain4j</td><td>1.20.0</td><td><code>dev.langchain4j</code></td></tr>
+<tr><td>Log4j2 / SLF4J</td><td>2.26.1 / 2.0.20</td><td><code>apache.log4j</code> / <code>org.slf4j</code></td></tr>
+<tr><td>Velocity / Quartz / XStream</td><td>2.4.1 / 2.5.2 / 1.4.21</td><td>inline versions</td></tr>
+<tr><td>PostgreSQL / MySQL JDBC</td><td>42.7.13 / 26.7.0</td><td><code>org.postgresql.version</code> / <code>com.mysql.version</code></td></tr>
+</tbody>
+</table>
+
+<p>These versions come from the regular dependency updates (OO-9367, OO-9656). The 21.0 branch carries the same versions. The Maxima CAS integration and the Nashorn engine are removed (OO-9587, OO-9637).</p>
+
+
 
 <h3>Package Layout</h3>
 <p>The codebase follows a layered package structure. The <code>org.olat.core</code> package contains the framework itself &mdash; the MVC engine, persistence layer, VFS, i18n, and security infrastructure. The <code>org.olat.modules</code> package contains self-contained feature modules (question pools, taxonomy, lectures, etc.), each with their own Spring context, controllers, and persistence. The <code>org.olat.course</code> package is the course engine &mdash; one of the largest subsystems &mdash; handling course structure, node types, conditions, and assessment.</p>
@@ -625,18 +670,27 @@ org.olat.restapi             REST API (JAX-RS via CXF)</code></pre>
 <tbody>
 <tr><td><code>/auth/</code></td><td><code>AuthenticatedDispatcher</code></td><td>All authenticated user requests (main UI)</td></tr>
 <tr><td><code>/dmz/</code></td><td><code>DMZDispatcher</code></td><td>Login, registration, password reset (unauthenticated)</td></tr>
-<tr><td><code>/raw/</code></td><td><code>StaticMediaDispatcher</code></td><td>Static resources (JS, CSS, images, theme files). Versioned URLs for cache-busting.</td></tr>
+<tr><td><code>/raw/</code></td><td><code>StaticServlet</code></td><td>Static resources (JS, CSS, images, theme files). Versioned URLs for cache-busting, built by <code>StaticMediaDispatcher.getStaticURI()</code>.</td></tr>
 <tr><td><code>/m/</code></td><td><code>MapperDispatcher</code></td><td>Session-scoped dynamic resource handlers (generated files, images)</td></tr>
 <tr><td><code>/g/</code></td><td><code>GlobalMapperRegistry</code></td><td>Global resource mappers (not session-bound)</td></tr>
 <tr><td><code>/url/</code></td><td><code>RESTDispatcher</code></td><td>External deep links to business paths</td></tr>
 <tr><td><code>/webdav/</code></td><td><code>WebDAVDispatcher</code></td><td>WebDAV file access</td></tr>
-<tr><td><code>/restapi/</code></td><td>CXF JAX-RS</td><td>REST API</td></tr>
-<tr><td><code>/lti/</code></td><td>LTI dispatcher</td><td>LTI 1.3 tool integration</td></tr>
-<tr><td colspan="3" style="font-size:0.9em;color:#666;">Additional routes: <code>/robots.txt</code>, <code>/sitemap.xml</code>, <code>/math/</code>, <code>/tiny/</code>, <code>/bigbluebutton/</code>, <code>/teams/</code>, <code>/certificate/</code>, <code>/badge/</code>, <code>/catalog/</code>, <code>/survey/</code></td></tr>
+<tr><td><code>/restapi/</code></td><td><code>CXFServlet</code> (JAX-RS)</td><td>REST API, behind the servlet filter <code>RestApiLoginFilter</code></td></tr>
+<tr><td><code>/lti/</code></td><td><code>LTI13Dispatcher</code></td><td>LTI 1.3 tool integration</td></tr>
 </tbody>
 </table>
 
-<p>All dispatchers are registered in <code>dispatcherContext.xml</code> as a map of path prefixes to Spring beans. The <code>/raw/</code> dispatcher is notable: it serves all static webapp resources (JavaScript, CSS, theme files) with versioned URLs (e.g., <code>/raw/61x/...</code>) for aggressive browser caching. The version segment changes on each build, busting caches automatically.</p>
+<p>Additional routes: <code>/robots.txt</code>, <code>/sitemap.xml</code>, <code>/tiny/</code>, <code>/bigbluebutton/</code>, <code>/teams/</code>, <code>/certificate/</code>, <code>/badge/</code>, <code>/catalog/</code>, <code>/survey/</code>, <code>/csp/</code>, <code>/pdfd/</code>, <code>/edusharing/</code>, <code>/transcoding/</code>.</p>
+
+<p>The registration has three places:</p>
+
+<ul>
+<li><code>dispatcherContext.xml</code> maps the path prefixes of the <code>DispatcherModule</code> bean (for example <code>/auth/</code>, <code>/dmz/</code>, <code>/url/</code>, <code>/lti/</code>).</li>
+<li><code>OpenOLATServlet.init()</code> adds <code>/m/</code>, <code>/g/</code> and <code>/webdav/</code> in code.</li>
+<li><code>web.xml</code> (for example <code>src/main/webapp-tomcat/WEB-INF/web.xml</code>) maps the servlets <code>StaticServlet</code> (<code>/raw/*</code>), <code>CXFServlet</code> (<code>/restapi/*</code>), <code>PersonalRSSServlet</code> (<code>/rss/*</code>) and <code>ICalServlet</code> (<code>/ical/*</code>), and the filters <code>SameSiteCookieFilter</code>, <code>RestApiLoginFilter</code> and <code>HeadersFilter</code>.</li>
+</ul>
+
+<p>The <code>/raw/</code> path is notable: it serves all static webapp resources (JavaScript, CSS, theme files) with versioned URLs (e.g., <code>/raw/61x/...</code>) for aggressive browser caching. The version segment changes on each build, busting caches automatically.</p>
 
 <p>For the main UI flow (<code>/auth/</code>), the <code>AuthenticatedDispatcher</code> creates a <code>UserRequestImpl</code> by parsing the URL. The framework encodes its state-management parameters directly into the URL path, using colons as delimiters:</p>
 
@@ -928,22 +982,24 @@ listenTo(editCtrl);</code></pre>
 <tr><td><code>TabbedPane</code></td><td>Tabbed container with lazy-loading support for tab content</td></tr>
 
 <tr><td rowspan="4"><strong>Navigation</strong></td><td><code>Link</code></td><td>Clickable element (button, link, icon-only) &mdash; the primary interaction component</td></tr>
-<tr><td><code>MenuTree</code> / <code>Tree</code></td><td>Hierarchical tree navigation with TreeModel and selection tracking</td></tr>
+<tr><td><code>MenuTree</code></td><td>Hierarchical tree navigation with TreeModel and selection tracking</td></tr>
 <tr><td><code>SegmentViewComponent</code></td><td>Horizontal segment/tab bar for switching between sub-views</td></tr>
 <tr><td><code>Dropdown</code></td><td>Dropdown menu containing Link children, for toolbar actions or context menus</td></tr>
 
-<tr><td rowspan="4"><strong>Display</strong></td><td><code>ProgressBar</code></td><td>Visual progress indicator (percentage or actual/max values, animated)</td></tr>
+<tr><td rowspan="7"><strong>Display</strong></td><td><code>ProgressBar</code></td><td>Visual progress indicator (percentage or actual/max values, animated)</td></tr>
 <tr><td><code>CountDownComponent</code></td><td>Client-side countdown timer (e.g., exam time remaining)</td></tr>
-<tr><td><code>Rating</code></td><td>Star rating display with optional interactive input</td></tr>
+<tr><td><code>RatingComponent</code></td><td>Star rating display with optional interactive input</td></tr>
 <tr><td><code>EmptyState</code></td><td>Standardized "no data" placeholder with icon, message, and optional action</td></tr>
+<tr><td><code>FactSheet</code></td><td><span class="version-badge">New in 21.1.0</span> Card with a title, a list of <code>Fact</code> rows (icon, label, value or component) and footer links. Create it with <code>FactSheetFactory</code> (package <code>core.gui.components.factsheet</code>).</td></tr>
+<tr><td><code>Sections</code></td><td><span class="version-badge">New in 21.1.0</span> List of titled, collapsible sections. Create it with <code>SectionsFactory.createSections()</code> and <code>createSection()</code> / <code>createTextSection()</code> / <code>createLinksSection()</code> (package <code>core.gui.components.sections</code>).</td></tr>
+<tr><td><code>ComponentList</code></td><td><span class="version-badge">New in 21.1.0</span> Renders a list of components in order, without a template (package <code>core.gui.components.util</code>).</td></tr>
 
 <tr><td rowspan="3"><strong>Charts</strong></td><td><code>BarChartComponent</code></td><td>Bar chart rendered via D3.js (horizontal or vertical)</td></tr>
 <tr><td><code>PieChartComponent</code></td><td>Pie/donut chart rendered via D3.js</td></tr>
 <tr><td><code>RadarChartComponent</code></td><td>Radar/spider chart for multi-dimensional comparison</td></tr>
 
-<tr><td rowspan="3"><strong>Media</strong></td><td><code>ImageComponent</code></td><td>Image display with optional cropping, lazy loading, and mapper integration</td></tr>
+<tr><td rowspan="2"><strong>Media</strong></td><td><code>ImageComponent</code></td><td>Image display with optional cropping, lazy loading, and mapper integration</td></tr>
 <tr><td><code>DownloadComponent</code></td><td>Renders a download link for a VFSLeaf or other resource</td></tr>
-<tr><td><code>VideoComponent</code></td><td>HTML5 video player with poster, captions, and chapter support</td></tr>
 
 <tr><td rowspan="3"><strong>Widgets</strong></td><td><code>TextWidget</code></td><td>Dashboard widget showing title, descriptive text, optional icon</td></tr>
 <tr><td><code>FigureWidget</code></td><td>Dashboard widget showing a numeric value with label and trend indicator</td></tr>
@@ -967,7 +1023,7 @@ listenTo(editCtrl);</code></pre>
 <li><strong>Modal dialogs:</strong> <code>pushAsModalDialog(component)</code>, <code>pushAsTopModalDialog(component)</code>, <code>pushAsCallout(component, targetId)</code></li>
 <li><strong>User messages:</strong> <code>setInfo(msg)</code>, <code>setWarning(msg)</code>, <code>setError(msg)</code> &mdash; displayed as growl-style notifications</li>
 <li><strong>Navigation:</strong> <code>pop()</code> to remove the current layer, <code>makeFlat()</code> to collapse the stack, <code>pushFullScreen(controller)</code> for full-screen views</li>
-<li><strong>Business path:</strong> <code>getBusinessControl()</code> for deep linking (see <a href="#businesspath">section 12</a>)</li>
+<li><strong>Business path:</strong> <code>getBusinessControl()</code> for deep linking (see <a href="#businesspath">section 13</a>)</li>
 <li><strong>Back office:</strong> <code>getWindowBackOffice()</code> to access the command queue, send JS commands to the browser, and register cycle listeners</li>
 </ul>
 
@@ -1054,7 +1110,7 @@ listenTo(editCtrl);</code></pre>
 <div class="diagram-caption">Figure 6: Three event mechanisms &mdash; component events (UI), controller events (parent-child), multi-user events (cross-session)</div>
 </div>
 
-<h3>6.1 Component Events</h3>
+<h3>6.1 Component &rarr; Controller Events</h3>
 
 <p>When a user clicks a link or interacts with a UI widget, the component translates the raw HTTP request into a semantic event and fires it to all registered <code>ComponentEventListener</code>s (typically one controller). The event is delivered synchronously within the same request cycle.</p>
 
@@ -1077,7 +1133,7 @@ listenTo(editCtrl);</code></pre>
     <span class="kw">if</span> (source == deleteLink) { <span class="cmt">/* handle delete click */</span> }
 }</code></pre>
 
-<h3>6.2 Controller Events</h3>
+<h3>6.2 Controller &rarr; Controller Events</h3>
 
 <p>Controller events flow upward from child to parent. When a child controller finishes its task, it calls <code>fireEvent(ureq, Event.DONE_EVENT)</code>, and the parent receives this in its <code>event(ureq, Controller, Event)</code> method. This is the primary mechanism for decoupling controllers &mdash; the child doesn't know who its parent is; it just fires a semantic event.</p>
 
@@ -1254,7 +1310,12 @@ $r.formatBytes($size)                  <span class="cmt">## human-readable file 
 <span class="cmt">## Static resources &amp; links</span>
 $r.staticLink("js/mylib.js")           <span class="cmt">## versioned static resource URL</span>
 $r.contextHelpWithWrapper("page")      <span class="cmt">## help icon with link</span>
-$r.contextPath()                       <span class="cmt">## server context path</span></code></pre>
+$r.contextPath()                       <span class="cmt">## server context path</span>
+
+<span class="cmt">## Sections (New in 21.1.0)</span>
+$r.sectionHeader($id, $title, false, true, true)  <span class="cmt">## header row of a collapsible section</span></code></pre>
+
+<p><span class="version-badge">New in 21.1.0</span> <code>$r.sectionHeader(id, title, subTitle, collapsible, expanded)</code> renders the header row of a titled section with <code>SectionHeaderRenderer</code>. <code>FormSection</code> (section 8) and the <code>Sections</code> component use the same header markup.</p>
 
 <h3>Asynchronous &amp; Background Events</h3>
 
@@ -1401,15 +1462,17 @@ $r.contextPath()                       <span class="cmt">## server context path<
 <tr><td><code>FormToggle</code></td><td>On/off toggle switch (boolean)</td></tr>
 
 <tr><td rowspan="2"><strong>Date &amp; Time</strong></td><td><code>DateChooser</code></td><td>Date picker with optional time selection, date range mode, and min/max constraints</td></tr>
-<tr><td><code>CountDownComponent</code></td><td>Read-only countdown timer display</td></tr>
+<tr><td><code>RelativeDateElement</code></td><td>Date relative to a reference date (offset, unit, direction). The caller supplies a <code>RelativeDateContext</code>. Add it with <code>addRelativeDateElement()</code>.</td></tr>
 
 <tr><td rowspan="2"><strong>File</strong></td><td><code>FileElement</code></td><td>File upload with MIME type validation, max size, drag-and-drop, preview</td></tr>
 <tr><td><code>DownloadLink</code></td><td>Download link for an existing file (VFSLeaf or MediaResource)</td></tr>
 
-<tr><td rowspan="5"><strong>Specialized</strong></td><td><code>ColorPickerElement</code></td><td>Color chooser with preset palette and custom hex input</td></tr>
+<tr><td rowspan="7"><strong>Specialized</strong></td><td><code>ColorPickerElement</code></td><td>Color chooser with preset palette and custom hex input</td></tr>
 <tr><td><code>SliderElement</code></td><td>Range slider with min/max/step and optional value display</td></tr>
 <tr><td><code>IconSelectorElement</code></td><td>Icon chooser from a predefined set of CSS icon classes</td></tr>
 <tr><td><code>AutoCompleter</code></td><td>Text field with server-side autocomplete suggestions (AJAX)</td></tr>
+<tr><td><code>SearchElement</code></td><td><span class="version-badge">New in 21.1.0</span> Unified search field with the variants <code>DEFAULT</code>, <code>LARGE</code> and <code>TYPEAHEAD</code> (<code>SearchVariant</code>). See "Search Element" below.</td></tr>
+<tr><td><code>ObjectSelectionElement</code></td><td>Selection of objects from an <code>ObjectSelectionSource</code>, with option groups (<code>ObjectOptionGroup</code>) and an optional browser controller. <code>IdentitySelectionSource</code> selects users.</td></tr>
 <tr><td><code>MathLiveElement</code></td><td>Mathematical formula editor (LaTeX input)</td></tr>
 
 <tr><td rowspan="4"><strong>Display Only</strong></td><td><code>StaticTextElement</code></td><td>Read-only HTML text (labels, explanations)</td></tr>
@@ -1420,6 +1483,8 @@ $r.contextPath()                       <span class="cmt">## server context path<
 <tr><td rowspan="2"><strong>Multi-Value</strong></td><td><code>TextBoxListElement</code></td><td>Tag-style input &mdash; multiple text values displayed as removable chips</td></tr>
 <tr><td><code>AutoCompletionMultiSelection</code></td><td>Autocomplete with multiple selections (tags + search)</td></tr>
 
+<tr><td><strong>Layout</strong></td><td><code>FormSection</code></td><td><span class="version-badge">New in 21.1.0</span> Titled, optionally collapsible part of a form. See "Form Sections" below.</td></tr>
+
 <tr><td rowspan="3"><strong>Buttons</strong></td><td><code>FormSubmit</code></td><td>Submit button &mdash; triggers validation then <code>formOK()</code></td></tr>
 <tr><td><code>FormCancel</code></td><td>Cancel button &mdash; fires <code>Event.CANCELLED_EVENT</code> to parent</td></tr>
 <tr><td><code>FormReset</code></td><td>Reset button &mdash; resets all elements to initial values</td></tr>
@@ -1427,6 +1492,8 @@ $r.contextPath()                       <span class="cmt">## server context path<
 <tr><td><strong>Table</strong></td><td><code>FlexiTableElement</code></td><td>Full data table (see <a href="#flexitable">section 9</a>) &mdash; the most complex form element</td></tr>
 </tbody>
 </table>
+
+<p><span class="version-badge">New in 21.1.0</span> <code>FormItem.setLabelIconCss(String)</code> shows an icon next to the label, for example <code>"o_icon o_icon_locked"</code> for a read-only field. The icon is only a visual cue. It does not change <code>setMandatory()</code> or <code>setEnabled()</code>.</p>
 
 <h3>FormItem &ndash; Component Relationship</h3>
 
@@ -1441,20 +1508,23 @@ Component comp = nameEl.getComponent();  <span class="cmt">// → TextElementCom
 
 <h3>Form Layout System</h3>
 
-<p><code>FormLayoutContainer</code> is both a <code>FormItem</code> and a container for other form items. It uses Velocity templates for layout. The framework provides 12 built-in layout types:</p>
+<p><code>FormLayoutContainer</code> is both a <code>FormItem</code> and a container for other form items. It uses Velocity templates for layout. The enum <code>FormLayoutContainer.FormLayout</code> has 13 layout types:</p>
 
 <table>
 <thead><tr><th>Layout</th><th>Factory Method</th><th>Use Case</th></tr></thead>
 <tbody>
-<tr><td><code>LAYOUT_DEFAULT</code> (3:9)</td><td><code>createDefaultFormLayout()</code></td><td>Standard label-left, input-right form layout (Bootstrap 3:9 grid)</td></tr>
-<tr><td><code>LAYOUT_HORIZONTAL</code></td><td><code>createHorizontalFormLayout()</code></td><td>Elements arranged horizontally in a row</td></tr>
-<tr><td><code>LAYOUT_VERTICAL</code></td><td><code>createVerticalFormLayout()</code></td><td>Elements stacked vertically, labels above inputs</td></tr>
-<tr><td><code>LAYOUT_CUSTOM</code></td><td><code>createCustomFormLayout()</code></td><td>Developer provides a custom Velocity template for full control</td></tr>
-<tr><td><code>LAYOUT_BUTTONGROUP</code></td><td><code>createButtonLayout()</code></td><td>Groups buttons (submit, cancel) in a row with proper spacing</td></tr>
-<tr><td><code>LAYOUT_BAREBONE</code></td><td><code>createBareBoneFormLayout()</code></td><td>No wrapping markup &mdash; just renders children directly</td></tr>
-<tr><td><code>LAYOUT_PANEL</code></td><td><code>createPanelFormLayout()</code></td><td>Wraps elements in a panel with border and optional title</td></tr>
-<tr><td><code>LAYOUT_INPUTGROUP</code></td><td><code>createInputGroupLayout()</code></td><td>Bootstrap input group (e.g., text field with button suffix)</td></tr>
-<tr><td><code>LAYOUT_TABLE_CONDENSED</code></td><td>&mdash;</td><td>Compact table-like layout for dense forms</td></tr>
+<tr><td><code>LAYOUT_DEFAULT</code> (3:9)</td><td><code>createDefaultFormLayout()</code></td><td>Standard label-left, input-right (Bootstrap 3:9 grid)</td></tr>
+<tr><td><code>LAYOUT_DEFAULT_6_6</code> / <code>_9_3</code> / <code>_2_10</code></td><td><code>createDefaultFormLayout_6_6()</code> / <code>_9_3()</code> / <code>_2_10()</code></td><td>Label-left layout with another grid ratio</td></tr>
+<tr><td><code>LAYOUT_HORIZONTAL</code></td><td><code>createHorizontalFormLayout()</code></td><td>Elements in a row</td></tr>
+<tr><td><code>LAYOUT_VERTICAL</code></td><td><code>createVerticalFormLayout()</code></td><td>Labels above inputs, stacked</td></tr>
+<tr><td><code>LAYOUT_TWO_COLS</code></td><td><code>createTwoColsFormLayout()</code>, <code>uifactory.addTwoColumnsFormLayout()</code></td><td>Two equal columns from 992 px viewport width, stacked below</td></tr>
+<tr><td>(custom page)</td><td><code>createCustomFormLayout(name, translator, page)</code></td><td>Developer-provided Velocity template. There is no enum constant for it.</td></tr>
+<tr><td><code>LAYOUT_BUTTONGROUP</code></td><td><code>createButtonLayout()</code></td><td>Button row with spacing</td></tr>
+<tr><td><code>LAYOUT_BAREBONE</code></td><td><code>createBareBoneFormLayout()</code></td><td>No wrapping markup</td></tr>
+<tr><td><code>LAYOUT_PANEL</code></td><td><code>createPanelFormLayout()</code></td><td>Panel with border and optional title</td></tr>
+<tr><td><code>LAYOUT_INLINE</code></td><td><code>createInlineFormLayout()</code></td><td>Inline form elements</td></tr>
+<tr><td><code>LAYOUT_INPUTGROUP</code></td><td><code>createInputGroupLayout()</code></td><td>Bootstrap input group</td></tr>
+<tr><td><code>LAYOUT_TABLE_CONDENSED</code></td><td><code>createTableCondensedLayout()</code></td><td>Compact table-like layout</td></tr>
 </tbody>
 </table>
 
@@ -1472,6 +1542,54 @@ Component comp = nameEl.getComponent();  <span class="cmt">// → TextElementCom
     uifactory.addFormCancelButton(<span class="str">"cancel"</span>, buttonLayout, ureq, getWindowControl());
 }</code></pre>
 
+<h3 id="flexiform-sections">Form Sections <span class="version-badge">New in 21.1.0</span></h3>
+<p><code>FormSection</code> (package <code>core.gui.components.form.flexible.impl</code>) divides a long form into titled parts (OO-9756). It extends <code>FormLayoutContainer</code> and renders its items with the default 3:9 layout under a section header.</p>
+
+<pre><code>FormSection generalSection = uifactory.addFormSection(<span class="str">"general"</span>, translate(<span class="str">"section.general"</span>),
+        formLayout, FormSection.Level.TITLE);
+nameEl = uifactory.addTextElement(<span class="str">"name"</span>, <span class="str">"field.name"</span>, 200, <span class="str">""</span>, generalSection);
+
+FormSection advancedSection = uifactory.addFormSection(<span class="str">"advanced"</span>, translate(<span class="str">"section.advanced"</span>),
+        formLayout, FormSection.Level.SUB_TITLE);
+advancedSection.setCollapsible(<span class="kw">true</span>);
+advancedSection.setCollapsed(<span class="kw">true</span>);                       <span class="cmt">// default for a first visit</span>
+advancedSection.setPersistedStatusId(ureq, <span class="str">"my.form.advanced"</span>); <span class="cmt">// remember the toggle</span></code></pre>
+
+<ul>
+<li><code>Level.TITLE</code> renders a legend-style heading, <code>Level.SUB_TITLE</code> a sub-title heading.</li>
+<li><code>setCollapsible(true)</code> makes the header a toggle. The toggle runs in the browser (Bootstrap collapse) without a server round trip.</li>
+<li>With a persisted status id, the browser sends the new state as a background command. <code>FormSectionVelocityContainer</code> saves it without a form submit.</li>
+<li><code>setPersistedStatusId(ureq, id)</code> loads the collapsed state from the GUI preferences (attributed class <code>FormSection</code>) and saves every toggle. Call it after <code>setCollapsed()</code>.</li>
+<li>The title is an already translated string.</li>
+</ul>
+
+<p>The factory hook <code>FormLayoutContainer.createFormVelocityContainer()</code> lets a subclass use its own <code>FormVelocityContainer</code>. <code>FormSection</code> uses it for the toggle handling.</p>
+
+<h3 id="flexiform-search">Search Element <span class="version-badge">New in 21.1.0</span></h3>
+<p><code>SearchElement</code> (OO-9627) is the one search field for forms, tables and headers. <code>FormUIFactory</code> offers two methods:</p>
+
+<pre><code><span class="cmt">// Search with a button, fires SearchFormEvent.SEARCH or SearchFormEvent.RESET</span>
+searchEl = uifactory.addSearchElement(<span class="str">"search"</span>, SearchVariant.DEFAULT, formLayout);
+searchEl.setPlaceholderKey(<span class="str">"search.placeholder"</span>);
+searchEl.setAriaControls(resultsDomId);
+
+<span class="cmt">// Search as you type, suggestions from a ListProvider (always SearchVariant.TYPEAHEAD)</span>
+searchEl = uifactory.addSearchElement(<span class="str">"search"</span>, listProvider, ureq.getUserSession(), formLayout);
+searchEl.setAutoCompleteSelectListener((lureq, key) -&gt; doSelect(lureq, key));</code></pre>
+
+<table>
+<thead><tr><th>Variant</th><th>Behaviour</th></tr></thead>
+<tbody>
+<tr><td><code>DEFAULT</code></td><td>Explicit search button, toolbar size</td></tr>
+<tr><td><code>LARGE</code></td><td>Explicit search button, hero size, button label visible</td></tr>
+<tr><td><code>TYPEAHEAD</code></td><td>Search as you type, no search button</td></tr>
+</tbody>
+</table>
+
+<p>The element fires a <code>SearchFormEvent</code> (<code>SEARCH</code> or <code>RESET</code>) to <code>formInnerEvent()</code>. By default it does not mark the surrounding form dirty (<code>setPropagateDirtiness(false)</code>). A composite that embeds the element calls <code>evalLocalDispatch(ureq)</code> and fires its own event. The FlexiTable search uses this (section 9).</p>
+
+<p>---</p>
+
 <hr>
 
 <!-- ============================================================ -->
@@ -1479,7 +1597,7 @@ Component comp = nameEl.getComponent();  <span class="cmt">// → TextElementCom
 
 <p>The FlexiTable is OpenOlat's most complex UI component. It provides a data table with sorting, filtering, searching, pagination, multi-select, export, and customizable cell rendering &mdash; all driven from server-side configuration. Because FlexiTable is implemented as a form element, table controllers extend <code>FormBasicController</code>.</p>
 
-<h3>Column Descriptors</h3>
+<h3>9.1 Column Descriptors</h3>
 
 <p>Columns are defined via an enum implementing <code>FlexiSortableColumnDef</code>, which provides the header i18n key and sort configuration. The enum is then used to create <code>DefaultFlexiColumnModel</code> instances, which carry additional properties like visibility, alignment, and cell renderer.</p>
 
@@ -1523,7 +1641,7 @@ col.setExportable(<span class="kw">false</span>);                            <sp
 col.setColumnCssClass(<span class="str">"o_col_narrow"</span>);               <span class="cmt">// CSS class on column cells</span>
 col.setHeaderTooltip(<span class="str">"tooltip.key"</span>);                 <span class="cmt">// tooltip on header</span></code></pre>
 
-<h3>Cell Renderers</h3>
+<h3>9.2 Cell Renderers</h3>
 
 <p>Cell renderers control how each cell value is displayed. The rendering pipeline calls <code>dataModel.getValueAt(row, col)</code> to get the raw value, then passes it to the column's <code>FlexiCellRenderer.render()</code> method to produce HTML. OpenOlat provides many built-in renderers:</p>
 
@@ -1536,6 +1654,11 @@ col.setHeaderTooltip(<span class="str">"tooltip.key"</span>);                 <s
 <tr><td><code>StaticFlexiCellRenderer</code></td><td>Clickable action links with icons</td></tr>
 <tr><td><code>BooleanCellRenderer</code></td><td>Conditional: delegates to trueRenderer or falseRenderer</td></tr>
 <tr><td><code>CSSIconFlexiCellRenderer</code></td><td>Icon-only cells (CSS class as value)</td></tr>
+<tr><td><code>YesNoCellRenderer</code></td><td>Boolean value as translated yes/no</td></tr>
+<tr><td><code>TreeNodeFlexiCellRenderer</code></td><td>Indented tree rows with open/close toggle</td></tr>
+<tr><td><code>ActionsCellRenderer</code></td><td>Action column (&ldquo;more&rdquo; menu)</td></tr>
+<tr><td><code>ProgressRadialCellRenderer</code></td><td>Radial progress indicator (package <code>core.gui.components.progressbar</code>)</td></tr>
+<tr><td><code>TranslateCellRenderer</code></td><td><span class="version-badge">New in 21.1.0</span> Marks a cell value that has a translation (OO-9596)</td></tr>
 </tbody>
 </table>
 
@@ -1558,7 +1681,26 @@ col.setHeaderTooltip(<span class="str">"tooltip.key"</span>);                 <s
     <span class="kw">new</span> StaticFlexiCellRenderer(<span class="str">""</span>, <span class="str">"deactivate"</span>, <span class="str">"o_icon o_icon_toggle_off"</span>) <span class="cmt">// false</span>
 )</code></pre>
 
-<h3>Sorting</h3>
+<h3>9.3 Data Model</h3>
+<p>The data model maps rows and columns to values:</p>
+
+<pre><code><span class="kw">public</span> <span class="kw">class</span> MyTableModel <span class="kw">extends</span> DefaultFlexiTableDataModel&lt;MyRow&gt; {
+    <span class="kw">public</span> MyTableModel(FlexiTableColumnModel columnsModel) {
+        <span class="kw">super</span>(columnsModel);
+    }
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> Object getValueAt(<span class="kw">int</span> row, <span class="kw">int</span> col) {
+        MyRow r = getObject(row);
+        <span class="kw">return</span> switch (MyCols.values()[col]) {
+            case id -&gt; r.getKey();
+            case name -&gt; r.getName();
+            case date -&gt; r.getCreationDate();
+            case actions -&gt; r.getKey();  <span class="cmt">// used by action renderer</span>
+        };
+    }
+}</code></pre>
+
+<h3>9.4 Sorting</h3>
 
 <p>When a column's <code>sortable()</code> returns <code>true</code>, the table header becomes clickable. Clicking toggles between ascending and descending order. The sort key (from <code>sortKey()</code>) is passed to the data model or data source. For in-memory sorting, the framework sorts the row list; for server-side (database) sorting, the <code>FlexiTableDataSource</code> receives <code>SortKey[]</code> to build into its query.</p>
 
@@ -1567,7 +1709,7 @@ FlexiTableSortOptions sortOptions = <span class="kw">new</span> FlexiTableSortOp
 sortOptions.setDefaultOrderBy(<span class="kw">new</span> SortKey(<span class="str">"name"</span>, <span class="kw">true</span>));  <span class="cmt">// ascending by name</span>
 tableEl.setSortSettings(sortOptions);</code></pre>
 
-<h3>Table Filters</h3>
+<h3>9.5 Filters</h3>
 
 <p>FlexiTable supports two levels of filtering: <strong>filter tabs</strong> (top-level categories, like &ldquo;All&rdquo; / &ldquo;Active&rdquo; / &ldquo;Archived&rdquo;) and <strong>extended filters</strong> (dropdown, text, multi-select, date range filters within a tab). Both fire events to the controller when the user changes a selection.</p>
 
@@ -1587,7 +1729,7 @@ statusValues.add(entry(<span class="str">"draft"</span>, <span class="str">"Draf
 statusValues.add(entry(<span class="str">"published"</span>, <span class="str">"Published"</span>));
 filters.add(<span class="kw">new</span> FlexiTableSingleSelectionFilter(<span class="str">"Status"</span>, <span class="str">"status"</span>, statusValues, <span class="kw">true</span>));
 filters.add(<span class="kw">new</span> FlexiTableTextFilter(<span class="str">"Name"</span>, <span class="str">"name"</span>, <span class="kw">true</span>));
-tableEl.setFilters(<span class="str">"filter.label"</span>, (List) filters, <span class="kw">false</span>);
+tableEl.setFilters(<span class="kw">true</span>, filters, <span class="kw">false</span>, <span class="kw">false</span>);
 
 <span class="cmt">// 3. Handle filter events:</span>
 <span class="kw">protected void</span> formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -1600,7 +1742,7 @@ tableEl.setFilters(<span class="str">"filter.label"</span>, (List) filters, <spa
 
 <p>Available filter types: <code>FlexiTableTextFilter</code>, <code>FlexiTableSingleSelectionFilter</code>, <code>FlexiTableMultiSelectionFilter</code>, <code>FlexiTableDateRangeFilter</code>, <code>FlexiTablePeriodFilter</code>, <code>FlexiTableNumericalRangeFilter</code>, <code>FlexiTableOneClickSelectionFilter</code>.</p>
 
-<h3>FlexiTableElement Configuration</h3>
+<h3>9.6 Column Visibility &amp; Table Configuration</h3>
 
 <p>The <code>FlexiTableElement</code> object is the central configuration point for the table. Key configuration methods:</p>
 
@@ -1619,7 +1761,11 @@ tableEl.setCustomizeColumns(<span class="kw">true</span>);
 tableEl.setAndLoadPersistedPreferences(ureq, <span class="str">"myTableId"</span>);
 
 <span class="cmt">// Empty state</span>
-tableEl.setEmptyTableSettings(<span class="str">"table.empty.title"</span>, <span class="str">"table.empty.desc"</span>, <span class="str">"o_icon_empty"</span>);
+tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+        .withIconCss(<span class="str">"o_icon_empty"</span>)
+        .withMessageI18nKey(<span class="str">"table.empty.title"</span>)
+        .withHintI18nKey(<span class="str">"table.empty.desc"</span>)
+        .build());
 
 <span class="cmt">// Pagination</span>
 tableEl.setNumOfRowsEnabled(<span class="kw">true</span>);    <span class="cmt">// show row count selector</span>
@@ -1628,12 +1774,122 @@ tableEl.setShowAllRowsEnabled(<span class="kw">true</span>); <span class="cmt">/
 <span class="cmt">// Footer row</span>
 tableEl.setFooter(<span class="kw">true</span>);</code></pre>
 
-<p><code>FlexiTableRendererType</code> options: <code>classic</code> (standard HTML table), <code>custom</code> (Velocity-based row templates for card/grid layouts), <code>external</code> (fully custom rendering).</p>
+<p>Renderer types (<code>FlexiTableRendererType</code>): <code>classic</code> (HTML table), <code>custom</code> (Velocity-based row templates for card layouts or custom rendering), <code>external</code> (a renderer set with <code>setExternalRenderer()</code>) and <code>verticalTimeLine</code> (timeline rows).</p>
+
+<p><span class="version-badge changed">Changed in 21.1.0</span> The table search field is a <code>SearchElement</code> (section 8). <code>FlexiTableElementImpl.getSearchEl()</code> returns it. <code>setSearchEnabled(true)</code> uses the <code>DEFAULT</code> variant. <code>setSearchEnabled(ListProvider, UserSession)</code> uses the <code>TYPEAHEAD</code> variant with suggestions. The table intercepts the search with <code>evalLocalDispatch()</code> and fires its own <code>FlexiTableSearchEvent</code>.</p>
 
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="ajax">10. AJAX Update Cycle</h2>
+<h2 id="wizards">10. Wizards</h2>
+
+<p>A wizard leads the user through a sequence of steps and commits the work at the end. The framework lives in <code>org.olat.core.gui.control.generic.wizard</code>. Examples: <code>UserImportController</code> (user import), <code>PwChangeController</code> (password change), the booking process in <code>org.olat.resource.accesscontrol.ui.wizard</code>.</p>
+
+<div class="diagram-box">
+<svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs><marker id="ahw" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#64748b"/></marker></defs>
+  <rect x="20" y="20" width="680" height="150" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="360" y="44" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">StepsMainRunController (one root Form, buttons back / next / finish / cancel)</text>
+  <rect x="45" y="65" width="170" height="80" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="130" y="88" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">Step 1 (BasicStep)</text>
+  <text x="130" y="106" text-anchor="middle" font-size="9.5" fill="#1e40af">StepFormBasicController</text>
+  <text x="130" y="122" text-anchor="middle" font-size="9.5" fill="#1e40af">addToRunContext(...)</text>
+  <text x="130" y="136" text-anchor="middle" font-size="9.5" fill="#1e40af">fireEvent(ACTIVATE_NEXT)</text>
+  <rect x="275" y="65" width="170" height="80" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="360" y="88" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">Step 2</text>
+  <text x="360" y="106" text-anchor="middle" font-size="9.5" fill="#1e40af">new controller per visit</text>
+  <text x="360" y="122" text-anchor="middle" font-size="9.5" fill="#1e40af">optional: CachedRunContext-</text>
+  <text x="360" y="136" text-anchor="middle" font-size="9.5" fill="#1e40af">Controller (kept alive)</text>
+  <rect x="505" y="65" width="170" height="80" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="590" y="88" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">Last step</text>
+  <text x="590" y="106" text-anchor="middle" font-size="9.5" fill="#1e40af">PrevNextFinishConfig</text>
+  <text x="590" y="122" text-anchor="middle" font-size="9.5" fill="#1e40af">BACK_FINISH</text>
+  <line x1="215" y1="105" x2="273" y2="105" stroke="#64748b" stroke-width="1.6" marker-end="url(#ahw)"/>
+  <line x1="445" y1="105" x2="503" y2="105" stroke="#64748b" stroke-width="1.6" marker-end="url(#ahw)"/>
+  <rect x="120" y="190" width="480" height="44" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="360" y="208" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">StepsRunContext (data of all steps)</text>
+  <text x="360" y="224" text-anchor="middle" font-size="9.5" fill="#92400e">finish: StepRunnerCallback.execute() commits, returns DONE_MODIFIED / DONE_UNCHANGED</text>
+  <line x1="130" y1="145" x2="200" y2="188" stroke="#f59e0b" stroke-width="1.2" marker-end="url(#ahw)"/>
+  <line x1="360" y1="145" x2="360" y2="188" stroke="#f59e0b" stroke-width="1.2" marker-end="url(#ahw)"/>
+  <line x1="590" y1="145" x2="520" y2="188" stroke="#f59e0b" stroke-width="1.2" marker-end="url(#ahw)"/>
+</svg>
+<div class="diagram-caption">Figure 8: Wizard steps share one root form and one run context; only the finish callback commits</div>
+</div>
+
+
+<h3>Wizard Building Blocks</h3>
+<table>
+<thead><tr><th>Class</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td><code>StepsMainRunController</code></td><td>The wizard itself. A <code>FormBasicController</code> with one root <code>Form</code> for all steps, the step title links and the buttons back, next, finish and cancel.</td></tr>
+<tr><td><code>Step</code> / <code>BasicStep</code></td><td>One step. <code>getStepController()</code> creates the controller of the step. <code>nextStep()</code> returns the following step or <code>Step.NOSTEP</code>. <code>getInitialPrevNextFinishConfig()</code> enables the buttons.</td></tr>
+<tr><td><code>StepFormBasicController</code></td><td>Base class of a step controller. It uses the root form of the wizard and gives access to the run context.</td></tr>
+<tr><td><code>StepsRunContext</code> (<code>DefaultStepsRunContext</code>)</td><td>Map that carries the data from step to step: <code>put()</code>, <code>get()</code>, <code>containsKey()</code>, <code>remove()</code>.</td></tr>
+<tr><td><code>PrevNextFinishConfig</code></td><td>Which buttons a step enables: constants <code>NEXT</code>, <code>BACK_NEXT</code>, <code>BACK_FINISH</code>, <code>NEXT_FINISH</code>, <code>BACK_NEXT_FINISH</code>, <code>BACK</code>, <code>NOOP</code>.</td></tr>
+<tr><td><code>StepRunnerCallback</code></td><td><code>execute(ureq, wControl, runContext)</code> for finish and cancel. Returns <code>StepsMainRunController.DONE_MODIFIED</code> or <code>DONE_UNCHANGED</code>.</td></tr>
+<tr><td><code>StepsEvent</code></td><td>Events of a step controller: <code>ACTIVATE_NEXT</code>, <code>ACTIVATE_PREVIOUS</code>, <code>INFORM_FINISHED</code>, <code>STEPS_CHANGED</code>, <code>RELOAD</code>.</td></tr>
+</tbody>
+</table>
+
+<h3>Wizard Flow</h3>
+<pre><code>Step start = <span class="kw">new</span> ImportStep00(ureq);                 <span class="cmt">// extends BasicStep</span>
+StepRunnerCallback finish = (uureq, wControl, runContext) -&gt; {
+    List&lt;?&gt; newUsers = (List&lt;?&gt;) runContext.get(<span class="str">"newUsers"</span>);
+    <span class="cmt">// commit the work here, and only here</span>
+    <span class="kw">return</span> StepsMainRunController.DONE_MODIFIED;
+};
+wizardCtrl = <span class="kw">new</span> StepsMainRunController(ureq, getWindowControl(), start, finish, <span class="kw">null</span>,
+        translate(<span class="str">"title"</span>), <span class="str">"o_sel_user_import_wizard"</span>);
+listenTo(wizardCtrl);
+getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());</code></pre>
+
+<p>A step controller validates its fields, stores the result in the run context and asks for the next step:</p>
+
+<pre><code><span class="ann">@Override</span>
+<span class="kw">protected</span> <span class="kw">void</span> formOK(UserRequest ureq) {
+    addToRunContext(<span class="str">"newUsers"</span>, newUsers);
+    fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+}</code></pre>
+
+<p>The wizard fires <code>Event.CHANGED_EVENT</code> to its parent after <code>DONE_MODIFIED</code> and <code>Event.DONE_EVENT</code> after <code>DONE_UNCHANGED</code>. Cancel fires <code>Event.CANCELLED_EVENT</code>. The parent closes the modal dialog and disposes the wizard.</p>
+
+<p>Rules:</p>
+
+<ul>
+<li>Change data only in the finish callback. The steps collect data in the run context.</li>
+<li>The wizard disposes the controller of a step when the user leaves the step. It creates a new controller when the user comes back.</li>
+<li>All step controllers share the root form. The validation of every registered sub form runs on next and finish.</li>
+</ul>
+
+<h3>Cached Step Controllers <span class="version-badge">New in 21.1.0</span></h3>
+<p><code>CachedRunContextController</code> keeps a sub-controller alive across back and forward navigation (OO-9742). Use it when a step embeds an expensive form, for example an evaluation form, whose input must survive navigation.</p>
+
+<pre><code>detailsCtrl = CachedRunContextController.of(runContext, CACHE_KEY, rootForm,
+        () -&gt; <span class="kw">new</span> InvoiceSubmitDetailsController(ureq, wControl, bookingContext, rootForm), <span class="kw">this</span>);
+
+<span class="ann">@Override</span>
+<span class="kw">public</span> FormItem getStepFormItem() {
+    <span class="kw">return</span> detailsCtrl.getStepFormItem();
+}
+
+<span class="ann">@Override</span>
+<span class="kw">protected</span> <span class="kw">void</span> doDispose() {
+    detailsCtrl.release(<span class="kw">this</span>);   <span class="cmt">// stop listening and remove the sub form listener</span>
+    <span class="kw">super</span>.doDispose();
+}</code></pre>
+
+<ul>
+<li><code>of()</code> creates the controller on the first visit and stores it in the run context. On a later visit it registers the cached controller again as sub form listener of the root form.</li>
+<li><code>release()</code> removes the sub form listener. The hidden form of an inactive step therefore does not block next or finish with its validation.</li>
+<li><code>StepsMainRunController.doDispose()</code> calls <code>CachedRunContextController.disposeAll(runContext)</code>.</li>
+</ul>
+
+<p><span class="version-badge changed">Changed in 21.1.0</span> <code>StepsMainRunController</code> propagates the dirty state only for its own navigation items (<code>propagateDirtinessToContainer()</code>). An event inside a step no longer redraws the whole wizard and keeps the scroll position. <code>setFinishText(String)</code> sets a custom label for the finish button. A <code>LanguageChangedEvent</code> of a step goes to the parent.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="ajax">11. AJAX Update Cycle</h2>
 
 <p>OpenOlat's AJAX mechanism is what makes the server-centric architecture feel responsive. Rather than sending full page reloads, the framework sends only the HTML fragments that changed. This section ties together the concepts introduced earlier into a complete picture of how a user click results in a partial page update.</p>
 
@@ -1701,7 +1957,7 @@ tableEl.setFooter(<span class="kw">true</span>);</code></pre>
   <line x1="597" y1="195" x2="597" y2="210" stroke="#86efac" stroke-width="1.2" marker-end="url(#ah7)"/>
   <line x1="120" y1="265" x2="120" y2="280" stroke="#d6d3d1" stroke-width="1.2" marker-end="url(#ah7)"/>
 </svg>
-<div class="diagram-caption">Figure 8: AJAX update cycle &mdash; only dirty components are re-rendered and sent as JSON</div>
+<div class="diagram-caption">Figure 9: AJAX update cycle &mdash; only dirty components are re-rendered and sent as JSON</div>
 </div>
 
 <p>The <code>WindowBackOfficeImpl</code> maintains a command queue that accumulates during the request. Besides DOM replacement commands, the queue can contain JS/CSS inclusion commands, redirect commands, scroll commands, and more. The client-side JavaScript in <code>functions.js</code> processes this queue sequentially, applying each command to the page.</p>
@@ -1743,7 +1999,7 @@ wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="mappers">11. Mapper Infrastructure</h2>
+<h2 id="mappers">12. Mapper Infrastructure</h2>
 
 <p>Mappers provide a mechanism to serve dynamic resources (images, files, JSON, generated content) via stable URLs. While Velocity templates render HTML fragments, mappers serve <strong>binary or non-HTML content</strong> that components reference via URLs.</p>
 
@@ -1763,7 +2019,7 @@ wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
 </tbody>
 </table>
 
-<h3>Registering Mappers in Controllers</h3>
+<h3>Registering Mappers</h3>
 
 <p><code>BasicController</code> provides convenience methods that automatically track mappers for cleanup:</p>
 
@@ -1783,7 +2039,7 @@ String url = registerCacheableMapper(ureq, <span class="str">"thumbnail-"</span>
 mainVC.contextPut(<span class="str">"mapperUrl"</span>, url);
 <span class="cmt">// Template: &lt;img src="$mapperUrl/image.jpg" /&gt;</span></code></pre>
 
-<h3>Cacheable vs. Non-Cacheable Mappers</h3>
+<h3>Cacheable vs. Non-Cacheable</h3>
 
 <ul>
 <li><strong>Non-cacheable</strong> (<code>registerMapper</code>): URL contains a random UUID hash. Each registration creates a new URL, forcing the browser to fetch fresh. Use for one-time or dynamic content.</li>
@@ -1812,16 +2068,118 @@ String path = GlobalMapperRegistry.getInstance()
 <li><strong>Zombie slayer</strong> &mdash; scheduled job removes persisted mappers older than 6 hours</li>
 </ol>
 
+<p>A request to an unknown mapper ID gets the status 404. The same applies to a sandboxed mapper that cannot be reclaimed (see below).</p>
+
+<h3 id="mappers-sandbox">Sandboxed Mappers &amp; Content Domain <span class="version-badge">New in 21.0.0</span></h3>
+<p><strong>New in 21.0.0</strong></p>
+
+<p>Section 34 gives the overview of all security mechanisms.</p>
+
+<div class="diagram-box">
+<svg viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="ah9" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#64748b"/></marker>
+  </defs>
+
+  <!-- Main domain -->
+  <rect x="20" y="20" width="250" height="290" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="145" y="44" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">Main domain</text>
+  <text x="145" y="60" text-anchor="middle" font-size="10" fill="#1e40af">server.domainname</text>
+  <rect x="40" y="75" width="210" height="44" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="145" y="93" text-anchor="middle" font-size="10" fill="#1e40af">Controller (e.g. IFrameDisplayController)</text>
+  <text x="145" y="108" text-anchor="middle" font-size="10" fill="#1e40af">registerSandboxedMapper(ureq, mapper)</text>
+  <rect x="40" y="135" width="210" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="145" y="155" text-anchor="middle" font-size="10" fill="#1e40af">Parent UserSession (identity, roles)</text>
+  <rect x="40" y="185" width="210" height="44" rx="5" fill="#fff" stroke="#d6d3d1"/>
+  <text x="145" y="203" text-anchor="middle" font-size="10" fill="#334155">Page with &lt;iframe src="https://content/</text>
+  <text x="145" y="218" text-anchor="middle" font-size="10" fill="#334155">m/&lt;id&gt;?token=&lt;uuid&gt;"&gt;</text>
+
+  <!-- Cache -->
+  <rect x="285" y="75" width="150" height="78" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="360" y="97" text-anchor="middle" font-size="10" fill="#92400e" font-weight="700">Infinispan cache</text>
+  <text x="360" y="113" text-anchor="middle" font-size="9" fill="#92400e">MapperService-</text>
+  <text x="360" y="126" text-anchor="middle" font-size="9" fill="#92400e">sandboxedmapper</text>
+  <text x="360" y="139" text-anchor="middle" font-size="9" fill="#92400e">(mapper, session, token)</text>
+
+  <!-- Content domain -->
+  <rect x="450" y="20" width="250" height="290" rx="12" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="575" y="44" text-anchor="middle" font-size="13" fill="#15803d" font-weight="700">Content domain</text>
+  <text x="575" y="60" text-anchor="middle" font-size="10" fill="#15803d">server.content.domainname</text>
+  <rect x="470" y="75" width="210" height="44" rx="5" fill="#dcfce7" stroke="#86efac"/>
+  <text x="575" y="93" text-anchor="middle" font-size="10" fill="#15803d">MapperDispatcher</text>
+  <text x="575" y="108" text-anchor="middle" font-size="10" fill="#15803d">MapperService.getSandboxMapper()</text>
+  <rect x="470" y="135" width="210" height="44" rx="5" fill="#dcfce7" stroke="#86efac"/>
+  <text x="575" y="153" text-anchor="middle" font-size="10" fill="#15803d">Content session (sandbox)</text>
+  <text x="575" y="168" text-anchor="middle" font-size="10" fill="#15803d">isContentDelivery() = true</text>
+  <rect x="470" y="195" width="210" height="100" rx="5" fill="#fff" stroke="#d6d3d1"/>
+  <text x="575" y="214" text-anchor="middle" font-size="10" fill="#334155" font-weight="600">Response rules</text>
+  <text x="575" y="232" text-anchor="middle" font-size="9.5" fill="#334155">CSP frame-ancestors = main URI</text>
+  <text x="575" y="248" text-anchor="middle" font-size="9.5" fill="#334155">no X-Frame-Options</text>
+  <text x="575" y="264" text-anchor="middle" font-size="9.5" fill="#334155">Cookie SameSite=None; Partitioned</text>
+  <text x="575" y="280" text-anchor="middle" font-size="9.5" fill="#334155">REST API: 403 (except course DB)</text>
+
+  <!-- Arrows -->
+  <line x1="250" y1="97" x2="288" y2="104" stroke="#64748b" stroke-width="1.6" marker-end="url(#ah9)"/>
+  <text x="258" y="88" font-size="9" fill="#64748b">1</text>
+  <line x1="145" y1="165" x2="145" y2="183" stroke="#93c5fd" stroke-width="1.2" marker-end="url(#ah9)"/>
+  <text x="152" y="178" font-size="9" fill="#64748b">2 URL + token</text>
+  <path d="M250,210 C360,215 400,120 468,100" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#ah9)"/>
+  <text x="330" y="205" font-size="9" fill="#64748b">3 first request with token</text>
+  <line x1="468" y1="112" x2="437" y2="118" stroke="#64748b" stroke-width="1.6" marker-end="url(#ah9)"/>
+  <text x="360" y="58" text-anchor="middle" font-size="9" fill="#64748b">4 token check,</text>
+  <text x="360" y="70" text-anchor="middle" font-size="9" fill="#64748b">copy identity</text>
+  <line x1="575" y1="119" x2="575" y2="133" stroke="#86efac" stroke-width="1.2" marker-end="url(#ah9)"/>
+  <line x1="575" y1="179" x2="575" y2="193" stroke="#86efac" stroke-width="1.2" marker-end="url(#ah9)"/>
+</svg>
+<div class="diagram-caption">Figure 10: Sandboxed mapper on the content domain. The first request with the one-time token opens a content session with the identity of the parent session</div>
+</div>
+
+
+<p>OpenOlat can deliver user content (single pages, SCORM packages, iframe content) from a second domain (OO-7612). A script in that content then runs in another origin than the main application. It cannot read the session cookie or call the main UI.</p>
+
+<ul>
+<li>Configure the domain with <code>server.content.domainname</code> in <code>olat.properties</code>. The default is <code>${server.domainname}</code>, which disables the feature.</li>
+<li><code>Settings.isContentDomainNameEnabled()</code> is true when the content domain differs from the main domain. <code>Settings.createContentServerURI()</code> builds its base URL.</li>
+<li>A controller calls <code>registerSandboxedMapper(ureq, mapper)</code> in <code>BasicController</code>. The method returns a <code>MapperKey</code> with the URL and a one-time token.</li>
+<li>The page loads <code>contentServerURI + mapperKey.getUrl() + "?token=" + mapperKey.getToken()</code>. See <code>IFrameDisplayController</code> (with <code>IFrameSettings.isUseContentDomain()</code>) and <code>ScormWrapperController</code>.</li>
+</ul>
+
+<pre><code>MapperKey mKey = registerSandboxedMapper(ureq, contentMapper);
+String baseUri = Settings.isContentDomainNameEnabled()
+        ? Settings.createContentServerURI() : Settings.createServerURI();
+String url = baseUri + mKey.getUrl() + <span class="str">"?token="</span> + mKey.getToken();</code></pre>
+
+<p>The browser has no session on the content domain. On the first request, <code>MapperDispatcher</code> asks <code>MapperService.getSandboxMapper()</code> for the mapper. The service checks the token and copies identity, roles and locale of the parent <code>UserSession</code> to the new content session. The token is valid once. A request of another identity gets the status 404.</p>
+
+<p><code>ControllerDeliveryMapper</code> runs a complete controller in a popup window of the content session. <code>ControllerDeliveryCreator</code> marks the session as content delivery. The sandbox mappers live in the Infinispan cache <code>MapperService-sandboxedmapper</code> (max idle 1 hour).</p>
+
+<p>Framework rules for a content session (<code>UserSession.isContentDelivery()</code> is true):</p>
+
+<table>
+<thead><tr><th>Mechanism</th><th>Rule</th></tr></thead>
+<tbody>
+<tr><td><code>HeadersFilter</code></td><td>No <code>X-Frame-Options</code>. The CSP gets <code>frame-ancestors</code> with the main server URI.</td></tr>
+<tr><td><code>SameSiteCookieFilter</code></td><td>The session cookie gets <code>SameSite=None; Partitioned</code>, because the browser loads it in a third-party iframe.</td></tr>
+<tr><td><code>ContentDeliveryDirectiveProvider</code></td><td>Adds the content domain to the CSP source lists of the main application.</td></tr>
+<tr><td><code>RestApiLoginFilter</code></td><td>Rejects REST calls with 403. Exception: the course database endpoint <code>/restapi/repo/courses/{id}/db/...</code>.</td></tr>
+<tr><td><code>UserSessionManager</code></td><td>Sign-off of the parent session invalidates all sandbox sessions (<code>UserSession.getSandboxSessions()</code>).</td></tr>
+</tbody>
+</table>
+
+<p>A sandboxed mapper stays usable for reloads of the same content session. Only the first request needs the token (OO-9728).</p>
+
+<p>---</p>
+
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="businesspath">12. Business Path &amp; Deep Linking</h2>
+<h2 id="businesspath">13. Business Path &amp; Deep Linking</h2>
 
 <p>A server-centric architecture faces a fundamental tension: the browser's URL bar is document-oriented (each URL identifies a page), but the server's UI state is component-oriented (a tree of controllers managing an interactive session). When a user clicks a link inside OpenOlat, the interaction is dispatched to a specific component via its internal ID &mdash; the resulting URL (<code>/auth/1:2:3:4/...</code>) is a <strong>component address</strong>, meaningful only to the current session. It cannot be bookmarked, shared, or opened in a new tab.</p>
 
 <p>The <strong>business path</strong> system solves this problem. It provides a second, <strong>document-style address</strong> for every UI state &mdash; a human-readable, serializable path like <code>[RepositoryEntry:123][CourseNode:456]</code> that describes <em>what</em> the user is looking at, not <em>which component</em> is rendering it. This enables bookmarking, deep linking, browser back/forward navigation, "open in new window", and session resumption.</p>
 
-<h3>12.1 The Business Path Format</h3>
+<h3>13.1 Business Path Format</h3>
 
 <p>A business path is a sequence of <code>ContextEntry</code> segments, each identifying a resource by type and ID:</p>
 
@@ -1831,7 +2189,7 @@ String path = GlobalMapperRegistry.getInstance()
 
 <p>Each segment wraps an <code>OLATResourceable</code> &mdash; the same type/key pair used for EventBus channels (see section 6.4). The path reads left to right from the outermost resource (e.g., a repository entry) to the innermost (e.g., a file in a course folder).</p>
 
-<h3>12.2 How It Works: The Dual-Address Architecture</h3>
+<h3>13.2 Dual-Address Architecture</h3>
 
 <!-- Business Path Flow Diagram -->
 <svg viewBox="0 0 750 380" style="max-width:750px;margin:1.5em auto;display:block;font-family:'Segoe UI',sans-serif">
@@ -1900,7 +2258,7 @@ String path = GlobalMapperRegistry.getInstance()
 
 <p><strong>Inbound (URL → state):</strong> When a user navigates to a business path URL (via bookmark, deep link, or "open in new tab"), the <code>AuthenticatedDispatcher</code> parses it into a list of <code>ContextEntry</code> objects and hands them to <code>NewControllerFactory.launch()</code>. The factory looks up a <code>ContextEntryControllerCreator</code> for the first resource type, creates the appropriate controller, and &mdash; if the controller implements <code>Activateable2</code> &mdash; calls <code>activate(ureq, remainingEntries, state)</code> to restore the full navigation state recursively.</p>
 
-<h3>12.3 The Activateable2 Contract</h3>
+<h3>13.3 The Activateable2 Contract</h3>
 
 <p>Controllers that support deep linking implement the <code>Activateable2</code> interface:</p>
 
@@ -1927,7 +2285,7 @@ public void activate(UserRequest ureq, List&lt;ContextEntry&gt; entries, StateEn
     }
 }</code></pre>
 
-<h3>12.4 BusinessControl Chain</h3>
+<h3>13.4 BusinessControl Chain</h3>
 
 <p>The <code>BusinessControl</code> interface models the business path as a linked list, mirroring the controller hierarchy. Each <code>WindowControl</code> in the controller tree wraps a <code>StackedBusinessControl</code> that points to its parent. When a controller updates its context entry, the full chain can be serialized top-down to produce the complete business path.</p>
 
@@ -1940,7 +2298,7 @@ public void activate(UserRequest ureq, List&lt;ContextEntry&gt; entries, StateEn
 
 <p>The factory method <code>BusinessControlFactory.createBusinessWindowControl(contextEntry, parentWControl)</code> creates a new layer in both the WindowControl and BusinessControl chains simultaneously.</p>
 
-<h3>12.5 NewControllerFactory &amp; ContextEntryControllerCreator</h3>
+<h3>13.5 NewControllerFactory</h3>
 
 <p><code>NewControllerFactory</code> is the central registry that maps resource types to controller creators. Each resource type (e.g., <code>"RepositoryEntry"</code>, <code>"HomeSite"</code>, <code>"CatalogEntry"</code>) registers a <code>ContextEntryControllerCreator</code> that knows how to:</p>
 
@@ -1952,7 +2310,7 @@ public void activate(UserRequest ureq, List&lt;ContextEntry&gt; entries, StateEn
 
 <p>The launch process integrates with the <strong>tab system</strong> (<code>DTabs</code>): resources open as tabs in the main UI, and activating an already-open tab simply calls <code>activate()</code> on its controller rather than creating a new one.</p>
 
-<h3>12.6 Session Resumption</h3>
+<h3>13.6 Session Resumption</h3>
 
 <p>The business path also powers <strong>session resumption</strong>. The <code>HistoryManager</code> persists the user's last navigation point (as a <code>HistoryPoint</code> containing the business path and context entries). On the next login, the <code>ResumeController</code> can offer to restore the previous state by re-launching the saved business path through the same <code>NewControllerFactory.launch()</code> mechanism.</p>
 
@@ -1963,7 +2321,7 @@ public void activate(UserRequest ureq, List&lt;ContextEntry&gt; entries, StateEn
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="dispose">13. Controller Disposal &amp; Housekeeping</h2>
+<h2 id="dispose">14. Controller Disposal &amp; Housekeeping</h2>
 
 <p>In a server-centric architecture where UI state lives on the server, proper cleanup is critical to prevent memory leaks. Every controller, mapper, listener, and EventBus subscription consumes server memory. The framework provides a hierarchical disposal mechanism that automatically cleans up the controller tree.</p>
 
@@ -1981,7 +2339,7 @@ public void activate(UserRequest ureq, List&lt;ContextEntry&gt; entries, StateEn
 
 <p>Once <code>disposed = true</code>, the controller silently ignores all incoming events. If a user somehow triggers a request to a disposed controller (e.g., stale browser tab), the framework displays a "page expired" message via the <code>wrapperPanel</code>.</p>
 
-<h3>Automatic Cleanup (BasicController.doPreDispose)</h3>
+<h3>Automatic Cleanup (no developer action needed)</h3>
 
 <p>The framework handles these automatically &mdash; <strong>no developer action needed</strong>:</p>
 
@@ -1991,7 +2349,7 @@ public void activate(UserRequest ureq, List&lt;ContextEntry&gt; entries, StateEn
 <li><strong>Disposable form items</strong> (e.g., <code>FileElement</code> with temp files) &mdash; <code>FormBasicController</code> disposes all <code>Disposable</code> form items</li>
 </ul>
 
-<h3>Manual Cleanup (Override doDispose)</h3>
+<h3>Manual Cleanup (override doDispose)</h3>
 
 <p>Developers must handle cleanup for resources the framework doesn't track:</p>
 
@@ -2042,7 +2400,7 @@ detailCtrl = <span class="kw">new</span> DetailController(ureq, wControl, item);
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="a11y">14. Accessibility (a11y)</h2>
+<h2 id="a11y">15. Accessibility (a11y)</h2>
 
 <p>OpenOlat integrates accessibility support directly into the component framework. Rather than requiring developers to add ARIA attributes manually, the built-in component renderers produce accessible HTML by default. This section documents the framework-provided accessibility features and best practices for maintaining them.</p>
 
@@ -2082,6 +2440,16 @@ $r.screenreaderOnly($r.translate("aria.close.dialog"))
 
 <p>Dialogs use the semantic <code>&lt;dialog&gt;</code> HTML element with <code>aria-labelledby</code> linking to the dialog title. The lightbox component adds <code>aria-modal="true"</code> to indicate a modal context to assistive technologies.</p>
 
+<p>A callout trigger follows the ARIA disclosure pattern (OO-8877):</p>
+
+<pre><code>toolsLink.setAriaDialogOpener();   <span class="cmt">// role=button, aria-haspopup=dialog, aria-expanded=false</span>
+calloutCtrl = <span class="kw">new</span> CloseableCalloutWindowController(ureq, getWindowControl(),
+        toolsCtrl.getInitialComponent(), toolsLink, title, <span class="kw">true</span>, <span class="str">""</span>, settings);</code></pre>
+
+<p><code>CloseableCalloutWindowController</code> sets <code>aria-expanded</code> on the trigger when it opens and closes the callout. It sends <code>FunctionCommand.pushDialogFocus()</code> on open and <code>popDialogFocus()</code> on close, so the focus returns to the trigger.</p>
+
+<p><span class="version-badge changed">Changed in 21.1.0</span> The constructors accept the trigger <code>Link</code> or <code>FormLink</code> in place of a DOM ID (OO-9727). Without a title or an <code>aria-label</code> in <code>CalloutSettings</code>, the callout takes the title or the <code>aria-label</code> of the trigger as its label. The focus goes to the first visible element in the callout, not to the hidden close button. Buttons and FlexiTable action columns use the pattern.</p>
+
 <h3>Form Label Association</h3>
 
 <p>The FlexiForm layout templates (<code>form_inputgroup.html</code>, <code>form_default.html</code>) automatically generate <code>&lt;label&gt;</code> elements with the correct <code>for</code> attribute pointing to the form element's DOM ID. When the element has an error, <code>aria-describedby</code> links the input to the error message. Mandatory fields get <code>aria-required="true"</code> automatically.</p>
@@ -2110,7 +2478,7 @@ $r.screenreaderOnly($r.translate("aria.close.dialog"))
 </ul>
 
 <!-- ============================================================ -->
-<h2 id="db">15. Database Access (Hibernate/JPA)</h2>
+<h2 id="db">16. Database Access (Hibernate/JPA)</h2>
 
 <p>OpenOlat's persistence layer wraps Hibernate/JPA behind a <code>DB</code> facade that provides thread-local <code>EntityManager</code> access. This design means any code &mdash; in a controller, service, or background job &mdash; can call <code>DBFactory.getInstance().getCurrentEntityManager()</code> to get the current transaction's entity manager without explicit dependency injection.</p>
 
@@ -2129,12 +2497,18 @@ $r.screenreaderOnly($r.translate("aria.close.dialog"))
 }</code></pre>
 
 <h3>Entity Mapping</h3>
-<p>All entities use JPA annotations and are registered in <code>src/main/resources/META-INF/persistence.xml</code> (~400+ entity classes). The infrastructure includes HikariCP connection pooling, Infinispan L2 cache, and support for MySQL, PostgreSQL, and Oracle.</p>
+<p>All entities use JPA annotations and are registered in <code>src/main/resources/META-INF/persistence.xml</code> (443 <code>&lt;class&gt;</code> entries on 21.1.0). Infrastructure: HikariCP connection pooling (<code>hibernate-hikaricp</code>), Infinispan L2 cache, MySQL/PostgreSQL/Oracle support.</p>
+
+<p><code>PersistenceHelper</code> has static helpers for JPQL results and query building.</p>
+
+<p><span class="version-badge">New in 21.1.0</span> <code>PersistenceHelper.extractBigDecimal(Object[], pos, default)</code> reads an aggregate column of a projection query as <code>BigDecimal</code>.</p>
+
+<p>---</p>
 
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="hibernate">16. Hibernate Session &amp; Entity Lifecycle</h2>
+<h2 id="hibernate">17. Hibernate Session &amp; Entity Lifecycle</h2>
 
 <p>OpenOlat uses a strict <strong>session-per-request</strong> pattern. Each HTTP request gets its own Hibernate <code>EntityManager</code> via a <code>ThreadLocal</code> in <code>DBImpl</code>. The session is lazily created on first database access and closed at the end of the request. Between requests (between clicks), <strong>no Hibernate session exists</strong> &mdash; all entities from the previous request are detached.</p>
 
@@ -2163,7 +2537,7 @@ $r.screenreaderOnly($r.translate("aria.close.dialog"))
 </tbody>
 </table>
 
-<h3>Preventing Stale Objects Between Requests</h3>
+<h3>Preventing Stale Objects</h3>
 
 <p>Since entities are detached after each request's session closes, the next request must reload them. Key patterns:</p>
 
@@ -2220,13 +2594,13 @@ entry.getStatistics().getLaunchCounter();            <span class="cmt">// forces
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="vfs">17. Virtual File System (VFS)</h2>
+<h2 id="vfs">18. Virtual File System (VFS)</h2>
 
 <p>OpenOlat does not access the filesystem directly. Instead, all file operations go through the <strong>Virtual File System (VFS)</strong> &mdash; an abstraction layer that decouples application code from physical storage. The VFS provides a uniform API for reading, writing, copying, and deleting files, while transparently handling security checks, quota enforcement, metadata tracking, versioning, and trash management.</p>
 
 <p>Files are physically stored on disk under the <strong><code>bcroot/</code></strong> directory (the "base canonical root"), while metadata is tracked in the <code>o_vfs_metadata</code> database table. This separation means even read-only or archived files can carry rich metadata (author, title, download count, etc.) without modifying the filesystem.</p>
 
-<h3>17.1 Core Interfaces</h3>
+<h3>18.1 Core Interfaces</h3>
 
 <p>The VFS is built on three interfaces forming a simple hierarchy:</p>
 
@@ -2275,7 +2649,7 @@ entry.getStatistics().getLaunchCounter();            <span class="cmt">// forces
   <li><strong><code>VFSLeaf</code></strong> (extends VFSItem) &mdash; represents files. Adds <code>getInputStream()</code>, <code>getOutputStream(append)</code>, and <code>getSize()</code>.</li>
 </ul>
 
-<h3>17.2 Key Implementations</h3>
+<h3>18.2 Key Implementations</h3>
 
 <p><strong>LocalFolderImpl</strong> and <strong>LocalFileImpl</strong> wrap <code>java.io.File</code> objects pointing into the <code>bcroot/</code> directory. They are the workhorses &mdash; most VFS operations ultimately hit these classes. Both extend <code>LocalImpl</code>, which handles security callback inheritance and capability checks.</p>
 
@@ -2295,7 +2669,7 @@ root.addContainersChildren(courseFolder, true);  // enableWrite=true → write t
 
 <p><strong>VirtualContainer</strong> is a simple in-memory container (not backed by filesystem, not writable) for assembling ad-hoc collections of VFS items.</p>
 
-<h3>17.3 Security Callbacks</h3>
+<h3>18.3 Security Callbacks</h3>
 
 <p>Access control is decentralized: each VFS item can carry a <code>VFSSecurityCallback</code> that defines what operations are permitted. The callback interface includes:</p>
 
@@ -2320,7 +2694,7 @@ root.addContainersChildren(courseFolder, true);  // enableWrite=true → write t
   <li><strong><code>DefaultVFSSecurityCallback</code></strong> &mdash; everything denied. Safe fallback.</li>
 </ul>
 
-<h3>17.4 Metadata &amp; Versioning</h3>
+<h3>18.4 Metadata &amp; Versioning</h3>
 
 <p>File metadata is managed by <strong><code>VFSRepositoryService</code></strong> and stored in the <code>o_vfs_metadata</code> database table. Metadata is separate from the file itself &mdash; the <code>VFSMetadata</code> interface exposes:</p>
 
@@ -2335,35 +2709,21 @@ root.addContainersChildren(courseFolder, true);  // enableWrite=true → write t
 
 <p><strong>Trash</strong>: calling <code>delete()</code> on a VFS item does not permanently remove it. Instead, the file is moved to a <code>._ootrash</code> folder within the same parent directory, and its metadata is marked as deleted. <code>deleteSilently()</code> bypasses this and removes permanently. Trash cleanup is handled by <code>VFSRepositoryService.cleanTrash()</code>.</p>
 
-<h3>17.5 Filtering</h3>
+<h3>18.5 Quotas</h3>
+<p>Storage quotas are enforced through security callbacks. A <code>Quota</code> object gives <code>getQuotaKB()</code> (maximum storage) and <code>getUlLimitKB()</code> (per-upload limit). <code>Quota.UNLIMITED</code> (-1) disables the check. <code>LocalFolderImpl</code> checks the quota automatically during <code>copyFrom()</code>:</p>
 
-<p>The <code>VFSItemFilter</code> interface (single method <code>accept(VFSItem)</code>) controls which items appear when listing a container. Filters can be passed to <code>getItems(filter)</code> or set as default on a container via <code>setDefaultItemFilter()</code>.</p>
-
-<p>Built-in filters include <code>VFSSystemItemFilter</code> (excludes hidden files and <code>__MACOSX</code>), <code>VFSLeafFilter</code> (files only), <code>VFSContainerFilter</code> (folders only), <code>VFSItemSuffixFilter</code> (by extension), and composites like <code>VFSAndFilter</code> / <code>VFSOrFilter</code>.</p>
-
-<h3>17.6 Quota Management</h3>
-
-<p>Storage quotas are enforced through security callbacks. A <code>Quota</code> object specifies <code>getQuotaKB()</code> (maximum storage) and <code>getUlLimitKB()</code> (per-upload limit). The constant <code>Quota.UNLIMITED = -1</code> disables enforcement.</p>
-
-<p>Quota is checked automatically during <code>copyFrom()</code> operations in <code>LocalFolderImpl</code>. You can also check programmatically:</p>
-
-<pre><code>long quotaLeftKB = VFSManager.getQuotaLeftKB(container);
-if (quotaLeftKB != Quota.UNLIMITED &amp;&amp; quotaLeftKB &lt; (fileSize / 1024)) {
-    // Not enough space
+<pre><code><span class="kw">long</span> quotaLeftKB = VFSManager.getQuotaLeftKB(container);
+<span class="kw">if</span> (quotaLeftKB != Quota.UNLIMITED &amp;&amp; quotaLeftKB &lt; (fileSize / 1024)) {
+    <span class="cmt">// Not enough space</span>
 }</code></pre>
 
-<h3>17.7 VFSManager Utilities</h3>
+<h3>18.6 Utilities</h3>
+<p><code>VFSManager</code> provides static helpers: <code>olatRootContainer(relPath)</code> / <code>olatRootLeaf(relPath)</code> for bcroot access, <code>resolveFile(root, path)</code> for lookups, <code>resolveOrCreateContainerFromPath()</code> / <code>resolveOrCreateLeafFromPath()</code> for path creation, <code>getRealPath()</code> to unwrap virtual containers, <code>findInheritedSecurityCallback()</code> to find effective permissions, <code>copyContent()</code> to write streams and leaves. <code>VFSContainer.isInPath(path)</code> rejects directory traversal, for example in <code>ZipUtil</code>.</p>
 
-<p>The <code>VFSManager</code> class provides essential static helpers:</p>
+<h3>18.7 Filtering</h3>
+<p><code>VFSItemFilter</code> (single method <code>accept(VFSItem)</code>) controls which items appear in <code>getItems()</code>. Built-in: <code>VFSSystemItemFilter</code> (excludes hidden files and <code>__MACOSX</code>), <code>VFSLeafFilter</code> (files only), <code>VFSContainerFilter</code> (folders only), <code>VFSItemSuffixFilter</code> (by extension), <code>VFSAndFilter</code>/<code>VFSOrFilter</code> (composites). Set default filter on a container with <code>setDefaultItemFilter()</code>.</p>
 
-<ul>
-  <li><strong>Path resolution</strong>: <code>resolveFile(rootContainer, path)</code>, <code>resolveOrCreateContainerFromPath(base, relPath)</code>, <code>resolveOrCreateLeafFromPath(base, relPath)</code></li>
-  <li><strong>Root access</strong>: <code>olatRootContainer(relPath)</code> and <code>olatRootLeaf(relPath)</code> create VFS items from paths relative to <code>bcroot/</code></li>
-  <li><strong>Security helpers</strong>: <code>findInheritingSecurityCallback(item)</code> walks up the tree; <code>isInPath(path)</code> prevents directory traversal attacks</li>
-  <li><strong>Real path</strong>: <code>getRealPath(container)</code> unwraps NamedContainerImpl and MergeSource to get the actual filesystem path</li>
-</ul>
-
-<h3>17.8 HTTP File Delivery</h3>
+<h3>18.8 HTTP File Delivery</h3>
 
 <p><code>VFSMediaResource</code> bridges VFS and HTTP: it wraps a <code>VFSLeaf</code> and implements the <code>MediaResource</code> interface for browser delivery. It handles MIME types, Content-Disposition headers, range requests for streaming, and cache control. For security, HTML and SVG files receive restrictive CSP headers.</p>
 
@@ -2373,7 +2733,7 @@ VFSMediaResource resource = new VFSMediaResource(file);
 resource.setDownloadable(true);  // Force download instead of inline
 ureq.getDispatchResult().setResultingMediaResource(resource);</code></pre>
 
-<h3>17.9 Real-World Example: MergedCourseContainer</h3>
+<h3>18.9 Real-World Example: MergedCourseContainer</h3>
 
 <p>The <code>MergedCourseContainer</code> demonstrates the full power of the VFS. It creates a unified view of a course's file resources by merging multiple sources:</p>
 
@@ -2409,9 +2769,9 @@ ureq.getDispatchResult().setResultingMediaResource(resource);</code></pre>
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="spring">18. Spring &amp; Dependency Injection</h2>
+<h2 id="spring">19. Spring &amp; Dependency Injection</h2>
 
-<p>OpenOlat uses Spring for dependency injection, with a hybrid approach: newer code uses annotation-based wiring (<code>@Service</code>, <code>@Autowired</code>), while older code uses XML configuration. The main Spring context at <code>src/main/java/org/olat/_spring/mainContext.xml</code> imports 70+ module-specific contexts, each located in their module's <code>_spring/</code> directory.</p>
+<p>OpenOlat uses Spring for dependency injection, with a hybrid approach: newer code uses annotation-based wiring (<code>@Service</code>, <code>@Autowired</code>), while older code uses XML configuration. The main Spring context at <code>src/main/java/org/olat/_spring/mainContext.xml</code> imports 30 top-level contexts (for example <code>mainCorecontext.xml</code>, <code>modulesContext.xml</code>, <code>restApiContext.xml</code>). These import the contexts in the <code>_spring/</code> folders of the modules. A <code>context:component-scan</code> picks up the annotated beans.</p>
 
 <p>In non-Spring-managed code (e.g., controllers, which are created by other controllers rather than by Spring), services are accessed via the service locator pattern:</p>
 
@@ -2425,12 +2785,122 @@ UserManager userManager = CoreSpringFactory.getImpl(UserManager.<span class="kw"
     <span class="ann">@Autowired</span> <span class="kw">private</span> UserManager userManager;
 }</code></pre>
 
-<p>Configuration properties flow from <code>src/main/resources/serviceconfig/olat.properties</code> (defaults) through <code>olat.local.properties</code> (overrides, not committed) into Spring beans via <code>@Value</code> annotations or property placeholders.</p>
+<p>Configuration properties flow from <code>src/main/resources/serviceconfig/olat.properties</code> (defaults) through <code>olat.local.properties</code> (overrides, not committed) into Spring beans via <code>@Value</code> annotations or property placeholders. An <code>AbstractSpringModule</code> persists values changed in the administration UI to <code>{userdata}/system/configuration/{FQCN}.properties</code> and reads them in <code>initFromChangedProperties()</code>.</p>
+
+<p>Controllers are not Spring beans, but the framework autowires them: <code>@Autowired</code> fields work in every controller. <code>BasicController</code> itself uses an <code>@Autowired MapperService</code>.</p>
+
+<h3 id="spring-ai">AI Services</h3>
+<p>The AI services are Spring beans in <code>org.olat.core.commons.services.ai</code>. Inject the feature service (for example <code>AiMCQuestionService</code>) and never an SPI. Section 31 describes the architecture, the task pools and the user control of AI features.</p>
+
+<p>---</p>
 
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="scheduler">19. Scheduler &amp; Background Tasks</h2>
+<h2 id="modules">20. Module Configuration (<code>AbstractSpringModule</code>)</h2>
+
+<p>A module class holds the configuration of a feature: switches, limits, defaults. It extends <code>AbstractSpringModule</code> (package <code>org.olat.core.configuration</code>) and is a Spring bean. Examples: <code>AiModule</code>, <code>RestModule</code>, <code>HttpClientModule</code>.</p>
+
+<h3>Lifecycle</h3>
+<table>
+<thead><tr><th>Phase</th><th>Method</th><th>What happens</th></tr></thead>
+<tbody>
+<tr><td>Construction</td><td><code>AbstractSpringModule(coordinatorManager)</code></td><td>Creates the <code>PersistedProperties</code> of the module.</td></tr>
+<tr><td>Spring init</td><td><code>afterPropertiesSet()</code></td><td>Loads the persisted file, calls <code>initDefaultProperties()</code>, then <code>init()</code>.</td></tr>
+<tr><td>Init</td><td><code>init()</code> (abstract)</td><td>Reads each value: persisted value first, else the <code>@Value</code> default from <code>olat.properties</code>.</td></tr>
+<tr><td>Change</td><td><code>initFromChangedProperties()</code> (abstract)</td><td>Runs after every save, on this node and on all other nodes.</td></tr>
+<tr><td>Shutdown</td><td><code>destroy()</code></td><td>Deregisters the event listener.</td></tr>
+</tbody>
+</table>
+
+<h3>Reading and Writing Settings</h3>
+<pre><code><span class="ann">@Service</span>
+<span class="kw">public</span> <span class="kw">class</span> MyModule <span class="kw">extends</span> AbstractSpringModule {
+
+    <span class="kw">private</span> <span class="kw">static</span> <span class="kw">final</span> String MY_ENABLED = <span class="str">"my.enabled"</span>;
+
+    <span class="ann">@Value</span>(<span class="str">"${my.enabled:false}"</span>)
+    <span class="kw">private</span> <span class="kw">boolean</span> enabled;
+
+    <span class="ann">@Autowired</span>
+    <span class="kw">public</span> MyModule(CoordinatorManager coordinatorManager) {
+        <span class="kw">super</span>(coordinatorManager);
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="kw">void</span> init() {
+        String enabledObj = getStringPropertyValue(MY_ENABLED, <span class="kw">true</span>);
+        <span class="kw">if</span> (StringHelper.containsNonWhitespace(enabledObj)) {
+            enabled = <span class="str">"true"</span>.equals(enabledObj);
+        }
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">protected</span> <span class="kw">void</span> initFromChangedProperties() {
+        init();
+    }
+
+    <span class="kw">public</span> <span class="kw">void</span> setEnabled(<span class="kw">boolean</span> enabled) {
+        <span class="kw">this</span>.enabled = enabled;
+        setStringProperty(MY_ENABLED, Boolean.toString(enabled), <span class="kw">true</span>); <span class="cmt">// save and fire the event</span>
+    }
+}</code></pre>
+
+<ul>
+<li>Getters: <code>getStringPropertyValue()</code>, <code>getIntPropertyValue()</code>, <code>getBooleanPropertyValue()</code>, <code>getLongPropertyValue()</code>.</li>
+<li>Setters: <code>setStringProperty()</code>, <code>setIntProperty()</code>, <code>setBooleanProperty()</code>, <code>setLongProperty()</code>, <code>removeProperty()</code>. With <code>saveConfiguration=true</code>, the value is saved at once. With <code>false</code>, call <code>savePropertiesAndFireChangedEvent()</code> later.</li>
+<li><code>setSecretStringProperty()</code> stores a value without writing it to the log. <code>setStringProperty()</code> writes every change to the audit log (<code>Tracing.M_AUDIT</code>).</li>
+<li>The constructor <code>AbstractSpringModule(coordinatorManager, true)</code> encrypts the persisted file (secured module).</li>
+</ul>
+
+<h3>Storage and Cluster Propagation</h3>
+<p><code>PersistedProperties</code> stores the values in the file <code>{userdata}/system/configuration/{fully.qualified.ClassName}.properties</code>. The database table <code>o_property</code> is not used for module settings. It belongs to <code>PropertyManager</code>, which stores properties of users, groups and resources.</p>
+
+<div class="diagram-box">
+<svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs><marker id="ahm" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#64748b"/></marker></defs>
+  <rect x="20" y="20" width="300" height="190" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="170" y="44" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">Node A (admin saves)</text>
+  <rect x="40" y="60" width="260" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="170" y="80" text-anchor="middle" font-size="10" fill="#1e40af">module.setXxx(value) → setStringProperty(..., true)</text>
+  <rect x="40" y="105" width="260" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="170" y="125" text-anchor="middle" font-size="10" fill="#1e40af">PersistedProperties.savePropertiesAndFireChangedEvent()</text>
+  <rect x="40" y="150" width="260" height="40" rx="5" fill="#dcfce7" stroke="#86efac"/>
+  <text x="170" y="167" text-anchor="middle" font-size="10" fill="#15803d">event(): isEventOnThisNode → no reload</text>
+  <text x="170" y="182" text-anchor="middle" font-size="10" fill="#15803d">initFromChangedProperties()</text>
+  <rect x="400" y="20" width="300" height="190" rx="12" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="550" y="44" text-anchor="middle" font-size="13" fill="#15803d" font-weight="700">Node B</text>
+  <rect x="420" y="150" width="260" height="40" rx="5" fill="#dcfce7" stroke="#86efac"/>
+  <text x="550" y="167" text-anchor="middle" font-size="10" fill="#15803d">event(): loadPropertiesFromFile()</text>
+  <text x="550" y="182" text-anchor="middle" font-size="10" fill="#15803d">initFromChangedProperties()</text>
+  <rect x="420" y="60" width="260" height="50" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="550" y="80" text-anchor="middle" font-size="10" fill="#92400e" font-weight="700">shared userdata</text>
+  <text x="550" y="96" text-anchor="middle" font-size="9" fill="#92400e">system/configuration/{FQCN}.properties</text>
+  <line x1="300" y1="120" x2="418" y2="88" stroke="#f59e0b" stroke-width="1.4" marker-end="url(#ahm)"/>
+  <text x="330" y="96" font-size="9" fill="#92400e">write file</text>
+  <line x1="300" y1="130" x2="418" y2="165" stroke="#64748b" stroke-width="1.6" marker-end="url(#ahm)"/>
+  <text x="360" y="190" text-anchor="middle" font-size="8.5" fill="#64748b">PersistedProperties-</text>
+  <text x="360" y="202" text-anchor="middle" font-size="8.5" fill="#64748b">ChangedEvent (JMS)</text>
+  <line x1="170" y1="135" x2="170" y2="148" stroke="#93c5fd" stroke-width="1.2" marker-end="url(#ahm)"/>
+  <line x1="550" y1="110" x2="550" y2="148" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#ahm)"/>
+</svg>
+<div class="diagram-caption">Figure 11: A saved module setting is written to the shared file and announced on the EventBus</div>
+</div>
+
+
+<p>Rules:</p>
+
+<ul>
+<li>A saved value wins over <code>olat.properties</code> and <code>olat.local.properties</code>. A changed default in <code>olat.properties</code> has no effect on an instance that saved the value.</li>
+<li>Deleting the file restores the defaults.</li>
+<li>Read a setting from the module each time you need it, if the change must apply at runtime. Copy it at init time only if a restart is acceptable.</li>
+<li>An upgrade runs after <code>init()</code>. It must call the setter of the module to change a value (section 23).</li>
+</ul>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="scheduler">21. Scheduler &amp; Background Tasks</h2>
 
 <p>OpenOlat uses <strong>Quartz</strong> for all periodic/scheduled tasks &mdash; no Spring <code>@Scheduled</code> annotations are used. The scheduler is configured in <code>schedulerContext.xml</code> with a 5-thread pool.</p>
 
@@ -2450,24 +2920,152 @@ UserManager userManager = CoreSpringFactory.getImpl(UserManager.<span class="kw"
 }</code></pre>
 
 <h3>TaskExecutorManager</h3>
+<p><code>TaskExecutorManager</code> has thread pools for async (non-periodic) execution. A <code>TaskRunnable</code> selects its pool with <code>TaskRunnable.Queue</code>:</p>
 
-<p>For asynchronous (non-periodic) task execution, <code>TaskExecutorManager</code> provides multiple thread pools:</p>
+<table>
+<thead><tr><th>Pool (Spring bean)</th><th>Threads</th><th>Queue</th></tr></thead>
+<tbody>
+<tr><td><code>mpTaskSpringExecutor</code></td><td>2 to 5</td><td><code>standard</code> (default)</td></tr>
+<tr><td><code>sequentialTaskSpringExecutor</code></td><td>1</td><td><code>sequential</code></td></tr>
+<tr><td><code>lowPriorityTaskSpringExecutor</code></td><td>2</td><td><code>lowPriority</code></td></tr>
+<tr><td><code>externalPriorityTaskSpringExecutor</code></td><td>2 to 5</td><td><code>external</code></td></tr>
+<tr><td><code>aiInteractiveTaskSpringExecutor</code></td><td>4 (from <code>AiModule</code>)</td><td><code>aiInteractive</code>: AI calls a user waits for</td></tr>
+<tr><td><code>aiBatchTaskSpringExecutor</code></td><td>2 (from <code>AiModule</code>)</td><td><code>aiBatch</code>: long AI batch work</td></tr>
+</tbody>
+</table>
 
-<ul>
-<li><strong>mpTaskExecutor</strong> &mdash; general purpose (2&ndash;5 threads, queue of 1000)</li>
-<li><strong>sequentialTaskExecutor</strong> &mdash; single thread for ordered execution</li>
-<li><strong>lowPriorityTaskExecutor</strong> &mdash; background work (2 threads)</li>
-<li><strong>externalPriorityTaskExecutor</strong> &mdash; external service calls (2&ndash;5 threads)</li>
-</ul>
+<p><code>AiTaskExecutorService</code> resizes the two AI pools from the <code>AiModule</code> configuration at startup and at runtime (OO-9496). A <code>LongRunnable</code> is persisted in <code>o_ex_task</code> and survives a restart (section 22).</p>
 
 <h3>Key Scheduled Jobs</h3>
+<p>Notifications, statistics, search indexing, REST token cleanup, reminders, video transcoding, assessment evaluation, lifecycle management, and more. All are Quartz triggers in <code>schedulerContext.xml</code> or in a module context.</p>
 
-<p>Notifications email, statistics updates, search indexing (Lucene), REST token cleanup, reminders, video transcoding, assessment evaluation, lifecycle management, and more &mdash; all configured as Quartz triggers in <code>schedulerContext.xml</code>.</p>
+<p>A job that must run on one cluster node only uses the singleton pattern. The trigger references the bean <code>myJob.${cluster.singleton.services}</code>. The bean <code>myJob.enabled</code> runs the job class, the bean <code>myJob.disabled</code> runs <code>DummyJob</code>:</p>
+
+<pre><code>&lt;bean id=<span class="str">"apiAuditRetentionTrigger"</span> class=<span class="str">"org.springframework.scheduling.quartz.CronTriggerFactoryBean"</span>&gt;
+  &lt;property name=<span class="str">"jobDetail"</span> ref=<span class="str">"apiAuditRetentionJob.${cluster.singleton.services}"</span> /&gt;
+  &lt;property name=<span class="str">"cronExpression"</span> value=<span class="str">"0 41 1 * * ?"</span> /&gt;
+&lt;/bean&gt;
+&lt;bean id=<span class="str">"apiAuditRetentionJob.enabled"</span> class=<span class="str">"org.springframework.scheduling.quartz.JobDetailFactoryBean"</span> lazy-init=<span class="str">"true"</span>&gt;
+  &lt;property name=<span class="str">"jobClass"</span> value=<span class="str">"org.olat.restapi.audit.manager.ApiAuditLogRetentionJob"</span> /&gt;
+&lt;/bean&gt;
+&lt;bean id=<span class="str">"apiAuditRetentionJob.disabled"</span> class=<span class="str">"org.springframework.scheduling.quartz.JobDetailFactoryBean"</span> lazy-init=<span class="str">"true"</span>&gt;
+  &lt;property name=<span class="str">"jobClass"</span> value=<span class="str">"org.olat.core.commons.services.scheduler.DummyJob"</span> /&gt;
+&lt;/bean&gt;</code></pre>
+
+<p><span class="version-badge">New in 21.1.0</span> <code>ApiAuditLogRetentionJob</code> deletes the rows of the REST API audit log that are older than <code>restapi.auditlog.retention.days</code> (section 37).</p>
+
+<p>---</p>
 
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="upgrades">20. Upgrade Infrastructure (<code>org.olat.upgrade</code>)</h2>
+<h2 id="longtasks">22. Persisted Long-Running Tasks</h2>
+
+<p>A task that takes longer than a user waits, or that must survive a restart, runs as a <code>LongRunnable</code> (package <code>org.olat.core.commons.services.taskexecutor</code>). <code>TaskExecutorManager</code> persists it in the table <code>o_ex_task</code> and runs it on a thread pool. Examples: <code>BulkAssessmentTask</code>, <code>DeleteUserDataTask</code>, <code>EssayAiCorrectionTask</code>, <code>QtiQuestionGenerationTask</code>.</p>
+
+<div class="diagram-box">
+<svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs><marker id="aht" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#64748b"/></marker></defs>
+  <rect x="20" y="70" width="120" height="50" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="80" y="92" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">execute()</text>
+  <text x="80" y="108" text-anchor="middle" font-size="9" fill="#92400e">row in o_ex_task</text>
+  <rect x="180" y="70" width="110" height="50" rx="8" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="235" y="92" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">newTask</text>
+  <text x="235" y="108" text-anchor="middle" font-size="9" fill="#1e40af">waits for a pool</text>
+  <rect x="340" y="70" width="130" height="50" rx="8" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="405" y="90" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">inWork</text>
+  <text x="405" y="104" text-anchor="middle" font-size="9" fill="#1e40af">pickTaskForRun()</text>
+  <text x="405" y="116" text-anchor="middle" font-size="9" fill="#1e40af">node ID + boot ID</text>
+  <rect x="530" y="30" width="80" height="40" rx="8" fill="#dcfce7" stroke="#86efac"/>
+  <text x="570" y="55" text-anchor="middle" font-size="11" fill="#15803d" font-weight="700">done</text>
+  <rect x="530" y="120" width="80" height="40" rx="8" fill="#fee2e2" stroke="#fca5a5"/>
+  <text x="570" y="145" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">failed</text>
+  <line x1="140" y1="95" x2="178" y2="95" stroke="#64748b" stroke-width="1.6" marker-end="url(#aht)"/>
+  <line x1="290" y1="95" x2="338" y2="95" stroke="#64748b" stroke-width="1.6" marker-end="url(#aht)"/>
+  <text x="314" y="62" text-anchor="middle" font-size="9" fill="#64748b">ExecutorJob (5 min)</text>
+  <text x="314" y="74" text-anchor="middle" font-size="9" fill="#64748b">or isDelayed()=false</text>
+  <line x1="470" y1="85" x2="528" y2="55" stroke="#22c55e" stroke-width="1.4" marker-end="url(#aht)"/>
+  <line x1="470" y1="105" x2="528" y2="138" stroke="#ef4444" stroke-width="1.4" marker-end="url(#aht)"/>
+  <path d="M380,120 C360,172 450,172 430,122" fill="none" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#aht)"/>
+  <text x="330" y="182" text-anchor="middle" font-size="9" fill="#64748b">restart of the node: taskToDos picks inWork rows with an old boot ID again</text>
+  <text x="660" y="100" text-anchor="middle" font-size="9" fill="#64748b">TaskEvent</text>
+  <text x="660" y="112" text-anchor="middle" font-size="9" fill="#64748b">on TASK_EVENTS</text>
+</svg>
+<div class="diagram-caption">Figure 12: Status of a persisted task in o_ex_task and the restart recovery</div>
+</div>
+
+
+<h3>Runnable Types</h3>
+<table>
+<thead><tr><th>Type</th><th>Persisted</th><th>Use for</th></tr></thead>
+<tbody>
+<tr><td><code>Runnable</code> / <code>TaskRunnable</code></td><td>No</td><td>Short async work. Lost on restart. <code>taskExecutorManager.execute(runnable)</code></td></tr>
+<tr><td><code>LongRunnable</code> (extends <code>TaskRunnable</code>, <code>Serializable</code>)</td><td>Yes, XStream XML in <code>o_ex_task</code></td><td>Long or important work that must finish after a restart</td></tr>
+<tr><td><code>TaskAwareRunnable</code></td><td>(mixin)</td><td>Receives its <code>Task</code> row with <code>setTask()</code>, for example to report progress</td></tr>
+</tbody>
+</table>
+
+<p><code>TaskRunnable.getExecutorsQueue()</code> selects the pool (<code>Queue.standard</code> is the default, section 21). <code>LongRunnable.isDelayed()</code> defaults to <code>true</code>: the task waits for the next run of the executor job. Return <code>false</code> to start it at once.</p>
+
+<h3>Writing a Task</h3>
+<pre><code><span class="kw">public</span> <span class="kw">class</span> MyExportTask <span class="kw">implements</span> LongRunnable {
+
+    <span class="kw">private</span> <span class="kw">static</span> <span class="kw">final</span> <span class="kw">long</span> serialVersionUID = 1L;
+
+    <span class="kw">private</span> <span class="kw">final</span> Long exportKey;          <span class="cmt">// keep the state small: keys, not entities</span>
+
+    <span class="kw">public</span> MyExportTask(Long exportKey) {
+        <span class="kw">this</span>.exportKey = exportKey;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> Queue getExecutorsQueue() {
+        <span class="kw">return</span> Queue.lowPriority;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="kw">boolean</span> isDelayed() {
+        <span class="kw">return</span> <span class="kw">false</span>;                        <span class="cmt">// start now, not with the next executor job</span>
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="kw">void</span> run() {
+        CoreSpringFactory.getImpl(MyExportService.<span class="kw">class</span>).runExport(exportKey);
+    }
+}
+
+<span class="cmt">// submit</span>
+taskExecutorManager.execute(<span class="kw">new</span> MyExportTask(export.getKey()), getIdentity(), resource, <span class="str">"my-export"</span>, <span class="kw">null</span>);</code></pre>
+
+<ul>
+<li>The task is serialized with XStream. Store keys and simple values, never entities or controllers.</li>
+<li>Look up services with <code>CoreSpringFactory.getImpl()</code> inside <code>run()</code>, because the task is deserialized without Spring.</li>
+<li><code>execute(task, creator, resource, resSubPath, scheduledDate)</code> binds the task to a resource. <code>getTasks(resource)</code> and <code>hasRunningTasks(resources)</code> find it again, for example to show a status.</li>
+<li>A <code>TaskCompanionFactory</code> creates a companion row in the same transaction as the task.</li>
+<li><code>updateProgress(task, progress, checkpoint)</code> and <code>getProgress(task)</code> report progress.</li>
+</ul>
+
+<h3>Lifecycle and Recovery</h3>
+<p><code>TaskStatus</code> values: <code>newTask</code>, <code>inWork</code>, <code>edition</code>, <code>failed</code>, <code>done</code>, <code>ignore</code>, <code>cancelled</code>.</p>
+
+<ol>
+<li><code>execute()</code> writes the row with status <code>newTask</code> and commits.</li>
+<li>The Quartz job <code>taskExecutorJob</code> (<code>ExecutorJob</code>, every 5 minutes on every node) or the direct start (<code>isDelayed() == false</code>) wraps the key in a <code>PersistentTaskRunnable</code>.</li>
+<li><code>PersistentTaskDAO.pickTaskForRun()</code> locks the row (<code>select for update</code>). It sets <code>inWork</code>, the node ID and the boot ID of the node. Only one node can pick a task.</li>
+<li>The task runs. The runner commits the DB session and marks the row as done, or rolls back and marks it <code>failed</code>.</li>
+<li>The EventBus channel <code>TaskExecutorManager.TASK_EVENTS</code> receives <code>TaskEvent.TASK_STARTED</code> and <code>TASK_DONE</code>.</li>
+</ol>
+
+<p>Recovery after a restart: the named query <code>taskToDos</code> also returns <code>inWork</code> tasks of the same node with another boot ID. A task that was running when its node stopped starts again on that node. Write <code>run()</code> so that a second run is safe.</p>
+
+<p>When a pool is full (<code>RejectedExecutionException</code>), the task stays <code>newTask</code> and the next executor job tries again.</p>
+
+<p><code>pickTaskForEdition()</code> / <code>returnTaskAfterEdition()</code> protect a task while a user edits its parameters. <code>cancel()</code> stops a waiting task.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="upgrades">23. Upgrade Infrastructure (<code>org.olat.upgrade</code>)</h2>
 
 <p>OpenOlat includes a built-in migration framework in the <code>org.olat.upgrade</code> package that handles both database schema changes and data transformations when upgrading between versions. The system is designed to run automatically on startup, track progress persistently, and support clustered deployments.</p>
 
@@ -2476,7 +3074,7 @@ UserManager userManager = CoreSpringFactory.getImpl(UserManager.<span class="kw"
 <p>The upgrade system operates in two distinct phases:</p>
 
 <ol>
-<li><strong>Database schema upgrades</strong> &mdash; Executed early during Spring context initialization by the <code>DatabaseUpgradeManager</code>. These run SQL ALTER scripts (located in <code>/database/mysql/alter_*.sql</code> and <code>/database/postgresql/alter_*.sql</code>) to bring the database schema up to date. This happens <em>before</em> most services and modules are initialized, ensuring the schema is ready for application code.</li>
+<li><strong>Database schema upgrades:</strong> Executed early during Spring context initialization by the <code>DatabaseUpgradeManager</code>. These run SQL ALTER scripts (located in <code>src/main/resources/database/mysql/</code>, <code>.../postgresql/</code> and <code>.../oracle/</code>, for example <code>alter_21_0_x_to_21_1_0.sql</code>) to bring the database schema up to date. This happens <em>before</em> most services and modules are initialized, ensuring the schema is ready for application code.</li>
 <li><strong>Post-system-init upgrades</strong> &mdash; Executed after the entire application (all Spring beans, modules, and services) has fully initialized. The <code>UpgradeManager</code> listens for the <code>FrameworkStartedEvent</code> and then runs data migration logic in a background thread via <code>TaskExecutorManager</code>. These upgrades can use any service or manager through <code>@Autowired</code> injection.</li>
 </ol>
 
@@ -2587,7 +3185,11 @@ UserManager userManager = CoreSpringFactory.getImpl(UserManager.<span class="kw"
 <li><strong>Service injection</strong> &mdash; Upgrades are Spring beans and can <code>@Autowired</code> any service.</li>
 <li><strong>Batch processing</strong> &mdash; Large data migrations should process in batches with <code>intermediateCommit()</code>.</li>
 <li><strong>Version constant</strong> &mdash; Format is <code>OLAT_XX.Y.Z</code> (e.g., <code>OLAT_20.3.0</code>).</li>
+<li><strong>Schema script per dialect:</strong> Add the same change to the MySQL, PostgreSQL and Oracle script. Register a <code>DatabaseUpgrade</code> bean with <code>alterDbStatements</code> in <code>databaseUpgradeContext.xml</code>.</li>
+<li><strong>Upgrade-private entities:</strong> An upgrade that needs an old table layout maps it with its own entity in <code>org.olat.upgrade.model</code> (for example <code>UpgradeOrganisationUnitMembershipImpl</code>). Register the class in <code>persistence.xml</code>.</li>
 </ul>
+
+<p><span class="version-badge">New in 21.1.0</span> <code>OLATUpgrade_21_1_0</code> shows how to introduce a secure default without a change of behaviour for existing instances. A new instance gets <code>http.ssrf.protection.enabled=true</code>. The upgrade switches the protection off on an existing instance, unless the key is set in <code>olat.local.properties</code> or as a system property (<code>isExplicitlyConfigured()</code>). The same upgrade adds the new user property <code>customerNumber</code> to the usage contexts of instances with a customized user property configuration.</p>
 
 <h3>State Tracking</h3>
 
@@ -2606,7 +3208,7 @@ UserManager userManager = CoreSpringFactory.getImpl(UserManager.<span class="kw"
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="guiprefs">21. GUI Preferences</h2>
+<h2 id="guiprefs">24. GUI Preferences</h2>
 
 <p>OpenOlat provides a per-user preference storage system for persisting UI state across sessions &mdash; such as table column visibility, selected segments, and view modes. This uses the <code>Preferences</code> interface and the <code>GuiPreferenceService</code>.</p>
 
@@ -2623,7 +3225,7 @@ prefs.putAndSave(MyController.<span class="kw">class</span>, <span class="str">"
 
 <h3>GuiPreferenceService</h3>
 
-<p><code>GuiPreferenceService</code> is the database-backed storage service. It provides direct CRUD operations and is used internally by the <code>Preferences</code> implementation. For most controllers, the <code>Preferences</code> interface (accessed via <code>ureq.getUserSession().getGuiPreferences()</code>) is sufficient.</p>
+<p><code>GuiPreferenceService</code> is the database-backed storage service. It provides direct CRUD operations and is used internally by the <code>Preferences</code> implementation. For most controllers, the <code>Preferences</code> interface (accessed via <code>ureq.getUserSession().getGuiPreferences()</code>) is sufficient. Guests get transient <code>RamPreferences</code>, because all guests of one language share one identity.</p>
 
 <h3>Common Uses</h3>
 
@@ -2632,12 +3234,14 @@ prefs.putAndSave(MyController.<span class="kw">class</span>, <span class="str">"
 <li><strong>SegmentView selection</strong> &mdash; remembers which tab/segment the user last selected</li>
 <li><strong>View mode</strong> &mdash; table vs. card view, compact vs. expanded layouts</li>
 <li><strong>Filter state</strong> &mdash; last-used filter settings in list views</li>
+<li><strong>Form sections:</strong> collapsed state of a <code>FormSection</code> with <code>setPersistedStatusId()</code> (<a href="#flexiform">section 8</a>)</li>
+<li><strong>AI choices:</strong> <code>AiUserPreferenceService</code> stores the choice per AI feature (<a href="#spring">section 19</a>)</li>
 </ul>
 
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="i18n">22. Internationalization (i18n)</h2>
+<h2 id="i18n">25. Internationalization (i18n)</h2>
 
 <h3>Core Architecture</h3>
 
@@ -2650,7 +3254,7 @@ prefs.putAndSave(MyController.<span class="kw">class</span>, <span class="str">"
 
 <p>Translation files follow the colocated resource pattern: each UI package contains an <code>_i18n/</code> directory with <code>LocalStrings_XX.properties</code> files (Java <code>.properties</code> format: <code>key=value</code>, <code>#</code> comments, <code>\:</code> escapes colons).</p>
 
-<p><strong>Statistics:</strong> ~382 i18n bundles, ~29,000 English keys, 36 language variants.</p>
+<p><strong>Statistics (21.1.0):</strong> 408 i18n bundles with a <code>LocalStrings_en.properties</code>, about 33,000 English keys, 31 language codes plus the demo overlay <code>en__DEMOVENDOR</code>.</p>
 
 <h3>Locale Resolution Order</h3>
 
@@ -2747,12 +3351,14 @@ I18nManager.getInstance().getLocalizedString(bundleName, key, args, locale, <spa
 
 <h3>Glossary</h3>
 
-<p>See <code>doc/openolat-glossary.md</code> for a glossary of product-specific terms and <code>doc/openolat-glossary-translations.md</code> for canonical translations across languages.</p>
+<p>The end-user glossary of product-specific terms lives in the docs repo at <code>OpenOLAT-docs/sites/reference_glossary/docs/glossary.md</code> (EN) and <code>glossary.de.md</code> (DE). Canonical i18n term mappings across languages live in <code>doc/i18n-translation-reference.yaml</code>; <code>doc/i18n-translation-reference.md</code> is its readable view. Both are generated from the OpenOlat concept map (<code>fxIntelligence/knowledge/openolat/concept-map/</code>) and are not edited by hand.</p>
+
+<p>---</p>
 
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="theming">23. Theming &amp; CSS</h2>
+<h2 id="theming">26. Theming &amp; CSS</h2>
 
 <p>OpenOlat uses SASS-based theming with a layered architecture. Themes live in <code>src/main/webapp/static/themes/</code> and are served via the <code>/raw/</code> dispatcher with versioned URLs for cache-busting.</p>
 
@@ -2792,7 +3398,7 @@ I18nManager.getInstance().getLocalizedString(bundleName, key, args, locale, <spa
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="caching">24. Caching Infrastructure</h2>
+<h2 id="caching">27. Caching Infrastructure</h2>
 
 <p>OpenOlat uses <strong>Infinispan</strong> as its caching layer, accessed through the <code>Coordinator.getCacher()</code> facade. Caches store frequently accessed data (user profiles, course structures, compiled templates) in memory to avoid repeated database or filesystem access.</p>
 
@@ -2826,16 +3432,20 @@ cache.clear()                           <span class="cmt">// flush entire cache<
 
 <h3>Cache Configuration</h3>
 
-<p>Caches are configured in <code>infinispan-config.xml</code>. Pre-defined caches have specific sizes and TTLs; dynamically created caches get defaults (10,000 entries, 15-minute idle timeout). Key caches:</p>
+<p><code>put(key, value, lifespan, maxIdleTime)</code> stores an entry with its own expiration in seconds. It replaced <code>put(key, value, expirationTime)</code> in 21.0.x (OO-9728).</p>
+
+<p><code>getCache(type, name)</code> returns the cache <code>type-name</code>. Caches are configured in <code>src/main/resources/infinispan-config.xml</code>. A cache without an entry gets the defaults of <code>InfinispanCacher</code>: 10,000 entries and 15 minutes max idle.</p>
 
 <table>
 <thead><tr><th>Cache</th><th>Max Entries</th><th>Max Idle</th><th>Content</th></tr></thead>
 <tbody>
-<tr><td><code>CourseFactory-courses</code></td><td>1,500</td><td>1 hour</td><td>Full course structures</td></tr>
+<tr><td><code>CourseFactory-courses</code></td><td>1,500</td><td>1 hour</td><td>Course structures</td></tr>
 <tr><td><code>UserManager-username</code></td><td>20,000</td><td>45 min</td><td>Username lookups</td></tr>
-<tr><td><code>Velocity-templates</code></td><td>7,700</td><td>Never</td><td>Compiled Velocity templates</td></tr>
-<tr><td><code>QTIWorks-testSessionControllers</code></td><td>50,000</td><td>2 hours</td><td>QTI test execution state</td></tr>
-<tr><td><code>VFSLockManager-file-locks</code></td><td>50,000</td><td>6 hours</td><td>WebDAV file locks</td></tr>
+<tr><td><code>Velocity-templates</code></td><td>7,700</td><td>Never</td><td>Compiled templates</td></tr>
+<tr><td><code>QTIWorks-testSessionControllers</code></td><td>50,000</td><td>2 hours</td><td>Test execution state</td></tr>
+<tr><td><code>VFSLockManager-file-locks</code></td><td>50,000</td><td>6 hours</td><td>WebDAV locks</td></tr>
+<tr><td><code>MapperService-sandboxedmapper</code></td><td>default</td><td>1 hour</td><td>Sandboxed mappers of the content domain (section 12)</td></tr>
+<tr><td><code>RequestRateLimiter-window</code></td><td>50,000</td><td>never, lifespan 61 s</td><td><span class="version-badge">New in 21.1.0</span> Counters of the REST rate limiter (section 37)</td></tr>
 </tbody>
 </table>
 
@@ -2849,23 +3459,116 @@ cache.clear()                           <span class="cmt">// flush entire cache<
 <li><strong>Manual flush</strong> &mdash; Administrators can clear individual caches via the admin UI (<code>AllCachesController</code>)</li>
 </ol>
 
-<pre><code><span class="cmt">// Event-driven invalidation pattern:</span>
-<span class="cmt">// 1. After modifying a course, fire event:</span>
-MultiUserEvent event = <span class="kw">new</span> ModifyCourseEvent(courseId);
+<pre><code><span class="cmt">// Event-driven invalidation (MyDataChangedEvent is an example class):</span>
+<span class="cmt">// 1. After a change, fire the event on the channel</span>
 CoordinatorManager.getInstance().getCoordinator().getEventBus()
-    .fireEventToListenersOf(event, courseOres);
+    .fireEventToListenersOf(<span class="kw">new</span> MyDataChangedEvent(dataKey), dataOres);
 
-<span class="cmt">// 2. Listener on each node removes from cache:</span>
-<span class="kw">public void</span> event(Event event) {
-    <span class="kw">if</span> (event <span class="kw">instanceof</span> ModifyCourseEvent mce) {
-        courseCache.remove(mce.getCourseId());
+<span class="cmt">// 2. The listener on every node removes the entry</span>
+<span class="ann">@Override</span>
+<span class="kw">public</span> <span class="kw">void</span> event(Event event) {
+    <span class="kw">if</span> (event <span class="kw">instanceof</span> MyDataChangedEvent e) {
+        dataCache.remove(e.getDataKey());
     }
 }</code></pre>
 
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="logging">25. Logging Infrastructure</h2>
+<h2 id="clustering">28. Clustering</h2>
+
+<p>OpenOlat runs on one node or on several nodes behind a load balancer with sticky sessions. The nodes share the database and the <code>userdata</code> directory. The <code>Coordinator</code> (<code>CoordinatorManager.getInstance().getCoordinator()</code>) gives access to the cluster services: <code>getEventBus()</code>, <code>getLocker()</code>, <code>getSyncer()</code>, <code>getCacher()</code>. The same <code>ClusterCoordinator</code> runs in single-node mode and in cluster mode.</p>
+
+<div class="diagram-box">
+<svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs><marker id="ahc" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#64748b"/></marker></defs>
+  <rect x="20" y="20" width="200" height="150" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="120" y="44" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">Node 1 (singleton enabled)</text>
+  <text x="120" y="70" text-anchor="middle" font-size="9.5" fill="#1e40af">local Infinispan caches</text>
+  <text x="120" y="88" text-anchor="middle" font-size="9.5" fill="#1e40af">local rate-limit counters</text>
+  <text x="120" y="106" text-anchor="middle" font-size="9.5" fill="#1e40af">AI pools, sessions</text>
+  <text x="120" y="130" text-anchor="middle" font-size="9.5" fill="#1e40af" font-weight="600">upgrades, singleton jobs</text>
+  <rect x="260" y="20" width="200" height="150" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="360" y="44" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">Node 2 (singleton disabled)</text>
+  <text x="360" y="70" text-anchor="middle" font-size="9.5" fill="#1e40af">local Infinispan caches</text>
+  <text x="360" y="88" text-anchor="middle" font-size="9.5" fill="#1e40af">local rate-limit counters</text>
+  <text x="360" y="106" text-anchor="middle" font-size="9.5" fill="#1e40af">AI pools, sessions</text>
+  <rect x="500" y="20" width="200" height="70" rx="12" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="600" y="46" text-anchor="middle" font-size="12" fill="#15803d" font-weight="700">JMS broker (Artemis)</text>
+  <text x="600" y="66" text-anchor="middle" font-size="9.5" fill="#15803d">topic olat/{instance.id}/sysbus</text>
+  <rect x="120" y="210" width="240" height="50" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="240" y="230" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">Database</text>
+  <text x="240" y="247" text-anchor="middle" font-size="9" fill="#92400e">oc_lock (Locker), o_plock (Syncer), o_ex_task</text>
+  <rect x="400" y="210" width="220" height="50" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="510" y="230" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">Shared userdata</text>
+  <text x="510" y="247" text-anchor="middle" font-size="9" fill="#92400e">bcroot, system/configuration</text>
+  <path d="M120,20 C120,4 470,4 498,36" fill="none" stroke="#64748b" stroke-width="1.4" marker-end="url(#ahc)"/>
+  <line x1="460" y1="70" x2="498" y2="66" stroke="#64748b" stroke-width="1.4" marker-end="url(#ahc)"/>
+  <text x="600" y="110" text-anchor="middle" font-size="9" fill="#64748b">every event goes to every node,</text>
+  <text x="600" y="122" text-anchor="middle" font-size="9" fill="#64748b">the sender included</text>
+  <line x1="120" y1="170" x2="200" y2="208" stroke="#f59e0b" stroke-width="1.2" marker-end="url(#ahc)"/>
+  <line x1="360" y1="170" x2="280" y2="208" stroke="#f59e0b" stroke-width="1.2" marker-end="url(#ahc)"/>
+  <line x1="200" y1="170" x2="440" y2="208" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#ahc)"/>
+  <line x1="420" y1="170" x2="480" y2="208" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#ahc)"/>
+</svg>
+<div class="diagram-caption">Figure 13: Cluster topology: nodes share the database, the userdata directory and the JMS broker; caches and counters stay local</div>
+</div>
+
+
+<h3>Cluster Configuration</h3>
+<table>
+<thead><tr><th>Property</th><th>Default</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>cluster.mode</code></td><td><code>SingleVM</code></td><td><code>Cluster</code> enables the cluster features</td></tr>
+<tr><td><code>node.id</code></td><td>1</td><td>Unique ID of the node, 1 to 64 (<code>ClusterConfig.getNodeId()</code>)</td></tr>
+<tr><td><code>cluster.singleton.services</code></td><td><code>enabled</code></td><td><code>enabled</code> on exactly one node, <code>disabled</code> on the others</td></tr>
+<tr><td><code>jms.broker.url</code></td><td><code>vm://0?...</code></td><td>Embedded Artemis broker; a remote broker (<code>failover:(tcp://...)</code>) in a cluster</td></tr>
+</tbody>
+</table>
+
+<h3>Cluster Services</h3>
+<table>
+<thead><tr><th>Service</th><th>Implementation</th><th>Scope and storage</th></tr></thead>
+<tbody>
+<tr><td>EventBus</td><td><code>ClusterEventBus</code></td><td>JMS topic <code>olat/{instance.id}/sysbus</code> (ActiveMQ Artemis, bean <code>sysbus.topic</code>). Every event goes through the broker, also on a single node.</td></tr>
+<tr><td>Locker</td><td><code>ClusterLocker</code> + <code>ClusterLockManager</code></td><td>Persistent locks in the table <code>oc_lock</code>, cluster wide. Released on logout of the owner.</td></tr>
+<tr><td>Syncer</td><td><code>ClusterSyncer</code></td><td><code>doInSync(ores, callback)</code>: a JVM lock plus a DB row lock in <code>o_plock</code> (<code>select for update</code>) for the duration of the transaction</td></tr>
+<tr><td>Cacher</td><td><code>InfinispanCacher</code></td><td>Local Infinispan caches on every node (<code>local-cache</code> in <code>infinispan-config.xml</code>). No replication.</td></tr>
+<tr><td>Hibernate L2 cache</td><td><code>InfinispanRegionFactory</code></td><td>Local configuration (<code>infinispan-configs-local.xml</code>)</td></tr>
+</tbody>
+</table>
+
+<h3>EventBus Transport</h3>
+<p><code>ClusterEventBus.fireEventToListenersOf()</code> wraps the event in a <code>JMSWrapper</code> (node ID, message ID, resource, event) and sends it to the topic. Every node, the sender included, receives the message and delivers it to its listeners. The delivery is asynchronous and runs on the JMS listener thread, not in the request of the sender.</p>
+
+<ul>
+<li>The event must be <code>Serializable</code> (extend <code>MultiUserEvent</code>). Keep it small: keys, not entities.</li>
+<li><code>MultiUserEvent.isEventOnThisNode()</code> tells whether the event comes from this node. <code>AbstractSpringModule</code> uses it to reload its file only on the other nodes (section 20).</li>
+<li>A JMS failure throws an <code>OLATRuntimeException</code>. The bus fails fast, so a broken broker is visible at once.</li>
+<li><code>ureq.getUserSession().getSingleUserEventCenter()</code> is a local bus inside one user session, without JMS.</li>
+</ul>
+
+<h3>Singleton Services</h3>
+<p>Some services must run on one node only: upgrades (<code>UpgradeManagerDummy</code> on the other nodes), statistics, notifications, retention jobs. The pattern uses the property <code>cluster.singleton.services</code> in the bean name (section 21):</p>
+
+<pre><code>&lt;property name=<span class="str">"jobDetail"</span> ref=<span class="str">"myJob.${cluster.singleton.services}"</span> /&gt;</code></pre>
+
+<p>The persisted task executor needs no singleton: every node picks tasks, and the row lock prevents a double run (section 22).</p>
+
+<h3>Per-Node State</h3>
+<p>Caches, counters and in-memory maps are per node. Plan for it:</p>
+
+<ul>
+<li>Cache invalidation: fire a <code>MultiUserEvent</code> after a change. Each node removes its entry (section 27).</li>
+<li>REST rate limit: the counters of <code>RequestRateLimiterImpl</code> are per node. The effective limit is the configured value times the number of nodes (section 37).</li>
+<li>AI pools: the effective parallelism against a provider is the pool size times the number of nodes (<code>AiTaskExecutorService</code>).</li>
+<li>Mappers: session-bound mappers live on the node of the session. <code>Serializable</code> mappers are persisted in <code>o_mapper</code>, so any node can serve them (section 12).</li>
+</ul>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="logging">29. Logging Infrastructure</h2>
 
 <p>OpenOlat has two distinct logging layers: <strong>technical logging</strong> (standard log files) and <strong>user activity logging</strong> (database-persisted audit trail).</p>
 
@@ -2879,13 +3582,15 @@ log.info(<span class="str">"Course published: {}"</span>, courseId);
 log.warn(<span class="str">"Retry failed for resource: {}"</span>, resourceKey);
 log.error(<span class="str">"Unexpected error in service"</span>, exception);</code></pre>
 
-<p><code>Tracing.createLoggerFor()</code> returns a standard SLF4J Logger. The <code>Tracing</code> class also sets up MDC (Mapped Diagnostic Context) entries for request correlation:</p>
+<p><code>Tracing.createLoggerFor()</code> returns a Log4j2 <code>Logger</code>. The <code>Tracing</code> class also sets up MDC (Mapped Diagnostic Context) entries for request correlation:</p>
 
 <ul>
 <li><code>ThreadLocalUserActivityLogger</code> adds user identity, IP address, and session ID to MDC</li>
 <li>Log4j2 configuration is in <code>src/main/resources/log4j2.xml</code></li>
 <li>A special audit marker <code>Tracing.M_AUDIT</code> is available for log statements that should be written to the audit log appender</li>
 </ul>
+
+<p><span class="version-badge">New in 21.1.0</span> The marker <code>Tracing.M_REST</code> tags the REST access log. <code>Tracing.setRequest(method, uri)</code> and <code>Tracing.setAuthProvider(provider)</code> put the keys <code>method</code>, <code>uri</code> and <code>authProvider</code> into the Log4j2 <code>ThreadContext</code>. A log pattern can print them.</p>
 
 <h3>User Activity Logging</h3>
 
@@ -2896,6 +3601,20 @@ ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURC
     LoggingResourceable.wrap(repositoryEntry));</code></pre>
 
 <p>Logging actions are defined as enum-like classes (e.g., <code>LearningResourceLoggingAction</code>, <code>CourseLoggingAction</code>) that describe the action type. <code>LoggingResourceable</code> wraps the business objects that were affected. The logging system is decoupled from the business logic &mdash; it runs as a background write and never blocks the user interaction.</p>
+
+<h3 id="logging-rest">REST API Access Log <span class="version-badge">New in 21.1.0</span></h3>
+<p><code>ApiAuditLogServiceImpl</code> writes one line per REST request on the logger <code>org.olat.restapi.access</code> (OO-9778). The line has the format <code>METHOD path?query status durationms channel= auth= actor= ip= resource= ref=</code>. The level depends on the result:</p>
+
+<table>
+<thead><tr><th>Level</th><th>Requests</th></tr></thead>
+<tbody>
+<tr><td><code>warn</code></td><td>Denied and failed calls: 401, 403, 429, 5xx</td></tr>
+<tr><td><code>info</code></td><td>Writes: PUT, POST, PATCH, DELETE</td></tr>
+<tr><td><code>debug</code></td><td>Reads: GET, HEAD</td></tr>
+</tbody>
+</table>
+
+<p>The line never contains the request body. Values of secret query parameters are masked. <code>log4j2.xml</code> has a commented example of the logger. The table <code>o_api_audit_log</code> stores the auditable requests (section 37).</p>
 
 <h3>Best Practices for Logging</h3>
 
@@ -2911,7 +3630,7 @@ ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURC
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="utilities">26. Core Utility Classes</h2>
+<h2 id="utilities">30. Core Utility Classes</h2>
 
 <p>OpenOlat provides a set of widely-used utility classes in <code>org.olat.core.util</code> that appear throughout the codebase. Understanding these avoids reinventing common operations.</p>
 
@@ -2956,13 +3675,141 @@ FileUtils.validateFilename("my:file.txt");       <span class="cmt">// false (col
 FileUtils.normalizeFilename("Über Müller.pdf");  <span class="cmt">// "Uber_Muller.pdf"</span></code></pre>
 
 <h3>Encoder</h3>
+<p>Hashing and legacy encryption with <code>Encoder.Algorithm</code>: <code>md5</code> variants, <code>sha1</code>, <code>sha256</code>, <code>sha512</code>, <code>pbkdf2</code>, <code>argon2id</code>, <code>argon2id_owasp</code> (password hashing) and <code>aes</code> (<code>Encoder.encrypt()</code> / <code>decrypt()</code>).</p>
 
-<p>Password hashing and encryption. Supports multiple algorithms: <code>argon2id</code> (recommended), <code>pbkdf2</code>, <code>sha256</code>, <code>sha512</code>, and <code>aes</code> (AES-256-CBC for encryption/decryption).</p>
+<p><span class="version-badge">New in 21.1.0</span> <code>AesGcmCipher</code> (package <code>core.util.crypto</code>) encrypts short secrets with AES-256-GCM (OO-9665). Use it for credentials that must be readable later, for example tokens stored in the database. Prefer it over <code>Encoder.Algorithm.aes</code>, which uses an unauthenticated mode and a hard-coded passphrase.</p>
+
+<pre><code>SecretKey key = AesGcmCipher.keyFromBase64(configuredBase64Key);  <span class="cmt">// AesGcmCipher.generateKeyBase64() creates one</span>
+String stored = AesGcmCipher.encrypt(key, refreshToken, ownerId);  <span class="cmt">// ownerId = additional authenticated data</span>
+String clear = AesGcmCipher.decrypt(key, stored, ownerId);</code></pre>
+
+<p>The stored value starts with the prefix <code>{aesgcm1}</code>. A value without the prefix is rejected. The additional authenticated data binds the secret to its owner, so a value copied to another row cannot be decrypted. Reference use: <code>TeamsCryptoHelper</code>.</p>
+
+<h3>DocxToMarkdownService</h3>
+<p><code>DocxToMarkdownService</code> (package <code>core.util.docxToMarkdown</code>) converts a Word file (.docx) to Markdown with images, footnotes, numbering, math and SmartArt (OO-9414). The page editor import uses it. <code>DocxZipExtractor</code> rejects unsafe archives with a <code>DocxSecurityException</code>. Details: <code>package.md</code> in the same package.</p>
+
+<h3>XStream</h3>
+<p><code>XStreamHelper</code> creates configured XStream instances. <code>EnhancedXStream</code> registers <code>HibernateProxyConverter</code>, which writes a Hibernate proxy as its entity class, so proxy class names never appear in the XML (OO-9671, since 21.0.1).</p>
+
+<p>---</p>
 
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="identity">27. Identity, Security &amp; Organisations</h2>
+<h2 id="ai">31. AI Framework</h2>
+
+<p>The package <code>org.olat.core.commons.services.ai</code> connects OpenOlat to AI providers through LangChain4j. The full reference with all classes, prompts, file stores and admin controllers is <code>src/main/java/org/olat/core/commons/services/ai/package.md</code>. This section describes the architecture and the rules for developers.</p>
+
+<h3>Service and SPI Layers</h3>
+<table>
+<thead><tr><th>Layer</th><th>Classes</th><th>Responsibility</th></tr></thead>
+<tbody>
+<tr><td>Feature services</td><td><code>AiMCQuestionService</code>, <code>AiImageDescriptionService</code>, <code>AiEssayGradingService</code>, <code>AiEssayGenerationService</code>, <code>EssayGenerationService</code>, <code>EssayAiCorrectionService</code></td><td>Prompts (LangChain4j <code>@AiServices</code> interfaces in <code>service/</code>), structured output, validation, rate limits</td></tr>
+<tr><td>Configuration</td><td><code>AiModule</code></td><td>Maps each <code>AiFeature</code> to a provider (<code>spiId</code>) and a model. Holds limits, pool sizes and user defaults. <code>resolveProvider(spiId)</code>, <code>getEnabledProviders()</code></td></tr>
+<tr><td>Chat SPI</td><td><code>AiSPI</code>: <code>buildChatModel(modelName, maxTokens)</code>, <code>getAvailableModels()</code>, <code>createAdminController(ureq, wControl, readOnly)</code></td><td><code>OpenAiSPI</code>, <code>AnthropicAiSPI</code>, <code>GenericAiSpiInstance</code> (OpenAI-compatible endpoints, managed by <code>GenericAiSPI</code>)</td></tr>
+<tr><td>Embedding SPI</td><td><code>AiEmbeddingSPI</code>: <code>buildEmbeddingModel(modelName)</code>, <code>getAvailableEmbeddingModels()</code>, <code>getEmbeddingDimension(modelName)</code></td><td><code>OpenAiSPI</code>, <code>GenericAiSpiInstance</code>, <code>LocalOnnxSPI</code> (uploaded ONNX model, in process). Used by the taxonomy matching.</td></tr>
+<tr><td>Logging</td><td><code>AiLoggingChatModel</code>, <code>AiLoggingEmbeddingModel</code>, <code>AiUsageLogDAO</code></td><td>One row per provider call in <code>o_ai_usage_log</code>: tokens, duration, status, error, usage context</td></tr>
+<tr><td>HTTP</td><td><code>LangChain4jHttpClientBuilder</code></td><td>Routes the LangChain4j HTTP calls through <code>HttpClientService</code> with <code>AiModule.PROTECTION_PROFILE</code></td></tr>
+</tbody>
+</table>
+
+<p>The SPI knows nothing about features. A new provider implements only <code>AiSPI</code> (and <code>AiApiKeySPI</code> for the generic API key form). A new feature needs no change in any SPI.</p>
+
+<h3>Calling a Feature Service</h3>
+<pre><code><span class="kw">if</span> (aiMCQuestionService.isEnabled()) {
+    AiUsageContext usageContext = AiUsageContext.builder()
+            .usageContextType(<span class="str">"my-feature"</span>)      <span class="cmt">// shows in the usage log</span>
+            .identity(getIdentity())
+            .resource(courseEntry)               <span class="cmt">// OLATResourceable, optional</span>
+            .locale(getLocale())
+            .build();
+    AiMCQuestionsResponse response = aiMCQuestionService.generateMCQuestionsResponse(usageContext, text, 5);
+    <span class="kw">if</span> (!response.isSuccess()) {
+        showError(<span class="str">"ai.error"</span>);
+    }
+}</code></pre>
+
+<ul>
+<li>Always check <code>isEnabled()</code> (feature switched on and provider configured).</li>
+<li>Always pass an <code>AiUsageContext</code>. It links the log row to the person and the resource.</li>
+<li>Never call an SPI or a LangChain4j model from UI code.</li>
+</ul>
+
+<h3>AI Task Pools</h3>
+<p>Long AI work runs as <code>LongRunnable</code> (section 22) on two dedicated queues. <code>AiModule</code> holds the sizes (<code>getAiTaskPoolInteractiveSize()</code>, <code>getAiTaskPoolBatchSize()</code>). <code>AiTaskExecutorService</code> applies them to the pools:</p>
+
+<table>
+<thead><tr><th>Queue</th><th>Default size</th><th>Use</th></tr></thead>
+<tbody>
+<tr><td><code>aiInteractive</code></td><td>4</td><td>A user waits for the result, for example <code>EssayAiCorrectionTask</code></td></tr>
+<tr><td><code>aiBatch</code></td><td>2</td><td>Background work, for example <code>QtiQuestionGenerationTask</code> and the image metadata of the media center</td></tr>
+</tbody>
+</table>
+
+<p>A full interactive pool refuses new essay corrections. The pools are per node (section 28).</p>
+
+<h3>User Control and Consent <span class="version-badge">New in 21.1.0</span></h3>
+<p>An AI feature that runs automatically, without an explicit request of the person, is user controlled (OO-9784, AI Act). <code>AiFeature.isUserControlled()</code> is true for <code>EssayGrading</code> and <code>ImageDescriptionGenerator</code>.</p>
+
+<div class="diagram-box">
+<svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs><marker id="aha" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#64748b"/></marker></defs>
+  <rect x="20" y="20" width="160" height="60" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="100" y="45" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">Controller / task</text>
+  <text x="100" y="62" text-anchor="middle" font-size="9" fill="#92400e">gate: isActive() (auto only)</text>
+  <rect x="220" y="20" width="280" height="60" rx="8" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="360" y="42" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">Feature service</text>
+  <text x="360" y="58" text-anchor="middle" font-size="9" fill="#1e40af">prompts (@AiServices), structured output,</text>
+  <text x="360" y="71" text-anchor="middle" font-size="9" fill="#1e40af">AiUsageContext, rate limits</text>
+  <rect x="540" y="20" width="160" height="60" rx="8" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="620" y="45" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">AiModule</text>
+  <text x="620" y="62" text-anchor="middle" font-size="9" fill="#1e40af">feature → spiId + model</text>
+  <rect x="220" y="110" width="280" height="44" rx="8" fill="#dcfce7" stroke="#86efac"/>
+  <text x="360" y="130" text-anchor="middle" font-size="11" fill="#15803d" font-weight="700">AiLoggingChatModel / AiLoggingEmbeddingModel</text>
+  <text x="360" y="146" text-anchor="middle" font-size="9" fill="#15803d">row in o_ai_usage_log per call</text>
+  <rect x="40" y="185" width="140" height="44" rx="8" fill="#fff" stroke="#d6d3d1"/>
+  <text x="110" y="205" text-anchor="middle" font-size="10" fill="#334155" font-weight="600">OpenAiSPI</text>
+  <text x="110" y="220" text-anchor="middle" font-size="9" fill="#334155">chat + embedding</text>
+  <rect x="200" y="185" width="140" height="44" rx="8" fill="#fff" stroke="#d6d3d1"/>
+  <text x="270" y="205" text-anchor="middle" font-size="10" fill="#334155" font-weight="600">AnthropicAiSPI</text>
+  <text x="270" y="220" text-anchor="middle" font-size="9" fill="#334155">chat</text>
+  <rect x="360" y="185" width="160" height="44" rx="8" fill="#fff" stroke="#d6d3d1"/>
+  <text x="440" y="205" text-anchor="middle" font-size="10" fill="#334155" font-weight="600">GenericAiSpiInstance</text>
+  <text x="440" y="220" text-anchor="middle" font-size="9" fill="#334155">OpenAI-compatible, chat + emb.</text>
+  <rect x="540" y="185" width="140" height="44" rx="8" fill="#fff" stroke="#d6d3d1"/>
+  <text x="610" y="205" text-anchor="middle" font-size="10" fill="#334155" font-weight="600">LocalOnnxSPI</text>
+  <text x="610" y="220" text-anchor="middle" font-size="9" fill="#334155">embedding, in process</text>
+  <line x1="180" y1="50" x2="218" y2="50" stroke="#64748b" stroke-width="1.6" marker-end="url(#aha)"/>
+  <line x1="538" y1="50" x2="502" y2="50" stroke="#64748b" stroke-width="1.4" marker-end="url(#aha)"/>
+  <line x1="360" y1="80" x2="360" y2="108" stroke="#64748b" stroke-width="1.6" marker-end="url(#aha)"/>
+  <line x1="300" y1="154" x2="130" y2="183" stroke="#86efac" stroke-width="1.2" marker-end="url(#aha)"/>
+  <line x1="330" y1="154" x2="275" y2="183" stroke="#86efac" stroke-width="1.2" marker-end="url(#aha)"/>
+  <line x1="390" y1="154" x2="435" y2="183" stroke="#86efac" stroke-width="1.2" marker-end="url(#aha)"/>
+  <line x1="420" y1="154" x2="600" y2="183" stroke="#86efac" stroke-width="1.2" marker-end="url(#aha)"/>
+</svg>
+<div class="diagram-caption">Figure 14: AI layers: feature services own the prompts, SPIs only build LangChain4j models</div>
+</div>
+
+
+<ul>
+<li>Gate every automatic call with <code>AiUserPreferenceService.isActive(prefs, feature)</code> at the point where the call starts.</li>
+<li><code>AiCorrectionConsentController</code> asks the person before the first AI essay correction when no choice exists. <code>EssayAiCorrectionService.submit()</code> checks again and returns <code>null</code> when the person switched it off.</li>
+<li>Explicit requests ("Generate with AI" buttons) are not gated.</li>
+<li><code>AiUserSettingsController</code> shows the choices in the user settings, segment "AI settings".</li>
+</ul>
+
+<h3>Provider Configuration and Security</h3>
+<ul>
+<li>Providers and feature mapping are configured in the administration (<code>AiAdminController</code>). Values persist through <code>AiModule</code> and the SPI modules (section 20).</li>
+<li><span class="version-badge changed">Changed in 21.1.0</span> A person without administrator rights can open the AI administration read-only (<code>createAdminController(..., readOnly)</code>).</li>
+<li>Content from users goes through <code>AiContentHardener</code> before it reaches a prompt. Output for learners is sanitised with the HTML filter (section 35).</li>
+<li><code>AiPromptRules.OUTPUT_STYLE_RULES</code> is appended to every generative system prompt.</li>
+</ul>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="identity">32. Identity, Security &amp; Organisations</h2>
 
 <p>OpenOlat's security model is built around three core concepts: <strong>Identity</strong> (who you are), <strong>Roles</strong> (what you can do), and <strong>Organisation</strong> (where you belong). These are defined in the <code>org.olat.basesecurity</code> and <code>org.olat.core.id</code> packages.</p>
 
@@ -2973,8 +3820,8 @@ FileUtils.normalizeFilename("Über Müller.pdf");  <span class="cmt">// "Uber_Mu
 <ul>
 <li><code>getKey()</code> &mdash; unique database ID (Long)</li>
 <li><code>getName()</code> &mdash; login username (unique, immutable after creation)</li>
-<li><code>getUser()</code> &mdash; link to the <code>User</code> profile entity (one-to-one, see <a href="#userprops">section 28</a>)</li>
-<li><code>getStatus()</code> &mdash; account lifecycle state: <code>activ</code>, <code>permanent</code>, <code>pending</code>, <code>inactive</code>, <code>login_denied</code>, <code>deleted</code></li>
+<li><code>getUser()</code> &mdash; link to the <code>User</code> profile entity (one-to-one, see <a href="#userprops">section 33</a>)</li>
+<li><code>getStatus()</code>: lifecycle state as <code>Integer</code> constants of <code>Identity</code>: <code>STATUS_PERMANENT</code> (1), <code>STATUS_ACTIV</code> (2), <code>STATUS_LOGIN_DENIED</code> (101), <code>STATUS_PENDING</code> (102), <code>STATUS_INACTIVE</code> (103), <code>STATUS_DELETED</code> (199). Values from <code>STATUS_VISIBLE_LIMIT</code> (100) up are invisible in user searches.</li>
 <li><code>getExternalId()</code> &mdash; external system identifier (LDAP DN, Shibboleth ID, etc.)</li>
 <li><code>getLastLogin()</code> &mdash; timestamp of last successful authentication</li>
 </ul>
@@ -2988,7 +3835,7 @@ FileUtils.normalizeFilename("Über Müller.pdf");  <span class="cmt">// "Uber_Mu
 <table>
 <thead><tr><th>Enum</th><th>Scope</th><th>Values</th></tr></thead>
 <tbody>
-<tr><td><code>OrganisationRoles</code></td><td>System-wide / per organisation</td><td><code>sysadmin</code>, <code>administrator</code>, <code>usermanager</code>, <code>rolesmanager</code>, <code>groupmanager</code>, <code>learnresourcemanager</code>, <code>poolmanager</code>, <code>curriculummanager</code>, <code>lecturemanager</code>, <code>qualitymanager</code>, <code>linemanager</code>, <code>principal</code>, <code>author</code>, <code>user</code>, <code>invitee</code>, <code>guest</code></td></tr>
+<tr><td><code>OrganisationRoles</code></td><td>System-wide / per organisation</td><td><code>sysadmin</code>, <code>administrator</code>, <code>usermanager</code>, <code>rolesmanager</code>, <code>learnresourcemanager</code>, <code>lecturemanager</code>, <code>groupmanager</code>, <code>poolmanager</code>, <code>curriculummanager</code>, <code>qualitymanager</code>, <code>projectmanager</code>, <code>linemanager</code>, <code>educationmanager</code>, <code>selectusmanager</code>, <code>principal</code>, <code>author</code>, <code>user</code>, <code>invitee</code>, <code>guest</code></td></tr>
 <tr><td><code>GroupRoles</code></td><td>Per resource / group / course</td><td><code>owner</code>, <code>coach</code>, <code>participant</code>, <code>invitee</code>, <code>waiting</code></td></tr>
 <tr><td><code>CurriculumRoles</code></td><td>Per curriculum / curriculum element</td><td><code>curriculummanager</code>, <code>curriculumowner</code>, <code>curriculumelementowner</code>, <code>owner</code>, <code>mastercoach</code>, <code>coach</code>, <code>participant</code></td></tr>
 <tr><td><code>ProjectRole</code></td><td>Per project</td><td><code>owner</code>, <code>leader</code>, <code>projectOffice</code>, <code>participant</code>, <code>supplier</code>, <code>client</code>, <code>steeringCommitee</code>, <code>invitee</code></td></tr>
@@ -3037,7 +3884,7 @@ List&lt;Identity&gt; authors = organisationService.getMembersIdentity(organisati
 
 <h3>Grant Mechanism</h3>
 
-<p>The <code>Grant</code> entity provides fine-grained permissions on specific <code>OLATResource</code> instances. A grant links a group role to a permission string on a resource. This is used for resource-level access control (e.g., "coaches of this course group can edit the course").</p>
+<p>The <code>Grant</code> entity provides fine-grained permissions on specific <code>OLATResource</code> instances. A grant links a group role to a permission string on a resource. This is used for resource-level access control (e.g., "coaches of this course group can edit the course"). <code>GroupDAO</code> manages them: <code>addGrant(group, role, permission, resource)</code>, <code>getGrants(...)</code> and <code>hasGrant(identity, permission, resource, role)</code>.</p>
 
 <h3>BaseSecurity Service</h3>
 
@@ -3048,20 +3895,22 @@ List&lt;Identity&gt; authors = organisationService.getMembersIdentity(organisati
 <li><code>loadIdentityByKey(key)</code> &mdash; load by database ID</li>
 <li><code>createAndPersistIdentityAndUser(...)</code> &mdash; create a new account</li>
 <li><code>getRoles(identity)</code> &mdash; get the immutable <code>Roles</code> object</li>
-<li><code>isIdentityPermittedOnResourceable(identity, permission, ores)</code> &mdash; check resource-level permission</li>
+<li><code>isIdentityLoginAllowed(identity, provider)</code>, <code>isIdentityVisible(identity)</code>: status checks</li>
 <li><code>getAuthentications(identity)</code> &mdash; list authentication providers (OLAT, LDAP, OAuth, etc.)</li>
 </ul>
 
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="userprops">28. User Properties &amp; Profile</h2>
+<h2 id="userprops">33. User Properties &amp; Profile</h2>
 
 <p>While <code>Identity</code> handles authentication and access control, the <code>User</code> entity (from <code>org.olat.core.id</code> and <code>org.olat.user</code>) stores profile data: name, email, institutional affiliation, and other personal attributes.</p>
 
 <h3>Identity vs. User</h3>
 
-<p><code>Identity</code> and <code>User</code> have a <strong>one-to-one</strong> relationship. Identity owns the reference: <code>identity.getUser()</code> returns the User. The User entity (<code>UserImpl</code>) is a JPA entity with 53 mapped database columns for property storage, plus a generic <code>userProperties</code> map for custom properties.</p>
+<p><code>Identity</code> and <code>User</code> have a <strong>one-to-one</strong> relationship. Identity owns the reference: <code>identity.getUser()</code> returns the User. The User entity (<code>UserImpl</code>) is a JPA entity with 78 profile columns (<code>u_*</code>), plus a generic <code>userProperties</code> map for custom properties.</p>
+
+<p><span class="version-badge">New in 21.1.0</span> The profile field <code>customerNumber</code> (column <code>u_customernumber</code>, handler <code>CustomerNumberPropertyHandler</code>). <code>OLATUpgrade_21_1_0</code> adds it to the usage contexts of customized configurations.</p>
 
 <h3>UserPropertyHandler</h3>
 
@@ -3116,13 +3965,92 @@ List&lt;UserPropertyHandler&gt; handlers = propConfig.getUserPropertyHandlersFor
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="security">29. XSS &amp; Security Infrastructure</h2>
+<h2 id="secarch">34. Security Architecture</h2>
 
-<p>OpenOlat employs multiple layers of defense against cross-site scripting (XSS) and other injection attacks.</p>
+<p>This section is the map of the security mechanisms. Each row points to the section with the details.</p>
 
-<h3>OWASP AntiSamy (HTML Sanitization)</h3>
+<div class="diagram-box">
+<svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs><marker id="ahs" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#64748b"/></marker></defs>
+  <rect x="20" y="85" width="90" height="50" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="65" y="115" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">Browser</text>
+  <rect x="140" y="20" width="170" height="180" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="225" y="42" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">Servlet filters</text>
+  <text x="225" y="68" text-anchor="middle" font-size="9.5" fill="#1e40af">SameSiteCookieFilter</text>
+  <text x="225" y="86" text-anchor="middle" font-size="9.5" fill="#1e40af">HeadersFilter (CSP, HSTS,</text>
+  <text x="225" y="100" text-anchor="middle" font-size="9.5" fill="#1e40af">X-Frame-Options)</text>
+  <text x="225" y="120" text-anchor="middle" font-size="9.5" fill="#1e40af">RestApiLoginFilter (auth,</text>
+  <text x="225" y="134" text-anchor="middle" font-size="9.5" fill="#1e40af">rate limit, audit)</text>
+  <rect x="340" y="20" width="170" height="180" rx="12" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="425" y="42" text-anchor="middle" font-size="11" fill="#15803d" font-weight="700">Dispatch and render</text>
+  <text x="425" y="68" text-anchor="middle" font-size="9.5" fill="#15803d">CSRF token, timestamps</text>
+  <text x="425" y="86" text-anchor="middle" font-size="9.5" fill="#15803d">Roles, security callbacks</text>
+  <text x="425" y="104" text-anchor="middle" font-size="9.5" fill="#15803d">$r.escapeHtml(), sanitizer</text>
+  <text x="425" y="122" text-anchor="middle" font-size="9.5" fill="#15803d">sandboxed mappers on the</text>
+  <text x="425" y="136" text-anchor="middle" font-size="9.5" fill="#15803d">content domain</text>
+  <rect x="540" y="20" width="160" height="80" rx="12" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
+  <text x="620" y="44" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">Outbound HTTP</text>
+  <text x="620" y="64" text-anchor="middle" font-size="9.5" fill="#991b1b">HttpClientService</text>
+  <text x="620" y="80" text-anchor="middle" font-size="9.5" fill="#991b1b">ProtectionProfile (SSRF)</text>
+  <rect x="540" y="120" width="160" height="80" rx="12" fill="#fff" stroke="#d6d3d1" stroke-width="1.5"/>
+  <text x="620" y="144" text-anchor="middle" font-size="11" fill="#334155" font-weight="700">Secrets and audit</text>
+  <text x="620" y="164" text-anchor="middle" font-size="9.5" fill="#334155">AesGcmCipher, M_AUDIT,</text>
+  <text x="620" y="180" text-anchor="middle" font-size="9.5" fill="#334155">o_api_audit_log</text>
+  <line x1="110" y1="110" x2="138" y2="110" stroke="#64748b" stroke-width="1.6" marker-end="url(#ahs)"/>
+  <line x1="310" y1="110" x2="338" y2="110" stroke="#64748b" stroke-width="1.6" marker-end="url(#ahs)"/>
+  <line x1="510" y1="70" x2="538" y2="60" stroke="#64748b" stroke-width="1.4" marker-end="url(#ahs)"/>
+  <line x1="510" y1="150" x2="538" y2="160" stroke="#64748b" stroke-width="1.4" marker-end="url(#ahs)"/>
+</svg>
+<div class="diagram-caption">Figure 15: Security mechanisms along the request path</div>
+</div>
 
-<p>User-generated HTML content (from rich-text editors, imported HTML pages, etc.) is sanitized through <code>OWASPAntiSamyXSSFilter</code>, which uses a whitelist-based policy defined in <code>OpenOLATPolicy.java</code>. The policy allows safe HTML tags and attributes while stripping everything else &mdash; including <code>&lt;script&gt;</code>, event handlers (<code>onclick</code>, <code>onerror</code>), and dangerous URI schemes (<code>javascript:</code>).</p>
+
+<h3>Request Path</h3>
+<table>
+<thead><tr><th>Stage</th><th>Mechanism</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td>Servlet filters</td><td><code>SameSiteCookieFilter</code>: <code>SameSite</code> attribute of the session cookie (<code>base.security.cookie.samesite</code>, default <code>Lax</code>). A content-delivery session gets <code>SameSite=None; Partitioned</code>.</td><td>section 12</td></tr>
+<tr><td></td><td><code>HeadersFilter</code>: HSTS, <code>X-Content-Type-Options</code>, <code>X-Frame-Options</code>, CSP</td><td>section 35</td></tr>
+<tr><td></td><td><code>RestApiLoginFilter</code>: REST authentication, rate limiting, audit</td><td>section 37</td></tr>
+<tr><td>Dispatch</td><td>CSRF token of every <code>Form</code>; timestamps in the URL reject stale requests</td><td>sections 3, 35</td></tr>
+<tr><td>Authorization</td><td><code>Roles</code> per organisation, security callbacks, <code>GroupDAO.hasGrant()</code></td><td>section 32</td></tr>
+<tr><td>Rendering</td><td><code>$r.escapeHtml()</code>, HTML sanitizer <code>OWASPAntiSamyXSSFilter</code></td><td>sections 7, 35</td></tr>
+</tbody>
+</table>
+
+<h3>Content Isolation</h3>
+<p>User content that may run scripts (HTML pages, SCORM, iframe content) is delivered from a second domain (<code>server.content.domainname</code>) through sandboxed mappers. The content session has no REST access and no access to the main session cookie. Details: section 12 "Sandboxed Mappers &amp; Content Domain".</p>
+
+<h3>Content Security Policy</h3>
+<p><code>CSPBuilder</code> builds the policy from <code>CSPModule</code> and from all Spring beans that implement <code>CSPDirectiveProvider</code>. A module that embeds an external service adds its URLs through such a provider (for example <code>ContentDeliveryDirectiveProvider</code> for the content domain). The provider methods cover <code>script-src</code>, <code>style-src</code>, <code>img-src</code>, <code>font-src</code>, <code>connect-src</code>, <code>frame-src</code>, <code>frame-ancestors</code>, <code>media-src</code>, <code>form-action</code>, <code>object-src</code> and <code>worker-src</code>. <code>CSPModule</code> can switch the policy to report-only.</p>
+
+<h3>Outbound Requests</h3>
+<p><code>HttpClientService</code> is the only HTTP client. The <code>ProtectionProfile</code> decides whether the SSRF filter applies: <code>USER_PROVIDED</code> for URLs of users, <code>CONFIGURED</code> for URLs of administrators. Details: section 36 "Protection Profiles".</p>
+
+<h3>Secrets and Audit</h3>
+<table>
+<thead><tr><th>Topic</th><th>Mechanism</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td>Passwords</td><td><code>Encoder.Algorithm.argon2id</code> / <code>pbkdf2</code> hashes</td><td>section 30</td></tr>
+<tr><td>Stored tokens</td><td><code>AesGcmCipher</code> (<strong>New in 21.1.0</strong>)</td><td>section 30</td></tr>
+<tr><td>Module secrets</td><td><code>setSecretStringProperty()</code>, secured module files</td><td>section 20</td></tr>
+<tr><td>Admin changes</td><td><code>setStringProperty()</code> logs with <code>Tracing.M_AUDIT</code></td><td>sections 29, 20</td></tr>
+<tr><td>User actions</td><td><code>ThreadLocalUserActivityLogger</code>, <code>o_loggingtable</code></td><td>section 29</td></tr>
+<tr><td>REST calls</td><td><code>o_api_audit_log</code>, logger <code>org.olat.restapi.access</code>, masked secrets (<strong>New in 21.1.0</strong>)</td><td>sections 29, 37</td></tr>
+<tr><td>AI calls</td><td><code>o_ai_usage_log</code></td><td>section 31</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="security">35. XSS &amp; Security Infrastructure</h2>
+
+<p>OpenOlat employs multiple layers of defense against cross-site scripting (XSS) and other injection attacks. <a href="#secarch">Section 34</a> is the map of all security mechanisms; this section holds the details of XSS, CSRF and headers.</p>
+
+<h3>OWASP HTML Sanitizer</h3>
+
+<p>User-generated HTML content (from rich-text editors, imported HTML pages, etc.) is sanitized through <code>OWASPAntiSamyXSSFilter</code>, which uses a whitelist-based policy defined in <code>OpenOLATPolicy.java</code>. The class keeps its historical name, but the implementation uses the OWASP Java HTML Sanitizer (<code>org.owasp.html.HtmlPolicyBuilder</code>), not AntiSamy. The policy allows safe HTML tags and attributes while stripping everything else, including <code>&lt;script&gt;</code>, event handlers (<code>onclick</code>, <code>onerror</code>), and dangerous URI schemes (<code>javascript:</code>).</p>
 
 <pre><code><span class="cmt">// Sanitize user HTML input:</span>
 OWASPAntiSamyXSSFilter filter = <span class="kw">new</span> OWASPAntiSamyXSSFilter();
@@ -3150,23 +4078,30 @@ String safeHtml = filter.filter(userInput);
 <p>The <code>Form</code> class generates a unique CSRF token per form instance, embedded as a hidden field. On submission, <code>Form.validate()</code> checks the token before processing. The token is tied to the user's window, preventing cross-origin form submissions.</p>
 
 <h3>Security Headers</h3>
-
-<p><code>HeadersFilter</code> (a servlet filter) adds security headers to every response:</p>
+<p><code>HeadersFilter</code> adds to every response (each header can be switched in <code>CSPModule</code>):</p>
 
 <ul>
-<li><code>X-Frame-Options: SAMEORIGIN</code> &mdash; prevents clickjacking</li>
-<li><code>X-Content-Type-Options: nosniff</code> &mdash; prevents MIME-type sniffing</li>
-<li><code>X-XSS-Protection: 1; mode=block</code> &mdash; legacy XSS filter</li>
-<li><strong>Content-Security-Policy</strong> &mdash; configured via <code>CSPModule</code>, controls allowed script/style/media sources</li>
-<li><strong>Strict-Transport-Security</strong> &mdash; enforces HTTPS</li>
+<li><code>X-Frame-Options: SAMEORIGIN</code> — prevents clickjacking</li>
+<li><code>X-Content-Type-Options: nosniff</code></li>
+<li><strong>Content-Security-Policy</strong> (or <code>Content-Security-Policy-Report-Only</code>): built by <code>CSPBuilder</code> from <code>CSPModule</code> and all <code>CSPDirectiveProvider</code> beans</li>
+<li><strong>Strict-Transport-Security</strong> — enforces HTTPS</li>
 </ul>
+
+<p>A response of a content-delivery session gets no <code>X-Frame-Options</code>. Its CSP gets <code>frame-ancestors</code> with the main server URI instead (section 12). <code>CSPDirectiveProvider</code> has default methods for <code>style-src</code>, <code>object-src</code> and <code>worker-src</code> in addition to the older source lists.</p>
+
+<h3 id="security-ssrf">SSRF Protection <span class="version-badge">New in 21.1.0</span></h3>
+<p>An outbound request to a URL that a user entered can reach internal hosts (server-side request forgery). <code>HttpClientService</code> blocks such requests with the protection profile <code>ProtectionProfile.USER_PROVIDED</code> (section 36).</p>
+
+<p>---</p>
 
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="httpclient">30. HTTP Client Service</h2>
+<h2 id="httpclient">36. HTTP Client Service</h2>
 
 <p>All outbound HTTP requests in OpenOlat <strong>must</strong> go through the centralized <code>HttpClientService</code> (<code>org.olat.core.util.httpclient.HttpClientService</code>). Do not use the native Java HTTP client (<code>java.net.http.HttpClient</code>), any other third-party HTTP client library, or instantiate Apache <code>HttpClient</code> directly.</p>
+
+<p><span class="version-badge changed">Changed in 21.1.0</span> Every factory method takes a <code>ProtectionProfile</code> as last parameter (OO-9310). The methods without a profile are removed. See "Protection Profiles" below and the overview in <a href="#secarch">section 34</a>.</p>
 
 <h3>Why</h3>
 
@@ -3176,6 +4111,7 @@ String safeHtml = filter.filter(userInput);
 <li><strong>Timeouts</strong> are standardized (connect, request, socket) &mdash; configured via <code>http.connect.*</code> properties</li>
 <li><strong>Credentials</strong> for basic authentication are handled uniformly</li>
 <li><strong>Database connections</strong> are freed before making outbound calls (<code>dbInstance.commit()</code> is called internally) to avoid holding a DB connection while waiting for an external service</li>
+<li><strong>SSRF protection</strong> is applied to URLs that users enter (profile <code>USER_PROVIDED</code>)</li>
 </ul>
 
 <h3>Configuration Properties</h3>
@@ -3190,6 +4126,9 @@ String safeHtml = filter.filter(userInput);
 <tr><td><code>http.proxy.port</code></td><td>8080</td><td>Proxy port</td></tr>
 <tr><td><code>http.proxy.exclusion</code></td><td>&mdash;</td><td>Comma-separated list of hosts to bypass proxy</td></tr>
 <tr><td><code>http.proxy.user</code> / <code>http.proxy.pwd</code></td><td>&mdash;</td><td>Proxy authentication credentials</td></tr>
+<tr><td><code>http.ssrf.protection.enabled</code></td><td>true</td><td><span class="version-badge">New in 21.1.0</span> SSRF filter for the profile <code>USER_PROVIDED</code>. Switchable in the administration (<code>HttpClientModule</code>).</td></tr>
+<tr><td><code>http.ssrf.allowed.addresses</code></td><td>(empty)</td><td><span class="version-badge">New in 21.1.0</span> Comma-separated IP addresses or CIDR blocks that are allowed although not public, e.g. <code>10.0.0.0/8</code></td></tr>
+<tr><td><code>http.ssrf.allowed.hosts</code></td><td>(empty)</td><td><span class="version-badge">New in 21.1.0</span> Comma-separated host names that are allowed although not public</td></tr>
 </tbody>
 </table>
 
@@ -3203,22 +4142,27 @@ String safeHtml = filter.filter(userInput);
 <pre><code>HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.<span class="kw">class</span>);</code></pre>
 
 <p>Create a client and execute a request:</p>
-<pre><code><span class="cmt">// Simple one-off request</span>
-<span class="kw">try</span> (CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
+<pre><code><span class="cmt">// URL from the configuration of an administrator</span>
+<span class="kw">try</span> (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
     HttpGet request = <span class="kw">new</span> HttpGet(<span class="str">"https://api.example.com/data"</span>);
     <span class="kw">try</span> (CloseableHttpResponse response = httpClient.execute(request)) {
         <span class="cmt">// handle response</span>
     }
 }
 
+<span class="cmt">// URL entered by a user (feed, calendar subscription, external page)</span>
+<span class="kw">try</span> (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED)) {
+    <span class="cmt">// a request to a loopback, private or link-local address fails with FilteredHostException</span>
+}
+
 <span class="cmt">// With basic authentication</span>
 <span class="kw">try</span> (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(
-        <span class="str">"api.example.com"</span>, 443, <span class="str">"user"</span>, <span class="str">"password"</span>, <span class="kw">true</span>)) {
+        <span class="str">"api.example.com"</span>, 443, <span class="str">"user"</span>, <span class="str">"password"</span>, <span class="kw">true</span>, ProtectionProfile.CONFIGURED)) {
     <span class="cmt">// use client for multiple requests</span>
 }
 
 <span class="cmt">// Custom builder for additional configuration</span>
-HttpClientBuilder builder = httpClientService.createHttpClientBuilder();
+HttpClientBuilder builder = httpClientService.createHttpClientBuilder(ProtectionProfile.CONFIGURED);
 builder.setDefaultHeaders(List.of(<span class="kw">new</span> BasicHeader(<span class="str">"Authorization"</span>, <span class="str">"Bearer "</span> + token)));
 <span class="kw">try</span> (CloseableHttpClient httpClient = builder.build()) {
     <span class="cmt">// use client</span>
@@ -3229,18 +4173,40 @@ builder.setDefaultHeaders(List.of(<span class="kw">new</span> BasicHeader(<span 
 <table>
 <thead><tr><th>Method</th><th>Description</th></tr></thead>
 <tbody>
-<tr><td><code>createHttpClient()</code></td><td>Simple client with default config (timeouts + proxy)</td></tr>
-<tr><td><code>createHttpClientBuilder()</code></td><td>Builder for customization before building</td></tr>
-<tr><td><code>createHttpClientBuilder(host, port, user, password)</code></td><td>Builder with basic auth credentials</td></tr>
-<tr><td><code>createThreadSafeHttpClient(redirect)</code></td><td>Pooled client for concurrent use</td></tr>
-<tr><td><code>createThreadSafeHttpClient(host, port, user, password, redirect)</code></td><td>Pooled client with basic auth</td></tr>
+<tr><td><code>createHttpClient(profile)</code></td><td>Simple client with default config (timeouts + proxy)</td></tr>
+<tr><td><code>createHttpClientBuilder(profile)</code></td><td>Builder for customization before building</td></tr>
+<tr><td><code>createHttpClientBuilder(host, port, user, password, profile)</code></td><td>Builder with basic auth credentials</td></tr>
+<tr><td><code>createThreadSafeHttpClient(redirect, profile)</code></td><td>Pooled client for concurrent use</td></tr>
+<tr><td><code>createThreadSafeHttpClient(host, port, user, password, redirect, profile)</code></td><td>Pooled client with basic auth</td></tr>
 </tbody>
 </table>
+
+<h3 id="httpclient-profiles">Protection Profiles <span class="version-badge">New in 21.1.0</span></h3>
+<table>
+<thead><tr><th>Profile</th><th>Use for</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>ProtectionProfile.USER_PROVIDED</code></td><td>A URL that a user entered: feeds (<code>RomeFeedFetcher</code>), calendar subscriptions (<code>CalendarManager</code>), the course element "External page" (<code>TUConfigForm</code>, <code>IframeTunnelController</code>), LTI 1.1 (<code>LTIManager</code>), video and live stream URLs, images in a Markdown import, Open Badges verification</td><td>With <code>http.ssrf.protection.enabled=true</code>, only public internet addresses are reachable. The allow lists are exempt.</td></tr>
+<tr><td><code>ProtectionProfile.CONFIGURED</code></td><td>A URL that an administrator configured: AI providers (<code>AiModule.PROTECTION_PROFILE</code>), BigBlueButton, Opencast, OnlyOffice, Gotenberg, OAuth login, Zoom</td><td>No address filter</td></tr>
+</tbody>
+</table>
+
+<p>The filter has two stages (package <code>core.util.httpclient.filter</code>):</p>
+
+<ol>
+<li><code>FilteringDnsResolver</code> resolves the host and rejects loopback, link-local, private and special-purpose addresses (<code>InetAddressFilter.externalAddresses()</code>). The configured proxy host is exempt.</li>
+<li><code>FilteringHostRequestInterceptor</code> checks literal IP addresses in the request. It covers the cases the DNS resolver does not see, for example a request through a forward proxy.</li>
+</ol>
+
+<p>A rejected request throws <code>FilteredHostException</code>. The DNS filter works only as long as no connection manager is set on the builder. Do not call <code>setConnectionManager()</code> on a builder with the profile <code>USER_PROVIDED</code>.</p>
+
+<p>Choose the profile by the origin of the URL, not by the feature. When in doubt, use <code>USER_PROVIDED</code>. On an instance upgraded to 21.1.0, <code>OLATUpgrade_21_1_0</code> switches the protection off, unless the key is set explicitly (section 23). An administrator switches it on in the administration of the HTTP client.</p>
+
+<p>---</p>
 
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="patterns">31. Common Patterns &amp; Best Practices</h2>
+<h2 id="patterns">37. Common Patterns &amp; Best Practices</h2>
 
 <h3>Choosing the Right Controller Type</h3>
 <table>
@@ -3269,7 +4235,7 @@ builder.setDefaultHeaders(List.of(<span class="kw">new</span> BasicHeader(<span 
 <li><strong>Never store <code>UserRequest</code></strong> &mdash; it is valid only for the current request cycle</li>
 <li><strong>Use <code>DBFactory.getInstance().commitAndCloseSession()</code></strong> in background tasks</li>
 <li><strong>Use <code>CoreSpringFactory.getImpl()</code></strong> for service access in non-Spring-managed classes</li>
-<li><strong>Use <code>Tracing.createLoggerFor()</code></strong> for all logging &mdash; never instantiate loggers directly. Use parameterized messages. See <a href="#logging">section 25</a></li>
+<li><strong>Use <code>Tracing.createLoggerFor()</code></strong> for all logging &mdash; never instantiate loggers directly. Use parameterized messages. See <a href="#logging">section 29</a></li>
 <li><strong>Use <code>ThreadLocalUserActivityLogger.log()</code></strong> for business-relevant actions that need an audit trail</li>
 </ul>
 
@@ -3319,10 +4285,175 @@ getWindowControl().pushFullScreen(editorCtrl, <span class="str">"o_editor_body"<
 <li><strong>Security callbacks</strong> &mdash; pass permission objects (e.g., <code>GradingSecurityCallback</code>) to controllers rather than checking roles inline.</li>
 </ul>
 
+<h3 id="patterns-rest">REST API Conventions</h3>
+<p>Module REST resources live in the <code>restapi/</code> sub-package of their module. Each resource class carries both <code>@Component</code> (Spring bean) and <code>@Path</code> (JAX-RS mount point), and its package must be listed in <code>src/main/java/org/olat/restapi/_spring/restApiContext.xml</code> for OpenAPI scanning. The <code>@Tag(name = "...")</code> annotation determines the section name in the Swagger UI. Reference pattern: <code>org.olat.modules.bigbluebutton.restapi</code>.</p>
+
+<p>Auth convention: call <code>getRoles(httpRequest)</code> early and delegate to a local <code>isAuthorised(Roles)</code> helper before any business logic. For non-admin roles (<code>author</code>, <code>lecturemanager</code>, <code>learnresourcemanager</code>) results are filtered at the DAO layer via a <code>SearchParameters.identity</code> field — the REST resource passes the caller's identity into the search parameters and never re-implements the predicate itself. Fields that must be hidden from non-admins (e.g. <code>externalId</code>, internal notes) are masked inside the VO's <code>valueOf(Entity, Roles)</code> factory rather than in the endpoint method.</p>
+
+<p>Notable module REST surfaces:</p>
+
+<table>
+<thead><tr><th>Package</th><th>Root path(s)</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>org.olat.modules.roommanagement.restapi</code></td><td><code>GET /rm/buildings</code>, <code>GET /rm/rooms</code></td><td>Read-only search and detail for buildings and rooms; results org-scoped for non-admins. Room booking sub-resource added to <code>LectureBlockWebService</code>: <code>GET / PUT / DELETE .../lectureblocks/{k}/room</code>.</td></tr>
+<tr><td><code>org.olat.modules.certificationprogram.restapi</code></td><td>certification programs</td><td>CRUD for certification programs (OO-9508). Listed in <code>restApiContext.xml</code>.</td></tr>
+</tbody>
+</table>
+
+<p>A request of a content-delivery session (section 12) gets the status 403. The only exception is the course database endpoint <code>/restapi/repo/courses/{id}/db/...</code>.</p>
+
+<p>Every REST request passes the same chain:</p>
+
+<div class="diagram-box">
+<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="ah10" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#64748b"/></marker>
+  </defs>
+
+  <!-- Client -->
+  <rect x="20" y="140" width="110" height="60" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="75" y="166" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">REST client</text>
+  <text x="75" y="183" text-anchor="middle" font-size="9.5" fill="#92400e">/restapi/...</text>
+
+  <!-- Servlet filter -->
+  <rect x="160" y="20" width="220" height="320" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="270" y="44" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">RestApiLoginFilter</text>
+  <text x="270" y="59" text-anchor="middle" font-size="9.5" fill="#1e40af">servlet filter (web.xml)</text>
+  <rect x="178" y="72" width="184" height="36" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="270" y="87" text-anchor="middle" font-size="10" fill="#1e40af">Authentication</text>
+  <text x="270" y="101" text-anchor="middle" font-size="9" fill="#1e40af">API key, password, token, session, IP</text>
+  <rect x="178" y="118" width="184" height="50" rx="5" fill="#fee2e2" stroke="#fca5a5"/>
+  <text x="270" y="134" text-anchor="middle" font-size="10" fill="#991b1b">Rate limit (RequestRateLimiter)</text>
+  <text x="270" y="148" text-anchor="middle" font-size="9" fill="#991b1b">acquire() parallel slots</text>
+  <text x="270" y="161" text-anchor="middle" font-size="9" fill="#991b1b">check() per 60 s window</text>
+  <rect x="178" y="178" width="184" height="36" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="270" y="193" text-anchor="middle" font-size="10" fill="#1e40af">CachedBodyHttpServletRequest</text>
+  <text x="270" y="207" text-anchor="middle" font-size="9" fill="#1e40af">copy of the body of a write call</text>
+  <rect x="178" y="270" width="184" height="50" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="270" y="287" text-anchor="middle" font-size="10" fill="#1e40af">finally: pending entry</text>
+  <text x="270" y="301" text-anchor="middle" font-size="9" fill="#1e40af">logInNewTransaction()</text>
+  <text x="270" y="314" text-anchor="middle" font-size="9" fill="#1e40af">after the rollback (5xx)</text>
+
+  <!-- CXF -->
+  <rect x="410" y="20" width="160" height="320" rx="12" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="490" y="44" text-anchor="middle" font-size="12" fill="#15803d" font-weight="700">CXFServlet</text>
+  <rect x="425" y="118" width="130" height="50" rx="5" fill="#dcfce7" stroke="#86efac"/>
+  <text x="490" y="138" text-anchor="middle" font-size="10" fill="#15803d">JAX-RS resource</text>
+  <text x="490" y="153" text-anchor="middle" font-size="9" fill="#15803d">@Path + @Component</text>
+  <rect x="425" y="200" width="130" height="50" rx="5" fill="#dcfce7" stroke="#86efac"/>
+  <text x="490" y="218" text-anchor="middle" font-size="10" fill="#15803d">ApiAuditResponse-</text>
+  <text x="490" y="232" text-anchor="middle" font-size="10" fill="#15803d">Filter</text>
+  <text x="490" y="245" text-anchor="middle" font-size="8.5" fill="#15803d">ApiAuditEntry</text>
+
+  <!-- Storage -->
+  <rect x="600" y="150" width="105" height="50" rx="8" fill="#fff" stroke="#d6d3d1"/>
+  <text x="652" y="170" text-anchor="middle" font-size="10" fill="#334155" font-weight="600">o_api_audit_log</text>
+  <text x="652" y="186" text-anchor="middle" font-size="9" fill="#334155">(masked body)</text>
+  <rect x="600" y="220" width="105" height="50" rx="8" fill="#fff" stroke="#d6d3d1"/>
+  <text x="652" y="240" text-anchor="middle" font-size="9.5" fill="#334155" font-weight="600">org.olat.restapi</text>
+  <text x="652" y="254" text-anchor="middle" font-size="9.5" fill="#334155" font-weight="600">.access log</text>
+
+  <!-- 429 -->
+  <rect x="20" y="245" width="110" height="46" rx="8" fill="#fee2e2" stroke="#fca5a5"/>
+  <text x="75" y="263" text-anchor="middle" font-size="10" fill="#991b1b" font-weight="700">429</text>
+  <text x="75" y="278" text-anchor="middle" font-size="9" fill="#991b1b">Retry-After</text>
+
+  <!-- Arrows -->
+  <line x1="130" y1="165" x2="176" y2="92" stroke="#64748b" stroke-width="1.6" marker-end="url(#ah10)"/>
+  <line x1="270" y1="108" x2="270" y2="116" stroke="#93c5fd" stroke-width="1.2" marker-end="url(#ah10)"/>
+  <line x1="270" y1="168" x2="270" y2="176" stroke="#93c5fd" stroke-width="1.2" marker-end="url(#ah10)"/>
+  <line x1="178" y1="150" x2="132" y2="258" stroke="#ef4444" stroke-width="1.4" marker-end="url(#ah10)"/>
+  <text x="96" y="236" text-anchor="middle" font-size="9" fill="#991b1b">limit exceeded</text>
+  <line x1="362" y1="196" x2="423" y2="148" stroke="#64748b" stroke-width="1.6" marker-end="url(#ah10)"/>
+  <line x1="490" y1="168" x2="490" y2="198" stroke="#86efac" stroke-width="1.2" marker-end="url(#ah10)"/>
+  <line x1="555" y1="218" x2="598" y2="182" stroke="#64748b" stroke-width="1.4" marker-end="url(#ah10)"/>
+  <line x1="555" y1="232" x2="598" y2="244" stroke="#64748b" stroke-width="1.4" marker-end="url(#ah10)"/>
+  <line x1="425" y1="240" x2="364" y2="290" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#ah10)"/>
+  <text x="386" y="310" text-anchor="middle" font-size="8.5" fill="#64748b">5xx: pending</text>
+</svg>
+<div class="diagram-caption">Figure 16: REST request chain with rate limiting and audit log (21.1.0)</div>
+</div>
+
+
+<h3 id="patterns-rest-audit">REST API Audit Log <span class="version-badge">New in 21.1.0</span></h3>
+<p>The REST API writes an audit trail to the table <code>o_api_audit_log</code> (OO-9778, package <code>org.olat.restapi.audit</code>). The resource classes need no code for it.</p>
+
+<table>
+<thead><tr><th>Class</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td><code>ApiAuditResponseFilter</code></td><td>JAX-RS response filter. Builds an <code>ApiAuditEntry</code> with resource class, method, path parameters and status.</td></tr>
+<tr><td><code>ApiAuditLogService</code> / <code>ApiAuditLogServiceImpl</code></td><td>Decides what to store (<code>isAuditable(method, status)</code>), writes the row and the access log line (section 29).</td></tr>
+<tr><td><code>ApiAuditMasking</code></td><td>Masks the values of the keys <code>password</code>, <code>credential</code>, <code>secret</code>, <code>clientSecret</code>, <code>token</code> and <code>sharedSecret</code> in JSON bodies and query strings with <code>***</code>.</td></tr>
+<tr><td><code>CachedBodyHttpServletRequest</code></td><td>Keeps a copy of the request body of a write call, up to <code>restapi.auditlog.body.maxsize</code> bytes.</td></tr>
+<tr><td><code>ApiAuditLogRetentionJob</code></td><td>Nightly job on the cluster singleton node. Deletes rows older than the retention.</td></tr>
+<tr><td><code>ApiAuditLogAdminController</code></td><td>Table of the audit log in the REST API administration (package <code>org.olat.admin.restapi</code>).</td></tr>
+</tbody>
+</table>
+
+<p><code>ApiAuditChannel</code> names the source of a row: <code>rest</code> today, <code>mcp</code> for a future MCP server.</p>
+
+<p>A row is stored for every PUT, POST, PATCH and DELETE, and for every request with the status 401, 403, 429 or 5xx. GET and HEAD requests are stored only with <code>restapi.auditlog.reads=true</code>.</p>
+
+<table>
+<thead><tr><th>Property</th><th>Default</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>restapi.auditlog.enabled</code></td><td>true</td><td>Audit log on or off</td></tr>
+<tr><td><code>restapi.auditlog.reads</code></td><td>false</td><td>Also store successful reads (high volume)</td></tr>
+<tr><td><code>restapi.auditlog.body</code></td><td>true</td><td>Store the masked JSON body of writes</td></tr>
+<tr><td><code>restapi.auditlog.body.maxsize</code></td><td>16384</td><td>Maximum stored body size in bytes</td></tr>
+<tr><td><code>restapi.auditlog.retention.days</code></td><td>365</td><td>Retention; 0 keeps all rows</td></tr>
+</tbody>
+</table>
+
+<p>A failed request loses its transaction. The response filter then marks the entry as pending. The servlet filter writes it with <code>logInNewTransaction()</code> after the rollback.</p>
+
+<h3 id="patterns-rest-ratelimit">REST API Rate Limiting <span class="version-badge">New in 21.1.0</span></h3>
+<p><code>RestApiLoginFilter</code> limits the requests per subject (OO-9779). A request above a limit gets the status 429 at once. It is never queued.</p>
+
+<ul>
+<li>The subject is <code>rest:id:&lt;identity key&gt;</code> for an authenticated request and <code>rest:ip:&lt;address&gt;</code> for an unauthenticated one (open URLs and the login URL <code>/restapi/auth</code>).</li>
+<li>Two guards apply: parallel requests (<code>RequestRateLimiter.acquire()</code> / <code>release()</code>) and requests per fixed window of 60 seconds (<code>check()</code>).</li>
+<li>Every allowed request gets the headers <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code> and <code>X-RateLimit-Reset</code> (epoch seconds).</li>
+<li>A rejected request gets <code>Retry-After</code> (seconds) and the JSON body <code>{"code":429,"message":"Too many requests, retry after N seconds"}</code>.</li>
+<li>Only the first rejection per subject, guard and window goes to the audit log and the access log. A client that ignores the 429 cannot flood the logs.</li>
+<li>Exempt paths: <code>/restapi/ping</code>, <code>/restapi/i18n</code>, <code>/restapi/openmeetings</code>, <code>/restapi/drawio</code>, <code>/restapi/onlyoffice</code>, <code>/restapi/office365</code>, and <code>/restapi/system</code> for the IPs in <code>restapi.ips.system</code>.</li>
+</ul>
+
+<table>
+<thead><tr><th>Property</th><th>Default</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>restapi.ratelimit.enabled</code></td><td>false</td><td>Rate limit on or off</td></tr>
+<tr><td><code>restapi.ratelimit.requests.per.minute</code></td><td>600</td><td>Requests per minute of an authenticated user</td></tr>
+<tr><td><code>restapi.ratelimit.max.parallel</code></td><td>4</td><td>Parallel requests of an authenticated user</td></tr>
+<tr><td><code>restapi.ratelimit.anonymous.requests.per.minute</code></td><td>60</td><td>Requests per minute of a client IP without authentication</td></tr>
+</tbody>
+</table>
+
+<p>The administration of the REST API can change the values at runtime (<code>RestModule</code>). The counters are per node: on a cluster, the effective limit is the configured value multiplied by the number of nodes.</p>
+
+<p><code>RequestRateLimiter</code> (package <code>core.util.ratelimit</code>) is a generic service. <code>RequestRateLimiterImpl</code> keeps the window counters in the Infinispan cache <code>RequestRateLimiter-window</code> and the parallel slots in a local map. <code>check()</code> returns a <code>RateLimitDecision</code> record. A caller that takes a slot with <code>acquire()</code> must call <code>release()</code> in a <code>finally</code> block.</p>
+
+<pre><code><span class="ann">@Autowired</span>
+<span class="kw">private</span> RequestRateLimiter requestRateLimiter;
+
+String key = <span class="str">"myfeature:id:"</span> + identity.getKey();
+<span class="kw">if</span> (requestRateLimiter.acquire(key, maxParallel)) {
+    <span class="kw">try</span> {
+        RateLimitDecision decision = requestRateLimiter.check(key, limitPerMinute);
+        <span class="kw">if</span> (!decision.allowed()) {
+            <span class="cmt">// reject, retry after decision.retryAfterSeconds()</span>
+        }
+    } <span class="kw">finally</span> {
+        requestRateLimiter.release(key);
+    }
+}</code></pre>
+
+<p>---</p>
+
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="testing">32. Testing Infrastructure</h2>
+<h2 id="testing">38. Testing Infrastructure</h2>
 
 <p>OpenOlat uses a multi-layered testing approach: unit tests, Spring integration tests, REST API tests, and browser-based Selenium tests.</p>
 
@@ -3400,7 +4531,29 @@ getWindowControl().pushFullScreen(editorCtrl, <span class="str">"o_editor_body"<
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="about">33. About</h2>
+<h2 id="about">39. About</h2>
+
+<h3 id="about-doc">About This Document</h3>
+<table>
+<thead><tr><th>Item</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Document version</td><td>2.0</td></tr>
+<tr><td>Covered release</td><td>OpenOlat 21.1.0 (master, <code>21.1-SNAPSHOT</code>)</td></tr>
+<tr><td>Last updated</td><td>2026-09-25</td></tr>
+<tr><td>Previous content update</td><td>2026-05-19 (commit <code>519afaf02c</code>)</td></tr>
+<tr><td>HTML view</td><td><code>doc/openolat-architecture.html</code> (same sections, with diagrams)</td></tr>
+</tbody>
+</table>
+
+<p>Changes in version 2.0:</p>
+
+<ul>
+<li><strong>New mechanisms of 21.1.0:</strong> REST API audit log and rate limiting (section 37), REST access log (section 29), SSRF protection profiles of <code>HttpClientService</code> (sections 35, 36), user control of AI features (section 31), cached wizard step controllers (section 10), <code>FormSection</code> and <code>SearchElement</code> (section 8), <code>FactSheet</code>, <code>Sections</code>, <code>ComponentList</code> (section 5), callout accessibility rollout (section 15), <code>AesGcmCipher</code> (section 30), label icon of <code>FormItem</code> (section 8).</li>
+<li><strong>Documented 21.0.x mechanisms:</strong> sandboxed mappers and the content domain (section 12), AI services and AI task pools (sections 21, 31), <code>RelativeDateElement</code>, <code>ObjectSelectionElement</code>, <code>LAYOUT_TWO_COLS</code> (section 8), <code>DocxToMarkdownService</code>, <code>HibernateProxyConverter</code> (section 30), the <code>CacheWrapper.put()</code> signature (section 27).</li>
+<li><strong>Corrections:</strong> dispatcher registration (section 3), component and cell renderer names (sections 5, 9), FlexiTable sort and empty state API (section 9), form layout types (section 8), VFS helpers (section 18), Spring context count (section 19), identity status values and organisation roles (section 32), HTML sanitizer library (section 35), logger type (section 29), statistics (sections 16, 25, 33).</li>
+<li><strong>Aligned with the HTML view:</strong> subsections that existed only in the HTML are now part of this file.</li>
+<li><strong>New sections for existing mechanisms:</strong> Wizards (10), Module Configuration (20), Persisted Long-Running Tasks (22), Clustering (28), AI Framework (31), Security Architecture (34). Sections after 9 are renumbered; the old sections 10 to 33 are now 11 to 39.</li>
+</ul>
 
 <h3>OpenOlat</h3>
 <p>
@@ -3456,7 +4609,7 @@ See the <code>NOTICE.TXT</code> file in the project root for a full list of depe
 
 <hr>
 <p style="text-align:center; color:#888; margin-top:2rem; font-size:0.85rem;">
-OpenOlat Architecture Reference &mdash; Generated February 2026
+OpenOlat Architecture Reference &middot; Document version 2.0 &middot; Covers OpenOlat 21.1.0 &middot; Updated 2026-09-25
 </p>
 
 </main>

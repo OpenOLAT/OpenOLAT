@@ -2,92 +2,171 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Framework — Developer Documentation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Framework — OpenOlat</title>
 <style>
-  :root {
-    --bg: #ffffff;
-    --text: #1e293b;
-    --muted: #64748b;
-    --border: #e2e8f0;
-    --code-bg: #f8fafc;
-    --accent: #3b82f6;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    color: var(--text);
-    background: var(--bg);
-    line-height: 1.65;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem 4rem;
-  }
-  h1 { font-size: 1.8rem; margin-bottom: .25rem; }
-  h2 { font-size: 1.35rem; margin: 2.5rem 0 .75rem; border-bottom: 1px solid var(--border); padding-bottom: .35rem; }
-  h3 { font-size: 1.1rem; margin: 1.5rem 0 .5rem; }
-  p, ul, ol { margin-bottom: .85rem; }
-  ul, ol { padding-left: 1.5rem; }
-  li { margin-bottom: .3rem; }
-  code {
-    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-    font-size: .88em;
-    background: var(--code-bg);
-    padding: .1em .35em;
-    border-radius: 3px;
-    border: 1px solid var(--border);
-  }
-  pre {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 1rem 1.25rem;
-    overflow-x: auto;
-    margin-bottom: 1rem;
-    line-height: 1.5;
-  }
-  pre code {
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: .85em;
-  }
-  .subtitle { color: var(--muted); font-size: .95rem; margin-bottom: 1.5rem; }
-  table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; }
-  th, td { text-align: left; padding: .5rem .75rem; border: 1px solid var(--border); }
-  th { background: var(--code-bg); font-weight: 600; }
-  .diagram-container { margin: 1.5rem 0; overflow-x: auto; }
-  .note {
-    background: #eff6ff;
-    border-left: 4px solid var(--accent);
-    padding: .75rem 1rem;
-    margin: 1rem 0;
-    border-radius: 0 6px 6px 0;
-  }
+:root {
+  --bg: #f5f7fa;
+  --content-bg: #ffffff;
+  --text: #1a1a2e;
+  --heading: #136669;
+  --heading-dark: #16797c;
+  --link: #16797c;
+  --link-hover: #1f999c;
+  --code-bg: #f6f8fa;
+  --code-border: #e2e8f0;
+  --code-color: #7c3aed;
+  --pre-bg: #1e1e2e;
+  --pre-text: #cdd6f4;
+  --table-header: #f8fafc;
+  --table-border: #e2e8f0;
+  --table-alt: #fafbfc;
+  --border: #e2e8f0;
+  --nav-width: 260px;
+  --nav-bg: #ffffff;
+  --aside-bg: #fff7ed;
+  --aside-border: #f97316;
+  --info-bg: #eff6ff;
+  --info-border: #3b82f6;
+  --diagram-bg: #ffffff;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+h2[id] { scroll-margin-top: 1rem; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+}
+.doc-header {
+  background: linear-gradient(135deg, #16797c 0%, #1f999c 65%, #23adb1 100%);
+  color: white;
+  padding: 28px 48px 32px;
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.header-logo { display: flex; align-items: center; gap: 11px; }
+.header-logo-text { font-size: 16px; font-weight: 700; color: white; line-height: 1; letter-spacing: 0.1px; }
+.header-doc-type { font-size: 10.5px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; }
+.header-rule { height: 1px; background: rgba(255,255,255,0.2); margin-bottom: 16px; }
+.doc-header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.3px; border: none; margin: 0; padding: 0; color: white; }
+.doc-header .subtitle { margin-top: 5px; color: rgba(255,255,255,0.82); font-size: 13px; }
+.doc-header .meta { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.doc-header .meta span { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22); border-radius: 4px; padding: 3px 10px; font-size: 11px; color: rgba(255,255,255,0.92); }
+.header-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 12px; }
+.header-nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 2px 0; transition: color 0.15s; }
+.header-nav a:hover { color: white; text-decoration: underline; }
+.header-nav a.active { color: white; font-weight: 600; }
+.header-nav .sep { color: rgba(255,255,255,0.35); font-size: 11px; }
+.page-layout { display: flex; min-height: 100vh; }
+.side-nav {
+  width: var(--nav-width); min-width: var(--nav-width);
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  border-right: 1px solid var(--border); background: var(--nav-bg);
+  padding: 1.2rem 0; font-size: 12px; scrollbar-width: thin;
+}
+.side-nav::-webkit-scrollbar { width: 4px; }
+.side-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+.side-nav .nav-title { font-size: 13px; font-weight: 700; color: var(--heading); padding: 0 1rem 0.6rem; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; }
+.side-nav .nav-group { padding: 0.5rem 0 0.2rem; }
+.side-nav .nav-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8; padding: 0.3rem 1rem; }
+.side-nav a { display: block; padding: 3px 1rem 3px 1.2rem; color: #475569; text-decoration: none; border-left: 3px solid transparent; transition: all 0.15s; line-height: 1.5; }
+.side-nav a:hover { color: var(--link-hover); background: rgba(22,121,124,0.06); }
+.side-nav a.active { color: var(--link); border-left-color: var(--heading); background: rgba(22,121,124,0.08); font-weight: 600; }
+.main-content { flex: 1; max-width: 960px; padding: 40px 32px 80px; min-width: 0; }
+h2 { font-size: 18px; font-weight: 700; color: var(--heading); border-bottom: 2px solid var(--border); padding-bottom: 10px; margin: 48px 0 20px; }
+h3 { font-size: 14px; font-weight: 600; color: #334155; margin: 20px 0 10px; }
+h4 { font-size: 13px; font-weight: 600; color: #475569; margin: 16px 0 6px; }
+p { margin: 8px 0; font-size: 14px; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; color: var(--link-hover); }
+ul, ol { margin: 6px 0 12px 1.8rem; }
+li { margin: 3px 0; }
+code { font-family: "SF Mono", "Fira Code", Consolas, monospace; font-size: 12px; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 4px; padding: 1px 5px; color: var(--code-color); }
+pre { background: var(--pre-bg); color: var(--pre-text); border-radius: 10px; padding: 16px 20px; overflow-x: auto; margin: 10px 0 16px; line-height: 1.7; font-size: 12.5px; box-shadow: var(--shadow); }
+pre code { background: none; border: none; padding: 0; font-size: inherit; color: inherit; }
+.kw { color: #ff7b72; } .str { color: #a6e3a1; } .cmt { color: #6c7086; font-style: italic; } .typ { color: #89b4fa; } .num { color: #89b4fa; } .ann { color: #cba6f7; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0 16px; background: var(--content-bg); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); }
+th { background: var(--table-header); padding: 8px 14px; text-align: left; color: #64748b; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+td { padding: 8px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafafa; }
+.aside { background: var(--aside-bg); border-left: 4px solid var(--aside-border); padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #7c2d12; }
+.aside strong { color: #92400e; }
+.info { background: var(--info-bg); border-left: 4px solid var(--info-border); padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #1e3a5f; }
+.info strong { color: #1e40af; }
+.diagram-box { background: var(--diagram-bg); border-radius: 12px; padding: 32px; margin: 16px 0 20px; text-align: center; overflow-x: auto; box-shadow: var(--shadow); }
+.diagram-box svg { max-width: 100%; height: auto; }
+.diagram-caption { font-size: 12px; color: #64748b; margin-top: 10px; font-style: italic; }
+hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+.version-badge { display:inline-block; font-size:10.5px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; color:#135e5f; background:#e6f4f4; border:1px solid #9fd3d4; border-radius:3px; padding:1px 7px; margin-left:8px; vertical-align:middle; } .version-badge.changed { color:#7c4a03; background:#fff4e5; border-color:#f5c98a; }
+@media (max-width: 1100px) { .side-nav { display: none; } .main-content { padding: 24px 16px 40px; } .doc-header { padding: 20px 16px 24px; } .doc-header h1 { font-size: 22px; } }
+@media print { .side-nav { display: none; } .doc-header { display: none; } body { background: white; } .diagram-box, table, pre { box-shadow: none; } }
 </style>
 </head>
 <body>
 
-<h1>Dashboard Framework</h1>
-<p class="subtitle">
-  Package <code>org.olat.core.gui.control.generic.dashboard</code><br>
-  Developer documentation for the OpenOlat bento-grid dashboard infrastructure.
-</p>
+<header class="doc-header">
+  <div class="header-top">
+    <div class="header-logo">
+      <div>
+        <div class="header-logo-text">OpenOlat</div>
+        <div class="header-doc-type">Framework Documentation</div>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a href="../../../../../../../../../../doc/openolat-architecture.html">Architecture</a>
+      <span class="sep">|</span>
+      <a href="#" class="active">Dashboard</a>
+    </nav>
+  </div>
+  <div class="header-rule"></div>
+  <h1>Dashboard Framework</h1>
+  <div class="subtitle">Bento-grid dashboard with user-configurable widgets, edit mode and system defaults</div>
+  <div class="meta">
+    <span>Java 17+</span>
+    <span>SortableJS</span>
+    <span>OpenOlat Framework</span>
+    <span>org.olat.core.gui.control.generic.dashboard</span>
+  </div>
+</header>
 
+<div class="page-layout">
+<nav class="side-nav">
+  <div class="nav-title">Dashboard</div>
+  <div class="nav-group">
+    <a href="#overview">1. Overview</a>
+    <a href="#class-diagram">2. Class Diagram</a>
+    <a href="#creating-a-dashboard">3. Creating a Dashboard</a>
+    <a href="#adding-widgets">4. Adding Widgets</a>
+    <a href="#writing-a-new-widget">5. Writing a New Widget</a>
+    <a href="#edit-mode-and-preferences">6. Edit Mode and Preferences</a>
+    <a href="#bentoboxsize-reference">7. BentoBoxSize Reference</a>
+    <a href="#velocity-templates">8. Velocity Templates</a>
+    <a href="#spring-configuration">9. Spring Configuration</a>
+    <a href="#complete-example">10. Complete Example</a>
+    <a href="#i18n-keys">11. i18n Keys</a>
+  </div>
+</nav>
+
+<main class="main-content">
 <!-- ================================================================ -->
-<h2>1. Overview</h2>
+<h2 id="overview">1. Overview</h2>
 
 <p>
   The dashboard framework provides a reusable, user-configurable widget container
   rendered as a CSS Grid bento layout. Widgets can be added by any module.
   When editing is enabled, users can reorder, hide, and restore widgets via
-  drag&nbsp;&amp;&nbsp;drop. Widget configuration follows a three-tier cascade:
+  drag&nbsp;&amp;&nbsp;drop or with move up and move down buttons. Widget configuration follows a three-tier cascade:
   personal preferences &gt; system defaults &gt; all widgets.
 </p>
 
 <p>Key features:</p>
 <ul>
   <li>Bento grid layout with configurable widget sizes (1&times;1 up to 4&times;4)</li>
-  <li>Optional edit mode with Dragula.js drag &amp; drop</li>
+  <li>Optional edit mode with SortableJS drag &amp; drop and keyboard-accessible move up / move down buttons</li>
   <li>Three-tier configuration cascade: personal &gt; system default &gt; all widgets</li>
   <li>Per-user preferences stored via XStream in <code>GuiPreferences</code></li>
   <li>System default configuration stored in the <code>o_property</code> table via <code>PropertyManager</code></li>
@@ -97,9 +176,9 @@
 </ul>
 
 <!-- ================================================================ -->
-<h2>2. Class Diagram</h2>
+<h2 id="class-diagram">2. Class Diagram</h2>
 
-<div class="diagram-container">
+<div class="diagram-box">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 870 440" font-family="'SF Mono','Cascadia Code','Fira Code','Consolas',monospace" style="max-width:870px;width:100%;">
   <style>
     .box { stroke-width: 1.2; rx: 4; ry: 4; }
@@ -138,10 +217,11 @@
   <text class="cls-text" x="18" y="138">- applyConfiguration()</text>
 
   <!-- ===== DashboardPrefs ===== -->
-  <rect class="box box-class" x="575" y="8" width="255" height="52"/>
+  <rect class="box box-class" x="575" y="8" width="255" height="64"/>
   <text class="cls-title" x="702" y="28" text-anchor="middle">DashboardPrefs</text>
   <line class="sep" x1="575" y1="36" x2="830" y2="36"/>
-  <text class="cls-text" x="583" y="52">enabledWidgets : List&lt;String&gt;</text>
+  <text class="cls-text" x="583" y="51">enabledWidgets : List&lt;String&gt;</text>
+  <text class="cls-text" x="583" y="65">disabledWidgets : List&lt;String&gt;</text>
 
   <!-- ===== BentoBoxSize ===== -->
   <rect class="box box-enum" x="575" y="80" width="255" height="64"/>
@@ -163,8 +243,8 @@
   <rect class="box box-class" x="10" y="200" width="310" height="100"/>
   <text class="cls-title" x="165" y="220" text-anchor="middle">DashboardEditController</text>
   <line class="sep" x1="10" y1="228" x2="320" y2="228"/>
-  <text class="cls-text" x="18" y="244">Drag &amp; drop reordering (Dragula.js)</text>
-  <text class="cls-text" x="18" y="259">Add / Remove / Reorder widgets</text>
+  <text class="cls-text" x="18" y="244">Drag &amp; drop reordering (SortableJS)</text>
+  <text class="cls-text" x="18" y="259">Add / Remove / Move up / Move down</text>
   <text class="cls-text" x="18" y="274">Admin: save / reset system defaults</text>
   <text class="cls-text" x="18" y="289">&rarr; CHANGED_EVENT | CANCELLED_EVENT</text>
 
@@ -235,7 +315,7 @@
 </svg>
 </div>
 
-<h3>Roles of each class</h3>
+<h3 id="roles-of-each-class">Roles of each class</h3>
 <table>
   <tr>
     <th>Class</th>
@@ -247,7 +327,7 @@
   </tr>
   <tr>
     <td><code>DashboardEditController</code></td>
-    <td>Edit-mode controller. Provides drag&nbsp;&amp;&nbsp;drop reordering via Dragula.js, add/remove actions, and save/cancel/reset buttons. For system administrators, also shows an ellipsis menu with "Save as system default" and "Reset system default" actions. Fires <code>CHANGED_EVENT</code> or <code>CANCELLED_EVENT</code>.</td>
+    <td>Edit-mode controller. Provides drag&nbsp;&amp;&nbsp;drop reordering via SortableJS, move up / move down buttons, add/remove actions, and save/cancel/reset buttons. For system administrators, also shows an ellipsis menu with "Save as system default" and "Reset system default" actions. Fires <code>CHANGED_EVENT</code> or <code>CANCELLED_EVENT</code>.</td>
   </tr>
   <tr>
     <td><code>DashboardSystemDefaultsManager</code></td>
@@ -259,7 +339,7 @@
   </tr>
   <tr>
     <td><code>DashboardPrefs</code></td>
-    <td>POJO used for both personal preferences (<code>GuiPreferences</code>) and system defaults (<code>o_property</code>). Contains the ordered list of enabled widget names. Serialized via XStream using the fully qualified class name.</td>
+    <td>POJO used for both personal preferences (<code>GuiPreferences</code>) and system defaults (<code>o_property</code>). Contains the ordered list of enabled widget names and the list of disabled widget names. Serialized via XStream using the fully qualified class name.</td>
   </tr>
   <tr>
     <td><code>BentoBoxSize</code></td>
@@ -280,34 +360,45 @@
 </table>
 
 <!-- ================================================================ -->
-<h2>3. Creating a Dashboard</h2>
+<h2 id="creating-a-dashboard">3. Creating a Dashboard</h2>
 
-<h3>Without edit support</h3>
+<h3 id="without-edit-support">Without edit support</h3>
 <p>
-  Use the no-arg constructor. All widgets are always shown in registration order.
+  Pass <code>null</code> as <code>dashboardId</code>. All widgets are always shown in registration order.
   No edit button is rendered. Suitable for dashboards that should not be user-configurable.
+  <code>DashboardController</code> has no constructor without the <code>dashboardId</code> argument.
 </p>
-<pre><code>DashboardController dashboard = new DashboardController(ureq, wControl);
+<pre><code>DashboardController dashboard = new DashboardController(ureq, wControl, null);
 listenTo(dashboard);
 putInitialPanel(dashboard.getInitialComponent());</code></pre>
 
-<h3>With edit support</h3>
+<h3 id="with-edit-support">With edit support</h3>
 <p>
-  Pass a stable, unique <code>dashboardId</code> string (typically the calling controller's
-  fully qualified class name). An "Edit dashboard" button is shown for non-guest users.
+  Pass a stable, unique <code>dashboardId</code> string. The existing dashboards use short
+  dotted identifiers, see the table below. An "Edit dashboard" button is shown for non-guest users.
 </p>
-<pre><code>DashboardController dashboard = new DashboardController(ureq, wControl, getClass().getName());
+<pre><code>DashboardController dashboard = new DashboardController(ureq, wControl, "dashboard.coaching");
 listenTo(dashboard);
 putInitialPanel(dashboard.getInitialComponent());</code></pre>
 
-<div class="note">
+<div class="info">
   The <code>dashboardId</code> is used as the key for both <code>GuiPreferences</code>
   (personal) and <code>o_property</code> (system default).
   Use a stable string that does not change across versions. Guest users never see the edit button.
 </div>
 
+<h3 id="existing-dashboards">Existing dashboards</h3>
+<table>
+  <tr><th><code>dashboardId</code></th><th>Created in</th></tr>
+  <tr><td><code>dashboard.coaching</code></td><td><code>org.olat.modules.coach.ui.dashboard.CoachDashboardController</code></td></tr>
+  <tr><td><code>dashboard.certification.program</code></td><td><code>org.olat.modules.certificationprogram.ui.CertificationProgramDashboardController</code></td></tr>
+  <tr><td><code>dashboard.course.planner</code></td><td><code>org.olat.modules.curriculum.ui.CurriculumManagerRootController</code></td></tr>
+  <tr><td><code>dashboard.curriculum</code></td><td><code>org.olat.modules.curriculum.ui.CurriculumDetailsController</code></td></tr>
+  <tr><td><code>dashboard.curriculum.element</code></td><td><code>org.olat.modules.curriculum.ui.CurriculumElementDetailsController</code></td></tr>
+</table>
+
 <!-- ================================================================ -->
-<h2>4. Adding Widgets</h2>
+<h2 id="adding-widgets">4. Adding Widgets</h2>
 
 <p>
   After creating the dashboard, add widgets using <code>addWidget()</code>.
@@ -321,7 +412,7 @@ listenTo(courseCtrl);
 // Register with the dashboard
 dashboard.addWidget("courses", translate("widget.courses"), courseCtrl, BentoBoxSize.box_4_1);</code></pre>
 
-<h3>Parameters</h3>
+<h3 id="parameters">Parameters</h3>
 <table>
   <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
   <tr>
@@ -346,13 +437,13 @@ dashboard.addWidget("courses", translate("widget.courses"), courseCtrl, BentoBox
   </tr>
 </table>
 
-<div class="note">
+<div class="info">
   <strong>Widget names must be stable.</strong> Renaming a widget name will cause existing user
   preferences to lose track of that widget. If you must rename, consider a migration step.
 </div>
 
 <!-- ================================================================ -->
-<h2>5. Writing a New Widget</h2>
+<h2 id="writing-a-new-widget">5. Writing a New Widget</h2>
 
 <p>
   Any <code>Controller</code> can serve as a widget. The dashboard framework has no
@@ -360,7 +451,7 @@ dashboard.addWidget("courses", translate("widget.courses"), courseCtrl, BentoBox
   Two approaches exist depending on complexity.
 </p>
 
-<h3>5a. Simple widget (any Controller)</h3>
+<h3 id="simple-widget-any-controller">5a. Simple widget (any Controller)</h3>
 
 <p>
   Create a standard <code>BasicController</code> or <code>FormBasicController</code>.
@@ -388,7 +479,7 @@ dashboard.addWidget("courses", translate("widget.courses"), courseCtrl, BentoBox
 listenTo(statsCtrl);
 dashboard.addWidget("myStats", translate("widget.stats"), statsCtrl, BentoBoxSize.box_2_2);</code></pre>
 
-<h3>5b. Implementing DashboardWidget for automatic title detection</h3>
+<h3 id="implementing-dashboardwidget-for-automatic-title-detection">5b. Implementing DashboardWidget for automatic title detection</h3>
 
 <p>
   If the widget controller implements <code>DashboardWidget</code>, you can pass
@@ -408,7 +499,7 @@ dashboard.addWidget("myStats", translate("widget.stats"), statsCtrl, BentoBoxSiz
 <pre><code>// title is auto-detected from getWidgetTitle()
 dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></pre>
 
-<h3>5c. Table widget (extending TableWidgetController)</h3>
+<h3 id="table-widget-extending-tablewidgetcontroller">5c. Table widget (extending TableWidgetController)</h3>
 
 <p>
   For widgets that display a FlexiTable with key-figure indicators and a "Show all" link,
@@ -461,29 +552,37 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
     }
 }</code></pre>
 
-<h3>TableWidgetController features</h3>
+<h3 id="tablewidgetcontroller-features">TableWidgetController features</h3>
 <ul>
   <li>Standard layout with title, indicators, table, empty state, and "Show all" footer</li>
-  <li>Built-in per-widget preferences (key figures, visible columns, row count) via <code>TableWidgetConfigProvider</code></li>
+  <li>Built-in per-widget preferences (key figures, visible columns, row count) via <code>TableWidgetConfigProvider</code>.
+    The settings button is only visible when <code>getConfigProvider()</code> returns a provider with a non-empty ID.
+    The preferences are stored in <code>GuiPreferences</code> under <code>TableWidgetController.class</code> and the provider ID.</li>
+  <li><span class="version-badge changed">Changed in 21.1.0</span> The settings button is marked as a dialog opener with <code>Link.setAriaDialogOpener()</code>
+    (<code>role="button"</code>, <code>aria-haspopup="dialog"</code>, <code>aria-expanded</code>). The settings callout receives the <code>FormLink</code>
+    itself, so <code>CloseableCalloutWindowController</code> updates <code>aria-expanded</code> on open and close (OO-9727).</li>
   <li><code>wrapCellLink(renderer)</code> helper to make entire table rows clickable</li>
-  <li><code>MaxHeightScrollableDelegate</code> for scrollable table with max height</li>
+  <li><code>MaxHeightScrollableDelegate</code> for scrollable table with max height. <code>widget_table.html</code> starts the
+    overflow indicator (<code>o_initScrollableVerticalOverflowIndicator</code>) in a <code>requestAnimationFrame</code> callback,
+    so the calculation runs after the widget is visible.</li>
 </ul>
 
 <!-- ================================================================ -->
-<h2>6. Edit Mode and Preferences</h2>
+<h2 id="edit-mode-and-preferences">6. Edit Mode and Preferences</h2>
 
-<h3>How edit mode works</h3>
+<h3 id="how-edit-mode-works">How edit mode works</h3>
 <ol>
   <li>User clicks "Edit dashboard" &rarr; <code>DashboardController.doEdit()</code></li>
   <li>The main panel swaps from the dashboard view to the <code>DashboardEditController</code> component</li>
-  <li>Edit view shows active widgets (reorderable via drag&nbsp;&amp;&nbsp;drop) and available widgets (with "Add" buttons)</li>
+  <li>Edit view shows active widgets (reorderable via drag&nbsp;&amp;&nbsp;drop or the move up / move down buttons) and available widgets (with "Add" buttons).
+    A move with the buttons updates an <code>aria-live</code> region with the new position (<code>dashboard.moved</code>)</li>
   <li>User clicks Save &rarr; preferences are written to <code>GuiPreferences</code> &rarr; <code>CHANGED_EVENT</code> is fired</li>
   <li>User clicks Reset &rarr; personal preferences are deleted (reverts to system default or all widgets) &rarr; <code>CHANGED_EVENT</code> is fired</li>
   <li>User clicks Cancel &rarr; <code>CANCELLED_EVENT</code> is fired, no changes saved</li>
   <li><code>DashboardController</code> receives the event, swaps the panel back, and reloads the configuration</li>
 </ol>
 
-<h3>Configuration cascade</h3>
+<h3 id="configuration-cascade">Configuration cascade</h3>
 <p>
   The dashboard uses a three-tier configuration cascade to determine which widgets are
   shown and in what order:
@@ -494,13 +593,21 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
   <li><strong>All widgets</strong> &mdash; Fallback: all registered widgets are shown in registration order. Used when neither personal nor system default configuration exists.</li>
 </ol>
 
+<p>When a stored configuration exists, <code>DashboardController.resolveWidgets()</code> builds the widget lists as follows:</p>
+<ol>
+  <li>The widgets in <code>enabledWidgets</code> are shown in the stored order. Unknown names are ignored.</li>
+  <li>The widgets in <code>disabledWidgets</code> are hidden and listed as available widgets in edit mode.</li>
+  <li>A registered widget that is in neither list is appended to the enabled widgets.
+    As a result, a widget that a new version adds is visible by default, also for users with stored preferences.</li>
+</ol>
+
 <p>
   The cascade is applied in <code>DashboardController.applyConfiguration()</code> and
-  <code>DashboardController.doEdit()</code>. Both methods check personal preferences first,
+  <code>DashboardController.doEdit()</code> through <code>getEffectivePrefs()</code> and <code>resolveWidgets()</code>. Both methods check personal preferences first,
   fall back to system defaults, and finally show all widgets if neither is configured.
 </p>
 
-<h3>Personal preference storage</h3>
+<h3 id="personal-preference-storage">Personal preference storage</h3>
 <p>
   User preferences are stored as <code>DashboardPrefs</code> objects in <code>GuiPreferences</code>,
   serialized via XStream using the fully qualified class name. Example XML:
@@ -511,9 +618,12 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
     &lt;string&gt;courses&lt;/string&gt;
     &lt;string&gt;lectureBlocks&lt;/string&gt;
   &lt;/enabledWidgets&gt;
+  &lt;disabledWidgets&gt;
+    &lt;string&gt;todos&lt;/string&gt;
+  &lt;/disabledWidgets&gt;
 &lt;/org.olat.core.gui.control.generic.dashboard.DashboardPrefs&gt;</code></pre>
 
-<h3>System default storage</h3>
+<h3 id="system-default-storage">System default storage</h3>
 <p>
   System defaults are managed by <code>DashboardSystemDefaultsManager</code>, a Spring
   <code>@Service</code>. It stores <code>DashboardPrefs</code> as XStream-serialized XML in the
@@ -530,10 +640,10 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
   keeping serialization consistent across the two storage backends.
 </p>
 
-<h3>Admin tools in edit mode</h3>
+<h3 id="admin-tools-in-edit-mode">Admin tools in edit mode</h3>
 <p>
   When a system administrator opens the edit mode, an ellipsis menu (&hellip;) is rendered
-  next to the Cancel button. This menu provides two additional actions:
+  on the right side of the "Active widgets" heading. This menu provides two additional actions:
 </p>
 <ul>
   <li><strong>Save as system default</strong> &mdash; Saves the current widget configuration (as shown
@@ -545,10 +655,10 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
 <p>
   The admin menu is only rendered when <code>ureq.getUserSession().getRoles().isSystemAdmin()</code>
   returns <code>true</code>. It uses <code>DropdownUIFactory.createMoreDropdown()</code> for
-  the ellipsis button and <code>LinkFactory.createToolLink()</code> for the menu items.
+  the ellipsis button and form links (<code>uifactory.addFormLink(..., Link.LINK)</code>) for the menu items.
 </p>
 
-<h3>Default behavior summary</h3>
+<h3 id="default-behavior-summary">Default behavior summary</h3>
 <ul>
   <li>When no personal preferences are stored and a <strong>system default</strong> exists, the system default configuration is used.</li>
   <li>When neither personal preferences nor system defaults exist, <strong>all widgets are shown</strong> in registration order.</li>
@@ -557,7 +667,7 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
 </ul>
 
 <!-- ================================================================ -->
-<h2>7. BentoBoxSize Reference</h2>
+<h2 id="bentoboxsize-reference">7. BentoBoxSize Reference</h2>
 
 <p>
   Each enum value maps to a CSS class that defines the widget's grid span.
@@ -584,34 +694,36 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
 </p>
 
 <!-- ================================================================ -->
-<h2>8. Velocity Templates</h2>
+<h2 id="velocity-templates">8. Velocity Templates</h2>
 
-<h3><code>dashboard.html</code> &mdash; main view</h3>
+<h3 id="html-main-view"><code>dashboard.html</code> &mdash; main view</h3>
 <p>
   Iterates over <code>$enabledWidgets</code> (a <code>List&lt;Widget&gt;</code>) and renders
   each widget inside a <code>&lt;div class="o_bento_box"&gt;</code>. The edit button is
   conditionally rendered for non-guest users.
 </p>
 
-<h3><code>dashboard_edit.html</code> &mdash; edit view</h3>
+<h3 id="dashboard-edit-html-edit-view"><code>dashboard_edit.html</code> &mdash; edit view</h3>
 <p>
-  Shows enabled widgets in a Dragula-enabled container and disabled widgets with "Add" buttons.
-  Uses <code>$r.openJavaScriptCommand()</code> to send drag/add/remove events from JavaScript
-  back to the Java controller via AJAX. For system administrators, renders the admin ellipsis
-  menu (<code>adminMenu</code>) next to the action buttons when available:
+  Shows enabled widgets in a SortableJS container with move up / move down buttons and disabled widgets with "Add" buttons.
+  A drop sends <code>o_ffXHREvent</code> with the parameters <code>draggedName</code> and <code>siblingName</code>
+  back to the Java controller. Add, remove and move buttons are regular form links.
+  The template contains the <code>aria-live</code> region for move announcements.
+  For system administrators, renders the admin ellipsis
+  menu (<code>adminMenu</code>) next to the "Active widgets" heading when available:
 </p>
 <pre><code>#if($r.available("adminMenu"))
     $r.render("adminMenu")
 #end</code></pre>
 
-<h3><code>widget_table.html</code> &mdash; table widget layout</h3>
+<h3 id="widget-table-html-table-widget-layout"><code>widget_table.html</code> &mdash; table widget layout</h3>
 <p>
   Standard layout used by <code>TableWidgetController</code> subclasses. Renders title,
-  indicators, table, empty state, and footer in a consistent structure.
+  settings button, indicators, table, empty state, and footer in a consistent structure.
 </p>
 
 <!-- ================================================================ -->
-<h2>9. Spring Configuration</h2>
+<h2 id="spring-configuration">9. Spring Configuration</h2>
 
 <p>
   The <code>DashboardSystemDefaultsManager</code> is a Spring <code>@Service</code>.
@@ -630,7 +742,7 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
 </p>
 
 <!-- ================================================================ -->
-<h2>10. Complete Example</h2>
+<h2 id="complete-example">10. Complete Example</h2>
 
 <pre><code>public class CoachDashboardController extends BasicController {
 
@@ -645,7 +757,7 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
                 CoachMainController.class, getLocale(), getTranslator()));
 
         // Create dashboard with edit support
-        dashboardCtrl = new DashboardController(ureq, wControl, getClass().getName());
+        dashboardCtrl = new DashboardController(ureq, wControl, "dashboard.coaching");
         listenTo(dashboardCtrl);
         putInitialPanel(dashboardCtrl.getInitialComponent());
 
@@ -677,12 +789,13 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
 }</code></pre>
 
 <!-- ================================================================ -->
-<h2>11. i18n Keys</h2>
+<h2 id="i18n-keys">11. i18n Keys</h2>
 
 <p>
   The dashboard framework uses the following i18n keys in its own
-  <code>_i18n/LocalStrings_*.properties</code>:
+  <code>_i18n/LocalStrings_*.properties</code> (<code>de</code>, <code>en</code>, <code>fr</code>, <code>it</code>, <code>sk</code>).
 </p>
+<p><span class="version-badge">New in 21.1.0</span> Spanish (<code>es</code>, OO-9823) and Polish (<code>pl</code>, OO-9822) translations of all keys.</p>
 
 <table>
   <tr><th>Key</th><th>Usage</th></tr>
@@ -695,11 +808,21 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
   <tr><td><code>dashboard.add</code></td><td>"Add" button on disabled widgets</td></tr>
   <tr><td><code>dashboard.remove</code></td><td>Remove tooltip on enabled widgets</td></tr>
   <tr><td><code>dashboard.drag</code></td><td>Drag handle label</td></tr>
+  <tr><td><code>dashboard.move.up</code></td><td>Title of the move up button</td></tr>
+  <tr><td><code>dashboard.move.down</code></td><td>Title of the move down button</td></tr>
+  <tr><td><code>dashboard.moved</code></td><td>Screen reader announcement after a move (widget title, new position, number of widgets)</td></tr>
+  <tr><td><code>dashboard.details</code></td><td>"Details" link from <code>DashboardUIFactory.createDetailsLink()</code></td></tr>
+  <tr><td><code>show.all</code></td><td>"Show all" link from <code>DashboardUIFactory.createShowAllLink()</code></td></tr>
+  <tr><td><code>settings</code>, <code>settings.change</code></td><td>Title of the table widget settings callout and of its button</td></tr>
+  <tr><td><code>settings.header</code>, <code>settings.figures</code>, <code>settings.main.figure</code>, <code>settings.table</code>, <code>settings.num.rows</code></td><td>Labels in <code>TableWidgetPreferenceController</code></td></tr>
   <tr><td><code>dashboard.system.default.save</code></td><td>"Save as system default" admin action</td></tr>
   <tr><td><code>dashboard.system.default.reset</code></td><td>"Reset system default" admin action</td></tr>
   <tr><td><code>dashboard.system.default.saved</code></td><td>Info message after saving system default</td></tr>
   <tr><td><code>dashboard.system.default.deleted</code></td><td>Info message after resetting system default</td></tr>
 </table>
+
+</main>
+</div>
 
 </body>
 </html>

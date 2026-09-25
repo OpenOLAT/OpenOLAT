@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Media Center Architecture | OpenOlat</title>
+<style>
+:root {
+  --bg: #f5f7fa;
+  --content-bg: #ffffff;
+  --text: #1a1a2e;
+  --heading: #136669;
+  --heading-dark: #16797c;
+  --link: #16797c;
+  --link-hover: #1f999c;
+  --code-bg: #f6f8fa;
+  --code-border: #e2e8f0;
+  --code-color: #7c3aed;
+  --pre-bg: #1e1e2e;
+  --pre-text: #cdd6f4;
+  --table-header: #f8fafc;
+  --table-border: #e2e8f0;
+  --table-alt: #fafbfc;
+  --border: #e2e8f0;
+  --nav-width: 260px;
+  --nav-bg: #ffffff;
+  --aside-bg: #fff7ed;
+  --aside-border: #f97316;
+  --info-bg: #eff6ff;
+  --info-border: #3b82f6;
+  --diagram-bg: #ffffff;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+h2[id] { scroll-margin-top: 1rem; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+}
+.doc-header {
+  background: linear-gradient(135deg, #16797c 0%, #1f999c 65%, #23adb1 100%);
+  color: white;
+  padding: 28px 48px 32px;
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.header-logo { display: flex; align-items: center; gap: 11px; }
+.header-logo-text { font-size: 16px; font-weight: 700; color: white; line-height: 1; letter-spacing: 0.1px; }
+.header-doc-type { font-size: 10.5px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; }
+.header-rule { height: 1px; background: rgba(255,255,255,0.2); margin-bottom: 16px; }
+.doc-header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.3px; border: none; margin: 0; padding: 0; color: white; }
+.doc-header .subtitle { margin-top: 5px; color: rgba(255,255,255,0.82); font-size: 13px; }
+.doc-header .meta { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.doc-header .meta span { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22); border-radius: 4px; padding: 3px 10px; font-size: 11px; color: rgba(255,255,255,0.92); }
+.header-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 12px; }
+.header-nav a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 2px 0; transition: color 0.15s; }
+.header-nav a:hover { color: white; text-decoration: underline; }
+.header-nav a.active { color: white; font-weight: 600; }
+.header-nav .sep { color: rgba(255,255,255,0.35); font-size: 11px; }
+.page-layout { display: flex; min-height: 100vh; }
+.side-nav {
+  width: var(--nav-width); min-width: var(--nav-width);
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  border-right: 1px solid var(--border); background: var(--nav-bg);
+  padding: 1.2rem 0; font-size: 12px; scrollbar-width: thin;
+}
+.side-nav::-webkit-scrollbar { width: 4px; }
+.side-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+.side-nav .nav-title { font-size: 13px; font-weight: 700; color: var(--heading); padding: 0 1rem 0.6rem; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; }
+.side-nav .nav-group { padding: 0.5rem 0 0.2rem; }
+.side-nav .nav-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8; padding: 0.3rem 1rem; }
+.side-nav a { display: block; padding: 3px 1rem 3px 1.2rem; color: #475569; text-decoration: none; border-left: 3px solid transparent; transition: all 0.15s; line-height: 1.5; }
+.side-nav a:hover { color: var(--link-hover); background: rgba(22,121,124,0.06); }
+.side-nav a.active { color: var(--link); border-left-color: var(--heading); background: rgba(22,121,124,0.08); font-weight: 600; }
+.main-content { flex: 1; max-width: 960px; padding: 40px 32px 80px; min-width: 0; }
+h2 { font-size: 18px; font-weight: 700; color: var(--heading); border-bottom: 2px solid var(--border); padding-bottom: 10px; margin: 48px 0 20px; }
+h3 { font-size: 14px; font-weight: 600; color: #334155; margin: 20px 0 10px; }
+h4 { font-size: 13px; font-weight: 600; color: #475569; margin: 16px 0 6px; }
+p { margin: 8px 0; font-size: 14px; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; color: var(--link-hover); }
+ul, ol { margin: 6px 0 12px 1.8rem; }
+li { margin: 3px 0; }
+code { font-family: "SF Mono", "Fira Code", Consolas, monospace; font-size: 12px; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 4px; padding: 1px 5px; color: var(--code-color); }
+pre { background: var(--pre-bg); color: var(--pre-text); border-radius: 10px; padding: 16px 20px; overflow-x: auto; margin: 10px 0 16px; line-height: 1.7; font-size: 12.5px; box-shadow: var(--shadow); }
+pre code { background: none; border: none; padding: 0; font-size: inherit; color: inherit; }
+.kw { color: #ff7b72; } .str { color: #a6e3a1; } .cmt { color: #6c7086; font-style: italic; } .typ { color: #89b4fa; } .num { color: #89b4fa; } .ann { color: #cba6f7; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0 16px; background: var(--content-bg); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); }
+th { background: var(--table-header); padding: 8px 14px; text-align: left; color: #64748b; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+td { padding: 8px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafafa; }
+.aside { background: var(--aside-bg); border-left: 4px solid var(--aside-border); padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #7c2d12; }
+.aside strong { color: #92400e; }
+.info { background: var(--info-bg); border-left: 4px solid var(--info-border); padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #1e3a5f; }
+.info strong { color: #1e40af; }
+.diagram-box { background: var(--diagram-bg); border-radius: 12px; padding: 32px; margin: 16px 0 20px; text-align: center; overflow-x: auto; box-shadow: var(--shadow); }
+.diagram-box svg { max-width: 100%; height: auto; }
+.diagram-caption { font-size: 12px; color: #64748b; margin-top: 10px; font-style: italic; }
+hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+.version-badge { display:inline-block; font-size:10.5px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; color:#135e5f; background:#e6f4f4; border:1px solid #9fd3d4; border-radius:3px; padding:1px 7px; margin-left:8px; vertical-align:middle; } .version-badge.changed { color:#7c4a03; background:#fff4e5; border-color:#f5c98a; }
+@media (max-width: 1100px) { .side-nav { display: none; } .main-content { padding: 24px 16px 40px; } .doc-header { padding: 20px 16px 24px; } .doc-header h1 { font-size: 22px; } }
+@media print { .side-nav { display: none; } .doc-header { display: none; } body { background: white; } .diagram-box, table, pre { box-shadow: none; } }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <div class="header-top">
+    <div class="header-logo">
+      <div>
+        <div class="header-logo-text">OpenOlat</div>
+        <div class="header-doc-type">Service Documentation</div>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a href="../../../../../../../doc/openolat-architecture.html">Architecture</a>
+      <span class="sep">|</span>
+      <a href="#" class="active">Media Center</a>
+    </nav>
+  </div>
+  <div class="header-rule"></div>
+  <h1>Media Center Architecture</h1>
+  <div class="subtitle">Reusable media with versions, handlers, usage tracking, sharing and AI image metadata</div>
+  <div class="meta">
+    <span>Java 17+</span>
+    <span>JPA</span>
+    <span>OpenOlat Module</span>
+    <span>org.olat.modules.cemedia</span>
+  </div>
+</header>
+
+<div class="page-layout">
+<nav class="side-nav">
+  <div class="nav-title">Media Center</div>
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <a href="#overview">Overview</a>
+    <a href="#package-structure">Package Structure</a>
+    <a href="#model-diagram">Model Diagram</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Class Reference</div>
+    <a href="#root-package">1.1 Root package</a>
+    <a href="#handler-and-further-handlers">1.2 handler/ and further handlers</a>
+    <a href="#manager">1.3 manager/</a>
+    <a href="#ui">1.4 ui/</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Patterns</div>
+    <a href="#important-patterns">2. Important Patterns</a>
+    <a href="#media-handler-spi">2.1 Media Handler SPI</a>
+    <a href="#versions-and-storage">2.2 Versions and Storage</a>
+    <a href="#usage-tracking">2.3 Usage Tracking</a>
+    <a href="#sharing">2.4 Sharing</a>
+    <a href="#tags-and-taxonomy">2.5 Tags and Taxonomy</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Reference</div>
+    <a href="#ai-image-metadata">3. AI Image Metadata</a>
+    <a href="#jpa-tables">4. JPA Tables</a>
+    <a href="#configuration">5. Configuration</a>
+    <a href="#related-packages">6. Related Packages</a>
+  </div>
+</nav>
+
+<main class="main-content">
+
+<h2 id="overview">Overview</h2>
+<p>The media center stores the reusable media of a person: images, videos, audio, files, draw.io diagrams, citations and texts. Pages of the content editor (<code>org.olat.modules.ceditor</code>) and of the portfolio reference these media. Each media has an ordered list of versions. Pluggable <code>MediaHandler</code> implementations provide the type-specific logic. The package also tracks where a media is used, whom it is shared with, its tags and taxonomy levels, and a change log. An asynchronous service fills in AI image metadata.</p>
+<p>Key features:</p>
+<ul>
+<li>One <code>Media</code> per item, with an ordered list of <code>MediaVersion</code> rows. Position 0 is the current version.</li>
+<li>Pluggable media types through Spring beans that implement <code>MediaHandler</code></li>
+<li>Usage tracking across image parts, quiz parts, gallery parts and image comparison parts</li>
+<li>Sharing with users, business groups, organisations and courses, each with an "editable" flag</li>
+<li>Tags, taxonomy levels and a license per media</li>
+<li>A change log (<code>o_media_log</code>) with the actions created, uploaded, versioned, and so on</li>
+<li>Asynchronous AI metadata for images: title, description, alt text, tags and taxonomy levels (<code>MediaAiMetadataService</code>)</li>
+<li>Media center as a personal user tool, a chooser for editors, and an admin view for all media</li>
+</ul>
+<h2 id="package-structure">Package Structure</h2>
+<table>
+<thead>
+<tr>
+<th>Directory</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cemedia/</code> (root)</td>
+<td>Domain interfaces (<code>Media</code>, <code>MediaVersion</code>, relations), <code>MediaHandler</code>, <code>MediaService</code>, <code>MediaModule</code>, the user tool extension and the license handler</td>
+</tr>
+<tr>
+<td><code>handler/</code></td>
+<td>The built-in media handlers and their shared base class <code>AbstractMediaHandler</code></td>
+</tr>
+<tr>
+<td><code>manager/</code></td>
+<td><code>MediaServiceImpl</code>, the DAOs, <code>MediaSearchQuery</code>, <code>MetadataXStream</code>, <code>MediaAiMetadataService</code> and <code>MediaAiMetadataGenerationTask</code></td>
+</tr>
+<tr>
+<td><code>model/</code></td>
+<td>JPA entities (<code>*Impl</code>), search parameters and read-only views (<code>MediaUsage</code>, <code>MediaShare</code>, <code>MediaWithVersion</code>)</td>
+</tr>
+<tr>
+<td><code>ui/</code></td>
+<td>Media center controllers, details, usage, relations, log and admin controllers</td>
+</tr>
+<tr>
+<td><code>ui/medias/</code></td>
+<td>Add, collect, edit and new-version controllers per media type</td>
+</tr>
+<tr>
+<td><code>ui/component/</code></td>
+<td>Cell renderers and the citation component</td>
+</tr>
+<tr>
+<td><code>ui/event/</code></td>
+<td>Events of the media center UI</td>
+</tr>
+</tbody>
+</table>
+<h2 id="model-diagram">Model Diagram</h2>
+
+<div class="diagram-box">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 400" width="860" height="400">
+  <defs><marker id="marr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#475569"/></marker></defs>
+  <rect x="340" y="20" width="180" height="44" rx="6" fill="#ccfbf1" stroke="#16797c" stroke-width="1.5"/>
+  <text x="430" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#134e4a">Media</text>
+  <text x="430" y="53" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" fill="#134e4a">o_media</text>
+  <rect x="340" y="130" width="180" height="44" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="430" y="148" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#0c4a6e">MediaVersion</text>
+  <text x="430" y="163" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" fill="#0c4a6e">o_media_version (pos 0 = current)</text>
+  <rect x="340" y="230" width="180" height="44" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="430" y="248" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#451a03">Files</text>
+  <text x="430" y="263" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" fill="#451a03">bcroot/portfolio/artefacts/</text>
+  <rect x="600" y="20" width="220" height="44" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="710" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#3b0764">MediaHandler (per type)</text>
+  <text x="710" y="53" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" fill="#3b0764">image, video, audio, bc, drawio, ...</text>
+  <rect x="20" y="20" width="220" height="44" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="130" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#500724">MediaToGroupRelation</text>
+  <text x="130" y="53" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" fill="#500724">USER, BUSINESS_GROUP, ORG, REPO</text>
+  <rect x="20" y="100" width="220" height="44" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="130" y="118" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#500724">MediaTag / MediaToTaxonomyLevel</text>
+  <text x="130" y="133" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" fill="#500724">o_media_tag, o_media_to_tax_level</text>
+  <rect x="20" y="180" width="220" height="44" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="130" y="198" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#500724">MediaLog</text>
+  <text x="130" y="213" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" fill="#500724">o_media_log</text>
+  <rect x="600" y="130" width="220" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="710" y="148" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#14532d">Page parts (ceditor)</text>
+  <text x="710" y="163" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" fill="#14532d">MediaPart, QuizPart, MediaToPagePart</text>
+  <rect x="600" y="230" width="220" height="44" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="710" y="248" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#450a0a">MediaAiMetadataService</text>
+  <text x="710" y="263" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" fill="#450a0a">task on Queue.aiBatch</text>
+  <rect x="340" y="320" width="180" height="44" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="430" y="338" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#1e293b">TaxonomyMatchingHelper</text>
+  <text x="430" y="353" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" fill="#1e293b">taxonomy.matching</text>
+  <line x1="430" y1="64" x2="430" y2="130" stroke="#475569" stroke-width="1.3" marker-end="url(#marr)"/>
+  <text x="430" y="93" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#64748b">1:N versions</text>
+  <line x1="430" y1="174" x2="430" y2="230" stroke="#475569" stroke-width="1.3" marker-end="url(#marr)"/>
+  <text x="430" y="198" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#64748b">storage path</text>
+  <line x1="600" y1="42" x2="520" y2="42" stroke="#475569" stroke-width="1.3" marker-end="url(#marr)"/>
+  <text x="560" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#64748b">type</text>
+  <line x1="240" y1="42" x2="340" y2="42" stroke="#475569" stroke-width="1.3" marker-end="url(#marr)"/>
+  <text x="290" y="38" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#64748b">shares</text>
+  <line x1="240" y1="122" x2="340" y2="50" stroke="#475569" stroke-width="1.3" marker-end="url(#marr)"/>
+  <line x1="240" y1="202" x2="340" y2="58" stroke="#475569" stroke-width="1.3" marker-end="url(#marr)"/>
+  <line x1="600" y1="152" x2="520" y2="152" stroke="#475569" stroke-width="1.3" marker-end="url(#marr)"/>
+  <text x="560" y="148" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#64748b">usage</text>
+  <line x1="600" y1="252" x2="520" y2="58" stroke="#475569" stroke-width="1.3" marker-end="url(#marr)"/>
+  <text x="560" y="151" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#64748b">apply metadata</text>
+  <line x1="710" y1="274" x2="520" y2="338" stroke="#475569" stroke-width="1.3" marker-end="url(#marr)"/>
+  <text x="615" y="302" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#64748b">subject</text>
+</svg>
+<div class="diagram-caption">Figure 1: Media, versions, relations and the services around them.</div>
+</div>
+
+<hr />
+<h2 id="class-overview">1. Class Overview</h2>
+<h3 id="root-package">1.1 Root package</h3>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MediaLight</code></td>
+<td>Light view of a media: key, type, title, description, creation and collection date, business path. <code>OLATResourceable</code> with the resource type <code>CEMedia</code> (<code>MEDIA_RESOURCE_TYPE</code>).</td>
+</tr>
+<tr>
+<td><code>Media</code></td>
+<td>Full media. Extends <code>MediaLight</code> and <code>DublinCoreMetadata</code>. Adds alt text, author, UUID, the metadata XML and <code>getVersions()</code>.</td>
+</tr>
+<tr>
+<td><code>MediaVersion</code></td>
+<td>One version of a media. Version name, UUID, checksum, collection date, content, storage (<code>getStoragePath()</code>, <code>getRootFilename()</code> from <code>StoredData</code>), the VFS metadata and the optional <code>MediaVersionMetadata</code>.</td>
+</tr>
+<tr>
+<td><code>MediaVersionMetadata</code></td>
+<td>Technical data of a version: URL, width, height, length and format. Used for video via URL and for image and video dimensions.</td>
+</tr>
+<tr>
+<td><code>MediaHandler</code></td>
+<td>SPI for one media type. See section 2.1.</td>
+</tr>
+<tr>
+<td><code>MediaHandlerUISettings</code></td>
+<td>Record: <code>hasVersion</code>, <code>canUploadVersion</code>, <code>canCreateVersion</code>, the icon CSS classes, <code>viewLogs</code>, <code>hasLicense</code>.</td>
+</tr>
+<tr>
+<td><code>MediaInformations</code></td>
+<td>Type, title and description to prefill the creation form.</td>
+</tr>
+<tr>
+<td><code>MediaService</code></td>
+<td>Public service. Search, create versions, usage, sharing, tags, taxonomy levels, logs and quota.</td>
+</tr>
+<tr>
+<td><code>MediaToPagePart</code></td>
+<td>Link from a media and version to a page part that holds several media (gallery, image comparison).</td>
+</tr>
+<tr>
+<td><code>MediaToGroupRelation</code></td>
+<td>Share of a media. <code>MediaToGroupRelationType</code>: <code>USER</code>, <code>BUSINESS_GROUP</code>, <code>ORGANISATION</code>, <code>REPOSITORY_ENTRY</code>. Carries the <code>editable</code> flag.</td>
+</tr>
+<tr>
+<td><code>MediaToTaxonomyLevel</code></td>
+<td>Link from a media to a taxonomy level.</td>
+</tr>
+<tr>
+<td><code>MediaTag</code></td>
+<td>Link from a media to a tag of <code>org.olat.core.commons.services.tag</code>.</td>
+</tr>
+<tr>
+<td><code>MediaLog</code></td>
+<td>Log row. <code>Action</code>: <code>ASSIGNMENT</code>, <code>CREATED</code>, <code>RECORDED</code>, <code>COLLECTED</code>, <code>UPDATE</code>, <code>UPLOAD</code>, <code>IMPORTED</code>, <code>VERSIONED</code>.</td>
+</tr>
+<tr>
+<td><code>MediaModule</code></td>
+<td>Configuration. See section 5.</td>
+</tr>
+<tr>
+<td><code>MediaCenterExtension</code></td>
+<td>User tool extension that opens <code>MediaCenterPersonalToolController</code>.</td>
+</tr>
+<tr>
+<td><code>MediaCenterLicenseHandler</code></td>
+<td><code>LicenseHandler</code> for media licenses.</td>
+</tr>
+<tr>
+<td><code>Citation</code>, <code>CitationSourceType</code></td>
+<td>Citation data of a citation media.</td>
+</tr>
+<tr>
+<td><code>MediaLoggingAction</code></td>
+<td>Logging actions of the media center.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="handler-and-further-handlers">1.2 <code>handler/</code> and further handlers</h3>
+<p>Spring collects every <code>MediaHandler</code> bean into <code>MediaServiceImpl.mediaHandlers</code>. <code>MediaService.getMediaHandler(type)</code> returns the handler for a type string.</p>
+<table>
+<thead>
+<tr>
+<th>Handler</th>
+<th>Type string</th>
+<th>Package</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ImageHandler</code></td>
+<td><code>image</code></td>
+<td><code>cemedia.handler</code></td>
+</tr>
+<tr>
+<td><code>VideoHandler</code></td>
+<td><code>video</code></td>
+<td><code>cemedia.handler</code></td>
+</tr>
+<tr>
+<td><code>AudioHandler</code></td>
+<td><code>audio</code></td>
+<td><code>cemedia.handler</code></td>
+</tr>
+<tr>
+<td><code>FileHandler</code></td>
+<td><code>bc</code></td>
+<td><code>cemedia.handler</code></td>
+</tr>
+<tr>
+<td><code>DrawioHandler</code></td>
+<td><code>drawio</code></td>
+<td><code>cemedia.handler</code></td>
+</tr>
+<tr>
+<td><code>CitationHandler</code></td>
+<td><code>citation</code></td>
+<td><code>cemedia.handler</code></td>
+</tr>
+<tr>
+<td><code>TextHandler</code></td>
+<td><code>text</code></td>
+<td><code>modules.portfolio.handler</code></td>
+</tr>
+<tr>
+<td><code>ForumMediaHandler</code></td>
+<td>forum type name</td>
+<td><code>modules.fo.portfolio</code></td>
+</tr>
+<tr>
+<td><code>WikiMediaHandler</code></td>
+<td><code>WikiResource.TYPE_NAME</code></td>
+<td><code>modules.wiki.portfolio</code></td>
+</tr>
+<tr>
+<td><code>BlogEntryMediaHandler</code></td>
+<td><code>BlogFileResource.TYPE_NAME</code></td>
+<td><code>modules.webFeed.portfolio</code></td>
+</tr>
+<tr>
+<td><code>EfficiencyStatementMediaHandler</code></td>
+<td><code>EfficiencyStatement</code></td>
+<td><code>course.assessment.portfolio</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>AbstractMediaHandler</code> is the base class of all of them. <code>VideoViaUrlHandlerDelegate</code> holds the logic for videos from a URL (YouTube, Vimeo, nanoo.tv) that <code>VideoHandler</code> uses.</p>
+<h3 id="manager">1.3 <code>manager/</code></h3>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MediaServiceImpl</code></td>
+<td>Implements <code>MediaService</code>. Listens on <code>DocEditorService.DOCUMENT_SAVED_EVENT_CHANNEL</code>, so a file saved in the document editor creates a new version.</td>
+</tr>
+<tr>
+<td><code>MediaDAO</code></td>
+<td>Media and version persistence, usage queries (<code>getUsages</code>, <code>countUsages</code>, <code>isUsed</code>), file usage and the version list.</td>
+</tr>
+<tr>
+<td><code>MediaRelationDAO</code></td>
+<td>Shares (<code>o_media_to_group</code>).</td>
+</tr>
+<tr>
+<td><code>MediaTagDAO</code></td>
+<td>Tags (<code>o_media_tag</code>).</td>
+</tr>
+<tr>
+<td><code>MediaToTaxonomyLevelDAO</code></td>
+<td>Taxonomy links (<code>o_media_to_tax_level</code>).</td>
+</tr>
+<tr>
+<td><code>MediaToPagePartDAO</code></td>
+<td>Media relations of gallery and image comparison parts (<code>o_media_to_page_part</code>).</td>
+</tr>
+<tr>
+<td><code>MediaLogDAO</code></td>
+<td>Log rows (<code>o_media_log</code>).</td>
+</tr>
+<tr>
+<td><code>MediaSearchQuery</code></td>
+<td>Search behind <code>MediaService.searchMedias(SearchMediaParameters)</code>.</td>
+</tr>
+<tr>
+<td><code>MetadataXStream</code></td>
+<td>XStream for the metadata XML of a media.</td>
+</tr>
+<tr>
+<td><code>MediaAiMetadataService</code></td>
+<td>AI metadata for images. See section 3.</td>
+</tr>
+<tr>
+<td><code>MediaAiMetadataGenerationTask</code></td>
+<td><code>LongRunnable</code> for one AI metadata run. See section 3.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ui">1.4 <code>ui/</code></h3>
+<table>
+<thead>
+<tr>
+<th>Controller</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MediaCenterPersonalToolController</code></td>
+<td>Entry of the user tool. It opens <code>MediaCentersController</code> for an administrator or a learn resource manager, and <code>MediaCenterController</code> for everybody else.</td>
+</tr>
+<tr>
+<td><code>MediaCentersController</code></td>
+<td>Segments "My media center" (<code>MediaCenterConfig.valueOfMy()</code>) and the admin media center (<code>MediaCenterConfig.managementConfig()</code>).</td>
+</tr>
+<tr>
+<td><code>MediaCenterController</code></td>
+<td>Media table with tabs, filters, upload and add actions. Behaviour comes from the <code>MediaCenterConfig</code> record.</td>
+</tr>
+<tr>
+<td><code>MediaCenterChooserController</code></td>
+<td>Media selection for the content editor (<code>MediaCenterConfig.valueOfChooser(...)</code> and <code>valueOfUploader(...)</code>).</td>
+</tr>
+<tr>
+<td><code>MediaUploadController</code></td>
+<td>Upload of a new media from a file.</td>
+</tr>
+<tr>
+<td><code>MediaDetailsController</code></td>
+<td>Details of one media: metadata, versions, usage, relations and log.</td>
+</tr>
+<tr>
+<td><code>MediaOverviewController</code>, <code>MediaMetadataController</code></td>
+<td>Preview and metadata of a media.</td>
+</tr>
+<tr>
+<td><code>MediaUsageController</code></td>
+<td>Where the media is used.</td>
+</tr>
+<tr>
+<td><code>MediaRelationsController</code></td>
+<td>Shares of the media.</td>
+</tr>
+<tr>
+<td><code>MediaLogController</code></td>
+<td>Change log.</td>
+</tr>
+<tr>
+<td><code>MediaAdminController</code></td>
+<td>Admin form: taxonomies, share rights per role, forced license check. Registered in <code>modules/_spring/modulesContext.xml</code> under the navigation key <code>mediacenter</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><code>ui/medias/</code> holds one set of controllers per type: <code>Add*Controller</code> (new media), <code>Collect*MediaController</code> (metadata form while collecting), <code>*MediaController</code> (view), <code>NewFileMediaVersionController</code>, <code>UpdateTextVersionController</code> and <code>StandardEditMediaController</code>.</p>
+<hr />
+<h2 id="important-patterns">2. Important Patterns</h2>
+<h3 id="media-handler-spi">2.1 Media Handler SPI</h3>
+<p>A <code>MediaHandler</code> provides everything that depends on the type:</p>
+<ul>
+<li><code>getType()</code>, <code>getSubType(MediaVersion)</code>, <code>acceptMimeType(String)</code>, <code>getIconCssClass(MediaVersion)</code></li>
+<li><code>hasMediaThumbnail(MediaVersion)</code>, <code>getThumbnail(MediaVersion, Size)</code></li>
+<li><code>getUISettings(MediaVersion)</code>: versioning, upload and license options of the details view</li>
+<li><code>getInformations(Object)</code> and <code>createMedia(title, description, altText, mediaObject, businessPath, author, action)</code></li>
+<li><code>getMediaController(...)</code>, <code>getCollectMetadataController(...)</code>, <code>getEditMetadataController(...)</code>, <code>getNewVersionController(..., CreateVersion)</code></li>
+<li><code>export(Media, ManifestBuilder, File, Locale)</code> and <code>hasDownload(MediaVersion)</code></li>
+</ul>
+<p><code>CreateVersion</code> is <code>CREATE</code> or <code>UPLOAD</code>.</p>
+<h3 id="versions-and-storage">2.2 Versions and Storage</h3>
+<p>A media keeps its versions in <code>o_media_version</code>, ordered by <code>pos</code>. Position 0 is the current version. <code>MediaService</code> offers <code>addVersion(...)</code> for content, for a file and for version metadata, plus <code>setVersion(...)</code> and <code>restoreVersion(...)</code>. <code>ContentEditorFileStorage</code> (in <code>org.olat.modules.ceditor.manager</code>) stores the files below <code>bcroot/portfolio/artefacts/</code>. <code>getMediaDirectory(StoredData)</code> resolves the directory of a version, and <code>generateMediaSubDirectory(Media)</code> creates one for a new media.</p>
+<h3 id="usage-tracking">2.3 Usage Tracking</h3>
+<p><code>MediaDAO.getUsages(media)</code> combines three queries:</p>
+<ol>
+<li><code>getMediaPartUses</code>: image parts (<code>cemediapart</code>) of pages</li>
+<li><code>getQuizPartUses</code>: quiz parts that reference the media</li>
+<li><code>getPagePartRelationUses</code>: <code>MediaToPagePart</code> rows of gallery and image comparison parts</li>
+</ol>
+<p>The result is a list of <code>MediaUsage</code> records with page, binder and status. <code>MediaService.isUsed(media)</code> blocks the deletion of a used media.</p>
+<h3 id="sharing">2.4 Sharing</h3>
+<p><code>MediaService.addRelation(media, editable, target)</code> shares a media with an identity, an organisation, a business group or a repository entry. <code>MediaModule</code> defines which roles may share with which target. <code>isMediaEditable(...)</code>, <code>isMediaShared(...)</code> and <code>isAdminOf(...)</code> answer the access questions.</p>
+<p><span class="version-badge changed" style="margin-left:0">Changed in 21.1.0</span> <code>MediaDetailsController</code> shows the delete link only when the person is the author of the media (OO-9774). The admin media center (<code>MediaCenterConfig.managementConfig()</code>) no longer offers the multi-select delete.</p>
+<h3 id="tags-and-taxonomy">2.5 Tags and Taxonomy</h3>
+<p><code>updateTags(identity, media, tags)</code> and <code>getTagInfos(...)</code> manage the tags. <code>updateTaxonomyLevels(media, levels)</code> and <code>getTaxonomyLevels(media)</code> manage the taxonomy levels. <code>MediaModule.getTaxonomyRefs()</code> returns the taxonomies of the media center. Without an own setting it falls back to the taxonomies of the repository module.</p>
+<hr />
+<h2 id="ai-image-metadata">3. AI Image Metadata</h2>
+<p><code>MediaAiMetadataService</code> generates title, description, alt text, tags and taxonomy levels for an image media. It uses <code>AiImageDescriptionService</code> of <code>org.olat.core.commons.services.ai</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>isEnabled()</code></td>
+<td>True when the image description feature is enabled.</td>
+</tr>
+<tr>
+<td><code>isSupportedImage(filename)</code></td>
+<td>True for JPEG, PNG, GIF and WebP.</td>
+</tr>
+<tr>
+<td><code>generateNow(imageFile, filename, requester, locale, usageContextType)</code></td>
+<td>Synchronous call for the "Generate metadata with AI" button. The form shows the result, nothing is saved.</td>
+</tr>
+<tr>
+<td><code>submit(media, requester, locale, usageContextType, resourceType, resourceId, resourceSubId, overwrite)</code></td>
+<td>Schedules one <code>MediaAiMetadataGenerationTask</code>. Returns <code>false</code> when the feature is off or the current version is not a supported image.</td>
+</tr>
+<tr>
+<td><code>runTask(task)</code></td>
+<td>Body of the task. Loads the image, calls the vision model and applies the result.</td>
+</tr>
+</tbody>
+</table>
+<p>The task runs on the <code>Queue.aiBatch</code> queue and is persisted in <code>o_ex_task</code>. A cluster restart picks it up again.</p>
+<p><strong>Apply rules.</strong> The person may edit the media before the task runs, so the task applies the result defensively:</p>
+<ul>
+<li>Title only when empty or filename-like. Truncated to 255 characters.</li>
+<li>Description and alt text only when empty. The alt text is truncated to 1000 characters.</li>
+<li>Tags only when the media has no tag yet. The tags come from orientation, colour tags, category tags, keywords and subject.</li>
+<li>Taxonomy levels only when the media has none. <code>TaxonomyMatchingHelper.matchTaxonomyLevels(...)</code> maps the AI subject to a level of the media center taxonomies (<code>org.olat.modules.taxonomy.matching</code>).</li>
+</ul>
+<p>With <code>overwrite = true</code> the task replaces existing values. The Markdown and Word import of the content editor passes <code>true</code>, because the imported titles and alt texts are machine generated. The upload and collect forms pass <code>false</code>.</p>
+<p><strong>Callers.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Caller</th>
+<th>Usage context type</th>
+<th>Gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MediaUploadController</code></td>
+<td><code>mc-upload-image</code></td>
+<td>After the save, when no AI button was used</td>
+</tr>
+<tr>
+<td><code>CollectImageMediaController</code></td>
+<td><code>mc-collect-image</code></td>
+<td>After the save, when no AI button was used</td>
+</tr>
+<tr>
+<td><code>MarkdownPagePartVisitor</code> (ceditor)</td>
+<td><code>page-markdown-import</code></td>
+<td>Import toggle of the person</td>
+</tr>
+</tbody>
+</table>
+<p><span class="version-badge changed" style="margin-left:0">Changed in 21.1.0</span> The upload and collect forms schedule the task only when <code>AiUserPreferenceService.isActive(prefs, AiFeature.ImageDescriptionGenerator)</code> returns true (OO-9784). A person who switched the AI image descriptions off gets no background task. The explicit AI button stays available. See section 2.10 of the AI package documentation.</p>
+<hr />
+<h2 id="jpa-tables">4. JPA Tables</h2>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Entity</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>o_media</code></td>
+<td><code>MediaImpl</code> (<code>mmedia</code>)</td>
+<td>Media: type, title, description, alt text, Dublin Core fields, UUID, metadata XML, author</td>
+</tr>
+<tr>
+<td><code>o_media_version</code></td>
+<td><code>MediaVersionImpl</code> (<code>mediaversion</code>)</td>
+<td>Versions: <code>pos</code>, version name, UUID, checksum, storage path, root filename, content, <code>fk_media</code>, <code>fk_metadata</code>, <code>fk_version_metadata</code></td>
+</tr>
+<tr>
+<td><code>o_media_version_metadata</code></td>
+<td><code>MediaVersionMetadataImpl</code></td>
+<td>URL, width, height, length, format</td>
+</tr>
+<tr>
+<td><code>o_media_to_group</code></td>
+<td><code>MediaToGroupRelationImpl</code> (<code>mediatogroup</code>)</td>
+<td>Shares: type, editable, <code>fk_group</code>, <code>fk_repositoryentry</code>, <code>fk_media</code></td>
+</tr>
+<tr>
+<td><code>o_media_to_page_part</code></td>
+<td><code>MediaToPagePartImpl</code> (<code>mediatopagepart</code>)</td>
+<td>Media of gallery and image comparison parts</td>
+</tr>
+<tr>
+<td><code>o_media_to_tax_level</code></td>
+<td><code>MediaToTaxonomyLevelImpl</code></td>
+<td>Taxonomy links</td>
+</tr>
+<tr>
+<td><code>o_media_tag</code></td>
+<td><code>MediaTagImpl</code></td>
+<td>Tags</td>
+</tr>
+<tr>
+<td><code>o_media_log</code></td>
+<td><code>MediaLogImpl</code> (<code>medialog</code>)</td>
+<td>Change log</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="configuration">5. Configuration</h2>
+<p><code>MediaModule</code> persists its settings in <code>{userdata}/system/configuration/org.olat.modules.cemedia.MediaModule.properties</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default (<code>olat.properties</code>)</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>media.center.share.with.user</code></td>
+<td><code>author,learnresourcemanager,administrator</code></td>
+<td>Roles that may share with a user</td>
+</tr>
+<tr>
+<td><code>media.center.share.with.group</code></td>
+<td><code>user,author,learnresourcemanager,administrator</code></td>
+<td>Roles that may share with a business group</td>
+</tr>
+<tr>
+<td><code>media.center.share.with.course</code></td>
+<td><code>author,learnresourcemanager,administrator</code></td>
+<td>Roles that may share with a course</td>
+</tr>
+<tr>
+<td><code>media.center.share.with.organisation</code></td>
+<td><code>administrator</code></td>
+<td>Roles that may share with an organisation</td>
+</tr>
+<tr>
+<td><code>media.force.license.check</code></td>
+<td><code>false</code></td>
+<td>A license is mandatory for a new media</td>
+</tr>
+<tr>
+<td><code>taxonomy.tree.key</code></td>
+<td>none</td>
+<td>Taxonomies of the media center (comma-separated keys); empty means the repository taxonomies</td>
+</tr>
+</tbody>
+</table>
+<p>The video via URL platforms use <code>media.server.*</code> keys of <code>MediaServerModule</code> (<code>media.server.mode</code>, <code>media.server.youtube</code>, <code>media.server.vimeo</code>, <code>media.server.nanootv</code>).</p>
+<h2 id="related-packages">6. Related Packages</h2>
+<ul>
+<li><code>org.olat.modules.ceditor</code>: pages and page parts that display media</li>
+<li><code>org.olat.modules.portfolio</code>: portfolio pages and the <code>TextHandler</code></li>
+<li><code>org.olat.core.commons.services.ai</code>: image description service and user preferences</li>
+<li><code>org.olat.modules.taxonomy.matching</code>: matching of an AI subject to taxonomy levels (<a href="../taxonomy/matching/package.html">package doc</a>)</li>
+</ul>
+
+</main>
+</div>
+
+</body>
+</html>

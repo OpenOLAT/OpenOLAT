@@ -25,6 +25,8 @@
       <a href="../openolat-frontend.html">Frontend</a>
       <span class="sep">|</span>
       <a href="index.html" class="active">Component Library</a>
+      <span class="sep">|</span>
+      <a href="../i18n-translation-reference.md">Translation Reference</a>
     </nav>
   </div>
   <div class="header-rule"></div>
@@ -53,6 +55,8 @@
   <a href="feedback.html">Feedback &amp; Status</a>
   <a href="layout.html">Layout &amp; Containers</a>
   <a href="data-display.html">Data Display</a>
+  <a href="ai-ui.html">AI UI</a>
+  <a href="room-management.html">Room Management</a>
 </nav>
 
 <main class="cl-main">
@@ -441,7 +445,7 @@ Peter;Test;peter@example.com</textarea>
       <h3>Vertical Radio Buttons</h3>
       <p>Radio buttons displayed in a vertical stack. Each option is wrapped in a <code>radio</code> div with a <code>&lt;label&gt;</code>.</p>
       <div class="cl-classes">
-        <code>radio</code> <code>o_radio</code>
+        <code>radio</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -451,7 +455,7 @@ Peter;Test;peter@example.com</textarea>
             <div class="form-group">
               <label class="col-sm-3 control-label">Zugangsart</label>
               <div class="col-sm-9">
-                <div class="o_radio">
+                <div>
                   <div class="radio">
                     <label><input type="radio" name="access" value="open" checked> Offen fuer alle</label>
                   </div>
@@ -472,7 +476,7 @@ Peter;Test;peter@example.com</textarea>
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;div class="o_radio"&gt;
+        <pre>&lt;div&gt;
   &lt;div class="radio"&gt;
     &lt;label&gt;&lt;input type="radio" name="access" value="open" checked&gt; Offen fuer alle&lt;/label&gt;
   &lt;/div&gt;
@@ -492,7 +496,7 @@ Peter;Test;peter@example.com</textarea>
       <h3>Horizontal (Inline) Radio Buttons</h3>
       <p>Radio buttons displayed in a horizontal row using the <code>radio-inline</code> label class.</p>
       <div class="cl-classes">
-        <code>radio-inline</code> <code>o_radio_inline</code>
+        <code>radio-inline</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -663,7 +667,7 @@ Peter;Test;peter@example.com</textarea>
       <h3>Horizontal (Inline) Checkboxes</h3>
       <p>Checkboxes displayed in a horizontal row using the <code>checkbox-inline</code> label class.</p>
       <div class="cl-classes">
-        <code>checkbox-inline</code> <code>o_checkbox_inline</code>
+        <code>checkbox-inline</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -999,66 +1003,49 @@ Peter;Test;peter@example.com</textarea>
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Color Picker</h3>
-      <p>Color selection dropdown with colored square preview. The button shows the currently selected color in <code>o_color_picker_colored_area</code> with a dropdown caret. The dropdown list shows all available colors.</p>
+      <p><code>ColorPickerElement</code> (<code>ColorPickerRenderer</code>, markup also read from the GUI demo "A more advanced form"). A Bootstrap dropdown: the button shows the selected colour as the letter icon <code>o_icon_a</code> on the colour background (<code>o_color_background o_color_{name}</code>) and its name. Without a selection the padding is 12px instead of 32px. Items are <code>a.o_color_picker_link</code> with <code>role="button"</code>; Space and Enter select. Colour classes come from <code>_colors.scss</code> (<code>o_color_lightblue</code>, <code>o_color_lightgreen</code>, <code>o_color_orange</code>, <code>o_color_red</code>, <code>o_color_purple</code>, ...). In the example the list is shown open.</p>
       <div class="cl-classes">
-        <code>o_color_picker_wrapper</code> <code>o_color_picker_button</code> <code>o_color_picker_colored_area</code> <code>o_color_picker_icon</code> <code>o_color_picker_dropdown</code> <code>o_color_picker_link</code>
+        <code>o_color_picker_wrapper</code> <code>o_color_picker_button</code> <code>o_color_picker_colored_area</code> <code>o_icon_a</code> <code>o_color_background</code> <code>o_color_contrast_border</code> <code>o_color_text_on_background</code> <code>o_color_picker_icon</code> <code>o_color_picker_dropdown</code> <code>o_color_picker_link</code> <code>o_drop_up</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
           <form class="o_form form-horizontal">
-            <div class="form-group">
-              <label class="col-sm-3 control-label">Farbe</label>
-              <div class="col-sm-9">
-                <div class="o_color_picker_wrapper" style="position: relative; display: inline-block; width: 220px;">
-                  <a href="#" class="btn btn-default o_color_picker_button" onclick="return false" style="width: 100%; text-align: left; position: relative; padding-right: 26px; padding-left: 32px;">
-                    <span class="o_color_picker_colored_area" style="display: inline-block; position: absolute; top: 6px; left: 6px; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 4px; background-color: #105CAD;"></span>
-                    Blau
-                    <span class="o_color_picker_icon caret" style="position: absolute; right: 8px; top: 14px;"></span>
-                  </a>
-                  <ul class="o_color_picker_dropdown dropdown-menu" style="display: block; position: relative; width: 100%; margin-top: 2px; box-shadow: none;">
-                    <li class="o_selected"><a href="#" class="o_color_picker_link" onclick="return false" style="position: relative; padding-left: 32px;"><span class="o_color_picker_colored_area" style="display: inline-block; position: absolute; top: 6px; left: 6px; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 4px; background-color: #105CAD;"></span>Blau</a></li>
-                    <li><a href="#" class="o_color_picker_link" onclick="return false" style="position: relative; padding-left: 32px;"><span class="o_color_picker_colored_area" style="display: inline-block; position: absolute; top: 6px; left: 6px; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 4px; background-color: #268000;"></span>Gruen</a></li>
-                    <li><a href="#" class="o_color_picker_link" onclick="return false" style="position: relative; padding-left: 32px;"><span class="o_color_picker_colored_area" style="display: inline-block; position: absolute; top: 6px; left: 6px; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 4px; background-color: #D17A00;"></span>Orange</a></li>
-                    <li><a href="#" class="o_color_picker_link" onclick="return false" style="position: relative; padding-left: 32px;"><span class="o_color_picker_colored_area" style="display: inline-block; position: absolute; top: 6px; left: 6px; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 4px; background-color: #b30018;"></span>Rot</a></li>
-                    <li><a href="#" class="o_color_picker_link" onclick="return false" style="position: relative; padding-left: 32px;"><span class="o_color_picker_colored_area" style="display: inline-block; position: absolute; top: 6px; left: 6px; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 4px; background-color: #804A33;"></span>Braun</a></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+            <div class="form-group clearfix"><label class="control-label col-sm-3">Colour</label><div class="col-sm-9 o_form_cell">
+              <div class="o_color_picker_wrapper"><div id="cl_cp_D" class="button-group dropdown open">
+                <button style="padding-left: 32px;" class="btn btn-default dropdown-toggle o_color_picker_button o_can_have_focus" type="button" id="cl_cp_B" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"><i class="o_color_picker_colored_area o_icon o_icon_a o_color_background o_color_contrast_border o_color_text_on_background o_color_lightblue"></i><span>Blue</span><i class="o_icon o_icon-fw o_icon_caret o_color_picker_icon"></i></button>
+                <ul class="dropdown-menu o_color_picker_dropdown" aria-labelledby="cl_cp_B" style="position:static;float:none;display:block;"><li class="o_selected"><a tabindex="0" role="button" aria-pressed="false" class="dropdown-item o_color_picker_link" href="#" onclick="return false"><i class="o_color_picker_colored_area o_icon o_icon_a o_color_background o_color_contrast_border o_color_text_on_background o_color_lightblue"></i><span>Blue</span></a></li><li><a tabindex="0" role="button" aria-pressed="false" class="dropdown-item o_color_picker_link" href="#" onclick="return false"><i class="o_color_picker_colored_area o_icon o_icon_a o_color_background o_color_contrast_border o_color_text_on_background o_color_lightgreen"></i><span>Green</span></a></li><li><a tabindex="0" role="button" aria-pressed="false" class="dropdown-item o_color_picker_link" href="#" onclick="return false"><i class="o_color_picker_colored_area o_icon o_icon_a o_color_background o_color_contrast_border o_color_text_on_background o_color_orange"></i><span>Orange</span></a></li><li><a tabindex="0" role="button" aria-pressed="false" class="dropdown-item o_color_picker_link" href="#" onclick="return false"><i class="o_color_picker_colored_area o_icon o_icon_a o_color_background o_color_contrast_border o_color_text_on_background o_color_red"></i><span>Red</span></a></li><li><a tabindex="0" role="button" aria-pressed="false" class="dropdown-item o_color_picker_link" href="#" onclick="return false"><i class="o_color_picker_colored_area o_icon o_icon_a o_color_background o_color_contrast_border o_color_text_on_background o_color_purple"></i><span>Purple</span></a></li></ul>
+              </div></div>
+            </div></div>
           </form>
         </div>
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
         <pre>&lt;div class="o_color_picker_wrapper"&gt;
-  &lt;a href="#" class="btn btn-default o_color_picker_button"&gt;
-    &lt;span class="o_color_picker_colored_area"
-      style="background-color: #105CAD;"&gt;&lt;/span&gt;
-    Blau
-    &lt;span class="o_color_picker_icon caret"&gt;&lt;/span&gt;
-  &lt;/a&gt;
-  &lt;ul class="o_color_picker_dropdown dropdown-menu"&gt;
-    &lt;li class="o_selected"&gt;
-      &lt;a href="#" class="o_color_picker_link"&gt;
-        &lt;span class="o_color_picker_colored_area"
-          style="background-color: #105CAD;"&gt;&lt;/span&gt;
-        Blau
-      &lt;/a&gt;
-    &lt;/li&gt;
-    &lt;li&gt;&lt;a href="#" class="o_color_picker_link"&gt;
-      &lt;span class="o_color_picker_colored_area"
-        style="background-color: #268000;"&gt;&lt;/span&gt;
-      Gruen
-    &lt;/a&gt;&lt;/li&gt;
-    ...
-  &lt;/ul&gt;
+  &lt;div id="o_fi42_D" class="button-group dropdown"&gt;
+    &lt;button style="padding-left: 32px;" type="button" id="o_fi42_B" data-toggle="dropdown"
+            class="btn btn-default dropdown-toggle o_color_picker_button o_can_have_focus o_button_printed"
+            aria-haspopup="true" aria-expanded="true"&gt;
+      &lt;i class="o_color_picker_colored_area o_icon o_icon_a o_color_background o_color_contrast_border o_color_text_on_background o_color_lightblue"&gt;&lt;/i&gt;
+      &lt;span&gt;Blue&lt;/span&gt;
+      &lt;i class="o_icon o_icon-fw o_icon_caret o_color_picker_icon"&gt;&lt;/i&gt;
+      &lt;input type="hidden" id="o_fi42" name="o_fi42" value="lightblue" cssclass="o_color_lightblue"&gt;
+    &lt;/button&gt;
+    &lt;ul class="dropdown-menu o_color_picker_dropdown [o_drop_up]" aria-labelledby="o_fi42_B"&gt;
+      &lt;li class="o_selected"&gt;
+        &lt;a tabindex="0" role="button" aria-pressed="false" class="dropdown-item o_color_picker_link"&gt;
+          &lt;i class="o_color_picker_colored_area o_icon o_icon_a o_color_background ... o_color_lightblue"&gt;&lt;/i&gt;&lt;span&gt;Blue&lt;/span&gt;
+        &lt;/a&gt;
+      &lt;/li&gt;
+      ...
+    &lt;/ul&gt;
+  &lt;/div&gt;
 &lt;/div&gt;</pre>
       </div>
     </div>
   </div>
-
 </section>
 
 <!-- ==================== TAG INPUT ==================== -->
@@ -1190,6 +1177,290 @@ Peter;Test;peter@example.com</textarea>
 
 </section>
 
+<!-- ==================== FORM SECTIONS (21.1) ==================== -->
+<section class="cl-section" id="form-sections">
+  <h2>Form Sections <span class="version-badge">New in 21.1.0</span></h2>
+
+  <!-- Form Section: Sub-title -->
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Form Section (Sub-title) <span class="version-badge">New in 21.1.0</span></h3>
+      <p>A form section groups related fields inside one form under a heading. The Java class is <code>FormSection</code> (<code>uifactory.addFormSection(...)</code>). The template <code>form_section.html</code> renders a <code>&lt;fieldset class="o_form_section"&gt;</code>. The level <code>SUB_TITLE</code> renders the heading as <code>div.o_section_sub_title</code> with a horizontal rule that fills the rest of the line (<code>::after</code>). The font size is <code>$o-font-size-section-title</code> (about 18px). The fields inside use the normal 3/9 horizontal layout.</p>
+      <p>The GUI demo page <strong>Example settings</strong> (<code>GuiDemoSettingsController</code>) is the blueprint for a settings page: a module toggle on top, then a <em>Configuration</em> section and a <em>Default settings</em> section. When the toggle is off, both sections and the save button are hidden.</p>
+      <div class="cl-classes">
+        <code>o_form_section</code> <code>o_section_sub_title</code> <code>o_section_title_text</code> <code>o_section_title</code> <code>o_section_content</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <fieldset class="o_form form-horizontal">
+            <legend>Module settings</legend>
+            <div class="form-group clearfix"><label class="control-label col-sm-3">Module "Astronomy"</label><div class="col-sm-9 o_form_cell"><button type="button" role="switch" class="o_can_have_focus o_button_toggle o_toggle_on" aria-checked="true"><span class="o_on">On</span><span class="o_off">Off</span> <i class="o_icon o_icon_toggle"></i></button></div></div>
+            <fieldset class="o_form_section">
+              <div class="o_section_sub_title"><span class="o_section_title_text">Configuration</span></div>
+              <div>
+                <div class="form-group clearfix"><label class="control-label col-sm-3">Home planet</label><div class="col-sm-9 o_form_cell"><select class="form-control"><option>Earth</option></select></div></div>
+                <div class="form-group clearfix"><label class="control-label col-sm-3">Telescope name</label><div class="col-sm-9 o_form_cell"><input type="text" class="form-control" value="Hubble's Little Cousin"><div class="o_form_example help-block">e.g. Big Dipper 3000</div></div></div>
+              </div>
+            </fieldset>
+            <fieldset class="o_form_section">
+              <div class="o_section_sub_title"><span class="o_section_title_text">Default settings</span></div>
+              <div>
+                <div class="form-group clearfix"><label class="control-label col-sm-3">Default view</label><div class="col-sm-9 o_form_cell"><div class="radio"><label><input type="radio" name="cl_fs_view" checked> Telescope view</label></div><div class="radio"><label><input type="radio" name="cl_fs_view"> Star map view</label></div></div></div>
+              </div>
+            </fieldset>
+            <div class="form-group clearfix"><div class="col-sm-9 col-sm-offset-3 o_form_cell"><div class="form-inline buttons"><button type="button" class="btn btn-primary"><span>Save</span></button></div></div></div>
+          </fieldset>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;fieldset class="o_form form-horizontal"&gt;
+  &lt;legend&gt;Module settings&lt;/legend&gt;
+  &lt;div class="form-group clearfix"&gt;...module toggle...&lt;/div&gt;
+
+  &lt;fieldset id="o_c1000001513" class="o_form_section"&gt;
+    &lt;div class="o_section_sub_title"&gt;
+      &lt;span class="o_section_title_text"&gt;Configuration&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div id="o_c1000001513_content"&gt;
+      &lt;div class="form-group clearfix"&gt;...&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/fieldset&gt;
+
+  &lt;div class="form-group clearfix"&gt;...buttons...&lt;/div&gt;
+&lt;/fieldset&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Section: Collapsible -->
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Form Section (Title, Collapsible) <span class="version-badge">New in 21.1.0</span></h3>
+      <p>The level <code>TITLE</code> (default) renders the heading as <code>&lt;legend&gt;&lt;h4 class="o_section_title"&gt;</code>. With <code>setCollapsible(true)</code> the heading becomes a toggle: it gets <code>o_section_toggle</code>, <code>role="button"</code>, <code>tabindex="0"</code>, <code>aria-controls</code> and <code>aria-expanded</code>. The content wrapper gets the Bootstrap classes <code>collapse o_section_content</code> and <code>in</code> when open. A screen-reader label (<code>sr-only</code>) says "expand" or "collapse". A delegated handler in <code>functions.js</code> toggles the section on click, Enter and Space, and keeps <code>aria-expanded</code>, the icon (<code>o_icon_open_togglebox</code> / <code>o_icon_close_togglebox</code>) and the label in sync. With <code>setPersistedStatusId(...)</code> the open/closed state is stored in the GUI preferences.</p>
+      <p>The same header markup is used by the <code>Sections</code> component (see Layout &amp; Containers).</p>
+      <div class="cl-classes">
+        <code>o_form_section</code> <code>o_section_title</code> <code>o_section_toggle</code> <code>o_link_plain</code> <code>collapsed</code> <code>o_section_content</code> <code>collapse</code> <code>in</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <fieldset class="o_form form-horizontal">
+            <fieldset class="o_form_section">
+              <legend><h4 class="o_section_title o_section_toggle o_link_plain" id="cl_sec1_content_toggle" role="button" tabindex="0" data-target="cl_sec1_content" aria-controls="cl_sec1_content" aria-expanded="true"><span class="o_section_title_text"><i id="cl_sec1_content_toggler" aria-hidden="true" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>Assessment settings <span class="sr-only">collapse</span></span></h4></legend>
+              <div id="cl_sec1_content" class="collapse o_section_content in">
+                <div class="form-group clearfix"><label class="control-label col-sm-3">Maximum score</label><div class="col-sm-9 o_form_cell"><input type="text" class="form-control o_form_number" value="10" style="width:6em"></div></div>
+              </div>
+            </fieldset>
+            <fieldset class="o_form_section">
+              <legend><h4 class="o_section_title o_section_toggle o_link_plain collapsed" role="button" tabindex="0" aria-expanded="false"><span class="o_section_title_text"><i aria-hidden="true" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>Advanced settings <span class="sr-only">expand</span></span></h4></legend>
+              <div class="collapse o_section_content"></div>
+            </fieldset>
+          </fieldset>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;fieldset id="o_c42" class="o_form_section"&gt;
+  &lt;legend&gt;
+    &lt;h4 class="o_section_title o_section_toggle o_link_plain"
+        id="o_c42_content_toggle" role="button" tabindex="0"
+        data-target="o_c42_content"
+        data-label-expand="expand" data-label-collapse="collapse"
+        aria-controls="o_c42_content" aria-expanded="true"&gt;
+      &lt;span class="o_section_title_text"&gt;
+        &lt;i id="o_c42_content_toggler" aria-hidden="true"
+           class="o_icon o_icon-fw o_icon_close_togglebox"&gt; &lt;/i&gt;Assessment settings
+        &lt;span id="o_c42_content_togglerLabel" class="sr-only"&gt;collapse&lt;/span&gt;
+      &lt;/span&gt;
+    &lt;/h4&gt;
+  &lt;/legend&gt;
+  &lt;div id="o_c42_content" class="collapse o_section_content in"&gt;
+    ...form items (3/9 layout)...
+  &lt;/div&gt;
+&lt;/fieldset&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SEARCH FIELD (21.1) ==================== -->
+<section class="cl-section" id="search-field">
+  <h2>Search Field <span class="version-badge">New in 21.1.0</span></h2>
+
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Search Field (SearchElement) <span class="version-badge">New in 21.1.0</span></h3>
+      <p>One search element for all search fields: FlexiTable quick search, navbar search, overview searches, tag and object selection. Java: <code>uifactory.addSearchElement(name, SearchVariant, container)</code>. <code>SearchElementRenderer</code> renders <code>div.o_search</code> with <code>role="search"</code> around a Bootstrap <code>input-group</code>. The input has <code>role="searchbox"</code> and an <code>aria-label</code>. The reset button (<code>o_search_reset</code>, ghost button with <code>o_icon_close</code>) overlaps the right edge of the input. It is only visible when the field has text.</p>
+      <p>Variants (class on <code>div.o_search</code>):</p>
+      <ul>
+        <li><code>o_search_default</code>: search button with icon only, toolbar size.</li>
+        <li><code>o_search_large</code>: search button with icon and text, <code>input-lg</code> sizing.</li>
+        <li><code>o_search_typeahead</code>: no search button, a search icon in <code>input-group-addon</code> on the left. The search runs while the user types, with a 300 ms debounce. With a <code>ListProvider</code> the field uses typeahead.js and shows suggestions in <code>.tt-menu</code>.</li>
+        <li>Default without button (<code>setSearchButtonVisible(false)</code>): same markup as typeahead, left addon icon.</li>
+      </ul>
+      <p>Keyboard: <kbd>Enter</kbd> starts the search by AJAX, not by form submit. If a typeahead suggestion is highlighted (<code>.tt-cursor</code>), <kbd>Enter</kbd> selects the suggestion. In the typeahead variant <kbd>Esc</kbd> resets the field. Width: <code>#o_navbar_search .o_search</code> is 320px, <code>.o_table_search .o_search</code> is at most 340px (170px below 540px), <code>.o_table_large_search .o_search</code> is at most 450px.</p>
+      <div class="cl-classes">
+        <code>o_search</code> <code>o_search_default</code> <code>o_search_large</code> <code>o_search_typeahead</code> <code>o_search_input_wrapper</code> <code>o_search_input</code> <code>o_search_reset</code> <code>o_search_button</code> <code>input-group</code> <code>input-group-addon</code> <code>tt-input</code> <code>tt-menu</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="cl-example-stack" style="max-width:600px;">
+            <div class="o_search o_search_default" role="search"><div class="input-group"><div class="o_search_input_wrapper"><input type="text" class="form-control o_search_input" size="35" placeholder="Enter search term" autocomplete="off" role="searchbox" aria-label="Enter search term"></div><span class="input-group-btn"><a class="btn btn-default o_search_button" href="#" onclick="return false" role="button"><i class="o_icon o_icon-fw o_icon_search" aria-hidden="true" title="Search"></i> <span><span class="sr-only">Search</span></span></a></span></div></div>
+            <div class="o_search o_search_large" role="search"><div class="input-group"><div class="o_search_input_wrapper"><input type="text" class="form-control o_search_input" size="35" placeholder="Search everything" autocomplete="off" role="searchbox" aria-label="Enter search term"></div><span class="input-group-btn"><a class="btn btn-default o_search_button" href="#" onclick="return false" role="button"><i class="o_icon o_icon-fw o_icon_search" aria-hidden="true"></i> <span>Search</span></a></span></div></div>
+            <div class="o_search o_search_typeahead" role="search"><div class="input-group"><span class="input-group-addon"><i class="o_icon o_icon-fw o_icon_search"></i></span><div class="o_search_input_wrapper"><input type="text" class="form-control o_search_input" size="35" value="ma" placeholder="Search by name" autocomplete="off" role="searchbox" aria-label="Enter search term"><span><a class="btn btn-sm btn-default o_button_ghost o_search_reset" href="#" onclick="return false" role="button"><i class="o_icon o_icon-fw o_icon_close" aria-hidden="true" title="Reset search"></i> <span><span class="sr-only">Reset search</span></span></a></span></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;!-- SearchVariant.DEFAULT --&gt;
+&lt;div class="o_search o_search_default" role="search"&gt;
+  &lt;div class="input-group"&gt;
+    &lt;div class="o_search_input_wrapper"&gt;
+      &lt;input type="text" class="form-control o_search_input" placeholder="Enter search term"
+             autocomplete="off" role="searchbox" aria-label="Enter search term"&gt;
+      &lt;span id="..._resetWrap" style="display:none"&gt;
+        &lt;a class="btn btn-sm btn-default o_button_ghost o_search_reset" role="button"&gt;
+          &lt;i class="o_icon o_icon-fw o_icon_close" aria-hidden="true" title="Reset search"&gt;&lt;/i&gt;
+          &lt;span&gt;&lt;span class="sr-only"&gt;Reset search&lt;/span&gt;&lt;/span&gt;
+        &lt;/a&gt;
+      &lt;/span&gt;
+    &lt;/div&gt;
+    &lt;span class="input-group-btn"&gt;
+      &lt;a class="btn btn-default o_search_button" role="button"&gt;
+        &lt;i class="o_icon o_icon-fw o_icon_search" aria-hidden="true" title="Search"&gt;&lt;/i&gt;
+        &lt;span&gt;&lt;span class="sr-only"&gt;Search&lt;/span&gt;&lt;/span&gt;
+      &lt;/a&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- SearchVariant.TYPEAHEAD: addon icon left, no button --&gt;
+&lt;div class="o_search o_search_typeahead" role="search"&gt;
+  &lt;div class="input-group"&gt;
+    &lt;span class="input-group-addon"&gt;&lt;i class="o_icon o_icon-fw o_icon_search"&gt;&lt;/i&gt;&lt;/span&gt;
+    &lt;div class="o_search_input_wrapper"&gt;...input + reset...&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== LABEL ICON (21.1) ==================== -->
+<section class="cl-section" id="label-icon">
+  <h2>Label Icon <span class="version-badge">New in 21.1.0</span></h2>
+
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Icon Left of the Label <span class="version-badge">New in 21.1.0</span></h3>
+      <p><code>FormItem.setLabelIconCss(String)</code> adds an icon before the label text. The icon is a visual cue only. It has <code>aria-hidden="true"</code> and does not change the mandatory or enabled state. The course editor uses <code>o_icon o_icon-fw o_icon_locked text-primary</code> for fields that cannot be changed while the edit mode is off. The mandatory marker <code>o_icon_mandatory</code> is rendered first, then the label icon.</p>
+      <div class="cl-classes">
+        <code>control-label</code> <code>o_icon_locked</code> <code>o_icon-fw</code> <code>text-primary</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <form class="o_form form-horizontal">
+            <div class="form-group clearfix"><label class="control-label col-sm-3"><i class="o_icon o_icon-fw o_icon_locked text-primary" aria-hidden="true"></i> Maximum score</label><div class="col-sm-9 o_form_cell"><input type="text" class="form-control o_disabled" value="10" disabled></div></div>
+            <div class="form-group clearfix"><label class="control-label col-sm-3" aria-required="true"><i class="o_icon o_icon_mandatory" title="This field is mandatory." aria-hidden="true"></i> <i class="o_icon o_icon-fw o_icon_locked" aria-hidden="true"></i> Passing score</label><div class="col-sm-9 o_form_cell"><input type="text" class="form-control o_disabled" value="6" disabled></div></div>
+          </form>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;label class="control-label col-sm-3" for="o_fi1000002235"&gt;
+  &lt;i class="o_icon o_icon-fw o_icon_locked text-primary" aria-hidden="true"&gt;&lt;/i&gt; Maximum score
+&lt;/label&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== OBJECT SELECTION ==================== -->
+<section class="cl-section" id="object-selection">
+  <h2>Object Selection</h2>
+
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Object Selection (Button and Callout)</h3>
+      <p><code>ObjectSelectionElement</code> shows the selected objects in a <code>button.o_expand_button.o_selection_display</code> with a caret. A click opens a callout with a typeahead search field, "Select all" / "Reset selection" links and a checkbox list (<code>o_object_selection</code>). The trigger has <code>aria-haspopup="dialog"</code> and <code>aria-expanded</code>. With a browser source a second button <code>o_selection_browse_button</code> opens a browser dialog. For user selections the current user is listed first, with the suffix "(me)".</p>
+      <p>Disabled state: the button gets <code>disabled o_disabled</code> and the <code>disabled</code> attribute. The browse button stays visible but is disabled too.</p>
+      <div class="cl-classes">
+        <code>o_expand_button</code> <code>o_selection_display</code> <code>o_expand_button_text</code> <code>o_object_selection_display</code> <code>o_selection_browse_button</code> <code>o_object_selection</code> <code>o_object_selection_header</code> <code>o_object_selection_divider</code> <code>o_object_selection_option</code> <code>o_disabled</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <form class="o_form form-horizontal">
+            <div class="form-group clearfix"><label class="control-label col-sm-3">Coach</label><div class="col-sm-9 o_form_cell"><button type="button" class="o_expand_button o_can_have_focus btn btn-default o_selection_display" aria-haspopup="dialog" aria-expanded="false"><span class="o_expand_button_text o_nowrap"><i class="o_icon o_icon_user"></i> AIT, Claude (me)</span> <i class="o_icon o_icon_caret"></i></button></div></div>
+            <div class="form-group clearfix"><label class="control-label col-sm-3">Participants</label><div class="col-sm-9 o_form_cell"><div class="o_object_selection_display"><button type="button" class="o_expand_button o_can_have_focus btn btn-default o_selection_display" aria-haspopup="dialog" aria-expanded="false"><span class="o_expand_button_text o_nowrap"><i class="o_icon o_icon_user"></i> Keith, Herman&nbsp;&nbsp;<i class="o_icon o_icon_user"></i> Newton, Gloria</span> <i class="o_icon o_icon_caret"></i></button><button type="button" class="btn btn-default o_selection_browse_button" title="Browse" aria-label="Browse"><i class="o_icon o_icon-fw o_icon_browse"></i> <span>Browse</span></button></div></div></div>
+            <div class="form-group clearfix"><label class="control-label col-sm-3">Rooms (disabled)</label><div class="col-sm-9 o_form_cell"><div class="o_object_selection_display"><button type="button" class="o_expand_button o_can_have_focus btn btn-default o_selection_display disabled o_disabled" aria-haspopup="dialog" aria-expanded="false" disabled><span class="o_expand_button_text o_nowrap">Please select</span> <i class="o_icon o_icon_caret"></i></button><button type="button" class="btn btn-default o_selection_browse_button o_disabled disabled" title="Browse" aria-label="Browse" disabled><i class="o_icon o_icon-fw o_icon_browse"></i> <span>Browse</span></button></div></div></div>
+          </form>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;div class="o_object_selection_display"&gt;
+  &lt;button type="button" class="o_expand_button o_can_have_focus btn btn-default o_selection_display"
+          aria-haspopup="dialog" aria-expanded="false"&gt;
+    &lt;span class="o_expand_button_text o_nowrap"&gt;
+      &lt;i class="o_icon o_icon_user"&gt;&lt;/i&gt; Keith, Herman
+    &lt;/span&gt; &lt;i class="o_icon o_icon_caret"&gt;&lt;/i&gt;
+  &lt;/button&gt;
+  &lt;button type="button" class="btn btn-default o_selection_browse_button"
+          title="Browse" aria-label="Browse"&gt;
+    &lt;i class="o_icon o_icon-fw o_icon_browse"&gt;&lt;/i&gt; &lt;span&gt;Browse&lt;/span&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+
+&lt;!-- disabled --&gt;
+&lt;button type="button" class="o_expand_button ... o_selection_display disabled o_disabled" disabled&gt;...&lt;/button&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== RELATIVE DATE ==================== -->
+<section class="cl-section" id="relative-date">
+  <h2>Relative Date</h2>
+
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Relative Date Field</h3>
+      <p><code>RelativeDateElement</code> shows a date that depends on another date, for example "3 days before the start of the implementation". The field is a read-only <code>input.form-control</code> in <code>div.o_relative_date.input-group</code> with an optional icon addon. A click opens a callout (<code>RelativeDatePickerController</code>) with the offset row (<code>o_relative_date_offset_row</code>) and the unit buttons (<code>o_relative_date_unit_row</code>).</p>
+      <div class="cl-classes">
+        <code>o_relative_date</code> <code>input-group</code> <code>input-group-addon</code> <code>o_relative_date_offset_row</code> <code>o_relative_date_unit_row</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <form class="o_form form-horizontal">
+            <div class="form-group clearfix"><label class="control-label col-sm-3">Valid from</label><div class="col-sm-9 o_form_cell"><div class="o_relative_date input-group"><span class="input-group-addon"><i class="o_icon o_icon-fw o_icon_calendar"></i></span><input type="text" class="form-control" readonly="readonly" size="100" aria-label="Valid from" value="3 days before the begin of the execution period"></div></div></div>
+          </form>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;div class="o_relative_date input-group"&gt;
+  &lt;span class="input-group-addon"&gt;&lt;i class="o_icon o_icon-fw o_icon_calendar"&gt;&lt;/i&gt;&lt;/span&gt;
+  &lt;input type="text" class="form-control" readonly="readonly" size="100"
+         aria-label="Valid from" value="3 days before the begin of the execution period"&gt;
+&lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ==================== FORM LAYOUT ==================== -->
 <section class="cl-section">
   <h2>Form Layout</h2>
@@ -1294,6 +1565,7 @@ Peter;Test;peter@example.com</textarea>
     <div class="cl-component-header">
       <h3>Two-Column Form Layout</h3>
       <p>A responsive two-column grid layout for forms with many fields. Uses <code>o_form_two_cols</code> which renders as a CSS Grid on wider screens.</p>
+      <p>The grid starts at <code>min-width: $screen-sm-max</code> (991px) with <code>grid-template-columns: 1fr 1fr</code> and a gap of 10px. The template <code>form_two_cols.html</code> renders a layout container as <code>div.o_form_two_cols</code> with all items in the vertical layout.</p>
       <div class="cl-classes">
         <code>o_form_two_cols</code>
       </div>

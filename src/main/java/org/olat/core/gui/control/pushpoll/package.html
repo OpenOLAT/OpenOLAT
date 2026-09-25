@@ -5,12 +5,23 @@
 	<title>Documentation</title>
 </head>
 <body>
-<h3>OLAT AJAX mode</h3>
+<h3>Window commands for the AJAX response</h3>
 <p>
-OLAT can be run in two modes. Either in normal mode where with each request every component visible on the screen gete rerendered and sended as a whole html page to the client.
-In the normal mode every component renderer or velocity page that belongs to a component gets rendered and packt together into a whole html page. The other mode, called AJAX mode works different.
-In the AJAX mode all (most) links are sended to a background target which is an hidden Iframe. The server then goes again through the render three and rerenders only the components that are dirty.
-The dirty components are rerenderd as html fragments and packed into a json object and send back to the hidden Iframe. When they are arrived the browser replaces the dirty stuff by dom replacements.
+This package holds one class, {@link org.olat.core.gui.control.pushpoll.WindowCommand}.
+A <code>WindowCommand</code> pairs a {@link org.olat.core.gui.control.winmgr.Command} with the
+{@link org.olat.core.gui.control.WindowBackOffice} of the browser window it is meant for.
+</p>
+<p>
+OpenOlat renders the full page only on the first request. Later requests are AJAX requests.
+After each request {@link org.olat.core.gui.control.winmgr.AjaxController} asks the window for its
+dirty components (<code>Window.handleDirties()</code>). The window returns them as a command.
+The controller wraps this command and other commands, for example a redirect from
+{@link org.olat.core.gui.control.winmgr.CommandFactory}, in <code>WindowCommand</code> objects.
+It then writes them as one JSON response. The browser replaces the matching DOM fragments.
+</p>
+<p>
+<code>WindowBackOfficeImpl.sendCommandTo(...)</code> uses the same path to push a command to the window.
+See the package <code>org.olat.core.gui.control.winmgr</code> for the classes that do the work.
 </p>
 </body>
 </html>

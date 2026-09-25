@@ -25,6 +25,8 @@
       <a href="../openolat-frontend.html">Frontend</a>
       <span class="sep">|</span>
       <a href="index.html" class="active">Component Library</a>
+      <span class="sep">|</span>
+      <a href="../i18n-translation-reference.md">Translation Reference</a>
     </nav>
   </div>
   <div class="header-rule"></div>
@@ -53,6 +55,8 @@
   <a href="feedback.html">Feedback &amp; Status</a>
   <a href="layout.html">Layout &amp; Containers</a>
   <a href="data-display.html">Data Display</a>
+  <a href="ai-ui.html">AI UI</a>
+  <a href="room-management.html">Room Management</a>
 </nav>
 
 <main class="cl-main">
@@ -66,8 +70,9 @@
     <div class="cl-component-header">
       <h3>Top Navbar</h3>
       <p>The main navigation bar at the top of the application. Contains site tabs for primary navigation areas and dynamic tabs for open resources. The active tab is highlighted. An overflow "More" menu appears when tabs exceed the available width.</p>
+      <p>The personal tools on the right are in <code>ul#o_navbar_tools_permanent</code>: <code>li#o_navbar_search_opener</code> (search dropdown), <code>li#o_navbar_imclient</code> (chat), <code>li#o_navbar_my_menu</code> (user portrait and personal menu). <span class="version-badge changed">Changed in 21.1.0</span> The search dropdown contains the <code>SearchElement</code> (<code>#o_navbar_search</code> with <code>div.o_search.o_search_default</code>, 320px wide, <code>aria-label</code> "Full-text search").</p>
       <div class="cl-classes">
-        <code>o_navbar</code> <code>o_navbar_tab_wrapper</code> <code>o_navbar_tabs</code> <code>o_navbar_sites</code> <code>active</code> <code>o_navbar_more</code> <code>o_container_offcanvas</code>
+        <code>o_navbar</code> <code>o_navbar_tabs</code> <code>o_navbar_sites</code> <code>active</code> <code>o_navbar_more</code> <code>o_container_offcanvas</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -80,7 +85,7 @@
                   <li class="active" aria-current="true"><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_home"></i> <span>Home</span></a></li>
                   <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_catalog"></i> <span>Kurse</span></a></li>
                   <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_group"></i> <span>Gruppen</span></a></li>
-                  <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_coaching"></i> <span>Coaching</span></a></li>
+                  <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_coach"></i> <span>Coaching</span></a></li>
                 </ul>
                 <ul class="o_navbar_tabs nav o_navbar-nav">
                   <li><a href="#" onclick="return false"><span>Kurs: Mathematik</span></a></li>
@@ -280,7 +285,7 @@
               <li class="active_parent children_visible" role="treeitem" aria-expanded="true" aria-selected="false">
                 <div class="o_tree_l0">
                   <span class="o_tree_link o_tree_l0 o_tree_level_label_close">
-                    <a href="#" onclick="return false"><span><i class="o_icon o_icon-fw o_icon_course"></i> Kurs: Mathematik</span></a>
+                    <a href="#" onclick="return false"><span><i class="o_icon o_icon-fw o_CourseModule_icon"></i> Kurs: Mathematik</span></a>
                   </span>
                 </div>
                 <ul role="group" class="o_tree_l1">
@@ -522,66 +527,34 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Scopes</h3>
-      <p>Scope selector rendered as a grid of toggle buttons for filtering by category or time period. Each scope is a <code>FormToggleComponent</code> rendered as a button. The selected scope uses <code>o_toggle_on</code>. Scopes can optionally display hint text below the title. Rendered by <code>ScopeRenderer</code>.</p>
+      <p>Category or time-period selector (GUI demo "Scopes", markup read from localhost). <code>ScopeRenderer</code> renders <code>ul.o_scopes</code> with one <code>FormToggle</code> per scope in the button presentation: <code>button.o_toggle_button.btn.o_scope_toggle</code> with <code>role="checkbox"</code> and <code>aria-checked</code>. The selected scope has <code>o_toggle_on</code>, the others <code>o_toggle_off</code>. The on and off text are both rendered; the hidden one has <code>aria-hidden="true"</code>. With hints (<code>o_scope_toggle_hints</code>) each scope shows a second line <code>o_scope_hint</code>.</p>
       <div class="cl-classes">
-        <code>o_scopes</code> <code>o_scope_toggle</code> <code>o_toggle_on</code> <code>o_scope</code> <code>o_scope_title</code> <code>o_scope_hint</code> <code>o_scope_toggle_hints</code>
+        <code>o_scopes</code> <code>o_scope_toggle_hints</code> <code>o_toggle_button</code> <code>o_scope_toggle</code> <code>o_toggle_on</code> <code>o_toggle_off</code> <code>o_toggle_button_text</code> <code>o_on</code> <code>o_off</code> <code>o_scope</code> <code>o_scope_title</code> <code>o_scope_hint</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
-          <!-- Scopes without hints -->
-          <p style="margin-bottom: 8px; font-size: 13px; color: #6c757d;">Without hints:</p>
-          <ul class="o_scopes">
-            <li><a href="#" class="btn o_scope_toggle o_toggle_on" onclick="return false"><span class="o_toggle_button_text"><span class="o_scope"><span class="o_scope_title">Alle</span></span></span></a></li>
-            <li><a href="#" class="btn o_scope_toggle" onclick="return false"><span class="o_toggle_button_text"><span class="o_scope"><span class="o_scope_title">Meine Kurse</span></span></span></a></li>
-            <li><a href="#" class="btn o_scope_toggle" onclick="return false"><span class="o_toggle_button_text"><span class="o_scope"><span class="o_scope_title">Favoriten</span></span></span></a></li>
-            <li><a href="#" class="btn o_scope_toggle" onclick="return false"><span class="o_toggle_button_text"><span class="o_scope"><span class="o_scope_title">Zuletzt besucht</span></span></span></a></li>
-          </ul>
-          <!-- Scopes with hints -->
-          <p style="margin-top: 24px; margin-bottom: 8px; font-size: 13px; color: #6c757d;">With hints:</p>
-          <ul class="o_scopes o_scope_toggle_hints">
-            <li><a href="#" class="btn o_scope_toggle o_toggle_on" onclick="return false"><span class="o_toggle_button_text"><span class="o_scope"><span class="o_scope_title">Heute</span><span class="o_scope_hint">12 Eintr&auml;ge</span></span></span></a></li>
-            <li><a href="#" class="btn o_scope_toggle" onclick="return false"><span class="o_toggle_button_text"><span class="o_scope"><span class="o_scope_title">Diese Woche</span><span class="o_scope_hint">47 Eintr&auml;ge</span></span></span></a></li>
-            <li><a href="#" class="btn o_scope_toggle" onclick="return false"><span class="o_toggle_button_text"><span class="o_scope"><span class="o_scope_title">Dieser Monat</span><span class="o_scope_hint">183 Eintr&auml;ge</span></span></span></a></li>
-          </ul>
+          <ul class="o_scopes"><li><button type="button" role="checkbox" id="cl_nsc1" class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_on" aria-checked="true"><div class="o_toggle_button_text"><span class="o_on"><div class="o_scope"><div class="o_scope_title">Mercury</div><div class="o_scope_hint"></div></div></span><span class="o_off" aria-hidden="true"><div class="o_scope"><div class="o_scope_title">Mercury</div><div class="o_scope_hint"></div></div></span></div></button></li><li><button type="button" role="checkbox" id="cl_nsc2" class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_off" aria-checked="false"><div class="o_toggle_button_text"><span class="o_on" aria-hidden="true"><div class="o_scope"><div class="o_scope_title">Venus</div><div class="o_scope_hint"></div></div></span><span class="o_off"><div class="o_scope"><div class="o_scope_title">Venus</div><div class="o_scope_hint"></div></div></span></div></button></li><li><button type="button" role="checkbox" id="cl_nsc3" class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_off" aria-checked="false"><div class="o_toggle_button_text"><span class="o_on" aria-hidden="true"><div class="o_scope"><div class="o_scope_title">Earth</div><div class="o_scope_hint"></div></div></span><span class="o_off"><div class="o_scope"><div class="o_scope_title">Earth</div><div class="o_scope_hint"></div></div></span></div></button></li></ul>
+          <ul class="o_scopes o_scope_toggle_hints"><li><button type="button" role="checkbox" id="cl_nsc4" class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_on" aria-checked="true"><div class="o_toggle_button_text"><span class="o_on"><div class="o_scope"><div class="o_scope_title">1 Month</div><div class="o_scope_hint">12.03.2026 - 12.04.2026</div></div></span><span class="o_off" aria-hidden="true"><div class="o_scope"><div class="o_scope_title">1 Month</div><div class="o_scope_hint">12.03.2026 - 12.04.2026</div></div></span></div></button></li><li><button type="button" role="checkbox" id="cl_nsc5" class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_off" aria-checked="false"><div class="o_toggle_button_text"><span class="o_on" aria-hidden="true"><div class="o_scope"><div class="o_scope_title">3 Months</div><div class="o_scope_hint">12.03.2026 - 12.06.2026</div></div></span><span class="o_off"><div class="o_scope"><div class="o_scope_title">3 Months</div><div class="o_scope_hint">12.03.2026 - 12.06.2026</div></div></span></div></button></li></ul>
         </div>
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;!-- Scopes without hints --&gt;
-&lt;ul class="o_scopes"&gt;
+        <pre>&lt;ul class="o_scopes [o_scope_toggle_hints]"&gt;
   &lt;li&gt;
-    &lt;a href="#" class="btn o_scope_toggle o_toggle_on"&gt;
-      &lt;span class="o_toggle_button_text"&gt;&lt;span class="o_scope"&gt;
-        &lt;span class="o_scope_title"&gt;Alle&lt;/span&gt;
-      &lt;/span&gt;&lt;/span&gt;
-    &lt;/a&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;a href="#" class="btn o_scope_toggle"&gt;
-      &lt;span class="o_toggle_button_text"&gt;&lt;span class="o_scope"&gt;
-        &lt;span class="o_scope_title"&gt;Meine Kurse&lt;/span&gt;
-      &lt;/span&gt;&lt;/span&gt;
-    &lt;/a&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;!-- Scopes with hints --&gt;
-&lt;ul class="o_scopes o_scope_toggle_hints"&gt;
-  &lt;li&gt;
-    &lt;a href="#" class="btn o_scope_toggle o_toggle_on"&gt;
-      &lt;span class="o_toggle_button_text"&gt;&lt;span class="o_scope"&gt;
-        &lt;span class="o_scope_title"&gt;Heute&lt;/span&gt;
-        &lt;span class="o_scope_hint"&gt;12 Eintr&amp;auml;ge&lt;/span&gt;
-      &lt;/span&gt;&lt;/span&gt;
-    &lt;/a&gt;
+    &lt;button type="button" role="checkbox" aria-checked="true"
+            class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_on"&gt;
+      &lt;div class="o_toggle_button_text"&gt;
+        &lt;span class="o_on"&gt;&lt;div class="o_scope"&gt;&lt;div class="o_scope_title"&gt;Mercury&lt;/div&gt;&lt;div class="o_scope_hint"&gt;&lt;/div&gt;&lt;/div&gt;&lt;/span&gt;
+        &lt;span class="o_off" aria-hidden="true"&gt;&lt;div class="o_scope"&gt;...same...&lt;/div&gt;&lt;/span&gt;
+      &lt;/div&gt;
+    &lt;/button&gt;
   &lt;/li&gt;
 &lt;/ul&gt;</pre>
       </div>
     </div>
   </div>
-
 </section>
 
 <!-- ==================== DROPDOWN MENU ==================== -->
@@ -620,12 +593,12 @@
               </button>
               <ul class="dropdown-menu">
                 <li class="dropdown-header">Kursbausteine</li>
-                <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_course"></i> Struktur</a></li>
-                <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_page"></i> Einzelne Seite</a></li>
+                <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_CourseModule_icon"></i> Struktur</a></li>
+                <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_sp_icon"></i> Einzelne Seite</a></li>
                 <li class="divider"></li>
                 <li class="dropdown-header">Bewertung</li>
-                <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_test"></i> Test</a></li>
-                <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_task"></i> Aufgabe</a></li>
+                <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_iqtest_icon"></i> Test</a></li>
+                <li><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_gta_icon"></i> Aufgabe</a></li>
               </ul>
             </div>
           </div>

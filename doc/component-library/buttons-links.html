@@ -25,6 +25,8 @@
       <a href="../openolat-frontend.html">Frontend</a>
       <span class="sep">|</span>
       <a href="index.html" class="active">Component Library</a>
+      <span class="sep">|</span>
+      <a href="../i18n-translation-reference.md">Translation Reference</a>
     </nav>
   </div>
   <div class="header-rule"></div>
@@ -53,6 +55,8 @@
   <a href="feedback.html">Feedback &amp; Status</a>
   <a href="layout.html">Layout &amp; Containers</a>
   <a href="data-display.html">Data Display</a>
+  <a href="ai-ui.html">AI UI</a>
+  <a href="room-management.html">Room Management</a>
 </nav>
 
 <main class="cl-main">
@@ -129,16 +133,18 @@
     <div class="cl-component-header">
       <h3>Button States</h3>
       <p>Disabled and ghost button variants. Ghost buttons render as plain text links.</p>
+      <p><code>LinkRenderer</code> writes a disabled button as <code>&lt;a class="o_disabled disabled btn btn-default"&gt;</code> without <code>href</code> action. Ghost buttons use <code>$o-button-ghost-color</code> (<code>$btn-primary-bg</code>). On hover the border gets the primary color and the background stays transparent.</p>
+      <p>Button borders: <code>$btn-default-border</code> is <code>#6c757d</code> and <code>$btn-default-hover-border</code> is <code>#667085</code>. Form fields keep the lighter <code>$input-border</code> (<code>#d0d5dd</code>). So buttons and dropdown toggles have a darker border than text fields.</p>
       <div class="cl-classes">
-        <code>o_disabled</code> <code>o_button_ghost</code>
+        <code>o_disabled</code> <code>disabled</code> <code>o_button_ghost</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
           <div class="cl-example-row">
-            <a class="btn btn-default o_disabled" onclick="return false">Disabled Default</a>
-            <a class="btn btn-primary o_disabled" onclick="return false">Disabled Primary</a>
+            <a class="o_disabled disabled btn btn-default" onclick="return false">Disabled Default</a>
+            <a class="o_disabled disabled btn btn-primary" onclick="return false">Disabled Primary</a>
             <a href="#" class="btn o_button_ghost" onclick="return false">Ghost Button</a>
             <span class="btn o_button_ghost o_disabled">Ghost Disabled</span>
           </div>
@@ -146,10 +152,102 @@
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;a class="btn btn-default o_disabled"&gt;Disabled Default&lt;/a&gt;
-&lt;a class="btn btn-primary o_disabled"&gt;Disabled Primary&lt;/a&gt;
+        <pre>&lt;a class="o_disabled disabled btn btn-default"&gt;Disabled Default&lt;/a&gt;
+&lt;a class="o_disabled disabled btn btn-primary"&gt;Disabled Primary&lt;/a&gt;
 &lt;a href="#" class="btn o_button_ghost"&gt;Ghost Button&lt;/a&gt;
 &lt;span class="btn o_button_ghost o_disabled"&gt;Ghost Disabled&lt;/span&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ghost Danger Button (21.1) -->
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Ghost Danger Button <span class="version-badge">New in 21.1.0</span></h3>
+      <p>A ghost button for a destructive action with low emphasis. Combine <code>o_button_ghost</code> with <code>btn-danger</code> (Java: <code>link.setGhost(true)</code> plus the element CSS class <code>btn-danger</code>). The text is <code>$brand-danger</code>. On hover the border turns <code>$brand-danger</code>. The info page uses it for the "Leave course" action in the "My course" panel.</p>
+      <div class="cl-classes">
+        <code>btn</code> <code>o_button_ghost</code> <code>btn-danger</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="cl-example-row">
+            <a href="#" class="btn btn-danger o_button_ghost" onclick="return false"><i class="o_icon o_icon-fw o_icon_sign_out" aria-hidden="true"></i> <span>Leave course</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;a class="btn btn-danger o_button_ghost" role="button"&gt;
+  &lt;i class="o_icon o_icon-fw o_icon_sign_out" aria-hidden="true"&gt;&lt;/i&gt; &lt;span&gt;Leave course&lt;/span&gt;
+&lt;/a&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Button Add-on in Input Group -->
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Button Add-on in an Input Group</h3>
+      <p>A <code>FormLink</code> with the element CSS class <code>input-group-addon</code> inside an input-group layout (<code>FormLayoutContainer.createInputGroupLayout</code>). <code>_bootstrap.scss</code> styles <code>.btn.input-group-addon</code> and <code>a.input-group-addon</code> with the button border and background. The border between field and add-on has the button border color. The text field keeps <code>$input-bg</code>, also when it is disabled.</p>
+      <div class="cl-classes">
+        <code>input-group</code> <code>input-group-addon</code> <code>btn</code> <code>btn-default</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="input-group" style="max-width:420px;">
+            <input type="text" disabled="disabled" class="form-control o_disabled" size="35" value="Clicked 0 times">
+            <a class="btn btn-default input-group-addon" href="#" onclick="return false" role="button"><i class="o_icon o_icon-fw o_icon_add" aria-hidden="true"></i> <span>Add</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;div class="input-group"&gt;
+  &lt;input type="text" disabled="disabled" class="form-control o_disabled" value="Clicked 0 times"&gt;
+  &lt;a class="btn btn-default input-group-addon" role="button"&gt;
+    &lt;i class="o_icon o_icon-fw o_icon_add" aria-hidden="true"&gt;&lt;/i&gt; &lt;span&gt;Add&lt;/span&gt;
+  &lt;/a&gt;
+&lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog opener (callout trigger) -->
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Callout Trigger (Dialog Opener)</h3>
+      <p>A link or button that opens a callout uses the ARIA disclosure pattern. <code>Link.setAriaDialogOpener()</code> (also on <code>FormLink</code>) sets <code>role="button"</code>, <code>aria-haspopup="dialog"</code> and <code>aria-expanded="false"</code>. <code>CloseableCalloutWindowController</code> switches <code>aria-expanded</code> to <code>true</code> while the callout is open. When the callout closes, the focus returns to the trigger (<code>pushdialogfocus</code> / <code>popdialogfocus</code> commands in <code>functions.js</code>).</p>
+      <p><span class="version-badge changed">Changed in 21.1.0</span> The pattern is now set on the "more actions" buttons of table action columns, on table tools such as "Customize columns" and "Sort", on filter buttons, and on many other buttons that open a callout. Controllers pass the trigger component to <code>CloseableCalloutWindowController</code> instead of its DOM id. When the callout opens, the focus moves to the first visible focusable element, not to the hidden close button. The hidden close control is now a <code>&lt;button class="close"&gt;</code> inside <code>div.sr-only</code>.</p>
+      <div class="cl-classes">
+        <code>role="button"</code> <code>aria-haspopup="dialog"</code> <code>aria-expanded</code> <code>o_callout_content</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="cl-example-row">
+            <a class="btn btn-default" href="#" onclick="return false" role="button" aria-haspopup="dialog" aria-expanded="false"><i class="o_icon o_icon_customize" aria-hidden="true" title="Customize columns"></i> <span><span class="sr-only">Customize columns</span></span></a>
+            <a class="btn btn-default btn-xs" href="#" onclick="return false" role="button" aria-haspopup="dialog" aria-expanded="true"><i class="o_icon o_icon-fw o_icon_actions" aria-hidden="true"></i> <span class="sr-only">More actions</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;!-- closed --&gt;
+&lt;a id="o_fi1000002061" class="btn btn-default" href="javascript:;" role="button"
+   aria-haspopup="dialog" aria-expanded="false"&gt;
+  &lt;i class="o_icon o_icon_customize" aria-hidden="true" title="Customize columns"&gt;&lt;/i&gt;
+  &lt;span&gt;&lt;span class="sr-only"&gt;Customize columns&lt;/span&gt;&lt;/span&gt;
+&lt;/a&gt;
+&lt;!-- while the callout is open: aria-expanded="true" --&gt;
+&lt;div class="o_callout_content"&gt;
+  &lt;div class="sr-only"&gt;&lt;button type="button" class="close"&gt;Close dialog window&lt;/button&gt;&lt;/div&gt;
+  ...
+&lt;/div&gt;</pre>
       </div>
     </div>
   </div>

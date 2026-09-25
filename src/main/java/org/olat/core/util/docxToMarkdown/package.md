@@ -3,7 +3,7 @@
 **Package:** `org.olat.core.util.docxToMarkdown`
 **Type:** Core Utility (zero external dependencies beyond fmath for math conversion)
 **Design:** Stateless `@Service`, thread-safe — all state is local to each `convert()` call
-**Files:** 21 Java files (~6,800 LOC), 2 i18n property files
+**Files:** 21 Java files (~6,800 LOC), 7 i18n property files
 **Pipeline:** 6-stage SAX-based conversion from DOCX (ZIP) to Markdown
 
 ---
@@ -71,6 +71,9 @@ public record DocxConversionMessage(
     String i18nKey, // e.g. "docx.convert.warn.image.skipped"
     String[] args   // substitution arguments for {0}, {1}, ...
 ) {
+    public enum Level { INFO, WARNING, ERROR }
+    /** Convenience constructor for messages without arguments */
+    public DocxConversionMessage(Level level, String i18nKey);
     public String translate(Translator translator);
 }
 ```
@@ -241,6 +244,7 @@ Memory is proportional to text content, not file size. Images and videos are str
 | Encrypted DOCX | Detected by OLE2 magic bytes; rejected with `error.encrypted` |
 | .docm files | Rejected (macro detection via `vbaProject.bin`) → `error.macro.detected` |
 | Images > 10 MB | Skipped with warning |
+| Alt text with line breaks | Whitespace runs in the Word alt text (`wp:docPr` `descr`) are collapsed to one space. A CommonMark image label must not contain blank lines. |
 | Media basename collisions | Uniquified (e.g. `image1.png` → `image1-1.png`) so files in different folders do not overwrite |
 | Missing numbering.xml | Treated as bullet list with `warn.numbering.missing` |
 | Comments | Skipped with warning |
@@ -275,7 +279,7 @@ Memory is proportional to text content, not file size. Images and videos are str
 | `DocxMetadata` | record | title, author, keywords, etc. + `toYamlFrontMatter()` |
 | `DocxFootnoteParser` | SAX handler | footnotes/endnotes -> `Map<id, text>` |
 | `DocxThemeParser` | SAX handler | `theme1.xml` -> `Map<schemeColor, hexRGB>` |
-| `DocxToMarkdownHandler` | SAX handler | Main converter (2100+ LOC) |
+| `DocxToMarkdownHandler` | SAX handler | Main converter (~2400 LOC) |
 | `DocxMathConverter` | utility | OOXML math -> LaTeX via fmath |
 | `VmlToSvgConverter` | utility | VML/DrawingML -> SVG |
 | `SmartArtRenderer` | utility | SmartArt correlation + diagram rendering to SVG |
@@ -286,7 +290,9 @@ Memory is proportional to text content, not file size. Images and videos are str
 
 ## i18n
 
-Keys are in `_i18n/LocalStrings_en.properties` and `_i18n/LocalStrings_de.properties`.
+Keys are in `_i18n/LocalStrings_<lang>.properties` for `de`, `en`, `fr`, `it` and `sk`.
+
+**New in 21.1.0:** Spanish (`es`, OO-9823) and Polish (`pl`, OO-9822) translations of all keys.
 
 Pattern: `docx.convert.<level>.<category>.<detail>`
 
@@ -330,6 +336,13 @@ Pattern: `docx.convert.<level>.<category>.<detail>`
 4. Use `result.basePath()` to access extracted media files (in `media/` subdirectory)
 5. Clean up `result.basePath()` when done -- it is a temp directory
 
+### Callers
+
+| Caller | Use |
+|---|---|
+| `org.olat.modules.ceditor.ui.MarkdownImportController` | Word import into the content editor (page), see `org.olat.modules.ceditor` package docs |
+| `org.olat.modules.qpool.ui.NewAiQuestionsImportController` | Word document as source text for AI question generation in the question pool |
+
 ### Spring Context
 
 The service is registered via component-scan in `utilCorecontext.xml`. No additional configuration is required.
@@ -363,7 +376,7 @@ Internal (package-private):
   DocxMetadata (record)             — title, author, keywords, etc.
   DocxFootnoteParser                — footnotes/endnotes → Map<id, text>
   DocxThemeParser                   — theme1.xml → Map<schemeColor, hexRGB>
-  DocxToMarkdownHandler             — Main SAX handler (~2200 LOC)
+  DocxToMarkdownHandler             — Main SAX handler (~2400 LOC)
   DocxMathConverter                 — OOXML math → LaTeX via fmath
   VmlToSvgConverter                 — VML/DrawingML shapes → SVG
   SmartArtRenderer                  — SmartArt correlation + diagrams → SVG

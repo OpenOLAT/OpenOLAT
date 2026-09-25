@@ -103,6 +103,7 @@ tr:hover td { background: #fafafa; }
 hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 @media (max-width: 1100px) { .side-nav { display: none; } .main-content { padding: 24px 16px 40px; } .doc-header { padding: 20px 16px 24px; } .doc-header h1 { font-size: 22px; } }
 @media print { .side-nav { display: none; } .doc-header { display: none; } body { background: white; } .diagram-box, table, pre { box-shadow: none; } }
+  .version-badge { display:inline-block; font-size:10.5px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; color:#135e5f; background:#e6f4f4; border:1px solid #9fd3d4; border-radius:3px; padding:1px 7px; margin-left:8px; vertical-align:middle; } .version-badge.changed { color:#7c4a03; background:#fff4e5; border-color:#f5c98a; }
 </style>
 </head>
 <body>
@@ -116,7 +117,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
       </div>
     </div>
     <nav class="header-nav">
-      <a href="../../../../../../../doc/openolat-architecture.html">Architecture</a>
+      <a href="../../../../../../../../doc/openolat-architecture.html">Architecture</a>
       <span class="sep">|</span>
       <a href="#" class="active">DOCX-to-Markdown</a>
     </nav>
@@ -214,6 +215,9 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
     <span class="typ">String</span> i18nKey, <span class="cmt">// e.g. "docx.convert.warn.image.skipped"</span>
     <span class="typ">String</span>[] args   <span class="cmt">// substitution arguments for {0}, {1}, ...</span>
 ) {
+    <span class="kw">public enum</span> <span class="typ">Level</span> { INFO, WARNING, ERROR }
+    <span class="cmt">/** Convenience constructor for messages without arguments */</span>
+    <span class="kw">public</span> <span class="typ">DocxConversionMessage</span>(<span class="typ">Level</span> level, <span class="typ">String</span> i18nKey);
     <span class="kw">public</span> <span class="typ">String</span> translate(<span class="typ">Translator</span> translator);
 }</code></pre>
 
@@ -336,7 +340,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <rect x="180" y="270" width="500" height="80" rx="10" fill="url(#mainGrad)" stroke="#0d4f52" stroke-width="1.5"/>
   <text x="430" y="296" text-anchor="middle" font-size="12" font-weight="700" fill="white">[6] DocxToMarkdownHandler</text>
   <text x="430" y="314" text-anchor="middle" font-size="9.5" fill="rgba(255,255,255,0.85)">SAX ContentHandler on document.xml (streamed from ZIP)</text>
-  <text x="430" y="330" text-anchor="middle" font-size="9.5" fill="rgba(255,255,255,0.85)">2,100+ LOC &mdash; handles paragraphs, tables, images, math, shapes, lists</text>
+  <text x="430" y="330" text-anchor="middle" font-size="9.5" fill="rgba(255,255,255,0.85)">~2,400 LOC &mdash; handles paragraphs, tables, images, math, shapes, lists</text>
   <text x="430" y="346" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.6)">Uses VmlToSvgConverter + DocxMathConverter for special content</text>
 
   <!-- document.xml streaming arrow (from ZIP directly) -->
@@ -534,6 +538,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><td>Encrypted DOCX</td><td>Detected by OLE2 magic bytes; rejected</td><td><code>docx.convert.error.encrypted</code></td></tr>
   <tr><td>.docm files</td><td>Rejected (macro detection via <code>vbaProject.bin</code>)</td><td><code>docx.convert.error.macro.detected</code></td></tr>
   <tr><td>Images &gt; 10 MB</td><td>Skipped with warning</td><td><code>docx.convert.warn.image.skipped</code></td></tr>
+  <tr><td>Alt text with line breaks</td><td>Whitespace runs in the Word alt text (<code>wp:docPr</code> <code>descr</code>) are collapsed to one space. A CommonMark image label must not contain blank lines.</td><td>-</td></tr>
   <tr><td>Media basename collisions</td><td>Uniquified (e.g. <code>image1.png</code> &rarr; <code>image1-1.png</code>)</td><td>—</td></tr>
   <tr><td>Missing numbering.xml</td><td>Treated as bullet list</td><td><code>docx.convert.warn.numbering.missing</code></td></tr>
   <tr><td>Comments</td><td>Skipped</td><td><code>docx.convert.warn.comments</code></td></tr>
@@ -670,7 +675,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <!-- Stage 6: Main handler -->
   <rect x="30" y="380" width="380" height="55" rx="8" fill="url(#intGrad)" stroke="#7b1fa2" stroke-width="1.5"/>
   <text x="40" y="400" font-size="11" font-weight="700" fill="#4a148c">DocxToMarkdownHandler</text>
-  <text x="40" y="415" font-size="9" fill="#37474f">Main SAX handler (2,100+ LOC)</text>
+  <text x="40" y="415" font-size="9" fill="#37474f">Main SAX handler (~2,400 LOC)</text>
   <text x="40" y="428" font-size="8.5" fill="#546e7a">paragraphs, tables, images, math, shapes, lists, track changes</text>
 
   <!-- Converters -->
@@ -690,10 +695,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <rect x="30" y="460" width="760" height="40" rx="7" fill="#f5f5f5" stroke="#bdbdbd" stroke-width="1"/>
   <text x="40" y="480" font-size="10" font-weight="600" fill="#616161">_i18n/</text>
   <text x="90" y="480" font-size="9" fill="#757575">LocalStrings_en.properties</text>
-  <text x="280" y="480" font-size="9" fill="#757575">LocalStrings_de.properties</text>
-  <text x="460" y="480" font-size="8.5" fill="#9e9e9e">22 message keys: docx.convert.{warn|error|info}.{category}.{detail}</text>
+  <text x="280" y="480" font-size="9" fill="#757575">+ de, es, fr, it, pl, sk</text>
+  <text x="460" y="480" font-size="8.5" fill="#9e9e9e">19 message keys: docx.convert.{warn|error}.{category}.{detail}</text>
 </svg>
-<div class="diagram-caption">17 Java files: 3 public API classes, 5 SAX handlers, 4 utility classes (incl. SmartArtRenderer), 5 records. All internal classes are package-private.</div>
+<div class="diagram-caption">21 Java files: 3 public API classes and 18 package-private classes (see the tables below). All internal classes are package-private.</div>
 </div>
 
 <h3>Public API (3 classes)</h3>
@@ -719,7 +724,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <tr><td><code>DocxMetadata</code></td><td>record</td><td>title, author, keywords, etc. + <code>toYamlFrontMatter()</code></td></tr>
   <tr><td><code>DocxFootnoteParser</code></td><td>SAX handler</td><td>footnotes/endnotes &rarr; <code>Map&lt;id, text&gt;</code></td></tr>
   <tr><td><code>DocxThemeParser</code></td><td>SAX handler</td><td><code>theme1.xml</code> &rarr; <code>Map&lt;schemeColor, hexRGB&gt;</code></td></tr>
-  <tr><td><code>DocxToMarkdownHandler</code></td><td>SAX handler</td><td>Main converter (2,100+ LOC)</td></tr>
+  <tr><td><code>DocxToMarkdownHandler</code></td><td>SAX handler</td><td>Main converter (~2,400 LOC)</td></tr>
   <tr><td><code>DocxMathConverter</code></td><td>utility</td><td>OOXML math &rarr; LaTeX via fmath</td></tr>
   <tr><td><code>VmlToSvgConverter</code></td><td>utility</td><td>VML/DrawingML &rarr; SVG</td></tr>
   <tr><td><code>SmartArtRenderer</code></td><td>utility</td><td>SmartArt correlation + diagram rendering to SVG</td></tr>
@@ -729,7 +734,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
 <!-- ===== I18N ===== -->
 <h2 id="i18n">i18n Messages</h2>
-<p>Keys are in <code>_i18n/LocalStrings_en.properties</code> and <code>_i18n/LocalStrings_de.properties</code>.</p>
+<p>Keys are in <code>_i18n/LocalStrings_&lt;lang&gt;.properties</code> for <code>de</code>, <code>en</code>, <code>fr</code>, <code>it</code> and <code>sk</code>.</p>
+<p><span class="version-badge">New in 21.1.0</span> Spanish (<code>es</code>, OO-9823) and Polish (<code>pl</code>, OO-9822) translations of all keys.</p>
 <p>Pattern: <code>docx.convert.&lt;level&gt;.&lt;category&gt;.&lt;detail&gt;</code></p>
 
 <table>
@@ -789,6 +795,13 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
     <span class="cmt">// Clean up when done</span>
     <span class="typ">FileUtils</span>.deleteDirsAndFiles(result.basePath(), <span class="kw">true</span>, <span class="kw">true</span>);
 }</code></pre>
+
+<h3>Callers</h3>
+<table>
+  <tr><th>Caller</th><th>Use</th></tr>
+  <tr><td><code>org.olat.modules.ceditor.ui.MarkdownImportController</code></td><td>Word import into the content editor (page), see the <code>org.olat.modules.ceditor</code> package docs</td></tr>
+  <tr><td><code>org.olat.modules.qpool.ui.NewAiQuestionsImportController</code></td><td>Word document as source text for AI question generation in the question pool</td></tr>
+</table>
 
 <h3>Spring Context</h3>
 <p>The service is registered via component-scan in <code>utilCorecontext.xml</code>. No additional XML configuration, no <code>@Bean</code> declarations, and no init/destroy lifecycle methods are needed.</p>

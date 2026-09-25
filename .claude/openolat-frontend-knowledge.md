@@ -2,21 +2,26 @@
 
 > Compressed reference for developers working with the OpenOlat CSS/SASS framework and frontend rendering.
 > For full documentation see `doc/openolat-frontend.md` and `doc/openolat-frontend.html`.
+> The md and html references have the same 37 chapters: 13.1 form section, 13.2 search element, 16.1 callout a11y, 24.3 fact sheet, 24.4 sections, 35 info page pattern, 36 accessibility.
+> State: release 21.1.0 (2026-09-25). `**New in 21.1.0:**` marks changes of 21.1.0; changes shipped in 21.0.x have no marker.
 
 ## 1. Technology Stack
 
-- **Bootstrap 3.4.1** (SASS version) — CSS foundation (grid, buttons, forms, navs, modals)
-- **Font Awesome 6** — icons via `o_icon` base class + `o_icon_{name}` or `fa-{name}`
-- **jQuery 3.x** — DOM manipulation, AJAX
-- **Apache Velocity** — server-side HTML templating (`.html` files in `_content/`)
-- **Java ComponentRenderers** (~540 classes) — programmatic HTML generation
-- **Custom SASS** (~100 modules) — OpenOlat-specific styling
-- **Dart Sass >= 1.33** — compilation via `compiletheme.sh`
-- **TinyMCE 6** — rich text editing
-- **FullCalendar 6** — calendar widget
-- **jQuery UI** — datepicker, sortable
-- **Chart.js 4.x** — charts
-- **MathLive** — math input
+- **Bootstrap 3.4.1** (SASS version): CSS foundation (grid, buttons, forms, navs, modals)
+- **Font Awesome 6.7.2**: icons via `o_icon` base class + `o_icon_{name}` or `fa-{name}`
+- **jQuery 3.7.1**: DOM manipulation, AJAX
+- **Apache Velocity**: server-side HTML templating (`.html` files in `_content/`)
+- **Java ComponentRenderers** (~540 classes): programmatic HTML generation
+- **Custom SASS** (~100 modules): OpenOlat-specific styling
+- **Dart Sass >= 1.33**: compilation via `compiletheme.sh`
+- **TinyMCE 6.8.6** (folder `js/tinymce4/`): rich text editing
+- **FullCalendar 6.1.15**: calendar widget
+- **Vanilla JS Datepicker 1.3.4** (`js/datepicker/`): date picker
+- **jQuery UI 1.13.2**: dialog, drag and drop, resize, slider
+- **typeahead.js**: autocompletion (`tt-*`)
+- **D3.js 7.9.0**: charts via jQuery plugins in `js/jquery/openolat/` (no Chart.js)
+- **Leaflet 1.9.4**: maps (room management)
+- **MathLive**: math input
 
 No client-side framework (no React/Angular/Vue). All state lives on the server.
 
@@ -32,7 +37,8 @@ src/main/webapp/static/
       theme.scss                # Entry: license → functions → config → modules → patches
       content.scss              # iFrame content styles
       email.scss                # Email notification styles
-      _config.scss              # ALL variables (~1500 lines, !default)
+      oo-docs.scss              # Icons only → oo-docs.css for the user manual
+      _config.scss              # ALL variables (~2000 lines, !default)
       _functions.scss           # luminance(), contrast(), o-a11y-color()
       _modules.scss             # Import manifest (~100 modules)
       modules/                  # SCSS partials by feature
@@ -57,6 +63,7 @@ Variables with `!default` are only set if not already defined. Custom themes imp
 | `theme.css` | Main application styles (every page) |
 | `content.css` | Learning content in iFrames |
 | `email.css` | Email notification styles (inlined) |
+| `oo-docs.css` | Icon classes + fonts, copied into OpenOLAT-docs |
 
 ### Variable Naming
 - `$o-` prefix = OpenOlat-specific (e.g., `$o-navbar-height`, `$o-tree-link-color`)
@@ -65,18 +72,21 @@ Variables with `!default` are only set if not already defined. Custom themes imp
 ### Key Variable Categories in _config.scss
 | Section | Lines | Examples |
 |---------|-------|---------|
-| Bootstrap overrides | 34-65 | `$btn-default-bg`, `$input-border` |
-| Color system | 67-133 | `$o-labeled-{color}-{variant}-{property}` |
-| Brand colors | 135-155 | `$o-color-info`, `$o-color-warning` |
-| Layout | 252-266 | `$o-main-bg`, `$o-content-bg` |
-| Navbar | 268-326 | `$o-navbar-height`, `$o-navbar-bg` |
-| Toolbar | 359-403 | `$o-toolbar-bg-color`, `$o-toolbar-breadcrumb-*` |
-| Form | 405-424 | `$o-radio-card-*`, `$o-date-*` |
-| Tree | 426-454 | `$o-tree-*`, indentation, padding |
-| Course | 650-730 | `$o-course-*`, assessment status |
-| QTI | 992-1082 | `$o-qti-*`, interaction styles |
-| Content Editor | 935-962 | `$o-ceditor-*` |
-| Email | 1456-1471 | `$o-email-*` |
+| Bootstrap overrides | 34-80 | `$btn-default-bg`, `$btn-default-border`, `$input-border` |
+| Color system | 82-142 | `$o-labeled-{color}-{variant}-{property}` |
+| Brand colors | 150-175 | `$o-color-info`, `$o-color-warning` |
+| Layout | 273-286 | `$o-page-width-max`, `$o-main-*-bg` |
+| Navbar | 289-346 | `$o-navbar-height`, `$o-navbar-bg` |
+| Toolbar | 380-424 | `$o-toolbar-bg-color`, `$o-toolbar-breadcrumb-*` |
+| Form | 427-445 | `$o-radio-card-*`, `$o-date-*` |
+| Tree | 448-475 | `$o-tree-*`, indentation, padding |
+| Course | 677-760 | `$o-course-*`, `$o-lp-*` |
+| Content Editor | 963-1017 | `$o-editor-*`, `$o-ce-padding-*` |
+| QTI | 1021-1115 | `$o-qti-*`, interaction styles |
+| Email | 1488-1503 | `$o-email-*` |
+| Fact sheet | 1873-1885 | `$o-fact-sheet-*`, `$o-fact-*` (**New in 21.1.0**) |
+
+Line numbers as of 21.1.0. Borders: `$btn-default-border` `#6c757d` (buttons, dropdown toggles), `$input-border` `#d0d5dd` (fields). Ghost button text = `$btn-primary-bg`. Section headings: `$o-font-size-section-title` (~18px).
 
 ### Accessibility Functions (_functions.scss)
 ```scss
@@ -99,7 +109,7 @@ o-a11y-color($color, $background, $target:4.5) // Auto-adjust for WCAG 4.5:1
   #o_navbar_wrapper > #o_navbar_container > .o_navbar
     .o_navbar-brand                    // Logo
     .o_navbar_tabs                     // Site tabs (Home, Courses, Groups...)
-    .o_navbar_tools                    // Search, profile, logout
+    ul#o_navbar_tools_permanent        // #o_navbar_imclient, #o_navbar_search_opener, #o_navbar_my_menu (logout inside)
   #o_main_wrapper > #o_main_container
     TooledStackedPanel (.o_with_toolbar .o_with_breadcrumb)  // wraps toolbar + content
       #o_main_toolbar .o_toolbar       // SIBLING of #o_main (breadcrumb + tools)
@@ -140,7 +150,9 @@ Every component: `id="o_c{dispatchID}"`. Used for AJAX DOM replacement.
 
 **Containers:** VelocityContainerRenderer (templates), PanelRenderer, LayeredPanelRenderer (modals)
 
-**Links:** LinkRenderer → `<a id="o_c{id}" onclick="o_XHREvent(...)">` with optional `.btn`, `.o_disabled`
+**Links:** LinkRenderer → `<a id="o_c{id}" onclick="o_XHREvent(...)">` with optional `.btn`, `.o_button_ghost`; disabled: `o_disabled disabled`
+
+**Callout triggers:** `setAriaDialogOpener()` → `role="button" aria-haspopup="dialog" aria-expanded`; focus returns to the trigger on close (`pushdialogfocus`/`popdialogfocus`). **New in 21.1.0:** rolled out to table action columns, table tools, filters and many buttons; focus goes to the first visible element in the callout.
 
 **Form Elements:**
 | Element | DOM |
@@ -150,10 +162,16 @@ Every component: `id="o_c{dispatchID}"`. Used for AJAX DOM replacement.
 | SelectboxElement | `<select class="form-control">` |
 | SingleSelection (radio) | `<div class="radio"><label><input type="radio">` |
 | MultipleSelection | `<div class="checkbox"><label><input type="checkbox">` |
-| DateChooser | `<div class="o_date"><input class="o_date_picker">` |
-| FormToggle | `<div class="o_toggle">` slider |
+| DateChooser | `<div class="o_date"><div class="input-group o_date_picker"><input class="form-control o_date_day datepicker-input">` |
+| FormToggle | `<button role="switch" class="o_button_toggle o_toggle_on">` |
 | FormLink | `<a class="btn btn-default">` |
 | FormSubmit | `<button class="btn btn-primary">` |
+| ObjectSelection | `button.o_expand_button.o_selection_display[aria-haspopup=dialog]` + `button.o_selection_browse_button`; disabled: `disabled o_disabled`; current user first with "(me)" |
+| RelativeDate | `div.o_relative_date.input-group` + read-only input |
+| SearchElement (**New in 21.1.0**) | `div.o_search.o_search_{default,large,typeahead}[role=search] > .input-group > .o_search_input_wrapper > input.o_search_input[role=searchbox]` + `a.o_search_reset` + `a.o_search_button` |
+| FormSection (**New in 21.1.0**) | `fieldset.o_form_section` > `div.o_section_sub_title` (SUB_TITLE) or `legend > h4.o_section_title[.o_section_toggle]` + `div.o_section_content[.collapse]` |
+
+**New in 21.1.0:** label icon `FormItem.setLabelIconCss("o_icon o_icon-fw o_icon_locked")` → `<i aria-hidden="true">` before the label text. Settings page blueprint: GUI demo "Example settings" (`GuiDemoSettingsController`).
 
 **FlexiTable:** Full structure (each section optional):
 ```
@@ -162,7 +180,7 @@ Every component: `id="o_c{dispatchID}"`. Used for AJAX DOM replacement.
   .o_table_filters_row > ul.nav.nav-pills.o_table_filters
     > li > a.btn.btn-default.o_table_filter[.o_filter_active]
       > span (label) + i.o_icon.o_icon-fw.o_icon_caret
-.o_table_toolbar                       // Search (.o_table_search) + tools (.o_table_tools)
+.o_table_toolbar                       // Search (.o_table_search > .o_search, 21.1.0) + tools (.o_table_tools)
 .o_table_batch_buttons                 // Bulk actions (shown when rows selected)
 .o_table_wrapper.o_table_flexi         // Table container
   CLASSIC: .o_scrollable_wrapper > .o_scrollable > table.table > thead/tbody
@@ -171,13 +189,17 @@ Every component: `id="o_c{dispatchID}"`. Used for AJAX DOM replacement.
 ```
 Filter buttons: `FlexiFiltersComponentRenderer` renders `<a class="btn btn-default o_table_filter">`. Active state `o_filter_active` goes on the `<a>`, NOT the `<li>`. Styled via `button-variant()` mixin with `$o-table-filter-color/bg/border` and `$o-table-filter-active-*` variables. Caret icon: `<i class="o_icon o_icon-fw o_icon_caret">`.
 
-View toggle: `.o_sel_table` (classic) / `.o_sel_custom` (card/list). Active has `.active` class.
+View toggle: `.o_sel_table` (classic) / `.o_sel_custom` (card/list). Active has `.active` class. Selected row: `tr.o_row_selected`.
 
-**Tree:** `.o_tree > ul > li > div` → `.o_tree_oc_l{n}` (opener) + `span.o_tree_l{n}.o_tree_link` (node)
+**New in 21.1.0:** `TranslateCellRenderer` → link with `o_icon_language` + term (action `translate`).
 
-**Toolbar:** `.o_toolbar` → `.o_breadcrumb > ol.breadcrumb` + `.o_tools_container > .o_tools.o_tools_{left|center|right|right_edge}` + `.o_tools_segments`
+**Tree:** `.o_tree > ul[role=tree].o_tree_l0 > li[role=treeitem] > div.o_tree_l{n}` → `a.o_tree_oc_l{n}` (opener) + `span.o_tree_link.o_tree_l{n} > a > span.o_tree_item`
 
-**Modal:** `.o_modal_wrapper.o_layer_{n}` → `dialog.modal-dialog` → `.modal-content` → `.modal-header` + `.modal-body` + `.modal-footer`
+**Toolbar:** `.o_toolbar` → `.o_breadcrumb > ol.breadcrumb` + `.o_tools_container > .o_tools.o_tools_{left|center|right|right_edge}` + `.o_tools_segments > li > div.o_segments.btn-group` (selected `a.btn-primary`)
+
+**Modal:** `div.o_layered_panel.o_layer_{n}` → `dialog.dialog.modal.show[aria-modal]` → `.modal-dialog.modal-lg` → `.modal-content` → `.modal-header` + `.modal-body` + `.modal-footer`
+
+**New in 21.1.0:** `FactSheet` → `.o_fact_sheet > h3.o_fact_sheet_title + .o_facts (grid, min 320px) > .o_fact > .o_fact_icon + .o_fact_body (.o_fact_label, .o_fact_value, .o_fact_sub_value)` + `.o_fact_sheet_footer_buttons`. `ComponentList` → `div.o_component_list` (flex, gap 10px). `Sections` → `.o_sections > .o_section > fieldset > legend > h4.o_section_title.o_section_toggle` + `.o_section_content.collapse` (same header as FormSection; one delegated handler in `functions.js`).
 
 **TabbedPane:** `.o_tabbed_pane` → `ul.nav.nav-tabs[role=tablist]` + `.o_tabbed_pane_content[role=tabpanel]`
 
@@ -189,7 +211,7 @@ View toggle: `.o_sel_table` (classic) / `.o_sel_custom` (card/list). Active has 
 | (none) | Bootstrap 3 | `btn`, `form-control`, `table`, `nav-tabs` |
 | `o_` | OpenOlat core | `o_toolbar`, `o_tree`, `o_table_wrapper` |
 | `o_icon_` | Icon classes | `o_icon_delete`, `o_icon_edit` |
-| `o_sel_` | Test selectors | `o_sel_course_list` |
+| `o_sel_` | Test selectors | `o_sel_course_add_member` |
 | `fa-` | Font Awesome | `fa-check`, `fa-times` |
 
 ### Spacing
@@ -221,12 +243,15 @@ View toggle: `.o_sel_table` (classic) / `.o_sel_custom` (card/list). Active has 
 Bootstrap: .btn.btn-default, .btn.btn-primary, .btn.btn-danger, .btn-xs/sm/lg
 OpenOlat:  .btn.o_button_ghost, .btn.o_button_mega, .btn.o_button_primary_light
            .btn.o_button_call_to_action, .btn.o_button_dirty
+           .btn.o_button_ghost.btn-danger (New in 21.1.0)
 Groups:    .o_button_group, .o_button_group_left, .o_button_group_right
+           .o_button_group.compact (New in 21.1.0), .o_btn_group_nowrap.btn-group
+Add-on:    a.btn.input-group-addon in .input-group (button border, field keeps $input-bg)
 ```
 
 ### Mega Buttons
 ```
-ul.o_mega_buttons                      // CSS Grid container (auto-fill, responsive 1-9 cols)
+ul.o_mega_buttons                      // CSS Grid: repeat(auto-fill, minmax(207px, 1fr)), gap 8px
   > li > button.btn.o_button_mega      // 55px height, flex row
     > i.o_icon.o_icon_{name}           // Left icon
     > span                             // Text container
@@ -246,10 +271,11 @@ Used in course element selection screens (e.g., course Planner "Add Element").
 ```
 .o_widgets                             // CSS Grid container (auto-fill, minmax 260px)
   .o_widget                            // Card: border, flex column, min-height
-    .o_widget_header                   // Title
+    .o_widget_header                   // .o_widget_title + .o_widget_icon
     .o_widget_content                  // Content area
+    .o_widget_additional               // Optional footer area
 ```
-Widget types: `o_figure_widget` (number+label), `o_text_widget`, `o_table_widget`. Dashboard: `o_dashboard_widget`.
+Widget content types: `.o_widget_main.o_widget_main_figure` (figure), `.o_widget_main.o_widget_main_text` (text), `.o_widget_main` + `.o_widget_link` (component, e.g. mini table). Dashboard: `o_dashboard_widget`.
 
 ### Scrolling
 ```
@@ -302,7 +328,8 @@ Variables: `$o-labeled-{color}-{variant}-{property}` (color/bg-color/border-colo
 | `_tree.scss` | Menu tree, indentation levels (0-11), DnD |
 | `_dialog.scss` | Modal dialogs |
 | `_wizard.scss` | Multi-step wizard |
-| `_card.scss` | Card layouts |
+| `_card.scss` | Card layouts, dashboard widgets, fact sheet (**New in 21.1.0**) |
+| `_search.scss` | `SearchElement` styles (**New in 21.1.0:** rewritten) |
 | `_bento.scss` | Bento grid |
 | `_autocomplete.scss` | Auto-complete inputs |
 
@@ -317,6 +344,9 @@ Variables: `$o-labeled-{color}-{variant}-{property}` (color/bg-color/border-colo
 | `_portfolio_v2.scss` | Portfolio entries, binders |
 | `_repository.scss` | Course catalog |
 | `_dmz.scss` | Login/registration page |
+| `_room_management.scss` | Buildings, rooms, scheduling |
+| `_ai_pulse.scss` / `_ai_feedback.scss` | AI activity indicator (`o_ai_pulse`), AI correction marks |
+| `_selectus.scss` | Selectus module |
 
 ## 8. Key Mixins
 
@@ -341,7 +371,9 @@ Bootstrap 3 breakpoints:
 | md (desktop) | < 1200px |
 | lg (large) | >= 1200px |
 
-Responsive behaviors: navbar → hamburger, left column → offcanvas drawer, tables → horizontal scroll with shadow, toolbar text hides, forms go full-width, card column count reduces.
+Responsive behaviors: navbar → hamburger, left column → offcanvas drawer, tables → horizontal scroll with shadow, toolbar text hides, forms go full-width, card column count reduces. `o_form_two_cols` is 2 columns only from 991px. **New in 21.1.0:** section sub-title rule moves under the title on xs; fact sheet columns via `auto-fill`; table quick search 170px below 540px.
+
+AJAX form data: `o_ffXHREvent()` sends `{name, value}` pairs (all values of checkbox groups).
 
 ## 10. Key CSS IDs
 
@@ -356,6 +388,19 @@ Responsive behaviors: navbar → hamburger, left column → offcanvas drawer, ta
 | `#o_main_right` | Right column (sidebar, optional) |
 | `#o_footer_wrapper` | Footer |
 
-## 11. Print Styles
+## 11. Accessibility (chapter 36 of the reference)
 
-`_print.scss` (`@media print`): hides navbar/footer/toolbar/tree, white backgrounds, avoids page breaks in tables/forms, print header via `#o_print_brand`.
+- Focus: `o_ffSetFocus()` / `o_ffSetFocusArray()` after AJAX (only inputs, selects, textareas, buttons and `.btn` links with `o_can_have_focus`; skipped while an open `<dialog>` has focus); `o_waitForVisibleThenFocusDialog()` for new dialogs (**New in 21.1.0:** skips clipped elements); `pushdialogfocus`/`popdialogfocus` focus return; skip link `a.sr-only[href="#o_main_container"]`.
+- ARIA: `dialog.modal[aria-modal][aria-labelledby=o_md_*]`; dialog opener `role=button aria-haspopup=dialog aria-expanded`; disclosure `role=button aria-expanded aria-controls` + `collapse`; FormToggle `role=switch`; scopes `role=checkbox`; tabs/tree roles; search `role=search`/`searchbox`.
+- Live regions: `role=status` (+ `aria-live=polite`) on AI overlays, `#o_dashboard_edit_live`; `role=alert` on the AI correction error. Gap: `#o_messages` info boxes are not announced.
+- Keyboard: `triggerClick(event, enter, space)`; Escape → `o_doEscapeDispatch()` closes the top layer.
+- Theme: `o-a11y-color()`, `.sr-only` forced black on white, `.dropdown-toggle:focus-visible` (tab-focus), `prefers-reduced-motion` in 10 modules.
+- Known gaps: object selection aria-label with raw HTML, `label for` mismatch, focus lost after callout close; colour picker `aria-expanded='true'` when closed.
+
+## 12. Info Page Pattern (**New in 21.1.0**, chapter 35)
+
+`.o_info_page > .o_info_page_column_aside (thumbnail, get_started, my_course, events) + .o_info_page_column_main (header, facts, sections, licence, rating)`, items `o_info_page_item`. Mobile: one column, wrappers `display: contents`, `order` 1-10. sm: `1fr auto`. md+: `2fr 1fr`. Print: one column + `.o_info_page_qrcode`.
+
+## 13. Print Styles
+
+`_print.scss` (`@media print`): hides navbar/footer/toolbar/tree, white backgrounds, avoids page breaks in tables/forms (`o_print_break_avoid/before/after`), print header via `#o_print_brand`. **New in 21.1.0:** info page print layout (`.o_info_page`, one column, QR code `.o_info_page_qrcode`).

@@ -25,6 +25,8 @@
       <a href="../openolat-frontend.html">Frontend</a>
       <span class="sep">|</span>
       <a href="index.html" class="active">Component Library</a>
+      <span class="sep">|</span>
+      <a href="../i18n-translation-reference.md">Translation Reference</a>
     </nav>
   </div>
   <div class="header-rule"></div>
@@ -53,6 +55,8 @@
   <a href="feedback.html">Feedback &amp; Status</a>
   <a href="layout.html">Layout &amp; Containers</a>
   <a href="data-display.html">Data Display</a>
+  <a href="ai-ui.html">AI UI</a>
+  <a href="room-management.html">Room Management</a>
 </nav>
 
 <main class="cl-main">
@@ -277,7 +281,7 @@
       <h3>Horizontal Progress Bar</h3>
       <p>Linear progress indicator with percentage, actual/max values, and optional label. Can align label left, right, or inside the bar.</p>
       <div class="cl-classes">
-        <code>o_progress</code> <code>o_progress_bar</code> <code>o_progress_info</code> <code>o_progress_label</code>
+        <code>o_progress</code> <code>progress</code> <code>progress-bar</code> <code>o_progress_info</code> <code>o_progress_label</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -337,7 +341,7 @@
       <h3>Radial / Pie Progress</h3>
       <p>Circular progress indicators for dashboards. Available as radial (donut) and pie chart styles. Rendered via SVG.</p>
       <div class="cl-classes">
-        <code>radial-progress</code> <code>o_progress_radial</code>
+        <code>radial-progress</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -622,8 +626,9 @@
     <div class="cl-component-header">
       <h3>Callout Window</h3>
       <p>Lightweight popover/callout that appears next to a trigger element. Uses Bootstrap popover styling with OpenOlat wrapper.</p>
+      <p>Rendered by <code>CloseableCalloutWindowController</code> into <code>div.o_callout_content</code>. The first focusable element gets the focus when the callout opens. The close control for screen readers is a <code>button.close</code> in <code>div.sr-only</code>. <span class="version-badge changed">Changed in 21.1.0</span> The focus goes to the first <em>visible</em> element (before 21.1.0 it could land on the hidden close control). See "Callout Trigger (Dialog Opener)" on the Buttons &amp; Links page for the trigger ARIA attributes.</p>
       <div class="cl-classes">
-        <code>popover</code> <code>o_callout</code> <code>o_callout_content</code>
+        <code>popover</code> <code>o_callout_content</code>
       </div>
     </div>
     <div class="cl-component-body">

@@ -101,6 +101,7 @@ tr:hover td { background: #fafafa; }
 .diagram-box svg { max-width: 100%; height: auto; }
 .diagram-caption { font-size: 12px; color: #64748b; margin-top: 10px; font-style: italic; }
 hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+.version-badge { display:inline-block; font-size:10.5px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; color:#135e5f; background:#e6f4f4; border:1px solid #9fd3d4; border-radius:3px; padding:1px 7px; margin-left:8px; vertical-align:middle; } .version-badge.changed { color:#7c4a03; background:#fff4e5; border-color:#f5c98a; }
 @media (max-width: 1100px) { .side-nav { display: none; } .main-content { padding: 24px 16px 40px; } .doc-header { padding: 20px 16px 24px; } .doc-header h1 { font-size: 22px; } }
 @media print { .side-nav { display: none; } .doc-header { display: none; } body { background: white; } .diagram-box, table, pre { box-shadow: none; } }
 </style>
@@ -128,7 +129,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
     <span>Java 17+</span>
     <span>Jakarta EE</span>
     <span>OpenOlat Module</span>
-    <span>~201 Java Files</span>
+    <span>~256 Java Files</span>
   </div>
 </header>
 
@@ -137,113 +138,91 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <div class="nav-title">Content Editor</div>
   <div class="nav-group">
     <div class="nav-group-label">Overview</div>
-    <a href="#overview">Overview</a>
+    <a href="#1-overview-and-purpose">1. Overview and Purpose</a>
+    <a href="#2-core-domain-model">2. Core Domain Model</a>
+    <a href="#3-jpa-persistence-model">3. JPA Persistence Model</a>
+    <a href="#4-settings-serialization-contenteditorxstream">4. Settings Serialization (ContentEditorXStream)</a>
   </div>
   <div class="nav-group">
-    <div class="nav-group-label">Core Model</div>
-    <a href="#domain-model">Domain Model</a>
-    <a href="#persistence">Persistence</a>
-    <a href="#settings">Settings</a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-group-label">Patterns</div>
-    <a href="#handler-pattern">Handler Pattern</a>
-    <a href="#provider-pattern">Provider Pattern</a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-group-label">UI Framework</div>
-    <a href="#rendering-pipeline">Rendering Pipeline</a>
-    <a href="#event-system">Event System</a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-group-label">Infrastructure</div>
-    <a href="#service-layer">Service Layer</a>
-    <a href="#container-system">Container System</a>
+    <div class="nav-group-label">Architecture</div>
+    <a href="#5-handler-pattern">5. Handler Pattern</a>
+    <a href="#6-provider-pattern-pageeditorprovider-spi">6. Provider Pattern (PageEditorProvider SPI)</a>
+    <a href="#7-ui-architecture-and-rendering-pipeline">7. UI Architecture and Rendering Pipeline</a>
+    <a href="#8-event-system">8. Event System</a>
+    <a href="#9-service-layer-and-persistence">9. Service Layer and Persistence</a>
+    <a href="#10-container-and-layout-system">10. Container and Layout System</a>
   </div>
   <div class="nav-group">
     <div class="nav-group-label">Reference</div>
-    <a href="#element-types">Element Types</a>
-    <a href="#new-element-guide">New Element Guide</a>
-    <a href="#client-side">Client-Side</a>
-    <a href="#configuration">Configuration</a>
+    <a href="#11-element-type-reference">11. Element Type Reference</a>
+    <a href="#12-adding-a-new-element-type-step-by-step">12. Adding a New Element Type (Step-by-Step)</a>
+    <a href="#13-client-side-integration">13. Client-Side Integration</a>
+    <a href="#14-configuration">14. Configuration</a>
   </div>
   <div class="nav-group">
-    <div class="nav-group-label">Import</div>
-    <a href="#markdown-import">Markdown &amp; Word Import</a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-group-label">AI Features</div>
-    <a href="#ai-question-generation">AI Question Generation</a>
+    <div class="nav-group-label">Import &amp; AI</div>
+    <a href="#15-markdown-and-word-import">15. Markdown and Word Import</a>
+    <a href="#16-ai-question-generation-on-import">16. AI Question Generation on Import</a>
+    <a href="#quick-reference-file-locations">Quick Reference: File Locations</a>
   </div>
 </nav>
 
 <main class="main-content">
 
-<!-- ===== OVERVIEW ===== -->
-<h2 id="overview">Overview</h2>
-<p>The <code>ceditor</code> package implements a <strong>server-centric, component-based content editor</strong> for OpenOlat. Pages consist of ordered <code>PagePart</code> elements stored via single-table JPA inheritance. Each element type is managed by a <code>PageElementHandler</code> that provides view, editor, and inspector controllers.</p>
-
-<h3>Usage Contexts</h3>
+<div class="info"><strong>Package:</strong> <code>org.olat.modules.ceditor</code><br>
+<strong>Source root:</strong> <code>src/main/java/org/olat/modules/ceditor/</code><br>
+<strong>Purpose:</strong> Provides the block-based content editor used across OpenOlat for portfolio pages and evaluation forms. Authors compose pages by adding, arranging, and configuring typed content elements (titles, paragraphs, code blocks, images, containers, etc.) through an in-browser WYSIWYG editor.</div>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-overview-and-purpose">Overview and Purpose</a></li>
+<li><a href="#2-core-domain-model">Core Domain Model</a></li>
+<li><a href="#3-jpa-persistence-model">JPA Persistence Model</a></li>
+<li><a href="#4-settings-serialization-contenteditorxstream">Settings Serialization (ContentEditorXStream)</a></li>
+<li><a href="#5-handler-pattern">Handler Pattern</a></li>
+<li><a href="#6-provider-pattern-pageeditorprovider-spi">Provider Pattern (PageEditorProvider SPI)</a></li>
+<li><a href="#7-ui-architecture-and-rendering-pipeline">UI Architecture and Rendering Pipeline</a></li>
+<li><a href="#8-event-system">Event System</a></li>
+<li><a href="#9-service-layer-and-persistence">Service Layer and Persistence</a></li>
+<li><a href="#10-container-and-layout-system">Container and Layout System</a></li>
+<li><a href="#11-element-type-reference">Element Type Reference</a></li>
+<li><a href="#12-adding-a-new-element-type-step-by-step">Adding a New Element Type (Step-by-Step)</a></li>
+<li><a href="#13-client-side-integration">Client-Side Integration</a></li>
+<li><a href="#14-configuration">Configuration</a></li>
+<li><a href="#15-markdown-and-word-import">Markdown and Word Import</a></li>
+<li><a href="#16-ai-question-generation-on-import">AI Question Generation on Import</a></li>
+</ol>
+<hr />
+<h2 id="1-overview-and-purpose">1. Overview and Purpose</h2>
+<p>The <code>ceditor</code> package implements a <strong>server-centric block-based content editor</strong>. Every page is a flat, ordered list of <strong>PagePart</strong> rows in a single database table. The editor renders each part as a visual block that can be edited inline, rearranged via drag-and-drop, configured through an inspector panel, and nested inside layout containers.</p>
+<h3 id="key-design-principles">Key design principles</h3>
 <ul>
-  <li><strong>Portfolio pages</strong> &mdash; via <code>PageRunController</code> in <code>org.olat.modules.portfolio.ui</code></li>
-  <li><strong>Evaluation forms</strong> &mdash; via <code>EvaluationFormEditorController</code> in <code>org.olat.modules.forms.ui</code></li>
+<li><strong>Server-side state:</strong> All editing state lives on the server. The browser receives HTML fragments via AJAX. There is no client-side framework; drag-and-drop uses the lightweight <code>dragula.js</code> library.</li>
+<li><strong>Handler/Provider SPI:</strong> New element types are introduced by implementing a <code>PageElementHandler</code>. The embedding context (portfolio, evaluation form) provides a <code>PageEditorProvider</code> that controls which handlers are available and how elements are persisted.</li>
+<li><strong>Single-table inheritance:</strong> All concrete page parts are stored in one database table (<code>o_ce_page_part</code>) using JPA single-table inheritance with a discriminator column.</li>
+<li><strong>Dual storage columns:</strong> Each part has a <code>content</code> column for primary data (HTML text, structured XML) and a <code>layoutOptions</code> column for XStream-serialized settings objects.</li>
+<li><strong>Three-part UI per element:</strong> Each element in edit mode has up to three components -- a view part (read-only rendering), an editor part (inline editing), and an inspector part (side-panel settings).</li>
 </ul>
-
-<h3>Package Structure</h3>
-<table>
-  <tr><th>Directory</th><th>Files</th><th>Purpose</th></tr>
-  <tr><td><code>ceditor/</code> (root)</td><td>~39</td><td>Core interfaces, enums, markers</td></tr>
-  <tr><td><code>handler/</code></td><td>12</td><td>PageElementHandler implementations</td></tr>
-  <tr><td><code>manager/</code></td><td>23</td><td>DAOs, services, file storage, XStream, markdown import</td></tr>
-  <tr><td><code>model/</code></td><td>~49</td><td>POJOs, settings, value objects</td></tr>
-  <tr><td><code>model/jpa/</code></td><td>24</td><td>JPA entity classes</td></tr>
-  <tr><td><code>ui/</code></td><td>~52</td><td>Controllers, run components, factories</td></tr>
-  <tr><td><code>ui/component/</code></td><td>16</td><td>Custom components and renderers</td></tr>
-  <tr><td><code>ui/event/</code></td><td>29</td><td>Event classes for AJAX communication</td></tr>
-</table>
-
-<div class="aside"><strong>Key Principle:</strong> All state lives on the server. The browser receives HTML fragments via AJAX. There is no client-side framework &mdash; drag-and-drop uses the lightweight <code>dragula.js</code> library.</div>
-
-<!-- ===== DOMAIN MODEL ===== -->
-<h2 id="domain-model">Domain Model</h2>
-
-<p>The core domain is built on a small set of interfaces.</p>
-
-<h3>PageElement (Base Interface)</h3>
-<pre><code><span class="kw">public interface</span> <span class="typ">PageElement</span> {
-    <span class="typ">String</span> <span class="kw">getId</span>();
-    <span class="typ">String</span> <span class="kw">getType</span>();
-}</code></pre>
-<p>Minimal contract &mdash; every element has an ID and a type string (e.g. <code>"htitle"</code>, <code>"htmlparagraph"</code>, <code>"container"</code>).</p>
-
-<h3>PagePart (Persistent Element)</h3>
-<pre><code><span class="kw">public interface</span> <span class="typ">PagePart</span> <span class="kw">extends</span> <span class="typ">PageElement</span> {
-    <span class="typ">Long</span>     getKey();
-    <span class="typ">String</span>   getContent();
-    <span class="kw">void</span>     setContent(<span class="typ">String</span> content);
-    <span class="typ">String</span>   getLayoutOptions();
-    <span class="kw">void</span>     setLayoutOptions(<span class="typ">String</span> options);
-    <span class="typ">String</span>   getStoragePath();
-    <span class="kw">void</span>     setStoragePath(<span class="typ">String</span> storagePath);
-    <span class="typ">Flow</span>     getPartFlow();
-    <span class="kw">void</span>     setPartFlow(<span class="typ">Flow</span> flow);
-    <span class="typ">PagePart</span> copy();
-    <span class="kw">boolean</span>  afterCopy(<span class="typ">PagePart</span> oldPart);
-    <span class="kw">void</span>     beforeDelete();
-}</code></pre>
-
-<h3>RenderingHints</h3>
-<pre><code><span class="kw">public interface</span> <span class="typ">RenderingHints</span> {
-    <span class="kw">boolean</span> isToPdf();
-    <span class="kw">boolean</span> isOnePage();
-    <span class="kw">boolean</span> isExtendedMetadata();
-    <span class="kw">boolean</span> isEditable();
-}</code></pre>
-
-<h3>PageElementCategory</h3>
-<p>Enum: <code>text</code>, <code>questionType</code>, <code>organisational</code>, <code>media</code>, <code>knowledge</code>, <code>other</code>, <code>content</code>, <code>layout</code>.</p>
-
-<!-- DIAGRAM 1: Class Hierarchy -->
+<h3 id="package-structure">Package structure</h3>
+<pre><code>ceditor/
+  *.java                    # Core interfaces and enums (~39 files)
+  handler/                  # PageElementHandler implementations (12 files)
+  manager/                  # Service layer, DAO, file storage, markdown import (23 files)
+  model/                    # Domain model interfaces and value objects (~49 files)
+  model/jpa/                # JPA entity classes (24 files)
+  ui/                       # Controllers, run components (~52 files)
+  ui/component/             # Custom UI components and renderers (16 files)
+  ui/event/                 # Event classes (29 files)
+</code></pre>
+<p>Templates (<code>*.html</code> Velocity files) live in <code>ui/_content/</code> subdirectories. i18n files (<code>LocalStrings_XX.properties</code>) live in <code>ui/_i18n/</code> subdirectories.</p>
+<hr />
+<h2 id="2-core-domain-model">2. Core Domain Model</h2>
+<h3 id="interface-hierarchy">Interface hierarchy</h3>
+<pre><code>PageElement                          # Minimal identity: getId(), getType()
+  +-- PagePart                       # Persistable part with content, layout, storage
+        +-- [model interfaces]       # TitleElement, HTMLElement, ContainerElement, ...
+              +-- [JPA entities]     # TitlePart, ParagraphPart, ContainerPart, ...
+</code></pre>
 <div class="diagram-box">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 420" width="750" height="420">
   <!-- PageElement -->
@@ -312,64 +291,204 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 <div class="diagram-caption">Figure 1: Core interface hierarchy &mdash; PageElement, PagePart, and PageElementHandler with mixin interfaces</div>
 </div>
 
-<!-- ===== PERSISTENCE ===== -->
-<h2 id="persistence">Persistence</h2>
+<h3 id="pageelement">PageElement</h3>
+<p>The root interface. Every piece of content on a page implements this.</p>
+<pre><code><span class="cmt">// File: PageElement.java</span>
+<span class="kw">public</span> <span class="kw">interface</span> <span class="typ">PageElement</span> {
+    <span class="kw">public</span> <span class="typ">String</span> getId();    <span class="cmt">// Unique identifier (typically the DB key as string)</span>
+    <span class="kw">public</span> <span class="typ">String</span> getType();  <span class="cmt">// Type discriminator, e.g. "htitle", "htmlparagraph", "container"</span>
+}</code></pre>
+<h3 id="pagepart">PagePart</h3>
+<p>Extends <code>PageElement</code> with persistence, content storage, and lifecycle hooks.</p>
+<pre><code><span class="cmt">// File: PagePart.java</span>
+<span class="kw">public</span> <span class="kw">interface</span> <span class="typ">PagePart</span> <span class="kw">extends</span> <span class="typ">PageElement</span> {
+    <span class="typ">Long</span> getKey();                          <span class="cmt">// JPA primary key</span>
 
-<h3>Database Tables</h3>
-<table>
-  <tr><th>Table</th><th>Entity</th><th>Purpose</th></tr>
-  <tr><td><code>o_ce_page</code></td><td><code>PageImpl</code></td><td>Page metadata (title, summary, status, preview image)</td></tr>
-  <tr><td><code>o_ce_page_body</code></td><td><code>PageBodyImpl</code></td><td>Content container (holds ordered part list, usage count)</td></tr>
-  <tr><td><code>o_ce_page_part</code></td><td><code>AbstractPart</code></td><td>All page parts (single-table inheritance)</td></tr>
-  <tr><td><code>o_ce_page_reference</code></td><td><code>PageReferenceImpl</code></td><td>External references to RepositoryEntry</td></tr>
-  <tr><td><code>o_ce_audit_log</code></td><td><code>ContentAuditLogImpl</code></td><td>Change tracking / audit trail</td></tr>
-  <tr><td><code>o_pf_category</code></td><td><code>CategoryImpl</code></td><td>Category definitions</td></tr>
-</table>
+    <span class="typ">String</span> getContent();                    <span class="cmt">// Primary content (HTML, XML, etc.)</span>
+    <span class="kw">void</span> setContent(<span class="typ">String</span> content);
 
-<h3>AbstractPart &mdash; Single-Table Inheritance</h3>
+    <span class="typ">String</span> getLayoutOptions();              <span class="cmt">// XStream XML settings blob</span>
+    <span class="kw">void</span> setLayoutOptions(<span class="typ">String</span> options);
+
+    <span class="typ">String</span> getStoragePath();                <span class="cmt">// VFS sub-path for binary data</span>
+    <span class="kw">void</span> setStoragePath(<span class="typ">String</span> storagePath);
+
+    <span class="typ">Flow</span> getPartFlow();                     <span class="cmt">// block or inline rendering</span>
+    <span class="kw">void</span> setPartFlow(<span class="typ">Flow</span> flow);
+
+    <span class="typ">PagePart</span> copy();                        <span class="cmt">// Shallow copy for cloning</span>
+    <span class="kw">boolean</span> afterCopy(<span class="typ">PagePart</span> oldPart);    <span class="cmt">// Post-copy hook (e.g., copy media references)</span>
+    <span class="kw">void</span> beforeDelete();                    <span class="cmt">// Pre-deletion cleanup hook</span>
+}</code></pre>
+<h3 id="flow">Flow</h3>
+<pre><code><span class="kw">public</span> <span class="kw">enum</span> <span class="typ">Flow</span> {
+    block,   <span class="cmt">// rendered like a &lt;div&gt;</span>
+    inline   <span class="cmt">// rendered like a &lt;span&gt;</span>
+}</code></pre>
+<h3 id="renderinghints">RenderingHints</h3>
+<p>Passed to handlers to control rendering behavior.</p>
+<pre><code><span class="kw">public</span> <span class="kw">interface</span> <span class="typ">RenderingHints</span> {
+    <span class="kw">public</span> <span class="kw">boolean</span> isToPdf();             <span class="cmt">// Rendering for PDF export</span>
+    <span class="kw">public</span> <span class="kw">boolean</span> isOnePage();           <span class="cmt">// Single-page mode</span>
+    <span class="kw">public</span> <span class="kw">boolean</span> isExtendedMetadata();  <span class="cmt">// Show extended metadata</span>
+    <span class="kw">public</span> <span class="kw">boolean</span> isEditable();          <span class="cmt">// Editor is active (show placeholders etc.)</span>
+}</code></pre>
+<p>The standard implementation is <code>StandardMediaRenderingHints</code>, which defaults <code>isToPdf()</code>, <code>isOnePage()</code>, and <code>isExtendedMetadata()</code> to <code>false</code>.</p>
+<h3 id="pageelementcategory">PageElementCategory</h3>
+<p>Categorizes element types in the "add element" dialog.</p>
+<pre><code><span class="kw">public</span> <span class="kw">enum</span> <span class="typ">PageElementCategory</span> {
+    text(<span class="str">"category.text"</span>),
+    questionType(<span class="str">"category.question.type"</span>),
+    organisational(<span class="str">"category.organisational"</span>),
+    media(<span class="str">"category.media"</span>),
+    knowledge(<span class="str">"category.knowledge"</span>),
+    other(<span class="str">"category.other"</span>),
+    content(<span class="str">"category.content"</span>),
+    layout(<span class="str">"category.layout"</span>);
+}</code></pre>
+<h3 id="page-and-pagebody">Page and PageBody</h3>
+<p>A <code>Page</code> represents a content page with metadata (title, summary, status, poster image). It owns a <code>PageBody</code>, which in turn owns an ordered list of <code>PagePart</code> instances.</p>
+<pre><code>Page (o_ce_page)
+  |-- title, summary, status, editable, version
+  |-- FK -&gt; PageBody (o_ce_page_body)
+  |-- FK -&gt; Group (base group for permissions)
+  |-- FK -&gt; Section (optional portfolio section)
+
+PageBody (o_ce_page_body)
+  |-- usage count, synthetic status
+  |-- @OneToMany -&gt; List&lt;PagePart&gt; (ordered by `pos` column, orphanRemoval=true)
+</code></pre>
+<hr />
+<h2 id="3-jpa-persistence-model">3. JPA Persistence Model</h2>
+<h3 id="table-o_ce_page_part-single-table-inheritance">Table: <code>o_ce_page_part</code> (Single-table inheritance)</h3>
+<p>All page parts share one table. The JPA discriminator column selects the concrete subclass.</p>
+<p><strong>AbstractPart</strong> (<code>model/jpa/AbstractPart.java</code>):</p>
 <pre><code><span class="ann">@Entity</span>(name=<span class="str">"cepagepart"</span>)
 <span class="ann">@Table</span>(name=<span class="str">"o_ce_page_part"</span>)
 <span class="ann">@DiscriminatorColumn</span>
-<span class="kw">public abstract class</span> <span class="typ">AbstractPart</span> <span class="kw">implements</span> <span class="typ">PagePart</span> {
-    <span class="ann">@Id</span> <span class="ann">@GeneratedValue</span>(strategy = IDENTITY)
+<span class="kw">public</span> abstract <span class="kw">class</span> <span class="typ">AbstractPart</span> <span class="kw">implements</span> <span class="typ">Persistable</span>, <span class="typ">ModifiedInfo</span>, <span class="typ">CreateInfo</span>, <span class="typ">PagePart</span> {
+    <span class="ann">@Id</span> <span class="ann">@GeneratedValue</span>(strategy = <span class="typ">GenerationType</span>.IDENTITY)
     <span class="kw">private</span> <span class="typ">Long</span> key;
 
-    <span class="ann">@Column</span>(name=<span class="str">"p_content"</span>)    <span class="cmt">// HTML or structured data</span>
+    <span class="kw">private</span> <span class="typ">Date</span> creationDate;
+    <span class="kw">private</span> <span class="typ">Date</span> lastModified;
+
+    <span class="ann">@Column</span>(name=<span class="str">"pos"</span>, insertable=<span class="kw">false</span>, updatable=<span class="kw">false</span>)  <span class="cmt">// read-only order column</span>
+    <span class="kw">private</span> long pos;
+
+    <span class="ann">@Column</span>(name=<span class="str">"p_content"</span>)       <span class="cmt">// primary content</span>
     <span class="kw">private</span> <span class="typ">String</span> content;
 
-    <span class="ann">@Column</span>(name=<span class="str">"p_layout_options"</span>) <span class="cmt">// XStream XML settings</span>
+    <span class="ann">@Column</span>(name=<span class="str">"p_flow"</span>)          <span class="cmt">// "block" or "inline"</span>
+    <span class="kw">private</span> <span class="typ">String</span> flow;
+
+    <span class="ann">@Column</span>(name=<span class="str">"p_layout_options"</span>) <span class="cmt">// XStream XML for settings</span>
     <span class="kw">private</span> <span class="typ">String</span> layoutOptions;
 
-    <span class="ann">@Column</span>(name=<span class="str">"pos"</span>, updatable=<span class="kw">false</span>) <span class="cmt">// ordering (read-only)</span>
-    <span class="kw">private</span> <span class="kw">long</span> pos;
+    <span class="ann">@Column</span>(name=<span class="str">"p_storage_path"</span>)   <span class="cmt">// VFS sub-path</span>
+    <span class="kw">private</span> <span class="typ">String</span> storagePath;
 
-    <span class="ann">@ManyToOne</span>(targetEntity=<span class="typ">PageBodyImpl</span>.class)
+    <span class="ann">@ManyToOne</span>(fetch=<span class="typ">FetchType</span>.LAZY)
     <span class="ann">@JoinColumn</span>(name=<span class="str">"fk_page_body_id"</span>)
     <span class="kw">private</span> <span class="typ">PageBody</span> body;
 }</code></pre>
-
-<h3>Concrete Part Entities (14 types)</h3>
+<h3 id="concrete-part-entities">Concrete part entities</h3>
 <table>
-  <tr><th>Entity Name</th><th>Type String</th><th>Discriminator</th></tr>
-  <tr><td><code>TitlePart</code></td><td><code>"htitle"</code></td><td>cetitlepart</td></tr>
-  <tr><td><code>ParagraphPart</code></td><td><code>"htmlparagraph"</code></td><td>ceparagraphpart</td></tr>
-  <tr><td><code>HTMLPart</code></td><td><code>"htmlraw"</code></td><td>cehtmlpart</td></tr>
-  <tr><td><code>SpacerPart</code></td><td><code>"hr"</code></td><td>ceseparatorpart</td></tr>
-  <tr><td><code>ContainerPart</code></td><td><code>"container"</code></td><td>cecontainerpart</td></tr>
-  <tr><td><code>TablePart</code></td><td><code>"table"</code></td><td>cetablepart</td></tr>
-  <tr><td><code>MediaPart</code></td><td>dynamic</td><td>cemediapart</td></tr>
-  <tr><td><code>GalleryPart</code></td><td><code>"gallery"</code></td><td>cegallerypart</td></tr>
-  <tr><td><code>ImageComparisonPart</code></td><td><code>"imagecomparison"</code></td><td>ceimagecomparisonpart</td></tr>
-  <tr><td><code>CodePart</code></td><td><code>"code"</code></td><td>cecodepart</td></tr>
-  <tr><td><code>MathPart</code></td><td><code>"math"</code></td><td>cemathpart</td></tr>
-  <tr><td><code>QuizPart</code></td><td><code>"quiz"</code></td><td>cequizpart</td></tr>
-  <tr><td><code>EvaluationFormPart</code></td><td><code>"evaluationform"</code></td><td>ceformpart</td></tr>
-  <tr><td><code>TocPart</code></td><td><code>&quot;toc&quot;</code></td><td>cetocpart</td></tr>
+<thead>
+<tr>
+<th>Entity / Discriminator</th>
+<th>Type String</th>
+<th>JPA Entity Name</th>
+<th>Model Interface</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TitlePart</code></td>
+<td><code>"htitle"</code></td>
+<td><code>cetitlepart</code></td>
+<td><code>TitleElement</code></td>
+</tr>
+<tr>
+<td><code>ParagraphPart</code></td>
+<td><code>"htmlparagraph"</code></td>
+<td><code>ceparagraphpart</code></td>
+<td><code>HTMLElement</code></td>
+</tr>
+<tr>
+<td><code>HTMLPart</code></td>
+<td><code>"htmlraw"</code></td>
+<td><code>cehtmlpart</code></td>
+<td><code>HTMLRawElement</code></td>
+</tr>
+<tr>
+<td><code>SpacerPart</code></td>
+<td><code>"hr"</code></td>
+<td><code>ceseparatorpart</code></td>
+<td>(none, extends AbstractPart directly)</td>
+</tr>
+<tr>
+<td><code>ContainerPart</code></td>
+<td><code>"container"</code></td>
+<td><code>cecontainerpart</code></td>
+<td><code>ContainerElement</code></td>
+</tr>
+<tr>
+<td><code>TablePart</code></td>
+<td><code>"table"</code></td>
+<td><code>cetablepart</code></td>
+<td><code>TableElement</code></td>
+</tr>
+<tr>
+<td><code>MediaPart</code></td>
+<td>(dynamic from media)</td>
+<td><code>cemediapart</code></td>
+<td><code>ImageElement</code></td>
+</tr>
+<tr>
+<td><code>GalleryPart</code></td>
+<td><code>"gallery"</code></td>
+<td><code>cegallerypart</code></td>
+<td><code>GalleryElement</code></td>
+</tr>
+<tr>
+<td><code>ImageComparisonPart</code></td>
+<td><code>"imagecomparison"</code></td>
+<td><code>ceimagecomparisonpart</code></td>
+<td><code>ImageComparisonElement</code></td>
+</tr>
+<tr>
+<td><code>CodePart</code></td>
+<td><code>"code"</code></td>
+<td><code>cecodepart</code></td>
+<td><code>CodeElement</code></td>
+</tr>
+<tr>
+<td><code>MathPart</code></td>
+<td><code>"math"</code></td>
+<td><code>cemathpart</code></td>
+<td><code>MathElement</code></td>
+</tr>
+<tr>
+<td><code>QuizPart</code></td>
+<td><code>"quiz"</code></td>
+<td><code>cequizpart</code></td>
+<td><code>QuizElement</code></td>
+</tr>
+<tr>
+<td><code>EvaluationFormPart</code></td>
+<td><code>"evaluationform"</code></td>
+<td><code>ceformpart</code></td>
+<td>(none)</td>
+</tr>
+<tr>
+<td><code>TocPart</code></td>
+<td><code>"toc"</code></td>
+<td><code>cetocpart</code></td>
+<td><code>TocElement</code></td>
+</tr>
+</tbody>
 </table>
-
-<div class="aside"><strong>Ordering:</strong> <code>PageBodyImpl</code> uses <code>@OneToMany</code> with <code>@OrderColumn(name="pos")</code> to maintain element order. The <code>pos</code> column in <code>AbstractPart</code> is read-only (<code>insertable=false, updatable=false</code>) &mdash; ordering is managed entirely by the JPA collection.</div>
-
-<!-- DIAGRAM 2: Entity Model -->
 <div class="diagram-box">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 280" width="700" height="280">
   <rect x="20" y="20" width="140" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
@@ -420,68 +539,332 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <rect x="180" y="220" width="16" height="12" rx="2" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
   <text x="202" y="230" font-family="system-ui,sans-serif" font-size="10" fill="#64748b">Concrete Part</text>
 </svg>
-<div class="diagram-caption">Figure 2: JPA entity model &mdash; Page &rarr; PageBody &rarr; PagePart with 13 concrete subtypes</div>
+<div class="diagram-caption">Figure 2: JPA entity model &mdash; Page &rarr; PageBody &rarr; PagePart with 14 concrete subtypes (selection shown)</div>
 </div>
 
-<!-- ===== SETTINGS ===== -->
-<h2 id="settings">Settings Serialization</h2>
-
-<p><code>ContentEditorXStream</code> provides a secure XStream instance with explicit type permissions. It implements the <strong>dual storage pattern</strong>:</p>
-<ul>
-  <li><code>content</code> column &mdash; HTML text or structured data (e.g. <code>TableContent</code> as XML)</li>
-  <li><code>layoutOptions</code> column &mdash; XStream XML for settings objects</li>
-</ul>
-
-<h3>Settings Classes</h3>
-<table>
-  <tr><th>Class</th><th>Used By</th><th>Key Properties</th></tr>
-  <tr><td><code>TitleSettings</code></td><td>TitlePart</td><td>size (1-6), layoutSettings</td></tr>
-  <tr><td><code>CodeSettings</code></td><td>CodePart</td><td>codeLanguage (29 values), lineNumbersEnabled</td></tr>
-  <tr><td><code>TableSettings</code></td><td>TablePart</td><td>rowHeaders, columnHeaders, striped, bordered</td></tr>
-  <tr><td><code>TableContent</code></td><td>TablePart (content)</td><td>numOfRows, numOfColumns, rows with cells</td></tr>
-  <tr><td><code>ContainerSettings</code></td><td>ContainerPart</td><td>numOfColumns, ContainerLayout, columns</td></tr>
-  <tr><td><code>ImageSettings</code></td><td>MediaPart</td><td>alignment, size, style, title</td></tr>
-  <tr><td><code>BlockLayoutSettings</code></td><td>All elements</td><td>spacing (predefined/zero/compact/normal/large/custom)</td></tr>
-  <tr><td><code>AlertBoxSettings</code></td><td>All elements</td><td>showAlertBox, type (note/info/tip/warning/...), title, icon</td></tr>
-</table>
-
-<pre><code><span class="cmt">// Serialize settings to XML</span>
-<span class="typ">String</span> xml = <span class="typ">ContentEditorXStream</span>.toXml(settings);
-part.setLayoutOptions(xml);
-
-<span class="cmt">// Deserialize settings from XML</span>
-<span class="typ">TitleSettings</span> ts = <span class="typ">ContentEditorXStream</span>.fromXml(part.getLayoutOptions(), <span class="typ">TitleSettings</span>.class);</code></pre>
-
-<!-- ===== HANDLER PATTERN ===== -->
-<h2 id="handler-pattern">Handler Pattern</h2>
-
-<h3>PageElementHandler Interface</h3>
-<pre><code><span class="kw">public interface</span> <span class="typ">PageElementHandler</span> {
-    <span class="typ">String</span>                          getType();
-    <span class="typ">String</span>                          getIconCssClass();
-    <span class="typ">PageElementCategory</span>             getCategory();
-    <span class="kw">int</span>                             getSortOrder();
-    <span class="typ">PageRunElement</span>                  getContent(ureq, wControl, element, hints);
-    <span class="typ">Controller</span>                      getEditor(ureq, wControl, element);
-    <span class="typ">PageElementInspectorController</span>  getInspector(ureq, wControl, element);
+<h3 id="table-o_ce_page">Table: <code>o_ce_page</code></h3>
+<pre><code><span class="ann">@Entity</span>(name=<span class="str">"cepage"</span>)
+<span class="ann">@Table</span>(name=<span class="str">"o_ce_page"</span>)
+<span class="kw">public</span> <span class="kw">class</span> <span class="typ">PageImpl</span> <span class="kw">implements</span> <span class="typ">Page</span> {
+    <span class="kw">private</span> <span class="typ">Long</span> key;
+    <span class="kw">private</span> <span class="typ">String</span> title, summary, status;
+    <span class="kw">private</span> <span class="kw">boolean</span> editable;
+    <span class="kw">private</span> <span class="kw">int</span> version;
+    <span class="kw">private</span> <span class="typ">Date</span> initialPublicationDate, lastPublicationDate;
+    <span class="kw">private</span> <span class="typ">String</span> imagePath, imageAlign, previewPath;
+    <span class="cmt">// FK references:</span>
+    <span class="kw">private</span> <span class="typ">PageBody</span> body;         <span class="cmt">// fk_body_id</span>
+    <span class="kw">private</span> <span class="typ">Group</span> baseGroup;       <span class="cmt">// fk_group_id</span>
+    <span class="kw">private</span> <span class="typ">Section</span> section;       <span class="cmt">// fk_section_id (optional, for portfolio)</span>
+    <span class="kw">private</span> <span class="typ">VFSMetadata</span> previewMetadata; <span class="cmt">// fk_preview_metadata</span>
 }</code></pre>
+<h3 id="table-o_ce_page_body">Table: <code>o_ce_page_body</code></h3>
+<pre><code><span class="ann">@Entity</span>(name=<span class="str">"cepagebody"</span>)
+<span class="ann">@Table</span>(name=<span class="str">"o_ce_page_body"</span>)
+<span class="kw">public</span> <span class="kw">class</span> <span class="typ">PageBodyImpl</span> <span class="kw">implements</span> <span class="typ">PageBody</span> {
+    <span class="kw">private</span> <span class="typ">Long</span> key;
+    <span class="kw">private</span> <span class="kw">int</span> usage;
+    <span class="kw">private</span> <span class="typ">String</span> syntheticStatus;
 
-<p>Each handler provides a <strong>triad</strong>: view component (<code>getContent</code>), inline editor (<code>getEditor</code>), and side-panel inspector (<code>getInspector</code>).</p>
-
-<h3>Mixin Interfaces</h3>
+    <span class="ann">@OneToMany</span>(targetEntity=<span class="typ">AbstractPart</span>.<span class="kw">class</span>, mappedBy=<span class="str">"body"</span>,
+               orphanRemoval=<span class="kw">true</span>, cascade={<span class="typ">CascadeType</span>.REMOVE})
+    <span class="ann">@OrderColumn</span>(name=<span class="str">"pos"</span>)
+    <span class="kw">private</span> <span class="typ">List</span>&lt;<span class="typ">PagePart</span>&gt; parts;
+}</code></pre>
+<p>The <code>@OrderColumn(name="pos")</code> annotation on <code>PageBodyImpl.parts</code> is the mechanism that maintains element ordering. JPA manages the <code>pos</code> column automatically when elements are added, removed, or reordered in the list.</p>
+<h3 id="important-jpa-notes">Important JPA notes</h3>
+<ul>
+<li>New entities must be registered in <code>META-INF/persistence.xml</code>.</li>
+<li><code>AbstractPart.pos</code> is read-only (<code>insertable=false, updatable=false</code>) -- it exists only for <code>ORDER BY</code> in native queries. The actual ordering is managed by the <code>@OrderColumn</code> on <code>PageBodyImpl.parts</code>.</li>
+<li><code>MediaPart</code> has additional FK columns (<code>fk_media_id</code>, <code>fk_media_version_id</code>, <code>fk_identity_id</code>) linking to the <code>cemedia</code> module.</li>
+</ul>
+<hr />
+<h2 id="4-settings-serialization-contenteditorxstream">4. Settings Serialization (ContentEditorXStream)</h2>
+<p><code>ContentEditorXStream</code> is a centralized XStream wrapper that serializes/deserializes settings objects to/from XML. It enforces XStream security via <code>ExplicitTypePermission</code> -- only explicitly registered classes can be deserialized.</p>
+<pre><code><span class="cmt">// File: ContentEditorXStream.java</span>
+<span class="kw">public</span> <span class="kw">class</span> <span class="typ">ContentEditorXStream</span> {
+    <span class="kw">public</span> <span class="kw">static</span> <span class="typ">String</span> toXml(<span class="typ">Object</span> obj);
+    <span class="kw">public</span> <span class="kw">static</span> &lt;U&gt; U fromXml(<span class="typ">String</span> xml, <span class="typ">Class</span>&lt;U&gt; cl);
+}</code></pre>
+<h3 id="dual-storage-pattern">Dual storage pattern</h3>
+<p>Each <code>PagePart</code> has two storage columns:</p>
 <table>
-  <tr><th>Interface</th><th>Method</th><th>Purpose</th></tr>
-  <tr><td><code>SimpleAddPageElementHandler</code></td><td><code>createPageElement(Locale)</code></td><td>Synchronous factory for new elements</td></tr>
-  <tr><td><code>InteractiveAddPageElementHandler</code></td><td><code>getAddPageElementController(...)</code></td><td>Wizard-based creation (e.g. image upload)</td></tr>
-  <tr><td><code>CloneElementHandler</code></td><td><code>clonePageElement(PageElement)</code></td><td>Deep copy of an element</td></tr>
-  <tr><td><code>PageElementStore&lt;U&gt;</code></td><td><code>savePageElement(U)</code></td><td>Persist via <code>PageService.updatePart()</code></td></tr>
-  <tr><td><code>PageLayoutHandler</code></td><td><code>getLayout()</code></td><td>Container-specific layout info</td></tr>
+<thead>
+<tr>
+<th>Column</th>
+<th>Purpose</th>
+<th>Example Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>p_content</code></td>
+<td>Primary data: HTML text or structured data</td>
+<td><code>"&lt;h3&gt;My Title&lt;/h3&gt;"</code> or <code>TableContent</code> XML</td>
+</tr>
+<tr>
+<td><code>p_layout_options</code></td>
+<td>Settings/configuration as XStream XML</td>
+<td><code>TitleSettings</code>, <code>CodeSettings</code>, <code>ContainerSettings</code></td>
+</tr>
+</tbody>
 </table>
+<h3 id="registered-settings-classes">Registered settings classes</h3>
+<p>All settings classes live in <code>org.olat.modules.ceditor.model</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Settings Class</th>
+<th>XStream Alias</th>
+<th>Used By</th>
+<th>Key Fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TitleSettings</code></td>
+<td><code>titlesettings</code></td>
+<td>TitlePart</td>
+<td><code>size</code> (1-6), <code>layoutSettings</code></td>
+</tr>
+<tr>
+<td><code>TextSettings</code></td>
+<td><code>textsettings</code></td>
+<td>ParagraphPart</td>
+<td>(text-specific settings)</td>
+</tr>
+<tr>
+<td><code>CodeSettings</code></td>
+<td><code>codesettings</code></td>
+<td>CodePart</td>
+<td><code>codeLanguage</code>, <code>lineNumbersEnabled</code>, <code>displayAllLines</code>, <code>numberOfLinesToDisplay</code></td>
+</tr>
+<tr>
+<td><code>TableSettings</code></td>
+<td><code>tablesettings</code></td>
+<td>TablePart</td>
+<td><code>rowHeaders</code>, <code>columnHeaders</code>, <code>striped</code>, <code>bordered</code></td>
+</tr>
+<tr>
+<td><code>TableContent</code></td>
+<td><code>tablecontent</code></td>
+<td>TablePart</td>
+<td><code>List&lt;TableRow&gt;</code> containing <code>List&lt;TableColumn&gt;</code></td>
+</tr>
+<tr>
+<td><code>ContainerSettings</code></td>
+<td><code>containersettings</code></td>
+<td>ContainerPart</td>
+<td><code>numOfColumns</code>, <code>type</code> (ContainerLayout), <code>List&lt;ContainerColumn&gt;</code></td>
+</tr>
+<tr>
+<td><code>ImageSettings</code></td>
+<td><code>imagesettings</code></td>
+<td>MediaPart</td>
+<td>alignment, size, title position</td>
+</tr>
+<tr>
+<td><code>GallerySettings</code></td>
+<td><code>gallerysettings</code></td>
+<td>GalleryPart</td>
+<td>gallery type</td>
+</tr>
+<tr>
+<td><code>ImageComparisonSettings</code></td>
+<td><code>imagecomparisonsettings</code></td>
+<td>ImageComparisonPart</td>
+<td>orientation, comparison type</td>
+</tr>
+<tr>
+<td><code>MathSettings</code></td>
+<td><code>mathsettings</code></td>
+<td>MathPart</td>
+<td>(LaTeX-specific)</td>
+</tr>
+<tr>
+<td><code>QuizSettings</code></td>
+<td><code>quizsettings</code></td>
+<td>QuizPart</td>
+<td><code>List&lt;QuizQuestion&gt;</code></td>
+</tr>
+<tr>
+<td><code>TocSettings</code></td>
+<td><code>tocsettings</code></td>
+<td>TocPart</td>
+<td><code>title</code>, <code>visibleLevels</code> (Set&lt;Integer&gt; of 1-5, default 1-4)</td>
+</tr>
+<tr>
+<td><code>BlockLayoutSettings</code></td>
+<td><code>blocklayoutsettings</code></td>
+<td>(shared)</td>
+<td><code>spacing</code>, custom spacing per side</td>
+</tr>
+<tr>
+<td><code>AlertBoxSettings</code></td>
+<td><code>alertboxsettings</code></td>
+<td>(shared)</td>
+<td><code>showAlertBox</code>, <code>type</code>, <code>title</code>, <code>withIcon</code>, <code>collapsible</code></td>
+</tr>
+<tr>
+<td><code>MediaSettings</code></td>
+<td><code>mediasettings</code></td>
+<td>MediaPart</td>
+<td>(media-specific)</td>
+</tr>
+<tr>
+<td><code>GeneralStyleSettings</code></td>
+<td><code>generalstylesettings</code></td>
+<td>(shared)</td>
+<td>(general CSS settings)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-reading-and-writing-settings">Example: reading and writing settings</h3>
+<pre><code><span class="cmt">// Reading settings from a TitlePart</span>
+<span class="typ">TitlePart</span> titlePart = ...;
+<span class="typ">TitleSettings</span> settings = <span class="typ">ContentEditorXStream</span>.fromXml(
+    titlePart.getLayoutOptions(), <span class="typ">TitleSettings</span>.<span class="kw">class</span>);
 
-<h3>Canonical Example: TitlePageElementHandler</h3>
-<pre><code><span class="kw">public class</span> <span class="typ">TitlePageElementHandler</span> <span class="kw">implements</span>
-        <span class="typ">PageElementHandler</span>, <span class="typ">PageElementStore</span>&lt;<span class="typ">TitleElement</span>&gt;,
-        <span class="typ">SimpleAddPageElementHandler</span>, <span class="typ">CloneElementHandler</span> {
+<span class="cmt">// Modifying and saving back</span>
+settings.setSize(<span class="num">2</span>);
+titlePart.setLayoutOptions(<span class="typ">ContentEditorXStream</span>.toXml(settings));
+pageService.updatePart(titlePart);</code></pre>
+<h3 id="adding-a-new-settings-class">Adding a new settings class</h3>
+<p>When adding a new settings class, you must:</p>
+<ol>
+<li>Create the class in <code>org.olat.modules.ceditor.model</code>.</li>
+<li>Add it to the <code>types</code> array in <code>ContentEditorXStream</code>'s static initializer.</li>
+<li>Register an alias: <code>xstream.alias("youralias", YourSettings.class);</code>.</li>
+</ol>
+<hr />
+<h2 id="5-handler-pattern">5. Handler Pattern</h2>
+<p>A <code>PageElementHandler</code> is the central extension point for each element type. It acts as a factory for the three UI parts (view, editor, inspector) and defines type metadata.</p>
+<h3 id="pageelementhandler-interface">PageElementHandler interface</h3>
+<pre><code><span class="cmt">// File: PageElementHandler.java</span>
+<span class="kw">public</span> <span class="kw">interface</span> <span class="typ">PageElementHandler</span> {
+    <span class="kw">public</span> <span class="typ">String</span> getType();            <span class="cmt">// Must match PagePart.getType()</span>
+    <span class="kw">public</span> <span class="typ">String</span> getIconCssClass();    <span class="cmt">// CSS icon class for the add-element dialog</span>
+    <span class="kw">public</span> <span class="typ">PageElementCategory</span> getCategory(); <span class="cmt">// Grouping in the add dialog</span>
+    <span class="kw">public</span> <span class="kw">int</span> getSortOrder();          <span class="cmt">// Order within category (lower = first)</span>
+
+    <span class="cmt">// Create the read-only view component</span>
+    <span class="kw">public</span> <span class="typ">PageRunElement</span> getContent(<span class="typ">UserRequest</span> ureq, <span class="typ">WindowControl</span> wControl,
+                                     <span class="typ">PageElement</span> element, <span class="typ">RenderingHints</span> options);
+
+    <span class="cmt">// Create the inline editor controller (nullable)</span>
+    <span class="kw">public</span> <span class="typ">Controller</span> getEditor(<span class="typ">UserRequest</span> ureq, <span class="typ">WindowControl</span> wControl, <span class="typ">PageElement</span> element);
+
+    <span class="cmt">// Create the inspector side-panel controller (nullable)</span>
+    <span class="kw">public</span> <span class="typ">PageElementInspectorController</span> getInspector(<span class="typ">UserRequest</span> ureq, <span class="typ">WindowControl</span> wControl,
+                                                        <span class="typ">PageElement</span> element);
+}</code></pre>
+<h3 id="mixin-interfaces">Mixin interfaces</h3>
+<p>Handlers combine <code>PageElementHandler</code> with one or more of these interfaces:</p>
+<table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Purpose</th>
+<th>Key Method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SimpleAddPageElementHandler</code></td>
+<td>Creates element without user interaction</td>
+<td><code>PageElement createPageElement(Locale locale)</code></td>
+</tr>
+<tr>
+<td><code>InteractiveAddPageElementHandler</code></td>
+<td>Needs a dialog to create (e.g., media upload)</td>
+<td><code>PageElementAddController getAddPageElementController(...)</code></td>
+</tr>
+<tr>
+<td><code>CloneElementHandler</code></td>
+<td>Supports duplicating elements</td>
+<td><code>PageElement clonePageElement(PageElement element)</code></td>
+</tr>
+<tr>
+<td><code>PageElementStore&lt;U&gt;</code></td>
+<td>Saves modified elements via the handler</td>
+<td><code>U savePageElement(U element)</code></td>
+</tr>
+<tr>
+<td><code>PageLayoutHandler</code></td>
+<td>Marks a handler as a layout/container type</td>
+<td><code>ContainerLayout getLayout()</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="supporting-controller-interfaces">Supporting controller interfaces</h3>
+<table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PageRunElement</code></td>
+<td>Wraps a <code>Component</code> for read-only rendering; has <code>validate()</code></td>
+</tr>
+<tr>
+<td><code>PageElementEditorController</code></td>
+<td>Marker interface extending <code>Controller</code></td>
+</tr>
+<tr>
+<td><code>PageElementInspectorController</code></td>
+<td>Extends <code>Controller</code>, adds <code>String getTitle()</code></td>
+</tr>
+<tr>
+<td><code>PageElementAddController</code></td>
+<td>Dialog controller for interactive element creation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="canonical-example-titlepageelementhandler">Canonical example: TitlePageElementHandler</h3>
+<pre><code><span class="cmt">// File: handler/TitlePageElementHandler.java</span>
+<span class="kw">public</span> <span class="kw">class</span> <span class="typ">TitlePageElementHandler</span> <span class="kw">implements</span> <span class="typ">PageElementHandler</span>,
+        <span class="typ">PageElementStore</span>&lt;<span class="typ">TitleElement</span>&gt;,
+        <span class="typ">SimpleAddPageElementHandler</span>,
+        <span class="typ">CloneElementHandler</span> {
+
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getType()         { <span class="kw">return</span> <span class="str">"htitle"</span>; }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getIconCssClass() { <span class="kw">return</span> <span class="str">"o_icon_header"</span>; }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">PageElementCategory</span> getCategory() { <span class="kw">return</span> <span class="typ">PageElementCategory</span>.text; }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="kw">int</span> getSortOrder()       { <span class="kw">return</span> <span class="num">10</span>; }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">PageRunElement</span> getContent(<span class="typ">UserRequest</span> ureq, <span class="typ">WindowControl</span> wControl,
+                                     <span class="typ">PageElement</span> element, <span class="typ">RenderingHints</span> options) {
+        <span class="cmt">// Cast to TitlePart, read settings, build HTML, wrap in TextRunComponent</span>
+        <span class="kw">if</span> (element instanceof <span class="typ">TitlePart</span> titlePart) {
+            <span class="typ">TitleSettings</span> settings = titlePart.getTitleSettings();
+            <span class="typ">String</span> html = <span class="typ">TitleElement</span>.toHtml(titlePart.getContent(), settings);
+            <span class="typ">TextComponent</span> cmp = <span class="typ">TextFactory</span>.createTextComponentFromString(..., html, ...);
+            <span class="kw">return</span> <span class="kw">new</span> <span class="typ">TextRunComponent</span>(cmp, <span class="kw">false</span>);
+        }
+        <span class="kw">return</span> <span class="kw">null</span>; <span class="cmt">// should not happen</span>
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">PageElementEditorController</span> getEditor(<span class="typ">UserRequest</span> ureq, <span class="typ">WindowControl</span> wControl,
+                                                  <span class="typ">PageElement</span> element) {
+        <span class="kw">if</span> (element instanceof <span class="typ">TitlePart</span> titlePart) {
+            <span class="kw">return</span> <span class="kw">new</span> <span class="typ">TitleEditorController</span>(ureq, wControl, titlePart, <span class="kw">this</span>, <span class="kw">false</span>);
+        }
+        <span class="kw">return</span> <span class="kw">null</span>;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">PageElementInspectorController</span> getInspector(<span class="typ">UserRequest</span> ureq, <span class="typ">WindowControl</span> wControl,
+                                                        <span class="typ">PageElement</span> element) {
+        <span class="kw">if</span> (element instanceof <span class="typ">TitlePart</span> titlePart) {
+            <span class="kw">return</span> <span class="kw">new</span> <span class="typ">TitleInspectorController</span>(ureq, wControl, titlePart, <span class="kw">this</span>, <span class="kw">false</span>);
+        }
+        <span class="kw">return</span> <span class="kw">null</span>;
+    }
 
     <span class="ann">@Override</span>
     <span class="kw">public</span> <span class="typ">PageElement</span> createPageElement(<span class="typ">Locale</span> locale) {
@@ -494,59 +877,54 @@ part.setLayoutOptions(xml);
     }
 
     <span class="ann">@Override</span>
-    <span class="kw">public</span> <span class="typ">PageRunElement</span> getContent(...) {
-        <span class="typ">String</span> htmlContent = <span class="typ">TitleElement</span>.toHtml(content, settings);
-        <span class="typ">TextComponent</span> cmp = <span class="typ">TextFactory</span>.createTextComponentFromString(...);
-        <span class="kw">return new</span> <span class="typ">TextRunComponent</span>(cmp, <span class="kw">false</span>);
+    <span class="kw">public</span> <span class="typ">PageElement</span> clonePageElement(<span class="typ">PageElement</span> element) {
+        <span class="kw">if</span> (element instanceof <span class="typ">TitlePart</span> titlePart) {
+            <span class="kw">return</span> titlePart.copy();  <span class="cmt">// AbstractPart.copy() copies content, layout, flow, storagePath</span>
+        }
+        <span class="kw">return</span> <span class="kw">null</span>;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">TitleElement</span> savePageElement(<span class="typ">TitleElement</span> element) {
+        <span class="kw">return</span> <span class="typ">CoreSpringFactory</span>.getImpl(<span class="typ">PageService</span>.<span class="kw">class</span>).updatePart((<span class="typ">TitlePart</span>) element);
     }
 }</code></pre>
-
-<h3>Complete Handler Table</h3>
-<table>
-  <tr><th>Handler</th><th>Type</th><th>Category</th><th>Creation</th></tr>
-  <tr><td><code>TitlePageElementHandler</code></td><td><code>htitle</code></td><td>text</td><td>Simple</td></tr>
-  <tr><td><code>ParagraphPageElementHandler</code></td><td><code>htmlparagraph</code></td><td>text</td><td>Simple</td></tr>
-  <tr><td><code>HTMLRawPageElementHandler</code></td><td><code>htmlraw</code></td><td>text</td><td>Simple</td></tr>
-  <tr><td><code>SpacerElementHandler</code></td><td><code>hr</code></td><td>layout</td><td>Simple</td></tr>
-  <tr><td><code>ContainerHandler</code></td><td><code>container</code></td><td>layout</td><td>Simple</td></tr>
-  <tr><td><code>TablePageElementHandler</code></td><td><code>table</code></td><td>text</td><td>Simple</td></tr>
-  <tr><td><code>ImageHandler</code></td><td><code>image</code></td><td>media</td><td>Interactive</td></tr>
-  <tr><td><code>GalleryElementHandler</code></td><td><code>gallery</code></td><td>media</td><td>Interactive</td></tr>
-  <tr><td><code>ImageComparisonElementHandler</code></td><td><code>imagecomparison</code></td><td>media</td><td>Interactive</td></tr>
-  <tr><td><code>CodeElementHandler</code></td><td><code>code</code></td><td>text</td><td>Simple</td></tr>
-  <tr><td><code>MathPageElementHandler</code></td><td><code>math</code></td><td>text</td><td>Simple</td></tr>
-  <tr><td><code>QuizElementHandler</code></td><td><code>quiz</code></td><td>knowledge</td><td>Simple</td></tr>
-  <tr><td><code>EvaluationFormHandler</code></td><td><code>evaluationform</code></td><td>organisational</td><td>Interactive</td></tr>
-  <tr><td><code>TocElementHandler</code></td><td><code>toc</code></td><td>other</td><td>Simple</td></tr>
-</table>
-
-<!-- ===== PROVIDER PATTERN ===== -->
-<h2 id="provider-pattern">Provider Pattern</h2>
-
-<h3>PageEditorProvider SPI</h3>
-<pre><code><span class="kw">public interface</span> <span class="typ">PageProvider</span> {
-    <span class="typ">List</span>&lt;? <span class="kw">extends</span> <span class="typ">PageElement</span>&gt; getElements();
-    <span class="typ">List</span>&lt;? <span class="kw">extends</span> <span class="typ">PageElementHandler</span>&gt; getAvailableHandlers();
+<h3 id="handler-registration">Handler registration</h3>
+<p>Handlers are <strong>not</strong> Spring beans. They are instantiated directly by the <code>PageEditorProvider</code> implementation. Each provider decides which handlers to create and register.</p>
+<hr />
+<h2 id="6-provider-pattern-pageeditorprovider-spi">6. Provider Pattern (PageEditorProvider SPI)</h2>
+<p>The <code>PageEditorProvider</code> is the <strong>integration point</strong> between the content editor and its embedding context (portfolio pages, evaluation forms, etc.). It acts as an adapter over the <code>PageService</code> for a specific page.</p>
+<h3 id="interface-hierarchy-1">Interface hierarchy</h3>
+<pre><code><span class="cmt">// File: PageProvider.java</span>
+<span class="kw">public</span> <span class="kw">interface</span> <span class="typ">PageProvider</span> {
+    <span class="typ">List</span>&lt;? <span class="kw">extends</span> <span class="typ">PageElement</span>&gt; getElements();          <span class="cmt">// Current parts on the page</span>
+    <span class="typ">List</span>&lt;? <span class="kw">extends</span> <span class="typ">PageElementHandler</span>&gt; getAvailableHandlers(); <span class="cmt">// All handlers (for rendering)</span>
 }
 
-<span class="kw">public interface</span> <span class="typ">PageEditorProvider</span> <span class="kw">extends</span> <span class="typ">PageProvider</span> {
+<span class="cmt">// File: PageEditorProvider.java (extends PageProvider)</span>
+<span class="kw">public</span> <span class="kw">interface</span> <span class="typ">PageEditorProvider</span> <span class="kw">extends</span> <span class="typ">PageProvider</span> {
+    <span class="typ">RepositoryEntry</span> getBasRepositoryEntry();
+
+    <span class="typ">List</span>&lt;<span class="typ">PageElementHandler</span>&gt; getCreateHandlers();       <span class="cmt">// Handlers shown in "add element" dialog</span>
+    <span class="typ">List</span>&lt;<span class="typ">PageLayoutHandler</span>&gt; getCreateLayoutHandlers();  <span class="cmt">// Layout handlers shown in "add layout" dialog</span>
+
+    <span class="kw">int</span> indexOf(<span class="typ">PageElement</span> element);
+    <span class="typ">String</span> getAppendRejectionKey(<span class="typ">String</span> type);          <span class="cmt">// null = allowed; i18n key = rejection message</span>
+
     <span class="typ">PageElement</span> appendPageElement(<span class="typ">PageElement</span> element);
     <span class="typ">PageElement</span> appendPageElementAt(<span class="typ">PageElement</span> element, <span class="kw">int</span> index);
+
+    <span class="kw">boolean</span> isRemoveConfirmation(<span class="typ">PageElement</span> element);
+    <span class="typ">String</span> getRemoveConfirmationI18nKey();
     <span class="kw">void</span> removePageElement(<span class="typ">PageElement</span> element);
-    <span class="kw">void</span> movePageElement(<span class="typ">PageElement</span> toMove, <span class="typ">PageElement</span> sibling, <span class="kw">boolean</span> after);
-    <span class="typ">String</span> getImportButtonKey();
-    <span class="kw">default</span> <span class="kw">boolean</span> isImportMarkdownEnabled() { <span class="kw">return</span> <span class="kw">false</span>; }
-    <span class="cmt">// ... more methods</span>
+
+    <span class="kw">void</span> moveUpPageElement(<span class="typ">PageElement</span> element);
+    <span class="kw">void</span> moveDownPageElement(<span class="typ">PageElement</span> element);
+    <span class="kw">void</span> movePageElement(<span class="typ">PageElement</span> elementToMove, <span class="typ">PageElement</span> sibling, <span class="kw">boolean</span> after);
+
+    <span class="typ">String</span> getImportButtonKey();                        <span class="cmt">// null = no import button</span>
+    <span class="kw">default</span> <span class="kw">boolean</span> isImportMarkdownEnabled() { <span class="kw">return</span> <span class="kw">false</span>; } <span class="cmt">// show markdown import button</span>
 }</code></pre>
-
-<h3>Implementations</h3>
-<table>
-  <tr><th>Implementation</th><th>Location</th><th>Context</th></tr>
-  <tr><td><code>PortfolioPageEditorProvider</code></td><td>Inner class in <code>PageRunController</code></td><td>Portfolio page editing</td></tr>
-  <tr><td><code>FormPageEditorProvider</code></td><td>Inner class in <code>EvaluationFormEditorController</code></td><td>Form building</td></tr>
-</table>
-
-<!-- DIAGRAM 5: Provider SPI -->
 <div class="diagram-box">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240">
   <rect x="200" y="10" width="200" height="50" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
@@ -568,27 +946,110 @@ part.setLayoutOptions(xml);
 <div class="diagram-caption">Figure 3: Provider SPI &mdash; PageEditorProvider decouples the editor from specific persistence contexts</div>
 </div>
 
-<!-- ===== RENDERING PIPELINE ===== -->
-<h2 id="rendering-pipeline">Rendering Pipeline</h2>
+<h3 id="existing-implementations">Existing implementations</h3>
+<ol>
+<li>
+<p><strong><code>PortfolioPageEditorProvider</code></strong> -- inner class in <code>PageRunController</code> (portfolio module). Registers all content handlers plus media handlers from <code>MediaService</code>. This is the most feature-complete provider.</p>
+</li>
+<li>
+<p><strong><code>FormPageEditorProvider</code></strong> -- inner class in <code>EvaluationFormEditorController</code> (forms module). Registers a subset of handlers appropriate for form building.</p>
+</li>
+</ol>
+<h3 id="typical-provider-implementation-pattern">Typical provider implementation pattern</h3>
+<pre><code><span class="kw">private</span> <span class="kw">class</span> <span class="typ">MyPageEditorProvider</span> <span class="kw">implements</span> <span class="typ">PageEditorProvider</span> {
 
-<h3>PageEditorV2Controller</h3>
-<p>The central <code>BasicController</code> that orchestrates the entire editor experience (~1073 lines).</p>
+    <span class="kw">private</span> <span class="kw">final</span> <span class="typ">List</span>&lt;<span class="typ">PageElementHandler</span>&gt; handlers = <span class="kw">new</span> <span class="typ">ArrayList</span>&lt;&gt;();
+    <span class="kw">private</span> <span class="kw">final</span> <span class="typ">List</span>&lt;<span class="typ">PageElementHandler</span>&gt; creationHandlers = <span class="kw">new</span> <span class="typ">ArrayList</span>&lt;&gt;();
+    <span class="kw">private</span> <span class="kw">final</span> <span class="typ">List</span>&lt;<span class="typ">PageLayoutHandler</span>&gt; layoutHandlers = <span class="kw">new</span> <span class="typ">ArrayList</span>&lt;&gt;();
+
+    <span class="kw">public</span> <span class="typ">MyPageEditorProvider</span>() {
+        <span class="cmt">// Register handlers for all supported element types</span>
+        <span class="typ">TitlePageElementHandler</span> titleHandler = <span class="kw">new</span> <span class="typ">TitlePageElementHandler</span>();
+        handlers.add(titleHandler);
+        creationHandlers.add(titleHandler);
+
+        <span class="typ">ParagraphPageElementHandler</span> paragraphHandler = <span class="kw">new</span> <span class="typ">ParagraphPageElementHandler</span>(...);
+        handlers.add(paragraphHandler);
+        creationHandlers.add(paragraphHandler);
+
+        <span class="cmt">// Container handler for rendering existing containers</span>
+        <span class="typ">ContainerHandler</span> containerHandler = <span class="kw">new</span> <span class="typ">ContainerHandler</span>();
+        handlers.add(containerHandler);
+
+        <span class="cmt">// Layout handlers for creating new containers (one per layout)</span>
+        <span class="kw">for</span> (<span class="typ">ContainerLayout</span> layout : <span class="typ">ContainerLayout</span>.values()) {
+            <span class="kw">if</span> (!layout.deprecated()) {
+                layoutHandlers.add(<span class="kw">new</span> <span class="typ">ContainerHandler</span>(layout));
+            }
+        }
+        <span class="cmt">// ... more handlers</span>
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">List</span>&lt;? <span class="kw">extends</span> <span class="typ">PageElement</span>&gt; getElements() {
+        <span class="kw">return</span> pageService.getPageParts(page);
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">PageElement</span> appendPageElement(<span class="typ">PageElement</span> element) {
+        <span class="kw">if</span> (element instanceof <span class="typ">PagePart</span> pagePart) {
+            <span class="kw">return</span> pageService.appendNewPagePart(page, pagePart);
+        }
+        <span class="kw">return</span> <span class="kw">null</span>;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="kw">void</span> removePageElement(<span class="typ">PageElement</span> element) {
+        <span class="kw">if</span> (element instanceof <span class="typ">PagePart</span> pagePart) {
+            pageService.removePagePart(page, pagePart);
+        }
+    }
+
+    <span class="cmt">// ... delegate other operations to pageService</span>
+}</code></pre>
+<h3 id="important-handler-vs-creation-handler-distinction">Important: handler vs. creation handler distinction</h3>
 <ul>
-  <li><code>loadModel()</code> &mdash; Loads elements from provider, creates fragment components, resolves container nesting</li>
-  <li><code>createFragmentComponent()</code> &mdash; Calls handler's <code>getContent()</code>, <code>getEditor()</code>, <code>getInspector()</code> for each element</li>
+<li><code>getAvailableHandlers()</code> returns <strong>all</strong> handlers needed to <strong>render</strong> existing elements on the page. This must include a handler for every type that could exist in the database.</li>
+<li><code>getCreateHandlers()</code> returns only the handlers that should appear in the <strong>"add element" dialog</strong>. A handler can exist in the available list but not in the creation list (e.g., <code>EvaluationFormHandler</code> in portfolio pages -- existing forms render but new ones cannot be added).</li>
 </ul>
-
-<h3>Component Hierarchy</h3>
-<table>
-  <tr><th>Component</th><th>Role</th></tr>
-  <tr><td><code>ContentEditorComponent</code></td><td>Root container. Manages fragment list, includes Dragula JS</td></tr>
-  <tr><td><code>ContentEditorFragment</code></td><td>Interface. <code>getElementId()</code>, <code>isEditMode()</code>, <code>setEditMode()</code></td></tr>
-  <tr><td><code>ContentEditorFragmentComponent</code></td><td>Leaf elements. Holds viewPart + editorPart + inspectorPart</td></tr>
-  <tr><td><code>ContentEditorContainerComponent</code></td><td>Layout containers. Manages child fragments across columns</td></tr>
-  <tr><td><code>InspectorPanelComponent</code></td><td>Wraps inspector controller in side panel</td></tr>
-</table>
-
-<!-- DIAGRAM 3: Rendering Pipeline -->
+<hr />
+<h2 id="7-ui-architecture-and-rendering-pipeline">7. UI Architecture and Rendering Pipeline</h2>
+<h3 id="central-orchestrator-pageeditorv2controller">Central orchestrator: PageEditorV2Controller</h3>
+<p><code>PageEditorV2Controller</code> (file: <code>ui/PageEditorV2Controller.java</code>, ~1073 lines) is the main controller that manages the entire editor UI.</p>
+<p><strong>Initialization flow:</strong>
+1. Constructor receives a <code>PageEditorProvider</code> and <code>PageEditorSecurityCallback</code>.
+2. Builds a <code>handlerMap</code> (type string -&gt; handler) and <code>cloneHandlerMap</code> from the provider's available handlers.
+3. Creates the <code>ContentEditorComponent</code> (root UI component).
+4. Calls <code>loadModel(ureq)</code> to populate the editor.</p>
+<p><strong><code>loadModel()</code> flow:</strong>
+1. Gets all <code>PageElement</code> instances from the provider.
+2. For each element, calls <code>createFragmentComponent()</code> to produce a <code>ContentEditorFragment</code>.
+3. Builds an <code>elementIdToFragmentMap</code>.
+4. Resolves container nesting: for each <code>ContentEditorContainerComponent</code>, iterates its <code>ContainerSettings.getAllElementIds()</code> and reparents the matching fragments from the root list into the container.
+5. Sets the remaining root-level fragments on the <code>ContentEditorComponent</code>.</p>
+<p><strong><code>createFragmentComponent()</code> flow:</strong>
+1. Looks up the handler for the element's type.
+2. Calls <code>handler.getContent()</code> -&gt; view part (<code>PageRunElement</code>).
+3. Calls <code>handler.getEditor()</code> -&gt; editor part (<code>Controller</code>, <code>listenTo()</code>'d).
+4. Calls <code>handler.getInspector()</code> -&gt; inspector part, wrapped in <code>ModalInspectorController</code>.
+5. Cross-wires event listeners between view/editor/inspector (bidirectional).
+6. Creates either <code>ContentEditorContainerComponent</code> or <code>ContentEditorFragmentComponent</code>.
+7. Applies security: <code>setCloneable()</code>, <code>setDeleteable()</code>, <code>setMoveable()</code>, <code>setCreate()</code>.</p>
+<h3 id="component-hierarchy">Component hierarchy</h3>
+<pre><code>ContentEditorComponent (root, ComponentCollection)
+  |
+  +-- ContentEditorFragmentComponent (leaf element)
+  |     |-- viewPart (PageRunElement -&gt; Component)
+  |     |-- editorPart (Controller -&gt; Component)
+  |     |-- inspectorPanel (InspectorPanelComponent -&gt; inspector Component)
+  |     +-- toggleInspectorButton (Link)
+  |
+  +-- ContentEditorContainerComponent (layout container)
+        |-- editorPart (ContainerEditorController)
+        |-- inspectorPanel (InspectorPanelComponent)
+        |-- toggleInspectorButton (Link)
+        +-- child ContentEditorFragment instances (organized by column)
+</code></pre>
 <div class="diagram-box">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 300" width="750" height="300">
   <!-- Controller -->
@@ -641,24 +1102,315 @@ part.setLayoutOptions(xml);
 <div class="diagram-caption">Figure 4: Rendering pipeline &mdash; from controller through handler triad to component tree</div>
 </div>
 
-<!-- ===== EVENT SYSTEM ===== -->
-<h2 id="event-system">Event System</h2>
-
-<p>The editor uses 29 custom event types for AJAX communication between components, editors, inspectors, and the main controller.</p>
-
-<h3>Event Categories</h3>
+<h3 id="contenteditorfragment-interface">ContentEditorFragment interface</h3>
+<pre><code><span class="kw">public</span> <span class="kw">interface</span> <span class="typ">ContentEditorFragment</span> <span class="kw">extends</span> <span class="typ">ComponentCollection</span> {
+    <span class="typ">String</span> getElementId();              <span class="cmt">// The PageElement's ID</span>
+    <span class="typ">PageElement</span> getElement();
+    <span class="kw">boolean</span> isEditMode();
+    <span class="kw">void</span> setEditMode(<span class="kw">boolean</span> editMode);
+    <span class="kw">boolean</span> hasInspector();
+    <span class="kw">boolean</span> isInspectorVisible();
+    <span class="kw">void</span> setInspectorVisible(<span class="kw">boolean</span> visible, <span class="kw">boolean</span> silently);
+    <span class="kw">boolean</span> isCloneable();
+    <span class="kw">boolean</span> isDeleteable();
+    <span class="kw">boolean</span> isMoveable();
+    <span class="kw">boolean</span> isCreate();                 <span class="cmt">// Can new elements be added adjacent to this one</span>
+    <span class="kw">boolean</span> isEditable();
+    <span class="kw">boolean</span> isInForm();                 <span class="cmt">// In evaluation form context</span>
+}</code></pre>
+<h3 id="renderers">Renderers</h3>
+<p>Each component has a corresponding renderer that produces the HTML:</p>
 <table>
-  <tr><th>Category</th><th>Events</th></tr>
-  <tr><td>Lifecycle</td><td><code>AddElementEvent</code>, <code>ChangePartEvent</code>, <code>CloneElementEvent</code>, <code>DeleteElementEvent</code>, <code>SaveElementEvent</code>, <code>ImportEvent</code>, <code>ImportMarkdownEvent</code>, <code>MarkdownImportDoneEvent</code></td></tr>
-  <tr><td>Edit Mode</td><td><code>EditElementEvent</code>, <code>EditFragmentEvent</code>, <code>CloseElementsEvent</code>, <code>ClosePartEvent</code></td></tr>
-  <tr><td>Inspector</td><td><code>CloseInspectorEvent</code>, <code>CloseInspectorsEvent</code>, <code>OpenRulesEvent</code></td></tr>
-  <tr><td>Position</td><td><code>MoveUpElementEvent</code>, <code>MoveDownElementEvent</code></td></tr>
-  <tr><td>Add / Layout</td><td><code>OpenAddElementEvent</code>, <code>OpenAddLayoutEvent</code></td></tr>
-  <tr><td>Drag &amp; Drop</td><td><code>DropToEditorEvent</code>, <code>DropToPageElementEvent</code>, <code>DropFragmentEvent</code>, <code>DropCanceledEvent</code></td></tr>
-  <tr><td>Container</td><td><code>ContainerColumnEvent</code>, <code>ContainerRuleLinkEvent</code></td></tr>
+<thead>
+<tr>
+<th>Component</th>
+<th>Renderer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ContentEditorComponent</code></td>
+<td><code>ContentEditorComponentRenderer</code></td>
+</tr>
+<tr>
+<td><code>ContentEditorFragmentComponent</code></td>
+<td><code>ContentEditorFragmentComponentRenderer</code></td>
+</tr>
+<tr>
+<td><code>ContentEditorContainerComponent</code></td>
+<td><code>ContentEditorContainerComponentRenderer</code></td>
+</tr>
+</tbody>
 </table>
+<p>All renderers extend <code>AbstractContentEditorComponentRenderer</code>, which provides shared rendering helpers.</p>
+<h3 id="edit-mode-lifecycle">Edit mode lifecycle</h3>
+<ol>
+<li>User clicks an element -&gt; browser sends <code>EditElementEvent</code> via AJAX.</li>
+<li><code>PageEditorV2Controller</code> calls <code>doCloseEditionEvent()</code> on previously active element, then <code>setEditMode(true)</code> on the clicked element.</li>
+<li>The fragment component toggles between rendering the view part and the editor part.</li>
+<li>Inspector becomes available via the toggle button.</li>
+<li>Changes fire <code>ChangePartEvent</code> (from editor/inspector controllers).</li>
+<li>On <code>ChangePartEvent</code>, the controller calls <code>doSaveElement()</code> and fires <code>Event.CHANGED_EVENT</code> upward.</li>
+<li>Closing: <code>CloseElementsEvent</code> sets <code>editMode(false)</code> on all fragments.</li>
+</ol>
+<h3 id="security-callback">Security callback</h3>
+<pre><code><span class="kw">public</span> <span class="kw">interface</span> <span class="typ">PageEditorSecurityCallback</span> {
+    <span class="kw">boolean</span> canCloneElement();
+    <span class="kw">boolean</span> canDeleteElement();
+    <span class="kw">boolean</span> canMoveUpAndDown();
+}</code></pre>
+<p>This is applied per-fragment during <code>createFragmentComponent()</code>.</p>
+<hr />
+<h2 id="8-event-system">8. Event System</h2>
+<p>The editor uses 29 event classes in <code>ui/event/</code> to communicate between components and controllers.</p>
+<h3 id="event-categories">Event categories</h3>
+<p><strong>Lifecycle events</strong> -- element CRUD operations:</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Fired When</th>
+<th>Key Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AddElementEvent</code></td>
+<td>User confirms adding an element</td>
+<td>handler, target, column</td>
+</tr>
+<tr>
+<td><code>ChangePartEvent</code></td>
+<td>Part content/settings modified</td>
+<td>PageElement</td>
+</tr>
+<tr>
+<td><code>ChangeVersionPartEvent</code></td>
+<td>Media version changed</td>
+<td>PageElement</td>
+</tr>
+<tr>
+<td><code>CloneElementEvent</code></td>
+<td>User clicks duplicate</td>
+<td>fragment component</td>
+</tr>
+<tr>
+<td><code>DeleteElementEvent</code></td>
+<td>User clicks delete</td>
+<td>fragment component</td>
+</tr>
+<tr>
+<td><code>SaveElementEvent</code></td>
+<td>Element explicitly saved</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td><code>ImportEvent</code></td>
+<td>User clicks import button</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td><code>ImportMarkdownEvent</code></td>
+<td>User clicks markdown import button</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td><code>MarkdownImportDoneEvent</code></td>
+<td>Markdown import completed</td>
+<td>List\&lt;String&gt; warnings</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Edit mode events</strong> -- switching between view/edit:</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Fired When</th>
+<th>Key Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EditElementEvent</code></td>
+<td>Element clicked for editing</td>
+<td>elementId</td>
+</tr>
+<tr>
+<td><code>EditFragmentEvent</code></td>
+<td>Fragment edit requested</td>
+<td>fragment</td>
+</tr>
+<tr>
+<td><code>EditionEvent</code></td>
+<td>Edition state changed</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td><code>EditPageElementEvent</code></td>
+<td>Edit via page-level action</td>
+<td>element</td>
+</tr>
+<tr>
+<td><code>CloseElementsEvent</code></td>
+<td>Close all open editors</td>
+<td>editedFragmentId (optional)</td>
+</tr>
+<tr>
+<td><code>ClosePartEvent</code></td>
+<td>Close one specific editor</td>
+<td>element</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Inspector events:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Fired When</th>
+<th>Key Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CloseInspectorEvent</code></td>
+<td>Inspector panel closed</td>
+<td>elementId, silently flag</td>
+</tr>
+<tr>
+<td><code>CloseInspectorsEvent</code></td>
+<td>All inspectors closed</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td><code>OpenRulesEvent</code></td>
+<td>Rules configuration opened</td>
+<td>(none)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Position events:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Fired When</th>
+<th>Key Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MoveUpElementEvent</code></td>
+<td>Move element up</td>
+<td>fragment component</td>
+</tr>
+<tr>
+<td><code>MoveDownElementEvent</code></td>
+<td>Move element down</td>
+<td>fragment component</td>
+</tr>
+<tr>
+<td><code>PositionEnum</code></td>
+<td>Enum: <code>top</code>, <code>bottom</code>, <code>above</code>, <code>below</code></td>
+<td>(used in other events)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Add/layout dialog events:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Fired When</th>
+<th>Key Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OpenAddElementEvent</code></td>
+<td>Open the add-element dialog</td>
+<td>component, target, column</td>
+</tr>
+<tr>
+<td><code>OpenAddLayoutEvent</code></td>
+<td>Open the add-layout dialog</td>
+<td>dispatchId, component, target</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Drag-and-drop events:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Fired When</th>
+<th>Key Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DropFragmentEvent</code></td>
+<td>Fragment dropped (internal)</td>
+<td>source, target</td>
+</tr>
+<tr>
+<td><code>DropToEditorEvent</code></td>
+<td>Dropped onto the editor root</td>
+<td>sourceId, position, content</td>
+</tr>
+<tr>
+<td><code>DropToPageElementEvent</code></td>
+<td>Dropped onto another element</td>
+<td>sourceId, targetCmp, position, content</td>
+</tr>
+<tr>
+<td><code>DropCanceledEvent</code></td>
+<td>Drag operation canceled</td>
+<td>(none)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Container events:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Fired When</th>
+<th>Key Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ContainerColumnEvent</code></td>
+<td>Container column modified</td>
+<td>column data</td>
+</tr>
+<tr>
+<td><code>ContainerRuleLinkEvent</code></td>
+<td>Container rule link clicked</td>
+<td>(none)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="event-flow-pattern">Event flow pattern</h3>
+<p>Events generally bubble upward through the component/controller hierarchy:</p>
+<pre><code>Inspector/Editor Controller
+  -&gt; fires ChangePartEvent / ClosePartEvent / CloseInspectorEvent
+    -&gt; PageEditorV2Controller.event(ureq, Controller source, Event event)
+      -&gt; persists changes, updates UI state
+      -&gt; may fire Event.CHANGED_EVENT upward to embedding controller
 
-<!-- DIAGRAM 4: Event Flow -->
+Browser (AJAX from JS)
+  -&gt; ContentEditorComponent.doDispatchRequest()
+    -&gt; fires CloseElementsEvent / CloseInspectorsEvent / DropToEditorEvent
+      -&gt; PageEditorV2Controller.event(ureq, Component source, Event event)
+
+Fragment Component (user actions on toolbar)
+  -&gt; fires EditElementEvent / DeleteElementEvent / CloneElementEvent / etc.
+    -&gt; bubbles to PageEditorV2Controller
+</code></pre>
+<hr />
 <div class="diagram-box">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 180" width="700" height="180">
   <rect x="10" y="40" width="100" height="44" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
@@ -688,209 +1440,883 @@ part.setLayoutOptions(xml);
 <div class="diagram-caption">Figure 5: Event flow &mdash; browser AJAX through component dispatch to controller and provider mutation</div>
 </div>
 
-<!-- ===== SERVICE LAYER ===== -->
-<h2 id="service-layer">Service Layer</h2>
+<h2 id="9-service-layer-and-persistence">9. Service Layer and Persistence</h2>
+<h3 id="pageservice">PageService</h3>
+<p><code>PageService</code> (file: <code>PageService.java</code>) is the primary service interface for page and part operations.</p>
+<p><strong>Key part operations:</strong></p>
+<pre><code><span class="kw">public</span> <span class="kw">interface</span> <span class="typ">PageService</span> {
+    <span class="cmt">// CRUD for parts</span>
+    &lt;U <span class="kw">extends</span> <span class="typ">PagePart</span>&gt; U appendNewPagePart(<span class="typ">Page</span> page, U part);
+    &lt;U <span class="kw">extends</span> <span class="typ">PagePart</span>&gt; U appendNewPagePartAt(<span class="typ">Page</span> page, U part, <span class="kw">int</span> index);
+    &lt;U <span class="kw">extends</span> <span class="typ">PagePart</span>&gt; U updatePart(U part);
+    <span class="kw">void</span> removePagePart(<span class="typ">Page</span> page, <span class="typ">PagePart</span> part);
+    <span class="typ">List</span>&lt;<span class="typ">PagePart</span>&gt; getPageParts(<span class="typ">Page</span> page);
 
-<h3>PageService (Interface)</h3>
-<pre><code><span class="kw">public interface</span> <span class="typ">PageService</span> {
+    <span class="cmt">// Reordering</span>
+    <span class="kw">void</span> moveUpPagePart(<span class="typ">Page</span> page, <span class="typ">PagePart</span> part);
+    <span class="kw">void</span> moveDownPagePart(<span class="typ">Page</span> page, <span class="typ">PagePart</span> part);
+    <span class="kw">void</span> movePagePart(<span class="typ">Page</span> page, <span class="typ">PagePart</span> partToMove, <span class="typ">PagePart</span> sibling, <span class="kw">boolean</span> after);
+
+    <span class="cmt">// Page lifecycle</span>
     <span class="typ">Page</span> getPageByKey(<span class="typ">Long</span> key);
+    <span class="typ">Page</span> getFullPageByKey(<span class="typ">Long</span> key);     <span class="cmt">// Eagerly loads body -&gt; parts -&gt; media</span>
     <span class="typ">Page</span> updatePage(<span class="typ">Page</span> page);
     <span class="typ">Page</span> copyPage(<span class="typ">Identity</span> owner, <span class="typ">Page</span> page);
-    <span class="typ">Page</span> importPage(<span class="typ">Identity</span> owner, <span class="typ">Identity</span> mediasOwner, <span class="typ">Page</span> page, <span class="typ">ZipFile</span> storage);
+    <span class="typ">Page</span> importPage(<span class="typ">Identity</span> pageOwner, <span class="typ">Identity</span> mediasOwner, <span class="typ">Page</span> page, <span class="typ">ZipFile</span> storage);
+    <span class="typ">Page</span> removePage(<span class="typ">Page</span> page);          <span class="cmt">// Soft delete (status = deleted)</span>
+    <span class="kw">void</span> deletePage(<span class="typ">Long</span> pageKey);       <span class="cmt">// Hard delete</span>
 
-    &lt;<span class="typ">U</span> <span class="kw">extends</span> <span class="typ">PagePart</span>&gt; <span class="typ">U</span> appendNewPagePart(<span class="typ">Page</span> page, <span class="typ">U</span> part);
-    &lt;<span class="typ">U</span> <span class="kw">extends</span> <span class="typ">PagePart</span>&gt; <span class="typ">U</span> appendNewPagePartAt(<span class="typ">Page</span> page, <span class="typ">U</span> part, <span class="kw">int</span> index);
-    &lt;<span class="typ">U</span> <span class="kw">extends</span> <span class="typ">PagePart</span>&gt; <span class="typ">U</span> updatePart(<span class="typ">U</span> part);
-    <span class="kw">void</span> removePagePart(<span class="typ">Page</span> page, <span class="typ">PagePart</span> part);
+    <span class="cmt">// References (link page to course elements)</span>
+    <span class="typ">PageReference</span> addReference(<span class="typ">Page</span> page, <span class="typ">RepositoryEntry</span> repositoryEntry, <span class="typ">String</span> subIdent);
+    <span class="kw">boolean</span> hasReference(<span class="typ">Page</span> page, <span class="typ">RepositoryEntry</span> repositoryEntry, <span class="typ">String</span> subIdent);
+    <span class="kw">int</span> deleteReference(<span class="typ">RepositoryEntry</span> repositoryEntry, <span class="typ">String</span> subIdent);
 
-    <span class="typ">List</span>&lt;<span class="typ">PagePart</span>&gt; getPageParts(<span class="typ">Page</span> page);
+    <span class="cmt">// Taxonomy competences</span>
+    <span class="typ">List</span>&lt;<span class="typ">TaxonomyCompetence</span>&gt; getRelatedCompetences(<span class="typ">Page</span> page, <span class="kw">boolean</span> fetchTaxonomies);
+    <span class="kw">void</span> linkCompetence(<span class="typ">Page</span> page, <span class="typ">TaxonomyCompetence</span> competence);
+    <span class="kw">void</span> unlinkCompetence(<span class="typ">Page</span> page, <span class="typ">TaxonomyCompetence</span> competence);
+
+    <span class="cmt">// Preview generation</span>
+    <span class="typ">Page</span> generatePreview(<span class="typ">Page</span> page, <span class="typ">PageSettings</span> settings, <span class="typ">Identity</span> identity, <span class="typ">WindowControl</span> wControl);
+    <span class="kw">void</span> generatePreviewAsync(<span class="typ">Page</span> page, <span class="typ">PageSettings</span> settings, <span class="typ">Identity</span> identity, <span class="typ">WindowControl</span> wControl);
 }</code></pre>
-
-<h3>Key Service Classes</h3>
-<table>
-  <tr><th>Class</th><th>Role</th></tr>
-  <tr><td><code>PageServiceImpl</code></td><td>Spring <code>@Service</code> implementing PageService</td></tr>
-  <tr><td><code>PageDAO</code></td><td>JPA operations on pages, bodies, parts</td></tr>
-  <tr><td><code>ContentEditorFileStorage</code></td><td>File storage under <code>bcroot/portfolio/</code></td></tr>
-  <tr><td><code>PageImportExportHelper</code></td><td>ZIP-based page import/export</td></tr>
-  <tr><td><code>ContentEditorXStream</code></td><td>Settings serialization (secure XStream)</td></tr>
-  <tr><td><code>PageXStream</code></td><td>Page serialization for export</td></tr>
-  <tr><td><code>MarkdownImportService</code></td><td>Markdown-to-PagePart conversion and persistence (CommonMark + GFM tables)</td></tr>
-  <tr><td><code>MarkdownPagePartVisitor</code></td><td>CommonMark AST visitor producing PagePart instances</td></tr>
-  <tr><td><code>MarkdownMathPreprocessor</code></td><td><code>$$...$$</code> math block pre-processing</td></tr>
-  <tr><td><code>MarkdownMkDocsAdmonitionPreprocessor</code></td><td>Transforms MkDocs <code>!!! type "Title"</code> blocks into blockquote admonitions</td></tr>
-  <tr><td><code>MarkdownAdmonitionMapping</code></td><td>Maps <code>[!TYPE]</code> / <code>[!TYPE|Title]</code> markers to <code>AlertBoxType</code></td></tr>
-  <tr><td><code>HighlightExtension</code></td><td>CommonMark extension adding <code>==text==</code> &rarr; <code>&lt;mark&gt;</code> via a <code>DelimiterProcessor</code></td></tr>
-  <tr><td><code>MarkdownCodeLanguageMapping</code></td><td>Code block info string to <code>CodeLanguage</code> mapping</td></tr>
-</table>
-
-<h3>Content Import (Markdown and Word)</h3>
-<p>The content import feature converts CommonMark markdown or Word documents (.docx) into page content. Users can upload <code>.md</code>/<code>.txt</code> files, <code>.zip</code> archives (with images), <code>.docx</code> Word documents, or paste markdown text directly.</p>
-
-<h4>Supported Markdown Features</h4>
-<table>
-  <tr><th>Markdown Construct</th><th>PagePart</th></tr>
-  <tr><td><code># Heading</code> (H1&ndash;H6)</td><td><code>TitlePart</code></td></tr>
-  <tr><td>Paragraphs</td><td><code>ParagraphPart</code> (consecutive merged)</td></tr>
-  <tr><td><code>**bold**</code>, <code>*italic*</code>, <code>~~strike~~</code></td><td>Inline HTML in paragraph content</td></tr>
-  <tr><td><code>==highlight==</code></td><td><code>&lt;mark&gt;</code> via custom <code>HighlightExtension</code></td></tr>
-  <tr><td><code>&lt;sup&gt;</code>, <code>&lt;sub&gt;</code>, <code>&lt;u&gt;</code>, <code>&lt;mark&gt;</code>, <code>&lt;span style=&quot;text-decoration:underline&quot;&gt;</code></td><td>Whitelisted safe inline HTML</td></tr>
-  <tr><td>Fenced code blocks</td><td><code>CodePart</code> with syntax highlighting</td></tr>
-  <tr><td><code>$$math$$</code> display math</td><td><code>MathPart</code></td></tr>
-  <tr><td>GFM tables</td><td><code>TablePart</code> with row/column header detection</td></tr>
-  <tr><td><code>&gt; blockquote</code> / <code>&gt; [!NOTE]</code> / <code>&gt; [!NOTE|Title]</code></td><td><code>ParagraphPart</code> with <code>AlertBoxSettings</code></td></tr>
-  <tr><td><code>!!! type "Title"</code> (MkDocs / Python-Markdown)</td><td><code>ParagraphPart</code> with <code>AlertBoxSettings</code> (custom title, empty <code>""</code> suppresses it)</td></tr>
-  <tr><td><code>---</code></td><td><code>SpacerPart</code></td></tr>
-  <tr><td><code>![alt](url){width=N height=N}</code></td><td><code>MediaPart</code> with <code>ImageSize</code> from dimensions</td></tr>
-  <tr><td><code>[^1]</code> footnotes</td><td>Footnote definitions</td></tr>
-  <tr><td><code>[x]</code> task lists</td><td>Task list checkboxes</td></tr>
-  <tr><td>YAML front matter (<code>---</code>)</td><td>Parsed and stripped</td></tr>
-</table>
-
-<h4>Word/DOCX Import</h4>
-<p>Word documents are converted to Markdown via <code>DocxToMarkdownService</code> from <code>org.olat.core.util.docxToMarkdown</code> before being fed into the standard Markdown import pipeline. This supports headings, formatting (bold, italic, underline, strikethrough, superscript, subscript, highlight), tables, images, shapes (as SVG), SmartArt diagrams, footnotes, math, hyperlinks, blockquotes, text boxes, and more. Word import is marked as beta. See the <code>docxToMarkdown</code> package documentation for full details.</p>
-
-<h4>Pipeline</h4>
-<p><strong>Markdown:</strong> <code>MarkdownMathPreprocessor</code> &rarr; <code>MarkdownMkDocsAdmonitionPreprocessor</code> &rarr; CommonMark parser (with GFM tables, strikethrough, footnotes, task lists, autolinks, image attributes, YAML front matter, and the custom <code>HighlightExtension</code>) &rarr; image dimension extraction &rarr; <code>MarkdownPagePartVisitor</code> &rarr; persist parts &rarr; <code>ContainerPart</code>. The math preprocessor runs first so that stray <code>!!!</code> inside LaTeX cannot be mis-transformed by the admonition preprocessor.</p>
-<p><strong>DOCX:</strong> <code>DocxToMarkdownService.convert()</code> &rarr; Markdown + media files on disk &rarr; same Markdown pipeline as above.</p>
-
-<h4>Security</h4>
-<p>Inline HTML is entity-escaped (<code>escapeHtml(true)</code>) with a whitelist for safe tags (<code>sup</code>, <code>sub</code>, <code>u</code>, <code>mark</code>, <code>span</code>). HTML blocks are skipped. URL sanitization allows only <code>http</code>/<code>https</code>/<code>mailto</code>. Remote image downloads restricted by <code>MediaServerModule</code>. Local file paths blocked in text paste mode. The <code>==highlight==</code> syntax is processed via a CommonMark <code>DelimiterProcessor</code>, so it respects code spans and code fences automatically. MkDocs admonition titles are sanitized to plain text (HTML tags and CommonMark-formatting chars stripped) before being emitted.</p>
-
-<h4>UI and Configuration</h4>
-<p><code>MarkdownImportController</code> provides a card-style mode selection (file upload or text paste). Upload limits are configurable:</p>
-<table>
-  <tr><th>Property</th><th>Default</th><th>Description</th></tr>
-  <tr><td><code>ceditor.import.limit.md</code></td><td>51200 (50 MB)</td><td>Markdown/ZIP upload limit (KB)</td></tr>
-  <tr><td><code>ceditor.import.limit.docx</code></td><td>204800 (200 MB)</td><td>Word document upload limit (KB)</td></tr>
-</table>
-<p>Enabled when <code>PageEditorProvider.isImportMarkdownEnabled()</code> returns <code>true</code>.</p>
-
-<!-- ===== CONTAINER SYSTEM ===== -->
-<h2 id="container-system">Container System</h2>
-
-<h3>ContainerLayout Enum (12 Layouts)</h3>
-<table>
-  <tr><th>Layout</th><th>CSS Class</th><th>Blocks</th><th>Status</th></tr>
-  <tr><td><code>block_1col</code></td><td>o_container_block_1_cols</td><td>1</td><td>active</td></tr>
-  <tr><td><code>block_2cols</code></td><td>o_container_block_2_cols</td><td>2</td><td>active</td></tr>
-  <tr><td><code>block_3cols</code></td><td>o_container_block_3_cols</td><td>3</td><td>active</td></tr>
-  <tr><td><code>block_4cols</code></td><td>o_container_block_4_cols</td><td>4</td><td>deprecated</td></tr>
-  <tr><td><code>block_5cols</code></td><td>o_container_block_5_cols</td><td>5</td><td>deprecated</td></tr>
-  <tr><td><code>block_6cols</code></td><td>o_container_block_6_cols</td><td>6</td><td>active</td></tr>
-  <tr><td><code>block_3rows</code></td><td>o_container_block_3_rows</td><td>3</td><td>active</td></tr>
-  <tr><td><code>block_2_1rows</code></td><td>o_container_block_2_1_rows</td><td>3</td><td>active</td></tr>
-  <tr><td><code>block_1_3rows</code></td><td>o_container_block_1_3_rows</td><td>4</td><td>active</td></tr>
-  <tr><td><code>block_1_1lcols</code></td><td>o_container_block_1_1l_cols</td><td>2</td><td>active</td></tr>
-  <tr><td><code>block_1_2rows</code></td><td>o_container_block_1_2_rows</td><td>3</td><td>active</td></tr>
-  <tr><td><code>block_1_2cols</code></td><td>o_container_block_1_2_cols</td><td>3</td><td>active</td></tr>
-</table>
-
-<p><code>ContainerSettings</code> stores column definitions. Each <code>ContainerColumn</code> holds a list of element IDs referencing child <code>PagePart</code>s. Containers can nest other containers &mdash; flattened in the DB but nested in the component tree during <code>loadModel()</code>.</p>
-
-<!-- ===== ELEMENT TYPES ===== -->
-<h2 id="element-types">Element Type Reference</h2>
-
-<h3>Creating Elements Programmatically</h3>
-
-<h4>Title</h4>
-<pre><code><span class="typ">TitlePart</span> title = <span class="kw">new</span> <span class="typ">TitlePart</span>();
-title.setContent(<span class="str">"My Heading"</span>);
-<span class="typ">TitleSettings</span> ts = <span class="kw">new</span> <span class="typ">TitleSettings</span>();
-ts.setSize(<span class="num">2</span>); <span class="cmt">// h2</span>
-ts.setLayoutSettings(<span class="typ">BlockLayoutSettings</span>.getPredefined());
-title.setTitleSettings(ts);
-pageService.appendNewPagePart(page, title);</code></pre>
-
-<h4>Paragraph</h4>
-<pre><code><span class="typ">ParagraphPart</span> p = <span class="kw">new</span> <span class="typ">ParagraphPart</span>();
-p.setContent(<span class="str">"&lt;p&gt;Text with &lt;strong&gt;bold&lt;/strong&gt; and &lt;em&gt;italic&lt;/em&gt;&lt;/p&gt;"</span>);
-pageService.appendNewPagePart(page, p);</code></pre>
-
-<h4>Table</h4>
-<pre><code><span class="typ">TablePart</span> tablePart = <span class="kw">new</span> <span class="typ">TablePart</span>();
-<span class="typ">TableContent</span> tc = <span class="kw">new</span> <span class="typ">TableContent</span>(<span class="num">3</span>, <span class="num">2</span>);
-tc.addContent(<span class="num">0</span>, <span class="num">0</span>, <span class="str">"Header 1"</span>);
-tc.addContent(<span class="num">0</span>, <span class="num">1</span>, <span class="str">"Header 2"</span>);
-tc.addContent(<span class="num">1</span>, <span class="num">0</span>, <span class="str">"Cell A"</span>);
-tc.addContent(<span class="num">1</span>, <span class="num">1</span>, <span class="str">"Cell B"</span>);
-tablePart.setContent(<span class="typ">ContentEditorXStream</span>.toXml(tc));
-<span class="typ">TableSettings</span> settings = <span class="kw">new</span> <span class="typ">TableSettings</span>();
-settings.setColumnHeaders(<span class="kw">true</span>);
-settings.setBordered(<span class="kw">true</span>);
-tablePart.setLayoutOptions(<span class="typ">ContentEditorXStream</span>.toXml(settings));
-pageService.appendNewPagePart(page, tablePart);</code></pre>
-
-<h4>Code</h4>
-<pre><code><span class="typ">CodePart</span> codePart = <span class="kw">new</span> <span class="typ">CodePart</span>();
-codePart.setContent(<span class="str">"public class Hello { }"</span>);
-<span class="typ">CodeSettings</span> cs = <span class="kw">new</span> <span class="typ">CodeSettings</span>();
-cs.setCodeLanguage(<span class="typ">CodeLanguage</span>.java);
-codePart.setLayoutOptions(<span class="typ">ContentEditorXStream</span>.toXml(cs));
-pageService.appendNewPagePart(page, codePart);</code></pre>
-
-<h4>Image (via Media Center)</h4>
-<pre><code><span class="typ">Media</span> media = imageHandler.createMedia(
-    <span class="str">"photo"</span>, <span class="str">"description"</span>, <span class="str">"alt text"</span>,
-    file, <span class="str">"photo.png"</span>, <span class="kw">null</span>, author, <span class="typ">MediaLog.Action</span>.UPLOAD);
-<span class="typ">MediaPart</span> mediaPart = <span class="typ">MediaPart</span>.valueOf(author, media);
-pageService.appendNewPagePart(page, mediaPart);</code></pre>
-
-<h4>Table of Contents</h4>
-<pre><code><span class="typ">TocPart</span> tocPart = <span class="kw">new</span> <span class="typ">TocPart</span>();
-<span class="typ">TocSettings</span> ts = <span class="kw">new</span> <span class="typ">TocSettings</span>(); <span class="cmt">// defaults: visibleLevels={1,2,3,4}, no title</span>
-ts.setTitle(<span class="str">"Contents"</span>);
-tocPart.setTocSettings(ts);
-pageService.appendNewPagePart(page, tocPart);</code></pre>
-
-<!-- ===== NEW ELEMENT GUIDE ===== -->
-<h2 id="new-element-guide">Adding a New Element Type</h2>
-
-<ol>
-  <li><strong>Model interface</strong> in <code>model/</code> &mdash; extend <code>PageElement</code> or suitable sub-interface</li>
-  <li><strong>JPA entity</strong> in <code>model/jpa/</code> &mdash; extend <code>AbstractPart</code>, override <code>getType()</code>, implement <code>copy()</code></li>
-  <li><strong>Register in <code>persistence.xml</code></strong> &mdash; add <code>&lt;class&gt;</code> entry</li>
-  <li><strong>Settings class</strong> in <code>model/</code> (if needed) &mdash; register in <code>ContentEditorXStream</code></li>
-  <li><strong>Handler</strong> in <code>handler/</code> &mdash; implement <code>PageElementHandler</code> + appropriate mixins</li>
-  <li><strong>Editor controller</strong> in <code>ui/</code> &mdash; implement <code>PageElementEditorController</code></li>
-  <li><strong>Inspector controller</strong> in <code>ui/</code> &mdash; extend <code>PageElementInspectorController</code></li>
-  <li><strong>Run component</strong> in <code>ui/</code> &mdash; implement <code>PageRunElement</code></li>
-  <li><strong>i18n keys</strong> in <code>ui/_i18n/</code></li>
-  <li><strong>Register handler</strong> in provider implementations (<code>PageRunController</code>, <code>EvaluationFormEditorController</code>)</li>
-</ol>
-
-<div class="aside"><strong>Tip:</strong> Use <code>TitlePageElementHandler</code> as the canonical reference implementation. It demonstrates the full handler pattern including <code>SimpleAddPageElementHandler</code>, <code>CloneElementHandler</code>, and <code>PageElementStore&lt;TitleElement&gt;</code>.</div>
-
-<!-- ===== CLIENT SIDE ===== -->
-<h2 id="client-side">Client-Side Integration</h2>
-
-<p>The editor relies on two JavaScript libraries:</p>
+<h3 id="pageserviceimpl-and-pagedao">PageServiceImpl and PageDAO</h3>
 <ul>
-  <li><code>jquery.contenteditor.v3.js</code> &mdash; jQuery plugin for element selection, AJAX command dispatch</li>
-  <li><code>dragula.js</code> &mdash; Lightweight drag-and-drop library for element reordering</li>
+<li><code>PageServiceImpl</code> (<code>manager/PageServiceImpl.java</code>) is the Spring <code>@Service</code> implementation.</li>
+<li><code>PageDAO</code> (<code>manager/PageDAO.java</code>) contains JPA operations on <code>o_ce_page</code>, <code>o_ce_page_body</code>, and <code>o_ce_page_part</code>.</li>
+<li>Part ordering is managed through the JPA <code>@OrderColumn(name="pos")</code> on <code>PageBodyImpl.parts</code>.</li>
 </ul>
-
-<p>Commands dispatched from browser via AJAX: <code>edit_fragment</code>, <code>save_element</code>, <code>clone_element</code>, <code>delete_element</code>, <code>move_up</code>, <code>move_down</code>, <code>drop_fragment</code>, <code>add_element_above</code>, <code>add_element_below</code>, <code>add_to_container</code>.</p>
-
-<!-- ===== CONFIGURATION ===== -->
-<h2 id="configuration">Configuration</h2>
-
-<p><code>ContentEditorModule</code> (Spring module) exposes these properties:</p>
+<h3 id="contenteditorfilestorage">ContentEditorFileStorage</h3>
+<p><code>ContentEditorFileStorage</code> (<code>manager/ContentEditorFileStorage.java</code>) manages binary files associated with page elements. It creates subdirectories under <code>bcroot/portfolio/</code> using UUID-based naming.</p>
+<p>Key directories:
+- <code>bcroot/portfolio/</code> -- root for page-related files
+- Subdirectories per media, poster images, assignments, etc.
+- Maximum 32,000 subdirectories per parent directory (then rolls over to a new parent).</p>
+<h3 id="content-import-markdown-and-word">Content Import (Markdown and Word)</h3>
+<p>The content import feature allows users to create page content from CommonMark markdown text/files or Word documents (.docx). The import dialog offers two modes: file upload (Markdown/ZIP/DOCX) or text paste (Markdown).</p>
+<p><strong>Supported Markdown features:</strong></p>
 <table>
-  <tr><th>Property</th><th>Purpose</th></tr>
-  <tr><td><code>ceditor.image.styles</code></td><td>Available CSS styles for images</td></tr>
-  <tr><td><code>ceditor.image.title.styles</code></td><td>Available styles for image titles</td></tr>
-  <tr><td><code>ceditor.table.styles</code></td><td>Available CSS styles for tables</td></tr>
+<thead>
+<tr>
+<th>Markdown construct</th>
+<th>PagePart</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code># Heading</code> (H1–H6)</td>
+<td><code>TitlePart</code></td>
+</tr>
+<tr>
+<td>Paragraphs</td>
+<td><code>ParagraphPart</code> (consecutive merged)</td>
+</tr>
+<tr>
+<td><code>**bold**</code>, <code>*italic*</code>, <code>~~strike~~</code></td>
+<td>Inline HTML in paragraph content</td>
+</tr>
+<tr>
+<td><code>==highlight==</code></td>
+<td><code>&lt;mark&gt;</code> via custom <code>HighlightExtension</code></td>
+</tr>
+<tr>
+<td><code>&lt;sup&gt;</code>, <code>&lt;sub&gt;</code>, <code>&lt;u&gt;</code>, <code>&lt;mark&gt;</code>, <code>&lt;span style="text-decoration:underline"&gt;</code></td>
+<td>Whitelisted safe inline HTML</td>
+</tr>
+<tr>
+<td><code>```code```</code></td>
+<td><code>CodePart</code> with syntax highlighting</td>
+</tr>
+<tr>
+<td><code>$$math$$</code></td>
+<td><code>MathPart</code> via display math preprocessor</td>
+</tr>
+<tr>
+<td>GFM tables</td>
+<td><code>TablePart</code> with row/column header detection</td>
+</tr>
+<tr>
+<td><code>&gt; blockquote</code> / <code>&gt; [!NOTE]</code></td>
+<td><code>ParagraphPart</code> with <code>AlertBoxSettings</code></td>
+</tr>
+<tr>
+<td><code>!!! type "Title"</code> (MkDocs)</td>
+<td><code>ParagraphPart</code> with <code>AlertBoxSettings</code> (custom title)</td>
+</tr>
+<tr>
+<td><code>---</code></td>
+<td><code>SpacerPart</code></td>
+</tr>
+<tr>
+<td><code>![alt](url){width=N height=N}</code></td>
+<td><code>MediaPart</code> with <code>ImageSize</code> from dimensions</td>
+</tr>
+<tr>
+<td><code>[^1]</code> footnotes</td>
+<td>Rendered as footnote definitions</td>
+</tr>
+<tr>
+<td><code>[x]</code> task lists</td>
+<td>Task list checkboxes</td>
+</tr>
+<tr>
+<td>YAML front matter (<code>---</code>)</td>
+<td>Parsed and stripped (via <code>YamlFrontMatterExtension</code>). An opening fence without a closing fence disables the extension for this import: the content is imported and the warning <code>import.markdown.warn.frontmatter.unclosed</code> is shown.</td>
+</tr>
+</tbody>
 </table>
+<p><strong>Word/DOCX import:</strong></p>
+<p>Word documents are converted to Markdown via the <code>DocxToMarkdownService</code> from <code>org.olat.core.util.docxToMarkdown</code> before being fed into the standard Markdown import pipeline. This supports headings, formatting, tables, images, shapes (as SVG), SmartArt, footnotes, math, and more. See the <code>docxToMarkdown</code> package documentation for full details. Word import is marked as beta with a user-visible warning.</p>
+<p><strong>Service and conversion pipeline:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MarkdownImportService</code></td>
+<td>Spring <code>@Service</code> — orchestrates parsing and persistence. Runs the math preprocessor then the MkDocs admonition preprocessor, extracts image dimensions from the AST, parses via CommonMark (with GFM tables, strikethrough, footnotes, task lists, autolinks, image attributes, YAML front matter, and the custom Highlight extension), visits the AST, persists parts in a <code>ContainerPart</code>.</td>
+</tr>
+<tr>
+<td><code>MarkdownPagePartVisitor</code></td>
+<td><code>AbstractVisitor</code> that walks the CommonMark AST and produces <code>PagePart</code> instances. Handles image dimension mapping (proportion-based <code>ImageSize</code> from Word page width), table header detection (bold row/column analysis), and safe inline HTML whitelist with post-processing unescape.</td>
+</tr>
+<tr>
+<td><code>MarkdownMathPreprocessor</code></td>
+<td>Replaces <code>$$...$$</code> display math blocks with unique placeholders before CommonMark parsing. Runs before the admonition preprocessor so stray <code>!!!</code> inside LaTeX cannot be mis-transformed.</td>
+</tr>
+<tr>
+<td><code>MarkdownMkDocsAdmonitionPreprocessor</code></td>
+<td>Transforms MkDocs / Python-Markdown admonition blocks (<code>!!! type "Title"</code> with 4-space-indented content) into the existing <code>&gt; [!TYPE\|Title]</code> blockquote form. Respects fenced code blocks. Titles are sanitized to plain text (HTML tags and CommonMark-formatting chars stripped) so the title survives as a single Text node and is safely displayed by the alert-box renderer. A blank separator line is appended so adjacent admonitions do not merge into a single blockquote.</td>
+</tr>
+<tr>
+<td><code>MarkdownCodeLanguageMapping</code></td>
+<td>Maps fenced code block info strings to <code>CodeLanguage</code> enum.</td>
+</tr>
+<tr>
+<td><code>MarkdownAdmonitionMapping</code></td>
+<td>Detects <code>[!TYPE]</code> and <code>[!TYPE\|Custom title]</code> markers in blockquotes and maps to <code>AlertBoxType</code>. Supports GitHub types (NOTE, TIP, IMPORTANT, WARNING, CAUTION, INFO, SUCCESS, ERROR) and MkDocs types (ABSTRACT, SUMMARY, TLDR, HINT, CHECK, DONE, HELP, FAQ, QUESTION, ATTENTION, FAILURE, FAIL, MISSING, DANGER, BUG, EXAMPLE, QUOTE, CITE). Empty custom title <code>\|</code> suppresses the title; absent <code>\|…</code> falls back to the translated type name.</td>
+</tr>
+<tr>
+<td><code>Highlight</code> / <code>HighlightDelimiterProcessor</code> / <code>HighlightHtmlNodeRenderer</code> / <code>HighlightExtension</code></td>
+<td>Custom CommonMark extension implementing the <code>==text==</code> → <code>&lt;mark&gt;text&lt;/mark&gt;</code> syntax via a proper <code>DelimiterProcessor</code>. Respects code spans and code fences automatically.</td>
+</tr>
+<tr>
+<td><code>MarkdownImportResult</code></td>
+<td>Record with <code>warnings</code> (i18n keys of partial conversion issues), <code>container</code> (the wrapping <code>ContainerPart</code>), <code>column</code> and <code>insertIndex</code> (the slot for a follow-up part such as the AI quiz placeholder) and <code>aiMetadataJobs</code> (the number of scheduled AI image metadata tasks).</td>
+</tr>
+<tr>
+<td><code>MarkdownImportOptions</code></td>
+<td><span class="version-badge" style="margin-left:0">New in 21.1.0</span> Record with the options of the import dialog. It holds one flag, <code>generateImageMetadata</code>. <code>MarkdownImportOptions.NONE</code> (and a <code>null</code> argument) switches the AI image metadata off.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Security measures:</strong></p>
+<ul>
+<li><code>HtmlRenderer</code> configured with <code>escapeHtml(true)</code> and <code>sanitizeUrls(true)</code> allowing only <code>http</code>, <code>https</code>, and <code>mailto</code> protocols.</li>
+<li>HTML blocks are skipped entirely (warning emitted).</li>
+<li>Safe inline HTML whitelist: only <code>&lt;sup&gt;</code>, <code>&lt;sub&gt;</code>, <code>&lt;u&gt;</code>, <code>&lt;mark&gt;</code>, <code>&lt;span style="text-decoration:underline"&gt;</code>, and their closing tags pass through. All other inline HTML is stripped.</li>
+<li><code>==highlight==</code> is processed by a CommonMark <code>DelimiterProcessor</code>, so code spans and code fences are respected automatically (e.g., <code>x==y</code> inside <code>`…`</code> or <code></code> ``` is never transformed).</li>
+<li>MkDocs admonition titles are stripped of all markup (HTML tags and CommonMark-formatting chars) before being emitted, so they cannot inject HTML into the alert box.</li>
+<li>Remote image downloads restricted by <code>MediaServerModule.isRestrictedDomain()</code>.</li>
+<li><span class="version-badge changed" style="margin-left:0">Changed in 21.1.0</span> Remote image downloads use <code>HttpClientService.createThreadSafeHttpClient(true, ProtectionProfile.USER_PROVIDED)</code>. The <code>USER_PROVIDED</code> profile applies the SSRF protection for URLs that a user supplies (OO-9310).</li>
+<li>Download size limited to <code>MAX_UPLOAD_SIZE_KB</code> (50 MB).</li>
+<li>Image alt texts are truncated to 1000 characters and media titles to 255 characters, so long Word alt texts do not break the persistence.</li>
+<li>Local file path images require a <code>basePath</code>; rejected in text paste mode.</li>
+<li>Path traversal protection via canonical path comparison against <code>basePath</code>.</li>
+</ul>
+<p><strong>UI integration:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MarkdownImportController</code></td>
+<td><code>FormBasicController</code> with card-style mode selection (file upload or text paste). Accepts <code>.md</code>, <code>.txt</code>, <code>.zip</code>, and <code>.docx</code> files. DOCX files are converted via <code>DocxToMarkdownService</code>. Upload limits configurable via <code>ceditor.import.limit.md</code> (default 50 MB) and <code>ceditor.import.limit.docx</code> (default 200 MB) in <code>olat.properties</code>. The text length is also limited by the AI input limit, see <a href="#ui-markdownimportcontroller">Chapter 15</a>. Fires <code>MarkdownImportDoneEvent</code> on success.</td>
+</tr>
+<tr>
+<td><code>ImportMarkdownEvent</code></td>
+<td>Fired by <code>PageEditorV2Controller</code> when the import button is clicked.</td>
+</tr>
+<tr>
+<td><code>MarkdownImportDoneEvent</code></td>
+<td>Carries <code>List&lt;String&gt; warnings</code> back to the embedding controller.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Configuration (<code>olat.properties</code>):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ceditor.import.limit.md</code></td>
+<td><code>51200</code></td>
+<td>Max upload size for Markdown/ZIP files (KB)</td>
+</tr>
+<tr>
+<td><code>ceditor.import.limit.docx</code></td>
+<td><code>204800</code></td>
+<td>Max upload size for DOCX files (KB)</td>
+</tr>
+</tbody>
+</table>
+<p>The import button is shown when <code>PageEditorProvider.isImportMarkdownEnabled()</code> returns <code>true</code>. Currently enabled for portfolio pages (<code>PortfolioPageEditorProvider</code>, inner class of <code>PageRunController</code>).</p>
+<hr />
+<h2 id="10-container-and-layout-system">10. Container and Layout System</h2>
+<p>Containers are the layout mechanism. A <code>ContainerPart</code> stores a <code>ContainerSettings</code> object (as XStream XML in <code>layoutOptions</code>) that defines the number and arrangement of columns, and which child element IDs live in each column.</p>
+<h3 id="containerlayout-enum">ContainerLayout enum</h3>
+<pre><code><span class="kw">public</span> <span class="kw">enum</span> <span class="typ">ContainerLayout</span> {
+    block_1col    (<span class="str">"o_container_block_1_cols"</span>,     <span class="num">1</span>, <span class="kw">false</span>),
+    block_2cols   (<span class="str">"o_container_block_2_cols"</span>,     <span class="num">2</span>, <span class="kw">false</span>),
+    block_3cols   (<span class="str">"o_container_block_3_cols"</span>,     <span class="num">3</span>, <span class="kw">false</span>),
+    block_4cols   (<span class="str">"o_container_block_4_cols"</span>,     <span class="num">4</span>, <span class="kw">true</span>),   <span class="cmt">// deprecated</span>
+    block_5cols   (<span class="str">"o_container_block_5_cols"</span>,     <span class="num">5</span>, <span class="kw">true</span>),   <span class="cmt">// deprecated</span>
+    block_6cols   (<span class="str">"o_container_block_6_cols"</span>,     <span class="num">6</span>, <span class="kw">true</span>),   <span class="cmt">// deprecated</span>
+    block_3rows   (<span class="str">"o_container_block_3_rows"</span>,     <span class="num">3</span>, <span class="kw">false</span>),
+    block_2_1rows (<span class="str">"o_container_block_2_1_rows"</span>,   <span class="num">3</span>, <span class="kw">false</span>),
+    block_1_3rows (<span class="str">"o_container_block_1_3_rows"</span>,   <span class="num">4</span>, <span class="kw">false</span>),
+    block_1_1lcols(<span class="str">"o_container_block_1_1l_cols"</span>,  <span class="num">2</span>, <span class="kw">false</span>),
+    block_1_2rows (<span class="str">"o_container_block_1_2_rows"</span>,   <span class="num">3</span>, <span class="kw">false</span>),
+    block_1_2cols (<span class="str">"o_container_block_1_2_cols"</span>,   <span class="num">3</span>, <span class="kw">false</span>);
 
-<!-- ===== MARKDOWN AND WORD IMPORT ===== -->
-<h2 id="markdown-import">15. Markdown and Word Import</h2>
+    <span class="typ">String</span> cssClass();          <span class="cmt">// CSS class applied to the container div</span>
+    <span class="kw">int</span> numberOfBlocks();       <span class="cmt">// How many slots/columns the layout provides</span>
+    <span class="kw">boolean</span> deprecated();       <span class="cmt">// Should not be offered for new containers</span>
+}</code></pre>
+<h3 id="containersettings">ContainerSettings</h3>
+<pre><code><span class="kw">public</span> <span class="kw">class</span> <span class="typ">ContainerSettings</span> {
+    <span class="kw">public</span> <span class="kw">static</span> <span class="kw">final</span> <span class="typ">String</span> EMPTY = <span class="str">"xxx-empty-xxx"</span>;
 
-<p><code>MarkdownImportController</code> (<code>ceditor.ui</code>) provides a dialog that converts Markdown, ZIP, and Word files into <code>PagePart</code> elements persisted directly onto the target page. It is enabled when <code>PageEditorProvider.isImportMarkdownEnabled()</code> returns <code>true</code>.</p>
+    <span class="kw">private</span> <span class="typ">String</span> name;
+    <span class="kw">private</span> <span class="kw">int</span> numOfColumns;
+    <span class="kw">private</span> <span class="typ">ContainerLayout</span> type;
+    <span class="kw">private</span> <span class="typ">List</span>&lt;<span class="typ">ContainerColumn</span>&gt; columns;
+    <span class="kw">private</span> <span class="typ">AlertBoxSettings</span> alertBoxSettings;
+    <span class="kw">private</span> <span class="typ">GeneralStyleSettings</span> generalStyleSettings;
 
-<h3>Import Pipeline Diagram</h3>
+    <span class="cmt">// Key methods:</span>
+    <span class="typ">ContainerLayout</span> getType();                    <span class="cmt">// Falls back to ofColumn() if type is null</span>
+    <span class="typ">List</span>&lt;<span class="typ">ContainerColumn</span>&gt; getColumns();           <span class="cmt">// Lazily initialized</span>
+    <span class="typ">ContainerColumn</span> getColumn(<span class="kw">int</span> index);
+    <span class="typ">ContainerColumn</span> getColumn(<span class="typ">String</span> elementId);  <span class="cmt">// Find which column holds an element</span>
+    <span class="typ">List</span>&lt;<span class="typ">String</span>&gt; getAllElementIds();               <span class="cmt">// All element IDs across all columns</span>
+    <span class="kw">void</span> setElementAt(<span class="typ">String</span> elementId, <span class="kw">int</span> column, <span class="typ">String</span> sibling);
+    <span class="kw">void</span> removeElement(<span class="typ">String</span> elementId);
+    <span class="kw">void</span> moveUp(<span class="typ">String</span> elementId);
+    <span class="kw">void</span> moveDown(<span class="typ">String</span> elementId);
+    <span class="kw">void</span> updateType(<span class="typ">ContainerLayout</span> newType);     <span class="cmt">// Merges overflow columns into the last column</span>
+    <span class="kw">void</span> remapElementIds(<span class="typ">Map</span>&lt;<span class="typ">String</span>,<span class="typ">String</span>&gt; mapKeys); <span class="cmt">// Used during copy/clone</span>
+}</code></pre>
+<h3 id="containercolumn">ContainerColumn</h3>
+<p>Each column holds an ordered list of element IDs (strings):</p>
+<pre><code><span class="kw">public</span> <span class="kw">class</span> <span class="typ">ContainerColumn</span> {
+    <span class="typ">List</span>&lt;<span class="typ">String</span>&gt; getElementIds();
+    <span class="kw">boolean</span> contains(<span class="typ">String</span> elementId);
+    <span class="kw">void</span> moveUp(<span class="typ">String</span> elementId);
+    <span class="kw">void</span> moveDown(<span class="typ">String</span> elementId);
+}</code></pre>
+<h3 id="container-rendering-and-nesting">Container rendering and nesting</h3>
+<p>The <code>PageEditorV2Controller.loadModel()</code> method resolves nesting:</p>
+<ol>
+<li>Creates all fragments (both leaf and container) in a flat list.</li>
+<li>For each <code>ContentEditorContainerComponent</code>, reads its <code>ContainerSettings.getAllElementIds()</code>.</li>
+<li>Moves matching fragments from the root list into the container via <code>container.addComponent(containedCmp)</code>.</li>
+<li>Only root-level fragments remain in <code>editorCmp.setRootComponents()</code>.</li>
+</ol>
+<p>Containers can be nested (a container can hold another container). The resolution happens in a single pass because <code>getAllElementIds()</code> returns only direct children, and the algorithm processes all containers.</p>
+<h3 id="containerhandler-specifics">ContainerHandler specifics</h3>
+<p><code>ContainerHandler</code> implements <code>PageLayoutHandler</code> (which extends <code>PageElementHandler</code>). It has a dual constructor:</p>
+<pre><code><span class="kw">public</span> <span class="typ">ContainerHandler</span>()                    <span class="cmt">// For rendering existing containers (no specific layout)</span>
+<span class="kw">public</span> <span class="typ">ContainerHandler</span>(<span class="typ">ContainerLayout</span> layout) <span class="cmt">// For creating new containers with a specific layout</span></code></pre>
+<p>When creating a new container:</p>
+<pre><code><span class="ann">@Override</span>
+<span class="kw">public</span> <span class="typ">PageElement</span> createPageElement(<span class="typ">Locale</span> locale) {
+    <span class="typ">ContainerSettings</span> settings = <span class="kw">new</span> <span class="typ">ContainerSettings</span>();
+    settings.setType(layout != <span class="kw">null</span> ? layout : <span class="typ">ContainerLayout</span>.block_2cols);
+    settings.setNumOfColumns(settings.getType().numberOfBlocks());
+    <span class="typ">ContainerPart</span> container = <span class="kw">new</span> <span class="typ">ContainerPart</span>();
+    container.setLayoutOptions(<span class="typ">ContentEditorXStream</span>.toXml(settings));
+    <span class="kw">return</span> container;
+}</code></pre>
+<p>When cloning a container, child element IDs are cleared (the parent controller handles deep-cloning children separately):</p>
+<pre><code><span class="ann">@Override</span>
+<span class="kw">public</span> <span class="typ">PageElement</span> clonePageElement(<span class="typ">PageElement</span> element) {
+    <span class="kw">if</span> (element instanceof <span class="typ">ContainerPart</span> containerPart) {
+        <span class="typ">ContainerPart</span> clone = containerPart.copy();
+        <span class="typ">ContainerSettings</span> settings = containerPart.getContainerSettings();
+        settings.getColumns().forEach(column -&gt; column.getElementIds().clear());
+        clone.setLayoutOptions(<span class="typ">ContentEditorXStream</span>.toXml(settings));
+        <span class="kw">return</span> clone;
+    }
+    <span class="kw">return</span> <span class="kw">null</span>;
+}</code></pre>
+<hr />
+<h2 id="11-element-type-reference">11. Element Type Reference</h2>
+<h3 id="complete-handler-table">Complete handler table</h3>
+<table>
+<thead>
+<tr>
+<th>Handler Class</th>
+<th>Type String</th>
+<th>Category</th>
+<th>Creation Mode</th>
+<th>Cloneable</th>
+<th>Store Type</th>
+<th>Sort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TitlePageElementHandler</code></td>
+<td><code>"htitle"</code></td>
+<td><code>text</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td><code>TitleElement</code></td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>ParagraphPageElementHandler</code></td>
+<td><code>"htmlparagraph"</code></td>
+<td><code>text</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td><code>HTMLElement</code></td>
+<td>20</td>
+</tr>
+<tr>
+<td><code>HTMLRawPageElementHandler</code></td>
+<td><code>"htmlraw"</code></td>
+<td><code>text</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td><code>HTMLRawElement</code></td>
+<td>100</td>
+</tr>
+<tr>
+<td><code>SpacerElementHandler</code></td>
+<td><code>"hr"</code></td>
+<td><code>layout</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td>(none)</td>
+<td>90</td>
+</tr>
+<tr>
+<td><code>ContainerHandler</code></td>
+<td><code>"container"</code></td>
+<td><code>layout</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td><code>ContainerElement</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>TablePageElementHandler</code></td>
+<td><code>"table"</code></td>
+<td><code>text</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td><code>TableElement</code></td>
+<td>30</td>
+</tr>
+<tr>
+<td><code>ImageHandler</code> *</td>
+<td>(media type)</td>
+<td><code>media</code></td>
+<td>Interactive</td>
+<td>No</td>
+<td><code>ImageElement</code></td>
+<td>--</td>
+</tr>
+<tr>
+<td><code>GalleryElementHandler</code></td>
+<td><code>"gallery"</code></td>
+<td><code>media</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td><code>GalleryElement</code></td>
+<td>75</td>
+</tr>
+<tr>
+<td><code>ImageComparisonElementHandler</code></td>
+<td><code>"imagecomparison"</code></td>
+<td><code>media</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td>(none)</td>
+<td>76</td>
+</tr>
+<tr>
+<td><code>CodeElementHandler</code></td>
+<td><code>"code"</code></td>
+<td><code>text</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td><code>CodeElement</code></td>
+<td>50</td>
+</tr>
+<tr>
+<td><code>MathPageElementHandler</code></td>
+<td><code>"math"</code></td>
+<td><code>text</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td><code>MathElement</code></td>
+<td>40</td>
+</tr>
+<tr>
+<td><code>QuizElementHandler</code></td>
+<td><code>"quiz"</code></td>
+<td><code>knowledge</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td><code>QuizElement</code></td>
+<td>--</td>
+</tr>
+<tr>
+<td><code>EvaluationFormHandler</code></td>
+<td><code>"evaluationform"</code></td>
+<td><code>organisational</code></td>
+<td>Interactive</td>
+<td>No</td>
+<td>(none)</td>
+<td>--</td>
+</tr>
+<tr>
+<td><code>TocElementHandler</code></td>
+<td><code>"toc"</code></td>
+<td><code>other</code></td>
+<td>Simple</td>
+<td>Yes</td>
+<td><code>TocElement</code></td>
+<td>20</td>
+</tr>
+</tbody>
+</table>
+<p>* <code>ImageHandler</code> is defined in the <code>cemedia</code> module (<code>org.olat.modules.cemedia.handler</code>), not in <code>ceditor</code>. Other media handlers (<code>AudioHandler</code>, <code>VideoHandler</code>, <code>FileHandler</code>, <code>CitationHandler</code>, <code>DrawioHandler</code>) follow the same pattern.</p>
+<h3 id="element-type-details">Element type details</h3>
+<h4 id="title-htitle">Title (<code>htitle</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> Plain text (the heading text, without HTML tags).</li>
+<li><strong>Layout options:</strong> <code>TitleSettings</code> -- <code>size</code> (1-6 for h1-h6), <code>BlockLayoutSettings</code>.</li>
+<li><strong>Editor:</strong> <code>TitleEditorController</code> -- inline contenteditable heading.</li>
+<li><strong>Inspector:</strong> <code>TitleInspectorController</code> -- heading size selector, spacing.</li>
+</ul>
+<h4 id="paragraph-htmlparagraph">Paragraph (<code>htmlparagraph</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> Rich HTML text.</li>
+<li><strong>Layout options:</strong> <code>TextSettings</code> with <code>BlockLayoutSettings</code> and <code>AlertBoxSettings</code>.</li>
+<li><strong>Editor:</strong> <code>HTMLRawEditorController</code> -- TinyMCE rich text editor. <code>ParagraphPageElementHandler</code> reuses the controller of the HTML raw element.</li>
+<li><strong>Inspector:</strong> <code>HTMLRawInspectorController</code> -- spacing, alert box settings.</li>
+</ul>
+<h4 id="html-raw-htmlraw">HTML Raw (<code>htmlraw</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> Raw HTML source code.</li>
+<li><strong>Layout options:</strong> Settings with <code>BlockLayoutSettings</code>.</li>
+<li><strong>Editor:</strong> <code>HTMLRawEditorController</code> -- code editor for raw HTML.</li>
+<li><strong>Inspector:</strong> <code>HTMLRawInspectorController</code>.</li>
+</ul>
+<h4 id="spacer--separator-hr">Spacer / Separator (<code>hr</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> Unused.</li>
+<li><strong>Layout options:</strong> <code>BlockLayoutSettings</code> for spacing.</li>
+<li><strong>Editor:</strong> <code>SpacerEditorController</code>.</li>
+<li><strong>Inspector:</strong> None. <code>SpacerElementHandler.getInspector()</code> returns <code>null</code>.</li>
+</ul>
+<h4 id="container-container">Container (<code>container</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> Unused.</li>
+<li><strong>Layout options:</strong> <code>ContainerSettings</code> (layout type, columns with element IDs, alert box).</li>
+<li><strong>Editor:</strong> <code>ContainerEditorController</code>.</li>
+<li><strong>Inspector:</strong> <code>ContainerInspectorController</code> -- layout picker, alert box settings.</li>
+<li><strong>Special:</strong> Acts as parent for other elements. See <a href="#10-container-and-layout-system">Container and Layout System</a>.</li>
+</ul>
+<h4 id="table-table">Table (<code>table</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> <code>TableContent</code> as XStream XML (rows and columns of cell data).</li>
+<li><strong>Layout options:</strong> <code>TableSettings</code> -- <code>rowHeaders</code>, <code>columnHeaders</code>, <code>striped</code>, <code>bordered</code>.</li>
+<li><strong>Editor:</strong> <code>TableEditorController</code>.</li>
+<li><strong>Inspector:</strong> <code>TableInspectorController</code>.</li>
+</ul>
+<h4 id="code-code">Code (<code>code</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> Plain text source code.</li>
+<li><strong>Layout options:</strong> <code>CodeSettings</code> -- <code>codeLanguage</code> (30 languages), <code>lineNumbersEnabled</code>, <code>displayAllLines</code>, <code>numberOfLinesToDisplay</code>.</li>
+<li><strong>Editor:</strong> <code>CodeEditorController</code>.</li>
+<li><strong>Inspector:</strong> <code>CodeInspectorController</code> -- language picker, display options.</li>
+<li><strong>View:</strong> <code>CodeRunController</code> -- renders with syntax highlighting via highlight.js.</li>
+</ul>
+<h4 id="math-math">Math (<code>math</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> LaTeX formula text.</li>
+<li><strong>Layout options:</strong> <code>MathSettings</code> with <code>BlockLayoutSettings</code>.</li>
+<li><strong>Editor:</strong> <code>MathLiveEditorController</code>.</li>
+<li><strong>Inspector:</strong> <code>MathLiveInspectorController</code>.</li>
+<li><strong>View:</strong> <code>MathLiveRunComponent</code>.</li>
+</ul>
+<h4 id="gallery-gallery">Gallery (<code>gallery</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> (managed internally).</li>
+<li><strong>Layout options:</strong> <code>GallerySettings</code> -- <code>GalleryType</code> enum.</li>
+<li><strong>Editor:</strong> <code>GalleryEditorController</code>.</li>
+<li><strong>Inspector:</strong> <code>GalleryInspectorController</code>.</li>
+<li><strong>View:</strong> <code>GalleryRunController</code>.</li>
+</ul>
+<h4 id="image-comparison-imagecomparison">Image Comparison (<code>imagecomparison</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> (managed internally).</li>
+<li><strong>Layout options:</strong> <code>ImageComparisonSettings</code> -- <code>ImageComparisonOrientation</code>, <code>ImageComparisonType</code>.</li>
+<li><strong>Editor/Inspector:</strong> Respective controllers.</li>
+</ul>
+<h4 id="quiz-quiz">Quiz (<code>quiz</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> Quiz data.</li>
+<li><strong>Layout options:</strong> <code>QuizSettings</code> with <code>List&lt;QuizQuestion&gt;</code>.</li>
+<li><strong>Editor/Inspector:</strong> Respective controllers.</li>
+</ul>
+<h4 id="evaluation-form-evaluationform">Evaluation Form (<code>evaluationform</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> References to the evaluation form resource.</li>
+<li><strong>Layout options:</strong> (minimal).</li>
+<li><strong>Special:</strong> Uses <code>InteractiveAddPageElementHandler</code> -- requires selecting an existing form resource.</li>
+</ul>
+<h4 id="table-of-contents-toc">Table of Contents (<code>toc</code>)</h4>
+<ul>
+<li><strong>Content column:</strong> Unused.</li>
+<li><strong>Layout options:</strong> <code>TocSettings</code> -- <code>title</code> (optional heading text), <code>visibleLevels</code> (Set&lt;Integer&gt; of 1–5, default {1,2,3,4}).</li>
+<li><strong>Editor:</strong> <code>TocEditorController</code> -- shows a live preview of the computed entries while in edit mode, updating automatically when the page structure changes or the user leaves element-edit-mode.</li>
+<li><strong>Inspector:</strong> <code>TocInspectorController</code> -- title text field, H1–H5 checkboxes for visible levels.</li>
+<li><strong>View:</strong> <code>TocRunController</code> -- renders entries as a <code>&lt;nav&gt;</code> with a hierarchical <code>&lt;ol&gt;</code> of anchor links.</li>
+<li><strong>Rendering algorithm:</strong> Implemented in <code>TocElementHandler.computeRenderData()</code>:</li>
+<li>Find the nearest <code>TitlePart</code> that precedes the TOC element; use its heading size as the baseline level (defaults to level 0 / full-page TOC if none is found).</li>
+<li>Collect all subsequent <code>TitlePart</code> elements whose level is strictly lower than the baseline (e.g. H2–H6 for an H1 baseline).</li>
+<li>Stop as soon as a title at the same or higher level as the baseline is encountered.</li>
+<li>Filter by <code>visibleLevels</code>; compute indent as <code>level - baseline - 1</code>.</li>
+<li><strong>Anchor IDs:</strong> <code>PageFragmentsComponentRenderer</code> adds <code>id="toc-{key}"</code> to the wrapper <code>&lt;div&gt;</code> of every <code>TitlePart</code>. TOC links reference these IDs as <code>#toc-{key}</code>.</li>
+<li><strong>Position sensitivity:</strong> <code>TocElementHandler</code> is instantiated with the owning <code>Page</code> so <code>computeRenderData()</code> can call <code>PageService.getAllPagePartsFlat(page)</code> to determine ordering. The editor controller receives a <code>Function&lt;TocPart, TocRenderData&gt;</code> to avoid a circular dependency between the <code>handler</code> and <code>ui</code> packages.</li>
+</ul>
+<h4 id="media-types-image-audio-video-file-citation-drawio">Media types (Image, Audio, Video, File, Citation, Draw.io)</h4>
+<ul>
+<li>Defined in the <code>cemedia</code> module, not in <code>ceditor</code>.</li>
+<li>All use <code>MediaPart</code> as the JPA entity (with FK to <code>Media</code> and <code>MediaVersion</code>).</li>
+<li><code>ImageHandler</code>, <code>AudioHandler</code>, <code>VideoHandler</code>, <code>FileHandler</code>, <code>CitationHandler</code>, <code>DrawioHandler</code> all implement <code>InteractiveAddPageElementHandler</code>.</li>
+<li><code>MediaPart.getType()</code> dynamically returns the media's type string.</li>
+</ul>
+<hr />
+<h2 id="12-adding-a-new-element-type-step-by-step">12. Adding a New Element Type (Step-by-Step)</h2>
+<p>This section walks through adding a hypothetical "Callout" element type.</p>
+<h3 id="step-1-define-the-model-interface">Step 1: Define the model interface</h3>
+<p>Create <code>src/main/java/org/olat/modules/ceditor/model/CalloutElement.java</code>:</p>
+<pre><code><span class="kw">package</span> org.olat.modules.ceditor.model;
+
+<span class="kw">import</span> org.olat.modules.ceditor.<span class="typ">PagePart</span>;
+
+<span class="kw">public</span> <span class="kw">interface</span> <span class="typ">CalloutElement</span> <span class="kw">extends</span> <span class="typ">PagePart</span> {
+    <span class="typ">CalloutSettings</span> getCalloutSettings();
+    <span class="kw">void</span> setCalloutSettings(<span class="typ">CalloutSettings</span> settings);
+}</code></pre>
+<h3 id="step-2-create-the-settings-class">Step 2: Create the settings class</h3>
+<p>Create <code>src/main/java/org/olat/modules/ceditor/model/CalloutSettings.java</code>:</p>
+<pre><code><span class="kw">package</span> org.olat.modules.ceditor.model;
+
+<span class="kw">public</span> <span class="kw">class</span> <span class="typ">CalloutSettings</span> {
+    <span class="kw">private</span> <span class="typ">String</span> style;  <span class="cmt">// "info", "warning", "error"</span>
+    <span class="kw">private</span> <span class="typ">BlockLayoutSettings</span> layoutSettings;
+    <span class="kw">private</span> <span class="typ">AlertBoxSettings</span> alertBoxSettings;
+    <span class="cmt">// getters and setters</span>
+}</code></pre>
+<h3 id="step-3-register-in-contenteditorxstream">Step 3: Register in ContentEditorXStream</h3>
+<p>Edit <code>ContentEditorXStream.java</code>:</p>
+<pre><code><span class="cmt">// Add to types array:</span>
+<span class="typ">CalloutSettings</span>.<span class="kw">class</span>,
+
+<span class="cmt">// Add alias:</span>
+xstream.alias(<span class="str">"calloutsettings"</span>, <span class="typ">CalloutSettings</span>.<span class="kw">class</span>);</code></pre>
+<p>Also register the new part entity in <code>PageXStream</code> (<code>manager/PageXStream.java</code>): add the class to the <code>types</code> array and call <code>xstream.aliasType(...)</code>. <code>PageXStream</code> serializes whole pages for the page export and import (<code>PageImportExportHelper</code>). A missing entry breaks the export or the import of pages that contain the element. The <code>TocPart</code> registration was added late for this reason (OO-9788).</p>
+<h3 id="step-4-create-the-jpa-entity">Step 4: Create the JPA entity</h3>
+<p>Create <code>src/main/java/org/olat/modules/ceditor/model/jpa/CalloutPart.java</code>:</p>
+<pre><code><span class="kw">package</span> org.olat.modules.ceditor.model.jpa;
+
+<span class="kw">import</span> jakarta.persistence.<span class="typ">Entity</span>;
+<span class="kw">import</span> jakarta.persistence.<span class="typ">Transient</span>;
+<span class="kw">import</span> org.olat.modules.ceditor.<span class="typ">ContentEditorXStream</span>;
+<span class="kw">import</span> org.olat.modules.ceditor.model.<span class="typ">CalloutElement</span>;
+<span class="kw">import</span> org.olat.modules.ceditor.model.<span class="typ">CalloutSettings</span>;
+
+<span class="ann">@Entity</span>(name=<span class="str">"cecalloutpart"</span>)
+<span class="kw">public</span> <span class="kw">class</span> <span class="typ">CalloutPart</span> <span class="kw">extends</span> <span class="typ">AbstractPart</span> <span class="kw">implements</span> <span class="typ">CalloutElement</span> {
+
+    <span class="kw">private</span> <span class="kw">static</span> <span class="kw">final</span> long serialVersionUID = 1L;
+
+    <span class="ann">@Override</span>
+    <span class="ann">@Transient</span>
+    <span class="kw">public</span> <span class="typ">String</span> getType() {
+        <span class="kw">return</span> <span class="str">"callout"</span>;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="ann">@Transient</span>
+    <span class="kw">public</span> <span class="typ">CalloutSettings</span> getCalloutSettings() {
+        <span class="typ">String</span> options = getLayoutOptions();
+        <span class="kw">return</span> options != <span class="kw">null</span>
+            ? <span class="typ">ContentEditorXStream</span>.fromXml(options, <span class="typ">CalloutSettings</span>.<span class="kw">class</span>)
+            : <span class="kw">new</span> <span class="typ">CalloutSettings</span>();
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="kw">void</span> setCalloutSettings(<span class="typ">CalloutSettings</span> settings) {
+        setLayoutOptions(<span class="typ">ContentEditorXStream</span>.toXml(settings));
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">CalloutPart</span> copy() {
+        <span class="typ">CalloutPart</span> part = <span class="kw">new</span> <span class="typ">CalloutPart</span>();
+        copy(part);
+        <span class="kw">return</span> part;
+    }
+}</code></pre>
+<h3 id="step-5-register-the-entity-in-persistencexml">Step 5: Register the entity in persistence.xml</h3>
+<p>Add to <code>src/main/resources/META-INF/persistence.xml</code>:</p>
+<pre><code>&lt;class&gt;org.olat.modules.ceditor.model.jpa.CalloutPart&lt;/class&gt;
+</code></pre>
+<h3 id="step-6-create-the-database-migration">Step 6: Create the database migration</h3>
+<p>Add the discriminator value. Since single-table inheritance is used and <code>CalloutPart</code> uses <code>@Entity(name="cecalloutpart")</code>, JPA will store <code>"cecalloutpart"</code> as the discriminator value automatically. No DDL changes are needed for the table structure (it reuses <code>o_ce_page_part</code>).</p>
+<h3 id="step-7-create-the-ui-controllers">Step 7: Create the UI controllers</h3>
+<p>Create three controllers in <code>ui/</code>:</p>
+<ul>
+<li><code>CalloutRunController</code> implementing <code>PageRunElement</code> -- renders the callout in view mode.</li>
+<li><code>CalloutEditorController</code> implementing <code>PageElementEditorController</code> -- inline editing.</li>
+<li><code>CalloutInspectorController</code> implementing <code>PageElementInspectorController</code> -- side panel with style picker.</li>
+</ul>
+<p>Create corresponding Velocity templates in <code>ui/_content/</code>.
+Add i18n keys in <code>ui/_i18n/LocalStrings_en.properties</code> (and other languages).</p>
+<h3 id="step-8-create-the-handler">Step 8: Create the handler</h3>
+<p>Create <code>src/main/java/org/olat/modules/ceditor/handler/CalloutElementHandler.java</code>:</p>
+<pre><code><span class="kw">package</span> org.olat.modules.ceditor.handler;
+
+<span class="kw">public</span> <span class="kw">class</span> <span class="typ">CalloutElementHandler</span> <span class="kw">implements</span> <span class="typ">PageElementHandler</span>,
+        <span class="typ">PageElementStore</span>&lt;<span class="typ">CalloutElement</span>&gt;,
+        <span class="typ">SimpleAddPageElementHandler</span>,
+        <span class="typ">CloneElementHandler</span> {
+
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getType() { <span class="kw">return</span> <span class="str">"callout"</span>; }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">String</span> getIconCssClass() { <span class="kw">return</span> <span class="str">"o_icon_callout"</span>; }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="typ">PageElementCategory</span> getCategory() { <span class="kw">return</span> <span class="typ">PageElementCategory</span>.text; }
+    <span class="ann">@Override</span> <span class="kw">public</span> <span class="kw">int</span> getSortOrder() { <span class="kw">return</span> <span class="num">55</span>; }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">PageRunElement</span> getContent(<span class="typ">UserRequest</span> ureq, <span class="typ">WindowControl</span> wControl,
+                                     <span class="typ">PageElement</span> element, <span class="typ">RenderingHints</span> options) {
+        <span class="kw">if</span> (element instanceof <span class="typ">CalloutElement</span> callout) {
+            <span class="kw">return</span> <span class="kw">new</span> <span class="typ">CalloutRunController</span>(ureq, wControl, callout, options);
+        }
+        <span class="kw">return</span> <span class="kw">null</span>;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">Controller</span> getEditor(<span class="typ">UserRequest</span> ureq, <span class="typ">WindowControl</span> wControl, <span class="typ">PageElement</span> element) {
+        <span class="kw">if</span> (element instanceof <span class="typ">CalloutPart</span> part) {
+            <span class="kw">return</span> <span class="kw">new</span> <span class="typ">CalloutEditorController</span>(ureq, wControl, part, <span class="kw">this</span>);
+        }
+        <span class="kw">return</span> <span class="kw">null</span>;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">PageElementInspectorController</span> getInspector(<span class="typ">UserRequest</span> ureq, <span class="typ">WindowControl</span> wControl,
+                                                        <span class="typ">PageElement</span> element) {
+        <span class="kw">if</span> (element instanceof <span class="typ">CalloutPart</span> part) {
+            <span class="kw">return</span> <span class="kw">new</span> <span class="typ">CalloutInspectorController</span>(ureq, wControl, part, <span class="kw">this</span>);
+        }
+        <span class="kw">return</span> <span class="kw">null</span>;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">PageElement</span> createPageElement(<span class="typ">Locale</span> locale) {
+        <span class="typ">CalloutPart</span> part = <span class="kw">new</span> <span class="typ">CalloutPart</span>();
+        <span class="typ">CalloutSettings</span> settings = <span class="kw">new</span> <span class="typ">CalloutSettings</span>();
+        settings.setStyle(<span class="str">"info"</span>);
+        settings.setLayoutSettings(<span class="typ">BlockLayoutSettings</span>.getPredefined());
+        part.setCalloutSettings(settings);
+        <span class="kw">return</span> part;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">PageElement</span> clonePageElement(<span class="typ">PageElement</span> element) {
+        <span class="kw">if</span> (element instanceof <span class="typ">CalloutPart</span> part) {
+            <span class="kw">return</span> part.copy();
+        }
+        <span class="kw">return</span> <span class="kw">null</span>;
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> <span class="typ">CalloutElement</span> savePageElement(<span class="typ">CalloutElement</span> element) {
+        <span class="kw">return</span> <span class="typ">CoreSpringFactory</span>.getImpl(<span class="typ">PageService</span>.<span class="kw">class</span>).updatePart((<span class="typ">CalloutPart</span>) element);
+    }
+}</code></pre>
+<h3 id="step-9-register-in-providers">Step 9: Register in provider(s)</h3>
+<p>In <code>PortfolioPageEditorProvider</code> (or wherever the new type should be available):</p>
+<pre><code><span class="typ">CalloutElementHandler</span> calloutHandler = <span class="kw">new</span> <span class="typ">CalloutElementHandler</span>();
+handlers.add(calloutHandler);
+creationHandlers.add(calloutHandler);</code></pre>
+<h3 id="step-10-build-and-test">Step 10: Build and test</h3>
+<pre><code>mvn compile -pl :openolat-lms -q
+</code></pre>
+<h3 id="checklist">Checklist</h3>
+<ul>
+<li>[ ] Model interface in <code>model/</code></li>
+<li>[ ] Settings class in <code>model/</code>, registered in <code>ContentEditorXStream</code></li>
+<li>[ ] JPA entity in <code>model/jpa/</code>, registered in <code>persistence.xml</code></li>
+<li>[ ] Run controller (<code>PageRunElement</code>)</li>
+<li>[ ] Editor controller (<code>PageElementEditorController</code>)</li>
+<li>[ ] Inspector controller (<code>PageElementInspectorController</code>)</li>
+<li>[ ] Velocity templates in <code>ui/_content/</code></li>
+<li>[ ] i18n strings in <code>ui/_i18n/</code></li>
+<li>[ ] Handler in <code>handler/</code> implementing appropriate mixins</li>
+<li>[ ] Handler registered in target <code>PageEditorProvider</code>(s)</li>
+<li>[ ] Icon CSS class defined (or use existing)</li>
+</ul>
+<hr />
+<h2 id="13-client-side-integration">13. Client-Side Integration</h2>
+<h3 id="javascript-dependencies">JavaScript dependencies</h3>
+<p>The content editor loads two JavaScript files:</p>
+<ol>
+<li><strong><code>js/jquery/openolat/jquery.contenteditor.v3.js</code></strong> -- Custom OpenOlat content editor logic. Handles:</li>
+<li>Click-to-edit activation</li>
+<li>Toolbar button interactions</li>
+<li>AJAX communication for edit/close/save events</li>
+<li>
+<p>Inspector panel positioning and toggling</p>
+</li>
+<li>
+<p><strong><code>js/dragula/dragula.js</code></strong> -- Lightweight drag-and-drop library. Handles:</p>
+</li>
+<li>Element reordering within the page</li>
+<li>Moving elements between container columns</li>
+<li>Dropping elements to new positions</li>
+</ol>
+<p>These are loaded in <code>ContentEditorComponent.validate()</code>:</p>
+<pre><code><span class="ann">@Override</span>
+<span class="kw">public</span> <span class="kw">void</span> validate(<span class="typ">UserRequest</span> ureq, <span class="typ">ValidationResult</span> vr) {
+    <span class="kw">super</span>.validate(ureq, vr);
+    vr.getJsAndCSSAdder().addRequiredStaticJsFile(<span class="str">"js/jquery/openolat/jquery.contenteditor.v3.js"</span>);
+    vr.getJsAndCSSAdder().addRequiredStaticJsFile(<span class="str">"js/dragula/dragula.js"</span>);
+}</code></pre>
+<h3 id="ajax-command-dispatching">AJAX command dispatching</h3>
+<p>The <code>ContentEditorComponent.doDispatchRequest()</code> method processes three commands sent from the browser:</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Parameter</th>
+<th>Event Fired</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>close_edit_fragment</code></td>
+<td><code>edited-fragment</code></td>
+<td><code>CloseElementsEvent</code></td>
+</tr>
+<tr>
+<td><code>close_inspector</code></td>
+<td>(none)</td>
+<td><code>CloseInspectorsEvent</code></td>
+</tr>
+<tr>
+<td><code>drop_fragment</code></td>
+<td><code>source</code>, <code>position</code>, <code>content</code></td>
+<td><code>DropToEditorEvent</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>ContentEditorFragmentComponent</code> and <code>ContentEditorContainerComponent</code> similarly dispatch their own commands for element-level interactions (edit, delete, clone, move, drop).</p>
+<h3 id="css-structure">CSS structure</h3>
+<p>Container layouts use CSS classes like <code>o_container_block_2_cols</code>, <code>o_container_block_3_rows</code>, etc. The SASS theme files provide the grid definitions. Individual element spacing is controlled by <code>BlockLayoutSettings</code> which generates CSS classes like <code>o_block_spacing_predefined</code>, with custom variants for each side.</p>
+<hr />
+<h2 id="14-configuration">14. Configuration</h2>
+<h3 id="page-status-lifecycle">Page status lifecycle</h3>
+<pre><code><span class="kw">public</span> <span class="kw">enum</span> <span class="typ">PageStatus</span> {
+    draft,
+    published,
+    inRevision,
+    closed,
+    deleted
+}</code></pre>
+<p>Pages follow a lifecycle managed by <code>PageService</code>:
+- <code>draft</code> -&gt; <code>published</code> (initial publish sets <code>initialPublicationDate</code>)
+- <code>published</code> -&gt; <code>inRevision</code> -&gt; <code>published</code>
+- Any state -&gt; <code>deleted</code> (soft delete via <code>removePage()</code>)
+- <code>deleted</code> -&gt; hard delete via <code>deletePage()</code></p>
+<h3 id="content-element-type">Content element type</h3>
+<pre><code><span class="kw">public</span> <span class="kw">enum</span> <span class="typ">ContentElementType</span> {
+    page,
+    portfolioTask
+}</code></pre>
+<h3 id="properties-and-defaults">Properties and defaults</h3>
+<p><code>ContentEditorModule</code> reads these properties from <code>olat.properties</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ceditor.image.styles</code></td>
+<td><code>o_image_classic,o_image_border,o_image_shadow,o_image_frame,o_image_polaroid,o_image_round</code></td>
+<td>CSS styles offered for images</td>
+</tr>
+<tr>
+<td><code>ceditor.image.title.styles</code></td>
+<td><code>o_image_title_dark,o_image_title_bright,o_image_title_standard</code></td>
+<td>Styles offered for image titles</td>
+</tr>
+<tr>
+<td><code>ceditor.table.styles</code></td>
+<td><code>b_gray,b_blue,b_green,b_yellow,b_red</code></td>
+<td>CSS styles offered for tables</td>
+</tr>
+<tr>
+<td><code>ceditor.import.limit.md</code></td>
+<td><code>51200</code></td>
+<td>Max upload size for Markdown/ZIP files (KB)</td>
+</tr>
+<tr>
+<td><code>ceditor.import.limit.docx</code></td>
+<td><code>204800</code></td>
+<td>Max upload size for DOCX files (KB)</td>
+</tr>
+</tbody>
+</table>
+<p>The other configuration happens at the provider level:
+- Which handlers are registered (controls available element types).
+- <code>PageEditorSecurityCallback</code> (controls clone/delete/move permissions).
+- <code>PageEditorProvider.getAppendRejectionKey()</code> (type-specific creation restrictions).
+- <code>PageEditorProvider.getImportButtonKey()</code> (import functionality).
+- <code>PageEditorProvider.isImportMarkdownEnabled()</code> (markdown import button).</p>
+<h3 id="vfs-storage">VFS storage</h3>
+<p>Content editor files are stored under <code>bcroot/portfolio/</code>. The <code>ContentEditorFileStorage</code> service manages directory creation with a limit of 32,000 subdirectories per parent.</p>
+<hr />
+<h2 id="15-markdown-and-word-import">15. Markdown and Word Import</h2>
+<p><code>MarkdownImportController</code> (<code>ui/MarkdownImportController.java</code>) provides a dialog that converts Markdown, ZIP, and Word files into <code>PagePart</code> elements persisted directly onto the target page. It is enabled when <code>PageEditorProvider.isImportMarkdownEnabled()</code> returns <code>true</code>.</p>
+<h3 id="import-pipeline-diagram">Import pipeline diagram</h3>
 <p>The diagram below shows both the basic import path and the optional AI quiz-generation branch.</p>
-
 <div class="diagram-box">
 <svg viewBox="0 0 980 1180" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" font-size="11">
   <defs>
@@ -1081,20 +2507,11 @@ pageService.appendNewPagePart(page, tocPart);</code></pre>
   <!-- QuizPart → submit -->
   <line x1="670" y1="788" x2="670" y2="816" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
 
-  <!-- ── o_essay_generation_job ── (cylinder-style) -->
-  <rect x="560" y="888" width="200" height="34" rx="6" fill="#fef9c3" stroke="#eab308" stroke-width="1.5"/>
-  <ellipse cx="660" cy="888" rx="100" ry="8" fill="#fef9c3" stroke="#eab308" stroke-width="1.5"/>
-  <text x="660" y="906" text-anchor="middle" font-weight="600" fill="#713f12" font-size="10">o_essay_generation_job</text>
-  <text x="660" y="917" text-anchor="middle" fill="#713f12" font-size="9">EssayGenerationJob row</text>
-
-  <!-- submit → db row -->
-  <line x1="670" y1="860" x2="670" y2="888" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
   <!-- ── o_ex_task ── (cylinder-style) -->
   <rect x="770" y="888" width="180" height="34" rx="6" fill="#fef9c3" stroke="#eab308" stroke-width="1.5"/>
   <ellipse cx="860" cy="888" rx="90" ry="8" fill="#fef9c3" stroke="#eab308" stroke-width="1.5"/>
   <text x="860" y="906" text-anchor="middle" font-weight="600" fill="#713f12" font-size="10">o_ex_task</text>
-  <text x="860" y="917" text-anchor="middle" fill="#713f12" font-size="9">PersistentTask row</text>
+  <text x="860" y="917" text-anchor="middle" fill="#713f12" font-size="9">QtiQuestionGenerationTask</text>
 
   <!-- submit → o_ex_task (TaskExecutorManager) -->
   <line x1="780" y1="838" x2="860" y2="888" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
@@ -1102,11 +2519,11 @@ pageService.appendNewPagePart(page, tocPart);</code></pre>
 
   <!-- ── ExecutorJob ── -->
   <rect x="770" y="950" width="180" height="44" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
-  <text x="860" y="968" text-anchor="middle" font-weight="600" fill="#334155">ExecutorJob</text>
-  <text x="860" y="982" text-anchor="middle" fill="#64748b" font-size="10">extends JobWithDB</text>
-  <text x="860" y="994" text-anchor="middle" fill="#64748b" font-size="9">Quartz scheduler</text>
+  <text x="860" y="968" text-anchor="middle" font-weight="600" fill="#334155">TaskExecutorManager</text>
+  <text x="860" y="982" text-anchor="middle" fill="#64748b" font-size="10">.processTaskToDo()</text>
+  <text x="860" y="994" text-anchor="middle" fill="#64748b" font-size="9">Queue.aiBatch pool</text>
 
-  <!-- o_ex_task → ExecutorJob -->
+  <!-- o_ex_task → TaskExecutorManager -->
   <line x1="860" y1="922" x2="860" y2="950" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
 
   <!-- ── PersistentTaskRunnable ── -->
@@ -1115,14 +2532,14 @@ pageService.appendNewPagePart(page, tocPart);</code></pre>
   <text x="660" y="982" text-anchor="middle" fill="#64748b" font-size="10">.run()</text>
   <text x="660" y="994" text-anchor="middle" fill="#64748b" font-size="9">commitAndCloseSession</text>
 
-  <!-- ExecutorJob → PersistentTaskRunnable -->
+  <!-- TaskExecutorManager → PersistentTaskRunnable -->
   <line x1="770" y1="972" x2="760" y2="972" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
 
-  <!-- ── EssayGenerationLongRunnable ── -->
+  <!-- ── QtiQuestionGenerationTask ── -->
   <rect x="560" y="1022" width="200" height="44" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
-  <text x="660" y="1040" text-anchor="middle" font-weight="600" fill="#334155">EssayGenerationLongRunnable</text>
+  <text x="660" y="1040" text-anchor="middle" font-weight="600" fill="#334155">QtiQuestionGenerationTask</text>
   <text x="660" y="1054" text-anchor="middle" fill="#64748b" font-size="10">.run() → EssayGenerationService</text>
-  <text x="660" y="1066" text-anchor="middle" fill="#64748b" font-size="9">.runJob(Long)</text>
+  <text x="660" y="1066" text-anchor="middle" fill="#64748b" font-size="9">.runTask(task)</text>
 
   <!-- PersistentTaskRunnable → LongRunnable -->
   <line x1="660" y1="994" x2="660" y2="1022" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
@@ -1131,7 +2548,7 @@ pageService.appendNewPagePart(page, tocPart);</code></pre>
   <rect x="540" y="1094" width="240" height="52" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
   <text x="660" y="1112" text-anchor="middle" font-weight="600" fill="#4c1d95">AiEssayGenerationService</text>
   <text x="660" y="1126" text-anchor="middle" fill="#5b21b6" font-size="10">AiMCQuestionService</text>
-  <text x="660" y="1140" text-anchor="middle" fill="#5b21b6" font-size="9">provider SPI · 3-min HTTP timeout</text>
+  <text x="660" y="1140" text-anchor="middle" fill="#5b21b6" font-size="9">provider SPI · timeout from AiModule</text>
 
   <!-- LongRunnable → AI services -->
   <line x1="660" y1="1066" x2="660" y2="1094" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
@@ -1175,165 +2592,366 @@ pageService.appendNewPagePart(page, tocPart);</code></pre>
 </svg>
 <div class="diagram-caption">Import and AI quiz-generation pipeline. Rectangles = services/controllers; diamonds = decision points; yellow rounded rectangles with ellipse caps = persisted artefacts.</div>
 </div>
-
-<h3>UI: <code>MarkdownImportController</code></h3>
+<h3 id="ui-markdownimportcontroller">UI: <code>MarkdownImportController</code></h3>
 <p>The controller (<code>ceditor.ui</code>) extends <code>FormBasicController</code>. Key UI elements:</p>
 <ul>
-  <li><strong>Mode selection:</strong> a card-style <code>SingleSelection</code> (via <code>uifactory.addCardSingleSelectHorizontal</code>) offering "file upload" (<code>MODE_FILE</code>) or "text paste" (<code>MODE_TEXT</code>). Defaults to file mode.</li>
-  <li><strong>File upload element:</strong> <code>FileElement</code> configured with:
-    <ul>
-      <li>Maximum size: <code>Math.max(contentEditorModule.getImportLimitMdKB(), contentEditorModule.getImportLimitDocxKB())</code>. The two limits come from Spring properties <code>ceditor.import.limit.md</code> (default 51&nbsp;200 KB = 50 MB) and <code>ceditor.import.limit.docx</code> (default 204&nbsp;800 KB = 200 MB).</li>
-      <li>Accepted MIME types (<code>UPLOAD_MIME_TYPES</code>): <code>text/markdown</code>, <code>text/x-markdown</code>, <code>text/plain</code>, <code>application/octet-stream</code>, <code>application/zip</code>, <code>application/x-zip-compressed</code>, <code>application/vnd.openxmlformats-officedocument.wordprocessingml.document</code>.</li>
-    </ul>
-  </li>
-  <li><strong>Text area:</strong> shown only in text-paste mode; accepts raw CommonMark text.</li>
-  <li><strong>DOCX beta warning:</strong> when a <code>.docx</code> file is selected, <code>fileUploadEl.setWarningKey("import.docx.beta.warning")</code> is called. This is a non-fatal i18n warning surfaced immediately on file selection.</li>
-  <li><strong>AI section:</strong> conditionally shown — covered in Chapter 16.</li>
-  <li><strong>Temp-dir cleanup:</strong> <code>doDispose()</code> calls <code>FileUtils.deleteDirsAndFiles(tempUnzipDir, true, true)</code>. Both the ZIP extraction directory and the DOCX temp media directory are tracked in <code>tempUnzipDir</code>.</li>
+<li><strong>Mode selection:</strong> a card-style <code>SingleSelection</code> (via <code>uifactory.addCardSingleSelectHorizontal</code>) offering "file upload" (<code>MODE_FILE</code>) or "text paste" (<code>MODE_TEXT</code>). Defaults to file mode.</li>
+<li><strong>File upload element:</strong> <code>FileElement</code> configured with:</li>
+<li>Maximum size: <code>Math.max(contentEditorModule.getImportLimitMdKB(), contentEditorModule.getImportLimitDocxKB())</code>. The two limits come from Spring properties <code>ceditor.import.limit.md</code> (default 51 200 KB = 50 MB) and <code>ceditor.import.limit.docx</code> (default 204 800 KB = 200 MB).</li>
+<li>Accepted MIME types (<code>UPLOAD_MIME_TYPES</code>): <code>text/markdown</code>, <code>text/x-markdown</code>, <code>text/plain</code>, <code>application/octet-stream</code>, <code>application/zip</code>, <code>application/x-zip-compressed</code>, <code>application/vnd.openxmlformats-officedocument.wordprocessingml.document</code>.</li>
+<li><strong>Text area:</strong> shown only in text-paste mode; accepts raw CommonMark text.</li>
+<li><strong>DOCX beta warning:</strong> when a <code>.docx</code> file is selected, <code>fileUploadEl.setWarningKey("import.docx.beta.warning")</code> is called. This is a non-fatal i18n warning surfaced immediately on file selection.</li>
+<li><strong>Input length limit:</strong> the text of the pasted Markdown or of the uploaded file must not be longer than the AI input limit. <code>resolveMaxInputChars()</code> takes the smaller value of <code>AiModule.getMCGeneratorMaxInputChars()</code> and <code>AiModule.getEssayGenerationMaxInputChars()</code> for the active AI features. When no AI feature is active, the essay generation limit applies. A longer text fails with <code>form.error.toolong</code>.</li>
+<li><strong>AI section:</strong> conditionally shown; covered in Chapter 16.</li>
+<li><strong>AI image metadata toggle</strong> (<code>import.ai.imagemeta</code>): <span class="version-badge">New in 21.1.0</span> shown when <code>MediaAiMetadataService.isEnabled()</code> returns <code>true</code>. It does not depend on the quiz gate, so it also shows in the e-portfolio. The toggle starts at the AI preference of the person for <code>AiFeature.ImageDescriptionGenerator</code> (<code>AiUserPreferenceService.isActive(...)</code>), without a stored choice at the system default. The choice applies to this import only and is not stored. The controller passes it as <code>MarkdownImportOptions</code> to <code>convertAndPersist(...)</code>. When the import scheduled metadata tasks, the controller shows the info <code>import.ai.metadata.background</code>.</li>
+<li><strong>Temp-dir cleanup:</strong> <code>doDispose()</code> calls <code>FileUtils.deleteDirsAndFiles(tempUnzipDir, true, true)</code>. Both the ZIP extraction directory and the DOCX temp media directory are tracked in <code>tempUnzipDir</code>.</li>
 </ul>
-
-<h3>File-Format Handling</h3>
+<h3 id="file-format-handling">File-format handling</h3>
 <table>
-  <tr><th>Extension</th><th>Handling</th></tr>
-  <tr><td><code>.md</code> / <code>.markdown</code></td><td>Read directly as UTF-8 text and passed to <code>MarkdownImportService</code>.</td></tr>
-  <tr><td><code>.txt</code></td><td>Accepted via the <code>text/plain</code> MIME type; read as UTF-8 and treated as CommonMark markdown.</td></tr>
-  <tr><td><code>.zip</code></td><td><code>ZipUtil.unzip(File, File)</code> extracts to a temp directory (zip-slip and zip-bomb protection built into <code>ZipUtil</code>). The controller walks the extracted tree, skipping <code>.</code> and <code>__MACOSX</code> subtrees, to find <code>.md</code>&nbsp;/&nbsp;<code>.markdown</code> files. Errors: <code>import.markdown.zip.nomd</code> (none found) or <code>import.markdown.zip.multiplemd</code> (more than one found). On success the single file is read and its parent directory becomes <code>basePath</code> for image resolution.</td></tr>
-  <tr><td><code>.docx</code></td><td><code>DocxToMarkdownService.convert(File)</code> runs a 6-stage SAX pipeline (ZIP extraction &rarr; relationships &rarr; numbering &rarr; styles &rarr; metadata &rarr; <code>document.xml</code>) and returns a <code>DocxToMarkdownResult</code> containing the markdown string, a <code>basePath</code> directory with extracted images, and a list of <code>DocxConversionMessage</code> objects. Any messages are rendered and surfaced as import warnings.</td></tr>
+<thead>
+<tr>
+<th>Extension</th>
+<th>Handling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.md</code> / <code>.markdown</code></td>
+<td>Read directly as UTF-8 text.</td>
+</tr>
+<tr>
+<td><code>.txt</code></td>
+<td>Accepted via <code>text/plain</code> MIME type; read as UTF-8 plain text and treated as CommonMark markdown.</td>
+</tr>
+<tr>
+<td><code>.zip</code></td>
+<td><code>ZipUtil.unzip(File, File)</code> extracts to a temp directory (zip-slip and zip-bomb protection built into <code>ZipUtil</code>). The controller then walks the extracted tree (skipping <code>.</code> and <code>__MACOSX</code> subtrees) to find <code>.md</code> / <code>.markdown</code> files. Errors: <code>import.markdown.zip.nomd</code> (none found), <code>import.markdown.zip.multiplemd</code> (more than one found). On success the single markdown file is read and its parent directory becomes <code>basePath</code> for image resolution.</td>
+</tr>
+<tr>
+<td><code>.docx</code></td>
+<td><code>DocxToMarkdownService.convert(File)</code> runs a 6-stage SAX pipeline (ZIP extraction → relationships → numbering → styles → metadata → <code>document.xml</code>) and returns a <code>DocxToMarkdownResult</code> holding the markdown string, a <code>basePath</code> directory with extracted images, and a list of <code>DocxConversionMessage</code> objects. Any messages are rendered as text and added to the import warnings shown to the author.</td>
+</tr>
+</tbody>
 </table>
-<p>Read errors in any file branch surface as <code>import.markdown.read.error</code>.</p>
-
-<h3><code>MarkdownImportService.convertAndPersist(...)</code></h3>
-<p>The service (<code>ceditor.manager</code>) converts markdown to <code>PagePart</code> elements and persists them. Processing stages:</p>
+<p>Read errors in any branch surface as <code>import.markdown.read.error</code>.</p>
+<h3 id="markdownimportserviceconvertandpersist"><code>MarkdownImportService.convertAndPersist(...)</code></h3>
+<p>The service (<code>ceditor.manager</code>) is the conversion core. It receives the markdown string, an optional <code>basePath</code> for image resolution, positioning parameters and a <code>MarkdownImportOptions</code> object, and produces a <code>MarkdownImportResult</code> carrying any warnings and the resulting <code>ContainerPart</code>.</p>
+<p><span class="version-badge changed" style="margin-left:0">Changed in 21.1.0</span> <code>convertAndPersist(...)</code> has a new last parameter <code>MarkdownImportOptions options</code>. <code>null</code> means no AI usage. <code>MarkdownPagePartVisitor</code> schedules the AI image metadata task (<code>MediaAiMetadataService.submit(...)</code>) only when <code>options.generateImageMetadata()</code> is <code>true</code>. Before 21.1.0 every imported image got a task when the service was enabled.</p>
+<p><strong>Processing stages:</strong></p>
 <ol>
-  <li><strong>Math pre-processing</strong> &mdash; <code>MarkdownMathPreprocessor.preprocess()</code> replaces <code>$$&hellip;$$</code> blocks with placeholders so their content cannot be mis-parsed as MkDocs admonitions.</li>
-  <li><strong>Admonition pre-processing</strong> &mdash; <code>MarkdownMkDocsAdmonitionPreprocessor.preprocess()</code> converts <code>!!! type title</code> blocks into blockquote form.</li>
-  <li><strong>CommonMark parse</strong> &mdash; <code>Parser</code> with GFM tables, strikethrough, task list items, autolinks, footnotes, image attributes, YAML front matter, and the custom <code>HighlightExtension</code>.</li>
-  <li><strong>Image dimension extraction</strong> &mdash; walks the AST to pull <code>width</code>/<code>height</code> attributes from <code>ImageAttributes</code> nodes before rendering strips them.</li>
-  <li><strong><code>MarkdownPagePartVisitor</code></strong> &mdash; walks the AST and produces a flat list of <code>PagePart</code> objects: <code>htmlparagraph</code> parts for paragraphs, <code>MediaPart</code> for images, alert-style paragraph parts for <code>&gt;</code> blockquote callouts, <code>TablePart</code> for GFM tables, <code>CodePart</code> for fenced code blocks, <code>MathPart</code> for math blocks, etc.</li>
-  <li><strong>Persist and wrap</strong> &mdash; all parts are saved via <code>pageService.appendNewPagePart()</code> and registered in a <code>ContainerPart</code> with layout <code>ContainerLayout.block_1col</code>. The container is resolved by priority: explicit container ID &rarr; before/after reference element (using <code>PageElementTarget</code>) &rarr; last empty container on the page &rarr; new container created.</li>
+<li><strong>Math pre-processing:</strong> <code>MarkdownMathPreprocessor.preprocess()</code> replaces <code>$$...$$</code> blocks with placeholders so their content cannot be mis-parsed as MkDocs admonitions.</li>
+<li><strong>Admonition pre-processing:</strong> <code>MarkdownMkDocsAdmonitionPreprocessor.preprocess()</code> converts <code>!!! type title</code> blocks into blockquote form.</li>
+<li><strong>CommonMark parse:</strong> <code>Parser</code> (built by <code>buildParser(markdown)</code>; without the front matter extension when the opening fence is not closed) with GFM tables, strikethrough, task list items, autolinks, footnotes, image attributes, YAML front matter, and the custom <code>HighlightExtension</code>.</li>
+<li><strong>Image dimension extraction:</strong> walks the AST to pull <code>width</code>/<code>height</code> attributes from <code>ImageAttributes</code> nodes before rendering strips them.</li>
+<li><strong><code>MarkdownPagePartVisitor</code></strong> walks the AST and produces a flat list of <code>PagePart</code> objects: <code>htmlparagraph</code> parts for paragraphs, <code>MediaPart</code> for images, alert-style paragraph parts for <code>&gt;</code> blockquote callouts, <code>TablePart</code> for GFM tables, <code>CodePart</code> for fenced code blocks, <code>MathPart</code> for math blocks, etc. For each imported image it can schedule an asynchronous AI metadata task (title, description, alt text, tags, taxonomy) through <code>MediaAiMetadataService</code>. The import does not wait for the AI provider.</li>
+<li><strong>Persist and wrap:</strong> all parts are saved via <code>pageService.appendNewPagePart()</code> and registered in a <code>ContainerPart</code> with layout <code>ContainerLayout.block_1col</code>. The container is resolved by priority: explicit container ID from the "add content" dialog → before/after a reference element (positions determined by <code>PageElementTarget</code>) → last empty container on the page → new container created.</li>
 </ol>
-<p>Returns <code>MarkdownImportResult(List&lt;String&gt; warnings, ContainerPart container)</code>.</p>
-
-<h3>Error States</h3>
+<p>The caller passes container ID, column index, reference element ID, and <code>PageElementTarget</code> (above / below / inside) so the import lands in the correct slot in a multi-column layout.</p>
+<p><strong>Result:</strong> <code>MarkdownImportResult(List&lt;String&gt; warnings, ContainerPart container, int column, int insertIndex, int aiMetadataJobs)</code>. <code>column</code> and <code>insertIndex</code> let <code>MarkdownImportController</code> insert the AI quiz placeholder directly after the imported parts, also in a multi-column layout (<code>appendNewPartToContainer(...)</code>).</p>
+<h3 id="error-states">Error states</h3>
 <table>
-  <tr><th>i18n key</th><th>Trigger</th></tr>
-  <tr><td><code>import.markdown.read.error</code></td><td>UTF-8 read fails on any uploaded file</td></tr>
-  <tr><td><code>import.markdown.zip.error</code></td><td>ZIP extraction throws <code>IOException</code></td></tr>
-  <tr><td><code>import.markdown.zip.nomd</code></td><td>ZIP contains no <code>.md</code> / <code>.markdown</code> file</td></tr>
-  <tr><td><code>import.markdown.zip.multiplemd</code></td><td>ZIP contains more than one <code>.md</code> / <code>.markdown</code> file</td></tr>
-  <tr><td><code>import.docx.beta.warning</code></td><td>Non-fatal warning shown when a <code>.docx</code> file is selected (DOCX support is beta)</td></tr>
+<thead>
+<tr>
+<th>i18n key</th>
+<th>Trigger</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>import.markdown.read.error</code></td>
+<td>UTF-8 read fails on any uploaded file</td>
+</tr>
+<tr>
+<td><code>import.markdown.zip.error</code></td>
+<td>ZIP extraction throws <code>IOException</code></td>
+</tr>
+<tr>
+<td><code>import.markdown.zip.nomd</code></td>
+<td>ZIP contains no <code>.md</code> / <code>.markdown</code> file</td>
+</tr>
+<tr>
+<td><code>import.markdown.zip.multiplemd</code></td>
+<td>ZIP contains more than one <code>.md</code> / <code>.markdown</code> file</td>
+</tr>
+<tr>
+<td><code>import.docx.beta.warning</code></td>
+<td>Non-fatal warning shown when a <code>.docx</code> file is selected (DOCX support is beta)</td>
+</tr>
+<tr>
+<td><code>import.markdown.warn.frontmatter.unclosed</code></td>
+<td>Non-fatal warning: the YAML front matter has no closing fence, the content was imported as regular Markdown</td>
+</tr>
+<tr>
+<td><code>form.error.toolong</code></td>
+<td>The text is longer than the AI input limit (see <code>resolveMaxInputChars()</code>)</td>
+</tr>
+</tbody>
 </table>
-
-<hr>
-
-<!-- ===== AI QUESTION GENERATION ===== -->
-<h2 id="ai-question-generation">16. AI Question Generation on Import</h2>
-
-<p>When the admin-level AI module is enabled, <code>MarkdownImportController</code> can trigger asynchronous question generation from imported content. The feature spans the import dialog, an async generation job, polling UI in both editor and run mode, and AI feedback delivery to learners.</p>
-
-<h3>Feature Gating</h3>
-<p><code>MarkdownImportController</code> accepts a <code>boolean allowAiQuestionGeneration</code> constructor argument. The portfolio page editor passes <code>true</code>; the e-portfolio context passes <code>false</code>. When <code>false</code>, the AI generation section (toggle and count fields) is hidden entirely, preventing learners from creating quiz elements inside e-portfolio pages.</p>
-
-<h3>Import Dialog</h3>
-<p>When generation is allowed and the AI module is configured:</p>
+<hr />
+<h2 id="16-ai-question-generation-on-import">16. AI Question Generation on Import</h2>
+<p>When the admin-level AI module is enabled, <code>MarkdownImportController</code> can trigger asynchronous question generation from the imported content. This section describes the full lifecycle from import dialog to runtime feedback.</p>
+<h3 id="feature-gating">Feature gating</h3>
+<p><code>MarkdownImportController</code> accepts a <code>boolean allowAiQuestionGeneration</code> constructor argument. <code>PageRunController.openMarkdownImport(...)</code> passes <code>PageSettings.isCanCreateQuiz()</code>. In the e-portfolio (<code>PageSettings.full</code>) the author is the student and <code>canCreateQuiz</code> is <code>false</code>. When the flag is <code>false</code> the AI generation section (toggle and count fields) is hidden entirely. This prevents learners from creating quiz elements inside e-portfolio pages.</p>
+<p><code>isAiQuestionGenerationAvailable()</code> also requires a resolvable repository entry key (<code>aiOres.getResourceableId()</code>) and <code>AiEssayGenerationService.isEnabled()</code>.</p>
+<p><span class="version-badge changed" style="margin-left:0">Changed in 21.1.0</span> The AI image metadata toggle has its own gate (<code>MediaAiMetadataService.isEnabled()</code>) and is not part of this section. See <a href="#ui-markdownimportcontroller">Chapter 15</a>.</p>
+<h3 id="import-dialog">Import dialog</h3>
+<p>When <code>allowAiQuestionGeneration</code> is <code>true</code> and the AI module is configured:</p>
 <ul>
-  <li>A toggle is shown in the import form (default: ON).</li>
-  <li>Two integer fields let the author specify how many multiple-choice and how many essay questions to generate (default: 2 each &mdash; <code>DEFAULT_AI_MC_COUNT</code> / <code>DEFAULT_AI_ESSAY_COUNT</code>).</li>
-  <li>Each field is validated against the range 0&ndash;5 (<code>MAX_AI_COUNT = 5</code>).</li>
+<li>A toggle is shown in the import form (default: ON).</li>
+<li>Two integer fields let the author specify how many multiple-choice and how many essay questions to generate (default: 2 each, constant <code>DEFAULT_AI_MC_COUNT</code> / <code>DEFAULT_AI_ESSAY_COUNT</code> in <code>MarkdownImportController</code>).</li>
+<li>Each field accepts values in the range 0–5 (<code>MIN_AI_COUNT = 0</code>, <code>MAX_AI_COUNT = 5</code>). Values outside this range are rejected with a validation error before the import proceeds.</li>
+<li>Bloom levels (<code>ai.bloom</code>, checkboxes of <code>AiBloomLevel</code>, default <code>UNDERSTAND</code> and <code>APPLY</code>).</li>
+<li>Target difficulty (<code>ai.difficulty</code>, 1 to 5 or unspecified, default 1 for short quiz questions).</li>
+<li>Learning objectives (<code>ai.objectives</code>, optional text area, one objective per line).</li>
 </ul>
-
-<h3>File Input and Conversion</h3>
+<p>The values travel in <code>EssayGenerationService.GenerationRequest.forQuizPart(...)</code>.</p>
+<h3 id="file-input-and-conversion-pipeline">File input and conversion pipeline</h3>
+<p><code>MarkdownImportController</code> accepts four file formats for upload:</p>
 <table>
-  <tr><th>Extension</th><th>Handling</th></tr>
-  <tr><td><code>.md</code> / <code>.markdown</code></td><td>Passed directly to <code>MarkdownImportService</code>.</td></tr>
-  <tr><td><code>.zip</code></td><td>Unzipped via <code>ZipUtil.unzip()</code> (zip-slip and zip-bomb protection); the extracted Markdown file and bundled images are then processed normally.</td></tr>
-  <tr><td><code>.docx</code></td><td>Converted to Markdown by <code>DocxToMarkdownService</code> (<code>org.olat.core.util.docxToMarkdown</code>) before being fed into the Markdown pipeline.</td></tr>
+<thead>
+<tr>
+<th>Extension</th>
+<th>Handling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.md</code> / <code>.markdown</code> / <code>.txt</code></td>
+<td>Passed directly to <code>MarkdownImportService</code>.</td>
+</tr>
+<tr>
+<td><code>.zip</code></td>
+<td>Unzipped via <code>ZipUtil.unzip()</code> (protected against zip-slip and zip-bomb attacks); the extracted Markdown file and any bundled images are then processed normally.</td>
+</tr>
+<tr>
+<td><code>.docx</code></td>
+<td>Converted to Markdown by <code>DocxToMarkdownService</code> (package <code>org.olat.core.util.docxToMarkdown</code>) before being fed into the standard Markdown pipeline.</td>
+</tr>
+</tbody>
 </table>
-
-<h3>QuizPart Placeholder Lifecycle</h3>
-<p>When the author enables generation and submits:</p>
+<p>Text-paste mode (no file upload) is also available for plain Markdown input.</p>
+<h3 id="quizpart-placeholder-lifecycle">QuizPart placeholder lifecycle</h3>
+<p>When the author enables AI generation and submits the import form:</p>
 <ol>
-  <li>A <code>QuizPart</code> is created immediately with its title prefixed by <code>EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER</code> (<code>"[AI:generating]"</code>).</li>
-  <li>An async job is dispatched to generate the questions.</li>
-  <li><code>EssayGenerationQuizPartSinkImpl.attachDraftsAsEssayItems()</code> is called on completion. It writes QTI XML, an <code>ai-grading.json</code> companion (essay scoring metadata), and an <code>ai-source.json</code> companion (MC source data) into the <code>QuizPart</code>'s storage directory.</li>
-  <li>On success the <code>GENERATING_TITLE_MARKER</code> prefix is stripped and the final title is set.</li>
-  <li>On failure the title prefix is replaced by <code>FAILED_TITLE_MARKER</code> (<code>"[AI:failed]"</code>) followed by the reason string.</li>
+<li>A <code>QuizPart</code> is created immediately with its title prefixed by <code>EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER</code> (<code>"[AI:generating]"</code>). This acts as a visible in-progress indicator.</li>
+<li><code>EssayGenerationService.submit(...)</code> schedules a <code>QtiQuestionGenerationTask</code> on the task executor (<code>o_ex_task</code>, queue <code>Queue.aiBatch</code>). The task runs <code>EssayGenerationService.runTask(...)</code>.</li>
+<li><code>EssayGenerationQuizPartSinkImpl.attachDraftsAsEssayItems()</code> is the callback invoked when the job finishes. It writes:</li>
+<li>QTI XML for each generated question into the <code>QuizPart</code>'s storage directory (managed by <code>ContentEditorQti</code>).</li>
+<li>An <code>ai-grading.json</code> companion file for essay items (scoring metadata read by <code>EssayAiGradingFileStore</code>).</li>
+<li>An <code>ai-source.json</code> companion file for MC items (read by <code>AiSourceCompanionFileStore</code>).</li>
+<li>On success the method strips the <code>GENERATING_TITLE_MARKER</code> prefix and sets the final title.</li>
+<li>On failure the title is replaced with <code>EssayGenerationQuizPartSinkImpl.FAILED_TITLE_MARKER</code> (<code>"[AI:failed]"</code>) followed by the reason string.</li>
 </ol>
-
-<div class="info"><strong>Note:</strong> <code>ContentEditorQti.deleteQuestion()</code> and <code>deleteQuestionsDirectory()</code> use <code>FileUtils.deleteDirsAndFiles()</code> (recursive) so the QTI XML, companion JSON files, and any media assets are all removed in one pass.</div>
-
-<h3>Polling UI &mdash; Editor (QuizEditorController)</h3>
-<p>While the <code>GENERATING_TITLE_MARKER</code> prefix is present on a <code>QuizPart</code> title, <code>QuizEditorController</code> renders an animated AI pulse instead of the question list. A hidden link is triggered by a JavaScript <code>setTimeout</code>:</p>
+<h3 id="polling-ui-in-the-editor-quizeditorcontroller">Polling UI in the editor (QuizEditorController)</h3>
+<p><code>QuizEditorController</code> detects the <code>GENERATING_TITLE_MARKER</code> prefix on the <code>QuizPart</code> title. While the marker is present:</p>
 <ul>
-  <li>First poll: 500 ms (fast path &mdash; a user who opens edit mode after generation has already finished sees the question list almost immediately).</li>
-  <li>Subsequent polls: every 3 000 ms (<code>AI_GEN_POLL_DELAY_MS</code>), up to <code>MAX_AI_GEN_POLL_ATTEMPTS</code> total.</li>
+<li>The editor renders an animated AI pulse indicator instead of the question list.</li>
+<li>A hidden link is clicked by a JavaScript <code>setTimeout</code> to re-dispatch a server poll.</li>
+<li>The <strong>first</strong> poll fires after 500 ms (fast path, so a user who opens edit mode after generation has already finished sees the question list almost immediately).</li>
+<li>Subsequent polls fire every 3 000 ms (<code>AI_GEN_POLL_DELAY_MS</code>).</li>
+<li>Up to <code>MAX_AI_GEN_POLL_ATTEMPTS</code> polls are attempted before the UI gives up.</li>
 </ul>
-<p>The same polling pattern is used in <code>QuizRunController</code> for the run view.</p>
-
-<h3>Essay Items in the Add Menu and Pool Import</h3>
-<p>When <code>aiModule.isEssayGradingEnabled()</code> is <code>true</code>:</p>
+<p>The same polling mechanism is present in <code>QuizRunController</code> for the run view.</p>
+<h3 id="essay-items-in-the-quiz-add-menu-and-pool-import">Essay items in the quiz add menu and pool import</h3>
+<p>When AI grading is enabled in the AI module, <code>QuizEditorController</code> allows:</p>
 <ul>
-  <li>Essay items appear in <code>NewQuestionItemCalloutController</code> (the question type selector).</li>
-  <li>Essay items are allowed in the question pool import filter (<code>QuizEditorController.applyImportFilter</code>).</li>
+<li>Essay items to appear in the question type selector (<code>NewQuestionItemCalloutController</code>).</li>
+<li>Essay items to be imported from the question pool (via <code>applyImportFilter</code> in <code>QuizEditorController</code>; essay items pass the filter only when <code>AiEssayGradingService.isEnabled()</code> returns <code>true</code>).</li>
 </ul>
-
-<h3>AI Feedback at Quiz Runtime (QuizRunController)</h3>
-<p>When a learner submits an essay answer:</p>
+<p>"AI grading is enabled" means <code>AiEssayGradingService.isEnabled()</code> in both places.</p>
+<p>When an author saves an AI-generated question in <code>EditQuestionController</code>, the controller writes the name of the author as <code>supervisedBy</code> into the <code>ai-source.json</code> companion and clears the <code>unsupervisedGenerated</code> flag (<code>AiSourceCompanionFileStore</code>).</p>
+<h3 id="ai-feedback-at-quiz-runtime-quizruncontroller">AI feedback at quiz runtime (QuizRunController)</h3>
+<p>When a learner submits an essay answer in a page run view:</p>
 <ol>
-  <li><code>QuizRunController</code> submits an async job via <code>EssayFeedbackJobService.submit()</code> (<code>org.olat.core.commons.services.ai.essay</code>).</li>
-  <li>An inline AI pulse is rendered while the controller polls <code>EssayFeedbackJobService.getStatus()</code>.</li>
-  <li>On completion, <code>EssayFeedbackJobService.parseFeedback()</code> deserializes the result into a <code>FormativeFeedback</code> record.</li>
-  <li><code>AiEssayFeedbackViewFlattener.flatten()</code> transforms the feedback into a Velocity-friendly map (assessment label, confidence CSS class, key-point hits/misses, warnings) for the quiz run template.</li>
-  <li>If the AI score meets or exceeds <code>AI_CORRECTION_PASS_THRESHOLD_PERCENT</code> (50 %) and the feedback type is <code>FormativeFeedback.Type.OK</code>, the quiz outcome is marked as passed.</li>
+<li><code>QuizRunController</code> submits an async correction via <code>EssayAiCorrectionService.submit()</code> (package <code>org.olat.core.commons.services.ai.essay</code>). The service stores an <code>o_ai_essay_correction</code> row and schedules an <code>EssayAiCorrectionTask</code> on the queue <code>Queue.aiInteractive</code>.</li>
+<li>The controller renders an inline AI pulse and polls for the result using <code>EssayAiCorrectionService.getStatus()</code> every 2 000 ms (<code>AI_CORRECTION_POLL_DELAY_MS</code>). The maximum number of polls follows from <code>AiModule.getEssayGradingTimeoutSeconds()</code>.</li>
+<li>When the correction completes, <code>EssayAiCorrectionService.parseFeedback()</code> deserializes the result into a <code>FormativeFeedback</code> record.</li>
+<li><code>AiEssayFeedbackViewFlattener.flatten()</code> transforms the <code>FormativeFeedback</code> into a Velocity-friendly <code>Map&lt;String, Object&gt;</code> (assessment label, confidence CSS class, key-point hits/misses, warnings) which is put into the Velocity context for the quiz run template.</li>
+<li>If the AI score meets <code>AI_CORRECTION_PASS_THRESHOLD_PERCENT</code> (50 %) and the feedback type is <code>FormativeFeedback.Type.OK</code>, the quiz outcome is marked as passed.</li>
 </ol>
-
-<h3>Class Summary</h3>
+<h3 id="consent-before-the-ai-correction-quizruncontroller">Consent before the AI correction (QuizRunController)<span class="version-badge">New in 21.1.0</span></h3>
+<p>The AI correction of essay answers asks the learner for consent (OO-9784, AI Act).</p>
+<ul>
+<li>When the quiz starts, <code>doAskAiCorrectionConsent(...)</code> opens <code>AiCorrectionConsentController</code> (package <code>org.olat.core.commons.services.ai.ui</code>) in a <code>CloseableModalController</code>. The dialog opens only when <code>AiFeature.EssayGrading</code> is available, the person has no stored preference, and at least one essay question has an <code>ai-grading.json</code>.</li>
+<li>The dialog has three buttons: <strong>Allow once</strong> (<code>ALLOW_ONCE_EVENT</code>), <strong>Always allow</strong> (<code>ALLOW_ALWAYS_EVENT</code>) and <strong>Not now</strong> (<code>DENY_EVENT</code>). <strong>Always allow</strong> stores <code>AiUserPreference.ON</code> for <code>AiFeature.EssayGrading</code> through <code>AiUserPreferenceService.set(...)</code>. Closing the dialog counts as <strong>Not now</strong>.</li>
+<li>The decision is kept in <code>aiCorrectionAllowedForRun</code> for this run only. A retry or a changed quiz part asks again.</li>
+<li>The decision fails closed: it is <code>FALSE</code> while the dialog is open and when a <code>SyntheticUserRequest</code> rebuilds the run.</li>
+<li>Without a decision for the run, <code>AiUserPreferenceService.isActive(...)</code> decides with the stored preference or the system default (<code>AiModule.isUserDefaultOn(...)</code>).</li>
+<li>When the correction is not allowed, the essay behaves like a manually corrected essay: no correction row, no overlay. <code>EssayAiCorrectionService.submit()</code> also checks the preference and returns <code>null</code> for an opted-out person.</li>
+</ul>
+<p>The preference itself and the user settings are documented in the package documentation of <code>org.olat.core.commons.services.ai</code>.</p>
+<h3 id="recursive-file-cleanup-contenteditorqti">Recursive file cleanup (ContentEditorQti)</h3>
+<p><code>ContentEditorQti.deleteQuestion()</code> and <code>deleteQuestionsDirectory()</code> use <code>FileUtils.deleteDirsAndFiles()</code> (recursive) to remove the QTI XML, companion JSON files, and any media assets in one pass. Earlier code used <code>Files.deleteIfExists()</code>, which only handles empty directories.</p>
+<h3 id="class-summary">Class summary</h3>
 <table>
-  <tr><th>Class</th><th>Package</th><th>Role</th></tr>
-  <tr><td><code>MarkdownImportController</code></td><td><code>ceditor.ui</code></td><td>Import dialog with AI generation toggle and count fields</td></tr>
-  <tr><td><code>EssayGenerationQuizPartSinkImpl</code></td><td><code>ceditor.manager</code></td><td>Async callback: writes QTI + JSON companions, strips placeholder marker</td></tr>
-  <tr><td><code>QuizEditorController</code></td><td><code>ceditor.ui</code></td><td>Detects generating marker; polling UI in editor mode</td></tr>
-  <tr><td><code>QuizRunController</code></td><td><code>ceditor.ui</code></td><td>AI feedback polling at runtime; submits essay to <code>EssayFeedbackJobService</code></td></tr>
-  <tr><td><code>AiEssayFeedbackViewFlattener</code></td><td><code>ceditor.ui</code></td><td>Transforms <code>FormativeFeedback</code> into a Velocity-ready map</td></tr>
-  <tr><td><code>NewQuestionItemCalloutController</code></td><td><code>ceditor.ui</code></td><td>Question type selector (essay items gated by AI grading flag)</td></tr>
-  <tr><td><code>ContentEditorQti</code></td><td><code>ceditor.manager</code></td><td>QTI file I/O and recursive directory cleanup</td></tr>
-  <tr><td><code>DocxToMarkdownService</code></td><td><code>core.util.docxToMarkdown</code></td><td>Server-side DOCX-to-Markdown conversion</td></tr>
-  <tr><td><code>EssayFeedbackJobService</code></td><td><code>core.commons.services.ai.essay</code></td><td>Submit and poll async AI grading jobs</td></tr>
+<thead>
+<tr>
+<th>Class</th>
+<th>Package</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MarkdownImportController</code></td>
+<td><code>ceditor.ui</code></td>
+<td>Import dialog with AI generation toggle and count fields</td>
+</tr>
+<tr>
+<td><code>EssayGenerationQuizPartSinkImpl</code></td>
+<td><code>ceditor.manager</code></td>
+<td>Async callback: writes QTI + JSON, strips placeholder marker</td>
+</tr>
+<tr>
+<td><code>QuizEditorController</code></td>
+<td><code>ceditor.ui</code></td>
+<td>Detects generating marker; polling UI in editor mode</td>
+</tr>
+<tr>
+<td><code>QuizRunController</code></td>
+<td><code>ceditor.ui</code></td>
+<td>AI feedback polling at runtime; passes essay to <code>EssayAiCorrectionService</code>; <span class="version-badge">New in 21.1.0</span> asks for AI consent</td>
+</tr>
+<tr>
+<td><code>AiEssayFeedbackViewFlattener</code></td>
+<td><code>ceditor.ui</code></td>
+<td>Transforms <code>FormativeFeedback</code> into a Velocity-ready map</td>
+</tr>
+<tr>
+<td><code>NewQuestionItemCalloutController</code></td>
+<td><code>ceditor.ui</code></td>
+<td>Question type selector (essay items gated by AI grading flag)</td>
+</tr>
+<tr>
+<td><code>ContentEditorQti</code></td>
+<td><code>ceditor.manager</code></td>
+<td>QTI file I/O and recursive directory cleanup</td>
+</tr>
+<tr>
+<td><code>DocxToMarkdownService</code></td>
+<td><code>core.util.docxToMarkdown</code></td>
+<td>Server-side DOCX-to-Markdown conversion</td>
+</tr>
+<tr>
+<td><code>EssayAiCorrectionService</code></td>
+<td><code>core.commons.services.ai.essay</code></td>
+<td>Submit and poll async AI essay corrections</td>
+</tr>
+<tr>
+<td><code>MarkdownImportOptions</code></td>
+<td><code>ceditor.manager</code></td>
+<td><span class="version-badge" style="margin-left:0">New in 21.1.0</span> Options of the import dialog</td>
+</tr>
+<tr>
+<td><code>AiCorrectionConsentController</code></td>
+<td><code>core.commons.services.ai.ui</code></td>
+<td><span class="version-badge" style="margin-left:0">New in 21.1.0</span> Consent dialog before the AI correction</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="quick-reference-file-locations">Quick Reference: File Locations</h2>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Core interfaces</td>
+<td><code>src/main/java/org/olat/modules/ceditor/*.java</code></td>
+</tr>
+<tr>
+<td>Handler implementations</td>
+<td><code>src/main/java/org/olat/modules/ceditor/handler/*.java</code></td>
+</tr>
+<tr>
+<td>JPA entities</td>
+<td><code>src/main/java/org/olat/modules/ceditor/model/jpa/*.java</code></td>
+</tr>
+<tr>
+<td>Domain model / settings</td>
+<td><code>src/main/java/org/olat/modules/ceditor/model/*.java</code></td>
+</tr>
+<tr>
+<td>Service layer</td>
+<td><code>src/main/java/org/olat/modules/ceditor/manager/*.java</code></td>
+</tr>
+<tr>
+<td>UI controllers</td>
+<td><code>src/main/java/org/olat/modules/ceditor/ui/*.java</code></td>
+</tr>
+<tr>
+<td>UI components / renderers</td>
+<td><code>src/main/java/org/olat/modules/ceditor/ui/component/*.java</code></td>
+</tr>
+<tr>
+<td>Events</td>
+<td><code>src/main/java/org/olat/modules/ceditor/ui/event/*.java</code></td>
+</tr>
+<tr>
+<td>Velocity templates</td>
+<td><code>src/main/java/org/olat/modules/ceditor/ui/_content/*.html</code></td>
+</tr>
+<tr>
+<td>i18n</td>
+<td><code>src/main/java/org/olat/modules/ceditor/ui/_i18n/</code></td>
+</tr>
+<tr>
+<td>Client-side JS</td>
+<td><code>src/main/webapp/static/js/jquery/openolat/jquery.contenteditor.v3.js</code></td>
+</tr>
+<tr>
+<td>Dragula library</td>
+<td><code>src/main/webapp/static/js/dragula/dragula.js</code></td>
+</tr>
+<tr>
+<td>Entity registration</td>
+<td><code>src/main/resources/META-INF/persistence.xml</code></td>
+</tr>
+<tr>
+<td>Markdown import</td>
+<td><code>src/main/java/org/olat/modules/ceditor/manager/Markdown*.java</code></td>
+</tr>
+<tr>
+<td>AI question generation sink</td>
+<td><code>src/main/java/org/olat/modules/ceditor/manager/EssayGenerationQuizPartSinkImpl.java</code></td>
+</tr>
+<tr>
+<td>AI feedback view flattener</td>
+<td><code>src/main/java/org/olat/modules/ceditor/ui/AiEssayFeedbackViewFlattener.java</code></td>
+</tr>
+<tr>
+<td>QTI file I/O and cleanup</td>
+<td><code>src/main/java/org/olat/modules/ceditor/manager/ContentEditorQti.java</code></td>
+</tr>
+<tr>
+<td>DOCX conversion service</td>
+<td><code>src/main/java/org/olat/core/util/docxToMarkdown/DocxToMarkdownService.java</code></td>
+</tr>
+<tr>
+<td>Essay AI correction service</td>
+<td><code>src/main/java/org/olat/core/commons/services/ai/essay/EssayAiCorrectionService.java</code></td>
+</tr>
+<tr>
+<td>Media handlers (cemedia)</td>
+<td><code>src/main/java/org/olat/modules/cemedia/handler/*.java</code></td>
+</tr>
+<tr>
+<td>Portfolio provider</td>
+<td><code>src/main/java/org/olat/modules/portfolio/ui/PageRunController.java</code> (inner class <code>PortfolioPageEditorProvider</code>)</td>
+</tr>
+<tr>
+<td>Form provider</td>
+<td><code>src/main/java/org/olat/modules/forms/ui/EvaluationFormEditorController.java</code> (inner class <code>FormPageEditorProvider</code>)</td>
+</tr>
+</tbody>
 </table>
 
 </main>
 </div>
 
-<script>
-(function(){
-  var links = document.querySelectorAll('.side-nav a[href^="#"]');
-  var sections = [];
-  links.forEach(function(link) {
-    var id = link.getAttribute('href').slice(1);
-    var el = document.getElementById(id);
-    if (el) sections.push({ link: link, el: el });
-  });
-  function update() {
-    var scrollY = window.scrollY || window.pageYOffset;
-    var active = sections[0];
-    for (var i = 0; i < sections.length; i++) {
-      if (sections[i].el.offsetTop - 60 <= scrollY) active = sections[i];
-    }
-    links.forEach(function(l) { l.classList.remove('active'); });
-    if (active) active.link.classList.add('active');
-  }
-  var ticking = false;
-  window.addEventListener('scroll', function() {
-    if (!ticking) { requestAnimationFrame(function() { update(); ticking = false; }); ticking = true; }
-  });
-  update();
-  links.forEach(function(link) {
-    link.addEventListener('click', function(e) {
-      var id = this.getAttribute('href').slice(1);
-      history.pushState(null, '', '#' + id);
-    });
-  });
-})();
-</script>
 </body>
 </html>

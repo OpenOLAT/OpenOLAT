@@ -410,3 +410,11 @@
   .doc-header { padding: 20px 16px 24px; }
   .doc-header h1 { font-size: 22px; }
 }
+
+/* === Release markers (21.1.0) === */
+.version-badge { display:inline-block; font-size:10.5px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; color:#135e5f; background:#e6f4f4; border:1px solid #9fd3d4; border-radius:3px; padding:1px 7px; margin-left:8px; vertical-align:middle; }
+.version-badge.changed { color:#7c4a03; background:#fff4e5; border-color:#f5c98a; }
+.cl-component-header p .version-badge:first-child { margin-left:0; margin-right:6px; }
+.doc-header .meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.cl-meta-tag { background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.22); border-radius:4px; padding:3px 10px; font-size:11px; color:rgba(255,255,255,.92); }
+.doc-header .version-badge { color:#135e5f; }

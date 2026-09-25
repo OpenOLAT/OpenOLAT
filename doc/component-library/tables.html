@@ -25,6 +25,8 @@
       <a href="../openolat-frontend.html">Frontend</a>
       <span class="sep">|</span>
       <a href="index.html" class="active">Component Library</a>
+      <span class="sep">|</span>
+      <a href="../i18n-translation-reference.md">Translation Reference</a>
     </nav>
   </div>
   <div class="header-rule"></div>
@@ -53,6 +55,8 @@
   <a href="feedback.html">Feedback &amp; Status</a>
   <a href="layout.html">Layout &amp; Containers</a>
   <a href="data-display.html">Data Display</a>
+  <a href="ai-ui.html">AI UI</a>
+  <a href="room-management.html">Room Management</a>
 </nav>
 
 <main class="cl-main">
@@ -247,9 +251,10 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>FlexiTable - Search</h3>
-      <p>Quick search input in the table toolbar. Includes a text field, a reset button (clear icon), and a search submit button. The toolbar also contains tool icons for actions, column customization, and export on the right side. Wrapped in the <code>o_table_toolbar</code> container with <code>o_table_search</code> and <code>o_table_tools</code> sections.</p>
+      <p>Quick search input in the table toolbar. Includes a text field, a reset button (clear icon, visible when the field has text), and a search submit button. The toolbar also contains tool icons for actions, column customization, and export on the right side. Wrapped in the <code>o_table_toolbar</code> container with <code>o_table_search</code> and <code>o_table_tools</code> sections.</p>
+      <p><span class="version-badge changed">Changed in 21.1.0</span> The quick search is now the <code>SearchElement</code> (<code>div.o_search.o_search_default</code>, see Form Elements, Search Field). The large search above the table (<code>o_table_large_search</code>) uses <code>o_search_large</code> and shows the row count in <code>o_table_rowcount</code>. The row count after the normal search stays a plain <code>&lt;span&gt;</code>. Table CSS rules for <code>input[type='text']</code> exclude <code>.o_search_input</code>.</p>
       <div class="cl-classes">
-        <code>o_table_toolbar</code> <code>o_table_search</code> <code>o_table_tools</code> <code>o_reset_quick_search</code> <code>o_icon_remove_filters</code> <code>o_icon_search</code> <code>o_icon_actions</code> <code>o_icon_customize</code> <code>o_icon_download</code>
+        <code>o_table_toolbar</code> <code>o_table_search</code> <code>o_table_tools</code> <code>o_search</code> <code>o_search_default</code> <code>o_search_reset</code> <code>o_icon_search</code> <code>o_icon_actions</code> <code>o_icon_customize</code> <code>o_icon_download</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -257,9 +262,7 @@
         <div class="cl-example">
           <div class="o_table_toolbar clearfix">
             <div class="o_table_search o_noprint">
-              <input type="text" class="form-control" placeholder="Quick search" style="display:inline-block;width:200px;">
-              <a href="#" class="btn btn-default o_reset_quick_search" onclick="return false"><i class="o_icon o_icon_remove_filters"></i></a>
-              <a href="#" class="btn btn-default" onclick="return false"><i class="o_icon o_icon_search"></i></a>
+              <div class="form-group clearfix"><div class="o_search o_search_default" role="search"><div class="input-group"><div class="o_search_input_wrapper"><input type="text" class="form-control o_search_input" size="35" placeholder="Enter search term" autocomplete="off" role="searchbox" aria-label="Enter search term"></div><span class="input-group-btn"><a class="btn btn-default o_search_button" href="#" onclick="return false" role="button"><i class="o_icon o_icon-fw o_icon_search" aria-hidden="true" title="Search"></i> <span><span class="sr-only">Search</span></span></a></span></div></div></div>
               <span>10 Entries</span>
             </div>
             <div class="o_table_tools o_noprint">
@@ -274,13 +277,20 @@
         <span class="cl-code-toggle">Show Code</span>
         <pre>&lt;div class="o_table_toolbar clearfix"&gt;
   &lt;div class="o_table_search o_noprint"&gt;
-    &lt;input type="text" class="form-control" placeholder="Quick search"&gt;
-    &lt;a href="#" class="btn btn-default o_reset_quick_search"&gt;
-      &lt;i class="o_icon o_icon_remove_filters"&gt;&lt;/i&gt;
-    &lt;/a&gt;
-    &lt;a href="#" class="btn btn-default"&gt;
-      &lt;i class="o_icon o_icon_search"&gt;&lt;/i&gt;
-    &lt;/a&gt;
+    &lt;div class="o_search o_search_default" role="search"&gt;
+      &lt;div class="input-group"&gt;
+        &lt;div class="o_search_input_wrapper"&gt;
+          &lt;input type="text" class="form-control o_search_input" role="searchbox"
+                 aria-label="Enter search term" placeholder="Enter search term"&gt;
+          ...reset button o_search_reset...
+        &lt;/div&gt;
+        &lt;span class="input-group-btn"&gt;
+          &lt;a class="btn btn-default o_search_button" role="button"&gt;
+            &lt;i class="o_icon o_icon-fw o_icon_search" aria-hidden="true"&gt;&lt;/i&gt;
+          &lt;/a&gt;
+        &lt;/span&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
     &lt;span&gt;10 Entries&lt;/span&gt;
   &lt;/div&gt;
   &lt;div class="o_table_tools o_noprint"&gt;
@@ -301,6 +311,36 @@
     &lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- FlexiTable - Translation Cell (21.1) -->
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>FlexiTable - Translation Cell <span class="version-badge">New in 21.1.0</span></h3>
+      <p><code>TranslateCellRenderer</code> shows a translatable term in a table cell: a link with the icon <code>o_icon_language</code> before the term. The link title and the <code>sr-only</code> text are "Translate "{term}"" (core key <code>translate.name</code>). A click fires the table action <code>translate</code> (<code>TranslateCellRenderer.CMD_TRANSLATE</code>). First use: grade scales (<code>GradeSystemListController</code>).</p>
+      <div class="cl-classes">
+        <code>o_icon_language</code> <code>sr-only</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="o_table_wrapper o_table_flexi o_rendertype_classic"><div class="o_scrollable_wrapper"><div class="o_scrollable"><table class="table table-condensed table-striped table-hover"><thead><tr><th>Name</th><th>Type</th></tr></thead><tbody>
+            <tr><td><a href="#" onclick="return false" title="Translate &quot;Swiss grades&quot;" draggable="false"><i class="o_icon o_icon_language" aria-hidden="true" title="Translate &quot;Swiss grades&quot;"> </i> <span class="sr-only">Translate "Swiss grades"</span></a> Swiss grades</td><td>Numeric</td></tr>
+            <tr><td><a href="#" onclick="return false" title="Translate &quot;Pass / fail&quot;" draggable="false"><i class="o_icon o_icon_language" aria-hidden="true" title="Translate &quot;Pass / fail&quot;"> </i> <span class="sr-only">Translate "Pass / fail"</span></a> Pass / fail</td><td>Text</td></tr>
+          </tbody></table></div></div></div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;td&gt;
+  &lt;a href="javascript:;" onclick="...; return false;" title="Translate &amp;quot;Swiss grades&amp;quot;" draggable="false"&gt;
+    &lt;i class="o_icon o_icon_language" aria-hidden="true" title="..."&gt; &lt;/i&gt;
+    &lt;span class="sr-only"&gt;Translate "Swiss grades"&lt;/span&gt;
+  &lt;/a&gt; Swiss grades
+&lt;/td&gt;</pre>
       </div>
     </div>
   </div>
@@ -419,9 +459,9 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>FlexiTable - Action Menu (3-dot)</h3>
-      <p>The three-dot action menu at the end of a table row. Uses a Bootstrap dropdown toggle with the <code>o_icon_actions</code> icon. Typically placed in the last column with class <code>o_table_action</code>.</p>
+      <p>The three-dot action menu at the end of a table row. Uses a Bootstrap dropdown toggle with the <code>o_icon_actions</code> icon. Typically placed in the last column with the classes <code>o_col_sticky_right o_col_action</code>.</p>
       <div class="cl-classes">
-        <code>o_table_action</code> <code>o_icon_actions</code> <code>btn-group</code> <code>dropdown-toggle</code> <code>dropdown-menu</code>
+        <code>o_col_action</code> <code>o_col_sticky_right</code> <code>o_icon_actions</code> <code>btn-group</code> <code>dropdown-toggle</code> <code>dropdown-menu</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -439,7 +479,7 @@
               <tr>
                 <td><a href="#" onclick="return false">Introduction to Mathematics</a></td>
                 <td>Anna Mueller</td>
-                <td class="o_table_action">
+                <td class="o_col_sticky_right o_col_action">
                   <div class="btn-group">
                     <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
                       <i class="o_icon o_icon_actions"></i>
@@ -457,7 +497,7 @@
               <tr>
                 <td><a href="#" onclick="return false">English B2 Final Exam</a></td>
                 <td>Peter Schmidt</td>
-                <td class="o_table_action">
+                <td class="o_col_sticky_right o_col_action">
                   <div class="btn-group">
                     <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
                       <i class="o_icon o_icon_actions"></i>
@@ -478,7 +518,7 @@
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;td class="o_table_action"&gt;
+        <pre>&lt;td class="o_col_sticky_right o_col_action"&gt;
   &lt;div class="btn-group"&gt;
     &lt;button type="button" class="btn btn-default btn-xs dropdown-toggle"
             data-toggle="dropdown"&gt;

@@ -26,22 +26,21 @@ Only a moderator (forumCallback.mayEditMessageAsModerator()) is allowed to creat
 Only a moderator is allowed to edit/delete/attach file a/to message with children or to split a thread.<br>
 The <em>split thread</em> outcome is a new thread starting from the selected Message on. The old thread loses the subtree starting from the selected Message.</p>
 
-<p>The {@link org.olat.modules.fo.ForumManager} provides the forum storage layer.<br>
-The {@link org.olat.modules.fo.ForumController} provides the business workflow. It processes the events coming from different Components or Controllers either by delegating
+<p>The {@link org.olat.modules.fo.manager.ForumManager} provides the forum storage layer.<br>
+The {@link org.olat.modules.fo.ui.ForumController} provides the business workflow. It processes the events coming from different Components or Controllers either by delegating
 the storage to the ForumManager or by presenting different Components to the user. 
-({@link org.olat.modules.fo.MessageEditorController} is for creating a thread, editing or replying to a message. It holds the form and allows to handle attachments.</p>
+({@link org.olat.modules.fo.ui.MessageEditController} is for creating a thread, editing or replying to a message. It holds the form and allows to handle attachments.</p>
 
 <p>A forum thread view has three options: <br>
 1) shows all messages with details (body text, etc) in a threaded view<br>
 2) shows all messages with details (body text, etc) in a flat view<br>
 3) shows only one message details at a time plus the messages table in the logical (not chronological) order.</p>
 
-<p>The {@link org.olat.modules.fo.ForumControllerFactory} provides a Titled ForumController, either in a popup or not.<br>
-The {@link org.olat.modules.fo.MessageNode} class represents a tree node (see org.olat.core.util.nodes.INode) adapter for the Message objects. 
-This is later used in {@link org.olat.modules.fo.ForumArchiveManager}.<br>
-The {@link org.olat.modules.fo.ForumArchiveManager} provides the possibility to archive the content of an entire forum or of a forum thread. 
-The {@link org.olat.modules.fo.ForumRTFFormatter} is the {@link org.olat.modules.fo.ForumFormatter} implementation for RTF. The outcome of the forum archive is a zip containing the RTF file plus the
-images used for marking the forum thread statuses (e.g. Sticky, Closed).
+<p>The {@link org.olat.modules.fo.archiver.MessageNode} class represents a tree node (see org.olat.core.util.nodes.INode) adapter for the Message objects. 
+This is later used in {@link org.olat.modules.fo.archiver.ForumArchive}.<br>
+The {@link org.olat.modules.fo.archiver.ForumArchive} provides the possibility to archive the content of an entire forum or of a forum thread. 
+The {@link org.olat.modules.fo.archiver.formatters.ForumOpenXMLFormatter} writes the archive as a Word (OpenXML) document. The outcome of the forum archive is a zip containing this document plus the
+message attachments.
 </p>
 
 <h2>Use cases:</h2>

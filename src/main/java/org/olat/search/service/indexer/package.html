@@ -11,7 +11,7 @@ The indexer package contains all classes to create a new search-index.
 <h3>Indexer Structure</h3>
 <p>
 The indexer loops over all OLAT data to analyse and generate a new index. 
-The indexer structure is given through the spring config defaultconfig.xml at org.olat.search.service._spring.
+The indexer structure is given through the spring config org/olat/search/_spring/searchContext.xml.
 Each indexer analyse his content and pass tha context to his child elements.<br>
 E.g. GroupIndexer goes further to GroupFolderIndexer, GroupForumIndexer, GroupWikiIndexer for each group.<br>
 <br>

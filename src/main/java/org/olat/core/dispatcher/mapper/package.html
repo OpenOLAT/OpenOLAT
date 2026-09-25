@@ -36,14 +36,14 @@ protected resource) or the delivered files are generated on the fly
 (e.g. an excel file download).
 </p>
 <h4>Registration</h4>
-<p>Mappers must be registered using the mapper registry or the global
-mapper registry. The difference between global and normal is that
+<p>Mappers must be registered using the MapperService or the
+GlobalMapperRegistry. The difference between global and normal is that
 globals mappers have a global mapper name based on the class that
 registered for the mapper. Thus, the global mapper will always have the
 same URL and can be cached by the browser.  Global mappers are shared between all users. Make sure you implement a
 proper last-modified in the resources you deliver via global mappers!
 </p>
-<p>The normal mapper registry registers for user session based mappers.
+<p>The MapperService registers user session based mappers.
 The life-time of such mappers is bound to the user session.
 </p>
 <h4>Deregistration</h4>

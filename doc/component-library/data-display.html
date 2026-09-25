@@ -25,6 +25,8 @@
       <a href="../openolat-frontend.html">Frontend</a>
       <span class="sep">|</span>
       <a href="index.html" class="active">Component Library</a>
+      <span class="sep">|</span>
+      <a href="../i18n-translation-reference.md">Translation Reference</a>
     </nav>
   </div>
   <div class="header-rule"></div>
@@ -53,6 +55,8 @@
   <a href="feedback.html">Feedback &amp; Status</a>
   <a href="layout.html">Layout &amp; Containers</a>
   <a href="data-display.html">Data Display</a>
+  <a href="ai-ui.html">AI UI</a>
+  <a href="room-management.html">Room Management</a>
 </nav>
 
 <main class="cl-main">
@@ -113,7 +117,7 @@
             <span><i class="o_icon o_icon-fw o_icon_group"></i> group</span>
             <span><i class="o_icon o_icon-fw o_icon_mail"></i> mail</span>
             <span><i class="o_icon o_icon-fw o_icon_calendar"></i> calendar</span>
-            <span><i class="o_icon o_icon-fw o_icon_folder"></i> folder</span>
+            <span><i class="o_icon o_icon-fw o_filetype_folder"></i> folder</span>
             <span><i class="o_icon o_icon-fw o_icon_courseareas"></i> course</span>
             <span><i class="o_icon o_icon-fw o_icon_tag"></i> tag</span>
             <span><i class="o_icon o_icon-fw o_icon_bookmark"></i> bookmark</span>
@@ -205,8 +209,8 @@
       <h3>Course Building Block Icons</h3>
       <p>Icons for course elements/building blocks used in the course editor tree.</p>
       <div class="cl-classes">
-        <code>o_icon_coursenode</code> <code>o_forum_icon</code> <code>o_wiki_icon</code>
-        <code>o_test_icon</code> <code>o_task_icon</code> <code>o_st_icon</code>
+        <code>o_{type}_icon</code> <code>o_fo_icon</code> <code>o_wiki_icon</code>
+        <code>o_iqtest_icon</code> <code>o_gta_icon</code> <code>o_st_icon</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -215,11 +219,11 @@
           <div class="cl-example-row" style="gap:20px;font-size:16px;">
             <span><i class="o_icon o_icon-fw o_st_icon"></i> Structure</span>
             <span><i class="o_icon o_icon-fw o_sp_icon"></i> Single Page</span>
-            <span><i class="o_icon o_icon-fw o_forum_icon"></i> Forum</span>
+            <span><i class="o_icon o_icon-fw o_fo_icon"></i> Forum</span>
             <span><i class="o_icon o_icon-fw o_wiki_icon"></i> Wiki</span>
-            <span><i class="o_icon o_icon-fw o_test_icon"></i> Test</span>
+            <span><i class="o_icon o_icon-fw o_iqtest_icon"></i> Test</span>
             <span><i class="o_icon o_icon-fw o_survey_icon"></i> Survey</span>
-            <span><i class="o_icon o_icon-fw o_task_icon"></i> Task</span>
+            <span><i class="o_icon o_icon-fw o_gta_icon"></i> Task</span>
             <span><i class="o_icon o_icon-fw o_en_icon"></i> Enrollment</span>
             <span><i class="o_icon o_icon-fw o_blog_icon"></i> Blog</span>
             <span><i class="o_icon o_icon-fw o_podcast_icon"></i> Podcast</span>
@@ -236,42 +240,31 @@
 
   <div class="cl-component">
     <div class="cl-component-header">
-      <h3>Avatar</h3>
-      <p>User avatar image in various sizes. Falls back to initials or generic user icon when no image is available.</p>
+      <h3>Avatar (User Portrait)</h3>
+      <p>The portrait uses the <code>o_user_portrait</code> classes from <code>_user.scss</code>. The classes <code>o_avatar_sm</code> and <code>o_avatar_lg</code> do not exist. Without an image the portrait shows the initials in one of the <code>o_user_initials_{color}</code> colors. The initials element has <code>role="img"</code> and an <code>aria-label</code> with the full name.</p>
       <div class="cl-classes">
-        <code>o_avatar</code> <code>o_avatar_sm</code> <code>o_avatar_lg</code> <code>o_portrait</code>
+        <code>o_user_portrait</code> <code>o_user_portrait_xsmall</code> <code>o_user_portrait_small</code> <code>o_user_portrait_medium</code> <code>o_user_portrait_large</code> <code>o_user_portrait_avatar</code> <code>o_user_portrait_initials</code> <code>o_user_initials_{color}</code> <code>o_user_portrait_border</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
           <div class="cl-example-row" style="gap:16px;align-items:center;">
-            <!-- Small avatar with initials -->
-            <div class="o_portrait" style="width:32px;height:32px;border-radius:50%;background:#337ab7;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;">GN</div>
-            <!-- Default avatar with initials -->
-            <div class="o_portrait" style="width:48px;height:48px;border-radius:50%;background:#5cb85c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;">JD</div>
-            <!-- Large avatar placeholder -->
-            <div class="o_portrait" style="width:64px;height:64px;border-radius:50%;background:#f0ad4e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold;">AB</div>
-            <!-- Fallback with icon -->
-            <div class="o_portrait" style="width:48px;height:48px;border-radius:50%;background:#eee;color:#999;display:flex;align-items:center;justify-content:center;">
-              <i class="o_icon o_icon_user" style="font-size:24px;"></i>
-            </div>
+            <div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_orange" role="img" aria-label="AIT, Claude">CA</div></div><div class="o_user_portrait_border"></div></div>
+            <div class="o_user_portrait o_user_portrait_small"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_dark_blue" role="img" aria-label="Alvarez, Zephania">ZA</div></div><div class="o_user_portrait_border"></div></div>
+            <div class="o_user_portrait o_user_portrait_medium"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_purple" role="img" aria-label="Andrews, Myles">MA</div></div><div class="o_user_portrait_border"></div></div>
+            <div class="o_user_portrait o_user_portrait_large"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Anthony, Jaime">JA</div></div><div class="o_user_portrait_border"></div></div>
           </div>
         </div>
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;!-- Avatar with image --&gt;
-&lt;div class="o_portrait"&gt;
-  &lt;img src="portrait.jpg" alt="User"&gt;
-&lt;/div&gt;
-
-&lt;!-- Avatar with initials --&gt;
-&lt;div class="o_portrait"&gt;GN&lt;/div&gt;
-
-&lt;!-- Avatar with fallback icon --&gt;
-&lt;div class="o_portrait"&gt;
-  &lt;i class="o_icon o_icon_user"&gt;&lt;/i&gt;
+        <pre>&lt;div class="o_user_portrait o_user_portrait_small"&gt;
+  &lt;div class="o_user_portrait_avatar"&gt;
+    &lt;div class="o_user_portrait_initials o_user_initials o_user_initials_orange"
+         role="img" aria-label="AIT, Claude"&gt;CA&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;
 &lt;/div&gt;</pre>
       </div>
     </div>
@@ -280,31 +273,140 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>User Info Card</h3>
-      <p>Compact user card showing avatar, name, and additional info. Used in member lists and user references.</p>
+      <p>User info as rendered by the user info controller (GUI demo "Users", markup read from localhost): a profile block with status badge, a large and a medium portrait (the theme shows one of them depending on the width), name and command buttons, then a divider and the user properties in the normal form layout. The instant messaging status is an overlay icon in <code>o_user_portrait_im</code>. The second example is a portrait list <code>o_users_portraits</code> with display names.</p>
       <div class="cl-classes">
-        <code>o_user_info</code> <code>o_user_display_name</code> <code>o_portrait</code>
+        <code>o_user_info_wrapper</code> <code>o_user_info</code> <code>o_user_info_profile</code> <code>o_user_status_badge</code> <code>o_user_status_active</code> <code>o_user_info_profile_portrait_wrapper</code> <code>o_user_info_profile_name</code> <code>o_user_info_profile_cmds</code> <code>o_user_info_divider</code> <code>o_user_info_items</code> <code>o_users_portraits</code> <code>o_users_portraits_items</code> <code>o_portrait_user</code> <code>o_displayname</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
-          <div style="display:flex;align-items:center;gap:12px;padding:8px;border:1px solid #eee;border-radius:4px;max-width:300px;">
-            <div class="o_portrait" style="width:40px;height:40px;border-radius:50%;background:#337ab7;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;">GN</div>
-            <div>
-              <div class="o_user_display_name" style="font-weight:600;">Gnagi, OpenOLAT</div>
-              <div style="font-size:12px;color:#999;">Administrator</div>
+          <div class="o_user_info_wrapper o_muted_labels">
+            <div class="o_user_info">
+              <div class="o_user_info_profile_container"><div class="o_user_info_profile">
+                <span class="o_user_status_badge o_user_status_active">Active</span>
+                <div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_large"><div class="o_user_portrait o_user_portrait_large"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin">KF</div></div><div class="o_user_portrait_border"></div><div class="o_user_portrait_im"><i class="o_icon o_icon_status_dnd"></i></div></div></div>
+                <div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_medium"><div class="o_user_portrait o_user_portrait_medium"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin">KF</div></div><div class="o_user_portrait_border"></div></div></div>
+                <div class="o_user_info_profile_name_wrapper">
+                  <div class="o_user_info_profile_name">Frøya, Kristin</div>
+                  <div class="o_user_info_profile_cmds o_noprint"><a class="btn btn-xs btn-default" href="#" onclick="return false" role="button"><i class="o_icon o_icon-fw o_icon_visiting_card" aria-hidden="true" title="Visiting card"></i> <span><span class="sr-only">Visiting card</span></span></a> <a class="btn btn-xs btn-default" href="#" onclick="return false" role="button"><i class="o_icon o_icon-fw o_icon_mail" aria-hidden="true" title="E-mail"></i> <span><span class="sr-only">E-mail</span></span></a></div>
+                </div>
+              </div></div>
+              <div class="o_user_info_divider"></div>
+              <div class="o_user_info_items o_user_info_items_1col"><div class="form-group clearfix"><label class="control-label">Institution</label><p class="form-control-static">University of Zurich</p></div></div>
             </div>
+          </div>
+          <div class="o_block_top">
+          <div class="o_users_portraits o_users_portraits_vertical_displayname o_users_portraits_xsmall"><ul class="o_users_portraits_items list-unstyled" aria-label="Users portraits">
+            <li class="o_portrait_user"><div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin">KF</div></div><div class="o_user_portrait_border"></div></div><div class="o_displayname">Frøya, Kristin</div></li>
+            <li class="o_portrait_user"><div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_orange" role="img" aria-label="AIT, Claude">CA</div></div><div class="o_user_portrait_border"></div></div><div class="o_displayname">AIT, Claude</div></li>
+            <li class="o_portrait_user"><div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_purple" role="img" aria-label="Miomir, Đorđe">ĐM</div></div><div class="o_user_portrait_border"></div></div><div class="o_displayname">Miomir, Đorđe</div></li>
+          </ul></div>
           </div>
         </div>
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;div class="o_user_info"&gt;
-  &lt;div class="o_portrait"&gt;...avatar...&lt;/div&gt;
-  &lt;div&gt;
-    &lt;div class="o_user_display_name"&gt;Name&lt;/div&gt;
-    &lt;div&gt;Role&lt;/div&gt;
+        <pre>&lt;div class="o_user_info_wrapper o_muted_labels"&gt;
+            &lt;div class="o_user_info"&gt;
+              &lt;div class="o_user_info_profile_container"&gt;&lt;div class="o_user_info_profile"&gt;
+                &lt;span class="o_user_status_badge o_user_status_active"&gt;Active&lt;/span&gt;
+                &lt;div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_large"&gt;&lt;div class="o_user_portrait o_user_portrait_large"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin"&gt;KF&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;div class="o_user_portrait_im"&gt;&lt;i class="o_icon o_icon_status_dnd"&gt;&lt;/i&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+                &lt;div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_medium"&gt;&lt;div class="o_user_portrait o_user_portrait_medium"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin"&gt;KF&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+                &lt;div class="o_user_info_profile_name_wrapper"&gt;
+                  &lt;div class="o_user_info_profile_name"&gt;Frøya, Kristin&lt;/div&gt;
+                  &lt;div class="o_user_info_profile_cmds o_noprint"&gt;&lt;a class="btn btn-xs btn-default" href="#" onclick="return false" role="button"&gt;&lt;i class="o_icon o_icon-fw o_icon_visiting_card" aria-hidden="true" title="Visiting card"&gt;&lt;/i&gt; &lt;span&gt;&lt;span class="sr-only"&gt;Visiting card&lt;/span&gt;&lt;/span&gt;&lt;/a&gt; &lt;a class="btn btn-xs btn-default" href="#" onclick="return false" role="button"&gt;&lt;i class="o_icon o_icon-fw o_icon_mail" aria-hidden="true" title="E-mail"&gt;&lt;/i&gt; &lt;span&gt;&lt;span class="sr-only"&gt;E-mail&lt;/span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;&lt;/div&gt;
+              &lt;div class="o_user_info_divider"&gt;&lt;/div&gt;
+              &lt;div class="o_user_info_items o_user_info_items_1col"&gt;&lt;div class="form-group clearfix"&gt;&lt;label class="control-label"&gt;Institution&lt;/label&gt;&lt;p class="form-control-static"&gt;University of Zurich&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class="o_block_top"&gt;
+          &lt;div class="o_users_portraits o_users_portraits_vertical_displayname o_users_portraits_xsmall"&gt;&lt;ul class="o_users_portraits_items list-unstyled" aria-label="Users portraits"&gt;
+            &lt;li class="o_portrait_user"&gt;&lt;div class="o_user_portrait o_user_portrait_xsmall"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin"&gt;KF&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class="o_displayname"&gt;Frøya, Kristin&lt;/div&gt;&lt;/li&gt;
+            &lt;li class="o_portrait_user"&gt;&lt;div class="o_user_portrait o_user_portrait_xsmall"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_user_initials_orange" role="img" aria-label="AIT, Claude"&gt;CA&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class="o_displayname"&gt;AIT, Claude&lt;/div&gt;&lt;/li&gt;
+            &lt;li class="o_portrait_user"&gt;&lt;div class="o_user_portrait o_user_portrait_xsmall"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_user_initials_purple" role="img" aria-label="Miomir, Đorđe"&gt;ĐM&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class="o_displayname"&gt;Miomir, Đorđe&lt;/div&gt;&lt;/li&gt;
+          &lt;/ul&gt;&lt;/div&gt;
+          &lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FACT SHEET (21.1) ==================== -->
+<section class="cl-section" id="fact-sheet">
+  <h2>Fact Sheet <span class="version-badge">New in 21.1.0</span></h2>
+
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Fact Sheet <span class="version-badge">New in 21.1.0</span></h3>
+      <p>A bordered box with a title and key facts in a responsive grid. Each fact has an icon in a tinted circle, a muted label, a value and an optional sub-value. A value can also be a component, for example a progress bar or a <code>ComponentList</code> of links. Optional footer buttons are right-aligned. A footer link with the class <code>o_fact_sheet_footer_full</code> (<code>FactSheet.CSS_FOOTER_LINK_FULL_WIDTH</code>) spans the full width. Java: <code>FactSheetFactory</code> in <code>org.olat.core.gui.components.factsheet</code>. Used on the info page of courses and implementations (<code>InfoPageFactsController</code>, <code>InfoPageMyCourseController</code>). GUI demo: <strong>Fact Sheets</strong>.</p>
+      <p>Layout: <code>.o_facts</code> is a CSS Grid with <code>repeat(auto-fill, minmax($o-fact-min-width, 1fr))</code>, so the number of columns follows the available width (320px per column by default). Variables in <code>_config.scss</code>: <code>$o-fact-sheet-padding</code> (20px), <code>$o-fact-sheet-title-font-size</code> (18px), <code>$o-fact-icon-size</code> (32px), <code>$o-fact-icon-color</code> (<code>$brand-primary</code>), <code>$o-fact-icon-bg-color</code> (10% of <code>$brand-primary</code>), <code>$o-fact-value-font-size</code> (16px). Styles are in <code>_card.scss</code>.</p>
+      <p>Accessibility: the title is an <code>h3</code>. The icons are decorative. The label comes before the value in the DOM, so screen readers read "Location, Lviv".</p>
+      <div class="cl-classes">
+        <code>o_fact_sheet</code> <code>o_fact_sheet_title</code> <code>o_facts</code> <code>o_fact</code> <code>o_fact_icon</code> <code>o_fact_body</code> <code>o_fact_label</code> <code>o_fact_value</code> <code>o_fact_sub_value</code> <code>o_fact_sheet_footer</code> <code>o_fact_sheet_footer_buttons</code> <code>o_fact_sheet_footer_full</code> <code>o_component_list</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="o_fact_sheet"><h3 class="o_fact_sheet_title">Fact sheet</h3><div class="o_facts"><div class="o_fact"><div class="o_fact_icon"><i class="o_icon o_icon_lifecycle_date"> </i></div><div class="o_fact_body"><div class="o_fact_label text-muted">Execution period</div><div class="o_fact_value">01.09.2026 &ndash; 31.01.2027</div><div class="o_fact_sub_value">Autumn semester 2026</div></div></div><div class="o_fact"><div class="o_fact_icon"><i class="o_icon o_icon_expenditure"> </i></div><div class="o_fact_body"><div class="o_fact_label text-muted">Effort</div><div class="o_fact_value">60 hours</div><div class="o_fact_sub_value">24 h of them on site</div></div></div><div class="o_fact"><div class="o_fact_icon"><i class="o_icon o_icon_location"> </i></div><div class="o_fact_body"><div class="o_fact_label text-muted">Location</div><div class="o_fact_value">Lviv</div><div class="o_fact_sub_value">Campus Pidzamche, room B3.12</div></div></div><div class="o_fact"><div class="o_fact_icon"><i class="o_icon o_icon_language"> </i></div><div class="o_fact_body"><div class="o_fact_label text-muted">Language</div><div class="o_fact_value">German</div></div></div><div class="o_fact"><div class="o_fact_icon"><i class="o_icon o_icon_num_participants"> </i></div><div class="o_fact_body"><div class="o_fact_label text-muted">Participants</div><div class="o_fact_value">24 of 30</div><div class="o_fact_sub_value">6 places available</div></div></div><div class="o_fact"><div class="o_fact_icon"><i class="o_icon o_icon_group"> </i></div><div class="o_fact_body"><div class="o_fact_label text-muted">Groups</div><div class="o_fact_value"><div class="o_component_list"><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_group" aria-hidden="true"></i> <span>Team Red</span></a><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_group" aria-hidden="true"></i> <span>Team Blue</span></a></div></div></div></div></div><div class="o_fact_sheet_footer"><div class="o_fact_sheet_footer_buttons"><a class="btn btn-default" href="#" onclick="return false" role="button"><span>Show orbits</span></a> <a class="btn btn-primary" href="#" onclick="return false" role="button"><span>Show moons</span></a></div></div></div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;div class="o_fact_sheet"&gt;
+  &lt;h3 class="o_fact_sheet_title"&gt;Fact sheet&lt;/h3&gt;
+  &lt;div class="o_facts"&gt;
+    &lt;div class="o_fact"&gt;
+      &lt;div class="o_fact_icon"&gt;&lt;i class="o_icon o_icon_location"&gt; &lt;/i&gt;&lt;/div&gt;
+      &lt;div class="o_fact_body"&gt;
+        &lt;div class="o_fact_label text-muted"&gt;Location&lt;/div&gt;
+        &lt;div class="o_fact_value"&gt;Lviv&lt;/div&gt;
+        &lt;div class="o_fact_sub_value"&gt;Campus Pidzamche, room B3.12&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;!-- value rendered by a component: ComponentList --&gt;
+    &lt;div class="o_fact"&gt;
+      &lt;div class="o_fact_icon"&gt;&lt;i class="o_icon o_icon_group"&gt; &lt;/i&gt;&lt;/div&gt;
+      &lt;div class="o_fact_body"&gt;
+        &lt;div class="o_fact_label text-muted"&gt;Groups&lt;/div&gt;
+        &lt;div class="o_fact_value"&gt;
+          &lt;div class="o_component_list"&gt;&lt;a&gt;...&lt;/a&gt;&lt;a&gt;...&lt;/a&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
   &lt;/div&gt;
+  &lt;div class="o_fact_sheet_footer"&gt;
+    &lt;div class="o_fact_sheet_footer_buttons"&gt;
+      &lt;a class="btn btn-default"&gt;...&lt;/a&gt; &lt;a class="btn btn-primary"&gt;...&lt;/a&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Component List <span class="version-badge">New in 21.1.0</span></h3>
+      <p><code>ComponentList</code> (<code>org.olat.core.gui.components.util</code>) renders several child components in one row. <code>ComponentListRenderer</code> writes <code>div.o_component_list</code>: a wrapping flex row with a gap of 10px (<code>_helpers.scss</code>).</p>
+      <div class="cl-classes">
+        <code>o_component_list</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="o_component_list"><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_group" aria-hidden="true"></i> <span>Team Red</span></a><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_group" aria-hidden="true"></i> <span>Team Blue</span></a><a href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_group" aria-hidden="true"></i> <span>Team Green</span></a></div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;div class="o_component_list"&gt;
+  &lt;a id="o_cogroup1" href="javascript:;"&gt;&lt;i class="o_icon o_icon-fw o_icon_group" aria-hidden="true"&gt;&lt;/i&gt; &lt;span&gt;Team Red&lt;/span&gt;&lt;/a&gt;
+  &lt;a id="o_cogroup2" href="javascript:;"&gt;&lt;i class="o_icon o_icon-fw o_icon_group" aria-hidden="true"&gt;&lt;/i&gt; &lt;span&gt;Team Blue&lt;/span&gt;&lt;/a&gt;
 &lt;/div&gt;</pre>
       </div>
     </div>
@@ -318,62 +420,31 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Scope Selector</h3>
-      <p>Category/time-period selector buttons. Selected scope is highlighted. Can include hints (subtitles) and time ranges.</p>
+      <p>Category or time-period selector (GUI demo "Scopes", markup read from localhost). <code>ScopeRenderer</code> renders <code>ul.o_scopes</code> with one <code>FormToggle</code> per scope in the button presentation: <code>button.o_toggle_button.btn.o_scope_toggle</code> with <code>role="checkbox"</code> and <code>aria-checked</code>. The selected scope has <code>o_toggle_on</code>, the others <code>o_toggle_off</code>. The on and off text are both rendered; the hidden one has <code>aria-hidden="true"</code>. With hints (<code>o_scope_toggle_hints</code>) each scope shows a second line <code>o_scope_hint</code>.</p>
       <div class="cl-classes">
-        <code>o_scopes</code> <code>o_scope</code> <code>o_scope_selected</code> <code>o_scope_hint</code>
+        <code>o_scopes</code> <code>o_scope_toggle_hints</code> <code>o_toggle_button</code> <code>o_scope_toggle</code> <code>o_toggle_on</code> <code>o_toggle_off</code> <code>o_toggle_button_text</code> <code>o_on</code> <code>o_off</code> <code>o_scope</code> <code>o_scope_title</code> <code>o_scope_hint</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
-          <div class="cl-example-stack">
-            <h5>Simple Scopes</h5>
-            <div class="o_scopes" style="display:flex;gap:8px;flex-wrap:wrap;">
-              <a href="#" onclick="return false" class="o_scope o_scope_selected" style="padding:8px 16px;border:1px solid #337ab7;border-radius:4px;background:#337ab7;color:#fff;text-decoration:none;text-align:center;">Mercury</a>
-              <a href="#" onclick="return false" class="o_scope" style="padding:8px 16px;border:1px solid #ddd;border-radius:4px;text-decoration:none;text-align:center;">Venus</a>
-              <a href="#" onclick="return false" class="o_scope" style="padding:8px 16px;border:1px solid #ddd;border-radius:4px;text-decoration:none;text-align:center;">Earth</a>
-              <a href="#" onclick="return false" class="o_scope" style="padding:8px 16px;border:1px solid #ddd;border-radius:4px;text-decoration:none;text-align:center;">Mars</a>
-            </div>
-
-            <h5 style="margin-top:16px;">Scopes with Hints</h5>
-            <div class="o_scopes" style="display:flex;gap:8px;flex-wrap:wrap;">
-              <a href="#" onclick="return false" class="o_scope" style="padding:8px 16px;border:1px solid #ddd;border-radius:4px;text-decoration:none;text-align:center;">
-                <strong>Mercury</strong><br><span class="o_scope_hint" style="font-size:12px;color:#999;">Planet #1</span>
-              </a>
-              <a href="#" onclick="return false" class="o_scope" style="padding:8px 16px;border:1px solid #ddd;border-radius:4px;text-decoration:none;text-align:center;">
-                <strong>Venus</strong><br><span class="o_scope_hint" style="font-size:12px;color:#999;">Planet #2</span>
-              </a>
-              <a href="#" onclick="return false" class="o_scope o_scope_selected" style="padding:8px 16px;border:1px solid #337ab7;border-radius:4px;background:#337ab7;color:#fff;text-decoration:none;text-align:center;">
-                <strong>Earth</strong><br><span class="o_scope_hint" style="font-size:12px;color:rgba(255,255,255,0.8);">Planet #3</span>
-              </a>
-            </div>
-
-            <h5 style="margin-top:16px;">Time Period Scopes</h5>
-            <div class="o_scopes" style="display:flex;gap:8px;flex-wrap:wrap;">
-              <a href="#" onclick="return false" class="o_scope o_scope_selected" style="padding:8px 16px;border:1px solid #337ab7;border-radius:4px;background:#337ab7;color:#fff;text-decoration:none;text-align:center;">
-                <strong>1 Month</strong><br><span style="font-size:11px;color:rgba(255,255,255,0.8);">12.03.2026 - 12.04.2026</span>
-              </a>
-              <a href="#" onclick="return false" class="o_scope" style="padding:8px 16px;border:1px solid #ddd;border-radius:4px;text-decoration:none;text-align:center;">
-                <strong>3 Months</strong><br><span style="font-size:11px;color:#999;">12.03.2026 - 12.06.2026</span>
-              </a>
-              <a href="#" onclick="return false" class="o_scope" style="padding:8px 16px;border:1px solid #ddd;border-radius:4px;text-decoration:none;text-align:center;">
-                <strong>Custom</strong><br><span style="font-size:11px;color:#999;">Set custom range</span>
-              </a>
-            </div>
-          </div>
+          <ul class="o_scopes"><li><button type="button" role="checkbox" id="cl_sc1" class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_on" aria-checked="true"><div class="o_toggle_button_text"><span class="o_on"><div class="o_scope"><div class="o_scope_title">Mercury</div><div class="o_scope_hint"></div></div></span><span class="o_off" aria-hidden="true"><div class="o_scope"><div class="o_scope_title">Mercury</div><div class="o_scope_hint"></div></div></span></div></button></li><li><button type="button" role="checkbox" id="cl_sc2" class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_off" aria-checked="false"><div class="o_toggle_button_text"><span class="o_on" aria-hidden="true"><div class="o_scope"><div class="o_scope_title">Venus</div><div class="o_scope_hint"></div></div></span><span class="o_off"><div class="o_scope"><div class="o_scope_title">Venus</div><div class="o_scope_hint"></div></div></span></div></button></li><li><button type="button" role="checkbox" id="cl_sc3" class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_off" aria-checked="false"><div class="o_toggle_button_text"><span class="o_on" aria-hidden="true"><div class="o_scope"><div class="o_scope_title">Earth</div><div class="o_scope_hint"></div></div></span><span class="o_off"><div class="o_scope"><div class="o_scope_title">Earth</div><div class="o_scope_hint"></div></div></span></div></button></li></ul>
+          <ul class="o_scopes o_scope_toggle_hints"><li><button type="button" role="checkbox" id="cl_sc4" class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_on" aria-checked="true"><div class="o_toggle_button_text"><span class="o_on"><div class="o_scope"><div class="o_scope_title">1 Month</div><div class="o_scope_hint">12.03.2026 - 12.04.2026</div></div></span><span class="o_off" aria-hidden="true"><div class="o_scope"><div class="o_scope_title">1 Month</div><div class="o_scope_hint">12.03.2026 - 12.04.2026</div></div></span></div></button></li><li><button type="button" role="checkbox" id="cl_sc5" class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_off" aria-checked="false"><div class="o_toggle_button_text"><span class="o_on" aria-hidden="true"><div class="o_scope"><div class="o_scope_title">3 Months</div><div class="o_scope_hint">12.03.2026 - 12.06.2026</div></div></span><span class="o_off"><div class="o_scope"><div class="o_scope_title">3 Months</div><div class="o_scope_hint">12.03.2026 - 12.06.2026</div></div></span></div></button></li></ul>
         </div>
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;div class="o_scopes"&gt;
-  &lt;a href="#" class="o_scope o_scope_selected"&gt;
-    &lt;strong&gt;Selected&lt;/strong&gt;
-  &lt;/a&gt;
-  &lt;a href="#" class="o_scope"&gt;
-    &lt;strong&gt;Normal&lt;/strong&gt;
-    &lt;span class="o_scope_hint"&gt;Subtitle&lt;/span&gt;
-  &lt;/a&gt;
-&lt;/div&gt;</pre>
+        <pre>&lt;ul class="o_scopes [o_scope_toggle_hints]"&gt;
+  &lt;li&gt;
+    &lt;button type="button" role="checkbox" aria-checked="true"
+            class="o_can_have_focus o_toggle_button btn o_scope_toggle o_toggle_on"&gt;
+      &lt;div class="o_toggle_button_text"&gt;
+        &lt;span class="o_on"&gt;&lt;div class="o_scope"&gt;&lt;div class="o_scope_title"&gt;Mercury&lt;/div&gt;&lt;div class="o_scope_hint"&gt;&lt;/div&gt;&lt;/div&gt;&lt;/span&gt;
+        &lt;span class="o_off" aria-hidden="true"&gt;&lt;div class="o_scope"&gt;...same...&lt;/div&gt;&lt;/span&gt;
+      &lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;</pre>
       </div>
     </div>
   </div>
@@ -386,53 +457,45 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Vertical Timeline</h3>
-      <p>Chronological timeline for displaying events in time order. Used in activity logs and history views.</p>
+      <p>FlexiTable render type VERTICAL_TIMELINE (<code>FlexiTableVerticalTimeLineRenderer</code>). Rows are grouped by year and by day in nested ordered lists. Each item has a path column (top, center, bottom segment) and a content column; the content comes from the row renderer. An expandable row adds <code>o_vertical_timeline_item_details</code> and a <code>button.o_button_details</code>. Styles: <code>_vertical_timeline.scss</code> and <code>_table.scss</code>.</p>
       <div class="cl-classes">
-        <code>o_vertical_timeline_rows</code> <code>o_vertical_timeline_row</code>
-        <code>o_vertical_timeline_year</code> <code>o_vertical_timeline_item_content</code>
+        <code>o_vertical_timeline</code> <code>o_rendertype_timeline</code> <code>o_vertical_timeline_rows</code> <code>o_vertical_timeline_year</code> <code>o_vertical_timeline_row</code> <code>o_vertical_timeline_day</code> <code>o_vertical_timeline_day_name</code> <code>o_vertical_timeline_day_number</code> <code>o_vertical_timeline_month_name</code> <code>o_vertical_timeline_item</code> <code>o_vertical_timeline_item_path</code> <code>o_vertical_timeline_item_content</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
-          <div class="o_vertical_timeline_rows" style="position:relative;padding-left:24px;border-left:2px solid #ddd;">
-            <div class="o_vertical_timeline_row" style="margin-bottom:20px;position:relative;">
-              <div style="position:absolute;left:-31px;width:16px;height:16px;border-radius:50%;background:#337ab7;border:2px solid #fff;"></div>
-              <div class="o_vertical_timeline_item_content" style="padding:8px 12px;background:#f8f9fa;border-radius:4px;">
-                <div style="font-size:12px;color:#999;">12.03.2026, 14:30</div>
-                <div style="font-weight:600;">Course published</div>
-                <div style="font-size:13px;color:#666;">The course "Introduction to Physics" was published by Gnagi.</div>
-              </div>
-            </div>
-            <div class="o_vertical_timeline_row" style="margin-bottom:20px;position:relative;">
-              <div style="position:absolute;left:-31px;width:16px;height:16px;border-radius:50%;background:#5cb85c;border:2px solid #fff;"></div>
-              <div class="o_vertical_timeline_item_content" style="padding:8px 12px;background:#f8f9fa;border-radius:4px;">
-                <div style="font-size:12px;color:#999;">10.03.2026, 09:15</div>
-                <div style="font-weight:600;">User enrolled</div>
-                <div style="font-size:13px;color:#666;">John Doe was enrolled as participant.</div>
-              </div>
-            </div>
-            <div class="o_vertical_timeline_row" style="margin-bottom:20px;position:relative;">
-              <div style="position:absolute;left:-31px;width:16px;height:16px;border-radius:50%;background:#f0ad4e;border:2px solid #fff;"></div>
-              <div class="o_vertical_timeline_item_content" style="padding:8px 12px;background:#f8f9fa;border-radius:4px;">
-                <div style="font-size:12px;color:#999;">08.03.2026, 16:00</div>
-                <div style="font-weight:600;">Course created</div>
-                <div style="font-size:13px;color:#666;">The course was created from template.</div>
-              </div>
-            </div>
-          </div>
+          <div class="o_table_wrapper o_table_flexi o_vertical_timeline o_rendertype_timeline"><ol class="o_vertical_timeline_rows">
+            <li class="o_vertical_timeline_year"><h3>2026</h3><ol><li class="o_vertical_timeline_row"><span class="o_vertical_timeline_day"><span class="o_vertical_timeline_day_name">Thu</span><span class="o_vertical_timeline_day_number">12</span><span class="o_vertical_timeline_month_name">Mar</span></span><ol><li class="o_vertical_timeline_item"><div class="o_vertical_timeline_item_path"><div class="o_vertical_timeline_path_top"></div><div class="o_vertical_timeline_path_center">&nbsp;</div><div class="o_vertical_timeline_path_bottom"></div></div><div class="o_vertical_timeline_item_content"><strong>Course published</strong><div class="o_muted">The course "Introduction to Physics" was published.</div></div></li><li class="o_vertical_timeline_item"><div class="o_vertical_timeline_item_path"><div class="o_vertical_timeline_path_top"></div><div class="o_vertical_timeline_path_center">&nbsp;</div><div class="o_vertical_timeline_path_bottom"></div></div><div class="o_vertical_timeline_item_content"><strong>Member added</strong><div class="o_muted">John Doe was added as participant.</div></div></li></ol></li><li class="o_vertical_timeline_row"><span class="o_vertical_timeline_day"><span class="o_vertical_timeline_day_name">Tue</span><span class="o_vertical_timeline_day_number">10</span><span class="o_vertical_timeline_month_name">Mar</span></span><ol><li class="o_vertical_timeline_item"><div class="o_vertical_timeline_item_path"><div class="o_vertical_timeline_path_top"></div><div class="o_vertical_timeline_path_center">&nbsp;</div><div class="o_vertical_timeline_path_bottom"></div></div><div class="o_vertical_timeline_item_content"><strong>Course created</strong><div class="o_muted">The course was created from a template.</div></div></li></ol></li></ol></li>
+          </ol></div>
         </div>
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;div class="o_vertical_timeline_rows"&gt;
-  &lt;div class="o_vertical_timeline_row"&gt;
-    &lt;div class="o_vertical_timeline_item_content"&gt;
-      &lt;div&gt;Date&lt;/div&gt;
-      &lt;div&gt;Title&lt;/div&gt;
-      &lt;div&gt;Description&lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
+        <pre>&lt;div class="o_table_wrapper o_table_flexi o_vertical_timeline o_rendertype_timeline"&gt;
+  &lt;ol class="o_vertical_timeline_rows"&gt;
+    &lt;li class="o_vertical_timeline_year"&gt;&lt;h3&gt;2026&lt;/h3&gt;
+      &lt;ol&gt;
+        &lt;li class="o_vertical_timeline_row"&gt;
+          &lt;span class="o_vertical_timeline_day"&gt;
+            &lt;span class="o_vertical_timeline_day_name"&gt;Thu&lt;/span&gt;
+            &lt;span class="o_vertical_timeline_day_number"&gt;12&lt;/span&gt;
+            &lt;span class="o_vertical_timeline_month_name"&gt;Mar&lt;/span&gt;
+          &lt;/span&gt;
+          &lt;ol&gt;
+            &lt;li class="o_vertical_timeline_item"&gt;
+              &lt;div class="o_vertical_timeline_item_path"&gt;
+                &lt;div class="o_vertical_timeline_path_top"&gt;&lt;/div&gt;
+                &lt;div class="o_vertical_timeline_path_center"&gt;&amp;nbsp;&lt;/div&gt;
+                &lt;div class="o_vertical_timeline_path_bottom"&gt;&lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="o_vertical_timeline_item_content"&gt;...row content...&lt;/div&gt;
+            &lt;/li&gt;
+          &lt;/ol&gt;
+        &lt;/li&gt;
+      &lt;/ol&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
 &lt;/div&gt;</pre>
       </div>
     </div>
@@ -477,47 +540,20 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Countdown Timer</h3>
-      <p>Countdown display showing remaining time in days, hours, minutes, and seconds. Used for exam timers and deadline indicators.</p>
+      <p><code>CountDownComponent</code> (<code>CountDownComponentRenderer</code>) renders a plain <code>&lt;span id="o_c{id}"&gt;</code> that contains the remaining number, or an i18n text with the number (singular and zero keys are supported). The polling updates the span. The theme has no countdown classes; the surrounding template gives the context, as in the example.</p>
       <div class="cl-classes">
-        <code>o_countdown</code> <code>o_countdown_value</code> <code>o_countdown_label</code>
+        <code>(no dedicated classes)</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
-          <div style="display:flex;gap:16px;align-items:center;font-size:14px;">
-            <div style="text-align:center;">
-              <div style="font-size:32px;font-weight:bold;color:#337ab7;">02</div>
-              <div style="font-size:12px;color:#999;">Days</div>
-            </div>
-            <span style="font-size:24px;color:#999;">:</span>
-            <div style="text-align:center;">
-              <div style="font-size:32px;font-weight:bold;color:#337ab7;">14</div>
-              <div style="font-size:12px;color:#999;">Hours</div>
-            </div>
-            <span style="font-size:24px;color:#999;">:</span>
-            <div style="text-align:center;">
-              <div style="font-size:32px;font-weight:bold;color:#337ab7;">30</div>
-              <div style="font-size:12px;color:#999;">Minutes</div>
-            </div>
-            <span style="font-size:24px;color:#999;">:</span>
-            <div style="text-align:center;">
-              <div style="font-size:32px;font-weight:bold;color:#337ab7;">45</div>
-              <div style="font-size:12px;color:#999;">Seconds</div>
-            </div>
-          </div>
+          <p>Time left: <span id="o_c1000001234">45</span> seconds</p>
         </div>
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;div class="o_countdown"&gt;
-  &lt;span class="o_countdown_value"&gt;02&lt;/span&gt;
-  &lt;span class="o_countdown_label"&gt;Days&lt;/span&gt;
-  :
-  &lt;span class="o_countdown_value"&gt;14&lt;/span&gt;
-  &lt;span class="o_countdown_label"&gt;Hours&lt;/span&gt;
-  ...
-&lt;/div&gt;</pre>
+        <pre>&lt;span id="o_c1000001234"&gt;45&lt;/span&gt;</pre>
       </div>
     </div>
   </div>
@@ -546,7 +582,7 @@
             <span><i class="o_icon o_flag o_flag_es"></i> Spanish</span>
             <span><i class="o_icon o_flag o_flag_pt_BR"></i> Portuguese</span>
             <span><i class="o_icon o_flag o_flag_ru"></i> Russian</span>
-            <span><i class="o_icon o_flag o_flag_ja"></i> Japanese</span>
+            <span><i class="o_icon o_flag o_flag_jp"></i> Japanese</span>
           </div>
         </div>
       </div>
@@ -567,21 +603,22 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Creative Commons License Icons</h3>
-      <p>License type icons for learning resource metadata.</p>
+      <p>License type icons for learning resource metadata. Each license has one icon class <code>o_icon_lic_{type}</code> from the OpenOlat icon font (<code>_icons.scss</code>).</p>
       <div class="cl-classes">
-        <code>o_icon_cc</code> <code>o_icon_cc_zero</code> <code>o_icon_cc_by</code>
-        <code>o_icon_cc_by_sa</code> <code>o_icon_cc_by_nd</code> <code>o_icon_cc_by_nc</code>
+        <code>o_icon_lic_cc0</code> <code>o_icon_lic_public_domain</code> <code>o_icon_lic_by</code>
+        <code>o_icon_lic_by_sa</code> <code>o_icon_lic_by_nd</code> <code>o_icon_lic_by_nc</code> <code>o_icon_lic_by_nc_sa</code> <code>o_icon_lic_by_nc_nd</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
           <div class="cl-example-stack" style="gap:8px;">
-            <span><i class="o_icon o_icon-fw o_icon_cc"></i> <i class="o_icon o_icon_cc_zero"></i> CC0 / Public Domain</span>
-            <span><i class="o_icon o_icon-fw o_icon_cc"></i> <i class="o_icon o_icon_cc_by"></i> CC BY</span>
-            <span><i class="o_icon o_icon-fw o_icon_cc"></i> <i class="o_icon o_icon_cc_by"></i> <i class="o_icon o_icon_cc_sa"></i> CC BY-SA</span>
-            <span><i class="o_icon o_icon-fw o_icon_cc"></i> <i class="o_icon o_icon_cc_by"></i> <i class="o_icon o_icon_cc_nd"></i> CC BY-ND</span>
-            <span><i class="o_icon o_icon-fw o_icon_cc"></i> <i class="o_icon o_icon_cc_by"></i> <i class="o_icon o_icon_cc_nc"></i> CC BY-NC</span>
+            <span style="display:flex;gap:12px;align-items:center;"><i class="o_icon o_icon_lic_cc0" aria-hidden="true"></i> <span>CC0</span></span>
+            <span style="display:flex;gap:12px;align-items:center;"><i class="o_icon o_icon_lic_public_domain" aria-hidden="true"></i> <span>Public Domain</span></span>
+            <span style="display:flex;gap:12px;align-items:center;"><i class="o_icon o_icon_lic_by" aria-hidden="true"></i> <span>CC BY</span></span>
+            <span style="display:flex;gap:12px;align-items:center;"><i class="o_icon o_icon_lic_by_sa" aria-hidden="true"></i> <span>CC BY-SA</span></span>
+            <span style="display:flex;gap:12px;align-items:center;"><i class="o_icon o_icon_lic_by_nd" aria-hidden="true"></i> <span>CC BY-ND</span></span>
+            <span style="display:flex;gap:12px;align-items:center;"><i class="o_icon o_icon_lic_by_nc" aria-hidden="true"></i> <span>CC BY-NC</span></span>
           </div>
         </div>
       </div>

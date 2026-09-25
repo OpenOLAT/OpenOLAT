@@ -8,9 +8,11 @@ allowed-tools: Read, Grep, Glob, Bash(mvn *)
 
 You are an expert OpenOlat developer. Use the architecture knowledge below and the reference files to help developers write correct, idiomatic OpenOlat code.
 
-For compressed architecture knowledge, read `.claude/openolat-architecture-knowledge.md`
+For compressed architecture knowledge (condensed, covers 21.1.0, same version markers), read `.claude/openolat-architecture-knowledge.md`
 
-For detailed architecture documentation, read: `doc/openolat-architecture.md`
+For detailed architecture documentation, read: `doc/openolat-architecture.md` (covers release 21.1.0; section numbers below refer to it). Package-level details: `package.md` next to the code, e.g. `src/main/java/org/olat/core/commons/services/ai/package.md`.
+
+Version markers in this skill: `**New in 21.1.0:**` marks a pattern that exists only on the 21.1 code line (master), not on the 21.0 branch.
 
 
 ## Project Basics
@@ -46,11 +48,13 @@ HTTP Request → Servlet → Dispatcher → Window (synchronized)
 
 ### Controller Hierarchy
 ```
-DefaultController (base, dispose lifecycle)
-  └─ BasicController (UI controller, Velocity rendering)
-       └─ FormBasicController (FlexiForm support)
-            └─ FormLayoutContainer (pure layout)
+Controller (interface)
+  └─ DefaultController (event dispatch, dispose lifecycle)
+       └─ BasicController (listenTo, Velocity, mappers)
+            └─ FormBasicController (FlexiForm support)
 ```
+`FormLayoutContainer` is not a controller. It is a `FormItem` container for layout (section 8 of the architecture doc).
+Controllers are autowired by the framework: `@Autowired` fields work in controllers too.
 
 ### Creating a BasicController
 ```java
@@ -199,10 +203,32 @@ columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit",
 
 tableModel = new MyTableModel(columnsModel);
 tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), layout);
-tableEl.setSearchEnabled(true);
+tableEl.setSearchEnabled(true);             // or setSearchEnabled(listProvider, ureq.getUserSession()) for typeahead
 tableEl.setSelectAllEnable(true);
-tableEl.setEmptyTableSettings("icon", "empty.message", null, "create.button");
+tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+        .withIconCss("o_icon_empty").withMessageI18nKey("table.empty").build());
+tableEl.setAndLoadPersistedPreferences(ureq, "my-table-v1");
+
+// Default sort
+FlexiTableSortOptions options = new FlexiTableSortOptions();
+options.setDefaultOrderBy(new SortKey(Cols.name.name(), true));
+tableEl.setSortSettings(options);
 ```
+
+## New Form Elements
+
+- **New in 21.1.0:** `FormSection` structures a long form (section 8 "Form Sections"):
+  ```java
+  FormSection sec = uifactory.addFormSection("advanced", translate("section.advanced"), formLayout, FormSection.Level.SUB_TITLE);
+  sec.setCollapsible(true);
+  sec.setCollapsed(true);
+  sec.setPersistedStatusId(ureq, "my.form.advanced"); // after setCollapsed()
+  uifactory.addTextElement("name", "field.name", 200, "", sec);
+  ```
+- **New in 21.1.0:** `SearchElement` is the one search field (section 8 "Search Element"). `uifactory.addSearchElement(name, SearchVariant.DEFAULT|LARGE|TYPEAHEAD, formLayout)` or `addSearchElement(name, listProvider, usess, formLayout)`. React to `SearchFormEvent` (`SEARCH`, `RESET`) in `formInnerEvent()`. It does not mark the form dirty. Do not build a search field from `TextElement` + button.
+- **New in 21.1.0:** `formItem.setLabelIconCss("o_icon o_icon_locked")` shows an icon next to the label (visual cue only).
+- `addRelativeDateElement(name, label, layout, wControl, relativeDateContext)`, `addObjectSelectionElement(...)` with an `ObjectSelectionSource` (`IdentitySelectionSource` for users), `addTwoColumnsFormLayout(...)`.
+- **New in 21.1.0:** Components `FactSheet` (`FactSheetFactory`), `Sections` (`SectionsFactory`), `ComponentList`; `$r.sectionHeader(...)` in templates (section 5, 7).
 
 ## Database Access
 
@@ -227,6 +253,7 @@ public void save(MyEntity entity) {
 ```
 
 - Session-per-request: framework commits after dispatch
+- Aggregate projections: `PersistenceHelper.extractBigDecimal(row, pos, default)` (**New in 21.1.0**)
 - Background jobs: must call `dbInstance.commitAndCloseSession()` explicitly
 - Bulk ops: use `dbInstance.intermediateCommit()` every ~100 items
 - All entities registered in `src/main/resources/META-INF/persistence.xml`
@@ -246,7 +273,36 @@ MyManager mgr = CoreSpringFactory.getImpl(MyManager.class);
 
 - Config defaults: `src/main/resources/serviceconfig/olat.properties`
 - Local overrides: `olat.local.properties`
-- Module pattern: extend `AbstractSpringModule` for feature toggles
+- Module pattern: extend `AbstractSpringModule` for feature toggles (section 20): read values in `init()` (persisted value first, `@Value` default second), re-read in `initFromChangedProperties()`, write with `setStringProperty(key, value, true)`. Values live in `{userdata}/system/configuration/{FQCN}.properties` (not `o_property`); a `PersistedPropertiesChangedEvent` reloads them on all nodes. Secrets: `setSecretStringProperty()`.
+- Cluster-singleton Quartz job: trigger references `myJob.${cluster.singleton.services}`, beans `myJob.enabled` (job class) and `myJob.disabled` (`DummyJob`) (section 21)
+- Async work: a `TaskRunnable`/`LongRunnable` on `TaskExecutorManager`, select the pool with `TaskRunnable.Queue` (`standard`, `sequential`, `lowPriority`, `external`, `aiInteractive`, `aiBatch`)
+- Work that must survive a restart: implement `LongRunnable` (section 22). Keep only keys and simple values (XStream-serialized into `o_ex_task`), look up services with `CoreSpringFactory.getImpl()` in `run()`, make `run()` safe to run twice, return `isDelayed() == false` to start at once. Submit with `taskExecutorManager.execute(task, identity, resource, resSubPath, null)`.
+- Cluster (section 28): caches, counters and pools are per node; EventBus events go through JMS to every node (asynchronous, `Serializable`, small). Cross-node exclusivity: `Locker` (`oc_lock`) for user locks, `Syncer.doInSync()` (`o_plock` row lock) for short critical sections, `${cluster.singleton.services}` for single-node jobs.
+- Caches: `coordinatorManager.getCoordinator().getCacher().getCache("MyService", "things")` → cache `MyService-things`; declare size/expiry in `infinispan-config.xml` (default 10,000 entries, 15 min idle). `put(key, value, lifespan, maxIdle)` replaced `put(key, value, expiration)`.
+
+## AI Services (`org.olat.core.commons.services.ai`)
+
+Use the feature services (`AiMCQuestionService`, `AiImageDescriptionService`, `AiEssayGradingService`, `AiEssayGenerationService`), never an SPI or a LangChain4j model directly. Check `isEnabled()` first. Pass an `AiUsageContext` (`AiUsageContext.builder()...build()`) so the call is logged in `o_ai_usage_log`. Long work runs as `LongRunnable` on the `aiInteractive`/`aiBatch` queues. New feature: follow "Adding a New AI Feature" in the AI `package.md`.
+
+**New in 21.1.0:** An AI call that runs automatically (without an explicit click) must respect the person's choice (AI Act, OO-9784):
+```java
+if (aiUserPreferenceService.isActive(ureq.getUserSession().getGuiPreferences(), AiFeature.ImageDescriptionGenerator)) {
+    // start the automatic AI work
+}
+```
+Mark a new automatic feature `userControlled` in `AiFeature` and gate it where the call starts. Explicit "Generate with AI" buttons are not gated. Details: architecture doc section 31.
+## Wizards (section 10)
+
+```java
+wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new MyStep00(ureq), finishCallback, null,
+        translate("wizard.title"), "o_sel_my_wizard");
+listenTo(wizardCtrl);
+getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
+```
+- Steps extend `BasicStep` (`setNextStep()`, `getInitialPrevNextFinishConfig()`, `getStepController()`); step controllers extend `StepFormBasicController` and use the shared root form.
+- Pass data with `addToRunContext()` / `getFromRunContext()`; advance with `fireEvent(ureq, StepsEvent.ACTIVATE_NEXT)`.
+- Commit only in the finish `StepRunnerCallback`; return `StepsMainRunController.DONE_MODIFIED` or `DONE_UNCHANGED`. The parent gets `CHANGED_EVENT` / `DONE_EVENT` / `CANCELLED_EVENT`.
+- **New in 21.1.0:** keep an expensive sub-form alive across navigation with `CachedRunContextController.of(runContext, key, rootForm, factory, this)`; call `release(this)` in `doDispose()`.
 
 ## i18n (Internationalization)
 
@@ -278,6 +334,11 @@ VFSContainer folder = VFSManager.olatRootContainer("/course/" + courseId + "/fil
 VFSLeaf file = folder.createChildLeaf("report.pdf");
 VFSManager.copyContent(inputStream, file, identity);
 ```
+
+## Mappers
+
+- `registerMapper(ureq, mapper)` / `registerCacheableMapper(ureq, id, mapper[, seconds])` in `BasicController`; cleanup is automatic.
+- User content that may run scripts (HTML pages, SCORM): deliver it with `registerSandboxedMapper(ureq, mapper)` from the content domain when `Settings.isContentDomainNameEnabled()`; append `"?token=" + mapperKey.getToken()` to the URL. The content session gets no REST access and relaxed framing headers. See section 12 "Sandboxed Mappers & Content Domain" and `IFrameDisplayController`.
 
 ## New File Header (mandatory)
 
@@ -321,7 +382,12 @@ public class ExampleController extends BasicController {
 
 ## HTTP Client Service
 
-All outbound HTTP requests **must** use `HttpClientService` (`org.olat.core.util.httpclient.HttpClientService`). Never use `java.net.http.HttpClient`, other HTTP client libraries, or instantiate Apache `HttpClient` directly. The service provides centralized proxy configuration, standardized timeouts, and frees the DB connection before outbound calls.
+All outbound HTTP requests **must** use `HttpClientService` (`org.olat.core.util.httpclient.HttpClientService`). Never use `java.net.http.HttpClient`, other HTTP client libraries, or instantiate Apache `HttpClient` directly. The service provides centralized proxy configuration, standardized timeouts, SSRF protection, and frees the DB connection before outbound calls.
+
+**New in 21.1.0:** Every factory method takes a `ProtectionProfile` (OO-9310):
+- `ProtectionProfile.USER_PROVIDED` for any URL a user entered (feeds, calendars, external pages, images, LTI, video). Private, loopback and link-local addresses are blocked (`FilteredHostException`), except the allow lists `http.ssrf.allowed.addresses` / `.hosts`.
+- `ProtectionProfile.CONFIGURED` for URLs an administrator configured (AI providers, BigBlueButton, Opencast, OnlyOffice...).
+- When in doubt use `USER_PROVIDED`. Do not set a connection manager on a `USER_PROVIDED` builder (it bypasses the DNS filter).
 
 ```java
 // In Spring-managed beans
@@ -332,7 +398,7 @@ private HttpClientService httpClientService;
 HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.class);
 
 // Simple request
-try (CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
+try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
     HttpGet request = new HttpGet("https://api.example.com/data");
     try (CloseableHttpResponse response = httpClient.execute(request)) {
         // handle response
@@ -340,20 +406,23 @@ try (CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
 }
 
 // Thread-safe pooled client for concurrent use
-try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true)) {
+try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.USER_PROVIDED)) {
     // use for multiple concurrent requests
 }
 ```
 
-**Methods:** `createHttpClient()`, `createHttpClientBuilder()`, `createThreadSafeHttpClient(redirect)`, plus variants with `(host, port, user, password)` for basic auth.
+**Methods:** `createHttpClient(profile)`, `createHttpClientBuilder(profile)`, `createThreadSafeHttpClient(redirect, profile)`, plus variants with `(host, port, user, password, ..., profile)` for basic auth.
 
 ## Security Checklist
 
 - **XSS:** Use `$r.escapeHtml()` for all user text in templates. `$r.render()` is safe.
 - **CSRF:** `Form` generates tokens automatically. Always use `FormBasicController` for forms.
 - **SQL injection:** Always use JPQL parameters (`:paramName`), never string concatenation.
-- **Sanitize HTML:** Use `OWASPAntiSamyXSSFilter` for rich-text content.
+- **Sanitize HTML:** Use `OWASPAntiSamyXSSFilter` for rich-text content (OWASP Java HTML Sanitizer despite the name).
 - **Velocity SSTI:** Never pass user input as Velocity template content.
+- **SSRF:** Use `ProtectionProfile.USER_PROVIDED` for user-entered URLs (see HTTP Client Service).
+- **Secrets at rest:** Encrypt tokens that must be readable later with `AesGcmCipher.encrypt(key, value, ownerId)` (**New in 21.1.0**), not `Encoder.Algorithm.aes`. Never log secrets.
+- **Untrusted content:** Scripted user content goes through a sandboxed mapper on the content domain (see Mappers).
 
 ## Disposal Checklist
 
@@ -371,7 +440,7 @@ You do NOT need to manually dispose:
 
 - **Breadcrumb navigation:** `BreadcrumbedStackedPanel` for drill-down views
 - **Modal dialogs:** `wControl.pushAsModalDialog(component)`
-- **Callouts:** `wControl.pushAsCallout(component)`
+- **Callouts:** `trigger.setAriaDialogOpener()` + `new CloseableCalloutWindowController(ureq, wControl, content, triggerLink, title, true, "", settings)`, then `listenTo()` and `activate()`. Pass the `Link`/`FormLink` (**New in 21.1.0**), not a DOM id: the controller handles `aria-expanded`, focus and the aria label (section 15)
 - **Info/error messages:** `showInfo("key")`, `showError("key")`
 - **Module toggles:** `AbstractSpringModule` with `isEnabled()` and persisted config
 - **Toolbar actions:** `toolbarPanel.addTool(link)` for create/export/import buttons
@@ -382,8 +451,8 @@ You do NOT need to manually dispose:
 For data migrations between versions, create an upgrade class:
 
 ```java
-public class OLATUpgrade_20_4_0 extends OLATUpgrade {
-    private static final String VERSION = "OLAT_20.4.0";
+public class OLATUpgrade_21_2_0 extends OLATUpgrade {
+    private static final String VERSION = "OLAT_21.2.0";
     private static final String MIGRATE_DATA = "MIGRATE DATA";
 
     @Autowired
@@ -421,9 +490,17 @@ public class OLATUpgrade_20_4_0 extends OLATUpgrade {
 }
 ```
 
-Register in `org/olat/upgrade/_spring/upgradeContext.xml` (append to the list). For SQL schema changes, add ALTER scripts to `/database/mysql/` and `/database/postgresql/` and register in `databaseUpgradeContext.xml`.
+Register in `org/olat/upgrade/_spring/upgradeContext.xml` (append to the list). For SQL schema changes, add the ALTER statements to `src/main/resources/database/mysql/`, `.../postgresql/` and `.../oracle/` (e.g. `alter_21_0_x_to_21_1_0.sql`) and register a `DatabaseUpgrade` bean in `databaseUpgradeContext.xml`. New entities go into `persistence.xml`.
+
+A new secure default that would change the behaviour of existing instances: enable it for new installs, and switch it off in the upgrade unless it is set explicitly (pattern: `OLATUpgrade_21_1_0.disableSSRFOnExistingInstances`).
 
 **Important:** Upgrades run *after* all modules are initialized. Changes to `AbstractSpringModule` configs may need module re-initialization since the module's `init()` has already executed.
+
+## REST API
+
+- Resource class in the `restapi/` sub-package with `@Component` + `@Path` + `@Tag`; list the package in `org/olat/restapi/_spring/restApiContext.xml`. Check `getRoles(httpRequest)` first (section 37 "REST API Conventions").
+- **New in 21.1.0:** Audit log and rate limiting are automatic (`RestApiLoginFilter`, `ApiAuditResponseFilter`, table `o_api_audit_log`, logger `org.olat.restapi.access`). Resource code needs nothing. Secret JSON keys (`password`, `token`, `secret`, ...) are masked; do not invent new secret field names without adding them to `ApiAuditMasking`.
+- **New in 21.1.0:** Clients must handle `429` with `Retry-After`. For your own throttling reuse `RequestRateLimiter` (`acquire()`/`release()` in `finally`, `check()` per 60 s window).
 
 ## Testing
 

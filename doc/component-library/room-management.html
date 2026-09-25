@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OpenOlat Component Library</title>
+<title>Room Management - OpenOlat Component Library</title>
 <link id="o_theme_css" rel="stylesheet" href="../../src/main/webapp/static/themes/light/theme.css">
 <link rel="stylesheet" href="component-library.css">
 </head>
-<body class="o_body o_dmz" style="background:#f5f7fa">
+<body class="o_body" style="background:#f5f7fa">
 <div class="o_component_library">
 
 <header class="doc-header">
@@ -33,8 +33,6 @@
   <h1>Component Library</h1>
   <div class="subtitle">Live rendered examples of all OpenOlat UI components with theme switching</div>
   <div class="meta">
-    <span class="cl-meta-tag">Release 21.1.0</span>
-    <span class="cl-meta-tag">Updated 2026-09-25</span>
     <label class="cl-theme-toggle">
       <span>Theme:</span>
       <select id="themeSwitch" onchange="switchTheme(this.value)">
@@ -63,107 +61,116 @@
 
 <main class="cl-main">
 
-<section class="cl-section">
-  <h2>About this Library</h2>
-  <p>This is a comprehensive reference of all UI components available in the OpenOlat LMS. Each component includes its name, a brief description, relevant CSS classes, the DOM structure, and a rendered visual example.</p>
-  <p>Use the <strong>Theme</strong> selector above to switch between the <em>Light</em> (default) and <em>OpenOlat</em> (branded) themes. The examples render live using the actual compiled theme CSS.</p>
-  <p>Each example is wrapped in a <code>&lt;div class="o_component_example"&gt;</code> marker for easy retrieval.</p>
-</section>
+<!-- ==================== ROOM CARD ==================== -->
+<section class="cl-section" id="room-card">
+  <h2>Rooms</h2>
 
-<section class="cl-section">
-  <h2>Pages</h2>
-  <div class="cl-page-grid">
-
-    <a href="buttons-links.html" class="cl-page-card">
-      <h3>Buttons &amp; Links</h3>
-      <p>Primary, default, ghost, ghost danger, dirty buttons. Sizes, disabled states, button add-ons, callout triggers (ARIA dialog opener), toggles, icon links, external links, up/down, add/remove controls.</p>
-    </a>
-
-    <a href="forms.html" class="cl-page-card">
-      <h3>Form Elements</h3>
-      <p>Text inputs, textareas, select/dropdowns, radio buttons, checkboxes, date pickers, file upload, sliders, color pickers, tags, form sections, search field, label icon, object selection, relative date.</p>
-    </a>
-
-    <a href="tables.html" class="cl-page-card">
-      <h3>Tables</h3>
-      <p>FlexiTable with sortable headers, filter tabs, filter dropdowns, search, pagination, batch actions, row checkboxes, action menus, translation cells.</p>
-    </a>
-
-    <a href="navigation.html" class="cl-page-card">
-      <h3>Navigation</h3>
-      <p>Top navbar, breadcrumbs, toolbars, menu tree, segmented views, tabbed panes, dropdown menus, scopes.</p>
-    </a>
-
-    <a href="feedback.html" class="cl-page-card">
-      <h3>Feedback &amp; Status</h3>
-      <p>Alerts/callouts (info, warning, error, success), empty states, progress bars (horizontal, radial, pie), ratings, badges, labels.</p>
-    </a>
-
-    <a href="layout.html" class="cl-page-card">
-      <h3>Layout &amp; Containers</h3>
-      <p>Bento grid, panels (icon, info, bootstrap), widgets (figure, text, table), repository entry card, info page pattern, collapsible sections, accordion, wells.</p>
-    </a>
-
-    <a href="data-display.html" class="cl-page-card">
-      <h3>Data Display</h3>
-      <p>Icons, user portraits, fact sheets, component lists, scopes, timeline, help tooltips, countdown, flags, license icons.</p>
-    </a>
-
-    <a href="ai-ui.html" class="cl-page-card">
-      <h3>AI UI</h3>
-      <p>AI pulse icon (idle, active, sizes, badge), AI job status and waiting overlays, AI draft status, AI essay feedback with annotated paragraphs.</p>
-    </a>
-
-    <a href="room-management.html" class="cl-page-card">
-      <h3>Room Management</h3>
-      <p>Room card, room details, room status labels and building colour reference.</p>
-    </a>
-
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Room Card</h3>
+      <p>Compact room card (<code>roommanagement/ui/_content/room_card.html</code>), markup read from Course Planner &gt; Room management &gt; Rooms on localhost. The coloured bar is the building colour (<code>o_building_rect</code> with a <code>o_color_{name}</code> class). The details button is icon-only with an <code>sr-only</code> label. Used in the room details, in room scheduling and in event details. Styles: <code>_room_management.scss</code>.</p>
+      <div class="cl-classes">
+        <code>o_room_card</code> <code>o_room_card_info</code> <code>o_room_card_name</code> <code>o_building_rect_container</code> <code>o_building_rect</code> <code>o_room_card_ref</code> <code>o_room_card_building_name</code> <code>o_room_card_address</code> <code>o_room_card_details_btn</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="o_room_card">
+            <div class="o_room_card_info">
+              <div class="o_room_card_name"><div class="o_building_rect_container"><div class="o_building_rect o_color_background o_color_lightblue"> </div></div><span class="o_room_card_ref">OO9734-A1</span></div>
+              <div class="o_room_card_building_name">in OO9734-BA</div>
+              <div class="o_room_card_address"><i class="o_icon o_icon_location"> </i>&nbsp;Bahnhofstrasse 1, 8001 Zürich</div>
+            </div>
+            <div class="o_room_card_details_btn"><a class="btn btn-default" href="#" onclick="return false" role="button"><i class="o_icon o_icon-fw o_icon_circle_info" aria-hidden="true" title="Details"></i> <span><span class="sr-only">Details</span></span></a></div>
+          </div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;div class="o_room_card"&gt;
+            &lt;div class="o_room_card_info"&gt;
+              &lt;div class="o_room_card_name"&gt;&lt;div class="o_building_rect_container"&gt;&lt;div class="o_building_rect o_color_background o_color_lightblue"&gt; &lt;/div&gt;&lt;/div&gt;&lt;span class="o_room_card_ref"&gt;OO9734-A1&lt;/span&gt;&lt;/div&gt;
+              &lt;div class="o_room_card_building_name"&gt;in OO9734-BA&lt;/div&gt;
+              &lt;div class="o_room_card_address"&gt;&lt;i class="o_icon o_icon_location"&gt; &lt;/i&gt;&amp;nbsp;Bahnhofstrasse 1, 8001 Zürich&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="o_room_card_details_btn"&gt;&lt;a class="btn btn-default" href="#" onclick="return false" role="button"&gt;&lt;i class="o_icon o_icon-fw o_icon_circle_info" aria-hidden="true" title="Details"&gt;&lt;/i&gt; &lt;span&gt;&lt;span class="sr-only"&gt;Details&lt;/span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;
+          &lt;/div&gt;</pre>
+      </div>
+    </div>
   </div>
-</section>
-
-<section class="cl-section">
-  <h2>What is new in 21.1.0</h2>
-  <p>Entries marked with <span class="version-badge">New in 21.1.0</span> or <span class="version-badge changed">Changed in 21.1.0</span> came with release 21.1.0. Changes that shipped in 21.0.x have no marker.</p>
-  <table class="table table-striped">
-    <thead><tr><th>Component</th><th>Page</th><th>Main classes</th><th>Issue</th></tr></thead>
-    <tbody>
-      <tr><td>Form section (sub-title, title, collapsible), settings page blueprint</td><td><a href="forms.html#form-sections">Form Elements</a></td><td><code>o_form_section</code>, <code>o_section_sub_title</code>, <code>o_section_toggle</code></td><td>OO-9756</td></tr>
-      <tr><td>Search field with autocompletion (default, large, typeahead)</td><td><a href="forms.html#search-field">Form Elements</a></td><td><code>o_search</code>, <code>o_search_default</code>, <code>o_search_large</code>, <code>o_search_typeahead</code></td><td>OO-9627</td></tr>
-      <tr><td>Icon left of the label</td><td><a href="forms.html#label-icon">Form Elements</a></td><td><code>control-label</code> + icon</td><td>OO-9647</td></tr>
-      <tr><td>Fact sheet, component list</td><td><a href="data-display.html#fact-sheet">Data Display</a></td><td><code>o_fact_sheet</code>, <code>o_fact</code>, <code>o_component_list</code></td><td>OO-9688</td></tr>
-      <tr><td>Info page (page pattern)</td><td><a href="layout.html#info-page">Layout &amp; Containers</a></td><td><code>o_info_page</code>, <code>o_info_page_item</code></td><td>OO-8728</td></tr>
-      <tr><td>Collapsible sections</td><td><a href="layout.html#sections">Layout &amp; Containers</a></td><td><code>o_sections</code>, <code>o_section</code></td><td>OO-8728</td></tr>
-      <tr><td>Ghost danger button</td><td><a href="buttons-links.html">Buttons &amp; Links</a></td><td><code>o_button_ghost btn-danger</code></td><td>OO-8728</td></tr>
-      <tr><td>Callout trigger ARIA pattern on more buttons, focus on first visible element</td><td><a href="buttons-links.html">Buttons &amp; Links</a>, <a href="feedback.html">Feedback</a></td><td><code>aria-haspopup="dialog"</code>, <code>aria-expanded</code></td><td>OO-9727</td></tr>
-      <tr><td>Translation cell in tables</td><td><a href="tables.html">Tables</a></td><td><code>o_icon_language</code></td><td>OO-9596</td></tr>
-      <tr><td>Table quick search and navbar search use the search field</td><td><a href="tables.html">Tables</a>, <a href="navigation.html">Navigation</a></td><td><code>o_table_search .o_search</code>, <code>#o_navbar_search .o_search</code></td><td>OO-9627</td></tr>
-    </tbody>
-  </table>
-</section>
-
-<section class="cl-section">
-  <h2>Quick Reference: CSS Class Naming</h2>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Prefix</th>
-        <th>Purpose</th>
-        <th>Examples</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td><code>o_</code></td><td>OpenOlat custom classes</td><td><code>o_icon</code>, <code>o_tree</code>, <code>o_table_wrapper</code></td></tr>
-      <tr><td><code>btn</code></td><td>Bootstrap button base</td><td><code>btn-primary</code>, <code>btn-default</code>, <code>btn-xs</code></td></tr>
-      <tr><td><code>form-</code></td><td>Bootstrap form controls</td><td><code>form-control</code>, <code>form-group</code></td></tr>
-      <tr><td><code>o_icon_</code></td><td>Icon classes (Font Awesome mapped)</td><td><code>o_icon_edit</code>, <code>o_icon_delete</code></td></tr>
-      <tr><td><code>o_labeled_</code></td><td>Labeled color system (8 colors x 3 variants)</td><td><code>o_labeled_blue</code>, <code>o_labeled_light_green</code></td></tr>
-      <tr><td><code>o_button_</code></td><td>Button state variants</td><td><code>o_button_dirty</code>, <code>o_button_ghost</code>, <code>o_button_primary_light</code></td></tr>
-      <tr><td><code>o_empty_</code></td><td>Empty state components</td><td><code>o_empty_state</code>, <code>o_empty_visual</code></td></tr>
-      <tr><td><code>o_widget</code></td><td>Dashboard widget system</td><td><code>o_widget</code>, <code>o_widget_main_figure</code></td></tr>
-      <tr><td><code>o_bento_</code></td><td>Bento grid layout</td><td><code>o_bento</code>, <code>o_bento_box</code></td></tr>
-    </tbody>
-  </table>
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Room Details</h3>
+      <p>Expanded room row in the rooms table (details row <code>o_table_row_details</code>). Header with title, status label and actions, then attribute cells with label and value. The building reference shows the building colour as a square icon and the room status as a coloured dot.</p>
+      <div class="cl-classes">
+        <code>o_rm_details</code> <code>o_flex_header</code> <code>o_rm_title</code> <code>o_rm_status</code> <code>o_rm_status_active</code> <code>o_rm_detail_attribute_row</code> <code>o_rm_detail_attribute_cell</code> <code>o_rm_detail_label</code> <code>o_rm_detail_value</code> <code>o_building_color_ref</code> <code>o_building_room_status_icon</code> <code>o_building_room_status_active</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="o_rm_details">
+            <div class="o_flex_header">
+              <div class="o_rm_title"><h3>OO9734-A1</h3></div>
+              <div class="o_rm_status"><span class="o_labeled o_rm_status_active" title="Active"><i class="o_icon o_icon-fw o_icon_rm_status_active"> </i> <span>Active</span></span></div>
+              <div class="o_button_group"><a class="btn btn-default" href="#" onclick="return false" role="button"><i class="o_icon o_icon-fw o_icon_calendar" aria-hidden="true"></i> <span>View calendar</span></a></div>
+            </div>
+            <div class="o_rm_detail_attribute_row">
+              <div class="o_rm_detail_attribute_cell"><div class="o_rm_detail_label">Seats</div><div class="o_rm_detail_value">30</div></div>
+              <div class="o_rm_detail_attribute_cell"><div class="o_rm_detail_label">Building</div><div class="o_rm_detail_value"><div class="o_building_color_ref"><div class="o_color o_color_lightblue"><i class="o_icon o_icon_square"></i></div><span>OO9734-BA</span> &nbsp;|&nbsp; <div class="o_building_room_status_icon"><i class="o_icon o_icon_circle_color o_building_room_status_active"> </i></div><span>Active</span></div></div></div>
+              <div class="o_rm_detail_attribute_cell"><div class="o_rm_detail_label">Next event</div><div class="o_rm_detail_value">&ndash;</div></div>
+              <div class="o_rm_detail_attribute_cell"><div class="o_rm_detail_label">Occupancy rate</div><div class="o_rm_detail_value">&ndash;</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;div class="o_rm_details"&gt;
+            &lt;div class="o_flex_header"&gt;
+              &lt;div class="o_rm_title"&gt;&lt;h3&gt;OO9734-A1&lt;/h3&gt;&lt;/div&gt;
+              &lt;div class="o_rm_status"&gt;&lt;span class="o_labeled o_rm_status_active" title="Active"&gt;&lt;i class="o_icon o_icon-fw o_icon_rm_status_active"&gt; &lt;/i&gt; &lt;span&gt;Active&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;
+              &lt;div class="o_button_group"&gt;&lt;a class="btn btn-default" href="#" onclick="return false" role="button"&gt;&lt;i class="o_icon o_icon-fw o_icon_calendar" aria-hidden="true"&gt;&lt;/i&gt; &lt;span&gt;View calendar&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="o_rm_detail_attribute_row"&gt;
+              &lt;div class="o_rm_detail_attribute_cell"&gt;&lt;div class="o_rm_detail_label"&gt;Seats&lt;/div&gt;&lt;div class="o_rm_detail_value"&gt;30&lt;/div&gt;&lt;/div&gt;
+              &lt;div class="o_rm_detail_attribute_cell"&gt;&lt;div class="o_rm_detail_label"&gt;Building&lt;/div&gt;&lt;div class="o_rm_detail_value"&gt;&lt;div class="o_building_color_ref"&gt;&lt;div class="o_color o_color_lightblue"&gt;&lt;i class="o_icon o_icon_square"&gt;&lt;/i&gt;&lt;/div&gt;&lt;span&gt;OO9734-BA&lt;/span&gt; &amp;nbsp;|&amp;nbsp; &lt;div class="o_building_room_status_icon"&gt;&lt;i class="o_icon o_icon_circle_color o_building_room_status_active"&gt; &lt;/i&gt;&lt;/div&gt;&lt;span&gt;Active&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+              &lt;div class="o_rm_detail_attribute_cell"&gt;&lt;div class="o_rm_detail_label"&gt;Next event&lt;/div&gt;&lt;div class="o_rm_detail_value"&gt;&amp;ndash;&lt;/div&gt;&lt;/div&gt;
+              &lt;div class="o_rm_detail_attribute_cell"&gt;&lt;div class="o_rm_detail_label"&gt;Occupancy rate&lt;/div&gt;&lt;div class="o_rm_detail_value"&gt;&amp;ndash;&lt;/div&gt;&lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
+  <div class="cl-component">
+    <div class="cl-component-header">
+      <h3>Status Labels and Building Reference in Tables</h3>
+      <p>In the rooms table the status column uses the light label (<code>o_labeled_light</code>), the details header the solid label (<code>o_labeled</code>), both with <code>o_rm_status_{status}</code>. The building column links the building name next to its colour square.</p>
+      <div class="cl-classes">
+        <code>o_labeled_light</code> <code>o_labeled</code> <code>o_rm_status_active</code> <code>o_icon_rm_status_active</code> <code>o_building_color_ref</code> <code>o_color</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example">
+          <div class="cl-example-row">
+            <span class="o_labeled_light o_rm_status_active"><i class="o_icon o_icon-fw o_icon_rm_status_active"> </i> <span>Active</span></span>
+            <span class="o_labeled o_rm_status_active" title="Active"><i class="o_icon o_icon-fw o_icon_rm_status_active"> </i> <span>Active</span></span>
+            <div class="o_building_color_ref"><div class="o_color o_color_lightblue"><i class="o_icon o_icon_square"></i></div><a href="#" onclick="return false"><span>OO9734-BA</span></a></div>
+          </div>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>&lt;div class="cl-example-row"&gt;
+            &lt;span class="o_labeled_light o_rm_status_active"&gt;&lt;i class="o_icon o_icon-fw o_icon_rm_status_active"&gt; &lt;/i&gt; &lt;span&gt;Active&lt;/span&gt;&lt;/span&gt;
+            &lt;span class="o_labeled o_rm_status_active" title="Active"&gt;&lt;i class="o_icon o_icon-fw o_icon_rm_status_active"&gt; &lt;/i&gt; &lt;span&gt;Active&lt;/span&gt;&lt;/span&gt;
+            &lt;div class="o_building_color_ref"&gt;&lt;div class="o_color o_color_lightblue"&gt;&lt;i class="o_icon o_icon_square"&gt;&lt;/i&gt;&lt;/div&gt;&lt;a href="#" onclick="return false"&gt;&lt;span&gt;OO9734-BA&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;
+          &lt;/div&gt;</pre>
+      </div>
+    </div>
+  </div>
 </section>
 
 </main>

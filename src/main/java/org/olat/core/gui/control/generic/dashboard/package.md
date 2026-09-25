@@ -9,13 +9,13 @@ Developer documentation for the OpenOlat bento-grid dashboard infrastructure.
 The dashboard framework provides a reusable, user-configurable widget container
 rendered as a CSS Grid bento layout. Widgets can be added by any module.
 When editing is enabled, users can reorder, hide, and restore widgets via
-drag & drop. Widget configuration follows a three-tier cascade:
+drag & drop or with move up and move down buttons. Widget configuration follows a three-tier cascade:
 personal preferences > system defaults > all widgets.
 
 Key features:
 
 - Bento grid layout with configurable widget sizes (1x1 up to 4x4)
-- Optional edit mode with Dragula.js drag & drop
+- Optional edit mode with SortableJS drag & drop and keyboard-accessible move up / move down buttons
 - Three-tier configuration cascade: personal > system default > all widgets
 - Per-user preferences stored via XStream in `GuiPreferences`
 - System default configuration stored in the `o_property` table via `PropertyManager`
@@ -63,10 +63,11 @@ Key features:
   <text class="cls-text" x="18" y="138">- applyConfiguration()</text>
 
   <!-- DashboardPrefs -->
-  <rect class="box box-class" x="575" y="8" width="255" height="52"/>
+  <rect class="box box-class" x="575" y="8" width="255" height="64"/>
   <text class="cls-title" x="702" y="28" text-anchor="middle">DashboardPrefs</text>
   <line class="sep" x1="575" y1="36" x2="830" y2="36"/>
-  <text class="cls-text" x="583" y="52">enabledWidgets : List&lt;String&gt;</text>
+  <text class="cls-text" x="583" y="51">enabledWidgets : List&lt;String&gt;</text>
+  <text class="cls-text" x="583" y="65">disabledWidgets : List&lt;String&gt;</text>
 
   <!-- BentoBoxSize -->
   <rect class="box box-enum" x="575" y="80" width="255" height="64"/>
@@ -88,8 +89,8 @@ Key features:
   <rect class="box box-class" x="10" y="200" width="310" height="100"/>
   <text class="cls-title" x="165" y="220" text-anchor="middle">DashboardEditController</text>
   <line class="sep" x1="10" y1="228" x2="320" y2="228"/>
-  <text class="cls-text" x="18" y="244">Drag &amp; drop reordering (Dragula.js)</text>
-  <text class="cls-text" x="18" y="259">Add / Remove / Reorder widgets</text>
+  <text class="cls-text" x="18" y="244">Drag &amp; drop reordering (SortableJS)</text>
+  <text class="cls-text" x="18" y="259">Add / Remove / Move up / Move down</text>
   <text class="cls-text" x="18" y="274">Admin: save / reset system defaults</text>
   <text class="cls-text" x="18" y="289">&#8594; CHANGED_EVENT | CANCELLED_EVENT</text>
 
@@ -154,10 +155,10 @@ Key features:
 | Class | Responsibility |
 |-------|---------------|
 | `DashboardController` | Main controller. Renders the bento grid, manages widget registration, loads both personal and system default preferences, applies the configuration cascade, and opens edit mode. |
-| `DashboardEditController` | Edit-mode controller. Drag & drop reordering via Dragula.js, add/remove actions, save/cancel/reset. For system admins, also shows an ellipsis menu with "Save as system default" and "Reset system default". Fires `CHANGED_EVENT` or `CANCELLED_EVENT`. |
+| `DashboardEditController` | Edit-mode controller. Drag & drop reordering via SortableJS, move up / move down buttons, add/remove actions, save/cancel/reset. For system admins, also shows an ellipsis menu with "Save as system default" and "Reset system default". Fires `CHANGED_EVENT` or `CANCELLED_EVENT`. |
 | `DashboardSystemDefaultsManager` | Spring `@Service` managing system-wide default configurations. Stores `DashboardPrefs` as XStream XML in the `o_property` table via `PropertyManager` (null identity/group/resource for system-level storage). |
 | `Widget` | Static inner class of `DashboardController`. View model holding the widget's `name`, `title`, and `css` class. |
-| `DashboardPrefs` | POJO used for both personal preferences (`GuiPreferences`) and system defaults (`o_property`). Contains the ordered list of enabled widget names. Serialized via XStream using the fully qualified class name. |
+| `DashboardPrefs` | POJO used for both personal preferences (`GuiPreferences`) and system defaults (`o_property`). Contains the ordered list of enabled widget names and the list of disabled widget names. Serialized via XStream using the fully qualified class name. |
 | `BentoBoxSize` | Enum defining widget sizes as CSS classes (e.g. `box_4_1` = 4 columns, 1 row). |
 | `DashboardWidget` | Optional interface. Controllers implementing it provide a title via `getWidgetTitle()`. |
 | `TableWidgetController` | Abstract base class for widgets displaying a FlexiTable with indicators and "Show all" link. Implements `DashboardWidget`. |
@@ -167,22 +168,22 @@ Key features:
 
 ### Without edit support
 
-Use the no-arg constructor. All widgets are always shown in registration order.
-No edit button is rendered.
+Pass `null` as `dashboardId`. All widgets are always shown in registration order.
+No edit button is rendered. `DashboardController` has no constructor without the `dashboardId` argument.
 
 ```java
-DashboardController dashboard = new DashboardController(ureq, wControl);
+DashboardController dashboard = new DashboardController(ureq, wControl, null);
 listenTo(dashboard);
 putInitialPanel(dashboard.getInitialComponent());
 ```
 
 ### With edit support
 
-Pass a stable, unique `dashboardId` string (typically the calling controller's
-fully qualified class name). An "Edit dashboard" button is shown for non-guest users.
+Pass a stable, unique `dashboardId` string. The existing dashboards use short
+dotted identifiers, see the table below. An "Edit dashboard" button is shown for non-guest users.
 
 ```java
-DashboardController dashboard = new DashboardController(ureq, wControl, getClass().getName());
+DashboardController dashboard = new DashboardController(ureq, wControl, "dashboard.coaching");
 listenTo(dashboard);
 putInitialPanel(dashboard.getInitialComponent());
 ```
@@ -190,6 +191,16 @@ putInitialPanel(dashboard.getInitialComponent());
 > **Note:** The `dashboardId` is used as the key for both `GuiPreferences` (personal)
 > and `o_property` (system default).
 > Use a stable string that does not change across versions. Guest users never see the edit button.
+
+### Existing dashboards
+
+| `dashboardId` | Created in |
+|---------------|-----------|
+| `dashboard.coaching` | `org.olat.modules.coach.ui.dashboard.CoachDashboardController` |
+| `dashboard.certification.program` | `org.olat.modules.certificationprogram.ui.CertificationProgramDashboardController` |
+| `dashboard.course.planner` | `org.olat.modules.curriculum.ui.CurriculumManagerRootController` |
+| `dashboard.curriculum` | `org.olat.modules.curriculum.ui.CurriculumDetailsController` |
+| `dashboard.curriculum.element` | `org.olat.modules.curriculum.ui.CurriculumElementDetailsController` |
 
 ## 4. Adding Widgets
 
@@ -327,9 +338,16 @@ public class CourseWidgetController extends TableWidgetController {
 ### TableWidgetController features
 
 - Standard layout with title, indicators, table, empty state, and "Show all" footer
-- Built-in per-widget preferences (key figures, visible columns, row count) via `TableWidgetConfigProvider`
+- Built-in per-widget preferences (key figures, visible columns, row count) via `TableWidgetConfigProvider`.
+  The settings button is only visible when `getConfigProvider()` returns a provider with a non-empty ID.
+  The preferences are stored in `GuiPreferences` under `TableWidgetController.class` and the provider ID.
+- **Changed in 21.1.0:** The settings button is marked as a dialog opener with `Link.setAriaDialogOpener()`
+  (`role="button"`, `aria-haspopup="dialog"`, `aria-expanded`). The settings callout receives the `FormLink`
+  itself, so `CloseableCalloutWindowController` updates `aria-expanded` on open and close (OO-9727).
 - `wrapCellLink(renderer)` helper to make entire table rows clickable
-- `MaxHeightScrollableDelegate` for scrollable table with max height
+- `MaxHeightScrollableDelegate` for scrollable table with max height. `widget_table.html` starts the
+  overflow indicator (`o_initScrollableVerticalOverflowIndicator`) in a `requestAnimationFrame` callback,
+  so the calculation runs after the widget is visible.
 
 ## 6. Edit Mode and Preferences
 
@@ -337,7 +355,8 @@ public class CourseWidgetController extends TableWidgetController {
 
 1. User clicks "Edit dashboard" -> `DashboardController.doEdit()`
 2. The main panel swaps from the dashboard view to the `DashboardEditController` component
-3. Edit view shows active widgets (reorderable via drag & drop) and available widgets (with "Add" buttons)
+3. Edit view shows active widgets (reorderable via drag & drop or the move up / move down buttons) and available widgets (with "Add" buttons).
+   A move with the buttons updates an `aria-live` region with the new position (`dashboard.moved`)
 4. User clicks **Save** -> preferences are written to `GuiPreferences` -> `CHANGED_EVENT` is fired
 5. User clicks **Reset** -> personal preferences are deleted (reverts to system default or all widgets) -> `CHANGED_EVENT` is fired
 6. User clicks **Cancel** -> `CANCELLED_EVENT` is fired, no changes saved
@@ -351,7 +370,15 @@ The dashboard uses a three-tier configuration cascade to determine which widgets
 2. **System default** -- System-wide default configuration stored in the `o_property` table via `DashboardSystemDefaultsManager`. Used when no personal preferences exist.
 3. **All widgets** -- Fallback: all registered widgets are shown in registration order. Used when neither personal nor system default configuration exists.
 
-The cascade is applied in `DashboardController.applyConfiguration()` and `DashboardController.doEdit()`. Both methods check personal preferences first, fall back to system defaults, and finally show all widgets if neither is configured.
+When a stored configuration exists, `DashboardController.resolveWidgets()` builds the widget lists as follows:
+
+1. The widgets in `enabledWidgets` are shown in the stored order. Unknown names are ignored.
+2. The widgets in `disabledWidgets` are hidden and listed as available widgets in edit mode.
+3. A registered widget that is in neither list is appended to the enabled widgets.
+   As a result, a widget that a new version adds is visible by default, also for users with stored preferences.
+
+The cascade is applied in `DashboardController.applyConfiguration()` and `DashboardController.doEdit()`
+through `getEffectivePrefs()` and `resolveWidgets()`. Both methods check personal preferences first, fall back to system defaults, and finally show all widgets if neither is configured.
 
 ### Personal preference storage
 
@@ -364,6 +391,9 @@ serialized via XStream using the fully qualified class name. Example XML:
     <string>courses</string>
     <string>lectureBlocks</string>
   </enabledWidgets>
+  <disabledWidgets>
+    <string>todos</string>
+  </disabledWidgets>
 </org.olat.core.gui.control.generic.dashboard.DashboardPrefs>
 ```
 
@@ -382,7 +412,7 @@ serialization consistent across the two storage backends.
 ### Admin tools in edit mode
 
 When a system administrator opens the edit mode, an ellipsis menu (...) is rendered
-next to the Cancel button. This menu provides two additional actions:
+on the right side of the "Active widgets" heading. This menu provides two additional actions:
 
 - **Save as system default** -- Saves the current widget configuration (as shown in the
   edit view) as the system-wide default. Other users without personal preferences will
@@ -392,7 +422,7 @@ next to the Cancel button. This menu provides two additional actions:
 
 The admin menu is only rendered when `ureq.getUserSession().getRoles().isSystemAdmin()`
 returns `true`. It uses `DropdownUIFactory.createMoreDropdown()` for the ellipsis button
-and `LinkFactory.createToolLink()` for the menu items.
+and form links (`uifactory.addFormLink(..., Link.LINK)`) for the menu items.
 
 ### Default behavior summary
 
@@ -427,8 +457,8 @@ spans half the width and 2 rows -- suitable for chart or summary widgets.
 | Template | Purpose |
 |----------|---------|
 | `dashboard.html` | Main view. Iterates over `$enabledWidgets` and renders each widget in a bento box. Edit button conditionally shown. |
-| `dashboard_edit.html` | Edit view. Dragula-enabled container for active widgets, disabled widgets with "Add" buttons. Uses `$r.openJavaScriptCommand()` for AJAX events. For system admins, renders the admin ellipsis menu (`adminMenu`) next to the action buttons. |
-| `widget_table.html` | Standard layout for `TableWidgetController` subclasses. Renders title, indicators, table, empty state, and footer. |
+| `dashboard_edit.html` | Edit view. SortableJS container for active widgets with move up / move down buttons, disabled widgets with "Add" buttons. A drop sends `o_ffXHREvent` with the parameters `draggedName` and `siblingName`. Contains the `aria-live` region for move announcements. For system admins, renders the admin ellipsis menu (`adminMenu`) next to the "Active widgets" heading. |
+| `widget_table.html` | Standard layout for `TableWidgetController` subclasses. Renders title, settings button, indicators, table, empty state, and footer. |
 
 ## 9. Spring Configuration
 
@@ -462,7 +492,7 @@ public class CoachDashboardController extends BasicController {
                 CoachMainController.class, getLocale(), getTranslator()));
 
         // Create dashboard with edit support
-        dashboardCtrl = new DashboardController(ureq, wControl, getClass().getName());
+        dashboardCtrl = new DashboardController(ureq, wControl, "dashboard.coaching");
         listenTo(dashboardCtrl);
         putInitialPanel(dashboardCtrl.getInitialComponent());
 
@@ -497,7 +527,9 @@ public class CoachDashboardController extends BasicController {
 ## 11. i18n Keys
 
 The dashboard framework uses the following i18n keys in its own
-`_i18n/LocalStrings_*.properties`:
+`_i18n/LocalStrings_*.properties` (`de`, `en`, `fr`, `it`, `sk`).
+
+**New in 21.1.0:** Spanish (`es`, OO-9823) and Polish (`pl`, OO-9822) translations of all keys.
 
 | Key | Usage |
 |-----|-------|
@@ -510,6 +542,13 @@ The dashboard framework uses the following i18n keys in its own
 | `dashboard.add` | "Add" button on disabled widgets |
 | `dashboard.remove` | Remove tooltip on enabled widgets |
 | `dashboard.drag` | Drag handle label |
+| `dashboard.move.up` | Title of the move up button |
+| `dashboard.move.down` | Title of the move down button |
+| `dashboard.moved` | Screen reader announcement after a move (widget title, new position, number of widgets) |
+| `dashboard.details` | "Details" link from `DashboardUIFactory.createDetailsLink()` |
+| `show.all` | "Show all" link from `DashboardUIFactory.createShowAllLink()` |
+| `settings`, `settings.change` | Title of the table widget settings callout and of its button |
+| `settings.header`, `settings.figures`, `settings.main.figure`, `settings.table`, `settings.num.rows` | Labels in `TableWidgetPreferenceController` |
 | `dashboard.system.default.save` | "Save as system default" admin action |
 | `dashboard.system.default.reset` | "Reset system default" admin action |
 | `dashboard.system.default.saved` | Info message after saving system default |

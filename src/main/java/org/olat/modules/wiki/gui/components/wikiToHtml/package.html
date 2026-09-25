@@ -13,11 +13,11 @@ you like to render wikisyntax to html (arbitrary textfields)</p>
 
 <p>The parser for the wiki (mediawiki) syntax is from a other open
 source project called: <a href="http://jamwiki.org">Jamwiki.org</a>. The
-source of the parser is located it the webapp/lib directory</p>
+parser is included as the Maven dependency org.openolat.jamwiki:jamwiki-core</p>
 
 <p>Usage: To include the component see the following code snipplet. You
 create an component and pass a name an OlatRescourcable object and a
-size of the output div. You register your Contriller by adding a
+minimum height of the output div. You register your Contriller by adding a
 listener. If you like your component to display images you need an
 seession based mapper. Mappers (global or user session style: @see org.olat.core.dispatcher.mapper.Mapper) generate
 URI's that reference static content like images. To finally display your

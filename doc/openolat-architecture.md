@@ -2,6 +2,10 @@
 
 A comprehensive guide to the architecture, design patterns, and internal workings of the OpenOlat Learning Management System.
 
+**Covers release:** OpenOlat 21.1.0 · **Document version:** 2.0 · **Last updated:** 2026-09-25
+
+> **Version markers:** `**New in 21.1.0**` under a heading marks a new mechanism. `**New in 21.1.0:**` or `**Changed in 21.1.0:**` at the start of a paragraph marks a change inside a section. Mechanisms that shipped with 21.0.x carry no marker, except where the reader needs the version. See section 39 for the list of changes in this revision.
+
 ## 1. Overview & Project Structure
 
 OpenOlat is a full-featured Learning Management System built as a monolithic Java web application. It follows a **server-centric architecture** — an established approach also used by frameworks like Vaadin, JSF, and Wicket — where the server maintains the complete UI state for each user session, renders HTML via Apache Velocity templates, and delivers incremental DOM updates over AJAX. The browser acts as a thin rendering layer, while all UI logic, state management, and security enforcement happen on the server.
@@ -10,13 +14,32 @@ This design has significant implications. Every user interaction — a button cl
 
 ### Technology Stack
 
-- **Build**: Maven (`mvn compile -pl :openolat-lms -q`)
+- **Build**: Maven (`mvn compile -pl :openolat-lms -q`), Java 17 target (`targetJdk` in `pom.xml`)
 - **Dependency Injection**: Spring Framework 7 (XML + annotation-based)
 - **ORM**: Hibernate 7 / JPA via Jakarta Persistence
 - **Templating**: Apache Velocity (server-side rendering)
 - **Frontend**: Server-rendered HTML + custom AJAX partial update protocol
 - **CSS**: SASS-based theming with Bootstrap integration
 - **Databases**: MySQL, PostgreSQL, Oracle
+- **AI**: LangChain4j (chat and embedding models, see section 19)
+
+Key library versions on the 21.1.0 code line (from `pom.xml` properties):
+
+| Library | Version | Property |
+|---------|---------|----------|
+| Spring Framework | 7.0.9 | `org.springframework.version` |
+| Hibernate ORM | 7.4.10.Final | `org.hibernate.version` |
+| Hibernate Validator | 9.1.4.Final | `org.hibernate.validator.version` |
+| Infinispan | 16.2.3 | `org.infinispan.version` |
+| Apache CXF (REST) | 4.2.3 | `apache.cxf` |
+| Jackson | 2.22.3 | `jackson.version` |
+| Undertow core / Undertow EE servlet (test scope) | 2.4.3.Final / 2.0.2.Final | `io.undertow` / `io.undertow.ee` |
+| LangChain4j | 1.20.0 | `dev.langchain4j` |
+| Log4j2 / SLF4J | 2.26.1 / 2.0.20 | `apache.log4j` / `org.slf4j` |
+| Velocity / Quartz / XStream | 2.4.1 / 2.5.2 / 1.4.21 | inline versions |
+| PostgreSQL / MySQL JDBC | 42.7.13 / 26.7.0 | `org.postgresql.version` / `com.mysql.version` |
+
+These versions come from the regular dependency updates (OO-9367, OO-9656). The 21.0 branch carries the same versions. The Maxima CAS integration and the Nashorn engine are removed (OO-9587, OO-9637).
 
 ### Package Layout
 
@@ -143,15 +166,21 @@ Every request enters through `OpenOLATServlet` (mapped to `/*`), which extracts 
 |------|-----------|---------|
 | `/auth/` | `AuthenticatedDispatcher` | All authenticated user requests (main UI) |
 | `/dmz/` | `DMZDispatcher` | Login, registration, password reset (unauthenticated) |
-| `/raw/` | `StaticMediaDispatcher` | Static resources (JS, CSS, images, themes). Versioned URLs for cache-busting. |
+| `/raw/` | `StaticServlet` | Static resources (JS, CSS, images, themes). Versioned URLs for cache-busting, built by `StaticMediaDispatcher.getStaticURI()`. |
 | `/m/` | `MapperDispatcher` | Session-scoped dynamic resource handlers |
 | `/g/` | `GlobalMapperRegistry` | Global resource mappers (not session-bound) |
 | `/url/` | `RESTDispatcher` | External deep links to business paths |
 | `/webdav/` | `WebDAVDispatcher` | WebDAV file access |
-| `/restapi/` | CXF JAX-RS | REST API |
-| `/lti/` | LTI dispatcher | LTI 1.3 tool integration |
+| `/restapi/` | `CXFServlet` (JAX-RS) | REST API, behind the servlet filter `RestApiLoginFilter` |
+| `/lti/` | `LTI13Dispatcher` | LTI 1.3 tool integration |
 
-Additional routes: `/robots.txt`, `/sitemap.xml`, `/math/`, `/tiny/`, `/bigbluebutton/`, `/teams/`, `/certificate/`, `/badge/`, `/catalog/`, `/survey/`. All dispatchers are registered in `dispatcherContext.xml`.
+Additional routes: `/robots.txt`, `/sitemap.xml`, `/tiny/`, `/bigbluebutton/`, `/teams/`, `/certificate/`, `/badge/`, `/catalog/`, `/survey/`, `/csp/`, `/pdfd/`, `/edusharing/`, `/transcoding/`.
+
+The registration has three places:
+
+- `dispatcherContext.xml` maps the path prefixes of the `DispatcherModule` bean (for example `/auth/`, `/dmz/`, `/url/`, `/lti/`).
+- `OpenOLATServlet.init()` adds `/m/`, `/g/` and `/webdav/` in code.
+- `web.xml` (for example `src/main/webapp-tomcat/WEB-INF/web.xml`) maps the servlets `StaticServlet` (`/raw/*`), `CXFServlet` (`/restapi/*`), `PersonalRSSServlet` (`/rss/*`) and `ICalServlet` (`/ical/*`), and the filters `SameSiteCookieFilter`, `RestApiLoginFilter` and `HeadersFilter`.
 
 For the main UI flow (`/auth/`), the `AuthenticatedDispatcher` creates a `UserRequestImpl` by parsing the URL. The framework encodes its state-management parameters directly into the URL path, using colons as delimiters:
 
@@ -345,19 +374,21 @@ The `core.gui.components` package contains over 300 component classes. Key compo
 | | `BreadcrumbedStackedPanel` | StackedPanel with breadcrumb navigation trail — the standard drill-down container |
 | | `TabbedPane` | Tabbed container with lazy-loading support |
 | **Navigation** | `Link` | Clickable element (button, link, icon-only) — the primary interaction component |
-| | `MenuTree` / `Tree` | Hierarchical tree navigation with TreeModel and selection |
+| | `MenuTree` | Hierarchical tree navigation with TreeModel and selection |
 | | `SegmentViewComponent` | Horizontal segment/tab bar for sub-view switching |
 | | `Dropdown` | Dropdown menu containing Link children |
 | **Display** | `ProgressBar` | Visual progress indicator (percentage or actual/max) |
 | | `CountDownComponent` | Client-side countdown timer |
-| | `Rating` | Star rating display with optional interactive input |
+| | `RatingComponent` | Star rating display with optional interactive input |
 | | `EmptyState` | Standardized "no data" placeholder with icon and action |
+| | `FactSheet` | **New in 21.1.0:** Card with a title, a list of `Fact` rows (icon, label, value or component) and footer links. Create it with `FactSheetFactory` (package `core.gui.components.factsheet`). |
+| | `Sections` | **New in 21.1.0:** List of titled, collapsible sections. Create it with `SectionsFactory.createSections()` and `createSection()` / `createTextSection()` / `createLinksSection()` (package `core.gui.components.sections`). |
+| | `ComponentList` | **New in 21.1.0:** Renders a list of components in order, without a template (package `core.gui.components.util`). |
 | **Charts** | `BarChartComponent` | Bar chart via D3.js |
 | | `PieChartComponent` | Pie/donut chart via D3.js |
 | | `RadarChartComponent` | Radar/spider chart |
 | **Media** | `ImageComponent` | Image display with cropping, lazy loading, mapper integration |
 | | `DownloadComponent` | Download link for a VFSLeaf |
-| | `VideoComponent` | HTML5 video player |
 | **Widgets** | `TextWidget` / `FigureWidget` / `ComponentWidget` | Dashboard widgets for text, numbers, or arbitrary components |
 | **Form** | `FormBaseComponent` | Bridge between FlexiForm elements and the component tree (see section 8) |
 
@@ -372,7 +403,7 @@ Controllers interact with the window through `WindowControl` — a facade provid
 - **Modal dialogs:** `pushAsModalDialog(component)`, `pushAsTopModalDialog(component)`, `pushAsCallout(component, targetId)`
 - **User messages:** `setInfo(msg)`, `setWarning(msg)`, `setError(msg)` — displayed as growl-style notifications
 - **Navigation:** `pop()`, `makeFlat()`, `pushFullScreen(controller)`
-- **Business path:** `getBusinessControl()` for deep linking (see section 12)
+- **Business path:** `getBusinessControl()` for deep linking (see section 13)
 - **Back office:** `getWindowBackOffice()` — command queue, JS commands to browser, cycle listeners
 
 The `WindowBackOffice` maintains a **command queue** accumulating during the request. Controllers send commands via `wbo.sendCommandTo(command)`. The client-side JavaScript processes the queue after receiving the AJAX response.
@@ -468,6 +499,24 @@ CoordinatorManager.getInstance().getCoordinator().getEventBus()
     .deregisterFor(this, courseOres);
 ```
 
+There is also a per-session EventBus (`ureq.getUserSession().getSingleUserEventCenter()`) for controllers of one session without a parent-child relationship, for example a toolbar button that toggles the glossary overlay.
+
+### Real-World Example: CourseRuntimeController
+
+When a user enters a course, `CourseRuntimeController` registers on the channels of the course and of the repository entry:
+
+```java
+// On entry: register for course and repository events
+coordinatorManager.getCoordinator().getEventBus()
+    .registerFor(this, getIdentity(), getOlatResourceable());
+coordinatorManager.getCoordinator().getEventBus()
+    .registerFor(this, getIdentity(), getRepositoryEntry());
+
+// On exit: deregister
+coordinatorManager.getCoordinator().getEventBus()
+    .deregisterFor(this, getOlatResourceable());
+```
+
 ---
 
 ## 7. Velocity Templating
@@ -532,7 +581,12 @@ $r.formatBytes($size)                  ## human-readable file size
 $r.staticLink("js/mylib.js")           ## versioned static resource URL
 $r.contextHelpWithWrapper("page")      ## help icon with link
 $r.contextPath()                       ## server context path
+
+## Sections (New in 21.1.0)
+$r.sectionHeader($id, $title, false, true, true)  ## header row of a collapsible section
 ```
+
+**New in 21.1.0:** `$r.sectionHeader(id, title, subTitle, collapsible, expanded)` renders the header row of a titled section with `SectionHeaderRenderer`. `FormSection` (section 8) and the `Sections` component use the same header markup.
 
 ### Asynchronous & Background Events
 
@@ -630,12 +684,15 @@ protected void initForm(FormItemContainer formLayout, Controller listener, UserR
 | | `MultipleSelectionElement` | Many-of-many: checkboxes (horizontal/vertical), dropdown with checkboxes |
 | | `FormToggle` | On/off toggle switch |
 | **Date & Time** | `DateChooser` | Date picker with optional time, date range, min/max constraints |
+| | `RelativeDateElement` | Date relative to a reference date (offset, unit, direction). The caller supplies a `RelativeDateContext`. Add it with `addRelativeDateElement()`. |
 | **File** | `FileElement` | File upload with MIME validation, max size, drag-and-drop, preview |
 | | `DownloadLink` | Download link for an existing file |
 | **Specialized** | `ColorPickerElement` | Color chooser with palette and hex input |
 | | `SliderElement` | Range slider with min/max/step |
 | | `IconSelectorElement` | Icon chooser from predefined CSS classes |
 | | `AutoCompleter` | Text field with server-side autocomplete (AJAX) |
+| | `SearchElement` | **New in 21.1.0:** Unified search field with the variants `DEFAULT`, `LARGE` and `TYPEAHEAD` (`SearchVariant`). See "Search Element" below. |
+| | `ObjectSelectionElement` | Selection of objects from an `ObjectSelectionSource`, with option groups (`ObjectOptionGroup`) and an optional browser controller. `IdentitySelectionSource` selects users. |
 | | `MathLiveElement` | Mathematical formula editor (LaTeX) |
 | **Display Only** | `StaticTextElement` | Read-only HTML text |
 | | `SpacerElement` | Visual separator |
@@ -643,10 +700,13 @@ protected void initForm(FormItemContainer formLayout, Controller listener, UserR
 | | `MemoryElement` | Hidden element preserving a value across form rebuilds |
 | **Multi-Value** | `TextBoxListElement` | Tag-style input — multiple values as removable chips |
 | | `AutoCompletionMultiSelection` | Autocomplete with multiple selections |
+| **Layout** | `FormSection` | **New in 21.1.0:** Titled, optionally collapsible part of a form. See "Form Sections" below. |
 | **Buttons** | `FormSubmit` | Triggers validation then `formOK()` |
 | | `FormCancel` | Fires `Event.CANCELLED_EVENT` to parent |
 | | `FormReset` | Resets all elements to initial values |
 | **Table** | `FlexiTableElement` | Full data table (see section 9) |
+
+**New in 21.1.0:** `FormItem.setLabelIconCss(String)` shows an icon next to the label, for example `"o_icon o_icon_locked"` for a read-only field. The icon is only a visual cue. It does not change `setMandatory()` or `setEnabled()`.
 
 ### FormItem – Component Relationship
 
@@ -665,16 +725,70 @@ Component comp = nameEl.getComponent();  // → TextElementComponent
 | Layout | Factory Method | Use Case |
 |--------|---------------|----------|
 | `LAYOUT_DEFAULT` (3:9) | `createDefaultFormLayout()` | Standard label-left, input-right (Bootstrap 3:9 grid) |
+| `LAYOUT_DEFAULT_6_6` / `_9_3` / `_2_10` | `createDefaultFormLayout_6_6()` / `_9_3()` / `_2_10()` | Label-left layout with another grid ratio |
 | `LAYOUT_HORIZONTAL` | `createHorizontalFormLayout()` | Elements in a row |
 | `LAYOUT_VERTICAL` | `createVerticalFormLayout()` | Labels above inputs, stacked |
-| `LAYOUT_CUSTOM` | `createCustomFormLayout()` | Developer-provided Velocity template |
+| `LAYOUT_TWO_COLS` | `createTwoColsFormLayout()`, `uifactory.addTwoColumnsFormLayout()` | Two equal columns from 992 px viewport width, stacked below |
+| (custom page) | `createCustomFormLayout(name, translator, page)` | Developer-provided Velocity template. There is no enum constant for it. |
 | `LAYOUT_BUTTONGROUP` | `createButtonLayout()` | Button row with spacing |
 | `LAYOUT_BAREBONE` | `createBareBoneFormLayout()` | No wrapping markup |
 | `LAYOUT_PANEL` | `createPanelFormLayout()` | Panel with border and optional title |
+| `LAYOUT_INLINE` | `createInlineFormLayout()` | Inline form elements |
 | `LAYOUT_INPUTGROUP` | `createInputGroupLayout()` | Bootstrap input group |
-| `LAYOUT_TABLE_CONDENSED` | — | Compact table-like layout |
+| `LAYOUT_TABLE_CONDENSED` | `createTableCondensedLayout()` | Compact table-like layout |
 
 Layout containers can be nested. Common pattern: default form layout with a button group sub-container.
+
+### Form Sections
+
+**New in 21.1.0**
+
+`FormSection` (package `core.gui.components.form.flexible.impl`) divides a long form into titled parts (OO-9756). It extends `FormLayoutContainer` and renders its items with the default 3:9 layout under a section header.
+
+```java
+FormSection generalSection = uifactory.addFormSection("general", translate("section.general"),
+        formLayout, FormSection.Level.TITLE);
+nameEl = uifactory.addTextElement("name", "field.name", 200, "", generalSection);
+
+FormSection advancedSection = uifactory.addFormSection("advanced", translate("section.advanced"),
+        formLayout, FormSection.Level.SUB_TITLE);
+advancedSection.setCollapsible(true);
+advancedSection.setCollapsed(true);                       // default for a first visit
+advancedSection.setPersistedStatusId(ureq, "my.form.advanced"); // remember the toggle
+```
+
+- `Level.TITLE` renders a legend-style heading, `Level.SUB_TITLE` a sub-title heading.
+- `setCollapsible(true)` makes the header a toggle. The toggle runs in the browser (Bootstrap collapse) without a server round trip.
+- With a persisted status id, the browser sends the new state as a background command. `FormSectionVelocityContainer` saves it without a form submit.
+- `setPersistedStatusId(ureq, id)` loads the collapsed state from the GUI preferences (attributed class `FormSection`) and saves every toggle. Call it after `setCollapsed()`.
+- The title is an already translated string.
+
+The factory hook `FormLayoutContainer.createFormVelocityContainer()` lets a subclass use its own `FormVelocityContainer`. `FormSection` uses it for the toggle handling.
+
+### Search Element
+
+**New in 21.1.0**
+
+`SearchElement` (OO-9627) is the one search field for forms, tables and headers. `FormUIFactory` offers two methods:
+
+```java
+// Search with a button, fires SearchFormEvent.SEARCH or SearchFormEvent.RESET
+searchEl = uifactory.addSearchElement("search", SearchVariant.DEFAULT, formLayout);
+searchEl.setPlaceholderKey("search.placeholder");
+searchEl.setAriaControls(resultsDomId);
+
+// Search as you type, suggestions from a ListProvider (always SearchVariant.TYPEAHEAD)
+searchEl = uifactory.addSearchElement("search", listProvider, ureq.getUserSession(), formLayout);
+searchEl.setAutoCompleteSelectListener((lureq, key) -> doSelect(lureq, key));
+```
+
+| Variant | Behaviour |
+|---------|-----------|
+| `DEFAULT` | Explicit search button, toolbar size |
+| `LARGE` | Explicit search button, hero size, button label visible |
+| `TYPEAHEAD` | Search as you type, no search button |
+
+The element fires a `SearchFormEvent` (`SEARCH` or `RESET`) to `formInnerEvent()`. By default it does not mark the surrounding form dirty (`setPropagateDirtiness(false)`). A composite that embeds the element calls `evalLocalDispatch(ureq)` and fires its own event. The FlexiTable search uses this (section 9).
 
 ---
 
@@ -721,7 +835,9 @@ public interface FlexiCellRenderer {
 }
 ```
 
-Built-in renderers: `TextFlexiCellRenderer`, `DateFlexiCellRenderer`, `BooleanCellRenderer`, `IconCellRenderer`, `StaticFlexiCellRenderer` (wraps value in a link), `ProgressBarCellRenderer`, `TreeIndentedCellRenderer`. You assign a renderer when adding the column model.
+Built-in renderers (package `core.gui.components.form.flexible.impl.elements.table`): `TextFlexiCellRenderer`, `DateFlexiCellRenderer`, `DateTimeFlexiCellRenderer`, `BooleanCellRenderer`, `YesNoCellRenderer`, `CSSIconFlexiCellRenderer`, `StaticFlexiCellRenderer` (wraps value in a link), `TreeNodeFlexiCellRenderer` (indented tree rows), `ActionsCellRenderer`. `ProgressRadialCellRenderer` lives in `core.gui.components.progressbar`. You assign a renderer when adding the column model.
+
+**New in 21.1.0:** `TranslateCellRenderer` marks a cell value that has a translation (OO-9596).
 
 ### 9.3 Data Model
 
@@ -747,10 +863,12 @@ public class MyTableModel extends DefaultFlexiTableDataModel<MyRow> {
 
 ### 9.4 Sorting
 
-Sorting is column-based. By default, columns sort by the natural order of the value returned by `getValueAt()`. For custom sort behavior, implement `SortableFlexiTableDataModel` and override `sort(SortKey)`. You can set the default sort on the table:
+Sorting is column-based. By default, columns sort by the natural order of the value returned by `getValueAt()`. For custom sort behavior, implement `SortableFlexiTableDataModel` and override `sort(SortKey)`. You set the default sort with `FlexiTableSortOptions`:
 
 ```java
-tableEl.setDefaultOrder(new SortKey(MyCols.name.name(), true));  // ascending by name
+FlexiTableSortOptions options = new FlexiTableSortOptions();
+options.setDefaultOrderBy(new SortKey(MyCols.name.name(), true));  // ascending by name
+tableEl.setSortSettings(options);
 ```
 
 ### 9.5 Filters
@@ -760,13 +878,14 @@ Filters narrow the displayed rows. Available filter types:
 - `FlexiTableTextFilter` — free-text input
 - `FlexiTableSingleSelectionFilter` — dropdown with predefined values
 - `FlexiTableMultiSelectionFilter` — multi-select checkboxes
+- Further types in `table/filter/`: `FlexiTableDateRangeFilter`, `FlexiTablePeriodFilter`, `FlexiTableNumericalRangeFilter`, `FlexiTableOneClickSelectionFilter`
 
 Filters are added to the table element and handled in `formInnerEvent()`:
 
 ```java
 List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 filters.add(new FlexiTableSingleSelectionFilter("Status", STATUS_FILTER,
-    statusOptions, true));  // true = preselected
+    statusOptions, true));  // statusOptions: SelectionValues, true = filter visible by default
 tableEl.setFilters(true, filters, false, false);
 
 // In formInnerEvent, react to filter changes:
@@ -786,14 +905,99 @@ tableEl.setMultiSelect(true);         // Checkboxes for batch operations
 tableEl.setSelectAllEnable(true);     // Select-all checkbox
 tableEl.setPageSize(25);              // Rows per page
 tableEl.setCustomizeColumns(true);    // Column chooser UI
-tableEl.setEmptyTableSettings("icon", "empty.message", null, "create.button");
+tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+        .withIconCss("o_icon_calendar")
+        .withMessageI18nKey("table.empty.message")
+        .build());
+tableEl.setAndLoadPersistedPreferences(ureq, "my-table-v1");  // column and sort preferences
 ```
 
-Renderer types: `FlexiTableRendererType.classic` (HTML table) and `FlexiTableRendererType.custom` (Velocity-based row templates for card layouts or custom rendering).
+Renderer types (`FlexiTableRendererType`): `classic` (HTML table), `custom` (Velocity-based row templates for card layouts or custom rendering), `external` (a renderer set with `setExternalRenderer()`) and `verticalTimeLine` (timeline rows).
+
+**Changed in 21.1.0:** The table search field is a `SearchElement` (section 8). `FlexiTableElementImpl.getSearchEl()` returns it. `setSearchEnabled(true)` uses the `DEFAULT` variant. `setSearchEnabled(ListProvider, UserSession)` uses the `TYPEAHEAD` variant with suggestions. The table intercepts the search with `evalLocalDispatch()` and fires its own `FlexiTableSearchEvent`.
 
 ---
 
-## 10. AJAX Update Cycle
+## 10. Wizards
+
+A wizard leads the user through a sequence of steps and commits the work at the end. The framework lives in `org.olat.core.gui.control.generic.wizard`. Examples: `UserImportController` (user import), `PwChangeController` (password change), the booking process in `org.olat.resource.accesscontrol.ui.wizard`.
+
+### Wizard Building Blocks
+
+| Class | Role |
+|-------|------|
+| `StepsMainRunController` | The wizard itself. A `FormBasicController` with one root `Form` for all steps, the step title links and the buttons back, next, finish and cancel. |
+| `Step` / `BasicStep` | One step. `getStepController()` creates the controller of the step. `nextStep()` returns the following step or `Step.NOSTEP`. `getInitialPrevNextFinishConfig()` enables the buttons. |
+| `StepFormBasicController` | Base class of a step controller. It uses the root form of the wizard and gives access to the run context. |
+| `StepsRunContext` (`DefaultStepsRunContext`) | Map that carries the data from step to step: `put()`, `get()`, `containsKey()`, `remove()`. |
+| `PrevNextFinishConfig` | Which buttons a step enables: constants `NEXT`, `BACK_NEXT`, `BACK_FINISH`, `NEXT_FINISH`, `BACK_NEXT_FINISH`, `BACK`, `NOOP`. |
+| `StepRunnerCallback` | `execute(ureq, wControl, runContext)` for finish and cancel. Returns `StepsMainRunController.DONE_MODIFIED` or `DONE_UNCHANGED`. |
+| `StepsEvent` | Events of a step controller: `ACTIVATE_NEXT`, `ACTIVATE_PREVIOUS`, `INFORM_FINISHED`, `STEPS_CHANGED`, `RELOAD`. |
+
+### Wizard Flow
+
+```java
+Step start = new ImportStep00(ureq);                 // extends BasicStep
+StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+    List<?> newUsers = (List<?>) runContext.get("newUsers");
+    // commit the work here, and only here
+    return StepsMainRunController.DONE_MODIFIED;
+};
+wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+        translate("title"), "o_sel_user_import_wizard");
+listenTo(wizardCtrl);
+getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
+```
+
+A step controller validates its fields, stores the result in the run context and asks for the next step:
+
+```java
+@Override
+protected void formOK(UserRequest ureq) {
+    addToRunContext("newUsers", newUsers);
+    fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+}
+```
+
+The wizard fires `Event.CHANGED_EVENT` to its parent after `DONE_MODIFIED` and `Event.DONE_EVENT` after `DONE_UNCHANGED`. Cancel fires `Event.CANCELLED_EVENT`. The parent closes the modal dialog and disposes the wizard.
+
+Rules:
+
+- Change data only in the finish callback. The steps collect data in the run context.
+- The wizard disposes the controller of a step when the user leaves the step. It creates a new controller when the user comes back.
+- All step controllers share the root form. The validation of every registered sub form runs on next and finish.
+
+### Cached Step Controllers
+
+**New in 21.1.0**
+
+`CachedRunContextController` keeps a sub-controller alive across back and forward navigation (OO-9742). Use it when a step embeds an expensive form, for example an evaluation form, whose input must survive navigation.
+
+```java
+detailsCtrl = CachedRunContextController.of(runContext, CACHE_KEY, rootForm,
+        () -> new InvoiceSubmitDetailsController(ureq, wControl, bookingContext, rootForm), this);
+
+@Override
+public FormItem getStepFormItem() {
+    return detailsCtrl.getStepFormItem();
+}
+
+@Override
+protected void doDispose() {
+    detailsCtrl.release(this);   // stop listening and remove the sub form listener
+    super.doDispose();
+}
+```
+
+- `of()` creates the controller on the first visit and stores it in the run context. On a later visit it registers the cached controller again as sub form listener of the root form.
+- `release()` removes the sub form listener. The hidden form of an inactive step therefore does not block next or finish with its validation.
+- `StepsMainRunController.doDispose()` calls `CachedRunContextController.disposeAll(runContext)`.
+
+**Changed in 21.1.0:** `StepsMainRunController` propagates the dirty state only for its own navigation items (`propagateDirtinessToContainer()`). An event inside a step no longer redraws the whole wizard and keeps the scroll position. `setFinishText(String)` sets a custom label for the finish button. A `LanguageChangedEvent` of a step goes to the parent.
+
+---
+
+## 11. AJAX Update Cycle
 
 OpenOlat's AJAX mechanism is what makes the server-centric architecture feel responsive. Rather than sending full page reloads, the framework sends only the HTML fragments that changed.
 
@@ -833,7 +1037,7 @@ Full cycle for server-push: another user's action fires `MultiUserEvent` via Eve
 
 ---
 
-## 11. Mapper Infrastructure
+## 12. Mapper Infrastructure
 
 Mappers serve dynamic resources (images, files, JSON, generated content) via stable URLs. While Velocity renders HTML fragments, mappers serve **binary or non-HTML content**.
 
@@ -870,19 +1074,76 @@ String url = registerCacheableMapper(ureq, "thumb-" + id, mapper, 3600);
 - **Non-cacheable** (`registerMapper`): URL = MD5(random UUID). Forces fresh fetch.
 - **Cacheable** (`registerCacheableMapper`): URL = MD5(stable ID). Enables browser caching.
 
-### Persisted Mappers & Cleanup
+### Persisted Mappers (Cluster Support)
 
-Serializable mappers are persisted to DB (via `MapperDAO`, `o_mapper` table) for cluster support. Cleanup: controller `doPreDispose()` deregisters mappers, `MapperSessionListener` cleans on session end, `MapperZombieSlayerJob` removes expired persisted mappers.
+Serializable mappers are persisted to DB (via `MapperDAO`, `o_mapper` table, serialized with XStream) for cluster support. Any node of the cluster can then serve the content of the mapper.
+
+### Global Mappers
+
+For application-wide shared resources (JS translation maps, static generated content), use the `GlobalMapperRegistry`:
+
+```java
+// Register a global mapper. The URL includes the build ID for cache-busting across releases.
+String path = GlobalMapperRegistry.getInstance()
+    .register(JSTranslatorMapper.class, jsTranslationMapper);
+// Results in URL: /g/{buildId}org.olat.core.gui.JSTranslatorMapper/...
+```
+
+### Mapper Cleanup
+
+Session-bound mappers are cleaned up in three ways:
+
+1. **Controller dispose:** `BasicController.doPreDispose()` calls `MapperService.cleanUp(mapperKeys)`.
+2. **Session end:** `MapperSessionListener` removes all mappers of an HTTP session.
+3. **Zombie slayer:** the scheduled `MapperZombieSlayerJob` removes expired persisted mappers.
+
+A request to an unknown mapper ID gets the status 404. The same applies to a sandboxed mapper that cannot be reclaimed (see below).
+
+### Sandboxed Mappers & Content Domain
+
+**New in 21.0.0**
+
+Section 34 gives the overview of all security mechanisms.
+
+OpenOlat can deliver user content (single pages, SCORM packages, iframe content) from a second domain (OO-7612). A script in that content then runs in another origin than the main application. It cannot read the session cookie or call the main UI.
+
+- Configure the domain with `server.content.domainname` in `olat.properties`. The default is `${server.domainname}`, which disables the feature.
+- `Settings.isContentDomainNameEnabled()` is true when the content domain differs from the main domain. `Settings.createContentServerURI()` builds its base URL.
+- A controller calls `registerSandboxedMapper(ureq, mapper)` in `BasicController`. The method returns a `MapperKey` with the URL and a one-time token.
+- The page loads `contentServerURI + mapperKey.getUrl() + "?token=" + mapperKey.getToken()`. See `IFrameDisplayController` (with `IFrameSettings.isUseContentDomain()`) and `ScormWrapperController`.
+
+```java
+MapperKey mKey = registerSandboxedMapper(ureq, contentMapper);
+String baseUri = Settings.isContentDomainNameEnabled()
+        ? Settings.createContentServerURI() : Settings.createServerURI();
+String url = baseUri + mKey.getUrl() + "?token=" + mKey.getToken();
+```
+
+The browser has no session on the content domain. On the first request, `MapperDispatcher` asks `MapperService.getSandboxMapper()` for the mapper. The service checks the token and copies identity, roles and locale of the parent `UserSession` to the new content session. The token is valid once. A request of another identity gets the status 404.
+
+`ControllerDeliveryMapper` runs a complete controller in a popup window of the content session. `ControllerDeliveryCreator` marks the session as content delivery. The sandbox mappers live in the Infinispan cache `MapperService-sandboxedmapper` (max idle 1 hour).
+
+Framework rules for a content session (`UserSession.isContentDelivery()` is true):
+
+| Mechanism | Rule |
+|-----------|------|
+| `HeadersFilter` | No `X-Frame-Options`. The CSP gets `frame-ancestors` with the main server URI. |
+| `SameSiteCookieFilter` | The session cookie gets `SameSite=None; Partitioned`, because the browser loads it in a third-party iframe. |
+| `ContentDeliveryDirectiveProvider` | Adds the content domain to the CSP source lists of the main application. |
+| `RestApiLoginFilter` | Rejects REST calls with 403. Exception: the course database endpoint `/restapi/repo/courses/{id}/db/...`. |
+| `UserSessionManager` | Sign-off of the parent session invalidates all sandbox sessions (`UserSession.getSandboxSessions()`). |
+
+A sandboxed mapper stays usable for reloads of the same content session. Only the first request needs the token (OO-9728).
 
 ---
 
-## 12. Business Path & Deep Linking
+## 13. Business Path & Deep Linking
 
 A server-centric architecture faces a fundamental tension: the browser's URL bar is document-oriented (each URL identifies a page), but the server's UI state is component-oriented (a tree of controllers managing an interactive session). When a user clicks inside OpenOlat, the interaction is dispatched to a specific component via its internal ID — the resulting URL (`/auth/1:2:3:4/...`) is a **component address**, meaningful only to the current session.
 
 The **business path** system provides a second, **document-style address** for every UI state — a serializable path like `[RepositoryEntry:123][CourseNode:456]` that describes *what* the user is looking at, not *which component* renders it. This enables bookmarking, deep linking, browser back/forward, "open in new tab", and session resumption.
 
-### 12.1 Business Path Format
+### 13.1 Business Path Format
 
 A business path is a sequence of `ContextEntry` segments, each wrapping an `OLATResourceable`:
 
@@ -892,13 +1153,13 @@ A business path is a sequence of `ContextEntry` segments, each wrapping an `OLAT
 [RepositoryEntry:123][CourseNode:456][path=/documents/report.pdf:0]
 ```
 
-### 12.2 Dual-Address Architecture
+### 13.2 Dual-Address Architecture
 
 **Outbound (state → URL):** After each interaction, the controller updates its `BusinessControl` via `setCurrentContextEntry()`. During the AJAX render cycle, `Window.handleBusinessPath()` serializes the path and sends an AJAX command that updates the browser URL via `history.replaceState()`.
 
 **Inbound (URL → state):** When a user navigates to a business path URL (bookmark, deep link, new tab), `AuthenticatedDispatcher` parses it into `ContextEntry` objects and calls `NewControllerFactory.launch()`. The factory looks up a `ContextEntryControllerCreator` for the resource type, creates the controller, and — if it implements `Activateable2` — calls `activate()` to restore the navigation state recursively.
 
-### 12.3 The Activateable2 Contract
+### 13.3 The Activateable2 Contract
 
 Controllers supporting deep linking implement `Activateable2`:
 
@@ -926,15 +1187,15 @@ public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry st
 }
 ```
 
-### 12.4 BusinessControl Chain
+### 13.4 BusinessControl Chain
 
 `BusinessControl` models the path as a linked list mirroring the controller hierarchy. Each `WindowControl` wraps a `StackedBusinessControl` pointing to its parent. Key operations: `getAsString()` (serialize full path), `popLauncherContextEntry()` (consume next entry during activation), `setCurrentContextEntry()` (update current segment).
 
-### 12.5 NewControllerFactory
+### 13.5 NewControllerFactory
 
 The central registry mapping resource types to `ContextEntryControllerCreator` instances. Each creator knows how to create a controller, validate access, and decide whether to open as a site (fixed tab) or dynamic tab. Integrates with the **DTabs** tab system — activating an already-open tab calls `activate()` on its existing controller.
 
-### 12.6 Session Resumption
+### 13.6 Session Resumption
 
 `HistoryManager` persists the user's last `HistoryPoint` (containing the business path). On next login, `ResumeController` offers to restore the previous state by re-launching the saved business path through `NewControllerFactory.launch()`.
 
@@ -942,7 +1203,7 @@ The central registry mapping resource types to `ContextEntryControllerCreator` i
 
 ---
 
-## 13. Controller Disposal & Housekeeping
+## 14. Controller Disposal & Housekeeping
 
 Proper cleanup prevents memory leaks. The framework provides hierarchical disposal.
 
@@ -994,6 +1255,8 @@ detailCtrl = new DetailController(ureq, wControl, item);
 listenTo(detailCtrl);
 ```
 
+### Disposal Checklist
+
 | Resource | Cleanup | Automatic? |
 |----------|---------|------------|
 | Child controllers (`listenTo`) | Recursive dispose | Yes |
@@ -1005,7 +1268,7 @@ listenTo(detailCtrl);
 
 ---
 
-## 14. Accessibility (a11y)
+## 15. Accessibility (a11y)
 
 OpenOlat integrates accessibility support directly into the component framework. Built-in renderers produce accessible HTML by default.
 
@@ -1031,6 +1294,18 @@ The `$r.screenreaderOnly()` method wraps text in `<span class='sr-only'>` for co
 
 Dialogs use semantic `<dialog>` element with `aria-labelledby`. Lightbox adds `aria-modal="true"`.
 
+A callout trigger follows the ARIA disclosure pattern (OO-8877):
+
+```java
+toolsLink.setAriaDialogOpener();   // role=button, aria-haspopup=dialog, aria-expanded=false
+calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+        toolsCtrl.getInitialComponent(), toolsLink, title, true, "", settings);
+```
+
+`CloseableCalloutWindowController` sets `aria-expanded` on the trigger when it opens and closes the callout. It sends `FunctionCommand.pushDialogFocus()` on open and `popDialogFocus()` on close, so the focus returns to the trigger.
+
+**Changed in 21.1.0:** The constructors accept the trigger `Link` or `FormLink` in place of a DOM ID (OO-9727). Without a title or an `aria-label` in `CalloutSettings`, the callout takes the title or the `aria-label` of the trigger as its label. The focus goes to the first visible element in the callout, not to the hidden close button. Buttons and FlexiTable action columns use the pattern.
+
 ### Form Label Association
 
 FlexiForm layout templates auto-generate `<label>` with `for` attribute. Errors linked via `aria-describedby`. Mandatory fields get `aria-required="true"`.
@@ -1041,7 +1316,7 @@ FlexiForm layout templates auto-generate `<label>` with `for` attribute. Errors 
 - Tabs and tree: standard keyboard patterns via semantic roles
 - Decorative icons: `aria-hidden="true"`
 
-### Best Practices
+### Accessibility Best Practices
 
 - **Use framework components** — renderers handle ARIA automatically
 - **Set `ariaLabel` on icon-only links:** `link.setAriaLabel(translate("action.edit"))`
@@ -1053,7 +1328,7 @@ FlexiForm layout templates auto-generate `<label>` with `for` attribute. Errors 
 
 ---
 
-## 15. Database Access (Hibernate/JPA)
+## 16. Database Access (Hibernate/JPA)
 
 OpenOlat's persistence layer wraps Hibernate/JPA behind a `DB` facade that provides thread-local `EntityManager` access. This design means any code — in a controller, service, or background job — can call `DBFactory.getInstance().getCurrentEntityManager()` to get the current transaction's entity manager without explicit dependency injection.
 
@@ -1073,11 +1348,17 @@ public void save(MyEntity entity) {
 }
 ```
 
-All entities use JPA annotations and are registered in `src/main/resources/META-INF/persistence.xml` (~400+ entity classes). Infrastructure: HikariCP connection pooling, Infinispan L2 cache, MySQL/PostgreSQL/Oracle support.
+### Entity Mapping
+
+All entities use JPA annotations and are registered in `src/main/resources/META-INF/persistence.xml` (443 `<class>` entries on 21.1.0). Infrastructure: HikariCP connection pooling (`hibernate-hikaricp`), Infinispan L2 cache, MySQL/PostgreSQL/Oracle support.
+
+`PersistenceHelper` has static helpers for JPQL results and query building.
+
+**New in 21.1.0:** `PersistenceHelper.extractBigDecimal(Object[], pos, default)` reads an aggregate column of a projection query as `BigDecimal`.
 
 ---
 
-## 16. Hibernate Session & Entity Lifecycle
+## 17. Hibernate Session & Entity Lifecycle
 
 OpenOlat uses a strict **session-per-request** pattern. Each HTTP request gets its own `EntityManager` via `ThreadLocal` in `DBImpl`. Between requests, **no session exists** — all entities are detached.
 
@@ -1118,6 +1399,14 @@ RepositoryEntry managed = dbInstance.getCurrentEntityManager().merge(detachedEnt
 entry.getOlatResource().getResourceableTypeName();
 ```
 
+### Avoiding Unintended Dirty Checking
+
+Hibernate detects changes to managed entities and flushes them on commit. To prevent accidental updates:
+
+- Do not modify managed entities unless you intend to persist the change.
+- Use DTOs or value objects when the UI layer can modify the data.
+- Detach an entity (`em.detach(entity)`) when you need a read-only copy.
+
 ### Bulk Operations
 
 Use `intermediateCommit()` to avoid huge transactions. `DBImpl` warns if >500 DB accesses in one transaction.
@@ -1133,19 +1422,19 @@ for (Item item : largeList) {
 
 ---
 
-## 17. Virtual File System (VFS)
+## 18. Virtual File System (VFS)
 
 OpenOlat does not access the filesystem directly. All file operations go through the **Virtual File System (VFS)** — an abstraction layer that decouples application code from physical storage, while transparently handling security, quotas, metadata, versioning, and trash.
 
 Files are physically stored under `bcroot/` (the "base canonical root"), with metadata in the `o_vfs_metadata` database table.
 
-### 17.1 Core Interfaces
+### 18.1 Core Interfaces
 
 - **`VFSItem`** — base interface. Provides `resolve(path)`, `rename()`, `delete()`, `exists()`, capability checks (`canRename()`, `canMeta()`, `canVersion()`), and `getMetaInfo()` / `getLocalSecurityCallback()`.
 - **`VFSContainer`** (extends VFSItem) — directories. Adds `getItems(filter)`, `getDescendants(filter)`, `createChildContainer(name)`, `createChildLeaf(name)`, `copyFrom(source, identity)`.
 - **`VFSLeaf`** (extends VFSItem) — files. Adds `getInputStream()`, `getOutputStream(append)`, `getSize()`.
 
-### 17.2 Key Implementations
+### 18.2 Key Implementations
 
 **`LocalFolderImpl`** / **`LocalFileImpl`** — wrap `java.io.File` objects in `bcroot/`. The workhorses of the VFS.
 
@@ -1161,7 +1450,7 @@ root.addContainer(new NamedContainerImpl("_shared", sharedFolder));  // add as s
 
 The `enableWrite=true` parameter designates the **rootWriteContainer** — uploads to this MergeSource land in that folder.
 
-### 17.3 Security Callbacks
+### 18.3 Security Callbacks
 
 Each VFS item can carry a `VFSSecurityCallback` defining permitted operations:
 
@@ -1178,7 +1467,7 @@ Callbacks **inherit down the tree**: children without their own callback use the
 - `FullAccessWithQuotaCallback` — full access with storage limits
 - `DefaultVFSSecurityCallback` — everything denied (safe fallback)
 
-### 17.4 Metadata & Versioning
+### 18.4 Metadata & Versioning
 
 `VFSRepositoryService` manages file metadata in the database. The `VFSMetadata` interface exposes identity tracking (creator, last modifier, deleter), Dublin Core fields (title, publisher, language), download counts, and deletion tracking.
 
@@ -1186,31 +1475,57 @@ Callbacks **inherit down the tree**: children without their own callback use the
 
 **Trash**: `delete()` moves files to a `._ootrash` folder (soft delete). `deleteSilently()` removes permanently. Cleanup via `VFSRepositoryService.cleanTrash()`.
 
-### 17.5 Quotas
+### 18.5 Quotas
 
-Storage quotas are enforced through security callbacks. Checked automatically during `copyFrom()`:
+Storage quotas are enforced through security callbacks. A `Quota` object gives `getQuotaKB()` (maximum storage) and `getUlLimitKB()` (per-upload limit). `Quota.UNLIMITED` (-1) disables the check. `LocalFolderImpl` checks the quota automatically during `copyFrom()`:
 
 ```java
 long quotaLeftKB = VFSManager.getQuotaLeftKB(container);
+if (quotaLeftKB != Quota.UNLIMITED && quotaLeftKB < (fileSize / 1024)) {
+    // Not enough space
+}
 ```
 
-### 17.6 Utilities
+### 18.6 Utilities
 
-`VFSManager` provides static helpers: `olatRootContainer(relPath)` / `olatRootLeaf(relPath)` for bcroot access, `resolveOrCreateContainerFromPath()` / `resolveOrCreateLeafFromPath()` for path creation, `getRealPath()` to unwrap virtual containers, `findInheritingSecurityCallback()` to find effective permissions.
+`VFSManager` provides static helpers: `olatRootContainer(relPath)` / `olatRootLeaf(relPath)` for bcroot access, `resolveFile(root, path)` for lookups, `resolveOrCreateContainerFromPath()` / `resolveOrCreateLeafFromPath()` for path creation, `getRealPath()` to unwrap virtual containers, `findInheritedSecurityCallback()` to find effective permissions, `copyContent()` to write streams and leaves. `VFSContainer.isInPath(path)` rejects directory traversal, for example in `ZipUtil`.
 
-`VFSMediaResource` bridges VFS and HTTP — wraps a `VFSLeaf` for browser delivery with MIME types, range requests, cache control, and CSP headers.
+### 18.7 Filtering
 
-### 17.7 Filtering
+`VFSItemFilter` (single method `accept(VFSItem)`) controls which items appear in `getItems()`. Built-in: `VFSSystemItemFilter` (excludes hidden files and `__MACOSX`), `VFSLeafFilter` (files only), `VFSContainerFilter` (folders only), `VFSItemSuffixFilter` (by extension), `VFSAndFilter`/`VFSOrFilter` (composites). Set default filter on a container with `setDefaultItemFilter()`.
 
-`VFSItemFilter` (single method `accept(VFSItem)`) controls which items appear in `getItems()`. Built-in: `VFSSystemItemFilter` (excludes hidden), `VFSLeafFilter` (files only), `VFSItemSuffixFilter` (by extension), `VFSAndFilter`/`VFSOrFilter` (composites). Set default filter on a container with `setDefaultItemFilter()`.
+### 18.8 HTTP File Delivery
+
+`VFSMediaResource` bridges VFS and HTTP. It wraps a `VFSLeaf` for browser delivery with MIME types, `Content-Disposition`, range requests and cache control. HTML and SVG files get restrictive CSP headers.
+
+```java
+VFSLeaf file = (VFSLeaf) container.resolve("report.pdf");
+VFSMediaResource resource = new VFSMediaResource(file);
+resource.setDownloadable(true);  // force download instead of inline display
+ureq.getDispatchResult().setResultingMediaResource(resource);
+```
+
+### 18.9 Real-World Example: MergedCourseContainer
+
+`MergedCourseContainer` (package `org.olat.course`) merges the file resources of a course into one tree:
+
+```java
+// simplified from MergedCourseContainer.init()
+VFSContainer courseFolder = persistingCourse.getIsolatedCourseFolder();
+addContainersChildren(courseFolder, true);                        // merge, write target
+addContainer(new NamedContainerImpl("_sharedfolder", sharedFolder)); // shared folder as sub-folder
+// plus a MergedCourseElementDataContainer with the folders of the course elements
+```
+
+The user sees one folder tree. The VFS routes every operation to the correct physical folder.
 
 > **Key Rule**: Never access `bcroot/` directly. Always use VFS classes to ensure security, quotas, metadata, and versioning are respected.
 
 ---
 
-## 18. Spring & Dependency Injection
+## 19. Spring & Dependency Injection
 
-OpenOlat uses Spring for dependency injection, with a hybrid approach: newer code uses annotation-based wiring (`@Service`, `@Autowired`), while older code uses XML configuration. The main Spring context at `src/main/java/org/olat/_spring/mainContext.xml` imports 70+ module-specific contexts.
+OpenOlat uses Spring for dependency injection, with a hybrid approach: newer code uses annotation-based wiring (`@Service`, `@Autowired`), while older code uses XML configuration. The main Spring context at `src/main/java/org/olat/_spring/mainContext.xml` imports 30 top-level contexts (for example `mainCorecontext.xml`, `modulesContext.xml`, `restApiContext.xml`). These import the contexts in the `_spring/` folders of the modules. A `context:component-scan` picks up the annotated beans.
 
 ```java
 // Service locator (in controllers and non-Spring classes):
@@ -1224,15 +1539,100 @@ public class MyServiceImpl implements MyService {
 }
 ```
 
-Configuration: `src/main/resources/serviceconfig/olat.properties` (defaults) + `olat.local.properties` (overrides).
+Configuration: `src/main/resources/serviceconfig/olat.properties` (defaults) + `olat.local.properties` (overrides). Beans read the values with `@Value("${key:default}")` or property placeholders. An `AbstractSpringModule` persists values changed in the administration UI to `{userdata}/system/configuration/{FQCN}.properties` and reads them in `initFromChangedProperties()`.
+
+Controllers are not Spring beans, but the framework autowires them: `@Autowired` fields work in every controller. `BasicController` itself uses an `@Autowired MapperService`.
+
+### AI Services
+
+The AI services are Spring beans in `org.olat.core.commons.services.ai`. Inject the feature service (for example `AiMCQuestionService`) and never an SPI. Section 31 describes the architecture, the task pools and the user control of AI features.
 
 ---
 
-## 19. Scheduler & Background Tasks
+## 20. Module Configuration (`AbstractSpringModule`)
+
+A module class holds the configuration of a feature: switches, limits, defaults. It extends `AbstractSpringModule` (package `org.olat.core.configuration`) and is a Spring bean. Examples: `AiModule`, `RestModule`, `HttpClientModule`.
+
+### Lifecycle
+
+| Phase | Method | What happens |
+|-------|--------|--------------|
+| Construction | `AbstractSpringModule(coordinatorManager)` | Creates the `PersistedProperties` of the module. |
+| Spring init | `afterPropertiesSet()` | Loads the persisted file, calls `initDefaultProperties()`, then `init()`. |
+| Init | `init()` (abstract) | Reads each value: persisted value first, else the `@Value` default from `olat.properties`. |
+| Change | `initFromChangedProperties()` (abstract) | Runs after every save, on this node and on all other nodes. |
+| Shutdown | `destroy()` | Deregisters the event listener. |
+
+### Reading and Writing Settings
+
+```java
+@Service
+public class MyModule extends AbstractSpringModule {
+
+    private static final String MY_ENABLED = "my.enabled";
+
+    @Value("${my.enabled:false}")
+    private boolean enabled;
+
+    @Autowired
+    public MyModule(CoordinatorManager coordinatorManager) {
+        super(coordinatorManager);
+    }
+
+    @Override
+    public void init() {
+        String enabledObj = getStringPropertyValue(MY_ENABLED, true);
+        if (StringHelper.containsNonWhitespace(enabledObj)) {
+            enabled = "true".equals(enabledObj);
+        }
+    }
+
+    @Override
+    protected void initFromChangedProperties() {
+        init();
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        setStringProperty(MY_ENABLED, Boolean.toString(enabled), true); // save and fire the event
+    }
+}
+```
+
+- Getters: `getStringPropertyValue()`, `getIntPropertyValue()`, `getBooleanPropertyValue()`, `getLongPropertyValue()`.
+- Setters: `setStringProperty()`, `setIntProperty()`, `setBooleanProperty()`, `setLongProperty()`, `removeProperty()`. With `saveConfiguration=true`, the value is saved at once. With `false`, call `savePropertiesAndFireChangedEvent()` later.
+- `setSecretStringProperty()` stores a value without writing it to the log. `setStringProperty()` writes every change to the audit log (`Tracing.M_AUDIT`).
+- The constructor `AbstractSpringModule(coordinatorManager, true)` encrypts the persisted file (secured module).
+
+### Storage and Cluster Propagation
+
+`PersistedProperties` stores the values in the file `{userdata}/system/configuration/{fully.qualified.ClassName}.properties`. The database table `o_property` is not used for module settings. It belongs to `PropertyManager`, which stores properties of users, groups and resources.
+
+```
+admin UI -> module.setXxx() -> PersistedProperties.savePropertiesAndFireChangedEvent()
+   -> write {userdata}/system/configuration/{FQCN}.properties
+   -> EventBus: PersistedPropertiesChangedEvent on the channel of the module class
+   -> every node: AbstractSpringModule.event()
+        other node: loadPropertiesFromFile()   (the userdata directory is shared)
+        all nodes:  initFromChangedProperties()
+```
+
+Rules:
+
+- A saved value wins over `olat.properties` and `olat.local.properties`. A changed default in `olat.properties` has no effect on an instance that saved the value.
+- Deleting the file restores the defaults.
+- Read a setting from the module each time you need it, if the change must apply at runtime. Copy it at init time only if a restart is acceptable.
+- An upgrade runs after `init()`. It must call the setter of the module to change a value (section 23).
+
+---
+
+## 21. Scheduler & Background Tasks
 
 OpenOlat uses **Quartz** for all scheduled tasks (no Spring `@Scheduled`). Configured in `schedulerContext.xml` with a 5-thread pool.
 
-**JobWithDB** — base class for all jobs. Automatically commits DB on success, rolls back on error:
+### JobWithDB
+
+`JobWithDB` is the base class for all jobs. It commits the DB session on success and rolls back on error:
 
 ```java
 public abstract class JobWithDB extends QuartzJobBean {
@@ -1247,13 +1647,116 @@ public abstract class JobWithDB extends QuartzJobBean {
 }
 ```
 
-**TaskExecutorManager** — thread pools for async (non-periodic) execution: `mpTaskExecutor` (2–5 threads), `sequentialTaskExecutor` (1 thread), `lowPriorityTaskExecutor` (2 threads), `externalPriorityTaskExecutor` (2–5 threads).
+### TaskExecutorManager
 
-Key scheduled jobs: notifications, statistics, search indexing, REST token cleanup, reminders, video transcoding, assessment evaluation, lifecycle management.
+`TaskExecutorManager` has thread pools for async (non-periodic) execution. A `TaskRunnable` selects its pool with `TaskRunnable.Queue`:
+
+| Pool (Spring bean) | Threads | Queue |
+|--------------------|---------|-------|
+| `mpTaskSpringExecutor` | 2 to 5 | `standard` (default) |
+| `sequentialTaskSpringExecutor` | 1 | `sequential` |
+| `lowPriorityTaskSpringExecutor` | 2 | `lowPriority` |
+| `externalPriorityTaskSpringExecutor` | 2 to 5 | `external` |
+| `aiInteractiveTaskSpringExecutor` | 4 (from `AiModule`) | `aiInteractive`: AI calls a user waits for |
+| `aiBatchTaskSpringExecutor` | 2 (from `AiModule`) | `aiBatch`: long AI batch work |
+
+`AiTaskExecutorService` resizes the two AI pools from the `AiModule` configuration at startup and at runtime (OO-9496). A `LongRunnable` is persisted in `o_ex_task` and survives a restart (section 22).
+
+### Key Scheduled Jobs
+
+Notifications, statistics, search indexing, REST token cleanup, reminders, video transcoding, assessment evaluation, lifecycle management, and more. All are Quartz triggers in `schedulerContext.xml` or in a module context.
+
+A job that must run on one cluster node only uses the singleton pattern. The trigger references the bean `myJob.${cluster.singleton.services}`. The bean `myJob.enabled` runs the job class, the bean `myJob.disabled` runs `DummyJob`:
+
+```xml
+<bean id="apiAuditRetentionTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+  <property name="jobDetail" ref="apiAuditRetentionJob.${cluster.singleton.services}" />
+  <property name="cronExpression" value="0 41 1 * * ?" />
+</bean>
+<bean id="apiAuditRetentionJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+  <property name="jobClass" value="org.olat.restapi.audit.manager.ApiAuditLogRetentionJob" />
+</bean>
+<bean id="apiAuditRetentionJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+  <property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+</bean>
+```
+
+**New in 21.1.0:** `ApiAuditLogRetentionJob` deletes the rows of the REST API audit log that are older than `restapi.auditlog.retention.days` (section 37).
 
 ---
 
-## 20. Upgrade Infrastructure (`org.olat.upgrade`)
+## 22. Persisted Long-Running Tasks
+
+A task that takes longer than a user waits, or that must survive a restart, runs as a `LongRunnable` (package `org.olat.core.commons.services.taskexecutor`). `TaskExecutorManager` persists it in the table `o_ex_task` and runs it on a thread pool. Examples: `BulkAssessmentTask`, `DeleteUserDataTask`, `EssayAiCorrectionTask`, `QtiQuestionGenerationTask`.
+
+### Runnable Types
+
+| Type | Persisted | Use for |
+|------|-----------|---------|
+| `Runnable` / `TaskRunnable` | No | Short async work. Lost on restart. `taskExecutorManager.execute(runnable)` |
+| `LongRunnable` (extends `TaskRunnable`, `Serializable`) | Yes, XStream XML in `o_ex_task` | Long or important work that must finish after a restart |
+| `TaskAwareRunnable` | (mixin) | Receives its `Task` row with `setTask()`, for example to report progress |
+
+`TaskRunnable.getExecutorsQueue()` selects the pool (`Queue.standard` is the default, section 21). `LongRunnable.isDelayed()` defaults to `true`: the task waits for the next run of the executor job. Return `false` to start it at once.
+
+### Writing a Task
+
+```java
+public class MyExportTask implements LongRunnable {
+
+    private static final long serialVersionUID = 1L;
+
+    private final Long exportKey;          // keep the state small: keys, not entities
+
+    public MyExportTask(Long exportKey) {
+        this.exportKey = exportKey;
+    }
+
+    @Override
+    public Queue getExecutorsQueue() {
+        return Queue.lowPriority;
+    }
+
+    @Override
+    public boolean isDelayed() {
+        return false;                        // start now, not with the next executor job
+    }
+
+    @Override
+    public void run() {
+        CoreSpringFactory.getImpl(MyExportService.class).runExport(exportKey);
+    }
+}
+
+// submit
+taskExecutorManager.execute(new MyExportTask(export.getKey()), getIdentity(), resource, "my-export", null);
+```
+
+- The task is serialized with XStream. Store keys and simple values, never entities or controllers.
+- Look up services with `CoreSpringFactory.getImpl()` inside `run()`, because the task is deserialized without Spring.
+- `execute(task, creator, resource, resSubPath, scheduledDate)` binds the task to a resource. `getTasks(resource)` and `hasRunningTasks(resources)` find it again, for example to show a status.
+- A `TaskCompanionFactory` creates a companion row in the same transaction as the task.
+- `updateProgress(task, progress, checkpoint)` and `getProgress(task)` report progress.
+
+### Lifecycle and Recovery
+
+`TaskStatus` values: `newTask`, `inWork`, `edition`, `failed`, `done`, `ignore`, `cancelled`.
+
+1. `execute()` writes the row with status `newTask` and commits.
+2. The Quartz job `taskExecutorJob` (`ExecutorJob`, every 5 minutes on every node) or the direct start (`isDelayed() == false`) wraps the key in a `PersistentTaskRunnable`.
+3. `PersistentTaskDAO.pickTaskForRun()` locks the row (`select for update`). It sets `inWork`, the node ID and the boot ID of the node. Only one node can pick a task.
+4. The task runs. The runner commits the DB session and marks the row as done, or rolls back and marks it `failed`.
+5. The EventBus channel `TaskExecutorManager.TASK_EVENTS` receives `TaskEvent.TASK_STARTED` and `TASK_DONE`.
+
+Recovery after a restart: the named query `taskToDos` also returns `inWork` tasks of the same node with another boot ID. A task that was running when its node stopped starts again on that node. Write `run()` so that a second run is safe.
+
+When a pool is full (`RejectedExecutionException`), the task stays `newTask` and the next executor job tries again.
+
+`pickTaskForEdition()` / `returnTaskAfterEdition()` protect a task while a user edits its parameters. `cancel()` stops a waiting task.
+
+---
+
+## 23. Upgrade Infrastructure (`org.olat.upgrade`)
 
 OpenOlat includes a built-in migration framework in the `org.olat.upgrade` package that handles both database schema changes and data transformations when upgrading between versions. The system is designed to run automatically on startup, track progress persistently, and support clustered deployments.
 
@@ -1261,7 +1764,7 @@ OpenOlat includes a built-in migration framework in the `org.olat.upgrade` packa
 
 The upgrade system operates in two distinct phases:
 
-1. **Database schema upgrades** — Executed early during Spring context initialization by the `DatabaseUpgradeManager`. These run SQL ALTER scripts (located in `/database/mysql/alter_*.sql` and `/database/postgresql/alter_*.sql`) to bring the database schema up to date. This happens *before* most services and modules are initialized, ensuring the schema is ready for application code.
+1. **Database schema upgrades:** Executed early during Spring context initialization by the `DatabaseUpgradeManager`. These run SQL ALTER scripts (located in `src/main/resources/database/mysql/`, `.../postgresql/` and `.../oracle/`, for example `alter_21_0_x_to_21_1_0.sql`) to bring the database schema up to date. This happens *before* most services and modules are initialized, ensuring the schema is ready for application code.
 
 2. **Post-system-init upgrades** — Executed after the entire application (all Spring beans, modules, and services) has fully initialized. The `UpgradeManager` listens for the `FrameworkStartedEvent` and then runs data migration logic in a background thread via `TaskExecutorManager`. These upgrades can use any service or manager through `@Autowired` injection.
 
@@ -1372,6 +1875,10 @@ Key patterns:
 - **Service injection** — Upgrades are Spring beans and can `@Autowired` any service.
 - **Batch processing** — Large data migrations should process in batches with `intermediateCommit()`.
 - **Version constant** — Format is `OLAT_XX.Y.Z` (e.g., `OLAT_20.3.0`).
+- **Schema script per dialect:** Add the same change to the MySQL, PostgreSQL and Oracle script. Register a `DatabaseUpgrade` bean with `alterDbStatements` in `databaseUpgradeContext.xml`.
+- **Upgrade-private entities:** An upgrade that needs an old table layout maps it with its own entity in `org.olat.upgrade.model` (for example `UpgradeOrganisationUnitMembershipImpl`). Register the class in `persistence.xml`.
+
+**New in 21.1.0:** `OLATUpgrade_21_1_0` shows how to introduce a secure default without a change of behaviour for existing instances. A new instance gets `http.ssrf.protection.enabled=true`. The upgrade switches the protection off on an existing instance, unless the key is set in `olat.local.properties` or as a system property (`isExplicitlyConfigured()`). The same upgrade adds the new user property `customerNumber` to the usage contexts of instances with a customized user property configuration.
 
 ### State Tracking
 
@@ -1387,7 +1894,7 @@ In a clustered deployment, only the singleton node (configured via `cluster.sing
 
 ---
 
-## 21. GUI Preferences
+## 24. GUI Preferences
 
 Per-user preference storage for persisting UI state across sessions — table column visibility, segment selection, view modes.
 
@@ -1401,16 +1908,22 @@ prefs.putAndSave(MyController.class, "selectedTab", "overview");
 
 Key = class (namespace) + string key. Values serialized via XStream, stored in `o_gui_prefs` table.
 
+### GuiPreferenceService
+
+`GuiPreferenceService` (package `core.util.prefs.gui`) is the database-backed storage behind `Preferences`. Controllers use the `Preferences` interface of the user session. Guests get transient `RamPreferences`, because all guests of one language share one identity.
+
 ### Common Uses
 
 - **FlexiTable column preferences** — show/hide columns persisted automatically
 - **SegmentView selection** — remembers last selected tab
 - **View mode** — table vs. card, compact vs. expanded
 - **Filter state** — last-used filter settings
+- **Form sections:** collapsed state of a `FormSection` with `setPersistedStatusId()` (section 8)
+- **AI choices:** `AiUserPreferenceService` stores the choice per AI feature (section 19)
 
 ---
 
-## 22. Internationalization (i18n)
+## 25. Internationalization (i18n)
 
 ### Core Architecture
 
@@ -1421,7 +1934,7 @@ Key = class (namespace) + string key. Values serialized via XStream, stored in `
 
 Translation files follow the colocated resource pattern: each UI package contains an `_i18n/` directory with `LocalStrings_XX.properties` files (Java `.properties` format: `key=value`, `#` comments, `\:` escapes colons).
 
-**Statistics:** ~382 i18n bundles, ~29,000 English keys, 36 language variants.
+**Statistics (21.1.0):** 408 i18n bundles with a `LocalStrings_en.properties`, about 33,000 English keys, 31 language codes plus the demo overlay `en__DEMOVENDOR`.
 
 ### Locale Resolution Order
 
@@ -1519,7 +2032,7 @@ The end-user glossary of product-specific terms lives in the docs repo at `OpenO
 
 ---
 
-## 23. Theming & CSS
+## 26. Theming & CSS
 
 OpenOlat uses SASS-based theming. Themes live in `src/main/webapp/static/themes/` and are served via `/raw/` with versioned URLs.
 
@@ -1537,11 +2050,21 @@ themes/
     └── _config.scss        ← override variables only
 ```
 
-The `light` theme is the base (includes Bootstrap). Product themes extend it by overriding `_config.scss` variables. Compilation via `compiletheme.sh` (wraps `sass` CLI). Compiled CSS is committed — no build step at deployment. Custom themes can be stored outside the codebase in a configurable `guiCustomThemePath`. In templates: `$r.staticThemeLink("image.png")`.
+### Theme Layering
+
+The `light` theme is the base (includes Bootstrap). Product themes extend it by overriding `_config.scss` variables. The Sass compiler loads the module partials from `light/modules/` for every theme.
+
+### Compilation
+
+Compilation via `compiletheme.sh` (wraps the `sass` CLI, option `-w` for watch mode). Compiled CSS is committed, so there is no build step at deployment.
+
+### Custom Themes
+
+Custom themes can be stored outside the codebase in a configurable `guiCustomThemePath`. The `Theme` class renders the header elements: CSS link, optional custom JS, favicons, Apple touch icons, PWA manifest. In templates: `$r.staticThemeLink("image.png")`. The frontend reference `doc/openolat-frontend.md` documents the theme system in detail.
 
 ---
 
-## 24. Caching Infrastructure
+## 27. Caching Infrastructure
 
 OpenOlat uses **Infinispan** for caching, accessed via `Coordinator.getCacher()`.
 
@@ -1573,7 +2096,11 @@ cache.remove(key)                       // explicit invalidation
 
 `put()` = reload from persistent source. `update()` = data changed, trigger cluster invalidation.
 
-### Key Caches
+`put(key, value, lifespan, maxIdleTime)` stores an entry with its own expiration in seconds. It replaced `put(key, value, expirationTime)` in 21.0.x (OO-9728).
+
+### Cache Configuration
+
+`getCache(type, name)` returns the cache `type-name`. Caches are configured in `src/main/resources/infinispan-config.xml`. A cache without an entry gets the defaults of `InfinispanCacher`: 10,000 entries and 15 minutes max idle.
 
 | Cache | Max Entries | Max Idle | Content |
 |-------|-------------|----------|---------|
@@ -1582,6 +2109,8 @@ cache.remove(key)                       // explicit invalidation
 | `Velocity-templates` | 7,700 | Never | Compiled templates |
 | `QTIWorks-testSessionControllers` | 50,000 | 2 hours | Test execution state |
 | `VFSLockManager-file-locks` | 50,000 | 6 hours | WebDAV locks |
+| `MapperService-sandboxedmapper` | default | 1 hour | Sandboxed mappers of the content domain (section 12) |
+| `RequestRateLimiter-window` | 50,000 | never, lifespan 61 s | **New in 21.1.0:** Counters of the REST rate limiter (section 37) |
 
 ### Cache Invalidation
 
@@ -1589,9 +2118,77 @@ cache.remove(key)                       // explicit invalidation
 2. **Event-driven** — `MultiUserEvent` via EventBus triggers `cache.remove()` on all nodes
 3. **Manual** — admin UI (`AllCachesController`) can flush individual caches
 
+```java
+// Event-driven invalidation (MyDataChangedEvent is an example class):
+// 1. After a change, fire the event on the channel
+CoordinatorManager.getInstance().getCoordinator().getEventBus()
+    .fireEventToListenersOf(new MyDataChangedEvent(dataKey), dataOres);
+
+// 2. The listener on every node removes the entry
+@Override
+public void event(Event event) {
+    if (event instanceof MyDataChangedEvent e) {
+        dataCache.remove(e.getDataKey());
+    }
+}
+```
+
 ---
 
-## 25. Logging Infrastructure
+## 28. Clustering
+
+OpenOlat runs on one node or on several nodes behind a load balancer with sticky sessions. The nodes share the database and the `userdata` directory. The `Coordinator` (`CoordinatorManager.getInstance().getCoordinator()`) gives access to the cluster services: `getEventBus()`, `getLocker()`, `getSyncer()`, `getCacher()`. The same `ClusterCoordinator` runs in single-node mode and in cluster mode.
+
+### Cluster Configuration
+
+| Property | Default | Purpose |
+|----------|---------|---------|
+| `cluster.mode` | `SingleVM` | `Cluster` enables the cluster features |
+| `node.id` | 1 | Unique ID of the node, 1 to 64 (`ClusterConfig.getNodeId()`) |
+| `cluster.singleton.services` | `enabled` | `enabled` on exactly one node, `disabled` on the others |
+| `jms.broker.url` | `vm://0?...` | Embedded Artemis broker; a remote broker (`failover:(tcp://...)`) in a cluster |
+
+### Cluster Services
+
+| Service | Implementation | Scope and storage |
+|---------|----------------|-------------------|
+| EventBus | `ClusterEventBus` | JMS topic `olat/{instance.id}/sysbus` (ActiveMQ Artemis, bean `sysbus.topic`). Every event goes through the broker, also on a single node. |
+| Locker | `ClusterLocker` + `ClusterLockManager` | Persistent locks in the table `oc_lock`, cluster wide. Released on logout of the owner. |
+| Syncer | `ClusterSyncer` | `doInSync(ores, callback)`: a JVM lock plus a DB row lock in `o_plock` (`select for update`) for the duration of the transaction |
+| Cacher | `InfinispanCacher` | Local Infinispan caches on every node (`local-cache` in `infinispan-config.xml`). No replication. |
+| Hibernate L2 cache | `InfinispanRegionFactory` | Local configuration (`infinispan-configs-local.xml`) |
+
+### EventBus Transport
+
+`ClusterEventBus.fireEventToListenersOf()` wraps the event in a `JMSWrapper` (node ID, message ID, resource, event) and sends it to the topic. Every node, the sender included, receives the message and delivers it to its listeners. The delivery is asynchronous and runs on the JMS listener thread, not in the request of the sender.
+
+- The event must be `Serializable` (extend `MultiUserEvent`). Keep it small: keys, not entities.
+- `MultiUserEvent.isEventOnThisNode()` tells whether the event comes from this node. `AbstractSpringModule` uses it to reload its file only on the other nodes (section 20).
+- A JMS failure throws an `OLATRuntimeException`. The bus fails fast, so a broken broker is visible at once.
+- `ureq.getUserSession().getSingleUserEventCenter()` is a local bus inside one user session, without JMS.
+
+### Singleton Services
+
+Some services must run on one node only: upgrades (`UpgradeManagerDummy` on the other nodes), statistics, notifications, retention jobs. The pattern uses the property `cluster.singleton.services` in the bean name (section 21):
+
+```xml
+<property name="jobDetail" ref="myJob.${cluster.singleton.services}" />
+```
+
+The persisted task executor needs no singleton: every node picks tasks, and the row lock prevents a double run (section 22).
+
+### Per-Node State
+
+Caches, counters and in-memory maps are per node. Plan for it:
+
+- Cache invalidation: fire a `MultiUserEvent` after a change. Each node removes its entry (section 27).
+- REST rate limit: the counters of `RequestRateLimiterImpl` are per node. The effective limit is the configured value times the number of nodes (section 37).
+- AI pools: the effective parallelism against a provider is the pool size times the number of nodes (`AiTaskExecutorService`).
+- Mappers: session-bound mappers live on the node of the session. `Serializable` mappers are persisted in `o_mapper`, so any node can serve them (section 12).
+
+---
+
+## 29. Logging Infrastructure
 
 Two distinct layers: **technical logging** (log files) and **user activity logging** (database audit trail).
 
@@ -1605,7 +2202,9 @@ log.warn("Retry failed for resource: {}", resourceKey);
 log.error("Unexpected error in service", exception);
 ```
 
-`Tracing.createLoggerFor()` returns a standard SLF4J Logger. MDC entries (user identity, IP, session ID) are set via `ThreadLocalUserActivityLogger`. Configuration in `src/main/resources/log4j2.xml`. Audit marker: `Tracing.M_AUDIT`.
+`Tracing.createLoggerFor()` returns a Log4j2 `Logger`. MDC entries (user identity, IP, session ID) are set via `ThreadLocalUserActivityLogger`. Configuration in `src/main/resources/log4j2.xml`. Audit marker: `Tracing.M_AUDIT`.
+
+**New in 21.1.0:** The marker `Tracing.M_REST` tags the REST access log. `Tracing.setRequest(method, uri)` and `Tracing.setAuthProvider(provider)` put the keys `method`, `uri` and `authProvider` into the Log4j2 `ThreadContext`. A log pattern can print them.
 
 ### User Activity Logging
 
@@ -1616,17 +2215,32 @@ ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURC
     getClass(), LoggingResourceable.wrap(repositoryEntry));
 ```
 
-### Best Practices
+### REST API Access Log
+
+**New in 21.1.0**
+
+`ApiAuditLogServiceImpl` writes one line per REST request on the logger `org.olat.restapi.access` (OO-9778). The line has the format `METHOD path?query status durationms channel= auth= actor= ip= resource= ref=`. The level depends on the result:
+
+| Level | Requests |
+|-------|----------|
+| `warn` | Denied and failed calls: 401, 403, 429, 5xx |
+| `info` | Writes: PUT, POST, PATCH, DELETE |
+| `debug` | Reads: GET, HEAD |
+
+The line never contains the request body. Values of secret query parameters are masked. `log4j2.xml` has a commented example of the logger. The table `o_api_audit_log` stores the auditable requests (section 37).
+
+### Best Practices for Logging
 
 - Always use `Tracing.createLoggerFor()`, never instantiate loggers directly
 - Use parameterized messages (`log.info("msg: {}", val)`) to avoid string concatenation
 - Pass exceptions as last argument: `log.error(msg, exception)`
 - Do not log sensitive data (passwords, tokens, personal data)
 - Use `ThreadLocalUserActivityLogger` for auditable business actions
+- Use `log.isDebugEnabled()` guards only when the construction of the message is expensive
 
 ---
 
-## 26. Core Utility Classes
+## 30. Core Utility Classes
 
 OpenOlat provides widely-used utility classes in `org.olat.core.util`:
 
@@ -1650,11 +2264,105 @@ File I/O and filename handling:
 - `getFileSuffix()`, `validateFilename()`, `normalizeFilename()`
 
 ### Encoder
-Password hashing (`argon2id`, `pbkdf2`, `sha256`) and AES-256 encryption/decryption.
+Hashing and legacy encryption with `Encoder.Algorithm`: `md5` variants, `sha1`, `sha256`, `sha512`, `pbkdf2`, `argon2id`, `argon2id_owasp` (password hashing) and `aes` (`Encoder.encrypt()` / `decrypt()`).
+
+**New in 21.1.0:** `AesGcmCipher` (package `core.util.crypto`) encrypts short secrets with AES-256-GCM (OO-9665). Use it for credentials that must be readable later, for example tokens stored in the database. Prefer it over `Encoder.Algorithm.aes`, which uses an unauthenticated mode and a hard-coded passphrase.
+
+```java
+SecretKey key = AesGcmCipher.keyFromBase64(configuredBase64Key);  // AesGcmCipher.generateKeyBase64() creates one
+String stored = AesGcmCipher.encrypt(key, refreshToken, ownerId);  // ownerId = additional authenticated data
+String clear = AesGcmCipher.decrypt(key, stored, ownerId);
+```
+
+The stored value starts with the prefix `{aesgcm1}`. A value without the prefix is rejected. The additional authenticated data binds the secret to its owner, so a value copied to another row cannot be decrypted. Reference use: `TeamsCryptoHelper`.
+
+### DocxToMarkdownService
+`DocxToMarkdownService` (package `core.util.docxToMarkdown`) converts a Word file (.docx) to Markdown with images, footnotes, numbering, math and SmartArt (OO-9414). The page editor import uses it. `DocxZipExtractor` rejects unsafe archives with a `DocxSecurityException`. Details: `package.md` in the same package.
+
+### XStream
+`XStreamHelper` creates configured XStream instances. `EnhancedXStream` registers `HibernateProxyConverter`, which writes a Hibernate proxy as its entity class, so proxy class names never appear in the XML (OO-9671, since 21.0.1).
 
 ---
 
-## 27. Identity, Security & Organisations
+## 31. AI Framework
+
+The package `org.olat.core.commons.services.ai` connects OpenOlat to AI providers through LangChain4j. The full reference with all classes, prompts, file stores and admin controllers is `src/main/java/org/olat/core/commons/services/ai/package.md`. This section describes the architecture and the rules for developers.
+
+### Service and SPI Layers
+
+| Layer | Classes | Responsibility |
+|-------|---------|----------------|
+| Feature services | `AiMCQuestionService`, `AiImageDescriptionService`, `AiEssayGradingService`, `AiEssayGenerationService`, `EssayGenerationService`, `EssayAiCorrectionService` | Prompts (LangChain4j `@AiServices` interfaces in `service/`), structured output, validation, rate limits |
+| Configuration | `AiModule` | Maps each `AiFeature` to a provider (`spiId`) and a model. Holds limits, pool sizes and user defaults. `resolveProvider(spiId)`, `getEnabledProviders()` |
+| Chat SPI | `AiSPI`: `buildChatModel(modelName, maxTokens)`, `getAvailableModels()`, `createAdminController(ureq, wControl, readOnly)` | `OpenAiSPI`, `AnthropicAiSPI`, `GenericAiSpiInstance` (OpenAI-compatible endpoints, managed by `GenericAiSPI`) |
+| Embedding SPI | `AiEmbeddingSPI`: `buildEmbeddingModel(modelName)`, `getAvailableEmbeddingModels()`, `getEmbeddingDimension(modelName)` | `OpenAiSPI`, `GenericAiSpiInstance`, `LocalOnnxSPI` (uploaded ONNX model, in process). Used by the taxonomy matching. |
+| Logging | `AiLoggingChatModel`, `AiLoggingEmbeddingModel`, `AiUsageLogDAO` | One row per provider call in `o_ai_usage_log`: tokens, duration, status, error, usage context |
+| HTTP | `LangChain4jHttpClientBuilder` | Routes the LangChain4j HTTP calls through `HttpClientService` with `AiModule.PROTECTION_PROFILE` |
+
+The SPI knows nothing about features. A new provider implements only `AiSPI` (and `AiApiKeySPI` for the generic API key form). A new feature needs no change in any SPI.
+
+### Calling a Feature Service
+
+```java
+if (aiMCQuestionService.isEnabled()) {
+    AiUsageContext usageContext = AiUsageContext.builder()
+            .usageContextType("my-feature")      // shows in the usage log
+            .identity(getIdentity())
+            .resource(courseEntry)               // OLATResourceable, optional
+            .locale(getLocale())
+            .build();
+    AiMCQuestionsResponse response = aiMCQuestionService.generateMCQuestionsResponse(usageContext, text, 5);
+    if (!response.isSuccess()) {
+        showError("ai.error");
+    }
+}
+```
+
+- Always check `isEnabled()` (feature switched on and provider configured).
+- Always pass an `AiUsageContext`. It links the log row to the person and the resource.
+- Never call an SPI or a LangChain4j model from UI code.
+
+### AI Task Pools
+
+Long AI work runs as `LongRunnable` (section 22) on two dedicated queues. `AiModule` holds the sizes (`getAiTaskPoolInteractiveSize()`, `getAiTaskPoolBatchSize()`). `AiTaskExecutorService` applies them to the pools:
+
+| Queue | Default size | Use |
+|-------|--------------|-----|
+| `aiInteractive` | 4 | A user waits for the result, for example `EssayAiCorrectionTask` |
+| `aiBatch` | 2 | Background work, for example `QtiQuestionGenerationTask` and the image metadata of the media center |
+
+A full interactive pool refuses new essay corrections. The pools are per node (section 28).
+
+### User Control and Consent
+
+**New in 21.1.0**
+
+An AI feature that runs automatically, without an explicit request of the person, is user controlled (OO-9784, AI Act). `AiFeature.isUserControlled()` is true for `EssayGrading` and `ImageDescriptionGenerator`.
+
+```
+feature switched on in AiModule?  --no-->  never runs
+        | yes
+person's choice (AiUserPreferenceService, GUI preferences)
+        ON  --> runs
+        OFF --> never runs
+        DEFAULT --> system default AiModule.isUserDefaultOn(feature)
+```
+
+- Gate every automatic call with `AiUserPreferenceService.isActive(prefs, feature)` at the point where the call starts.
+- `AiCorrectionConsentController` asks the person before the first AI essay correction when no choice exists. `EssayAiCorrectionService.submit()` checks again and returns `null` when the person switched it off.
+- Explicit requests ("Generate with AI" buttons) are not gated.
+- `AiUserSettingsController` shows the choices in the user settings, segment "AI settings".
+
+### Provider Configuration and Security
+
+- Providers and feature mapping are configured in the administration (`AiAdminController`). Values persist through `AiModule` and the SPI modules (section 20).
+- **Changed in 21.1.0:** A person without administrator rights can open the AI administration read-only (`createAdminController(..., readOnly)`).
+- Content from users goes through `AiContentHardener` before it reaches a prompt. Output for learners is sanitised with the HTML filter (section 35).
+- `AiPromptRules.OUTPUT_STYLE_RULES` is appended to every generative system prompt.
+
+---
+
+## 32. Identity, Security & Organisations
 
 OpenOlat's security model is built around three core concepts: **Identity** (who you are), **Roles** (what you can do), and **Organisation** (where you belong). Defined in `org.olat.basesecurity` and `org.olat.core.id`.
 
@@ -1664,8 +2372,8 @@ OpenOlat's security model is built around three core concepts: **Identity** (who
 
 - `getKey()` — unique database ID (Long)
 - `getName()` — login username (unique, immutable)
-- `getUser()` — link to the `User` profile entity (one-to-one, see section 28)
-- `getStatus()` — lifecycle state: `activ`, `permanent`, `pending`, `inactive`, `login_denied`, `deleted`
+- `getUser()` — link to the `User` profile entity (one-to-one, see section 33)
+- `getStatus()`: lifecycle state as `Integer` constants of `Identity`: `STATUS_PERMANENT` (1), `STATUS_ACTIV` (2), `STATUS_LOGIN_DENIED` (101), `STATUS_PENDING` (102), `STATUS_INACTIVE` (103), `STATUS_DELETED` (199). Values from `STATUS_VISIBLE_LIMIT` (100) up are invisible in user searches.
 - `getExternalId()` — external system identifier (LDAP DN, Shibboleth ID, etc.)
 - `getLastLogin()` — timestamp of last authentication
 
@@ -1673,7 +2381,7 @@ OpenOlat's security model is built around three core concepts: **Identity** (who
 
 | Enum | Scope | Values |
 |------|-------|--------|
-| `OrganisationRoles` | System-wide / per org | `sysadmin`, `administrator`, `usermanager`, `rolesmanager`, `groupmanager`, `learnresourcemanager`, `poolmanager`, `curriculummanager`, `lecturemanager`, `qualitymanager`, `linemanager`, `principal`, `author`, `user`, `invitee`, `guest` |
+| `OrganisationRoles` | System-wide / per org | `sysadmin`, `administrator`, `usermanager`, `rolesmanager`, `learnresourcemanager`, `lecturemanager`, `groupmanager`, `poolmanager`, `curriculummanager`, `qualitymanager`, `projectmanager`, `linemanager`, `educationmanager`, `selectusmanager`, `principal`, `author`, `user`, `invitee`, `guest` |
 | `GroupRoles` | Per resource / group / course | `owner`, `coach`, `participant`, `invitee`, `waiting` |
 | `CurriculumRoles` | Per curriculum / curriculum element | `curriculummanager`, `curriculumowner`, `curriculumelementowner`, `owner`, `mastercoach`, `coach`, `participant` |
 | `ProjectRole` | Per project | `owner`, `leader`, `projectOffice`, `participant`, `supplier`, `client`, `steeringCommitee`, `invitee` |
@@ -1708,7 +2416,7 @@ All memberships stored as `GroupMembership` (Identity + Group + role). Inheritan
 
 ### Grant Mechanism
 
-`Grant` provides fine-grained permissions on specific `OLATResource` instances, linking a group role to a permission string on a resource.
+`Grant` provides fine-grained permissions on specific `OLATResource` instances, linking a group role to a permission string on a resource. `GroupDAO` manages them: `addGrant(group, role, permission, resource)`, `getGrants(...)` and `hasGrant(identity, permission, resource, role)`.
 
 ### BaseSecurity Service
 
@@ -1716,18 +2424,20 @@ Primary interface for identity management:
 - `findIdentityByLogin(login)`, `loadIdentityByKey(key)`
 - `createAndPersistIdentityAndUser(...)` — create new account
 - `getRoles(identity)` — get immutable `Roles` object
-- `isIdentityPermittedOnResourceable(identity, permission, ores)` — resource-level check
+- `isIdentityLoginAllowed(identity, provider)`, `isIdentityVisible(identity)`: status checks
 - `getAuthentications(identity)` — list auth providers (OLAT, LDAP, OAuth, etc.)
 
 ---
 
-## 28. User Properties & Profile
+## 33. User Properties & Profile
 
 While `Identity` handles authentication, the `User` entity stores profile data: name, email, institutional affiliation.
 
 ### Identity vs. User
 
-One-to-one relationship. Identity owns the reference: `identity.getUser()`. The `UserImpl` entity has 53 mapped DB columns plus a generic `userProperties` map.
+One-to-one relationship. Identity owns the reference: `identity.getUser()`. The `UserImpl` entity maps 78 profile columns (`u_*`) plus a generic `userProperties` map.
+
+**New in 21.1.0:** The profile field `customerNumber` (column `u_customernumber`, handler `CustomerNumberPropertyHandler`). `OLATUpgrade_21_1_0` adds it to the usage contexts of customized configurations.
 
 ### UserPropertyHandler
 
@@ -1762,13 +2472,54 @@ Primary service for profile operations with display name caching:
 
 ---
 
-## 29. XSS & Security Infrastructure
+## 34. Security Architecture
 
-OpenOlat employs multiple layers of defense against XSS and injection attacks.
+This section is the map of the security mechanisms. Each row points to the section with the details.
 
-### OWASP AntiSamy (HTML Sanitization)
+### Request Path
 
-User-generated HTML (rich-text editors, imported pages) is sanitized through `OWASPAntiSamyXSSFilter` using a whitelist policy (`OpenOLATPolicy.java`). Strips `<script>`, event handlers, dangerous URI schemes.
+| Stage | Mechanism | Detail |
+|-------|-----------|--------|
+| Servlet filters | `SameSiteCookieFilter`: `SameSite` attribute of the session cookie (`base.security.cookie.samesite`, default `Lax`). A content-delivery session gets `SameSite=None; Partitioned`. | section 12 |
+| | `HeadersFilter`: HSTS, `X-Content-Type-Options`, `X-Frame-Options`, CSP | section 35 |
+| | `RestApiLoginFilter`: REST authentication, rate limiting, audit | section 37 |
+| Dispatch | CSRF token of every `Form`; timestamps in the URL reject stale requests | sections 3, 35 |
+| Authorization | `Roles` per organisation, security callbacks, `GroupDAO.hasGrant()` | section 32 |
+| Rendering | `$r.escapeHtml()`, HTML sanitizer `OWASPAntiSamyXSSFilter` | sections 7, 35 |
+
+### Content Isolation
+
+User content that may run scripts (HTML pages, SCORM, iframe content) is delivered from a second domain (`server.content.domainname`) through sandboxed mappers. The content session has no REST access and no access to the main session cookie. Details: section 12 "Sandboxed Mappers & Content Domain".
+
+### Content Security Policy
+
+`CSPBuilder` builds the policy from `CSPModule` and from all Spring beans that implement `CSPDirectiveProvider`. A module that embeds an external service adds its URLs through such a provider (for example `ContentDeliveryDirectiveProvider` for the content domain). The provider methods cover `script-src`, `style-src`, `img-src`, `font-src`, `connect-src`, `frame-src`, `frame-ancestors`, `media-src`, `form-action`, `object-src` and `worker-src`. `CSPModule` can switch the policy to report-only.
+
+### Outbound Requests
+
+`HttpClientService` is the only HTTP client. The `ProtectionProfile` decides whether the SSRF filter applies: `USER_PROVIDED` for URLs of users, `CONFIGURED` for URLs of administrators. Details: section 36 "Protection Profiles".
+
+### Secrets and Audit
+
+| Topic | Mechanism | Detail |
+|-------|-----------|--------|
+| Passwords | `Encoder.Algorithm.argon2id` / `pbkdf2` hashes | section 30 |
+| Stored tokens | `AesGcmCipher` (**New in 21.1.0**) | section 30 |
+| Module secrets | `setSecretStringProperty()`, secured module files | section 20 |
+| Admin changes | `setStringProperty()` logs with `Tracing.M_AUDIT` | sections 29, 20 |
+| User actions | `ThreadLocalUserActivityLogger`, `o_loggingtable` | section 29 |
+| REST calls | `o_api_audit_log`, logger `org.olat.restapi.access`, masked secrets (**New in 21.1.0**) | sections 29, 37 |
+| AI calls | `o_ai_usage_log` | section 31 |
+
+---
+
+## 35. XSS & Security Infrastructure
+
+OpenOlat employs multiple layers of defense against XSS and injection attacks. Section 34 is the map of all security mechanisms; this section holds the details of XSS, CSRF and headers.
+
+### OWASP HTML Sanitizer
+
+User-generated HTML (rich-text editors, imported pages) is sanitized through `OWASPAntiSamyXSSFilter` using a whitelist policy (`OpenOLATPolicy.java`). The class keeps its historical name, but the implementation uses the OWASP Java HTML Sanitizer (`org.owasp.html.HtmlPolicyBuilder`), not AntiSamy. It strips `<script>`, event handlers, dangerous URI schemes.
 
 ```java
 OWASPAntiSamyXSSFilter filter = new OWASPAntiSamyXSSFilter();
@@ -1790,17 +2541,27 @@ String safeHtml = filter.filter(userInput);
 
 ### Security Headers
 
-`HeadersFilter` adds to every response:
+`HeadersFilter` adds to every response (each header can be switched in `CSPModule`):
 - `X-Frame-Options: SAMEORIGIN` — prevents clickjacking
 - `X-Content-Type-Options: nosniff`
-- **Content-Security-Policy** — configured via `CSPModule`
+- **Content-Security-Policy** (or `Content-Security-Policy-Report-Only`): built by `CSPBuilder` from `CSPModule` and all `CSPDirectiveProvider` beans
 - **Strict-Transport-Security** — enforces HTTPS
+
+A response of a content-delivery session gets no `X-Frame-Options`. Its CSP gets `frame-ancestors` with the main server URI instead (section 12). `CSPDirectiveProvider` has default methods for `style-src`, `object-src` and `worker-src` in addition to the older source lists.
+
+### SSRF Protection
+
+**New in 21.1.0**
+
+An outbound request to a URL that a user entered can reach internal hosts (server-side request forgery). `HttpClientService` blocks such requests with the protection profile `ProtectionProfile.USER_PROVIDED` (section 36).
 
 ---
 
-## 30. HTTP Client Service
+## 36. HTTP Client Service
 
 All outbound HTTP requests in OpenOlat **must** go through the centralized `HttpClientService` (`org.olat.core.util.httpclient.HttpClientService`). Do not use the native Java HTTP client (`java.net.http.HttpClient`), any other third-party HTTP client library, or instantiate Apache `HttpClient` directly.
+
+**Changed in 21.1.0:** Every factory method takes a `ProtectionProfile` as last parameter (OO-9310). The methods without a profile are removed. See "Protection Profiles" below and the overview in section 34.
 
 ### Why
 
@@ -1810,6 +2571,7 @@ The `HttpClientService` is the single point of configuration for all outbound HT
 - **Timeouts** are standardized (connect, request, socket) — configured via `http.connect.*` properties
 - **Credentials** for basic authentication are handled uniformly
 - **Database connections** are freed before making outbound calls (`dbInstance.commit()` is called internally) to avoid holding a DB connection while waiting for an external service
+- **SSRF protection** is applied to URLs that users enter (profile `USER_PROVIDED`)
 
 ### Configuration Properties
 
@@ -1822,6 +2584,9 @@ The `HttpClientService` is the single point of configuration for all outbound HT
 | `http.proxy.port` | 8080 | Proxy port |
 | `http.proxy.exclusion` | — | Comma-separated list of hosts to bypass proxy |
 | `http.proxy.user` / `http.proxy.pwd` | — | Proxy authentication credentials |
+| `http.ssrf.protection.enabled` | true | **New in 21.1.0:** SSRF filter for the profile `USER_PROVIDED`. Switchable in the administration (`HttpClientModule`). |
+| `http.ssrf.allowed.addresses` | (empty) | **New in 21.1.0:** Comma-separated IP addresses or CIDR blocks that are allowed although not public, e.g. `10.0.0.0/8` |
+| `http.ssrf.allowed.hosts` | (empty) | **New in 21.1.0:** Comma-separated host names that are allowed although not public |
 
 ### Usage
 
@@ -1841,22 +2606,27 @@ HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientServic
 Create a client and execute a request:
 
 ```java
-// Simple one-off request
-try (CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
+// URL from the configuration of an administrator
+try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
     HttpGet request = new HttpGet("https://api.example.com/data");
     try (CloseableHttpResponse response = httpClient.execute(request)) {
         // handle response
     }
 }
 
+// URL entered by a user (feed, calendar subscription, external page)
+try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED)) {
+    // a request to a loopback, private or link-local address fails with FilteredHostException
+}
+
 // With basic authentication
 try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(
-        "api.example.com", 443, "user", "password", true)) {
+        "api.example.com", 443, "user", "password", true, ProtectionProfile.CONFIGURED)) {
     // use client for multiple requests
 }
 
 // Custom builder for additional configuration
-HttpClientBuilder builder = httpClientService.createHttpClientBuilder();
+HttpClientBuilder builder = httpClientService.createHttpClientBuilder(ProtectionProfile.CONFIGURED);
 builder.setDefaultHeaders(List.of(new BasicHeader("Authorization", "Bearer " + token)));
 try (CloseableHttpClient httpClient = builder.build()) {
     // use client
@@ -1867,15 +2637,33 @@ try (CloseableHttpClient httpClient = builder.build()) {
 
 | Method | Description |
 |--------|-------------|
-| `createHttpClient()` | Simple client with default config (timeouts + proxy) |
-| `createHttpClientBuilder()` | Builder for customization before building |
-| `createHttpClientBuilder(host, port, user, password)` | Builder with basic auth credentials |
-| `createThreadSafeHttpClient(redirect)` | Pooled client for concurrent use |
-| `createThreadSafeHttpClient(host, port, user, password, redirect)` | Pooled client with basic auth |
+| `createHttpClient(profile)` | Simple client with default config (timeouts + proxy) |
+| `createHttpClientBuilder(profile)` | Builder for customization before building |
+| `createHttpClientBuilder(host, port, user, password, profile)` | Builder with basic auth credentials |
+| `createThreadSafeHttpClient(redirect, profile)` | Pooled client for concurrent use |
+| `createThreadSafeHttpClient(host, port, user, password, redirect, profile)` | Pooled client with basic auth |
+
+### Protection Profiles
+
+**New in 21.1.0**
+
+| Profile | Use for | Effect |
+|---------|---------|--------|
+| `ProtectionProfile.USER_PROVIDED` | A URL that a user entered: feeds (`RomeFeedFetcher`), calendar subscriptions (`CalendarManager`), the course element "External page" (`TUConfigForm`, `IframeTunnelController`), LTI 1.1 (`LTIManager`), video and live stream URLs, images in a Markdown import, Open Badges verification | With `http.ssrf.protection.enabled=true`, only public internet addresses are reachable. The allow lists are exempt. |
+| `ProtectionProfile.CONFIGURED` | A URL that an administrator configured: AI providers (`AiModule.PROTECTION_PROFILE`), BigBlueButton, Opencast, OnlyOffice, Gotenberg, OAuth login, Zoom | No address filter |
+
+The filter has two stages (package `core.util.httpclient.filter`):
+
+1. `FilteringDnsResolver` resolves the host and rejects loopback, link-local, private and special-purpose addresses (`InetAddressFilter.externalAddresses()`). The configured proxy host is exempt.
+2. `FilteringHostRequestInterceptor` checks literal IP addresses in the request. It covers the cases the DNS resolver does not see, for example a request through a forward proxy.
+
+A rejected request throws `FilteredHostException`. The DNS filter works only as long as no connection manager is set on the builder. Do not call `setConnectionManager()` on a builder with the profile `USER_PROVIDED`.
+
+Choose the profile by the origin of the URL, not by the feature. When in doubt, use `USER_PROVIDED`. On an instance upgraded to 21.1.0, `OLATUpgrade_21_1_0` switches the protection off, unless the key is set explicitly (section 23). An administrator switches it on in the administration of the HTTP client.
 
 ---
 
-## 31. Common Patterns & Best Practices
+## 37. Common Patterns & Best Practices
 
 ### Choosing the Right Controller Type
 
@@ -1901,7 +2689,7 @@ try (CloseableHttpClient httpClient = builder.build()) {
 - **Never store `UserRequest`** — it is valid only for the current request cycle
 - **Use `DBFactory.getInstance().commitAndCloseSession()`** in background tasks
 - **Use `CoreSpringFactory.getImpl()`** for service access in non-Spring-managed classes
-- **Use `Tracing.createLoggerFor()`** for all logging — never instantiate loggers directly. Use parameterized messages. See section 25
+- **Use `Tracing.createLoggerFor()`** for all logging — never instantiate loggers directly. Use parameterized messages. See section 29
 - **Use `ThreadLocalUserActivityLogger.log()`** for business-relevant actions that need an audit trail
 
 ### WindowControl — Modals & Overlays
@@ -1963,10 +2751,99 @@ Notable module REST surfaces:
 | Package | Root path(s) | Purpose |
 |---------|-------------|---------|
 | `org.olat.modules.roommanagement.restapi` | `GET /rm/buildings`, `GET /rm/rooms` | Read-only search and detail for buildings and rooms; results org-scoped for non-admins. Room booking sub-resource added to `LectureBlockWebService`: `GET / PUT / DELETE .../lectureblocks/{k}/room`. |
+| `org.olat.modules.certificationprogram.restapi` | certification programs | CRUD for certification programs (OO-9508). Listed in `restApiContext.xml`. |
+
+A request of a content-delivery session (section 12) gets the status 403. The only exception is the course database endpoint `/restapi/repo/courses/{id}/db/...`.
+
+Every REST request passes the same chain:
+
+```
+HTTP request
+  -> RestApiLoginFilter (servlet filter, web.xml)
+       authentication (API key, password, token, session, IP)
+       rate limit: RequestRateLimiter.acquire() + check()  -> 429 + Retry-After
+       write call: CachedBodyHttpServletRequest keeps the body
+  -> CXFServlet -> JAX-RS resource (@Path)
+  -> ApiAuditResponseFilter (JAX-RS ContainerResponseFilter)
+       ApiAuditEntry -> ApiAuditLogService.log()   (same transaction)
+       status >= 500 or DB error -> entry pending
+  <- RestApiLoginFilter finally block
+       pending entry -> logInNewTransaction()      (after the rollback)
+```
+
+### REST API Audit Log
+
+**New in 21.1.0**
+
+The REST API writes an audit trail to the table `o_api_audit_log` (OO-9778, package `org.olat.restapi.audit`). The resource classes need no code for it.
+
+| Class | Role |
+|-------|------|
+| `ApiAuditResponseFilter` | JAX-RS response filter. Builds an `ApiAuditEntry` with resource class, method, path parameters and status. |
+| `ApiAuditLogService` / `ApiAuditLogServiceImpl` | Decides what to store (`isAuditable(method, status)`), writes the row and the access log line (section 29). |
+| `ApiAuditMasking` | Masks the values of the keys `password`, `credential`, `secret`, `clientSecret`, `token` and `sharedSecret` in JSON bodies and query strings with `***`. |
+| `CachedBodyHttpServletRequest` | Keeps a copy of the request body of a write call, up to `restapi.auditlog.body.maxsize` bytes. |
+| `ApiAuditLogRetentionJob` | Nightly job on the cluster singleton node. Deletes rows older than the retention. |
+| `ApiAuditLogAdminController` | Table of the audit log in the REST API administration (package `org.olat.admin.restapi`). |
+
+`ApiAuditChannel` names the source of a row: `rest` today, `mcp` for a future MCP server.
+
+A row is stored for every PUT, POST, PATCH and DELETE, and for every request with the status 401, 403, 429 or 5xx. GET and HEAD requests are stored only with `restapi.auditlog.reads=true`.
+
+| Property | Default | Purpose |
+|----------|---------|---------|
+| `restapi.auditlog.enabled` | true | Audit log on or off |
+| `restapi.auditlog.reads` | false | Also store successful reads (high volume) |
+| `restapi.auditlog.body` | true | Store the masked JSON body of writes |
+| `restapi.auditlog.body.maxsize` | 16384 | Maximum stored body size in bytes |
+| `restapi.auditlog.retention.days` | 365 | Retention; 0 keeps all rows |
+
+A failed request loses its transaction. The response filter then marks the entry as pending. The servlet filter writes it with `logInNewTransaction()` after the rollback.
+
+### REST API Rate Limiting
+
+**New in 21.1.0**
+
+`RestApiLoginFilter` limits the requests per subject (OO-9779). A request above a limit gets the status 429 at once. It is never queued.
+
+- The subject is `rest:id:<identity key>` for an authenticated request and `rest:ip:<address>` for an unauthenticated one (open URLs and the login URL `/restapi/auth`).
+- Two guards apply: parallel requests (`RequestRateLimiter.acquire()` / `release()`) and requests per fixed window of 60 seconds (`check()`).
+- Every allowed request gets the headers `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` (epoch seconds).
+- A rejected request gets `Retry-After` (seconds) and the JSON body `{"code":429,"message":"Too many requests, retry after N seconds"}`.
+- Only the first rejection per subject, guard and window goes to the audit log and the access log. A client that ignores the 429 cannot flood the logs.
+- Exempt paths: `/restapi/ping`, `/restapi/i18n`, `/restapi/openmeetings`, `/restapi/drawio`, `/restapi/onlyoffice`, `/restapi/office365`, and `/restapi/system` for the IPs in `restapi.ips.system`.
+
+| Property | Default | Purpose |
+|----------|---------|---------|
+| `restapi.ratelimit.enabled` | false | Rate limit on or off |
+| `restapi.ratelimit.requests.per.minute` | 600 | Requests per minute of an authenticated user |
+| `restapi.ratelimit.max.parallel` | 4 | Parallel requests of an authenticated user |
+| `restapi.ratelimit.anonymous.requests.per.minute` | 60 | Requests per minute of a client IP without authentication |
+
+The administration of the REST API can change the values at runtime (`RestModule`). The counters are per node: on a cluster, the effective limit is the configured value multiplied by the number of nodes.
+
+`RequestRateLimiter` (package `core.util.ratelimit`) is a generic service. `RequestRateLimiterImpl` keeps the window counters in the Infinispan cache `RequestRateLimiter-window` and the parallel slots in a local map. `check()` returns a `RateLimitDecision` record. A caller that takes a slot with `acquire()` must call `release()` in a `finally` block.
+
+```java
+@Autowired
+private RequestRateLimiter requestRateLimiter;
+
+String key = "myfeature:id:" + identity.getKey();
+if (requestRateLimiter.acquire(key, maxParallel)) {
+    try {
+        RateLimitDecision decision = requestRateLimiter.check(key, limitPerMinute);
+        if (!decision.allowed()) {
+            // reject, retry after decision.retryAfterSeconds()
+        }
+    } finally {
+        requestRateLimiter.release(key);
+    }
+}
+```
 
 ---
 
-## 32. Testing Infrastructure
+## 38. Testing Infrastructure
 
 Multi-layered testing: unit tests, Spring integration tests, REST API tests, and Selenium browser tests.
 
@@ -2023,7 +2900,25 @@ Key conventions:
 
 ---
 
-## 33. About
+## 39. About
+
+### About This Document
+
+| Item | Value |
+|------|-------|
+| Document version | 2.0 |
+| Covered release | OpenOlat 21.1.0 (master, `21.1-SNAPSHOT`) |
+| Last updated | 2026-09-25 |
+| Previous content update | 2026-05-19 (commit `519afaf02c`) |
+| HTML view | `doc/openolat-architecture.html` (same sections, with diagrams) |
+
+Changes in version 2.0:
+
+- **New mechanisms of 21.1.0:** REST API audit log and rate limiting (section 37), REST access log (section 29), SSRF protection profiles of `HttpClientService` (sections 35, 36), user control of AI features (section 31), cached wizard step controllers (section 10), `FormSection` and `SearchElement` (section 8), `FactSheet`, `Sections`, `ComponentList` (section 5), callout accessibility rollout (section 15), `AesGcmCipher` (section 30), label icon of `FormItem` (section 8).
+- **Documented 21.0.x mechanisms:** sandboxed mappers and the content domain (section 12), AI services and AI task pools (sections 21, 31), `RelativeDateElement`, `ObjectSelectionElement`, `LAYOUT_TWO_COLS` (section 8), `DocxToMarkdownService`, `HibernateProxyConverter` (section 30), the `CacheWrapper.put()` signature (section 27).
+- **Corrections:** dispatcher registration (section 3), component and cell renderer names (sections 5, 9), FlexiTable sort and empty state API (section 9), form layout types (section 8), VFS helpers (section 18), Spring context count (section 19), identity status values and organisation roles (section 32), HTML sanitizer library (section 35), logger type (section 29), statistics (sections 16, 25, 33).
+- **Aligned with the HTML view:** subsections that existed only in the HTML are now part of this file.
+- **New sections for existing mechanisms:** Wizards (10), Module Configuration (20), Persisted Long-Running Tasks (22), Clustering (28), AI Framework (31), Security Architecture (34). Sections after 9 are renumbered; the old sections 10 to 33 are now 11 to 39.
 
 ### OpenOlat
 

@@ -851,7 +851,7 @@ The content import feature allows users to create page content from CommonMark m
 | `![alt](url){width=N height=N}` | `MediaPart` with `ImageSize` from dimensions |
 | `[^1]` footnotes | Rendered as footnote definitions |
 | `[x]` task lists | Task list checkboxes |
-| YAML front matter (`---`) | Parsed and stripped (via `YamlFrontMatterExtension`) |
+| YAML front matter (`---`) | Parsed and stripped (via `YamlFrontMatterExtension`). An opening fence without a closing fence disables the extension for this import: the content is imported and the warning `import.markdown.warn.frontmatter.unclosed` is shown. |
 
 **Word/DOCX import:**
 
@@ -868,7 +868,8 @@ Word documents are converted to Markdown via the `DocxToMarkdownService` from `o
 | `MarkdownCodeLanguageMapping` | Maps fenced code block info strings to `CodeLanguage` enum. |
 | `MarkdownAdmonitionMapping` | Detects `[!TYPE]` and `[!TYPE\|Custom title]` markers in blockquotes and maps to `AlertBoxType`. Supports GitHub types (NOTE, TIP, IMPORTANT, WARNING, CAUTION, INFO, SUCCESS, ERROR) and MkDocs types (ABSTRACT, SUMMARY, TLDR, HINT, CHECK, DONE, HELP, FAQ, QUESTION, ATTENTION, FAILURE, FAIL, MISSING, DANGER, BUG, EXAMPLE, QUOTE, CITE). Empty custom title `\|` suppresses the title; absent `\|…` falls back to the translated type name. |
 | `Highlight` / `HighlightDelimiterProcessor` / `HighlightHtmlNodeRenderer` / `HighlightExtension` | Custom CommonMark extension implementing the `==text==` → `<mark>text</mark>` syntax via a proper `DelimiterProcessor`. Respects code spans and code fences automatically. |
-| `MarkdownImportResult` | Record carrying `List<String> warnings` from partial conversion issues. |
+| `MarkdownImportResult` | Record with `warnings` (i18n keys of partial conversion issues), `container` (the wrapping `ContainerPart`), `column` and `insertIndex` (the slot for a follow-up part such as the AI quiz placeholder) and `aiMetadataJobs` (the number of scheduled AI image metadata tasks). |
+| `MarkdownImportOptions` | **New in 21.1.0:** Record with the options of the import dialog. It holds one flag, `generateImageMetadata`. `MarkdownImportOptions.NONE` (and a `null` argument) switches the AI image metadata off. |
 
 **Security measures:**
 
@@ -878,7 +879,9 @@ Word documents are converted to Markdown via the `DocxToMarkdownService` from `o
 - `==highlight==` is processed by a CommonMark `DelimiterProcessor`, so code spans and code fences are respected automatically (e.g., `x==y` inside `` `…` `` or ``` ``` ``` is never transformed).
 - MkDocs admonition titles are stripped of all markup (HTML tags and CommonMark-formatting chars) before being emitted, so they cannot inject HTML into the alert box.
 - Remote image downloads restricted by `MediaServerModule.isRestrictedDomain()`.
+- **Changed in 21.1.0:** Remote image downloads use `HttpClientService.createThreadSafeHttpClient(true, ProtectionProfile.USER_PROVIDED)`. The `USER_PROVIDED` profile applies the SSRF protection for URLs that a user supplies (OO-9310).
 - Download size limited to `MAX_UPLOAD_SIZE_KB` (50 MB).
+- Image alt texts are truncated to 1000 characters and media titles to 255 characters, so long Word alt texts do not break the persistence.
 - Local file path images require a `basePath`; rejected in text paste mode.
 - Path traversal protection via canonical path comparison against `basePath`.
 
@@ -886,7 +889,7 @@ Word documents are converted to Markdown via the `DocxToMarkdownService` from `o
 
 | Class | Role |
 |-------|------|
-| `MarkdownImportController` | `FormBasicController` with card-style mode selection (file upload or text paste). Accepts `.md`, `.txt`, `.zip`, and `.docx` files. DOCX files are converted via `DocxToMarkdownService`. Upload limits configurable via `ceditor.import.limit.md` (default 50 MB) and `ceditor.import.limit.docx` (default 200 MB) in `olat.properties`. Fires `MarkdownImportDoneEvent` on success. |
+| `MarkdownImportController` | `FormBasicController` with card-style mode selection (file upload or text paste). Accepts `.md`, `.txt`, `.zip`, and `.docx` files. DOCX files are converted via `DocxToMarkdownService`. Upload limits configurable via `ceditor.import.limit.md` (default 50 MB) and `ceditor.import.limit.docx` (default 200 MB) in `olat.properties`. The text length is also limited by the AI input limit, see [Chapter 15](#ui-markdownimportcontroller). Fires `MarkdownImportDoneEvent` on success. |
 | `ImportMarkdownEvent` | Fired by `PageEditorV2Controller` when the import button is clicked. |
 | `MarkdownImportDoneEvent` | Carries `List<String> warnings` back to the embedding controller. |
 
@@ -897,7 +900,7 @@ Word documents are converted to Markdown via the `DocxToMarkdownService` from `o
 | `ceditor.import.limit.md` | `51200` | Max upload size for Markdown/ZIP files (KB) |
 | `ceditor.import.limit.docx` | `204800` | Max upload size for DOCX files (KB) |
 
-The import button is shown when `PageEditorProvider.isImportMarkdownEnabled()` returns `true`. Currently enabled for portfolio pages (`PortfolioPageEditorProvider`).
+The import button is shown when `PageEditorProvider.isImportMarkdownEnabled()` returns `true`. Currently enabled for portfolio pages (`PortfolioPageEditorProvider`, inner class of `PageRunController`).
 
 ---
 
@@ -1053,8 +1056,8 @@ public PageElement clonePageElement(PageElement element) {
 #### Paragraph (`htmlparagraph`)
 - **Content column:** Rich HTML text.
 - **Layout options:** `TextSettings` with `BlockLayoutSettings` and `AlertBoxSettings`.
-- **Editor:** `ParagraphEditorController` -- TinyMCE rich text editor.
-- **Inspector:** `ParagraphInspectorController` -- spacing, alert box settings.
+- **Editor:** `HTMLRawEditorController` -- TinyMCE rich text editor. `ParagraphPageElementHandler` reuses the controller of the HTML raw element.
+- **Inspector:** `HTMLRawInspectorController` -- spacing, alert box settings.
 
 #### HTML Raw (`htmlraw`)
 - **Content column:** Raw HTML source code.
@@ -1066,7 +1069,7 @@ public PageElement clonePageElement(PageElement element) {
 - **Content column:** Unused.
 - **Layout options:** `BlockLayoutSettings` for spacing.
 - **Editor:** `SpacerEditorController`.
-- **Inspector:** `SpacerInspectorController`.
+- **Inspector:** None. `SpacerElementHandler.getInspector()` returns `null`.
 
 #### Container (`container`)
 - **Content column:** Unused.
@@ -1091,8 +1094,9 @@ public PageElement clonePageElement(PageElement element) {
 #### Math (`math`)
 - **Content column:** LaTeX formula text.
 - **Layout options:** `MathSettings` with `BlockLayoutSettings`.
-- **Editor:** `MathEditorController`.
-- **Inspector:** `MathInspectorController`.
+- **Editor:** `MathLiveEditorController`.
+- **Inspector:** `MathLiveInspectorController`.
+- **View:** `MathLiveRunComponent`.
 
 #### Gallery (`gallery`)
 - **Content column:** (managed internally).
@@ -1183,6 +1187,8 @@ CalloutSettings.class,
 // Add alias:
 xstream.alias("calloutsettings", CalloutSettings.class);
 ```
+
+Also register the new part entity in `PageXStream` (`manager/PageXStream.java`): add the class to the `types` array and call `xstream.aliasType(...)`. `PageXStream` serializes whole pages for the page export and import (`PageImportExportHelper`). A missing entry breaks the export or the import of pages that contain the element. The `TocPart` registration was added late for this reason (OO-9788).
 
 ### Step 4: Create the JPA entity
 
@@ -1431,7 +1437,17 @@ public enum ContentElementType {
 
 ### Properties and defaults
 
-There are no dedicated module configuration properties for the content editor itself. Configuration happens at the provider level:
+`ContentEditorModule` reads these properties from `olat.properties`:
+
+| Property | Default | Description |
+|---|---|---|
+| `ceditor.image.styles` | `o_image_classic,o_image_border,o_image_shadow,o_image_frame,o_image_polaroid,o_image_round` | CSS styles offered for images |
+| `ceditor.image.title.styles` | `o_image_title_dark,o_image_title_bright,o_image_title_standard` | Styles offered for image titles |
+| `ceditor.table.styles` | `b_gray,b_blue,b_green,b_yellow,b_red` | CSS styles offered for tables |
+| `ceditor.import.limit.md` | `51200` | Max upload size for Markdown/ZIP files (KB) |
+| `ceditor.import.limit.docx` | `204800` | Max upload size for DOCX files (KB) |
+
+The other configuration happens at the provider level:
 - Which handlers are registered (controls available element types).
 - `PageEditorSecurityCallback` (controls clone/delete/move permissions).
 - `PageEditorProvider.getAppendRejectionKey()` (type-specific creation restrictions).
@@ -1483,13 +1499,12 @@ flowchart TD
 
     O -->|Yes| Q[QuizPart placeholder\ntitle = GENERATING_TITLE_MARKER\n+ translated label\no_ce_page_part]
     Q --> R[EssayGenerationService\n.submit&#40;GenerationRequest&#41;]
-    R --> S[(o_essay_generation_job\nEssayGenerationJob row)]
-    R --> T[(o_ex_task\nPersistentTask row\nvia TaskExecutorManager)]
+    R --> T[(o_ex_task\nPersistentTask row with the\nserialized QtiQuestionGenerationTask\nvia TaskExecutorManager.execute&#40;&#41;)]
 
-    T --> U[ExecutorJob\n&#40;extends JobWithDB&#41;\nQuartz scheduler picks up task]
+    T --> U[TaskExecutorManager\n.processTaskToDo&#40;&#41;\nQueue.aiBatch thread pool]
     U --> V[PersistentTaskRunnable\n.run&#40;&#41;\ncommitAndCloseSession /\nrollbackAndCloseSession]
-    V --> W[EssayGenerationLongRunnable\n.run&#40;&#41;\ndelegates to EssayGenerationService\n.runJob&#40;Long&#41;]
-    W --> X[AiEssayGenerationService /\nAiMCQuestionService\nprovider SPI\n3-minute HTTP timeout]
+    V --> W[QtiQuestionGenerationTask\n.run&#40;&#41;\ndelegates to EssayGenerationService\n.runTask&#40;task&#41;]
+    W --> X[AiEssayGenerationService /\nAiMCQuestionService\nprovider SPI\ntimeout from AiModule]
 
     X -->|drafts ready| Y[EssayGenerationQuizPartSinkImpl\n.attachDraftsAsEssayItems&#40;&#41;]
     Y --> Z[(QuizPart storage dir\nQTI item XML\nai-grading.json\nai-source.json)]
@@ -1500,7 +1515,6 @@ flowchart TD
 
     style ERR fill:#fee2e2,stroke:#ef4444
     style P fill:#dcfce7,stroke:#22c55e
-    style S fill:#fef9c3,stroke:#eab308
     style T fill:#fef9c3,stroke:#eab308
     style Z fill:#fef9c3,stroke:#eab308
 ```
@@ -1515,7 +1529,9 @@ The controller (`ceditor.ui`) extends `FormBasicController`. Key UI elements:
   - Accepted MIME types (`UPLOAD_MIME_TYPES`): `text/markdown`, `text/x-markdown`, `text/plain`, `application/octet-stream`, `application/zip`, `application/x-zip-compressed`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`.
 - **Text area:** shown only in text-paste mode; accepts raw CommonMark text.
 - **DOCX beta warning:** when a `.docx` file is selected, `fileUploadEl.setWarningKey("import.docx.beta.warning")` is called. This is a non-fatal i18n warning surfaced immediately on file selection.
+- **Input length limit:** the text of the pasted Markdown or of the uploaded file must not be longer than the AI input limit. `resolveMaxInputChars()` takes the smaller value of `AiModule.getMCGeneratorMaxInputChars()` and `AiModule.getEssayGenerationMaxInputChars()` for the active AI features. When no AI feature is active, the essay generation limit applies. A longer text fails with `form.error.toolong`.
 - **AI section:** conditionally shown; covered in Chapter 16.
+- **AI image metadata toggle** (`import.ai.imagemeta`): **New in 21.1.0:** shown when `MediaAiMetadataService.isEnabled()` returns `true`. It does not depend on the quiz gate, so it also shows in the e-portfolio. The toggle starts at the AI preference of the person for `AiFeature.ImageDescriptionGenerator` (`AiUserPreferenceService.isActive(...)`), without a stored choice at the system default. The choice applies to this import only and is not stored. The controller passes it as `MarkdownImportOptions` to `convertAndPersist(...)`. When the import scheduled metadata tasks, the controller shows the info `import.ai.metadata.background`.
 - **Temp-dir cleanup:** `doDispose()` calls `FileUtils.deleteDirsAndFiles(tempUnzipDir, true, true)`. Both the ZIP extraction directory and the DOCX temp media directory are tracked in `tempUnzipDir`.
 
 ### File-format handling
@@ -1531,20 +1547,22 @@ Read errors in any branch surface as `import.markdown.read.error`.
 
 ### `MarkdownImportService.convertAndPersist(...)`
 
-The service (`ceditor.manager`) is the conversion core. It receives the markdown string, an optional `basePath` for image resolution, positioning parameters, and produces a `MarkdownImportResult` carrying any warnings and the resulting `ContainerPart`.
+The service (`ceditor.manager`) is the conversion core. It receives the markdown string, an optional `basePath` for image resolution, positioning parameters and a `MarkdownImportOptions` object, and produces a `MarkdownImportResult` carrying any warnings and the resulting `ContainerPart`.
+
+**Changed in 21.1.0:** `convertAndPersist(...)` has a new last parameter `MarkdownImportOptions options`. `null` means no AI usage. `MarkdownPagePartVisitor` schedules the AI image metadata task (`MediaAiMetadataService.submit(...)`) only when `options.generateImageMetadata()` is `true`. Before 21.1.0 every imported image got a task when the service was enabled.
 
 **Processing stages:**
 
 1. **Math pre-processing:** `MarkdownMathPreprocessor.preprocess()` replaces `$$...$$` blocks with placeholders so their content cannot be mis-parsed as MkDocs admonitions.
 2. **Admonition pre-processing:** `MarkdownMkDocsAdmonitionPreprocessor.preprocess()` converts `!!! type title` blocks into blockquote form.
-3. **CommonMark parse:** `Parser` with GFM tables, strikethrough, task list items, autolinks, footnotes, image attributes, YAML front matter, and the custom `HighlightExtension`.
+3. **CommonMark parse:** `Parser` (built by `buildParser(markdown)`; without the front matter extension when the opening fence is not closed) with GFM tables, strikethrough, task list items, autolinks, footnotes, image attributes, YAML front matter, and the custom `HighlightExtension`.
 4. **Image dimension extraction:** walks the AST to pull `width`/`height` attributes from `ImageAttributes` nodes before rendering strips them.
-5. **`MarkdownPagePartVisitor`** walks the AST and produces a flat list of `PagePart` objects: `htmlparagraph` parts for paragraphs, `MediaPart` for images, alert-style paragraph parts for `>` blockquote callouts, `TablePart` for GFM tables, `CodePart` for fenced code blocks, `MathPart` for math blocks, etc.
+5. **`MarkdownPagePartVisitor`** walks the AST and produces a flat list of `PagePart` objects: `htmlparagraph` parts for paragraphs, `MediaPart` for images, alert-style paragraph parts for `>` blockquote callouts, `TablePart` for GFM tables, `CodePart` for fenced code blocks, `MathPart` for math blocks, etc. For each imported image it can schedule an asynchronous AI metadata task (title, description, alt text, tags, taxonomy) through `MediaAiMetadataService`. The import does not wait for the AI provider.
 6. **Persist and wrap:** all parts are saved via `pageService.appendNewPagePart()` and registered in a `ContainerPart` with layout `ContainerLayout.block_1col`. The container is resolved by priority: explicit container ID from the "add content" dialog → before/after a reference element (positions determined by `PageElementTarget`) → last empty container on the page → new container created.
 
 The caller passes container ID, column index, reference element ID, and `PageElementTarget` (above / below / inside) so the import lands in the correct slot in a multi-column layout.
 
-**Result:** `MarkdownImportResult(List<String> warnings, ContainerPart container)`.
+**Result:** `MarkdownImportResult(List<String> warnings, ContainerPart container, int column, int insertIndex, int aiMetadataJobs)`. `column` and `insertIndex` let `MarkdownImportController` insert the AI quiz placeholder directly after the imported parts, also in a multi-column layout (`appendNewPartToContainer(...)`).
 
 ### Error states
 
@@ -1555,6 +1573,8 @@ The caller passes container ID, column index, reference element ID, and `PageEle
 | `import.markdown.zip.nomd` | ZIP contains no `.md` / `.markdown` file |
 | `import.markdown.zip.multiplemd` | ZIP contains more than one `.md` / `.markdown` file |
 | `import.docx.beta.warning` | Non-fatal warning shown when a `.docx` file is selected (DOCX support is beta) |
+| `import.markdown.warn.frontmatter.unclosed` | Non-fatal warning: the YAML front matter has no closing fence, the content was imported as regular Markdown |
+| `form.error.toolong` | The text is longer than the AI input limit (see `resolveMaxInputChars()`) |
 
 ---
 
@@ -1564,7 +1584,11 @@ When the admin-level AI module is enabled, `MarkdownImportController` can trigge
 
 ### Feature gating
 
-`MarkdownImportController` accepts a `boolean allowAiQuestionGeneration` constructor argument. The portfolio page editor passes `true`; the e-portfolio context (`PageRunController`) passes `false`. When the flag is `false` the AI generation section — toggle and count fields — is hidden entirely. This prevents learners from creating quiz elements inside e-portfolio pages.
+`MarkdownImportController` accepts a `boolean allowAiQuestionGeneration` constructor argument. `PageRunController.openMarkdownImport(...)` passes `PageSettings.isCanCreateQuiz()`. In the e-portfolio (`PageSettings.full`) the author is the student and `canCreateQuiz` is `false`. When the flag is `false` the AI generation section (toggle and count fields) is hidden entirely. This prevents learners from creating quiz elements inside e-portfolio pages.
+
+`isAiQuestionGenerationAvailable()` also requires a resolvable repository entry key (`aiOres.getResourceableId()`) and `AiEssayGenerationService.isEnabled()`.
+
+**Changed in 21.1.0:** The AI image metadata toggle has its own gate (`MediaAiMetadataService.isEnabled()`) and is not part of this section. See [Chapter 15](#ui-markdownimportcontroller).
 
 ### Import dialog
 
@@ -1572,7 +1596,12 @@ When `allowAiQuestionGeneration` is `true` and the AI module is configured:
 
 - A toggle is shown in the import form (default: ON).
 - Two integer fields let the author specify how many multiple-choice and how many essay questions to generate (default: 2 each, constant `DEFAULT_AI_MC_COUNT` / `DEFAULT_AI_ESSAY_COUNT` in `MarkdownImportController`).
-- Each field accepts values in the range 0–5 (`MAX_AI_COUNT = 5`). Values outside this range are rejected with a validation error before the import proceeds.
+- Each field accepts values in the range 0–5 (`MIN_AI_COUNT = 0`, `MAX_AI_COUNT = 5`). Values outside this range are rejected with a validation error before the import proceeds.
+- Bloom levels (`ai.bloom`, checkboxes of `AiBloomLevel`, default `UNDERSTAND` and `APPLY`).
+- Target difficulty (`ai.difficulty`, 1 to 5 or unspecified, default 1 for short quiz questions).
+- Learning objectives (`ai.objectives`, optional text area, one objective per line).
+
+The values travel in `EssayGenerationService.GenerationRequest.forQuizPart(...)`.
 
 ### File input and conversion pipeline
 
@@ -1580,7 +1609,7 @@ When `allowAiQuestionGeneration` is `true` and the AI module is configured:
 
 | Extension | Handling |
 |-----------|----------|
-| `.md` / `.markdown` | Passed directly to `MarkdownImportService`. |
+| `.md` / `.markdown` / `.txt` | Passed directly to `MarkdownImportService`. |
 | `.zip` | Unzipped via `ZipUtil.unzip()` (protected against zip-slip and zip-bomb attacks); the extracted Markdown file and any bundled images are then processed normally. |
 | `.docx` | Converted to Markdown by `DocxToMarkdownService` (package `org.olat.core.util.docxToMarkdown`) before being fed into the standard Markdown pipeline. |
 
@@ -1591,7 +1620,7 @@ Text-paste mode (no file upload) is also available for plain Markdown input.
 When the author enables AI generation and submits the import form:
 
 1. A `QuizPart` is created immediately with its title prefixed by `EssayGenerationQuizPartSinkImpl.GENERATING_TITLE_MARKER` (`"[AI:generating]"`). This acts as a visible in-progress indicator.
-2. An async job is dispatched to generate the questions.
+2. `EssayGenerationService.submit(...)` schedules a `QtiQuestionGenerationTask` on the task executor (`o_ex_task`, queue `Queue.aiBatch`). The task runs `EssayGenerationService.runTask(...)`.
 3. `EssayGenerationQuizPartSinkImpl.attachDraftsAsEssayItems()` is the callback invoked when the job finishes. It writes:
    - QTI XML for each generated question into the `QuizPart`'s storage directory (managed by `ContentEditorQti`).
    - An `ai-grading.json` companion file for essay items (scoring metadata read by `EssayAiGradingFileStore`).
@@ -1616,17 +1645,35 @@ The same polling mechanism is present in `QuizRunController` for the run view.
 When AI grading is enabled in the AI module, `QuizEditorController` allows:
 
 - Essay items to appear in the question type selector (`NewQuestionItemCalloutController`).
-- Essay items to be imported from the question pool (via `applyImportFilter` in `QuizEditorController`; essay items pass the filter only when `aiModule.isEssayGradingEnabled()` returns `true`).
+- Essay items to be imported from the question pool (via `applyImportFilter` in `QuizEditorController`; essay items pass the filter only when `AiEssayGradingService.isEnabled()` returns `true`).
+
+"AI grading is enabled" means `AiEssayGradingService.isEnabled()` in both places.
+
+When an author saves an AI-generated question in `EditQuestionController`, the controller writes the name of the author as `supervisedBy` into the `ai-source.json` companion and clears the `unsupervisedGenerated` flag (`AiSourceCompanionFileStore`).
 
 ### AI feedback at quiz runtime (QuizRunController)
 
 When a learner submits an essay answer in a page run view:
 
-1. `QuizRunController` submits an async grading job via `EssayFeedbackJobService.submit()` (package `org.olat.core.commons.services.ai.essay`).
-2. The controller renders an inline AI pulse and polls for the result using `EssayFeedbackJobService.getStatus()`.
-3. When the job completes, `EssayFeedbackJobService.parseFeedback()` deserializes the result into a `FormativeFeedback` record.
+1. `QuizRunController` submits an async correction via `EssayAiCorrectionService.submit()` (package `org.olat.core.commons.services.ai.essay`). The service stores an `o_ai_essay_correction` row and schedules an `EssayAiCorrectionTask` on the queue `Queue.aiInteractive`.
+2. The controller renders an inline AI pulse and polls for the result using `EssayAiCorrectionService.getStatus()` every 2 000 ms (`AI_CORRECTION_POLL_DELAY_MS`). The maximum number of polls follows from `AiModule.getEssayGradingTimeoutSeconds()`.
+3. When the correction completes, `EssayAiCorrectionService.parseFeedback()` deserializes the result into a `FormativeFeedback` record.
 4. `AiEssayFeedbackViewFlattener.flatten()` transforms the `FormativeFeedback` into a Velocity-friendly `Map<String, Object>` (assessment label, confidence CSS class, key-point hits/misses, warnings) which is put into the Velocity context for the quiz run template.
 5. If the AI score meets `AI_CORRECTION_PASS_THRESHOLD_PERCENT` (50 %) and the feedback type is `FormativeFeedback.Type.OK`, the quiz outcome is marked as passed.
+
+### Consent before the AI correction (QuizRunController)
+**New in 21.1.0**
+
+The AI correction of essay answers asks the learner for consent (OO-9784, AI Act).
+
+- When the quiz starts, `doAskAiCorrectionConsent(...)` opens `AiCorrectionConsentController` (package `org.olat.core.commons.services.ai.ui`) in a `CloseableModalController`. The dialog opens only when `AiFeature.EssayGrading` is available, the person has no stored preference, and at least one essay question has an `ai-grading.json`.
+- The dialog has three buttons: **Allow once** (`ALLOW_ONCE_EVENT`), **Always allow** (`ALLOW_ALWAYS_EVENT`) and **Not now** (`DENY_EVENT`). **Always allow** stores `AiUserPreference.ON` for `AiFeature.EssayGrading` through `AiUserPreferenceService.set(...)`. Closing the dialog counts as **Not now**.
+- The decision is kept in `aiCorrectionAllowedForRun` for this run only. A retry or a changed quiz part asks again.
+- The decision fails closed: it is `FALSE` while the dialog is open and when a `SyntheticUserRequest` rebuilds the run.
+- Without a decision for the run, `AiUserPreferenceService.isActive(...)` decides with the stored preference or the system default (`AiModule.isUserDefaultOn(...)`).
+- When the correction is not allowed, the essay behaves like a manually corrected essay: no correction row, no overlay. `EssayAiCorrectionService.submit()` also checks the preference and returns `null` for an opted-out person.
+
+The preference itself and the user settings are documented in the package documentation of `org.olat.core.commons.services.ai`.
 
 ### Recursive file cleanup (ContentEditorQti)
 
@@ -1639,12 +1686,14 @@ When a learner submits an essay answer in a page run view:
 | `MarkdownImportController` | `ceditor.ui` | Import dialog with AI generation toggle and count fields |
 | `EssayGenerationQuizPartSinkImpl` | `ceditor.manager` | Async callback: writes QTI + JSON, strips placeholder marker |
 | `QuizEditorController` | `ceditor.ui` | Detects generating marker; polling UI in editor mode |
-| `QuizRunController` | `ceditor.ui` | AI feedback polling at runtime; passes essay to `EssayFeedbackJobService` |
+| `QuizRunController` | `ceditor.ui` | AI feedback polling at runtime; passes essay to `EssayAiCorrectionService`; **New in 21.1.0:** asks for AI consent |
 | `AiEssayFeedbackViewFlattener` | `ceditor.ui` | Transforms `FormativeFeedback` into a Velocity-ready map |
 | `NewQuestionItemCalloutController` | `ceditor.ui` | Question type selector (essay items gated by AI grading flag) |
 | `ContentEditorQti` | `ceditor.manager` | QTI file I/O and recursive directory cleanup |
 | `DocxToMarkdownService` | `core.util.docxToMarkdown` | Server-side DOCX-to-Markdown conversion |
-| `EssayFeedbackJobService` | `core.commons.services.ai.essay` | Submit and poll async AI grading jobs |
+| `EssayAiCorrectionService` | `core.commons.services.ai.essay` | Submit and poll async AI essay corrections |
+| `MarkdownImportOptions` | `ceditor.manager` | **New in 21.1.0:** Options of the import dialog |
+| `AiCorrectionConsentController` | `core.commons.services.ai.ui` | **New in 21.1.0:** Consent dialog before the AI correction |
 
 ---
 
@@ -1670,7 +1719,7 @@ When a learner submits an essay answer in a page run view:
 | AI feedback view flattener     | `src/main/java/org/olat/modules/ceditor/ui/AiEssayFeedbackViewFlattener.java` |
 | QTI file I/O and cleanup       | `src/main/java/org/olat/modules/ceditor/manager/ContentEditorQti.java` |
 | DOCX conversion service        | `src/main/java/org/olat/core/util/docxToMarkdown/DocxToMarkdownService.java` |
-| Essay feedback job service     | `src/main/java/org/olat/core/commons/services/ai/essay/EssayFeedbackJobService.java` |
+| Essay AI correction service    | `src/main/java/org/olat/core/commons/services/ai/essay/EssayAiCorrectionService.java` |
 | Media handlers (cemedia)       | `src/main/java/org/olat/modules/cemedia/handler/*.java`     |
 | Portfolio provider              | `src/main/java/org/olat/modules/portfolio/ui/PageRunController.java` (inner class `PortfolioPageEditorProvider`) |
 | Form provider                  | `src/main/java/org/olat/modules/forms/ui/EvaluationFormEditorController.java` (inner class `FormPageEditorProvider`) |

@@ -59,6 +59,9 @@ hr{border:none;border-top:1px solid var(--border);margin:32px 0}
 .layer-label{width:140px;min-width:140px;padding:12px 14px;display:flex;align-items:center;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
 .layer-content{flex:1;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .layer-tag{background:rgba(255,255,255,.2);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:400;white-space:nowrap}
+.version-badge{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:#135e5f;background:#e6f4f4;border:1px solid #9fd3d4;border-radius:3px;padding:1px 7px;margin-left:8px;vertical-align:middle}
+.version-badge.changed{color:#7c4a03;background:#fff4e5;border-color:#f5c98a}
+p>.version-badge:first-child,li>.version-badge:first-child{margin-left:0;margin-right:6px}
 @media(max-width:1100px){.side-nav{display:none}.main-content{padding:24px 16px 40px}.doc-header{padding:20px 16px 24px}.doc-header h1{font-size:22px}}
 @media print{.side-nav,.doc-header{display:none}body{background:#fff}.diagram-box,table,pre{box-shadow:none}}
 </style>
@@ -80,17 +83,21 @@ hr{border:none;border-top:1px solid var(--border);margin:32px 0}
       <a href="openolat-frontend.html" class="active">Frontend</a>
       <span class="sep">|</span>
       <a href="component-library/index.html">Component Library</a>
+      <span class="sep">|</span>
+      <a href="i18n-translation-reference.md">Translation Reference</a>
     </nav>
   </div>
   <div class="header-rule"></div>
   <h1>Frontend Architecture Reference</h1>
   <div class="subtitle">CSS/SASS framework, DOM structure, component rendering, and theme customization for the OpenOlat LMS</div>
   <div class="meta">
+    <span>Release 21.1.0</span>
+    <span>Updated 2026-09-25</span>
     <span>Bootstrap 3.4.1</span>
     <span>SASS/SCSS</span>
-    <span>Font Awesome 6</span>
+    <span>Font Awesome 6.7.2</span>
     <span>Velocity Templates</span>
-    <span>jQuery</span>
+    <span>jQuery 3.7.1</span>
     <span>Server-Centric UI</span>
   </div>
 </header>
@@ -123,9 +130,12 @@ hr{border:none;border-top:1px solid var(--border);margin:32px 0}
     <div class="nav-group-label">Components</div>
     <a href="#renderers">Component Renderers</a>
     <a href="#form-elements">Form Elements</a>
+    <a href="#form-section">Form Section <span class="version-badge">21.1</span></a>
+    <a href="#search-element">Search Element <span class="version-badge">21.1</span></a>
     <a href="#flexitable">FlexiTable</a>
     <a href="#tree">Tree Navigation</a>
     <a href="#dialogs">Modals &amp; Dialogs</a>
+    <a href="#callout-a11y">Callout Triggers (a11y)</a>
   </div>
   <div class="nav-group">
     <div class="nav-group-label">CSS Reference</div>
@@ -137,6 +147,8 @@ hr{border:none;border-top:1px solid var(--border);margin:32px 0}
     <a href="#css-forms">Form Classes</a>
     <a href="#css-tables">Table Classes</a>
     <a href="#css-cards">Cards &amp; Widgets</a>
+    <a href="#fact-sheet">Fact Sheet <span class="version-badge">21.1</span></a>
+    <a href="#sections">Sections <span class="version-badge">21.1</span></a>
     <a href="#css-state">State &amp; Visibility</a>
     <a href="#css-colors">Color System</a>
     <a href="#scss-modules">SCSS Modules</a>
@@ -146,6 +158,16 @@ hr{border:none;border-top:1px solid var(--border);margin:32px 0}
     <a href="#ajax">AJAX Mechanism</a>
     <a href="#dirty">Dirty Marking</a>
     <a href="#responsive">Responsive Design</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Reference</div>
+    <a href="#third-party">Third-Party Libraries</a>
+    <a href="#print">Print Styles</a>
+    <a href="#css-ids">Key CSS IDs</a>
+    <a href="#renderer-stats">Renderer Statistics</a>
+    <a href="#info-page">Info Page Pattern <span class="version-badge">21.1</span></a>
+    <a href="#accessibility">Accessibility</a>
+    <a href="#changelog">Changelog</a>
   </div>
 </nav>
 
@@ -282,7 +304,7 @@ hr{border:none;border-top:1px solid var(--border);margin:32px 0}
 <!-- ==================== SECTION 3: THEME STRUCTURE ==================== -->
 <h2 id="theme-structure">3. Theme Structure</h2>
 
-<p>The theme system is built on <strong>Bootstrap 3.4.1</strong> (SASS version) with ~100 custom OpenOlat SCSS module files. The <code>light</code> theme is the base; all custom themes derive from it.</p>
+<p>The theme system is built on <strong>Bootstrap 3.4.1</strong> (SASS version) with ~100 custom OpenOlat SCSS module files (99 imports in <code>_modules.scss</code>). The <code>light</code> theme is the base; all custom themes derive from it.</p>
 
 <div class="diagram-box">
 <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
@@ -343,15 +365,47 @@ hr{border:none;border-top:1px solid var(--border);margin:32px 0}
 <div class="diagram-caption">Figure 3: Theme inheritance model &mdash; Bootstrap feeds into the Light base theme, which is extended by the OpenOlat default theme and many client themes</div>
 </div>
 
-<h3>Three CSS Output Files</h3>
+<p>Directory layout:</p>
+<pre><code>src/main/webapp/static/
+├── bootstrap/                       # Bootstrap 3.4.1 (SASS version)
+│   ├── stylesheets/bootstrap/       # Bootstrap SCSS partials (_variables.scss, _mixins.scss, ...)
+│   └── OO_bootstrap_version         # "3.4.1"
+├── themes/
+│   ├── themes.README                # Theming guide
+│   ├── compiletheme.sh              # Dart Sass compile script
+│   ├── light/                       # BASE THEME (do not modify)
+│   │   ├── theme.scss               # Main entry point → theme.css
+│   │   ├── content.scss             # iFrame content → content.css
+│   │   ├── email.scss               # Email styles → email.css
+│   │   ├── oo-docs.scss             # Icon bundle for the user manual → oo-docs.css
+│   │   ├── _config.scss             # ALL variables (~2000 lines)
+│   │   ├── _functions.scss          # a11y functions: luminance, contrast
+│   │   ├── _modules.scss            # Import manifest (99 imports)
+│   │   ├── _patches.scss            # Post-import fixes
+│   │   ├── modules/                 # ~100 SCSS partials (_form.scss, _table.scss, _search.scss, _card.scss, ...)
+│   │   ├── styles/                  # Optional variants: _square_config.scss, _square_theme.scss, _realistic.scss
+│   │   ├── images/  fonts/  meta/   # Images, icon fonts, favicon and app icons
+│   └── openolat/                    # DEFAULT DERIVED THEME
+│       ├── theme.scss               # fonts → openolat_config → light/theme → openolat_theme
+│       ├── _openolat_config.scss    # Variable overrides ($brand-primary, colors, fonts)
+│       ├── _openolat_theme.scss     # CSS rule overrides (logo, login page)
+│       ├── _openolat_content.scss   # Content CSS overrides
+│       ├── _openolat_email.scss     # Email CSS overrides
+│       ├── fonts/  images/          # Roboto, logos, backgrounds
+│       └── theme.js                 # Theme-specific JavaScript</code></pre>
+
+<h3>3.1 Three CSS Output Files</h3>
 <table>
 <thead><tr><th>File</th><th>Purpose</th><th>Included Where</th></tr></thead>
 <tbody>
 <tr><td><code>theme.css</code></td><td>Main application styles</td><td>Every OpenOlat page</td></tr>
 <tr><td><code>content.css</code></td><td>Learning content in iFrames</td><td>Single pages, SCORM, CP iframes</td></tr>
 <tr><td><code>email.css</code></td><td>Email notification styles</td><td>Inlined in email HTML</td></tr>
+<tr><td><code>oo-docs.css</code></td><td>Icon classes and icon fonts only (<code>light/oo-docs.scss</code>)</td><td>Copied into the user manual (OpenOLAT-docs), so the manual shows the same icons as the application</td></tr>
 </tbody>
 </table>
+
+<p><code>compiletheme.sh</code> compiles every non-partial <code>.scss</code> file in a theme folder, so <code>oo-docs.css</code> is built together with <code>theme.css</code> for <code>light</code>. <code>oo-docs.scss</code> imports only <code>functions</code>, <code>config</code>, <code>modules/mixins</code> and <code>modules/icons</code>, and loads the fonts from a sibling <code>fonts/</code> folder.</p>
 
 <!-- ==================== SECTION 4: COMPILATION ==================== -->
 <h2 id="compilation">4. Compilation Pipeline</h2>
@@ -362,7 +416,7 @@ hr{border:none;border-top:1px solid var(--border);margin:32px 0}
   @import "mytheme_config"       <span style="color:#6c7086">// Override variables FIRST</span>
   @import "light/theme"          <span style="color:#6c7086">// Base theme (uses !default)</span>
     @import "functions"          <span style="color:#6c7086">// luminance(), contrast(), o-a11y-color()</span>
-    @import "config"             <span style="color:#6c7086">// 1500+ vars with !default</span>
+    @import "config"             <span style="color:#6c7086">// ~2000 lines of vars with !default</span>
       @import "bootstrap/variables"
     @import "modules"            <span style="color:#6c7086">// 100 SCSS module files</span>
       @import "modules/bootstrap"
@@ -379,32 +433,48 @@ hr{border:none;border-top:1px solid var(--border);margin:32px 0}
 <!-- ==================== SECTION 5: VARIABLES ==================== -->
 <h2 id="variables">5. Variables &amp; Config</h2>
 
-<p>All OpenOlat-specific variables use the <code>$o-</code> prefix. Bootstrap variables are unprefixed. The <code>_config.scss</code> file spans ~1500 lines organized by component:</p>
+<p>Variables with <code>!default</code> in <code>_config.scss</code> are only set if not already defined. Custom themes import their config before <code>light/theme</code>, so their values take precedence.</p>
+<pre><code>// Bootstrap variables (no prefix)
+$brand-primary           : #2E6BBF;
+$font-size-base          : 14px;
+$btn-default-bg          : #fff;
+
+// OpenOlat variables ($o- prefix)
+$o-navbar-height         : $navbar-height;
+$o-toolbar-bg-color      : $navbar-default-bg;
+$o-tree-link-color       : $navbar-default-link-color;</code></pre>
+<p>All OpenOlat-specific variables use the <code>$o-</code> prefix. Bootstrap variables are unprefixed. The <code>_config.scss</code> file spans about 2000 lines organized by component (line numbers as of 21.1.0; they move with every change):</p>
 
 <table>
 <thead><tr><th>Category</th><th>Lines</th><th>Example Variables</th></tr></thead>
 <tbody>
-<tr><td>Bootstrap overrides</td><td>34&ndash;65</td><td><code>$btn-default-bg</code>, <code>$input-border</code>, <code>$text-color</code></td></tr>
-<tr><td>Color system</td><td>67&ndash;133</td><td><code>$o-labeled-{color}-{variant}-{property}</code> (8 colors &times; 3 variants)</td></tr>
-<tr><td>Brand colors</td><td>135&ndash;155</td><td><code>$brand-info</code>, <code>$brand-warning</code>, <code>$brand-danger</code></td></tr>
-<tr><td>Page layout</td><td>252&ndash;266</td><td><code>$o-page-width-max</code>, <code>$o-main-*-bg</code></td></tr>
-<tr><td>Navbar</td><td>268&ndash;326</td><td><code>$o-navbar-height</code>, <code>$o-navbar-bg</code>, <code>$o-navbar-link-*</code></td></tr>
-<tr><td>Toolbar</td><td>359&ndash;403</td><td><code>$o-toolbar-bg-color</code>, <code>$o-toolbar-breadcrumb-*</code></td></tr>
-<tr><td>Forms</td><td>405&ndash;424</td><td><code>$o-radio-card-*</code></td></tr>
-<tr><td>Tree menu</td><td>426&ndash;454</td><td><code>$o-tree-link-*</code>, <code>$o-tree-padding-*</code></td></tr>
-<tr><td>Course</td><td>650&ndash;730</td><td><code>$o-course-state-*</code>, <code>$o-lp-*</code> (learning path)</td></tr>
-<tr><td>QTI Assessment</td><td>992&ndash;1082</td><td><code>$o-qti-status-*</code>, <code>$o-qti-menu-*</code></td></tr>
-<tr><td>Content Editor</td><td>935&ndash;962</td><td><code>$o-editor-*</code>, <code>$o-ce-padding-*</code></td></tr>
-<tr><td>Email</td><td>1456&ndash;1471</td><td><code>$o-email-brand</code>, <code>$o-email-btn-*</code></td></tr>
+<tr><td>Bootstrap overrides</td><td>34&ndash;80</td><td><code>$btn-default-bg</code>, <code>$input-border</code>, <code>$text-color</code></td></tr>
+<tr><td>Color system</td><td>82&ndash;142</td><td><code>$o-labeled-{color}-{variant}-{property}</code> (8 colors &times; 3 variants)</td></tr>
+<tr><td>Brand colors</td><td>150&ndash;175</td><td><code>$brand-info</code>, <code>$brand-warning</code>, <code>$brand-danger</code></td></tr>
+<tr><td>Page layout</td><td>273&ndash;286</td><td><code>$o-page-width-max</code>, <code>$o-main-*-bg</code></td></tr>
+<tr><td>Navbar</td><td>289&ndash;346</td><td><code>$o-navbar-height</code>, <code>$o-navbar-bg</code>, <code>$o-navbar-link-*</code></td></tr>
+<tr><td>Toolbar</td><td>380&ndash;424</td><td><code>$o-toolbar-bg-color</code>, <code>$o-toolbar-breadcrumb-*</code></td></tr>
+<tr><td>Forms</td><td>427&ndash;445</td><td><code>$o-radio-card-*</code></td></tr>
+<tr><td>Tree menu</td><td>448&ndash;475</td><td><code>$o-tree-link-*</code>, <code>$o-tree-padding-*</code></td></tr>
+<tr><td>Course</td><td>677&ndash;760</td><td><code>$o-course-state-*</code>, <code>$o-lp-*</code> (learning path)</td></tr>
+<tr><td>QTI Assessment</td><td>1021&ndash;1115</td><td><code>$o-qti-status-*</code>, <code>$o-qti-menu-*</code></td></tr>
+<tr><td>Content Editor</td><td>963&ndash;1017</td><td><code>$o-editor-*</code>, <code>$o-ce-padding-*</code></td></tr>
+<tr><td>Email</td><td>1488&ndash;1503</td><td><code>$o-email-brand</code>, <code>$o-email-btn-*</code></td></tr>
+<tr><td>Fact sheet <span class="version-badge">New in 21.1.0</span></td><td>1873&ndash;1885</td><td><code>$o-fact-sheet-*</code>, <code>$o-fact-*</code> (padding 20px, title 18px, icon 32px, <code>$o-fact-min-width: 320px</code>)</td></tr>
 </tbody>
 </table>
+
+<p>Button and field borders use two tokens: <code>$btn-default-border</code> (<code>#6c757d</code>) and <code>$btn-default-hover-border</code> (<code>#667085</code>) for buttons and dropdown toggles, <code>$input-border</code> (<code>#d0d5dd</code>) for text fields, radio cards, tag selection and the toolbar nav. Ghost buttons use <code>$o-button-ghost-color: $btn-primary-bg</code> with a transparent hover background. <code>$o-font-size-section-title</code> (about 18px) sets the size of section headings.</p>
 
 <!-- ==================== SECTION 6: A11Y ==================== -->
 <h2 id="a11y">6. Accessibility Functions</h2>
 
 <p><code>_functions.scss</code> provides built-in WCAG contrast checking used throughout the config:</p>
 
-<pre><code><span style="color:#6c7086">// Calculate contrast ratio (returns float, 4.5+ = WCAG AA)</span>
+<pre><code><span style="color:#6c7086">// Calculate relative luminance (0=black, 1=white)</span>
+@function luminance($color) { ... }
+
+<span style="color:#6c7086">// Calculate contrast ratio (returns float, 4.5+ = WCAG AA)</span>
 @function contrast($color1, $color2) { ... }
 
 <span style="color:#6c7086">// Auto-adjust color for WCAG 4.5:1 contrast</span>
@@ -526,6 +596,35 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <div class="diagram-caption">Figure 4: Page DOM skeleton &mdash; the TooledStackedPanel renders <code>#o_main_toolbar</code> as a sibling above <code>#o_main</code>, which uses CSS Grid for its 3-column layout</div>
 </div>
 
+<p>Skeleton as HTML:</p>
+<pre><code>&lt;body id="o_body" class="[o_dmz]"&gt;
+  &lt;a href="#o_main_container" class="sr-only"&gt;Skip to main content&lt;/a&gt;
+  &lt;div id="o_navbar_wrapper" class="o_navbar" role="navigation" aria-label="Main navigation"&gt;
+    &lt;div id="o_navbar_container"&gt;
+      &lt;a class="o_navbar-brand" href="..."&gt;&lt;/a&gt;                   &lt;!-- logo --&gt;
+      &lt;ul class="o_navbar-nav o_navbar_tabs"&gt;...site tabs...&lt;/ul&gt;
+      &lt;ul id="o_navbar_more" class="nav o_navbar-nav o_dropdown_toggle"&gt;...&lt;/ul&gt;
+      &lt;ul id="o_navbar_tools_permanent" class="nav o_navbar-nav o_navbar-right"&gt;
+        &lt;li id="o_navbar_imclient" class="o_navbar_tool"&gt;...&lt;/li&gt;
+        &lt;li id="o_navbar_search_opener" class="o_navbar_tool dropdown"&gt;...#o_navbar_search...&lt;/li&gt;
+        &lt;li id="o_navbar_my_menu" class="o_portrait"&gt;...&lt;/li&gt;       &lt;!-- personal menu, logout inside --&gt;
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div id="o_messages"&gt;...&lt;/div&gt;                                  &lt;!-- info boxes --&gt;
+  &lt;div id="o_main_wrapper"&gt;
+    &lt;div id="o_main_container"&gt;
+      &lt;!-- TooledStackedPanel: #o_main_toolbar.o_toolbar is a sibling of #o_main --&gt;
+      &lt;div id="o_main" class="[o_hide_main_left] [o_hide_main_right]"&gt;
+        &lt;div id="o_main_left"&gt;&lt;div id="o_main_left_content"&gt;...tree...&lt;/div&gt;&lt;/div&gt;
+        &lt;div id="o_main_center"&gt;&lt;div id="o_main_center_content"&gt;&lt;div id="o_main_center_content_inner"&gt;...&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+        &lt;div id="o_main_right"&gt;&lt;div id="o_main_right_content"&gt;...&lt;/div&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div id="o_footer_wrapper"&gt;&lt;div id="o_footer_container"&gt;...&lt;/div&gt;&lt;/div&gt;
+&lt;/body&gt;</code></pre>
+
 <!-- ==================== SECTION 9: GRID LAYOUT ==================== -->
 <h2 id="grid-layout">9. CSS Grid Layout</h2>
 
@@ -557,6 +656,36 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
+<p>Toolbar markup:</p>
+<pre><code>&lt;div class="o_toolbar [o_toolbar_with_segments]"&gt;
+  &lt;div class="o_breadcrumb"&gt;
+    &lt;ol class="breadcrumb"&gt;
+      &lt;li class="o_breadcrumb_back"&gt;&lt;a&gt;Back&lt;/a&gt;&lt;/li&gt;
+      &lt;li class="o_breadcrumb_root"&gt;&lt;a&gt;Home&lt;/a&gt;&lt;/li&gt;
+      &lt;li class="o_breadcrumb_crumb"&gt;&lt;a&gt;Level 1&lt;/a&gt;&lt;/li&gt;
+      &lt;li class="o_breadcrumb_crumb o_last_crumb" aria-current="true"&gt;Current&lt;/li&gt;
+      &lt;li class="o_breadcrumb_close"&gt;&lt;a&gt;Close&lt;/a&gt;&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/div&gt;
+  &lt;div class="o_tools_container"&gt;
+    &lt;ul class="o_tools o_tools_left list-inline"&gt;&lt;li class="o_tool"&gt;&lt;a class="btn btn-sm"&gt;Action&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;
+    &lt;ul class="o_tools o_tools_center list-inline"&gt;...&lt;/ul&gt;
+    &lt;ul class="o_tools o_tools_right list-inline"&gt;...&lt;/ul&gt;
+    &lt;ul class="o_tools o_tools_right_edge list-inline"&gt;...&lt;/ul&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+<p>Segments are rendered by <code>SegmentViewComponent</code> as a justified button group. The selected segment is a primary button:</p>
+<pre><code>&lt;ul class="o_tools o_tools_segments [o_tools_segments_alone] list-inline"&gt;
+  &lt;li&gt;
+    &lt;div class="o_segments btn-group btn-group-justified" role="navigation"&gt;
+      &lt;a class="btn btn-primary"&gt;Tab 1&lt;/a&gt;   <span style="color:#6c7086">&lt;!-- selected --&gt;</span>
+      &lt;a class="btn btn-default"&gt;Tab 2&lt;/a&gt;
+    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+
+<p>The personal tools in the navbar are in <code>ul#o_navbar_tools_permanent</code>: <code>li#o_navbar_imclient</code> (chat), <code>li#o_navbar_search_opener</code> (search dropdown with <code>#o_navbar_search</code>) and <code>li#o_navbar_my_menu</code> (portrait and personal menu, logout inside).</p>
+
 <!-- ==================== SECTION 11: NAVIGATION ==================== -->
 <h2 id="navigation">11. Navigation System</h2>
 
@@ -569,11 +698,32 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <li><strong>popController()</strong> &mdash; navigates back (removes level)</li>
 </ul>
 
+<p>TabbedPane markup:</p>
+<pre><code>&lt;div class="o_tabbed_pane"&gt;
+  &lt;ul role="tablist" class="nav nav-tabs"&gt;
+    &lt;li class="active"&gt;&lt;a role="tab" aria-selected="true"&gt;Tab 1&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a role="tab" aria-selected="false"&gt;Tab 2&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;div role="tabpanel" class="o_tabbed_pane_content"&gt;...active tab content...&lt;/div&gt;
+&lt;/div&gt;</code></pre>
 <div class="info-box"><strong>Tab navigation:</strong> <code>TabbedPane</code> renders <code>&lt;ul class="nav nav-tabs"&gt;</code> for internal tab switching. <code>SegmentViewComponent</code> renders segment buttons in the toolbar for view switching (list/card/etc.).</div>
 
 <!-- ==================== SECTION 12: RENDERERS ==================== -->
 <h2 id="renderers">12. Component Renderers</h2>
 
+<pre><code>User Action → AJAX POST → Server Dispatch
+  → Controller.event() → Business Logic → Mark dirty
+  → RENDER PHASE: Window → Component Tree traversal
+      → ComponentRenderer.render(StringOutput, Component, args) → HTML string
+  → JSON response: {action: "updcmp", id: "o_c12345", content: "..."}
+  → Client: jQuery replaces the DOM element by ID</code></pre>
+<p>Every rendered component gets a unique DOM ID <code>o_c{dispatchID}</code>, for example <code>&lt;div id="o_c12345"&gt;</code>. <code>VelocityContainerRenderer</code> processes the <code>.html</code> templates; templates include child components with <code>$r.render("name")</code>. <code>LayeredPanelRenderer</code> adds <code>o_layer_0</code>, <code>o_layer_1</code> for the modal stacking.</p>
+<p>LinkRenderer output:</p>
+<pre><code>&lt;a id="o_c{id}" href="javascript:;" onclick="o_XHREvent(...);" class="[btn btn-default] [o_button_ghost]"&gt;
+  &lt;i class="o_icon o_icon_{name}" aria-hidden="true"&gt;&lt;/i&gt; &lt;span&gt;Link Text&lt;/span&gt;
+&lt;/a&gt;
+&lt;!-- disabled --&gt;
+&lt;a class="o_disabled disabled btn btn-default"&gt;...&lt;/a&gt;</code></pre>
 <p>OpenOlat has <strong>~540 ComponentRenderer implementations</strong>. Each generates HTML for a specific component type. Key renderers:</p>
 
 <table>
@@ -589,7 +739,12 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <tr><td>TabbedPaneRenderer</td><td>Tab navigation</td><td><code>nav nav-tabs</code>, <code>o_tabbed_pane</code></td></tr>
 <tr><td>DropdownRenderer</td><td>Dropdown menus</td><td><code>dropdown</code>, <code>dropdown-menu</code></td></tr>
 <tr><td>TooledStackedPanelRenderer</td><td>Toolbar + breadcrumb</td><td><code>o_toolbar</code>, <code>o_breadcrumb</code>, <code>o_tools_*</code></td></tr>
-<tr><td>ClosableModalController</td><td>Modal dialogs</td><td><code>modal-dialog</code>, <code>modal-content</code></td></tr>
+<tr><td>CloseableModalController</td><td>Modal dialogs</td><td><code>dialog.modal</code>, <code>modal-dialog</code>, <code>modal-content</code></td></tr>
+<tr><td>SearchElementRenderer <span class="version-badge">New in 21.1.0</span></td><td>Search fields</td><td><code>o_search</code>, <code>o_search_default</code>, <code>o_search_large</code>, <code>o_search_typeahead</code></td></tr>
+<tr><td>FactSheetRenderer <span class="version-badge">New in 21.1.0</span></td><td>Fact sheets</td><td><code>o_fact_sheet</code>, <code>o_facts</code>, <code>o_fact</code></td></tr>
+<tr><td>SectionsRenderer / SectionHeaderRenderer <span class="version-badge">New in 21.1.0</span></td><td>Collapsible sections</td><td><code>o_sections</code>, <code>o_section</code>, <code>o_section_toggle</code></td></tr>
+<tr><td>ComponentListRenderer <span class="version-badge">New in 21.1.0</span></td><td>Row of components</td><td><code>o_component_list</code></td></tr>
+<tr><td>TranslateCellRenderer <span class="version-badge">New in 21.1.0</span></td><td>Translatable term in a table cell</td><td><code>o_icon_language</code></td></tr>
 </tbody>
 </table>
 
@@ -604,15 +759,119 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <tr><td>Select</td><td>SelectboxRenderer</td><td><code>&lt;select class="form-control"&gt;</code></td></tr>
 <tr><td>Radio buttons</td><td>RadioElementRenderer</td><td><code>&lt;div class="radio"&gt;&lt;label&gt;&lt;input type="radio"&gt;</code></td></tr>
 <tr><td>Checkboxes</td><td>CheckboxElementRenderer</td><td><code>&lt;div class="checkbox"&gt;&lt;label&gt;&lt;input type="checkbox"&gt;</code></td></tr>
-<tr><td>Date picker</td><td>DateChooserRenderer</td><td><code>&lt;div class="o_date"&gt;&lt;input class="o_date_picker"&gt;</code></td></tr>
+<tr><td>Date picker</td><td>JSDateChooserRenderer</td><td><code>&lt;div class="o_date"&gt;&lt;div class="input-group o_date_picker"&gt;&lt;input class="form-control o_date_day datepicker-input"&gt;</code> + Vanilla JS Datepicker popup</td></tr>
 <tr><td>Rich text</td><td>RichTextElementRenderer</td><td>TinyMCE wrapper</td></tr>
 <tr><td>File upload</td><td>FileElementRenderer</td><td><code>&lt;input type="file"&gt;</code> + upload zone</td></tr>
-<tr><td>Toggle switch</td><td>FormToggleRenderer</td><td><code>&lt;div class="o_toggle"&gt;</code></td></tr>
+<tr><td>Toggle switch</td><td>FormToggleRenderer</td><td><code>&lt;button type="button" role="switch" aria-checked="true" class="o_button_toggle o_toggle_on"&gt;</code></td></tr>
 <tr><td>Submit button</td><td>FormSubmitRenderer</td><td><code>&lt;button class="btn btn-primary"&gt;</code></td></tr>
+<tr><td>Static text</td><td>StaticTextElementRenderer</td><td><code>&lt;p class="form-control-static"&gt;</code> (wrapper element configurable)</td></tr>
+<tr><td>Spacer</td><td>SpacerElementRenderer</td><td><code>&lt;hr class="o_spacer"&gt;</code>, optionally in <code>div.o_spacer_wrapper</code></td></tr>
+<tr><td>Form link</td><td>FormLinkRenderer</td><td><code>&lt;a class="btn btn-default"&gt;</code></td></tr>
+<tr><td>Object selection</td><td>ObjectSelectionComponentRenderer</td><td><code>&lt;button class="o_expand_button btn btn-default o_selection_display" aria-haspopup="dialog"&gt;</code> + optional <code>button.o_selection_browse_button</code></td></tr>
+<tr><td>Relative date</td><td>RelativeDateComponentRenderer</td><td><code>&lt;div class="o_relative_date input-group"&gt;</code> with read-only input</td></tr>
+<tr><td>Search <span class="version-badge">New in 21.1.0</span></td><td>SearchElementRenderer</td><td><code>&lt;div class="o_search o_search_default" role="search"&gt;</code></td></tr>
+<tr><td>Form section <span class="version-badge">New in 21.1.0</span></td><td><code>form_section.html</code></td><td><code>&lt;fieldset class="o_form_section"&gt;</code></td></tr>
 </tbody>
 </table>
 
 <p>All form elements are wrapped in <code>&lt;div class="form-group"&gt;</code> with a <code>&lt;label class="control-label"&gt;</code>. Validation errors appear as <code>&lt;div class="o_error"&gt;</code>.</p>
+
+<p><span class="version-badge">New in 21.1.0</span> <code>FormItem.setLabelIconCss(String)</code> renders an icon before the label text: <code>&lt;label class="control-label"&gt;&lt;i class="o_icon o_icon-fw o_icon_locked" aria-hidden="true"&gt;&lt;/i&gt; Label&lt;/label&gt;</code>. The mandatory marker <code>o_icon_mandatory</code> comes first. The course editor uses <code>o_icon o_icon-fw o_icon_locked text-primary</code> for fields that stay read-only until the edit mode is on.</p>
+
+<p>Object selection: a disabled element renders <code>disabled o_disabled</code> and the <code>disabled</code> attribute on the button. The browse button stays visible and is disabled too. User selections list the current user first, with the suffix "(me)".</p>
+
+<h3 id="form-section">13.1 Form Section <span class="version-badge">New in 21.1.0</span></h3>
+
+<p>A form section groups the fields of one form under a heading. Java: <code>FormSection</code> (<code>uifactory.addFormSection(name, title, container, Level)</code>). The template <code>form_section.html</code> renders one <code>fieldset.o_form_section</code>. The items inside use the normal 3/9 horizontal layout. Styles: <code>.o_form_section</code> in <code>_form.scss</code>.</p>
+
+<div class="diagram-box">
+<svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+  <text x="380" y="20" text-anchor="middle" font-size="14" font-weight="700" fill="#16797c">Settings Page Blueprint (GuiDemoSettingsController)</text>
+  <rect x="20" y="35" width="720" height="255" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="35" y="54" font-size="10" font-weight="600" fill="#64748b">fieldset.o_form.form-horizontal</text>
+  <rect x="35" y="62" width="690" height="26" rx="4" fill="#16797c" opacity="0.1"/>
+  <text x="45" y="80" font-size="11" font-weight="600" fill="#16797c">legend: Module settings</text>
+  <text x="715" y="80" text-anchor="end" font-size="9" fill="#16797c">o_chelp_wrapper</text>
+  <rect x="35" y="94" width="690" height="24" rx="4" fill="#fff" stroke="#cbd5e1"/>
+  <text x="45" y="110" font-size="10" fill="#475569">.form-group: module toggle (button.o_button_toggle, role="switch")</text>
+  <rect x="35" y="126" width="690" height="66" rx="4" fill="#fff" stroke="#16797c" stroke-width="1.2"/>
+  <text x="45" y="142" font-size="10" font-weight="600" fill="#16797c">fieldset.o_form_section</text>
+  <text x="200" y="142" font-size="10" fill="#475569">div.o_section_sub_title "Configuration"</text>
+  <line x1="420" y1="138" x2="715" y2="138" stroke="#cbd5e1"/>
+  <rect x="55" y="150" width="660" height="16" rx="3" fill="#16797c" opacity="0.06"/>
+  <text x="65" y="162" font-size="9" fill="#475569">.form-group (3/9) checkboxes, select, text, radios, toggle</text>
+  <rect x="55" y="170" width="660" height="16" rx="3" fill="#16797c" opacity="0.06"/>
+  <text x="65" y="182" font-size="9" fill="#475569">.form-group (3/9) ...</text>
+  <rect x="35" y="198" width="690" height="50" rx="4" fill="#fff" stroke="#16797c" stroke-width="1.2"/>
+  <text x="45" y="214" font-size="10" font-weight="600" fill="#16797c">fieldset.o_form_section</text>
+  <text x="200" y="214" font-size="10" fill="#475569">div.o_section_sub_title "Default settings"</text>
+  <line x1="420" y1="210" x2="715" y2="210" stroke="#cbd5e1"/>
+  <rect x="55" y="222" width="660" height="16" rx="3" fill="#16797c" opacity="0.06"/>
+  <text x="65" y="234" font-size="9" fill="#475569">.form-group (3/9) radios, spacer, checkboxes</text>
+  <rect x="35" y="254" width="690" height="26" rx="4" fill="#fff" stroke="#cbd5e1"/>
+  <text x="45" y="271" font-size="10" fill="#475569">.form-group: .buttons &gt; button.btn.btn-primary "Save"</text>
+  <text x="715" y="271" text-anchor="end" font-size="9" fill="#f97316">sections + button hidden when toggle is off</text>
+</svg>
+<div class="diagram-caption">Figure 6: Settings page blueprint from the GUI demo "Example settings": a module toggle and two form sections with the level SUB_TITLE</div>
+</div>
+
+<pre><code><span style="color:#6c7086">&lt;!-- Level.SUB_TITLE --&gt;</span>
+&lt;fieldset id="o_c1000001513" class="o_form_section"&gt;
+  &lt;div class="o_section_sub_title"&gt;&lt;span class="o_section_title_text"&gt;Configuration&lt;/span&gt;&lt;/div&gt;
+  &lt;div id="o_c1000001513_content"&gt;...form-groups...&lt;/div&gt;
+&lt;/fieldset&gt;
+
+<span style="color:#6c7086">&lt;!-- Level.TITLE + setCollapsible(true) --&gt;</span>
+&lt;fieldset id="o_c42" class="o_form_section"&gt;
+  &lt;legend&gt;
+    &lt;h4 class="o_section_title o_section_toggle o_link_plain [collapsed]" id="o_c42_content_toggle"
+        role="button" tabindex="0" data-target="o_c42_content"
+        aria-controls="o_c42_content" aria-expanded="true"&gt;
+      &lt;span class="o_section_title_text"&gt;
+        &lt;i id="o_c42_content_toggler" aria-hidden="true" class="o_icon o_icon-fw o_icon_close_togglebox"&gt; &lt;/i&gt;Title
+        &lt;span id="o_c42_content_togglerLabel" class="sr-only"&gt;collapse&lt;/span&gt;
+      &lt;/span&gt;
+    &lt;/h4&gt;
+  &lt;/legend&gt;
+  &lt;div id="o_c42_content" class="collapse o_section_content in"&gt;...&lt;/div&gt;
+&lt;/fieldset&gt;</code></pre>
+
+<ul>
+<li><strong>Levels:</strong> <code>TITLE</code> renders <code>legend &gt; h4.o_section_title</code>. <code>SUB_TITLE</code> renders <code>div.o_section_sub_title</code> with <code>$o-font-size-section-title</code> and a <code>::after</code> rule. Below <code>$screen-xs-max</code> the rule moves under the title.</li>
+<li><strong>Collapsible:</strong> Bootstrap <code>collapse</code> on <code>.o_section_content</code>. One delegated handler in <code>functions.js</code> toggles on click, Enter and Space, and keeps <code>aria-expanded</code>, <code>collapsed</code>, the icon and the <code>sr-only</code> label in sync.</li>
+<li><strong>Persisted state:</strong> <code>setPersistedStatusId(ureq, id)</code> stores the open/closed state in the GUI preferences.</li>
+</ul>
+
+<h3 id="search-element">13.2 Search Element <span class="version-badge">New in 21.1.0</span></h3>
+
+<p>One element for all search fields: FlexiTable quick search, navbar search, overview searches, object and tag selection. Java: <code>uifactory.addSearchElement(name, SearchVariant, container)</code>, or with a <code>ListProvider</code> for suggestions. Styles: <code>_search.scss</code>. GUI demo: <strong>Flexi forms &gt; Search</strong>.</p>
+
+<pre><code>&lt;div class="o_search o_search_default" role="search"&gt;
+  &lt;div class="input-group"&gt;
+    <span style="color:#6c7086">&lt;!-- only without search button: span.input-group-addon with o_icon_search --&gt;</span>
+    &lt;div class="o_search_input_wrapper"&gt;
+      &lt;input type="text" class="form-control o_search_input" role="searchbox" aria-label="Enter search term"&gt;
+      &lt;span id="{id}_resetWrap" style="display:none"&gt;   <span style="color:#6c7086">&lt;!-- visible when the field has text --&gt;</span>
+        &lt;a class="btn btn-sm btn-default o_button_ghost o_search_reset" role="button"&gt;...o_icon_close...&lt;/a&gt;
+      &lt;/span&gt;
+    &lt;/div&gt;
+    &lt;span class="input-group-btn"&gt;
+      &lt;a class="btn btn-default o_search_button" role="button"&gt;...o_icon_search...&lt;/a&gt;
+    &lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+<table>
+<thead><tr><th>Variant</th><th>Class</th><th>Behaviour</th></tr></thead>
+<tbody>
+<tr><td><code>SearchVariant.DEFAULT</code></td><td><code>o_search_default</code></td><td>Search button with icon only, toolbar size</td></tr>
+<tr><td><code>SearchVariant.LARGE</code></td><td><code>o_search_large</code></td><td>Search button with icon and text, <code>input-lg</code> sizing</td></tr>
+<tr><td><code>SearchVariant.TYPEAHEAD</code></td><td><code>o_search_typeahead</code></td><td>No button, addon icon left, search while typing (300 ms debounce). With a <code>ListProvider</code> typeahead.js wraps the input (<code>.tt-input</code>, <code>.tt-menu</code>)</td></tr>
+<tr><td><code>setSearchButtonVisible(false)</code></td><td><code>o_search_default</code></td><td>Same markup as typeahead, addon icon left</td></tr>
+</tbody>
+</table>
+
+<p>Keyboard: Enter starts the search by AJAX, not by form submit. When a suggestion is highlighted (<code>.tt-cursor</code>), Enter commits the suggestion. In the typeahead variant Escape resets the field. Widths: <code>#o_navbar_search .o_search</code> 320px, <code>.o_table_search .o_search</code> max 340px, <code>.o_table_large_search .o_search</code> max 450px.</p>
 
 <!-- ==================== SECTION 14: FLEXITABLE ==================== -->
 <h2 id="flexitable">14. FlexiTable</h2>
@@ -631,7 +890,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 
 <p>Users toggle between CLASSIC and CUSTOM views via <code>.o_sel_table</code> / <code>.o_sel_custom</code> buttons in the toolbar (class <code>active</code> on the selected one).</p>
 
-<h3>FlexiTable Component Structure</h3>
+<h3>14.1 FlexiTable Component Structure</h3>
 
 <p>A full FlexiTable with all features enabled has this overall layout. Each section is rendered only when applicable:</p>
 
@@ -671,7 +930,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
   ...                                                          <span style="color:#6c7086">&lt;!-- table or card body --&gt;</span>
 &lt;/div&gt;</code></pre>
 
-<h3>Classic Table DOM</h3>
+<h3>14.2 Classic Table DOM</h3>
 
 <pre><code>&lt;div class="o_table_wrapper o_table_flexi o_table_bulk o_rendertype_classic"&gt;
   &lt;div class="o_scrollable_wrapper"&gt;
@@ -695,7 +954,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
   &lt;div class="o_table_pagination"&gt;...&lt;/div&gt;
 &lt;/div&gt;</code></pre>
 
-<h3>Custom (Card/List) View DOM</h3>
+<h3>14.3 Custom (Card/List) View DOM</h3>
 
 <pre><code>&lt;div class="o_table_wrapper o_table_flexi o_coursetable o_rendertype_custom"&gt;
   &lt;div class="o_table_body"&gt;
@@ -727,7 +986,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
   &lt;div class="o_table_pagination"&gt;...&lt;/div&gt;
 &lt;/div&gt;</code></pre>
 
-<h3>Course Type Classes on <code>o_repo_entry_list_item</code></h3>
+<h3>14.4 Course Type Classes on <code>o_repo_entry_list_item</code></h3>
 
 <p>The card item gets an additional class based on the educational type / course format:</p>
 <table>
@@ -740,7 +999,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Course Table &amp; Catalog Classes</h3>
+<h3>14.5 Course Table &amp; Catalog Classes</h3>
 
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
@@ -771,7 +1030,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Autorenbereich (Author Area) Table</h3>
+<h3>14.6 Autorenbereich (Author Area) Table</h3>
 
 <p>The Autorenbereich uses a CLASSIC FlexiTable with tabs, filters, bulk operations, and extensive column configurations:</p>
 <ul>
@@ -782,7 +1041,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <li><strong>Search tab filters:</strong> <code>ul.nav.nav-pills.o_table_filters</code> with filter pills (Id, Favoriten, Technischer Typ, Durchführungsformat, Status, Typ, Mehr...)</li>
 </ul>
 
-<h3>Coaching Dashboard</h3>
+<h3>14.7 Coaching Dashboard</h3>
 
 <p>The Coaching site uses a CUSTOM FlexiTable within a dashboard layout. Cards are wrapped in <code>o_bento</code> grid:</p>
 
@@ -803,7 +1062,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
   &lt;/div&gt;
 &lt;/div&gt;</code></pre>
 
-<h3>Curriculum Table Classes</h3>
+<h3>14.8 Curriculum Table Classes</h3>
 
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
@@ -820,23 +1079,77 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <h2 id="tree">15. Tree Navigation</h2>
 
 <p>The <code>.o_tree</code> component renders hierarchical navigation with indentation levels controlled by CSS classes <code>o_tree_l0</code> through <code>o_tree_l11</code>, each adding <code>$o-tree-padding-steps-px</code> (15px) of left padding.</p>
+<pre><code>&lt;div class="o_tree [o_tree_root_hidden]"&gt;
+  &lt;ul role="tree" class="o_tree_l0"&gt;
+    &lt;li role="treeitem" aria-selected="false" data-nodeid="..."&gt;
+      &lt;div id="dd{nodeid}" class="o_tree_l0"&gt;
+        &lt;a class="o_tree_oc_l0"&gt;...&lt;/a&gt;                  &lt;!-- opener, only for nodes with children --&gt;
+        &lt;span class="o_tree_link o_tree_l0"&gt;
+          &lt;a href="javascript:;" title="..."&gt;&lt;span class="o_tree_item"&gt;Node Title&lt;/span&gt;&lt;/a&gt;
+        &lt;/span&gt;
+      &lt;/div&gt;
+      &lt;ul class="o_tree_l1"&gt;...children...&lt;/ul&gt;
+    &lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;</code></pre>
 
 <!-- ==================== SECTION 16: DIALOGS ==================== -->
 <h2 id="dialogs">16. Modals &amp; Dialogs</h2>
 
 <p>Dialogs use Bootstrap's modal structure wrapped in OpenOlat's <code>LayeredPanel</code> for z-index stacking:</p>
 
-<pre><code>&lt;div class="o_modal_wrapper o_layer_0"&gt;
-  &lt;dialog class="modal-dialog modal-lg"&gt;
-    &lt;div class="modal-content"&gt;
-      &lt;div class="modal-header"&gt;...&lt;/div&gt;
-      &lt;div class="modal-body"&gt;...&lt;/div&gt;
-      &lt;div class="modal-footer"&gt;...&lt;/div&gt;
+<pre><code>&lt;div class="o_layered_panel o_layer_0"&gt;              <span style="color:#6c7086">&lt;!-- LayeredPanelRenderer --&gt;</span>
+  &lt;dialog id="o_closablewapper_{id}" class="dialog modal show" aria-modal="true" aria-labelledby="o_md_{id}"&gt;
+    &lt;div class="modal-dialog modal-lg"&gt;
+      &lt;div class="modal-content"&gt;
+        &lt;div class="modal-header"&gt;...&lt;h4 id="o_md_{id}"&gt;Title&lt;/h4&gt;&lt;/div&gt;
+        &lt;div class="modal-body"&gt;...&lt;/div&gt;
+        &lt;div class="modal-footer"&gt;...&lt;/div&gt;   <span style="color:#6c7086">&lt;!-- DialogBoxController --&gt;</span>
+      &lt;/div&gt;
     &lt;/div&gt;
   &lt;/dialog&gt;
 &lt;/div&gt;</code></pre>
 
-<p>Multiple modals stack with <code>o_layer_0</code>, <code>o_layer_1</code>, etc.</p>
+<p>Multiple modals stack with <code>o_layer_0</code>, <code>o_layer_1</code>, etc. The HTML element is a native <code>&lt;dialog&gt;</code> with the classes <code>dialog modal show</code>; <code>.modal-dialog</code> is the inner Bootstrap wrapper.</p>
+
+<h3 id="callout-a11y">16.1 Callout Triggers and Focus (a11y)</h3>
+
+<p>A link or button that opens a callout uses the ARIA disclosure pattern. <code>Link.setAriaDialogOpener()</code> and <code>FormLink.setAriaDialogOpener()</code> render <code>role="button" aria-haspopup="dialog" aria-expanded="false"</code>. <code>CloseableCalloutWindowController</code> switches <code>aria-expanded</code> with the <code>setattribute</code> command and returns the focus to the trigger when the callout closes.</p>
+
+<div class="diagram-box">
+<svg viewBox="0 0 780 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+  <defs><marker id="arCa" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#64748b"/></marker></defs>
+  <text x="390" y="20" text-anchor="middle" font-size="14" font-weight="700" fill="#16797c">Callout Open / Close: ARIA State and Focus</text>
+  <rect x="15" y="40" width="160" height="62" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="95" y="60" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Trigger (a.btn)</text>
+  <text x="95" y="76" text-anchor="middle" font-size="9" fill="#1e40af">aria-haspopup="dialog"</text>
+  <text x="95" y="90" text-anchor="middle" font-size="9" fill="#1e40af">aria-expanded="false"</text>
+  <line x1="175" y1="71" x2="215" y2="71" stroke="#64748b" stroke-width="1.5" marker-end="url(#arCa)"/>
+  <text x="195" y="64" text-anchor="middle" font-size="8" fill="#64748b">click</text>
+  <rect x="215" y="40" width="175" height="62" rx="6" fill="#faf5ff" stroke="#8b5cf6"/>
+  <text x="302" y="58" text-anchor="middle" font-size="10" font-weight="600" fill="#6d28d9">CloseableCallout-</text>
+  <text x="302" y="71" text-anchor="middle" font-size="10" font-weight="600" fill="#6d28d9">WindowController</text>
+  <text x="302" y="88" text-anchor="middle" font-size="8" fill="#6d28d9">pushdialogfocus(triggerId), setattribute</text>
+  <line x1="390" y1="71" x2="430" y2="71" stroke="#64748b" stroke-width="1.5" marker-end="url(#arCa)"/>
+  <rect x="430" y="40" width="165" height="62" rx="6" fill="#f0fdf4" stroke="#22c55e"/>
+  <text x="512" y="58" text-anchor="middle" font-size="10" font-weight="600" fill="#166534">div.o_callout_content</text>
+  <text x="512" y="74" text-anchor="middle" font-size="9" fill="#166534">trigger: aria-expanded="true"</text>
+  <text x="512" y="89" text-anchor="middle" font-size="9" fill="#166534">focus: first visible element</text>
+  <line x1="595" y1="71" x2="635" y2="71" stroke="#64748b" stroke-width="1.5" marker-end="url(#arCa)"/>
+  <text x="615" y="64" text-anchor="middle" font-size="8" fill="#64748b">close</text>
+  <rect x="635" y="40" width="130" height="62" rx="6" fill="#fff7ed" stroke="#f97316"/>
+  <text x="700" y="60" text-anchor="middle" font-size="10" font-weight="600" fill="#9a3412">popdialogfocus</text>
+  <text x="700" y="76" text-anchor="middle" font-size="9" fill="#9a3412">aria-expanded="false"</text>
+  <text x="700" y="90" text-anchor="middle" font-size="9" fill="#9a3412">focus back to trigger</text>
+  <path d="M700 102 L700 135 L95 135 L95 106" stroke="#f97316" stroke-width="1.5" fill="none" stroke-dasharray="4" marker-end="url(#arCa)"/>
+  <rect x="15" y="150" width="750" height="48" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="390" y="170" text-anchor="middle" font-size="10" fill="#475569">functions.js: o_info.focusReturnStack holds the trigger IDs; o_waitForVisibleThenFocusDialog() skips clipped elements (21.1.0)</text>
+  <text x="390" y="186" text-anchor="middle" font-size="10" fill="#475569">o_scrollToElementIfInvisible() avoids a scroll jump when a callout opens inside a modal dialog</text>
+</svg>
+<div class="diagram-caption">Figure 7: ARIA state and focus handling when a callout opens and closes</div>
+</div>
+
+<p><span class="version-badge changed">Changed in 21.1.0</span> The pattern is rolled out to the "more actions" buttons of table action columns (<code>ActionsColumnModel</code>), table tools (sort, customize columns), filter buttons, relative date and multi-selection fields, and many feature controllers. Controllers pass the trigger component to <code>CloseableCalloutWindowController</code> instead of its DOM ID. When a callout opens, the focus moves to the first <em>visible</em> focusable element. The hidden close control is a <code>&lt;button class="close"&gt;</code> in <code>div.sr-only</code> (before: <code>&lt;a&gt;</code>).</p>
 
 <!-- ==================== SECTION 17: CSS NAMING ==================== -->
 <h2 id="css-naming">17. CSS Naming Conventions</h2>
@@ -847,12 +1160,12 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <tr><td>(none)</td><td>Bootstrap 3</td><td><code>btn</code>, <code>form-control</code>, <code>table</code>, <code>nav-tabs</code>, <code>panel</code></td></tr>
 <tr><td><code>o_</code></td><td>OpenOlat core</td><td><code>o_toolbar</code>, <code>o_tree</code>, <code>o_table_wrapper</code>, <code>o_block</code></td></tr>
 <tr><td><code>o_icon_</code></td><td>Icon classes</td><td><code>o_icon_delete</code>, <code>o_icon_edit</code>, <code>o_icon_user</code></td></tr>
-<tr><td><code>o_sel_</code></td><td>Selenium test selectors</td><td><code>o_sel_course_list</code>, <code>o_sel_add_item</code></td></tr>
+<tr><td><code>o_sel_</code></td><td>Selenium test selectors</td><td><code>o_sel_course_add_member</code>, <code>o_sel_author_courses</code></td></tr>
 <tr><td><code>fa-</code></td><td>Font Awesome 6</td><td><code>fa-check</code>, <code>fa-times</code>, <code>fa-spinner</code></td></tr>
 <tr><td><code>#o_</code></td><td>Page structure IDs</td><td><code>#o_body</code>, <code>#o_main</code>, <code>#o_navbar_wrapper</code></td></tr>
 <tr><td><code>o_colcat_</code></td><td>Color category</td><td><code>o_colcat_dark_blue</code>, <code>o_colcat_red_bg</code></td></tr>
 <tr><td><code>o_lp_</code></td><td>Learning path status</td><td><code>o_lp_done</code>, <code>o_lp_in_progress</code></td></tr>
-<tr><td><code>o_ce_</code></td><td>Content editor</td><td><code>o_ce_element</code>, <code>o_ce_container</code></td></tr>
+<tr><td><code>o_ce_</code></td><td>Content editor</td><td><code>o_ce_add</code>, <code>o_ce_edit_wrapper</code>, <code>o_ce_layout_normal</code></td></tr>
 </tbody>
 </table>
 
@@ -861,7 +1174,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <!-- ==================== SECTION 18: LAYOUT CLASSES ==================== -->
 <h2 id="css-layout">18. Layout &amp; Spacing Classes</h2>
 
-<h3>Block Spacing</h3>
+<h3>18.1 Block Spacing</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -879,7 +1192,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Flexbox Utilities</h3>
+<h3>18.2 Flexbox Utilities</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -891,7 +1204,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Grid Layouts</h3>
+<h3>18.3 Grid Layouts</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -899,11 +1212,11 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <tr><td><code>o_two_span</code></td><td>Spans full width in a 2-column grid</td></tr>
 <tr><td><code>o_metadata_horizontal</code></td><td>Flex horizontal metadata layout with 45px column gap</td></tr>
 <tr><td><code>o_block_with_icon_left</code></td><td>Grid: 32px icon column + auto content column</td></tr>
-<tr><td><code>o_form_two_cols</code></td><td>2-column grid for form layouts (&gt;576px), gap 10px</td></tr>
+<tr><td><code>o_form_two_cols</code></td><td>2-column grid for form layouts (from <code>$screen-sm-max</code>, 991px), gap 10px</td></tr>
 </tbody>
 </table>
 
-<h3>Centering &amp; Positioning</h3>
+<h3>18.4 Centering &amp; Positioning</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -914,7 +1227,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Scrolling</h3>
+<h3>18.5 Scrolling</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -926,7 +1239,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Padding Helpers</h3>
+<h3>18.6 Padding Helpers</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -941,7 +1254,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <!-- ==================== SECTION 19: TYPOGRAPHY ==================== -->
 <h2 id="css-typography">19. Typography &amp; Text Classes</h2>
 
-<h3>Font Size</h3>
+<h3>19.1 Font Size</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -952,7 +1265,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Visual State</h3>
+<h3>19.2 Visual State</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -965,7 +1278,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Text Handling</h3>
+<h3>19.3 Text Handling</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -977,7 +1290,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Interaction</h3>
+<h3>19.4 Interaction</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -988,7 +1301,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Link Variants</h3>
+<h3>19.5 Link Variants</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -998,7 +1311,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Code &amp; Monospace</h3>
+<h3>19.6 Code &amp; Monospace</h3>
 <table>
 <thead><tr><th>Class</th><th>Effect</th></tr></thead>
 <tbody>
@@ -1011,7 +1324,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <!-- ==================== SECTION 20: BUTTONS ==================== -->
 <h2 id="css-buttons">20. Button Variants</h2>
 
-<h3>Bootstrap Button Types</h3>
+<h3>20.1 Bootstrap Button Types</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1025,11 +1338,12 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>OpenOlat Button Extensions</h3>
+<h3>20.2 OpenOlat Button Extensions</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
-<tr><td><code>btn o_button_ghost</code></td><td>Transparent background, link-colored text. Used for low-emphasis actions</td></tr>
+<tr><td><code>btn o_button_ghost</code></td><td>Transparent background, primary-colored text (<code>$btn-primary-bg</code>), primary border on hover. Used for low-emphasis actions</td></tr>
+<tr><td><code>btn o_button_ghost btn-danger</code> <span class="version-badge">New in 21.1.0</span></td><td>Ghost button for destructive actions: <code>$brand-danger</code> text and hover border. Java: <code>link.setGhost(true)</code> plus <code>btn-danger</code>. Example: "Leave course" on the info page</td></tr>
 <tr><td><code>btn o_button_mega</code></td><td>Large button with flex layout for icon + title + subtitle. Used in selection screens</td></tr>
 <tr><td><code>btn o_button_primary_light</code></td><td>Primary color outline variant (lighter emphasis than btn-primary)</td></tr>
 <tr><td><code>btn o_button_call_to_action</code></td><td>Large, bold CTA button (min-width: 30%, wide padding)</td></tr>
@@ -1037,7 +1351,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Button Groups &amp; Layout</h3>
+<h3>20.3 Button Groups &amp; Layout</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1046,14 +1360,18 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <tr><td><code>o_button_group_right</code></td><td>Right-aligned button group</td></tr>
 <tr><td><code>o_button_group_top</code></td><td>Remove top margin from button group</td></tr>
 <tr><td><code>o_button_group_bottom</code></td><td>Remove bottom margin from button group</td></tr>
-<tr><td><code>o_mega_buttons</code></td><td>CSS Grid container for mega buttons (responsive 1&ndash;9 columns)</td></tr>
+<tr><td><code>o_mega_buttons</code></td><td>CSS Grid container for mega buttons (<code>repeat(auto-fill, minmax(207px, 1fr))</code>, gap 8px)</td></tr>
+<tr><td><code>o_button_group compact</code> <span class="version-badge">New in 21.1.0</span></td><td>Button group with small vertical margin, for example the "enable edit mode" button inside an info box</td></tr>
+<tr><td><code>o_btn_group_nowrap</code></td><td>With <code>btn-group</code>: <code>display: flex</code>, split buttons do not wrap</td></tr>
 </tbody>
 </table>
+
+<p>Disabled buttons: <code>LinkRenderer</code> writes <code>&lt;a class="o_disabled disabled btn btn-default"&gt;</code>. Button borders use <code>$btn-default-border</code> (<code>#6c757d</code>), text fields the lighter <code>$input-border</code> (<code>#d0d5dd</code>). A <code>FormLink</code> with the class <code>input-group-addon</code> in an input group gets the button border and background (<code>_bootstrap.scss</code>); the text field keeps <code>$input-bg</code>, also when it is disabled.</p>
 
 <!-- ==================== SECTION 21: MESSAGES ==================== -->
 <h2 id="css-messages">21. Messages &amp; Alerts</h2>
 
-<h3>Message Boxes</h3>
+<h3>21.1 Message Boxes</h3>
 <p>Full-width message boxes with icon and colored styling. Available in two forms: basic (text only) and <code>_with_icon</code> (icon + content layout).</p>
 <table>
 <thead><tr><th>Class</th><th>Color</th><th>Icon</th><th>Usage</th></tr></thead>
@@ -1068,7 +1386,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Inline Variants</h3>
+<h3>21.2 Inline Variants</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1079,7 +1397,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>System Alerts</h3>
+<h3>21.3 System Alerts</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1092,13 +1410,14 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <!-- ==================== SECTION 22: FORMS ==================== -->
 <h2 id="css-forms">22. Form Classes</h2>
 
-<h3>Form Containers</h3>
+<h3>22.1 Form Containers</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
 <tr><td><code>.form-group</code></td><td>Bootstrap standard form group wrapper (label + input + help)</td></tr>
 <tr><td><code>.form-control</code></td><td>Bootstrap standard form input styling</td></tr>
-<tr><td><code>o_form_two_cols</code></td><td>2-column grid for side-by-side form fields (&gt;576px)</td></tr>
+<tr><td><code>o_form_two_cols</code></td><td>2-column grid for side-by-side form fields (from 991px). Template <code>form_two_cols.html</code> renders a container with this class</td></tr>
+<tr><td><code>o_form_section</code> <span class="version-badge">New in 21.1.0</span></td><td>Form section fieldset, see <a href="#form-section">Form Section</a></td></tr>
 <tr><td><code>o_form_button_right</code></td><td>Grid: form area (100fr) + button (1fr) side-by-side</td></tr>
 <tr><td><code>o_inline_cont.form-inline</code></td><td>Inline form where children display as inline-block</td></tr>
 <tr><td><code>o_form_label</code></td><td>Inline-block, bold, 5px bottom margin</td></tr>
@@ -1106,7 +1425,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Form Feedback</h3>
+<h3>22.2 Form Feedback</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1122,7 +1441,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 
 <p><strong>Form field errors</strong> are rendered by <code>SimpleFormErrorText</code> as a block <code>&lt;div class="o_error"&gt;</code> (not a <code>&lt;span&gt;</code>) positioned below the input within the <code>.form-group</code>. This is distinct from message boxes &mdash; form errors are inline field-level feedback.</p>
 
-<h3>Date Picker</h3>
+<h3>22.3 Date Picker</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1134,7 +1453,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Radio Cards</h3>
+<h3>22.4 Radio Cards</h3>
 <p>Rich selection controls that render as visual cards instead of plain radio buttons:</p>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
@@ -1150,7 +1469,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Toggle &amp; Switch Controls</h3>
+<h3>22.5 Toggle &amp; Switch Controls</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1163,7 +1482,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>File Upload</h3>
+<h3>22.6 File Upload</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1176,7 +1495,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Color &amp; Icon Pickers</h3>
+<h3>22.7 Color &amp; Icon Pickers</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1190,7 +1509,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <!-- ==================== SECTION 23: TABLES ==================== -->
 <h2 id="css-tables">23. Table Classes</h2>
 
-<h3>FlexiTable Structure</h3>
+<h3>23.1 FlexiTable Structure</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1201,12 +1520,12 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Table Search &amp; Filters</h3>
+<h3>23.2 Table Search &amp; Filters</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
-<tr><td><code>o_table_search</code></td><td>Search input area (max-width 300px, nowrap)</td></tr>
-<tr><td><code>o_table_large_search</code></td><td>Large search input variant</td></tr>
+<tr><td><code>o_table_search</code></td><td>Search area in the toolbar. <span class="version-badge changed">Changed in 21.1.0</span> Contains the <code>SearchElement</code> (<code>.o_search.o_search_default</code>, max 340px, 170px below 540px) and the row count</td></tr>
+<tr><td><code>o_table_large_search</code></td><td>Large search above the table. <span class="version-badge changed">Changed in 21.1.0</span> Contains <code>.o_search.o_search_large</code> (max 450px) and <code>.o_table_rowcount</code></td></tr>
 <tr><td><code>o_reset_quick_search</code></td><td>Reset button within search field</td></tr>
 <tr><td><code>o_table_tabs</code></td><td>Tab bar above table (flex, space-between, border-bottom)</td></tr>
 <tr><td><code>o_table_filters_wrapper</code></td><td>Filter area (z-index 3, relative, centered)</td></tr>
@@ -1217,7 +1536,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Table Rows &amp; Columns</h3>
+<h3>23.3 Table Rows &amp; Columns</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1233,7 +1552,9 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Sticky Columns</h3>
+<p><span class="version-badge">New in 21.1.0</span> <code>TranslateCellRenderer</code> marks a translatable term in a cell: a link with <code>o_icon_language</code>, the title and <code>sr-only</code> text "Translate "{term}"" (core key <code>translate.name</code>), then the term. The link fires the table action <code>translate</code>. First use: grade scales.</p>
+
+<h3>23.4 Sticky Columns</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1243,7 +1564,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </table>
 <p>When the table scrolls, shadow indicators appear on sticky columns via the <code>o_scrollable_left</code> / <code>o_scrollable_right</code> classes on the wrapper.</p>
 
-<h3>Batch Operations</h3>
+<h3>23.5 Batch Operations</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1253,7 +1574,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Table Variants</h3>
+<h3>23.6 Table Variants</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1264,7 +1585,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Vertical Timeline</h3>
+<h3>23.7 Vertical Timeline</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1275,7 +1596,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Sort Indicators</h3>
+<h3>23.8 Sort Indicators</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1288,7 +1609,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <!-- ==================== SECTION 24: CARDS ==================== -->
 <h2 id="css-cards">24. Cards &amp; Widgets</h2>
 
-<h3>Card Layout</h3>
+<h3>24.1 Card Layout</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1301,7 +1622,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Widgets</h3>
+<h3>24.2 Widgets</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1318,20 +1639,65 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 
 <h4>Widget DOM Structure</h4>
 <p>Widgets are rendered in a responsive CSS Grid. Each widget is a card with a header and content area. Widget types include figures, text, tables, and downloads.</p>
-<pre><code>&lt;div class="o_widgets"&gt;                         &lt;!-- CSS Grid: auto-fill minmax(260px, 1fr) --&gt;
-  &lt;div class="o_widget o_figure_widget"&gt;        &lt;!-- or o_text_widget, o_table_widget --&gt;
+<pre><code>&lt;div class="o_widgets"&gt;                         &lt;!-- WidgetGroupRenderer, CSS Grid: auto-fill minmax(260px, 1fr) --&gt;
+  &lt;div class="o_widget"&gt;                         &lt;!-- WidgetRenderer --&gt;
     &lt;div class="o_widget_header"&gt;
-      &lt;h4&gt;Widget Title&lt;/h4&gt;
-      &lt;i class="o_icon"&gt;&lt;/i&gt;
+      &lt;div class="o_widget_title o_flex_item_max"&gt;Widget Title&lt;/div&gt;
+      &lt;div class="o_widget_icon"&gt;&lt;i class="o_icon ..."&gt;&lt;/i&gt;&lt;/div&gt;
     &lt;/div&gt;
     &lt;div class="o_widget_content"&gt;
-      &lt;div class="o_widget_main_figure"&gt;42&lt;/div&gt; &lt;!-- or o_widget_main_text --&gt;
+      &lt;div class="o_widget_main o_widget_main_figure"&gt;   &lt;!-- FigureWidgetRenderer --&gt;
+        &lt;div class="o_widget_figure o_flex_item_max"&gt;...&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;!-- or: div.o_widget_main.o_widget_main_text (TextWidgetRenderer)
+           or: div.o_widget_main + div.o_widget_link (ComponentWidgetRenderer, e.g. a mini table) --&gt;
     &lt;/div&gt;
+    &lt;div class="o_widget_additional"&gt;...&lt;/div&gt;   &lt;!-- optional --&gt;
   &lt;/div&gt;
-  ...
 &lt;/div&gt;</code></pre>
 
-<h3>Dashboard</h3>
+<h3 id="fact-sheet">24.3 Fact Sheet <span class="version-badge">New in 21.1.0</span></h3>
+<p><code>FactSheet</code> (<code>org.olat.core.gui.components.factsheet</code>, <code>FactSheetFactory</code>) shows key facts with icons in a responsive grid. The info page of courses and implementations uses it. GUI demo: <strong>Fact Sheets</strong>. Styles: <code>_card.scss</code>, variables <code>$o-fact-sheet-*</code> and <code>$o-fact-*</code>.</p>
+<pre><code>&lt;div class="o_fact_sheet"&gt;
+  &lt;h3 class="o_fact_sheet_title"&gt;Fact sheet&lt;/h3&gt;
+  &lt;div class="o_facts"&gt;                        <span style="color:#6c7086">&lt;!-- grid: repeat(auto-fill, minmax($o-fact-min-width, 1fr)) --&gt;</span>
+    &lt;div class="o_fact"&gt;
+      &lt;div class="o_fact_icon"&gt;&lt;i class="o_icon o_icon_location"&gt; &lt;/i&gt;&lt;/div&gt;
+      &lt;div class="o_fact_body"&gt;
+        &lt;div class="o_fact_label text-muted"&gt;Location&lt;/div&gt;
+        &lt;div class="o_fact_value"&gt;Lviv&lt;/div&gt;    <span style="color:#6c7086">&lt;!-- text or a component --&gt;</span>
+        &lt;div class="o_fact_sub_value"&gt;Campus Pidzamche, room B3.12&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="o_fact_sheet_footer"&gt;&lt;div class="o_fact_sheet_footer_buttons"&gt;...&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+<table>
+<thead><tr><th>Class</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>o_fact_sheet</code></td><td>Box with border (<code>$o-fact-sheet-border</code>), radius and 20px padding</td></tr>
+<tr><td><code>o_fact_sheet_title</code></td><td><code>h3</code>, 18px, bold, separator line below</td></tr>
+<tr><td><code>o_facts</code></td><td>CSS Grid, columns of at least 320px (<code>$o-fact-min-width</code>), gap 20px</td></tr>
+<tr><td><code>o_fact_icon</code></td><td>32px circle, icon in <code>$brand-primary</code> on 10% tint</td></tr>
+<tr><td><code>o_fact_label</code> / <code>o_fact_value</code> / <code>o_fact_sub_value</code></td><td>Muted label, value (16px), optional smaller sub-value</td></tr>
+<tr><td><code>o_fact_sheet_footer_buttons</code></td><td>Right-aligned footer buttons; <code>o_fact_sheet_footer_full</code> on a link makes it full width</td></tr>
+<tr><td><code>o_component_list</code></td><td><code>ComponentList</code> output: wrapping flex row, gap 10px (e.g. group links in one fact value)</td></tr>
+</tbody>
+</table>
+
+<h3 id="sections">24.4 Sections <span class="version-badge">New in 21.1.0</span></h3>
+<p><code>Sections</code> (<code>org.olat.core.gui.components.sections</code>, <code>SectionsFactory</code>) renders titled, collapsible blocks outside of forms, for example on the redesigned info page. <code>SectionHeaderRenderer</code> writes the same header as the collapsible <a href="#form-section">Form Section</a>, and the same <code>functions.js</code> handler toggles it.</p>
+<pre><code>&lt;div id="o_sections_{id}" class="o_sections"&gt;
+  &lt;div class="o_section"&gt;
+    &lt;fieldset&gt;
+      &lt;legend&gt;&lt;h4 class="o_section_title o_section_toggle o_link_plain" role="button" tabindex="0"
+                  aria-controls="o_sections_{id}_{sectionId}" aria-expanded="true"&gt;...&lt;/h4&gt;&lt;/legend&gt;
+      &lt;div id="o_sections_{id}_{sectionId}" class="collapse o_section_content in"&gt;...&lt;/div&gt;
+    &lt;/fieldset&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+<h3>24.5 Dashboard</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1345,7 +1711,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Panels</h3>
+<h3>24.6 Panels</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1357,7 +1723,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <!-- ==================== SECTION 25: STATE ==================== -->
 <h2 id="css-state">25. State &amp; Visibility</h2>
 
-<h3>Drag &amp; Drop</h3>
+<h3>25.1 Drag &amp; Drop</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1372,7 +1738,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Activity Indicators</h3>
+<h3>25.2 Activity Indicators</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1382,7 +1748,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Skeleton Loading</h3>
+<h3>25.3 Skeleton Loading</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1395,7 +1761,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Assessment Status</h3>
+<h3>25.4 Assessment Status</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1406,7 +1772,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Learning Path Status</h3>
+<h3>25.5 Learning Path Status</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1418,7 +1784,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Labeled Badges</h3>
+<h3>25.6 Labeled Badges</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1429,7 +1795,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Repository Entry Status</h3>
+<h3>25.7 Repository Entry Status</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1442,7 +1808,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Educational Course Types</h3>
+<h3>25.8 Educational Course Types</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1455,7 +1821,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Course Color Categories</h3>
+<h3>25.9 Course Color Categories</h3>
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
@@ -1550,10 +1916,24 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <div class="diagram-caption">Figure 5: The labeled color system with 8 colors &times; 3 variants (solid, light/outline, mega/tinted background)</div>
 </div>
 
+<table>
+<thead><tr><th>Color</th><th>Base</th><th>Solid (labeled)</th><th>Light (outline)</th><th>Mega (tinted bg)</th></tr></thead>
+<tbody>
+<tr><td>Blue</td><td><code>#105CAD</code></td><td>White on <code>#146DCC</code></td><td>Blue on white, blue border</td><td>Blue on <code>#cde3f9</code></td></tr>
+<tr><td>Green</td><td><code>#268000</code></td><td>White on <code>#37AD00</code></td><td>Green on white, green border</td><td>Green on <code>#C4E6B8</code></td></tr>
+<tr><td>Yellow</td><td></td><td><code>#574000</code> on <code>#FBD774</code></td><td><code>#574000</code> on white</td><td><code>#805e00</code> on <code>#fbe6a7</code></td></tr>
+<tr><td>Orange</td><td><code>#D17A00</code></td><td><code>#663B00</code> on <code>#F4AC47</code></td><td>Orange on white</td><td><code>#663B00</code> on <code>#FFDAA6</code></td></tr>
+<tr><td>Red</td><td></td><td>White on <code>#b30018</code></td><td>Red on white</td><td>Red on <code>#ffc9bd</code></td></tr>
+<tr><td>Brown</td><td></td><td>White on <code>#804A33</code></td><td>Brown on white</td><td>Brown on <code>#E7D2BC</code></td></tr>
+<tr><td>Grey</td><td></td><td>White on <code>#595959</code></td><td>Grey on white</td><td><code>#342c24</code> on <code>#F6F6F6</code></td></tr>
+</tbody>
+</table>
+<p>Variables: <code>$o-labeled-{color}-{variant}-{property}</code> where variant = (none)/light/mega and property = color/bg-color/border-color.</p>
+
 <!-- ==================== SECTION 27: SCSS MODULES ==================== -->
 <h2 id="scss-modules">27. SCSS Module Index</h2>
 
-<h3>Core Modules</h3>
+<h3>27.1 Core Modules</h3>
 <table>
 <thead><tr><th>Module</th><th>Purpose</th></tr></thead>
 <tbody>
@@ -1563,10 +1943,11 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <tr><td><code>_helpers.scss</code></td><td>Spacing, flex, scrolling, buttons, typography utilities</td></tr>
 <tr><td><code>_fonts.scss</code></td><td>Font imports and declarations</td></tr>
 <tr><td><code>_colors.scss</code></td><td>Labeled color classes</td></tr>
+<tr><td><code>_type.scss</code></td><td>Typography and heading styles</td></tr>
 </tbody>
 </table>
 
-<h3>Layout Modules</h3>
+<h3>27.2 Layout Modules</h3>
 <table>
 <thead><tr><th>Module</th><th>Purpose</th></tr></thead>
 <tbody>
@@ -1579,7 +1960,7 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 </tbody>
 </table>
 
-<h3>Component Modules</h3>
+<h3>27.3 Component Modules</h3>
 <table>
 <thead><tr><th>Module</th><th>Purpose</th></tr></thead>
 <tbody>
@@ -1589,12 +1970,14 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <tr><td><code>_dialog.scss</code></td><td>Modal dialogs, floating windows</td></tr>
 <tr><td><code>_breadcrumb.scss</code></td><td>Breadcrumb trail styling</td></tr>
 <tr><td><code>_wizard.scss</code></td><td>Multi-step wizard progress</td></tr>
-<tr><td><code>_card.scss</code></td><td>Card layouts</td></tr>
+<tr><td><code>_card.scss</code></td><td>Card layouts, dashboard widgets; <span class="version-badge">New in 21.1.0</span> fact sheet</td></tr>
+<tr><td><code>_search.scss</code></td><td><span class="version-badge changed">Changed in 21.1.0</span> Unified <code>SearchElement</code> styles (variants, reset button, navbar and table widths)</td></tr>
 <tr><td><code>_bento.scss</code></td><td>Bento grid layout</td></tr>
+<tr><td><code>_autocomplete.scss</code></td><td>Autocompletion (typeahead.js <code>tt-*</code> classes)</td></tr>
 </tbody>
 </table>
 
-<h3>Feature Modules (selection of ~60)</h3>
+<h3>27.4 Feature Modules (selection of ~60)</h3>
 <table>
 <thead><tr><th>Module</th><th>Feature</th></tr></thead>
 <tbody>
@@ -1611,6 +1994,10 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 <tr><td><code>_projects.scss</code></td><td>Project management</td></tr>
 <tr><td><code>_todo.scss</code></td><td>To-do lists</td></tr>
 <tr><td><code>_print.scss</code></td><td>Print styles</td></tr>
+<tr><td><code>_room_management.scss</code></td><td>Buildings, rooms, room scheduling</td></tr>
+<tr><td><code>_ai_pulse.scss</code></td><td>Animated SVG indicator for AI activity (<code>o_ai_pulse</code>, <code>o_ai_pulse_active</code>, sizes <code>o_ai_pulse_xs</code> to <code>o_ai_pulse_xl</code>, reduced-motion fallback)</td></tr>
+<tr><td><code>_ai_feedback.scss</code></td><td>AI essay correction marks (<code>o_ai_mark_correct</code>, <code>o_ai_mark_ambiguous</code>, <code>o_ai_mark_wrong</code>)</td></tr>
+<tr><td><code>_selectus.scss</code></td><td>Selectus application and review module</td></tr>
 </tbody>
 </table>
 
@@ -1619,14 +2006,36 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 
 <p>OpenOlat uses a custom AJAX framework (not REST). User actions trigger <code>o_XHREvent()</code> which POSTs to the server. The response contains JSON commands that update specific DOM elements. Background polling (<code>jQuery.periodic</code>) provides server-push capability.</p>
 
-<h3>Key JavaScript Functions</h3>
+<ol>
+<li><strong>User action:</strong> JavaScript captures the event (click, submit, change).</li>
+<li><strong>XHR POST:</strong> <code>o_XHREvent()</code> or a form event (<code>o_ffXHREvent()</code>) sends the request.</li>
+<li><strong>Server dispatch:</strong> the window finds the target component by ID.</li>
+<li><strong>Controller event:</strong> business logic, state updates, <code>setDirty(true)</code>.</li>
+<li><strong>Render phase:</strong> only dirty components are re-rendered.</li>
+<li><strong>JSON response:</strong> array of commands, for example <code>[{action: "updcmp", id: "o_c12345", content: "..."}]</code>.</li>
+<li><strong>DOM update:</strong> <code>jQuery('#o_c12345').replaceWith(newHTML)</code>.</li>
+</ol>
+<p>Form events send the request data as an array of <code>{name, value}</code> pairs, not as an object, so a checkbox group with several checked boxes sends all values. Explicit parameters override form fields with the same name; <code>dispatchuri</code>, <code>dispatchevent</code> and <code>_csrf</code> are always added.</p>
+<p>Background polling for server-push updates:</p>
+<pre><code>jQuery.periodic({period: 5000, decay: 1.005}, function() {
+  jQuery.ajax({
+    method: 'POST', url: '/olat/auth/ajax',
+    data: {_csrf: token, oow: window.name},
+    success: function(commands) { o_ainvoke(commands); }
+  });
+});</code></pre>
+
+<h3>28.1 Key JavaScript Functions</h3>
 <table>
 <thead><tr><th>Function</th><th>Purpose</th></tr></thead>
 <tbody>
 <tr><td><code>o_XHREvent()</code></td><td>Send AJAX request for link/button clicks</td></tr>
-<tr><td><code>o_XHRFnCall()</code></td><td>Send AJAX request for form field changes</td></tr>
-<tr><td><code>o_ainvoke()</code></td><td>Execute JSON command array from server</td></tr>
-<tr><td><code>o_ffSetFormDirty()</code></td><td>Track unsaved form changes</td></tr>
+<tr><td><code>o_ffXHREvent()</code> / <code>o_ffXHRNFEvent()</code></td><td>Send AJAX request for form element events. Data is sent as an array of <code>{name, value}</code> pairs, so all values of a checkbox group arrive</td></tr>
+<tr><td><code>o_ainvoke()</code></td><td>Execute JSON command array from server. Handles <code>pushdialogfocus</code>, <code>popdialogfocus</code> and <code>setattribute</code> for callout focus and ARIA state</td></tr>
+<tr><td><code>setFlexiFormDirty()</code></td><td>Track unsaved form changes</td></tr>
+<tr><td><code>o_waitForVisibleThenFocusDialog()</code></td><td>Focus the first focusable element of a new dialog. <span class="version-badge changed">Changed in 21.1.0</span> Skips clipped elements</td></tr>
+<tr><td><code>o_scrollToElementIfInvisible()</code></td><td>Scroll only when the element is outside the viewport or the modal content</td></tr>
+<tr><td><code>o_shareCopyLink()</code> <span class="version-badge">New in 21.1.0</span></td><td>Copy a share link to the clipboard and show a confirmation (new share component <code>o_share_links</code>)</td></tr>
 <tr><td><code>o_table_toggleCheck()</code></td><td>Toggle table row selection</td></tr>
 <tr><td><code>o_initScrollableOverflowIndicator()</code></td><td>Show scroll shadow indicators</td></tr>
 </tbody>
@@ -1660,10 +2069,236 @@ if (itemDeleted) {
 </table>
 
 <p>Key responsive behaviors: navbar collapses to hamburger on xs/sm; left column becomes offcanvas drawer on xs; tables get horizontal scroll with shadow indicators; toolbar tools shrink/hide text on smaller screens.</p>
+<ul>
+<li><code>o_form_two_cols</code> is a 2-column grid only from <code>$screen-sm-max</code> (991px) upwards.</li>
+<li><span class="version-badge">New in 21.1.0</span> Below <code>$screen-xs-max</code> the rule of <code>.o_section_sub_title</code> moves under the title.</li>
+<li><span class="version-badge">New in 21.1.0</span> <code>.o_facts</code> uses <code>auto-fill</code> columns of at least 320px, so the fact sheet shows 1 to n columns without media queries.</li>
+<li><span class="version-badge">New in 21.1.0</span> Below 540px the table quick search shrinks to 170px.</li>
+</ul>
+
+<!-- ==================== SECTION 31: THIRD-PARTY ==================== -->
+<h2 id="third-party">31. Third-Party Libraries</h2>
+<table>
+<thead><tr><th>Library</th><th>Version</th><th>Purpose</th><th>CSS Impact</th></tr></thead>
+<tbody>
+<tr><td>Bootstrap</td><td>3.4.1 (SASS, JS partly removed)</td><td>CSS framework</td><td>Grid, buttons, forms, navs, modals</td></tr>
+<tr><td>Font Awesome</td><td>6.7.2</td><td>Icon set</td><td><code>fa-*</code> / <code>o_icon_*</code> classes</td></tr>
+<tr><td>jQuery</td><td>3.7.1</td><td>DOM manipulation</td><td>(no CSS)</td></tr>
+<tr><td>TinyMCE</td><td>6.8.6 (folder <code>js/tinymce4/</code>)</td><td>Rich text editor</td><td>Themed via <code>_tinymce.scss</code></td></tr>
+<tr><td>FullCalendar</td><td>6.1.15</td><td>Calendar widget</td><td><code>fc-*</code> classes, <code>_cal.scss</code></td></tr>
+<tr><td>Vanilla JS Datepicker</td><td>1.3.4</td><td>Date picker of <code>JSDateChooserRenderer</code></td><td><code>datepicker-*</code> classes</td></tr>
+<tr><td>jQuery UI</td><td>1.13.2</td><td>Dialog, drag and drop, resize, slider</td><td><code>ui-*</code> classes, <code>_thirdparty.scss</code></td></tr>
+<tr><td>typeahead.js</td><td>bundle in <code>js/jquery/typeahead/</code></td><td>Autocompletion, <code>SearchElement</code> with <code>ListProvider</code></td><td><code>tt-*</code> classes, <code>_autocomplete.scss</code></td></tr>
+<tr><td>MathLive</td><td>&mdash;</td><td>Math input</td><td><code>_mathlive.scss</code></td></tr>
+<tr><td>D3.js</td><td>7.9.0</td><td>Charts (pie, bar, radar, statistics) via the jQuery plugins in <code>js/jquery/openolat/</code></td><td>SVG, minimal CSS</td></tr>
+<tr><td>Leaflet</td><td>1.9.4</td><td>Maps in room management (building address)</td><td><code>leaflet.css</code></td></tr>
+</tbody>
+</table>
+<p>Other OpenOlat scripts: <code>js/openolat/resize.js</code> holds <code>o_adjustContentHeightForAbsoluteElement()</code>, and <code>js/edusharing/edusharing.js</code> holds the edu-sharing integration. Both were moved out of <code>functions.js</code>.</p>
+
+<!-- ==================== SECTION 32: PRINT ==================== -->
+<h2 id="print">32. Print Styles</h2>
+<p><code>_print.scss</code> defines <code>@media print</code> rules:</p>
+<ul>
+<li>Hides navbar, footer, toolbar tools, tree menu</li>
+<li>Shows breadcrumb as text trail</li>
+<li>Forces white backgrounds</li>
+<li>Avoids page breaks in tables and forms; helpers <code>o_print_break_avoid</code>, <code>o_print_break_before</code>, <code>o_print_break_after</code></li>
+<li>Adds print-specific header with logo via <code>#o_print_brand</code></li>
+</ul>
+<p><span class="version-badge">New in 21.1.0</span> The info page of courses and implementations (<code>.o_info_page</code>, <code>_repository.scss</code>) has its own <code>@media print</code> block. It forces the one-column order of the mobile layout, hides interactive parts, and shows the QR code (<code>.o_info_page_qrcode</code>) next to the header instead of the teaser image.</p>
+
+<!-- ==================== SECTION 33: CSS IDS ==================== -->
+<h2 id="css-ids">33. Key CSS IDs</h2>
+<table>
+<thead><tr><th>ID</th><th>Element</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>#o_body</code></td><td><code>&lt;body&gt;</code></td><td>Root body, gets <code>.o_dmz</code> on login page</td></tr>
+<tr><td><code>#o_navbar_wrapper</code> / <code>#o_navbar_container</code></td><td><code>&lt;div&gt;</code></td><td>Top navigation bar</td></tr>
+<tr><td><code>#o_navbar_tools_permanent</code></td><td><code>&lt;ul&gt;</code></td><td>Personal tools: <code>#o_navbar_imclient</code>, <code>#o_navbar_search_opener</code>, <code>#o_navbar_my_menu</code></td></tr>
+<tr><td><code>#o_main_wrapper</code> / <code>#o_main_container</code></td><td><code>&lt;div&gt;</code></td><td>Main content wrappers</td></tr>
+<tr><td><code>#o_main</code></td><td><code>&lt;div&gt;</code></td><td>CSS Grid 3-column layout</td></tr>
+<tr><td><code>#o_main_left</code> / <code>#o_main_center</code> / <code>#o_main_right</code></td><td><code>&lt;div&gt;</code></td><td>Tree menu / content / sidebar</td></tr>
+<tr><td><code>#o_main_center_content_inner</code></td><td><code>&lt;div&gt;</code></td><td>Content area inner wrapper</td></tr>
+<tr><td><code>#o_footer_wrapper</code> / <code>#o_footer_container</code></td><td><code>&lt;div&gt;</code></td><td>Footer</td></tr>
+<tr><td><code>#o_toplink</code></td><td><code>&lt;a&gt;</code></td><td>Scroll-to-top link</td></tr>
+<tr><td><code>#o_bg</code></td><td><code>&lt;div&gt;</code></td><td>Background image (login page)</td></tr>
+</tbody>
+</table>
+
+<!-- ==================== SECTION 34: RENDERER STATS ==================== -->
+<h2 id="renderer-stats">34. Renderer Statistics</h2>
+<table>
+<thead><tr><th>Category</th><th>Count</th><th>Key Renderers</th></tr></thead>
+<tbody>
+<tr><td>Form elements</td><td>24</td><td>TextElementRenderer, SelectboxRenderer, CheckboxElementRenderer, SearchElementRenderer</td></tr>
+<tr><td>FlexiTable</td><td>9</td><td>FlexiTableClassicRenderer, FlexiFilterTabsComponentRenderer</td></tr>
+<tr><td>Panels/Containers</td><td>13</td><td>PanelRenderer, IconPanelRenderer, VelocityContainerRenderer, SectionsRenderer</td></tr>
+<tr><td>Navigation</td><td>10</td><td>TabbedPaneRenderer, DropdownRenderer, MenuTreeRenderer</td></tr>
+<tr><td>Widgets</td><td>4</td><td>WidgetRenderer, TextWidgetRenderer, FigureWidgetRenderer</td></tr>
+<tr><td>Media/Files</td><td>4</td><td>ImageRenderer, DownloadComponentRenderer</td></tr>
+<tr><td>Charts</td><td>7</td><td>BarChartComponentRenderer, ProgressBarRenderer</td></tr>
+<tr><td>Assessment/QTI</td><td>10</td><td>AssessmentTestComponentRenderer</td></tr>
+<tr><td>Content Editor</td><td>6</td><td>ContentEditorComponentRenderer</td></tr>
+<tr><td>Specialized Cell</td><td>250+</td><td>PassedCellRenderer, CompletionRenderer, GradeCellRenderer, TranslateCellRenderer</td></tr>
+<tr><td>Other</td><td>200+</td><td>Curriculum, Portfolio, Badge, Lecture, FactSheet renderers</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>~540</strong></td><td></td></tr>
+</tbody>
+</table>
+
+
+<!-- ==================== SECTION 35: INFO PAGE PATTERN ==================== -->
+<h2 id="info-page">35. Page Pattern: Info Page <span class="version-badge">New in 21.1.0</span></h2>
+
+<p>The info page of courses and implementations was redesigned in 21.1.0 (OO-8728). Template: <code>repository/ui/list/_content/info_page.html</code>. Styles: <code>.o_info_page</code> in <code>_repository.scss</code>. Library entry: <a href="component-library/layout.html#info-page">Layout &amp; Containers, Info Page</a>.</p>
+
+<pre><code>&lt;div class="o_info_page [o_{educationalType}_course] [o_info_page_member]"&gt;
+  &lt;div class="o_info_page_column_aside"&gt;
+    &lt;div class="o_info_page_item o_info_page_thumbnail"&gt;...&lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_get_started"&gt;...offers, start button...&lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_my_course"&gt;...FactSheet "My course"...&lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_events"&gt;...dates...&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="o_info_page_column_main"&gt;
+    &lt;div class="o_info_page_item o_info_page_header"&gt;
+      &lt;div class="o_header"&gt;...o_meta, h2 title, o_header_actions, o_header_offers...
+        &lt;div class="o_info_page_qrcode"&gt;...&lt;/div&gt;          &lt;!-- print only --&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_facts"&gt;...FactSheet...&lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_sections"&gt;...Sections...&lt;/div&gt;
+    &lt;div class="o_info_page_item o_info_page_licence"&gt;...&lt;/div&gt;
+    &lt;fieldset class="o_info_page_item o_info_page_rating"&gt;&lt;legend&gt;Rating&lt;/legend&gt;...&lt;/fieldset&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+<div class="diagram-box">
+<svg viewBox="0 0 780 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif"><text x="390" y="20" text-anchor="middle" font-size="14" font-weight="700" fill="#16797c">Info Page Grid: Mobile Order vs. Desktop Columns</text><text x="130" y="44" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">below $screen-sm-min: 1 column, order 1-10</text><rect x="40" y="54" width="180" height="22" rx="4" fill="#f97316" opacity="0.14"/><text x="130.0" y="69.0" text-anchor="middle" font-size="9" fill="#9a3412">o_info_page_thumbnail  (1)</text><rect x="40" y="80" width="180" height="22" rx="4" fill="#16797c" opacity="0.14"/><text x="130.0" y="95.0" text-anchor="middle" font-size="9" fill="#16797c">o_info_page_header  (2)</text><rect x="40" y="106" width="180" height="22" rx="4" fill="#f97316" opacity="0.14"/><text x="130.0" y="121.0" text-anchor="middle" font-size="9" fill="#9a3412">o_info_page_get_started  (3)</text><rect x="40" y="132" width="180" height="22" rx="4" fill="#f97316" opacity="0.14"/><text x="130.0" y="147.0" text-anchor="middle" font-size="9" fill="#9a3412">o_info_page_my_course  (4)</text><rect x="40" y="158" width="180" height="22" rx="4" fill="#16797c" opacity="0.14"/><text x="130.0" y="173.0" text-anchor="middle" font-size="9" fill="#16797c">o_info_page_benefits  (5)</text><rect x="40" y="184" width="180" height="22" rx="4" fill="#16797c" opacity="0.14"/><text x="130.0" y="199.0" text-anchor="middle" font-size="9" fill="#16797c">o_info_page_facts  (6)</text><rect x="40" y="210" width="180" height="22" rx="4" fill="#16797c" opacity="0.14"/><text x="130.0" y="225.0" text-anchor="middle" font-size="9" fill="#16797c">o_info_page_sections  (7)</text><rect x="40" y="236" width="180" height="22" rx="4" fill="#f97316" opacity="0.14"/><text x="130.0" y="251.0" text-anchor="middle" font-size="9" fill="#9a3412">o_info_page_events  (8)</text><rect x="40" y="262" width="180" height="22" rx="4" fill="#16797c" opacity="0.14"/><text x="130.0" y="277.0" text-anchor="middle" font-size="9" fill="#16797c">o_info_page_licence  (9)</text><rect x="40" y="288" width="180" height="22" rx="4" fill="#16797c" opacity="0.14"/><text x="130.0" y="303.0" text-anchor="middle" font-size="9" fill="#16797c">o_info_page_rating  (10)</text><text x="545" y="44" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">from $screen-md-min: grid 2fr 1fr</text><rect x="300" y="54" width="330" height="256" rx="6" fill="#fff" stroke="#16797c"/><text x="465" y="70" text-anchor="middle" font-size="10" font-weight="600" fill="#16797c">.o_info_page_column_main (2fr)</text><rect x="315" y="80" width="300" height="36" rx="4" fill="#16797c" opacity="0.12"/><text x="465.0" y="102.0" text-anchor="middle" font-size="9" fill="#16797c">o_info_page_header</text><rect x="315" y="124" width="300" height="36" rx="4" fill="#16797c" opacity="0.12"/><text x="465.0" y="146.0" text-anchor="middle" font-size="9" fill="#16797c">o_info_page_facts</text><rect x="315" y="168" width="300" height="36" rx="4" fill="#16797c" opacity="0.12"/><text x="465.0" y="190.0" text-anchor="middle" font-size="9" fill="#16797c">o_info_page_sections</text><rect x="315" y="212" width="300" height="36" rx="4" fill="#16797c" opacity="0.12"/><text x="465.0" y="234.0" text-anchor="middle" font-size="9" fill="#16797c">o_info_page_licence</text><rect x="315" y="256" width="300" height="36" rx="4" fill="#16797c" opacity="0.12"/><text x="465.0" y="278.0" text-anchor="middle" font-size="9" fill="#16797c">o_info_page_rating</text><rect x="645" y="54" width="120" height="256" rx="6" fill="#fff" stroke="#f97316"/><text x="705" y="70" text-anchor="middle" font-size="10" font-weight="600" fill="#9a3412">.._column_aside (1fr)</text><rect x="655" y="80" width="100" height="46" rx="4" fill="#f97316" opacity="0.14"/><text x="705.0" y="107.0" text-anchor="middle" font-size="9" fill="#9a3412">thumbnail</text><rect x="655" y="134" width="100" height="46" rx="4" fill="#f97316" opacity="0.14"/><text x="705.0" y="161.0" text-anchor="middle" font-size="9" fill="#9a3412">get_started</text><rect x="655" y="188" width="100" height="46" rx="4" fill="#f97316" opacity="0.14"/><text x="705.0" y="215.0" text-anchor="middle" font-size="9" fill="#9a3412">my_course</text><rect x="655" y="242" width="100" height="46" rx="4" fill="#f97316" opacity="0.14"/><text x="705.0" y="269.0" text-anchor="middle" font-size="9" fill="#9a3412">events</text></svg>
+<div class="diagram-caption">Figure 8: The info page items sorted by <code>order</code> in the one-column layout (left) and placed in two columns on desktop (right). Orange items belong to the aside column.</div>
+</div>
+
+<ul>
+<li><strong>Mobile (below <code>$screen-sm-min</code>):</strong> one grid column, gap 20px. The two column wrappers get <code>display: contents</code>, so the items become grid children and <code>order</code> 1 to 10 sorts them.</li>
+<li><strong>Tablet (sm):</strong> <code>grid-template-columns: 1fr auto</code>; the thumbnail (max 285px) sits next to the header.</li>
+<li><strong>Desktop (from <code>$screen-md-min</code>):</strong> <code>grid-template-columns: 2fr 1fr</code>; each column wrapper is a flex column with gap 20px.</li>
+<li><strong>Print:</strong> back to the one-column order, interactive parts hidden, <code>.o_info_page_qrcode</code> shown next to the header.</li>
+<li><strong>Building blocks:</strong> the facts and "My course" are <a href="#fact-sheet">Fact Sheets</a>, the description is <a href="#sections">Sections</a>, "Leave course" is a ghost danger button with <code>o_fact_sheet_footer_full</code>, share is a dialog opener.</li>
+</ul>
+
+<!-- ==================== SECTION 36: ACCESSIBILITY ==================== -->
+<h2 id="accessibility">36. Accessibility</h2>
+
+<p>This chapter collects the accessibility mechanisms of the frontend layer. Markers show what changed in 21.1.0; the rest is documented here for the first time.</p>
+
+<h3>36.1 Focus Management</h3>
+<table>
+<thead><tr><th>Mechanism</th><th>Behaviour</th></tr></thead>
+<tbody>
+<tr><td>Focus after AJAX</td><td>The server sends focus commands; <code>o_ffSetFocusArray()</code> tries each target with <code>o_ffSetFocus()</code>. Only inputs, selects, textareas, and buttons or <code>.btn</code> links with <code>o_can_have_focus</code> receive focus. A text input gets its content selected. A second attempt runs after the next tick because typeahead.js can steal the focus. Nothing happens while the focus is inside an open <code>&lt;dialog&gt;</code>.</td></tr>
+<tr><td><code>o_info.lastFormFocusEl</code></td><td>Form elements record the last focused element in <code>onfocus</code>, so a re-rendered form can restore it.</td></tr>
+<tr><td>Scroll and focus</td><td><code>o_scrollTopAndFocus()</code> scrolls to the top first, then sets the focus, so the page does not jump twice.</td></tr>
+<tr><td>Dialogs and callouts</td><td><code>o_waitForVisibleThenFocusDialog()</code> waits until the new dialog is visible and focuses its first focusable element. <span class="version-badge changed">Changed in 21.1.0</span> Clipped (hidden) elements are skipped, so the focus no longer lands on the <code>sr-only</code> close button.</td></tr>
+<tr><td>Focus return</td><td><code>pushdialogfocus</code> / <code>popdialogfocus</code> keep a stack of trigger IDs (<code>o_info.focusReturnStack</code>). After the close, <code>o_ainvoke()</code> focuses <code>o_info.pendingFocusReturn</code> and scrolls it into view only when needed (<code>o_scrollToElementIfInvisible()</code>). See <a href="#callout-a11y">Callout Triggers and Focus</a>.</td></tr>
+<tr><td>Skip link</td><td>The first element of the page is <code>&lt;a href="#o_main_container" class="sr-only"&gt;</code> "Skip to main content" (<code>fullwebapplayout.html</code>).</td></tr>
+</tbody>
+</table>
+
+<h3>36.2 ARIA Patterns</h3>
+<table>
+<thead><tr><th>Pattern</th><th>Markup</th><th>Where</th></tr></thead>
+<tbody>
+<tr><td>Modal dialog</td><td><code>&lt;dialog class="dialog modal" aria-modal="true" aria-labelledby="o_md_{id}"&gt;</code></td><td><code>CloseableModalController</code>, <code>DialogBoxController</code>, dirty form dialog</td></tr>
+<tr><td>Dialog opener (callout trigger)</td><td><code>role="button" aria-haspopup="dialog" aria-expanded</code> (+ <code>aria-controls</code> on object selection)</td><td><code>Link</code>/<code>FormLink.setAriaDialogOpener()</code>, <span class="version-badge changed">Changed in 21.1.0</span> action columns, table tools, filters</td></tr>
+<tr><td>Disclosure</td><td>toggle with <code>role="button"</code>, <code>aria-expanded</code>, <code>aria-controls</code>; body with Bootstrap <code>collapse</code></td><td><a href="#form-section">Form Section</a> and <a href="#sections">Sections</a> (<span class="version-badge">New in 21.1.0</span>), <code>InfoPanel</code>, assistance accordion, <code>FormExpandButton</code></td></tr>
+<tr><td>Switch</td><td><code>button role="switch" aria-checked</code></td><td><code>FormToggle</code> (<code>o_button_toggle</code>)</td></tr>
+<tr><td>Toggle button</td><td><code>button role="checkbox" aria-checked</code>; the hidden text has <code>aria-hidden="true"</code></td><td>scopes (<code>o_toggle_button o_scope_toggle</code>)</td></tr>
+<tr><td>Tabs</td><td><code>role="tablist"</code>, <code>role="tab" aria-selected</code>, <code>role="tabpanel"</code></td><td><code>TabbedPane</code></td></tr>
+<tr><td>Tree</td><td><code>ul role="tree"</code>, <code>li role="treeitem" aria-selected</code></td><td><code>MenuTree</code></td></tr>
+<tr><td>Search</td><td><code>div role="search"</code>, <code>input role="searchbox" aria-label</code></td><td><a href="#search-element">Search Element</a> (<span class="version-badge">New in 21.1.0</span>)</td></tr>
+<tr><td>Landmarks</td><td><code>role="navigation" aria-label</code> on <code>#o_navbar_wrapper</code> and <code>#o_offcanvas_right</code></td><td>page layout</td></tr>
+<tr><td>Images</td><td>user initials <code>role="img" aria-label="{name}"</code>; AI pulse SVG <code>role="img" aria-label="OpenOlat AI"</code>; decorative icons <code>aria-hidden="true"</code></td><td>portraits, AI UI, all <code>o_icon</code> in links</td></tr>
+</tbody>
+</table>
+
+<h3>36.3 Live Regions</h3>
+<ul>
+<li><strong>Status:</strong> AI job overlays and messages use <code>role="status"</code> (question generation overlay <code>o_ai_questions_overlay</code> and essay correction overlay also <code>aria-live="polite"</code>).</li>
+<li><strong>Announcements:</strong> the dashboard edit mode writes into <code>#o_dashboard_edit_live</code> (<code>sr-only</code>, <code>aria-live="polite" aria-atomic="true"</code>).</li>
+<li><strong>Errors:</strong> the AI correction error box uses <code>role="alert"</code>.</li>
+<li><strong>Progress:</strong> the AJAX busy dialog <code>#o_ajax_busy</code> contains a <code>role="progressbar"</code> with <code>aria-valuenow</code>, updated by <code>functions.js</code>.</li>
+<li><strong>Gap:</strong> the info messages of <code>showInfoBox()</code> are prepended to <code>#o_messages</code>, which is not a live region. Screen readers do not announce them.</li>
+</ul>
+
+<h3>36.4 Keyboard Patterns</h3>
+<table>
+<thead><tr><th>Key</th><th>Behaviour</th></tr></thead>
+<tbody>
+<tr><td>Enter / Space on <code>role="button"</code> links</td><td><code>triggerClick(event, enter, space)</code> prevents the default action and clicks the element. <code>LinkRenderer</code> adds it for form links and links with the button role; Enter on a link inside a form never submits the form.</td></tr>
+<tr><td>Escape</td><td><code>o_doEscapeDispatch()</code> closes the top layer: lightbox, then the last layered panel, callout or modal (its close button). Ignored in selects and in the date picker.</td></tr>
+<tr><td>Enter / Escape in search fields</td><td>Enter searches by AJAX instead of submitting the form; in the typeahead variant Escape resets (<span class="version-badge">New in 21.1.0</span>).</td></tr>
+<tr><td>Enter / Space on section headers</td><td>Toggles the section (<span class="version-badge">New in 21.1.0</span>).</td></tr>
+<tr><td>Space / Enter in the colour picker</td><td>Selects the colour and closes the dropdown.</td></tr>
+</tbody>
+</table>
+
+<h3>36.5 A11y Helpers in the JS Layer</h3>
+<table>
+<thead><tr><th>Function / command</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>o_ffSetFocus()</code>, <code>o_ffSetFocusArray()</code></td><td>Programmatic focus after AJAX updates</td></tr>
+<tr><td><code>o_waitForVisibleThenFocusDialog()</code></td><td>Initial focus in dialogs and callouts</td></tr>
+<tr><td><code>pushdialogfocus</code>, <code>popdialogfocus</code></td><td>Focus return to the trigger</td></tr>
+<tr><td><code>setattribute</code></td><td>Change one attribute (e.g. <code>aria-expanded</code>) without re-render</td></tr>
+<tr><td><code>o_scrollToElementIfInvisible()</code></td><td>Scroll only when needed, also inside modal content</td></tr>
+<tr><td><code>triggerClick()</code></td><td>Keyboard activation for link buttons</td></tr>
+<tr><td><code>o_doEscapeDispatch()</code></td><td>Escape closes the top layer</td></tr>
+<tr><td>section handler (<code>click.oSection keydown.oSection</code>)</td><td>Disclosure state for <code>.o_section_toggle</code> (<span class="version-badge">New in 21.1.0</span>)</td></tr>
+</tbody>
+</table>
+
+<h3>36.6 A11y Rules of the Theme</h3>
+<ul>
+<li><strong>Contrast:</strong> <code>o-a11y-color()</code> in <code>_functions.scss</code> adjusts text colours to 4.5:1 against their background (see <a href="#a11y">Accessibility Functions</a>).</li>
+<li><strong>Screen-reader text:</strong> <code>.sr-only</code> is forced to black on white (<code>_bootstrap.scss</code>) so contrast checkers do not report it; templates use <code>$r.screenreaderOnly("text")</code>.</li>
+<li><strong>Visible focus:</strong> <code>.dropdown-toggle:focus-visible</code> uses the Bootstrap <code>tab-focus</code> mixin.</li>
+<li><strong>Reduced motion:</strong> <code>prefers-reduced-motion</code> rules in 10 modules, for example ghost button transitions (<code>_helpers.scss</code>), the AI pulse (all animation off) and the wavy AI marks (solid).</li>
+<li><strong>Icons:</strong> icon fonts are decorative; links render them with <code>aria-hidden="true"</code> and put the text in a <code>span</code> or <code>sr-only</code> span.</li>
+</ul>
+
+<h3>36.7 Known Gaps (verified 2026-09-25)</h3>
+<ul>
+<li>Object selection: the button <code>aria-label</code> contains raw HTML from <code>IdentitySelectionSource</code>; <code>label for</code> points to a non-existent id; after the callout closes the focus lands on <code>body</code>.</li>
+<li>Colour picker: <code>ColorPickerRenderer</code> writes <code>aria-expanded='true'</code> also when the dropdown is closed, and omits the space before <code>onfocus</code>.</li>
+<li><code>#o_messages</code> info boxes are not announced (no live region).</li>
+<li>AI essay marks carry the meaning by colour and <code>title</code> only.</li>
+<li>Question pool AI overlay: the classes <code>o_ai_questions_overlay</code> and <code>o_ai_questions_generating</code> have no rule in the light theme.</li>
+</ul>
+
+<!-- ==================== SECTION 37: CHANGELOG ==================== -->
+<h2 id="changelog">37. Changelog</h2>
+<h3>37.1 21.1.0 (2026-09-25)</h3>
+<p>New components and mechanisms (commits on <code>master</code> that are not on <code>OpenOLAT_21.0</code>):</p>
+<table>
+<thead><tr><th>Issue</th><th>Change</th><th>Section</th></tr></thead>
+<tbody>
+<tr><td>OO-9756</td><td><code>FormSection</code> (<code>o_form_section</code>), GUI demo "Example settings" as settings page blueprint</td><td><a href="#form-section">Form Section</a></td></tr>
+<tr><td>OO-9627</td><td><code>SearchElement</code> (<code>o_search</code> with variants) in tables, navbar, overviews, object and tag selection</td><td><a href="#search-element">Search Element</a></td></tr>
+<tr><td>OO-9688</td><td><code>FactSheet</code> (<code>o_fact_sheet</code>), <code>ComponentList</code> (<code>o_component_list</code>)</td><td><a href="#fact-sheet">Fact Sheet</a></td></tr>
+<tr><td>OO-8728</td><td><code>Sections</code> (<code>o_sections</code>), info page redesign, ghost danger button</td><td><a href="#sections">Sections</a>, <a href="#css-buttons">Buttons</a></td></tr>
+<tr><td>OO-9647</td><td>Label icon (<code>FormItem.setLabelIconCss</code>), <code>.o_button_group.compact</code></td><td><a href="#form-elements">Form Elements</a></td></tr>
+<tr><td>OO-9727</td><td>Callout trigger ARIA pattern on buttons and action columns, focus on first visible element</td><td><a href="#callout-a11y">Callout Triggers</a></td></tr>
+<tr><td>OO-9596</td><td><code>TranslateCellRenderer</code></td><td><a href="#css-tables">Table Classes</a></td></tr>
+<tr><td>OO-9693</td><td>Share component with <code>o_shareCopyLink()</code></td><td><a href="#ajax">AJAX Mechanism</a></td></tr>
+<tr><td>OO-9299</td><td>Print layout of the info page</td><td><a href="#print">Print Styles</a>, <a href="#info-page">Info Page</a></td></tr>
+</tbody>
+</table>
+<p>Documented for the first time (shipped in 21.0.x, no marker): button and input border tokens (OO-9547), callout ARIA disclosure pattern and focus return (OO-8877), object selection disabled state and "(me)" user (OO-9620, OO-9526, OO-9531), <code>RelativeDateElement</code> (OO-9304), AJAX form data as name/value pairs (OO-9795), <code>oo-docs.css</code> icon bundle, SCSS modules <code>_room_management</code>, <code>_ai_pulse</code>, <code>_ai_feedback</code>, <code>_selectus</code>, Leaflet.</p>
+<p>Also new in this update: chapter 35 (info page pattern) and chapter 36 (accessibility); the Markdown version follows the same 37-chapter structure.</p>
+<p>Corrections of earlier content: toolbar segment markup, modal markup (<code>o_layered_panel</code> + <code>&lt;dialog class="dialog modal"&gt;</code>), FormToggle and date picker markup, widget type classes, JavaScript function names (<code>o_XHRFnCall</code>, <code>o_ffSetFormDirty</code> do not exist), <code>o_ce_</code> and <code>o_sel_</code> examples, <code>o_form_two_cols</code> breakpoint, <code>_config.scss</code> size and line numbers. Sections 31 to 34 bring content from the Markdown version that was missing here.</p>
 
 <hr>
 
-<p style="color:#64748b;font-size:12px;margin-top:40px">Generated for the OpenOlat project &mdash; frentix GmbH, Z&uuml;rich, Switzerland</p>
+<p style="color:#64748b;font-size:12px;margin-top:40px">Generated for the OpenOlat project &mdash; frentix GmbH, Z&uuml;rich, Switzerland. Release 21.1.0, updated 2026-09-25.</p>
 
 </main>
 </div>
