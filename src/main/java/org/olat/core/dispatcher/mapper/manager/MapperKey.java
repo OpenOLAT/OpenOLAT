@@ -33,40 +33,24 @@ public class MapperKey implements Serializable {
 
 	private static final long serialVersionUID = 4078036800789246979L;
 	
-	private String mapperId;
-	private String sessionId;
+	private final String mapperId;
+	private final String sessionId;
 	private String url;
 	private String token;
 	
-	public MapperKey() {
-		//
-	}
-	
 	public MapperKey(UserSession usess, String mapperId) {
 		this.mapperId = mapperId;
-		if(usess != null) {
-			sessionId = usess.getSessionId();
-		}
-		
-		if(sessionId == null) {
-			sessionId = "";
-		}
+		sessionId = usess == null || usess.getSessionId() == null
+				? ""
+				: usess.getSessionId();
 	}
 	
 	public String getMapperId() {
 		return mapperId;
 	}
 	
-	public void setMapperId(String mapperId) {
-		this.mapperId = mapperId;
-	}
-	
 	public String getSessionId() {
 		return sessionId;
-	}
-	
-	public void setSessionId(String sessionId) {
-		this.sessionId = sessionId;
 	}
 
 	public String getUrl() {

@@ -183,8 +183,8 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 			}
 			
 			if(token != null && sandboxedMapper.token() != null && token.equals(sandboxedMapper.token())) {
-				MapperKey mapperKey = new MapperKey(newSession, id);
-				mapperKeyToMapper.computeIfAbsent(mapperKey, key -> mapper);
+				MapperKey mapperKey = new MapperKey(parentSession, id);// sandbox() returns a MapperKey with the parent session
+				mapperKeyToMapper.putIfAbsent(mapperKey, mapper);
 				sessionIdToMapperKeys
 					.computeIfAbsent(mapperKey.getSessionId(), sid -> new ArrayList<>())
 					.add(mapperKey);
@@ -233,15 +233,14 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 		if(mapKeys != null && !mapKeys.isEmpty()) {
 			for(MapperKey mapKey:mapKeys) {
 				Mapper mapper = mapperKeyToMapper.remove(mapKey);
-				if(mapper != null) {
-					if(mapper instanceof Serializable sMapper) {
-						mapperDao.updateConfiguration(mapKey.getMapperId(), sMapper, -1);
-					}
+				if(mapper instanceof Serializable sMapper) {
+					mapperDao.updateConfiguration(mapKey.getMapperId(), sMapper, -1);
 				}
+				sandboxMapperCache.remove(mapKey.getMapperId());
 			}
 		}
 		
-		log.debug("Mappers: with key: {} with sessions: {}", mapperKeyToMapper.size(), sessionIdToMapperKeys.size());
+		log.debug("Mappers: with key: {} with sessions: {} sandboxed: {}", mapperKeyToMapper.size(), sessionIdToMapperKeys.size(), sandboxMapperCache.size());
 	}
 	
 	@Override
@@ -252,8 +251,9 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 			if(mapper instanceof Serializable sMapper) {
 				mapperDao.updateConfiguration(mapperKey.getMapperId(), sMapper, -1);
 			}
+			sandboxMapperCache.remove(mapperKey.getMapperId());
 		}
 		
-		log.debug("Mappers: with key: {} with sessions: {}", mapperKeyToMapper.size(), sessionIdToMapperKeys.size());
+		log.debug("Mappers: with key: {} with sessions: {} sandboxed: {}", mapperKeyToMapper.size(), sessionIdToMapperKeys.size(), sandboxMapperCache.size());
 	}
 }

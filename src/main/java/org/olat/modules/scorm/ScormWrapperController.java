@@ -68,10 +68,12 @@ public class ScormWrapperController extends MainLayoutBasicController {
 		mainVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID		
 		
 		ControllerCreator scormDisplayControllerCreator = (lureq, lwControl) -> {
-			return new ScormAPIandDisplayController(lureq, lwControl, showMenu,
+			ScormAPIandDisplayController ctrl = new ScormAPIandDisplayController(lureq, lwControl, showMenu,
 					cpRoot, scormResourceId, courseIdNodeId, lessonMode, creditMode,
 					assessableType, activate,  attemptsAlreadyIncremented, fullWindow,
 					randomizeDelivery, getDeliveryOptions());
+			listenTo(ctrl);
+			return ctrl;
 		};
 		
 		ControllerDeliveryMapper mapper = new ControllerDeliveryMapper(getWindowControl(),
