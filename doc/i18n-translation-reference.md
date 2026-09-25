@@ -785,7 +785,7 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 | Organisation roles | Organisationsrollen | Roles de organización | Rôles d'organisation | Ruoli dell'organizzazione | Role organizacyjne |  | Roly organizácie |  |
 | Access roles | Zugangsrollen | Roles de acceso | Rôles d'accès | Ruoli di accesso | Role dostępu |  | Prístupové roly |  |
 | Course and group roles | Kurs- und Gruppenrollen | Roles de curso y de grupo | Rôles de cours et de groupe | Ruoli di corso e di gruppo | Role kursu i grupy |  | Roly kurzu a skupiny |  |
-| Course Planner roles | Course-Planner-Rollen | Roles del Course Planner | Rôles du Planificateur de cours | Ruoli del Course Planner | Role Course Planner |  | Roly plánovača kurzov |  |
+| Course Planner roles | Course-Planner-Rollen | Roles del Course Planner | Rôles Course Planner | Ruoli del Course Planner | Role Course Planner |  | Roly Course Planner |  |
 | Project roles | Projektrollen | Roles de proyecto | Rôles de projet | Ruoli di progetto | Role projektu |  | Projektové roly |  |
 | Selection roles | Rollen im Auswahlverfahren | Roles en el procedimiento de selección | Rôles de la procédure de sélection | Ruoli nella procedura di selezione | Role w procedurze wyboru |  | Roly vo výberovom konaní |  |
 | Portfolio roles | Portfoliorollen | Roles de portfolio | Rôles de portfolio | Ruoli del portfolio | Role portfolio |  | Portfóliové roly |  |

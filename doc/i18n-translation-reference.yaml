@@ -15321,15 +15321,15 @@ terms:
     es_source: proposed_unsure
     es: Roles del Course Planner
     fr_source: proposed_unsure
-    fr: Rôles du Planificateur de cours
+    fr: Rôles Course Planner
     it_source: proposed_unsure
     it: Ruoli del Course Planner
     pl_source: proposed_unsure
     pl: Role Course Planner
     sk_source: proposed
-    sk: Roly plánovača kurzov
+    sk: Roly Course Planner
     keys:
-    - modules/curriculum/ui:membership
+    - user/ui/admin:menu.curriculums.roles
     note: Das Enum CurriculumRoles hält zusätzlich owner, coach und participant. Das sind die Kursrollen,
       an einer Durchführung vergeben; im Kurs stehen sie als CPL Kursbesitzer{in}, CPL Betreuer{in} und
       CPL Teilnehmer{in}. Vererbt werden laut Code Klassenlehrer{in} und Elementbesitzer{in}.

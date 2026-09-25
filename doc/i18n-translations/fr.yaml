@@ -276,7 +276,7 @@ terms:
     fr: Rôles de cours et de groupe
     status: unsure
   roles.role_group_curriculum:
-    fr: Rôles du Planificateur de cours
+    fr: Rôles Course Planner
     status: unsure
   roles.role_group_organisation:
     fr: Rôles d'organisation

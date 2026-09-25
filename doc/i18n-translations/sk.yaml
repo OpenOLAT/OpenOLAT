@@ -436,7 +436,7 @@ terms:
     sk: Roly kurzu a skupiny
     status: ai-decided
   roles.role_group_curriculum:
-    sk: Roly plánovača kurzov
+    sk: Roly Course Planner
     status: ai-decided
   roles.role_group_organisation:
     sk: Roly organizácie
