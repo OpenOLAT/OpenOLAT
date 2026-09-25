@@ -96,6 +96,16 @@ public enum QTI21QuestionType {
 		return poolQuestionType;
 	}
 	
+	/**
+	 * @return true if this question type has no auto-gradable response processing (essay, file
+	 *         upload, drawing): SCORE stays at its default and cannot be trusted to reflect whether
+	 *         the response was actually correct, e.g. for a QTI21ComponentRenderer's correctness badge,
+	 *         or when computing whether the question counts as passed/done (OO-9748).
+	 */
+	public boolean isManuallyGradedType() {
+		return this == essay || this == upload || this == drawing;
+	}
+
 	public static String generateNewIdentifier(String identifier) {
 		String newIdentifier = null;
 		for(QTI21QuestionType type:QTI21QuestionType.values()) {
