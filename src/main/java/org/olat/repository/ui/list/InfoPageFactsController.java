@@ -71,7 +71,8 @@ public class InfoPageFactsController extends BasicController {
 						Util.createPackageTranslator(CertificatesOptionsController.class, ureq.getLocale()))));
 
 		List<Fact> facts = new ArrayList<>();
-		addFact(facts, "o_icon_lifecycle_date", "cif.dates", period(entry.getLifecycle()));
+		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
+		addFact(facts, "o_icon_lifecycle_date", "cif.dates", period(lifecycle), periodDesc(lifecycle));
 		addEventsFact(facts, numLectureBlocks);
 		addFact(facts, "o_icon_location", "cif.location.short", entry.getLocation());
 		addFact(facts, "o_icon_graduate", "cif.authors", entry.getAuthors());
@@ -155,6 +156,13 @@ public class InfoPageFactsController extends BasicController {
 		return Formatter.getInstance(getLocale()).formatPeriod(lifecycle.getValidFrom(), lifecycle.getValidTo());
 	}
 
+	private String periodDesc(RepositoryEntryLifecycle lifecycle) {
+		if (lifecycle == null || lifecycle.isPrivateCycle() || !StringHelper.containsNonWhitespace(lifecycle.getSoftKey())) {
+			return null;
+		}
+		return lifecycle.getLabel();
+	}
+
 	private void addEventsFact(List<Fact> facts, int numLectureBlocks) {
 		if (numLectureBlocks > 0) {
 			String numEvents = numLectureBlocks == 1
@@ -165,8 +173,12 @@ public class InfoPageFactsController extends BasicController {
 	}
 
 	private void addFact(List<Fact> facts, String iconCss, String labelI18nKey, String value) {
+		addFact(facts, iconCss, labelI18nKey, value, null);
+	}
+
+	private void addFact(List<Fact> facts, String iconCss, String labelI18nKey, String value, String subValue) {
 		if (StringHelper.containsNonWhitespace(value)) {
-			facts.add(FactSheetFactory.createFact(iconCss, translate(labelI18nKey), value));
+			facts.add(FactSheetFactory.createFact(iconCss, translate(labelI18nKey), value, subValue));
 		}
 	}
 
