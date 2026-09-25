@@ -157,6 +157,7 @@ public class LectureBlockAuditLogDAO {
 		absenceNoticeRelationsXStream.omitField(RepositoryEntry.class, "lifecycle");
 		absenceNoticeRelationsXStream.omitField(RepositoryEntry.class, "deletedBy");
 		absenceNoticeRelationsXStream.omitField(RepositoryEntry.class, "statistics");
+		absenceNoticeRelationsXStream.omitField(RepositoryEntry.class, "educationalType");
 	
 		absenceNoticeRelationsXStream.alias("rollcall", LectureBlockRollCallImpl.class);
 		absenceNoticeRelationsXStream.ignoreUnknownElements();
