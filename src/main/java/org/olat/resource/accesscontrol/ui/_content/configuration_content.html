@@ -43,7 +43,7 @@
 	</div>
 #end
 
-#if($offer.forms.size() > 0)
+#if($offer.forms && $offer.forms.size() > 0)
 	<div>
 		<label class="control-label col-sm-3" for="o_ac_forms_${offer.link.key}">$r.translate("access.info.forms")</label>
 	</div>

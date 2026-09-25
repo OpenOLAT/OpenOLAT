@@ -1137,8 +1137,8 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 
 		public void setPendingOfferSurveys(List<EvaluationFormSurvey> pendingOfferSurveys) {
-			this.pendingOfferSurveys = pendingOfferSurveys;
-			this.forms = pendingOfferSurveys;
+			this.pendingOfferSurveys = pendingOfferSurveys != null ? pendingOfferSurveys : List.of();
+			this.forms = this.pendingOfferSurveys;
 		}
 
 		public List<EvaluationFormSurvey> getForms() {
@@ -1146,7 +1146,7 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 
 		public void setForms(List<EvaluationFormSurvey> forms) {
-			this.forms = forms;
+			this.forms = forms != null ? forms : List.of();
 		}
 
 		public OfferCatalogInfo getOfferCatalogInfo() {
