@@ -258,7 +258,7 @@ public class BusinessGroupQueries {
 		  .append(" ) as numOfParticipantReservations")
 		  .append(" from businessgrouptosearch as bgi")
 		  .append(" inner join fetch bgi.resource as bgResource ")
-		  .append(" inner join bgi.baseGroup as bGroup ");
+		  .append(" inner join fetch bgi.baseGroup as bGroup ");
 		if(params.getRepositoryEntry() == null) {
 			params.setRepositoryEntry(entry);//make sur the restricition is applied
 		}
