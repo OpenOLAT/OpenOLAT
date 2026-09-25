@@ -20,1009 +20,1009 @@ To add a new language to this reference: generate a worksheet with `scripts/15_g
 
 ## Artificial intelligence (Künstliche Intelligenz)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| AI module | KI Modul | Module IA | Modulo IA |  | AI modul |  |
-| AI Provider | KI Anbieter | Fournisseur IA | Fornitore IA |  | Poskytovateľ AI |  |
-| OpenAI | OpenAI | OpenAI | OpenAI |  | OpenAI |  |
-| Anthropic Claude | Anthropic Claude | Anthropic Claude | Anthropic Claude |  | Anthropic Claude |  |
-| Generic AI Provider | Generischer KI Anbieter | Fournisseur IA générique | Fornitore IA generico |  | Generický poskytovateľ AI |  |
-| ONNX embedding model | ONNX Einbettungsmodell | Modèle d'embedding ONNX | Modello di embedding ONNX |  | Embeddingový model ONNX |  |
-| Language model | Sprachmodell | Modèle de langage | Modello di linguaggio |  | Jazykový model |  |
-| Embedding model | Einbettungsmodell | Modèle d'embedding | Modello di embedding |  | Embeddingový model |  |
-| Vision model | Vision Modell | Modèle de vision | Modello di visione |  | Model vízie |  |
-| AI Feature | KI Funktion | Fonctionnalité IA | Funzione IA |  | Funkcia AI |  |
-| MC Question Generator | MC Fragen Generator | Générateur de questions à choix multiples | Generatore di domande a scelta multipla |  | Generátor otázok s výberom |  |
-| Essay Question Generator | Essay Fragen Generator | Générateur de questions à texte libre | Generatore di domande a testo libero |  | Generátor esejových otázok |  |
-| Essay Grading | Essay Bewertung | Évaluation des textes libres | Valutazione dei testi liberi |  | Hodnotenie esejových odpovedí |  |
-| Image Description Generator | Bildbeschreibungs-Generator | Générateur de descriptions d'image | Generatore di descrizioni di immagini |  | Generátor popisov obrázkov |  |
-| Taxonomy Matching (Embeddings) | Taxonomie-Zuordnung (Embeddings) | Correspondance de taxonomie (embeddings) | Mappatura della tassonomia (embedding) |  | Priraďovanie k taxonómii (embeddingy) |  |
-| AI questions | KI Fragen | Questions par IA | Domande IA |  | Otázky AI |  |
-| AI feedback | KI-Feedback | Feedback IA | Feedback IA |  | Spätná väzba AI |  |
-| Feedback reliability | Verlässlichkeit Feedback | Fiabilité du feedback | Affidabilità del feedback |  | Spoľahlivosť spätnej väzby |  |
-| AI correction | KI-Korrektur | Correction IA | Correzione IA | Correção por IA | Oprava AI | Yapay zeka düzeltmesi |
-| AI settings | KI-Einstellungen | Paramètres IA | Impostazioni IA | Configurações de IA | Nastavenia AI | Yapay zeka ayarları |
-| Enable feature | Funktion aktivieren | Activer la fonctionnalité | Attivare la funzione |  | Aktivácia funkcie |  |
-| Default for users | Vorgabe für Personen | Valeur par défaut pour les personnes | Valore predefinito per le persone | Padrão para as pessoas | Predvolené pre osoby | Kişiler için varsayılan |
-| Bloom levels | Bloom-Stufen | Niveaux de Bloom | Livelli di Bloom |  | Bloomove úrovne |  |
-| Target difficulty | Zielschwierigkeit | Difficulté cible | Difficoltà desiderata |  | Cieľová náročnosť |  |
-| Learning objectives (optional) | Lernziele (optional) | Objectifs d'apprentissage (optionnel) | Obiettivi di apprendimento (opzionale) |  | Vzdelávacie ciele (voliteľné) |  |
-| Grading kit (reference + model answer) | Bewertungs-Kit (Referenz + Musterantwort) | Kit d'évaluation (référence + réponse modèle) | Kit di valutazione (riferimento + risposta modello) |  | Hodnotiaca súprava (referencia a vzorová odpoveď) |  |
-| Rubric criteria | Bewertungskriterien | Critères d'évaluation | Criteri di valutazione |  | Kritériá hodnotenia |  |
-| AI processing pool | KI-Verarbeitungs-Pool | Pool de traitement IA | Pool di elaborazione IA |  | Fond spracovania AI |  |
-| Pool "Interactive" (threads) | Pool "Interaktiv" (Threads) | Pool "Interactif" (threads) | Pool "Interattivo" (thread) |  | Fond „Interaktívny“ (vlákna) |  |
-| Pool "Batch" (threads) | Pool "Batch" (Threads) | Pool "Batch" (threads) | Pool "Batch" (thread) |  | Fond „Dávkový“ (vlákna) |  |
-| Usage log | Nutzungsprotokoll | Journal d'utilisation | Registro di utilizzo |  | Protokol používania |  |
-| AI call | KI-Aufruf | Appel IA | Chiamata IA |  | Volanie AI |  |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| AI module | KI Modul | Módulo de IA | Module IA | Modulo IA | Moduł AI |  | AI modul |  |
+| AI Provider | KI Anbieter | Proveedor de IA | Fournisseur IA | Fornitore IA | Dostawca AI |  | Poskytovateľ AI |  |
+| OpenAI | OpenAI | OpenAI | OpenAI | OpenAI | OpenAI |  | OpenAI |  |
+| Anthropic Claude | Anthropic Claude | Anthropic Claude | Anthropic Claude | Anthropic Claude | Anthropic Claude |  | Anthropic Claude |  |
+| Generic AI Provider | Generischer KI Anbieter | Proveedor de IA genérico | Fournisseur IA générique | Fornitore IA generico | Ogólny dostawca AI |  | Generický poskytovateľ AI |  |
+| ONNX embedding model | ONNX Einbettungsmodell | Modelo de incrustaciones ONNX | Modèle d'embedding ONNX | Modello di embedding ONNX | Model osadzeń ONNX |  | Embeddingový model ONNX |  |
+| Language model | Sprachmodell | Modelo de lenguaje | Modèle de langage | Modello di linguaggio | Model językowy |  | Jazykový model |  |
+| Embedding model | Einbettungsmodell | Modelo de incrustaciones | Modèle d'embedding | Modello di embedding | Model osadzeń |  | Embeddingový model |  |
+| Vision model | Vision Modell | Modelo de visión | Modèle de vision | Modello di visione | Model wizyjny |  | Model vízie |  |
+| AI Feature | KI Funktion | Función de IA | Fonctionnalité IA | Funzione IA | Funkcja AI |  | Funkcia AI |  |
+| MC Question Generator | MC Fragen Generator | Generador de preguntas MC | Générateur de questions à choix multiples | Generatore di domande a scelta multipla | Generator pytań MC |  | Generátor otázok s výberom |  |
+| Essay Question Generator | Essay Fragen Generator | Generador de preguntas de ensayo | Générateur de questions à texte libre | Generatore di domande a testo libero | Generator pytań typu esej |  | Generátor esejových otázok |  |
+| Essay Grading | Essay Bewertung | Evaluación de ensayos | Évaluation des textes libres | Valutazione dei testi liberi | Ocena eseju |  | Hodnotenie esejových odpovedí |  |
+| Image Description Generator | Bildbeschreibungs-Generator | Generador de descripciones de imágenes | Générateur de descriptions d'image | Generatore di descrizioni di immagini | Generator opisów obrazów |  | Generátor popisov obrázkov |  |
+| Taxonomy Matching (Embeddings) | Taxonomie-Zuordnung (Embeddings) | Asignación de taxonomía (Embeddings) | Correspondance de taxonomie (embeddings) | Mappatura della tassonomia (embedding) | Dopasowanie taksonomii (Embeddings) |  | Priraďovanie k taxonómii (embeddingy) |  |
+| AI questions | KI Fragen | Preguntas de IA | Questions par IA | Domande IA | Pytania AI |  | Otázky AI |  |
+| AI feedback | KI-Feedback | Feedback de IA | Feedback IA | Feedback IA | Feedback AI |  | Spätná väzba AI |  |
+| Feedback reliability | Verlässlichkeit Feedback | Fiabilidad del feedback | Fiabilité du feedback | Affidabilità del feedback | Wiarygodność feedbacku |  | Spoľahlivosť spätnej väzby |  |
+| AI correction | KI-Korrektur | Corrección de IA | Correction IA | Correzione IA | Korekta AI | Correção por IA | Oprava AI | Yapay zeka düzeltmesi |
+| AI settings | KI-Einstellungen | Opciones de IA | Paramètres IA | Impostazioni IA | Ustawienia AI | Configurações de IA | Nastavenia AI | Yapay zeka ayarları |
+| Enable feature | Funktion aktivieren | Activar función | Activer la fonctionnalité | Attivare la funzione | Włącz funkcję |  | Aktivácia funkcie |  |
+| Default for users | Vorgabe für Personen | Valor predeterminado para los usuarios | Valeur par défaut pour les personnes | Valore predefinito per le persone | Wartość domyślna dla użytkowników | Padrão para as pessoas | Predvolené pre osoby | Kişiler için varsayılan |
+| Bloom levels | Bloom-Stufen | Niveles de Bloom | Niveaux de Bloom | Livelli di Bloom | Poziomy Blooma |  | Bloomove úrovne |  |
+| Target difficulty | Zielschwierigkeit | Dificultad objetivo | Difficulté cible | Difficoltà desiderata | Docelowy poziom trudności |  | Cieľová náročnosť |  |
+| Learning objectives (optional) | Lernziele (optional) | Objetivos de aprendizaje (opcional) | Objectifs d'apprentissage (optionnel) | Obiettivi di apprendimento (opzionale) | Cele nauczania (opcjonalnie) |  | Vzdelávacie ciele (voliteľné) |  |
+| Grading kit (reference + model answer) | Bewertungs-Kit (Referenz + Musterantwort) | Kit de evaluación (referencia + respuesta modelo) | Kit d'évaluation (référence + réponse modèle) | Kit di valutazione (riferimento + risposta modello) | Zestaw oceny (odniesienie + wzorcowa odpowiedź) |  | Hodnotiaca súprava (referencia a vzorová odpoveď) |  |
+| Rubric criteria | Bewertungskriterien | Criterios de evaluación | Critères d'évaluation | Criteri di valutazione | Kryteria oceny |  | Kritériá hodnotenia |  |
+| AI processing pool | KI-Verarbeitungs-Pool | Pool de procesamiento de IA | Pool de traitement IA | Pool di elaborazione IA | Pool przetwarzania AI |  | Fond spracovania AI |  |
+| Pool "Interactive" (threads) | Pool "Interaktiv" (Threads) | Pool "Interactivo" (hilos) | Pool "Interactif" (threads) | Pool "Interattivo" (thread) | Pool "Interaktywny" (wątki) |  | Fond „Interaktívny“ (vlákna) |  |
+| Pool "Batch" (threads) | Pool "Batch" (Threads) | Pool "Batch" (hilos) | Pool "Batch" (threads) | Pool "Batch" (thread) | Pool "Batch" (wątki) |  | Fond „Dávkový“ (vlákna) |  |
+| Usage log | Nutzungsprotokoll | Registro de uso | Journal d'utilisation | Registro di utilizzo | Dziennik użycia |  | Protokol používania |  |
+| AI call | KI-Aufruf | Llamada de IA | Appel IA | Chiamata IA | Wywołanie AI |  | Volanie AI |  |
 
 ## Assessment (Bewertung)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Assessment | Bewertung | Evaluation | Valutazione | Avaliação | Hodnotenie | Değerlendirme |
-| Levels/Grading | Einstufung/Noten | Niveaux/notes | Livelli/voti |  | Stupne/klasifikácia |  |
-| Correction | Korrektur | Corrections | Correzione | Correção | Oprava | Düzeltme |
-| Score | Punkte | Points | Punteggio | Pontuação | Body | Puan |
-| Progress | Fortschritt | Progrès | Progresso | Progresso | Pokrok | İlerleme |
-| Cut value | Punkteschwelle | Seuil de points | Tagliare valore | Valor de corte | Bodová hodnota | Kesim değeri |
-| Grade | Note | Note | Voto |  | Známka |  |
-| Grading system | Bewertungssystem | Système d'évaluation | Sistema di valutazione |  | Klasifikačný systém |  |
-| Performance class | Leistungsklasse | Classe de performance | Classe di performance |  | Výkonnostná trieda |  |
-| Grading scale | Bewertungsskala | Échelle d'évaluation | Scala di valutazione |  | Klasifikačná stupnica |  |
-| Success criterion | Erfolgskriterium | Critère de réussite | Criterio di successo | Critério de aprovação | Kritérium úspešnosti | Başarı kriteri |
-| Assessment tool | Bewertungswerkzeug | Outil d'évaluation | Strumento di valutazione | Ferramenta de Avaliação | Nástroj na hodnotenie | Değerlendirme aracı |
-| Bulk assessment | Massenbewertung | Evaluation en masse | Valutazione in massa | Avaliação em massa | Hromadné hodnotenie | Toplu değerlendirme |
-| Assessment documents | Bewertungsdokumente | Documents d'évaluation | Documenti di valutazione | Documentos de avaliação | Hodnotiace dokumenty | Değerlendirme belgeleri |
-| Release assessment | Freigabe Bewertung | Publication évaluation | Rilasciare valutazione |  | Vydať hodnotenie | Görünürlük |
-| Change log | Änderungsverlauf | Historique des modifications | Tracciamento delle attività | Histórico de ocorrências | Denník zmien | Günlüğü değiştir |
-| Rubric form | Rubrik-Formular | Rubrique formulaire | Questionario rubrica |  | Formulár rubriky | Değerlendirme listesi |
-| Rubric assessment | Rubrik-Bewertung | Évaluation des rubriques | Valutazione della rubrica | Avaliação de rúbrica | Hodnotenie podľa rubrík | Dereceli puanlama anahtarı değerlendirmesi |
-| Assessment configuration | Konfiguration Bewertung | Configuration évaluation | Configurazione della valutazione |  | Hodnotenie konfigurácie |  |
-| Assessment form | Bewertungsformular | Formulaire d'évaluation | Modulo di valutazione |  | Formulár hodnotenia |  |
-| Grading assignment | Korrekturauftrag | Attribution de correction | Ordine di correzione |  | Príkaz na opravu |  |
-| Deadline | Frist | Délai | Scadenza | Prazo | Termín | Son teslim tarihi |
-| Assessment mode | Prüfungsmodus | Mode d'évaluation | Modalità di valutazione | Modo avaliação | Režim hodnotenia | Değerlendirme modu |
-| Safe Exam Browser | Safe Exam Browser | Safe Exam Browser | Safe Exam Browser |  | Safe Exam Browser |  |
-| SEB configuration | SEB-Konfiguration | Configuration SEB | Configurazione SEB |  | Konfigurácia SEB |  |
-| Safe Exam Browser configuration template | Safe Exam Browser Konfigurationsvorlage | Modèle de configuration Safe Exam Browser | Modello di configurazione di Safe Exam Browser |  | Konfiguračná šablóna Safe Exam Browser |  |
-| Preparation time | Vorlaufzeit | Préparation | Periodo di preparazione | Tempo de preparação | Čas prípravy | Hazırlık zamanı |
-| Follow-up time | Nachlaufzeit | Période de temporisation | Periodo di follow-up | Follow-up | Čas po skončení | Takip |
-| Assessment inspection | Prüfungseinsicht | Consultation d'examen | Ispezioni di valutazione |  | Hodnotiace inšpekcie |  |
-| Assessment management | Prüfungsverwaltung | Administration des évaluations | Gestione della valutazione |  | Riadenie hodnotenia |  |
-| Disadvantage compensation | Nachteilsausgleich | Compensation des désavantages | Svantaggi compensativi |  | Kompenzácia nevýhod |  |
-| Extra time | Zusatzzeit | Temps additionel | Tempo aggiuntivo | Tempo extra | Dodatočný čas | Ekstra süre |
-| Exam course | Prüfungskurs | Cours examen | Esame del corso | Curso de exame | Skúškový kurz | Sınav kursu |
-| Reset data | Daten zurücksetzen | Réinitialiser les données | Azzeramento dei dati |  | Obnoviť údaje |  |
-| Comment for participant | Kommentar für Teilnehmende | Commentaire pour le participant | Commento per il partecipante |  | Komentár pre účastníkov | Kullanıcılar için yorumlar |
-| Comment for other coaches | Kommentar für andere Betreuende | Commentaires pour les autres coaches | Commento per altri coach |  | Komentár pre ostatných koučov | Diğer koçlar için yorumlarım |
-| Complete assessment | Bewertung abschliessen | Terminé l'évaluation | Terminare valutazione |  | Dokončiť hodnotenie | Değerlendirmeyi sonlandır |
-| Performance summary | Leistungsübersicht | Aperçu des performances | Riepilogo performance | Resumo do desempenho | Zhrnutie výkonu | Performans özeti |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Assessment | Bewertung | Evaluación | Evaluation | Valutazione | Ocena | Avaliação | Hodnotenie | Değerlendirme |
+| Levels/Grading | Einstufung/Noten | Niveles/Notas | Niveaux/notes | Livelli/voti | Poziomy/Stopnie |  | Stupne/klasifikácia |  |
+| Correction | Korrektur | Corrección | Corrections | Correzione | Korekta | Correção | Oprava | Düzeltme |
+| Score | Punkte | Puntuación | Points | Punteggio | Wynik | Pontuação | Body | Puan |
+| Progress | Fortschritt | Progreso | Progrès | Progresso | Postęp | Progresso | Pokrok | İlerleme |
+| Cut value | Punkteschwelle | Puntuación de aprobado | Seuil de points | Tagliare valore | Próg punktowy | Valor de corte | Bodová hodnota | Kesim değeri |
+| Grade | Note | Nota | Note | Voto | Stopień |  | Známka |  |
+| Grading system | Bewertungssystem | Sistema de evaluación | Système d'évaluation | Sistema di valutazione | System oceniania |  | Klasifikačný systém |  |
+| Performance class | Leistungsklasse | Clase de logro | Classe de performance | Classe di performance | Klasa osiągnięć |  | Výkonnostná trieda |  |
+| Grading scale | Bewertungsskala | Escala de evaluación | Échelle d'évaluation | Scala di valutazione | Skala ocen |  | Klasifikačná stupnica |  |
+| Success criterion | Erfolgskriterium | Criterio de aprobación | Critère de réussite | Criterio di successo | Kryterium zaliczenia | Critério de aprovação | Kritérium úspešnosti | Başarı kriteri |
+| Assessment tool | Bewertungswerkzeug | Herramienta de evaluación | Outil d'évaluation | Strumento di valutazione | Narzędzie oceny | Ferramenta de Avaliação | Nástroj na hodnotenie | Değerlendirme aracı |
+| Bulk assessment | Massenbewertung | Evaluación masiva | Evaluation en masse | Valutazione in massa | Ocena zbiorcza | Avaliação em massa | Hromadné hodnotenie | Toplu değerlendirme |
+| Assessment documents | Bewertungsdokumente | Documentos de evaluación | Documents d'évaluation | Documenti di valutazione | Dokumenty oceny | Documentos de avaliação | Hodnotiace dokumenty | Değerlendirme belgeleri |
+| Release assessment | Freigabe Bewertung | Publicación de la evaluación | Publication évaluation | Rilasciare valutazione | Publikacja oceny |  | Vydať hodnotenie | Görünürlük |
+| Change log | Änderungsverlauf | Historial de cambios | Historique des modifications | Tracciamento delle attività | Historia zmian | Histórico de ocorrências | Denník zmien | Günlüğü değiştir |
+| Rubric form | Rubrik-Formular | Formulario de rúbrica | Rubrique formulaire | Questionario rubrica | Formularz rubryki |  | Formulár rubriky | Değerlendirme listesi |
+| Rubric assessment | Rubrik-Bewertung | Evaluación con rúbrica | Évaluation des rubriques | Valutazione della rubrica | Ocena z rubryką | Avaliação de rúbrica | Hodnotenie podľa rubrík | Dereceli puanlama anahtarı değerlendirmesi |
+| Assessment configuration | Konfiguration Bewertung | Configuración de la evaluación | Configuration évaluation | Configurazione della valutazione | Konfiguracja oceny |  | Hodnotenie konfigurácie |  |
+| Assessment form | Bewertungsformular | Formulario de evaluación | Formulaire d'évaluation | Modulo di valutazione | Formularz oceny |  | Formulár hodnotenia |  |
+| Grading assignment | Korrekturauftrag | Asignación de corrección | Attribution de correction | Ordine di correzione | Zlecenie korekty |  | Príkaz na opravu |  |
+| Deadline | Frist | Plazo | Délai | Scadenza | Termin końcowy | Prazo | Termín | Son teslim tarihi |
+| Assessment mode | Prüfungsmodus | Modo de examen | Mode d'évaluation | Modalità di valutazione | Tryb egzaminu | Modo avaliação | Režim hodnotenia | Değerlendirme modu |
+| Safe Exam Browser | Safe Exam Browser | Safe Exam Browser | Safe Exam Browser | Safe Exam Browser | Safe Exam Browser |  | Safe Exam Browser |  |
+| SEB configuration | SEB-Konfiguration | Configuración de SEB | Configuration SEB | Configurazione SEB | Konfiguracja SEB |  | Konfigurácia SEB |  |
+| Safe Exam Browser configuration template | Safe Exam Browser Konfigurationsvorlage | Plantilla de configuración de Safe Exam Browser | Modèle de configuration Safe Exam Browser | Modello di configurazione di Safe Exam Browser | Szablon konfiguracji Safe Exam Browser |  | Konfiguračná šablóna Safe Exam Browser |  |
+| Preparation time | Vorlaufzeit | Tiempo de preparación | Préparation | Periodo di preparazione | Czas przygotowania | Tempo de preparação | Čas prípravy | Hazırlık zamanı |
+| Follow-up time | Nachlaufzeit | Tiempo posterior | Période de temporisation | Periodo di follow-up | Czas po zakończeniu | Follow-up | Čas po skončení | Takip |
+| Assessment inspection | Prüfungseinsicht | Consulta del examen | Consultation d'examen | Ispezioni di valutazione | Wgląd do egzaminu |  | Hodnotiace inšpekcie |  |
+| Assessment management | Prüfungsverwaltung | Gestión de exámenes | Administration des évaluations | Gestione della valutazione | Zarządzanie egzaminami |  | Riadenie hodnotenia |  |
+| Disadvantage compensation | Nachteilsausgleich | Compensación de desventajas | Compensation des désavantages | Svantaggi compensativi | Wyrównanie szans |  | Kompenzácia nevýhod |  |
+| Extra time | Zusatzzeit | Tiempo adicional | Temps additionel | Tempo aggiuntivo | Dodatkowy czas | Tempo extra | Dodatočný čas | Ekstra süre |
+| Exam course | Prüfungskurs | Curso de examen | Cours examen | Esame del corso | Kurs egzaminacyjny | Curso de exame | Skúškový kurz | Sınav kursu |
+| Reset data | Daten zurücksetzen | Restablecer datos | Réinitialiser les données | Azzeramento dei dati | Zresetuj dane |  | Obnoviť údaje |  |
+| Comment for participant | Kommentar für Teilnehmende | Comentario para el participante | Commentaire pour le participant | Commento per il partecipante | Komentarz dla uczestnika |  | Komentár pre účastníkov | Kullanıcılar için yorumlar |
+| Comment for other coaches | Kommentar für andere Betreuende | Comentario para otros tutores | Commentaires pour les autres coaches | Commento per altri coach | Komentarz dla innych opiekunów |  | Komentár pre ostatných koučov | Diğer koçlar için yorumlarım |
+| Complete assessment | Bewertung abschliessen | Completar evaluación | Terminé l'évaluation | Terminare valutazione | Zakończ ocenę |  | Dokončiť hodnotenie | Değerlendirmeyi sonlandır |
+| Performance summary | Leistungsübersicht | Resumen de logros | Aperçu des performances | Riepilogo performance | Przegląd osiągnięć | Resumo do desempenho | Zhrnutie výkonu | Performans özeti |
 
 ## Events and absences (Termine und Absenzen)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Event | Termin | Événement | Evento |  | Blok prednášok |  |
-| Units | Einheiten | Unités | Unità |  | Prednášky |  |
-| Effective units | Effektive Einheiten | Unités effectives | Unità effettive |  | Efektívne prednášky |  |
-| Roll call status | Status Termin | Statut de l’événement | Status del controllo delle presenze | Status da chamada | Stav pohotovostnej služby | Yoklama durumu |
-| Online meeting | Online Meeting | Réunion en ligne | Riunione online |  | Online stretnutie |  |
-| Attendance | Anwesenheit | Présence | Presenza | Presença | Prítomnosť | Mevcudiyet |
-| Roll call | Anwesenheitskontrolle | Contrôle de présence | Controllo delle presenze | Chamada (Roll Call) | Kontrola dochádzky | Yoklama |
-| Auto close period | Sperrfrist | Délai pour bloquer le cours bloc | Periodo di chiusura automatica nei giorni | Encerramento automático em dias | Blokačná lehota | Gün olarak otomatik kapanma süresi |
-| Reminder period | Erinnerungsfrist | Délai de rappel | Periodo di promemoria in giorni | Período de lembrete em dias | Lehota na pripomenutie | Gün olarak hatırlatma süresi |
-| Attendance rate | Anwesenheitsquote | Taux de fréquentation | Tasso di presenza |  | Miera dochádzky |  |
-| Attendance threshold | Schwellwert | Valeur seuil | Tasso | Avaliação | Prahová hodnota | Puanla |
-| Compulsory attendance | Anwesenheit obligatorisch | Présence obligatoire | Obbligatorio | Compulsório | Povinné | Zorunlu |
-| Multi-absence recording | Multi-Absenzenerfassung | Saisie d'absences multiples | Inserire assenze multiple |  | Záznam viacerých neprítomností | Çoklu yokluk kaydı |
-| Attendance list | Präsenzliste | Liste de présence | Lista di presenze | Lista de presenças | Zoznam účastníkov | Katılımcı listesi |
-| Absence list | Absenzenliste | Liste d'absences | Lista di assenze | Lista de ausências | Zoznam neprítomností | Devamsızlık listesi |
-| Signature | Unterschrift | Signature | Firma | Assinatura | Podpis | İmza |
-| Absence | Absenz | Absence | Assenza | Ausência | Neprítomnosť | Devamsızlık |
-| Events and absences | Termine und Absenzen | Événements et absences | Eventi e Assenze |  | Termíny a absencie |  |
-| Absence management | Absenzenverwaltung | Gestion des absences | Gestione assenze |  | Správa absencií |  |
-| Reason | Begründung | Justification | Motivo | Motivo | Dôvod | Sebep |
-| Reason of absence | Absenzenbegründung | Raison de l'absence | Motivo dell'assenza | Razão da ausência | Dôvod neprítomnosti | Devamsızlık nedeni |
-| Reasons events | Begründungen Termine | Justifications des événements | Motivi degli eventi |  | Dôvody ukončenia bloku |  |
-| Notice | Meldung | Avis | Avviso |  | Hlásenie neprítomnosti |  |
-| Notice of absence | Abmeldung | Avis d'absence | Avviso di assenza | Aviso de ausência | Oznámenie o neprítomnosti | Devamsızlık bildirimi |
-| Dispensation | Dispens | Dispense | Esonero | Dispensa | Oslobodenie | Dağıtım |
-| Appeal | Rekurs | Recours | Appello | Recurso | Odvolanie | Temyiz |
-| Appeal period | Rekursfrist | Délai de recours | Periodo di assenza di appello nei giorni | Prazo para recurso de ausências (em dias) | Lehota na odvolanie | Gün olarak devamsızlık süresine itiraz |
-| Rooms | Räume | Salles | Aule |  | Miestnosti |  |
-| Room management | Raumverwaltung | Gestion des salles | Gestione delle aule |  | Správa miestností |  |
-| Room | Raum | Salle | Aula |  | Miestnosť |  |
-| Building | Gebäude | Bâtiment | Edificio |  | Budova |  |
-| Room scheduling | Raumplanung | Planification des salles | Pianificazione delle aule |  | Plánovanie miestností |  |
-| Room booking | Raumbuchung | Réservation de salle | Prenotazione dell'aula |  | Rezervácia miestnosti |  |
-| Seats | Plätze | Places | Posti |  | Miesta |  |
-| Occupancy rate | Belegung | Taux d'occupation | Occupazione |  | Obsadenosť |  |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Event | Termin | Evento | Événement | Evento | Wydarzenie |  | Blok prednášok |  |
+| Units | Einheiten | Unidades | Unités | Unità | Jednostki |  | Prednášky |  |
+| Effective units | Effektive Einheiten | Unidades efectivas | Unités effectives | Unità effettive | Jednostki zrealizowane |  | Efektívne prednášky |  |
+| Roll call status | Status Termin | Estado del control de asistencia | Statut de l’événement | Status del controllo delle presenze | Status sprawdzania obecności | Status da chamada | Stav pohotovostnej služby | Yoklama durumu |
+| Online meeting | Online Meeting | Online meeting | Réunion en ligne | Riunione online | Online meeting |  | Online stretnutie |  |
+| Attendance | Anwesenheit | Asistencia | Présence | Presenza | Obecność | Presença | Prítomnosť | Mevcudiyet |
+| Roll call | Anwesenheitskontrolle | Control de asistencia | Contrôle de présence | Controllo delle presenze | Sprawdzanie obecności | Chamada (Roll Call) | Kontrola dochádzky | Yoklama |
+| Auto close period | Sperrfrist | Plazo de cierre automático | Délai pour bloquer le cours bloc | Periodo di chiusura automatica nei giorni | Okres do automatycznego zamknięcia | Encerramento automático em dias | Blokačná lehota | Gün olarak otomatik kapanma süresi |
+| Reminder period | Erinnerungsfrist | Plazo de recordatorio | Délai de rappel | Periodo di promemoria in giorni | Termin przypomnienia | Período de lembrete em dias | Lehota na pripomenutie | Gün olarak hatırlatma süresi |
+| Attendance rate | Anwesenheitsquote | Tasa de asistencia | Taux de fréquentation | Tasso di presenza | Wskaźnik obecności |  | Miera dochádzky |  |
+| Attendance threshold | Schwellwert | Umbral de asistencia | Valeur seuil | Tasso | Próg obecności | Avaliação | Prahová hodnota | Puanla |
+| Compulsory attendance | Anwesenheit obligatorisch | Asistencia obligatoria | Présence obligatoire | Obbligatorio | Obecność obowiązkowa | Compulsório | Povinné | Zorunlu |
+| Multi-absence recording | Multi-Absenzenerfassung | Registro múltiple de ausencias | Saisie d'absences multiples | Inserire assenze multiple | Wielokrotna rejestracja nieobecności |  | Záznam viacerých neprítomností | Çoklu yokluk kaydı |
+| Attendance list | Präsenzliste | Lista de asistencia | Liste de présence | Lista di presenze | Lista obecności | Lista de presenças | Zoznam účastníkov | Katılımcı listesi |
+| Absence list | Absenzenliste | Lista de ausencias | Liste d'absences | Lista di assenze | Lista nieobecności | Lista de ausências | Zoznam neprítomností | Devamsızlık listesi |
+| Signature | Unterschrift | Firma | Signature | Firma | Podpis | Assinatura | Podpis | İmza |
+| Absence | Absenz | Ausencia | Absence | Assenza | Nieobecność | Ausência | Neprítomnosť | Devamsızlık |
+| Events and absences | Termine und Absenzen | Eventos y ausencias | Événements et absences | Eventi e Assenze | Wydarzenia i nieobecności |  | Termíny a absencie |  |
+| Absence management | Absenzenverwaltung | Gestión de ausencias | Gestion des absences | Gestione assenze | Zarządzanie nieobecnościami |  | Správa absencií |  |
+| Reason | Begründung | Justificación | Justification | Motivo | Uzasadnienie | Motivo | Dôvod | Sebep |
+| Reason of absence | Absenzenbegründung | Motivo de ausencia | Raison de l'absence | Motivo dell'assenza | Powód nieobecności | Razão da ausência | Dôvod neprítomnosti | Devamsızlık nedeni |
+| Reasons events | Begründungen Termine | Justificaciones de eventos | Justifications des événements | Motivi degli eventi | Uzasadnienia wydarzeń |  | Dôvody ukončenia bloku |  |
+| Notice | Meldung | Aviso | Avis | Avviso | Zawiadomienie |  | Hlásenie neprítomnosti |  |
+| Notice of absence | Abmeldung | Aviso de ausencia | Avis d'absence | Avviso di assenza | Zawiadomienie o nieobecności | Aviso de ausência | Oznámenie o neprítomnosti | Devamsızlık bildirimi |
+| Dispensation | Dispens | Dispensa | Dispense | Esonero | Zwolnienie | Dispensa | Oslobodenie | Dağıtım |
+| Appeal | Rekurs | Recurso | Recours | Appello | Odwołanie | Recurso | Odvolanie | Temyiz |
+| Appeal period | Rekursfrist | Plazo de recurso | Délai de recours | Periodo di assenza di appello nei giorni | Termin na odwołanie | Prazo para recurso de ausências (em dias) | Lehota na odvolanie | Gün olarak devamsızlık süresine itiraz |
+| Rooms | Räume | Salas | Salles | Aule | Sale |  | Miestnosti |  |
+| Room management | Raumverwaltung | Gestión de salas | Gestion des salles | Gestione delle aule | Zarządzanie salami |  | Správa miestností |  |
+| Room | Raum | Sala | Salle | Aula | Sala |  | Miestnosť |  |
+| Building | Gebäude | Edificio | Bâtiment | Edificio | Budynek |  | Budova |  |
+| Room scheduling | Raumplanung | Planificación de salas | Planification des salles | Pianificazione delle aule | Planowanie sal |  | Plánovanie miestností |  |
+| Room booking | Raumbuchung | Reserva de sala | Réservation de salle | Prenotazione dell'aula | Rezerwacja sali |  | Rezervácia miestnosti |  |
+| Seats | Plätze | Plazas | Places | Posti | Miejsca |  | Miesta |  |
+| Occupancy rate | Belegung | Ocupación | Taux d'occupation | Occupazione | Obłożenie |  | Obsadenosť |  |
 
 ## Content and media (Inhalte und Medien)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Content editor | Content Editor | Content Editor | Editor di contenuti |  | Editor obsahu |  |
-| Media Center | Media Center | Media Center | Media Center |  | Centrum médií |  |
-| Content element | Inhaltselement | Élément de contenu | Elemento di contenuto |  | Prvok obsahu |  |
-| Text | Text | Texte | Testo | Parágrafo | Text | Paragraf |
-| Title | Titel | Titre | Titolo | Título | Názov | Başlık |
-| Table | Tabelle | Tableau | Tabella | Tabela | Tabuľka | Tablo |
-| Citation | Zitat | Choisir une citation | Citazione |  | Citácia |  |
-| Code example | Code-Beispiel | Exemple de code | Esempio di codice |  | Ukážka kódu |  |
-| Math formula | Mathematische Formel | Formule mathématique | Formula matematica |  | Matematický vzorec |  |
-| Separator | Separator | Séparateur | Separatore | Separador | Oddeľovač | Ayırıcı |
-| Container | Container | Conteneur | Conenitore | Recipiente | Kontajner | Kapsayıcı |
-| Gallery | Galerie | Galerie | Galleria |  | Galéria |  |
-| Quiz | Quiz | Quiz | Quiz |  | Kvíz |  |
-| Table of contents | Inhaltsverzeichnis | Table des matières | Indice |  | Obsah |  |
-| Image comparison | Bildvergleich | Comparaison d'image | Confronto di immagini |  | Porovnanie obrázkov |  |
-| HTML text code | HTML-Textcode | Code texte HTML | Codice testo HTML | Seção de texto | Zdrojový kód HTML | Metin bölümü |
-| Image | Bild | Choisir une image | Immagine |  | Obrázok |  |
-| Video | Video | Choisir une vidéo | Video |  | Video |  |
-| Audio | Audio | Audio | Audio |  | Zvuk |  |
-| Document | Dokument | Choisr un fichier | Documento |  | Dokument |  |
-| Diagram | Diagramm | Diagramme | Diagramma |  | Diagram |  |
-| Inspector | Inspektor | Inspecteur | Ispettore |  | Inšpektor |  |
-| Shares | Freigaben | Partages | Condivisioni |  | Zdieľania |  |
-| Version | Version | Version | Versione |  | Verzia |  |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Content editor | Content Editor | Content Editor | Content Editor | Editor di contenuti | Content Editor |  | Editor obsahu |  |
+| Media Center | Media Center | Media Center | Media Center | Media Center | Media Center |  | Centrum médií |  |
+| Content element | Inhaltselement | Elemento de contenido | Élément de contenu | Elemento di contenuto | Element treści |  | Prvok obsahu |  |
+| Text | Text | Texto | Texte | Testo | Tekst | Parágrafo | Text | Paragraf |
+| Title | Titel | Título | Titre | Titolo | Tytuł | Título | Názov | Başlık |
+| Table | Tabelle | Tabla | Tableau | Tabella | Tabela | Tabela | Tabuľka | Tablo |
+| Citation | Zitat | Cita textual | Choisir une citation | Citazione | Cytat |  | Citácia |  |
+| Code example | Code-Beispiel | Ejemplo de código | Exemple de code | Esempio di codice | Przykład kodu |  | Ukážka kódu |  |
+| Math formula | Mathematische Formel | Fórmula matemática | Formule mathématique | Formula matematica | Wzór matematyczny |  | Matematický vzorec |  |
+| Separator | Separator | Separador | Séparateur | Separatore | Separator | Separador | Oddeľovač | Ayırıcı |
+| Container | Container | Contenedor | Conteneur | Conenitore | Kontener | Recipiente | Kontajner | Kapsayıcı |
+| Gallery | Galerie | Galería | Galerie | Galleria | Galeria |  | Galéria |  |
+| Quiz | Quiz | Quiz | Quiz | Quiz | Quiz |  | Kvíz |  |
+| Table of contents | Inhaltsverzeichnis | Índice | Table des matières | Indice | Spis treści |  | Obsah |  |
+| Image comparison | Bildvergleich | Comparación de imágenes | Comparaison d'image | Confronto di immagini | Porównanie obrazów |  | Porovnanie obrázkov |  |
+| HTML text code | HTML-Textcode | Código HTML | Code texte HTML | Codice testo HTML | Kod HTML | Seção de texto | Zdrojový kód HTML | Metin bölümü |
+| Image | Bild | Imagen | Choisir une image | Immagine | Obraz |  | Obrázok |  |
+| Video | Video | Video | Choisir une vidéo | Video | Wideo |  | Video |  |
+| Audio | Audio | Audio | Audio | Audio | Audio |  | Zvuk |  |
+| Document | Dokument | Documento | Choisr un fichier | Documento | Dokument |  | Dokument |  |
+| Diagram | Diagramm | Diagrama | Diagramme | Diagramma | Diagram |  | Diagram |  |
+| Inspector | Inspektor | Inspector | Inspecteur | Ispettore | Inspektor |  | Inšpektor |  |
+| Shares | Freigaben | Elementos compartidos | Partages | Condivisioni | Udostępnione |  | Zdieľania |  |
+| Version | Version | Versión | Version | Versione | Wersja |  | Verzia |  |
 
 ## Catalogue, booking and payment (Katalog, Buchung und Bezahlung)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Catalog | Katalog | Catalogue | Catalogo | Catálogo | Katalóg | Katalog |
-| Launcher | Launcher | Launcher | Launcher |  | Spúšťač |  |
-| Catalog | Katalog | Catalogue | Catalogo | Catálogo | Katalóg | Katalog |
-| Catalog administration | Katalogverwaltung | Administration du catalogue | Amministrazione del catalogo | Administração do Catálogo | Správa katalógu | Katalog yönetimi |
-| Web catalog | Web-Katalog | Catalogue Web | Catalogo web |  | Webový katalóg |  |
-| Access control | Zugangskontrolle | Contrôle d'accès | Controllo di accesso | Controle de acesso | Kontrola prístupu | Erişim kontrolü |
-| Offer | Angebot | Offre | Offerta |  | Ponuka |  |
-| Offer type | Angebotsart | Type offre | Tipo di offerta |  | Typ ponuky |  |
-| Access code | Zugangscode | Code d'accès | Codice di accesso | Código de acesso | Prístupový kód | Giriş kodu |
-| Booking | Buchung | Réservation | Prenotazione | Reserva | Rezervácia | Rezervasyon |
-| Booking order | Buchungsauftrag | Ordre de réservation | Ordine di prenotazione |  | Objednávka rezervácie |  |
-| Pre-order | Vorbestellung | Précommande | Prenotazione anticipata |  | Predbežná objednávka |  |
-| Booking number | Buchungsnummer | Numéro de réservation | Numero di registrazione | Número de reserva | Číslo rezervácie | Rezervasyon numarası |
-| VAT | Mehrwertsteuer | TVA | IVA |  | DPH |  |
-| Invoice | Rechnung | Facture | Fattura |  | Faktúra |  |
-| Billing address | Rechnungsadresse | Adresse de facturation | Indirizzo di fatturazione |  | Fakturačná adresa |  |
-| Cost center | Kostenstelle | Centre de coûts | Centro di costo |  | Nákladové stredisko |  |
-| PO number | PO Nummer | Numéro PO | Numero postale |  | PO číslo |  |
-| Participant comment | Teilnehmer{in}kommentar | Commentaire du participant | Commento del partecipante |  | Komentár účastníka |  |
-| With confirmation | Mit Bestätigung | Avec confirmation | Con conferma |  | S potvrdením |  |
-| Booking order forms | Formulare für Buchungsaufträge | Formulaires pour les ordres de réservation | Questionari per ordini di prenotazione |  | Formuláre pre objednávky rezervácie |  |
-| Requires booking order | Buchungsauftrag erforderlich | Ordre de réservation requis | Ordine di prenotazione richiesto |  | Vyžaduje sa objednávka rezervácie |  |
-| PayPal | PayPal | PayPal | PayPal | PayPal | PayPal | PayPal |
-| Credit points | Kreditpunkte | Crédits | Crediti formativi |  | Kreditné body |  |
-| Credit point system | Kreditpunktesystem | Système de crédit | Sistema di crediti formativi |  | Systém kreditných bodov |  |
-| Credit point balance | Kreditpunkteguthaben | Solde des points de crédit | Bilancio dei crediti formativi |  | Zostatok kreditných bodov |  |
-| Credit | Gutschrift | Crédits | Credito |  | Pripísanie kreditov |  |
-| Debit | Belastung | Charge | Debito |  | Odpísanie kreditov |  |
-| Transaction | Transaktion | Transaction | Transazione |  | Transakcia |  |
-| Waiting list | Warteliste | Liste d'attente | Lista di attesa | Lista de espera | Zoznam čakateľov | Bekleme listesi |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Catalog | Katalog | Catálogo | Catalogue | Catalogo | Katalog | Catálogo | Katalóg | Katalog |
+| Launcher | Launcher | Launcher | Launcher | Launcher | Launcher |  | Spúšťač |  |
+| Catalog | Katalog | Catálogo | Catalogue | Catalogo | Katalog | Catálogo | Katalóg | Katalog |
+| Catalog administration | Katalogverwaltung | Gestión del catálogo | Administration du catalogue | Amministrazione del catalogo | Zarządzanie katalogiem | Administração do Catálogo | Správa katalógu | Katalog yönetimi |
+| Web catalog | Web-Katalog | Catálogo web | Catalogue Web | Catalogo web | Katalog internetowy |  | Webový katalóg |  |
+| Access control | Zugangskontrolle | Control de acceso | Contrôle d'accès | Controllo di accesso | Kontrola dostępu | Controle de acesso | Kontrola prístupu | Erişim kontrolü |
+| Offer | Angebot | Oferta | Offre | Offerta | Oferta |  | Ponuka |  |
+| Offer type | Angebotsart | Tipo de oferta | Type offre | Tipo di offerta | Rodzaj oferty |  | Typ ponuky |  |
+| Access code | Zugangscode | Código de acceso | Code d'accès | Codice di accesso | Kod dostępu | Código de acesso | Prístupový kód | Giriş kodu |
+| Booking | Buchung | Reserva | Réservation | Prenotazione | Rezerwacja | Reserva | Rezervácia | Rezervasyon |
+| Booking order | Buchungsauftrag | Orden de reserva | Ordre de réservation | Ordine di prenotazione | Zlecenie rezerwacji |  | Objednávka rezervácie |  |
+| Pre-order | Vorbestellung | Pedido anticipado | Précommande | Prenotazione anticipata | Zamówienie wstępne |  | Predbežná objednávka |  |
+| Booking number | Buchungsnummer | Número de reserva | Numéro de réservation | Numero di registrazione | Numer rezerwacji | Número de reserva | Číslo rezervácie | Rezervasyon numarası |
+| VAT | Mehrwertsteuer | IVA | TVA | IVA | VAT |  | DPH |  |
+| Invoice | Rechnung | Factura | Facture | Fattura | Faktura |  | Faktúra |  |
+| Billing address | Rechnungsadresse | Dirección de facturación | Adresse de facturation | Indirizzo di fatturazione | Adres rozliczeniowy |  | Fakturačná adresa |  |
+| Cost center | Kostenstelle | Centro de costos | Centre de coûts | Centro di costo | Centrum kosztów |  | Nákladové stredisko |  |
+| PO number | PO Nummer | Número de PO | Numéro PO | Numero postale | Numer PO |  | PO číslo |  |
+| Participant comment | Teilnehmer{in}kommentar | Comentario del participante | Commentaire du participant | Commento del partecipante | Komentarz uczestnika |  | Komentár účastníka |  |
+| With confirmation | Mit Bestätigung | Con confirmación | Avec confirmation | Con conferma | Z potwierdzeniem |  | S potvrdením |  |
+| Booking order forms | Formulare für Buchungsaufträge | Formularios de órdenes de reserva | Formulaires pour les ordres de réservation | Questionari per ordini di prenotazione | Formularze zleceń rezerwacji |  | Formuláre pre objednávky rezervácie |  |
+| Requires booking order | Buchungsauftrag erforderlich | Requiere orden de reserva | Ordre de réservation requis | Ordine di prenotazione richiesto | Wymagane zlecenie rezerwacji |  | Vyžaduje sa objednávka rezervácie |  |
+| PayPal | PayPal | PayPal | PayPal | PayPal | PayPal | PayPal | PayPal | PayPal |
+| Credit points | Kreditpunkte | Puntos de crédito | Crédits | Crediti formativi | Punkty kredytowe |  | Kreditné body |  |
+| Credit point system | Kreditpunktesystem | Sistema de puntos de crédito | Système de crédit | Sistema di crediti formativi | System punktów kredytowych |  | Systém kreditných bodov |  |
+| Credit point balance | Kreditpunkteguthaben | Saldo de puntos de crédito | Solde des points de crédit | Bilancio dei crediti formativi | Saldo punktów kredytowych |  | Zostatok kreditných bodov |  |
+| Credit | Gutschrift | Abono | Crédits | Credito | Uznanie |  | Pripísanie kreditov |  |
+| Debit | Belastung | Cargo | Charge | Debito | Obciążenie |  | Odpísanie kreditov |  |
+| Transaction | Transaktion | Transacción | Transaction | Transazione | Transakcja |  | Transakcia |  |
+| Waiting list | Warteliste | Lista de espera | Liste d'attente | Lista di attesa | Lista oczekujących | Lista de espera | Zoznam čakateľov | Bekleme listesi |
 
 ## Coaching (Coaching)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Coaching | Coaching | Coaching | Tutoraggio | Coaching | Koučovanie | Koçluk |
-| Overview | Übersicht | Aperçu | Panoramica |  | Prehľad |  |
-| Courses - As coach | Kurse - Als Betreuer{in} | Cours - En tant que coach | Corsi - Come coach |  | Kurzy - Ako kouč |  |
-| Events | Termine | Événements | Eventi |  | Termíny |  |
-| Scope | Fokus | Focus | Ambito |  | Zameranie |  |
-| Assignments | Aufgaben | Tâches | Compiti |  | Úlohy |  |
-| Communication | Kommunikation | Communication | Comunicazione |  | Komunikácia |  |
-| Coach's notifications | Betreuer{innen} Benachrichtigungen | Notifications des coaches | Notifiche dei coach |  | Oznámenia kouča |  |
-| Educational products | Bildungsprodukte | Produits éducatifs | Prodotti per l'istruzione |  | Vzdelávacie produkty |  |
-| User relations | Personenbeziehungen | Relations utilisateurs | Relazioni d'utente | Relações com o usuário | Vzťahy s používateľmi | Kullanıcı ilişkileri |
-| Pending confirmations | Ausstehende Bestätigungen | Confirmations en attente | Conferme in sospeso |  | Čakajúce potvrdenia |  |
-| Credit points | Kreditpunkte | Crédits | Crediti formativi |  | Kreditné body |  |
-| Pending memberships | Ausstehende Mitgliedschaften | Adhésions en attente | Iscrizioni in sospeso |  | Čakajúce členstvá |  |
-| People | Personen | Personnes | Membri |  | Osoby |  |
-| Courses | Kurse | Mes cours | I miei corsi | Meu curso | Kurzy | Dersler |
-| Groups | Gruppen | Mes groupes | I miei gruppi | Meu grupo | Skupiny | Gruplar |
-| Events / Absences | Termine / Absenzen | Événements / Absences | Eventi / Assenze |  | Termíny / absencie |  |
-| User search | Personensuche | Recherche utilisateurs | Ricerca utenti | Buscar Usuário | Vyhľadávanie osôb | Kullanıcı arama |
-| Assessment orders | Bewertungsaufträge | Ordres d'évaluation | Ordini di valutazione |  | Hodnotiace úlohy |  |
-| Order management | Auftragsverwaltung | Gestion des affectations | Gestione ordini |  | Správa objednávok | Talimat yönetimi |
-| Reports | Reports | Rapports | Rapporti |  | Prehľady |  |
-| Report templates | Reportvorlagen | Modèles de rapport | Modelli di report |  | Šablóny reportov |  |
-| Generated report | Generierter Report | Rapports générés | Rapporti generati |  | Vygenerovaný report |  |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Coaching | Coaching | Coaching | Coaching | Tutoraggio | Coaching | Coaching | Koučovanie | Koçluk |
+| Overview | Übersicht | Resumen | Aperçu | Panoramica | Przegląd |  | Prehľad |  |
+| Courses - As coach | Kurse - Als Betreuer{in} | Cursos - Como tutor | Cours - En tant que coach | Corsi - Come coach | Kursy - jako opiekun |  | Kurzy - Ako kouč |  |
+| Events | Termine | Eventos | Événements | Eventi | Wydarzenia |  | Termíny |  |
+| Scope | Fokus | Ámbito | Focus | Ambito | Zakres |  | Zameranie |  |
+| Assignments | Aufgaben | Asignaciones | Tâches | Compiti | Przydziały |  | Úlohy |  |
+| Communication | Kommunikation | Comunicación | Communication | Comunicazione | Komunikacja |  | Komunikácia |  |
+| Coach's notifications | Betreuer{innen} Benachrichtigungen | Notificaciones de tutores | Notifications des coaches | Notifiche dei coach | Powiadomienia opiekunów |  | Oznámenia kouča |  |
+| Educational products | Bildungsprodukte | Productos educativos | Produits éducatifs | Prodotti per l'istruzione | Produkty edukacyjne |  | Vzdelávacie produkty |  |
+| User relations | Personenbeziehungen | Relaciones entre personas | Relations utilisateurs | Relazioni d'utente | Relacje między osobami | Relações com o usuário | Vzťahy s používateľmi | Kullanıcı ilişkileri |
+| Pending confirmations | Ausstehende Bestätigungen | Confirmaciones pendientes | Confirmations en attente | Conferme in sospeso | Oczekujące potwierdzenia |  | Čakajúce potvrdenia |  |
+| Credit points | Kreditpunkte | Puntos de crédito | Crédits | Crediti formativi | Punkty kredytowe |  | Kreditné body |  |
+| Pending memberships | Ausstehende Mitgliedschaften | Membresías pendientes | Adhésions en attente | Iscrizioni in sospeso | Oczekujące członkostwa |  | Čakajúce členstvá |  |
+| People | Personen | Personas | Personnes | Membri | Osoby |  | Osoby |  |
+| Courses | Kurse | Cursos | Mes cours | I miei corsi | Kursy | Meu curso | Kurzy | Dersler |
+| Groups | Gruppen | Grupos | Mes groupes | I miei gruppi | Grupy | Meu grupo | Skupiny | Gruplar |
+| Events / Absences | Termine / Absenzen | Eventos / ausencias | Événements / Absences | Eventi / Assenze | Wydarzenia / nieobecności |  | Termíny / absencie |  |
+| User search | Personensuche | Búsqueda de personas | Recherche utilisateurs | Ricerca utenti | Wyszukiwanie osób | Buscar Usuário | Vyhľadávanie osôb | Kullanıcı arama |
+| Assessment orders | Bewertungsaufträge | Órdenes de evaluación | Ordres d'évaluation | Ordini di valutazione | Zlecenia oceny |  | Hodnotiace úlohy |  |
+| Order management | Auftragsverwaltung | Gestión de órdenes | Gestion des affectations | Gestione ordini | Zarządzanie zleceniami |  | Správa objednávok | Talimat yönetimi |
+| Reports | Reports | Informes | Rapports | Rapporti | Raporty |  | Prehľady |  |
+| Report templates | Reportvorlagen | Plantillas de informes | Modèles de rapport | Modelli di report | Szablony raportów |  | Šablóny reportov |  |
+| Generated report | Generierter Report | Informe generado | Rapports générés | Rapporti generati | Wygenerowany raport |  | Vygenerovaný report |  |
 
 ## Collaboration (Zusammenarbeit)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Group | Gruppe | Groupe | Gruppo | Grupo | Skupina | grup |
-| Learning groups | Lerngruppen | Groupe d'étude | Gruppi di studio | Grupos de estudo | Vzdelávacie skupiny | öğrenme grupları |
-| Learning area | Lernbereich | Domaine d'étude | Area di studio | Área de ensino | Vzdelávacia oblasť | öğrenme alanı |
-| Members | Mitglieder | Membres | Membri |  | Členovia |  |
-| Collaborative tools | Kollaborative Werkzeuge | Outils collaboratifs | Strumenti di collaborazione | Ferramentas de colaboração | Nástroje na spoluprácu | İşbirliğine dayalı araçlar |
-| Group life cycle | Gruppen-Lebenszyklus | Cycle de vie des groupes | Ciclo di vita del gruppo | Ciclo de vida do grupo | Životný cyklus skupiny | Grup yaşam döngüsü |
-| Invitations | Einladungen | Invitations | Inviti |  | Pozvánky |  |
-| Group management | Gruppenverwaltung | Gestion des groupes | Gestione dei gruppi | Gestão de grupos | Riadenie skupiny | Grup yönetimi |
-| Published groups | Veröffentlichte Gruppen | Groupes publiés | Gruppi pubblicati | Grupos publicados | Publikované skupiny | Yayınlanan gruplar |
-| Externally managed groups | Extern verwaltete Gruppen | Groupes gérés de l'extérieur | Gruppi gestiti esternamente |  | Externe spravované skupiny | Dışarıdan yönetilen gruplar |
-| Merge | Zusammenführen | Réunir | Fusione | Juntar | Zlúčiť | Birleştir |
-| Information for members | Information an Mitglieder | Information aux membres | Informazione ai membri | Informação para membros | Informácie pre členov | Üyeler için bilgiler |
-| E-mail | E-Mail | E-mail | E-Mail | Formulário de contato | E-mail | E-mail |
-| Forum | Forum | Forum | Forum | Forum | Fórum | Forum |
-| Thread | Diskussionsthema | Sujet de discussion | Il tema |  | Diskusná téma |  |
-| Post | Beitrag | Contribution | Contributo | Mensagem | Príspevok | Postala |
-| Alias | Pseudonym | Pseudonyme | Alias | Apelido | Pseudonym | Takma ad |
-| Wiki | Wiki | Wiki | Wiki | Wiki | Wiki | Wiki |
-| Article | Artikel | Article | Articolo | Artigo | Článok | Madde |
-| Wiki page | Wiki-Seite | Page wiki | Pagina wiki | Página Wiki | Stránka Wiki | Wiki sayfası |
-| Discussion | Diskussion | Discussion | Discussione | Discussão | Diskusia | Tartışma |
-| Chat | Chat | Chat | Chat |  | Čet |  |
-| Instant Messaging | Instant-Messaging | Messagerie instantanée | Messaggeria istantanea | Mensagem instantânea | Okamžité zasielanie správ | Anlık mesajlaşma |
-| Chatroom | Chatraum | Chatroom | Ambiente chat | Sala de bate-papo | Diskusná miestnosť | Sohbet odası |
-| Calendar | Kalender | Calendrier | Calendario | Calendário | Kalendár | Takvim |
-| Event | Termin | Événement | Impegno |  | Termín |  |
-| Visibility | Sichtbarkeit | Visibilité | Visibilità | Visibilidade | Viditeľnosť | Görünürlük |
-| List of calendars | Kalenderliste | Liste des calendriers | Lista dei calendari | Lista de calendários | Zoznam kalendárov | Takvimler listesi |
-| Import calendar | Kalender importieren | Importer calendrier | Importare calendari | Impotar calendário | Importovať kalendár | Takvimi içe aktar |
-| ICal feed link | iCal Feed-Link | Lien ICal Feed | Feed link iCal | Feed-link Ical | Odkaz na kanál iCal | ICal besleme bağlantısı |
-| Folder | Ordner | Dossier | Cartella | Pasta | Priečinok | Klasör |
-| Files | Dateien | Fichiers | Files |  | Súbory |  |
-| Notes | Notizen | Mes feuilles de notes | Appunti | Anotações | Poznámky | Notlar |
-| Library | Bibliothek | Bibliothèque | Biblioteca | Biblioteca | Knižnica | Kütüphane |
-| Review | Überprüfen | Vérifier | Revisione | Revisar | Prehľad | Gözden geçir |
-| Catalog | Katalog | Catalogue | Catalogo |  | Katalóg knižnice |  |
-| Document pool | Dokumentenpool | Banque de documents | Pool di documenti | Reservatório de documentos | Fond dokumentov | Belge havuzu |
-| Notification | Benachrichtigung | Notification | Notifiche |  | Oznámenie |  |
-| Subscription | Abonnement | Abonnement | Iscrizione |  | Odber |  |
-| News | Neuigkeiten | Nouvelles | Novità | Notícias | Novinky | Haberler |
-| E-mail notification | E-Mail-Benachrichtigung | Notification e-mail | Avviso e-mail | Notificação por E-mail | E-mailová notifikácia | Eposta bildirimi |
-| Personal RSS Feed | Persönlicher RSS-Feed | Flux RSS personnel | Feed RSS personale | Feed RSS pessoal | Osobný kanál RSS | Kişisel RSS Akışı |
-| Message | Nachricht | Message | Messaggio | Mensagem | Správa | İleti |
-| E-mail | E-Mail | E-mail | E-mail | E-mail | E-mail | E-posta |
-| Project | Projekt | Projet | Progetto |  | Projekt |  |
-| Milestone | Meilenstein | Évènement clé | Milestone |  | Míľnik |  |
-| Decision | Entscheid | Décision | Decisione |  | Rozhodnutie |  |
-| Note | Notiz | Note | Nota |  | Poznámka |  |
-| Whiteboard | Whiteboard | Tableau blanc | Lavagna |  | Interaktívna tabuľa |  |
-| Timeline | Timeline | Chronologie | Timeline |  | Časová os |  |
-| Schedule | Terminplan | Calendrier | Calendario |  | Harmonogram |  |
-| Files | Dateien | Fichiers | File |  | Súbory |  |
-| Activity | Aktivität | Activité | Attività |  | Aktivita |  |
-| Activities | Aktivitäten | Activités | Attività |  | Aktivity |  |
-| Quick start | Schnellzugriff | Accès rapide | Avvio rapido |  | Rýchly štart |  |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Group | Gruppe | Grupo | Groupe | Gruppo | Grupa | Grupo | Skupina | grup |
+| Learning groups | Lerngruppen | Grupos de aprendizaje | Groupe d'étude | Gruppi di studio | Grupy edukacyjne | Grupos de estudo | Vzdelávacie skupiny | öğrenme grupları |
+| Learning area | Lernbereich | Área de aprendizaje | Domaine d'étude | Area di studio | Obszar edukacyjny | Área de ensino | Vzdelávacia oblasť | öğrenme alanı |
+| Members | Mitglieder | Miembros | Membres | Membri | Członkowie |  | Členovia |  |
+| Collaborative tools | Kollaborative Werkzeuge | Herramientas de colaboración | Outils collaboratifs | Strumenti di collaborazione | Narzędzia współpracy | Ferramentas de colaboração | Nástroje na spoluprácu | İşbirliğine dayalı araçlar |
+| Group life cycle | Gruppen-Lebenszyklus | Ciclo de vida del grupo | Cycle de vie des groupes | Ciclo di vita del gruppo | Cykl życia grupy | Ciclo de vida do grupo | Životný cyklus skupiny | Grup yaşam döngüsü |
+| Invitations | Einladungen | Invitaciones | Invitations | Inviti | Zaproszenia |  | Pozvánky |  |
+| Group management | Gruppenverwaltung | Gestión de grupos | Gestion des groupes | Gestione dei gruppi | Zarządzanie grupami | Gestão de grupos | Riadenie skupiny | Grup yönetimi |
+| Published groups | Veröffentlichte Gruppen | Grupos publicados | Groupes publiés | Gruppi pubblicati | Opublikowane grupy | Grupos publicados | Publikované skupiny | Yayınlanan gruplar |
+| Externally managed groups | Extern verwaltete Gruppen | Grupos gestionados externamente | Groupes gérés de l'extérieur | Gruppi gestiti esternamente | Grupy zarządzane zewnętrznie |  | Externe spravované skupiny | Dışarıdan yönetilen gruplar |
+| Merge | Zusammenführen | Fusionar | Réunir | Fusione | Połącz | Juntar | Zlúčiť | Birleştir |
+| Information for members | Information an Mitglieder | Información para miembros | Information aux membres | Informazione ai membri | Informacje dla członków | Informação para membros | Informácie pre členov | Üyeler için bilgiler |
+| E-mail | E-Mail | Formulario de contacto | E-mail | E-Mail | Formularz kontaktowy | Formulário de contato | E-mail | E-mail |
+| Forum | Forum | Foro | Forum | Forum | Forum | Forum | Fórum | Forum |
+| Thread | Diskussionsthema | Hilo | Sujet de discussion | Il tema | Wątek |  | Diskusná téma |  |
+| Post | Beitrag | Publicación | Contribution | Contributo | Post | Mensagem | Príspevok | Postala |
+| Alias | Pseudonym | Seudónimo | Pseudonyme | Alias | Pseudonim | Apelido | Pseudonym | Takma ad |
+| Wiki | Wiki | Wiki | Wiki | Wiki | Wiki | Wiki | Wiki | Wiki |
+| Article | Artikel | Artículo | Article | Articolo | Artykuł | Artigo | Článok | Madde |
+| Wiki page | Wiki-Seite | Página Wiki | Page wiki | Pagina wiki | Strona Wiki | Página Wiki | Stránka Wiki | Wiki sayfası |
+| Discussion | Diskussion | Discusión | Discussion | Discussione | Dyskusja | Discussão | Diskusia | Tartışma |
+| Chat | Chat | Chat | Chat | Chat | Czat |  | Čet |  |
+| Instant Messaging | Instant-Messaging | Mensajería instantánea | Messagerie instantanée | Messaggeria istantanea | Komunikator | Mensagem instantânea | Okamžité zasielanie správ | Anlık mesajlaşma |
+| Chatroom | Chatraum | Sala de chat | Chatroom | Ambiente chat | Pokój czatu | Sala de bate-papo | Diskusná miestnosť | Sohbet odası |
+| Calendar | Kalender | Calendario | Calendrier | Calendario | Kalendarz | Calendário | Kalendár | Takvim |
+| Event | Termin | Cita | Événement | Impegno | Wydarzenie |  | Termín |  |
+| Visibility | Sichtbarkeit | Visibilidad | Visibilité | Visibilità | Widoczność | Visibilidade | Viditeľnosť | Görünürlük |
+| List of calendars | Kalenderliste | Lista de calendarios | Liste des calendriers | Lista dei calendari | Lista kalendarzy | Lista de calendários | Zoznam kalendárov | Takvimler listesi |
+| Import calendar | Kalender importieren | Importar calendario | Importer calendrier | Importare calendari | Importuj kalendarz | Impotar calendário | Importovať kalendár | Takvimi içe aktar |
+| ICal feed link | iCal Feed-Link | Enlace del feed iCal | Lien ICal Feed | Feed link iCal | Link do iCal | Feed-link Ical | Odkaz na kanál iCal | ICal besleme bağlantısı |
+| Folder | Ordner | Carpeta | Dossier | Cartella | Folder | Pasta | Priečinok | Klasör |
+| Files | Dateien | Archivos | Fichiers | Files | Pliki |  | Súbory |  |
+| Notes | Notizen | Notas | Mes feuilles de notes | Appunti | Notatki | Anotações | Poznámky | Notlar |
+| Library | Bibliothek | Biblioteca | Bibliothèque | Biblioteca | Biblioteka | Biblioteca | Knižnica | Kütüphane |
+| Review | Überprüfen | Revisar | Vérifier | Revisione | Zweryfikuj | Revisar | Prehľad | Gözden geçir |
+| Catalog | Katalog | Catálogo | Catalogue | Catalogo | Katalog |  | Katalóg knižnice |  |
+| Document pool | Dokumentenpool | Pool de documentos | Banque de documents | Pool di documenti | Pool dokumentów | Reservatório de documentos | Fond dokumentov | Belge havuzu |
+| Notification | Benachrichtigung | Notificación | Notification | Notifiche | Powiadomienie |  | Oznámenie |  |
+| Subscription | Abonnement | Suscripción | Abonnement | Iscrizione | Subskrypcja |  | Odber |  |
+| News | Neuigkeiten | Novedades | Nouvelles | Novità | Nowości | Notícias | Novinky | Haberler |
+| E-mail notification | E-Mail-Benachrichtigung | Notificación por e-mail | Notification e-mail | Avviso e-mail | Powiadomienie e-mail | Notificação por E-mail | E-mailová notifikácia | Eposta bildirimi |
+| Personal RSS Feed | Persönlicher RSS-Feed | Feed RSS personal | Flux RSS personnel | Feed RSS personale | Osobisty kanał RSS | Feed RSS pessoal | Osobný kanál RSS | Kişisel RSS Akışı |
+| Message | Nachricht | Mensaje | Message | Messaggio | Wiadomość | Mensagem | Správa | İleti |
+| E-mail | E-Mail | E-mail | E-mail | E-mail | E-mail | E-mail | E-mail | E-posta |
+| Project | Projekt | Proyecto | Projet | Progetto | Projekt |  | Projekt |  |
+| Milestone | Meilenstein | Hito | Évènement clé | Milestone | Kamień milowy |  | Míľnik |  |
+| Decision | Entscheid | Decisión | Décision | Decisione | Decyzja |  | Rozhodnutie |  |
+| Note | Notiz | Nota | Note | Nota | Notatka |  | Poznámka |  |
+| Whiteboard | Whiteboard | Whiteboard | Tableau blanc | Lavagna | Whiteboard |  | Interaktívna tabuľa |  |
+| Timeline | Timeline | Timeline | Chronologie | Timeline | Timeline |  | Časová os |  |
+| Schedule | Terminplan | Cronograma | Calendrier | Calendario | Harmonogram |  | Harmonogram |  |
+| Files | Dateien | Archivos | Fichiers | File | Pliki |  | Súbory |  |
+| Activity | Aktivität | Actividad | Activité | Attività | Aktywność |  | Aktivita |  |
+| Activities | Aktivitäten | Actividades | Activités | Attività | Aktywności |  | Aktivity |  |
+| Quick start | Schnellzugriff | Acceso rápido | Accès rapide | Avvio rapido | Szybki dostęp |  | Rýchly štart |  |
 
 ## Course (Kurs)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Course | Kurs | Cours | Corso | Curso | Kurz | Kurs |
-| Learning path course | Lernpfadkurs | Cours avec parcours d'apprentissage | Percorso di apprendimento |  | Kurz vzdelávacieho procesu |  |
-| Conventional course | Herkömmlicher Kurs | Cours conventionnel | Corso convenzionale |  | Bežný kurz |  |
-| Learning path | Lernpfad | Parcours d'apprentissage | Percorso | Caminho de estudo | Vzdelávací proces | Öğrenme yolu |
-| Course element | Kursbaustein | Élément de cours | Elemento di corso | Elemento de curso | Prvok kurzu | Ders öğesi |
-| Course editor | Kurseditor | Editeur de cours | Editore di corso | Editor de curso | Editor kurzu | Kurs editörü |
-| Partial elements | Teilbausteine | Éléments partiels | Elementi parziali | Caixa de retorno | Čiastkové prvky | Kısmi elemanlar |
-| Course status | Kursstatus | Statut du cours | Stato del corso |  | Stav kurzu |  |
-| Publication | Veröffentlichung | Publication | RIlasciare | Lançamento | Publikovanie | Serbest bırak |
-| Publish | Publizieren | Publier | Pubblicare | Publicar | Publikovať | Yayınla |
-| Unpublished changes | Nicht publizierte Änderungen | Publier les changements | Pubblicare le modifiche | Publicar alterações | Nepublikované úpravy | Değişiklikleri yayınla |
-| Course life cycle | Kurs-Lebenszyklus | Cycle de vie des cours | Ciclo di vita del corso | Ciclo de vida do curso | Životný cyklus kurzu | Kurs yaşam döngüsü |
-| Execution period | Durchführungszeitraum | Période de mise en œuvre | Periodo di esecuzione | Período de execução | Obdobie vykonávania | Yürütme Süresi |
-| Course archive | Kursarchiv | Archive de cours | Archivio del corso |  | Archív kurzov |  |
-| Trash | Papierkorb | Poubelle | Cestino | Lixeira | Kôš | Çöp |
-| Storage folder | Ablageordner | Dossier de stockage | Cartella di archiviazione |  | Úložný priečinok |  |
-| Resource folder | Ressourcenordner | Dossier des ressources | Cartella delle risorse | Pasta de recursos | Priečinok so zdrojmi | Kaynak klasörü |
-| Info page | Infoseite | Page d'information | Pagina di informazioni | Página de informações | Informačná stránka | Bilgi sayfası |
-| Members displayed as teacher | Als Dozenten angezeigte Mitglieder | Membres affichés comme enseignant | Membri visualizzati come insegnante |  | Členovia zobrazení ako lektor |  |
-| Course reminders | Kurserinnerungen | Rappels du cours | Promemoria corso | Lembretes de curso | Upozornenia na kurzy | Kurs hatırlatıcıları |
-| Reminder | Erinnerung | Rappel | Promemoria | Lembrete | Pripomienka | Hatırlacı |
-| Rule | Bedingung | Condition | Regola |  | Pravidlo pripomienky |  |
-| Additional rule | Zusatzbedingung | Condition additionnelle | Regola aggiuntiva |  | Doplnková podmienka |  |
-| E-mail message | E-Mail-Benachrichtigung | Notification par courriel | Messaggio email |  | E-mailová správa | E-posta mesajı |
-| Recipients | Empfänger{innen} | Destinataires | Destinatari |  | Príjemcovia | Alıcılar |
-| Sent reminder | Versendete Erinnerung | Rappel envoyé | Promemoria inviato |  | Odoslaná pripomienka |  |
-| SMS reminders | SMS Erinnerungen | Rappels via SMS | Promemoria via SMS | Lembretes SMS | Pripomienky SMS | SMS hatırlatıcıları |
-| Course execution | Kursdurchführung | Exécution du cours | Esecuzione del corso |  | Realizácia kurzu |  |
-| Course to-do | Kurs To-do | Tâches à faire du cours | Cosa da fare del corso |  | Kurz To-do |  |
-| Highscore | Rangliste | HighScore | Massimo punteggio | Pontuação Alta | Vysoké skóre | Yüksek puan |
-| Consents | Einwilligungen | Consentements | Consensi | Consentimentos | Súhlasy | Rızalar |
-| Access configuration | Zugangskonfiguration | Configuration d'accès | Configurazione accesso | Configuração de acesso | Konfigurácia prístupu | Erişim yapılandırması |
-| Access authorisation | Zutrittsberechtigung | Autorisation d'accès | Autorizzazione accesso | Autorização de acesso | Oprávnenie na prístup | Erişim yetkisi |
-| Visibility | Sichtbarkeit | Visibilité | Visibilità | Visibilidade | Viditeľnosť | Görünürlük |
-| Access for coach | Freigabe Betreuer{innen} | Publié pour les coaches | Accesso al coach | Acesso para treinador | Prístup pre kouča | Koç için erişim |
-| Structure | Struktur | Structure | Struttura | Estrutura | Štruktúra | Yapı |
-| HTML page | HTML-Seite | Page HTML | Pagina HTML | Página HTML | Stránka HTML |  |
-| Page | Seite | Page | Pagina |  | Stránka |  |
-| External page | Externe Seite | Page externe | Pagina esterna | Página externa | Externá stránka | Harici sayfa |
-| Folder | Ordner | Dossier | Cartella | Pasta | Priečinok | Klasör |
-| Link list | Linkliste | Liste de liens | Lista link | Lista de Links | Zoznam odkazov | Bağlantı listesi |
-| CP learning content | CP-Lerninhalt | Contenu didactique CP | Contenuto didattico CP | Módulo IMS-CP | Vzdelávací obsah CP | CP öğrenme içeriği |
-| SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 |
-| Wiki | Wiki | Page Wiki | Wiki | Wiki | Wiki | Wiki |
-| Blog | Blog | Blogue | Blog | Blog | Blog | Blog |
-| Podcast | Podcast | Podcast | Podcast | Podcast | Podcast | Podcast |
-| Forum | Forum | Forum | Forum | Fórum | Fórum | Forum |
-| Info messages | Mitteilungen | Communications | Comunicazioni | Notificações | Oznámenia | Bildirimler |
-| E-Mail recipient | E-Mail Empfänger{innen} | Destinataires courriels | Destinatario di email |  | Príjemcovia e-mailov |  |
-| E-mail | E-Mail | E-mail | E-mail | Formulário de contato | E-mail | E-mail |
-| Calendar | Kalender | Calendrier | Calendario | O acesso como o apresentador lhe permite ler, comentar, editar, apagar ou criar entradas. Além disso, os apresentadores podem modificar o título e descrição do "Feed". | Kalendár | Takvim |
-| File dialog | Dateidiskussion | Fichier discuté | Discussione documentata | Arquivo de diálogo | Dialóg súborov | Dosya iletişim kutusu |
-| Participant list | Liste der Teilnehmer{innen} | Liste des participants | Lista dei partecipanti | Lista de participantes | Zoznam účastníkov | Katılımcı listesi |
-| Enrolment | Einschreibung | Inscription | Iscrizione | Inscrição | Zápis | Kayıt |
-| Selection | Auswahl | Sélection | Selezione |  | Výber |  |
-| Topic broker | Themenbörse | Foire aux sujets | Broker di argomenti |  | Výmena tém |  |
-| Topic assignment | Themenvergabe | Affectation sujets | Assegnazione temi | Atribuição de Tópico | Priradenie témy | Konu atama |
-| Appointment scheduling | Terminplanung | Prise de rendez-vous | Programmazione degli appuntamenti |  | Plánovanie stretnutí |  |
-| Assignment of dates | Terminvergabe | Attribution de rendez-vous | Attribuzione impegni | Data de inscrição | Priradenie dátumov | Tarihlerin atanması |
-| Participant folder | Teilnehmer{innen} Ordner | Dossier participant | Cartella di consegna | Pasta do participante | Priečinok účastníka | Katılımcı Klasörü |
-| Portfolio task | Portfolioaufgabe | Devoir portfolio | Attività del portfolio |  | Úloha portfólia |  |
-| Assessment | Bewertung | Evaluation | Valutazione | Avaliação | Hodnotenie | Değerlendirme |
-| Check list | Checkliste | Listes de contrôle | Checklist | Check list | Kontrolný zoznam | Kontrol listesi |
-| Check list (old) | Checkliste (alt) | Check-list (ancienne) | Check list | Check list | Kontrolný zoznam (starý) | Kontrol listesi (eski) |
-| Self-test | Selbsttest | Auto-test | Autotest | Auto-teste | Autotest | Kendi kendine test |
-| Questionnaire | Fragebogen | Questionnaire | Questionario | Pesquisa | Dotazník | Anket |
-| Survey | Umfrage | Sondage | Indagine | Pesquisa | Prieskum | Anket |
-| Form | Formular | Formulaire | Questionario |  | Formulár | Form |
-| Practice | Übung | Exercice | Prova |  | Prax |  |
-| Video | Video | Vidéo | Video | Vídeo | Video | Video |
-| Video task | Videoaufgabe | Devoir vidéo | Compito video |  | Video úloha |  |
-| LTI page | LTI-Seite | Page LTI | Pagina LTI | Página LTI | Stránka LTI | LTI sayfası |
-| <s>Task (deprecated)</s> | <s>Aufgabe (deprecated)</s> | <s>Devoir</s> | Compito | Tarefa | <s>Úloha (zastarané)</s> | <s>Görev (kullanımdan kaldırıldı)</s> |
-| Document | Dokument | Document | Documento | Documento | Dokument | Belge |
-| Video live stream | Video Livestream | Diffusion vidéo en direct | Video live stream | Vídeo ao vivo | Priamy prenos videa | Video canlı akışı |
-| Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect |
-| GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting | Toplantıya git |
-| Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams |
-| OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings |
-| vitero | vitero | vitero | vitero | vitero | vitero | vitero |
-| Opencast | Opencast | Opencast | Opencast | Opencast | Opencast | Opencast |
-| Mediasite | Mediasite | Mediasite | Mediasite |  | Mediasite | Mediasite |
-| edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | eğitim paylaşımı |
-| Edubase | Edubase | Edubase | Edubase | Edubase | Edubase | Edubase |
-| card2brain flashcards | card2brain Lernkarten | Carte d'apprentissages card2brain | card2brain flashcards | flashcards card2brain | card2brain flashcards | card2brain bilgi kartları |
-| JupyterHub | JupyterHub | JupyterHub | JupyterHub |  | JupyterHub |  |
-| BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton |
-| Zoom | Zoom | Zoom | Zoom |  | Zoom |  |
-| Drop box | Abgabeordner | Boîte de dépôt | Box di raccolta |  | Priečinok na doručenie |  |
-| Return box | Rückgabeordner | Dossier de restitution | Box di restituzione |  | Priečinok na vrátenie |  |
-| Sample solution | Musterlösung | Solution | Modello di soluzione |  | Vzorové riešenie |  |
-| Topic | Thema | Sujet | Argomento |  | Téma |  |
-| Number of participants | Anzahl Teilnehmer{innen} | Nombre de participant{e}s | Numero di partecipanti |  | Počet účastníkov |  |
-| Selection | Auswahl | Sélection | Selezione |  | Voľba témy |  |
-| Enrolment | Einschreibung | Inscription | Iscrizione |  | Prihlásenie |  |
-| Enrolment process | Einschreibevorgang | Processus d'inscription | Procedura di iscrizione |  | Proces prihlasovania |  |
-| Optimization strategy | Optimierungsstrategie | Stratégie d'optimisation | Strategia di ottimizzazione |  | Optimalizačná stratégia |  |
-| Status | Status | Statut | Stato |  | Stav |  |
-| Status | Status | Statut | Status |  | Stav |  |
-| Responsible for the topic | Zuständig für dieses Thema | Responsable de ce sujet | Responsabile di questo argomento |  | Zodpovedná osoba za tému |  |
-| Participants accepted | Akzeptierte Teilnehmer{innen} | Participants acceptés | Partecipanti accettati | Descrição | Prijatí účastníci | Katılımcılar kabul edildi |
-| Occasion | Anlass | Événement | Occasione | Ocasião | Príležitosť | Etkinlik |
-| Appointment booking | Terminbuchung | Réservation d'un rendezvous | Prenotare appuntamento |  | Rezervácia termínu |  |
-| Appointment finding | Terminfindung | Choix du rendez-vous | Scelta dell'appuntamento | Encontrar compromisso | Hľadanie termínu | Randevu bulma |
-| Appointment | Termin | Rendez-vous | Appuntamento | Compromisso | Stretnutie | Randevu |
-| Participation | Teilnahme | Participation | Partecipazione |  | Účasť |  |
-| Confirm | Bestätigen | Confirmer | Confermare | Confirmar | Potvrdiť | Onayla |
-| Organizer | Organisator{in} | Organisateur | Organizzatore | Organizador | Organizátor | Düzenleyen |
-| Maximum number of participants | Max. Teilnehmer{innen} | Maximum de participants | Numero massimo di partecipanti | Número máximo de participantes | Maximálny počet účastníkov | Maksimum katılımcılar |
-| Execution | Durchführung | Exécution | Esecuzione |  | Realizácia | Yükümlülük |
-| Exception | Ausnahme | Exception | Eccezione |  | Výnimka |  |
-| Learning time | Bearbeitungszeit | Temps d'apprentissage | Tempo di studio | Tempo de estudo | Čas spracovania | Öğrenme zamanı |
-| Status | Status | Statut | Stato | Status | Stav | Durum |
-| Calculation of learning progress | Lernfortschritt berechnen | Calcul de la progression de l'apprentissage en cours | Calcolo dei progressi di apprendimento | Cálculo de progresso do estudo | Výpočet učebného pokroku | Öğrenme ilerlemesinin hesaplanması |
-| Condition | Bedingung | Condition | Condizione |  | Podmienka |  |
-| Access | Zugang | Accès | Accesso | Acesso | Prístup | Erişim |
-| Expert mode | Expertenmodus | Mode avancé | Modalità avanzata |  | Expertný režim |  |
-| Simple mode | Einfacher Modus | Mode simple | Modalità semplice |  | Jednoduchý režim |  |
-| Course template | Kursvorlage | Présentation du cours | Layout di corso | Modelo de curso | Šablóna kurzu | Kurs şablonu |
-| Course statistics | Kurs Statistiken | Statistique | Statistiche | Ajuda sobre as configurações das descrições | Štatistiky kurzu | Ders istatistikleri |
-| Archiving & Reporting | Archivierung & Reports | Archivage & rapports | Archiviazione e reporting |  | Archivácia a podávanie správ |  |
-| Complete archive | Gesamtarchiv | Archive complète | Archivio completo |  | Kompletný archív |  |
-| Partial archive | Teilarchiv | Archive partielle | Archivio parziale |  | Čiastočný archív |  |
-| Copy course | Kurs kopieren | Copier un cours | Copiare corso |  | Kopírovať kurz | Kursu kopyala |
-| Save as template | Als Template speichern | Enregistrer comme modèle | Salvare come template |  | Uložiť ako šablónu |  |
-| Check box | Checkbox | Case à cocher | Checkbox |  | Zaškrtávacie políčko |  |
-| Coach files | Unterlagen Betreuer{innen} | Documents pour les coaches | Documenti dei coach |  | Súbory kouča | Koç dosyaları |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Course | Kurs | Curso | Cours | Corso | Kurs | Curso | Kurz | Kurs |
+| Learning path course | Lernpfadkurs | Curso con ruta de aprendizaje | Cours avec parcours d'apprentissage | Percorso di apprendimento | Kurs ze ścieżką nauki |  | Kurz vzdelávacieho procesu |  |
+| Conventional course | Herkömmlicher Kurs | Curso convencional | Cours conventionnel | Corso convenzionale | Kurs tradycyjny |  | Bežný kurz |  |
+| Learning path | Lernpfad | Ruta de aprendizaje | Parcours d'apprentissage | Percorso | Ścieżka nauki | Caminho de estudo | Vzdelávací proces | Öğrenme yolu |
+| Course element | Kursbaustein | Elemento del curso | Élément de cours | Elemento di corso | Element kursu | Elemento de curso | Prvok kurzu | Ders öğesi |
+| Course editor | Kurseditor | Editor del curso | Editeur de cours | Editore di corso | Edytor kursu | Editor de curso | Editor kurzu | Kurs editörü |
+| Partial elements | Teilbausteine | Elementos parciales | Éléments partiels | Elementi parziali | Elementy składowe | Caixa de retorno | Čiastkové prvky | Kısmi elemanlar |
+| Course status | Kursstatus | Estado del curso | Statut du cours | Stato del corso | Status kursu |  | Stav kurzu |  |
+| Publication | Veröffentlichung | Publicación | Publication | RIlasciare | Publikacja | Lançamento | Publikovanie | Serbest bırak |
+| Publish | Publizieren | Publicar | Publier | Pubblicare | Publikuj | Publicar | Publikovať | Yayınla |
+| Unpublished changes | Nicht publizierte Änderungen | Cambios no publicados | Publier les changements | Pubblicare le modifiche | Nieopublikowane zmiany | Publicar alterações | Nepublikované úpravy | Değişiklikleri yayınla |
+| Course life cycle | Kurs-Lebenszyklus | Ciclo de vida del curso | Cycle de vie des cours | Ciclo di vita del corso | Cykl życia kursu | Ciclo de vida do curso | Životný cyklus kurzu | Kurs yaşam döngüsü |
+| Execution period | Durchführungszeitraum | Periodo de ejecución | Période de mise en œuvre | Periodo di esecuzione | Okres realizacji | Período de execução | Obdobie vykonávania | Yürütme Süresi |
+| Course archive | Kursarchiv | Archivo del curso | Archive de cours | Archivio del corso | Archiwum kursu |  | Archív kurzov |  |
+| Trash | Papierkorb | Papelera | Poubelle | Cestino | Kosz | Lixeira | Kôš | Çöp |
+| Storage folder | Ablageordner | Carpeta de almacenamiento | Dossier de stockage | Cartella di archiviazione | Folder przechowywania |  | Úložný priečinok |  |
+| Resource folder | Ressourcenordner | Carpeta de recursos | Dossier des ressources | Cartella delle risorse | Folder zasobów | Pasta de recursos | Priečinok so zdrojmi | Kaynak klasörü |
+| Info page | Infoseite | Página de información | Page d'information | Pagina di informazioni | Strona informacyjna | Página de informações | Informačná stránka | Bilgi sayfası |
+| Members displayed as teacher | Als Dozenten angezeigte Mitglieder | Miembros mostrados como docentes | Membres affichés comme enseignant | Membri visualizzati come insegnante | Członkowie wyświetlani jako wykładowcy |  | Členovia zobrazení ako lektor |  |
+| Course reminders | Kurserinnerungen | Recordatorios del curso | Rappels du cours | Promemoria corso | Przypomnienia kursu | Lembretes de curso | Upozornenia na kurzy | Kurs hatırlatıcıları |
+| Reminder | Erinnerung | Recordatorio | Rappel | Promemoria | Przypomnienie | Lembrete | Pripomienka | Hatırlacı |
+| Rule | Bedingung | Regla | Condition | Regola | Reguła |  | Pravidlo pripomienky |  |
+| Additional rule | Zusatzbedingung | Regla adicional | Condition additionnelle | Regola aggiuntiva | Reguła dodatkowa |  | Doplnková podmienka |  |
+| E-mail message | E-Mail-Benachrichtigung | Mensaje de e-mail | Notification par courriel | Messaggio email | Wiadomość e-mail |  | E-mailová správa | E-posta mesajı |
+| Recipients | Empfänger{innen} | Destinatarios | Destinataires | Destinatari | Odbiorcy |  | Príjemcovia | Alıcılar |
+| Sent reminder | Versendete Erinnerung | Recordatorio enviado | Rappel envoyé | Promemoria inviato | Wysłane przypomnienie |  | Odoslaná pripomienka |  |
+| SMS reminders | SMS Erinnerungen | Recordatorios por SMS | Rappels via SMS | Promemoria via SMS | Przypomnienia SMS | Lembretes SMS | Pripomienky SMS | SMS hatırlatıcıları |
+| Course execution | Kursdurchführung | Recorrido del curso | Exécution du cours | Esecuzione del corso | Przebieg kursu |  | Realizácia kurzu |  |
+| Course to-do | Kurs To-do | To-do del curso | Tâches à faire du cours | Cosa da fare del corso | To-do kursu |  | Kurz To-do |  |
+| Highscore | Rangliste | Clasificación | HighScore | Massimo punteggio | Ranking | Pontuação Alta | Vysoké skóre | Yüksek puan |
+| Consents | Einwilligungen | Consentimientos | Consentements | Consensi | Zgody | Consentimentos | Súhlasy | Rızalar |
+| Access configuration | Zugangskonfiguration | Configuración de acceso | Configuration d'accès | Configurazione accesso | Konfiguracja dostępu | Configuração de acesso | Konfigurácia prístupu | Erişim yapılandırması |
+| Access authorisation | Zutrittsberechtigung | Autorización de entrada | Autorisation d'accès | Autorizzazione accesso | Uprawnienie do wejścia | Autorização de acesso | Oprávnenie na prístup | Erişim yetkisi |
+| Visibility | Sichtbarkeit | Visibilidad | Visibilité | Visibilità | Widoczność | Visibilidade | Viditeľnosť | Görünürlük |
+| Access for coach | Freigabe Betreuer{innen} | Acceso para tutores | Publié pour les coaches | Accesso al coach | Dostęp dla opiekunów | Acesso para treinador | Prístup pre kouča | Koç için erişim |
+| Structure | Struktur | Estructura | Structure | Struttura | Struktura | Estrutura | Štruktúra | Yapı |
+| HTML page | HTML-Seite | Página HTML | Page HTML | Pagina HTML | Strona HTML | Página HTML | Stránka HTML |  |
+| Page | Seite | Página | Page | Pagina | Strona |  | Stránka |  |
+| External page | Externe Seite | Página externa | Page externe | Pagina esterna | Strona zewnętrzna | Página externa | Externá stránka | Harici sayfa |
+| Folder | Ordner | Carpeta | Dossier | Cartella | Folder | Pasta | Priečinok | Klasör |
+| Link list | Linkliste | Lista de enlaces | Liste de liens | Lista link | Lista odnośników | Lista de Links | Zoznam odkazov | Bağlantı listesi |
+| CP learning content | CP-Lerninhalt | Contenido didáctico CP | Contenu didactique CP | Contenuto didattico CP | Materiał CP | Módulo IMS-CP | Vzdelávací obsah CP | CP öğrenme içeriği |
+| SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 |
+| Wiki | Wiki | Wiki | Page Wiki | Wiki | Wiki | Wiki | Wiki | Wiki |
+| Blog | Blog | Blog | Blogue | Blog | Blog | Blog | Blog | Blog |
+| Podcast | Podcast | Podcast | Podcast | Podcast | Podcast | Podcast | Podcast | Podcast |
+| Forum | Forum | Foro | Forum | Forum | Forum | Fórum | Fórum | Forum |
+| Info messages | Mitteilungen | Mensajes informativos | Communications | Comunicazioni | Komunikaty | Notificações | Oznámenia | Bildirimler |
+| E-Mail recipient | E-Mail Empfänger{innen} | Destinatarios del e-mail | Destinataires courriels | Destinatario di email | Odbiorcy e-maila |  | Príjemcovia e-mailov |  |
+| E-mail | E-Mail | E-mail | E-mail | E-mail | E-mail | Formulário de contato | E-mail | E-mail |
+| Calendar | Kalender | Calendario | Calendrier | Calendario | Kalendarz | O acesso como o apresentador lhe permite ler, comentar, editar, apagar ou criar entradas. Além disso, os apresentadores podem modificar o título e descrição do "Feed". | Kalendár | Takvim |
+| File dialog | Dateidiskussion | Diálogo de archivo | Fichier discuté | Discussione documentata | Dyskusja o pliku | Arquivo de diálogo | Dialóg súborov | Dosya iletişim kutusu |
+| Participant list | Liste der Teilnehmer{innen} | Lista de participantes | Liste des participants | Lista dei partecipanti | Lista uczestników | Lista de participantes | Zoznam účastníkov | Katılımcı listesi |
+| Enrolment | Einschreibung | Inscripción | Inscription | Iscrizione | Zapisanie się | Inscrição | Zápis | Kayıt |
+| Selection | Auswahl | Selección | Sélection | Selezione | Wybór |  | Výber |  |
+| Topic broker | Themenbörse | Bolsa de temas | Foire aux sujets | Broker di argomenti | Giełda tematów |  | Výmena tém |  |
+| Topic assignment | Themenvergabe | Asignación de temas | Affectation sujets | Assegnazione temi | Przydział tematów | Atribuição de Tópico | Priradenie témy | Konu atama |
+| Appointment scheduling | Terminplanung | Planificación de citas | Prise de rendez-vous | Programmazione degli appuntamenti | Planowanie terminów |  | Plánovanie stretnutí |  |
+| Assignment of dates | Terminvergabe | Asignación de fecha | Attribution de rendez-vous | Attribuzione impegni | Przydział terminów | Data de inscrição | Priradenie dátumov | Tarihlerin atanması |
+| Participant folder | Teilnehmer{innen} Ordner | Carpeta del participante | Dossier participant | Cartella di consegna | Folder uczestnika | Pasta do participante | Priečinok účastníka | Katılımcı Klasörü |
+| Portfolio task | Portfolioaufgabe | Tarea de portfolio | Devoir portfolio | Attività del portfolio | Zadanie portfolio |  | Úloha portfólia |  |
+| Assessment | Bewertung | Evaluación | Evaluation | Valutazione | Ocena | Avaliação | Hodnotenie | Değerlendirme |
+| Check list | Checkliste | Lista de verificación | Listes de contrôle | Checklist | Lista kontrolna | Check list | Kontrolný zoznam | Kontrol listesi |
+| Check list (old) | Checkliste (alt) | Lista de verificación (antigua) | Check-list (ancienne) | Check list | Lista kontrolna (stara) | Check list | Kontrolný zoznam (starý) | Kontrol listesi (eski) |
+| Self-test | Selbsttest | Autotest | Auto-test | Autotest | Samoocena | Auto-teste | Autotest | Kendi kendine test |
+| Questionnaire | Fragebogen | Cuestionario | Questionnaire | Questionario | Ankieta | Pesquisa | Dotazník | Anket |
+| Survey | Umfrage | Encuesta | Sondage | Indagine | Sondaż | Pesquisa | Prieskum | Anket |
+| Form | Formular | Formulario | Formulaire | Questionario | Formularz |  | Formulár | Form |
+| Practice | Übung | Práctica | Exercice | Prova | Ćwiczenie |  | Prax |  |
+| Video | Video | Video | Vidéo | Video | Wideo | Vídeo | Video | Video |
+| Video task | Videoaufgabe | Tarea de video | Devoir vidéo | Compito video | Zadanie wideo |  | Video úloha |  |
+| LTI page | LTI-Seite | Página LTI | Page LTI | Pagina LTI | Strona LTI | Página LTI | Stránka LTI | LTI sayfası |
+| <s>Task (deprecated)</s> | <s>Aufgabe (deprecated)</s> | <s>Tarea (obsoleta)</s> | <s>Devoir</s> | Compito | <s>Zadanie (przestarzałe)</s> | Tarefa | <s>Úloha (zastarané)</s> | <s>Görev (kullanımdan kaldırıldı)</s> |
+| Document | Dokument | Documento | Document | Documento | Dokument | Documento | Dokument | Belge |
+| Video live stream | Video Livestream | Transmisión de video en vivo | Diffusion vidéo en direct | Video live stream | Transmisja wideo na żywo | Vídeo ao vivo | Priamy prenos videa | Video canlı akışı |
+| Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect |
+| GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting | Toplantıya git |
+| Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams |
+| OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings |
+| vitero | vitero | vitero | vitero | vitero | vitero | vitero | vitero | vitero |
+| Opencast | Opencast | Opencast | Opencast | Opencast | Opencast | Opencast | Opencast | Opencast |
+| Mediasite | Mediasite | Mediasite | Mediasite | Mediasite | Mediasite |  | Mediasite | Mediasite |
+| edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | eğitim paylaşımı |
+| Edubase | Edubase | Edubase | Edubase | Edubase | Edubase | Edubase | Edubase | Edubase |
+| card2brain flashcards | card2brain Lernkarten | Tarjetas de aprendizaje card2brain | Carte d'apprentissages card2brain | card2brain flashcards | Fiszki card2brain | flashcards card2brain | card2brain flashcards | card2brain bilgi kartları |
+| JupyterHub | JupyterHub | JupyterHub | JupyterHub | JupyterHub | JupyterHub |  | JupyterHub |  |
+| BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton |
+| Zoom | Zoom | Zoom | Zoom | Zoom | Zoom |  | Zoom |  |
+| Drop box | Abgabeordner | Carpeta de entrega | Boîte de dépôt | Box di raccolta | Folder zgłoszeń |  | Priečinok na doručenie |  |
+| Return box | Rückgabeordner | Carpeta de retorno | Dossier de restitution | Box di restituzione | Folder zwrotny |  | Priečinok na vrátenie |  |
+| Sample solution | Musterlösung | Solución de ejemplo | Solution | Modello di soluzione | Przykładowe rozwiązanie |  | Vzorové riešenie |  |
+| Topic | Thema | Tema | Sujet | Argomento | Temat |  | Téma |  |
+| Number of participants | Anzahl Teilnehmer{innen} | Número de participantes | Nombre de participant{e}s | Numero di partecipanti | Liczba uczestników |  | Počet účastníkov |  |
+| Selection | Auswahl | Selección | Sélection | Selezione | Wybór |  | Voľba témy |  |
+| Enrolment | Einschreibung | Inscripción | Inscription | Iscrizione | Zapisanie się |  | Prihlásenie |  |
+| Enrolment process | Einschreibevorgang | Proceso de inscripción | Processus d'inscription | Procedura di iscrizione | Proces zapisów |  | Proces prihlasovania |  |
+| Optimization strategy | Optimierungsstrategie | Estrategia de optimización | Stratégie d'optimisation | Strategia di ottimizzazione | Strategia optymalizacji |  | Optimalizačná stratégia |  |
+| Status | Status | Estado | Statut | Stato | Status |  | Stav |  |
+| Status | Status | Estado | Statut | Status | Status |  | Stav |  |
+| Responsible for the topic | Zuständig für dieses Thema | Responsable del tema | Responsable de ce sujet | Responsabile di questo argomento | Osoba odpowiedzialna za ten temat |  | Zodpovedná osoba za tému |  |
+| Participants accepted | Akzeptierte Teilnehmer{innen} | Participantes aceptados | Participants acceptés | Partecipanti accettati | Zaakceptowani uczestnicy | Descrição | Prijatí účastníci | Katılımcılar kabul edildi |
+| Occasion | Anlass | Ocasión | Événement | Occasione | Spotkanie | Ocasião | Príležitosť | Etkinlik |
+| Appointment booking | Terminbuchung | Reserva de cita | Réservation d'un rendezvous | Prenotare appuntamento | Rezerwacja terminu |  | Rezervácia termínu |  |
+| Appointment finding | Terminfindung | Búsqueda de cita | Choix du rendez-vous | Scelta dell'appuntamento | Ustalanie terminu | Encontrar compromisso | Hľadanie termínu | Randevu bulma |
+| Appointment | Termin | Cita | Rendez-vous | Appuntamento | Termin | Compromisso | Stretnutie | Randevu |
+| Participation | Teilnahme | Participación | Participation | Partecipazione | Udział |  | Účasť |  |
+| Confirm | Bestätigen | Confirmar | Confirmer | Confermare | Potwierdź | Confirmar | Potvrdiť | Onayla |
+| Organizer | Organisator{in} | Organizador | Organisateur | Organizzatore | Organizator | Organizador | Organizátor | Düzenleyen |
+| Maximum number of participants | Max. Teilnehmer{innen} | Número máximo de participantes | Maximum de participants | Numero massimo di partecipanti | Maks. liczba uczestników | Número máximo de participantes | Maximálny počet účastníkov | Maksimum katılımcılar |
+| Execution | Durchführung | Ejecución | Exécution | Esecuzione | Wykonanie |  | Realizácia | Yükümlülük |
+| Exception | Ausnahme | Excepción | Exception | Eccezione | Wyjątek |  | Výnimka |  |
+| Learning time | Bearbeitungszeit | Tiempo de aprendizaje | Temps d'apprentissage | Tempo di studio | Czas nauki | Tempo de estudo | Čas spracovania | Öğrenme zamanı |
+| Status | Status | Estado | Statut | Stato | Status | Status | Stav | Durum |
+| Calculation of learning progress | Lernfortschritt berechnen | Cálculo del progreso de aprendizaje | Calcul de la progression de l'apprentissage en cours | Calcolo dei progressi di apprendimento | Obliczanie postępu w nauce | Cálculo de progresso do estudo | Výpočet učebného pokroku | Öğrenme ilerlemesinin hesaplanması |
+| Condition | Bedingung | Condición | Condition | Condizione | Warunek |  | Podmienka |  |
+| Access | Zugang | Acceso | Accès | Accesso | Dostęp | Acesso | Prístup | Erişim |
+| Expert mode | Expertenmodus | Modo experto | Mode avancé | Modalità avanzata | Tryb ekspercki |  | Expertný režim |  |
+| Simple mode | Einfacher Modus | Modo simple | Mode simple | Modalità semplice | Tryb prosty |  | Jednoduchý režim |  |
+| Course template | Kursvorlage | Diseño del curso | Présentation du cours | Layout di corso | Układ kursu | Modelo de curso | Šablóna kurzu | Kurs şablonu |
+| Course statistics | Kurs Statistiken | Estadísticas del curso | Statistique | Statistiche | Statystyki kursu | Ajuda sobre as configurações das descrições | Štatistiky kurzu | Ders istatistikleri |
+| Archiving & Reporting | Archivierung & Reports | Archivado e informes | Archivage & rapports | Archiviazione e reporting | Archiwizacja i raporty |  | Archivácia a podávanie správ |  |
+| Complete archive | Gesamtarchiv | Archivo completo | Archive complète | Archivio completo | Archiwum pełne |  | Kompletný archív |  |
+| Partial archive | Teilarchiv | Archivo parcial | Archive partielle | Archivio parziale | Archiwum częściowe |  | Čiastočný archív |  |
+| Copy course | Kurs kopieren | Copiar curso | Copier un cours | Copiare corso | Kopiuj kurs |  | Kopírovať kurz | Kursu kopyala |
+| Save as template | Als Template speichern | Guardar como plantilla | Enregistrer comme modèle | Salvare come template | Zapisz jako szablon |  | Uložiť ako šablónu |  |
+| Check box | Checkbox | Casilla de verificación | Case à cocher | Checkbox | Pole wyboru |  | Zaškrtávacie políčko |  |
+| Coach files | Unterlagen Betreuer{innen} | Documentos para tutores | Documents pour les coaches | Documenti dei coach | Materiały dla opiekunów |  | Súbory kouča | Koç dosyaları |
 
 ## Course Planner (Course Planner)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Product | Produkt | Produit | Prodotto |  | Produkt |  |
-| Element | Element | Élément | Elemento |  | Prvok |  |
-| Implementation | Durchführung | Implémentation | Implementazione |  | Realizácia vzdelávania |  |
-| Execution period | Durchführungszeitraum | Période d'exécution | Periodo di esecuzione |  | Obdobie vykonávania |  |
-| Location | Durchführungsort | Lieu | Luogo | Localização | Miesto konania | Konum |
-| Time period | Zeitabschnitt | Période | Periodo di tempo |  | Časové obdobie |  |
-| Element type | Elementtyp | Type d'élément | Tipo di elemento |  | Typ prvku |  |
-| Content | Inhalt | Contenu | Contenuto |  | Obsah |  |
-| Reference | Kennzeichen | Référence | Riferimento esterno | Ref. Externa | Označenie | Referans |
-| External ID | Externe ID | Id. externe | ID esterno | ID Externo | Externé ID | Harici kimlik |
-| Membership | Mitgliedschaft | Adhésion | Iscrizione |  | Členstvo |  |
-| Number of participants | Anzahl Teilnehmer{innen} | Nombre de participant{e}s | Numero di partecipanti |  | Počet účastníkov |  |
-| Automation | Automatisierung | Automatisation | Automazione |  | Automatizácia |  |
-| Implementation life cycle | Durchführungs-Lebenszyklus | Cycle de vie des implémentations | Ciclo di vita dell'implementazione | Ciclo de vida da implementação | Životný cyklus realizácie vzdelávania | Uygulama yaşam döngüsü |
-| Automation rule | Automatisierungsregel | Règle d'automatisation | Regola di automazione |  | Pravidlo automatizácie |  |
-| Instantiation | Instanziierung | Instanciation | Istanziazione |  | Vytvorenie inštancie |  |
-| Course template | Kurstemplate | Modèle de cours | Modello del corso |  | Template kurzu |  |
-| Timetable | Stundenplan | Calendrier | Agenda | Calendário | Rozvrh hodín | Zaman Çizelgesi |
-| To-do | To-do | Tâche à faire | Da-fare |  | Úloha |  |
-| Educational products | Bildungsprodukte | Produits éducatifs | Prodotti per l'istruzione |  | Vzdelávacie produkty |  |
-| Course Planner | Course Planner | Planificateur de cours | Pianificatore di corsi |  | Plánovač kurzov |  |
-| Usage for new courses | Verwendungszweck für neue Kurse | Utilisation pour les nouveaux cours | Utilizzo per i nuovi corsi |  | Účel použitia pre nové kurzy |  |
-| Reports | Reports | Rapports | Rapporti |  | Reporty |  |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Product | Produkt | Producto | Produit | Prodotto | Produkt |  | Produkt |  |
+| Element | Element | Elemento | Élément | Elemento | Element |  | Prvok |  |
+| Implementation | Durchführung | Implementación | Implémentation | Implementazione | Realizacja |  | Realizácia vzdelávania |  |
+| Execution period | Durchführungszeitraum | Periodo de ejecución | Période d'exécution | Periodo di esecuzione | Okres realizacji |  | Obdobie vykonávania |  |
+| Location | Durchführungsort | Lugar de la implementación | Lieu | Luogo | Miejsce realizacji | Localização | Miesto konania | Konum |
+| Time period | Zeitabschnitt | Periodo de tiempo | Période | Periodo di tempo | Przedział czasu |  | Časové obdobie |  |
+| Element type | Elementtyp | Tipo de elemento | Type d'élément | Tipo di elemento | Typ elementu |  | Typ prvku |  |
+| Content | Inhalt | Contenido | Contenu | Contenuto | Zawartość |  | Obsah |  |
+| Reference | Kennzeichen | Referencia | Référence | Riferimento esterno | Oznaczenie | Ref. Externa | Označenie | Referans |
+| External ID | Externe ID | ID externo | Id. externe | ID esterno | Zewnętrzne ID | ID Externo | Externé ID | Harici kimlik |
+| Membership | Mitgliedschaft | Membresía | Adhésion | Iscrizione | Członkostwo |  | Členstvo |  |
+| Number of participants | Anzahl Teilnehmer{innen} | Número de participantes | Nombre de participant{e}s | Numero di partecipanti | Liczba uczestników |  | Počet účastníkov |  |
+| Automation | Automatisierung | Automatización | Automatisation | Automazione | Automatyzacja |  | Automatizácia |  |
+| Implementation life cycle | Durchführungs-Lebenszyklus | Ciclo de vida de la implementación | Cycle de vie des implémentations | Ciclo di vita dell'implementazione | Cykl życia realizacji | Ciclo de vida da implementação | Životný cyklus realizácie vzdelávania | Uygulama yaşam döngüsü |
+| Automation rule | Automatisierungsregel | Regla de automatización | Règle d'automatisation | Regola di automazione | Reguła automatyzacji |  | Pravidlo automatizácie |  |
+| Instantiation | Instanziierung | Instanciación | Instanciation | Istanziazione | Instancjonowanie |  | Vytvorenie inštancie |  |
+| Course template | Kurstemplate | Plantilla de curso | Modèle de cours | Modello del corso | Szablon kursu |  | Template kurzu |  |
+| Timetable | Stundenplan | Horario | Calendrier | Agenda | Plan zajęć | Calendário | Rozvrh hodín | Zaman Çizelgesi |
+| To-do | To-do | Tarea pendiente | Tâche à faire | Da-fare | Zadanie do wykonania |  | Úloha |  |
+| Educational products | Bildungsprodukte | Productos educativos | Produits éducatifs | Prodotti per l'istruzione | Produkty edukacyjne |  | Vzdelávacie produkty |  |
+| Course Planner | Course Planner | Course Planner | Planificateur de cours | Pianificatore di corsi | Course Planner |  | Plánovač kurzov |  |
+| Usage for new courses | Verwendungszweck für neue Kurse | Uso para nuevos cursos | Utilisation pour les nouveaux cours | Utilizzo per i nuovi corsi | Przeznaczenie nowych kursów |  | Účel použitia pre nové kurzy |  |
+| Reports | Reports | Informes | Rapports | Rapporti | Raporty |  | Reporty |  |
 
 ## Evidence (Nachweise)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Evidence of achievement | Leistungsnachweis | Attestation de performance | Attestato di efficienza | Comprovante de conclusão | Dôkazy o dosiahnutých výsledkoch | Başarı kanıtı |
-| Certificate | Zertifikat | Certificat | Certificato |  | Certifikát |  |
-| Certificate template | Zertifikatsvorlage | Modèle de certificat | Modello di certificato |  | Šablóna certifikátu |  |
-| Variable | Variable | Variable | Variabile |  | Premenná |  |
-| Serial number | Seriennummer | Numéro de série | Numero di serie |  | Sériové číslo |  |
-| Issued on | Ausgestellt am | Délivré le | Rilasciato il |  | Vydané dňa |  |
-| Validity period | Gültigkeitsdauer | Période de validité | Periodo di validità |  | Obdobie platnosti |  |
-| Certificate file status | Zertifikat-Status | Statut du certificat | Stato del file del certificato |  | Stav certifikátu |  |
-| Recertification | Rezertifizierung | Recertification | Ricertificazione |  | Recertifikácia |  |
-| Certification program | Zertifikatsprogramm | Programme de certification | Programma di certificazione |  | Certifikačný program |  |
-| Print template | Druckvorlage | Modèle d'impression | Modello di stampa |  | Tlačová šablóna |  |
-| Membership | Mitgliedschaft | Adhésion | Iscrizione |  | Členstvo v programe |  |
-| Badge | Badge | Badge | Badge |  | Odznak |  |
-| OpenBadges | OpenBadges | OpenBadges | OpenBadges |  | OpenBadges |  |
-| Badge class | Badge-Klasse | Classe de badge | Classe del badge |  | Trieda odznaku |  |
-| Awarded badge | Vergebener Badge | Badge attribué | Badge ottenuto |  | Udelený odznak |  |
-| Issuer | Herausgeber | Éditeur | Editore |  | Vydavateľ |  |
-| Badge expiry | Ablauf des Badges | Expiration du badge | Scadenza del badge |  | Platnosť odznaku |  |
-| Template | Vorlage | Modèle | Template |  | Šablóna |  |
-| Award criteria | Vergabekriterien | Critères d'attribution | Criteri di attribuzione |  | Kritériá udelenia |  |
-| Awarded by | Vergeben von | Attribué par | Attribuito da |  | Udelil |  |
-| Revoked | Widerrufen | Révoqué | Revocato |  | Odvolané |  |
-| Verification | Verifizierung | Vérification | Verifica |  | Overenie |  |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Evidence of achievement | Leistungsnachweis | Evidencia de logros | Attestation de performance | Attestato di efficienza | Wykaz osiągnięć | Comprovante de conclusão | Dôkazy o dosiahnutých výsledkoch | Başarı kanıtı |
+| Certificate | Zertifikat | Certificado | Certificat | Certificato | Certyfikat |  | Certifikát |  |
+| Certificate template | Zertifikatsvorlage | Plantilla de certificado | Modèle de certificat | Modello di certificato | Szablon certyfikatu |  | Šablóna certifikátu |  |
+| Variable | Variable | Variable | Variable | Variabile | Zmienna |  | Premenná |  |
+| Serial number | Seriennummer | Número de serie | Numéro de série | Numero di serie | Numer seryjny |  | Sériové číslo |  |
+| Issued on | Ausgestellt am | Emitido el | Délivré le | Rilasciato il | Wystawiono dnia |  | Vydané dňa |  |
+| Validity period | Gültigkeitsdauer | Periodo de validez | Période de validité | Periodo di validità | Okres ważności |  | Obdobie platnosti |  |
+| Certificate file status | Zertifikat-Status | Estado del certificado | Statut du certificat | Stato del file del certificato | Status certyfikatu |  | Stav certifikátu |  |
+| Recertification | Rezertifizierung | Recertificación | Recertification | Ricertificazione | Recertyfikacja |  | Recertifikácia |  |
+| Certification program | Zertifikatsprogramm | Programa de certificación | Programme de certification | Programma di certificazione | Program certyfikacji |  | Certifikačný program |  |
+| Print template | Druckvorlage | Plantilla de impresión | Modèle d'impression | Modello di stampa | Szablon wydruku |  | Tlačová šablóna |  |
+| Membership | Mitgliedschaft | Membresía | Adhésion | Iscrizione | Członkostwo |  | Členstvo v programe |  |
+| Badge | Badge | Badge | Badge | Badge | Badge |  | Odznak |  |
+| OpenBadges | OpenBadges | OpenBadges | OpenBadges | OpenBadges | OpenBadges |  | OpenBadges |  |
+| Badge class | Badge-Klasse | Clase de badge | Classe de badge | Classe del badge | Klasa badge |  | Trieda odznaku |  |
+| Awarded badge | Vergebener Badge | Badge otorgado | Badge attribué | Badge ottenuto | Przyznany badge |  | Udelený odznak |  |
+| Issuer | Herausgeber | Emisor | Éditeur | Editore | Wystawca |  | Vydavateľ |  |
+| Badge expiry | Ablauf des Badges | Caducidad del badge | Expiration du badge | Scadenza del badge | Wygaśnięcie badge |  | Platnosť odznaku |  |
+| Template | Vorlage | Plantilla | Modèle | Template | Szablon |  | Šablóna |  |
+| Award criteria | Vergabekriterien | Criterios de concesión | Critères d'attribution | Criteri di attribuzione | Kryteria przyznania |  | Kritériá udelenia |  |
+| Awarded by | Vergeben von | Otorgado por | Attribué par | Attribuito da | Przyznane przez |  | Udelil |  |
+| Revoked | Widerrufen | Revocado | Révoqué | Revocato | Odwołany |  | Odvolané |  |
+| Verification | Verifizierung | Verificación | Vérification | Verifica | Weryfikacja |  | Overenie |  |
 
 ## Integrations and standards (Integrationen und Standards)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| LTI | LTI | LTI | LTI |  | LTI | LTI |
-| Platform | Plattform | Plateforme | Piattaforma |  | Platforma | Platform |
-| Deployment | Deployment | Déploiement | Deployment |  | Nasadenie |  |
-| Tool | Tool | Outil | Strumenti |  | Nástroj | Araç |
-| Client ID | Client-ID | Identifiant de client | ID Cliente |  | ID zákazníka | Müşteri kimliği |
-| Deployment ID | Deployment-ID | Identifiant de déploiement | ID dislocamento |  | ID nasadenia | Dağıtım Kimliği |
-| Deep Linking | Deep Linking | Deep Linking | Deep Linking |  | Deep Linking |  |
-| LTI 1.3 access configuration | LTI 1.3 Zugangskonfiguration | Configuration d'accès LTI 1.3 | LTI 1.3 configurazione di accesso |  | Konfigurácia prístupu LTI 1.3 | LTI 1.3 Erişim yapılandırması |
-| Role mapping | Rollen-Mapping | Attribution des rôles | Mappatura dei ruoli |  | Mapovanie rolí |  |
-| QTI 2.1 | QTI 2.1 | QTI 2.1 | QTI 2.1 | QTI 2.1 | QTI 2.1 | QTI 2.1 |
-| SCORM | SCORM | SCORM | SCORM | SCORM | SCORM | SCORM |
-| OAI-PMH | OAI-PMH | OAI-PMH | OAI-PMH |  | OAI-PMH |  |
-| REST API | REST API | REST API | REST API | REST API | REST API | REST API'si |
-| Virtual classroom | Virtuelles Klassenzimmer | Classe virtuelle | Aula virtuale |  | Virtuálna trieda |  |
-| Online meeting | Online-Termin | Meeting | Meeting online |  | Online stretnutie |  |
-| BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | Adobe Connect | BigBlueButton | BigBlueButton |
-| Room template | Raumvorlage | Modèle | Modello della stanza | Modelo de sala | Šablóna miestnosti | Oda-şablonu |
-| Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams |
-| Meeting recording | Terminaufzeichnung | Enregistrement du meeting | Registrazione del meeting |  | Nahrávka stretnutia |  |
-| Participants can open the meeting | Teilnehmer{innen} können den Termin eröffnen | Participants peuvent démarrer un meeting | I partecipanti sono autorizzati ad aprire la riunione | Os participantes têm permissão para abrir a reunião | Účastníci môžu otvoriť míting | Katılımcıların toplantıyı açmasına izin verilir |
-| Zoom | Zoom | Zoom | Zoom |  | Zoom |  |
-| Zoom profile | Zoom-Profil | Profile Zoom | Profilo Zoom |  | Zoom profil |  |
-| OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | Open Görüşmeler |
-| Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect |
-| GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting |  | GoToMeeting |  |
-| vitero | vitero | vitero | vitero | vitero | vitero | vitero |
-| Opencast | Opencast | Opencast | Opencast | Opencast | Opencast | Açık yayın |
-| Mediasite | Mediasite | Mediasite | Mediasite |  | Mediasite | Mediasite |
-| edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing |
-| Edubase | Edubase | Edubase | Edubase |  | Edubase |  |
-| card2brain | card2brain | card2brain | card2brain | card2brain | card2brain | card2brain |
-| JupyterHub | JupyterHub | JupyterHub | JupyterHub |  | JupyterHub |  |
-| YouTube API | YouTube API | API Youtube | API Youtube | API YouTube | YouTube API | Youtube uygulama programlama ara yüzü |
-| Microsoft SharePoint / OneDrive | Microsoft SharePoint / OneDrive | Microsoft SharePoint | Microsoft SharePoint / One Drive |  | Microsoft SharePoint / OneDrive |  |
-| Document editor | Dokumenteneditor | Editeur de documents | Editor di documenti |  | Editor dokumentov |  |
-| ONLYOFFICE | ONLYOFFICE | ONLYOFFICE | ONLYOFFICE | ONLYOFFICE | ONLYOFFICE | ONLYOFFICE |
-| draw.io | draw.io | draw.io | draw.io |  | draw.io |  |
-| Analytics module | Analytics Modul | Module d'analyse d'audience | Modulo di analisi | Módulo de estatísticas | Analytický modul | Analitik modülü |
-| Google Analytics | Google Analytics | Google Analytics | Google Analytics |  | Google Analytics |  |
-| Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| LTI | LTI | LTI | LTI | LTI | LTI |  | LTI | LTI |
+| Platform | Plattform | Plataforma | Plateforme | Piattaforma | Platforma |  | Platforma | Platform |
+| Deployment | Deployment | Deployment | Déploiement | Deployment | Deployment |  | Nasadenie |  |
+| Tool | Tool | Tool | Outil | Strumenti | Tool |  | Nástroj | Araç |
+| Client ID | Client-ID | Client ID | Identifiant de client | ID Cliente | Client ID |  | ID zákazníka | Müşteri kimliği |
+| Deployment ID | Deployment-ID | Deployment ID | Identifiant de déploiement | ID dislocamento | Deployment ID |  | ID nasadenia | Dağıtım Kimliği |
+| Deep Linking | Deep Linking | Deep Linking | Deep Linking | Deep Linking | Deep Linking |  | Deep Linking |  |
+| LTI 1.3 access configuration | LTI 1.3 Zugangskonfiguration | Configuración de acceso LTI 1.3 | Configuration d'accès LTI 1.3 | LTI 1.3 configurazione di accesso | Konfiguracja dostępu LTI 1.3 |  | Konfigurácia prístupu LTI 1.3 | LTI 1.3 Erişim yapılandırması |
+| Role mapping | Rollen-Mapping | Mapeo de roles | Attribution des rôles | Mappatura dei ruoli | Mapowanie ról |  | Mapovanie rolí |  |
+| QTI 2.1 | QTI 2.1 | QTI 2.1 | QTI 2.1 | QTI 2.1 | QTI 2.1 | QTI 2.1 | QTI 2.1 | QTI 2.1 |
+| SCORM | SCORM | SCORM | SCORM | SCORM | SCORM | SCORM | SCORM | SCORM |
+| OAI-PMH | OAI-PMH | OAI-PMH | OAI-PMH | OAI-PMH | OAI-PMH |  | OAI-PMH |  |
+| REST API | REST API | REST API | REST API | REST API | REST API | REST API | REST API | REST API'si |
+| Virtual classroom | Virtuelles Klassenzimmer | Aula virtual | Classe virtuelle | Aula virtuale | Wirtualna klasa |  | Virtuálna trieda |  |
+| Online meeting | Online-Termin | Reunión en línea | Meeting | Meeting online | Spotkanie online |  | Online stretnutie |  |
+| BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | BigBlueButton | Adobe Connect | BigBlueButton | BigBlueButton |
+| Room template | Raumvorlage | Plantilla de sala | Modèle | Modello della stanza | Szablon pokoju | Modelo de sala | Šablóna miestnosti | Oda-şablonu |
+| Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams | Microsoft Teams |
+| Meeting recording | Terminaufzeichnung | Grabación de la reunión | Enregistrement du meeting | Registrazione del meeting | Nagranie spotkania |  | Nahrávka stretnutia |  |
+| Participants can open the meeting | Teilnehmer{innen} können den Termin eröffnen | Los participantes pueden abrir la reunión | Participants peuvent démarrer un meeting | I partecipanti sono autorizzati ad aprire la riunione | Uczestnicy mogą otworzyć spotkanie | Os participantes têm permissão para abrir a reunião | Účastníci môžu otvoriť míting | Katılımcıların toplantıyı açmasına izin verilir |
+| Zoom | Zoom | Zoom | Zoom | Zoom | Zoom |  | Zoom |  |
+| Zoom profile | Zoom-Profil | Perfil de Zoom | Profile Zoom | Profilo Zoom | Profil Zoom |  | Zoom profil |  |
+| OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | OpenMeetings | Open Görüşmeler |
+| Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect | Adobe Connect |
+| GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting | GoToMeeting |  | GoToMeeting |  |
+| vitero | vitero | vitero | vitero | vitero | vitero | vitero | vitero | vitero |
+| Opencast | Opencast | Opencast | Opencast | Opencast | Opencast | Opencast | Opencast | Açık yayın |
+| Mediasite | Mediasite | Mediasite | Mediasite | Mediasite | Mediasite |  | Mediasite | Mediasite |
+| edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing | edu-sharing |
+| Edubase | Edubase | Edubase | Edubase | Edubase | Edubase |  | Edubase |  |
+| card2brain | card2brain | card2brain | card2brain | card2brain | card2brain | card2brain | card2brain | card2brain |
+| JupyterHub | JupyterHub | JupyterHub | JupyterHub | JupyterHub | JupyterHub |  | JupyterHub |  |
+| YouTube API | YouTube API | YouTube API | API Youtube | API Youtube | YouTube API | API YouTube | YouTube API | Youtube uygulama programlama ara yüzü |
+| Microsoft SharePoint / OneDrive | Microsoft SharePoint / OneDrive | Microsoft SharePoint / OneDrive | Microsoft SharePoint | Microsoft SharePoint / One Drive | Microsoft SharePoint / OneDrive |  | Microsoft SharePoint / OneDrive |  |
+| Document editor | Dokumenteneditor | Editor de documentos | Editeur de documents | Editor di documenti | Edytor dokumentów |  | Editor dokumentov |  |
+| ONLYOFFICE | ONLYOFFICE | ONLYOFFICE | ONLYOFFICE | ONLYOFFICE | ONLYOFFICE | ONLYOFFICE | ONLYOFFICE | ONLYOFFICE |
+| draw.io | draw.io | draw.io | draw.io | draw.io | draw.io |  | draw.io |  |
+| Analytics module | Analytics Modul | Módulo Analytics | Module d'analyse d'audience | Modulo di analisi | Moduł Analytics | Módulo de estatísticas | Analytický modul | Analitik modülü |
+| Google Analytics | Google Analytics | Google Analytics | Google Analytics | Google Analytics | Google Analytics |  | Google Analytics |  |
+| Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) | Matomo (Piwik) |
 
 ## Platform (Plattform)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Account | Konto | Compte | Account |  | Účet |  |
-| User | Person | Personne | Persona | Pessoa | Osoba | Kişi |
-| Username | Anmeldename | Nom d'utilisateur | Nome d'utente | Usuário | Používateľské meno | kullanıcı adı |
-| User type | Kontotyp | Type d'utilisateur | Tipo d'utente | Tipo de usuário | Typ používateľa | Kullanıcı tipi |
-| User status | Kontostatus | Status utilisateur | Status utente | Status do usuário | Stav používateľa | Kullanıcı durumu |
-| Account expiration | Kontoablauf | Expiration compte | Scadenza account | Validade da conta | Platnosť účtu | Hesap sona erme |
-| Life cycle | Lebenszyklus | Cycle de vie | Ciclo di vita | Ciclo de vida | Životný cyklus | Yaşam döngüsü |
-| Automatic user lifecycle | Automatischer Kontolebenszyklus | Cycle de vie automatisé des comptes | Ciclo di vita automatico dell'account | Ciclo de vida automático da conta | Automatický životný cyklus účtu | Otomatik hesap yaşam döngüsü |
-| Inactivation | Inaktivierung | Inactivation | Disattivazione | Inativação | Deaktivácia | İnaktivasyon |
-| Grace period | Karenzfrist | Délai de grâce | Periodo di tolleranza | Período de carência | Ochranná lehota | Tolerans süresi |
-| Reaction time | Reaktionsfrist | Temps de réaction | Tempo di reazione | Prazo de reação | Doba odozvy | Tepki süresi |
-| Days until inactivation | Tage bis Inaktivierung | Jours jusqu'à l'inactivation | Giorni fino alla disattivazione | Dias até a desativação | Dni do deaktivácie | Devre dışı bırakmaya kalan gün sayısı |
-| Days until deletion | Tage bis Löschung | Jours jusqu'à l'effacement | Giorni fino alla cancellazione | Dias até a exclusão | Dni na vymazanie | Silinmeye kalan gün sayısı |
-| Days until expiry | Tage bis Ablauf | Jours jusqu'à l'expiration | Giorni fino alla scadenza |  | Dni do vypršania platnosti |  |
-| User management | Benutzerverwaltung | Utilisateurs | Gestione degli utenti | Administração de usuários | Správa používateľov | Kullanıcı yönetimi |
-| Organisation | Organisation | Organisation | Organizzazione |  | Organizácia |  |
-| Visiting card | Visitenkarte | Carte de visite | Biglietto da visita | Cartão de visitas | Návštevná karta | Ziyaret Kartı |
-| Configuration | Konfiguration | Configuration | Configurazione | Configuração | Konfigurácia | Yapılandırma |
-| Profile | Profil | Profil | Profilo | Perfil | Profil | Profil |
-| System settings | Einstellungen | Configuration | Impostazioni del sistema | Configurações do sistema | Nastavenia systému | Sistem ayarları |
-| System settings | Systemeinstellungen | Paramètres système | Preferenze di sistema | Configurações de sistema | Nastavenia systému | Sistem ayarları |
-| Language | Sprache | Langue | Lingua | Idioma | Jazyk | Dil |
-| User Properties | Benutzer{innen}-Attribute | Attributs  des utilisateurs | Attributi utente | Propriedades do usuário | Atribúty používateľa | Kullanıcı Özellikleri |
-| Contexts | Contexts | Contextes | Contesti | Contextos | Kontexty | Bağlamlar |
-| Institution identifier (registration number) | Institutionsnummer (Matrikelnummer) | Identifiant de l'institution (Numéro de matricule) | Identificazione istituzionale (numero di matricola) | Identificador de Instituição | Identifikátor inštitúcie (registračné číslo) | Kurum tanımlayıcısı (kayıt numarası) |
-| Customer number | Debitorennummer | Numéro de débiteur | Numero cliente |  | Číslo zákazníka |  |
-| Institution | Institution | Institution | Istituzione | Instituição | Inštitúcia | Kurum |
-| E-mail | E-Mail | E-mail | E-mail | Endereço de e-mail | E-mail | e-posta |
-| Date of birth | Geburtsdatum | Date de naissance | Data di nascita | Data de nascimento | Dátum narodenia | Doğum tarihi |
-| Privacy | Datenschutz | Protection des données | Privacy | Privacidade | Ochrana osobných údajov | Gizlilik |
-| Authentication | Authentifizierung | Authentification | Autenticazione | Autenticação | Autentifikácia | Kimlik doğrulama |
-| Local OpenOlat authentication | Lokale OpenOlat-Authentifizierung | Authentification OpenOlat locale | Autenticazione OpenOlat locale |  | Lokálna autentifikácia OpenOlat |  |
-| OpenOlat password | OpenOlat-Passwort | Mot de passe OpenOlat | Password OpenOlat | Senha OpenOlat | Heslo OpenOlat | OpenOlat şifresi |
-| Cloud login | Cloud Login | Connexion au cloud | Accesso Cloud | Login na nuvem | Prihlásenie do cloudu | Bulut oturum açma |
-| OpenID Connect | OpenID Connect | OpenID Connect | OpenID Connect |  | OpenID Connect |  |
-| Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Etkin Dizini |
-| Active Directory Federation Services | Active Directory Federation Services | Active Directory Federation Services | Active Directory Federation Services | Active Directory Federation Services | Služby Active Directory Federation Services | Active Directory Federasyon Hizmetleri |
-| Keycloak | Keycloak | Keycloak | Keycloak | Keycloak | Kľúčový plášť |  |
-| Switch edu-ID | Switch edu-ID | Switch edu-ID | Switch edu-ID |  | Prepínač edu-ID |  |
-| Google | Google | Google | Google | Google | Google | Google |
-| Facebook | Facebook | Facebook | Facebook | Facebook | Facebook | Facebook |
-| LinkedIn | LinkedIn | LinkedIn | LinkedIn | LinkedIn | LinkedIn | LinkedIn |
-| X (Twitter) | X (Twitter) | X (Twitter) | X (Twitter) | X (Twitter) | X (Twitter) | X (Twitter) |
-| Datenlotsen | Datenlotsen | Datenlotsen | Datenlotsen | Datenlotsen | Správcovia údajov | Datenlotsen |
-| Passkey | Passkey | Passkey | Chiave di accesso |  | Prístupový kľúč |  |
-| Shibboleth | Shibboleth | Shibboleth | Shibboleth | Shibboleth | Shibboleth | Shibboleth |
-| LDAP | LDAP | LDAP | LDAP | LDAP | LDAP | LDAP |
-| WebDAV | WebDAV | WebDAV | WebDAV | WebDAV | WebDAV | WebDAV |
-| Forgot password? | Passwort vergessen? | Oubli du mot de passe? | Ho dimenticato la password.? | Esqueceu sua senha? | Zabudli ste heslo? | Şifre unutulmuş? |
-| Password syntax | Passwort-Syntax | Syntaxe des mots de passe | Sintassi della password |  | Syntax hesla |  |
-| Security level | Sicherheitsstufe | Niveau de sécurité | Livello di sicurezza |  | Úroveň zabezpečenia |  |
-| One time code | One Time Code | One Time Code | One Time Code |  | Jednorazový kód |  |
-| Self-registration | Selbstregistrierung | Auto-enregistrement | Auto-registrazione | Auto-Inscrição | Samoregistrácia | Kendi kendine kayıt |
-| Registration | Registrierung | Inscription | Registrazione |  | Registrácia |  |
-| Confirmation code | Validierungscode | Code de confirmation | Codice di conferma |  | Overovací kód |  |
-| Domain limitation | Einschränkung auf Domäne | Restriction par nom de domaine | Limitazione per dominio | Limite de domínios | Obmedzenie domény | Alan sınırlaması |
-| Invitation link | Einladungslink | Lien d'invitation | Link di invito |  | Pozývací odkaz |  |
-| Invitations | Einladungen | Invitations | Inviti |  | Pozvánky |  |
-| Guest access | Gastzugang | Accès invité(e) | Accesso come ospite | Acesso ao Convidado | Prístup pre hostí | Misafir erişimi |
-| Files and folders | Dateien und Ordner | Fichiers et dossiers | File e cartelle | Arquivos e pastas | Súbory a priečinky | Dosyalar ve Klasörler |
-| Quota | Quota | Quota | Quota |  | Kvóta |  |
-| Upload limit (KB) | Upload Limite (KB) | Limite upload (KB) | Limite di caricamento (KB) | Limite de carga (upload) KB | Limit nahrávania (KB) | Yükleme sınırı (KB) |
-| Storage usage | Speicherverbrauch | Utilisation sur disque | Risorse per l'utilizzo della memoria |  | Využitie úložiska |  |
-| Versioning | Versionierung | Vérification des versions | Controllo delle versioni | Controle de Versão | Verzia | Sürüm oluşturma |
-| Trash | Papierkorb | Corbeille | Cestino |  | Kôš |  |
-| Locked | Gesperrt | Bloqué | Bloccato | Bloqueado | Uzamknuté | Kilitli |
-| Metadata | Metadaten | Méta-données | Metadati | Meta dados | Metadáta | Meta veri |
-| Export | Export | Export | Esportazione |  | Export |  |
-| Export history | Exportverlauf | Exporter l'historique | Esportare storia |  | História exportu |  |
-| Home | Home | Home | Home | Home | Domov | Ana sayfa |
-| Courses | Kurse | Cours | Corsi | Cursos | Kurzy | Kurslar |
-| Authoring | Autorenbereich | Ressources didactiques | Risorse didattiche |  | Autorizácia | Yazarlık |
-| Groups | Gruppen | Groupes | Gruppi | Grupos | Skupiny | Gruplar |
-| Media Center | Media Center | Media Center | Media Center |  | Centrum médií |  |
-| Question bank | Fragenpool | Banque de questions | Banca delle domande | Banco de perguntas | Databanka otázok | Soru bankası |
-| Projects | Projekte | Projets | Progetti |  | Projekty |  |
-| Course Planner | Course Planner | Planificateur de cours | Pianificatore del corso |  | Plánovač kurzov |  |
-| Library | Bibliothek | Bibliothèque | Biblioteca | Biblioteca | Knižnica | Kütüphane |
-| Document pool | Dokumentenpool | Banque de documents | Pool di documenti | Reservatório de documentos | Fond dokumentov | Belge havuzu |
-| Video Collection | Video Collection | Video Collection | Video Collection | Video Collection | Zbierka videí | Video Koleksiyonu |
-| File Hub | File Hub | File Hub | File Hub |  | Centrum súborov |  |
-| Administration | Administration | Administration | Amministrazione | Administração | Správa | Yönetim |
-| User tools | Persönliche Werkzeuge | Outils personnels | Strumenti utente | Ferramenta do Usuário | Nástroje používateľa | Kullanıcı araçları |
-| Full-text search | Volltextsuche | Recherche en plein texte | Ricerca testo intero | Buscar texto | Vyhľadávanie celého textu | Tam metin arama |
-| Accessibility | Barrierefreiheit | Accessibilité | Accessibilità |  | Prístupnosť |  |
-| Imprint | Impressum | Mentions légales | Note legali | Impressão | Impressum | Baskı |
-| Privacy policy | Datenschutzerklärung | Déclaration de protection des données | Informativa sulla privacy | Política de Privacidade | Zásady ochrany osobných údajov | Gizlilik Politikası |
-| To-do | To-do | Tâches à faire | Da-fare |  | Úloha |  |
-| Customizing | Customizing | Personnalisation | Personalizzazione | Customização | Prispôsobenie | Özelleştirme |
-| Reports | Reports | Rapports | Report | Relatórios | Prehľady | Raporlar |
-| Core functions | Core Konfiguration | Configuration du système | Configurazione del sistema | Configuração do sistema | Základné funkcie | Temel işlevler |
-| System | System | Système | Sistema | Sistema | Systém | Sistem |
-| Login | Login | Login | Login | Login | Prihlásenie | Giriş |
-| Site | Bereich | Site | Sito |  | Stránka |  |
-| Sites | Bereiche | Sites | Siti | Sites | Stránky | Siteler |
-| External site | Externe Seite | Site externe | Sito esterno |  | Externá stránka navigácie |  |
-| Info page | Infoseite | Page d'information | Pagina di informazioni | Página de informações | Informačná stránka navigácie | Bilgi sayfası |
-| Portal | Portal | Portail | Portale | Portal | Portál | Portal |
-| Help | Hilfe | Aide | Aiuto | Ajuda | Pomoc | Yardım |
-| Context help | Kontexthilfe | Aide contextuelle | Guida contestuale |  | Kontextová pomoc |  |
-| OpenOlat Manual | OpenOlat Handbuch | Manuel OpenOlat | Manuale OpenOlat | Manual OpenOlat | Príručka OpenOlat | OpenOlat Kılavuzu |
-| E-mail support | E-Mail Support | Assistance par courriel | Supporto email | Suporte por e-mail | E-mailová podpora | E-posta desteği |
-| Landing page | Startseite | Page de départ | Landing page | Página inicial | Úvodná stránka | Açılış sayfası |
-| Share | Teilen | Partager le lien vers cette page | Condividere il link a questa pagina | Compartilhar link para esta página | Zdieľať odkaz na túto stránku | Bu sayfanın bağlantısını paylaş |
-| Contact tracing | Kontaktverfolgung | Suivi des contacts | Contact tracing | Rastreamento de contatos | Sledovanie kontaktov | İletişim takibi |
-| COVID certificate | COVID-Zertifikat | Certificat COVID | Certificati COVID |  | COVID-certifikát | COVID sertifikası |
-| Info messages | Info messages | Messages d'informations | Messaggi informativi | Info messages | Informačné správy | Bilgi mesajları |
-| Info message | Info Meldung | Message informatif | Messaggio informativo |  | Informačná správa |  |
-| Maintenance message | Wartungsmeldung | Message de maintenance | Messaggio di manutenzione |  | Správa o údržbe |  |
-| User sessions | Aktive Sitzungen | Sessions utilisateurs | Sessioni utente | Sessões de usuários | Relácie používateľov | Kullanıcı oturumları |
-| Session timeout | Session-Timeout | Expiration de session | Timeout della sessione |  | Časový limit relácie |  |
-| Block logins | Login sperren | Bloquez les logins | Bloccare login | Bloquear logins | Zablokovať prihlasovanie | Girişleri engelle |
-| Security | Sicherheit | Sécurité | Sicurezza | Segurança | Zabezpečenie | Güvenlik |
-| API Key | API-Key | Clé API | Chiave API |  | Kľúč API |  |
-| Audit log | Audit-Log | Journal d'audit | Registro di audit |  | Auditný protokol |  |
-| Audit log entry | Audit-Log Eintrag | Entrée du journal d'audit | Voce del registro di audit |  | Záznam auditného protokolu |  |
-| Request limit | Limite für Anfragen | Limite de requêtes | Limite di richieste |  | Limit požiadaviek |  |
-| E-mail inbox and outbox | E-Mail Postfach und Versand | Boîte aux lettres et envois d'e-mails | Posta in arrivo e posta in uscita | Caixa de entrada e de saída de E-mail | E-mailová schránka a odosielanie | E-posta gelen kutusu ve giden kutusu |
-| Dashboard | Dashboard | Dashboard | Dashboard |  | Dashboard |  |
-| Widget | Widget | Widget | Widget |  | Miniaplikácia |  |
-| Tags | Tags | Étiquettes | Tags |  | Tagy |  |
-| Terms of use | Nutzungsbedingungen | Conditions d'utilisation | Condizioni d'uso | Termos de uso | Podmienky používania | Kullanım Şartları |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Account | Konto | Cuenta | Compte | Account | Konto |  | Účet |  |
+| User | Person | Persona | Personne | Persona | Osoba | Pessoa | Osoba | Kişi |
+| Username | Anmeldename | Nombre de usuario | Nom d'utilisateur | Nome d'utente | Nazwa użytkownika | Usuário | Používateľské meno | kullanıcı adı |
+| User type | Kontotyp | Tipo de usuario | Type d'utilisateur | Tipo d'utente | Typ konta | Tipo de usuário | Typ používateľa | Kullanıcı tipi |
+| User status | Kontostatus | Estado de usuario | Status utilisateur | Status utente | Status konta | Status do usuário | Stav používateľa | Kullanıcı durumu |
+| Account expiration | Kontoablauf | Caducidad de la cuenta | Expiration compte | Scadenza account | Wygaśnięcie konta | Validade da conta | Platnosť účtu | Hesap sona erme |
+| Life cycle | Lebenszyklus | Ciclo de vida | Cycle de vie | Ciclo di vita | Cykl życia | Ciclo de vida | Životný cyklus | Yaşam döngüsü |
+| Automatic user lifecycle | Automatischer Kontolebenszyklus | Ciclo de vida automático de la cuenta | Cycle de vie automatisé des comptes | Ciclo di vita automatico dell'account | Automatyczny cykl życia konta | Ciclo de vida automático da conta | Automatický životný cyklus účtu | Otomatik hesap yaşam döngüsü |
+| Inactivation | Inaktivierung | Desactivación | Inactivation | Disattivazione | Dezaktywacja | Inativação | Deaktivácia | İnaktivasyon |
+| Grace period | Karenzfrist | Periodo de gracia | Délai de grâce | Periodo di tolleranza | Okres karencji | Período de carência | Ochranná lehota | Tolerans süresi |
+| Reaction time | Reaktionsfrist | Plazo de reacción | Temps de réaction | Tempo di reazione | Termin na reakcję | Prazo de reação | Doba odozvy | Tepki süresi |
+| Days until inactivation | Tage bis Inaktivierung | Días hasta la desactivación | Jours jusqu'à l'inactivation | Giorni fino alla disattivazione | Dni do dezaktywacji | Dias até a desativação | Dni do deaktivácie | Devre dışı bırakmaya kalan gün sayısı |
+| Days until deletion | Tage bis Löschung | Días hasta la eliminación | Jours jusqu'à l'effacement | Giorni fino alla cancellazione | Dni do usunięcia | Dias até a exclusão | Dni na vymazanie | Silinmeye kalan gün sayısı |
+| Days until expiry | Tage bis Ablauf | Días hasta la caducidad | Jours jusqu'à l'expiration | Giorni fino alla scadenza | Dni do wygaśnięcia |  | Dni do vypršania platnosti |  |
+| User management | Benutzerverwaltung | Gestión de usuarios | Utilisateurs | Gestione degli utenti | Zarządzanie użytkownikami | Administração de usuários | Správa používateľov | Kullanıcı yönetimi |
+| Organisation | Organisation | Organización | Organisation | Organizzazione | Organizacja |  | Organizácia |  |
+| Visiting card | Visitenkarte | Tarjeta de visita | Carte de visite | Biglietto da visita | Wizytówka | Cartão de visitas | Návštevná karta | Ziyaret Kartı |
+| Configuration | Konfiguration | Configuración | Configuration | Configurazione | Konfiguracja | Configuração | Konfigurácia | Yapılandırma |
+| Profile | Profil | Perfil | Profil | Profilo | Profil | Perfil | Profil | Profil |
+| System settings | Einstellungen | Opciones | Configuration | Impostazioni del sistema | Ustawienia | Configurações do sistema | Nastavenia systému | Sistem ayarları |
+| System settings | Systemeinstellungen | Opciones del sistema | Paramètres système | Preferenze di sistema | Ustawienia systemowe | Configurações de sistema | Nastavenia systému | Sistem ayarları |
+| Language | Sprache | Idioma | Langue | Lingua | Język | Idioma | Jazyk | Dil |
+| User Properties | Benutzer{innen}-Attribute | Atributos de usuario | Attributs  des utilisateurs | Attributi utente | Właściwości użytkownika | Propriedades do usuário | Atribúty používateľa | Kullanıcı Özellikleri |
+| Contexts | Contexts | Contexts | Contextes | Contesti | Contexts | Contextos | Kontexty | Bağlamlar |
+| Institution identifier (registration number) | Institutionsnummer (Matrikelnummer) | Identificador institucional (número de matrícula) | Identifiant de l'institution (Numéro de matricule) | Identificazione istituzionale (numero di matricola) | Identyfikator instytucji (numer rejestracyjny) | Identificador de Instituição | Identifikátor inštitúcie (registračné číslo) | Kurum tanımlayıcısı (kayıt numarası) |
+| Customer number | Debitorennummer | Número de cliente | Numéro de débiteur | Numero cliente | Numer klienta |  | Číslo zákazníka |  |
+| Institution | Institution | Institución | Institution | Istituzione | Instytucja | Instituição | Inštitúcia | Kurum |
+| E-mail | E-Mail | Dirección de e-mail | E-mail | E-mail | Adres e-mail | Endereço de e-mail | E-mail | e-posta |
+| Date of birth | Geburtsdatum | Fecha de nacimiento | Date de naissance | Data di nascita | Data urodzenia | Data de nascimento | Dátum narodenia | Doğum tarihi |
+| Privacy | Datenschutz | Protección de datos | Protection des données | Privacy | Ochrona danych | Privacidade | Ochrana osobných údajov | Gizlilik |
+| Authentication | Authentifizierung | Autentificación | Authentification | Autenticazione | Autentykacja | Autenticação | Autentifikácia | Kimlik doğrulama |
+| Local OpenOlat authentication | Lokale OpenOlat-Authentifizierung | Autentificación local de OpenOlat | Authentification OpenOlat locale | Autenticazione OpenOlat locale | Lokalna autentykacja OpenOlat |  | Lokálna autentifikácia OpenOlat |  |
+| OpenOlat password | OpenOlat-Passwort | Contraseña OpenOlat | Mot de passe OpenOlat | Password OpenOlat | Hasło OpenOlat | Senha OpenOlat | Heslo OpenOlat | OpenOlat şifresi |
+| Cloud login | Cloud Login | Cloud login | Connexion au cloud | Accesso Cloud | Cloud login | Login na nuvem | Prihlásenie do cloudu | Bulut oturum açma |
+| OpenID Connect | OpenID Connect | OpenID Connect | OpenID Connect | OpenID Connect | OpenID Connect |  | OpenID Connect |  |
+| Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Active Directory | Microsoft Azure Etkin Dizini |
+| Active Directory Federation Services | Active Directory Federation Services | Active Directory Federation Services | Active Directory Federation Services | Active Directory Federation Services | Active Directory Federation Services | Active Directory Federation Services | Služby Active Directory Federation Services | Active Directory Federasyon Hizmetleri |
+| Keycloak | Keycloak | Keycloak | Keycloak | Keycloak | Keycloak | Keycloak | Kľúčový plášť |  |
+| Switch edu-ID | Switch edu-ID | Switch edu-ID | Switch edu-ID | Switch edu-ID | Switch edu-ID |  | Prepínač edu-ID |  |
+| Google | Google | Google | Google | Google | Google | Google | Google | Google |
+| Facebook | Facebook | Facebook | Facebook | Facebook | Facebook | Facebook | Facebook | Facebook |
+| LinkedIn | LinkedIn | LinkedIn | LinkedIn | LinkedIn | LinkedIn | LinkedIn | LinkedIn | LinkedIn |
+| X (Twitter) | X (Twitter) | X (Twitter) | X (Twitter) | X (Twitter) | X (Twitter) | X (Twitter) | X (Twitter) | X (Twitter) |
+| Datenlotsen | Datenlotsen | Datenlotsen | Datenlotsen | Datenlotsen | Datenlotsen | Datenlotsen | Správcovia údajov | Datenlotsen |
+| Passkey | Passkey | Passkey | Passkey | Chiave di accesso | Passkey |  | Prístupový kľúč |  |
+| Shibboleth | Shibboleth | Shibboleth | Shibboleth | Shibboleth | Shibboleth | Shibboleth | Shibboleth | Shibboleth |
+| LDAP | LDAP | LDAP | LDAP | LDAP | LDAP | LDAP | LDAP | LDAP |
+| WebDAV | WebDAV | WebDAV | WebDAV | WebDAV | WebDAV | WebDAV | WebDAV | WebDAV |
+| Forgot password? | Passwort vergessen? | ¿Olvidó su contraseña? | Oubli du mot de passe? | Ho dimenticato la password.? | Nie pamiętasz hasła? | Esqueceu sua senha? | Zabudli ste heslo? | Şifre unutulmuş? |
+| Password syntax | Passwort-Syntax | Sintaxis de la contraseña | Syntaxe des mots de passe | Sintassi della password | Składnia hasła |  | Syntax hesla |  |
+| Security level | Sicherheitsstufe | Nivel de seguridad | Niveau de sécurité | Livello di sicurezza | Poziom bezpieczeństwa |  | Úroveň zabezpečenia |  |
+| One time code | One Time Code | One time code | One Time Code | One Time Code | One time code |  | Jednorazový kód |  |
+| Self-registration | Selbstregistrierung | Autorregistro | Auto-enregistrement | Auto-registrazione | Samodzielna rejestracja | Auto-Inscrição | Samoregistrácia | Kendi kendine kayıt |
+| Registration | Registrierung | Registro | Inscription | Registrazione | Rejestracja |  | Registrácia |  |
+| Confirmation code | Validierungscode | Código de confirmación | Code de confirmation | Codice di conferma | Kod potwierdzający |  | Overovací kód |  |
+| Domain limitation | Einschränkung auf Domäne | Restricción por dominio | Restriction par nom de domaine | Limitazione per dominio | Ograniczenie do domeny | Limite de domínios | Obmedzenie domény | Alan sınırlaması |
+| Invitation link | Einladungslink | Enlace de invitación | Lien d'invitation | Link di invito | Link z zaproszeniem |  | Pozývací odkaz |  |
+| Invitations | Einladungen | Invitaciones | Invitations | Inviti | Zaproszenia |  | Pozvánky |  |
+| Guest access | Gastzugang | Acceso invitado | Accès invité(e) | Accesso come ospite | Dostęp jako gość | Acesso ao Convidado | Prístup pre hostí | Misafir erişimi |
+| Files and folders | Dateien und Ordner | Archivos y carpetas | Fichiers et dossiers | File e cartelle | Pliki i foldery | Arquivos e pastas | Súbory a priečinky | Dosyalar ve Klasörler |
+| Quota | Quota | Cuota | Quota | Quota | Limit miejsca |  | Kvóta |  |
+| Upload limit (KB) | Upload Limite (KB) | Límite de subida en KB | Limite upload (KB) | Limite di caricamento (KB) | Limit przekazywania (kB) | Limite de carga (upload) KB | Limit nahrávania (KB) | Yükleme sınırı (KB) |
+| Storage usage | Speicherverbrauch | Uso de almacenamiento | Utilisation sur disque | Risorse per l'utilizzo della memoria | Wykorzystanie przestrzeni dyskowej |  | Využitie úložiska |  |
+| Versioning | Versionierung | Versionado | Vérification des versions | Controllo delle versioni | Wersjonowanie | Controle de Versão | Verzia | Sürüm oluşturma |
+| Trash | Papierkorb | Papelera | Corbeille | Cestino | Kosz |  | Kôš |  |
+| Locked | Gesperrt | Bloqueado | Bloqué | Bloccato | Zablokowany | Bloqueado | Uzamknuté | Kilitli |
+| Metadata | Metadaten | Metadatos | Méta-données | Metadati | Metadane | Meta dados | Metadáta | Meta veri |
+| Export | Export | Exportación | Export | Esportazione | Eksport |  | Export |  |
+| Export history | Exportverlauf | Historial de exportaciones | Exporter l'historique | Esportare storia | Historia eksportu |  | História exportu |  |
+| Home | Home | Inicio | Home | Home | Strona główna | Home | Domov | Ana sayfa |
+| Courses | Kurse | Cursos | Cours | Corsi | Kursy | Cursos | Kurzy | Kurslar |
+| Authoring | Autorenbereich | Área de autoría | Ressources didactiques | Risorse didattiche | Obszar autorski |  | Autorizácia | Yazarlık |
+| Groups | Gruppen | Grupos | Groupes | Gruppi | Grupy | Grupos | Skupiny | Gruplar |
+| Media Center | Media Center | Media Center | Media Center | Media Center | Media Center |  | Centrum médií |  |
+| Question bank | Fragenpool | Banco de preguntas | Banque de questions | Banca delle domande | Baza pytań | Banco de perguntas | Databanka otázok | Soru bankası |
+| Projects | Projekte | Proyectos | Projets | Progetti | Projekty |  | Projekty |  |
+| Course Planner | Course Planner | Course Planner | Planificateur de cours | Pianificatore del corso | Course Planner |  | Plánovač kurzov |  |
+| Library | Bibliothek | Biblioteca | Bibliothèque | Biblioteca | Biblioteka | Biblioteca | Knižnica | Kütüphane |
+| Document pool | Dokumentenpool | Pool de documentos | Banque de documents | Pool di documenti | Pool dokumentów | Reservatório de documentos | Fond dokumentov | Belge havuzu |
+| Video Collection | Video Collection | Video Collection | Video Collection | Video Collection | Video Collection | Video Collection | Zbierka videí | Video Koleksiyonu |
+| File Hub | File Hub | File Hub | File Hub | File Hub | File Hub |  | Centrum súborov |  |
+| Administration | Administration | Administración | Administration | Amministrazione | Administracja | Administração | Správa | Yönetim |
+| User tools | Persönliche Werkzeuge | Herramientas personales | Outils personnels | Strumenti utente | Narzędzia osobiste | Ferramenta do Usuário | Nástroje používateľa | Kullanıcı araçları |
+| Full-text search | Volltextsuche | Búsqueda de texto completo | Recherche en plein texte | Ricerca testo intero | Wyszukiwanie pełnotekstowe | Buscar texto | Vyhľadávanie celého textu | Tam metin arama |
+| Accessibility | Barrierefreiheit | Accesibilidad | Accessibilité | Accessibilità | Dostępność |  | Prístupnosť |  |
+| Imprint | Impressum | Aviso legal | Mentions légales | Note legali | Nota prawna | Impressão | Impressum | Baskı |
+| Privacy policy | Datenschutzerklärung | Política de privacidad | Déclaration de protection des données | Informativa sulla privacy | Polityka prywatności | Política de Privacidade | Zásady ochrany osobných údajov | Gizlilik Politikası |
+| To-do | To-do | To-do | Tâches à faire | Da-fare | To-do |  | Úloha |  |
+| Customizing | Customizing | Customizing | Personnalisation | Personalizzazione | Kustomizacja | Customização | Prispôsobenie | Özelleştirme |
+| Reports | Reports | Informes | Rapports | Report | Raporty | Relatórios | Prehľady | Raporlar |
+| Core functions | Core Konfiguration | Configuración del sistema | Configuration du système | Configurazione del sistema | Funkcje podstawowe | Configuração do sistema | Základné funkcie | Temel işlevler |
+| System | System | Sistema | Système | Sistema | System | Sistema | Systém | Sistem |
+| Login | Login | Login | Login | Login | Login | Login | Prihlásenie | Giriş |
+| Site | Bereich | Área | Site | Sito | Obszar |  | Stránka |  |
+| Sites | Bereiche | Áreas | Sites | Siti | Obszary | Sites | Stránky | Siteler |
+| External site | Externe Seite | Sitio externo | Site externe | Sito esterno | Witryna zewnętrzna |  | Externá stránka navigácie |  |
+| Info page | Infoseite | Página de información | Page d'information | Pagina di informazioni | Strona informacyjna | Página de informações | Informačná stránka navigácie | Bilgi sayfası |
+| Portal | Portal | Portal | Portail | Portale | Portal | Portal | Portál | Portal |
+| Help | Hilfe | Ayuda | Aide | Aiuto | Pomoc | Ajuda | Pomoc | Yardım |
+| Context help | Kontexthilfe | Ayuda contextual | Aide contextuelle | Guida contestuale | Pomoc kontekstowa |  | Kontextová pomoc |  |
+| OpenOlat Manual | OpenOlat Handbuch | Manual de OpenOlat | Manuel OpenOlat | Manuale OpenOlat | Podręcznik OpenOlat | Manual OpenOlat | Príručka OpenOlat | OpenOlat Kılavuzu |
+| E-mail support | E-Mail Support | Soporte por e-mail | Assistance par courriel | Supporto email | Wsparcie e-mail | Suporte por e-mail | E-mailová podpora | E-posta desteği |
+| Landing page | Startseite | Página de inicio | Page de départ | Landing page | Strona startowa | Página inicial | Úvodná stránka | Açılış sayfası |
+| Share | Teilen | Compartir | Partager le lien vers cette page | Condividere il link a questa pagina | Udostępnij | Compartilhar link para esta página | Zdieľať odkaz na túto stránku | Bu sayfanın bağlantısını paylaş |
+| Contact tracing | Kontaktverfolgung | Rastreo de contactos | Suivi des contacts | Contact tracing | Śledzenie kontaktów | Rastreamento de contatos | Sledovanie kontaktov | İletişim takibi |
+| COVID certificate | COVID-Zertifikat | Certificado COVID | Certificat COVID | Certificati COVID | Certyfikat COVID |  | COVID-certifikát | COVID sertifikası |
+| Info messages | Info messages | Mensajes de información | Messages d'informations | Messaggi informativi | Wiadomości informacyjne | Info messages | Informačné správy | Bilgi mesajları |
+| Info message | Info Meldung | Mensaje de información | Message informatif | Messaggio informativo | Wiadomość informacyjna |  | Informačná správa |  |
+| Maintenance message | Wartungsmeldung | Mensaje de mantenimiento | Message de maintenance | Messaggio di manutenzione | Wiadomość serwisowa |  | Správa o údržbe |  |
+| User sessions | Aktive Sitzungen | Sesiones | Sessions utilisateurs | Sessioni utente | Sesje użytkowników | Sessões de usuários | Relácie používateľov | Kullanıcı oturumları |
+| Session timeout | Session-Timeout | Tiempo de espera de la sesión | Expiration de session | Timeout della sessione | Limit czasu sesji |  | Časový limit relácie |  |
+| Block logins | Login sperren | Bloquear inicios de sesión | Bloquez les logins | Bloccare login | Zablokuj logowanie | Bloquear logins | Zablokovať prihlasovanie | Girişleri engelle |
+| Security | Sicherheit | Seguridad | Sécurité | Sicurezza | Bezpieczeństwo | Segurança | Zabezpečenie | Güvenlik |
+| API Key | API-Key | Clave API | Clé API | Chiave API | Klucz API |  | Kľúč API |  |
+| Audit log | Audit-Log | Registro de auditoría | Journal d'audit | Registro di audit | Dziennik audytu |  | Auditný protokol |  |
+| Audit log entry | Audit-Log Eintrag | Entrada del registro de auditoría | Entrée du journal d'audit | Voce del registro di audit | Wpis dziennika audytu |  | Záznam auditného protokolu |  |
+| Request limit | Limite für Anfragen | Límite de solicitudes | Limite de requêtes | Limite di richieste | Limit żądań |  | Limit požiadaviek |  |
+| E-mail inbox and outbox | E-Mail Postfach und Versand | Buzón y envío de e-mail | Boîte aux lettres et envois d'e-mails | Posta in arrivo e posta in uscita | Skrzynka i wysyłka e-mail | Caixa de entrada e de saída de E-mail | E-mailová schránka a odosielanie | E-posta gelen kutusu ve giden kutusu |
+| Dashboard | Dashboard | Dashboard | Dashboard | Dashboard | Dashboard |  | Dashboard |  |
+| Widget | Widget | Widget | Widget | Widget | Widget |  | Miniaplikácia |  |
+| Tags | Tags | Etiquetas | Étiquettes | Tags | Tagi |  | Tagy |  |
+| Terms of use | Nutzungsbedingungen | Condiciones de uso | Conditions d'utilisation | Condizioni d'uso | Zasady użytkowania | Termos de uso | Podmienky používania | Kullanım Şartları |
 
 ## ePortfolio (ePortfolio)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| ePortfolio | ePortfolio | ePortfolio | ePortfolio | ePortfolio | ePortfólio | ePortfolio |
-| Portfolio 2.0 | Portfolio 2.0 | Portfolio 2.0 | Portfolio 2.0 | Portfólio 2.0 | Portfólio 2.0 | Portfolio 2.0 |
-| My portfolio binders | Meine Portfoliomappen | Les classeurs de mon portfolio | I miei raccoglitori portfolio | Minhas pastas de portfólio | Moje portfóliové zakladače | Portföy bağlayıcılarım |
-| My entries | Meine Einträge | Mes contributions | I miei elementi | Minhas entradas | Moje príspevky | Girdilerim |
-| Shared with me | An mich freigegeben | Partagé avec moi | Condiviso con me | Compartilhado comigo | Zdieľané so mnou | Benimle paylaşılanlar |
-| Shared by me | Von mir freigegeben | Que je partage | Condivisi da me | Compartilhado por mim | Zdieľané mnou | Tarafımdan paylaşılmıştır |
-| Trash | Papierkorb | Poubelle | Cestino | Lixeira | Kôš | Çöp |
-| Binder | Mappe | Classeur | Raccoglitore | Pasta | Zakladač | Klasör |
-| Section | Bereich | Section | Selezione | Seção | Oddiel | Bölüm |
-| Entry | Eintrag | Contribution | voce |  | Položka | girdi |
-| Publish entry | Eintrag veröffentlichen | Publier la contribution | Pubblicare voce |  | Publikovať záznam |  |
-| Floating entry | Floating Eintrag | Entrée libre | Elemento mobile | Entrada flutuante | Samostatný záznam | Kayan giriş |
-| Comments | Kommentare | Commentaires | Commenti | Comentários | Komentáre | Yorumlar |
-| Categories | Kategorien | Catégories | Categorie | Categorias | Kategórie | Kategoriler |
-| Competences | Kompetenzen | Compétences | Competenze |  | Kompetencie | Yetkinlikler |
-| Timeline | Zeitstrahl | Frise chronologique | Linea del tempo | Timeline | Časová os | Zaman çizelgesi |
-| History | Änderungsprotokoll | Historique | Cronologia | História | História zmien | Geçmiş |
-| Assignment | Aufgabe | Devoir | Compito | Atribuição | Zadanie | Ödev |
-| Evaluation | Einschätzung | Evaluation | Valutazione | Avaliação | Hodnotenie | Değerlendirme |
-| Self evaluation | Selbsteinschätzung | Auto-évaluation | Autovalutazione |  | Sebahodnotenie |  |
-| External evaluation | Fremdeinschätzung | Evaluation externe | Valutazione esterna |  | Externé hodnotenie |  |
-| Assessment | Bewertung | Evaluation | Valutazione | Classificação | Hodnotenie | Notlama |
-| Sharing | Freigabe | Publier | Controllo accesso | Controle de acesso | Zdieľania | Erişim kontrolü |
-| Portfolio template | Portfoliovorlage | Modèle de portfolio | Modello di portfolio | Template do Portfolio | Šablóna portfólia | Portföy şablonu |
-| Portfolio template's options | Einstellungen zur Portfoliovorlage | Options du modèle de Portfolio | Opzioni dei modelli del portfolio | Opções de modelo de portfólio | Možnosti šablóny portfólia | Portföy şablonunun seçenekleri |
-| Template | Vorlage | Modèle | Modello | Modelo | Šablóna | Şablon |
-| Collect portfolio task | Portfolioaufgabe abholen | Prélever devoir portfolio | Prelevare compito portfolio | Coletar tarefa de portfolio | Prevziať portfóliovú úlohu | Portföy görevi topla |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| ePortfolio | ePortfolio | ePortfolio | ePortfolio | ePortfolio | ePortfolio | ePortfolio | ePortfólio | ePortfolio |
+| Portfolio 2.0 | Portfolio 2.0 | Portfolio 2.0 | Portfolio 2.0 | Portfolio 2.0 | Portfolio 2.0 | Portfólio 2.0 | Portfólio 2.0 | Portfolio 2.0 |
+| My portfolio binders | Meine Portfoliomappen | Mis archivadores de portfolio | Les classeurs de mon portfolio | I miei raccoglitori portfolio | Moje teczki portfolio | Minhas pastas de portfólio | Moje portfóliové zakladače | Portföy bağlayıcılarım |
+| My entries | Meine Einträge | Mis entradas | Mes contributions | I miei elementi | Moje wpisy | Minhas entradas | Moje príspevky | Girdilerim |
+| Shared with me | An mich freigegeben | Compartido conmigo | Partagé avec moi | Condiviso con me | Udostępnione mnie | Compartilhado comigo | Zdieľané so mnou | Benimle paylaşılanlar |
+| Shared by me | Von mir freigegeben | Compartido por mí | Que je partage | Condivisi da me | Udostępnione przeze mnie | Compartilhado por mim | Zdieľané mnou | Tarafımdan paylaşılmıştır |
+| Trash | Papierkorb | Papelera | Poubelle | Cestino | Kosz | Lixeira | Kôš | Çöp |
+| Binder | Mappe | Archivador | Classeur | Raccoglitore | Teczka | Pasta | Zakladač | Klasör |
+| Section | Bereich | Apartado | Section | Selezione | Rozdział | Seção | Oddiel | Bölüm |
+| Entry | Eintrag | Entrada | Contribution | voce | Wpis |  | Položka | girdi |
+| Publish entry | Eintrag veröffentlichen | Publicar entrada | Publier la contribution | Pubblicare voce | Publikuj wpis |  | Publikovať záznam |  |
+| Floating entry | Floating Eintrag | Entrada independiente | Entrée libre | Elemento mobile | Wpis niezależny | Entrada flutuante | Samostatný záznam | Kayan giriş |
+| Comments | Kommentare | Comentarios | Commentaires | Commenti | Komentarze | Comentários | Komentáre | Yorumlar |
+| Categories | Kategorien | Categorías | Catégories | Categorie | Kategorie | Categorias | Kategórie | Kategoriler |
+| Competences | Kompetenzen | Competencias | Compétences | Competenze | Kompetencje |  | Kompetencie | Yetkinlikler |
+| Timeline | Zeitstrahl | Línea de tiempo | Frise chronologique | Linea del tempo | Oś czasu | Timeline | Časová os | Zaman çizelgesi |
+| History | Änderungsprotokoll | Registro de cambios | Historique | Cronologia | Dziennik zmian | História | História zmien | Geçmiş |
+| Assignment | Aufgabe | Tarea | Devoir | Compito | Zadanie | Atribuição | Zadanie | Ödev |
+| Evaluation | Einschätzung | Valoración | Evaluation | Valutazione | Ewaluacja | Avaliação | Hodnotenie | Değerlendirme |
+| Self evaluation | Selbsteinschätzung | Autovaloración | Auto-évaluation | Autovalutazione | Samoewaluacja |  | Sebahodnotenie |  |
+| External evaluation | Fremdeinschätzung | Valoración externa | Evaluation externe | Valutazione esterna | Ewaluacja zewnętrzna |  | Externé hodnotenie |  |
+| Assessment | Bewertung | Evaluación | Evaluation | Valutazione | Ocena | Classificação | Hodnotenie | Notlama |
+| Sharing | Freigabe | Uso compartido | Publier | Controllo accesso | Udostępnianie | Controle de acesso | Zdieľania | Erişim kontrolü |
+| Portfolio template | Portfoliovorlage | Plantilla de portfolio | Modèle de portfolio | Modello di portfolio | Szablon portfolio | Template do Portfolio | Šablóna portfólia | Portföy şablonu |
+| Portfolio template's options | Einstellungen zur Portfoliovorlage | Opciones de la plantilla de portfolio | Options du modèle de Portfolio | Opzioni dei modelli del portfolio | Ustawienia szablonu portfolio | Opções de modelo de portfólio | Možnosti šablóny portfólia | Portföy şablonunun seçenekleri |
+| Template | Vorlage | Plantilla | Modèle | Modello | Szablon | Modelo | Šablóna | Şablon |
+| Collect portfolio task | Portfolioaufgabe abholen | Recoger tarea de portfolio | Prélever devoir portfolio | Prelevare compito portfolio | Odbierz zadanie portfolio | Coletar tarefa de portfolio | Prevziať portfóliovú úlohu | Portföy görevi topla |
 
 ## Quality management and forms (Qualitätsmanagement und Formulare)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Quality management | Qualitätsmanagement | Gestion de la qualité | Gestione della qualità | Gestão da qualidade | Riadenie kvality | Kalite Yönetimi |
-| Data collection | Datenerhebung | Collecte de données | Raccolta dati |  | Zber údajov |  |
-| Data collection generator | Datenerhebungsgenerator | Générateur de collectes de données | Generatore di raccolta dati |  | Generátor zberu údajov |  |
-| Black list | Negativliste | Liste d'exclusion | Black list | Lista negra | Zoznam vylúčených položiek | Kara listee |
-| White list | Positivliste | Liste blanche | White list | Lista branca | Zoznam povolených položiek | Beyaz liste |
-| Topic | Beurteilungsgegenstand | Sujet d'évaluation | Argomento | Tópico | Predmet posudzovania | Konu |
-| Previous survey | Erstbefragung | Sondage précédent | Indagine precedente | Pesquisa anterior | Predchádzajúci prieskum | Önceki anket |
-| Data collection participation | Teilnahme Datenerhebung | Participation à la collecte de données | Partecipazione alla raccolta dati |  | Zber údajov o účasti |  |
-| Public link | Öffentlicher Zugang | Lien public | Link pubblico |  | Verejný odkaz |  |
-| Reminder | Erinnerung | Rappel | Promemoria |  | Pripomienka zberu údajov |  |
-| Report | Report | Rapport | Report | Relatório | Report | Rapor |
-| Suggestion for improvement | Verbesserungsvorschlag | Suggestion d'amélioration | Suggestioni per il miglioramento | Sugestão para melhoria | Návrh na zlepšenie | İyileştirme önerisi |
-| Action to-dos | Massnahmen To-dos | Actions tâches à faire | Azioni da fare |  | Úlohy opatrení |  |
-| Data collection previews | Datenerhebungsvorschau | Aperçus des collectes de données | Anteprime delle collezioni di dati |  | Ukážka zberu údajov |  |
-| Analysis | Analyse | Analyse | Analisi | Análise | Analýza | Analiz |
-| Heat map | Heatmap | Carte thermique | Mappa termica | Mapa de calor | Tepelná mapa | Sıcaklık haritası |
-| Trend details | Trend Detail | Détails des tendances | Dettagli del trend | Detalhes da tendência | Podrobnosti trendu | Trend ayrıntıları |
-| Form | Formular | Formulaire | Questionario |  | Formulár | Form |
-| Form editor | Formulareditor | Editeur de formulaire | Editor di questionari |  | Editor formulára |  |
-| Rubric | Rubrik | Rubrique | Sezione | Rubrica | Rubrika | Değerlendirme tablosu |
-| Weight | Gewichtung | Pondération | Peso | Peso | Váha | Ağırlıklandırma |
-| Single choice | Einzelauswahl | Choix simple | Scelta singola | Escolha única | Výber jednej možnosti | Tek seçenek |
-| Multiple choice | Mehrfachauswahl | Choix multiple | Scelta multipla | Múltipla escolha | Výber viacerých možností | Çoktan seçmeli |
-| Text block | Textblock | Bloc de texte | Blocco di testo |  | Textové pole |  |
-| Date / Time | Datum / Zeit | Date / Heure | Data / Ora |  | Dátum / čas |  |
-| Upload file | Datei hochladen | Télécharger un fichier | Caricare file | Enviar arquivo | Nahrať súbor | Dosya yükle |
-| Terms of use | Nutzungsbedingungen | Conditions d'utilisation | Condizioni di utilizzo | Termos de uso | Podmienky používania | Kullanım Şartları |
-| Respondent details | Angaben zur befragten Person | Informations sur la personne interrogée | Dati della persona intervistata |  | Informácie o osobe, s ktorou sa schádzal rozhovor |  |
-| Coach details | Angaben zum{r} Betreuer{in} | Informations sur le coach | Dati del coach |  | Informácie o koučovi |  |
-| Key figures | Kennzahlen | Indicateurs | Dati di riferimento | Números-chave | Kľúčové ukazovatele | Şekiller |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Quality management | Qualitätsmanagement | Gestión de calidad | Gestion de la qualité | Gestione della qualità | Zarządzanie jakością | Gestão da qualidade | Riadenie kvality | Kalite Yönetimi |
+| Data collection | Datenerhebung | Recopilación de datos | Collecte de données | Raccolta dati | Zbieranie danych |  | Zber údajov |  |
+| Data collection generator | Datenerhebungsgenerator | Generador de recopilación de datos | Générateur de collectes de données | Generatore di raccolta dati | Generator zbierania danych |  | Generátor zberu údajov |  |
+| Black list | Negativliste | Lista negativa | Liste d'exclusion | Black list | Lista negatywna | Lista negra | Zoznam vylúčených položiek | Kara listee |
+| White list | Positivliste | Lista positiva | Liste blanche | White list | Lista pozytywna | Lista branca | Zoznam povolených položiek | Beyaz liste |
+| Topic | Beurteilungsgegenstand | Objeto de valoración | Sujet d'évaluation | Argomento | Przedmiot opiniowania | Tópico | Predmet posudzovania | Konu |
+| Previous survey | Erstbefragung | Encuesta inicial | Sondage précédent | Indagine precedente | Pierwsze badanie | Pesquisa anterior | Predchádzajúci prieskum | Önceki anket |
+| Data collection participation | Teilnahme Datenerhebung | Participación en la recopilación de datos | Participation à la collecte de données | Partecipazione alla raccolta dati | Udział w zbieraniu danych |  | Zber údajov o účasti |  |
+| Public link | Öffentlicher Zugang | Acceso público | Lien public | Link pubblico | Dostęp publiczny |  | Verejný odkaz |  |
+| Reminder | Erinnerung | Recordatorio | Rappel | Promemoria | Przypomnienie |  | Pripomienka zberu údajov |  |
+| Report | Report | Informe | Rapport | Report | Raport | Relatório | Report | Rapor |
+| Suggestion for improvement | Verbesserungsvorschlag | Sugerencia de mejora | Suggestion d'amélioration | Suggestioni per il miglioramento | Propozycja ulepszenia | Sugestão para melhoria | Návrh na zlepšenie | İyileştirme önerisi |
+| Action to-dos | Massnahmen To-dos | Tareas pendientes de medidas | Actions tâches à faire | Azioni da fare | Zadania do wykonania dla działań |  | Úlohy opatrení |  |
+| Data collection previews | Datenerhebungsvorschau | Vista previa de recopilación de datos | Aperçus des collectes de données | Anteprime delle collezioni di dati | Podgląd zbierania danych |  | Ukážka zberu údajov |  |
+| Analysis | Analyse | Análisis | Analyse | Analisi | Analiza | Análise | Analýza | Analiz |
+| Heat map | Heatmap | Mapa de calor | Carte thermique | Mappa termica | Mapa cieplna | Mapa de calor | Tepelná mapa | Sıcaklık haritası |
+| Trend details | Trend Detail | Detalles de tendencia | Détails des tendances | Dettagli del trend | Szczegóły trendu | Detalhes da tendência | Podrobnosti trendu | Trend ayrıntıları |
+| Form | Formular | Formulario | Formulaire | Questionario | Formularz |  | Formulár | Form |
+| Form editor | Formulareditor | Editor de formularios | Editeur de formulaire | Editor di questionari | Edytor formularzy |  | Editor formulára |  |
+| Rubric | Rubrik | Rúbrica | Rubrique | Sezione | Rubryka | Rubrica | Rubrika | Değerlendirme tablosu |
+| Weight | Gewichtung | Ponderación | Pondération | Peso | Waga | Peso | Váha | Ağırlıklandırma |
+| Single choice | Einzelauswahl | Selección única | Choix simple | Scelta singola | Pojedynczy wybór | Escolha única | Výber jednej možnosti | Tek seçenek |
+| Multiple choice | Mehrfachauswahl | Selección múltiple | Choix multiple | Scelta multipla | Wielokrotny wybór | Múltipla escolha | Výber viacerých možností | Çoktan seçmeli |
+| Text block | Textblock | Bloque de texto | Bloc de texte | Blocco di testo | Blok tekstu |  | Textové pole |  |
+| Date / Time | Datum / Zeit | Fecha / Hora | Date / Heure | Data / Ora | Data / Godzina |  | Dátum / čas |  |
+| Upload file | Datei hochladen | Subir archivo | Télécharger un fichier | Caricare file | Przekaż plik | Enviar arquivo | Nahrať súbor | Dosya yükle |
+| Terms of use | Nutzungsbedingungen | Condiciones de uso | Conditions d'utilisation | Condizioni di utilizzo | Warunki korzystania | Termos de uso | Podmienky používania | Kullanım Şartları |
+| Respondent details | Angaben zur befragten Person | Datos de la persona encuestada | Informations sur la personne interrogée | Dati della persona intervistata | Dane osoby ankietowanej |  | Informácie o osobe, s ktorou sa schádzal rozhovor |  |
+| Coach details | Angaben zum{r} Betreuer{in} | Datos del tutor | Informations sur le coach | Dati del coach | Dane opiekuna |  | Informácie o koučovi |  |
+| Key figures | Kennzahlen | Indicadores clave | Indicateurs | Dati di riferimento | Wskaźniki | Números-chave | Kľúčové ukazovatele | Şekiller |
 
 ## Learning resources (Lernressourcen)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Learning resource | Lernressource | Ressource didactique | Risorsa didattica | Recurso didático | Vzdelávací zdroj | Öğrenme kaynağı |
-| Title of learning resource | Titel der Lernressource | Titre de la ressource didactique | Titolo della risorsa didattica | Título do recurso didático | Názov učebného zdroja | Öğrenme kaynağının başlığı |
-| Usage | Verwendungszweck | Usage | Uso |  | Použitie |  |
-| Authors can | Autor{innen} können | Les auteurs peuvent | Gli autori possono | Autores podem | Autori môžu | Yazarlar |
-| Test | Test | Test | Test | Teste | Test | Test |
-| Test (QTI 1.2 - no longer supported) | Test (QTI 1.2 - nicht mehr unterstützt) | Test (QTI 1.2 - n'est plus supporté) | Test (QTI 1.2 - non più supportato) | Teste (QTI 1.2 - não mais suportado) | Test (QTI 1.2 - už nie je podporovaný) | Test (QTI 1.2 - artık desteklenmiyor) |
-| Questionnaire | Fragebogen | Questionnaire | Questionario | Pesquisa | Dotazník | Anket |
-| Wiki | Wiki | Wiki | Wiki | Wiki | Wiki | Wiki |
-| Blog | Blog | Blogue | Blog | Blog | Blog | Blog |
-| Podcast | Podcast | Podcast | Podcast | Podcast | Podcast | Podcast |
-| Entry | Eintrag | Contribution | Voce |  | Príspevok |  |
-| Episode | Episode | Episode | Episodio |  | Epizóda |  |
-| Feed URL | Feed-URL | Feed URL | Feed URL | Feed URL | URL kanála | Besleme URL'si |
-| Comments and ratings | Kommentare und Bewertungen | Commentaires et évaluations | Commenti e voti | Comentários e avaliações | Komentáre a hodnotenia | Yorumlar ve derecelendirmeler |
-| Rating | Beurteilung | Evaluation | Voto |  | Ohodnotenie |  |
-| Glossary | Glossar | Glossar | Glossario | Glossário | Slovník | Sözlük |
-| Term | Begriff | Terme | Termine | Termo | Pojem | Terim |
-| Embed glossary terms | Glossarbegriffe einbinden | Glossaire | Includere termini di glossario | Incorporar termos do glossário | Vloženie slovníka pojmov | Sözlük terimlerini göm |
-| CP learning content | CP-Lerninhalt | Contenu didactique CP | Contenuto didattico CP | Módulo IMS-CP | Vzdelávací obsah CP | CP öğrenme içeriği |
-| SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 |
-| Video | Video | Vidéo | Video | Vídeo | Video | Video |
-| Video editor | Videoeditor | Editeur vidéo | Editor video |  | Editor videa |  |
-| Timeline | Timeline | Ligne de temps | Linea temporale |  | Časová os |  |
-| Chapter | Kapitel | Chapitres | Capitoli | Capítulos | Kapitola | Bölümler |
-| Annotation | Annotation | Annotation | Annotazione |  | Anotácia |  |
-| Comment | Kommentar | Commentaire | Commento |  | Komentár |  |
-| Quiz | Quiz | Jeu de questions | Quiz | Quiz | Kvíz | Quiz |
-| Subtitles | Untertitel | Sous-titres | Sottotitoli | Legendas | Titulky | Alt yazılar |
-| Transcoding | Transkodierung | Transcodage | Transcodifica | Transcodificação | Transkódovanie | kod çevrimi |
-| Segment | Segment | Segment | Segmento |  | Segment |  |
-| Poster frame | Poster | Aperçu | Fotogramma anteprima | Poster | Titulný obrázok | Poster çerçevesi |
-| Audio/video recording | Audio/Video-Aufnahme | Enregistrement audio/vidéo | Registrazione audio/video |  | Audio/video záznam |  |
-| Media server | Medien-Server | Serveur médias | Server multimediale |  | Mediálny server |  |
-| Portfolio 2.0 template | Portfolio 2.0 Vorlage | Modèle de portfolio 2.0 | Portfolio 2.0 modello | Modelo Portfolio 2.0 | Šablóna Portfólio 2.0 | Portfolio 2.0 şablonu |
-| File | Datei | Fichier | File | Arquivo | Súbor | Dosya |
-| PDF | PDF | PDF | PDF | PDF | PDF | PDF |
-| Word | Word | Word | Word | Word | Word | Word |
-| Excel | Excel | Excel | Excel | Excel | Excel | Excel |
-| PowerPoint | PowerPoint | PowerPoint | PowerPoint | Powerpoint | PowerPoint | PowerPoint |
-| Image | Bild | Image | Immagine | Imagem | Obrázok | Resim |
-| Movie | Film | Film | Video | Filme | Video | Film |
-| Audio | Audio | Audio | Audio |  | Zvuk |  |
-| Animation | Animation | Animation | Animazione | Animação | Animácia | Animasyon |
-| Other file | Andere Datei | Autres fichiers | Altro file | Outro arquivo | Iný súbor | Diğer dosya |
-| Taxonomy | Taxonomie | Taxonomie | Tassonomia | Taxonomia | Taxonómia | Taksonomi |
-| Taxonomy level | Taxonomieebene | Niveau de taxonomie | Livello di tassonomia | Níveis de taxonomia | Úroveň taxonómie | Taksonomi seviyeleri |
-| Level type | Ebenentyp | Type de niveau | Tipo di livello | Tipo de nível | Typ úrovne | Seviye türü |
-| Subject | Fachbereich | Sujet | Soggetto | Assunto | Odborná oblasť | Konu |
-| Competence | Kompetenz | Compétence | Competenza | Competência | Kompetencia | Yeterlilik |
-| Lost+found | Lost+found | Lost+found | Lost+found | Achados+Perdidos | Straty a nálezy | Kayıp+Bulundu |
-| Metadata | Metadaten | Métadonnées | Metadati |  | Metadáta |  |
-| About this learning resource | Über diese Lernressource | À propos de cette ressource didactique | Informazioni su questa risorsa didattica |  | O tomto vzdelávacom zdroji |  |
-| Metadata and settings | Metadaten und Einstellungen | Méta-données et configurations | Metadati e impostazioni |  | Metadáta a nastavenia |  |
-| Author | Autor | Auteur{rice} | Autore |  | Autor |  |
-| Teaser image | Hintergrundbild | Image de fond | Immagine teaser |  | Ukážkový obrázok | Teaser resmi |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Learning resource | Lernressource | Recurso didáctico | Ressource didactique | Risorsa didattica | Zasób edukacyjny | Recurso didático | Vzdelávací zdroj | Öğrenme kaynağı |
+| Title of learning resource | Titel der Lernressource | Título del recurso didáctico | Titre de la ressource didactique | Titolo della risorsa didattica | Tytuł zasobu edukacyjnego | Título do recurso didático | Názov učebného zdroja | Öğrenme kaynağının başlığı |
+| Usage | Verwendungszweck | Uso | Usage | Uso | Przeznaczenie |  | Použitie |  |
+| Authors can | Autor{innen} können | Los autores pueden | Les auteurs peuvent | Gli autori possono | Inni autorzy mogą | Autores podem | Autori môžu | Yazarlar |
+| Test | Test | Test | Test | Test | Test | Teste | Test | Test |
+| Test (QTI 1.2 - no longer supported) | Test (QTI 1.2 - nicht mehr unterstützt) | Test (QTI 1.2 - ya no compatible) | Test (QTI 1.2 - n'est plus supporté) | Test (QTI 1.2 - non più supportato) | Test (QTI 1.2 - nie jest już wspierane) | Teste (QTI 1.2 - não mais suportado) | Test (QTI 1.2 - už nie je podporovaný) | Test (QTI 1.2 - artık desteklenmiyor) |
+| Questionnaire | Fragebogen | Cuestionario | Questionnaire | Questionario | Ankieta | Pesquisa | Dotazník | Anket |
+| Wiki | Wiki | Wiki | Wiki | Wiki | Wiki | Wiki | Wiki | Wiki |
+| Blog | Blog | Blog | Blogue | Blog | Blog | Blog | Blog | Blog |
+| Podcast | Podcast | Podcast | Podcast | Podcast | Podcast | Podcast | Podcast | Podcast |
+| Entry | Eintrag | Entrada | Contribution | Voce | Wpis |  | Príspevok |  |
+| Episode | Episode | Episodio | Episode | Episodio | Odcinek |  | Epizóda |  |
+| Feed URL | Feed-URL | URL del feed | Feed URL | Feed URL | URL kanału | Feed URL | URL kanála | Besleme URL'si |
+| Comments and ratings | Kommentare und Bewertungen | Comentarios y calificaciones | Commentaires et évaluations | Commenti e voti | Komentarze i oceny | Comentários e avaliações | Komentáre a hodnotenia | Yorumlar ve derecelendirmeler |
+| Rating | Beurteilung | Calificación | Evaluation | Voto | Ocena gwiazdkowa |  | Ohodnotenie |  |
+| Glossary | Glossar | Glosario | Glossar | Glossario | Słownik | Glossário | Slovník | Sözlük |
+| Term | Begriff | Término | Terme | Termine | Hasło | Termo | Pojem | Terim |
+| Embed glossary terms | Glossarbegriffe einbinden | Integrar términos del glosario | Glossaire | Includere termini di glossario | Osadź hasła słownika | Incorporar termos do glossário | Vloženie slovníka pojmov | Sözlük terimlerini göm |
+| CP learning content | CP-Lerninhalt | Contenido didáctico CP | Contenu didactique CP | Contenuto didattico CP | Pakiet CP | Módulo IMS-CP | Vzdelávací obsah CP | CP öğrenme içeriği |
+| SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 | SCORM 1.2 |
+| Video | Video | Video | Vidéo | Video | Wideo | Vídeo | Video | Video |
+| Video editor | Videoeditor | Editor de video | Editeur vidéo | Editor video | Edytor wideo |  | Editor videa |  |
+| Timeline | Timeline | Timeline | Ligne de temps | Linea temporale | Timeline |  | Časová os |  |
+| Chapter | Kapitel | Capítulo | Chapitres | Capitoli | Rozdział | Capítulos | Kapitola | Bölümler |
+| Annotation | Annotation | Anotación | Annotation | Annotazione | Adnotacja |  | Anotácia |  |
+| Comment | Kommentar | Comentario | Commentaire | Commento | Komentarz |  | Komentár |  |
+| Quiz | Quiz | Quiz | Jeu de questions | Quiz | Quiz | Quiz | Kvíz | Quiz |
+| Subtitles | Untertitel | Subtítulos | Sous-titres | Sottotitoli | Napisy | Legendas | Titulky | Alt yazılar |
+| Transcoding | Transkodierung | Transcodificación | Transcodage | Transcodifica | Transkodowanie | Transcodificação | Transkódovanie | kod çevrimi |
+| Segment | Segment | Segmento | Segment | Segmento | Segment |  | Segment |  |
+| Poster frame | Poster | Póster | Aperçu | Fotogramma anteprima | Poster | Poster | Titulný obrázok | Poster çerçevesi |
+| Audio/video recording | Audio/Video-Aufnahme | Grabación de audio/video | Enregistrement audio/vidéo | Registrazione audio/video | Nagranie audio/wideo |  | Audio/video záznam |  |
+| Media server | Medien-Server | Servidor de medios | Serveur médias | Server multimediale | Serwer multimediów |  | Mediálny server |  |
+| Portfolio 2.0 template | Portfolio 2.0 Vorlage | Plantilla de portfolio 2.0 | Modèle de portfolio 2.0 | Portfolio 2.0 modello | Szablon portfolio 2.0 | Modelo Portfolio 2.0 | Šablóna Portfólio 2.0 | Portfolio 2.0 şablonu |
+| File | Datei | Archivo | Fichier | File | Plik | Arquivo | Súbor | Dosya |
+| PDF | PDF | PDF | PDF | PDF | PDF | PDF | PDF | PDF |
+| Word | Word | Word | Word | Word | Word | Word | Word | Word |
+| Excel | Excel | Excel | Excel | Excel | Excel | Excel | Excel | Excel |
+| PowerPoint | PowerPoint | PowerPoint | PowerPoint | PowerPoint | PowerPoint | Powerpoint | PowerPoint | PowerPoint |
+| Image | Bild | Imagen | Image | Immagine | Obraz | Imagem | Obrázok | Resim |
+| Movie | Film | Película | Film | Video | Film | Filme | Video | Film |
+| Audio | Audio | Audio | Audio | Audio | Audio |  | Zvuk |  |
+| Animation | Animation | Animación | Animation | Animazione | Animacja | Animação | Animácia | Animasyon |
+| Other file | Andere Datei | Otro archivo | Autres fichiers | Altro file | Inny plik | Outro arquivo | Iný súbor | Diğer dosya |
+| Taxonomy | Taxonomie | Taxonomía | Taxonomie | Tassonomia | Taksonomia | Taxonomia | Taxonómia | Taksonomi |
+| Taxonomy level | Taxonomieebene | Nivel de taxonomía | Niveau de taxonomie | Livello di tassonomia | Poziom taksonomii | Níveis de taxonomia | Úroveň taxonómie | Taksonomi seviyeleri |
+| Level type | Ebenentyp | Tipo de nivel | Type de niveau | Tipo di livello | Typ poziomu | Tipo de nível | Typ úrovne | Seviye türü |
+| Subject | Fachbereich | Área temática | Sujet | Soggetto | Dziedzina | Assunto | Odborná oblasť | Konu |
+| Competence | Kompetenz | Competencia | Compétence | Competenza | Kompetencja | Competência | Kompetencia | Yeterlilik |
+| Lost+found | Lost+found | Lost+found | Lost+found | Lost+found | Lost+found | Achados+Perdidos | Straty a nálezy | Kayıp+Bulundu |
+| Metadata | Metadaten | Metadatos | Métadonnées | Metadati | Metadane |  | Metadáta |  |
+| About this learning resource | Über diese Lernressource | Acerca de este recurso didáctico | À propos de cette ressource didactique | Informazioni su questa risorsa didattica | O tym zasobie edukacyjnym |  | O tomto vzdelávacom zdroji |  |
+| Metadata and settings | Metadaten und Einstellungen | Metadatos y opciones | Méta-données et configurations | Metadati e impostazioni | Metadane i ustawienia |  | Metadáta a nastavenia |  |
+| Author | Autor | Autor | Auteur{rice} | Autore | Autor |  | Autor |  |
+| Teaser image | Hintergrundbild | Imagen de fondo | Image de fond | Immagine teaser | Obraz w tle |  | Ukážkový obrázok | Teaser resmi |
 
 ## Roles (Rollen)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| System roles | Systemrollen | Rôles système | Ruoli di sistema |  | Systémové roly |  |
-| Organisation roles | Organisationsrollen | Rôles d'organisation | Ruoli dell'organizzazione |  | Roly organizácie |  |
-| Access roles | Zugangsrollen | Rôles d'accès | Ruoli di accesso |  | Prístupové roly |  |
-| Course and group roles | Kurs- und Gruppenrollen | Rôles de cours et de groupe | Ruoli di corso e di gruppo |  | Roly kurzu a skupiny |  |
-| Course Planner roles | Course-Planner-Rollen | Rôles du Planificateur de cours | Ruoli del Course Planner |  | Roly plánovača kurzov |  |
-| Project roles | Projektrollen | Rôles de projet | Ruoli di progetto |  | Projektové roly |  |
-| Selection roles | Rollen im Auswahlverfahren | Rôles de la procédure de sélection | Ruoli nella procedura di selezione |  | Roly vo výberovom konaní |  |
-| Portfolio roles | Portfoliorollen | Rôles de portfolio | Ruoli del portfolio |  | Portfóliové roly |  |
-| User | Benutzer{in} | Utilisateur | Utente | Usuário | Používateľ | Kullanıcı |
-| Author | Autor{in} | Auteur | Autore | Autor | Autor | Yazar |
-| Administrator | Administrator{in} | Administrateur | Amministratore | Administrador | Administrátor | Yönetici |
-| System administrator | Systemadministrator{in} | Administrateur système | Amministratore sistema | Administrador do sistema | Správca systému | Sistem yöneticisi |
-| User manager | Benutzerverwalter{in} | Gestion des utilisateurs | Amministratore utenti | Gerenciamento de usuários | Správca používateľov | Kullanıcı yönetimi |
-| Group manager | Gruppenverwalter{in} | Gestion des groupes | Amministratore gruppi | Gerenciamento de grupo | Správca skupiny | Grup yönetimi |
-| Learning resource manager | Lernressourcenverwalter{in} | Administrateur des ressources didactiques | Amministratore della risorsa didattica | Gestor de recurso didático | Manažér vzdelávacích zdrojov | Öğrenme kaynağı yöneticisi |
-| Question bank manager | Poolverwalter{in} | Gestion banque de questions | Gestore del pool di domande | Gestor de reservatório de perguntas | Správca banky otázok | Soru bankası yöneticisi |
-| Roles manager | Rollenverwalter{in} | Gestion rôles | Manager dei ruoli | Gestor de funções | Správca roly | Rol yöneticisi |
-| Absence manager | Absenzenverwalter{in} | Responsable des absences | Responsabile delle assenze |  | Správca absencií |  |
-| Project manager | Projektverwalter{in} | Gestionnaire de projet | Responsabile di progetto |  | Správca projektov |  |
-| Quality manager | Qualitätsverwalter{in} | Responsable qualité | Manager della qualità |  | Správca kvality |  |
-| Selectus manager | Selectusverwalter{in} | Gestionnaire Selectus | Manager Selectus |  | Správca Selectusu |  |
-| Course planner | Kursplaner{in} | Planificateur de cours | Pianificatore del corso |  | Plánovač kurzov |  |
-| Line manager | Linienvorgesetzte{r} | Line manager | Manager di linea | Gerente de linha | Líniový manažér | Bağlantı yöneticisi |
-| Education manager | Ausbildungsverantwortliche{r} | Responsable de la formation | Responsabile della formazione |  | Manažér školení |  |
-| Principal | Principal | Principal | Principale | Diretor | Riaditeľ | Müdür |
-| Guest | Gast | invité | Ospite | Convidado | Hosť | Konuk |
-| Invitee | Einladung | Invitation | Invitato | Convidado | Pozvaná osoba | Davetli |
-| Coach | Betreuer{in} | Coach | Coach | Treinador (Coach) | Kouč | Koç |
-| Owner | Besitzer{in} | Propriétaire | Proprietari | Proprietário | Vlastník | Sahip |
-| Participant | Teilnehmer{in} | Participant | Partecipante | Participante | Účastník | Katılımcı |
-| Corrector | Korrektor{in} | Correcteur | Correttore | Revisor | Opravovateľ | Not veren kişi |
-| Teacher | Dozent{in} | Enseignant{e} | Insegnante |  | Lektor |  |
-| Product owner | Produktbesitzer{in} | Propriétaire du produit | Proprietario del prodotto |  | Vlastník produktu |  |
-| Element owner | Elementbesitzer{in} | Propriétaire d'éléments | Proprietario di elementi | Proprietário do elemento | Vlastník prvku | Öğe sahibi |
-| Master coach | Klassenlehrer{in} | Maître{sse} de classe | Coordinatore di classe | Treinador principal | Hlavný kouč | Uzman grup sorumlusu |
-| Certification program owner | Zertifikatsprogrammbesitzer{in} | Propriétaire du programme de certification | Proprietario del programma di certificazione |  | Vlastník certifikačného programu |  |
-| Project office | Projektbüro | Bureau de projets | Ufficio del Progetto |  | Projektová kancelária |  |
-| Steering committee | Lenkungsausschuss | Comité d'orientation | Comitato di orientamento |  | Riadiaci výbor |  |
-| Leader | Leiter{in} | Directeur{rice} | Responsabile |  | Vedúci |  |
-| Sponsor / Client | Sponsor{in} / Auftraggeber{in} | Sponsor{e} / commanditaire | Sponsor / Cliente |  | Sponzor / objednávateľ |  |
-| Business analyst / Supplier | Business-Analyst{in} / Lieferant{in} | Analyste d'affaires / fournisseur{se} | Business analyst /fornitore |  | Biznis analytik / dodávateľ |  |
-| Applicant | Bewerber{in} | Candidat{e} | Candidato |  | Uchádzač |  |
-| Staff | Sachbearbeitung | Personnel administratif | Segreteria |  | Administratívny pracovník |  |
-| Committee member | Kommissionsmitglied | Membre de la commission | Membro della commissione |  | Člen komisie |  |
-| Head of Committee | Kommissionspräsidium | Présidence de la commission | Presidenza della commissione |  | Predsedníctvo komisie |  |
-| Secretary | Sekretariat | Secrétariat | Segretariato |  | Sekretariát |  |
-| Ex-Officio | Ex-Officio | Ex-officio | Ex officio |  | Z titulu funkcie |  |
-| Faculty member | Fakultätsmitglied | Membre de la faculté | Membro della facoltà |  | Člen fakulty |  |
-| Referee | Referenzperson | Référent{e} | Referente |  | Referenčná osoba |  |
-| Expert | Gutachter{in} | Expert{e} | Esperto |  | Posudzovateľ |  |
-| External expert | Externe{r} Gutachter{in} | Expert{e} externe | Esperto esterno |  | Externý posudzovateľ |  |
-| Comparative assessment expert | Vergleichsgutachter{in} | Expert{e} comparatif{ve} | Esperto comparativo |  | Porovnávací posudzovateľ |  |
-| Reviewer | Reviewer{in} | Réviseur | Revisore |  | Recenzent{v} |  |
-| Reviewer | Gutachter{in} | Relecteur | Revisore |  | Recenzent |  |
-| Home base | Home Base | Home base | Home base |  | Domovská organizácia |  |
-| Administrative access | Administrative Freigabe | Accès administratif | Accesso amministrativo |  | Administratívny prístup |  |
-| Inheritance | Vererbung | Héritage | Eredità |  | Dedenie |  |
-| Relation role rights | Rechte von Beziehungsrollen | Droits des rôles de relation | Diritti dei ruoli di relazione |  | Práva vzťahových rolí |  |
-| Course rights | Kursrechte | Droits de cours | Diritti del corso |  | Práva v kurze |  |
-| Statistics | Statistiken | Statistiques | Statistiche | Estatística | Štatistiky | İstatistik |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| System roles | Systemrollen | Roles del sistema | Rôles système | Ruoli di sistema | Role systemowe |  | Systémové roly |  |
+| Organisation roles | Organisationsrollen | Roles de organización | Rôles d'organisation | Ruoli dell'organizzazione | Role organizacyjne |  | Roly organizácie |  |
+| Access roles | Zugangsrollen | Roles de acceso | Rôles d'accès | Ruoli di accesso | Role dostępu |  | Prístupové roly |  |
+| Course and group roles | Kurs- und Gruppenrollen | Roles de curso y de grupo | Rôles de cours et de groupe | Ruoli di corso e di gruppo | Role kursu i grupy |  | Roly kurzu a skupiny |  |
+| Course Planner roles | Course-Planner-Rollen | Roles del Course Planner | Rôles du Planificateur de cours | Ruoli del Course Planner | Role Course Planner |  | Roly plánovača kurzov |  |
+| Project roles | Projektrollen | Roles de proyecto | Rôles de projet | Ruoli di progetto | Role projektu |  | Projektové roly |  |
+| Selection roles | Rollen im Auswahlverfahren | Roles en el procedimiento de selección | Rôles de la procédure de sélection | Ruoli nella procedura di selezione | Role w procedurze wyboru |  | Roly vo výberovom konaní |  |
+| Portfolio roles | Portfoliorollen | Roles de portfolio | Rôles de portfolio | Ruoli del portfolio | Role portfolio |  | Portfóliové roly |  |
+| User | Benutzer{in} | Usuario | Utilisateur | Utente | Użytkownik | Usuário | Používateľ | Kullanıcı |
+| Author | Autor{in} | Autor | Auteur | Autore | Autor | Autor | Autor | Yazar |
+| Administrator | Administrator{in} | Administrador | Administrateur | Amministratore | Administrator | Administrador | Administrátor | Yönetici |
+| System administrator | Systemadministrator{in} | Administrador del sistema | Administrateur système | Amministratore sistema | Administrator systemu | Administrador do sistema | Správca systému | Sistem yöneticisi |
+| User manager | Benutzerverwalter{in} | Gestor de usuarios | Gestion des utilisateurs | Amministratore utenti | Menedżer użytkowników | Gerenciamento de usuários | Správca používateľov | Kullanıcı yönetimi |
+| Group manager | Gruppenverwalter{in} | Gestor de grupos | Gestion des groupes | Amministratore gruppi | Menedżer grup | Gerenciamento de grupo | Správca skupiny | Grup yönetimi |
+| Learning resource manager | Lernressourcenverwalter{in} | Gestor de recursos didácticos | Administrateur des ressources didactiques | Amministratore della risorsa didattica | Menedżer zasobów edukacyjnych | Gestor de recurso didático | Manažér vzdelávacích zdrojov | Öğrenme kaynağı yöneticisi |
+| Question bank manager | Poolverwalter{in} | Gestor del banco de preguntas | Gestion banque de questions | Gestore del pool di domande | Menedżer bazy pytań | Gestor de reservatório de perguntas | Správca banky otázok | Soru bankası yöneticisi |
+| Roles manager | Rollenverwalter{in} | Gestor de roles | Gestion rôles | Manager dei ruoli | Menedżer ról | Gestor de funções | Správca roly | Rol yöneticisi |
+| Absence manager | Absenzenverwalter{in} | Gestor de ausencias | Responsable des absences | Responsabile delle assenze | Menedżer nieobecności |  | Správca absencií |  |
+| Project manager | Projektverwalter{in} | Gestor de proyectos | Gestionnaire de projet | Responsabile di progetto | Menedżer projektów |  | Správca projektov |  |
+| Quality manager | Qualitätsverwalter{in} | Gestor de calidad | Responsable qualité | Manager della qualità | Menedżer jakości |  | Správca kvality |  |
+| Selectus manager | Selectusverwalter{in} | Gestor de Selectus | Gestionnaire Selectus | Manager Selectus | Menedżer Selectus |  | Správca Selectusu |  |
+| Course planner | Kursplaner{in} | Planificador de cursos | Planificateur de cours | Pianificatore del corso | Planista kursów |  | Plánovač kurzov |  |
+| Line manager | Linienvorgesetzte{r} | Superior jerárquico | Line manager | Manager di linea | Przełożony | Gerente de linha | Líniový manažér | Bağlantı yöneticisi |
+| Education manager | Ausbildungsverantwortliche{r} | Responsable de formación | Responsable de la formation | Responsabile della formazione | Koordynator kształcenia |  | Manažér školení |  |
+| Principal | Principal | Principal | Principal | Principale | Principal | Diretor | Riaditeľ | Müdür |
+| Guest | Gast | Invitado | invité | Ospite | Gość | Convidado | Hosť | Konuk |
+| Invitee | Einladung | Persona invitada | Invitation | Invitato | Osoba zaproszona | Convidado | Pozvaná osoba | Davetli |
+| Coach | Betreuer{in} | Tutor | Coach | Coach | Opiekun | Treinador (Coach) | Kouč | Koç |
+| Owner | Besitzer{in} | Propietario | Propriétaire | Proprietari | Właściciel | Proprietário | Vlastník | Sahip |
+| Participant | Teilnehmer{in} | Participante | Participant | Partecipante | Uczestnik | Participante | Účastník | Katılımcı |
+| Corrector | Korrektor{in} | Corrector | Correcteur | Correttore | Sprawdzający | Revisor | Opravovateľ | Not veren kişi |
+| Teacher | Dozent{in} | Docente | Enseignant{e} | Insegnante | Wykładowca |  | Lektor |  |
+| Product owner | Produktbesitzer{in} | Propietario del producto | Propriétaire du produit | Proprietario del prodotto | Właściciel produktu |  | Vlastník produktu |  |
+| Element owner | Elementbesitzer{in} | Propietario del elemento | Propriétaire d'éléments | Proprietario di elementi | Właściciel elementu | Proprietário do elemento | Vlastník prvku | Öğe sahibi |
+| Master coach | Klassenlehrer{in} | Tutor principal | Maître{sse} de classe | Coordinatore di classe | Wychowawca | Treinador principal | Hlavný kouč | Uzman grup sorumlusu |
+| Certification program owner | Zertifikatsprogrammbesitzer{in} | Propietario del programa de certificación | Propriétaire du programme de certification | Proprietario del programma di certificazione | Właściciel programu certyfikacji |  | Vlastník certifikačného programu |  |
+| Project office | Projektbüro | Oficina de proyecto | Bureau de projets | Ufficio del Progetto | Biuro projektu |  | Projektová kancelária |  |
+| Steering committee | Lenkungsausschuss | Comité de dirección | Comité d'orientation | Comitato di orientamento | Komitet sterujący |  | Riadiaci výbor |  |
+| Leader | Leiter{in} | Líder | Directeur{rice} | Responsabile | Kierownik |  | Vedúci |  |
+| Sponsor / Client | Sponsor{in} / Auftraggeber{in} | Patrocinador / Cliente | Sponsor{e} / commanditaire | Sponsor / Cliente | Sponsor / Zleceniodawca |  | Sponzor / objednávateľ |  |
+| Business analyst / Supplier | Business-Analyst{in} / Lieferant{in} | Analista de negocio / Proveedor | Analyste d'affaires / fournisseur{se} | Business analyst /fornitore | Analityk biznesowy / Dostawca |  | Biznis analytik / dodávateľ |  |
+| Applicant | Bewerber{in} | Candidato | Candidat{e} | Candidato | Kandydat |  | Uchádzač |  |
+| Staff | Sachbearbeitung | Personal administrativo | Personnel administratif | Segreteria | Obsługa administracyjna |  | Administratívny pracovník |  |
+| Committee member | Kommissionsmitglied | Miembro de la comisión | Membre de la commission | Membro della commissione | Członek komisji |  | Člen komisie |  |
+| Head of Committee | Kommissionspräsidium | Presidencia de la comisión | Présidence de la commission | Presidenza della commissione | Przewodnictwo komisji |  | Predsedníctvo komisie |  |
+| Secretary | Sekretariat | Secretaría | Secrétariat | Segretariato | Sekretariat |  | Sekretariát |  |
+| Ex-Officio | Ex-Officio | Ex-Officio | Ex-officio | Ex officio | Ex-Officio |  | Z titulu funkcie |  |
+| Faculty member | Fakultätsmitglied | Miembro de la facultad | Membre de la faculté | Membro della facoltà | Członek wydziału |  | Člen fakulty |  |
+| Referee | Referenzperson | Persona de referencia | Référent{e} | Referente | Osoba polecająca |  | Referenčná osoba |  |
+| Expert | Gutachter{in} | Experto | Expert{e} | Esperto | Ekspert |  | Posudzovateľ |  |
+| External expert | Externe{r} Gutachter{in} | Experto externo | Expert{e} externe | Esperto esterno | Ekspert zewnętrzny |  | Externý posudzovateľ |  |
+| Comparative assessment expert | Vergleichsgutachter{in} | Experto para dictamen comparativo | Expert{e} comparatif{ve} | Esperto comparativo | Ekspert do ekspertyzy porównawczej |  | Porovnávací posudzovateľ |  |
+| Reviewer | Reviewer{in} | Revisor | Réviseur | Revisore | Recenzent |  | Recenzent{v} |  |
+| Reviewer | Gutachter{in} | Revisor de portfolio | Relecteur | Revisore | Recenzent portfolio |  | Recenzent |  |
+| Home base | Home Base | Home base | Home base | Home base | Home base |  | Domovská organizácia |  |
+| Administrative access | Administrative Freigabe | Acceso administrativo | Accès administratif | Accesso amministrativo | Dostęp administracyjny |  | Administratívny prístup |  |
+| Inheritance | Vererbung | Herencia | Héritage | Eredità | Dziedziczenie |  | Dedenie |  |
+| Relation role rights | Rechte von Beziehungsrollen | Derechos de roles de relación | Droits des rôles de relation | Diritti dei ruoli di relazione | Uprawnienia ról relacji |  | Práva vzťahových rolí |  |
+| Course rights | Kursrechte | Derechos del curso | Droits de cours | Diritti del corso | Uprawnienia kursu |  | Práva v kurze |  |
+| Statistics | Statistiken | Estadísticas | Statistiques | Statistiche | Statystyki | Estatística | Štatistiky | İstatistik |
 
 ## Selectus (Selectus)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Selectus | Selectus | Selectus | Selectus |  | Selectus |  |
-| Decision tool | Entscheidungswerkzeug | Outil de décision | Strumento di decisione |  | Nástroj rozhodovania |  |
-| Review tool | Review-Werkzeug | Outil de review | Strumento di review |  | Nástroj posudzovania |  |
-| Review questionnaire | Review-Fragebogen | Questionnaire de review | Questionario di review |  | Dotazník posudzovania |  |
-| Review discussion | Review-Diskussion | Discussion de review | Discussione di review |  | Diskusia k posudku |  |
-| Referee management | Referenzverwaltung | Gestion des références | Gestione delle referenze |  | Správa referenčných osôb |  |
-| Mail center | Mailcenter | Centre de messagerie | Centro messaggi |  | Centrum e-mailov |  |
-| Reporting | Reporting | Reporting | Reporting |  | Reportovanie |  |
-| Screening | Screening | Screening | Screening |  | Screening |  |
-| Rating policy | Beurteilungsrichtlinien | Directives d'appréciation | Direttive per il giudizio |  | Pravidlá hodnotenia |  |
-| Form letter | Serienbrief | Lettre type | Lettera circolare |  | Hromadný list |  |
-| Mail template | E-Mail-Vorlage | Modèle d'e-mail | Modello di e-mail |  | E-mailová šablóna |  |
-| Profile paper | Profildokument | Document de profil | Documento di profilo |  | Profilový dokument |  |
-| Organisation unit | Organisationseinheit | unité d'organisation | unità organizzativa |  | Organizačná jednotka |  |
-| Tags | Tags | Tags | Tag |  | Značky |  |
-| Position | Ausschreibung | Poste | Posizione |  | Pracovná pozícia |  |
-| Committee | Kommission | Commission | Commissione |  | Komisia |  |
-| Application | Bewerbung | Candidature | Candidatura |  | Prihláška |  |
-| Committee assignment | Kommissionszuweisung | Attribution à la commission | Assegnazione alla commissione |  | Priradenie komisie |  |
-| Rating | Beurteilung | Appréciation | Giudizio |  | Hodnotenie |  |
-| Committee rating | Kommissionsbeurteilung | Appréciation de la commission | Giudizio della commissione |  | Hodnotenie komisie |  |
-| Decision | Entscheid | Décision | Decisione |  | Rozhodnutie |  |
-| Committee decision | Kommissionsentscheid | Décision de la commission | Decisione della commissione |  | Rozhodnutie komisie |  |
-| Review | Review | Review | Review |  | Review |  |
-| Expert assessment | Gutachten | Expertise | Parere |  | Odborný posudok |  |
-| Comparative assessment | Vergleichsgutachten | Évaluations comparatives | Pareri comparativi |  | Porovnávací posudok |  |
-| Letter of recommendation | Referenzschreiben | Lettre de recommandation | Lettera di referenza |  | Odporúčací list |  |
-| List of referees | Referenzenliste | Liste de références | Elenco delle referenze |  | Zoznam referenčných osôb |  |
-| Faculty feedback | Fakultätsfeedback | Retour de la faculté | Feedback della facoltà |  | Spätná väzba fakulty |  |
-| Public feedback | Öffentliche Rückmeldung | Retour public | Riscontro pubblico |  | Verejná spätná väzba |  |
-| Abstention | Enthaltung | Abstention | Astensione |  | Zdržanie sa hlasovania |  |
-| Full professor | Ordentliche Professur | Professorat ordinaire | Professore ordinario |  | Riadna profesúra |  |
-| Assistant professor | Assistenzprofessur | Professorat assistant | Professore assistente |  | Asistentská profesúra |  |
-| Academical background | Akademischer Hintergrund | Parcours universitaire | Percorso accademico |  | Akademické vzdelanie |  |
-| Academic age | Akademisches Alter | Âge académique | Età accademica |  | Akademický vek |  |
-| Highest degree | Höchster Abschluss | Diplôme le plus élevé | Titolo di studio più alto |  | Najvyšší akademický titul |  |
-| Habilitation | Habilitation | Habilitation | Abilitazione |  | Habilitácia |  |
-| Dissertation | Dissertation | Thèse de doctorat | Tesi di dottorato |  | Dizertačná práca |  |
-| h-index | h-Index | H-Factor | Indice h |  | h-index |  |
-| First authorships | Erstautorenschaften | Publications en tant que premier(e) auteur(e) | Pubblicazioni come primo autore |  | Prvé autorstvo |  |
-| Last authorships | Letztautorenschaften | Publications en tant que dernier(e) auteur(e) | Pubblicazioni come ultimo autore |  | Posledné autorstvo |  |
-| Original publications | Originalpublikationen | Publications originales | Pubblicazioni originali |  | Pôvodné publikácie |  |
-| Documents and attachments | Dokumente und Anhänge | Documents et annexes | Documenti e allegati |  | Dokumenty a prílohy |  |
-| Covering letter | Anschreiben | Lettre de motivation | Lettera di motivazione |  | Motivačný list |  |
-| Curriculum vitae | Lebenslauf | Curriculum vitae | Curriculum vitae |  | Životopis |  |
-| Research statement | Forschungsziel | Objectifs de recherche | Obiettivi di ricerca |  | Koncepcia výskumu |  |
-| Teaching statement | Lehransatz | Objectifs pédagogiques | Obiettivi didattici |  | Koncepcia výučby |  |
-| Leadership philosophy | Führungsphilosophie | Philosophie en matière de leadership | Filosofia di leadership |  | Filozofia vedenia |  |
-| Teaching assessment | Lehrbeurteilung | Évaluation de l'enseignement | Valutazione della didattica |  | Hodnotenie výučby |  |
-| Certificate of Study | Studienbescheinigung | Certificat d'étude | Certificato di studio |  | Potvrdenie o štúdiu |  |
-| Degree certificates | Abschlusszertifikate | Diplômes | Diplomi |  | Doklady o dosiahnutom vzdelaní |  |
-| Clinical expertise | Klinische Expertise | Expertise cliniques | Competenza clinica |  | Klinická odbornosť |  |
-| Surgical expertise | Chirurgische Expertise | Expertise chirurgicales | Competenza chirurgica |  | Chirurgická odbornosť |  |
-| External funding | Drittmittel | Financement externe | Fondi esterni |  | Externé financovanie |  |
-| Reprints up to 5 publications | Sonderdrucke von bis zu 5 Publikationen | Copies d'un maximum de 5 publications | Estratti di massimo 5 pubblicazioni |  | Separáty najviac 5 publikácií |  |
-| Combined document | Kombiniertes Dokument | Document combiné | Documento combinato |  | Kombinovaný dokument |  |
-| Apply | Bewerben | Postuler | Candidarsi |  | Podať prihlášku |  |
-| Evaluation | Auswertung | Évaluation | Analisi |  | Vyhodnotenie |  |
-| Dashboard | Dashboard | Dashboard | Dashboard |  | Prehľad uchádzača |  |
-| Application status | Bewerbungsstatus | Statut de la candidature | Stato della candidatura |  | Stav prihlášky |  |
-| Application deadline | Bewerbungsfrist | Délai de candidature | Termine di candidatura |  | Termín podania prihlášky |  |
-| Rating deadline | Beurteilungsfrist | Délai d'appréciation | Termine per il giudizio |  | Termín hodnotenia |  |
-| Submission deadline | Einreichefrist | Délai de soumission | Termine di presentazione |  | Termín odovzdania |  |
-| Application form | Bewerbungsformular | Formulaire de candidature | Modulo di candidatura |  | Formulár prihlášky |  |
-| Other applications | Weitere Bewerbungen | Autres candidatures | Altre candidature |  | Ďalšie prihlášky |  |
-| Memo | Memo | Mémo | Memo |  | Poznámka |  |
-| Email log | E-Mail-Protokoll | Journal des e-mails | Registro e-mail |  | Protokol e-mailov |  |
-| Public feedback link | Link für öffentliche Rückmeldungen | Lien de retour public | Link per riscontri pubblici |  | Odkaz na verejnú spätnú väzbu |  |
-| Rubric | Rubrik | Rubrique | Rubrica |  | Hodnotiace kritérium |  |
-| Committee role permissions | Rollenrechte der Kommission | Droits des rôles de la commission | Diritti dei ruoli della commissione |  | Práva rolí komisie |  |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Selectus | Selectus | Selectus | Selectus | Selectus | Selectus |  | Selectus |  |
+| Decision tool | Entscheidungswerkzeug | Herramienta de decisión | Outil de décision | Strumento di decisione | Narzędzie decyzyjne |  | Nástroj rozhodovania |  |
+| Review tool | Review-Werkzeug | Herramienta de review | Outil de review | Strumento di review | Narzędzie review |  | Nástroj posudzovania |  |
+| Review questionnaire | Review-Fragebogen | Cuestionario de review | Questionnaire de review | Questionario di review | Ankieta review |  | Dotazník posudzovania |  |
+| Review discussion | Review-Diskussion | Discusión de review | Discussion de review | Discussione di review | Dyskusja review |  | Diskusia k posudku |  |
+| Referee management | Referenzverwaltung | Gestión de referencias | Gestion des références | Gestione delle referenze | Zarządzanie referencjami |  | Správa referenčných osôb |  |
+| Mail center | Mailcenter | Centro de e-mail | Centre de messagerie | Centro messaggi | Centrum e-mail |  | Centrum e-mailov |  |
+| Reporting | Reporting | Reporting | Reporting | Reporting | Reporting |  | Reportovanie |  |
+| Screening | Screening | Screening | Screening | Screening | Screening |  | Screening |  |
+| Rating policy | Beurteilungsrichtlinien | Directrices de valoración | Directives d'appréciation | Direttive per il giudizio | Zasady opiniowania |  | Pravidlá hodnotenia |  |
+| Form letter | Serienbrief | Carta modelo | Lettre type | Lettera circolare | Korespondencja seryjna |  | Hromadný list |  |
+| Mail template | E-Mail-Vorlage | Plantilla de e-mail | Modèle d'e-mail | Modello di e-mail | Szablon e-mail |  | E-mailová šablóna |  |
+| Profile paper | Profildokument | Documento de perfil | Document de profil | Documento di profilo | Dokument profilu |  | Profilový dokument |  |
+| Organisation unit | Organisationseinheit | Unidad organizativa | unité d'organisation | unità organizzativa | Jednostka organizacyjna |  | Organizačná jednotka |  |
+| Tags | Tags | Etiquetas | Tags | Tag | Tagi |  | Značky |  |
+| Position | Ausschreibung | Convocatoria | Poste | Posizione | Konkurs |  | Pracovná pozícia |  |
+| Committee | Kommission | Comisión | Commission | Commissione | Komisja |  | Komisia |  |
+| Application | Bewerbung | Candidatura | Candidature | Candidatura | Kandydatura |  | Prihláška |  |
+| Committee assignment | Kommissionszuweisung | Asignación a la comisión | Attribution à la commission | Assegnazione alla commissione | Przydział do komisji |  | Priradenie komisie |  |
+| Rating | Beurteilung | Valoración | Appréciation | Giudizio | Opinia |  | Hodnotenie |  |
+| Committee rating | Kommissionsbeurteilung | Valoración de la comisión | Appréciation de la commission | Giudizio della commissione | Opinia komisji |  | Hodnotenie komisie |  |
+| Decision | Entscheid | Decisión | Décision | Decisione | Decyzja |  | Rozhodnutie |  |
+| Committee decision | Kommissionsentscheid | Decisión de la comisión | Décision de la commission | Decisione della commissione | Decyzja komisji |  | Rozhodnutie komisie |  |
+| Review | Review | Review | Review | Review | Review |  | Review |  |
+| Expert assessment | Gutachten | Dictamen | Expertise | Parere | Ekspertyza |  | Odborný posudok |  |
+| Comparative assessment | Vergleichsgutachten | Dictamen comparativo | Évaluations comparatives | Pareri comparativi | Ekspertyza porównawcza |  | Porovnávací posudok |  |
+| Letter of recommendation | Referenzschreiben | Carta de recomendación | Lettre de recommandation | Lettera di referenza | List polecający |  | Odporúčací list |  |
+| List of referees | Referenzenliste | Lista de referencias | Liste de références | Elenco delle referenze | Lista osób polecających |  | Zoznam referenčných osôb |  |
+| Faculty feedback | Fakultätsfeedback | Feedback de la facultad | Retour de la faculté | Feedback della facoltà | Feedback wydziału |  | Spätná väzba fakulty |  |
+| Public feedback | Öffentliche Rückmeldung | Retroalimentación pública | Retour public | Riscontro pubblico | Publiczna informacja zwrotna |  | Verejná spätná väzba |  |
+| Abstention | Enthaltung | Abstención | Abstention | Astensione | Wstrzymanie się od głosu |  | Zdržanie sa hlasovania |  |
+| Full professor | Ordentliche Professur | Profesorado ordinario | Professorat ordinaire | Professore ordinario | Profesura zwyczajna |  | Riadna profesúra |  |
+| Assistant professor | Assistenzprofessur | Profesorado asistente | Professorat assistant | Professore assistente | Profesura asystencka |  | Asistentská profesúra |  |
+| Academical background | Akademischer Hintergrund | Formación académica | Parcours universitaire | Percorso accademico | Wykształcenie akademickie |  | Akademické vzdelanie |  |
+| Academic age | Akademisches Alter | Edad académica | Âge académique | Età accademica | Wiek akademicki |  | Akademický vek |  |
+| Highest degree | Höchster Abschluss | Título más alto | Diplôme le plus élevé | Titolo di studio più alto | Najwyższe wykształcenie |  | Najvyšší akademický titul |  |
+| Habilitation | Habilitation | Habilitación | Habilitation | Abilitazione | Habilitacja |  | Habilitácia |  |
+| Dissertation | Dissertation | Tesis doctoral | Thèse de doctorat | Tesi di dottorato | Rozprawa doktorska |  | Dizertačná práca |  |
+| h-index | h-Index | Índice h | H-Factor | Indice h | Indeks h |  | h-index |  |
+| First authorships | Erstautorenschaften | Primeras autorías | Publications en tant que premier(e) auteur(e) | Pubblicazioni come primo autore | Pierwsze autorstwa |  | Prvé autorstvo |  |
+| Last authorships | Letztautorenschaften | Últimas autorías | Publications en tant que dernier(e) auteur(e) | Pubblicazioni come ultimo autore | Ostatnie autorstwa |  | Posledné autorstvo |  |
+| Original publications | Originalpublikationen | Publicaciones originales | Publications originales | Pubblicazioni originali | Publikacje oryginalne |  | Pôvodné publikácie |  |
+| Documents and attachments | Dokumente und Anhänge | Documentos y anexos | Documents et annexes | Documenti e allegati | Dokumenty i załączniki |  | Dokumenty a prílohy |  |
+| Covering letter | Anschreiben | Carta de presentación | Lettre de motivation | Lettera di motivazione | List motywacyjny |  | Motivačný list |  |
+| Curriculum vitae | Lebenslauf | Currículum vitae | Curriculum vitae | Curriculum vitae | Życiorys |  | Životopis |  |
+| Research statement | Forschungsziel | Objetivo de investigación | Objectifs de recherche | Obiettivi di ricerca | Cel badawczy |  | Koncepcia výskumu |  |
+| Teaching statement | Lehransatz | Enfoque docente | Objectifs pédagogiques | Obiettivi didattici | Koncepcja dydaktyczna |  | Koncepcia výučby |  |
+| Leadership philosophy | Führungsphilosophie | Filosofía de liderazgo | Philosophie en matière de leadership | Filosofia di leadership | Filozofia przywództwa |  | Filozofia vedenia |  |
+| Teaching assessment | Lehrbeurteilung | Valoración docente | Évaluation de l'enseignement | Valutazione della didattica | Opinia o dydaktyce |  | Hodnotenie výučby |  |
+| Certificate of Study | Studienbescheinigung | Certificado de estudios | Certificat d'étude | Certificato di studio | Zaświadczenie o studiach |  | Potvrdenie o štúdiu |  |
+| Degree certificates | Abschlusszertifikate | Títulos académicos | Diplômes | Diplomi | Dyplomy ukończenia studiów |  | Doklady o dosiahnutom vzdelaní |  |
+| Clinical expertise | Klinische Expertise | Experiencia clínica | Expertise cliniques | Competenza clinica | Doświadczenie kliniczne |  | Klinická odbornosť |  |
+| Surgical expertise | Chirurgische Expertise | Experiencia quirúrgica | Expertise chirurgicales | Competenza chirurgica | Doświadczenie chirurgiczne |  | Chirurgická odbornosť |  |
+| External funding | Drittmittel | Financiación externa | Financement externe | Fondi esterni | Finansowanie zewnętrzne |  | Externé financovanie |  |
+| Reprints up to 5 publications | Sonderdrucke von bis zu 5 Publikationen | Separatas de hasta 5 publicaciones | Copies d'un maximum de 5 publications | Estratti di massimo 5 pubblicazioni | Odbitki do 5 publikacji |  | Separáty najviac 5 publikácií |  |
+| Combined document | Kombiniertes Dokument | Documento combinado | Document combiné | Documento combinato | Połączony dokument |  | Kombinovaný dokument |  |
+| Apply | Bewerben | Presentar candidatura | Postuler | Candidarsi | Zgłoś kandydaturę |  | Podať prihlášku |  |
+| Evaluation | Auswertung | Análisis | Évaluation | Analisi | Ewaluacja |  | Vyhodnotenie |  |
+| Dashboard | Dashboard | Dashboard | Dashboard | Dashboard | Dashboard |  | Prehľad uchádzača |  |
+| Application status | Bewerbungsstatus | Estado de la candidatura | Statut de la candidature | Stato della candidatura | Status kandydatury |  | Stav prihlášky |  |
+| Application deadline | Bewerbungsfrist | Plazo de candidatura | Délai de candidature | Termine di candidatura | Termin składania kandydatur |  | Termín podania prihlášky |  |
+| Rating deadline | Beurteilungsfrist | Plazo de valoración | Délai d'appréciation | Termine per il giudizio | Termin wydania opinii |  | Termín hodnotenia |  |
+| Submission deadline | Einreichefrist | Plazo de entrega | Délai de soumission | Termine di presentazione | Termin przesłania |  | Termín odovzdania |  |
+| Application form | Bewerbungsformular | Formulario de candidatura | Formulaire de candidature | Modulo di candidatura | Formularz kandydatury |  | Formulár prihlášky |  |
+| Other applications | Weitere Bewerbungen | Otras candidaturas | Autres candidatures | Altre candidature | Inne kandydatury |  | Ďalšie prihlášky |  |
+| Memo | Memo | Memo | Mémo | Memo | Memo |  | Poznámka |  |
+| Email log | E-Mail-Protokoll | Registro de e-mails | Journal des e-mails | Registro e-mail | Dziennik e-mail |  | Protokol e-mailov |  |
+| Public feedback link | Link für öffentliche Rückmeldungen | Enlace de retroalimentación pública | Lien de retour public | Link per riscontri pubblici | Link do publicznej informacji zwrotnej |  | Odkaz na verejnú spätnú väzbu |  |
+| Rubric | Rubrik | Rúbrica | Rubrique | Rubrica | Rubryka |  | Hodnotiace kritérium |  |
+| Committee role permissions | Rollenrechte der Kommission | Permisos de roles de la comisión | Droits des rôles de la commission | Diritti dei ruoli della commissione | Uprawnienia ról komisji |  | Práva rolí komisie |  |
 
 ## Tasks and practice (Aufgaben und Üben)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Task | Aufgabe | Devoir | Compito | Tarefa | Úloha | Görev |
-| Group task | Gruppenaufgabe | Devoir de groupe | Compito di gruppo | Tarefa de Grupo | Skupinová úloha | Grup görevi |
-| Video task | Videoaufgabe | Devoir vidéo | Compito video |  | Video úloha |  |
-| Segment | Segment | Segment | Segmento |  | Segment videoúlohy |  |
-| Term | Begriff | Terme | Termine |  | Výraz |  |
-| Answer attempt | Antwortversuch | Tentative de réponse | Tentativo di risposta |  | Pokus o odpoveď |  |
-| Attempts | Lösungsversuche | Tentatives | Tentativi |  | Pokusy o riešenie |  |
-| Invalidate | Annullieren | Invalider | Invalidare | Invalidar | Zrušiť | Geçersiz kıl |
-| Practice | Übung | Exercice | Prova |  | Prax |  |
-| Workflow | Workflow | Flux de travail | Flusso di lavoro | Workflow | Pracovný postup | İş akışı |
-| Assignment | Aufgabenstellung | Affectation | Assegnazione | Atribuição | Zadanie | Atama |
-| Submission | Abgabe | Dépôt | Consegna | Apresentação | Odoslanie | Gönderme |
-| Drop box | Abgabeordner | Boîte de dépôt | Cartella di consegna | Resolução da tarefa | Priečinok na doručenie | Açılır kutu |
-| Return box | Rückgabeordner | Dossier de restitution | Cartella di restituzione | Retorno da correção | Priečinok na vrátenie | İade kutusu |
-| Submission date | Abgabedatum | Date de remise | Data di presentazione | Data para envio | Dátum predloženia | Teslim tarihi |
-| Collected | Eingezogen | Collecté | Collezionato |  | Zozbierané |  |
-| Revision | Überarbeitung | Période de remaniement | Periodo di revisione | Fase de revisão | Revízia | Revizyon |
-| Correction request | Korrekturanforderung | Demande de correction | Richiesta di correzione |  | Žiadosť o opravu |  |
-| Return and feedback | Rückgabe und Feedback | Evaluation et corrections | Riconsegna e feedback | Retorno e feedback | Vrátenie a spätná väzba | İade ve geri bildirim |
-| Sample solution | Musterlösung | Solutions | Modello di soluzione | solução de amostra | Vzorové riešenie | Örnek çözüm |
-| Assessment | Bewertung | Evaluation | Valutazione | Classificação | Triedenie | Puanlama |
-| Late | Verspätet | En retard | In ritardo |  | Neskoro |  |
-| Peer review | Peer-Review | Évaluation par les pairs | Valutazione tra pari |  | Vzájomné hodnotenie |  |
-| Review object | Review-Objekt | Objet de la révision | Rivedere oggetti |  | Objekt preskúmania |  |
-| Form of feedback | Form des Feedbacks | Formulaire de feedback | Formulario del feedback |  | Forma spätnej väzby |  |
-| Practice series | Übungsserie | Série d'exercices | Serie di prove |  | Séria cvičení |  |
-| Challenge | Challenge | Défi | Sfida |  | Challenge |  |
-| Learning status | Lernstand | Niveau d'apprentissage | Status di apprendimento |  | Zistiť stav |  |
-| Type of assignment | Art der Zuweisung | Type d'affectation | Tipo di assegnazione | Tipo de tarefa | Typ zadania | Görev türü |
-| Deadline | Frist | Délai | Scadenza |  | Termín |  |
-| Extend | Verlängern | Prolonger | Estendere | Ampliar | Predĺžiť | Uzat |
-| Late submission | Verspätete Abgabe | Soumission en retard | Consegna in ritardo |  | Neskoré predloženie |  |
-| Assignment coaches/participants | Zuweisung Betreuende/Teilnehmende | Assignation coaches/participants | Assegnazione coach/partecipanti |  | Pridelenie koučov a účastníkov |  |
-| Assignment | Zuweisung | Assignation | Assegnazione |  | Zadanie |  |
-| Form of the review | Review-Form | Formulaire d'évaluation | Formulario di valutazione |  | Forma preskúmania |  |
-| Quality feedback for reviewer | Qualitäts-Feedback für Reviewer{in} | Feedback sur la qualité pour le réviseur | Feedback di qualità per il recensore |  | Spätná väzba kvality pre recenzenta |  |
-| Level | Level | Niveau | Livello |  | Level |  |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Task | Aufgabe | Tarea | Devoir | Compito | Zadanie | Tarefa | Úloha | Görev |
+| Group task | Gruppenaufgabe | Tarea de grupo | Devoir de groupe | Compito di gruppo | Zadanie grupowe | Tarefa de Grupo | Skupinová úloha | Grup görevi |
+| Video task | Videoaufgabe | Tarea de video | Devoir vidéo | Compito video | Zadanie wideo |  | Video úloha |  |
+| Segment | Segment | Segmento | Segment | Segmento | Segment |  | Segment videoúlohy |  |
+| Term | Begriff | Concepto | Terme | Termine | Pojęcie |  | Výraz |  |
+| Answer attempt | Antwortversuch | Intento de respuesta | Tentative de réponse | Tentativo di risposta | Próba odpowiedzi |  | Pokus o odpoveď |  |
+| Attempts | Lösungsversuche | Intentos de solución | Tentatives | Tentativi | Próby rozwiązania |  | Pokusy o riešenie |  |
+| Invalidate | Annullieren | Anular | Invalider | Invalidare | Unieważnij | Invalidar | Zrušiť | Geçersiz kıl |
+| Practice | Übung | Práctica | Exercice | Prova | Ćwiczenie |  | Prax |  |
+| Workflow | Workflow | Workflow | Flux de travail | Flusso di lavoro | Workflow | Workflow | Pracovný postup | İş akışı |
+| Assignment | Aufgabenstellung | Enunciado de la tarea | Affectation | Assegnazione | Treść zadania | Atribuição | Zadanie | Atama |
+| Submission | Abgabe | Entrega | Dépôt | Consegna | Zgłoszenie | Apresentação | Odoslanie | Gönderme |
+| Drop box | Abgabeordner | Carpeta de entrega | Boîte de dépôt | Cartella di consegna | Folder zgłoszeń | Resolução da tarefa | Priečinok na doručenie | Açılır kutu |
+| Return box | Rückgabeordner | Carpeta de retorno | Dossier de restitution | Cartella di restituzione | Folder zwrotny | Retorno da correção | Priečinok na vrátenie | İade kutusu |
+| Submission date | Abgabedatum | Fecha de entrega | Date de remise | Data di presentazione | Data zgłoszenia | Data para envio | Dátum predloženia | Teslim tarihi |
+| Collected | Eingezogen | Recopilado | Collecté | Collezionato | Zebrane |  | Zozbierané |  |
+| Revision | Überarbeitung | Revisión | Période de remaniement | Periodo di revisione | Poprawki | Fase de revisão | Revízia | Revizyon |
+| Correction request | Korrekturanforderung | Solicitud de corrección | Demande de correction | Richiesta di correzione | Prośba o poprawki |  | Žiadosť o opravu |  |
+| Return and feedback | Rückgabe und Feedback | Devolución y retroalimentación | Evaluation et corrections | Riconsegna e feedback | Zwrot i informacja zwrotna | Retorno e feedback | Vrátenie a spätná väzba | İade ve geri bildirim |
+| Sample solution | Musterlösung | Solución de ejemplo | Solutions | Modello di soluzione | Przykładowe rozwiązanie | solução de amostra | Vzorové riešenie | Örnek çözüm |
+| Assessment | Bewertung | Evaluación | Evaluation | Valutazione | Ocena | Classificação | Triedenie | Puanlama |
+| Late | Verspätet | Con retraso | En retard | In ritardo | Spóźnione |  | Neskoro |  |
+| Peer review | Peer-Review | Peer review | Évaluation par les pairs | Valutazione tra pari | Peer review |  | Vzájomné hodnotenie |  |
+| Review object | Review-Objekt | Objeto de review | Objet de la révision | Rivedere oggetti | Obiekt review |  | Objekt preskúmania |  |
+| Form of feedback | Form des Feedbacks | Forma de retroalimentación | Formulaire de feedback | Formulario del feedback | Forma informacji zwrotnej |  | Forma spätnej väzby |  |
+| Practice series | Übungsserie | Serie de práctica | Série d'exercices | Serie di prove | Seria ćwiczeń |  | Séria cvičení |  |
+| Challenge | Challenge | Challenge | Défi | Sfida | Challenge |  | Challenge |  |
+| Learning status | Lernstand | Estado de aprendizaje | Niveau d'apprentissage | Status di apprendimento | Stan nauki |  | Zistiť stav |  |
+| Type of assignment | Art der Zuweisung | Tipo de asignación | Type d'affectation | Tipo di assegnazione | Rodzaj przydziału | Tipo de tarefa | Typ zadania | Görev türü |
+| Deadline | Frist | Plazo | Délai | Scadenza | Termin końcowy |  | Termín |  |
+| Extend | Verlängern | Extender | Prolonger | Estendere | Przedłuż | Ampliar | Predĺžiť | Uzat |
+| Late submission | Verspätete Abgabe | Entrega tardía | Soumission en retard | Consegna in ritardo | Spóźnione zgłoszenie |  | Neskoré predloženie |  |
+| Assignment coaches/participants | Zuweisung Betreuende/Teilnehmende | Asignación de tutores/participantes | Assignation coaches/participants | Assegnazione coach/partecipanti | Przydział opiekunów/uczestników |  | Pridelenie koučov a účastníkov |  |
+| Assignment | Zuweisung | Asignación | Assignation | Assegnazione | Przydział |  | Zadanie |  |
+| Form of the review | Review-Form | Forma de review | Formulaire d'évaluation | Formulario di valutazione | Forma review |  | Forma preskúmania |  |
+| Quality feedback for reviewer | Qualitäts-Feedback für Reviewer{in} | Retroalimentación de calidad para el revisor | Feedback sur la qualité pour le réviseur | Feedback di qualità per il recensore | Informacja zwrotna o jakości dla recenzenta |  | Spätná väzba kvality pre recenzenta |  |
+| Level | Level | Level | Niveau | Livello | Level |  | Level |  |
 
 ## Testing and question bank (Test und Fragenpool)
 
-| English | Deutsch | Français | Italiano | Português (BR) | Slovenčina | Türkçe |
-|---|---|---|---|---|---|---|
-| Test | Test | Test | Test | Teste | Test | Test |
-| Self-test | Selbsttest | Auto-test | Autotest | Auto-teste | Autotest | Kendi kendine test |
-| Questionnaire | Fragebogen | Questionnaire | Questionario | Pesquisa | Dotazník | Anket |
-| Test part | Test-Part | Partie de test | Sezione test | Parte do teste | Testovacia časť | Test bölümü |
-| Section | Sektion | Section | Sezione | Seção | Sekcia | Bölüm |
-| Question | Frage | Question | Domanda | Questão | Otázka | Soru |
-| Answer | Antwort | Réponse | Risposta | Resposta | Odpoveď | Cevap |
-| Correct solution | Korrekte Lösung | Solution correcte | Soluzione corretta | Solução correta | Správne riešenie | Doğru çözüm |
-| Feedback | Feedback | Feedback | Feedback | Feedback | Spätná väzba | Geri bildirim |
-| Shuffle | Zufällige Reihenfolge | Ordre aléatoire | Ordine casuale |  | Náhodné poradie |  |
-| Test Statistics | Test Statistiken | Statistiques des tests | Statistiche test | Estatísticas do teste | Štatistiky testov | Test istatistikleri |
-| Supervisor chat | Betreuer{innen}-Chat | Chat des coaches | Chat dei coach |  | Chat s koučom |  |
-| Single choice | Single Choice | Choix simple | Scelta singola | Escolha única | Výber jednej odpovede | Tek seçenek |
-| Multiple choice | Multiple Choice | Choix multiples | Scelta multipla | Escolha Múltipla | Výber viacerých odpovedí | Çoktan seçmeli |
-| Kprim | Kprim | Kprim | KPrim | Kprim | Kprim | Kprim |
-| True/false | True/false | True/false | Vero/falso | Verdadeiro/Falso | Pravda/nepravda | Doğru/yanlış |
-| Match | Matrix | Match | Corrispondenza | Combine | Priraďovanie | Eşleştir |
-| Drag and Drop | Drag and Drop | Drag and Drop | Drag and Drop | Arraste e solte | Drag and Drop | Sürükle ve bırak |
-| Order | Reihenfolge | Ordre | Ordine | Sequência | Zoradenie | Sırala |
-| Gap FIB text | Lückentext | Texte à trou | Lacuna di testo | Lacuna de texto | Text s medzerami | Boşluklu metin |
-| Gap mixed | Lückentext gemischt | Texte à trou mélangé | Lacuna di testo mista |  | Kombinovaný text s medzerami |  |
-| Gap with dropdown | Lückentext mit Dropdown | Texte à trou avec liste déroulante | Spazio con menù a tendina |  | Cvičenie s dopĺňaním prázdnych polí pomocou rozbaľovacej ponuky |  |
-| Gap FIB numerical | Lückentext numerisch | Texte à trou numérique | Inserimento numerico | Entrada numérica | Číselný text s medzerami | Sayısal giriş |
-| Hotspot | Hotspot | Hotspot | Hotspot | Hotspot | Hotspot | Hotspot |
-| Hottext | Hottext | Hottext | Hottext | Hottext | Hottext | Hottext |
-| Drawing | Zeichnen | Dessin | Disegno | Desenho | Kreslenie | Çizim |
-| Essay | Freitext | Texte libre | Testo libero | Redação | Otvorená otázka | Makale |
-| Upload file | Datei hochladen | Téléverser un fichier | Caricare un file | Enviar arquivo | Nahrať súbor | Dosya yükle |
-| Question type | Fragetyp | Type de question | Tipo di domanda | Tipo de questão | Typ otázky | Soru türü |
-| Test run | Testversuch | Session de test | Tentativo di test |  | Pokus o test |  |
-| Attempt | Versuch | Essai | Tentativo | Tentativa | Pokus | Deneme |
-| Test duration | Bearbeitungsdauer | Durée du test | Durata del test | Duração do teste | Dĺžka testu | Test süresi |
-| Pull test | Test einziehen | Retirer le test | Estrarre test | Puxar teste | Stiahnuť test | Testi çek |
-| Invalidate | Annullieren | Invalider | Invalidare | Invalidar | Zneplatniť | Geçersiz kıl |
-| Test receipt | Testquittung | Signature digitale du test | Ricevuta del test |  | Potvrdenie o teste |  |
-| Additional sheet | Zusätzliche Seite | Page additionelle | Pagina aggiuntiva |  | Dodatočná stránka | Ek sayfa |
-| Final score | Endgültige Punkte | Points définitifs | Punteggio finale | Pontuação final | Záverečné body | Son puan |
-| Manual score | Manuelle Punkte | Points manuels | Punteggio manuale | Pontuação manual | Manuálne hodnotenie | Manuel puanlandırma |
-| Score (auto) | Punkte (Auto) | Points (auto) | Punteggio (auto) |  | Body (auto) |  |
-| Adjust score | Punkte anpassen | Ajuster les points | Adeguare il punteggio |  | Upraviť body |  |
-| Mark for review | Zur Überprüfung markieren | Marquer pour vérification | Segnare per verifica | Marcar para revisão | Označiť na preskúmanie | İncelemek için işaretle |
-| Question bank | Fragenpool | Banque de questions | Pool delle domande | Banco de perguntas | Banka otázok | Soru bankası |
-| Level | Stufe | Niveau | Livello | Nível | Úroveň | Seviye |
-| Review process | Beurteilungsprozess | Processus d'évaluation | Processo di revisione | Processo de revisão | Proces posudzovania | İnceleme süreci |
-| Shares | Freigaben | Partagé | Condivisioni pubbliche | Compartilhamentos públicos | Verejné zdieľanie | Halka açık paylaşımlar |
-| Pool | Pool | Pool | Pool | Reservatório | Pool | Havuz |
-| List | Liste | Liste | Lista |  | Zoznam |  |
-| Discrimination index | Trennschärfe | Sélectivité | Indice di discriminazione | Índice de discriminação | Index diskriminačnej schopnosti | Ayırtedicilik endeksi |
-| Difficulty index | Itemschwierigkeit | Indice de difficulté | Indice di difficoltà | Índice de dificuldade | Index obťažnosti | Güçlük endeksi |
-| Hint | Lösungshinweis | Indice de solution | Suggerimento | Dica | Pomôcka | İpucu |
-| Score per answer | Punkte pro Antwort | Points par réponse | Punti per risposta | Pontuação por resposta | Body za odpoveď | Cevap başına puan |
-| Partial score | Teilpunkte | Points partiels | Punteggio parziale |  | Čiastkové body |  |
-| Max. number of attempts | Max. Anzahl Versuche | Nombre max. de tentatives | Numero massimo di tentativi | Número máximo de tentativas | Maximálny počet pokusov | Maksimum deneme sayısı |
-| Time limit | Zeitbeschränkung | Limite de temps | Tempo limite | Limite de tempo | Časový limit | Zaman sınırı |
-| Results | Resultate | Résultat | Risultati | Resultado | Výsledky | Sonuçlar |
-| Finish test | Test beenden | Terminer le test | Terminare il test | Concluir teste | Dokončiť test | Testi bitir |
-| Suspend test | Test unterbrechen | Interrompre le test | Sospendere test | Suspender teste | Pozastavenie testu | Testi askıya al |
-| Cancel test | Test abbrechen | Arrêter test | Interrompere test | Cancelar teste | Zrušiť test | Testi iptal et |
-| Correction tool | Korrekturwerkzeug | Outil de correction | Strumento di correzione | Grau | Nástroj na opravu | Notlandır |
-| Test editor | Testeditor | Editeur de test | Editor di test |  | Editor testu |  |
+| English | Deutsch | Español | Français | Italiano | Polski | Português (BR) | Slovenčina | Türkçe |
+|---|---|---|---|---|---|---|---|---|
+| Test | Test | Test | Test | Test | Test | Teste | Test | Test |
+| Self-test | Selbsttest | Autotest | Auto-test | Autotest | Samoocena | Auto-teste | Autotest | Kendi kendine test |
+| Questionnaire | Fragebogen | Cuestionario | Questionnaire | Questionario | Ankieta | Pesquisa | Dotazník | Anket |
+| Test part | Test-Part | Parte del test | Partie de test | Sezione test | Część testu | Parte do teste | Testovacia časť | Test bölümü |
+| Section | Sektion | Sección | Section | Sezione | Sekcja | Seção | Sekcia | Bölüm |
+| Question | Frage | Pregunta | Question | Domanda | Pytanie | Questão | Otázka | Soru |
+| Answer | Antwort | Respuesta | Réponse | Risposta | Odpowiedź | Resposta | Odpoveď | Cevap |
+| Correct solution | Korrekte Lösung | Solución correcta | Solution correcte | Soluzione corretta | Poprawne rozwiązanie | Solução correta | Správne riešenie | Doğru çözüm |
+| Feedback | Feedback | Feedback | Feedback | Feedback | Feedback | Feedback | Spätná väzba | Geri bildirim |
+| Shuffle | Zufällige Reihenfolge | Orden aleatorio | Ordre aléatoire | Ordine casuale | Losowa kolejność |  | Náhodné poradie |  |
+| Test Statistics | Test Statistiken | Estadísticas del test | Statistiques des tests | Statistiche test | Statystyki testu | Estatísticas do teste | Štatistiky testov | Test istatistikleri |
+| Supervisor chat | Betreuer{innen}-Chat | Chat de tutores | Chat des coaches | Chat dei coach | Czat opiekunów |  | Chat s koučom |  |
+| Single choice | Single Choice | Single choice | Choix simple | Scelta singola | Single choice | Escolha única | Výber jednej odpovede | Tek seçenek |
+| Multiple choice | Multiple Choice | Multiple choice | Choix multiples | Scelta multipla | Multiple choice | Escolha Múltipla | Výber viacerých odpovedí | Çoktan seçmeli |
+| Kprim | Kprim | Kprim | Kprim | KPrim | Kprim | Kprim | Kprim | Kprim |
+| True/false | True/false | True/false | True/false | Vero/falso | True/false | Verdadeiro/Falso | Pravda/nepravda | Doğru/yanlış |
+| Match | Matrix | Matriz | Match | Corrispondenza | Macierz | Combine | Priraďovanie | Eşleştir |
+| Drag and Drop | Drag and Drop | Drag and Drop | Drag and Drop | Drag and Drop | Drag and Drop | Arraste e solte | Drag and Drop | Sürükle ve bırak |
+| Order | Reihenfolge | Orden | Ordre | Ordine | Kolejność | Sequência | Zoradenie | Sırala |
+| Gap FIB text | Lückentext | Texto con huecos | Texte à trou | Lacuna di testo | Uzupełnianie luk | Lacuna de texto | Text s medzerami | Boşluklu metin |
+| Gap mixed | Lückentext gemischt | Texto con huecos mixto | Texte à trou mélangé | Lacuna di testo mista | Uzupełnianie luk mieszane |  | Kombinovaný text s medzerami |  |
+| Gap with dropdown | Lückentext mit Dropdown | Texto con huecos con lista desplegable | Texte à trou avec liste déroulante | Spazio con menù a tendina | Uzupełnianie luk z listą rozwijaną |  | Cvičenie s dopĺňaním prázdnych polí pomocou rozbaľovacej ponuky |  |
+| Gap FIB numerical | Lückentext numerisch | Texto con huecos numérico | Texte à trou numérique | Inserimento numerico | Uzupełnianie luk liczbowe | Entrada numérica | Číselný text s medzerami | Sayısal giriş |
+| Hotspot | Hotspot | Hotspot | Hotspot | Hotspot | Hotspot | Hotspot | Hotspot | Hotspot |
+| Hottext | Hottext | Hottext | Hottext | Hottext | Hottext | Hottext | Hottext | Hottext |
+| Drawing | Zeichnen | Dibujo | Dessin | Disegno | Rysowanie | Desenho | Kreslenie | Çizim |
+| Essay | Freitext | Texto libre | Texte libre | Testo libero | Esej | Redação | Otvorená otázka | Makale |
+| Upload file | Datei hochladen | Subir archivo | Téléverser un fichier | Caricare un file | Przekaż plik | Enviar arquivo | Nahrať súbor | Dosya yükle |
+| Question type | Fragetyp | Tipo de pregunta | Type de question | Tipo di domanda | Typ pytania | Tipo de questão | Typ otázky | Soru türü |
+| Test run | Testversuch | Intento de test | Session de test | Tentativo di test | Próba testu |  | Pokus o test |  |
+| Attempt | Versuch | Intento | Essai | Tentativo | Próba | Tentativa | Pokus | Deneme |
+| Test duration | Bearbeitungsdauer | Duración del test | Durée du test | Durata del test | Czas trwania testu | Duração do teste | Dĺžka testu | Test süresi |
+| Pull test | Test einziehen | Recopilar test | Retirer le test | Estrarre test | Zbierz test | Puxar teste | Stiahnuť test | Testi çek |
+| Invalidate | Annullieren | Anular | Invalider | Invalidare | Unieważnij | Invalidar | Zneplatniť | Geçersiz kıl |
+| Test receipt | Testquittung | Recibo del test | Signature digitale du test | Ricevuta del test | Potwierdzenie testu |  | Potvrdenie o teste |  |
+| Additional sheet | Zusätzliche Seite | Página adicional | Page additionelle | Pagina aggiuntiva | Dodatkowa strona |  | Dodatočná stránka | Ek sayfa |
+| Final score | Endgültige Punkte | Puntuación final | Points définitifs | Punteggio finale | Wynik końcowy | Pontuação final | Záverečné body | Son puan |
+| Manual score | Manuelle Punkte | Puntuación manual | Points manuels | Punteggio manuale | Wynik ręczny | Pontuação manual | Manuálne hodnotenie | Manuel puanlandırma |
+| Score (auto) | Punkte (Auto) | Puntuación (auto) | Points (auto) | Punteggio (auto) | Wynik (auto) |  | Body (auto) |  |
+| Adjust score | Punkte anpassen | Ajustar puntuación | Ajuster les points | Adeguare il punteggio | Dostosuj wynik |  | Upraviť body |  |
+| Mark for review | Zur Überprüfung markieren | Marcar para verificación | Marquer pour vérification | Segnare per verifica | Oznacz do sprawdzenia | Marcar para revisão | Označiť na preskúmanie | İncelemek için işaretle |
+| Question bank | Fragenpool | Banco de preguntas | Banque de questions | Pool delle domande | Baza pytań | Banco de perguntas | Banka otázok | Soru bankası |
+| Level | Stufe | Nivel | Niveau | Livello | Poziom | Nível | Úroveň | Seviye |
+| Review process | Beurteilungsprozess | Proceso de valoración | Processus d'évaluation | Processo di revisione | Proces opiniowania | Processo de revisão | Proces posudzovania | İnceleme süreci |
+| Shares | Freigaben | Elementos compartidos | Partagé | Condivisioni pubbliche | Udostępnione | Compartilhamentos públicos | Verejné zdieľanie | Halka açık paylaşımlar |
+| Pool | Pool | Pool | Pool | Pool | Pool | Reservatório | Pool | Havuz |
+| List | Liste | Lista | Liste | Lista | Lista |  | Zoznam |  |
+| Discrimination index | Trennschärfe | Índice de discriminación | Sélectivité | Indice di discriminazione | Indeks dyskryminacji | Índice de discriminação | Index diskriminačnej schopnosti | Ayırtedicilik endeksi |
+| Difficulty index | Itemschwierigkeit | Índice de dificultad | Indice de difficulté | Indice di difficoltà | Trudność | Índice de dificuldade | Index obťažnosti | Güçlük endeksi |
+| Hint | Lösungshinweis | Pista | Indice de solution | Suggerimento | Podpowiedź | Dica | Pomôcka | İpucu |
+| Score per answer | Punkte pro Antwort | Puntuación por respuesta | Points par réponse | Punti per risposta | Wynik za odpowiedź | Pontuação por resposta | Body za odpoveď | Cevap başına puan |
+| Partial score | Teilpunkte | Puntuación parcial | Points partiels | Punteggio parziale | Wynik częściowy |  | Čiastkové body |  |
+| Max. number of attempts | Max. Anzahl Versuche | Número máx. de intentos | Nombre max. de tentatives | Numero massimo di tentativi | Maksymalna liczba prób | Número máximo de tentativas | Maximálny počet pokusov | Maksimum deneme sayısı |
+| Time limit | Zeitbeschränkung | Límite de tiempo | Limite de temps | Tempo limite | Limit czasu | Limite de tempo | Časový limit | Zaman sınırı |
+| Results | Resultate | Resultados | Résultat | Risultati | Wyniki | Resultado | Výsledky | Sonuçlar |
+| Finish test | Test beenden | Finalizar test | Terminer le test | Terminare il test | Zakończ test | Concluir teste | Dokončiť test | Testi bitir |
+| Suspend test | Test unterbrechen | Suspender test | Interrompre le test | Sospendere test | Zawieś test | Suspender teste | Pozastavenie testu | Testi askıya al |
+| Cancel test | Test abbrechen | Cancelar test | Arrêter test | Interrompere test | Anuluj test | Cancelar teste | Zrušiť test | Testi iptal et |
+| Correction tool | Korrekturwerkzeug | Herramienta de corrección | Outil de correction | Strumento di correzione | Narzędzie korekty | Grau | Nástroj na opravu | Notlandır |
+| Test editor | Testeditor | Editor de tests | Editeur de test | Editor di test | Edytor testu |  | Editor testu |  |
 
 ## Rules
 
