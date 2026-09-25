@@ -320,6 +320,7 @@ public class InPreparationListController extends FormBasicController implements 
 	
 	private InPreparationRow forgeRow(RepositoryEntryInPreparation entry, Map<Long,VFSThumbnailInfos> thumbnails) {
 		InPreparationRow row = new InPreparationRow(Long.valueOf(++count), entry.entry(), entry.marked());
+		row.setLifecyclePeriod(RepositoyUIFactory.formatExecutionPeriod(getTranslator(), row.getLifecycleStart(), row.getLifecycleEnd()));
 		forgeDetailsLink(row);
 		forgeSelectLink(row);
 		forgeMarkLink(row);
@@ -336,6 +337,7 @@ public class InPreparationListController extends FormBasicController implements 
 	
 	private InPreparationRow forgeRow(CurriculumElementInPreparation element, Map<Long,VFSThumbnailInfos> thumbnails) {
 		InPreparationRow row = new InPreparationRow(Long.valueOf(++count), element.element(), element.entry(), element.marked());
+		row.setLifecyclePeriod(RepositoyUIFactory.formatExecutionPeriod(getTranslator(), row.getLifecycleStart(), row.getLifecycleEnd()));
 		forgeDetailsLink(row);
 		forgeSelectLink(row);
 		forgeMarkLink(row);

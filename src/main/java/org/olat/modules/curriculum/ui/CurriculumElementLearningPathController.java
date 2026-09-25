@@ -29,10 +29,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Util;
 import org.olat.course.learningpath.ui.CurriculumElementLearningPathListController;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,12 +54,13 @@ public class CurriculumElementLearningPathController extends BasicController {
 	public CurriculumElementLearningPathController(UserRequest ureq, WindowControl swControl,
 			TooledStackedPanel stackPanel, CurriculumElement element) {
 		super(ureq, swControl);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
 		VelocityContainer mainVC = createVelocityContainer("curriculum_learning_progress");
 		
 		mainVC.contextPut("elementName", element.getDisplayName());
 		mainVC.contextPut("elementIdentifier", element.getIdentifier());
-		mainVC.contextPut("elementPeriod", CurriculumUIFactory.formatExecutionPeriod(getTranslator(), element));
+		mainVC.contextPut("elementPeriod", RepositoyUIFactory.formatExecutionPeriod(getTranslator(), element.getBeginDate(), element.getEndDate()));
 		
 		Curriculum curriculum = element.getCurriculum();
 		mainVC.contextPut("curriculumName", curriculum.getDisplayName());

@@ -48,8 +48,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -77,6 +75,7 @@ import org.olat.repository.manager.InPreparationQueries;
 import org.olat.repository.manager.RepositoryEntryMyImplementationsQueries;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.list.RepositoryEntryListConfig.RepositoryEntryListPresets;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -255,23 +254,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	}
 
 	private String scopeDatesHint(CurriculumElement implementation) {
-		Formatter formatter = Formatter.getInstance(getLocale());
-		String begin = formatter.formatDate(implementation.getBeginDate());
-		String end = formatter.formatDate(implementation.getEndDate());
-		
-		String hint;
-		if(begin != null && DateUtils.isSameDay(implementation.getBeginDate(), implementation.getEndDate())) {
-			hint = begin;
-		} else if(begin != null && end != null) {
-			hint = translate("search.implementations.dates", begin, end);
-		} else if(begin != null) {
-			hint = translate("search.implementations.begin", begin);
-		} else if(end != null) {
-			hint = translate("search.implementations.end", end);
-		} else {
-			hint = null;
-		}
-		return hint;
+		return RepositoyUIFactory.formatExecutionPeriod(getTranslator(), implementation.getBeginDate(), implementation.getEndDate());
 	}
 	
 	@Override

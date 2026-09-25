@@ -48,6 +48,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -282,6 +283,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		List<RepositoryEntryRow> items = new ArrayList<>(repoEntries.size());
 		for(RepositoryEntryMyView entry:repoEntries) {
 			RepositoryEntryRow row = new RepositoryEntryRow(entry);
+			row.setLifecyclePeriod(RepositoyUIFactory.formatExecutionPeriod(uifactory.getTranslator(), row.getLifecycleStart(), row.getLifecycleEnd()));
 			
 			String imageUrl = uifactory.getImageMapper().getThumbnailURL(uifactory.getMapperThumbnailUrl(), row, mimages);
 			row.setThumbnailRelPath(imageUrl);

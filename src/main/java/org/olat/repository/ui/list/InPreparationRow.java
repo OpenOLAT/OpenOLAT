@@ -56,6 +56,7 @@ public class InPreparationRow {
 	private String lifecycleSoftKey;
 	private Date lifecycleStart;
 	private Date lifecycleEnd;
+	private String lifecyclePeriod;
 	
 	private final String location;
 	private String thumbnailRelPath;
@@ -205,6 +206,14 @@ public class InPreparationRow {
 
 	public void setLifecycleEnd(Date lifecycleEnd) {
 		this.lifecycleEnd = lifecycleEnd;
+	}
+
+	public String getLifecyclePeriod() {
+		return lifecyclePeriod;
+	}
+
+	public void setLifecyclePeriod(String lifecyclePeriod) {
+		this.lifecyclePeriod = lifecyclePeriod;
 	}
 
 	public String getLocation() {

@@ -63,8 +63,6 @@ import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -80,6 +78,8 @@ import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
 import org.olat.modules.curriculum.ui.component.RelevanceSortDelegate;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.event.SelectCurriculumElementRowEvent;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -108,7 +108,6 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 	private CloseableCalloutWindowController calloutCtrl;
 	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
 
-	private final Formatter formatter;
 	private final CurriculumElementImageMapper mapperThumbnail;
 	private final MapperKey mapperThumbnailKey;
 	protected final CurriculumSecurityCallback secCallback;
@@ -123,8 +122,8 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 	protected ImplementationWidgetController(UserRequest ureq, WindowControl wControl, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CurriculumElementDetailsController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.secCallback = secCallback;
-		formatter = Formatter.getInstance(getLocale());
 		mapperThumbnail = CurriculumElementImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, CurriculumElementImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 	}
@@ -374,18 +373,7 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 			row.setTranslatedTechnicalType(type.getDisplayName());
 		}
 
-		String executionPeriod = "";
-		if (curriculumElement.getBeginDate() != null && DateUtils.isSameDay(curriculumElement.getBeginDate(), curriculumElement.getEndDate())) {
-			executionPeriod = formatter.formatDate(curriculumElement.getBeginDate());
-		} else if (curriculumElement.getBeginDate() != null && curriculumElement.getEndDate() != null) {
-			executionPeriod = formatter.formatDate(curriculumElement.getBeginDate())
-					+ " - "
-					+ formatter.formatDate(curriculumElement.getEndDate());
-		} else if (curriculumElement.getBeginDate() != null) {
-			executionPeriod = translate("curriculum.element.from", formatter.formatDate(curriculumElement.getBeginDate()));
-		} else if (curriculumElement.getEndDate() != null) {
-			executionPeriod = translate("curriculum.element.to", formatter.formatDate(curriculumElement.getEndDate()));
-		}
+		String executionPeriod = RepositoyUIFactory.formatExecutionPeriod(getTranslator(), curriculumElement.getBeginDate(), curriculumElement.getEndDate());
 		row.setExecutionPeriod(executionPeriod);
 
 		forgeLinks(row, curriculumElement);

@@ -36,14 +36,15 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementKeyToRepositoryEntryKey;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -68,6 +69,7 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 	public CurriculumElementInfosOutlineController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement rootElement, List<LectureBlock> lectureBlocks) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		VelocityContainer mainVC = createVelocityContainer("curriculum_element_outline");
 		putInitialPanel(mainVC);
 		
@@ -114,7 +116,6 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 		
 		Map<Long,VFSThumbnailInfos> thumbnails = curriculumElementImageMapper.getThumbnails(rows);
 		
-		Formatter formatter = Formatter.getInstance(getLocale());
 		List<OutlineRow> outlineRows = new ArrayList<>(rows.size());
 		for (CurriculumElementRow row : rows) {
 			OutlineRow outlineRow = new OutlineRow(row);
@@ -131,15 +132,7 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 				outlineRow.setNumEvents(numEvents);
 			}
 			
-			StringBuilder dates = new StringBuilder();
-			if (row.getBeginDate() != null) {
-				dates.append(formatter.formatDate(row.getBeginDate()));
-			}
-			if (row.getEndDate() != null && !DateUtils.isSameDay(row.getBeginDate(), row.getEndDate())) {
-				if (!dates.isEmpty()) dates.append(" \u2013 ");
-				dates.append(formatter.formatDate(row.getEndDate()));
-			}
-			outlineRow.setPeriod(dates.toString());
+			outlineRow.setPeriod(RepositoyUIFactory.formatExecutionPeriod(getTranslator(), row.getBeginDate(), row.getEndDate()));
 			
 			outlineRow.setLevels(getLevels(row));
 		}

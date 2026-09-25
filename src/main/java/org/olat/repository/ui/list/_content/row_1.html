@@ -54,9 +54,9 @@
 				<span class="o_warning o_closed">$r.translate("close.ressource.warning")</span>
 			</div>
 		#else
-			#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd || ($row.location  && !${row.location.isEmpty()}))
+			#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $r.isNotEmpty($row.lifecyclePeriod) || ($row.location  && !${row.location.isEmpty()}))
 				<div class="o_lifecycle #if ($row.isActive()) o_active #end o_flex_block_one_line_left">
-					#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
+					#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $r.isNotEmpty($row.lifecyclePeriod))
 						<div class="o_lifecycle_date o_flex_item_fix"><i class="o_icon o_icon-fw o_icon_lifecycle_date"> </i>
 						#if($r.isNotEmpty($row.lifecycleSoftKey) || $r.isNotEmpty($row.lifecycleLabel))
 							#if($r.isNotEmpty($row.lifecycleSoftKey))
@@ -65,12 +65,11 @@
 								$r.escapeHtml($row.lifecycleLabel)
 							#end
 						#else
-							#if($row.lifecycleStart) $r.formatDate($row.lifecycleStart) #end
-							#if($row.lifecycleEnd && !$row.isLifecycleOneDay()) - $r.formatDate($row.lifecycleEnd) #end
+							$r.escapeHtml($row.lifecyclePeriod)
 						#end</div>
 					#end
 					#if($row.location  && !${row.location.isEmpty()})
-						#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
+						#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $r.isNotEmpty($row.lifecyclePeriod))
 							<span class="o_spacer">&middot;</span>
 						#end
 						<div class="o_lifecycle_location o_flex_item_max">

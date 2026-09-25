@@ -28,8 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.condition.ConditionNodeAccessProvider;
@@ -156,15 +154,7 @@ public class RepositoryEntryInfoCardController extends FormBasicController {
 		} else if (StringHelper.containsNonWhitespace(lifecycle.getSoftKey())) {
 			executionPeriod = lifecycle.getSoftKey();
 		} else {
-			if (lifecycle.getValidFrom() != null) {
-				executionPeriod = Formatter.getInstance(getLocale()).formatDate(lifecycle.getValidFrom());
-			}
-			if (lifecycle.getValidTo() != null && !DateUtils.isSameDay(lifecycle.getValidFrom(), lifecycle.getValidTo())) {
-				if (StringHelper.containsNonWhitespace(executionPeriod)) {
-					executionPeriod += " - ";
-				}
-				executionPeriod += Formatter.getInstance(getLocale()).formatDate(lifecycle.getValidTo());
-			}
+			executionPeriod = RepositoyUIFactory.formatExecutionPeriod(getTranslator(), lifecycle.getValidFrom(), lifecycle.getValidTo());
 		}
 		return executionPeriod;
 	}

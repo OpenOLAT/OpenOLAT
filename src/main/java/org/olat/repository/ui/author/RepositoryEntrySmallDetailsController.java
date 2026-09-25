@@ -30,8 +30,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
@@ -77,13 +75,7 @@ public class RepositoryEntrySmallDetailsController extends FormBasicController {
 		if(!lifecycle.isPrivateCycle()) {
 			return StringHelper.containsNonWhitespace(lifecycle.getSoftKey()) ? lifecycle.getSoftKey() : lifecycle.getLabel();
 		}
-		Formatter formatter = Formatter.getInstance(getLocale());
-		String from = lifecycle.getValidFrom() == null ? null : formatter.formatDate(lifecycle.getValidFrom());
-		if(lifecycle.getValidTo() == null || DateUtils.isSameDay(lifecycle.getValidFrom(), lifecycle.getValidTo())) {
-			return from;
-		}
-		String to = formatter.formatDate(lifecycle.getValidTo());
-		return from == null ? to : from + " - " + to;
+		return RepositoyUIFactory.formatExecutionPeriod(getTranslator(), lifecycle.getValidFrom(), lifecycle.getValidTo());
 	}
 
 	@Override

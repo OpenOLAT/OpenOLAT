@@ -147,6 +147,7 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ResourceInfoHelper;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
 import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
@@ -563,6 +564,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	
 	private CatalogEntryRow toRow(CatalogEntry catalogEntry) {
 		CatalogEntryRow row = new CatalogEntryRow(catalogEntry);
+		row.setLifecyclePeriod(RepositoyUIFactory.formatExecutionPeriod(getTranslator(), row.getLifecycleStart(), row.getLifecycleEnd()));
 		
 		Set<String> taxonomyLevelDisplayNames = row.getTaxonomyLevels() == null? null:
 			row.getTaxonomyLevels().stream()

@@ -65,6 +65,7 @@ public class CatalogEntryRow {
 	private final String lifecycleSoftKey;
 	private final Date lifecycleStart;
 	private final Date lifecycleEnd;
+	private String lifecyclePeriod;
 	
 	private final Long curriculumKey;
 	private final Long curriculumElementTypeKey;
@@ -203,8 +204,12 @@ public class CatalogEntryRow {
 		return lifecycleEnd;
 	}
 
-	public boolean isLifecycleOneDay() {
-		return lifecycleStart != null && lifecycleEnd != null && DateUtils.isSameDay(lifecycleStart, lifecycleEnd);
+	public String getLifecyclePeriod() {
+		return lifecyclePeriod;
+	}
+
+	public void setLifecyclePeriod(String lifecyclePeriod) {
+		this.lifecyclePeriod = lifecyclePeriod;
 	}
 
 	public Long getCurriculumKey() {

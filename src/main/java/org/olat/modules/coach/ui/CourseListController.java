@@ -598,6 +598,7 @@ public class CourseListController extends FormBasicController implements Activat
 		boolean showStatistics = runtimeTypesGroup.loadStatistics();
 		CourseStatEntryRow row = new CourseStatEntryRow(entry, educationalType, showStatistics);
 		row.setMarked(marked);
+		row.setLifecyclePeriod(RepositoyUIFactory.formatExecutionPeriod(getTranslator(), row.getLifecycleStart(), row.getLifecycleEnd()));
 
 		if(showStatistics && row.isCourse() && entry.getSuccessStatus() != null) {
 			StringOutput target = new StringOutput();

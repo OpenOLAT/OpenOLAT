@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,6 +55,8 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
@@ -270,6 +273,33 @@ public class RepositoyUIFactory {
 	
 	public static String getPresetI18nKey(RepositoryEntryEducationalType type) {
 		return "educational.type.id.preset." + type.getIdentifier();
+	}
+	
+	/**
+	 * Formats an execution period (course lifecycle or curriculum element dates) for display.
+	 * 
+	 * @param translator A translator with the RepositoryService bundle available
+	 * @param begin The begin date, can be null
+	 * @param end The end date, can be null
+	 * @return The formatted execution period, or null if both dates are null (anytime)
+	 */
+	public static String formatExecutionPeriod(Translator translator, Date begin, Date end) {
+		if(begin != null && end != null && DateUtils.isSameDay(begin, end)) {
+			return Formatter.getInstance(translator.getLocale()).formatDate(begin);
+		}
+		Formatter formatter = Formatter.getInstance(translator.getLocale());
+		String from = begin == null ? null : formatter.formatDate(begin);
+		String to = end == null ? null : formatter.formatDate(end);
+		if(from != null && to != null) {
+			return translator.translate("cif.dates.range", from, to);
+		}
+		if(from != null) {
+			return translator.translate("cif.dates.from", from);
+		}
+		if(to != null) {
+			return translator.translate("cif.dates.to", to);
+		}
+		return null;
 	}
 	
 	public static boolean validateTextElement(TextElement el, boolean mandatory, int maxLength) {

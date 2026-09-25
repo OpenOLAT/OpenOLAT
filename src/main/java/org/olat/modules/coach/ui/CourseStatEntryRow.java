@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.coach.model.CourseStatEntry;
@@ -48,6 +47,7 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 	
 	private String thumbnailRelPath;
 	private String translatedTechnicalType;
+	private String lifecyclePeriod;
 	
 	private long numOfTaxonomyLevels;
 	private final boolean showStatistics;
@@ -188,8 +188,12 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 		return entry.getLifecycleEndDate();
 	}
 	
-	public boolean isLifecycleOneDay() {
-		return getLifecycleStart() != null && getLifecycleEnd() != null && DateUtils.isSameDay(getLifecycleStart(), getLifecycleEnd());
+	public String getLifecyclePeriod() {
+		return lifecyclePeriod;
+	}
+
+	public void setLifecyclePeriod(String lifecyclePeriod) {
+		this.lifecyclePeriod = lifecyclePeriod;
 	}
 	
 	public String getAuthors() {

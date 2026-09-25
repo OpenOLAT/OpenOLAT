@@ -67,9 +67,8 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
@@ -98,6 +97,8 @@ import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -178,6 +179,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback,
 			CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
@@ -413,16 +415,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			mainVC.contextPut("typeDisplayName", curriculumElement.getType().getDisplayName());
 		}
 		
-		Formatter formatter = Formatter.getInstance(getLocale());
-		StringBuilder dates = new StringBuilder();
-		if(curriculumElement.getBeginDate() != null) {
-			dates.append(formatter.formatDate(curriculumElement.getBeginDate()));
-		}
-		if(curriculumElement.getEndDate() != null && !DateUtils.isSameDay(curriculumElement.getBeginDate(), curriculumElement.getEndDate())) {
-			if(!dates.isEmpty()) dates.append(" \u2013 ");
-			dates.append(formatter.formatDate(curriculumElement.getEndDate()));
-		}
-		mainVC.contextPut("dates", dates.toString());
+		String dates = RepositoyUIFactory.formatExecutionPeriod(getTranslator(), curriculumElement.getBeginDate(), curriculumElement.getEndDate());
+		mainVC.contextPut("dates", dates);
 	}
 	
 	private void updateRepositoryEntries() {

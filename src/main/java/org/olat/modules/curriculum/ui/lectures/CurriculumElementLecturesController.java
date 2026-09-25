@@ -40,7 +40,6 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
-import org.olat.modules.curriculum.ui.CurriculumUIFactory;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRateWarning;
 import org.olat.modules.lecture.LectureService;
@@ -50,6 +49,8 @@ import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.ui.coach.LecturesSearchFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +95,7 @@ public class CurriculumElementLecturesController extends BasicController {
 	public CurriculumElementLecturesController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel breadcrumbPanel,
 			Curriculum curriculum, CurriculumElement element, boolean withDescendants, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean adminProps = securityModule.isUserAllowedAdminProps(roles);
@@ -147,7 +149,7 @@ public class CurriculumElementLecturesController extends BasicController {
 		
 		mainVC.contextPut("elementName", element.getDisplayName());
 		mainVC.contextPut("elementIdentifier", element.getIdentifier());
-		mainVC.contextPut("elementPeriod", CurriculumUIFactory.formatExecutionPeriod(getTranslator(), element));
+		mainVC.contextPut("elementPeriod", RepositoyUIFactory.formatExecutionPeriod(getTranslator(), element.getBeginDate(), element.getEndDate()));
 	}
 	
 	private void calculateWarningRates(List<LectureBlockIdentityStatistics> rawStatistics, List<LectureBlockIdentityStatistics> aggregatedStatistics) {

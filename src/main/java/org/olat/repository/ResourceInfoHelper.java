@@ -31,9 +31,8 @@ import org.olat.core.commons.fullWebApp.SeoMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
-import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -42,6 +41,7 @@ import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.ui.RepositoyUIFactory;
 
 /**
  * Helper to build SEO meta descriptions for repository entries and
@@ -74,9 +74,8 @@ public class ResourceInfoHelper {
 		// Lifecycle dates
 		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
 		if (lifecycle != null) {
-			Formatter formatter = Formatter.getInstance(locale);
 			if (lifecycle.isPrivateCycle()) {
-				appendDates(sb, formatter, lifecycle.getValidFrom(), lifecycle.getValidTo());
+				appendDates(sb, locale, lifecycle.getValidFrom(), lifecycle.getValidTo());
 			} else if (StringHelper.containsNonWhitespace(lifecycle.getLabel())) {
 				appendSeparator(sb);
 				sb.append(lifecycle.getLabel());
@@ -102,8 +101,7 @@ public class ResourceInfoHelper {
 		// Teaser or description
 		appendText(sb, curriculumElement.getTeaser(), curriculumElement.getDescription());
 		// Dates
-		Formatter formatter = Formatter.getInstance(locale);
-		appendDates(sb, formatter, curriculumElement.getBeginDate(), curriculumElement.getEndDate());
+		appendDates(sb, locale, curriculumElement.getBeginDate(), curriculumElement.getEndDate());
 		// Taxonomy levels
 		List<TaxonomyLevel> levels = curriculumElement.getTaxonomyLevels().stream()
 				.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
@@ -272,16 +270,12 @@ public class ResourceInfoHelper {
 		}
 	}
 
-	private static void appendDates(StringBuilder sb, Formatter formatter, Date from, Date to) {
-		if (from != null || to != null) {
+	private static void appendDates(StringBuilder sb, Locale locale, Date from, Date to) {
+		Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
+		String period = RepositoyUIFactory.formatExecutionPeriod(translator, from, to);
+		if (StringHelper.containsNonWhitespace(period)) {
 			appendSeparator(sb);
-			if (from != null && to != null && !DateUtils.isSameDay(from, to)) {
-				sb.append(formatter.formatDate(from)).append(" - ").append(formatter.formatDate(to));
-			} else if (from != null) {
-				sb.append(formatter.formatDate(from));
-			} else {
-				sb.append(formatter.formatDate(to));
-			}
+			sb.append(period);
 		}
 	}
 

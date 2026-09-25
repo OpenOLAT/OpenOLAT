@@ -43,6 +43,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ui.OpenAccessOfferController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -88,6 +89,7 @@ public class ImplementationHeaderController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			InPreparationRow row = new InPreparationRow(element.getKey(), element, null,  false);
+			row.setLifecyclePeriod(RepositoyUIFactory.formatExecutionPeriod(getTranslator(), row.getLifecycleStart(), row.getLifecycleEnd()));
 			layoutCont.contextPut("row", row);
 			
 			String imageUrl = curriculumElementImageMapper.getThumbnailURL(curriculumElementImageMapperKey.getUrl(), element);
