@@ -305,7 +305,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		nextButton.setIconRightCSS("o_icon o_icon_next_step o_icon-fw");
 		nextButton.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		finishButton = new FormLinkImpl("finish");
-		finishButton.setCustomEnabledLinkCSS("btn btn-default o_wizard_button_finish");
+		finishButton.setCustomEnabledLinkCSS("btn btn-primary o_wizard_button_finish");
 		finishButton.setCustomDisabledLinkCSS("btn btn-default o_wizard_button_finish");
 		finishButton.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		cancelButton = new FormLinkImpl("cancel");
