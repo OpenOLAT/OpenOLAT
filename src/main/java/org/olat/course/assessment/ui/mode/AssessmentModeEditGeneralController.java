@@ -154,7 +154,9 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		}
 		leadTimeEl = uifactory.addIntegerElement("mode.leadTime", leadTime, formLayout);
 		leadTimeEl.setElementCssClass("o_sel_assessment_mode_leadtime");
+		leadTimeEl.setMandatory(true);
 		leadTimeEl.setDisplaySize(3);
+		leadTimeEl.setMinValueCheck(0, "form.error.positive.integer");
 		leadTimeEl.setEnabled((status == Status.none || status == Status.leadtime)
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.leadTime));
 		leadTimeEl.setInlineValidationOn(true);
@@ -174,7 +176,9 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		}
 		followupTimeEl = uifactory.addIntegerElement("mode.followupTime", followupTime, formLayout);
 		followupTimeEl.setElementCssClass("o_sel_assessment_mode_followuptime");
+		followupTimeEl.setMandatory(true);
 		followupTimeEl.setDisplaySize(3);
+		followupTimeEl.setMinValueCheck(0, "form.error.positive.integer");
 		followupTimeEl.setEnabled(status != Status.end
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.followupTime));
 		
@@ -272,6 +276,23 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 				&& beginEl.getDate().compareTo(endEl.getDate()) >= 0) {
 			beginEl.setErrorKey("error.begin.after.end");
 			endEl.setErrorKey("error.begin.after.end");
+			allOk &= false;
+		}
+		
+		allOk &= validateIntegerElement(followupTimeEl);
+		allOk &= validateIntegerElement(leadTimeEl);
+		
+		return allOk;
+	}
+	
+	private boolean validateIntegerElement(IntegerElement element) {
+		boolean allOk = true;
+		
+		element.clearError();
+		if(!StringHelper.containsNonWhitespace(element.getValue())) {
+			element.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		} else if(!element.validate()) {
 			allOk &= false;
 		}
 		
