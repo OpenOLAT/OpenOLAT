@@ -836,6 +836,45 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		Assert.assertEquals("room.inactive", body.get("code"));
 	}
 
+	@Test
+	public void putRoom_roundTripOfGetBody_withExistingBookingInInactiveRoom_isNoOp()
+	throws IOException, URISyntaxException {
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
+		LectureBlock block = createLectureBlock(entry);
+		Building building = roomManagementService.createBuilding("BldInactiveExisting_" + UUID.randomUUID(), admin.getIdentity());
+		Room activeRoom = roomManagementService.createRoom(building, "RoomInactiveExistingActive_" + UUID.randomUUID(), admin.getIdentity());
+		Room roomToDeactivate = roomManagementService.createRoom(building, "RoomInactiveExistingDeact_" + UUID.randomUUID(), admin.getIdentity());
+		roomManagementService.bookRoom(activeRoom, block, block.getStartDate(), block.getEndDate(), 0, 0, admin.getIdentity());
+		roomManagementService.bookRoom(roomToDeactivate, block, block.getStartDate(), block.getEndDate(), 0, 0, admin.getIdentity());
+		dbInstance.commitAndCloseSession();
+
+		roomToDeactivate.setStatus(RoomStatus.inactive);
+		roomToDeactivate = roomManagementService.updateRoom(roomToDeactivate, admin.getIdentity());
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection(admin);
+		URI uri = buildRoomUri(entry, block);
+
+		HttpResponse getResponse = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
+		Assert.assertEquals(200, getResponse.getStatusLine().getStatusCode());
+		List<RoomBookingVO> body = conn.parseList(getResponse, RoomBookingVO.class);
+		Assert.assertEquals(2, body.size());
+
+		int logCountBefore = countLogsForRoom(roomToDeactivate);
+
+		HttpResponse putResponse = putBookings(conn, uri, body.toArray(new RoomBookingVO[0]));
+		Assert.assertEquals(200, putResponse.getStatusLine().getStatusCode());
+		List<RoomBookingVO> result = conn.parseList(putResponse, RoomBookingVO.class);
+		List<Long> roomKeys = result.stream().map(RoomBookingVO::getRoomKey).toList();
+		Assert.assertEquals(2, result.size());
+		Assert.assertTrue(roomKeys.contains(activeRoom.getKey()));
+		Assert.assertTrue(roomKeys.contains(roomToDeactivate.getKey()));
+
+		int logCountAfter = countLogsForRoom(roomToDeactivate);
+		Assert.assertEquals("An unchanged round trip including an existing booking in a now-inactive room must not write a new log row",
+				logCountBefore, logCountAfter);
+	}
+
 	// ---------- PUT .../room : buffers ----------
 
 	@Test

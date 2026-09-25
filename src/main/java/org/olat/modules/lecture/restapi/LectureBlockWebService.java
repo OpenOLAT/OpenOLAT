@@ -608,10 +608,15 @@ public class LectureBlockWebService {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 
+		List<RoomBooking> existing = roomManagementService.getBookings(lectureBlock);
+		Set<Long> existingRoomKeys = existing.stream()
+				.map(b -> b.getRoom().getKey())
+				.collect(Collectors.toSet());
+
 		Map<Long, RoomBookingVO> target = new LinkedHashMap<>();
 		Map<Long, Room> resolvedRooms = new LinkedHashMap<>();
 		for (RoomBookingVO vo : vos) {
-			RoomResolution resolution = resolveRoom(vo, httpRequest);
+			RoomResolution resolution = resolveRoom(vo, existingRoomKeys, httpRequest);
 			if (resolution instanceof RoomResolution.Failed failed) {
 				return failed.response();
 			}
@@ -625,10 +630,6 @@ public class LectureBlockWebService {
 		}
 
 		Identity doer = getIdentity(httpRequest);
-		List<RoomBooking> existing = roomManagementService.getBookings(lectureBlock);
-		Set<Long> existingRoomKeys = existing.stream()
-				.map(b -> b.getRoom().getKey())
-				.collect(Collectors.toSet());
 
 		for (RoomBooking booking : existing) {
 			RoomBookingVO vo = target.get(booking.getRoom().getKey());
@@ -708,7 +709,7 @@ public class LectureBlockWebService {
 		record Failed(Response response) implements RoomResolution {}
 	}
 
-	private RoomResolution resolveRoom(RoomBookingVO vo, HttpServletRequest httpRequest) {
+	private RoomResolution resolveRoom(RoomBookingVO vo, Set<Long> existingRoomKeys, HttpServletRequest httpRequest) {
 		if (vo == null) {
 			return new RoomResolution.Failed(Response.status(Status.BAD_REQUEST).build());
 		}
@@ -747,7 +748,10 @@ public class LectureBlockWebService {
 			return new RoomResolution.Failed(Response.status(Status.BAD_REQUEST).build());
 		}
 
-		if (room.getStatus() != RoomStatus.active) {
+		// An inactive room can no longer be booked, but a booking the block already has in it must
+		// survive an unchanged read-then-write round trip (OO-9734): only reject inactive rooms when
+		// they would be a NEW booking on this block, same as EditLectureBlockController.syncRoomBookings().
+		if (room.getStatus() != RoomStatus.active && !existingRoomKeys.contains(room.getKey())) {
 			String body = "{\"code\":\"room.inactive\"}";
 			return new RoomResolution.Failed(Response.status(Status.CONFLICT).entity(body).type(MediaType.APPLICATION_JSON).build());
 		}
