@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
@@ -74,9 +73,9 @@ import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
-import org.olat.resource.accesscontrol.ui.OfferSurveyExportFactory.SurveyExportInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.author.AuthorListConfiguration;
@@ -85,7 +84,9 @@ import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferComparator;
 import org.olat.resource.accesscontrol.OfferToSurvey;
+import org.olat.resource.accesscontrol.ui.OfferSurveyExportFactory.SurveyExportInfos;
 import org.olat.resource.accesscontrol.ui.OfferSurveyListTableModel.OfferSurveyCols;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -173,6 +174,7 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OfferSurveyCols.stepName));
 
 		offers = acService.findOfferByResource(resource, true, null, null);
+		offers.sort(new OfferComparator());
 		OfferSurveyPositionCellRenderer positionRenderer = new OfferSurveyPositionCellRenderer();
 		int offerColumnIndex = OfferSurveyCols.values().length;
 		for (Offer offer : offers) {
@@ -190,7 +192,7 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 		tableModel = new OfferSurveyListTableModel(columnsModel, getLocale(), offers);
 		tableEl = uifactory.addTableElement(getWindowControl(), "offerSurveyTable", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(false);
-		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(OfferSurveyCols.title.name(), true)));
+		tableEl.setSortSettings(new FlexiTableSortOptions(false, new SortKey(OfferSurveyCols.title.name(), true)));
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
 
@@ -387,8 +389,10 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 		tableConfig.setSelectRepositoryEntry(SelectionMode.single);
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
+		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.embedded));
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
 		searchParams.addResourceTypes(EvaluationFormResource.TYPE_NAME);
+		searchParams.setRuntimeTypes(tableConfig.getAllowedRuntimeTypes());
 
 		formSearchCtrl = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
 		listenTo(formSearchCtrl);

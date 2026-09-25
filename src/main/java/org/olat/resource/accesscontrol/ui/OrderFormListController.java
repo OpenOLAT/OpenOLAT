@@ -132,7 +132,7 @@ public class OrderFormListController extends FormBasicController {
 		tableModel = new OrderFormListTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "orderFormTable", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(false);
-		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(OrderFormCols.submissionDate.name(), false)));
+		tableEl.setSortSettings(new FlexiTableSortOptions(false, new SortKey(OrderFormCols.submissionDate.name(), false)));
 	}
 
 	private void loadModel() {

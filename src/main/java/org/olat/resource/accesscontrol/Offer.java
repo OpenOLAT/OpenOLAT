@@ -23,6 +23,7 @@ package org.olat.resource.accesscontrol;
 import java.util.Date;
 import java.util.Set;
 
+import org.olat.core.id.CreateInfo;
 import org.olat.resource.OLATResource;
 
 /**
@@ -34,7 +35,7 @@ import org.olat.resource.OLATResource;
  * Initial Date:  14 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface Offer extends OfferRef {
+public interface Offer extends OfferRef, CreateInfo {
 	
 	public OLATResource getResource();
 	

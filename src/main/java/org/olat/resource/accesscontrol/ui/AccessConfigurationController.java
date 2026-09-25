@@ -23,6 +23,7 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +78,7 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferComparator;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.OfferToSurvey;
 import org.olat.resource.accesscontrol.Price;
@@ -448,6 +450,7 @@ public class AccessConfigurationController extends FormBasicController {
 				List<Organisation> organisations = newMethodCtrl.getOfferOrganisations();
 				AccessInfo infos = addOffer(offerAccess, organisations, 0);
 				infos.setPendingOfferSurveys(newMethodCtrl.getPendingOfferSurveys());
+				sortOffers();
 				updateCatalogOverviewUI();
 				offersContainer.setDirty(true);
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -577,6 +580,11 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 		}
 		
+		sortOffers();
+	}
+
+	private void sortOffers() {
+		accessInfos.sort(Comparator.comparing(AccessInfo::getOffer, Comparator.nullsLast(new OfferComparator())));
 	}
 
 	private void replace(OfferAccess link, Collection<Organisation> offerOrganisations, List<EvaluationFormSurvey> forms) {
@@ -594,6 +602,7 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		if(!updated) {
 			addOffer(link, offerOrganisations, currentNumOfOrders);
+			sortOffers();
 		} else {
 			offersContainer.setDirty(true);
 		}
@@ -946,6 +955,7 @@ public class AccessConfigurationController extends FormBasicController {
 			listenTo(cmc);
 		} else {
 			addOffer(link, defaultOfferOrganisations, 0);
+			sortOffers();
 		}
 	}
 	

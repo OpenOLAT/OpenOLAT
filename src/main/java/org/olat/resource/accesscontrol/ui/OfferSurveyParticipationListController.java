@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -34,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -165,9 +167,10 @@ public class OfferSurveyParticipationListController extends FormBasicController 
 		columnsModel.addFlexiColumnModel(viewColumn);
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(OfferSurveyParticipationCols.tools));
 
-		tableModel = new OfferSurveyParticipationListTableModel(columnsModel);
+		tableModel = new OfferSurveyParticipationListTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "offerSurveyParticipationTable", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(false);
+		tableEl.setSortSettings(new FlexiTableSortOptions(false, new SortKey(OfferSurveyParticipationCols.submissionDate.name(), false)));
 
 		initFilters();
 		initFilterTabs(ureq);

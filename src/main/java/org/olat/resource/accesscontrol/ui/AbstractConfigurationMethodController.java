@@ -383,6 +383,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		Offer offer = link.getOffer();
 		OLATResource resource = offer.getResource();
 		List<EvaluationFormSurvey> surveys = acService.loadOfferSurveys(resource);
+		surveyCont.setVisible(!surveys.isEmpty());
 		List<OfferToSurvey> offerToSurveys = offer.getKey() != null? acService.loadOfferToSurveys(offer): List.of();
 		Map<Long, OfferToSurvey> offerToSurveyBySurveyKey = offerToSurveys.stream()
 				.collect(Collectors.toMap(ots -> ots.getSurvey().getKey(), ots -> ots));

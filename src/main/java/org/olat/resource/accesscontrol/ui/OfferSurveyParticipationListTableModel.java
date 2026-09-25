@@ -19,9 +19,15 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  *
@@ -29,12 +35,22 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class OfferSurveyParticipationListTableModel extends DefaultFlexiTableDataModel<OfferSurveyParticipationRow> {
+public class OfferSurveyParticipationListTableModel extends DefaultFlexiTableDataModel<OfferSurveyParticipationRow>
+		implements SortableFlexiTableDataModel<OfferSurveyParticipationRow> {
 
 	private static final OfferSurveyParticipationCols[] COLS = OfferSurveyParticipationCols.values();
 
-	public OfferSurveyParticipationListTableModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+
+	public OfferSurveyParticipationListTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
+	}
+
+	@Override
+	public void sort(SortKey orderBy) {
+		List<OfferSurveyParticipationRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		super.setObjects(rows);
 	}
 
 	@Override
@@ -43,6 +59,7 @@ public class OfferSurveyParticipationListTableModel extends DefaultFlexiTableDat
 		return getValueAt(participationRow, col);
 	}
 
+	@Override
 	public Object getValueAt(OfferSurveyParticipationRow row, int col) {
 		if (col >= 0 && col < COLS.length) {
 			return switch (COLS[col]) {
@@ -58,7 +75,7 @@ public class OfferSurveyParticipationListTableModel extends DefaultFlexiTableDat
 		return row.getIdentityProp(propPos);
 	}
 
-	public enum OfferSurveyParticipationCols implements FlexiColumnDef {
+	public enum OfferSurveyParticipationCols implements FlexiSortableColumnDef {
 		offer("offer.survey.offer.column"),
 		order("offer.survey.participation.order"),
 		status("offer.survey.participation.status"),
@@ -70,6 +87,16 @@ public class OfferSurveyParticipationListTableModel extends DefaultFlexiTableDat
 
 		private OfferSurveyParticipationCols(String i18nKey) {
 			this.i18nKey = i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return this != view && this != tools;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 
 		@Override
