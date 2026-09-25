@@ -216,7 +216,7 @@ public class GroupTaskConfigurationPage {
 	}
 	
 	public GroupTaskConfigurationPage saveAssessmentOptions() {
-		By saveBy = By.cssSelector(".o_sel_course_ms_form button.btn.btn-primary");
+		By saveBy = By.cssSelector(".o_sel_course_ms_buttons button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitBusy(browser);
 		return this;

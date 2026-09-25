@@ -150,7 +150,7 @@ public class AssessmentCEConfigurationPage {
 	}
 	
 	public GradeConfigurationPage editGradingScale() {
-		By editScaleBy = By.cssSelector("fieldset.o_sel_course_ms a.o_sel_grade_edit_scale");
+		By editScaleBy = By.cssSelector("fieldset.o_sel_course_ms_grading_form a.o_sel_grade_edit_scale");
 		OOGraphene.click(editScaleBy, browser);
 		OOGraphene.waitModalDialog(browser);
 		return new GradeConfigurationPage(browser)

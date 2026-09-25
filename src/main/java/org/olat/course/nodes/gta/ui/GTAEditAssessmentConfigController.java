@@ -228,6 +228,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		// Buttons
 		FormLayoutContainer footerCont = uifactory.addDefaultFormLayout("footer", null, formLayout);
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, footerCont);
+		buttonsCont.setElementCssClass("o_sel_course_ms_buttons");
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 
