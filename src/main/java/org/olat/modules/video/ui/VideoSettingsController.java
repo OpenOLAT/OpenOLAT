@@ -37,7 +37,6 @@ import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
-import org.olat.repository.ui.settings.RepositoryEntryInfoController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,15 +49,12 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	private RepositoryEntry entry;
 	private VideoMeta videoMetadata;
 
-	private RepositoryEntryInfoController infoCtrl;
 	private VideoMetaDataWrapperController videoMetadataController;
 	private VideoPosterEditController posterEditController;
 	private VideoTrackEditController trackEditController;
 	private VideoQualityTableFormController qualityEditController;
 	private VideoDownloadSettingsController downloadSettingsController;
 
-	private Link infoLink;
-	private Link metaDataLink;
 	private Link posterEditLink;
 	private Link trackEditLink;
 	private Link qualityConfigLink;
@@ -76,15 +72,11 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) {
-			doOpenInfos(ureq);
-		} else {
+		super.activate(ureq, entries, state);
+		
+		if(entries != null && !entries.isEmpty()) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if("Info".equalsIgnoreCase(type)) {
-				doOpenInfos(ureq);
-			} else if("Metadata".equalsIgnoreCase(type)) {
-				doOpenMetadata(ureq);
-			} else if("Poster".equalsIgnoreCase(type)) {
+			if("Poster".equalsIgnoreCase(type)) {
 				doOpenPosterConfig(ureq);
 			} else if("Subtitles".equalsIgnoreCase(type)) {
 				doOpenSubtitles(ureq);
@@ -92,21 +84,13 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 				doOpenQualities(ureq);
 			} else if("Download".equalsIgnoreCase(type)) {
 				doOpenDownload(ureq);
-			} else {
-				super.activate(ureq, entries, state);
 			}
 		}
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(infoLink == source) {
-			cleanUp();
-			doOpenInfos(ureq);
-		} else if(metaDataLink == source) {
-			cleanUp();
-			doOpenMetadata(ureq);
-		} else if(posterEditLink == source) {
+		if(posterEditLink == source) {
 			cleanUp();
 			doOpenPosterConfig(ureq);
 		} else if(trackEditLink == source) {
@@ -127,14 +111,12 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 		removeAsListenerAndDispose(qualityEditController);
 		removeAsListenerAndDispose(trackEditController);
 		removeAsListenerAndDispose(posterEditController);
-		removeAsListenerAndDispose(infoCtrl);
 		
 		downloadSettingsController = null;
 		videoMetadataController = null;
 		qualityEditController = null;
 		trackEditController = null;
 		posterEditController = null;
-		infoCtrl = null;
 		
 		super.cleanUp();
 	}
@@ -153,17 +135,6 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 		initQualities();
 		initDownload();
 		initOptions();
-	}
-	
-	@Override
-	protected void initInfos() {
-		infoLink = LinkFactory.createLink("details.info", getTranslator(), this);
-		infoLink.setElementCssClass("o_sel_infos");
-		buttonsGroup.addButton(infoLink, false);
-		
-		metaDataLink = LinkFactory.createLink("details.metadata", getTranslator(), this);
-		metaDataLink.setElementCssClass("o_sel_metadata");
-		buttonsGroup.addButton(metaDataLink, false);
 	}
 	
 	private void initPoster() {
@@ -195,23 +166,13 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	}
 	
 	@Override
-	protected void doOpenInfos(UserRequest ureq) {
-		entry = repositoryService.loadByKey(entry.getKey());
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Info"), null);
-		infoCtrl = new RepositoryEntryInfoController(ureq, swControl, entry, readOnly);
-		listenTo(infoCtrl);
-		mainPanel.setContent(infoCtrl.getInitialComponent());
-		buttonsGroup.setSelectedButton(infoLink);
-	}
-	
-	@Override
 	protected void doOpenMetadata(UserRequest ureq) {
 		entry = repositoryService.loadByKey(entry.getKey());
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Metadata"), null);
 		videoMetadataController = new VideoMetaDataWrapperController(ureq, swControl, entry, videoMetadata);
 		listenTo(videoMetadataController);
 		mainPanel.setContent(videoMetadataController.getInitialComponent());
-		buttonsGroup.setSelectedButton(metaDataLink);
+		buttonsGroup.setSelectedButton(metadataLink);
 	}
 
 	@Override
@@ -260,7 +221,7 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 			mainPanel.setContent(downloadSettingsController.getInitialComponent());
 			buttonsGroup.setSelectedButton(downloadConfigLink);
 		} else {
-			doOpenInfos(ureq);
+			doOpenMetadata(ureq);
 		}
 	}
 }

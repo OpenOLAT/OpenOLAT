@@ -50,7 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class FeedSettingsController extends RepositoryEntrySettingsController {
 	
 	private Link quotaLink;
-	private Link metadataLink;
 	private Link optionsLink;
 	
 	private Controller quotaCtrl;
@@ -84,8 +83,6 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Quota".equalsIgnoreCase(type)) {
 				doOpenQuota(ureq);
-			} else if("Metadata".equalsIgnoreCase(type)) {
-				doOpenMetadata(ureq);
 			}
 		}
 	}

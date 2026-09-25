@@ -76,10 +76,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntrySettingsController extends BasicController implements Activateable2, TooledController {
 	
-	private Link infoLink;
+	protected Link infoLink;
 	protected Link accessLink;
 	private Link catalogLink;
-	private Link metadataLink;
+	protected Link metadataLink;
 	protected Link finishedAccessLink;
 	private Dropdown status;
 	protected final StackedPanel mainPanel;
