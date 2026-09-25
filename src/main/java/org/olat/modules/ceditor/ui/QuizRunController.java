@@ -955,10 +955,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 		if (quizQuestion == null || !StringHelper.containsNonWhitespace(quizQuestion.getType())) {
 			return false;
 		}
-		QTI21QuestionType type = QTI21QuestionType.safeValueOf(quizQuestion.getType());
-		return type == QTI21QuestionType.essay
-				|| type == QTI21QuestionType.upload
-				|| type == QTI21QuestionType.drawing;
+		return QTI21QuestionType.safeValueOf(quizQuestion.getType()).isManuallyGradedType();
 	}
 
 	private enum State {

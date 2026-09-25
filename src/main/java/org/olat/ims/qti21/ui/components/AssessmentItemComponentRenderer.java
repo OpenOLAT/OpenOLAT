@@ -37,6 +37,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
@@ -187,7 +188,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			if (component.isShowPageModeSolution()) {
 				renderItemStatusMessage(renderer, "solution", "solution", sb, translator);
 			} else {
-				renderAnswerCorrectnessFeedback(renderer, sb, itemSessionState, translator);
+				renderAnswerCorrectnessFeedback(renderer, sb, assessmentItem, itemSessionState, translator);
 			}
 		}
 		if(component.isShowQuestionLevel()) {
@@ -351,7 +352,16 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 
-	private void renderAnswerCorrectnessFeedback(AssessmentRenderer renderer, StringOutput sb, ItemSessionState itemSessionState, Translator translator) {
+	private void renderAnswerCorrectnessFeedback(AssessmentRenderer renderer, StringOutput sb, AssessmentItem assessmentItem,
+			ItemSessionState itemSessionState, Translator translator) {
+		// Manually graded types (essay, upload, drawing) have no auto-gradable response processing:
+		// SCORE stays at its default (e.g. 0) regardless of the actual (e.g. AI-driven) assessment, so
+		// comparing it to MAXSCORE would always show "incorrect" here. Leave the badge empty instead and
+		// let the actual (possibly asynchronous) grading feedback shown elsewhere be the only verdict the
+		// learner sees for these types (OO-9748).
+		if (QTI21QuestionType.getType(assessmentItem).isManuallyGradedType()) {
+			return;
+		}
 		if (itemSessionState.isRespondedValidly()) {
 			if (itemSessionState.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER) instanceof FloatValue maxScore) {
 				if (itemSessionState.getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER) instanceof FloatValue score) {
