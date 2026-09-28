@@ -22,10 +22,7 @@ package org.olat.course.nodes.cl.ui;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -56,17 +53,14 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	private static final String PANE_TAB_CHECKBOX = "pane.tab.checkbox";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	
-	private CheckListBoxListEditController checkboxListEditCtrl;
-	private CheckListConfigurationController configurationCtrl;
-	private HighScoreEditController highScoreNodeConfigController;
-	private CheckListCourseNode courseNode;
+	private final CheckListBoxListEditController checkboxListEditCtrl;
+	private final CheckListConfigurationController configurationCtrl;
+	private final HighScoreEditController highScoreNodeConfigController;
+	private final CheckListCourseNode courseNode;
 
 	private TabbedPane myTabbedPane;
-	private VelocityContainer configurationVC;
-	private Link enableEditingLink;
-	private boolean hasAssessments;
 	
-	private ICourse course;
+	private final ICourse course;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -86,27 +80,17 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 		
 		checkboxListEditCtrl = new CheckListBoxListEditController(ureq, wControl, course, courseNode, numOfChecks > 0);
 		listenTo(checkboxListEditCtrl);
+
 		configurationCtrl = new CheckListConfigurationController(ureq, wControl, course, courseNode,
 				NodeAccessType.of(course), numOfChecks > 0);
 		listenTo(configurationCtrl);
 		
-		configurationVC = createVelocityContainer("edit_clconfig");
-		configurationVC.put("assessmentform", configurationCtrl.getInitialComponent());
-		enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", configurationVC, this);
-		enableEditingLink.setPrimary(true);
-		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
-
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode.getModuleConfiguration(), course);
 		listenTo(highScoreNodeConfigController);
 
-		// if there are already assessments, make read only
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		hasAssessments = assessmentService.hasAssessments(courseEntry, courseNode.getIdent());
-		configurationVC.contextPut("hasAssessments", Boolean.valueOf(hasAssessments));
-		if (hasAssessments) {
-			configurationCtrl.setDisplayOnly(true);
-		}
-		configurationVC.contextPut("isOverwriting", Boolean.valueOf(false));
+		boolean hasAssessments = assessmentService.hasAssessments(courseEntry, courseNode.getIdent());
+		configurationCtrl.setHasAssessments(hasAssessments);
 	}
 
 	@Override
@@ -128,7 +112,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CLCONFIG), configurationVC);
+		tabbedPane.addTab(translate(PANE_TAB_CLCONFIG), configurationCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_CHECKBOX), checkboxListEditCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();
@@ -136,10 +120,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == enableEditingLink) {
-			configurationCtrl.setDisplayOnly(false);
-			configurationVC.contextPut("isOverwriting", Boolean.TRUE);
-		}
+		//
 	}
 
 	@Override

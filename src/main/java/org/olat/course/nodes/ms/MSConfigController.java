@@ -176,7 +176,7 @@ public class MSConfigController extends FormBasicController {
 	}
 	
 	private void setDisplayOnly(boolean displayOnly) {
-		FormItem assessmentFormItems[] = {evaluationFormEnabledEl, evaluationFormNotChoosen, evaluationFormLink, 
+		FormItem[] assessmentFormItems = {evaluationFormEnabledEl, evaluationFormNotChoosen, evaluationFormLink, 
 				chooseLink, replaceLink, editLink, scoreEnableEl,scoreTypeEl,scaleEl,minEl, maxEl,gradeEnabledEl, 
 				gradeAutoEl, gradeScaleCont, gradePassedEl, passedEl, passedTypeEl, cutEl, 
 				incorporateInCourseAssessmentEl, scoreScalingEl

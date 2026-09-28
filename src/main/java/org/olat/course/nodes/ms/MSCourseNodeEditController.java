@@ -57,8 +57,8 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	private final MSCourseNode msNode;
 	private final ICourse course;
-	private MSConfigController configController;
-	private HighScoreEditController highScoreNodeConfigController;
+	private final MSConfigController configController;
+	private final HighScoreEditController highScoreNodeConfigController;
 
 	private TabbedPane myTabbedPane;
 	
@@ -72,7 +72,6 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	 * 
 	 * @param ureq The user request
 	 * @param msNode The manual scoring course node
-	 * @param course
 	 */
 	public MSCourseNodeEditController(UserRequest ureq, WindowControl wControl, MSCourseNode msNode, ICourse course) {
 		super(ureq, wControl);

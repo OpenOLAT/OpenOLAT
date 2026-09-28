@@ -20,9 +20,9 @@
 package org.olat.course.nodes.cl.ui;
 
 import java.util.Date;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -37,7 +37,9 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -100,6 +102,8 @@ public class CheckListConfigurationController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private GradeScaleEditController gradeScaleCtrl;
+	private FormLayoutContainer warningCont;
+	private Link enableEditingLink;
 	
 	private RepositoryEntry courseEntry;
 	private CourseNode courseNode;
@@ -165,8 +169,20 @@ public class CheckListConfigurationController extends FormBasicController {
 		}
 		initDueDatesForm(dueDatesCont);
 
+		warningCont = FormLayoutContainer.createCustomFormLayout("warningCont", getTranslator(),
+				velocity_root + "/checklist_warning.html");
+		warningCont.setRootForm(mainForm);
+		formLayout.add(warningCont);
+
 		FormLayoutContainer gradingCont = uifactory.addDefaultFormLayout("config.grading", null, formLayout);
 		initGradingForm(gradingCont);
+		initAssessmentForm(gradingCont);
+
+		if(!wizard) {
+			buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			gradingCont.add(buttonsLayout);
+			uifactory.addFormSubmitButton("submit", "submit", buttonsLayout);
+		}
 	}
 
 	private void initWizardForm(FormItemContainer formLayout) {
@@ -205,9 +221,6 @@ public class CheckListConfigurationController extends FormBasicController {
 	}
 
 	private void initGradingForm(FormLayoutContainer formLayout) {
-		formLayout.setFormTitle(translate("grading.configuration.title"));
-		String[] theValues = new String[] { "" };
-		//points
 		Boolean scoreGrantedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		Float minVal = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 		Float maxVal = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
@@ -306,7 +319,7 @@ public class CheckListConfigurationController extends FormBasicController {
 			outputEl.select(outputKeys[0], true);
 		}
 		
-		uifactory.addSpacerElement("spacer-passed", formLayout, false);
+		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("last-spacer", formLayout, false);
 		
 		// course assesment
 		boolean ignoreInCourseAssessment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
@@ -319,43 +332,52 @@ public class CheckListConfigurationController extends FormBasicController {
 		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scaling, formLayout);
 		scoreScalingEl.setExampleKey("score.scaling.example", null);
 		
-		incorporateInCourseAssessmentSpacer = uifactory.addSpacerElement("spacer3", formLayout, false);
-
-		//comment
-		commentEl = uifactory.addCheckboxesHorizontal("comment", "config.comment", formLayout, onKeys, theValues);
-		Boolean commentBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
-		if(commentBool != null && commentBool.booleanValue()) {
-			commentEl.select(onKeys[0], true);
-		}
-		
-		assessmentDocsEl = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", formLayout, onKeys, new String[]{null});
-		boolean docsCf = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
-		if(docsCf) {
-			assessmentDocsEl.select(onKeys[0], true);
-		}
-		
-		if(!wizard) {
-			buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			formLayout.add(buttonsLayout);
-			uifactory.addFormSubmitButton("submit", "submit", buttonsLayout);
-		}
-		
 		updateScoreVisibility();
 		updatePassedAndOutputVisibilty();
 	}
 
-	public void setDisplayOnly(boolean displayOnly) {
-		Map<String, FormItem> formItems = flc.getFormComponents();
-		for (FormItem formItem : formItems.values()) {
-			formItem.setEnabled(!displayOnly);
+	private void initAssessmentForm(FormItemContainer formLayout) {
+		FormSection assessmentFormCont = uifactory.addFormSection("assessment.form",
+				translate("assessment.form"), formLayout, FormSection.Level.SUB_TITLE);
+
+		String[] theValues = new String[] { "" };
+		commentEl = uifactory.addCheckboxesHorizontal("comment", "config.comment", assessmentFormCont, onKeys, theValues);
+		Boolean commentBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
+		if(commentBool != null && commentBool.booleanValue()) {
+			commentEl.select(onKeys[0], true);
 		}
-		if (buttonsLayout != null) {
-			buttonsLayout.setVisible(!displayOnly);
+
+		assessmentDocsEl = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", assessmentFormCont, onKeys, new String[]{null});
+		boolean docsCf = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+		if(docsCf) {
+			assessmentDocsEl.select(onKeys[0], true);
+		}
+	}
+
+	public void setDisplayOnly(boolean displayOnly) {
+		FormItem[] formItems = {scoreGrantedEl, minPointsEl, maxPointsEl, gradeEnabledEl, gradeAutoEl, gradeScaleCont, 
+				passedEl, outputEl, cutValueEl, sumCheckboxEl, incorporateInCourseAssessmentEl, scoreScalingEl
+		};
+
+		for (FormItem formItem : formItems) {
+			if (formItem != null) {
+				formItem.setEnabled(!displayOnly);
+				formItem.setLabelIconCss(displayOnly ? "o_icon o_icon-fw o_icon_locked text-primary" : null);
+			}
 		}
 		if (!displayOnly) {
 			updateScoreVisibility();
 			updatePassedAndOutputVisibilty();
 		}
+	}
+
+	public void setHasAssessments(boolean hasAssessments) {
+		enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", warningCont.getFormItemComponent(), this);
+		enableEditingLink.setPrimary(true);
+		enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
+		warningCont.contextPut("hasAssessments", hasAssessments);
+
+		setDisplayOnly(hasAssessments);
 	}
 
 	@Override
@@ -540,6 +562,15 @@ public class CheckListConfigurationController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == enableEditingLink) {
+			setDisplayOnly(false);
+			warningCont.contextPut("isOverwriting", Boolean.TRUE);
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source instanceof CheckListBoxListEditController) {
