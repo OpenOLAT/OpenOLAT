@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -44,6 +45,8 @@ public class QTI21QPoolServiceProviderTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private QPoolService qpoolService;
 	@Autowired
 	private QTI21QPoolServiceProvider poolServiceProvider;
 	
@@ -108,6 +111,31 @@ public class QTI21QPoolServiceProviderTest extends OlatTestCase {
 		Assert.assertEquals("Image", item.getKeywords());
 	}
 	
+	/**
+	 * The imported item must point to the directory where its XML file,
+	 * its manifest and its materials were written.
+	 */
+	@Test
+	public void importArchive_qpoolQuestionsFiles() throws URISyntaxException {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("imp-pool-4");
+
+		String filename = "ExportItems_pool_sc_mc.zip";
+		URL fileUrl = QTI21QPoolServiceProviderTest.class.getResource(filename);
+		File questionFile = new File(fileUrl.toURI());
+
+		List<QuestionItem> items = poolServiceProvider.importItems(owner, Locale.ENGLISH, filename, questionFile);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(items);
+		Assert.assertEquals(2, items.size());
+		for(QuestionItem item:items) {
+			File rootFile = qpoolService.getRootFile(item);
+			Assert.assertNotNull(rootFile);
+			Assert.assertTrue(rootFile.exists());
+			File manifestFile = new File(qpoolService.getRootDirectory(item), "imsmanifest.xml");
+			Assert.assertTrue(manifestFile.exists());
+		}
+	}
+
 	@Test
 	public void compatibleArchive_openolatTest() throws URISyntaxException {
 		String filename = "QTI_21_test_sc_mc.zip";
