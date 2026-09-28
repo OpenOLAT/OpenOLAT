@@ -238,8 +238,10 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		Translator sourceTranslator = jsdcc.getElementTranslator();
 		Translator dateTranslator = Util.createPackageTranslator(JSDateChooserRenderer.class, translator.getLocale());
 
+		String ariaLabel = "o_second_date".equals(cssClass) ? jsdcc.getFormItem().getSecondAriaLabel() : te.getAriaLabel();
+
 		sb.append("<div class='form-group ").append(cssClass).append("'><div class='input-group o_date_picker'>");
-		renderTextElement(sb, receiverId, onChangeId, labeledById, value, jsdcc, teC, maxlength);
+		renderTextElement(sb, receiverId, onChangeId, labeledById, ariaLabel, value, jsdcc, teC, maxlength);
 		//date chooser button
 		sb.append("<span class='input-group-addon' id='trigger_").append(jsdcc.getFormDispatchId()).append("' onclick=\"document.getElementById('").append(receiverId).append("').datepicker.show();\">")
 		  .append("<i class='o_icon o_icon_calendar' title=\"").appendHtmlEscaped(sourceTranslator.translate("calendar.choose")).append("\">\u00A0</i></span>")
@@ -452,12 +454,12 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderTextElement(StringOutput sb, String receiverId, String onChangeId, String labeledById,
-			String value, JSDateChooserComponent jsdcc, TextElementComponent teC, int maxlength) {
+			String ariaLabel, String value, JSDateChooserComponent jsdcc, TextElementComponent teC, int maxlength) {
 		TextElementImpl te = teC.getFormItem();
-		
+
 		//display size cannot be bigger the maxlenght given by dateformat
 		te.displaySize = te.displaySize <= maxlength ? te.displaySize : maxlength;
-	
+
 		//read write view
 		sb.append("<input type=\"text\" class='form-control o_date_day' id=\"")
 		  .append(receiverId).append("\" name=\"").append(receiverId)
@@ -466,10 +468,10 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("\" value=\"").append(StringHelper.escapeHtml(value))
 		  .append("\" data-oo-validation-group=\"").append(receiverId).append("\" ")
 		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), onChangeId, te.getAction()));
-		if (StringHelper.containsNonWhitespace(labeledById)) {
+		if (StringHelper.containsNonWhitespace(ariaLabel)) {
+			sb.append(" aria-label=\"").append(ariaLabel).append("\"");
+		} else if (StringHelper.containsNonWhitespace(labeledById)) {
 			sb.append(" aria-labelledby=\"").append(labeledById).append("\"");
-		} else if (StringHelper.containsNonWhitespace(te.getAriaLabel())) {
-			sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
 		}
 		 sb.append(" aria-required='true'", teC.getFormItem().isMandatory());
 		 sb.append(" autocomplete=\"off\">");

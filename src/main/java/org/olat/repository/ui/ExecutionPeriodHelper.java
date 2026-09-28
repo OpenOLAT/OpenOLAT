@@ -40,7 +40,8 @@ public class ExecutionPeriodHelper {
 		return start != null && end != null && DateUtils.isSameDay(start, end) ? "oneday" : "private";
 	}
 
-	public static void updateVisibility(String type, DateChooser privateDatesEl, SingleSelection publicDatesEl) {
+	public static void updateVisibility(String type, DateChooser privateDatesEl, SingleSelection publicDatesEl,
+			String beginDateAriaLabel, String endDateAriaLabel) {
 		boolean oneDay = "oneday".equals(type);
 		if (publicDatesEl != null) {
 			publicDatesEl.setVisible("public".equals(type));
@@ -48,6 +49,8 @@ public class ExecutionPeriodHelper {
 		privateDatesEl.setVisible("private".equals(type) || oneDay);
 		privateDatesEl.setSecondDate(!oneDay);
 		privateDatesEl.setLabel(oneDay ? "cif.date" : "cif.private.dates", null);
+		privateDatesEl.setAriaLabel(oneDay ? null : beginDateAriaLabel);
+		privateDatesEl.setSecondAriaLabel(oneDay ? null : endDateAriaLabel);
 	}
 
 	public static class ExecutionPeriodCache {

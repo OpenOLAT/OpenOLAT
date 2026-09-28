@@ -190,7 +190,8 @@ public class ExecutionController extends StepFormBasicController {
 		if (dateTypeCheckboxEl.isAtLeastSelected(1) && dateTypesEl.isOneSelected()) {
 			type = dateTypesEl.getSelectedKey();
 		}
-		ExecutionPeriodHelper.updateVisibility(type, privateDatesEl, publicDatesEl);
+		ExecutionPeriodHelper.updateVisibility(type, privateDatesEl, publicDatesEl,
+				translate("cif.date.start.aria"), translate("cif.date.end.aria"));
 		executionCont.setDirty(true);
 	}
 	

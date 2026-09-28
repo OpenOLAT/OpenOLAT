@@ -362,7 +362,8 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 
 	private void updateDatesVisibility() {
 		String type = dateTypesEl.isOneSelected() ? dateTypesEl.getSelectedKey() : "none";
-		ExecutionPeriodHelper.updateVisibility(type, privateDatesEl, publicDatesEl);
+		ExecutionPeriodHelper.updateVisibility(type, privateDatesEl, publicDatesEl,
+				translate("cif.date.start.aria"), translate("cif.date.end.aria"));
 	}
 
 	private void restoreOrCachePrivateDates() {

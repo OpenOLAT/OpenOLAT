@@ -71,6 +71,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	private boolean checkForValidDate;
 	private boolean sameDay;
 	private boolean secondDate;
+	private String secondAriaLabel;
 	private boolean buttonsEnabled = true;
 	private boolean actionDateOnly;
 	private int minute;
@@ -496,6 +497,16 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	@Override
 	public void setSecondDate(boolean enableSecondDate) {
 		this.secondDate = enableSecondDate;
+	}
+
+	@Override
+	public String getSecondAriaLabel() {
+		return secondAriaLabel;
+	}
+
+	@Override
+	public void setSecondAriaLabel(String label) {
+		this.secondAriaLabel = label;
 	}
 
 	@Override

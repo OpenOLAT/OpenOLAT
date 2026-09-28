@@ -280,7 +280,8 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 
 	private void updateExecutionPeriodVisibility() {
 		String type = executionPeriodEl.isOneSelected() ? executionPeriodEl.getSelectedKey() : "none";
-		ExecutionPeriodHelper.updateVisibility(type, privateDatesEl, publicDatesEl);
+		ExecutionPeriodHelper.updateVisibility(type, privateDatesEl, publicDatesEl,
+				translate("cif.date.start.aria"), translate("cif.date.end.aria"));
 	}
 
 	private void restoreOrCachePrivateDates() {
