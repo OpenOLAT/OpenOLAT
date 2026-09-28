@@ -215,7 +215,7 @@ public class QTI21ImportProcessor {
 				editorVersion = assessmentItem.getToolVersion();
 			}
 
-			QuestionItemImpl qitem = processItem(assessmentItem, null, href,
+			QuestionItemImpl qitem = processItem(assessmentItem, null, null, href,
 					editor, editorVersion, dir, metadata);
 
 			//create manifest
