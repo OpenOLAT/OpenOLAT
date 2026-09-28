@@ -108,7 +108,6 @@ public class CheckListConfigurationController extends FormBasicController {
 	private RepositoryEntry courseEntry;
 	private CourseNode courseNode;
 	private final ModuleConfiguration config;
-	private final boolean inUse;
 	private final boolean wizard;
 	private final boolean scoreScalingEnabled;
 	private final boolean ignoreInCourseAssessmentAvailable;
@@ -125,13 +124,12 @@ public class CheckListConfigurationController extends FormBasicController {
 	private GradeService gradeService;
 	
 	public CheckListConfigurationController(UserRequest ureq, WindowControl wControl, ICourse course, CourseNode courseNode,
-			NodeAccessType nodeAccessType, boolean inUse) {
+			NodeAccessType nodeAccessType) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		this.courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		this.courseNode = courseNode;
 		wizard = false;
-		this.inUse = inUse;
 		config = courseNode.getModuleConfiguration();
 		ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
@@ -143,7 +141,6 @@ public class CheckListConfigurationController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		wizard = true;
-		inUse = false;
 		this.data = data;
 		this.config = config;
 		ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
@@ -163,9 +160,6 @@ public class CheckListConfigurationController extends FormBasicController {
 		if(!wizard) {
 			dueDatesCont.setFormInfo(translate("config.description"));
 			dueDatesCont.setFormContextHelp("manual_user/learningresources/Course_Element_Checklist/");
-			if(inUse) {
-				dueDatesCont.setFormWarning(translate("config.warning.inuse"));
-			}
 		}
 		initDueDatesForm(dueDatesCont);
 
