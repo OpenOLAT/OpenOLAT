@@ -773,7 +773,7 @@ public class UserRolesController extends FormBasicController {
 			if (role == OrganisationRoles.user || role == OrganisationRoles.invitee) continue;
 
 			boolean allowedToManage = switch (role) {
-				case author -> iAmAdmin || iAmUserManager;
+				case author -> iAmAdmin || iAmUserManager || iAmRolesManager;
 				case groupmanager, poolmanager, curriculummanager, linemanager,
 					 projectmanager, qualitymanager, lecturemanager, usermanager,
 					 rolesmanager, learnresourcemanager, educationmanager, selectusmanager -> iAmAdmin || iAmRolesManager;
