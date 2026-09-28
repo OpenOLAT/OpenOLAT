@@ -185,7 +185,7 @@ public class ProjMembersManagementController extends MainLayoutBasicController i
 	
 	private InvitationListController doOpenInvitations(UserRequest ureq, WindowControl bwControl) {
 		if (invitationListCtrl == null) {
-			invitationListCtrl = new InvitationListController(ureq, bwControl, project, secCallback.canEditMembers());
+			invitationListCtrl = new InvitationListController(ureq, bwControl, project, !secCallback.canEditMembers());
 			listenTo(invitationListCtrl);
 		} else {
 			invitationListCtrl.loadModel();
