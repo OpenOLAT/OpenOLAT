@@ -185,9 +185,13 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			renderItemStatus(renderer, sb, itemSessionState, translator);
 		}
 		if (component.isPageMode()) {
-			if (component.isShowPageModeSolution()) {
+			// Manually graded types (essay, upload, drawing) have no auto-computed correct response for
+			// QTI to show as a "solution": clicking "Show solution" is a no-op that only flips this
+			// badge, with nothing else changing on screen. Suppress it here too, consistent with the
+			// correctness badge below (OO-9748).
+			if (component.isShowPageModeSolution() && !QTI21QuestionType.getType(assessmentItem).isManuallyGradedType()) {
 				renderItemStatusMessage(renderer, "solution", "solution", sb, translator);
-			} else {
+			} else if (!component.isShowPageModeSolution()) {
 				renderAnswerCorrectnessFeedback(renderer, sb, assessmentItem, itemSessionState, translator);
 			}
 		}
@@ -282,6 +286,12 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			return;
 		}
 		if (component.isShowPageModeSolution()) {
+			return;
+		}
+		// Manually graded types (essay, upload, drawing) have no auto-computed correct response to show
+		// as a "solution": the button would be a no-op that only flips the "Solution" badge, with
+		// nothing else changing on screen (OO-9748).
+		if (QTI21QuestionType.getType(component.getAssessmentItem()).isManuallyGradedType()) {
 			return;
 		}
 		if (AssessmentRenderFunctions.isIncorrectlyAnswered(itemSessionState)) {

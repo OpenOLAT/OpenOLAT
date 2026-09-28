@@ -406,7 +406,7 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 				}
 			}
 
-			.o_button_group.o_assessmentitem_controls {
+			.o_assessmentitem_controls {
 				background: unset;
 				border: unset;
 				margin-top: auto;
@@ -415,10 +415,10 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 				margin-left: unset;
 				padding: unset;
 				padding-top: 20px;
-			}
 
-			.o_assessmentitem_controls .o_sel_show_solution span::before {
-				content: unset;
+				.o_sel_show_solution span::before {
+					content: unset;
+				}
 			}
 		}
 	}
