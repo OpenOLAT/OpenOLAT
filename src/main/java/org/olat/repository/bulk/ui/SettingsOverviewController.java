@@ -22,6 +22,7 @@ package org.olat.repository.bulk.ui;
 import static org.olat.core.util.StringHelper.EMPTY;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -48,6 +49,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -246,13 +248,20 @@ public class SettingsOverviewController extends StepFormBasicController {
 					text = translate("settings.bulk.overview.execution.public", lifecycleName);
 					break;
 				case privateCycle:
-					String from = context.getLifecycleValidFrom() != null
-							? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidFrom())
-							: "-";
-					String to = context.getLifecycleValidTo() != null
-							? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidTo())
-							: "-";
-					text = translate("settings.bulk.overview.execution.private", from, to);
+					Date validFrom = context.getLifecycleValidFrom();
+					Date validTo = context.getLifecycleValidTo();
+					if (validFrom != null && validTo != null && DateUtils.isSameDay(validFrom, validTo)) {
+						String date = Formatter.getInstance(getLocale()).formatDate(validFrom);
+						text = translate("settings.bulk.overview.execution.oneday", date);
+					} else {
+						String from = validFrom != null
+								? Formatter.getInstance(getLocale()).formatDate(validFrom)
+								: "-";
+						String to = validTo != null
+								? Formatter.getInstance(getLocale()).formatDate(validTo)
+								: "-";
+						text = translate("settings.bulk.overview.execution.private", from, to);
+					}
 					break;
 				default:
 					text = "-";

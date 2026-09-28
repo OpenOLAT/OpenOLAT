@@ -67,8 +67,12 @@ public interface DateChooser extends TextElement {
 	public long getDateDifference();
 	
 	public Date getSecondDate();
-	
+
 	public void setSecondDate(Date date);
+
+	public String getSecondAriaLabel();
+
+	public void setSecondAriaLabel(String label);
 	
 	public boolean isTimeOnly();
 	

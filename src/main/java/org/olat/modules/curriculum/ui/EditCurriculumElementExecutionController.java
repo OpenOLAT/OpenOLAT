@@ -152,7 +152,8 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 	
 	private void updatePeriodVisibility() {
 		String type = dateTypesEl.isOneSelected() ? dateTypesEl.getSelectedKey() : "none";
-		ExecutionPeriodHelper.updateVisibility(type, periodEl, null);
+		ExecutionPeriodHelper.updateVisibility(type, periodEl, null,
+				translate("cif.date.start.aria"), translate("cif.date.end.aria"));
 	}
 
 	private void restoreOrCachePeriodDates() {
