@@ -1,6 +1,6 @@
 {
 	"name": "@frentix/oopaella",
-	"version": "1.0.11",
+	"version": "1.0.12",
 	"description": "Paella player for OpenOlat",
 	"main": "src/index.js",
 	"scripts": {
@@ -23,8 +23,8 @@
 		"webpack-dev-server": "^5.2.3"
 	},
 	"dependencies": {
-		"paella-basic-plugins": "^1.23.0",
-		"paella-core": "^1.23.1"
+		"paella-basic-plugins": "^1.50.3",
+		"paella-core": "^1.50.6"
 	},
 	"overrides": {
 		"serialize-javascript": "^7.0.3",
