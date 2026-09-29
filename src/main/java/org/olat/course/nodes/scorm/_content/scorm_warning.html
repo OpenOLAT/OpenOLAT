@@ -1,0 +1,17 @@
+<legend>
+	$r.translate("grading.configuration.title")
+</legend>
+#if ($hasAssessments)
+	#if ($isOverwriting)
+		<div class="o_warning_with_icon">
+			$r.translate("assessments.exist.warning")
+		</div>
+	#else
+		<div class="o_info_with_icon">
+			$r.translate("assessments.exist.info")
+			<div class="o_button_group compact">
+				$r.render("enable.edit.mode")
+			</div>
+		</div>
+	#end
+#end
