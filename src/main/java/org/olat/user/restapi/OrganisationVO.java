@@ -24,6 +24,8 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Organisation;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -65,7 +67,9 @@ public class OrganisationVO {
 	private Long parentOrganisationKey;
 
 	private Long organisationTypeKey;
-	
+
+	private String customerNumber;
+
 	public OrganisationVO() {
 		//
 	}
@@ -89,6 +93,9 @@ public class OrganisationVO {
 		}
 		if(organisation.getType() != null) {
 			vo.setOrganisationTypeKey(organisation.getType().getKey());
+		}
+		if(CoreSpringFactory.getImpl(OrganisationModule.class).isCustomerNumberEnabled()) {
+			vo.setCustomerNumber(organisation.getCustomerNumber());
 		}
 		return vo;
 	}
@@ -187,5 +194,13 @@ public class OrganisationVO {
 
 	public void setOrganisationTypeKey(Long organisationTypeKey) {
 		this.organisationTypeKey = organisationTypeKey;
+	}
+
+	public String getCustomerNumber() {
+		return customerNumber;
+	}
+
+	public void setCustomerNumber(String customerNumber) {
+		this.customerNumber = customerNumber;
 	}
 }

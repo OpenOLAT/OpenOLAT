@@ -43,6 +43,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
@@ -51,6 +52,7 @@ import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
 import org.olat.basesecurity.model.SearchOrganisationParameters;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -376,7 +378,10 @@ public class OrganisationsWebService {
 		if(StringHelper.containsNonWhitespace(organisation.getStatus())) {
 			organisationToSave.setOrganisationStatus(OrganisationStatus.valueOf(organisation.getStatus()));
 		}
-		
+		if(CoreSpringFactory.getImpl(OrganisationModule.class).isCustomerNumberEnabled()) {
+			organisationToSave.setCustomerNumber(organisation.getCustomerNumber());
+		}
+
 		Organisation savedOrganisation = organisationService.updateOrganisation(organisationToSave);
 		if(move) {
 			organisationService.moveOrganisation(savedOrganisation, parentOrganisation, doer);
