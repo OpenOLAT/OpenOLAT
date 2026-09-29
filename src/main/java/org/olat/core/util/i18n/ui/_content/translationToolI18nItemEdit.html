@@ -69,7 +69,7 @@
 				$r.render("targetLangSelection")
 			</div>
 			#else
-			<h5><i class="o_flag o_flag_$targetLanguageKey"> </i> $r.translate("generic.${customizingPrefix}lang.target"): $targetLanguage</h5>
+			<h5><i class="o_flag o_flag_$targetLanguageKey"> </i> $r.translate("generic.${customizingPrefix}lang.target"): $r.escapeHtml($targetLanguage)</h5>
 			#end
 			$r.render("targetArea", "minimal")
 		</div>		
@@ -143,8 +143,8 @@ function checkClick(wrapperName, langCode) {
 				var translated = trans.translate(key);
 				if (translated != reference) {
 					## set new key and value, make element visible
-					jQuery('div.' + wrapperName + ' div.o_translation_refKey code').html(reference);
-					jQuery('div.' + wrapperName + ' div.o_translation_refKey span').html(translated);
+					jQuery('div.' + wrapperName + ' div.o_translation_refKey code').text(reference);
+					jQuery('div.' + wrapperName + ' div.o_translation_refKey span').text(translated);
 					jQuery('div.' + wrapperName + ' div.o_translation_refKey').css('display: inline');
 				}
 			}
