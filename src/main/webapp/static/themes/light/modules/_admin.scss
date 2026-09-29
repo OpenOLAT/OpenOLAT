@@ -8,3 +8,16 @@
 	max-width: 200px; 
 	word-wrap: break-word;
 }
+
+/* Translation tool: read-only reference and compare texts grow with their content */
+.o_translation_edit .form-control.textarea_disabled {
+	height: auto;
+	min-height: $input-height-base;
+}
+
+/* Translation tool: space between the reference, annotation, compare and target blocks */
+.o_translation_edit_reference,
+.o_translation_edit_annotation,
+.o_translation_edit_compare {
+	margin-bottom: 15px;
+}

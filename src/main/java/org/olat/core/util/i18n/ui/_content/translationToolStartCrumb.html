@@ -77,6 +77,6 @@
 	</div>
 	## set meaningfull page title
 	<script>
-		document.title = "$r.escapeHtml($r.translate("start.title"))";
+		document.title = "$r.escapeJavaScript($r.translate("start.${customizingPrefix}title"))";
 	</script>	
 </div>

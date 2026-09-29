@@ -64,6 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicController {
 	private Locale referenceLocale;
+	private Locale targetLocale;
 	private Locale compareLocale;
 	private List<I18nItem> i18nItems;
 	private int currentItemPosition = 0;
@@ -73,6 +74,8 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 
 	private SingleSelection bundlesSelection;
 	private SingleSelection keysSelection;
+	private SingleSelection referenceLangSelection;
+	private SingleSelection targetLangSelection;
 	private TextAreaElement referenceArea;
 	private TextElement annotationArea;
 	private TextElement targetArea;
@@ -123,6 +126,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		}
 		if (i18nItems.size() > 0) {
 			currentItem = i18nItems.get(currentItemPosition);
+			targetLocale = currentItem.getLocale();
 			initForm(ureq);
 		} else {
 			showError("edit.error.noitem");
@@ -165,8 +169,6 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		flc.contextPut("referenceLanguageKey", referenceLocale.toString());
-		flc.contextPut("referenceLanguage", i18nMgr.getLanguageTranslated(referenceLocale.toString(), false));
 		// Add bundles and keys selection
 		List<String> bundlesList = new ArrayList<>();
 		List<String> keysList = new ArrayList<>();
@@ -188,6 +190,33 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		keysSelection.setDomReplacementWrapperRequired(false);
 		keysSelection.addActionListener(FormEvent.ONCHANGE);
 		keysSelection.select(currentItem.getKey(), true);
+		// Add reference language selection, same languages as in the start screen
+		List<String> referenceLangs;
+		if (customizingMode) {
+			referenceLangs = new ArrayList<>(i18nModule.getEnabledLanguageKeys());
+		} else {
+			referenceLangs = i18nModule.getTransToolReferenceLanguages();
+		}
+		String[] referenceLangKeys = ArrayHelper.toArray(referenceLangs);
+		String[] referenceLangValues = getLanguageNamesInEnglish(referenceLangKeys);
+		ArrayHelper.sort(referenceLangKeys, referenceLangValues, false, true, false);
+		referenceLangSelection = uifactory.addDropdownSingleselect("referenceLangSelection", null, flc, referenceLangKeys, referenceLangValues, null);
+		referenceLangSelection.setDomReplacementWrapperRequired(false);
+		referenceLangSelection.addActionListener(FormEvent.ONCHANGE);
+		if (referenceLangSelection.containsKey(referenceLocale.toString())) {
+			referenceLangSelection.select(referenceLocale.toString(), true);
+		}
+		// Add target language selection. In customizing mode the target is the
+		// overlay of the reference language and follows the reference selection
+		if (!customizingMode) {
+			String[] targetLangKeys = ArrayHelper.toArray(i18nModule.getTranslatableLanguageKeys());
+			String[] targetLangValues = getLanguageNamesInEnglish(targetLangKeys);
+			ArrayHelper.sort(targetLangKeys, targetLangValues, false, true, false);
+			targetLangSelection = uifactory.addDropdownSingleselect("targetLangSelection", null, flc, targetLangKeys, targetLangValues, null);
+			targetLangSelection.setDomReplacementWrapperRequired(false);
+			targetLangSelection.addActionListener(FormEvent.ONCHANGE);
+		}
+		updateLanguages();
 		// Add reference box
 		referenceArea = uifactory.addTextAreaElement("referenceArea", null, -1, -1, -1, false, false, null, flc);
 		referenceArea.setEnabled(false); // read only
@@ -230,8 +259,6 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		compareLangSelection.setEnabled(compareEnabledPrefs.booleanValue());
 		
 		// Add target box
-		flc.contextPut("targetLanguageKey", i18nModule.getLocaleKey(currentItem.getLocale()));
-		flc.contextPut("targetLanguage", i18nMgr.getLanguageTranslated(i18nModule.getLocaleKey(currentItem.getLocale()), false));			
 		targetArea = uifactory.addTextAreaElement("targetArea", null, -1, 5, -1, true, false, null, flc);
 		// Add annotation box
 		annotationArea = uifactory.addTextAreaElement("annotationArea", null, -1, 1, -1, true, false, null, flc);
@@ -259,14 +286,6 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		if (customizingMode) {
 			// don't edit annotations in customizing mode
 			annotationArea.setEnabled(false);
-			// target lang flags and lang name		
-			Locale origLocale = i18nModule.getAllLocales().get(i18nMgr.createOrigianlLocaleKeyForOverlay(currentItem.getLocale()));
-			if(origLocale == null) {
-				origLocale = currentItem.getLocale();
-			}
-			String localeKey = i18nModule.getLocaleKey(origLocale);
-			flc.contextPut("targetLanguageKey", localeKey);			
-			flc.contextPut("targetLanguage", i18nMgr.getLanguageTranslated(localeKey, true));		
 		}
 		flc.contextPut("customizingMode", Boolean.valueOf(customizingMode));
 		flc.contextPut("customizingPrefix", (customizingMode ? "customize." : ""));
@@ -312,6 +331,58 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		// Set all links
 		this.flc.contextPut("hasPrevious", (currentItemPosition == 0 ? Boolean.FALSE : Boolean.TRUE));
 		this.flc.contextPut("hasNext", (currentItemPosition + 1 == i18nItems.size() ? Boolean.FALSE : Boolean.TRUE));
+	}
+
+	private String[] getLanguageNamesInEnglish(String[] langKeys) {
+		String[] langValues = new String[langKeys.length];
+		for (int i = 0; i < langKeys.length; i++) {
+			String key = langKeys[i];
+			String explLang = i18nMgr.getLanguageInEnglish(key, false);
+			String all = explLang;
+			if (explLang != null && !explLang.equals(key)) all += " (" + key + ")";
+			langValues[i] = all;
+		}
+		return langValues;
+	}
+
+	/**
+	 * Push the reference and target language flags and names to velocity and
+	 * sync the target language selection with the current target locale.
+	 */
+	private void updateLanguages() {
+		flc.contextPut("referenceLanguageKey", referenceLocale.toString());
+		flc.contextPut("referenceLanguage", i18nMgr.getLanguageTranslated(referenceLocale.toString(), false));
+		if (customizingMode) {
+			// target lang flags and lang name of the original language, not the overlay
+			Locale origLocale = i18nModule.getAllLocales().get(i18nMgr.createOrigianlLocaleKeyForOverlay(targetLocale));
+			if(origLocale == null) {
+				origLocale = targetLocale;
+			}
+			String localeKey = i18nModule.getLocaleKey(origLocale);
+			flc.contextPut("targetLanguageKey", localeKey);
+			flc.contextPut("targetLanguage", i18nMgr.getLanguageTranslated(localeKey, true));
+		} else {
+			String localeKey = i18nModule.getLocaleKey(targetLocale);
+			flc.contextPut("targetLanguageKey", localeKey);
+			flc.contextPut("targetLanguage", i18nMgr.getLanguageTranslated(localeKey, false));
+			if (targetLangSelection.containsKey(localeKey)) {
+				targetLangSelection.select(localeKey, true);
+			}
+		}
+	}
+
+	/**
+	 * Replace the items by the same bundles and keys in the given target locale.
+	 * The position in the list stays the same.
+	 */
+	private void doSwitchTargetLocale(Locale locale) {
+		List<I18nItem> switchedItems = new ArrayList<>(i18nItems.size());
+		for (I18nItem item : i18nItems) {
+			switchedItems.add(new I18nItem(item.getBundleName(), item.getKey(), locale, item.getBundlePriority(), item.getKeyPriority()));
+		}
+		i18nItems = switchedItems;
+		targetLocale = locale;
+		currentItem = i18nItems.get(currentItemPosition);
 	}
 
 	private void updateCompareArea(UserRequest ureq) {
@@ -433,6 +504,31 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 				}
 			}
 			initOrUpdateCurrentItem(ureq);
+
+		} else if (source == referenceLangSelection) {
+			Locale locale = i18nMgr.getLocaleOrNull(referenceLangSelection.getSelectedKey());
+			if (locale != null) {
+				referenceLocale = locale;
+				Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+				guiPrefs.putAndSave(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_REFERENCE_LANG, referenceLocale.toString());
+				if (customizingMode) {
+					// customize the overlay of the selected language
+					Locale overlayLocale = i18nModule.getOverlayLocales().get(referenceLocale);
+					if (overlayLocale != null) {
+						doSwitchTargetLocale(overlayLocale);
+					}
+				}
+				updateLanguages();
+				initOrUpdateCurrentItem(ureq);
+			}
+
+		} else if (source == targetLangSelection) {
+			Locale locale = i18nMgr.getLocaleOrNull(targetLangSelection.getSelectedKey());
+			if (locale != null) {
+				doSwitchTargetLocale(locale);
+				updateLanguages();
+				initOrUpdateCurrentItem(ureq);
+			}
 
 		} else if (source == compareSwitch) {
 			if (compareSwitch.isSelected(0)) {

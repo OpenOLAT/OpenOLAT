@@ -22,7 +22,12 @@
 			<div class="o_translation_refKey pull-right" style="display: none" onclick="this.style.display='none'">
 				<code></code> = <span></span>
 			</div>
-			<h5><i class="o_flag o_flag_$referenceLanguageKey"> </i> $r.translate("generic.${customizingPrefix}lang.reference"): $referenceLanguage</h5>
+			<div class="form-inline">
+				<div class="form-group">
+					<label><i class="o_flag o_flag_$referenceLanguageKey"> </i> $r.translate("generic.${customizingPrefix}lang.reference"):</label>
+				</div>
+				$r.render("referenceLangSelection")
+			</div>
 			$r.render("referenceArea")
 		</div>
 		#if ($r.available("annotationAddLink"))
@@ -56,7 +61,16 @@
 			<div class="o_translation_refKey" style="display: none" onclick="this.style.display='none'">
 				<code></code> = <span></span>
 			</div>
+			#if ($r.available("targetLangSelection"))
+			<div class="form-inline">
+				<div class="form-group">
+					<label><i class="o_flag o_flag_$targetLanguageKey"> </i> $r.translate("generic.${customizingPrefix}lang.target"):</label>
+				</div>
+				$r.render("targetLangSelection")
+			</div>
+			#else
 			<h5><i class="o_flag o_flag_$targetLanguageKey"> </i> $r.translate("generic.${customizingPrefix}lang.target"): $targetLanguage</h5>
+			#end
 			$r.render("targetArea", "minimal")
 		</div>		
 		<div class="o_button_group">
