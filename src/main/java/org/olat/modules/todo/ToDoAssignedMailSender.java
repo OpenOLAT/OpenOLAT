@@ -17,16 +17,10 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.todo.manager;
+package org.olat.modules.todo;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
-import org.olat.modules.todo.ToDoAssignedMailer;
-import org.olat.modules.todo.ToDoProvider;
-import org.olat.modules.todo.ToDoTask;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  *
@@ -36,18 +30,19 @@ import org.springframework.stereotype.Service;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-@Service
 public class ToDoAssignedMailSender implements ToDoAssignedMailer {
 	
-	@Autowired
-	private ToDoMailing toDoMailing;
-	@Autowired
-	private BaseSecurity securityManager;
+	private final Identity doer;
+	
+	public ToDoAssignedMailSender(Identity doer) {
+		this.doer = doer;
+	}
 	
 	@Override
-	public void onAssigned(Identity doer, IdentityRef recipient, ToDoTask toDoTask, ToDoProvider provider) {
-		Identity reloadedRecipient = securityManager.loadIdentityByKey(recipient.getKey());
-		toDoMailing.sendAssignedEmail(doer, reloadedRecipient, toDoTask, provider);
+	public void onAssigned(IdentityRef recipient, ToDoTask toDoTask, String businessPath) {
+		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch(doer);
+		batch.onAssigned(recipient, toDoTask, businessPath);
+		batch.sendMails();
 	}
 	
 }

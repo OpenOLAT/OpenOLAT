@@ -306,7 +306,7 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 			Collection<? extends IdentityRef> assignees,
 			Collection<? extends IdentityRef> delegatees,
 			List<String> tagDisplayNames) {
-		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch();
+		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch(doer);
 		int count = 0;
 		for (CurriculumElement element : elements) {
 			ToDoTask task = toDoService.createToDoTask(doer, TYPE,

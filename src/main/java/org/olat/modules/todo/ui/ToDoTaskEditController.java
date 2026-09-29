@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.todo.ToDoAssignedMailSender;
 import org.olat.modules.todo.ToDoContext;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoRelativeDates;
@@ -47,7 +48,6 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
-import org.olat.modules.todo.manager.ToDoAssignedMailSender;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.CopyValues;
 import org.olat.modules.todo.ui.ToDoTaskEditForm.ToDoTaskValues;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,8 +77,6 @@ public class ToDoTaskEditController extends FormBasicController {
 
 	@Autowired
 	private ToDoService toDoService;
-	@Autowired
-	private ToDoAssignedMailSender toDoAssignedMailSender;
 
 	public ToDoTaskEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask,
 			ToDoTask toDoTaskCopySource, ToDoTaskContextConfig contextConfig, ToDoTaskMemberConfig assigneeConfig,
@@ -204,7 +202,7 @@ public class ToDoTaskEditController extends FormBasicController {
 				toDoTaskEditForm.getExpenditureOfWork(),
 				toDoTaskEditForm.getDescription());
 		
-		toDoService.updateMember(getIdentity(), toDoTask, toDoTaskEditForm.getAssignees(), toDoTaskEditForm.getDelegatees(), toDoAssignedMailSender);
+		toDoService.updateMember(getIdentity(), toDoTask, toDoTaskEditForm.getAssignees(), toDoTaskEditForm.getDelegatees(), new ToDoAssignedMailSender(getIdentity()));
 		
 		toDoService.updateTags(toDoTask, toDoTaskEditForm.getTagDisplayNames());
 		

@@ -43,29 +43,29 @@ public class ToDoAssignedMailBatchTest {
 	
 	@Test
 	public void shouldKeepTwoEntriesInInsertionOrder_forOneRecipient() {
-		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch();
+		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch(null);
 		IdentityRefImpl recipient = new IdentityRefImpl(1L);
 		ToDoTaskImpl task1 = createTask(11L, "First task");
 		ToDoTaskImpl task2 = createTask(12L, "Second task");
 		
-		batch.onAssigned(null, recipient, task1, null);
-		batch.onAssigned(null, recipient, task2, null);
+		batch.onAssigned(recipient, task1, null);
+		batch.onAssigned(recipient, task2, null);
 		
 		Map<Long, List<Entry>> assignments = batch.getAssignments();
 		assertThat(assignments).hasSize(1);
 		List<Entry> entries = assignments.get(1L);
-		assertThat(entries).extracting(entry -> entry.toDoTask().getKey()).containsExactly(11L, 12L);
+		assertThat(entries).extracting(Entry::toDoTaskKey).containsExactly(11L, 12L);
 	}
 	
 	@Test
 	public void shouldNotDuplicateTheSameToDo_forTheSameRecipient() {
-		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch();
+		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch(null);
 		IdentityRefImpl recipient = new IdentityRefImpl(1L);
 		ToDoTaskImpl task = createTask(11L, "Task with an assignee and a delegatee");
 		
 		// The same recipient can be assignee and delegatee of the same to-do
-		batch.onAssigned(null, recipient, task, null);
-		batch.onAssigned(null, recipient, task, null);
+		batch.onAssigned(recipient, task, null);
+		batch.onAssigned(recipient, task, null);
 		
 		List<Entry> entries = batch.getAssignments().get(1L);
 		assertThat(entries).hasSize(1);
@@ -73,27 +73,27 @@ public class ToDoAssignedMailBatchTest {
 	
 	@Test
 	public void shouldKeepTwoRecipientsApart() {
-		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch();
+		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch(null);
 		ToDoTaskImpl task = createTask(11L, "Task");
 		
-		batch.onAssigned(null, new IdentityRefImpl(1L), task, null);
-		batch.onAssigned(null, new IdentityRefImpl(2L), task, null);
+		batch.onAssigned(new IdentityRefImpl(1L), task, null);
+		batch.onAssigned(new IdentityRefImpl(2L), task, null);
 		
 		assertThat(batch.getAssignments()).hasSize(2);
 	}
 	
 	@Test
 	public void shouldBeEmpty_withoutAnyAssignment() {
-		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch();
+		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch(null);
 		
 		assertThat(batch.isEmpty()).isTrue();
 	}
 	
 	@Test
 	public void shouldNotBeEmpty_afterAnAssignment() {
-		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch();
+		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch(null);
 		
-		batch.onAssigned(null, new IdentityRefImpl(1L), createTask(11L, "Task"), null);
+		batch.onAssigned(new IdentityRefImpl(1L), createTask(11L, "Task"), null);
 		
 		assertThat(batch.isEmpty()).isFalse();
 	}

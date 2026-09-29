@@ -36,6 +36,7 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.todo.CourseToDoEnvironment;
+import org.olat.modules.todo.ToDoAssignedMailSender;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
@@ -43,7 +44,6 @@ import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskSearchParams;
-import org.olat.modules.todo.manager.ToDoAssignedMailSender;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -66,7 +66,6 @@ public class MultiUserUserToDoEnvironment implements CourseToDoEnvironment {
 	
 	private DB dbInstance;
 	private ToDoService toDoService;
-	private ToDoAssignedMailSender toDoAssignedMailSender;
 
 	public MultiUserUserToDoEnvironment(Collection<String> toDoProviderTypes, Collection<? extends IdentityRef> identities) {
 		this.toDoProviderTypes = toDoProviderTypes;
@@ -124,7 +123,7 @@ public class MultiUserUserToDoEnvironment implements CourseToDoEnvironment {
 		ToDoTask toDoTask = getToDoService().createToDoTask(null, toDoTaskType, originId, originSubPath, originTitle, originSubTitle, null);
 		toDoTask.setTitle(title); // Needed in email template
 		toDoTask.setAssigneeRights(ASSIGNEE_RIGHTS);
-		getToDoService().updateMember(null, toDoTask, List.of(assignee), List.of(), getToDoAssignedMailSender());
+		getToDoService().updateMember(null, toDoTask, List.of(assignee), List.of(), new ToDoAssignedMailSender(null));
 		getDBInstance().commit();
 		return toDoTask;
 	}
@@ -208,13 +207,6 @@ public class MultiUserUserToDoEnvironment implements CourseToDoEnvironment {
 			toDoService = CoreSpringFactory.getImpl(ToDoService.class);
 		}
 		return toDoService;
-	}
-	
-	private ToDoAssignedMailSender getToDoAssignedMailSender() {
-		if (toDoAssignedMailSender == null) {
-			toDoAssignedMailSender = CoreSpringFactory.getImpl(ToDoAssignedMailSender.class);
-		}
-		return toDoAssignedMailSender;
 	}
 	
 	private DB getDBInstance() {

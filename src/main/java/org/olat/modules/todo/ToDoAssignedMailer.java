@@ -20,14 +20,13 @@
 package org.olat.modules.todo;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.id.Identity;
 
 /**
  *
  * Strategy for the delivery of a to-do assignment mail. The immediate implementation
- * sends one mail per call and reloads the recipient itself. The batch implementation
- * collects the calls of one operation, the mailing sends one mail per recipient
- * after the operation has been committed.
+ * sends one mail per call. The batch implementation collects the calls of one
+ * operation, the mailing sends one mail per recipient after the operation has been
+ * committed. Both are created per operation with the doer.
  *
  * Initial date: 22 Sep 2026<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
@@ -35,6 +34,6 @@ import org.olat.core.id.Identity;
  */
 public interface ToDoAssignedMailer {
 	
-	void onAssigned(Identity doer, IdentityRef recipient, ToDoTask toDoTask, ToDoProvider provider);
+	void onAssigned(IdentityRef recipient, ToDoTask toDoTask, String businessPath);
 	
 }

@@ -29,10 +29,10 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.todo.ToDoAssignedMailSender;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
-import org.olat.modules.todo.manager.ToDoAssignedMailSender;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +52,6 @@ public class QualityToDoTaskQueryTest extends OlatTestCase {
 	
 	@Autowired
 	private ToDoService toDoService;
-	@Autowired
-	private ToDoAssignedMailSender toDoAssignedMailSender;
 	
 	@Test
 	public void shouldGetTodos() {
@@ -78,7 +76,7 @@ public class QualityToDoTaskQueryTest extends OlatTestCase {
 		// Member
 		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollection();
 		ToDoTask toDoTask6 = toDoService.createToDoTask(identity, DataCollectionToDoTaskProvider.TYPE, dataCollection3.getKey(), null, null, null, null);
-		toDoService.updateMember(identity, toDoTask6, List.of(identity), List.of(member), toDoAssignedMailSender);
+		toDoService.updateMember(identity, toDoTask6, List.of(identity), List.of(member), new ToDoAssignedMailSender(identity));
 		
 		dbInstance.commitAndCloseSession();
 		

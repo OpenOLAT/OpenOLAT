@@ -42,18 +42,27 @@ import org.olat.modules.todo.manager.ToDoMailing;
  */
 public class ToDoAssignedMailBatch implements ToDoAssignedMailer {
 	
-	public record Entry(Identity doer, ToDoTask toDoTask, ToDoProvider provider) {}
+	public record Entry(String providerType, Long toDoTaskKey, String title, String businessPath) {}
 	
+	private final Long doerIdentityKey;
 	private final Map<Long, List<Entry>> recipientKeyToEntries = new LinkedHashMap<>();
 	private final Set<String> deduplication = new HashSet<>();
 	
+	public ToDoAssignedMailBatch(Identity doer) {
+		this.doerIdentityKey = doer != null ? doer.getKey() : null;
+	}
+	
 	@Override
-	public void onAssigned(Identity doer, IdentityRef recipient, ToDoTask toDoTask, ToDoProvider provider) {
+	public void onAssigned(IdentityRef recipient, ToDoTask toDoTask, String businessPath) {
 		if (!deduplication.add(recipient.getKey() + "-" + toDoTask.getKey())) {
 			return;
 		}
-		recipientKeyToEntries.computeIfAbsent(recipient.getKey(), key -> new ArrayList<>())
-				.add(new Entry(doer, toDoTask, provider));
+		Entry entry = new Entry(toDoTask.getType(), toDoTask.getKey(), toDoTask.getTitle(), businessPath);
+		recipientKeyToEntries.computeIfAbsent(recipient.getKey(), key -> new ArrayList<>()).add(entry);
+	}
+	
+	public Long getDoerIdentityKey() {
+		return doerIdentityKey;
 	}
 	
 	public boolean isEmpty() {

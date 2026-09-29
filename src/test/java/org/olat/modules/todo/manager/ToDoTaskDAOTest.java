@@ -45,6 +45,7 @@ import static org.olat.modules.curriculum.manager.CurriculumElementToDoProvider.
 
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
 import org.olat.modules.todo.ToDoRelativeDates;
+import org.olat.modules.todo.ToDoAssignedMailSender;
 import org.olat.modules.todo.ToDoDateUnit;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoRight;
@@ -70,8 +71,6 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private ToDoService toDoService;
-	@Autowired
-	private ToDoAssignedMailSender toDoAssignedMailSender;
 	@Autowired
 	private TagService tagService;
 	
@@ -433,11 +432,11 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		ToDoTask toDoTask1 = createRandomToDoTask();
-		toDoService.updateMember(identity1, toDoTask1, List.of(identity1, identity2), List.of(), toDoAssignedMailSender);
+		toDoService.updateMember(identity1, toDoTask1, List.of(identity1, identity2), List.of(), new ToDoAssignedMailSender(identity1));
 		ToDoTask toDoTask2 =  createRandomToDoTask();
-		toDoService.updateMember(identity1, toDoTask2, List.of(), List.of(identity1), toDoAssignedMailSender);
+		toDoService.updateMember(identity1, toDoTask2, List.of(), List.of(identity1), new ToDoAssignedMailSender(identity1));
 		ToDoTask toDoTask3 =  createRandomToDoTask();
-		toDoService.updateMember(identity1, toDoTask3, List.of(), List.of(identity2), toDoAssignedMailSender);
+		toDoService.updateMember(identity1, toDoTask3, List.of(), List.of(identity2), new ToDoAssignedMailSender(identity1));
 		
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
 		searchParams.setToDoTasks(List.of(toDoTask1, toDoTask2, toDoTask3));
@@ -474,12 +473,12 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		Identity delegatee = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 
 		ToDoTask withAssignee = createRandomToDoTask();
-		toDoService.updateMember(assignee, withAssignee, List.of(assignee), List.of(), toDoAssignedMailSender);
+		toDoService.updateMember(assignee, withAssignee, List.of(assignee), List.of(), new ToDoAssignedMailSender(assignee));
 
 		ToDoTask noMembers = createRandomToDoTask();
 
 		ToDoTask onlyDelegatee = createRandomToDoTask();
-		toDoService.updateMember(assignee, onlyDelegatee, List.of(), List.of(delegatee), toDoAssignedMailSender);
+		toDoService.updateMember(assignee, onlyDelegatee, List.of(), List.of(delegatee), new ToDoAssignedMailSender(assignee));
 
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
 		searchParams.setToDoTasks(List.of(withAssignee, noMembers, onlyDelegatee));

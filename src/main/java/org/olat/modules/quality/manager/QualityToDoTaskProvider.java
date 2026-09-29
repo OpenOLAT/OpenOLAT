@@ -44,6 +44,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.quality.QualityAuditLog.Action;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.ui.QualityToDoEditController;
+import org.olat.modules.todo.ToDoAssignedMailSender;
 import org.olat.modules.todo.ToDoContextFilter;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoProvider;
@@ -57,7 +58,6 @@ import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ToDoTaskTag;
-import org.olat.modules.todo.manager.ToDoAssignedMailSender;
 import org.olat.modules.todo.ui.ToDoTaskDetailsController;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,8 +77,6 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider, ToDoConte
 
 	@Autowired
 	private ToDoService toDoService;
-	@Autowired
-	private ToDoAssignedMailSender toDoAssignedMailSender;
 	@Autowired
 	private QualityModule qualityModule;
 	@Autowired
@@ -264,7 +262,7 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider, ToDoConte
 				.get(toDoTask.getBaseGroup().getKey());
 		Set<Identity> beforeMembers = toDoTaskMembersBefore.getMembers();
 		
-		toDoService.updateMember(doer, toDoTask, assignees, delegatees, toDoAssignedMailSender);
+		toDoService.updateMember(doer, toDoTask, assignees, delegatees, new ToDoAssignedMailSender(doer));
 		
 		ToDoTaskMembers toDoTaskMembersAfter = toDoService
 				.getToDoTaskGroupKeyToMembers(List.of(toDoTask), ToDoRole.ASSIGNEE_DELEGATEE)

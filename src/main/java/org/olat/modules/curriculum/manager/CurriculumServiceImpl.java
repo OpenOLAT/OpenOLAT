@@ -588,7 +588,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public CurriculumElement copyCurriculumElement(Curriculum curriculum, CurriculumElement parentElement,
 			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity doer) {
-		ToDoAssignedMailBatch toDoMailBatch = new ToDoAssignedMailBatch();
+		ToDoAssignedMailBatch toDoMailBatch = new ToDoAssignedMailBatch(doer);
 		CurriculumElement copy = copyCurriculumElementRec(curriculum, parentElement, elementToClone, settings, doer, 0, toDoMailBatch);
 		dbInstance.commit();
 		

@@ -273,7 +273,7 @@ public class ToDoServiceImpl implements ToDoService {
 				roles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)),
 				currentRoles.stream().anyMatch(role -> ToDoRole.ASSIGNEE_DELEGATEE.contains(role)));
 		if (sendAssignmentEmail) {
-			mailer.onAssigned(doer, identity, toDoTask, provider);
+			mailer.onAssigned(identity, toDoTask, provider.getBusinessPath(toDoTask));
 		}
 		
 		// Delete membership of old roles. Creators are never removed

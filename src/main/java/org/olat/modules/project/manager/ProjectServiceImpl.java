@@ -147,13 +147,13 @@ import org.olat.modules.project.model.ProjNoteInfoImpl;
 import org.olat.modules.project.model.ProjReferenceValues;
 import org.olat.modules.project.model.ProjToDoInfoImpl;
 import org.olat.modules.project.ui.ProjectBCFactory;
+import org.olat.modules.todo.ToDoAssignedMailSender;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoRight;
 import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
-import org.olat.modules.todo.manager.ToDoAssignedMailSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -198,8 +198,6 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private ProjDecisionDAO decisionDao;
 	@Autowired
 	private ToDoService toDoService;
-	@Autowired
-	private ToDoAssignedMailSender toDoAssignedMailSender;
 	@Autowired
 	private ProjNoteDAO noteDao;
 	@Autowired
@@ -1602,7 +1600,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			updateContentModified(reloadedToDo.getArtefact(), doer);
 		}
 		
-		toDoService.updateMember(doer, reloadedToDo.getToDoTask(), assignees, delegatees, toDoAssignedMailSender);
+		toDoService.updateMember(doer, reloadedToDo.getToDoTask(), assignees, delegatees, new ToDoAssignedMailSender(doer));
 	}
 	
 	@Override

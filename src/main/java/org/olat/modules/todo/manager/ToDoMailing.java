@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -41,6 +42,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.todo.ToDoAssignedMailBatch;
 import org.olat.modules.todo.ToDoAssignedMailBatch.Entry;
 import org.olat.modules.todo.ToDoProvider;
+import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.user.UserManager;
@@ -68,29 +70,10 @@ public class ToDoMailing {
 	@Autowired
 	private BaseSecurity securityManager;
 
-	public void sendAssignedEmail(Identity doer, Identity assignee, ToDoTask toDoTask, ToDoProvider toDoProvider) {
-		if (assignee.getStatus() > Identity.STATUS_VISIBLE_LIMIT) {
-			return;
-		}
-		
-		Locale locale = i18nManager.getLocaleOrDefault(assignee.getUser().getPreferences().getLanguage());
-		MailBundle bundle = createBundle(assignee, locale, List.of(new Entry(doer, toDoTask, toDoProvider)));
-		if (bundle != null) {
-			MailerResult result = mailManager.sendMessage(bundle);
-			if (result.isSuccessful()) {
-				log.debug("To-do {} (key::{}) assigned email sent to {}.", toDoTask.getTitle(), toDoTask.getKey(),
-						assignee);
-			} else {
-				log.warn("Sending to-do {} (key::{}) assigned email to {} failed!", toDoTask.getTitle(),
-						toDoTask.getKey(), assignee);
-			}
-		}
-	}
-
 	/**
 	 * Sends one digest mail per recipient. A recipient with exactly one entry gets the
-	 * existing single mail instead of the digest. Sends asynchronously, the caller has
-	 * already committed the to-dos of the batch.
+	 * existing single mail instead of the digest. The bundles are built at once, the
+	 * transport is asynchronous.
 	 *
 	 * @param batch The to-do assignments of one operation, grouped by recipient.
 	 */
@@ -100,6 +83,7 @@ public class ToDoMailing {
 			return;
 		}
 		
+		Identity doer = batch.getDoerIdentityKey() != null ? securityManager.loadIdentityByKey(batch.getDoerIdentityKey()) : null;
 		List<Identity> recipients = securityManager.loadIdentityByKeys(recipientKeyToEntries.keySet());
 		List<MailBundle> bundles = new ArrayList<>(recipients.size());
 		for (Identity recipient : recipients) {
@@ -112,7 +96,7 @@ public class ToDoMailing {
 			}
 			
 			Locale locale = i18nManager.getLocaleOrDefault(recipient.getUser().getPreferences().getLanguage());
-			MailBundle bundle = createBundle(recipient, locale, entries);
+			MailBundle bundle = createBundle(doer, recipient, locale, entries);
 			if (bundle != null) {
 				bundles.add(bundle);
 				log.debug("To-do assigned digest email ({} to-dos) queued for {}.", entries.size(), recipient);
@@ -136,9 +120,9 @@ public class ToDoMailing {
 		Translator translator = Util.createPackageTranslator(ToDoUIFactory.class, locale);
 		String subject = translator.translate("email.done.subject");
 		String body = translator.translate("email.done.body.styled");
-		Entry entry = new Entry(doer, toDoTask, toDoProvider);
-		SingleToDoTemplate template = new SingleToDoTemplate(subject, body, translator,
-				getDoerDisplayName(entry, locale), getTitle(translator, toDoTask), getUrl(entry));
+		String doerDisplayName = resolveDoerDisplayName(doer, toDoProvider, toDoTask, locale);
+		SingleToDoTemplate template = new SingleToDoTemplate(subject, body, translator, doerDisplayName,
+				getTitle(translator, toDoTask.getTitle()), getUrl(toDoProvider.getBusinessPath(toDoTask)));
 		
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(null, member, template, doer, null, result);
@@ -155,18 +139,18 @@ public class ToDoMailing {
 	/**
 	 * @param entries One entry: the existing single assignment mail. Several entries: the digest.
 	 */
-	private MailBundle createBundle(Identity recipient, Locale locale, List<Entry> entries) {
+	private MailBundle createBundle(Identity doer, Identity recipient, Locale locale, List<Entry> entries) {
 		Translator translator = Util.createPackageTranslator(ToDoUIFactory.class, locale);
 		MailerResult result = new MailerResult();
 		Entry first = entries.get(0);
-		String doerDisplayName = getDoerDisplayName(first, locale);
+		String doerDisplayName = resolveDoerDisplayName(doer, first, locale);
 		
 		if (entries.size() == 1) {
 			String subject = translator.translate("email.assigned.subject");
 			String body = translator.translate("email.assigned.body.styled");
 			SingleToDoTemplate template = new SingleToDoTemplate(subject, body, translator, doerDisplayName,
-					getTitle(translator, first.toDoTask()), getUrl(first));
-			return mailManager.makeMailBundle(null, recipient, template, first.doer(), null, result);
+					getTitle(translator, first.title()), getUrl(first.businessPath()));
+			return mailManager.makeMailBundle(null, recipient, template, doer, null, result);
 		}
 		
 		String subject = translator.translate("email.assigned.digest.subject");
@@ -174,14 +158,14 @@ public class ToDoMailing {
 		String rows = renderRows(translator, entries);
 		AssignedDigestTemplate template = new AssignedDigestTemplate(subject, body, translator, doerDisplayName,
 				entries.size(), rows);
-		return mailManager.makeMailBundle(null, recipient, template, first.doer(), null, result);
+		return mailManager.makeMailBundle(null, recipient, template, doer, null, result);
 	}
 	
 	private String renderRows(Translator translator, List<Entry> entries) {
 		StringBuilder rows = new StringBuilder();
 		int shown = Math.min(entries.size(), MAX_DIGEST_ROWS);
 		for (Entry entry : entries.subList(0, shown)) {
-			rows.append(translator.translate("email.assigned.digest.row", getTitle(translator, entry.toDoTask()), getUrl(entry)));
+			rows.append(translator.translate("email.assigned.digest.row", getTitle(translator, entry.title()), getUrl(entry.businessPath())));
 		}
 		if (entries.size() > shown) {
 			rows.append(translator.translate("email.assigned.digest.more", String.valueOf(entries.size() - shown)));
@@ -189,18 +173,30 @@ public class ToDoMailing {
 		return rows.toString();
 	}
 	
-	private String getDoerDisplayName(Entry entry, Locale locale) {
-		return entry.doer() != null
-				? userManager.getUserDisplayName(entry.doer())
-				: entry.provider().getModifiedBy(locale, entry.toDoTask());
+	private String resolveDoerDisplayName(Identity doer, Entry entry, Locale locale) {
+		if (doer != null) {
+			return userManager.getUserDisplayName(doer);
+		}
+		ToDoService toDoService = CoreSpringFactory.getImpl(ToDoService.class);
+		ToDoTask toDoTask = toDoService.getToDoTask(() -> entry.toDoTaskKey());
+		if (toDoTask == null) {
+			return null;
+		}
+		return toDoService.getProvider(entry.providerType()).getModifiedBy(locale, toDoTask);
 	}
 	
-	private static String getTitle(Translator translator, ToDoTask toDoTask) {
-		return StringHelper.escapeHtml(ToDoUIFactory.getDisplayName(translator, toDoTask));
+	private String resolveDoerDisplayName(Identity doer, ToDoProvider toDoProvider, ToDoTask toDoTask, Locale locale) {
+		return doer != null
+				? userManager.getUserDisplayName(doer)
+				: toDoProvider.getModifiedBy(locale, toDoTask);
 	}
 	
-	private static String getUrl(Entry entry) {
-		String businessPath = entry.provider().getBusinessPath(entry.toDoTask());
+	private static String getTitle(Translator translator, String title) {
+		String displayName = StringHelper.containsNonWhitespace(title) ? title : ToDoUIFactory.getNoTitle(translator);
+		return StringHelper.escapeHtml(displayName);
+	}
+	
+	private static String getUrl(String businessPath) {
 		List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, true);
 	}

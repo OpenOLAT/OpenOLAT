@@ -45,16 +45,15 @@ import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.todo.ToDoAssignedMailBatch;
+import org.olat.modules.todo.ToDoAssignedMailSender;
 import org.olat.modules.todo.ToDoAssignedMailer;
 import org.olat.modules.todo.ToDoDateUnit;
-import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoRelativeDates;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.manager.PersonalToDoProvider;
-import org.olat.modules.todo.manager.ToDoAssignedMailSender;
 import org.olat.modules.todo.model.ToDoTaskImpl;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -72,8 +71,6 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private ToDoService toDoService;
-	@Autowired
-	private ToDoAssignedMailSender toDoAssignedMailSender;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -372,7 +369,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		Date targetEnd = addDays(targetBegin, 30);
 		CurriculumElement target = createCurriculumElement(targetBegin, targetEnd);
 
-		curriculumElementToDoProvider.copyToDoTasks(source, target, false, null, doer, new ToDoAssignedMailBatch());
+		curriculumElementToDoProvider.copyToDoTasks(source, target, false, null, doer, new ToDoAssignedMailBatch(doer));
 		dbInstance.commitAndCloseSession();
 
 		ToDoTaskSearchParams searchParams = curriculumElementToDoProvider.createActiveSearchParams(
@@ -400,7 +397,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		Date targetEnd = addDays(targetBegin, 30);
 		CurriculumElement target = createCurriculumElement(targetBegin, targetEnd);
 
-		curriculumElementToDoProvider.copyToDoTasks(source, target, false, null, doer, new ToDoAssignedMailBatch());
+		curriculumElementToDoProvider.copyToDoTasks(source, target, false, null, doer, new ToDoAssignedMailBatch(doer));
 		dbInstance.commitAndCloseSession();
 
 		ToDoTaskSearchParams searchParams = curriculumElementToDoProvider.createActiveSearchParams(
@@ -430,7 +427,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		ToDoTask task = createCurriculumElementTask(doer, source);
 		task.setTitle("Source task");
 		toDoService.update(doer, task, ToDoStatus.open);
-		toDoService.updateMember(doer, task, List.of(assignee), List.of(), toDoAssignedMailSender);
+		toDoService.updateMember(doer, task, List.of(assignee), List.of(), new ToDoAssignedMailSender(doer));
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumElement target = createCurriculumElement(null, null);
@@ -449,7 +446,7 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		CurriculumElement source = createCurriculumElement(null, null);
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ToDoTask task = createCurriculumElementTask(doer, source);
-		toDoService.updateMember(doer, task, List.of(doer), List.of(), toDoAssignedMailSender);
+		toDoService.updateMember(doer, task, List.of(doer), List.of(), new ToDoAssignedMailSender(doer));
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumElement target = createCurriculumElement(null, null);
@@ -466,9 +463,9 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity assignee = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ToDoTask includedTask = createCurriculumElementTask(doer, source);
-		toDoService.updateMember(doer, includedTask, List.of(assignee), List.of(), toDoAssignedMailSender);
+		toDoService.updateMember(doer, includedTask, List.of(assignee), List.of(), new ToDoAssignedMailSender(doer));
 		ToDoTask excludedTask = createCurriculumElementTask(doer, source);
-		toDoService.updateMember(doer, excludedTask, List.of(assignee), List.of(), toDoAssignedMailSender);
+		toDoService.updateMember(doer, excludedTask, List.of(assignee), List.of(), new ToDoAssignedMailSender(doer));
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumElement target = createCurriculumElement(null, null);
@@ -488,14 +485,14 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity assignee = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ToDoTask task1 = createCurriculumElementTask(doer, source1);
-		toDoService.updateMember(doer, task1, List.of(assignee), List.of(), toDoAssignedMailSender);
+		toDoService.updateMember(doer, task1, List.of(assignee), List.of(), new ToDoAssignedMailSender(doer));
 		ToDoTask task2 = createCurriculumElementTask(doer, source2);
-		toDoService.updateMember(doer, task2, List.of(assignee), List.of(), toDoAssignedMailSender);
+		toDoService.updateMember(doer, task2, List.of(assignee), List.of(), new ToDoAssignedMailSender(doer));
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumElement target1 = createCurriculumElement(null, null);
 		CurriculumElement target2 = createCurriculumElement(null, null);
-		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch();
+		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch(doer);
 		curriculumElementToDoProvider.copyToDoTasks(source1, target1, true, null, doer, batch);
 		curriculumElementToDoProvider.copyToDoTasks(source2, target2, true, null, doer, batch);
 		dbInstance.commitAndCloseSession();
@@ -503,6 +500,37 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		assertThat(batch.isEmpty()).isFalse();
 	}
 	
+	@Test
+	public void shouldSnapshotTheToDo_soFlushAfterDetachStillHasTheRightTitleAndBusinessPath() {
+		// copyToDoTasks intermediateCommit()s every 10 tasks. With more than 10 to-dos and a
+		// commitAndCloseSession() after the copy, an Entry that held the entity instead of a
+		// snapshot would read a detached ToDoTask when the batch is inspected below.
+		CurriculumElement source = createCurriculumElement(null, null);
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assignee = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		for (int i = 0; i < 12; i++) {
+			ToDoTask task = createCurriculumElementTask(doer, source);
+			task.setTitle("Task " + i);
+			toDoService.update(doer, task, ToDoStatus.open);
+			toDoService.updateMember(doer, task, List.of(assignee), List.of(), new ToDoAssignedMailSender(doer));
+		}
+		dbInstance.commitAndCloseSession();
+
+		CurriculumElement target = createCurriculumElement(null, null);
+		ToDoAssignedMailBatch batch = new ToDoAssignedMailBatch(doer);
+		curriculumElementToDoProvider.copyToDoTasks(source, target, true, null, doer, batch);
+		dbInstance.commitAndCloseSession();
+		batch.sendMails();
+
+		List<ToDoAssignedMailBatch.Entry> entries = batch.getAssignments().get(assignee.getKey());
+		assertThat(entries).hasSize(12);
+		assertThat(entries).extracting(ToDoAssignedMailBatch.Entry::title)
+				.containsExactlyInAnyOrder(
+						"Task 0", "Task 1", "Task 2", "Task 3", "Task 4", "Task 5",
+						"Task 6", "Task 7", "Task 8", "Task 9", "Task 10", "Task 11");
+		assertThat(entries).extracting(ToDoAssignedMailBatch.Entry::businessPath).doesNotContainNull();
+	}
+
 	private ToDoTask createCurriculumElementTask(Identity doer, CurriculumElement element) {
 		ToDoTask task = toDoService.createToDoTask(doer, CurriculumElementToDoProvider.TYPE,
 				element.getCurriculum().getKey(), String.valueOf(element.getKey()), null, null, null);
@@ -521,8 +549,8 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		private final List<Recorded> recorded = new ArrayList<>();
 		
 		@Override
-		public void onAssigned(Identity doer, IdentityRef recipient, ToDoTask toDoTask, ToDoProvider provider) {
-			recorded.add(new Recorded(recipient.getKey(), toDoTask.getTitle(), provider.getBusinessPath(toDoTask)));
+		public void onAssigned(IdentityRef recipient, ToDoTask toDoTask, String businessPath) {
+			recorded.add(new Recorded(recipient.getKey(), toDoTask.getTitle(), businessPath));
 		}
 		
 		private record Recorded(Long recipientKey, String title, String businessPath) {}
