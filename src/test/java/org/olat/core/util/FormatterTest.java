@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.test.OlatTestCase;
@@ -213,28 +212,6 @@ public class FormatterTest extends OlatTestCase {
 		ZonedDateTime date = ZonedDateTime.of(2025, 1, 12, 12, 23, 34, 456, ZoneId.systemDefault());
 		String value = Formatter.getInstance(Locale.GERMAN).formatDateAndTime(date);
 		Assert.assertEquals("12.01.2025, 12:23", value);
-	}
-	
-	@Test
-	public void testFormatPeriod() {
-		Formatter de = Formatter.getInstance(Locale.GERMAN);
-		Formatter en = Formatter.getInstance(Locale.ENGLISH);
-		Assert.assertEquals("Mo, 21. \u2013 Do, 24. September 2026", de.formatPeriod(date(2026, 9, 21), date(2026, 9, 24)));
-		Assert.assertEquals("Mo, 28. September \u2013 Do, 1. Oktober 2026", de.formatPeriod(date(2026, 9, 28), date(2026, 10, 1)));
-		Assert.assertEquals("Mo, 28. Dezember 2026 \u2013 Fr, 8. Januar 2027", de.formatPeriod(date(2026, 12, 28), date(2027, 1, 8)));
-		Assert.assertEquals("Mo, 21. September 2026", de.formatPeriod(date(2026, 9, 21), null));
-		Assert.assertNull(de.formatPeriod(null, null));
-		Assert.assertEquals("Mon 21 \u2013 Thu 24 September 2026", en.formatPeriod(date(2026, 9, 21), date(2026, 9, 24)));
-		Assert.assertEquals("Mon 28 December 2026 \u2013 Fri 8 January 2027", en.formatPeriod(date(2026, 12, 28), date(2027, 1, 8)));
-		Assert.assertEquals("Thu 24 September 2026", en.formatPeriod(null, date(2026, 9, 24)));
-		Assertions.assertThat(de.formatPeriod(date(2026, 9, 21), date(2026, 9, 21))).isEqualTo("Mo, 21. September 2026");
-		Assertions.assertThat(en.formatPeriod(date(2026, 9, 21), date(2026, 9, 21))).isEqualTo("Mon 21 September 2026");
-	}
-	
-	private Date date(int year, int month, int day) {
-		Calendar cal = Calendar.getInstance();
-		cal.set(year, month - 1, day, 12, 0, 0);
-		return cal.getTime();
 	}
 	
 }

@@ -29,6 +29,7 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -300,6 +301,69 @@ public class RepositoyUIFactory {
 			return translator.translate("cif.dates.to", to);
 		}
 		return null;
+	}
+	
+	/**
+	 * Formats an execution period with weekday (short), day, month and year on the
+	 * end date; on the begin date, month and year are dropped when they are the
+	 * same as on the end date. Either date may be null.
+	 * 
+	 * @param translator A translator with the RepositoryService bundle available
+	 * @param begin The begin date, can be null
+	 * @param end The end date, can be null
+	 * @param longFormat true for the weekday format, false for the short date format
+	 * @return The formatted execution period, or null if both dates are null (anytime)
+	 */
+	public static String formatExecutionPeriod(Translator translator, Date begin, Date end, boolean longFormat) {
+		if(!longFormat) {
+			return formatExecutionPeriod(translator, begin, end);
+		}
+		Formatter formatter = Formatter.getInstance(translator.getLocale());
+		if(begin != null && end != null && DateUtils.isSameDay(begin, end)) {
+			return formatPeriodFull(formatter, begin);
+		}
+		if(begin != null && end != null) {
+			return formatPeriodBegin(formatter, begin, end) + " \u2013 " + formatPeriodFull(formatter, end);
+		}
+		if(begin != null) {
+			return translator.translate("cif.dates.from", formatPeriodFull(formatter, begin));
+		}
+		if(end != null) {
+			return translator.translate("cif.dates.to", formatPeriodFull(formatter, end));
+		}
+		return null;
+	}
+	
+	private static String formatPeriodBegin(Formatter formatter, Date begin, Date end) {
+		Calendar beginCal = Calendar.getInstance(formatter.getLocale());
+		beginCal.setTime(begin);
+		Calendar endCal = Calendar.getInstance(formatter.getLocale());
+		endCal.setTime(end);
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(formatPeriodDay(formatter, begin, beginCal));
+		boolean sameMonth = beginCal.get(Calendar.MONTH) == endCal.get(Calendar.MONTH)
+				&& beginCal.get(Calendar.YEAR) == endCal.get(Calendar.YEAR);
+		if(!sameMonth) {
+			sb.append(' ').append(formatter.formatMonthLong(begin));
+		}
+		if(beginCal.get(Calendar.YEAR) != endCal.get(Calendar.YEAR)) {
+			sb.append(' ').append(beginCal.get(Calendar.YEAR));
+		}
+		return sb.toString();
+	}
+	
+	private static String formatPeriodFull(Formatter formatter, Date date) {
+		Calendar cal = Calendar.getInstance(formatter.getLocale());
+		cal.setTime(date);
+		return formatPeriodDay(formatter, date, cal) + " " + formatter.formatMonthLong(date) + " " + cal.get(Calendar.YEAR);
+	}
+	
+	private static String formatPeriodDay(Formatter formatter, Date date, Calendar cal) {
+		if("de".equals(formatter.getLocale().getLanguage())) {
+			return formatter.dayOfWeekShort(date) + ", " + cal.get(Calendar.DAY_OF_MONTH) + ".";
+		}
+		return formatter.dayOfWeekShort(date) + " " + cal.get(Calendar.DAY_OF_MONTH);
 	}
 	
 	public static boolean validateTextElement(TextElement el, boolean mandatory, int maxLength) {

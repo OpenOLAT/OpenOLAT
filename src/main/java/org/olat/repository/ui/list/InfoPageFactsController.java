@@ -31,7 +31,6 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.certificate.CertificatesManager;
@@ -48,6 +47,7 @@ import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -112,7 +112,7 @@ public class InfoPageFactsController extends BasicController {
 								Util.createPackageTranslator(CertificatesOptionsController.class, ureq.getLocale())))));
 
 		List<Fact> facts = new ArrayList<>();
-		addFact(facts, "o_icon_lifecycle_date", "cif.dates", Formatter.getInstance(getLocale()).formatPeriod(element.getBeginDate(), element.getEndDate()));
+		addFact(facts, "o_icon_lifecycle_date", "cif.dates", RepositoyUIFactory.formatExecutionPeriod(getTranslator(), element.getBeginDate(), element.getEndDate(), true));
 		addEventsFact(facts, numLectureBlocks);
 		addFact(facts, "o_icon_location", "cif.location.short", element.getLocation());
 		addFact(facts, "o_icon_graduate", "cif.authors", element.getAuthors());
@@ -153,7 +153,7 @@ public class InfoPageFactsController extends BasicController {
 		if (!lifecycle.isPrivateCycle()) {
 			return StringHelper.containsNonWhitespace(lifecycle.getSoftKey()) ? lifecycle.getSoftKey() : lifecycle.getLabel();
 		}
-		return Formatter.getInstance(getLocale()).formatPeriod(lifecycle.getValidFrom(), lifecycle.getValidTo());
+		return RepositoyUIFactory.formatExecutionPeriod(getTranslator(), lifecycle.getValidFrom(), lifecycle.getValidTo(), true);
 	}
 
 	private String periodDesc(RepositoryEntryLifecycle lifecycle) {

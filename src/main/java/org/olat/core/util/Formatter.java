@@ -374,59 +374,6 @@ public class Formatter {
 	}
 
 	/**
-	 * Formats an execution period: weekday (short), day, month and year on the
-	 * end date; on the begin date, month and year are dropped when they are the
-	 * same as on the end date. Either date may be null.
-	 */
-	public String formatPeriod(Date begin, Date end) {
-		if (begin != null && end != null && DateUtils.isSameDay(begin, end)) {
-			return formatPeriodFull(begin);
-		}
-		if (begin != null && end != null) {
-			return formatPeriodBegin(begin, end) + " – " + formatPeriodFull(end);
-		}
-		if (begin != null) {
-			return formatPeriodFull(begin);
-		}
-		if (end != null) {
-			return formatPeriodFull(end);
-		}
-		return null;
-	}
-
-	private String formatPeriodBegin(Date begin, Date end) {
-		Calendar beginCal = Calendar.getInstance(locale);
-		beginCal.setTime(begin);
-		Calendar endCal = Calendar.getInstance(locale);
-		endCal.setTime(end);
-
-		StringBuilder sb = new StringBuilder();
-		sb.append(formatPeriodDay(begin, beginCal));
-		boolean sameMonth = beginCal.get(Calendar.MONTH) == endCal.get(Calendar.MONTH)
-				&& beginCal.get(Calendar.YEAR) == endCal.get(Calendar.YEAR);
-		if (!sameMonth) {
-			sb.append(' ').append(formatMonthLong(begin));
-		}
-		if (beginCal.get(Calendar.YEAR) != endCal.get(Calendar.YEAR)) {
-			sb.append(' ').append(beginCal.get(Calendar.YEAR));
-		}
-		return sb.toString();
-	}
-
-	private String formatPeriodFull(Date date) {
-		Calendar cal = Calendar.getInstance(locale);
-		cal.setTime(date);
-		return formatPeriodDay(date, cal) + " " + formatMonthLong(date) + " " + cal.get(Calendar.YEAR);
-	}
-
-	private String formatPeriodDay(Date date, Calendar cal) {
-		if ("de".equals(locale.getLanguage())) {
-			return dayOfWeekShort(date) + ", " + cal.get(Calendar.DAY_OF_MONTH) + ".";
-		}
-		return dayOfWeekShort(date) + " " + cal.get(Calendar.DAY_OF_MONTH);
-	}
-	
-	/**
 	 * Generate a simple date pattern that formats a date using the locale of the
 	 * formatter
 	 * 
