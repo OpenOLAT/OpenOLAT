@@ -42,7 +42,7 @@ import org.olat.modules.todo.manager.ToDoMailing;
  */
 public class ToDoAssignedMailBatch implements ToDoAssignedMailer {
 	
-	public record Entry(String providerType, Long toDoTaskKey, String title, String businessPath) {}
+	public record Entry(String providerType, Long toDoTaskKey, String title, String originTitle, String businessPath) {}
 	
 	private final Long doerIdentityKey;
 	private final Map<Long, List<Entry>> recipientKeyToEntries = new LinkedHashMap<>();
@@ -57,7 +57,7 @@ public class ToDoAssignedMailBatch implements ToDoAssignedMailer {
 		if (!deduplication.add(recipient.getKey() + "-" + toDoTask.getKey())) {
 			return;
 		}
-		Entry entry = new Entry(toDoTask.getType(), toDoTask.getKey(), toDoTask.getTitle(), businessPath);
+		Entry entry = new Entry(toDoTask.getType(), toDoTask.getKey(), toDoTask.getTitle(), toDoTask.getOriginTitle(), businessPath);
 		recipientKeyToEntries.computeIfAbsent(recipient.getKey(), key -> new ArrayList<>()).add(entry);
 	}
 	

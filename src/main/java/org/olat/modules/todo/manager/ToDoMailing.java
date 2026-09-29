@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -61,6 +60,8 @@ public class ToDoMailing {
 	private static final Logger log = Tracing.createLoggerFor(ToDoMailing.class);
 	private static final int MAX_DIGEST_ROWS = 20;
 	
+	@Autowired
+	private ToDoService toDoService;
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
@@ -122,7 +123,8 @@ public class ToDoMailing {
 		String body = translator.translate("email.done.body.styled");
 		String doerDisplayName = resolveDoerDisplayName(doer, toDoProvider, toDoTask, locale);
 		SingleToDoTemplate template = new SingleToDoTemplate(subject, body, translator, doerDisplayName,
-				getTitle(translator, toDoTask.getTitle()), getUrl(toDoProvider.getBusinessPath(toDoTask)));
+				getTitle(translator, toDoTask.getTitle()), getUrl(toDoProvider.getBusinessPath(toDoTask)),
+				getContextLabel(locale, toDoProvider, toDoTask.getOriginTitle()));
 		
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(null, member, template, doer, null, result);
@@ -149,7 +151,7 @@ public class ToDoMailing {
 			String subject = translator.translate("email.assigned.subject");
 			String body = translator.translate("email.assigned.body.styled");
 			SingleToDoTemplate template = new SingleToDoTemplate(subject, body, translator, doerDisplayName,
-					getTitle(translator, first.title()), getUrl(first.businessPath()));
+					getTitle(translator, first.title()), getUrl(first.businessPath()), getContextLabel(locale, first));
 			return mailManager.makeMailBundle(null, recipient, template, doer, null, result);
 		}
 		
@@ -165,7 +167,8 @@ public class ToDoMailing {
 		StringBuilder rows = new StringBuilder();
 		int shown = Math.min(entries.size(), MAX_DIGEST_ROWS);
 		for (Entry entry : entries.subList(0, shown)) {
-			rows.append(translator.translate("email.assigned.digest.row", getTitle(translator, entry.title()), getUrl(entry.businessPath())));
+			rows.append(translator.translate("email.assigned.digest.row", getTitle(translator, entry.title()), getUrl(entry.businessPath()),
+					getContextLabel(translator.getLocale(), entry)));
 		}
 		if (entries.size() > shown) {
 			rows.append(translator.translate("email.assigned.digest.more", String.valueOf(entries.size() - shown)));
@@ -177,7 +180,6 @@ public class ToDoMailing {
 		if (doer != null) {
 			return userManager.getUserDisplayName(doer);
 		}
-		ToDoService toDoService = CoreSpringFactory.getImpl(ToDoService.class);
 		ToDoTask toDoTask = toDoService.getToDoTask(() -> entry.toDoTaskKey());
 		if (toDoTask == null) {
 			return null;
@@ -189,6 +191,18 @@ public class ToDoMailing {
 		return doer != null
 				? userManager.getUserDisplayName(doer)
 				: toDoProvider.getModifiedBy(locale, toDoTask);
+	}
+	
+	private String getContextLabel(Locale locale, Entry entry) {
+		return getContextLabel(locale, toDoService.getProvider(entry.providerType()), entry.originTitle());
+	}
+	
+	private static String getContextLabel(Locale locale, ToDoProvider provider, String originTitle) {
+		String label = provider.getDisplayName(locale);
+		if (StringHelper.containsNonWhitespace(originTitle)) {
+			label += " - " + originTitle;
+		}
+		return StringHelper.escapeHtml(label);
 	}
 	
 	private static String getTitle(Translator translator, String title) {
@@ -223,12 +237,14 @@ public class ToDoMailing {
 		
 		private final String toDoTitle;
 		private final String contextUrl;
+		private final String contextLabel;
 		
 		public SingleToDoTemplate(String subjectTemplate, String bodyTemplate, Translator translator,
-				String doerDisplayName, String toDoTitle, String contextUrl) {
+				String doerDisplayName, String toDoTitle, String contextUrl, String contextLabel) {
 			super(subjectTemplate, bodyTemplate, translator, doerDisplayName);
 			this.toDoTitle = toDoTitle;
 			this.contextUrl = contextUrl;
+			this.contextLabel = contextLabel;
 		}
 		
 		@Override
@@ -236,6 +252,7 @@ public class ToDoMailing {
 			super.putVariablesInMailContext(recipient);
 			putVariablesInMailContext("toDoTitle", toDoTitle);
 			putVariablesInMailContext("contextUrl", contextUrl);
+			putVariablesInMailContext("contextLabel", contextLabel);
 		}
 	}
 	
