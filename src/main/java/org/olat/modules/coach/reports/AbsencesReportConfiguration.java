@@ -336,7 +336,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 
 	@Override
 	protected List<UserPropertyHandler> getUserPropertyHandlers() {
-		return CoreSpringFactory.getImpl(UserManager.class).getUserPropertyHandlersFor(PROPS_IDENTIFIER, false);
+		return filterDisabledUserPropertyHandlers(CoreSpringFactory.getImpl(UserManager.class).getUserPropertyHandlersFor(PROPS_IDENTIFIER, false));
 	}
 	
 	private int findPropertyIndex(String propertyName, List<UserPropertyHandler> userPropertyHandlers) { 

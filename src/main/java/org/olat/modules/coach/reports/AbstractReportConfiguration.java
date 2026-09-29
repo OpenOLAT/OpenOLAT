@@ -26,7 +26,9 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -40,6 +42,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.modules.coach.CoachingService;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.apache.logging.log4j.Logger;
 
@@ -161,6 +164,15 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 	protected abstract void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
 
 	protected abstract List<UserPropertyHandler> getUserPropertyHandlers();
+
+	protected static List<UserPropertyHandler> filterDisabledUserPropertyHandlers(List<UserPropertyHandler> userPropertyHandlers) {
+		if (CoreSpringFactory.getImpl(OrganisationModule.class).isCustomerNumberEnabled()) {
+			return userPropertyHandlers;
+		}
+		return userPropertyHandlers.stream()
+				.filter(userPropertyHandler -> !(userPropertyHandler instanceof CustomerNumberPropertyHandler))
+				.collect(Collectors.toList());
+	}
 
 	public void setOrder(int order) {
 		this.order = order;

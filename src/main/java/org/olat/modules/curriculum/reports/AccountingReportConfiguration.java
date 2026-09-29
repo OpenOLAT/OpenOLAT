@@ -528,8 +528,8 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 
 	@Override
 	protected List<UserPropertyHandler> getUserPropertyHandlers() {
-		return CoreSpringFactory.getImpl(UserManager.class)
-				.getUserPropertyHandlersFor(AbstractReportConfiguration.PROPS_IDENTIFIER, false);
+		return filterDisabledUserPropertyHandlers(CoreSpringFactory.getImpl(UserManager.class)
+				.getUserPropertyHandlersFor(AbstractReportConfiguration.PROPS_IDENTIFIER, false));
 	}
 
 	@Override

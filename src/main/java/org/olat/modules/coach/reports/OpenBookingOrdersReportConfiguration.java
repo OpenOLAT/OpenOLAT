@@ -160,6 +160,6 @@ public class OpenBookingOrdersReportConfiguration extends TimeBoundReportConfigu
 
 	@Override
 	protected List<UserPropertyHandler> getUserPropertyHandlers() {
-		return CoreSpringFactory.getImpl(UserManager.class).getUserPropertyHandlersFor(PROPS_IDENTIFIER, false);
+		return filterDisabledUserPropertyHandlers(CoreSpringFactory.getImpl(UserManager.class).getUserPropertyHandlersFor(PROPS_IDENTIFIER, false));
 	}
 }
