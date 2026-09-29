@@ -124,7 +124,7 @@ public class ToDoMailing {
 		String doerDisplayName = resolveDoerDisplayName(doer, toDoProvider, toDoTask, locale);
 		SingleToDoTemplate template = new SingleToDoTemplate(subject, body, translator, doerDisplayName,
 				getTitle(translator, toDoTask.getTitle()), getUrl(toDoProvider.getBusinessPath(toDoTask)),
-				getContextLabel(locale, toDoProvider, toDoTask.getOriginTitle()));
+				getContextLabel(translator, toDoProvider, toDoTask.getOriginTitle()));
 		
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(null, member, template, doer, null, result);
@@ -151,7 +151,7 @@ public class ToDoMailing {
 			String subject = translator.translate("email.assigned.subject");
 			String body = translator.translate("email.assigned.body.styled");
 			SingleToDoTemplate template = new SingleToDoTemplate(subject, body, translator, doerDisplayName,
-					getTitle(translator, first.title()), getUrl(first.businessPath()), getContextLabel(locale, first));
+					getTitle(translator, first.title()), getUrl(first.businessPath()), getContextLabel(translator, first));
 			return mailManager.makeMailBundle(null, recipient, template, doer, null, result);
 		}
 		
@@ -168,7 +168,7 @@ public class ToDoMailing {
 		int shown = Math.min(entries.size(), MAX_DIGEST_ROWS);
 		for (Entry entry : entries.subList(0, shown)) {
 			rows.append(translator.translate("email.assigned.digest.row", getTitle(translator, entry.title()), getUrl(entry.businessPath()),
-					getContextLabel(translator.getLocale(), entry)));
+					getContextLabel(translator, entry)));
 		}
 		if (entries.size() > shown) {
 			rows.append(translator.translate("email.assigned.digest.more", String.valueOf(entries.size() - shown)));
@@ -193,16 +193,18 @@ public class ToDoMailing {
 				: toDoProvider.getModifiedBy(locale, toDoTask);
 	}
 	
-	private String getContextLabel(Locale locale, Entry entry) {
-		return getContextLabel(locale, toDoService.getProvider(entry.providerType()), entry.originTitle());
+	private String getContextLabel(Translator translator, Entry entry) {
+		return getContextLabel(translator, toDoService.getProvider(entry.providerType()), entry.originTitle());
 	}
-	
-	private static String getContextLabel(Locale locale, ToDoProvider provider, String originTitle) {
-		String label = provider.getDisplayName(locale);
+
+	private static String getContextLabel(Translator translator, ToDoProvider provider, String originTitle) {
+		String label = provider.getDisplayName(translator.getLocale());
 		if (StringHelper.containsNonWhitespace(originTitle)) {
 			label += " - " + originTitle;
 		}
-		return StringHelper.escapeHtml(label);
+		label += " · " + translator.translate("email.open.todo");
+		// U+279E heavy round-tipped rightwards arrow, as HTML entity: icon fonts are not reliable in mail clients
+		return "&#x279E; " + StringHelper.escapeHtml(label);
 	}
 	
 	private static String getTitle(Translator translator, String title) {
