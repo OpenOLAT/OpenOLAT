@@ -772,7 +772,7 @@ class VarForm extends FormBasicController {
 	public void setDisplayOnly(boolean displayOnly) {
 		Map<String, FormItem> formItems = gradingCont.getFormComponents();
 		for (FormItem formItem : formItems.values()) {
-			if (formItem != saveButton && formItem != scoreAttemptsEl && formItem != attemptsEl) {
+			if (formItem != saveButton && formItem != scoreAttemptsEl && formItem != attemptsEl && formItem != advanceScoreEl) {
 				formItem.setEnabled(!displayOnly);
 				formItem.setLabelIconCss(displayOnly ? "o_icon o_icon-fw o_icon_locked text-primary" : null);
 			}
