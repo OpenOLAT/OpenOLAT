@@ -184,7 +184,7 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 			if(studentView) {
 				target = "[MyCoursesSite:0][My:0]";
 			} else {
-				target = "[RepositorySite:0][My:0]";
+				target = "[CoachSite:0][Courses:0][coach:0][All:0]";
 			}
 			NewControllerFactory.getInstance().launch(target, ureq, getWindowControl());
 		} 
