@@ -823,4 +823,174 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		assertThat(contains(reNotReferenceable, results)).isFalse();
 		assertThat(contains(reOtherOrganisation, results)).isFalse();
 	}
+
+	/**
+	 * Neither shared, canCopy nor canReference is set. The shared organisations
+	 * key is not used in the query in that case, and must not be bound as a
+	 * named parameter either, else Hibernate throws an IllegalArgumentException.
+	 */
+	@Test
+	public void searchViews_sharedOrganisations_withoutSharedFlags() {
+		Organisation org1 = organisationService.createOrganisation("Org shared flags 1", "org-shared-flags-1",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("id-shared-flags-");
+
+		RepositoryEntry reOwned = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reOwned = repositoryManager.setAccess(reOwned, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		repositoryEntryRelationDao.addRole(identity, reOwned, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(identity, securityManager.getRoles(identity));
+		params.setSharedOrganisations(List.of(org1));
+		params.setStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published });
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+
+		assertThat(contains(reOwned, results)).isTrue();
+	}
+
+	/**
+	 * Owned tab (isOwned=true, isShared=false), with canReference also set on
+	 * the params (as reused e.g. by AuthorListController). The shared
+	 * organisations clause is not part of the owned-only branch, so the named
+	 * parameter must not be bound either, else Hibernate throws an
+	 * IllegalArgumentException.
+	 */
+	@Test
+	public void searchViews_sharedOrganisations_ownedOnlyWithCanReference() {
+		Organisation org1 = organisationService.createOrganisation("Org shared flags 2", "org-shared-flags-2",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("id-shared-flags-owned-");
+
+		RepositoryEntry reOwned = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reOwned = repositoryManager.setAccess(reOwned, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		repositoryEntryRelationDao.addRole(identity, reOwned, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(identity, securityManager.getRoles(identity));
+		params.setOwned(true);
+		params.setShared(false);
+		params.setCanReference(true);
+		params.setSharedOrganisations(List.of(org1));
+		params.setStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published });
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+
+		assertThat(contains(reOwned, results)).isTrue();
+	}
+
+	/**
+	 * The generic search (neither owned nor shared) must respect an explicit
+	 * status filter for entries shared through an organisation, exactly as the
+	 * "Shared with me" tab does.
+	 */
+	@Test
+	public void searchViews_sharedOrganisations_genericSearch_statusRespected() {
+		Organisation org1 = organisationService.createOrganisation("Org shared status 1", "org-shared-status-1",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("id-shared-status-");
+
+		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		rePublished = repositoryManager.setAccess(rePublished, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reReview = repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
+		reReview = repositoryManager.setAccess(reReview, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		dbInstance.commitAndCloseSession();
+
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(identity, securityManager.getRoles(identity));
+		params.setCanReference(true);
+		params.setSharedOrganisations(List.of(org1));
+		params.setStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published });
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+
+		assertThat(contains(rePublished, results)).isTrue();
+		assertThat(contains(reReview, results)).isFalse();
+	}
+
+	/**
+	 * Without an explicit status filter, the generic search must default to
+	 * published entries only for the organisation-shared clause, exactly as
+	 * the "Shared with me" tab (which always filters explicitly by
+	 * RepositoryEntryStatusEnum.published).
+	 */
+	@Test
+	public void searchViews_sharedOrganisations_genericSearch_defaultStatusIsPublishedOnly() {
+		Organisation org1 = organisationService.createOrganisation("Org shared status 2", "org-shared-status-2",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("id-shared-status-default-");
+
+		RepositoryEntry rePublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		rePublished = repositoryManager.setAccess(rePublished, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		RepositoryEntry reReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reReview = repositoryManager.setStatus(reReview, RepositoryEntryStatusEnum.review);
+		reReview = repositoryManager.setAccess(reReview, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		dbInstance.commitAndCloseSession();
+
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(identity, securityManager.getRoles(identity));
+		params.setCanReference(true);
+		params.setSharedOrganisations(List.of(org1));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+
+		assertThat(contains(rePublished, results)).isTrue();
+		assertThat(contains(reReview, results)).isFalse();
+	}
+
+	/**
+	 * An entry shared through an organisation is only visible while published,
+	 * even if an explicit status filter asks for another status. An entry
+	 * that is in the result list for another reason (here: owned) is not
+	 * restricted to published by this rule and follows the explicit filter.
+	 */
+	@Test
+	public void searchViews_sharedOrganisations_genericSearch_statusFilterDoesNotOverridePublishedOnly() {
+		Organisation org1 = organisationService.createOrganisation("Org shared status 3", "org-shared-status-3",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("id-shared-status-override-");
+
+		RepositoryEntry reOwnedReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reOwnedReview = repositoryManager.setStatus(reOwnedReview, RepositoryEntryStatusEnum.review);
+		repositoryEntryRelationDao.addRole(identity, reOwnedReview, GroupRoles.owner.name());
+		RepositoryEntry reSharedReview = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reSharedReview = repositoryManager.setStatus(reSharedReview, RepositoryEntryStatusEnum.review);
+		reSharedReview = repositoryManager.setAccess(reSharedReview, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		dbInstance.commitAndCloseSession();
+
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(identity, securityManager.getRoles(identity));
+		params.setCanReference(true);
+		params.setSharedOrganisations(List.of(org1));
+		params.setStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.review });
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+
+		assertThat(contains(reOwnedReview, results)).isTrue();
+		assertThat(contains(reSharedReview, results)).isFalse();
+	}
+
+	/**
+	 * An org-shared entry (always published) must not appear when the status
+	 * filter excludes published, even though it excludes preparation too.
+	 */
+	@Test
+	public void searchViews_sharedOrganisations_genericSearch_statusFilterExcludesPublished() {
+		Organisation org1 = organisationService.createOrganisation("Org shared status 4", "org-shared-status-4",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("id-shared-status-excl-");
+
+		RepositoryEntry reSharedPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reSharedPublished = repositoryManager.setAccess(reSharedPublished, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		dbInstance.commitAndCloseSession();
+
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(identity, securityManager.getRoles(identity));
+		params.setCanReference(true);
+		params.setSharedOrganisations(List.of(org1));
+		params.setStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.preparation });
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+
+		assertThat(contains(reSharedPublished, results)).isFalse();
+	}
 }

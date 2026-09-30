@@ -20,6 +20,7 @@
 package org.olat.repository.manager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -436,7 +437,10 @@ public class RepositoryEntryAuthorQueries {
 					.map(OrganisationRef::getKey).collect(Collectors.toList());
 			dbQuery.setParameter("organisationKeys", organisationKeys);
 		}
-		if (params.isSharedOrganisationsDefined()) {
+		boolean sharedOrganisationKeysUsedInQuery = params.isOwned() || params.isShared()
+				? params.isShared()
+				: (params.isCanCopy() || params.isCanReference()) && isPublishedStatusAllowed(params);
+		if (params.isSharedOrganisationsDefined() && sharedOrganisationKeysUsedInQuery) {
 			List<Long> sharedOrganisationKeys = params.getSharedOrganisations().stream()
 					.map(OrganisationRef::getKey).toList();
 			dbQuery.setParameter("sharedOrganisationKeys", sharedOrganisationKeys);
@@ -538,15 +542,12 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" ))");
 		}
 
-		if (params.isSharedOrganisationsDefined() && (params.isCanCopy() || params.isCanReference())) {
+		if (params.isSharedOrganisationsDefined() && (params.isCanCopy() || params.isCanReference())
+				&& isPublishedStatusAllowed(params)) {
 			sb.append(" or (exists (select reToOrg.key from repoentrytoorganisation as reToOrg")
 			  .append("  where reToOrg.entry.key=v.key and reToOrg.organisation.key in (:sharedOrganisationKeys))")
-			  .append(" and v.status ");
-			if (params.hasStatus()) {
-				sb.in(params.getStatus());
-			} else {
-				sb.in(RepositoryEntryStatusEnum.reviewToClosed());
-			}
+			  .append(" and v.status ")
+			  .in(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published });
 			sb.append(" and (");
 			if (params.isCanCopy()) {
 				sb.append(" v.canCopy=true");
@@ -563,7 +564,11 @@ public class RepositoryEntryAuthorQueries {
 		sb.append(")");
 		return true;
 	}
-	
+
+	private boolean isPublishedStatusAllowed(SearchAuthorRepositoryEntryViewParams params) {
+		return !params.hasStatus() || Arrays.asList(params.getStatus()).contains(RepositoryEntryStatusEnum.published);
+	}
+
 	private Enum<?>[] collectManagementRoles(Roles roles, SearchAuthorRepositoryEntryViewParams params) {
 		List<Enum<?>> list = new ArrayList<>(6);
 		if(roles.isAdministrator()) {
