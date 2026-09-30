@@ -685,7 +685,8 @@ public class QTI21EditForm extends FormBasicController {
 			updateShowResultsWarning();
 			markDirty();
 		} else if (source == gradeEnabledEl) {
-			doConfirmGrades(ureq);
+			updateGradeUI();
+			markDirty();
 		} else if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);
 		}
@@ -1017,17 +1018,6 @@ public class QTI21EditForm extends FormBasicController {
 			assessmentModeDefaults.setLeadTime(leadTime);
 			int followupTime = followupTimeEl.getIntValue();
 			assessmentModeDefaults.setFollowUpTime(followupTime);
-		}
-	}
-	
-	private void doConfirmGrades(UserRequest ureq) {
-		if (assessmentService.getScoreCount(courseEntry, courseNode.getIdent()) > 0) {
-			String title = translate("node.grade.enabled");
-			String text = translate("qti.form.grade.confirm.text");
-			confirmGradeCtrl = activateOkCancelDialog(ureq, title, text, confirmGradeCtrl);
-		} else {
-			updateGradeUI();
-			markDirty();
 		}
 	}
 
