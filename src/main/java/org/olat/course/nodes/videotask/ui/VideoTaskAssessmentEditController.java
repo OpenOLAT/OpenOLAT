@@ -207,7 +207,6 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		Float min = MSCourseNode.CONFIG_DEFAULT_SCORE_MIN;
 		minEl = uifactory.addTextElement("form.min", "form.min", 8, min.toString(), formLayout);
 		minEl.setElementCssClass("o_sel_course_video_min");
-		minEl.setEnabled(false);
 		
 		// Maximum
 		Float max = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
@@ -325,6 +324,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	private void updateUI() {
 		boolean scoreEnabled = scoreEl.isOn();
 		minEl.setVisible(scoreEnabled);
+		minEl.setEnabled(false);
 		maxEl.setVisible(scoreEnabled);
 		roundingEl.setVisible(scoreEnabled);
 		if(gradeEnabledEl != null) {
