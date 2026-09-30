@@ -436,7 +436,7 @@ public class RepositoryEntryAuthorQueries {
 					.map(OrganisationRef::getKey).collect(Collectors.toList());
 			dbQuery.setParameter("organisationKeys", organisationKeys);
 		}
-		if (params.isShared() && params.isSharedOrganisationsDefined()) {
+		if (params.isSharedOrganisationsDefined()) {
 			List<Long> sharedOrganisationKeys = params.getSharedOrganisations().stream()
 					.map(OrganisationRef::getKey).toList();
 			dbQuery.setParameter("sharedOrganisationKeys", sharedOrganisationKeys);
@@ -537,7 +537,29 @@ public class RepositoryEntryAuthorQueries {
 			}
 			sb.append(" ))");
 		}
-		
+
+		if (params.isSharedOrganisationsDefined() && (params.isCanCopy() || params.isCanReference())) {
+			sb.append(" or (exists (select reToOrg.key from repoentrytoorganisation as reToOrg")
+			  .append("  where reToOrg.entry.key=v.key and reToOrg.organisation.key in (:sharedOrganisationKeys))")
+			  .append(" and v.status ");
+			if (params.hasStatus()) {
+				sb.in(params.getStatus());
+			} else {
+				sb.in(RepositoryEntryStatusEnum.reviewToClosed());
+			}
+			sb.append(" and (");
+			if (params.isCanCopy()) {
+				sb.append(" v.canCopy=true");
+			}
+			if (params.isCanReference()) {
+				if (params.isCanCopy()) {
+					sb.append(" or");
+				}
+				sb.append(" v.canReference=true");
+			}
+			sb.append("))");
+		}
+
 		sb.append(")");
 		return true;
 	}

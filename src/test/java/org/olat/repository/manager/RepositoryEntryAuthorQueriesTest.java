@@ -787,4 +787,40 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		assertThat(contains(reOwned, results)).isFalse();
 		assertThat(contains(rePreparation, results)).isFalse();
 	}
+
+	/**
+	 * Neither the owned nor the shared filter is set, as in the generic search
+	 * tab of a repository entry selection dialog (e.g. the "Add form" dialog
+	 * of the booking order forms). Entries shared through an organisation must
+	 * be found as well, see OO-9724.
+	 */
+	@Test
+	public void searchViews_sharedOrganisations_genericSearch() {
+		Organisation org1 = organisationService.createOrganisation("Org shared search 1", "org-shared-search-1",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation org2 = organisationService.createOrganisation("Org shared search 2", "org-shared-search-2",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("id-shared-search-");
+
+		RepositoryEntry reShared = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reShared = repositoryManager.setAccess(reShared, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		RepositoryEntry reNotReferenceable = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reNotReferenceable = repositoryManager.setAccess(reNotReferenceable, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				true, false, false, false, List.of(org1));
+		RepositoryEntry reOtherOrganisation = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reOtherOrganisation = repositoryManager.setAccess(reOtherOrganisation, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org2));
+		dbInstance.commitAndCloseSession();
+
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(identity, securityManager.getRoles(identity));
+		params.setCanReference(true);
+		params.setSharedOrganisations(List.of(org1));
+		params.setStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published });
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+
+		assertThat(contains(reShared, results)).isTrue();
+		assertThat(contains(reNotReferenceable, results)).isFalse();
+		assertThat(contains(reOtherOrganisation, results)).isFalse();
+	}
 }
