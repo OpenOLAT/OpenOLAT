@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -62,9 +63,13 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.member.CurriculumElementMemberUsersController;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipationCounts;
@@ -133,6 +138,8 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 	private ACService acService;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -387,12 +394,16 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 		Roles roles = ureq.getUserSession().getRoles();
 		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("offer-survey-form-v1", EvaluationFormResource.TYPE_NAME);
 		tableConfig.setSelectRepositoryEntry(SelectionMode.single);
+		tableConfig.setBatchSelect(true);
+		tableConfig.setSharedWithMeTab(true);
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
 		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.embedded));
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
 		searchParams.addResourceTypes(EvaluationFormResource.TYPE_NAME);
 		searchParams.setRuntimeTypes(tableConfig.getAllowedRuntimeTypes());
+		searchParams.setCanReference(true);
+		searchParams.setSharedOrganisations(loadSharedOrganisations(roles));
 
 		formSearchCtrl = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
 		listenTo(formSearchCtrl);
@@ -402,6 +413,16 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 				true, translate("offer.survey.add"));
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	private List<OrganisationRef> loadSharedOrganisations(Roles roles) {
+		List<OrganisationRef> organisations = new ArrayList<>(roles.getOrganisationsWithRole(OrganisationRoles.curriculummanager));
+		CurriculumElement element = curriculumService.getCurriculumElement(resource);
+		if (element != null && element.getCurriculum() != null
+				&& curriculumService.hasRoleExpanded(element.getCurriculum(), getIdentity(), CurriculumRoles.curriculumowner.name())) {
+			organisations.add(element.getCurriculum().getOrganisation());
+		}
+		return organisations;
 	}
 
 	private void doAddForm(RepositoryEntryRef formEntryRef) {

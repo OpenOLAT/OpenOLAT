@@ -19,6 +19,7 @@
  */
 package org.olat.repository.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Arrays;
@@ -744,5 +745,46 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		// Assert
 		Assert.assertTrue(contains(re, results));
 		Assert.assertFalse(contains(notRe, results));
+	}
+	
+	@Test
+	public void searchViews_sharedOrganisations() {
+		Organisation org1 = organisationService.createOrganisation("Org shared 1", "org-shared-1",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation org2 = organisationService.createOrganisation("Org shared 2", "org-shared-2",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("id-shared-");
+		
+		RepositoryEntry reShared = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reShared = repositoryManager.setAccess(reShared, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		RepositoryEntry reNotReferenceable = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reNotReferenceable = repositoryManager.setAccess(reNotReferenceable, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				true, false, false, false, List.of(org1));
+		RepositoryEntry reOtherOrganisation = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reOtherOrganisation = repositoryManager.setAccess(reOtherOrganisation, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org2));
+		RepositoryEntry reOwned = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reOwned = repositoryManager.setAccess(reOwned, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		repositoryEntryRelationDao.addRole(identity, reOwned, GroupRoles.owner.name());
+		RepositoryEntry rePreparation = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		rePreparation = repositoryManager.setStatus(rePreparation, RepositoryEntryStatusEnum.preparation);
+		rePreparation = repositoryManager.setAccess(rePreparation, false, RepositoryEntryAllowToLeaveOptions.atAnyTime,
+				false, true, false, false, List.of(org1));
+		dbInstance.commitAndCloseSession();
+		
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(identity, securityManager.getRoles(identity));
+		params.setShared(true);
+		params.setCanReference(true);
+		params.setSharedOrganisations(List.of(org1));
+		params.setStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published });
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		
+		assertThat(contains(reShared, results)).isTrue();
+		assertThat(contains(reNotReferenceable, results)).isFalse();
+		assertThat(contains(reOtherOrganisation, results)).isFalse();
+		assertThat(contains(reOwned, results)).isFalse();
+		assertThat(contains(rePreparation, results)).isFalse();
 	}
 }

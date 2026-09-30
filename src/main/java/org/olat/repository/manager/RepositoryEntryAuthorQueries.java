@@ -436,6 +436,11 @@ public class RepositoryEntryAuthorQueries {
 					.map(OrganisationRef::getKey).collect(Collectors.toList());
 			dbQuery.setParameter("organisationKeys", organisationKeys);
 		}
+		if (params.isShared() && params.isSharedOrganisationsDefined()) {
+			List<Long> sharedOrganisationKeys = params.getSharedOrganisations().stream()
+					.map(OrganisationRef::getKey).toList();
+			dbQuery.setParameter("sharedOrganisationKeys", sharedOrganisationKeys);
+		}
 		if (params.getTaxonomyLevels() != null) {
 			List<Long> taxonomyLevelKeys = params.getTaxonomyLevels().stream()
 					.map(TaxonomyLevelRef::getKey).collect(Collectors.toList());
@@ -595,8 +600,17 @@ public class RepositoryEntryAuthorQueries {
 
 			sb.append(" and membership.role='").append(GroupRoles.owner.name()).append("')");
 					
-			sb.append(" and v.status").in(RepositoryEntryStatusEnum.reviewToClosed());
-			sb.append(" and v.canCopy=true");
+			if (params.isSharedOrganisationsDefined()) {
+				sb.append(" and exists (select reToOrg.key from repoentrytoorganisation as reToOrg")
+				  .append("  where reToOrg.entry.key=v.key and reToOrg.organisation.key in (:sharedOrganisationKeys))");
+			}
+			sb.append(" and v.status");
+			if (params.hasStatus()) {
+				sb.in(params.getStatus());
+			} else {
+				sb.in(RepositoryEntryStatusEnum.reviewToClosed());
+			}
+			sb.append(params.isCanReference() ? " and v.canReference=true" : " and v.canCopy=true");
 		}
 		
 		if (withOrClause) {

@@ -219,6 +219,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FlexiFiltersTab allCoursesTab;
 	private FlexiFiltersTab myCoursesTab;
 	private FlexiFiltersTab coursesSharedWithMeTab;
+	private FlexiFiltersTab sharedWithMeTab;
 	private FlexiFiltersTab bookmarkTab;
 	private FlexiFiltersTab searchTab;
 	private FlexiFiltersTab deletedTab;
@@ -734,6 +735,15 @@ public class AuthorListController extends FormBasicController implements Activat
 			myTab.setElementCssClass("o_sel_author_my");
 			myTab.setFiltersExpanded(true);
 			tabs.add(myTab);
+		}
+		
+		if(configuration.isSharedWithMeTab()) {
+			sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters("SharedWithMe", translate("search.shared.with.me"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "shared"),
+							FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, RepositoryEntryStatusEnum.published.name())));
+			sharedWithMeTab.setElementCssClass("o_sel_author_shared_with_me");
+			sharedWithMeTab.setFiltersExpanded(true);
+			tabs.add(sharedWithMeTab);
 		}
 		
 		searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.generic"), TabSelectionBehavior.clear);

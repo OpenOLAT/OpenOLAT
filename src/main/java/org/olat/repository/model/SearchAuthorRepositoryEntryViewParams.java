@@ -45,6 +45,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private Boolean marked;
 	private boolean owned;
 	private boolean shared;
+	private List<OrganisationRef> sharedOrganisations;
 	private OERRelease oerRelease = OERRelease.all;
 	private ResourceUsage resourceUsage = ResourceUsage.all;
 	private RepositoryEntryStatusEnum[] status;
@@ -119,6 +120,18 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setShared(boolean shared) {
 		this.shared = shared;
+	}
+
+	public boolean isSharedOrganisationsDefined() {
+		return sharedOrganisations != null && !sharedOrganisations.isEmpty();
+	}
+
+	public List<OrganisationRef> getSharedOrganisations() {
+		return sharedOrganisations;
+	}
+
+	public void setSharedOrganisations(List<OrganisationRef> sharedOrganisations) {
+		this.sharedOrganisations = sharedOrganisations;
 	}
 
 	public String getAuthor() {

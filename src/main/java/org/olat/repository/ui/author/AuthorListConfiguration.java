@@ -56,6 +56,7 @@ public class AuthorListConfiguration {
 	private boolean defaultIconType = true;
 	private boolean templatesMode = false;
 	private boolean templateMode = false;
+	private boolean sharedWithMeTab = false;
 	
 	private AuthorListConfiguration(String tableId) {
 		this.tableId = tableId;
@@ -276,5 +277,13 @@ public class AuthorListConfiguration {
 
 	public void setTemplateMode(boolean templateMode) {
 		this.templateMode = templateMode;
+	}
+
+	public boolean isSharedWithMeTab() {
+		return sharedWithMeTab;
+	}
+
+	public void setSharedWithMeTab(boolean sharedWithMeTab) {
+		this.sharedWithMeTab = sharedWithMeTab;
 	}
 }
