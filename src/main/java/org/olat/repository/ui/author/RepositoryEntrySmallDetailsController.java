@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.author;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,8 +112,10 @@ public class RepositoryEntrySmallDetailsController extends FormBasicController {
 			
 			List<String> referenceDetails = referenceManager.getReferencesToSummary(entry.getOlatResource());
 	        if (referenceDetails != null) {
+	        	Collator collator = Collator.getInstance(getLocale());
+	        	referenceDetails.sort(collator);
 	        	layoutCont.contextPut("referenceDetails", referenceDetails);
-	        }	
+	        }
 		}
 	}
 

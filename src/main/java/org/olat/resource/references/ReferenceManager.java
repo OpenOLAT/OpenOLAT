@@ -28,10 +28,12 @@ package org.olat.resource.references;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
@@ -47,6 +49,8 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.manager.RepositoryEntryDAO;
@@ -81,6 +85,8 @@ public class ReferenceManager {
 	private OLATResourceManager olatResourceManager;
 	@Autowired
 	private RepositoryEntryRelationDAO reToGroupDao;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 
 	/**
 	 * Add a new reference. The meaning of source and target is
@@ -280,9 +286,10 @@ public class ReferenceManager {
 		StringBuilder result = new StringBuilder(100);
 		List<Reference> refs = getReferencesTo(target);
 		if (refs.size() == 0) return null;
+		Map<Long,String> curriculumElementNames = loadCurriculumElementNames(refs);
 		for (Reference ref:refs) {
 			if(result.length() > 0) result.append(", ");
-			
+
 			OLATResource source = ref.getSource();
 			// special treatment for referenced courses: find out the course title
 			if (source.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
@@ -293,17 +300,20 @@ public class ReferenceManager {
 					log.error("", e);
 					result.append(translator.translate("ref.course", "<strike>" + source.getKey().toString() + "</strike>"));
 				}
+			} else if (curriculumElementNames.containsKey(source.getKey())) {
+				result.append(StringHelper.escapeHtml(curriculumElementNames.get(source.getKey())));
 			} else {
 				result.append(source.getKey().toString());
 			}
 		}
 		return result.toString();
 	}
-	
+
 	public List<String> getReferencesToSummary(OLATResourceable target) {
 		List<Reference> refs = getReferencesTo(target);
 		List<String> refNames = new ArrayList<>(refs.size());
 		if (refs.size() > 0) {
+			Map<Long,String> curriculumElementNames = loadCurriculumElementNames(refs);
 			for (Reference ref:refs) {
 				OLATResource source = ref.getSource();
 				// special treatment for referenced courses: find out the course title
@@ -315,13 +325,32 @@ public class ReferenceManager {
 						log.error("", e);
 						refNames.add("<strike>" + source.getKey().toString() + "</strike>");
 					}
+				} else if (curriculumElementNames.containsKey(source.getKey())) {
+					refNames.add(StringHelper.escapeHtml(curriculumElementNames.get(source.getKey())));
 				} else {
 					refNames.add(source.getKey().toString());
 				}
 			}
 		}
 		return refNames;
-		
+
+	}
+
+	private Map<Long,String> loadCurriculumElementNames(List<Reference> refs) {
+		List<OLATResource> curriculumElementResources = new ArrayList<>();
+		for (Reference ref:refs) {
+			OLATResource source = ref.getSource();
+			if (CurriculumElement.class.getSimpleName().equals(source.getResourceableTypeName())) {
+				curriculumElementResources.add(source);
+			}
+		}
+		if (curriculumElementResources.isEmpty()) return Map.of();
+
+		Map<Long,String> names = new HashMap<>();
+		for (CurriculumElement element:curriculumElementDao.loadElementsByResources(curriculumElementResources)) {
+			names.put(element.getResource().getKey(), element.getDisplayName());
+		}
+		return names;
 	}
 	
 	public List<ReferenceHistory> getReferencesHistoryOf(OLATResource source, String userdata) {
