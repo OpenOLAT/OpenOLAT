@@ -44,6 +44,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.i18n.I18nManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -123,6 +124,9 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 					usess.setIdentity(delivery.getIdentity());
 				}
 				usess.setRoles(Roles.userRoles());
+			}
+			if(delivery.getIdentity() != null) {
+				usess.setLocale(I18nManager.getInstance().getLocaleOrDefault(delivery.getIdentity().getUser().getPreferences().getLanguage()));
 			}
 			
 			Window window;
