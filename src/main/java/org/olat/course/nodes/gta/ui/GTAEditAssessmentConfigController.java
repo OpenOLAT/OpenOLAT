@@ -238,6 +238,12 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 
 		boolean evaluationEnabled = evaluationFormEnabledEl.isVisible() && evaluationFormEnabledEl.isOn();
 		evaluationReferenceContainer.setVisible(!displayOnly && individualTask && evaluationEnabled);
+		
+		if (!displayOnly) {
+			boolean scoreAuto = isScoreAuto();
+			minValEl.setEnabled(!scoreAuto);
+			maxValEl.setEnabled(!scoreAuto);
+		}
 	}
 
 	private void setDisplayOnly(Iterable<FormItem> formItems, boolean displayOnly) {
