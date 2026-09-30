@@ -181,6 +181,8 @@ import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
+import org.olat.resource.references.Reference;
+import org.olat.resource.references.ReferenceManager;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -228,6 +230,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
+	@Autowired
+	private ReferenceManager referenceManager;
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
@@ -1157,11 +1161,28 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public List<CurriculumElementWithParents> getOrderedCurriculumElementsTree(RepositoryEntryRef entry) {
 		List<CurriculumElement> elementsList = curriculumElementDao.loadElements(entry);
 		Set<CurriculumElement> elements = new HashSet<>(elementsList);
-		
+
+		List<CurriculumElementWithParents> withParents = toOrderedCurriculumElementsWithParents(elements);
+		return withParents;
+	}
+
+	@Override
+	public List<CurriculumElementWithParents> getCurriculumElementsReferencing(RepositoryEntry entry) {
+		Set<CurriculumElement> elements = new HashSet<>();
+		for(Reference reference:referenceManager.getReferencesTo(entry.getOlatResource())) {
+			CurriculumElement element = getCurriculumElement(reference.getSource());
+			if(element != null) {
+				elements.add(element);
+			}
+		}
+		return toOrderedCurriculumElementsWithParents(elements);
+	}
+
+	private List<CurriculumElementWithParents> toOrderedCurriculumElementsWithParents(Collection<CurriculumElement> elements) {
 		List<CurriculumElementWithParents> withParents = new ArrayList<>(elements.size() + 2);
 		for(CurriculumElement element:elements) {
 			int numOfSlashes = StringHelper.count(element.getMaterializedPathKeys(), '/');
-			
+
 			List<CurriculumElement> parentLine;
 			if(numOfSlashes <= 2) {
 				parentLine = List.of();
@@ -1172,7 +1193,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			}
 			withParents.add(new CurriculumElementWithParents(element, parentLine, 0));
 		}
-		
+
 		try {
 			Collections.sort(withParents, new CurriculumElementWithParentsComparator(Locale.GERMAN));
 		} catch (Exception e) {

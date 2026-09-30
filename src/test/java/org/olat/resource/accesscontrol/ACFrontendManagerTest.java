@@ -73,6 +73,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.references.Reference;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.manager.ACOrderDAO;
@@ -132,6 +134,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	private ACReservationDAO acReservationDao;
 	@Autowired
 	private EvaluationFormTestsHelper evaluationFormTestsHelper;
+	@Autowired
+	private ReferenceManager referenceManager;
 
 	@Test
 	public void testManagers() {
@@ -849,6 +853,53 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		assertEquals(reservationWithOrder, reservations.get(0));
 		assertEquals(ce1.getResource(), reservations.get(0).getResource());
 		assertEquals(orderer, reservations.get(0).getIdentity());
+	}
+
+	@Test
+	public void shouldAddCurriculumElementReferenceOnCreateOfferSurvey() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-SURVEY-REF", "Curriculum Survey Reference", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("CE-SURVEY-REF", "Element Survey Reference",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		RepositoryEntry formEntry = evaluationFormTestsHelper.createFormEntry();
+		dbInstance.commitAndCloseSession();
+
+		acService.createOfferSurvey(element.getResource(), formEntry, "Step 1");
+		dbInstance.commitAndCloseSession();
+
+		List<Reference> references = referenceManager.getReferences(element.getResource(), formEntry.getOlatResource());
+		assertThat(references).hasSize(1);
+	}
+
+	@Test
+	public void shouldNotAddReferenceOnCreateOfferSurveyWhenResourceIsNotACurriculumElement() {
+		OLATResource resource = createRandomResource();
+		RepositoryEntry formEntry = evaluationFormTestsHelper.createFormEntry();
+		dbInstance.commitAndCloseSession();
+
+		acService.createOfferSurvey(resource, formEntry, "Step 1");
+		dbInstance.commitAndCloseSession();
+
+		List<Reference> references = referenceManager.getReferences(resource, formEntry.getOlatResource());
+		assertThat(references).isEmpty();
+	}
+
+	@Test
+	public void shouldRemoveCurriculumElementReferenceOnDeleteOfferSurvey() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-SURVEY-REF-DEL", "Curriculum Survey Reference Delete", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("CE-SURVEY-REF-DEL", "Element Survey Reference Delete",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		RepositoryEntry formEntry = evaluationFormTestsHelper.createFormEntry();
+		dbInstance.commitAndCloseSession();
+		EvaluationFormSurvey survey = acService.createOfferSurvey(element.getResource(), formEntry, "Step 1");
+		dbInstance.commitAndCloseSession();
+
+		acService.deleteOfferSurvey(survey);
+		dbInstance.commitAndCloseSession();
+
+		List<Reference> references = referenceManager.getReferences(element.getResource(), formEntry.getOlatResource());
+		assertThat(references).isEmpty();
 	}
 	
 }

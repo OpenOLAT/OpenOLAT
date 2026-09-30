@@ -26,7 +26,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -2416,9 +2418,15 @@ public class AuthorListController extends FormBasicController implements Activat
 						String.valueOf(references.size())));
 			}
 
-			List<CurriculumElementWithParents> curriculumElements = curriculumService.getOrderedCurriculumElementsTree(entry);
+			Map<Long,CurriculumElementWithParents> curriculumElements = new LinkedHashMap<>();
+			for(CurriculumElementWithParents curriculumElement:curriculumService.getOrderedCurriculumElementsTree(entry)) {
+				curriculumElements.put(curriculumElement.getKey(), curriculumElement);
+			}
+			for(CurriculumElementWithParents curriculumElement:curriculumService.getCurriculumElementsReferencing(entry)) {
+				curriculumElements.putIfAbsent(curriculumElement.getKey(), curriculumElement);
+			}
 			List<Link> curriculumElementsLinks = new ArrayList<>(curriculumElements.size());
-			for(CurriculumElementWithParents curriculumElement:curriculumElements) {
+			for(CurriculumElementWithParents curriculumElement:curriculumElements.values()) {
 				String name = "curel-" + (++counter);
 				Link elementLink = LinkFactory.createLink(name, "curriculum-element", this.getTranslator(), mainVC, this, Link.NONTRANSLATED);
 				elementLink.setCustomDisplayText(StringHelper.escapeHtml(curriculumElement.getDisplayName()));

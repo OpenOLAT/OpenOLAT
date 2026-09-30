@@ -388,6 +388,16 @@ public interface CurriculumService {
 	
 	
 	public List<CurriculumElementWithParents> getOrderedCurriculumElementsTree(RepositoryEntryRef entry);
+
+	/**
+	 * Return the curriculum elements which hold a reference (via the reference
+	 * manager) to the specified repository entry, for example a form entry used
+	 * as booking order form of the element.
+	 *
+	 * @param entry A repository entry
+	 * @return A list of curriculum elements
+	 */
+	public List<CurriculumElementWithParents> getCurriculumElementsReferencing(RepositoryEntry entry);
 	
 	/**
 	 * Return the curriculum elements linked to the specified repository entry and a

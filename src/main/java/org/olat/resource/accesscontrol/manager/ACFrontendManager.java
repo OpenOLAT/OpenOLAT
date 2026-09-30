@@ -135,6 +135,8 @@ import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutMan
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.olat.resource.references.Reference;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserDataExportable;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -203,6 +205,8 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	private OrganisationService organisationService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private ReferenceManager referenceManager;
 
 	@Override
 	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean isGuest,
@@ -389,14 +393,34 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	@Override
 	public EvaluationFormSurvey createOfferSurvey(OLATResource resource, RepositoryEntry formEntry, String displayName) {
 		EvaluationFormSurvey survey = offerSurveyDao.createSurvey(resource, formEntry, displayName);
+		addCurriculumElementReference(resource, formEntry);
 		log.info(Tracing.M_AUDIT, "Create booking order form: {} ({}) for resource: {}", displayName, formEntry, resource);
 		return survey;
 	}
 
+	private void addCurriculumElementReference(OLATResource resource, RepositoryEntry formEntry) {
+		CurriculumElement element = curriculumService.getCurriculumElement(resource);
+		if (element != null) {
+			referenceManager.addReference(resource, formEntry.getOlatResource(), null);
+		}
+	}
+
 	@Override
 	public void deleteOfferSurvey(EvaluationFormSurvey survey) {
+		removeCurriculumElementReference(survey);
 		offerSurveyDao.deleteSurvey(survey);
 		log.info(Tracing.M_AUDIT, "Delete booking order form: {}", survey);
+	}
+
+	private void removeCurriculumElementReference(EvaluationFormSurvey survey) {
+		Long resourceKey = survey.getIdentifier().getOLATResourceable().getResourceableId();
+		OLATResource resource = OLATResourceManager.getInstance().findResourceById(resourceKey);
+		CurriculumElement element = resource == null ? null : curriculumService.getCurriculumElement(resource);
+		if (element != null) {
+			for (Reference reference : referenceManager.getReferences(resource, survey.getFormEntry().getOlatResource())) {
+				referenceManager.delete(reference);
+			}
+		}
 	}
 
 	@Override
