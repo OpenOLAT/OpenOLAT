@@ -24,8 +24,10 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
@@ -36,8 +38,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -72,6 +78,8 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 	private LectureService lectureService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	/**
 	 * Only administrator and lecture managers have access to this REST API
@@ -213,6 +221,139 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		Assert.assertNotNull("Lecture block on a curriculum element without a course must be returned", lectureBlockVo);
 		Assert.assertEquals(block.getKey(), lectureBlockVo.getKey());
 		Assert.assertEquals(curriculumElement.getKey(), lectureBlockVo.getCurriculumElementKey());
+	}
+
+	/**
+	 * A lecture manager sees the lecture blocks of the curricula of his organisation.
+	 */
+	@Test
+	public void getLecturesBlock_lectureManager_curriculumOrganisation()
+	throws IOException, URISyntaxException {
+		Organisation organisation = createOrganisation(null);
+		LectureBlock block = createLectureBlock(createCurriculumElement(organisation));
+		IdentityWithLogin manager = createLectureManager(organisation, GroupMembershipInheritance.none);
+
+		List<Long> keys = getLectureBlockKeys(new RestConnection(manager), null);
+		Assert.assertTrue(keys.contains(block.getKey()));
+	}
+
+	/**
+	 * A lecture manager doesn't see the lecture blocks of the curricula of other organisations.
+	 */
+	@Test
+	public void getLecturesBlock_lectureManager_otherOrganisation()
+	throws IOException, URISyntaxException {
+		Organisation organisation = createOrganisation(null);
+		Organisation otherOrganisation = createOrganisation(null);
+		LectureBlock block = createLectureBlock(createCurriculumElement(organisation));
+		IdentityWithLogin manager = createLectureManager(otherOrganisation, GroupMembershipInheritance.root);
+
+		List<Long> keys = getLectureBlockKeys(new RestConnection(manager), null);
+		Assert.assertFalse(keys.contains(block.getKey()));
+	}
+
+	/**
+	 * A lecture manager of the parent organisation sees the lecture blocks of the curricula
+	 * of the child organisation.
+	 */
+	@Test
+	public void getLecturesBlock_lectureManager_parentOrganisation()
+	throws IOException, URISyntaxException {
+		Organisation parentOrganisation = createOrganisation(null);
+		Organisation childOrganisation = createOrganisation(parentOrganisation);
+		LectureBlock block = createLectureBlock(createCurriculumElement(childOrganisation));
+		IdentityWithLogin manager = createLectureManager(parentOrganisation, GroupMembershipInheritance.root);
+
+		List<Long> keys = getLectureBlockKeys(new RestConnection(manager), null);
+		Assert.assertTrue(keys.contains(block.getKey()));
+	}
+
+	/**
+	 * The lecture blocks of a course with lectures disabled are not returned.
+	 */
+	@Test
+	public void getLecturesBlock_courseWithLecturesDisabled()
+	throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-dis");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		LectureBlock block = createLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+
+		List<Long> keys = getLectureBlockKeys(new RestConnection("administrator", "openolat"), null);
+		Assert.assertFalse(keys.contains(block.getKey()));
+	}
+
+	/**
+	 * The lecture blocks of a deleted curriculum element are not returned.
+	 */
+	@Test
+	public void getLecturesBlock_deletedCurriculumElement()
+	throws IOException, URISyntaxException {
+		CurriculumElement element = createCurriculumElement(JunitTestHelper.getDefaultOrganisation());
+		LectureBlock block = createLectureBlock(element);
+		curriculumService.updateCurriculumElementStatus(JunitTestHelper.getDefaultActor(), element,
+				CurriculumElementStatus.deleted, false, null);
+		dbInstance.commitAndCloseSession();
+
+		List<Long> keys = getLectureBlockKeys(new RestConnection("administrator", "openolat"), null);
+		Assert.assertFalse(keys.contains(block.getKey()));
+	}
+
+	/**
+	 * The date parameter accepts an ISO date without time.
+	 */
+	@Test
+	public void getLecturesBlock_isoDate()
+	throws IOException, URISyntaxException {
+		LectureBlock block = createLectureBlock(createCurriculumElement(JunitTestHelper.getDefaultOrganisation()));
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		List<Long> keys = getLectureBlockKeys(conn, LocalDate.now().toString());
+		Assert.assertTrue(keys.contains(block.getKey()));
+
+		List<Long> keysOtherDay = getLectureBlockKeys(conn, LocalDate.now().plusDays(3).toString());
+		Assert.assertFalse(keysOtherDay.contains(block.getKey()));
+	}
+
+	private List<Long> getLectureBlockKeys(RestConnection conn, String date)
+	throws IOException, URISyntaxException {
+		UriBuilder builder = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures");
+		if(date != null) {
+			builder = builder.queryParam("date", date);
+		}
+		HttpGet method = conn.createGet(builder.build(), MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<LectureBlockVO> voList = parseLectureBlockArray(response.getEntity().getContent());
+		return voList.stream().map(LectureBlockVO::getKey).toList();
+	}
+
+	private Organisation createOrganisation(Organisation parent) {
+		String identifier = "lect-root-org-" + UUID.randomUUID();
+		Organisation organisation = organisationService.createOrganisation(identifier, identifier, null, parent, null,
+				JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+		return organisation;
+	}
+
+	private IdentityWithLogin createLectureManager(Organisation organisation, GroupMembershipInheritance inheritance) {
+		IdentityWithLogin manager = JunitTestHelper.createAndPersistRndUser("lect-root-mgr");
+		organisationService.addMember(organisation, manager.getIdentity(), OrganisationRoles.lecturemanager, inheritance,
+				JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+		return manager;
+	}
+
+	private CurriculumElement createCurriculumElement(Organisation organisation) {
+		Curriculum curriculum = curriculumService.createCurriculum("lect-root-cur", "Lecture root curriculum", "",
+				false, organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("lect-root-cur-el",
+				"Lecture root curriculum element", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.enabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		dbInstance.commitAndCloseSession();
+		return element;
 	}
 
 	private RepositoryEntry deployCourseWithLecturesEnabled(Identity author) {

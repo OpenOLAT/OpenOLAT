@@ -64,6 +64,7 @@ public class LecturesBlockSearchParameters {
 	private boolean inSomeCurriculum = false;
 	
 	private boolean configuredEntry = true;
+	private boolean configuredEntryOrCurriculumElement = false;
 	private List<TaxonomyLevelRef> taxonomyLevels;
 
 	public LecturesBlockSearchParameters() {
@@ -225,6 +226,22 @@ public class LecturesBlockSearchParameters {
 
 	public void setLectureConfiguredRepositoryEntry(boolean enabled) {
 		this.configuredEntry = enabled;
+	}
+
+	public boolean isLectureConfiguredRepositoryEntryOrCurriculumElement() {
+		return configuredEntryOrCurriculumElement;
+	}
+
+	/**
+	 * Only lecture blocks of a course with lectures enabled, or lecture blocks
+	 * of a curriculum element which is not deleted. Needs
+	 * setLectureConfiguredRepositoryEntry(false) to include lecture blocks
+	 * without a course.
+	 *
+	 * @param enabled true to enable the restriction
+	 */
+	public void setLectureConfiguredRepositoryEntryOrCurriculumElement(boolean enabled) {
+		this.configuredEntryOrCurriculumElement = enabled;
 	}
 
 	public List<CurriculumRef> getCurriculums() {

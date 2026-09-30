@@ -19,9 +19,13 @@
  */
 package org.olat.modules.lecture.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.parseDate;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -83,21 +87,20 @@ public class LectureBlocksRootWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response searchLectureBlocks(@QueryParam("date") @Parameter(description = "The date") String date, @Context HttpServletRequest httpRequest) {
+	public Response searchLectureBlocks(@QueryParam("date") @Parameter(description = "The date, format yyyy-MM-dd or yyyy-MM-dd'T'HH:mm:ss") String date,
+			@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isLectureManager()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
-		// Include lecture blocks on curriculum elements without a course too (OO-9734): the caller is
-		// already restricted to administrator/lecture manager above, so there is no need to also
-		// require a per-course/curriculum membership row via setManager(...) - that would only exclude
-		// results for a privileged caller whose role is granted at a parent/root organisation instead
-		// of directly on the block's own course/curriculum/organisation group.
+		// Lecture blocks of courses with lectures enabled and of curriculum elements (with or without course)
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setLectureConfiguredRepositoryEntry(false);
+		searchParams.setLectureConfiguredRepositoryEntryOrCurriculumElement(true);
+		searchParams.setManager(getIdentity(httpRequest));
 		if(date != null) {
-			Date d = parseDate(date, Locale.ENGLISH);
+			Date d = parseDay(date);
 			Date startDate = CalendarUtils.removeTime(d);
 			Date endDate = CalendarUtils.endOfDay(d);
 			searchParams.setStartDate(startDate);
@@ -110,6 +113,18 @@ public class LectureBlocksRootWebService {
 			voes[i] = LectureBlockVO.valueOf(block, block.getEntry(), block.getCurriculumElement());
 		}
 		return Response.ok(voes).build();
+	}
+
+	/**
+	 * RestSecurityHelper.parseDate() doesn't understand an ISO date without time
+	 * and silently falls back to one month ago.
+	 */
+	private Date parseDay(String date) {
+		try {
+			return Date.from(LocalDate.parse(date).atStartOfDay(ZoneId.systemDefault()).toInstant());
+		} catch (DateTimeParseException e) {
+			return parseDate(date, Locale.ENGLISH);
+		}
 	}
 
 	@Path("rollcalls")

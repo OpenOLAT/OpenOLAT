@@ -939,6 +939,12 @@ public class LectureBlockDAO {
 			  .append(" exists (select config.key from lectureentryconfig config")
 			  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
 			  .append(" )");
+		} else if(searchParams.isLectureConfiguredRepositoryEntryOrCurriculumElement()) {
+			sb.and()
+			  .append(" ((entry.key is null and curEl.key is not null and curEl.status ").in(CurriculumElementStatus.notDeleted()).append(")")
+			  .append("  or exists (select config.key from lectureentryconfig config")
+			  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
+			  .append(" ))");
 		}
 		
 		if(searchParams.getLectureBlocks() != null && !searchParams.getLectureBlocks().isEmpty()) {
