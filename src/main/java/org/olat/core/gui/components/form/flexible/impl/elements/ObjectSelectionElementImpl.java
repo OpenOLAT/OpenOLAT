@@ -93,6 +93,11 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	}
 
 	@Override
+	public String getForId() {
+		return expandFormItem.getFormDispatchId();
+	}
+
+	@Override
 	protected Component getFormItemComponent() {
 		return component;
 	}
@@ -185,7 +190,7 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		expandFormItem.setExpanded(false);
 		expandFormItem.setAriaControls(null);
 		
-		Command focusCommand = FormJSHelper.getFormFocusCommand(getRootForm().getFormName(), getFormDispatchId());
+		Command focusCommand = FormJSHelper.getFormFocusCommand(getRootForm().getFormName(), getForId());
 		getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
 	
