@@ -19,9 +19,15 @@
  */
 package org.olat.course.nodes;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
@@ -32,7 +38,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.VFSContainer;
@@ -66,8 +74,12 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.resource.OLATResource;
 
@@ -93,6 +105,8 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	private static final int CURRENT_VERSION = 4;
 	public static final String CONFIG_DOC_COURSE_REL_PATH = "doc.course.folder";
 	public static final String CONFIG_DOC_REPO_SOFT_KEY = "doc.repo";
+	private static final String EXPORT_FILE_NAME = "document.properties";
+	private static final String EXPORT_KEY_FILE_NAME = "filename";
 	public static final String CONFIG_HEIGHT_AUTO = "auto";
 	public static final String CONFIG_KEY_HEIGHT = "height";
 	
@@ -194,7 +208,7 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 
 		StatusDescription sd = StatusDescription.NOERROR;
 		boolean documentSelected = getModuleConfiguration().has(CONFIG_DOC_COURSE_REL_PATH)
-				|| getModuleConfiguration().has(CONFIG_DOC_REPO_SOFT_KEY);
+				|| (getModuleConfiguration().has(CONFIG_DOC_REPO_SOFT_KEY) && re != null);
 		if (!documentSelected) {
 			String shortKey = "error.no.document.short";
 			String longKey = "error.no.document";
@@ -330,6 +344,71 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 		return new DocumentSource(vfsLeaf, entry);
 	}
 	
+	@Override
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences) {
+		RepositoryEntry re = getReferencedRepositoryEntry();
+		if (re == null || withReferences == RepositoryEntryImportExportLinkEnum.NONE) {
+			return;
+		}
+		
+		File exportFolder = new File(exportDirectory, getIdent());
+		exportFolder.mkdirs();
+		new RepositoryEntryImportExport(re, exportFolder).exportDoExport(withReferences);
+		
+		VFSLeaf vfsLeaf = getDocumentSource(null).getVfsLeaf();
+		if (vfsLeaf != null) {
+			Properties properties = new Properties();
+			properties.setProperty(EXPORT_KEY_FILE_NAME, vfsLeaf.getName());
+			try (FileOutputStream out = new FileOutputStream(new File(exportFolder, EXPORT_FILE_NAME))) {
+				properties.store(out, null);
+			} catch (IOException e) {
+				log.error("Cannot export file name of document node {}", getIdent(), e);
+			}
+		}
+	}
+	
+	@Override
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale,
+			RepositoryEntryImportExportLinkEnum withReferences) {
+		ModuleConfiguration config = getModuleConfiguration();
+		if (!config.has(CONFIG_DOC_REPO_SOFT_KEY)) {
+			return;
+		}
+		if (withReferences == RepositoryEntryImportExportLinkEnum.NONE) {
+			config.remove(CONFIG_DOC_REPO_SOFT_KEY);
+			return;
+		}
+		
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
+		if (withReferences != RepositoryEntryImportExportLinkEnum.WITH_REFERENCE || !rie.anyExportedPropertiesAvailable()) {
+			return;
+		}
+		
+		RepositoryEntry re = null;
+		File propertiesFile = new File(new File(importDirectory, getIdent()), EXPORT_FILE_NAME);
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(rie.getResourceType());
+		if (handler != null && propertiesFile.exists()) {
+			Properties properties = new Properties();
+			try (FileInputStream in = new FileInputStream(propertiesFile)) {
+				properties.load(in);
+				String filename = properties.getProperty(EXPORT_KEY_FILE_NAME);
+				if (StringHelper.containsNonWhitespace(filename)) {
+					re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(), rie.getDescription(),
+							RepositoryEntryImportExportLinkEnum.NONE, organisation, locale, rie.importGetExportedFile(), filename);
+				}
+			} catch (IOException e) {
+				log.error("Cannot import document of node {}", getIdent(), e);
+			}
+		}
+		
+		if (re != null) {
+			setDocumentFromRepository(re);
+		} else {
+			log.warn("Document of node {} not imported, reference removed", getIdent());
+			config.remove(CONFIG_DOC_REPO_SOFT_KEY);
+		}
+	}
+
 	@Override
 	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings,
 			CourseEnvironmentMapper envMapper) {

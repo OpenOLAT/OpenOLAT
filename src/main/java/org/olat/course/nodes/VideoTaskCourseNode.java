@@ -20,6 +20,7 @@
  */
 package org.olat.course.nodes;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -75,6 +77,7 @@ import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibilityFilter;
+import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -88,8 +91,12 @@ import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 /**
  * 
@@ -131,6 +138,42 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;
+	}
+	
+	@Override
+	public void exportNode(File exportDirectory, ICourse course, RepositoryEntryImportExportLinkEnum withReferences) {
+		RepositoryEntry re = getReferencedRepositoryEntry();
+		if (re == null) {
+			return;
+		}
+		
+		if (withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE || withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+			File exportFolder = new File(exportDirectory, getIdent());
+			exportFolder.mkdirs();
+			new RepositoryEntryImportExport(re, exportFolder).exportDoExport(withReferences);
+		}
+	}
+	
+	@Override
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale,
+			RepositoryEntryImportExportLinkEnum withReferences) {
+		if (withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+			return;
+		}
+		
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
+		if (withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE && rie.anyExportedPropertiesAvailable()) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(VideoFileResource.TYPE_NAME);
+			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(), rie.getDescription(),
+					RepositoryEntryImportExportLinkEnum.NONE, organisation, locale, rie.importGetExportedFile(), null);
+			if (re != null) {
+				VideoTaskEditController.setVideoReference(re, getModuleConfiguration());
+				return;
+			}
+		} else if (withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE) {
+			return;
+		}
+		VideoTaskEditController.removeVideoReference(getModuleConfiguration());
 	}
 	
 	@Override

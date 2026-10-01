@@ -498,6 +498,13 @@ public class RepositoryEntryImportExport {
 		}
 		return repositoryProperties.getResourcename();
 	}
+
+	public String getResourceType() {
+		if(!propertiesLoaded) {
+			loadConfiguration();
+		}
+		return repositoryProperties.getResourceType();
+	}
 	
 	/**
 	 * @return the descritpion
