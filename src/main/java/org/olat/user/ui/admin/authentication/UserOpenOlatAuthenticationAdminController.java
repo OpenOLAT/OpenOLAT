@@ -263,13 +263,13 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		if (!withPasskey) {
 			return false;
 		}
-		if (minimalLevel != PasskeyLevels.level1) {
+		if (passkeyListCtrl != null && passkeyListCtrl.hasPasskeys()) {
 			return true;
 		}
-		if (getOlatAuthentication(authentications) != null) {
-			return true;
-		}
-		return false;
+		// No passkeys: show only if the configured minimum requires one, so the admin/user
+		// can see that a passkey is still needed. At level1 (password sufficient) and no
+		// passkeys, there is nothing to show.
+		return minimalLevel != PasskeyLevels.level1;
 	}
 	
 	private void updateUI(UserRequest ureq) {
