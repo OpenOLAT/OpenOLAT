@@ -115,17 +115,20 @@ public class IdentitySelectionSource implements ObjectSelectionSource {
 
 	private ObjectDisplayValues joinNames(Stream<? extends Identity> stream) {
 		String meSuffix = " (" + Util.createPackageTranslator(IdentitySelectionSource.class, locale).translate("identity.selection.me") + ")";
-		String joined = stream
+		List<String> names = stream
 				.map(identity -> {
-					String name = StringHelper.escapeHtml(userManager.getUserDisplayName(identity));
+					String name = userManager.getUserDisplayName(identity);
 					if (currentIdentity != null && currentIdentity.getKey().equals(identity.getKey())) {
 						name = name + meSuffix;
 					}
-					return "<i class=\"o_icon o_icon_user\"></i> " + name;
+					return name;
 				})
 				.sorted(collator::compare)
+				.toList();
+		String joined = names.stream()
+				.map(name -> "<i class=\"o_icon o_icon_user\"></i> " + StringHelper.escapeHtml(name))
 				.collect(Collectors.joining("&nbsp;&nbsp;"));
-		return new ObjectDisplayValues(joined, EscapeMode.none, joined, null);
+		return new ObjectDisplayValues(joined, EscapeMode.none, String.join(", ", names), null);
 	}
 
 	@Override
