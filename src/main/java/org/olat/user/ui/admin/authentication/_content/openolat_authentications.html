@@ -1,9 +1,9 @@
-<div class="panel o_authentication_overview #if($r.isNotEmpty($withPasskey)) o_authentication_upgrade #end">
+<div class="panel o_authentication_overview #if($withPasskey) o_authentication_upgrade #end">
 	<i class="o_icon o_icon-lg o_icon_user_authentication o_authentication_$level"> </i>
 	<div class="o_authentication_details">
 		<h3>$title</h3>
 	</div>
-	#if($r.isNotEmpty($withPasskey))
+	#if($withPasskey)
 	<div class="o_authentication_upgrade">
 		<div class="o_form">
 			<div class="form-horizontal"><label class="control-label col-sm-6">$r.translate("minimal.level.label")</label></div>
