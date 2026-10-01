@@ -237,7 +237,7 @@ public class CurriculumElementRepositoryTableModel extends DefaultFlexiTableData
 		repoEntry("table.header.typeimg"),
 		displayname("table.header.title"),
 		author("table.header.author"),
-		access("table.header.access"),
+		access("cif.resources.status"),
 		creationDate("table.header.date"),
 		lastUsage("table.header.lastusage"),
 		externalId("table.header.externalid"),
