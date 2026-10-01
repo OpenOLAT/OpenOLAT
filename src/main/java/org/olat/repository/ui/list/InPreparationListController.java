@@ -459,6 +459,15 @@ public class InPreparationListController extends FormBasicController implements 
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == infosCtrl && event instanceof LeavingEvent) {
+			closeInformations();
+			loadModelAndFilter();
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == mainForm.getInitialComponent()) {
 			if("ONCLICK".equals(event.getCommand())) {
