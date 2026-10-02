@@ -632,7 +632,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			List<RelationRole> roles = relationshipService.getAvailableRoles();
 			if(!roles.isEmpty()) {
 				GenericTreeNode relationsNode = appendNode("menu.relations", "menu.relations.alt",
-						new Presentation("menu.relations", "menu.relations.intro", "manual_admin/usermanagement/Search_Users/"),
+						new Presentation("menu.relations", "menu.relations.intro", "manual_admin/usermanagement/Search_Users/#user_roles"),
 						"o_sel_useradmin_relations", root);
 				buildTreeRelationsSubMenu(relationsNode, roles);
 			}
