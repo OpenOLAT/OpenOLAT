@@ -38,6 +38,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TaxonomyModule extends AbstractSpringModule implements ConfigOnOff {
+	
+	/** Maximum size of the teaser image of a level, edit form and import */
+	public static final int TEASER_IMAGE_MAX_SIZE_KB = 2048;
+	/** Maximum size of the background image of a level, edit form and import */
+	public static final int BACKGROUND_IMAGE_MAX_SIZE_KB = 5024;
 
 	private static final String TAXONOMY_ENABLED = "docpool.enabled";
 

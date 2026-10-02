@@ -867,7 +867,9 @@ public class OpenXMLWorkbook implements Closeable {
 				writer.writeStartElement("si");
 				writer.writeStartElement("t");
 				String cleanedSharedString = xmlCharactersFilter.filter(sharedString);
-				if(cleanedSharedString.contains("<") || cleanedSharedString.contains(">")) {
+				// a CDATA block cannot contain ]]>, write such strings as escaped characters
+				if((cleanedSharedString.contains("<") || cleanedSharedString.contains(">"))
+						&& !cleanedSharedString.contains("]]>")) {
 					writer.writeCData(cleanedSharedString);
 				} else {
 					writer.writeCharacters(cleanedSharedString);

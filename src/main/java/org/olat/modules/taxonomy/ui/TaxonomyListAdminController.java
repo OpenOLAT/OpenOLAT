@@ -46,6 +46,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -60,6 +61,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomySecurityCallback;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.importwizard.TaxonomyImportWizard;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.olat.modules.taxonomy.ui.TaxonomyListDataModel.TaxonomyCols;
 import org.olat.repository.RepositoryModule;
@@ -72,16 +74,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TaxonomyListAdminController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2, BreadcrumbPanelAware {
-	
+
 	private FlexiTableElement tableEl;
 	private TaxonomyListDataModel model;
 	private BreadcrumbPanel stackPanel;
 	private FormLink createTaxonomyButton;
-	
+	private FormLink importTaxonomyButton;
+
 	private CloseableModalController cmc;
 	private TaxonomyOverviewController taxonomyCtrl;
 	private EditTaxonomyController editTaxonomyCtrl;
-	
+	private StepsMainRunController importWizardCtrl;
+
 	private int counter;
 
 	@Autowired
@@ -98,7 +102,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	private PortfolioV2Module portfolioModule;
 	@Autowired
 	private CurriculumModule curriculumModule;
-	
+
 	public TaxonomyListAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "taxonomy_list");
 		initForm(ureq);
@@ -117,6 +121,9 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		createTaxonomyButton = uifactory.addFormLink("create.taxonomy", formLayout, Link.BUTTON);
 		createTaxonomyButton.setElementCssClass("o_block_large");
+		importTaxonomyButton = uifactory.addFormLink("import.taxonomy.new", formLayout, Link.BUTTON);
+		importTaxonomyButton.setIconLeftCSS("o_icon o_icon_import");
+		importTaxonomyButton.setElementCssClass("o_block_large");
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyCols.key, "select"));
@@ -167,7 +174,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		}
 		return components;
 	}
-	
+
 	private void loadModel() {
 		List<TaxonomyInfos> taxonomyList = taxonomyService.getTaxonomyInfosList();
 		List<TaxonomyRow> rows = new ArrayList<>(taxonomyList.size());
@@ -177,7 +184,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		model.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
-	
+
 	private TaxonomyRow forgeTaxonomyRow(TaxonomyInfos taxonomy) {
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.taxonomy", "open.taxonomy", null, flc, Link.LINK);
@@ -189,7 +196,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		boolean ePortfolioEnabled = portfolioModule.isTaxonomyLinkingEnabled() && portfolioModule.isTaxonomyLinked(taxonomy.getKey());
 		boolean curriculumEnabled = curriculumModule.getTaxonomyRefs().stream().map(TaxonomyRef::getKey).anyMatch(key -> key.equals(taxonomy.getKey()));
 		boolean mediaEnabled = mediaModule.isTaxonomyLinked(taxonomy.getKey(), false);
-		
+
 		String id = Long.toString(++counter);
 
 		FormLink repoLink = uifactory.addFormLink("repo_".concat(id), "open.repo",
@@ -204,7 +211,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 				linkString(curriculumEnabled), null, flc, Link.LINK | Link.NONTRANSLATED);
 		FormLink mediaLink = uifactory.addFormLink("mediacenter_".concat(id), "open.mediacenter",
 				linkString(mediaEnabled), null, flc, Link.LINK | Link.NONTRANSLATED);
-		
+
 		TaxonomyRow row = new TaxonomyRow(taxonomy, docPoolEnabled, qPoolEnabled, openLink, repoLink, docPoolLink, qPoolLink, ePortfolioLink, curriculumLink, mediaLink);
 		openLink.setUserObject(row);
 		repoLink.setUserObject(row);
@@ -215,7 +222,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		mediaLink.setUserObject(row);
 		return row;
 	}
-	
+
 	private String linkString(boolean enabled) {
 		return enabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
 	}
@@ -223,7 +230,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
-		
+
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Taxonomy".equalsIgnoreCase(type)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
@@ -246,6 +253,8 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(createTaxonomyButton == source) {
 			doCreateTaxonomy(ureq);
+		} else if(importTaxonomyButton == source) {
+			doImportTaxonomy(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("open.taxonomy".equals(link.getCmd())) {
@@ -264,7 +273,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 				doOpenMediaCenterAdmin(ureq);
 			}
 		}
-		
+
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -272,7 +281,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(editTaxonomyCtrl == source) {
@@ -286,44 +295,54 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 				stackPanel.popController(taxonomyCtrl);
 				loadModel();
 			}
+		} else if(importWizardCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.CHANGED_EVENT) {
+					loadModel();
+				}
+				cleanUp();
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(editTaxonomyCtrl);
+		removeAsListenerAndDispose(importWizardCtrl);
 		removeAsListenerAndDispose(cmc);
+		importWizardCtrl = null;
 		editTaxonomyCtrl = null;
 		cmc = null;
 	}
-	
+
 	private void doOpenRepositoryAdmin(UserRequest ureq) {
 		String businessPath = "[AdminSite:0][repositoryAdmin:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
-	
+
 	private void doOpenDocumentPoolAdmin(UserRequest ureq) {
 		String businessPath = "[AdminSite:0][docpool:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
-	
+
 	private void doOpenMediaCenterAdmin(UserRequest ureq) {
 		String businessPath = "[AdminSite:0][mediacenter:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
-	
+
 	private void doOpenQuestionPoolAdmin(UserRequest ureq) {
 		String businessPath = "[AdminSite:0][qpool:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
-	
+
 	private void doOpenEPortfolio(UserRequest ureq) {
 		String businessPath = "[AdminSite:0][portfolio:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
-	
+
 	private void doOpenCurriculum(UserRequest ureq) {
 		String businessPath = "[AdminSite:0][curriculum:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
@@ -331,35 +350,48 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 
 	private TaxonomyOverviewController doOpenTaxonomy(UserRequest ureq, TaxonomyRow row) {
 		removeAsListenerAndDispose(taxonomyCtrl);
-		
+
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Taxonomy", row.getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		Taxonomy taxonomy = taxonomyService.getTaxonomy(row);
 		taxonomyCtrl = new TaxonomyOverviewController(ureq, bwControl, TaxonomySecurityCallback.FULL, taxonomy);
 		taxonomyCtrl.setBreadcrumbPanel(stackPanel);
 		listenTo(taxonomyCtrl);
-		
+
 		stackPanel.changeDisplayname(translate("admin.menu.title"));
 		stackPanel.pushController(row.getDisplayName(), taxonomyCtrl);
 		return taxonomyCtrl;
 	}
-	
+
 	private void doCreateTaxonomy(UserRequest ureq) {
 		if(guardModalController(editTaxonomyCtrl)) return;
-		
+
 		editTaxonomyCtrl = new EditTaxonomyController(ureq, getWindowControl(), TaxonomySecurityCallback.FULL, null);
 		listenTo(editTaxonomyCtrl);
-		
+
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editTaxonomyCtrl.getInitialComponent(), true, translate("create.taxonomy"));
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
+
+	@Override
+	protected void doDispose() {
+		TaxonomyImportWizard.cleanUp(importWizardCtrl);
+		super.doDispose();
+	}
+
+	private void doImportTaxonomy(UserRequest ureq) {
+		removeAsListenerAndDispose(importWizardCtrl);
+		importWizardCtrl = TaxonomyImportWizard.create(ureq, getWindowControl(), null);
+		listenTo(importWizardCtrl);
+		getWindowControl().pushAsModalDialog(importWizardCtrl.getInitialComponent());
+	}
+
 	private static class TaxonomyCssDelegate extends DefaultFlexiTableCssDelegate {
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
 			return "o_taxonomy_row";
 		}
 	}
-	
+
 }

@@ -19,18 +19,15 @@
  */
 package org.olat.modules.taxonomy.ui;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.LocaleUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
@@ -69,14 +66,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.Callout
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.wizard.Step;
-import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.resource.OresHelper;
@@ -87,13 +80,13 @@ import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomySecurityCallback;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.matching.TaxonomyMatchingService;
-import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
 import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.olat.modules.taxonomy.ui.TaxonomyTreeTableModel.TaxonomyLevelCols;
 import org.olat.modules.taxonomy.ui.events.DeleteTaxonomyLevelEvent;
 import org.olat.modules.taxonomy.ui.events.MoveTaxonomyLevelEvent;
 import org.olat.modules.taxonomy.ui.events.NewTaxonomyLevelEvent;
 import org.olat.modules.taxonomy.ui.events.OpenTaxonomyLevelEvent;
+import org.olat.modules.taxonomy.ui.importwizard.TaxonomyImportWizard;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -130,12 +123,12 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private EditTaxonomyLevelController createTaxonomyLevelCtrl;
 	private TaxonomyLevelsCalloutController taxonomyLevelsCalloutCtrl;
 	private StepsMainRunController importWizardCtrl;
-	
+
 	private final TaxonomySecurityCallback secCallback;
 	private final Taxonomy taxonomy;
 	private final TaxonomyLevel parentLevel;
 	private boolean dirty = false;
-	
+
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
@@ -161,7 +154,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		if (this.stackPanel != null) {
 			this.stackPanel.removeListener(this);
 		}
-		
+
 		this.stackPanel = stackPanel;
 		if (this.stackPanel != null) {
 			this.stackPanel.addListener(this);
@@ -174,31 +167,31 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			newLevelButton = uifactory.addFormLink("add.taxonomy.level", formLayout, Link.BUTTON);
 			newLevelButton.setElementCssClass("o_sel_taxonomy_new_level");
 		}
-		
+
 		deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		mergeButton = uifactory.addFormLink("merge.taxonomy.level", formLayout, Link.BUTTON);
 		typeButton = uifactory.addFormLink("type.taxonomy.level", formLayout, Link.BUTTON);
 		moveButton = uifactory.addFormLink("move.taxonomy.level", formLayout, Link.BUTTON);
-		
+
 		if (secCallback.canImportExport()) {
 			FormLink importExportLink = uifactory.addFormLink(TOOLS_IMPORT_EXPORT, TOOLS_IMPORT_EXPORT, "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 			importExportLink.setAriaDialogOpener();
 			importExportLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions");
 			importExportLink.setTitle(translate("action.more"));
 		}
-		
+
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.key));
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(ACTION_SELECT);
 		treeNodeRenderer.setFlatBySearchAndFilter(true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.displayName, treeNodeRenderer));
-		
+
 		
 		DefaultFlexiColumnModel structureCol = new DefaultFlexiColumnModel(TaxonomyLevelCols.structure);
 		structureCol.setIconHeader("o_icon o_icon-lg o_icon_structure");
 		structureCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(structureCol);
-		
+
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.identifier, ACTION_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.externalId, ACTION_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.typeIdentifier));
@@ -206,7 +199,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.numOfChildren));
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(TaxonomyLevelCols.tools));
-		
+
 		model = new TaxonomyTreeTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
@@ -228,7 +221,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		tableEl.addBatchButton(mergeButton);
 		tableEl.addBatchButton(deleteButton);
 	}
-	
+
 	private List<FlexiTableFilter> getFilters() {
 		List<TaxonomyLevelType> types = taxonomyService.getTaxonomyLevelTypes(taxonomy);
 		List<FlexiTableFilter> resources = new ArrayList<>(types.size() + 1);
@@ -240,30 +233,30 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		resources.add(new FlexiTableFilter(translate("show.all"), "all", true));
 		return resources;
 	}
-	
+
 	protected void initFilterTabs(UserRequest ureq) {
 		if (!secCallback.canFilterRelevant()) {
 			return;
 		}
-		
+
 		List<FlexiFiltersTab> tabs = new ArrayList<>(2);
-		
+
 		tabRelevant = FlexiFiltersTabFactory.tab(
 				TAB_ID_RELEVANT,
 				translate("relevant"),
 				TabSelectionBehavior.nothing);
 		tabs.add(tabRelevant);
-		
+
 		tabAll = FlexiFiltersTabFactory.tab(
 				TAB_ID_ALL,
 				translate("all"),
 				TabSelectionBehavior.nothing);
 		tabs.add(tabAll);
-		
+
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, tabRelevant);
 	}
-	
+
 	private void loadModel(boolean resetPage, boolean resetInternal) {
 		TaxonomyLevelSearchParameters searchParams = new TaxonomyLevelSearchParameters();
 		searchParams.setParentLevel(parentLevel);
@@ -276,7 +269,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				.map(key -> key.substring(TaxonomyUIFactory.PREFIX_DISPLAY_NAME.length()))
 				.collect(Collectors.toSet());
 		searchParams.setQuickSearchI18nSuffix(quickSearchI18nSuffix);
-		
+
 		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy, searchParams);
 		applyFilter(taxonomyLevels);
 		List<TaxonomyLevelRow> rows = new ArrayList<>(taxonomyLevels.size());
@@ -286,19 +279,19 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			rows.add(row);
 			levelToRows.put(taxonomyLevel.getKey(), row);
 		}
-		
+
 		for(TaxonomyLevelRow row:rows) {
 			Long parentLevelKey = row.getParentLevelKey();
 			TaxonomyLevelRow parentRow = levelToRows.get(parentLevelKey);
 			row.setParent(parentRow);
 		}
-		
+
 		for(TaxonomyLevelRow row:rows) {
 			for(FlexiTreeTableNode parent=row.getParent(); parent != null; parent=parent.getParent()) {
 				((TaxonomyLevelRow)parent).incrementNumberOfChildren();
 			}
 		}
-		
+
 		try {
 			rows.sort(new TaxonomyTreeNodeComparator());
 		} catch (Exception e) {
@@ -308,7 +301,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		model.setObjects(rows);
 		tableEl.reset(resetPage, resetInternal, true);
 	}
-	
+
 	private void applyFilter(List<TaxonomyLevel> taxonomyLevels) {
 		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabRelevant) {
 			taxonomyLevels.removeIf(level -> !secCallback.isRelevant(level));
@@ -320,7 +313,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		structureLink.setAriaDialogOpener();
 		structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_structure");
 		structureLink.setTitle(translate("table.header.taxonomy.level.levels"));
-		
+
 		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
 		String description = TaxonomyUIFactory.translateDescription(getTranslator(), taxonomyLevel);
@@ -335,13 +328,14 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+		TaxonomyImportWizard.cleanUp(importWizardCtrl);
         super.doDispose();
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
-		
+
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("TaxonomyLevel".equalsIgnoreCase(type)) {
 			Long levelKey = entries.get(0).getOLATResourceable().getResourceableId();
@@ -403,7 +397,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == stackPanel) {
@@ -445,7 +439,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				stackPanel.popController(source);
 				loadModel(true, true);
 				doSelectTaxonomyLevel(ureq, levelEvent.getTaxonomyLevel());
-				
+
 			}
 		} else if(createTaxonomyLevelCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -484,7 +478,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(taxonomyLevelsCalloutCtrl);
 		removeAsListenerAndDispose(createTaxonomyLevelCtrl);
@@ -504,214 +498,52 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		mergeCtrl = null;
 		cmc = null;
 	}
-	
+
 	private void doOpenImportWizard(UserRequest ureq) {
-		// Create context wrapper (used to transfer data from step to step)
-        TaxonomyImportContext context = new TaxonomyImportContext();
-        context.setTaxonomy(taxonomy);
-
-        // Create first step and finish callback
-        Step importStep = new TaxonomyImportStep1(ureq, context);
-        FinishedCallback finish = new FinishedCallback();
-        CancelCallback cancel = new CancelCallback();
-
-        // Create step controller
-        importWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), importStep, finish, cancel, translate("import.taxonomy"), null);
-        listenTo(importWizardCtrl);
-        getWindowControl().pushAsModalDialog(importWizardCtrl.getInitialComponent());
+		removeAsListenerAndDispose(importWizardCtrl);
+		importWizardCtrl = TaxonomyImportWizard.create(ureq, getWindowControl(), taxonomy);
+		listenTo(importWizardCtrl);
+		getWindowControl().pushAsModalDialog(importWizardCtrl.getInitialComponent());
 	}
 
 	private void doExportTaxonomyLevels(UserRequest ureq) {
-		ureq.getDispatchResult().setResultingMediaResource(new ExportTaxonomyLevels("UTF-8", getTranslator(),
-																					taxonomy, taxonomyService, i18nManager, i18nModule));
+		ureq.getDispatchResult().setResultingMediaResource(new TaxonomyExportMediaResource(taxonomy, getIdentity(), getLocale()));
 	}
-	
+
 	private void doAssignType(UserRequest ureq) {
 		if(guardModalController(typeLevelCtrl)) return;
-		
+
 		List<TaxonomyLevel> levelsToMerge = getSelectedTaxonomyLevels(level -> secCallback.canEditMetadata(level), TaxonomyLevelManagedFlag.type);
 		if(levelsToMerge.isEmpty()) {
 			showWarning("warning.atleastone.level");
 		} else {
 			typeLevelCtrl = new TypeTaxonomyLevelController(ureq, getWindowControl(), levelsToMerge, taxonomy);
 			listenTo(typeLevelCtrl);
-			
+
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), typeLevelCtrl.getInitialComponent(),
 					true, translate("type.taxonomy.level"));
 			listenTo(cmc);
 			cmc.activate();
 		}
 	}
-	
+
 	private void doMerge(UserRequest ureq) {
 		if(guardModalController(mergeCtrl)) return;
-		
+
 		List<TaxonomyLevel> levelsToMerge = getSelectedTaxonomyLevels(level -> secCallback.canDelete(level), TaxonomyLevelManagedFlag.delete);
 		if(levelsToMerge.isEmpty()) {
 			showWarning("warning.atleastone.level");
 		} else {
 			mergeCtrl = new MergeTaxonomyLevelController(ureq, getWindowControl(), levelsToMerge, taxonomy);
 			listenTo(mergeCtrl);
-			
+
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), mergeCtrl.getInitialComponent(),
 					true, translate("merge.taxonomy.level"));
 			listenTo(cmc);
 			cmc.activate();
 		}
 	}
-	
-	private class FinishedCallback implements StepRunnerCallback {
-		@Override
-	    public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-	        TaxonomyImportContext context = (TaxonomyImportContext) runContext.get(TaxonomyImportContext.CONTEXT_KEY);
-	         
-	        // Collect the created types for the next step
-	        List<TaxonomyLevelType> createdTypes = new ArrayList<>();
-			if (context.getTaxonomyLevelTypeCreateList() != null) {
-				for (TaxonomyLevelType newLevelType : context.getTaxonomyLevelTypeCreateList()) {
-					createdTypes.add(taxonomyService.createTaxonomyLevelType(newLevelType.getIdentifier(), newLevelType.getIdentifier(), null, null, true, context.getTaxonomy()));
-				}
-			}
 
-	        
-	        // Collect created levels to find parents 
-	        List<TaxonomyLevel> createdLevels = new ArrayList<>();
-			if (context.getTaxonomyLevelCreateList() != null) {
-				for (TaxonomyLevel newLevel : context.getTaxonomyLevelCreateList()) {
-					TaxonomyLevel parent = null;
-					if (newLevel.getParent() != null) {
-						// Check whether already existing
-						if (newLevel.getParent().getKey() != null) {
-							// Take existing Level
-							parent = newLevel.getParent();
-						} else {
-							// Parent cannot throw exception because it must have been created already
-							parent = createdLevels.stream().filter(level -> level.getIdentifier().equals(newLevel.getParent().getIdentifier())).collect(Collectors.toList()).get(0);
-						}
-					}
-
-					TaxonomyLevel createdLevel = taxonomyService.createTaxonomyLevel(newLevel.getIdentifier(), taxonomyService.createI18nSuffix(), null, null, parent, context.getTaxonomy());
-					if (newLevel instanceof TaxonomyLevelImpl && context.getNameDescriptionByLanguage() != null) {
-						saveOrUpdateI18nItemForTaxonomyLevel(createdLevel, context);
-					}
-
-					createdLevel.setSortOrder(newLevel.getSortOrder());
-
-					if (newLevel.getType() != null && !createdTypes.isEmpty()) {
-						createdLevel.setType(getLevelType(newLevel, createdTypes));
-					}
-
-					createdLevel = taxonomyService.updateTaxonomyLevel(createdLevel);
-					createdLevels.add(createdLevel);
-				}
-			}
-
-	        // Update existing taxonomies if needed
-	        if (context.isUpdateExistingTaxonomies()) {
-		        for (TaxonomyLevel updateLevel : context.getTaxonomyLevelUpdateList()) {
-		        	if (updateLevel.getType() != null && !createdTypes.isEmpty()) {
-						updateLevel.setType(getLevelType(updateLevel, createdTypes));
-		        	}
-					taxonomyService.updateTaxonomyLevel(updateLevel);
-					if (context.getNameDescriptionByLanguage() != null) {
-						saveOrUpdateI18nItemForTaxonomyLevel(updateLevel, context);
-					}
-		        }
-
-				if (context.getTaxonomyLevelToImageMap() != null) {
-					for (TaxonomyLevel level : context.getTaxonomyLevelToImageMap().keySet()) {
-						File backImage = context.getTaxonomyLevelToImageMap().get(level).get("background");
-						File teaserImage = context.getTaxonomyLevelToImageMap().get(level).get("teaser");
-
-						TaxonomyLevel finalLevel = level;
-						if (createdLevels.stream().anyMatch(cl -> cl.getIdentifier().equals(finalLevel.getIdentifier()))) {
-							level = createdLevels.stream().filter(cl -> cl.getIdentifier().equals(finalLevel.getIdentifier())).findFirst().get();
-						}
-						if (backImage != null) {
-							taxonomyService.storeBackgroundImage(level, ureq.getIdentity(), backImage, backImage.getName());
-						}
-						if (teaserImage != null) {
-							taxonomyService.storeTeaserImage(level, ureq.getIdentity(), teaserImage, teaserImage.getName());
-						}
-					}
-				}
-	        }
-
-	    	taxonomyMatchingService.startIndexing();
-	    	return StepsMainRunController.DONE_MODIFIED;
-	    }
-	}
-
-	private TaxonomyLevelType getLevelType(TaxonomyLevel level, List<TaxonomyLevelType> createdTypes) {
-		if (level.getType().getKey() == null) {
-			return createdTypes.stream().filter(type -> type.getIdentifier().equals(level.getType().getIdentifier())).findFirst().orElse(null);
-		}
-		return level.getType();
-	}
-
-	private void saveOrUpdateI18nItemForTaxonomyLevel(TaxonomyLevel level, TaxonomyImportContext context) {
-		Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
-		List<Locale> locales = context.getNameDescriptionByLanguage().keySet().stream()
-				.map(key -> LocaleUtils.toLocale(standardizeLocaleCase(key)))
-				.collect(Collectors.toList());
-		String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + level.getI18nSuffix();
-		String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + level.getI18nSuffix();
-
-		if (context.getNameDescriptionByLanguage() != null) {
-			for (int i = 0; i < locales.size(); i++) {
-				I18nItem displayNameItem = i18nManager.getI18nItem(
-						TaxonomyUIFactory.BUNDLE_NAME,
-						displayNameKey,
-						allOverlays.get(locales.get(i)));
-				I18nItem descriptionItem = i18nManager.getI18nItem(
-						TaxonomyUIFactory.BUNDLE_NAME,
-						descriptionKey,
-						allOverlays.get(locales.get(i)));
-
-				if (context.getReviewList().stream().anyMatch(t -> t.getTaxonomyLevel().getIdentifier().equals(level.getIdentifier()))) {
-					int finalI = i;
-					if (!context.isUpdateExistingTaxonomies()
-							|| (context.isUpdateExistingTaxonomies()
-							&& !TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.displayName))) {
-						i18nManager.saveOrUpdateI18nItem(displayNameItem, context.getReviewList().stream()
-								.filter(t -> t.getTaxonomyLevel().getIdentifier().equals(level.getIdentifier()) && t.getLanguage().equals(locales.get(finalI).getLanguage().toUpperCase()))
-								.findFirst()
-								.get().getDisplayName());
-					}
-					if (!context.isUpdateExistingTaxonomies()
-							|| (context.isUpdateExistingTaxonomies()
-							&& !TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.description))) {
-						i18nManager.saveOrUpdateI18nItem(descriptionItem, context.getReviewList().stream()
-								.filter(t -> t.getTaxonomyLevel().getIdentifier().equals(level.getIdentifier()) && t.getLanguage().equals(locales.get(finalI).getLanguage().toUpperCase()))
-								.findFirst()
-								.get().getDescription());
-					}
-				}
-			}
-		}
-	}
-	
-	private String standardizeLocaleCase(String val) {
-		String[] valArr = val.split("_");
-		StringBuilder sb = new StringBuilder();
-		if(valArr.length >= 1) {
-			sb.append(valArr[0].toLowerCase());
-		}
-		if(valArr.length >= 2) {
-			sb.append("_").append(valArr[1].toUpperCase());
-		}
-		if(valArr.length >= 3) {
-			sb.append("_").append(valArr[2].toUpperCase());
-		}
-		return sb.toString();
-	}
-	    
-    private static class CancelCallback implements StepRunnerCallback {
-        @Override
-        public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-            return Step.NOSTEP;
-        }
-    }
 
 	private void doOpenTaxonomyLevel(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
 		if (parentLevel == null) {
@@ -737,46 +569,46 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		stackPanel.pushController(displayName, null, detailsLevelCtrl, reloadedTaxonomyLevel);
 		return detailsLevelCtrl;
 	}
-	
+
 	private void addIntermediatePath(TaxonomyLevel taxonomyLevel) {
 		List<TaxonomyLevel> parentLine = taxonomyService.getTaxonomyLevelParentLine(taxonomyLevel, taxonomy);
 		for(TaxonomyLevel parent:parentLine) {
 			stackPanel.popUserObject(parent);
 		}
-		
+
 		parentLine.remove(taxonomyLevel);
 		for(TaxonomyLevel parent:parentLine) {
 			stackPanel.pushController(TaxonomyUIFactory.translateDisplayName(getTranslator(), parent), null, parent);
 		}
 	}
-	
+
 	private void doNewLevel(UserRequest ureq) {
 		doCreateTaxonomyLevel(ureq, parentLevel);
 	}
-	
+
 	private void doCreateTaxonomyLevel(UserRequest ureq, TaxonomyLevel parentLevel) {
 		if(guardModalController(createTaxonomyLevelCtrl)) return;
 
 		createTaxonomyLevelCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), parentLevel, taxonomy);
 		listenTo(createTaxonomyLevelCtrl);
-		
+
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), createTaxonomyLevelCtrl.getInitialComponent(), true, translate("add.taxonomy.level"));
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
+
 	private void doOpenStructure(UserRequest ureq, TaxonomyLevelRow taxonomyLevelRow, FormLink link) {
 		TaxonomyLevel taxonomyLevel = taxonomyLevelRow.getTaxonomyLevel();
 		taxonomyLevelsCalloutCtrl = new TaxonomyLevelsCalloutController(ureq, getWindowControl(), taxonomyLevel);
 		listenTo(taxonomyLevelsCalloutCtrl);
-		
+
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				taxonomyLevelsCalloutCtrl.getInitialComponent(), link, "", true, "", settings);
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
-	
+
 	private void doOpenLevelTools(UserRequest ureq, TaxonomyLevelRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -788,7 +620,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		} else {
 			toolsCtrl = new ToolsController(ureq, getWindowControl(), row, level);
 			listenTo(toolsCtrl);
-	
+
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 					toolsCtrl.getInitialComponent(), link, "", true, "");
 			listenTo(toolsCalloutCtrl);
@@ -821,40 +653,40 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				}
 			}
 		}
-		
+
 		if(levelsToDelete.isEmpty()) {
 			showWarning("warning.atleastone.level");
 		} else {
 			confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), secCallback, levelsToDelete, taxonomy);
 			listenTo(confirmDeleteCtrl);
-			
+
 			String title = translate("confirmation.delete.level.title");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}
 	}
-	
+
 	private void doConfirmDelete(UserRequest ureq, TaxonomyLevelRow row) {
 		if(TaxonomyLevelManagedFlag.isManaged(row.getManagedFlags(), TaxonomyLevelManagedFlag.delete)) {
 			showWarning("warning.atleastone.level");
 			return;
 		}
-		
+
 		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(row);
 		List<TaxonomyLevel> levelToDelete = Collections.singletonList(taxonomyLevel);
 		confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), secCallback, levelToDelete, taxonomy);
 		listenTo(confirmDeleteCtrl);
-		
+
 		String title = translate("confirmation.delete.level.title");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
+
 	private void doMove(UserRequest ureq) {
 		if(moveLevelCtrl != null) return;
-		
+
 		List<TaxonomyLevel> levelsToMove = getSelectedTaxonomyLevels(level -> secCallback.canMove(level), TaxonomyLevelManagedFlag.move);
 		if (levelsToMove.isEmpty()) {
 			showWarning("warning.atleastone.level");
@@ -862,10 +694,10 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			doMove(ureq, levelsToMove);
 		}
 	}
-	
+
 	private void doMove(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
 		if(moveLevelCtrl != null) return;
-		
+
 		List<TaxonomyLevel> levelsToMove = Collections.singletonList(taxonomyLevel);
 		doMove(ureq, levelsToMove);
 	}
@@ -873,13 +705,13 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private void doMove(UserRequest ureq, List<TaxonomyLevel> taxonomyLevels) {
 		moveLevelCtrl = new MoveTaxonomyLevelController(ureq, getWindowControl(), secCallback, taxonomyLevels, taxonomy);
 		listenTo(moveLevelCtrl);
-		
+
 		String title = translate("move.taxonomy.levels.title");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), moveLevelCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
+
 	private List<TaxonomyLevel> getSelectedTaxonomyLevels(Predicate<TaxonomyLevel> can, TaxonomyLevelManagedFlag flag) {
 		Set<Integer> indexList = tableEl.getMultiSelectedIndex();
 		List<TaxonomyLevel> allowedLevels = new ArrayList<>(indexList.size());
@@ -894,33 +726,33 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		}
 		return allowedLevels;
 	}
-	
+
 	private class ToolsController extends BasicController {
 
 		private final VelocityContainer mainVC = createVelocityContainer("tools");
 		private Link editLink, moveLink, newLink, deleteLink;
 		private Link exportLink, importLink;
-		
+
 		private TaxonomyLevelRow row;
 		private TaxonomyLevel taxonomyLevel;
-		
+
 		public ToolsController(UserRequest ureq, WindowControl wControl, TaxonomyLevelRow row, TaxonomyLevel taxonomyLevel) {
 			super(ureq, wControl);
 			this.row = row;
 			this.taxonomyLevel = taxonomyLevel;
-			
+
 			List<String> links = new ArrayList<>(6);
-			
+
 			if (secCallback.canEditMetadata(taxonomyLevel)) {
 				editLink = addLink("edit", "o_icon_edit", links);
 			} else {
 				editLink = addLink("open.taxonomy.level", "o_icon_preview", links);
 			}
-			
+
 			if(secCallback.canMove(taxonomyLevel) && !TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.move)) {
 				moveLink = addLink("move.taxonomy.level", "o_icon_move", links);
 			}
-			
+
 			if (secCallback.canCreateChild(taxonomyLevel)) {
 				newLink = addLink("add.taxonomy.level.under", "o_icon_taxonomy_levels", links);
 			}
@@ -929,7 +761,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				deleteLink = addLink("delete", "o_icon_delete_item", links);
 			}
 			mainVC.contextPut("links", links);
-			
+
 			putInitialPanel(mainVC);
 		}
 
@@ -945,7 +777,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 
 			putInitialPanel(mainVC);
 		}
-		
+
 		private Link addLink(String name, String iconCss, List<String> links) {
 			Link link = LinkFactory.createLink(name, name, getTranslator(), mainVC, this, Link.LINK);
 			mainVC.put(name, link);
@@ -976,15 +808,15 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				doExportTaxonomyLevels(ureq);
 			}
 		}
-		
+
 		private void close() {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
 		}
 	}
-	
+
 	static class TaxonomyTreeNodeComparator extends FlexiTreeNodeComparator {
-		
+
 		@Override
 		protected int compareNodes(FlexiTreeTableNode o1, FlexiTreeTableNode o2) {
 			TaxonomyLevelRow r1 = (TaxonomyLevelRow)o1;
@@ -996,13 +828,13 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			} else {
 				Integer s1 = r1.getSortOrder();
 				Integer s2 = r2.getSortOrder();
-	
+
 				if(s1 == null || s2 == null) {
 					c = -compareNullObjects(s1, s2);
 				} else {
 					c = s1.compareTo(s2);
 				}
-				
+
 				if(c == 0) {
 					String c1 = r1.getDisplayName();
 					String c2 = r2.getDisplayName();
@@ -1012,7 +844,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 						c = c1.compareTo(c2);
 					}
 				}
-				
+
 				if(c == 0) {
 					Long k1 = r1.getKey();
 					Long k2 = r2.getKey();

@@ -1,0 +1,20 @@
+<div class="o_taxonomy_import_changes">
+	<table class="table table-condensed">
+		<thead>
+			<tr>
+				<th>$r.translate("importexport.change.column")</th>
+				<th>$r.translate("importexport.change.before")</th>
+				<th>$r.translate("importexport.change.after")</th>
+			</tr>
+		</thead>
+		<tbody>
+		#foreach($change in $changes)
+			<tr>
+				<td>$change.label()</td>
+				<td>$change.before()</td>
+				<td><strong>$change.after()</strong></td>
+			</tr>
+		#end
+		</tbody>
+	</table>
+</div>

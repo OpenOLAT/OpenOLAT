@@ -63,6 +63,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeRef;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.TaxonomySecurityCallback;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyAllTreesBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
@@ -276,7 +277,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		teaserImageCont.contextPut("square", catalogV2Module.isEnabled() && CatalogV2Module.TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE.equals(catalogV2Module.getLauncherTaxonomyLevelStyle()));
 		
 		teaserImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "level.image.teaser", imagelCont);
-		teaserImageEl.setMaxUploadSizeKB(2048, null, null);
+		teaserImageEl.setMaxUploadSizeKB(TaxonomyModule.TEASER_IMAGE_MAX_SIZE_KB, null, null);
 		teaserImageEl.setExampleKey("level.image.teaser.example", null);
 		teaserImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
 		teaserImageEl.setReplaceButton(true);
@@ -295,7 +296,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		imagelCont.add(backgroundImageCont);
 		
 		backgroundImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "level.image.background", imagelCont);
-		backgroundImageEl.setMaxUploadSizeKB(5024, null, null);
+		backgroundImageEl.setMaxUploadSizeKB(TaxonomyModule.BACKGROUND_IMAGE_MAX_SIZE_KB, null, null);
 		backgroundImageEl.setExampleKey("level.image.background.example", null);
 		backgroundImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
 		backgroundImageEl.setReplaceButton(true);
