@@ -229,7 +229,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 					.withIconCss("o_icon_provider_olat")
 					.withIndicatorIconCss("o-empty")
 					.withMessageI18nKey("olat.authentication.no.password");
-			if(!withPasskey || (currentLevel != PasskeyLevels.level2 && minimalLevel != PasskeyLevels.level2)) {
+			if(currentLevel != PasskeyLevels.level2 && minimalLevel != PasskeyLevels.level2) {
 				config = config.withPrimaryButton(null, "send.invitation.link", null);
 			}
 			noAuthenticationState = EmptyStateFactory.create("noolatauthentication", mainVC, this, config.build());
@@ -260,11 +260,13 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	}
 
 	private boolean passkeySectionVisible() {
-		if (!withPasskey) {
-			return false;
-		}
+		// Existing passkeys stay visible (and manageable/deletable) even if the passkey
+		// feature has since been disabled administration-wide.
 		if (passkeyListCtrl != null && passkeyListCtrl.hasPasskeys()) {
 			return true;
+		}
+		if (!withPasskey) {
+			return false;
 		}
 		// No passkeys: show only if the configured minimum requires one, so the admin/user
 		// can see that a passkey is still needed. At level1 (password sufficient) and no
