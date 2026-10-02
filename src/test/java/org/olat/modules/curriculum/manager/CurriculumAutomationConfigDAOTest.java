@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import org.olat.modules.curriculum.model.CurriculumElementImpl;
+import java.util.ArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
@@ -205,5 +207,31 @@ public class CurriculumAutomationConfigDAOTest extends OlatTestCase {
 
 		List<CurriculumAutomationConfig> reloaded = curriculumAutomationConfigDao.getConfigs(element);
 		assertThat(reloaded).isEmpty();
+	}
+
+	@Test
+	public void getConfigsByCurriculumElements_moreElementsThanQueryParametersAllow_returnsConfigs() {
+		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), random(), false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
+		dbInstance.commitAndCloseSession();
+		CurriculumAutomationConfig config = curriculumAutomationConfigDao.createConfig(null, element, new CurriculumAutomationRuleImpl(), true);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumAutomationConfig> configs = curriculumAutomationConfigDao
+				.getConfigsByCurriculumElements(withManyNotExistingElements(element));
+
+		assertThat(configs).extracting(CurriculumAutomationConfig::getKey).containsExactly(config.getKey());
+	}
+
+	private List<CurriculumElement> withManyNotExistingElements(CurriculumElement element) {
+		List<CurriculumElement> elements = new ArrayList<>();
+		for (long i = 0; i < 70_000; i++) {
+			CurriculumElementImpl notExisting = new CurriculumElementImpl();
+			notExisting.setKey(9_000_000_000L + i);
+			elements.add(notExisting);
+		}
+		elements.add(element);
+		return elements;
 	}
 }

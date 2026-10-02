@@ -23,7 +23,6 @@ import java.text.Collator;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.tag.TagInfo;
@@ -34,7 +33,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
-import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
@@ -51,26 +49,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumMangerToDoListController extends ToDoTaskListController {
 	
-	private Collection<String> subPaths;
 	private ToDoTaskSecurityCallback securityCallback;
 	private final SelectionValues contextOriginIds;
 
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CurriculumElementToDoProvider curriculumElementToDoProvider;
 
 	public CurriculumMangerToDoListController(UserRequest ureq, WindowControl wControl,
 			CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "manager_todos", CurriculumElementToDoProvider.TYPE, null, null);
 
-		AccessibleCurriculumSearchParams searchParams = new AccessibleCurriculumSearchParams(getIdentity());
-		searchParams.setIncludeImplementationOwnership(false);
-		Set<Long> elementKeys = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys();
-		subPaths = elementKeys.stream().map(String::valueOf).toList();
-		if (subPaths.isEmpty()) {
-			// Not existing key to prevent loading all to-dos.
-			subPaths = List.of("-1");
-		}
-		securityCallback = new CurriculumManagerToDoSecurityCallback(secCallback, elementKeys, curriculumService);
+		securityCallback = new CurriculumManagerToDoSecurityCallback(secCallback, curriculumService);
 
 		Collator collator = Collator.getInstance(getLocale());
 		contextOriginIds = new SelectionValues();
@@ -162,10 +153,7 @@ public class CurriculumMangerToDoListController extends ToDoTaskListController {
 
 	@Override
 	protected ToDoTaskSearchParams createSearchParams() {
-		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
-		params.setTypes(List.of(CurriculumElementToDoProvider.TYPE));
-		params.setOriginSubPaths(subPaths);
-		return params;
+		return curriculumElementToDoProvider.createManagerSearchParams(getIdentity());
 	}
 
 	@Override
