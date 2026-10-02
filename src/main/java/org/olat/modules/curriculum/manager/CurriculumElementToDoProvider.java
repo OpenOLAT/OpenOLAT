@@ -716,6 +716,35 @@ public class CurriculumElementToDoProvider implements ToDoProvider, ToDoContextF
 		return count != null ? count : 0;
 	}
 
+	public ToDoTaskSearchParams createManagerSearchParams(Identity manager) {
+		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
+		params.setTypes(List.of(TYPE));
+		params.setCustomQuery(CurriculumElementToDoTaskQuery.accessibleBy(manager));
+		return params;
+	}
+
+	public ToDoTaskSearchParams createManagerSearchParams(Identity manager, CurriculumElement element, boolean descendants) {
+		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
+		params.setTypes(List.of(TYPE));
+		params.setOriginIds(List.of(element.getCurriculum().getKey()));
+		params.setCustomQuery(CurriculumElementToDoTaskQuery.accessibleBy(manager, element, descendants));
+		return params;
+	}
+
+	public long countActiveToDoTasksOfElementAndDescendants(CurriculumElement element) {
+		if (element.getCurriculum() == null) {
+			return 0;
+		}
+		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
+		params.setTypes(List.of(TYPE));
+		params.setOriginIds(List.of(element.getCurriculum().getKey()));
+		params.setOriginDeleted(Boolean.FALSE);
+		params.setStatus(ToDoStatus.OPEN_TO_DONE);
+		params.setCustomQuery(CurriculumElementToDoTaskQuery.ofElementAndDescendants(element));
+		Long count = toDoService.getToDoTaskCount(params);
+		return count != null ? count : 0;
+	}
+
 	public ToDoTaskSearchParams createActiveSearchParams(List<String> originSubPaths) {
 		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
 		params.setTypes(List.of(TYPE));

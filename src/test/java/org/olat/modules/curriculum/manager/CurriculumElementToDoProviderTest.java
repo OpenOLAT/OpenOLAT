@@ -32,14 +32,18 @@ import java.util.List;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.todo.ToDoDateUnit;
 import org.olat.modules.todo.ToDoRelativeDates;
@@ -65,6 +69,8 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private ToDoService toDoService;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -401,6 +407,188 @@ public class CurriculumElementToDoProviderTest extends OlatTestCase {
 		assertThat(copies.get(0).getStartDate()).isCloseTo(sourceBegin, DELTA_MS);
 		assertThat(copies.get(0).getDueDate()).isCloseTo(sourceEnd, DELTA_MS);
 		assertThat(copies.get(0).getRelativeDates()).isNull();
+	}
+
+	@Test
+	public void shouldCountOnlyToDoTasksOfAccessibleElements_forCurriculumOwner() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, null);
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculumowner);
+		CurriculumElement element1 = createCurriculumElement(curriculum);
+		CurriculumElement element2 = createCurriculumElement(curriculum);
+		CurriculumElement foreignElement = createCurriculumElement(null, null);
+		createCurriculumElementTask(manager, element1);
+		createCurriculumElementTask(manager, element2);
+		createCurriculumElementTask(manager, foreignElement);
+
+		Long count = toDoService.getToDoTaskCount(curriculumElementToDoProvider.createManagerSearchParams(manager));
+
+		assertThat(count).isEqualTo(2);
+	}
+
+	@Test
+	public void shouldListOnlyToDoTasksOfAccessibleElements_forCurriculumOwner() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, null);
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculumowner);
+		CurriculumElement element = createCurriculumElement(curriculum);
+		CurriculumElement foreignElement = createCurriculumElement(null, null);
+		ToDoTask task = createCurriculumElementTask(manager, element);
+		ToDoTask foreignTask = createCurriculumElementTask(manager, foreignElement);
+
+		List<ToDoTask> tasks = toDoService.getToDoTasks(curriculumElementToDoProvider.createManagerSearchParams(manager));
+
+		assertThat(tasks)
+				.extracting(ToDoTask::getKey)
+				.containsExactly(task.getKey())
+				.doesNotContain(foreignTask.getKey());
+	}
+
+	@Test
+	public void shouldCountOnlyToDoTasksOfOwnedElement_forElementOwner() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, null);
+		CurriculumElement ownedElement = createCurriculumElement(curriculum);
+		CurriculumElement otherElement = createCurriculumElement(curriculum);
+		curriculumService.addMember(ownedElement, owner, CurriculumRoles.curriculumelementowner, owner);
+		dbInstance.commitAndCloseSession();
+		createCurriculumElementTask(owner, ownedElement);
+		createCurriculumElementTask(owner, otherElement);
+
+		Long count = toDoService.getToDoTaskCount(curriculumElementToDoProvider.createManagerSearchParams(owner));
+
+		assertThat(count).isEqualTo(1);
+	}
+
+	@Test
+	public void shouldCountNoToDoTasks_forIdentityWithoutAccess() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity noManager = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, null);
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculumowner);
+		CurriculumElement element = createCurriculumElement(curriculum);
+		createCurriculumElementTask(manager, element);
+
+		Long count = toDoService.getToDoTaskCount(curriculumElementToDoProvider.createManagerSearchParams(noManager));
+
+		assertThat(count).isZero();
+	}
+
+	@Test
+	public void shouldCountOnlyToDoTasksOfOrganisationCurricula_forCurriculumManager() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null, manager);
+		organisationService.addMember(organisation, manager, OrganisationRoles.curriculummanager, manager);
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
+		CurriculumElement element = createCurriculumElement(curriculum);
+		CurriculumElement foreignElement = createCurriculumElement(null, null);
+		createCurriculumElementTask(manager, element);
+		createCurriculumElementTask(manager, foreignElement);
+
+		Long count = toDoService.getToDoTaskCount(curriculumElementToDoProvider.createManagerSearchParams(manager));
+
+		assertThat(count).isEqualTo(1);
+	}
+
+	@Test
+	public void shouldCountOnlyToDoTasksOfGivenCurriculum_whenOriginIdIsSet() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Curriculum curriculum1 = curriculumService.createCurriculum(random(), random(), null, false, null);
+		Curriculum curriculum2 = curriculumService.createCurriculum(random(), random(), null, false, null);
+		curriculumService.addMember(curriculum1, manager, CurriculumRoles.curriculumowner);
+		curriculumService.addMember(curriculum2, manager, CurriculumRoles.curriculumowner);
+		CurriculumElement element1 = createCurriculumElement(curriculum1);
+		CurriculumElement element2 = createCurriculumElement(curriculum2);
+		createCurriculumElementTask(manager, element1);
+		createCurriculumElementTask(manager, element2);
+
+		ToDoTaskSearchParams params = curriculumElementToDoProvider.createManagerSearchParams(manager);
+		params.setOriginIds(List.of(curriculum1.getKey()));
+		Long count = toDoService.getToDoTaskCount(params);
+
+		assertThat(count).isEqualTo(1);
+	}
+
+	@Test
+	public void shouldCountToDoTasksOfElementAndDescendants_forCurriculumOwner() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, null);
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculumowner);
+		CurriculumElement root = createCurriculumElement(curriculum);
+		CurriculumElement child = createChildElement(curriculum, root);
+		CurriculumElement grandChild = createChildElement(curriculum, child);
+		CurriculumElement sibling = createCurriculumElement(curriculum);
+		createCurriculumElementTask(manager, root);
+		createCurriculumElementTask(manager, child);
+		createCurriculumElementTask(manager, grandChild);
+		createCurriculumElementTask(manager, sibling);
+
+		Long allLevels = toDoService.getToDoTaskCount(curriculumElementToDoProvider.createManagerSearchParams(manager, reloadElement(root), true));
+		Long thisLevel = toDoService.getToDoTaskCount(curriculumElementToDoProvider.createManagerSearchParams(manager, reloadElement(root), false));
+
+		assertThat(allLevels).isEqualTo(3);
+		assertThat(thisLevel).isEqualTo(1);
+	}
+
+	@Test
+	public void shouldCountOnlyAccessibleToDoTasksOfDescendants_forElementOwner() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, null);
+		CurriculumElement root = createCurriculumElement(curriculum);
+		CurriculumElement child = createChildElement(curriculum, root);
+		CurriculumElement otherChild = createChildElement(curriculum, root);
+		curriculumService.addMember(child, owner, CurriculumRoles.curriculumelementowner, owner);
+		dbInstance.commitAndCloseSession();
+		createCurriculumElementTask(owner, root);
+		createCurriculumElementTask(owner, child);
+		createCurriculumElementTask(owner, otherChild);
+
+		Long allLevels = toDoService.getToDoTaskCount(curriculumElementToDoProvider.createManagerSearchParams(owner, reloadElement(root), true));
+		Long thisLevel = toDoService.getToDoTaskCount(curriculumElementToDoProvider.createManagerSearchParams(owner, reloadElement(root), false));
+
+		assertThat(allLevels).isEqualTo(1);
+		assertThat(thisLevel).isZero();
+	}
+
+	@Test
+	public void shouldCountActiveToDoTasksOfElementAndDescendants() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, null);
+		CurriculumElement root = createCurriculumElement(curriculum);
+		CurriculumElement child = createChildElement(curriculum, root);
+		CurriculumElement sibling = createCurriculumElement(curriculum);
+		createCurriculumElementTask(doer, root);
+		createCurriculumElementTask(doer, child);
+		createCurriculumElementTask(doer, sibling);
+		ToDoTask deleted = createCurriculumElementTask(doer, child);
+		toDoService.deleteToDoTaskPermanently(deleted);
+		dbInstance.commitAndCloseSession();
+
+		long count = curriculumElementToDoProvider.countActiveToDoTasksOfElementAndDescendants(reloadElement(root));
+
+		assertThat(count).isEqualTo(2);
+	}
+
+	private CurriculumElement reloadElement(CurriculumElement element) {
+		return curriculumService.getCurriculumElement(element);
+	}
+
+	private CurriculumElement createChildElement(Curriculum curriculum, CurriculumElement parent) {
+		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, parent, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		dbInstance.commitAndCloseSession();
+		return element;
+	}
+
+	private CurriculumElement createCurriculumElement(Curriculum curriculum) {
+		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		dbInstance.commitAndCloseSession();
+		return element;
 	}
 
 	private CurriculumElement createCurriculumElement(Date beginDate, Date endDate) {

@@ -432,6 +432,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.curriculum.manager.ParentBasedIdentifierGeneratorTest.class,
 	org.olat.modules.curriculum.manager.CurriculumElementToDoProviderTest.class,
 	org.olat.modules.curriculum.manager.CurriculumElementToDoProviderGetCandidatesTest.class,
+	org.olat.modules.curriculum.ui.CurriculumManagerToDoSecurityCallbackTest.class,
 	org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsFileReaderTest.class,
 	org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoaderTest.class,
 	org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsValidatorTest.class,

@@ -19,16 +19,12 @@
  */
 package org.olat.modules.curriculum.ui.widgets;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
-import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
 import org.olat.modules.curriculum.ui.CurriculumManagerToDoSecurityCallback;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
@@ -45,21 +41,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumManagerToDoTasksWidgetController extends ToDoTasksWidgetController {
 
-	private final Set<String> originSubPaths;
 	private ToDoTaskSecurityCallback securityCallback;
 
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CurriculumElementToDoProvider curriculumElementToDoProvider;
 
 	public CurriculumManagerToDoTasksWidgetController(UserRequest ureq, WindowControl wControl,
 			CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 
-		AccessibleCurriculumSearchParams searchParams = new AccessibleCurriculumSearchParams(getIdentity());
-		searchParams.setIncludeImplementationOwnership(false);
-		Set<Long> elementKeys = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys();
-		originSubPaths = elementKeys.stream().map(String::valueOf).collect(Collectors.toSet());
-		securityCallback = new CurriculumManagerToDoSecurityCallback(secCallback, elementKeys, curriculumService);
+		securityCallback = new CurriculumManagerToDoSecurityCallback(secCallback, curriculumService);
 
 		initForm(ureq);
 	}
@@ -76,10 +69,7 @@ public class CurriculumManagerToDoTasksWidgetController extends ToDoTasksWidgetC
 
 	@Override
 	protected ToDoTaskSearchParams createBaseParams() {
-		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
-		params.setTypes(List.of(CurriculumElementToDoProvider.TYPE));
-		params.setOriginSubPaths(originSubPaths);
-		return params;
+		return curriculumElementToDoProvider.createManagerSearchParams(getIdentity());
 	}
 
 	@Override
