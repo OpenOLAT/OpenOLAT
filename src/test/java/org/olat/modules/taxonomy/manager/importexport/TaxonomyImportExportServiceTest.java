@@ -91,7 +91,7 @@ public class TaxonomyImportExportServiceTest extends OlatTestCase {
 		"Modul: Grundlagen?",
 		"Deutsch/Englisch \\ Backslash",
 		"<b>kein HTML</b> ]]> <![CDATA[ x",
-		"Emoji 😀 und 中文",
+		"Smiley ☺ und 中文",
 		"${not.a.key} {0} 'apostrophe' $org.olat.core:ok",
 		"|pipe| *star* `backtick` #hash %percent"
 	};
@@ -563,7 +563,7 @@ public class TaxonomyImportExportServiceTest extends OlatTestCase {
 		TaxonomyLevel media = createLevel("media", null, null, null, taxonomy, languages, 8);
 		createLevel("teaser", media, null, null, taxonomy, languages, 9);
 		createLevel("=SUM(1;2)", media, null, null, taxonomy, languages, 10);
-		createLevel("Emoji 😀", media, null, null, taxonomy, languages, 11);
+		createLevel("Smiley ☺", media, null, null, taxonomy, languages, 11);
 		createLevel("C++ (Level 1) [x]", media, null, null, taxonomy, languages, 12);
 		dbInstance.commitAndCloseSession();
 
