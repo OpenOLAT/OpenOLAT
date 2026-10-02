@@ -779,7 +779,7 @@ public class CourseToolbarController extends FormBasicController {
 			}
 		}
 
-		allOk = validateDocumentPath();
+		allOk &= validateDocumentPath();
 		
 		return allOk;
 	}
