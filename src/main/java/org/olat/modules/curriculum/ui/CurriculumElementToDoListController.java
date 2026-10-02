@@ -23,7 +23,6 @@ import java.text.ParseException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
@@ -44,7 +43,6 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToDoProvider;
-import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
@@ -70,12 +68,13 @@ public class CurriculumElementToDoListController extends ToDoTaskListController 
 
 	private final CurriculumElement element;
 	private final CurriculumSecurityCallback secCallback;
-	private List<String> allLevelsSubPaths;
 
 	private Date lastVisitDate;
 
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CurriculumElementToDoProvider curriculumElementToDoProvider;
 
 	public CurriculumElementToDoListController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement element, CurriculumSecurityCallback secCallback) {
@@ -83,23 +82,6 @@ public class CurriculumElementToDoListController extends ToDoTaskListController 
 				element.getCurriculum().getKey(), element.getKey().toString());
 		this.element = element;
 		this.secCallback = secCallback;
-		
-		AccessibleCurriculumSearchParams searchParams = new AccessibleCurriculumSearchParams(getIdentity());
-		searchParams.setIncludeImplementationOwnership(false);
-		searchParams.setCurriculums(List.of(element.getCurriculum()));
-		Set<Long> accessibleElementKeys = curriculumService.getAccessibleCurriculumKeys(searchParams).curriculumElementKeys();
-		List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(element);
-		descendants.add(element);
-		allLevelsSubPaths = descendants.stream()
-				.filter(level -> accessibleElementKeys.contains(level.getKey()))
-				.map(CurriculumElement::getKey)
-				.map(String::valueOf)
-				.toList();
-		
-		if (allLevelsSubPaths.isEmpty()) {
-			// Not existing key to prevent loading all to-dos.
-			allLevelsSubPaths = List.of("-1");
-		}
 		
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
@@ -194,19 +176,8 @@ public class CurriculumElementToDoListController extends ToDoTaskListController 
 
 	@Override
 	protected ToDoTaskSearchParams createSearchParams() {
-		ToDoTaskSearchParams params = new ToDoTaskSearchParams();
-		params.setTypes(List.of(CurriculumElementToDoProvider.TYPE));
-		params.setOriginIds(List.of(element.getCurriculum().getKey()));
 		boolean oneLevelOnly = thisLevelButton.getComponent().isPrimary();
-		if (oneLevelOnly) {
-			List<String> thisLevelSubPaths = allLevelsSubPaths.contains(element.getKey().toString())
-					? List.of(element.getKey().toString())
-					: List.of("-1");
-			params.setOriginSubPaths(thisLevelSubPaths);
-		} else {
-			params.setOriginSubPaths(allLevelsSubPaths);
-		}
-		return params;
+		return curriculumElementToDoProvider.createManagerSearchParams(getIdentity(), element, !oneLevelOnly);
 	}
 
 	@Override

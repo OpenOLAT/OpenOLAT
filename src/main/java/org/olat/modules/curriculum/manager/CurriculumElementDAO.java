@@ -650,7 +650,7 @@ public class CurriculumElementDAO {
 	 * 
 	 * @param sb The query builder
 	 */
-	private void appendManagerAccess(QueryBuilder sb, boolean includeImplementationOwnership) {
+	static void appendManagerAccess(QueryBuilder sb, boolean includeImplementationOwnership) {
 		// curriculum administrator at level curriculum
 		sb.and()
 		  .append("(")

@@ -19,11 +19,10 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
@@ -38,19 +37,23 @@ import org.olat.modules.todo.ToDoTask;
  */
 public class CurriculumManagerToDoSecurityCallback extends CurriculumElementToDoSecurityCallback {
 
-	private final Map<String, CurriculumElement> elementBySubPath;
+	private final Map<String, CurriculumElement> elementBySubPath = new HashMap<>();
+	private final CurriculumService curriculumService;
 
-	public CurriculumManagerToDoSecurityCallback(CurriculumSecurityCallback secCallback, Set<Long> elementKeys,
+	public CurriculumManagerToDoSecurityCallback(CurriculumSecurityCallback secCallback,
 			CurriculumService curriculumService) {
 		super(secCallback, null);
-		List<CurriculumElementRefImpl> refs = elementKeys.stream().map(CurriculumElementRefImpl::new).toList();
-		elementBySubPath = curriculumService.getCurriculumElements(refs).stream()
-				.collect(Collectors.toMap(el -> String.valueOf(el.getKey()), el -> el));
+		this.curriculumService = curriculumService;
 	}
 
 	@Override
 	protected CurriculumElement getCurriculumElement(ToDoTask toDoTask) {
-		return toDoTask.getOriginSubPath() != null ? elementBySubPath.get(toDoTask.getOriginSubPath()) : null;
+		String subPath = toDoTask.getOriginSubPath();
+		if (!StringHelper.isLong(subPath)) {
+			return null;
+		}
+		return elementBySubPath.computeIfAbsent(subPath,
+				key -> curriculumService.getCurriculumElement(new CurriculumElementRefImpl(Long.valueOf(key))));
 	}
 
 	@Override

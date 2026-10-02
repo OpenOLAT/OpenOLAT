@@ -83,7 +83,7 @@ public class ConfirmDeleteCurriculumElementController extends ConfirmationContro
 		membersKeys = curriculumService.getMemberKeys(elements, CurriculumRoles.participant.name(), CurriculumRoles.coach.name(), CurriculumRoles.owner.name(),
 				 CurriculumRoles.mastercoach.name(), CurriculumRoles.curriculumelementowner.name());
 
-		toDoCount = curriculumElementToDoProvider.countActiveToDoTasks(curriculumElement, elements);
+		toDoCount = curriculumElementToDoProvider.countActiveToDoTasksOfElementAndDescendants(curriculumElement);
 
 		initForm(ureq);
 	}
