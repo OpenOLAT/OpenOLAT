@@ -73,20 +73,20 @@ public class PasskeyListController extends FormBasicController {
 	private final boolean asAdmin;
 	private final boolean withInUse;
 	private final Identity identityToModify;
-	private final boolean withLastOneWarning;
+	private final boolean noOlatPassword;
 	private final boolean canSendPasswordLink;
 	
 	@Autowired
 	private OLATWebAuthnManager webAuthnManager;
 	
 	public PasskeyListController(UserRequest ureq, WindowControl wControl,
-			Identity identityToModify, boolean withLastOneWarning, boolean withInUse,
+			Identity identityToModify, boolean noOlatPassword, boolean withInUse,
 			boolean asAdmin, boolean canSendPasswordLink) {
 		super(ureq, wControl, "passkey_list");
 		this.asAdmin = asAdmin;
 		this.withInUse = withInUse;
 		this.identityToModify = identityToModify;
-		this.withLastOneWarning = withLastOneWarning;
+		this.noOlatPassword = noOlatPassword;
 		this.canSendPasswordLink = canSendPasswordLink;
 		
 		initForm(ureq);
@@ -125,7 +125,7 @@ public class PasskeyListController extends FormBasicController {
 			newPasskeyButton = uifactory.addFormLink("new.passkey", formLayout, Link.BUTTON);
 			newPasskeyButton.setIconLeftCSS("o_icon o_ac_token_icon");
 		} else {
-			String actionKey = canSendPasswordLink ? "send.invitation.link" : null;
+			String actionKey = (canSendPasswordLink && noOlatPassword) ? "send.invitation.link" : null;
 			EmptyStateConfigBuilder builder = EmptyStateConfig.builder()
 					.withMessageI18nKey("table.empty.passkeys.admin")
 					.withIconCss("o_icon_password");
@@ -203,7 +203,7 @@ public class PasskeyListController extends FormBasicController {
 	
 	private void doConfirmDelete(UserRequest ureq, PasskeyRow row) {
 		confirmDeleteCtrl = new ConfirmDeletePasskeyController(ureq, getWindowControl(),
-				row, identityToModify, withLastOneWarning);
+				row, identityToModify, noOlatPassword);
 		listenTo(confirmDeleteCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(),
