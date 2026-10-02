@@ -25,7 +25,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.modules.curriculum.CurriculumAutomationConfig;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -110,10 +113,14 @@ public class CurriculumAutomationConfigDAO {
 				where config.curriculumElement.key in :keys""";
 
 		List<Long> keys = elements.stream().map(CurriculumElement::getKey).collect(Collectors.toList());
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(query, CurriculumAutomationConfig.class)
-				.setParameter("keys", keys)
-				.getResultList();
+		TypedQuery<CurriculumAutomationConfig> typedQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(query, CurriculumAutomationConfig.class);
+
+		List<CurriculumAutomationConfig> configs = new ArrayList<>(keys.size());
+		for (List<Long> chunkOfKeys : PersistenceHelper.collectionOfChunks(keys)) {
+			configs.addAll(typedQuery.setParameter("keys", chunkOfKeys).getResultList());
+		}
+		return configs;
 	}
 
 	public CurriculumAutomationConfig update(CurriculumAutomationConfig config) {
