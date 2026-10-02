@@ -162,6 +162,11 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			levelString = translate("security.level.level1.only");
 		}
 		mainVC.contextPut("title", translate("security.level.title.admin", levelString));
+
+		// The passkey feature was disabled after this account was reduced to passkey-only:
+		// the account can no longer log in at all.
+		boolean passkeyOnlyButFeatureDisabled = !withPasskey && currentLevel == PasskeyLevels.level2;
+		mainVC.contextPut("passkeyOnlyButFeatureDisabled", passkeyOnlyButFeatureDisabled);
 	}
 
 	private void initTemporaryKeys() {

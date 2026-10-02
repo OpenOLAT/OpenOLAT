@@ -1,3 +1,7 @@
+#if($passkeyOnlyButFeatureDisabled)
+	<div class="o_warning">$r.translate("warning.passkey.feature.disabled")</div>
+#end
+
 <div class="panel o_authentication_overview #if($withPasskey) o_authentication_upgrade #end">
 	<i class="o_icon o_icon-lg o_icon_user_authentication o_authentication_$level"> </i>
 	<div class="o_authentication_details">
