@@ -468,6 +468,7 @@ public class GapEditorController extends FormBasicController {
 				itemBuilder.getAssessmentItem(), itemBuilder.getQuestionType()));
 
 		itemBuilder.extractQuestions();
+		itemBuilder.extractInteractions();
 		itemBuilder.extractEntriesSettingsFromResponseDeclaration();
 		
 		String question = itemBuilder.getQuestion();
