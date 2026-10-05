@@ -1017,7 +1017,8 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 			updateUI(true);
 		} else if(templateEl == source || templateTypeEl == source) {
 			updateUI(true);
-		} else if(allowToExitEl == source || showAudioOptionsEl == source || showSebTaskListEl == source) {
+		} else if(allowToExitEl == source || showAudioOptionsEl == source || showSebTaskListEl == source
+				|| urlFilterEl == source) {
 			updateUIOptions();
 		} else if(typeOfUseEl == source || templateEl == source) {
 			updateUI(false);
