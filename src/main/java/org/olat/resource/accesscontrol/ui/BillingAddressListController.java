@@ -121,7 +121,6 @@ public class BillingAddressListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BillingAddressCols.nameLine2));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BillingAddressCols.addressLine1));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BillingAddressCols.addressLine2));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BillingAddressCols.addressLine2));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BillingAddressCols.addressLine3));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BillingAddressCols.addressLine4));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BillingAddressCols.poBox));

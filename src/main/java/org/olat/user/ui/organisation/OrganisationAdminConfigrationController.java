@@ -83,7 +83,7 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 		emailDomainCont = FormLayoutContainer.createDefaultFormLayout("emailDomain", getTranslator());
 		emailDomainCont.setFormTitle(translate("organisation.email.domains"));
 		emailDomainCont.setFormInfo(translate("organisation.email.domains.help"));
-		emailDomainCont.setFormInfoHelp("manual_admin/administration/Modules_Organisations/#e-mail_domain_mapping");
+		emailDomainCont.setFormInfoHelp("manual_admin/administration/Modules_Organisations/#tab_mail_domain_assignment");
 		emailDomainCont.setElementCssClass("o_block_top");
 		emailDomainCont.setRootForm(mainForm);
 		formLayout.add(emailDomainCont);

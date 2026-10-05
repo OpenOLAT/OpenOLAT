@@ -1103,6 +1103,8 @@ public class LoginModule extends AbstractSpringModule {
 	}
 
 	public PasskeyLevels getPasskeyLevel(OrganisationRoles role) {
+		if(!isOlatProviderWithPasskey()) return PasskeyLevels.level1;
+		
 		String level;
 		switch(role) {
 			case sysadmin: level = passkeyLevelSystemAdministrator; break;

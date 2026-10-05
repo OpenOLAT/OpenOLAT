@@ -32,6 +32,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
+import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.event.ChangeDayEvent;
 
 /**
@@ -47,7 +49,7 @@ public class DayChooserController extends FormBasicController {
 	private DateChooser dateEl;
 	
 	public DayChooserController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "day_chooser");
+		super(ureq, wControl, "day_chooser", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		
 		initForm(ureq);
 	}
@@ -59,12 +61,12 @@ public class DayChooserController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		previousDayButton = uifactory.addFormLink("previous.day", "previous", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		previousDayButton.setTitle("aria.previous.day");
+		previousDayButton.setTitle(translate("aria.previous.day"));
 		previousDayButton.setDomReplacementWrapperRequired(false);
 		previousDayButton.setIconLeftCSS("o_icon o_icon_previous_page");
 		
 		nextDayButton = uifactory.addFormLink("next.day", "next", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		nextDayButton.setTitle("aria.next.day");
+		nextDayButton.setTitle(translate("aria.next.day"));
 		nextDayButton.setDomReplacementWrapperRequired(false);
 		nextDayButton.setIconLeftCSS("o_icon o_icon_next_page");
 		
