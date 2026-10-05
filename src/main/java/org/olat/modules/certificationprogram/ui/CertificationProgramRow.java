@@ -64,6 +64,10 @@ public class CertificationProgramRow implements CertificationProgramRef {
 		return certificationProgram.getIdentifier();
 	}
 	
+	public boolean isRecertificationEnabled() {
+		return certificationProgram.isRecertificationEnabled();
+	}
+	
 	public RecertificationMode getRecertificationMode() {
 		return certificationProgram.getRecertificationMode();
 	}
