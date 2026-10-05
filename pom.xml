@@ -67,7 +67,7 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>7.0.9</org.springframework.version>
-		<org.hibernate.version>7.4.10.Final</org.hibernate.version>
+		<org.hibernate.version>7.4.12.Final</org.hibernate.version>
 		<org.hibernate.validator.version>9.1.4.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.9</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.2.3</apache.cxf>
@@ -77,8 +77,8 @@
 		<org.slf4j>2.0.20</org.slf4j>
 		<org.bouncycastle>1.86</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
-		<io.undertow>2.4.3.Final</io.undertow>
-		<io.undertow.ee>2.0.2.Final</io.undertow.ee>
+		<io.undertow>2.4.4.Final</io.undertow>
+		<io.undertow.ee>2.0.3.Final</io.undertow.ee>
 		<jackson.version>2.22.3</jackson.version>
 		<jackson.annotations.version>2.22</jackson.annotations.version>
 		<swagger.ui.version>5.33.1</swagger.ui.version>
@@ -1687,7 +1687,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>4.3.0</version>
+			<version>4.4.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2398,7 +2398,7 @@
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-embeddings</artifactId>
-			<version>${dev.langchain4j}-beta30</version>
+			<version>${dev.langchain4j}-beta31</version>
 		</dependency>
 		<!-- end AI API -->
 
