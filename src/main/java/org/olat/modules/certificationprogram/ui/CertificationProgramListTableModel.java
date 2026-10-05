@@ -144,7 +144,7 @@ implements SortableFlexiTableDataModel<CertificationProgramRow>, FilterableFlexi
 			case key -> row.getKey();
 			case identifier -> row.getIdentifier();
 			case displayName -> row.getDisplayName();
-			case recertificationMode -> row.getRecertificationMode();
+			case recertificationMode -> row.isRecertificationEnabled() ? row.getRecertificationMode() : null;
 			case validityPeriod -> row.getValidityPeriod();
 			case activeUsers -> Long.valueOf(row.getActiveUsers());
 			case candidates -> Long.valueOf(row.getCandidates());

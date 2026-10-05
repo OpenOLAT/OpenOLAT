@@ -453,6 +453,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		String key = configuration.getSafeExamBrowserKey();
 		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 16000, 6, 60, false, false, key, keyConfigCont);
 		safeExamBrowserKeyEl.setMaxLength(16000);
+		safeExamBrowserKeyEl.setMandatory(true);
 		safeExamBrowserKeyEl.setVisible(configuration.isSafeExamBrowser());
 	}
 	
@@ -1017,7 +1018,8 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 			updateUI(true);
 		} else if(templateEl == source || templateTypeEl == source) {
 			updateUI(true);
-		} else if(allowToExitEl == source || showAudioOptionsEl == source || showSebTaskListEl == source) {
+		} else if(allowToExitEl == source || showAudioOptionsEl == source || showSebTaskListEl == source
+				|| urlFilterEl == source) {
 			updateUIOptions();
 		} else if(typeOfUseEl == source || templateEl == source) {
 			updateUI(false);
