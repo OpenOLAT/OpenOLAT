@@ -453,6 +453,7 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		String key = configuration.getSafeExamBrowserKey();
 		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 16000, 6, 60, false, false, key, keyConfigCont);
 		safeExamBrowserKeyEl.setMaxLength(16000);
+		safeExamBrowserKeyEl.setMandatory(true);
 		safeExamBrowserKeyEl.setVisible(configuration.isSafeExamBrowser());
 	}
 	
