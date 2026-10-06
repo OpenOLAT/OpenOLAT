@@ -192,7 +192,10 @@ public class RESTDispatcher implements Dispatcher {
 				// UserSession.getSession() request. This means, the normal session
 				// timeout is set in the redirect request that will happen immediately
 				// after the REST dispatcher finishes. No need to change it here.
-				if (!usess.isAuthenticated() || !restIdentity.equalsByPersistableKey(usess.getIdentity())) {
+				if(usess.isContentDelivery()) {
+					DispatcherModule.forwardToDefault(request, response);
+					return;
+				} else if (!usess.isAuthenticated() || !restIdentity.equalsByPersistableKey(usess.getIdentity())) {
 					// Re-authenticate user session for this user and start a fresh
 					// standard OLAT session
 					int loginStatus = AuthHelper.doLogin(restIdentity, RestSecurityHelper.SEC_TOKEN, ureq);			
@@ -269,7 +272,7 @@ public class RESTDispatcher implements Dispatcher {
 	
 	private void redirectAuthenticatedTo(UserSession usess, UserRequest ureq, String encodedRestPart) {
 		String url = WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + encodedRestPart;
-		if(usess != null && !ureq.getHttpReq().isRequestedSessionIdFromCookie()) {
+		if(usess != null && !usess.isContentDelivery() && !ureq.getHttpReq().isRequestedSessionIdFromCookie()) {
 			url += ";jsessionid=" + usess.getSessionInfo().getSession().getId();
 		}
 		DispatcherModule.redirectTo(ureq.getHttpResp(), url);

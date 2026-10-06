@@ -193,16 +193,16 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			if (redirectUrl != null) {
 				DispatcherModule.redirectTo(response, redirectUrl);
 			} else if (businessPath != null) {
-				processBusinessPath(businessPath, ureq, usess);
+				processBusinessPath(businessPath, request, response, ureq, usess);
 			} else if (ureq.isValidDispatchURI()) {
 				// valid uri for dispatching (has timestamp, componentid and windowid)
 				processValidDispatchURI(ureq, usess, request, response);
 			} else {
 				businessPath = extractBusinessPath(ureq, request, uriPrefix);
 				if(businessPath == null) {
-					processBusinessPath("", ureq, usess);
+					processBusinessPath("", request, response, ureq, usess);
 				} else {
-					processBusinessPath(businessPath, ureq, usess);
+					processBusinessPath(businessPath, request, response, ureq, usess);
 				}
 			}
 		} catch (InvalidRequestParameterException e) {
@@ -324,7 +324,13 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		}
 	}
 	
-	private void processBusinessPath(String businessPath, UserRequest ureq, UserSession usess) {
+	private void processBusinessPath(String businessPath, HttpServletRequest request, HttpServletResponse response,
+			UserRequest ureq, UserSession usess) {
+		if(usess.isContentDelivery()) {
+			forwardToDefaultDispatcher(request, response);
+			return;
+		}
+		
 		// Check first if URL was opened in an existing window. Send page that reads the
 		// browser window name and redirects back with the attached parameter.
 		String ooBrowserWinCheck = ureq.getHttpReq().getParameter("oow");
