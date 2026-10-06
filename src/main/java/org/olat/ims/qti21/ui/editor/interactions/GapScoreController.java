@@ -531,8 +531,8 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 				
 					Double points = null;
 					if(variants.get(0) instanceof TextEntryWrapper entryWrapper
-							&& entryWrapper.getEntry().getScore() != null
-							&& entryWrapper.getEntry().getScore().doubleValue() == -1.0d) {
+							&& (entryWrapper.getEntry().getScore() == null
+								|| (entryWrapper.getEntry().getScore() != null && entryWrapper.getEntry().getScore().doubleValue() == -1.0d))) {
 						entryWrapper.getEntry().setScore(1.0d);
 						entryWrapper.getPointsEl().setValue("1.0");
 						points = Double.valueOf(1.0d);
@@ -928,6 +928,44 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 		}
 	}
 	
+	public static final class InlineComparator implements Comparator<Alternative> {
+		
+		private final List<Identifier> identifiersList;
+		
+		public InlineComparator(List<Identifier> identifiersList) {
+			this.identifiersList = identifiersList;
+		}
+
+		@Override
+		public int compare(Alternative o1, Alternative o2) {
+			boolean c1 = o1.isCorrect();
+			boolean c2 = o2.isCorrect();
+			
+			int c = - Boolean.compare(c1, c2);
+			if(c == 0) {
+				double p1 = getScore(o1);
+				double p2 = getScore(o2);
+				c = - Double.compare(p1, p2);
+			}
+			
+			if(c == 0) {
+				Identifier id1 = o1 instanceof InlineChoiceWrapper ? ((InlineChoiceWrapper)o1).getIdentifier() : null;
+				Identifier id2 = o2 instanceof InlineChoiceWrapper ? ((InlineChoiceWrapper)o2).getIdentifier() : null;
+				
+				int i1 = identifiersList.indexOf(id1);
+				int i2 = identifiersList.indexOf(id2);
+				c = Integer.compare(i1, i2);
+			}
+
+			return c;
+		}
+		
+		private double getScore(Alternative o) {
+			Double val = o.getPoints();
+			return val == null ? -1.0 : val.doubleValue();
+		}
+	}
+	
 	public class InlineChoiceInteractionBundle implements InteractionBundle {
 		
 		private String context;
@@ -956,7 +994,13 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 		public List<Alternative> getVariants() {
 			List<Alternative> variants = getAllVariants();
 			if(variants.size() > 1) {
-				Collections.sort(variants, new VariantComparator());
+				if(inlineChoiceInteractionEntry.isShuffle()) {
+					Collections.sort(variants, new VariantComparator());
+				} else {
+					List<Identifier> identifiersList = inlineChoiceInteractionEntry.getInlineChoices()
+							.stream().map(InlineChoice::getIdentifier).toList();
+					Collections.sort(variants, new InlineComparator(identifiersList));
+				}
 			}
 			return variants;
 		}
