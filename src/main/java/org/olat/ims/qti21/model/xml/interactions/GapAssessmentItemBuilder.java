@@ -301,6 +301,22 @@ public class GapAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 	}
 	
+	public void removeOrphanInlineChoiceInteractions() {
+		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		if(interactions != null && inlineChoiceInteractions != null) {
+			Set<Identifier> responseIdentifiers = interactions.stream()
+					.map(Interaction::getResponseIdentifier)
+					.collect(Collectors.toSet());
+			
+			for(Iterator<InlineChoiceInteractionEntry> it=inlineChoiceInteractions.iterator(); it.hasNext(); ) {
+				InlineChoiceInteractionEntry entry = it.next();
+				if(!responseIdentifiers.contains(entry.getResponseIdentifier())) {
+					it.remove();
+				}
+			}
+		}
+	}
+	
 	/**
 	 * We loop around the textEntryInteraction, search the responseDeclaration. responseDeclaration
 	 * of type string are gap text, of type float are numerical.

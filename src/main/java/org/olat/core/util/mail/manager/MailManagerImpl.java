@@ -1948,7 +1948,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			if(content instanceof MimeMultipart) {
 				MimeMultipart mmp = (MimeMultipart)content;
 				for(int i=0; i<mmp.getCount(); i++) {
-					if(i > 0) log.info("---------------------");
+					if(i > 0) log.log(level, "---------------------");
 					log.log(level, "Content : {}", mmp.getBodyPart(i).getContent());
 				}
 			} else {
