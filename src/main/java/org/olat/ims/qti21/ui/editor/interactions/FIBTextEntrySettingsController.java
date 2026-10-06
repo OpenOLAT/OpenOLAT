@@ -167,6 +167,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		correctionsEl = uifactory.addCheckboxesVertical("fib.corrections", "fib.corrections", optionsCont, optionsPK.keys(), optionsPK.values(), 1);
 		correctionsEl.setElementCssClass("o_sel_gap_entry_options");
 		correctionsEl.setEnabled(!restrictedEdit && !readOnly);
+		correctionsEl.setHelpTextKey("fib.corrections.hint", null);
 		if(interaction.isCaseSensitive()) {
 			correctionsEl.select(OPTION_CASE_SENSITIVITY_KEY, true);
 		}
