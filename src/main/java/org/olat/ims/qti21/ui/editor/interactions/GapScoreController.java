@@ -83,7 +83,7 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 	
-	private static final String PER_ANSWER_AND_ALTERNAITVES = "perAnswerAndAlternatives";
+	private static final String PER_ANSWER_AND_ALTERNATIVES = "perAnswerAndAlternatives";
 	
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
@@ -138,7 +138,7 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 		modeValues.add(SelectionValues.entry(ScoreEvaluation.allCorrectAnswers.name(), translate("form.score.assessment.all.correct")));
 		modeValues.add(SelectionValues.entry(ScoreEvaluation.perAnswer.name(), translate("form.score.assessment.per.answer")));
 		if(type != QTI21QuestionType.inlinechoice) {
-			modeValues.add(SelectionValues.entry(PER_ANSWER_AND_ALTERNAITVES, translate("form.score.assessment.per.answer.and.alternatives")));
+			modeValues.add(SelectionValues.entry(PER_ANSWER_AND_ALTERNATIVES, translate("form.score.assessment.per.answer.and.alternatives")));
 		}
 		modeValues.add(SelectionValues.entry(ScoreEvaluation.negativePointSystem.name(), translate("form.score.assessment.nps")));
 		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout,
@@ -346,6 +346,7 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 	private void syncChoices(InlineChoiceInteractionBundle wrapper, InlineChoiceInteractionEntry entry) {
 		List<Alternative> variantsWrappers = wrapper.getAllVariants();
 		List<InlineChoice> inlineChoices = entry.getInlineChoices();
+		Identifier correctResponseId = entry.getCorrectResponseId();
 		
 		for(Iterator<Alternative> it=variantsWrappers.iterator(); it.hasNext(); ) {
 			Alternative alternativeWrapper = it.next();
@@ -356,6 +357,7 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 					if(alternativeWrapper instanceof InlineChoiceWrapper inlineChoiceWrapper
 							&&  inlineChoiceWrapper.getInlineChoice().getIdentifier().equals(inlineChoice.getIdentifier())) {
 						inlineChoiceWrapper.setInlineChoice(inlineChoice);
+						inlineChoiceWrapper.setCorrect(correctResponseId != null && correctResponseId.equals(inlineChoice.getIdentifier()));
 						found = true;
 					}
 				}
@@ -372,6 +374,7 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 				for(Alternative alternativeWrapper:variantsWrappers) {
 					if(alternativeWrapper instanceof InlineChoiceWrapper inlineChoiceWrapper
 							&& inlineChoiceWrapper.getInlineChoice() == inlineChoice) {
+						inlineChoiceWrapper.setCorrect(correctResponseId != null && correctResponseId.equals(inlineChoice.getIdentifier()));
 						found = true;
 					}
 				}
@@ -565,9 +568,11 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 						for(InlineChoiceWrapper choiceWrapper:choiceWrappers) {
 							if(!StringHelper.containsNonWhitespace(choiceWrapper.getPointsEl().getValue())) {
 								if(correctResponseId != null && correctResponseId.equals(choiceWrapper.getIdentifier())) {
-									choiceWrapper.getPointsEl().setValue("1.0");
+									choiceWrapper.getPointsEl().setValue("1");
+									choiceWrapper.setCorrect(true);
 								} else {
-									choiceWrapper.getPointsEl().setValue("0.0");
+									choiceWrapper.getPointsEl().setValue("0");
+									choiceWrapper.setCorrect(false);
 								}
 							}
 						}
@@ -595,9 +600,9 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 		}
 		
 		String selectedMode = assessmentModeEl.getSelectedKey();
-		if(assessmentModeEl.isOneSelected() && (ScoreEvaluation.perAnswer.name().equals(selectedMode) || PER_ANSWER_AND_ALTERNAITVES.equals(selectedMode))) {
+		if(assessmentModeEl.isOneSelected() && (ScoreEvaluation.perAnswer.name().equals(selectedMode) || PER_ANSWER_AND_ALTERNATIVES.equals(selectedMode))) {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
-			boolean alternativeSpecificScore = PER_ANSWER_AND_ALTERNAITVES.equals(selectedMode);
+			boolean alternativeSpecificScore = PER_ANSWER_AND_ALTERNATIVES.equals(selectedMode);
 			
 			for(InteractionBundle bundle:wrappers) {
 				List<Alternative> variants = bundle.getAllVariants();
@@ -658,6 +663,10 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 			return correct;
 		}
 		
+		public void setCorrect(boolean correct) {
+			this.correct = correct;
+		}
+		
 		public boolean isPositive() {
 			if(isCorrect()) {
 				return true;
@@ -670,11 +679,7 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 			}
 			return false;
 		}
-		
-		public void setCorrect(boolean correct) {
-			this.correct = correct;
-		}
-		
+
 		public abstract String getText();
 		
 		public TextElement getPointsEl() {
