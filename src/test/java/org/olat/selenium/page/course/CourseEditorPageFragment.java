@@ -45,7 +45,7 @@ public class CourseEditorPageFragment {
 	public static final By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
 	
 	public static final By chooseCpButton = By.className("o_sel_cp_choose_repofile");
-	public static final By chooseWikiButton = By.className("o_sel_wiki_choose_repofile");
+	public static final By chooseWikiButton = By.className("o_sel_re_reference_select");
 	public static final By chooseTestButton = By.className("o_sel_re_reference_select");
 	public static final By chooseScormButton = By.className("o_sel_scorm_choose_repofile");
 	public static final By choosePortfolioButton = By.className("o_sel_map_choose_repofile");
@@ -395,7 +395,7 @@ public class CourseEditorPageFragment {
 	 * @return Itself
 	 */
 	public CourseEditorPageFragment chooseWiki(String resourceTitle) {
-		return chooseResource(chooseWikiButton, resourceTitle);
+		return chooseResourceModern(chooseWikiButton, resourceTitle);
 	}
 	
 	/**
