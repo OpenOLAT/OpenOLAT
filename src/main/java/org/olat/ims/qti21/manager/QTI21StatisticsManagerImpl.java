@@ -505,7 +505,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		sb.append("select isession.score, isession.manualScore, count(isession.key), avg(isession.duration) from qtiassessmentitemsession isession ")
 		  .append(" inner join isession.assessmentTestSession asession");
 		boolean fakeParticipantParam = decorateRSet(sb, searchParams, true);
-		sb.append(" and isession.assessmentItemIdentifier=:itemIdent and isession.duration > 0")
+		sb.append(" and isession.assessmentItemIdentifier=:itemIdent")
 		  .append(" group by isession.score, isession.manualScore");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -545,8 +545,6 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				totalAdjustements = totalAdjustements + (diff.doubleValue() * numOfResults);
 			}
 			
-			double averageDuration = ((Number)result[3]).doubleValue();
-			
 			//average
 			double dScore = score == null ? 0.0d : score.doubleValue();
 			totalScore += (dScore * numOfResults);
@@ -558,7 +556,12 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				numOfIncorrectAnswers += numOfResults;
 			}
 			
-			totalDuration += (averageDuration * numOfResults);
+			// duration
+			Number duration = (Number)result[3];
+			if(duration != null) {
+				double averageDuration = duration.doubleValue();
+				totalDuration += (averageDuration * numOfResults);
+			}
 		}
 
 		double averageScore = totalScore / totalResults;

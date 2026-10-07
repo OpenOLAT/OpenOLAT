@@ -517,9 +517,19 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 				|| correction.getItemSessionState() == null 
 				|| !correction.getItemSessionState().isResponded()
 				|| !correction.isItemSessionStatusFinal()) {
-			status = "details.status.no.answer";
-			statusCssClass = "notAnswered";
-			iconCssClass = "o_icon_warning";
+			if(itemSession.getManualScore() == null) {
+				status = "details.status.no.answer";
+				statusCssClass = "notAnswered";
+				iconCssClass = "o_icon_warning";
+			} else if(manualScore) {
+				status = "details.status.manual";
+				statusCssClass = "manual";
+				iconCssClass = "o_icon_correction_manual";
+			} else {
+				status = "details.status.adjusted";
+				statusCssClass = "adjusted";
+				iconCssClass = "o_icon_correction_adjusted";
+			}
 		} else {
 			if(manualScore) {
 				if(itemSession.getManualScore() == null) {
