@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
@@ -107,6 +109,28 @@ public class AssessmentTestHelper {
 			return resolvedAssessmentItem.getItemLookup().extractIfSuccessful().getTitle();
 		}
 		return "ERROR";
+	}
+	
+	public static String appendComment(String comment, String toAppend) {
+		if(!StringHelper.containsNonWhitespace(toAppend)) return comment;
+		
+		if(StringHelper.containsNonWhitespace(comment)) {
+			boolean commentHtml = StringHelper.isHtml(comment);
+			boolean toAppendHtml = StringHelper.isHtml(toAppend);
+			if(commentHtml && toAppendHtml) {
+				comment += "<br>" + toAppend;
+			} else if(!commentHtml && toAppendHtml) {
+				comment =  Formatter.escWithBR(comment) + "<br>" + toAppend;
+			} else if(commentHtml && !toAppendHtml) {
+				comment += "<br>" + Formatter.escWithBR(toAppend);
+			} else  {
+				comment += "\n" + toAppend;
+			}
+		} else {
+			comment = toAppend;
+		}
+		
+		return comment;
 	}
 	
 	public static boolean needManualCorrection(ResolvedAssessmentTest resolvedAssessmentTest) {

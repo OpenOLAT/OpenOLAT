@@ -26,9 +26,11 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -65,6 +67,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 public class BulkScoreController extends FormBasicController {
 	
 	private TextElement pointsEl;
+	private RichTextElement commentEl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -97,20 +100,31 @@ public class BulkScoreController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String questionTitle = assessmentItem.getTitle();
 		String infoI18nKey = (mode == Mode.ADD) ? "point.add.info" : "point.set.info";
-		setFormInfo(infoI18nKey, new String[] { questionTitle } );
+		String info = translate(infoI18nKey, questionTitle);
+		if(!AssessmentTestHelper.needManualCorrection(assessmentItem)) {
+			info += "<br>" + translate("point.info.auto");
+		}
+		setFormTranslatedInfo(info);
 		
 		String i18nKey = (mode == Mode.ADD) ? "points.to.add" : "points.to.set";
 		pointsEl = uifactory.addTextElement("points", i18nKey, 8, null, formLayout);
+		pointsEl.setMandatory(true);
 		if(minScore != null && maxScore != null) {
 			pointsEl.setExampleKey("correction.min.max.score",
 				new String[] { AssessmentHelper.getRoundedScore(minScore), AssessmentHelper.getRoundedScore(maxScore) });
 		}
 		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		commentEl = uifactory.addRichTextElementForStringData("commentItem", "comment", "", 8, -1,
+				false, null, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		commentEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		commentEl.getEditorConfiguration().setPathInStatusBar(false);
+		commentEl.setHelpTextKey("comment.help", null);
+		commentEl.setExampleKey("comment.help.bulk", null);
+		
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		String submitI18nKey = (mode == Mode.ADD) ? "point.add" : "point.set";
 		uifactory.addFormSubmitButton("apply", submitI18nKey, buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
 	@Override
@@ -137,6 +151,9 @@ public class BulkScoreController extends FormBasicController {
 				pointsEl.setErrorKey("error.double.format");
 				allOk &= false;
 			}
+		} else {
+			pointsEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
 		}
 		
 		return allOk;
@@ -165,6 +182,7 @@ public class BulkScoreController extends FormBasicController {
 	}
 	
 	private void doAddPoints() {
+		String comment = commentEl.getValue();
 		BigDecimal points = getPoints();
 		if(points == null) return;
 		
@@ -176,7 +194,7 @@ public class BulkScoreController extends FormBasicController {
 			if(candidateSession != null && testSessionState != null) {
 				List<TestPlanNode> nodes = testSessionState.getTestPlan().getNodes(itemRef.getIdentifier());
 				if(nodes != null && nodes.size() == 1) {
-					addPoints(assessedIdentity, candidateSession, testSessionState, nodes.get(0), points);
+					addPoints(assessedIdentity, candidateSession, testSessionState, nodes.get(0), points, comment);
 					dbInstance.commit();
 				}
 			}
@@ -184,7 +202,7 @@ public class BulkScoreController extends FormBasicController {
 	}
 	
 	private void addPoints(Identity assessedIdentity, AssessmentTestSession candidateSession,
-			TestSessionState testSessionState, TestPlanNode itemNode, BigDecimal score) {
+			TestSessionState testSessionState, TestPlanNode itemNode, BigDecimal score, String comment) {
 
 		ResolvedAssessmentTest resolvedAssessmentTest = model.getResolvedAssessmentTest();
 		try(AssessmentSessionAuditLogger candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, false)) {
@@ -198,6 +216,7 @@ public class BulkScoreController extends FormBasicController {
 					.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier, null);
 
 			evaluateScore(itemSession, score);
+			appendComment(itemSession, comment);
 			
 			itemSession = qtiService.updateAssessmentItemSession(itemSession);
 			
@@ -214,6 +233,14 @@ public class BulkScoreController extends FormBasicController {
 		} catch(IOException e) {
 			logError("", e);
 		}
+	}
+	
+	private void appendComment(AssessmentItemSession itemSession, String commentToAppend) {
+		if(!StringHelper.containsNonWhitespace(commentToAppend)) return;
+		
+		String comment = itemSession.getCoachComment();
+		comment = AssessmentTestHelper.appendComment(comment, commentToAppend);
+		itemSession.setCoachComment(comment);
 	}
 	
 	private void evaluateScore(AssessmentItemSession itemSession, BigDecimal points) {

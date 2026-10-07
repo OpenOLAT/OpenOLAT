@@ -62,6 +62,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentItemSession;
+import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
@@ -516,26 +517,36 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 				|| correction.getItemSessionState() == null 
 				|| !correction.getItemSessionState().isResponded()
 				|| !correction.isItemSessionStatusFinal()) {
-			status = "status.not.answered";
-			statusCssClass = "notAnswered";
-			iconCssClass = "o_icon_warning";
+			if(itemSession.getManualScore() == null) {
+				status = "details.status.no.answer";
+				statusCssClass = "notAnswered";
+				iconCssClass = "o_icon_warning";
+			} else if(manualScore) {
+				status = "details.status.manual";
+				statusCssClass = "manual";
+				iconCssClass = "o_icon_correction_manual";
+			} else {
+				status = "details.status.adjusted";
+				statusCssClass = "adjusted";
+				iconCssClass = "o_icon_correction_adjusted";
+			}
 		} else {
 			if(manualScore) {
 				if(itemSession.getManualScore() == null) {
-					status = "status.to.correct";
+					status = "details.status.to.correct";
 					statusCssClass = "toCorrect";
 					iconCssClass = "o_icon_correction_to_correct";
 				} else {
-					status = "status.manual";
+					status = "details.status.manual";
 					statusCssClass = "manual";
 					iconCssClass = "o_icon_correction_manual";
 				}
 			} else if(overrideAutoScore != null) {
-				status = "status.adjusted";
+				status = "details.status.adjusted";
 				statusCssClass = "adjusted";
 				iconCssClass = "o_icon_correction_adjusted";
 			} else {
-				status = "status.auto";
+				status = "details.status.auto";
 				statusCssClass = "auto";
 				iconCssClass = "o_icon_correction_auto";
 			}
@@ -650,7 +661,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(adjustCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				doAdjustScore(adjustCtrl.getNewScore());
+				doAdjustScore(adjustCtrl.getNewScore(), adjustCtrl.getCommentToAppend());
 			}
 			adjustScoreCalloutCtrl.deactivate();
 			cleanUp();
@@ -830,7 +841,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		adjustScoreCalloutCtrl.activate();
 	}
 	
-	private void doAdjustScore(BigDecimal newScore) {
+	private void doAdjustScore(BigDecimal newScore, String comment) {
 		overrideAutoScore = newScore;
 		String score;
 		if(newScore == null) {
@@ -841,6 +852,12 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		}
 		scoreEl.setValue(score);
 		overrideScoreCont.setDirty(true);
+		
+		if(StringHelper.containsNonWhitespace(comment)) {
+			String val = commentEl.getValue();
+			commentEl.setValue(AssessmentTestHelper.appendComment(val, comment));
+		}
+		
 		updateScoreUI();
 		markDirty();
 	}
@@ -867,6 +884,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	public class AdjustmentScoreController extends FormBasicController {
 		
 		private TextElement newScoreEl;
+		private RichTextElement newCommentEl;
 		
 		public AdjustmentScoreController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl, LAYOUT_VERTICAL);
@@ -883,11 +901,23 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			}
 			return null;
 		}
+		
+		public String getCommentToAppend() {
+			return newCommentEl.getValue();
+		}
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			String maScore = overrideAutoScore == null ? "" : AssessmentHelper.getRoundedScore(overrideAutoScore);
-			newScoreEl = uifactory.addTextElement("new.score", "score", 6, maScore, formLayout);
+			newScoreEl = uifactory.addTextElement("new.score", "points.to.set", 6, maScore, formLayout);
+			newScoreEl.setMandatory(true);
+			
+			newCommentEl = uifactory.addRichTextElementForStringData("commentItem", "comment", "", 8, -1,
+					false, null, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+			newCommentEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+			newCommentEl.getEditorConfiguration().setPathInStatusBar(false);
+			newCommentEl.setExampleKey("comment.help.append", null);
+			newCommentEl.setHelpText(translate("comment.help"));
 			
 			FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttonscont", null, formLayout);
 			uifactory.addFormSubmitButton("adjust.score", buttonsCont);
@@ -897,7 +927,15 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
 			boolean allOk = super.validateFormLogic(ureq);
-			allOk &= validateScore(newScoreEl);
+			
+			newScoreEl.clearError();
+			if(StringHelper.containsNonWhitespace(newScoreEl.getValue())) {
+				allOk &= validateScore(newScoreEl);
+			} else {
+				newScoreEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+			
 			return allOk;
 		}
 
