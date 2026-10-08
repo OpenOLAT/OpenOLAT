@@ -93,7 +93,7 @@ public class Windows implements Disposable, Serializable {
 				for(Enumeration<String> names=session.getAttributeNames(); names.hasMoreElements(); ) {
 					Object val = session.getAttribute(names.nextElement());
 					if(val instanceof Window window) {
-						newWs.registerPersitentWindow(window);
+						newWs.registerPersitentWindow(window, session);
 					}
 				}
 			}
@@ -106,23 +106,20 @@ public class Windows implements Disposable, Serializable {
 		return ws;
 	}
 	
-	public boolean disposeClosedWindows(UserRequest ureq) {
+	public void disposeClosedWindows(UserRequest ureq) {
 		String winId = ureq.getWindowID();
 		String winCmpId = ureq.getWindowComponentID();
 		
-		boolean canBeRemoved = false;
 		Map<UriPrefixIdPair,ChiefController> entries = windows.copyEntries();
 		for(Map.Entry<UriPrefixIdPair,ChiefController> entry:entries.entrySet()) {
 			Window window = entry.getValue().getWindow();
 			if(window.getInstanceId().equals(winId) || window.getDispatchID().equals(winCmpId)) {
 				window.setMarkToBeRemoved(false);
 			} else if(window.canBeRemoved()) {
-				window.getWindowBackOffice().dispose();
 				windows.remove(entry.getKey());
-				canBeRemoved = true;
+				disposeEvictedWindow(entry, ureq.getHttpReq().getSession());
 			}
 		}
-		return canBeRemoved;
 	}
 
 	/**
@@ -286,18 +283,38 @@ public class Windows implements Disposable, Serializable {
 		if(persistent && session != null) {
 			session.setAttribute(uriPrefix + "-" + wiid, w);
 		}
-		windows.put(np, chief);
+		disposeEvictedWindow(windows.put(np, chief), session);
 	}
 	
+	/**
+	 * The FIFO map drops the oldest window if the user has too much of them. The
+	 * window must be disposed, or its mappers and listeners hold it in memory
+	 * until the end of the session.
+	 * 
+	 * @param evicted The window removed from the FIFO map (can be null)
+	 * @param session The HTTP session (can be null)
+	 */
+	private void disposeEvictedWindow(Map.Entry<UriPrefixIdPair,ChiefController> evicted, HttpSession session) {
+		if(evicted == null) return;
+		
+		UriPrefixIdPair key = evicted.getKey();
+		if(key.isPersistent() && session != null) {
+			session.removeAttribute(key.toString());
+		}
+		ChiefController chief = evicted.getValue();
+		if(chief != null) {
+			chief.getWindow().getWindowBackOffice().dispose();
+		}
+	}
 
-	private UriPrefixIdPair registerPersitentWindow(Window window) {
+	private UriPrefixIdPair registerPersitentWindow(Window window, HttpSession session) {
 		String instanceId = window.getInstanceId();
 		UriPrefixIdPair np = new UriPrefixIdPair(window.getUriPrefix(), instanceId, true);
 		int nextWindowId = Integer.parseInt(instanceId) + 1;
 		if(nextWindowId > windowId) {
 			windowId = nextWindowId;
 		}
-		windows.put(np, window.getWindowBackOffice().getChiefController());
+		disposeEvictedWindow(windows.put(np, window.getWindowBackOffice().getChiefController()), session);
 		return np;
 	}
 
