@@ -170,7 +170,27 @@ public class CourseSecurityTest extends OlatRestTestCase {
 				.queryParam("objectives", "Structure-objectives-id-0").build();
 		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void authorCannotCopyCourse() throws IOException, URISyntaxException {
+		//author and owner
+		Identity author = JunitTestHelper.getDefaultAuthor();
+		RestConnection conn = new RestConnection(author.getUser().getNickName(), "A6B7C8");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.queryParam("shortTitle", "Course copy")
+				.queryParam("title", "Course copy")
+				.queryParam("initialAuthor", author.getKey().toString())
+				.queryParam("copyFrom", course.getResourceableId())
+				.build();
+		
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
 		
 		conn.shutdown();
 	}

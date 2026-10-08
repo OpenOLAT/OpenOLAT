@@ -168,6 +168,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		correctionsEl.setElementCssClass("o_sel_gap_entry_options");
 		correctionsEl.setEnabled(!restrictedEdit && !readOnly);
 		correctionsEl.setHelpTextKey("fib.corrections.hint", null);
+		correctionsEl.setHelpUrlForManualPage("manual_user/learningresources/Test_question_types/#gap");
 		if(interaction.isCaseSensitive()) {
 			correctionsEl.select(OPTION_CASE_SENSITIVITY_KEY, true);
 		}
