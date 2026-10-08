@@ -32,7 +32,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
-import org.olat.modules.sharepoint.SharePointModule;
 import org.olat.modules.teams.TeamsModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -92,8 +91,6 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 	private TeamsModule teamsModule;
 	@Autowired
 	private OAuthLoginModule oauthModule;
-	@Autowired
-	private SharePointModule sharePointModule;
 	
 	@Override
 	public boolean isEnabled() {
@@ -129,14 +126,14 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 		scopes.append("profile openid email User.Read");
 		if(teamsModule.isEnabled()) {
 			scopes.append(" OnlineMeetings.ReadWrite");
+			if(teamsModule.isRecordingsEnabled()) {
+				scopes.append(" OnlineMeetingRecording.Read.All");
+			}
 		}
-		if(teamsModule.isRecordingsEnabled()) {
-			scopes.append(" OnlineMeetingRecording.Read.All");
-		}
-		if(sharePointModule.isEnabled()) {
-			// Sites.Search.All AllSites.Read MyFiles.Read MyFiles.Write
-			// scopes.append(" MyFiles.Read MyFiles.Write");
-		}
+		//if(sharePointModule.isEnabled()) {
+		//	 Sites.Search.All AllSites.Read MyFiles.Read MyFiles.Write
+		//	 scopes.append(" MyFiles.Read MyFiles.Write");
+		//}
 		scopes.append(" offline_access");
 		
 		return serviceBuilder
