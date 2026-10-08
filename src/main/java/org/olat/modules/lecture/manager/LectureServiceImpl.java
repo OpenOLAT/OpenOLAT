@@ -1658,6 +1658,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
+	public List<LectureBlock> getLectureBlocksByBigBlueButtonMeeting(BigBlueButtonMeeting meeting) {
+		return lectureBlockDao.loadLectureBlocksByMeeting(meeting);
+	}
+
+	@Override
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry) {
 		return lectureBlockDao.getLectureBlocks(entry);
 	}

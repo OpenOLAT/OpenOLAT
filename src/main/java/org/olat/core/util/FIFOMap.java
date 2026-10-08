@@ -26,6 +26,7 @@
 
 package org.olat.core.util;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -58,15 +59,18 @@ public class FIFOMap<T,U> {
 	 * 
 	 * @param key The key
 	 * @param value The value
+	 * @return The evicted (key,value) tuple if the map exceeded its maximum size, or null
 	 */
-	public synchronized void put(T key, U value) {
+	public synchronized Map.Entry<T,U> put(T key, U value) {
 		lhm.put(key, value);
 		if (lhm.size() > maxsize) {
 			// removed oldest = 1. in queue
-			Iterator<T> it = lhm.keySet().iterator();
-			it.next();
+			Iterator<Map.Entry<T,U>> it = lhm.entrySet().iterator();
+			Map.Entry<T,U> eldest = it.next();
 			it.remove();
+			return new AbstractMap.SimpleImmutableEntry<>(eldest);
 		}
+		return null;
 	}
 
 	/**
@@ -83,10 +87,11 @@ public class FIFOMap<T,U> {
 	 * @param key
 	 * @return value of removed key
 	 */
-	public synchronized U remove(T key) {
-		U o = lhm.get(key);
-		lhm.remove(key);
-		return o;
+	public synchronized Map.Entry<T,U> remove(T key) {
+		U o = lhm.remove(key);
+		return o == null
+				? null
+				: new AbstractMap.SimpleImmutableEntry<>(key, o);
 	}
 
 	/**
