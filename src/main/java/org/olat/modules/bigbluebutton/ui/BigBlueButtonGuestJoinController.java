@@ -20,6 +20,7 @@
 package org.olat.modules.bigbluebutton.ui;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -71,6 +72,8 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.manager.AvatarMapper;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -101,6 +104,8 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 	private BigBlueButtonMeeting meeting;
 	private OLATResourceable meetingOres;
 	
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private NodeAccessService nodeAccessService;
 	@Autowired
@@ -258,27 +263,43 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		if(identEnv.getRoles() == null && identEnv.getIdentity() == null) {
 			return new MeetinSecurity(externalUsersAllowed, false, false);
 		} else if(meeting.getEntry() != null) {
-			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), identEnv.getRoles(), meeting.getEntry());
-			if(reSecurity.canLaunch()) {
-				readOnly = reSecurity.isReadOnly();
-				if(StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
-					RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(meeting.getEntry().getKey());
-					ICourse course = CourseFactory.loadCourse(entry);
-					UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(identEnv, course.getCourseEnvironment());
-					CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(uce)
-							.withFilter(AccessibleFilter.create())
-							.build()
-							.getNodeById(meeting.getSubIdent());
-					return new MeetinSecurity(courseTreeNode.isVisible(), reSecurity.isAdministrator() || reSecurity.isOwner(), reSecurity.isCoach());
-				}
-				return new MeetinSecurity(true, reSecurity.isAdministrator() || reSecurity.isOwner(), reSecurity.isCoach());
-			}
-			return new MeetinSecurity(externalUsersAllowed, false, false);
+			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(meeting.getEntry().getKey());
+			return isAllowedToMeetInRepositoryEntry(identEnv, entry, externalUsersAllowed);
 		} else if(meeting.getBusinessGroup() != null) {
 			boolean allowed = externalUsersAllowed || businessGroupService.isIdentityInBusinessGroup(getIdentity(), meeting.getBusinessGroup());
 			return new MeetinSecurity(allowed, false, false);
+		} else if(meeting != null) {
+			// Meetings in lecture block doesn't have a direct relation to the course
+			List<LectureBlock> lectureBlocks = lectureService.getLectureBlocksByBigBlueButtonMeeting(meeting);
+			if(lectureBlocks.size() == 1) {
+				RepositoryEntry entry = lectureBlocks.get(0).getEntry();
+				if(entry != null) {
+					entry = repositoryManager.lookupRepositoryEntry(entry.getKey());
+					return isAllowedToMeetInRepositoryEntry(identEnv, entry, externalUsersAllowed);
+				}
+			} else if(lectureBlocks.size() > 1) {
+				return new MeetinSecurity(externalUsersAllowed, false, false);
+			}
 		}
 		return new MeetinSecurity(false, false, false);
+	}
+	
+	private MeetinSecurity isAllowedToMeetInRepositoryEntry(IdentityEnvironment identEnv, RepositoryEntry entry, boolean externalUsersAllowed) {
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), identEnv.getRoles(), entry);
+		if(reSecurity.canLaunch()) {
+			readOnly = reSecurity.isReadOnly();
+			if(StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
+				ICourse course = CourseFactory.loadCourse(entry);
+				UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(identEnv, course.getCourseEnvironment());
+				CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(uce)
+						.withFilter(AccessibleFilter.create())
+						.build()
+						.getNodeById(meeting.getSubIdent());
+				return new MeetinSecurity(courseTreeNode.isVisible(), reSecurity.isAdministrator() || reSecurity.isOwner(), reSecurity.isCoach());
+			}
+			return new MeetinSecurity(true, reSecurity.isAdministrator() || reSecurity.isOwner(), reSecurity.isCoach());
+		}
+		return new MeetinSecurity(externalUsersAllowed, false, false);
 	}
 	
 	private boolean isModeratorStartMeeting() {

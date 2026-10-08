@@ -595,7 +595,8 @@ public interface LectureService {
 	
 	public void sendReminders();
 	
-	
+	public List<LectureBlock> getLectureBlocksByBigBlueButtonMeeting(BigBlueButtonMeeting meeting);
+
 	/**
 	 * All lecture block of the specified repository entry
 	 * 
