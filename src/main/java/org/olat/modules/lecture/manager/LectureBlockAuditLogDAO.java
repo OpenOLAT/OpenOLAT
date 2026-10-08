@@ -96,6 +96,10 @@ public class LectureBlockAuditLogDAO {
 		rollCallXStream.omitField(LectureBlockRollCallImpl.class, "identity");
 		rollCallXStream.omitField(LectureBlockRollCallImpl.class, "lectureBlock");
 		rollCallXStream.omitField(LectureBlockRollCallImpl.class, "lastModified");
+		rollCallXStream.omitField(AbsenceNoticeImpl.class, "identity");
+		rollCallXStream.omitField(AbsenceNoticeImpl.class, "notifier");
+		rollCallXStream.omitField(AbsenceNoticeImpl.class, "authorizer");
+		rollCallXStream.omitField(AbsenceNoticeImpl.class, "absenceCategory");
 	}
 	
 	private static final XStream summaryXStream = XStreamHelper.createXStreamInstanceForDBObjects();
