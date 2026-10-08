@@ -70,11 +70,11 @@ public class BigBlueButtonUIHelper {
 			if (externalLinkEl != null) {
 				boolean visible = template != null && template.isExternalUsersAllowed();
 				externalLinkEl.setVisible(visible);
-				if(visible && externalLinkEl instanceof TextElement
-						&& !StringHelper.containsNonWhitespace(((TextElement)externalLinkEl).getValue())
+				if(visible && externalLinkEl instanceof TextElement externalLinkTextEl
+						&& !StringHelper.containsNonWhitespace(externalLinkTextEl.getValue())
 						&& !meetingExists) {
 					String externalLink = Long.toString(CodeHelper.getForeverUniqueID());
-					((TextElement)externalLinkEl).setValue(Long.toString(CodeHelper.getForeverUniqueID()));
+					externalLinkTextEl.setValue(externalLink);
 					if (externalLink != null) {
 						String url = BigBlueButtonDispatcher.getMeetingUrl(externalLink);
 						externalLinkEl.setExampleKey("noTransOnlyParam", new String[] { url });	
