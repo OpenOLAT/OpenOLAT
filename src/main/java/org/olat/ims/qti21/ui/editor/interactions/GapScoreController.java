@@ -533,12 +533,17 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 					List<Alternative> variants = textEntryInteractionBundle.getAllVariants();
 				
 					Double points = null;
-					if(variants.get(0) instanceof TextEntryWrapper entryWrapper
-							&& (entryWrapper.getEntry().getScore() == null
-								|| (entryWrapper.getEntry().getScore() != null && entryWrapper.getEntry().getScore().doubleValue() == -1.0d))) {
-						entryWrapper.getEntry().setScore(1.0d);
-						entryWrapper.getPointsEl().setValue("1.0");
-						points = Double.valueOf(1.0d);
+					if(variants.get(0) instanceof TextEntryWrapper entryWrapper) {
+						if(entryWrapper.getEntry().getScore() == null
+								|| (entryWrapper.getEntry().getScore() != null && entryWrapper.getEntry().getScore().doubleValue() == -1.0d)) {
+							entryWrapper.getEntry().setScore(1.0d);
+							entryWrapper.getPointsEl().setValue("1.0");
+							points = Double.valueOf(1.0d);
+						} else if(entryWrapper.getEntry().getScore() != null
+								&& !StringHelper.containsNonWhitespace(entryWrapper.getPointsEl().getValue())) {
+							points = entryWrapper.getEntry().getScore();
+							entryWrapper.getPointsEl().setValue(points.toString());
+						}
 					}
 					
 					for(Alternative variant:variants) {
@@ -557,7 +562,7 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 									alternativeWrapper.getPointsEl().setValue(points.toString());
 								}
 							}
-						}
+						} 
 					}
 				} else if(wrapper instanceof InlineChoiceInteractionBundle inlineChoiceInteractionBundle) {
 					InlineChoiceInteractionEntry interactionEntry = inlineChoiceInteractionBundle.getInlineChoiceInteractionEntry();
@@ -674,8 +679,12 @@ public class GapScoreController extends AssessmentItemRefEditorController implem
 			
 			String score = pointsEl.getValue();
 			if(StringHelper.containsNonWhitespace(score)) {
-				double val = Double.parseDouble(pointsEl.getValue());
-				return val > 0.0d;
+				try {
+					double val = Double.parseDouble(pointsEl.getValue());
+					return val > 0.0d;
+				} catch (NumberFormatException e) {
+					//
+				}
 			}
 			return false;
 		}
