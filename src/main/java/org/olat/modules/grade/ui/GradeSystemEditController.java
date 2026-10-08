@@ -503,12 +503,7 @@ public class GradeSystemEditController extends FormBasicController {
 	private void doAddPerformanceClassBelow(Integer position) {
 		PerformanceClassRow row = createRow(null, position.intValue() + 1, false);
 		performanceClassRows.add(position.intValue(), row);
-		
-		for (int i = 0; i < performanceClassRows.size(); i++) {
-			PerformanceClassRow performanceClassRow = performanceClassRows.get(i);
-			performanceClassRow.setPosition(Integer.valueOf(i + 1));
-			updateName(performanceClassRow);
-		}
+		recalculatePosition();
 		
 		dataModel.setObjects(performanceClassRows);
 		tableEl.reset();
@@ -592,8 +587,18 @@ public class GradeSystemEditController extends FormBasicController {
 	
 	private void doDelete(PerformanceClassRow performanceClassRow) {
 		performanceClassRows.remove(performanceClassRow);
+		recalculatePosition();
+		
 		dataModel.setObjects(performanceClassRows);
 		tableEl.reset();
+	}
+	
+	private void recalculatePosition() {
+		for (int i = 0; i < performanceClassRows.size(); i++) {
+			PerformanceClassRow performanceClassRow = performanceClassRows.get(i);
+			performanceClassRow.setPosition(Integer.valueOf(i + 1));
+			updateName(performanceClassRow);
+		}
 	}
 	
 	private void doOpenTools(UserRequest ureq, PerformanceClassRow performanceClassRow, FormLink link) {
