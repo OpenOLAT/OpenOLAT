@@ -50,6 +50,7 @@ import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -328,9 +329,17 @@ public class CoursesWebService {
 		}
 
 		if(copyFrom != null) {
-			course = copyCourse(copyFrom, ureq, id, shortTitle, title, displayName, description, teaser, objectives,
-					requirements, credits, expenditureOfWork, softKey, accessStatus, accessPublicVisible, organisationKey,
-					authors, location, externalId, externalRef, managedFlags, configVO);
+			RepositoryEntry sourceEntry = getCopyFrom(copyFrom);
+			if(sourceEntry == null) {
+				log.warn("Cannot find course to copy from: {}", copyFrom);
+				return Response.status(Status.NOT_FOUND).build();
+			} else if(isAllowedToCopy(sourceEntry, request)) {
+				course = copyCourse(sourceEntry, ureq, id, shortTitle, title, displayName, description, teaser, objectives,
+						requirements, credits, expenditureOfWork, softKey, accessStatus, accessPublicVisible, organisationKey,
+						authors, location, externalId, externalRef, managedFlags, configVO);
+			} else {
+				return Response.status(Status.FORBIDDEN).build();
+			}
 		} else {
 			course = createEmptyCourse(id, shortTitle, title, displayName, description, teaser, objectives,
 					requirements, credits, expenditureOfWork, softKey, accessStatus, accessPublicVisible,
@@ -338,10 +347,42 @@ public class CoursesWebService {
 					configVO);
 		}
 		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
 		}
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
+	}
+	
+	private RepositoryEntry getCopyFrom(Long copyFrom) {
+		OLATResourceable originalOresTrans = OresHelper.createOLATResourceableInstance(CourseModule.class, copyFrom);
+		RepositoryEntry src = repositoryManager.lookupRepositoryEntry(originalOresTrans, false);
+		if(src == null) {
+			src = repositoryManager.lookupRepositoryEntry(copyFrom, false);
+		}
+		return src;
+	}
+	
+	/**
+	 * This check if the identity, which is at least author, can copy the course.
+	 * 
+	 * @param sourceEntry The repository entry to copy
+	 * @param request The request
+	 * @return true if the user is allowed to copy the entry
+	 */
+	private boolean isAllowedToCopy(RepositoryEntry sourceEntry, HttpServletRequest request) {
+		if(sourceEntry.getCanCopy()) {
+			return true;
+		}
+		
+		Identity identity = getIdentity(request);
+		if(repositoryService.hasRoleExpanded(identity, sourceEntry,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name())) {
+			return true;
+		}
+		if(repositoryService.hasRoleExpanded(identity, sourceEntry, GroupRoles.owner.name())) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -526,22 +567,13 @@ public class CoursesWebService {
 		return course;
 	}
 
-	private ICourse copyCourse(Long copyFrom, UserRequest ureq, Identity initialAuthor, String shortTitle,
+	private ICourse copyCourse(RepositoryEntry src, UserRequest ureq, Identity initialAuthor, String shortTitle,
 			String longTitle, String displayName, String description, String teaser, String objectives,
 			String requirements, String credits, String expenditureOfWork, String softKey,
 			RepositoryEntryStatusEnum status, boolean publicVisible, Long organisationKey, String authors,
 			String location, String externalId, String externalRef, String managedFlags,
 			CourseConfigVO courseConfigVO) {
 
-		OLATResourceable originalOresTrans = OresHelper.createOLATResourceableInstance(CourseModule.class, copyFrom);
-		RepositoryEntry src = repositoryManager.lookupRepositoryEntry(originalOresTrans, false);
-		if(src == null) {
-			src = repositoryManager.lookupRepositoryEntry(copyFrom, false);
-		}
-		if(src == null) {
-			log.warn("Cannot find course to copy from: {}", copyFrom);
-			return null;
-		}
 		OLATResource originalOres = olatResourceManager.findResourceable(src.getOlatResource());
 		boolean isAlreadyLocked = handlerFactory.getRepositoryHandler(src).isLocked(originalOres);
 		LockResult lockResult = handlerFactory.getRepositoryHandler(src).acquireLock(originalOres, ureq.getIdentity());
