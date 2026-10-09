@@ -42,6 +42,8 @@ public interface PageEditorProvider extends PageProvider {
 	
 	public List<PageLayoutHandler> getCreateLayoutHandlers();
 	
+	public SimpleAddPageElementHandler createDefaultContainer();
+	
 	public int indexOf(PageElement element);
 
 	/**
