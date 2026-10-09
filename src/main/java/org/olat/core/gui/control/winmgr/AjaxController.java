@@ -77,6 +77,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.websocket.OpenOLATWebSocket;
+import org.olat.core.util.websocket.WebSocketChannel;
 import org.olat.core.util.websocket.WebSocketModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -101,7 +102,7 @@ public class AjaxController extends DefaultController {
 	private final Mapper m;
 	private final MapperKey mKey;
 	
-	private transient List<Session> webSocketSessions = new ArrayList<>();
+	private transient List<WebSocketChannel> webSocketChannels = new ArrayList<>();
 	
 	private static final int DEFAULT_POLLPERIOD = 5000;//reasonable default value
 	private int pollperiod = DEFAULT_POLLPERIOD;//reasonable default value
@@ -438,16 +439,16 @@ public class AjaxController extends DefaultController {
 	void sendMessage(final String message) {
 		if(!StringHelper.containsNonWhitespace(message)) return;
 		
-		if(webSocketSessions != null) {
-			synchronized(webSocketSessions) {
-				for(Iterator<Session> sessionIt=webSocketSessions.iterator(); sessionIt.hasNext(); ) {
+		if(webSocketChannels != null) {
+			synchronized(webSocketChannels) {
+				for(Iterator<WebSocketChannel> channelIt=webSocketChannels.iterator(); channelIt.hasNext(); ) {
 					try {
-						Session session = sessionIt.next();
-						if(session.isOpen()) {
-							sendAsyncMessage(session, message);
+						WebSocketChannel channel = channelIt.next();
+						if(channel.isOpen()) {
+							channel.send(message);
 						} else {
-							closeWebSocket(session);
-							sessionIt.remove();
+							closeWebSocket(channel.getSession());
+							channelIt.remove();
 						}
 					} catch (Exception e) {
 						log.error("Send message via WebSocket", e);
@@ -456,33 +457,31 @@ public class AjaxController extends DefaultController {
 			}
 		}
 	}
-	
-	private void sendAsyncMessage(Session session, String message) {
-		session.getAsyncRemote().sendText(message);
-	}
 
 	void registerWebSocketSession(Session webSocketSession) {
-		if(webSocketSessions == null) {
-			webSocketSessions = new ArrayList<>();
+		if(webSocketChannels == null) {
+			webSocketChannels = new ArrayList<>();
 		}
-		synchronized(webSocketSessions) {
-			webSocketSessions.add(webSocketSession);
+		synchronized(webSocketChannels) {
+			webSocketChannels.add(new WebSocketChannel(webSocketSession));
 		}
 	}
 	
 	void deregisterWebSocketSession(Session webSocketSession) {
-		if(webSocketSessions == null || webSocketSessions.isEmpty()) return;
+		if(webSocketChannels == null) return;
 		
-		synchronized(webSocketSessions) {
-			webSocketSessions.remove(webSocketSession);
+		synchronized(webSocketChannels) {
+			webSocketChannels.removeIf(channel -> channel.getSession() == webSocketSession);
 		}
 	}
 	
 	boolean isWebSocketConnected() {
-		if(webSocketSessions != null) {
-			for(Session session:webSocketSessions) {
-				if(session.isOpen()) {
-					return true;
+		if(webSocketChannels != null) {
+			synchronized(webSocketChannels) {
+				for(WebSocketChannel channel:webSocketChannels) {
+					if(channel.isOpen()) {
+						return true;
+					}
 				}
 			}
 		}
@@ -490,11 +489,16 @@ public class AjaxController extends DefaultController {
 	}
 	
 	void closeWebSockets() {
-		if(webSocketSessions != null) {
-			for(Session session:webSocketSessions) {
-				closeWebSocket(session);
+		if(webSocketChannels != null) {
+			List<WebSocketChannel> channels;
+			synchronized(webSocketChannels) {
+				channels = new ArrayList<>(webSocketChannels);
+				webSocketChannels.clear();
 			}
-			webSocketSessions.clear();
+			// close outside the lock, onClose calls deregisterWebSocketSession
+			for(WebSocketChannel channel:channels) {
+				closeWebSocket(channel.getSession());
+			}
 		}
 	}
 
