@@ -54,10 +54,8 @@ import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
-import org.olat.modules.ceditor.handler.ContainerHandler;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
-import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.ceditor.model.jpa.AbstractPart;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
@@ -85,8 +83,8 @@ import org.olat.modules.ceditor.ui.event.MoveUpElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenAddElementEvent;
 import org.olat.modules.ceditor.ui.event.OpenAddLayoutEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
-import org.olat.modules.ceditor.ui.event.PositionEnum;
 import org.olat.modules.ceditor.ui.event.PageStructureChangedEvent;
+import org.olat.modules.ceditor.ui.event.PositionEnum;
 import org.olat.modules.ceditor.ui.event.SaveElementEvent;
 import org.olat.modules.cemedia.ui.event.AddMediaEvent;
 import org.olat.modules.forms.model.xml.Container;
@@ -801,7 +799,7 @@ public class PageEditorV2Controller extends BasicController {
 		// transferring so that moveElementsToPreviousContainer has a destination and there are no orphans.
 		if (editorCmp.previousRootContainerComponent(layoutComponent) == null
 				&& editorCmp.nextRootContainerComponent(layoutComponent) == null) {
-			ContainerHandler handler = new ContainerHandler(ContainerLayout.block_1col);
+			SimpleAddPageElementHandler handler = provider.createDefaultContainer();
 			PageElement element = handler.createPageElement(getLocale());
 			doAddPageElementAtTheEnd(ureq, element);
 		}
@@ -889,7 +887,8 @@ public class PageEditorV2Controller extends BasicController {
 				return;
 			}
 		}
-		ContainerHandler handler = new ContainerHandler(ContainerLayout.block_1col);
+
+		SimpleAddPageElementHandler handler = provider.createDefaultContainer();
 		PageElement element = handler.createPageElement(getLocale());
 		doAddPageElementAtTheEnd(ureq, element);
 	}

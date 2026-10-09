@@ -48,6 +48,7 @@ import org.olat.modules.ceditor.PageEditorSecurityCallback;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageLayoutHandler;
+import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
@@ -289,6 +290,11 @@ public class EvaluationFormEditorController extends BasicController implements T
 		@Override
 		public RepositoryEntry getBasRepositoryEntry() {
 			return null;
+		}
+		
+		@Override
+		public SimpleAddPageElementHandler createDefaultContainer() {
+			return new ContainerHandler(EvaluationFormEditorController.this, ContainerLayout.block_1col);
 		}
 
 		@Override
