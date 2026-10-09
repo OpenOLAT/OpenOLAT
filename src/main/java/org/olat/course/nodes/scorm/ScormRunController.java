@@ -34,7 +34,6 @@ import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ConfigurationChangedListener;
 import org.olat.core.gui.control.Controller;
@@ -219,26 +218,28 @@ public class ScormRunController extends BasicController implements GenericEventL
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == scormDispC) { // just pass on the event.
-			if (event.equals(Event.BACK_EVENT)) {
+			if (event == Event.BACK_EVENT) {
 				if (maxAttemptsReached()) {
 					startPage.contextPut("maxAttemptsReached", Boolean.TRUE);
 				}
 				doStartPage(ureq);
-			} else if(Event.CLOSE_EVENT == event) {
+			} else if(event == Event.CLOSE_EVENT) {
 				doStartPage(ureq);
 				scormDispC.close();
-			} else if(event instanceof FinishEvent) {
+			} else if(event instanceof FinishEvent fe) {
+				boolean closeOnFinish = fe.closeOnFinish()
+						|| config.getBooleanSafe(ScormEditController.CONFIG_CLOSE_ON_FINISH, false);
+				if (closeOnFinish && maxAttemptsReached()) {
+					startPage.contextPut("maxAttemptsReached", Boolean.TRUE);
+				}
 				doStartPage(ureq);
-				if (config.getBooleanSafe(ScormEditController.CONFIG_CLOSE_ON_FINISH, false)) {
+				if(closeOnFinish) {
 					scormDispC.close();
 				}
+				getWindow().getWindowBackOffice().requestImmediateRender();
 			} else {
 				doStartPage(ureq);
 				fireEvent(ureq, event);
-			}
-		} else if (source == null) { // external source
-			if (event instanceof TreeEvent) {
-				scormDispC.doGoToSco((TreeEvent)event);
 			}
 		} else if (source == chooseScormRunMode) {
 			doLaunch(ureq, true);
@@ -379,11 +380,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 			deliveryOptions = (pConfig == null ? null : pConfig.getDeliveryOptions());
 		}
 		
-		if(deliveryOptions == null) {
-			scormDispC.setHeightPX(680);
-		} else {
-			scormDispC.setDeliveryOptions(deliveryOptions);
-		}
+		scormDispC.setDeliveryOptions(deliveryOptions);
 		listenTo(scormDispC);
 		// the scormDispC activates itself
 	}

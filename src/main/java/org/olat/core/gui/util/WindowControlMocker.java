@@ -22,6 +22,8 @@ package org.olat.core.gui.util;
 import java.util.Collections;
 import java.util.List;
 
+import jakarta.websocket.Session;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
@@ -242,7 +244,6 @@ public class WindowControlMocker implements WindowControl{
 		@Override
 		public void setWindowSettings(WindowSettings settings) {
 			//
-			
 		}
 
 		@Override
@@ -272,7 +273,7 @@ public class WindowControlMocker implements WindowControl{
 
 		@Override
 		public List<ZIndexWrapper> getGuiMessages() {
-			return Collections.emptyList();
+			return List.of();
 		}
 
 		@Override
@@ -282,6 +283,26 @@ public class WindowControlMocker implements WindowControl{
 
 		@Override
 		public void removeCycleListener(GenericEventListener gel) {
+			//
+		}
+
+		@Override
+		public void requestImmediateRender() {
+			//
+		}
+		
+		@Override
+		public boolean isWebSocketConnected() {
+			return false;
+		}
+
+		@Override
+		public void registerWebSocketSession(Session webSocketSession) {
+			//
+		}
+
+		@Override
+		public void deregisterWebSocketSession(Session webSocketSession) {
 			//
 		}
 	}

@@ -33,6 +33,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.websocket.Session;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.GlobalSettings;
@@ -220,6 +221,26 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		if (guidebugC != null) {
 			guidebugC.setShowDebugInfo(showDebugInfo);
 		}
+	}
+
+	@Override
+	public void requestImmediateRender() {
+		ajaxC.sendMessage("redraw");
+	}
+
+	@Override
+	public boolean isWebSocketConnected() {
+		return ajaxC.isWebSocketConnected();
+	}
+
+	@Override
+	public void registerWebSocketSession(Session webSocketSession) {
+		ajaxC.registerWebSocketSession(webSocketSession);
+	}
+	
+	@Override
+	public void deregisterWebSocketSession(Session webSocketSession) {
+		ajaxC.deregisterWebSocketSession(webSocketSession);
 	}
 
 	@Override

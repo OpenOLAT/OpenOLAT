@@ -492,6 +492,26 @@
 		</property>
 		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
 	</bean>
+	
+	<!-- the WebSocket menu-entry -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7207" />
+		<property name="navigationKey" value="websocket" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.core.util.websocket.ui.WebSocketAdminController"/>
+			</bean>
+		</property>
+		<property name="i18nActionKey" value="menu.websocket"/>
+		<property name="i18nDescriptionKey" value="menu.websocket.alt"/>
+		<property name="translationPackage" value="org.olat.core.util.websocket.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+	</bean>
 
 	<!--  the ("einrichten")  menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">

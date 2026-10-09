@@ -27,6 +27,8 @@ package org.olat.core.gui.control;
 
 import java.util.List;
 
+import jakarta.websocket.Session;
+
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
@@ -97,12 +99,12 @@ public interface WindowBackOffice extends Disposable{
 	 * @param initialComponent
 	 * @return
 	 */
-	public GuiStack createGuiStack(Component initialComponent);
+	GuiStack createGuiStack(Component initialComponent);
 
 	/**
 	 * @param wco the Command to be sent to the client (all requests are queued and sent in a batch at the end of the request)
 	 */
-	public void sendCommandTo(Command wco);
+	void sendCommandTo(Command wco);
 	
 	/**
 	 * gets the data
@@ -110,14 +112,23 @@ public interface WindowBackOffice extends Disposable{
 	 * @param key the key
 	 * @return
 	 */
-	public List<ZIndexWrapper> getGuiMessages();
+	List<ZIndexWrapper> getGuiMessages();
 	
 	/**
 	 * not used normally! normally you do not have to care about when happens what - you should only need to know what to do in your event-methods of your controllers. 
 	 * when listeners want to be informed about cycles in the dispatching/validating/rendering
 	 * @param gel the listener
 	 */
-	public void addCycleListener(GenericEventListener gel);
+	void addCycleListener(GenericEventListener gel);
 	
-	public void removeCycleListener(GenericEventListener gel);
+	void removeCycleListener(GenericEventListener gel);
+
+	boolean isWebSocketConnected();
+	
+	void registerWebSocketSession(Session webSocketSession);
+	
+	void deregisterWebSocketSession(Session webSocketSession);
+	
+	void requestImmediateRender();
+
 }

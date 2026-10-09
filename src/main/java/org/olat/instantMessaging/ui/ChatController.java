@@ -69,6 +69,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.websocket.WebSocketModule;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessageTypeEnum;
@@ -157,6 +158,8 @@ public class ChatController extends BasicController implements GenericEventListe
 	@Autowired
 	private InstantMessagingModule imModule;
 	@Autowired
+	private WebSocketModule webSocketModule;
+	@Autowired
 	private InstantMessagingService imService;
 	@Autowired
 	private UserPortraitService userPortraitService;
@@ -190,11 +193,13 @@ public class ChatController extends BasicController implements GenericEventListe
 		boolean ajaxOn = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
 		mainVC.contextPut("isAjaxMode", Boolean.valueOf(ajaxOn));
 		
-		//	checks with the given intervall if dirty components are available to rerender
-		jsc = new JSAndCSSComponent("intervall", this.getClass(), 2500);
-		mainVC.put("updatecontrol", jsc);
+		//	checks with the given interval if dirty components are available to rerender
+		if(!webSocketModule.isEnabled() || !getWindow().getWindowBackOffice().isWebSocketConnected()) {
+			jsc = new JSAndCSSComponent("intervall", this.getClass(), 2500);
+			mainVC.put("updatecontrol", jsc);
+		}
 
-		// configure anonym mode depending on configuration. separate configurations for course and group chats
+		// configure anonymous mode depending on configuration. separate configurations for course and group chats
 		boolean offerAnonymMode;
 		boolean defaultAnonym;
 		if ("CourseModule".equals(ores.getResourceableTypeName())
@@ -365,7 +370,9 @@ public class ChatController extends BasicController implements GenericEventListe
 		if (source == chatPanelCtr) {
 			fireEvent(ureq, new CloseInstantMessagingEvent(getOlatResourceable(), resSubPath, channel));
 			allChats.remove(Integer.toString(hashCode()));
-			jsc.setRefreshIntervall(5000);
+			if(jsc != null) {
+				jsc.setRefreshIntervall(5000);
+			}
 		} else if (source == sendMessageForm) {
 			if(event == Event.DONE_EVENT) {
 				doSendMessage();
@@ -662,12 +669,12 @@ public class ChatController extends BasicController implements GenericEventListe
 	 */
 	@Override
 	public void event(Event event) {
-		if(event instanceof InstantMessagingEvent) {
-			processInstantMessageEvent((InstantMessagingEvent)event);
-		} else if(event instanceof LeaveChatEvent) {
-			processInstantMessageEvent((LeaveChatEvent)event);
-		} else if(event instanceof SignOnOffEvent) {
-			processUserSessionEvent((SignOnOffEvent)event);
+		if(event instanceof InstantMessagingEvent ime) {
+			processInstantMessageEvent(ime);
+		} else if(event instanceof LeaveChatEvent lce) {
+			processInstantMessageEvent(lce);
+		} else if(event instanceof SignOnOffEvent sooe) {
+			processUserSessionEvent(sooe);
 		}
 	}
 	
@@ -820,6 +827,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 		if(appended) {
 			imService.updateLastSeen(getIdentity(), ores, resSubPath, channel);
+			getWindow().getWindowBackOffice().requestImmediateRender();
 		}
 	}
 	

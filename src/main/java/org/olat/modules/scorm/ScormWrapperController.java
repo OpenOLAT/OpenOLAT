@@ -27,7 +27,6 @@ import org.olat.core.dispatcher.mapper.sandbox.ControllerDeliveryMapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
-import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
@@ -138,14 +137,6 @@ public class ScormWrapperController extends MainLayoutBasicController {
 		close();
 		getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
 		getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_with_back");
-	}
-	
-	public void doGoToSco(TreeEvent te) {
-		//TODO scorm
-	}
-	
-	public void setHeightPX(int height) {
-		//TODO scorm
 	}
 	
 	public void setAsFullscreen() {

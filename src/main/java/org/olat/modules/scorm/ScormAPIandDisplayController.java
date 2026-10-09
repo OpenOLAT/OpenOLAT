@@ -394,8 +394,8 @@ public class ScormAPIandDisplayController extends BasicController implements Con
 			TreeNode tn = treeModel.getNodeByScormItemId(nextScoId);
 			setSco(nextScoId, tn, false);
 		} else if(sessionController.getNumOfSCOs() == 1 && sessionController.isCurrentSCOFinished()) {
-			executeBack(ureq);
-			fireEvent(ureq, new FinishEvent());
+			close();
+			fireEvent(ureq, new FinishEvent(true));
 		} else {
 			updateMenuTreeIconsAndMessages();
 		}

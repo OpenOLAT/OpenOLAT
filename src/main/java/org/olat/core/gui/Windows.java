@@ -147,6 +147,19 @@ public class Windows implements Disposable, Serializable {
 		}
 		return null;
 	}
+	
+	public Window getWindowByDispatchId(String dispatchId) {
+		if(!StringHelper.containsNonWhitespace(dispatchId)) return null;
+		
+		Map<UriPrefixIdPair,ChiefController> entries = windows.copyEntries();
+		for(Map.Entry<UriPrefixIdPair,ChiefController> entry:entries.entrySet()) {
+			Window w = entry.getValue().getWindow();
+			if(dispatchId.equals(w.getDispatchID())) {
+				return w;
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * the url must be a valid dispatchUri (have a windowId), otherwise an

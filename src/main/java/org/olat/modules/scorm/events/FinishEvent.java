@@ -22,17 +22,25 @@ package org.olat.modules.scorm.events;
 import org.olat.core.gui.control.Event;
 
 /**
+ * The only purpose of this event is if the SCORM package has a single SCO,
+ * the method LMSFinish is called and the SCO is finished.
  * 
  * Initial date: 3 mai 2021<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class FinishEvent extends Event {
 
 	private static final long serialVersionUID = 2137267950077876418L;
 	public static final String LMS_FINISH = "scorm-lms-finish";
 	
-	public FinishEvent() {
+	private final boolean closeOnFinish;
+	
+	public FinishEvent(boolean closeOnFinish) {
 		super(LMS_FINISH);
+		this.closeOnFinish = closeOnFinish;
+	}
+	
+	public boolean closeOnFinish() {
+		return closeOnFinish;
 	}
 }

@@ -72,6 +72,43 @@ function tick () {
 
 jQuery(document).ready(initPolling);
 
+#if($r.isTrue($websocketEnabled))
+jQuery(function() { 
+	setTimeout( function() {
+		const wsUri = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "$wsuri?oow=" + window.name;
+		const websocket = new WebSocket(wsUri);
+		websocket.addEventListener("open", () => {
+			  console.log("Connected");
+		});
+		websocket.addEventListener("error", (event) => {
+			 console.log('WebSocket error', event);
+		});
+		websocket.addEventListener("message", (event) => {
+			if("redraw" === event.data) {
+				try {
+					let data = {
+						"_csrf": "$csrfToken",
+						"oow": window.name
+					};
+					o_info.ajaxpp = jQuery.ajax({
+						method:'POST',
+						url:'$mapuri/',
+						dataType: 'json',
+						data: data,
+						cache: false,
+						success:onPollSuccess
+					});
+				} catch(e) {
+					console.log(e);
+				}
+			} else {
+				o_awsexecute(event);
+			}
+		});
+	});
+});
+#end
+
 ##check whether polling started or not. Wrap it makes it more stable
 jQuery(function() { 
 	setTimeout( function(){ if (!o_info.ajaxpp) {

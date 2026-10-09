@@ -487,6 +487,7 @@ public class InstantMessagingMainController extends BasicController implements G
 				} else {
 					showNewMessageHolder.add(fromId);
 					createShowNewMessageLink(buddy);
+					getWindow().getWindowBackOffice().requestImmediateRender();
 				}
 			}
 		}

@@ -29,10 +29,14 @@ package org.olat.core.gui.control.winmgr;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.websocket.CloseReason;
+import jakarta.websocket.CloseReason.CloseCodes;
+import jakarta.websocket.Session;
 
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -72,6 +76,8 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.websocket.OpenOLATWebSocket;
+import org.olat.core.util.websocket.WebSocketModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -95,6 +101,8 @@ public class AjaxController extends DefaultController {
 	private final Mapper m;
 	private final MapperKey mKey;
 	
+	private transient List<Session> webSocketSessions = new ArrayList<>();
+	
 	private static final int DEFAULT_POLLPERIOD = 5000;//reasonable default value
 	private int pollperiod = DEFAULT_POLLPERIOD;//reasonable default value
 	private int pollCount = 0;
@@ -103,6 +111,8 @@ public class AjaxController extends DefaultController {
 	
 	private WindowBackOffice wboImpl;
 	
+	@Autowired
+	private WebSocketModule webSocketModule;
 	@Autowired
 	private SessionStatsManager statsManager;
 
@@ -116,6 +126,7 @@ public class AjaxController extends DefaultController {
 		
 		myContent = new VelocityContainer("jsserverpart", VELOCITY_ROOT + "/serverpart.html", null, this);
 		myContent.contextPut("pollperiod", Integer.valueOf(pollperiod));
+		myContent.contextPut("websocketEnabled", Boolean.valueOf(webSocketModule.isEnabled()));
 		
 		// create a mapper to not block main traffic when polling (or vica versa)
 		final Window window = wboImpl.getWindow();
@@ -189,6 +200,7 @@ public class AjaxController extends DefaultController {
 
 		mKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), m);
 		myContent.contextPut("mapuri", mKey.getUrl());
+		myContent.contextPut("wsuri", Settings.getServerContextPath() + "/ws/notifications");
 		
 		final String csrfToken = ureq.getUserSession().getCsrfToken();
 		myContent.contextPut("csrfToken", csrfToken);
@@ -385,6 +397,7 @@ public class AjaxController extends DefaultController {
 				log.warn("Client did not send a single polling request though ajax is enabled!");
 			}
 		}
+		closeWebSockets();
         super.doDispose();
 	}
 
@@ -420,6 +433,80 @@ public class AjaxController extends DefaultController {
 			this.pollperiod = pollperiod;
 			pollPeriodContent.contextPut("pollperiod", Integer.valueOf(pollperiod));
 		} // else no need to change anything
+	}
+	
+	void sendMessage(final String message) {
+		if(!StringHelper.containsNonWhitespace(message)) return;
+		
+		if(webSocketSessions != null) {
+			synchronized(webSocketSessions) {
+				for(Iterator<Session> sessionIt=webSocketSessions.iterator(); sessionIt.hasNext(); ) {
+					try {
+						Session session = sessionIt.next();
+						if(session.isOpen()) {
+							sendAsyncMessage(session, message);
+						} else {
+							closeWebSocket(session);
+							sessionIt.remove();
+						}
+					} catch (Exception e) {
+						log.error("Send message via WebSocket", e);
+					}
+				}
+			}
+		}
+	}
+	
+	private void sendAsyncMessage(Session session, String message) {
+		session.getAsyncRemote().sendText(message);
+	}
+
+	void registerWebSocketSession(Session webSocketSession) {
+		if(webSocketSessions == null) {
+			webSocketSessions = new ArrayList<>();
+		}
+		synchronized(webSocketSessions) {
+			webSocketSessions.add(webSocketSession);
+		}
+	}
+	
+	void deregisterWebSocketSession(Session webSocketSession) {
+		if(webSocketSessions == null || webSocketSessions.isEmpty()) return;
+		
+		synchronized(webSocketSessions) {
+			webSocketSessions.remove(webSocketSession);
+		}
+	}
+	
+	boolean isWebSocketConnected() {
+		if(webSocketSessions != null) {
+			for(Session session:webSocketSessions) {
+				if(session.isOpen()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	void closeWebSockets() {
+		if(webSocketSessions != null) {
+			for(Session session:webSocketSessions) {
+				closeWebSocket(session);
+			}
+			webSocketSessions.clear();
+		}
+	}
+
+	void closeWebSocket(Session session) {
+		try {
+			session.getUserProperties().remove(OpenOLATWebSocket.USER_KEY);
+			if(session.isOpen()) {
+				session.close(new CloseReason(CloseCodes.NORMAL_CLOSURE, "Window disposed"));
+			}
+		} catch (Exception e) {
+			log.error("Dispose WebSocket", e);
+		}
 	}
 	
 	private final class NothingChangedMediaResource extends DefaultMediaResource {

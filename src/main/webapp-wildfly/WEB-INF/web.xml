@@ -90,6 +90,9 @@
 	<listener>
 		<listener-class>org.olat.core.dispatcher.mapper.MapperSessionListener</listener-class>
 	</listener>
+	<listener>
+		<listener-class>org.olat.core.util.websocket.OpenOLATWebSocketContextListener</listener-class>
+	</listener>
 
 	<!-- OLAT servlet -->
 	<servlet>

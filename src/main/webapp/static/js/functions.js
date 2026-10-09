@@ -764,6 +764,10 @@ function o_avideo(command, parameters) {
 	}
 }
 
+function o_awsexecute(event) {
+	console.log('o_awsexecute', event.data);
+}
+
 // main interpreter for ajax mode
 let o_debug_trid = 0;
 function o_ainvoke(r) {
