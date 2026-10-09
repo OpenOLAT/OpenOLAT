@@ -270,7 +270,8 @@ public class CourseElementTest extends Deployments {
 		LoginPage participantLoginPage = LoginPage.load(browser, new URL(courseUrl));		
 		
 		participantLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword(), By.className("o_scorm_content"));
+			.loginAs(participant.getLogin(), participant.getPassword(),
+					By.cssSelector("#o_main_wrapper .o_iframesandbox .o_iframe_rel"));
 		
 		// direct jump in SCORM content
 		ScormPage.getScormPage(browser)
