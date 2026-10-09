@@ -1073,6 +1073,11 @@ public class PageRunController extends BasicController implements TooledControll
 		public List<PageElementHandler> getAvailableHandlers() {
 			return handlers;
 		}
+		
+		@Override
+		public SimpleAddPageElementHandler createDefaultContainer() {
+			return new ContainerHandler(ContainerLayout.block_1col);
+		}
 
 		@Override
 		public int indexOf(PageElement element) {

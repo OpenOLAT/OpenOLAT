@@ -428,7 +428,7 @@ public class CourseFactory {
 		try {
 			course = (PersistingCourseImpl)loadCourse(res);
 		} catch (CorruptedCourseException e) {
-			log.error("Try to delete a corrupted course, I make want I can.");
+			log.error("Try to delete a corrupted course, I make want I can: {}", entry);
 		}
 
 		// call cleanupOnDelete for nodes
