@@ -763,6 +763,43 @@ public class NotificationsManagerTest extends OlatTestCase {
 		Assertions.assertThat(publishers).isEmpty();
 	}
 	
+	/**
+	 * Same structure as the feeds: feed -> comments -> comments of the items
+	 */
+	@Test
+	public void deleteAllPublishersWithThreeLevels() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pub-del-3-");
+		Long resId = CodeHelper.getForeverUniqueID();
+
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("SubscribersDel3", resId, identifier);
+		PublisherData feedData = new PublisherData("testDeleteFeed", "e.g. feed", null);
+		Publisher feedPublisher = notificationManager.getOrCreatePublisherWithData(context, feedData, null, PublisherChannel.PULL);
+		dbInstance.commitAndCloseSession();
+
+		PublisherData commentData = new PublisherData("testDeleteFeedComment", "e.g. feed", null);
+		Publisher commentPublisher = notificationManager.getOrCreatePublisherWithData(context, commentData, feedPublisher, PublisherChannel.PULL);
+		dbInstance.commitAndCloseSession();
+
+		for(int i=0; i<5; i++) {
+			PublisherData itemData = new PublisherData("testDeleteFeedItemComment", "item-" + i, null);
+			Publisher itemPublisher = notificationManager.getOrCreatePublisherWithData(context, itemData, commentPublisher, PublisherChannel.DIRECT_EMAIL);
+			dbInstance.commitAndCloseSession();
+			notificationManager.subscribe(id, itemPublisher);
+			dbInstance.commitAndCloseSession();
+		}
+
+		notificationManager.subscribe(id, feedPublisher);
+		notificationManager.subscribe(id, commentPublisher);
+		dbInstance.commitAndCloseSession();
+
+		notificationManager.delete(context);
+		dbInstance.commit();
+
+		List<Publisher> publishers = publisherDao.getPublishers(context);
+		Assertions.assertThat(publishers).isEmpty();
+	}
+
 	@Test(expected=DBRuntimeException.class)
 	public void duplicateSubscribers() throws Exception {
 		try {

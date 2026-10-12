@@ -843,19 +843,49 @@ public class UserMgmtTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void testGetUserNotFound() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/1").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetUserMe() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection(id1);
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		UserVO vo = conn.parse(response, UserVO.class);
+
+		Assert.assertNotNull(vo);
+		Assert.assertEquals(vo.getKey(), id1.getKey());
+		Assert.assertFalse(vo.getProperties().isEmpty());
+		conn.shutdown();
+	}
+	
+	/**
+	 * User without managers permission cannot see profile informations of
+	 * other users.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
 	public void testGetUserNotAdmin() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection(id1);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id2.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		UserVO vo = conn.parse(response, UserVO.class);
-
-		assertNotNull(vo);
-		assertEquals(vo.getKey(), id2.getKey());
-		//no properties for security reason
-		assertTrue(vo.getProperties().isEmpty());
+		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
 		conn.shutdown();
 	}
 	
