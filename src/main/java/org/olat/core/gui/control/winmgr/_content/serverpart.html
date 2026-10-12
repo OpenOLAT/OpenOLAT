@@ -39,6 +39,9 @@ function tick () {
 						timestampLastPoll = now;
 						pollcount++;
 						pollgrowth = Math.ceil((this.period+pollgrowth)*(100+growthrate)/100) - this.period;
+						#if($r.isTrue($websocketEnabled))
+						checkWebSocket();
+						#end
 
 						let data = {
 							"_csrf": "$csrfToken",
@@ -73,39 +76,89 @@ function tick () {
 jQuery(document).ready(initPolling);
 
 #if($r.isTrue($websocketEnabled))
-jQuery(function() { 
-	setTimeout( function() {
-		const wsUri = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "$wsuri?oow=" + window.name;
-		const websocket = new WebSocket(wsUri);
-		websocket.addEventListener("open", () => {
-			  console.log("Connected");
-		});
-		websocket.addEventListener("error", (event) => {
-			 console.log('WebSocket error', event);
-		});
-		websocket.addEventListener("message", (event) => {
-			if("redraw" === event.data) {
-				try {
-					let data = {
-						"_csrf": "$csrfToken",
-						"oow": window.name
-					};
-					o_info.ajaxpp = jQuery.ajax({
-						method:'POST',
-						url:'$mapuri/',
-						dataType: 'json',
-						data: data,
-						cache: false,
-						success:onPollSuccess
-					});
-				} catch(e) {
-					console.log(e);
-				}
-			} else {
-				o_awsexecute(event);
-			}
-		});
+o_info.ws = null;
+let wsPingTime = 0;
+let wsFailures = 0;
+let wsDisabled = false;
+## time in milliseconds to wait for a pong before closing the connection
+let wsPongTimeout = 15000;
+
+function openWebSocket() {
+	const wsUri = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "$wsuri?oow=" + window.name;
+	const websocket = new WebSocket(wsUri);
+	let opened = false;
+	websocket.addEventListener("open", () => {
+		opened = true;
+		wsPingTime = 0;
+		wsFailures = 0;
 	});
+	websocket.addEventListener("close", (event) => {
+		if(o_info.ws === websocket) {
+			o_info.ws = null;
+		}
+		## 1008 violated policy: not authenticated or window not found, retrying is useless
+		## stop retrying too after 5 consecutive connections which could not be opened
+		if(event.code === 1008 || (!opened && ++wsFailures >= 5)) {
+			wsDisabled = true;
+		}
+	});
+	websocket.addEventListener("error", (event) => {
+		console.log('WebSocket error', event);
+	});
+	websocket.addEventListener("message", (event) => {
+		if("pong" === event.data) {
+			wsPingTime = 0;
+		} else if("redraw" === event.data) {
+			try {
+				let data = {
+					"_csrf": "$csrfToken",
+					"oow": window.name
+				};
+				o_info.ajaxpp = jQuery.ajax({
+					method:'POST',
+					url:'$mapuri/',
+					dataType: 'json',
+					data: data,
+					cache: false,
+					success:onPollSuccess
+				});
+			} catch(e) {
+				console.log(e);
+			}
+		} else {
+			o_awsexecute(event);
+		}
+	});
+	o_info.ws = websocket;
+}
+
+## called by the poller: reconnect a closed WebSocket, ping an open one and
+## close it if the previous ping was not answered (half-open connection)
+function checkWebSocket() {
+	if(wsDisabled) return;
+
+	try {
+		const websocket = o_info.ws;
+		if(websocket == null || websocket.readyState === WebSocket.CLOSING || websocket.readyState === WebSocket.CLOSED) {
+			openWebSocket();
+		} else if(websocket.readyState === WebSocket.OPEN) {
+			let now = new Date().getTime();
+			if(wsPingTime === 0) {
+				wsPingTime = now;
+				websocket.send("ping");
+			} else if((now - wsPingTime) > wsPongTimeout) {
+				o_info.ws = null;
+				wsPingTime = 0;
+				websocket.close();
+			}
+		}
+	} catch(e) {
+		console.log(e);
+	}
+}
+
+jQuery(function() {
+	setTimeout(openWebSocket);
 });
 #end
 

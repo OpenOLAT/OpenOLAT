@@ -33,6 +33,7 @@ import jakarta.websocket.Session;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.control.winmgr.WindowBackOfficeImpl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 
@@ -47,6 +48,8 @@ public class OpenOLATWebSocket {
 	private static final Logger log = Tracing.createLoggerFor(OpenOLATWebSocket.class);
 	
 	public static final String USER_KEY = "userKey";
+	public static final String PING = "ping";
+	public static final String PONG = "pong";
 	
 	@OnOpen
 	public void onOpen(Session wsSession, EndpointConfig config)
@@ -96,7 +99,23 @@ public class OpenOLATWebSocket {
      */
     @OnMessage
     public void onMessage(String message, Session wsSession) {
-    	log.debug("Message: {}", message);
+    	if(PING.equals(message)) {
+    		onPing(wsSession) ;
+    	} else {
+    		log.debug("Message: {}", message);
+    	}
+    }
+    
+    private void onPing(Session wsSession) {
+    	Object windowDispatchId = wsSession.getUserProperties().get(OpenOLATWebSocketConfigurator.WINDOW_DISPATCH_ID);
+    	Object userKey = wsSession.getUserProperties().get(USER_KEY);
+    	if(userKey instanceof UserSession usess && usess.isAuthenticated() && windowDispatchId != null) {
+    		Window window = Windows.getWindows(usess).getWindowByDispatchId(windowDispatchId.toString());
+    		if(window != null && window.getWindowBackOffice() instanceof WindowBackOfficeImpl windowBackOffice) {
+    			// send through the channel, concurrent async sends on the same session are not allowed
+    			windowBackOffice.sendMessage(wsSession, PONG);
+    		}
+    	}
     }
     
     @OnError

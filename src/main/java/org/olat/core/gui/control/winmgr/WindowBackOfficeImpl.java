@@ -242,6 +242,16 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	public void deregisterWebSocketSession(Session webSocketSession) {
 		ajaxC.deregisterWebSocketSession(webSocketSession);
 	}
+	
+	/**
+	 * Only use it for ping purpose. Don't assume the session is alive.
+	 * 
+	 * @param wsSesssion The WebSocket session to specifically send a message to
+	 * @param message The message
+	 */
+	public boolean sendMessage(Session wsSesssion, String message) {
+		return ajaxC.sendMessage(wsSesssion, message);
+	}
 
 	@Override
 	public WindowManagerImpl getWindowManager() {

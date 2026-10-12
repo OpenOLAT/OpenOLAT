@@ -458,6 +458,24 @@ public class AjaxController extends DefaultController {
 		}
 	}
 
+	boolean sendMessage(Session webSocketSession, String message) {
+		if(webSocketChannels == null || !StringHelper.containsNonWhitespace(message)) return false;
+		
+		boolean send = false;
+		synchronized(webSocketChannels) {
+			for(WebSocketChannel channel:webSocketChannels) {
+				if(channel.getSession() == webSocketSession) {
+					if(channel.isOpen()) {
+						channel.send(message);
+						send = true;
+					}
+					break;
+				}
+			}
+		}
+		return send;
+	}
+
 	void registerWebSocketSession(Session webSocketSession) {
 		if(webSocketChannels == null) {
 			webSocketChannels = new ArrayList<>();
