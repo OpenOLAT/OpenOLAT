@@ -44,8 +44,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CorruptedCourseException;
@@ -218,21 +216,13 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 			item.setLocation(entry.getLocation());
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.executionPeriod)) {
-			String executionPeriod = null;
+			String executionPeriod = "";
 			if (StringHelper.containsNonWhitespace(entry.getLifecycleLabel())) {
 				executionPeriod = StringHelper.escapeHtml(entry.getLifecycleLabel());
 			} else if (StringHelper.containsNonWhitespace(entry.getLifecycleSoftKey())) {
 				executionPeriod = entry.getLifecycleSoftKey();
 			} else {
-				if (entry.getLifecycleStart() != null) {
-					executionPeriod = Formatter.getInstance(getLocale()).formatDate(entry.getLifecycleStart());
-				}
-				if (entry.getLifecycleEnd() != null && !DateUtils.isSameDay(entry.getLifecycleStart(), entry.getLifecycleEnd())) {
-					if (StringHelper.containsNonWhitespace(executionPeriod)) {
-						executionPeriod += " - ";
-					}
-					executionPeriod += Formatter.getInstance(getLocale()).formatDate(entry.getLifecycleEnd());
-				}
+				executionPeriod = RepositoyUIFactory.formatExecutionPeriod(getTranslator(), entry.getLifecycleStart(), entry.getLifecycleEnd());
 			}
 			item.setExecutionPeriod(executionPeriod);
 		}
