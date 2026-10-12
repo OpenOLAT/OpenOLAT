@@ -218,7 +218,7 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 			item.setLocation(entry.getLocation());
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.executionPeriod)) {
-			String executionPeriod = null;
+			String executionPeriod = "";
 			if (StringHelper.containsNonWhitespace(entry.getLifecycleLabel())) {
 				executionPeriod = StringHelper.escapeHtml(entry.getLifecycleLabel());
 			} else if (StringHelper.containsNonWhitespace(entry.getLifecycleSoftKey())) {
