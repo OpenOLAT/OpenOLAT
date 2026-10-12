@@ -1404,18 +1404,35 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 */
 	@Override
 	public void delete(SubscriptionContext scontext) {
-		List<Publisher> pList = getInternalPublishers(scontext, null);
-		// First delete child publishers
-		for(Publisher p:pList) {
-			if (p != null && p.getRootPublisher() != null) {
-				internalDelete(p);
+		List<Publisher> pList = new ArrayList<>(getInternalPublishers(scontext, null));
+		pList.removeIf(Objects::isNull);
+		// Delete the leaves first, publishers can be nested on several levels
+		// (e.g. feed -> comments -> comments of an item)
+		while(!pList.isEmpty()) {
+			// Set of publisher keys which are parents of other publishers
+			Set<Long> parentKeys = new HashSet<>();
+			for(Publisher p:pList) {
+				if(p.getParentPublisher() != null) {
+					parentKeys.add(p.getParentPublisher().getKey());
+				}
 			}
-		}
-		// Then delete all root publishers
-		for(Publisher p:pList) {
-			if (p != null && p.getRootPublisher() == null) {
-				internalDelete(p);
+
+			// Collect publishers which are not parent
+			List<Publisher> leaves = new ArrayList<>();
+			for(Publisher p:pList) {
+				if(!parentKeys.contains(p.getKey())) {
+					leaves.add(p);
+				}
 			}
+			if(leaves.isEmpty()) {
+				// Cycle, should not happen
+				leaves.addAll(pList);
+			}
+
+			for(Publisher leaf:leaves) {
+				internalDelete(leaf);
+			}
+			pList.removeAll(leaves);
 		}
 	}
 	

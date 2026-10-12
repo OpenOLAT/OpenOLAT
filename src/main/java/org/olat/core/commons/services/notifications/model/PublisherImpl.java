@@ -302,8 +302,7 @@ public class PublisherImpl implements Publisher  {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof PublisherImpl) {
-			PublisherImpl p = (PublisherImpl)obj;
+		if(obj instanceof PublisherImpl p) {
 			return getKey() != null && getKey().equals(p.getKey());
 		}
 		return false;
