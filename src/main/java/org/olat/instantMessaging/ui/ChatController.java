@@ -193,8 +193,8 @@ public class ChatController extends BasicController implements GenericEventListe
 		boolean ajaxOn = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
 		mainVC.contextPut("isAjaxMode", Boolean.valueOf(ajaxOn));
 		
-		//	checks with the given interval if dirty components are available to rerender
 		if(!webSocketModule.isEnabled() || !getWindow().getWindowBackOffice().isWebSocketConnected()) {
+			//	checks with the given interval if dirty components are available to rerender
 			jsc = new JSAndCSSComponent("intervall", this.getClass(), 2500);
 			mainVC.put("updatecontrol", jsc);
 		}

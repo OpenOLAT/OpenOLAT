@@ -410,6 +410,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			for(AssessmentModeOverviewRow row:rows) {
 				if(event.getAssessmentModeKey().equals(row.getAssessmentMode().getKey())) {
 					loadModel();
+					getWindow().getWindowBackOffice().requestImmediateRender();
 				}	
 			}
 		} catch (Exception e) {
@@ -429,6 +430,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 							&& (!Objects.equals(assessmentMode.getStatus(), row.getAssessmentMode().getStatus())
 									|| !Objects.equals(assessmentMode.getEndStatus(), row.getAssessmentMode().getEndStatus()))) {
 						loadModel();
+						getWindow().getWindowBackOffice().requestImmediateRender();
 					}	
 				}
 			}

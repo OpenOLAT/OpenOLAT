@@ -1494,6 +1494,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		} else if (event instanceof ChiefControllerMessageEvent) {
 			// msg can be set to show only on one node or on all nodes
 			updateStickyMessage();
+			getWindow().getWindowBackOffice().requestImmediateRender();
 		} else if (event instanceof AssessmentModeNotificationEvent assessmentModeNotificationEvent) {
 			try {
 				processAssessmentModeNotificationEvent(assessmentModeNotificationEvent);
@@ -1523,6 +1524,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			currentMsgHolder = guimsgHolder;
 			currentMsgHolder.setContent(guimsgPanel);
 			currentMsgHolder.setDirty(guimsgPanel.isDirty());
+			getWindow().getWindowBackOffice().requestImmediateRender();
 		}
 	}
 	
@@ -1533,23 +1535,30 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 
 		String cmd = event.getCommand();
 		switch (cmd) {
-			case AssessmentModeNotificationEvent.STOP_WARNING ->
-					lockResourceWarningMessage(event.getAssessementMode(), event.getExtraTimeInSeconds(getIdentity()));
+			case AssessmentModeNotificationEvent.STOP_WARNING -> {
+				if(lockResourceWarningMessage(event.getAssessementMode(), event.getExtraTimeInSeconds(getIdentity()))) {
+					getWindow().getWindowBackOffice().requestImmediateRender();
+				}
+			}
 			case AssessmentModeNotificationEvent.BEFORE -> {
 				if (asyncUnlockResource(event.getAssessementMode(), true)) {
 					stickyMessageCmp.setDelegateComponent(null);
+					getWindow().getWindowBackOffice().requestImmediateRender();
 				}
 			}
 			case AssessmentModeNotificationEvent.LEADTIME -> {
 				if (!usess.isCancelledLockRequest(event.getAssessementMode())
 						&& asyncLockResource(event.getAssessementMode(), true)) {
 					stickyMessageCmp.setDelegateComponent(null);
+					getWindow().getWindowBackOffice().requestImmediateRender();
 				}
 			}
 			case AssessmentModeNotificationEvent.START_ASSESSMENT -> {
 				if (event.getAssessedIdentityKeys().contains(getIdentity().getKey())
 						&& !usess.isCancelledLockRequest(event.getAssessementMode())) {
-					asyncLockResource(event.getAssessementMode(), true);
+					if(asyncLockResource(event.getAssessementMode(), true)) {
+						getWindow().getWindowBackOffice().requestImmediateRender();
+					}
 				}
 			}
 			case AssessmentModeNotificationEvent.STOP_ASSESSMENT -> {
@@ -1557,12 +1566,14 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 						&& !usess.isCancelledLockRequest(event.getAssessementMode())
 						&& asyncLockResource(event.getAssessementMode(), true)) {
 					stickyMessageCmp.setDelegateComponent(null);
+					getWindow().getWindowBackOffice().requestImmediateRender();
 				}
 			}
 			case AssessmentModeNotificationEvent.END -> {
 				if (event.getAssessedIdentityKeys().contains(getIdentity().getKey())
 						&& asyncUnlockResource(event.getAssessementMode(), true)) {
 					stickyMessageCmp.setDelegateComponent(null);
+					getWindow().getWindowBackOffice().requestImmediateRender();
 				}
 			}
 			default -> { // Do nothing
@@ -1748,7 +1759,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		return unlock;
 	}
 	
-	private void lockResourceWarningMessage(LockRequest request, Integer extraTime) {
+	private boolean lockResourceWarningMessage(LockRequest request, Integer extraTime) {
+		boolean needUpdate = false;
 		if(lockResource != null
 				&& request instanceof TransientAssessmentMode mode
 				&& lockResource.getResourceableId().equals(request.getResource().getResourceableId())) {
@@ -1767,7 +1779,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				cmp.setI18nKeyZero("assessment.countdown.zero");
 				stickyMessageCmp.setDelegateComponent(cmp);
 			}
+			needUpdate = true;
 		}
+		return needUpdate;
 	}
 	
 	private boolean checkAssessmentGuard(UserRequest ureq, LockRequest mode) {

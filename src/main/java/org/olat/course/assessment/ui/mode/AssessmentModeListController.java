@@ -260,6 +260,7 @@ public class AssessmentModeListController extends FormBasicController implements
 					 && mode.getRepositoryEntryKey().equals(entry.getKey())
 					 && model.updateModeStatus(mode)) {
 				 tableEl.getComponent().setDirty(true);
+				 getWindow().getWindowBackOffice().requestImmediateRender();
 			 }
 		}
 	}

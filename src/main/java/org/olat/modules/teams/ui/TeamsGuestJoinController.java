@@ -224,10 +224,10 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof TeamsMeetingEvent ace) {
-			if(ace.getMeetingKey() != null && ace.getMeetingKey().equals(meeting.getKey())) {
-				reloadButtonsAndStatus();
-			}
+		if(event instanceof TeamsMeetingEvent ace && ace.getMeetingKey() != null
+				&& ace.getMeetingKey().equals(meeting.getKey())) {
+			reloadButtonsAndStatus();
+			getWindow().getWindowBackOffice().requestImmediateRender();
 		}
 	}
 

@@ -478,11 +478,10 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof BigBlueButtonEvent) {
-			BigBlueButtonEvent ace = (BigBlueButtonEvent)event;
-			if(ace.getMeetingKey() != null && ace.getMeetingKey().equals(meeting.getKey())) {
-				reloadButtonsAndStatus();
-			}
+		if(event instanceof BigBlueButtonEvent ace && ace.getMeetingKey() != null
+				&& ace.getMeetingKey().equals(meeting.getKey())) {
+			reloadButtonsAndStatus();
+			getWindow().getWindowBackOffice().requestImmediateRender();
 		}
 	}
 

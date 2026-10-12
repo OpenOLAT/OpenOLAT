@@ -227,6 +227,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 						if (assessmentModeKey.equals(currentMode.getKey())) {
 							if (needReload(currentMode, end, followUptime, status, endStatus)) {
 								reloadAssessmentModeMessage();
+								getWindow().getWindowBackOffice().requestImmediateRender();
 							}
 							return;
 						}
@@ -234,6 +235,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 				}
 
 				reloadAssessmentModeMessage();
+				getWindow().getWindowBackOffice().requestImmediateRender();
 			}
 		} catch (Exception e) {
 			logError("", e);

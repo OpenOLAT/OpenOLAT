@@ -129,7 +129,7 @@ public class AjaxController extends DefaultController {
 		myContent.contextPut("pollperiod", Integer.valueOf(pollperiod));
 		myContent.contextPut("websocketEnabled", Boolean.valueOf(webSocketModule.isEnabled()));
 		
-		// create a mapper to not block main traffic when polling (or vica versa)
+		// create a mapper to not block main traffic when polling (or vice versa)
 		final Window window = wboImpl.getWindow();
 		m = (String relPath, HttpServletRequest request) -> {
 			pollCount++;

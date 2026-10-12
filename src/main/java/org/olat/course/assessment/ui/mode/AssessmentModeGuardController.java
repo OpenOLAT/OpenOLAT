@@ -535,6 +535,10 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			}
 			modes = updatedModes;
 			pushUpdate |= update;
+			
+			if(update) {
+				getWindow().getWindowBackOffice().requestImmediateRender();
+			}
 		}
 	}
 

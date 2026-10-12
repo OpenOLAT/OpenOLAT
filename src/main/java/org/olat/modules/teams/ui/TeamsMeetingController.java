@@ -397,6 +397,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		if(event instanceof TeamsMeetingEvent ace && ace.getMeetingKey() != null
 				&& ace.getMeetingKey().equals(meeting.getKey())) {
 			reloadButtonsAndStatus();
+			getWindow().getWindowBackOffice().requestImmediateRender();
 		}
 	}
 

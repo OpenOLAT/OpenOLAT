@@ -529,11 +529,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof RetrieveAssessmentTestSessionEvent) {
-			RetrieveAssessmentTestSessionEvent rats = (RetrieveAssessmentTestSessionEvent)event;
+		if(event instanceof RetrieveAssessmentTestSessionEvent rats) {
 			processRetrieveAssessmentTestSessionEvent(rats);
-		} else if(event instanceof DeleteAssessmentTestSessionEvent) {
-			DeleteAssessmentTestSessionEvent dats = (DeleteAssessmentTestSessionEvent)event;
+		} else if(event instanceof DeleteAssessmentTestSessionEvent dats) {
 			processDeleteAssessmentTestSessionEvent(dats);
 		}
 	}
@@ -546,6 +544,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			compensationExtraTime = candidateSession.getCompensationExtraTime();
 			if(extraTime != null || compensationExtraTime != null || hasCurrentlyExtraTime) {
 				qtiWorksCtrl.extraTime();
+				getWindow().getWindowBackOffice().requestImmediateRender();
 			}
 		}
 	}
