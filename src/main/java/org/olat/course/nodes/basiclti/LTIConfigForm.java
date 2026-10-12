@@ -1074,10 +1074,8 @@ public class LTIConfigForm extends FormBasicController {
 			}
 		} else if(chooseResourceCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadContentItems(itemListEditCtrl.getOrderedItemsKey(), chooseResourceCtrl.getAddPosition());
-				updateContentItemsKeysOrder();
-				fireEvent(ureq, Event.CHANGED_EVENT);
-				markDirty();
+				chooseResource(ureq, chooseResourceCtrl.getAddPosition());
+				getWindow().getWindowBackOffice().requestImmediateRender();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -1085,17 +1083,12 @@ public class LTIConfigForm extends FormBasicController {
 			if(event instanceof LTI13ContentItemAddEvent ciae) {
 				doChooseResource(ureq, ciae.getAddPosition());
 			} else if(event instanceof LTI13ContentItemRemoveEvent) {
-				loadContentItems(itemListEditCtrl.getOrderedItemsKey(), -1);
-				updateContentItemsKeysOrder();
-				fireEvent(ureq, Event.CHANGED_EVENT);
-				markDirty();
+				chooseResource(ureq, -1);
 			}
 		} else if(cmc == source) {
 			if(chooseResourceCtrl != null) {
-				loadContentItems(itemListEditCtrl.getOrderedItemsKey(), chooseResourceCtrl.getAddPosition());
-				updateContentItemsKeysOrder();
-				fireEvent(ureq, Event.CHANGED_EVENT);
-				markDirty();
+				chooseResource(ureq, chooseResourceCtrl.getAddPosition());
+				getWindow().getWindowBackOffice().requestImmediateRender();
 			}
 			cleanUp();
 		}
@@ -1400,6 +1393,13 @@ public class LTIConfigForm extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", chooseResourceCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void chooseResource(UserRequest ureq, int position) {
+		loadContentItems(itemListEditCtrl.getOrderedItemsKey(), position);
+		updateContentItemsKeysOrder();
+		fireEvent(ureq, Event.CHANGED_EVENT);
+		markDirty();
 	}
 	
 	public static class NameValuePair {

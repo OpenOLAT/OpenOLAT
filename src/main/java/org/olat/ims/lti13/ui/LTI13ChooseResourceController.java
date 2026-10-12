@@ -38,6 +38,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.websocket.WebSocketModule;
 import org.olat.ims.lti13.LTI13Constants;
 import org.olat.ims.lti13.LTI13Constants.MessageTypes;
 import org.olat.ims.lti13.LTI13Constants.OpenOlatClaims;
@@ -73,6 +74,8 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 	private LTI13Module lti13Module;
 	@Autowired
 	private LTI13Service lti13Service;
+	@Autowired
+	private WebSocketModule webSocketModule;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
 	
@@ -117,8 +120,10 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 		mainVC.contextPut("client_id", tool.getClientId());
 		mainVC.contextPut("lti_deployment_id", toolDeployment.getDeploymentId());
 		
-		jsc = new JSAndCSSComponent("intervall", this.getClass(), 1500);
-		mainVC.put("updatecontrol", jsc);
+		if(!webSocketModule.isEnabled() || !getWindow().getWindowBackOffice().isWebSocketConnected()) {
+			jsc = new JSAndCSSComponent("intervall", this.getClass(), 1500);
+			mainVC.put("updatecontrol", jsc);
+		}
 	}
 	
 	private String loginHint(LTI13Key platformKey) {
@@ -177,6 +182,9 @@ public class LTI13ChooseResourceController extends BasicController implements Ge
 				&& ltiContext.getKey().equals(cre.getLtiContextKey())) {
 			UserRequest ureq = new SyntheticUserRequest(getIdentity(), getLocale());
 			fireEvent(ureq, Event.DONE_EVENT);
+			if(jsc != null) {
+				jsc.setRefreshIntervall(5000);
+			}
 		}
 	}
 
