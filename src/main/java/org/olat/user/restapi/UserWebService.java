@@ -685,19 +685,23 @@ public class UserWebService {
 	@ApiResponse(responseCode = "200", description = "The user", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity not found")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response findById(@PathParam("identityKey") Long identityKey, @QueryParam("withPortrait") @DefaultValue("false") Boolean withPortrait,
 			@Context HttpServletRequest httpRequest) {
+		Identity actingIdentity = getIdentity(httpRequest);
 		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+		if(actingIdentity == null
+				|| (!actingIdentity.getKey().equals(identityKey) && !isUserManagerOf(identityKey, httpRequest))) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
 		
-		boolean isUserManager = isUserManagerOf(identityKey, httpRequest);
-		UserVO userVO = get(identity, null, true, isUserManager, withPortrait);
+		// User managers can see all informations, and I can see all my informations
+		UserVO userVO = get(identity, null, true, true, withPortrait);
 		return Response.ok(userVO).build();
 	}
 	
