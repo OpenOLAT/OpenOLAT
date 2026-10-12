@@ -70,7 +70,7 @@
 		<org.hibernate.version>7.4.12.Final</org.hibernate.version>
 		<org.hibernate.validator.version>9.1.4.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.9</org.glassfish.jaxb.runtime>
-		<apache.cxf>4.2.3</apache.cxf>
+		<apache.cxf>4.2.4</apache.cxf>
 		<apache.pdfbox>3.0.8</apache.pdfbox>
 		<apache.poi>5.5.1</apache.poi>
 		<apache.log4j>2.26.1</apache.log4j>
@@ -86,13 +86,13 @@
 		<org.postgresql.version>42.7.14</org.postgresql.version>
 		<org.infinispan.version>16.2.3</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.50.0</version.selenium>
+		<version.selenium>4.51.0</version.selenium>
 		<activemq.artemis.version>2.57.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.5</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.37</qtiworks.version>
-		<org.commonmark>0.30.0</org.commonmark>
+		<org.commonmark>0.30.1</org.commonmark>
 		<dev.langchain4j>1.22.0</dev.langchain4j>
 		
 	    <!-- properties for testing and Q&A -->
