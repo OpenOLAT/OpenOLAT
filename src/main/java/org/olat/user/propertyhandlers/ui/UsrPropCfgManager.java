@@ -245,9 +245,9 @@ public class UsrPropCfgManager extends AbstractSpringModule {
 	private void loadModifiedUserPropertiesConfig(Properties props) {
 		log.info("loading modified UserPropertiesConfig");
 
-		UserPropertiesConfig usrMngConfig = userManager.getUserPropertiesConfig();
-
-		cfgObject = new UsrPropCfgObject(allUserPropertyHandlersFromXML, usrMngConfig.getUserPropertyUsageContexts());
+		Map<String, UserPropertyUsageContext> masterContexts = new LinkedHashMap<>();
+		systemDefaultContexts.forEach((name, context) -> masterContexts.put(name, context.copy()));
+		cfgObject = new UsrPropCfgObject(allUserPropertyHandlersFromXML, masterContexts);
 
 		// now manipulate this cfgObject according to our own config ( from the
 		// persistedProperties)
@@ -303,7 +303,7 @@ public class UsrPropCfgManager extends AbstractSpringModule {
 
 			for (UserPropertyHandler handler : cfgObject.getPropertyHandlers()) {
 				String handlerName = handler.getName();
-				if (val_handlers.contains(handlerName) && cfgObject.isActiveHandler(handler)) {
+				if (val_handlers.contains(handlerName)) {
 					ctx_allHandlers.add(handler);
 					//either it is set as mandatory in config or it is one of the property where mandatory must be enforced :) 
 					if (val_mandatoryHandlers.contains(handlerName) || !UsrPropCfgManager.canBeOptionalInContext(handler,contextName)) {
@@ -373,6 +373,24 @@ public class UsrPropCfgManager extends AbstractSpringModule {
 		setUserManagerProperties();
 	}
 
+	public void setHandlerActive(Identity doer, UserPropertyHandler handler, boolean active) {
+		log.info(Tracing.M_AUDIT, "User::{} set user property {} {}", doer.getKey(), handler.getName(), active ? "active" : "inactive");
+		UsrPropCfgObject cfg = getUserPropertiesConfigObject();
+		if (active && cfg.contextsWith(handler).isEmpty()) {
+			systemDefaultContexts.forEach((name, defaultContext) -> {
+				UserPropertyUsageContext context = cfg.getUsageContexts().get(name);
+				if (context != null && defaultContext.contains(handler)) {
+					context.addPropertyHandler(handler);
+					context.setAsMandatoryUserProperty(handler, defaultContext.isMandatoryUserProperty(handler));
+					context.setAsAdminstrativeUserOnly(handler, defaultContext.isForAdministrativeUserOnly(handler));
+					context.setAsUserViewReadOnly(handler, defaultContext.isUserViewReadOnly(handler));
+				}
+			});
+		}
+		cfg.setHandlerAsActive(handler, active);
+		saveUserPropertiesConfig();
+	}
+
 	/**
 	 * updates the userManager with our current config
 	 */
@@ -383,7 +401,8 @@ public class UsrPropCfgManager extends AbstractSpringModule {
 			if (cfgObject.isActiveHandler(handler)) handlers.add(handler);
 		}
 		upConfig.setUserPropertyHandlers(handlers);
-		upConfig.setUserPropertyUsageContexts(cfgObject.getUsageContexts());
+		upConfig.setUserPropertyUsageContexts(cfgObject.createEffectiveContexts());
+		upConfig.setMaxNumOfInterests(userManager.getUserPropertiesConfig().getMaxNumOfInterests());
 		userManager.setUserPropertiesConfig(upConfig);
 	}
 
@@ -417,10 +436,7 @@ public class UsrPropCfgManager extends AbstractSpringModule {
 			// now loop over the handlers in the current context
 			UserPropertyUsageContext ctx = ctxEntry.getValue();
 			for (UserPropertyHandler handler : ctx.getPropertyHandlers()) {
-				if (cfgObject.isActiveHandler(handler)) {
-					sbHandlers.append(handler.getName() + PROP_DELIMITER);
-					log.debug("{} has active handler :{}", ctxEntry.getKey(), handler.getName());
-				}
+				sbHandlers.append(handler.getName() + PROP_DELIMITER);
 
 				if (ctx.isMandatoryUserProperty(handler)) {
 					sbMandatoryHandlers.append(handler.getName() + PROP_DELIMITER);

@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -44,6 +45,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController.InputType;
@@ -76,6 +78,7 @@ public class UsrPropCfgTableController extends FormBasicController {
 	private static final String FT_NAME_PREFIX_TRANSNAME = "transname_";
 	private static final String FT_NAME_PREFIX_TRANSL = "translate_";
 	private static final String FT_NAME_PREFIX_HDNL = "hndl_";
+	private static final String FT_NAME_PREFIX_CTXCOUNT = "ctxcount_";
 
 	private Map<String, FormToggle> rowToggleButtonsMap;
 
@@ -178,11 +181,23 @@ public class UsrPropCfgTableController extends FormBasicController {
 				handlerLink.setUserObject(handler);
 			}
 
+			int contextCount = usrPropCfgMng.getUserPropertiesConfigObject().contextsWith(handler).size();
+			if (usrPropCfgMng.getUserPropertiesConfigObject().isActiveHandler(handler)) {
+				FormLink countLink = uifactory.addFormLink(FT_NAME_PREFIX_CTXCOUNT + handlerName, "ctxcount", String.valueOf(contextCount), null, propTableFlc, Link.NONTRANSLATED);
+				countLink.setTitle(translate("upc.contexts.count.title"));
+				countLink.setAriaLabel(translate("upc.contexts.count.aria", handlerName, String.valueOf(contextCount)));
+				countLink.setUserObject(handler);
+			} else {
+				StaticTextElement countText = uifactory.addStaticTextElement(FT_NAME_PREFIX_CTXCOUNT + handlerName, null, String.valueOf(contextCount), propTableFlc);
+				countText.setDomWrapperElement(DomWrapperElement.span);
+			}
+
 			// put the translation (in the current language) for the property
 			translatedName = I18nManager.getInstance().getLocalizedString(UserPropertyHandler.class.getPackage().getName(),
 					handler.i18nFormElementLabelKey(), null, getLocale(), true, true);
-			uifactory.addStaticTextElement(FT_NAME_PREFIX_TRANSNAME + handlerName, null, (translatedName == null ? "-" : translatedName),
-					propTableFlc);
+			StaticTextElement nameText = uifactory.addStaticTextElement(FT_NAME_PREFIX_TRANSNAME + handlerName, null,
+					(translatedName == null ? "-" : translatedName), propTableFlc);
+			nameText.setDomWrapperElement(DomWrapperElement.span);
 		}
 		propTableFlc.contextPut("rows", myHandlerList);
 	}
@@ -200,8 +215,9 @@ public class UsrPropCfgTableController extends FormBasicController {
 		if (source instanceof FormToggle) {
 			FormToggle toggle = (FormToggle) source;
 			if (toggle.isOn()) {
-				usrPropCfgMng.getUserPropertiesConfigObject().setHandlerAsActive(handler, true);
-				usrPropCfgMng.saveUserPropertiesConfig();
+				usrPropCfgMng.setHandlerActive(getIdentity(), handler, true);
+				refresh();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else {
 				deactPropertyYesNoCtrl = activateYesNoDialog(ureq, translate("upc.deact_confirmationtitle"),
 						translate("upc.deact_confirmationtext"), deactPropertyYesNoCtrl);
@@ -213,7 +229,9 @@ public class UsrPropCfgTableController extends FormBasicController {
 			usrPropCfgMng.saveUserPropertiesConfig();
 		} else if (source instanceof FormLink) {
 			String itemname = source.getName();
-			if (itemname.startsWith(FT_NAME_PREFIX_TRANSL)) {
+			if (itemname.startsWith(FT_NAME_PREFIX_CTXCOUNT)) {
+				fireEvent(ureq, new ShowContextsEvent(handler.getName()));
+			} else if (itemname.startsWith(FT_NAME_PREFIX_TRANSL)) {
 				// open the singlekeyTranslator-controller callout
 				SingleKey key2Translate1 = new SingleKey(handler.i18nFormElementLabelKey(), InputType.TEXT_ELEMENT);
 				SingleKey key2Translate2 = new SingleKey(handler.i18nColumnDescriptorLabelKey(), InputType.TEXT_ELEMENT);
@@ -246,8 +264,9 @@ public class UsrPropCfgTableController extends FormBasicController {
 		} else if (source.equals(deactPropertyYesNoCtrl)) {
 			UserPropertyHandler handler = (UserPropertyHandler) deactPropertyYesNoCtrl.getUserObject();
 			if (DialogBoxUIFactory.isYesEvent(event)) {
-				usrPropCfgMng.getUserPropertiesConfigObject().setHandlerAsActive(handler, false);
-				usrPropCfgMng.saveUserPropertiesConfig();
+				usrPropCfgMng.setHandlerActive(getIdentity(), handler, false);
+				refresh();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else {
 				rowToggleButtonsMap.get(handler.getName()).toggleOn();
 			}
@@ -263,6 +282,22 @@ public class UsrPropCfgTableController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		usrPropCfgMng.saveUserPropertiesConfig();
+	}
+
+	public static class ShowContextsEvent extends Event {
+
+		private static final long serialVersionUID = 4631250981235012394L;
+
+		private final String handlerName;
+
+		public ShowContextsEvent(String handlerName) {
+			super("show.contexts");
+			this.handlerName = handlerName;
+		}
+
+		public String getHandlerName() {
+			return handlerName;
+		}
 	}
 
 	/**

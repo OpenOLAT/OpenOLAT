@@ -20,41 +20,76 @@
 
 package org.olat.user.propertyhandlers.ui;
 
-import java.util.List;
-import java.util.Map.Entry;
-
-import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.user.propertyhandlers.UserPropertyUsageContext;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
- * 
+ *
  * Description:<br>
- * simple TableModel that wraps UserPropertyContext-entries
- * 
+ * table model for the UserPropertyUsageContext rows
+ *
  * <P>
  * Initial Date:  29.08.2011 <br>
  * @author strentini
  */
-public class UsrPropContextCfgTableModel extends DefaultTableDataModel<Entry<String, UserPropertyUsageContext>> {
+public class UsrPropContextCfgTableModel extends DefaultFlexiTableDataModel<UsrPropContextRow>
+		implements SortableFlexiTableDataModel<UsrPropContextRow> {
 
-	public UsrPropContextCfgTableModel(List<Entry<String, UserPropertyUsageContext>> objects) {
-		super(objects);
+	private static final ContextCols[] COLS = ContextCols.values();
+
+	public UsrPropContextCfgTableModel(FlexiTableColumnModel columnModel) {
+		super(columnModel);
 	}
 
 	@Override
-	public int getColumnCount() {
-		return 3;
+	public void sort(SortKey orderBy) {
+		if (orderBy != null) {
+			setObjects(new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort());
+		}
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		Entry<String, UserPropertyUsageContext> contextRow = objects.get(row);
-		UserPropertyUsageContext ucontext = contextRow.getValue();
-		switch (col) {
-			case 0:return contextRow.getKey();
-			case 1: return ucontext.getDescription();
-			case 2:return ucontext.getPropertyHandlers().size();
-			default: return "-";
+		return getValueAt(getObject(row), col);
+	}
+
+	@Override
+	public Object getValueAt(UsrPropContextRow row, int col) {
+		return switch (COLS[col]) {
+			case name -> row.name();
+			case description -> row.description();
+			case count -> Integer.valueOf(row.activeCount());
+		};
+	}
+
+	public enum ContextCols implements FlexiSortableColumnDef {
+		name("upc.name"),
+		description("upc.description"),
+		count("upc.context.propcount");
+
+		private final String i18nKey;
+
+		private ContextCols(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }

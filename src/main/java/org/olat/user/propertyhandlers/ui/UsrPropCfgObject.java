@@ -23,6 +23,7 @@ package org.olat.user.propertyhandlers.ui;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -91,21 +92,40 @@ public class UsrPropCfgObject {
 		} else {
 			if (UsrPropCfgManager.canBeDeactivated(propertyHandler)) {
 				activeHandlers.remove(propertyHandler);
-				// user disabled a propertyHandler, remove it from all contexts!
-				removeHandlerFromAllContexts(propertyHandler);
 			}
 		}
 	}
 
+	public List<String> contextsWith(UserPropertyHandler propertyHandler) {
+		return contextNames(propertyHandler, true);
+	}
+
+	public List<String> contextsWithout(UserPropertyHandler propertyHandler) {
+		return contextNames(propertyHandler, false);
+	}
+
+	private List<String> contextNames(UserPropertyHandler propertyHandler, boolean contained) {
+		return allContexts.entrySet().stream()
+				.filter(entry -> entry.getValue().contains(propertyHandler) == contained)
+				.map(Entry::getKey).toList();
+	}
+
+	public List<UserPropertyHandler> activeHandlersOf(UserPropertyUsageContext context) {
+		return context.getPropertyHandlers().stream().filter(activeHandlers::contains).toList();
+	}
+
+	public int activeHandlerCount(UserPropertyUsageContext context) {
+		return activeHandlersOf(context).size();
+	}
+
 	/**
-	 * removes the given PropertyHandler from all contexts.
-	 * 
-	 * @param propertyHandler
+	 * @return copies of all contexts without the inactive handlers, for the UserManager
 	 */
-	private void removeHandlerFromAllContexts(UserPropertyHandler propertyHandler) {
-		for (Entry<String, UserPropertyUsageContext> ctxEntry : allContexts.entrySet()) {
-			ctxEntry.getValue().removePropertyHandler(propertyHandler);
-		}
+	public Map<String, UserPropertyUsageContext> createEffectiveContexts() {
+		List<UserPropertyHandler> inactive = allHandlers.stream().filter(handler -> !activeHandlers.contains(handler)).toList();
+		Map<String, UserPropertyUsageContext> effective = new LinkedHashMap<>();
+		allContexts.forEach((name, context) -> effective.put(name, context.copyWithout(inactive)));
+		return effective;
 	}
 
 }

@@ -50,6 +50,8 @@ public class UsrPropCfgController extends BasicController {
 		userPropTblCtr = new UsrPropCfgTableController(ureq, wControl);
 		userPropContextTblCtr = new UsrPropContextCfgTableController(ureq, wControl);
 		userPropResetCtrl = new UsrPropCfgResetController(ureq, wControl);
+		listenTo(userPropTblCtr);
+		listenTo(userPropContextTblCtr);
 		listenTo(userPropResetCtrl);
 
 		tabbedPane = new TabbedPane("tabbedPane", ureq.getLocale());
@@ -67,8 +69,18 @@ public class UsrPropCfgController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source.equals(userPropResetCtrl) && event.equals(Event.DONE_EVENT)){
+		if (source == userPropTblCtr) {
+			if (event instanceof UsrPropCfgTableController.ShowContextsEvent showContexts) {
+				userPropContextTblCtr.filterByProperty(showContexts.getHandlerName());
+				tabbedPane.setSelectedPane(ureq, 1);
+			} else if (event == Event.CHANGED_EVENT) {
+				userPropContextTblCtr.reload();
+			}
+		} else if (source == userPropContextTblCtr && event == Event.CHANGED_EVENT) {
 			userPropTblCtr.refresh();
+		} else if(source.equals(userPropResetCtrl) && event.equals(Event.DONE_EVENT)){
+			userPropTblCtr.refresh();
+			userPropContextTblCtr.reload();
 			getWindowControl().setInfo(translate("upc.reset.config.done"));
 		}
 	}

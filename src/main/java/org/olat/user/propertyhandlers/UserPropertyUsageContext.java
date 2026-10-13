@@ -20,6 +20,7 @@
 package org.olat.user.propertyhandlers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,9 +58,15 @@ public class UserPropertyUsageContext {
 		return context;
 	}
 
+	public UserPropertyUsageContext copyWithout(Collection<UserPropertyHandler> excluded) {
+		UserPropertyUsageContext context = copy();
+		excluded.forEach(context::removePropertyHandler);
+		return context;
+	}
+
 	/**
 	 * Spring setter
-	 * 
+	 *
 	 * @param propertyHandlers
 	 */
 	public void setPropertyHandlers(List<UserPropertyHandler> propertyHandlers) {
