@@ -49,6 +49,7 @@ public class UserPropertyUsageContext {
 	
 	public UserPropertyUsageContext copy() {
 		UserPropertyUsageContext context = new UserPropertyUsageContext();
+		context.description = description;
 		context.propertyHandlers = new ArrayList<>(propertyHandlers);
 		context.mandatoryProperties = new HashSet<>(mandatoryProperties);
 		context.adminViewOnlyProperties = new HashSet<>(adminViewOnlyProperties);

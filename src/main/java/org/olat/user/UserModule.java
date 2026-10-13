@@ -28,8 +28,10 @@ package org.olat.user;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
@@ -124,6 +126,10 @@ public class UserModule extends AbstractSpringModule {
 	@Value("${user.email.unique:true}")
 	private boolean isEmailUnique;
 	
+	@Value("${user.properties.deactivated.default:}")
+	private String deactivatedByDefaultPropertiesConfig;
+	private Set<String> deactivatedByDefaultProperties;
+
 	@Value("${user.portrait.managed:false}")
 	private boolean portraitManaged;
 	
@@ -445,6 +451,16 @@ public class UserModule extends AbstractSpringModule {
 
 	public boolean isEmailUnique() {
 		return isEmailUnique;
+	}
+
+	public Set<String> getDeactivatedByDefaultProperties() {
+		if (deactivatedByDefaultProperties == null) {
+			deactivatedByDefaultProperties = Arrays.stream(deactivatedByDefaultPropertiesConfig.split(","))
+					.map(String::trim)
+					.filter(StringHelper::containsNonWhitespace)
+					.collect(Collectors.toUnmodifiableSet());
+		}
+		return deactivatedByDefaultProperties;
 	}
 
 	public void setEmailUnique(boolean isEmailUnique) {

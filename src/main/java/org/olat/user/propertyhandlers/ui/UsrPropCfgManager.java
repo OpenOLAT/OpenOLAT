@@ -22,21 +22,24 @@ package org.olat.user.propertyhandlers.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Predicate;
 
-import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.gui.control.Event;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.event.GenericEventListener;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.UserPropertiesConfigImpl;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -58,7 +61,7 @@ import org.springframework.stereotype.Service;
  * @author strentini
  */
 @Service
-public class UsrPropCfgManager extends AbstractSpringModule implements GenericEventListener {
+public class UsrPropCfgManager extends AbstractSpringModule {
 
 	private static final Logger log = Tracing.createLoggerFor(UsrPropCfgManager.class);
 	/*
@@ -70,7 +73,9 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 	 * properties (the handlers) that must be mandatory in all contexts.
 	 */
 	private static final String[] MUST_BE_MANDATORY_PROPERTIES = {"firstName", "lastName","email"};
-	
+
+	private static final Set<String> MINIMAL_PROPERTIES = Set.of("nickName", "firstName", "lastName", "email");
+
 	/* 
 	 * contexts that are an exception for "MUST-BE-MANDATORIY-PROPERTIES" ;-)
 	 * explanation: there are some contexts where the propertyhandlers are used to render search-fields. in these contexts/Forms
@@ -99,13 +104,31 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 
 	private final List<UserPropertyHandler> allUserPropertyHandlersFromXML;
 
+	private final Map<String, String> systemDefaultGroups;
+	private final Map<String, UserPropertyUsageContext> systemDefaultContexts;
+
 	private final UserManager userManager;
+	@Autowired
+	private UserModule userModule;
 
 	@Autowired
 	public UsrPropCfgManager(CoordinatorManager coordinatorManager, UserManager userManager) {
 		super(coordinatorManager, "com.frentix.olat.admin.userproperties.UsrPropCfgManager");
 		this.userManager = userManager;
-		allUserPropertyHandlersFromXML = userManager.getUserPropertiesConfig().getAllUserPropertyHandlers();
+		UserPropertiesConfig xmlConfig = userManager.getUserPropertiesConfig();
+		allUserPropertyHandlersFromXML = xmlConfig.getAllUserPropertyHandlers();
+
+		Map<String, String> groups = new HashMap<>();
+		for (UserPropertyHandler handler : allUserPropertyHandlersFromXML) {
+			groups.put(handler.getName(), handler.getGroup());
+		}
+		systemDefaultGroups = Map.copyOf(groups);
+
+		Map<String, UserPropertyUsageContext> contexts = new LinkedHashMap<>();
+		for (Entry<String, UserPropertyUsageContext> entry : xmlConfig.getUserPropertyUsageContexts().entrySet()) {
+			contexts.put(entry.getKey(), entry.getValue().copy());
+		}
+		systemDefaultContexts = Collections.unmodifiableMap(contexts);
 	}
 
 	@Override
@@ -132,14 +155,87 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 		return cfgObject;
 	}
 
-	/**
-	 * Resets the UserCongfig to the given Preset
-	 * 
-	 * @param properties
-	 */
-	public void resetToPresetConfig(Properties properties) {
+	void applyPreset(Properties properties) {
 		loadModifiedUserPropertiesConfig(properties);
+	}
+
+	void reloadFromPersistedProperties() {
+		loadModifiedUserPropertiesConfig(createPropertiesFromPersistedProperties());
+	}
+
+	public void resetToSystemDefault(Identity doer) {
+		log.info(Tracing.M_AUDIT, "User::{} reset user properties configuration to preset::default", doer.getKey());
+		applyPreset(createSystemDefaultProperties());
 		savePersistedProperties();
+	}
+
+	public void resetToMinimal(Identity doer) {
+		log.info(Tracing.M_AUDIT, "User::{} reset user properties configuration to preset::minimal", doer.getKey());
+		applyPreset(createMinimalProperties());
+		savePersistedProperties();
+	}
+
+	Properties createSystemDefaultProperties() {
+		Set<String> deactivatedByDefault = userModule.getDeactivatedByDefaultProperties();
+		return createPresetProperties(handler -> !deactivatedByDefault.contains(handler.getName()));
+	}
+
+	Properties createMinimalProperties() {
+		return createPresetProperties(handler -> MINIMAL_PROPERTIES.contains(handler.getName()));
+	}
+
+	/**
+	 * Builds an overlay in the persisted format from the XML snapshot. Handlers
+	 * failing the filter are deactivated, except the ones that can never be
+	 * deactivated: they stay active but appear in no context.
+	 */
+	private Properties createPresetProperties(Predicate<UserPropertyHandler> keep) {
+		Properties props = new Properties();
+		StringBuilder sbActive = new StringBuilder();
+		StringBuilder sbDeactive = new StringBuilder();
+		for (UserPropertyHandler handler : allUserPropertyHandlersFromXML) {
+			String name = handler.getName();
+			props.setProperty(name + CONF_KEY_PROPGROUP, systemDefaultGroups.get(name));
+			if (keep.test(handler) || !canBeDeactivated(handler)) {
+				sbActive.append(name).append(PROP_DELIMITER);
+			} else {
+				sbDeactive.append(name).append(PROP_DELIMITER);
+			}
+		}
+		props.setProperty(CONF_KEY_ACTUPROP, sbActive.toString());
+		props.setProperty(CONF_KEY_DACTUPROP, sbDeactive.toString());
+
+		for (Entry<String, UserPropertyUsageContext> entry : systemDefaultContexts.entrySet()) {
+			String contextName = entry.getKey();
+			UserPropertyUsageContext ctx = entry.getValue();
+			StringBuilder sbHandlers = new StringBuilder();
+			StringBuilder sbMandatory = new StringBuilder();
+			StringBuilder sbAdminOnly = new StringBuilder();
+			StringBuilder sbUserReadOnly = new StringBuilder();
+			for (UserPropertyHandler handler : ctx.getPropertyHandlers()) {
+				if (!keep.test(handler)) {
+					continue;
+				}
+				String name = handler.getName();
+				sbHandlers.append(name).append(PROP_DELIMITER);
+				if (ctx.isMandatoryUserProperty(handler)) {
+					sbMandatory.append(name).append(PROP_DELIMITER);
+				}
+				if (ctx.isForAdministrativeUserOnly(handler)) {
+					sbAdminOnly.append(name).append(PROP_DELIMITER);
+				}
+				if (ctx.isUserViewReadOnly(handler)) {
+					sbUserReadOnly.append(name).append(PROP_DELIMITER);
+				}
+			}
+			String handlersKey = contextName + CONF_KEY_CONTPREFIX;
+			props.setProperty(contextName, "1");
+			props.setProperty(handlersKey, sbHandlers.toString());
+			props.setProperty(handlersKey + CONF_KEY_CONT_MANDATORY_PREFIX, sbMandatory.toString());
+			props.setProperty(handlersKey + CONF_KEY_CONT_ADMINONLY_PREFIX, sbAdminOnly.toString());
+			props.setProperty(handlersKey + CONF_KEY_CONT_USERREADONLY_PREFIX, sbUserReadOnly.toString());
+		}
+		return props;
 	}
 
 	/**
@@ -157,6 +253,7 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 		// persistedProperties)
 		List<String> val_activeHandlers = Arrays.asList(props.getProperty(CONF_KEY_ACTUPROP, "").split(PROP_DELIMITER));
 		List<String> val_dactiveHandlers = Arrays.asList(props.getProperty(CONF_KEY_DACTUPROP, "").split(PROP_DELIMITER));
+		Set<String> deactivatedByDefault = userModule.getDeactivatedByDefaultProperties();
 		for (UserPropertyHandler handler : cfgObject.getPropertyHandlers()) {
 			//modify the groupName of the handler
 			String groupName = props.getProperty(handler.getName() + CONF_KEY_PROPGROUP,null);
@@ -166,7 +263,9 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 			//either it is set as an active property, or the property can't be deactivated (email, firstname, lastname, etc.)
 			if (val_activeHandlers.contains(handler.getName()) || !UsrPropCfgManager.canBeDeactivated(handler)) {
 				cfgObject.setHandlerAsActive(handler, true);
-			} else if (!val_dactiveHandlers.contains(handler.getName())) {
+			} else if (val_dactiveHandlers.contains(handler.getName()) || deactivatedByDefault.contains(handler.getName())) {
+				cfgObject.setHandlerAsActive(handler, false);
+			} else {
 				// this is a new handler (not yet in our own config)
 				// -->set it as active
 				// (note: if you delete persistedProperties-conf-file, all handlers are
@@ -385,9 +484,5 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 		}
 		return true;
 	}
-
-	@Override
-	public void event(Event event) {
-		// nothing to do
-	}
+	
 }

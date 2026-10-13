@@ -989,6 +989,7 @@ import org.junit.runners.Suite;
 	org.olat.user.ui.organisation.OrganisationRowComparatorTest.class,
 	org.olat.user.propertyhandlers.DatePropertyHandlerTest.class,
 	org.olat.user.propertyhandlers.LinkedinPropertyHandlerTest.class,
+	org.olat.user.propertyhandlers.ui.UsrPropCfgManagerTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.FileElementRendererTest.class,
 	// Must be at the end
 	org.olat.core.commons.services.license.ui.LicenseSelectionConfigTest.class,
