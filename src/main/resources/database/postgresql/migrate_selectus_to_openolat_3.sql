@@ -321,6 +321,10 @@ create table o_repositoryentry (
    requirements varchar(32000),
    credits varchar(32000),
    expenditureofwork varchar(32000),
+   show_lectures bool default false not null,
+   show_certificate bool default true not null,
+   show_creditpoints bool default true not null,
+   taught_by varchar(255),
    fk_stats int8 unique not null,
    fk_lifecycle int8,
    lifecycle_over_eval_date timestamp,
@@ -507,6 +511,7 @@ create table o_info_message_to_group (
    id bigserial,
    fk_info_message_id bigserial not null,
    fk_group_id bigserial not null,
+   sendmailto varchar(255),
    primary key (id)
 );
 
@@ -514,6 +519,7 @@ create table o_info_message_to_cur_el (
    id bigserial,
    fk_info_message_id bigserial not null,
    fk_cur_element_id bigserial not null,
+   sendmailto varchar(255),
    primary key (id)
 );
 
@@ -653,6 +659,16 @@ create table o_ac_offer_to_organisation (
   primary key (id)
 );
 
+create table o_ac_offer_to_survey (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  a_pos int4 not null,
+  fk_offer int8 not null,
+  fk_survey int8 not null,
+  primary key (id)
+);
+
 create table o_ac_method (
     method_id int8 NOT NULL,
     access_method varchar(32),
@@ -697,6 +713,7 @@ create table o_ac_billing_address (
   creationdate timestamp not null,
   lastmodified timestamp not null,
   a_identifier varchar(255),
+  a_customer_number varchar(255),
   a_name_line_1 varchar(255),
   a_name_line_2 varchar(255),
   a_address_line_1 varchar(255),
@@ -1172,10 +1189,16 @@ create table o_teams_meeting (
    t_access_level varchar(32) default 'EVERYONE',
    t_entry_exit_announcement bool default true,
    t_lobby_bypass_scope varchar(32) default 'ORGANIZATION_AND_FEDERATED',
+   t_recordings_publishing varchar(64),
+   t_record bool default false not null,
+   t_record_auto_start bool default false not null,
+   t_organizer_azure_id varchar(255),
+   t_organizer_token text,
    fk_entry_id int8 default null,
    a_sub_ident varchar(64) default null,
    fk_group_id int8 default null,
    fk_creator_id int8 default null,
+   fk_organizer_id int8,
    primary key (id)
 );
 
@@ -1200,7 +1223,22 @@ create table o_teams_attendee (
    fk_teams_user_id int8 default null,
    fk_meeting_id int8 not null,
    primary key (id)
+);
 
+create table o_teams_recording (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   t_recording_id varchar(512),
+   t_start_date timestamp,
+   t_end_date timestamp,
+   t_status varchar(16) not null,
+   t_permanent bool,
+   t_publish_to varchar(128),
+   t_attempts int8 default 0 not null,
+   fk_recording_metadata_id int8,
+   fk_meeting_id int8 not null,
+   primary key (id)
 );
 
 -- efficiency statments
@@ -1561,6 +1599,9 @@ create table o_cer_certificate (
    c_removal_date timestamp,
    c_course_title varchar(255),
    c_archived_resource_id int8 not null,
+   c_generation_retries int8 default 0 not null,
+   c_generation_next_date timestamp,
+   c_generation_data text,
    fk_olatresource int8,
    fk_identity int8 not null,
    fk_metadata int8,
@@ -1689,6 +1730,7 @@ create table o_gr_grade_system (
    g_has_passed bool not null default false,
    g_type varchar(32) not null,
    g_enabled bool not null default true,
+   g_default bool not null default false,
    g_resolution varchar(32),
    g_rounding varchar(32),
    g_best_grade int8,
@@ -2505,6 +2547,7 @@ create table o_eva_form_survey (
    e_series_key bigint,
    e_series_index int,
    e_public_part_identifier varchar(128),
+   e_display_name varchar(255),
    fk_form_entry bigint not null,
    fk_series_previous bigint,
    primary key (id)
@@ -3813,6 +3856,7 @@ create table o_org_organisation (
   o_identifier varchar(64),
   o_displayname varchar(255) not null,
   o_location varchar(255),
+  o_customernumber varchar(255),
   o_description text,
   o_m_path_keys varchar(255),
   o_external_id varchar(64),
@@ -3918,6 +3962,7 @@ create table o_cur_curriculum_element (
   c_max_participants int8,
   c_taught_by varchar(128),
   c_catalog_sort_priority int8,
+  c_order_form_required bool default false not null,
   c_external_id varchar(128),
   c_m_path_keys varchar(255),
   c_managed_flags varchar(255),
@@ -4880,6 +4925,30 @@ create table o_rm_module_log (
     primary key (id)
 );
 
+-- REST API audit log
+create table o_api_audit_log (
+   id bigserial,
+   creationdate timestamp not null,
+   a_channel varchar(16) not null,
+   a_login_attempt varchar(128),
+   a_auth_provider varchar(32),
+   a_ip varchar(64),
+   a_user_agent varchar(255),
+   a_method varchar(8) not null,
+   a_path varchar(1024) not null,
+   a_query varchar(1024),
+   a_resource_class varchar(255),
+   a_resource_method varchar(128),
+   a_path_params text,
+   a_status int4 not null,
+   a_duration_ms int8,
+   a_request_body text,
+   a_ref varchar(64),
+   a_node_id int4,
+   fk_identity int8,
+   primary key (id)
+);
+
 -- view
 create view o_gp_business_to_repository_v as (
     select
@@ -5174,6 +5243,11 @@ create index idx_rel_oto_offer_idx on o_ac_offer_to_organisation (fk_offer);
 alter table o_ac_offer_to_organisation add constraint rel_oto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
 create index idx_rel_oto_org_offer_idx on o_ac_offer_to_organisation (fk_organisation, fk_offer);
 
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
+create index idx_ac_offer_to_survey_offer_idx on o_ac_offer_to_survey (fk_offer);
+alter table o_ac_offer_to_survey add constraint ac_offer_to_survey_survey_idx foreign key (fk_survey) references o_eva_form_survey(id);
+create unique index idx_ac_offer_to_survey_uniq_idx on o_ac_offer_to_survey (fk_offer, fk_survey);
+
 alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);
 create index idx_offeracc_method_idx on o_ac_offer_access (fk_method_id);
 alter table o_ac_offer_access add constraint off_to_meth_off_ctx foreign key (fk_offer_id) references o_ac_offer (offer_id);
@@ -5436,6 +5510,9 @@ create index idx_teams_meet_grp_idx on o_teams_meeting(fk_group_id);
 alter table o_teams_meeting add constraint teams_meet_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
 create index idx_teams_meet_creator_idx on o_teams_meeting(fk_creator_id);
 
+alter table o_teams_meeting add constraint teams_org_ident_idx foreign key (fk_organizer_id) references o_bs_identity (id);
+create index idx_teams_org_ident_idx on o_teams_meeting(fk_organizer_id);
+
 alter table o_teams_user add constraint teams_user_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_teams_user_ident_idx on o_teams_user(fk_identity_id);
 
@@ -5445,6 +5522,12 @@ alter table o_teams_attendee add constraint teams_att_user_idx foreign key (fk_t
 create index idx_teams_att_user_idx on o_teams_attendee(fk_teams_user_id);
 alter table o_teams_attendee add constraint teams_att_meet_idx foreign key (fk_meeting_id) references o_teams_meeting (id);
 create index idx_teams_att_meet_idx on o_teams_attendee(fk_meeting_id);
+
+alter table o_teams_recording add constraint teams_rec_meet_idx foreign key (fk_meeting_id) references o_teams_meeting (id);
+create index idx_teams_rec_meet_idx on o_teams_recording (fk_meeting_id);
+alter table o_teams_recording add constraint teams_rec_data_idx foreign key (fk_recording_metadata_id) references o_vfs_metadata(id);
+create index idx_teams_rec_data_idx on o_teams_recording (fk_recording_metadata_id);
+create unique index idx_teams_rec_graph_unique on o_teams_recording (t_recording_id, fk_meeting_id);
 
 -- tag
 create unique index idx_tag_name_idx on o_tag_tag (t_display_name);
@@ -6632,4 +6715,13 @@ alter table o_rm_module_log add constraint rm_log_to_room_idx foreign key (fk_ro
 alter table o_rm_module_log add constraint rm_log_to_book_idx foreign key (fk_booking) references o_rm_room_booking(id);
 alter table o_rm_module_log add constraint rm_log_to_lb_idx foreign key (fk_lecture_block) references o_lecture_block(id);
 create index idx_rm_log_room_date on o_rm_module_log(fk_room, creationdate);
+
+-- REST API audit log
+alter table o_api_audit_log add constraint api_audit_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_api_audit_ident_idx on o_api_audit_log (fk_identity);
+create index idx_api_audit_creation_idx on o_api_audit_log (creationdate);
+create index idx_api_audit_status_idx on o_api_audit_log (a_status);
+create index idx_api_audit_resclass_idx on o_api_audit_log (a_resource_class);
+
+
 

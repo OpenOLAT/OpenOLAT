@@ -31,6 +31,7 @@ alter table o_user add column u_emchangekey varchar(255);
 alter table o_user add column u_emaildisabled varchar(255);
 alter table o_user add column u_typeofuser varchar(255);
 alter table o_user add column u_socialsecuritynumber varchar(255);
+alter table o_user add column u_customernumber varchar(255);
 
 alter table o_user add column u_rank varchar(255);
 alter table o_user add column u_degree varchar(255);
