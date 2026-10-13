@@ -104,6 +104,15 @@ public interface ProjectService {
 
 	public Set<ProjectRole> getRoles(ProjProject project, IdentityRef identity);
 
+	/**
+	 * Loads the roles of one identity in several projects with one query.
+	 *
+	 * @param projects The projects
+	 * @param identity The identity
+	 * @return The roles by project key; a project without membership of the identity has no entry
+	 */
+	public Map<Long, Set<ProjectRole>> getRoles(Collection<? extends ProjProjectRef> projects, IdentityRef identity);
+
 	public List<ProjMemberInfo> getMembersInfos(ProjMemberInfoSearchParameters params);
 
 	public ProjProjectUserInfo getOrCreateProjectUserInfo(ProjProject project, Identity identity);

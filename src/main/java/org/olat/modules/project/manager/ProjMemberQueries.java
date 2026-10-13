@@ -20,6 +20,8 @@
 package org.olat.modules.project.manager;
 
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +66,41 @@ public class ProjMemberQueries {
 				.setMaxResults(1)
 				.getResultList()
 				.isEmpty();
+	}
+	
+	/**
+	 * The roles of one identity in several projects with one query.
+	 *
+	 * @param projectKeys The keys of the projects
+	 * @param identity The identity
+	 * @return The roles by project key; a project without membership of the identity has no entry
+	 */
+	public Map<Long, Set<ProjectRole>> getProjectKeyToRoles(Collection<Long> projectKeys, IdentityRef identity) {
+		if (projectKeys == null || projectKeys.isEmpty() || identity == null) {
+			return new HashMap<>(0);
+		}
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select project.key, membership.role");
+		sb.append("  from projproject project");
+		sb.append(" inner join project.baseGroup baseGroup");
+		sb.append(" inner join baseGroup.members membership");
+		sb.and().append(" project.key in :projectKeys");
+		sb.and().append(" membership.identity.key = :identityKey");
+		
+		List<Object[]> rows = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("projectKeys", projectKeys)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+		
+		Map<Long, Set<ProjectRole>> projectKeyToRoles = new HashMap<>();
+		for (Object[] row : rows) {
+			Long projectKey = (Long)row[0];
+			ProjectRole role = ProjectRole.valueOf((String)row[1]);
+			projectKeyToRoles.computeIfAbsent(projectKey, key -> EnumSet.noneOf(ProjectRole.class)).add(role);
+		}
+		return projectKeyToRoles;
 	}
 	
 	public List<GroupMembership> getProjMemberships(ProjMemberInfoSearchParameters params) {
