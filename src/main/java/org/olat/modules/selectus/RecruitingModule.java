@@ -197,6 +197,11 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 	private boolean sendBccForConfirmation;
 	@Value("${recruiting.mail.position:disabled}")
 	private String mailProPosition;
+	@Value("${recruiting.mail.position.default}")
+	private String mailProPositionDefault;
+	@Value("${recruiting.mail.position.position.default.empty:false}")
+	private String mailProPositionEmptyForPositionSetting;
+	
 	@Value("${recruiting.mail.letter:disabled}")
 	private String mailLetter;
 	
@@ -2023,6 +2028,14 @@ public class RecruitingModule extends AbstractSpringModule implements ConfigOnOf
 
 	public boolean isMailProPositionEnabled() {
 		return "enabled".equals(mailProPosition);
+	}
+	
+	public MailSettingEnum getMailProPositionDefault() {
+		return MailSettingEnum.secureValueOf(mailProPositionDefault);
+	}
+	
+	public boolean isMailProPositionEmptyForPositionSetting() {
+		return "true".equals(mailProPositionEmptyForPositionSetting);
 	}
 	
 	public boolean isMailLetterEnabled() {
