@@ -523,12 +523,12 @@ $o-button-dirty-bg				: $btn-warning-bg !default;
 $o-button-dirty-color			: o-a11y-color($btn-warning-color, $o-button-dirty-bg) !default;
 $o-button-dirty-border			: darken($o-button-dirty-bg	, 5%) !default;
 /* Ghost button */
-$o-button-ghost-color					: $btn-primary-bg !default;
+$o-button-ghost-color						: $link-color !default;
 $o-button-ghost-background-color			: transparent !default;
 $o-button-ghost-border-color				: transparent !default;
-$o-button-ghost-hover-color				: $btn-primary-bg !default;
+$o-button-ghost-hover-color					: $link-color !default;
 $o-button-ghost-hover-background-color	: transparent !default;
-$o-button-ghost-hover-border-color		: $btn-primary-bg !default;
+$o-button-ghost-hover-border-color			: $link-color !default;
 $o-button-mega-height					: 55px !default;
 $o-button-mega-bg-color					: #fff !default;
 $o-button-mega-hover-bg-color			: #e6e6e6 !default;
