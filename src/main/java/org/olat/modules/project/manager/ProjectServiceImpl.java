@@ -680,6 +680,15 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
+	public Map<Long, Set<ProjectRole>> getRoles(Collection<? extends ProjProjectRef> projects, IdentityRef identity) {
+		if (projects == null || projects.isEmpty()) {
+			return new HashMap<>(0);
+		}
+		List<Long> projectKeys = projects.stream().map(ProjProjectRef::getKey).distinct().toList();
+		return memberQueries.getProjectKeyToRoles(projectKeys, identity);
+	}
+	
+	@Override
 	public List<ProjMemberInfo> getMembersInfos(ProjMemberInfoSearchParameters params) {
 		Map<Identity, Set<ProjectRole>> identityRoRoles = getMemberToRoles(params);
 		
@@ -1709,6 +1718,17 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		updateReloadedDecision(doer, reloadedDecision, title, details, decisionDate);
 	}
 	
+	/**
+	 * A loaded date is a java.sql.Timestamp, which never equals a java.util.Date
+	 * (Timestamp.equals), so the dates are compared by their milliseconds.
+	 */
+	private static boolean isSameInstant(Date date1, Date date2) {
+		if (date1 == null || date2 == null) {
+			return date1 == date2;
+		}
+		return date1.getTime() == date2.getTime();
+	}
+	
 	private ProjDecision updateReloadedDecision(Identity doer, ProjDecision reloadedDecision, String title,
 			String details, Date decisionDate) {
 		String before = ProjectXStream.toXml(reloadedDecision);
@@ -1727,7 +1747,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			contentChanged = true;
 		}
 		Date cleanedDecisionDate = decisionDate != null? DateUtils.truncateSeconds(decisionDate): null;
-		if (!Objects.equals(reloadedDecision.getDecisionDate(), cleanedDecisionDate)) {
+		if (!isSameInstant(reloadedDecision.getDecisionDate(), cleanedDecisionDate)) {
 			reloadedDecision.setDecisionDate(cleanedDecisionDate);
 			contentChanged = true;
 		}
@@ -2047,12 +2067,12 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			contentChanged = true;
 		}
 		Date cleanedStartDate = startDate != null? DateUtils.truncateSeconds(startDate): null;
-		if (!Objects.equals(reloadedAppointment.getStartDate(), cleanedStartDate)) {
+		if (!isSameInstant(reloadedAppointment.getStartDate(), cleanedStartDate)) {
 			reloadedAppointment.setStartDate(cleanedStartDate);
 			contentChanged = true;
 		}
 		Date cleanedEndDate = endDate != null? DateUtils.truncateSeconds(endDate): null;
-		if (!Objects.equals(reloadedAppointment.getEndDate(), cleanedEndDate)) {
+		if (!isSameInstant(reloadedAppointment.getEndDate(), cleanedEndDate)) {
 			reloadedAppointment.setEndDate(cleanedEndDate);
 			contentChanged = true;
 		}
@@ -2353,7 +2373,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			contentChanged = true;
 		}
 		Date cleanedDueDate = dueDate != null? DateUtils.truncateSeconds(dueDate): null;
-		if (!Objects.equals(reloadedMilestone.getDueDate(), cleanedDueDate)) {
+		if (!isSameInstant(reloadedMilestone.getDueDate(), cleanedDueDate)) {
 			reloadedMilestone.setDueDate(cleanedDueDate);
 			contentChanged = true;
 		}
