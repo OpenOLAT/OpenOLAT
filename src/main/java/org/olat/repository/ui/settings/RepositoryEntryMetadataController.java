@@ -213,7 +213,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			} else {
 				externalRef = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, extRef, formLayout);
 				externalRef.setHelpText(translate("cif.externalref.hover"));
-				externalRef.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Metadata/");
+				externalRef.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Metadata/#externalref");
 			}
 			
 			FormLayoutContainer typeCont = FormLayoutContainer.createInlineFormLayout("typeinput_" + CodeHelper.getRAMUniqueID(), getTranslator());
