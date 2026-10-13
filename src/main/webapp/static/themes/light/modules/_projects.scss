@@ -728,9 +728,24 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 				margin: 0px;
 			}
 			.o_proj_note_text {
-				font-size: 18px;
-				line-height: 1.5;
-				letter-spacing: .02em;
+				font-size: $font-size-base;
+				line-height: $line-height-base;
+
+				/* Markdown headings one level smaller, like the badge descriptions */
+				.milkdown {
+					h1 { font-size: $font-size-h2; }
+					h2 { font-size: $font-size-h3; }
+					h3 { font-size: $font-size-h4; }
+					h4 { font-size: $font-size-h5; }
+					h5, h6 { font-size: $font-size-h6; }
+					h1, h2, h3, h4, h5, h6 {
+						margin-top: $line-height-computed;
+						margin-bottom: $line-height-computed * 0.5;
+					}
+					> .ProseMirror > :first-child {
+						margin-top: 0;
+					}
+				}
 			}
 		}
 	}

@@ -341,3 +341,48 @@ body:has(.basicLightbox) {
 	word-wrap: break-word;
 	white-space: pre-wrap;
 }
+
+/* Tables in the markdown view and editor, styled like a bordered content editor table.
+   Milkdown renders the table without a wrapper, so the table itself is the scroll
+   container: a wide table scrolls horizontally instead of widening the page (mobile). */
+.milkdown table {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	margin-bottom: $line-height-computed;
+	border: 1px solid rgba($gray-base, 10%);
+	border-radius: $border-radius-base;
+	box-shadow: $o-cc-box-shadow;
+	background: transparent;
+
+	> thead, > tbody {
+		display: table;
+		width: 100%;
+		border-collapse: separate;
+		border-spacing: 0;
+	}
+
+	td, th {
+		padding: $table-cell-padding;
+		vertical-align: top;
+		border-top: 1px solid rgba($gray-base, 10%);
+		border-left: 1px solid rgba($gray-base, 10%);
+		> p {
+			margin: 0;
+		}
+	}
+	tr > *:first-child {
+		border-left: none;
+	}
+	> thead > tr:first-child > *,
+	> tbody:first-child > tr:first-child > * {
+		border-top: none;
+	}
+	th, thead td {
+		background: rgba($gray-base, 10%);
+		font-weight: bold;
+		text-align: left;
+	}
+}

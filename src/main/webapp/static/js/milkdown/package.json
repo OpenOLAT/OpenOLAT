@@ -20,9 +20,12 @@
 		"@milkdown/ctx": "^7.2.1",
 		"@milkdown/prose": "^7.2.1",
 		"@milkdown/transformer": "^7.2.1",
+		"@milkdown/utils": "^7.2.1",
 		"@milkdown/plugin-listener": "^7.2.1",
 		"@milkdown/preset-commonmark": "^7.2.1",
 		"@milkdown/preset-gfm": "^7.2.1",
+		"mdast-util-to-string": "^4.0.0",
+		"remark-gfm": "^4.0.0",
 		"strip-markdown": "^5.0.1"
 	}
 }
