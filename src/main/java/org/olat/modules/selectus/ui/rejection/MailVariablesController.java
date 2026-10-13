@@ -22,6 +22,7 @@ package org.olat.modules.selectus.ui.rejection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
@@ -106,11 +107,29 @@ public class MailVariablesController extends BasicController {
 		positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_SHORT_TITLE, translate("explain.position.short.title")));
 		
 		Locale[] positionLanguages = recruitingModule.getPositionLocales();
-		if(positionLanguages.length > 1) {
-			String availableLanguages = position.getAvailableLanguages();
-			if(StringHelper.containsNonWhitespace(availableLanguages) && availableLanguages.split(",").length > 1) {
+		Set<String> availableLanguages = getAvailableLanguages(position);
+		if(positionLanguages.length > 1 && availableLanguages.size() > 1) {
+			if(availableLanguages.contains("de")) {
 				positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_TITLE_DE, translate("explain.position.title.de")));
+			}
+			if(availableLanguages.contains("en")) {
 				positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_TITLE_EN, translate("explain.position.title.en")));
+			}
+			if(availableLanguages.contains("fr")) {
+				positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_TITLE_FR, translate("explain.position.title.fr")));
+			}
+		}
+		
+		positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_DEPARTMENT, translate("explain.position.department")));
+		if(positionLanguages.length > 1 && availableLanguages.size() > 1) {
+			if(availableLanguages.contains("de")) {
+				positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_DEPARTMENT_DE, translate("explain.position.department.de")));
+			}
+			if(availableLanguages.contains("en")) {
+				positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_DEPARTMENT_EN, translate("explain.position.department.en")));
+			}
+			if(availableLanguages.contains("fr")) {	
+				positionVariables.add(new Variable(RecruitingMailTemplate.POSITION_DEPARTMENT_FR, translate("explain.position.department.fr")));
 			}
 		}
 		
@@ -131,6 +150,17 @@ public class MailVariablesController extends BasicController {
 		}
 
 		variablesCollections.add(positionVariables);
+	}
+	
+	private Set<String> getAvailableLanguages(Position position) {
+		String availableLanguages = position.getAvailableLanguages();
+		if(StringHelper.containsNonWhitespace(availableLanguages)) {
+			String[] arr = availableLanguages.split(",");
+			if(arr != null && arr.length > 1) {
+				return Set.of(arr);
+			}
+		}
+		return Set.of();
 	}
 	
 	private void initOrganisationUnit(List<VariablesCollection> variablesCollections, Organisation organisation, OrganisationUnit settings) {

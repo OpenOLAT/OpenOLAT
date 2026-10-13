@@ -69,6 +69,10 @@ public class RecruitingMailTemplate extends ApplicationMailTemplate {
 	public static final String POSITION_TITLE_DE = "positionTitleDe";
 	public static final String POSITION_TITLE_EN = "positionTitleEn";
 	public static final String POSITION_TITLE_FR = "positionTitleFr";
+	public static final String POSITION_DEPARTMENT= "department";
+	public static final String POSITION_DEPARTMENT_DE= "departmentDe";
+	public static final String POSITION_DEPARTMENT_EN= "departmentEn";
+	public static final String POSITION_DEPARTMENT_FR= "departmentFr";
 	public static final String POSITION_PROFESSORSHIP = "professorship";
 	public static final String POSITION_MAIL_SIGNATURE = "mailSignature";
 	public static final String POSITION_APPLICATION_DEADLINE = "applicationDeadline";
@@ -258,6 +262,11 @@ public class RecruitingMailTemplate extends ApplicationMailTemplate {
 		context.put(POSITION_TITLE_DE, position.getMLTitle(Locale.GERMAN));
 		context.put(POSITION_TITLE_EN, position.getMLTitle(Locale.ENGLISH));
 		context.put(POSITION_TITLE_FR, position.getMLTitle(Locale.FRENCH));
+		
+		context.put(POSITION_DEPARTMENT, position.getMLDepartement(getLocale()));
+		context.put(POSITION_DEPARTMENT_DE, position.getMLDepartement(Locale.GERMAN));
+		context.put(POSITION_DEPARTMENT_EN, position.getMLDepartement(Locale.ENGLISH));
+		context.put(POSITION_DEPARTMENT_FR, position.getMLDepartement(Locale.FRENCH));
 		
 		PositionProfessorship professorship;
 		if(StringHelper.containsNonWhitespace(position.getProfessorship())) {
