@@ -20,6 +20,7 @@
 package org.olat.user.propertyhandlers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -49,6 +50,7 @@ public class UserPropertyUsageContext {
 	
 	public UserPropertyUsageContext copy() {
 		UserPropertyUsageContext context = new UserPropertyUsageContext();
+		context.description = description;
 		context.propertyHandlers = new ArrayList<>(propertyHandlers);
 		context.mandatoryProperties = new HashSet<>(mandatoryProperties);
 		context.adminViewOnlyProperties = new HashSet<>(adminViewOnlyProperties);
@@ -56,9 +58,15 @@ public class UserPropertyUsageContext {
 		return context;
 	}
 
+	public UserPropertyUsageContext copyWithout(Collection<UserPropertyHandler> excluded) {
+		UserPropertyUsageContext context = copy();
+		excluded.forEach(context::removePropertyHandler);
+		return context;
+	}
+
 	/**
 	 * Spring setter
-	 * 
+	 *
 	 * @param propertyHandlers
 	 */
 	public void setPropertyHandlers(List<UserPropertyHandler> propertyHandlers) {

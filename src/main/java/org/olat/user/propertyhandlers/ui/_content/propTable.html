@@ -6,6 +6,7 @@
 			<th>$r.translate("upc.defaulttranslation")</th>
 			<th>$r.translate("upc.group")</th>
 			<th>$r.translate("upc.active")</th>
+			<th class="text-right">$r.translate("upc.contexts")</th>
 			<th>$r.translate("upc.translate")</th>
 			<th>$r.translate("upc.hndlconfig")</th>
 		</tr>
@@ -19,10 +20,12 @@
 			#set($handlername = "hndl_" + $name)
 			#set($translate = "translate_"+$name)
 			#set($group = "grpn_" + $name)
+			#set($ctxcount = "ctxcount_" + $name)
 			<td>$name</td>
 			<td>$r.render($defaulttranslation)</td>
 			<td>$r.render($group)</td>
 			<td>$r.render($tglname)</td>
+			<td class="text-right">$r.render($ctxcount)</td>
 			<td>$r.render($translate)</td>
 			<td>
 			#if($r.available($handlername))

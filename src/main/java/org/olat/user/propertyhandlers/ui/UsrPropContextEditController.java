@@ -105,12 +105,13 @@ public class UsrPropContextEditController extends FormBasicController {
 	 */
 	private void buildPropertyHandlerListFromContext() {
 		rowToggleButtonsMap = new HashMap<>();
+		includedPropertiesCount = 0;
 		
 		// add form components for each row
 		List<UserPropertyHandler> handlerList = new ArrayList<>();
 
 		// loop over the handlers within this context
-		for (UserPropertyHandler handler : context.getPropertyHandlers()) {
+		for (UserPropertyHandler handler : usrPropCfgMng.getUserPropertiesConfigObject().activeHandlersOf(context)) {
 			handlerList.add(handler);
 			addTableRowComponents(handler, true);
 		}
@@ -253,13 +254,28 @@ public class UsrPropContextEditController extends FormBasicController {
 			// a link, (up/down)
 			UserPropertyHandler handler = (UserPropertyHandler) source.getUserObject();
 			if (source.getName().startsWith(FT_NAME_PREFIX_MUP)) {
-				context.moveHandlerUp(handler);
+				moveVisibly(handler, true);
 				usrPropCfgMng.saveUserPropertiesConfig();
 				buildPropertyHandlerListFromContext();
 			} else if (source.getName().startsWith(FT_NAME_PREFIX_MDN)) {
-				context.moveHandlerDown(handler);
+				moveVisibly(handler, false);
 				usrPropCfgMng.saveUserPropertiesConfig();
 				buildPropertyHandlerListFromContext();
+			}
+		}
+	}
+
+	private void moveVisibly(UserPropertyHandler handler, boolean up) {
+		UsrPropCfgObject cfg = usrPropCfgMng.getUserPropertiesConfigObject();
+		List<UserPropertyHandler> visibleBefore = cfg.activeHandlersOf(context);
+		for (int i = 0; i < context.getPropertyHandlers().size(); i++) {
+			if (up) {
+				context.moveHandlerUp(handler);
+			} else {
+				context.moveHandlerDown(handler);
+			}
+			if (!cfg.activeHandlersOf(context).equals(visibleBefore)) {
+				return;
 			}
 		}
 	}
