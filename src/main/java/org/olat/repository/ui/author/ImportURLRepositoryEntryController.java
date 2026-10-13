@@ -170,7 +170,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 
 		externalRef = uifactory.addTextElement("cif.externalref", 255, null, formLayout);
 		externalRef.setHelpText(translate("cif.externalref.hover"));
-		externalRef.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Info/");
+		externalRef.setHelpUrlForManualPage("manual_user/learningresources/Course_Settings_Metadata/#externalref");
 		externalRef.setInlineValidationOn(true);
 		
 		organisationEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), formLayout, uifactory,

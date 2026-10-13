@@ -26,9 +26,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.id.Identity;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -56,16 +54,10 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 	@Autowired
 	private UserModule userModule;
 
-	private Identity doer;
-
-	@Before
-	public void createDoer() {
-		doer = JunitTestHelper.createAndPersistIdentityAsRndUser("upc-doer");
-	}
-
 	@After
 	public void restoreSystemDefault() {
-		usrPropCfgManager.resetToSystemDefault(doer);
+		usrPropCfgManager.resetToSystemDefault(JunitTestHelper.getDefaultActor());
+		waitMessageAreConsumed();
 	}
 
 	@Test
@@ -125,7 +117,7 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 		usrPropCfgManager.saveUserPropertiesConfig();
 		assertThat(names(userManager.getUserPropertyHandlersFor(PROFILE_CTX, true))).doesNotContain("birthDay");
 
-		usrPropCfgManager.resetToSystemDefault(doer);
+		usrPropCfgManager.resetToSystemDefault(JunitTestHelper.getDefaultActor());
 
 		cfg = usrPropCfgManager.getUserPropertiesConfigObject();
 		birthDay = cfg.getPropertyHandler("birthDay");
@@ -148,7 +140,7 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 
 	@Test
 	public void resetToMinimal_appliesToLiveConfiguration() {
-		usrPropCfgManager.resetToMinimal(doer);
+		usrPropCfgManager.resetToMinimal(JunitTestHelper.getDefaultActor());
 
 		assertThat(names(userManager.getUserPropertyHandlersFor(PROFILE_CTX, true)))
 				.containsExactly("nickName", "firstName", "lastName", "email");
@@ -161,7 +153,7 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 
 	@Test
 	public void resetToMinimal_survivesReloadFromPersistedProperties() {
-		usrPropCfgManager.resetToMinimal(doer);
+		usrPropCfgManager.resetToMinimal(JunitTestHelper.getDefaultActor());
 
 		usrPropCfgManager.reloadFromPersistedProperties();
 
@@ -175,8 +167,8 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 
 	@Test
 	public void resetToSystemDefault_survivesReloadFromPersistedProperties() {
-		usrPropCfgManager.resetToMinimal(doer);
-		usrPropCfgManager.resetToSystemDefault(doer);
+		usrPropCfgManager.resetToMinimal(JunitTestHelper.getDefaultActor());
+		usrPropCfgManager.resetToSystemDefault(JunitTestHelper.getDefaultActor());
 
 		usrPropCfgManager.reloadFromPersistedProperties();
 
@@ -196,14 +188,14 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 		List<String> contextsBefore = cfg.contextsWith(birthDay);
 		assertThat(contextsBefore).contains(PROFILE_CTX);
 
-		usrPropCfgManager.setHandlerActive(doer, birthDay, false);
+		usrPropCfgManager.setHandlerActive(JunitTestHelper.getDefaultActor(), birthDay, false);
 
 		assertThat(cfg.isActiveHandler(birthDay)).isFalse();
 		assertThat(cfg.contextsWith(birthDay)).isEqualTo(contextsBefore);
 		assertThat(names(userManager.getUserPropertyHandlersFor(PROFILE_CTX, true))).doesNotContain("birthDay");
 		assertThat(names(userManager.getAllUserPropertyHandlers())).doesNotContain("birthDay");
 
-		usrPropCfgManager.setHandlerActive(doer, birthDay, true);
+		usrPropCfgManager.setHandlerActive(JunitTestHelper.getDefaultActor(), birthDay, true);
 
 		assertThat(cfg.contextsWith(birthDay)).isEqualTo(contextsBefore);
 		assertThat(names(userManager.getUserPropertyHandlersFor(PROFILE_CTX, true))).contains("birthDay");
@@ -214,7 +206,7 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 		UsrPropCfgObject cfg = usrPropCfgManager.getUserPropertiesConfigObject();
 		UserPropertyHandler birthDay = cfg.getPropertyHandler("birthDay");
 		List<String> contextsBefore = cfg.contextsWith(birthDay);
-		usrPropCfgManager.setHandlerActive(doer, birthDay, false);
+		usrPropCfgManager.setHandlerActive(JunitTestHelper.getDefaultActor(), birthDay, false);
 
 		usrPropCfgManager.reloadFromPersistedProperties();
 
@@ -234,12 +226,12 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 				.toList();
 		assertThat(defaultContexts).contains(PROFILE_CTX);
 
-		usrPropCfgManager.resetToMinimal(doer);
+		usrPropCfgManager.resetToMinimal(JunitTestHelper.getDefaultActor());
 		UsrPropCfgObject cfg = usrPropCfgManager.getUserPropertiesConfigObject();
 		UserPropertyHandler birthDay = cfg.getPropertyHandler("birthDay");
 		assertThat(cfg.contextsWith(birthDay)).isEmpty();
 
-		usrPropCfgManager.setHandlerActive(doer, birthDay, true);
+		usrPropCfgManager.setHandlerActive(JunitTestHelper.getDefaultActor(), birthDay, true);
 
 		assertThat(cfg.contextsWith(birthDay)).containsExactlyInAnyOrderElementsOf(defaultContexts);
 		assertThat(names(userManager.getUserPropertyHandlersFor(PROFILE_CTX, true))).contains("birthDay");
@@ -252,9 +244,9 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 		cfg.getUsageContexts().get(PROFILE_CTX).removePropertyHandler(birthDay);
 		List<String> contextsBefore = cfg.contextsWith(birthDay);
 		assertThat(contextsBefore).isNotEmpty().doesNotContain(PROFILE_CTX);
-		usrPropCfgManager.setHandlerActive(doer, birthDay, false);
+		usrPropCfgManager.setHandlerActive(JunitTestHelper.getDefaultActor(), birthDay, false);
 
-		usrPropCfgManager.setHandlerActive(doer, birthDay, true);
+		usrPropCfgManager.setHandlerActive(JunitTestHelper.getDefaultActor(), birthDay, true);
 
 		assertThat(cfg.contextsWith(birthDay)).isEqualTo(contextsBefore);
 	}
@@ -278,7 +270,7 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 		UserPropertyUsageContext profile = cfg.getUsageContexts().get(PROFILE_CTX);
 		int before = cfg.activeHandlerCount(profile);
 
-		usrPropCfgManager.setHandlerActive(doer, birthDay, false);
+		usrPropCfgManager.setHandlerActive(JunitTestHelper.getDefaultActor(), birthDay, false);
 
 		assertThat(cfg.activeHandlerCount(profile)).isEqualTo(before - 1);
 		assertThat(profile.getPropertyHandlers()).contains(birthDay);
@@ -289,7 +281,7 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 	public void effectiveContexts_areCopiesWithoutInactiveHandlers() {
 		UsrPropCfgObject cfg = usrPropCfgManager.getUserPropertiesConfigObject();
 		UserPropertyHandler birthDay = cfg.getPropertyHandler("birthDay");
-		usrPropCfgManager.setHandlerActive(doer, birthDay, false);
+		usrPropCfgManager.setHandlerActive(JunitTestHelper.getDefaultActor(), birthDay, false);
 
 		UserPropertyUsageContext master = cfg.getUsageContexts().get(PROFILE_CTX);
 		UserPropertyUsageContext effective = userManager.getUserPropertiesConfig().getUserPropertyUsageContexts().get(PROFILE_CTX);
