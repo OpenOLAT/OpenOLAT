@@ -889,6 +889,8 @@ public class VFSManager {
 			try(InputStream in = new BufferedInputStream(inStream);
 					OutputStream out = new BufferedOutputStream(target.getOutputStream(false))) {
 				FileUtils.cpio(in, out, "");
+				// flush before the metadata records the size of the file
+				out.flush();
 				vfsRepositoryService.itemSaved(target, savedBy);
 				successful = true;
 			} catch (IOException e) {
