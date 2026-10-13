@@ -20,7 +20,6 @@
 package org.olat.upgrade;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,9 +33,11 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.repository.RepositoryModule;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,6 +60,10 @@ public class OLATUpgrade_21_0_0 extends OLATUpgrade {
 	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private RepositoryModule repositoryModule;
+	@Autowired
+	private CatalogV2Module catalogV2Module;
 
 	@Override
 	public String getVersion() {
@@ -298,8 +303,12 @@ public class OLATUpgrade_21_0_0 extends OLATUpgrade {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(MIGRATE_CATALOG_DEFAULTS)) {
 			try {
-				pinPropertyDefault("org.olat.repository.RepositoryModule.properties", "catalog.enable", "true");
-				pinPropertyDefault("org.olat.modules.catalog.CatalogV2Module.properties", "catalog.v2.enabled", "false");
+				if (!hasPersistedProperty("org.olat.repository.RepositoryModule.properties", "catalog.enable")) {
+					repositoryModule.setCatalogEnabled(true);
+				}
+				if (!hasPersistedProperty("org.olat.modules.catalog.CatalogV2Module.properties", "catalog.v2.enabled")) {
+					catalogV2Module.setEnabled(false);
+				}
 				log.info("Catalog defaults migrated.");
 			} catch (Exception e) {
 				log.error("", e);
@@ -311,20 +320,15 @@ public class OLATUpgrade_21_0_0 extends OLATUpgrade {
 		return allOk;
 	}
 
-	private void pinPropertyDefault(String fileName, String key, String value) throws Exception {
+	private boolean hasPersistedProperty(String fileName, String key) throws Exception {
 		Path propsPath = Paths.get(WebappHelper.getUserDataRoot(), "system", "configuration", fileName);
+		if (!Files.exists(propsPath)) {
+			return false;
+		}
 		Properties props = new Properties();
-		if (Files.exists(propsPath)) {
-			try (FileInputStream input = new FileInputStream(propsPath.toFile())) {
-				props.load(input);
-			}
+		try (FileInputStream input = new FileInputStream(propsPath.toFile())) {
+			props.load(input);
 		}
-		if (!props.containsKey(key)) {
-			props.setProperty(key, value);
-			Files.createDirectories(propsPath.getParent());
-			try (FileOutputStream output = new FileOutputStream(propsPath.toFile())) {
-				props.store(output, "");
-			}
-		}
+		return props.containsKey(key);
 	}
 }
