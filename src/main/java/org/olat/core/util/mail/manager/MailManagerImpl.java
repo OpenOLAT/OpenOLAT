@@ -1372,8 +1372,18 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			} else if (fromId != null) {
 				from = createFromAddress(fromId, result);
 			} else {
-				// fxdiff: change from/replyto, see FXOLAT-74 . if no from is set, use default sysadmin-address (adminemail).
-				from = createAddress(WebappHelper.getMailConfig("mailReplyTo"));
+				String replyTo = WebappHelper.getMailConfig("mailReplyTo");
+				String replyToName = WebappHelper.getMailConfig("mailReplyToName");
+				if(StringHelper.containsNonWhitespace(replyTo) && StringHelper.containsNonWhitespace(replyToName)) {
+					try {
+						from = createAddressWithName(replyTo, replyToName);
+					} catch (Exception e) {
+						log.error("MailConfigError: mailReplyToName: {}", replyToName, e);
+						from = createAddress(replyTo);
+					}
+				} else {
+					from = createAddress(replyTo);
+				}
 				if(from == null) {
 					log.error("MailConfigError: mailReplyTo is not set");
 				}
@@ -1745,10 +1755,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		Address viewableFrom = createAddressWithName(platformFrom, platformName);
 		msg.setFrom(viewableFrom);
 		msg.setSubject(subject, "utf-8");
-		// reply to can only be an address without name (at least for postfix!), see FXOLAT-312
-		Address convertedFrom = getRawEmailFromAddress(from); 
-		msg.setReplyTo(new Address[] { convertedFrom });
-		
+		msg.setReplyTo(new Address[] { from });
 		return msg;
 	}
 	

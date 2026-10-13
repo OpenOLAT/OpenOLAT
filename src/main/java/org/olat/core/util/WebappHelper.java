@@ -432,6 +432,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	 *	key="smtpPwd"
 	 *	key="mailSupport"
 	 *  key="mailReplyTo" - default from email address (reply-to)
+	 *  key="mailReplyToName" - name for the default from email address (reply-to)
 	 *  key="mailFromDomain" - own domain of our smtp server where it is allowed to use foreign addresses
 	 *  key="mailFrom" - real from email address
 	 *  key="mailFromName" - plain text name for from address

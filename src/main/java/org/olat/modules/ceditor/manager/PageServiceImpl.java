@@ -207,7 +207,6 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 
 	@Override
 	public int deleteReference(RepositoryEntry repositoryEntry, String subIdent) {
-		mediaRelationDao.deleteRelations(repositoryEntry);
 		return pageReferenceDao.deleteReference(repositoryEntry, subIdent);	
 	}
 

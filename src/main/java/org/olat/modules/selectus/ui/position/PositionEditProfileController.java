@@ -505,7 +505,8 @@ public class PositionEditProfileController extends FormBasicController implement
 		if(selectedKey != null && mailSettings.containsKey(selectedKey)) {
 			mailSettingEl.select(selectedKey, true);
 		} else {
-			mailSettingEl.select(MailSettingEnum.system.name(), true);
+			MailSettingEnum defaultMailSetting = recruitingModule.getMailProPositionDefault();
+			mailSettingEl.select(defaultMailSetting.name(), true);
 		}
 	}
 	
@@ -514,6 +515,7 @@ public class PositionEditProfileController extends FormBasicController implement
 			String selectedSetting = mailSettingEl.getSelectedKey();
 			boolean positionMail = MailSettingEnum.position.name().equals(selectedSetting);
 			senderMailEl.setEnabled(positionMail);
+			senderMailEl.setMandatory(positionMail);
 			bccMailEl.setEnabled(positionMail);
 			
 			Position mockedPosition = new PositionImpl();
@@ -525,7 +527,14 @@ public class PositionEditProfileController extends FormBasicController implement
 			mockedPosition.setOrganisation(organisation);
 			organisationSettings = erFrontendManager.getOrganisationUnit(organisation);
 
-			String sender = recruitingModule.getStaffMail(mockedPosition, organisationSettings);
+			String sender;
+			if(positionMail
+					&& !StringHelper.containsNonWhitespace(position.getSenderMail())
+					&& recruitingModule.isMailProPositionEmptyForPositionSetting()) {
+				sender = "";
+			} else {
+				sender = recruitingModule.getStaffMail(mockedPosition, organisationSettings);
+			}
 			String bcc = recruitingModule.getBccStaffMail(mockedPosition, organisationSettings);
 			senderMailEl.setValue(sender);
 			bccMailEl.setValue(bcc);
@@ -810,7 +819,7 @@ public class PositionEditProfileController extends FormBasicController implement
 				}
 			}
 			
-			if(senderMailEl.isEnabled() && senderMailEl.isVisible()) {
+			if(allOk && senderMailEl.isEnabled() && senderMailEl.isVisible()) {
 				try {
 					InternetAddress add = new InternetAddress(senderMailEl.getValue());
 					if(!MailHelper.isValidEmailAddress(senderMailEl.getValue()) && add.getAddress() != null) {

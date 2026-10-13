@@ -29,6 +29,14 @@ public enum MailSettingEnum {
 	
 	system,
 	organisationUnit,
-	position
-
+	position;
+	
+	public static final MailSettingEnum secureValueOf(String val) {
+		for(MailSettingEnum setting:values()) {
+			if(setting.name().equalsIgnoreCase(val)) {
+				return setting;
+			}
+		}
+		return system;
+	}
 }

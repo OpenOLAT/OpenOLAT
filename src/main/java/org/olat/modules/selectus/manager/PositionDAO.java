@@ -62,6 +62,7 @@ import org.olat.modules.selectus.model.Attachment;
 import org.olat.modules.selectus.model.AttachmentImpl;
 import org.olat.modules.selectus.model.CommitteeMembershipSummary;
 import org.olat.modules.selectus.model.CommitteeMembershipsStats;
+import org.olat.modules.selectus.model.MailSettingEnum;
 import org.olat.modules.selectus.model.OrganisationUnit;
 import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.PositionApplicationAttributeTabEnum;
@@ -119,6 +120,11 @@ public class PositionDAO {
 		boolean project = recruitingModule.isApplicationProjectEnabled() && recruitingModule.isApplicationProjectEnabledDefault();
 		position.setApplicationProject(project);
 		position.setApplicationAcademicalBackground(true);
+		
+		if(recruitingModule.isMailProPositionEnabled()) {
+			MailSettingEnum defaultSetting = recruitingModule.getMailProPositionDefault();
+			position.setMailSetting(defaultSetting);
+		}
 		
 		position.setOrganisation(organisation);
 
