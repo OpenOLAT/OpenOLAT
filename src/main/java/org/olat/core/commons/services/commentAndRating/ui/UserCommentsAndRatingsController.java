@@ -230,7 +230,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			commentsCountLink.setCustomEnabledLinkCSS("o_comments");
 			commentsCountLink.setIconLeftCSS(css);
 			
-			String legendI18n = commentsCount > 1l ? "comments.legend.plural" : "comments.legend.singular";
+			String legendI18n = commentsCount != 1l ? "comments.legend.plural" : "comments.legend.singular";
 			userCommentsAndRatingsVC.contextPut("commentsCountLegend", translate(legendI18n, commentsCount.toString()));
 		}
 	}
