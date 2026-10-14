@@ -117,6 +117,7 @@ import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogFilterSearchParams;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.WebCatalogDispatcher;
 import org.olat.modules.catalog.filter.LifecyclePublicHandler;
 import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
 import org.olat.modules.creditpoint.CreditPointModule;
@@ -1075,12 +1076,14 @@ public class CatalogEntryListController extends FormBasicController implements A
 			
 			String windowTitle = translate("window.title.infos", displayName);
 			getWindow().setTitle(windowTitle);
-			// SEO: set per-entry meta data for catalog detail pages
-			SeoMetadata seo = getWindowControl().getWindowBackOffice().getWindow().getSeoMetadata();
-			String canonicalUrl = searchParams.isWebPublish()
-					? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()) : null;
-			ResourceInfoHelper.populateEntrySeoMetadata(seo, entry, canonicalUrl,
-					getLocale(), getTranslator(), repositoryService);
+			// SEO: set per-entry meta data for the public catalog detail pages
+			if (searchParams.isWebPublish()) {
+				SeoMetadata seo = getWindowControl().getWindowBackOffice().getWindow().getSeoMetadata();
+				String canonicalUrl = CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource());
+				String ogImageUrl = WebCatalogDispatcher.getImageUrl(repositoryService.getIntroductionImage(entry), entry.getOlatResource().getKey());
+				ResourceInfoHelper.populateEntrySeoMetadata(seo, entry, canonicalUrl, ogImageUrl,
+						getLocale(), getTranslator(), repositoryService);
+			}
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
 			tableEl.reloadData();
@@ -1107,7 +1110,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 			} else {
 				config = new CatalogCurriculumElementStructuredHeaderConfig(curriculumElement, searchParams.getMember());
 			}
-			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, config, searchParams.isWebPublish());
+			CurriculumElementInfosController curriculumInfosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, config, searchParams.isWebPublish());
+			infosCtrl = curriculumInfosCtrl;
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
@@ -1116,12 +1120,14 @@ public class CatalogEntryListController extends FormBasicController implements A
 			
 			String windowTitle = translate("window.title.infos", displayName);
 			getWindow().setTitle(windowTitle);
-			// SEO: set per-entry meta data for catalog detail pages
-			SeoMetadata seo = getWindowControl().getWindowBackOffice().getWindow().getSeoMetadata();
-			String canonicalUrl = searchParams.isWebPublish()
-					? CatalogBCFactory.get(true).getOfferUrl(curriculumElement.getResource()) : null;
-			CurriculumInfoHelper.populateSeoMetadata(seo, curriculumElement, entry,
-					canonicalUrl, getLocale(), getTranslator(), repositoryService);
+			// SEO: set per-element meta data for the public catalog detail pages
+			if (searchParams.isWebPublish()) {
+				SeoMetadata seo = getWindowControl().getWindowBackOffice().getWindow().getSeoMetadata();
+				String canonicalUrl = CatalogBCFactory.get(true).getOfferUrl(curriculumElement.getResource());
+				CurriculumInfoHelper.populateSeoMetadata(seo, curriculumElement, entry,
+						canonicalUrl, getLocale(), getTranslator(), repositoryService, curriculumService,
+						curriculumInfosCtrl.getLectureBlocks(), curriculumInfosCtrl.getTaughtBys());
+			}
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
 			tableEl.reloadData();

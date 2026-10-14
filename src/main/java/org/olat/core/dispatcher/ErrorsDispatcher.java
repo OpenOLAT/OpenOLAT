@@ -42,6 +42,11 @@ public class ErrorsDispatcher implements Dispatcher {
 	private static final Logger log = Tracing.createLoggerFor(ErrorsDispatcher.class);
 
 	@Override
+	public boolean isSessionRequired() {
+		return false;
+	}
+
+	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try(PrintWriter writer = response.getWriter()) {
 			response.setContentType("text/html;charset=utf-8");

@@ -66,4 +66,8 @@ public interface Dispatcher {
 	default boolean isSessionRequired() {
 		return true;
 	}
+
+	default boolean isSessionRequired(HttpServletRequest request) {
+		return isSessionRequired();
+	}
 }

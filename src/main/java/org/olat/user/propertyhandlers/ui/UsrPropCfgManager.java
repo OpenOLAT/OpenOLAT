@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
@@ -107,6 +108,8 @@ public class UsrPropCfgManager extends AbstractSpringModule {
 	private final Map<String, String> systemDefaultGroups;
 	private final Map<String, UserPropertyUsageContext> systemDefaultContexts;
 
+	private final CopyOnWriteArrayList<UserPropertiesConfigAdjuster> adjusters = new CopyOnWriteArrayList<>();
+
 	private final UserManager userManager;
 	@Autowired
 	private UserModule userModule;
@@ -159,7 +162,12 @@ public class UsrPropCfgManager extends AbstractSpringModule {
 		loadModifiedUserPropertiesConfig(properties);
 	}
 
-	void reloadFromPersistedProperties() {
+	public void registerAdjuster(UserPropertiesConfigAdjuster adjuster) {
+		adjusters.addIfAbsent(adjuster);
+		reloadFromPersistedProperties();
+	}
+
+	public void reloadFromPersistedProperties() {
 		loadModifiedUserPropertiesConfig(createPropertiesFromPersistedProperties());
 	}
 
@@ -323,8 +331,10 @@ public class UsrPropCfgManager extends AbstractSpringModule {
 			ctx.setUserViewReadOnlyProperties(ctx_usrreadonlyHandlers);
 		}
 
+		adjusters.forEach(adjuster -> adjuster.adjust(cfgObject));
+
 		// create new modified userPropertiesConfig for UserManager
-		setUserManagerProperties();
+		refreshUserManagerProperties();
 	}
 	
 	/**
@@ -370,7 +380,7 @@ public class UsrPropCfgManager extends AbstractSpringModule {
 		savePersistedProperties();
 
 		// make a new userpropertiesconfig and set it in the userManager
-		setUserManagerProperties();
+		refreshUserManagerProperties();
 	}
 
 	public void setHandlerActive(Identity doer, UserPropertyHandler handler, boolean active) {
@@ -394,7 +404,7 @@ public class UsrPropCfgManager extends AbstractSpringModule {
 	/**
 	 * updates the userManager with our current config
 	 */
-	private void setUserManagerProperties() {
+	public void refreshUserManagerProperties() {
 		UserPropertiesConfigImpl upConfig = new UserPropertiesConfigImpl();
 		List<UserPropertyHandler> handlers = new ArrayList<>();
 		for (UserPropertyHandler handler : cfgObject.getPropertyHandlers()) {

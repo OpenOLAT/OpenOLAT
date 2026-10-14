@@ -19,7 +19,6 @@
  */
 package org.olat.repository;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -27,13 +26,15 @@ import java.util.Locale;
 import org.json.JSONObject;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.SeoJsonLdHelper;
 import org.olat.core.commons.fullWebApp.SeoMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
@@ -41,6 +42,8 @@ import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.repository.ui.RepositoyUIFactory;
 
 /**
@@ -118,12 +121,13 @@ public class ResourceInfoHelper {
 	 * @param seo The SeoMetadata object to populate
 	 * @param entry The repository entry
 	 * @param canonicalUrl The canonical URL (null to skip canonical/OG/JSON-LD)
+	 * @param ogImageUrl The OG image URL (may be null)
 	 * @param locale The locale for date formatting
 	 * @param taxonomyTranslator Translator for taxonomy display names
-	 * @param repositoryService Service for taxonomy and image lookups
+	 * @param repositoryService Service for taxonomy lookups
 	 */
 	public static void populateEntrySeoMetadata(SeoMetadata seo, RepositoryEntry entry,
-			String canonicalUrl, Locale locale, Translator taxonomyTranslator,
+			String canonicalUrl, String ogImageUrl, Locale locale, Translator taxonomyTranslator,
 			RepositoryService repositoryService) {
 		seo.resetMetadata();
 		List<TaxonomyLevel> levels = repositoryService.getTaxonomy(entry);
@@ -133,11 +137,12 @@ public class ResourceInfoHelper {
 		}
 		if (StringHelper.containsNonWhitespace(canonicalUrl)) {
 			seo.setCanonicalUrl(canonicalUrl);
-			String ogImageUrl = buildOgImageUrl(entry, repositoryService);
 			if (ogImageUrl != null) {
 				seo.setOgImageUrl(ogImageUrl);
 			}
-			String jsonLd = buildCourseJsonLd(entry, canonicalUrl, ogImageUrl, locale);
+			List<Offer> offers = CoreSpringFactory.getImpl(ACService.class).getOffers(entry, true, true, null, false, Boolean.TRUE, null);
+			String jsonLd = buildCourseJsonLd(entry, canonicalUrl, ogImageUrl, metaDesc,
+					translateTaxonomyLevels(taxonomyTranslator, levels), offers);
 			if (jsonLd != null) {
 				seo.setStructuredDataJson(jsonLd);
 			}
@@ -168,11 +173,13 @@ public class ResourceInfoHelper {
 	 * @param entry The repository entry
 	 * @param url The canonical URL
 	 * @param imageUrl The OG image URL (may be null)
-	 * @param locale The locale for formatting
+	 * @param metaDescription The meta description, used if the entry has no teaser and no description
+	 * @param taxonomyNames The translated taxonomy level names
+	 * @param offers The web published offers
 	 * @return JSON-LD string, or null if entry has no displayname
 	 */
-	public static String buildCourseJsonLd(RepositoryEntry entry, String url,
-			String imageUrl, Locale locale) {
+	public static String buildCourseJsonLd(RepositoryEntry entry, String url, String imageUrl,
+			String metaDescription, List<String> taxonomyNames, List<Offer> offers) {
 		if (entry == null || !StringHelper.containsNonWhitespace(entry.getDisplayname())) {
 			return null;
 		}
@@ -181,30 +188,27 @@ public class ResourceInfoHelper {
 		jsonLd.put("@type", "Course");
 		jsonLd.put("name", entry.getDisplayname());
 
-		String description = entry.getTeaser();
-		if (!StringHelper.containsNonWhitespace(description)) {
-			description = entry.getDescription();
-		}
-		if (StringHelper.containsNonWhitespace(description)) {
-			jsonLd.put("description", FilterFactory.getHtmlTagsFilter().filter(description).trim());
-		}
+		jsonLd.put("description", SeoJsonLdHelper.firstPlainText(entry.getTeaser(), entry.getDescription(),
+				metaDescription, entry.getDisplayname()));
 
 		if (StringHelper.containsNonWhitespace(url)) {
 			jsonLd.put("url", url);
 		}
+		SeoJsonLdHelper.putIdentity(jsonLd, url);
 		if (StringHelper.containsNonWhitespace(imageUrl)) {
 			jsonLd.put("image", imageUrl);
 		}
-		if (StringHelper.containsNonWhitespace(entry.getMainLanguage())) {
-			jsonLd.put("inLanguage", entry.getMainLanguage());
+		String languageCode = languageCode(entry.getMainLanguage());
+		if (StringHelper.containsNonWhitespace(languageCode)) {
+			jsonLd.put("inLanguage", languageCode);
 		}
+		SeoJsonLdHelper.putTaxonomy(jsonLd, taxonomyNames);
 
-		SimpleDateFormat isoDate = new SimpleDateFormat("yyyy-MM-dd");
 		if (entry.getStatusPublishedDate() != null) {
-			jsonLd.put("datePublished", isoDate.format(entry.getStatusPublishedDate()));
+			jsonLd.put("datePublished", SeoJsonLdHelper.isoDate(entry.getStatusPublishedDate()));
 		}
 		if (entry.getLastModified() != null) {
-			jsonLd.put("dateModified", isoDate.format(entry.getLastModified()));
+			jsonLd.put("dateModified", SeoJsonLdHelper.isoDate(entry.getLastModified()));
 		}
 
 		if (StringHelper.containsNonWhitespace(entry.getAuthors())) {
@@ -228,46 +232,59 @@ public class ResourceInfoHelper {
 		provider.put("url", Settings.getServerContextPathURI());
 		jsonLd.put("provider", provider);
 
-		JSONObject offers = new JSONObject();
-		offers.put("@type", "Offer");
-		offers.put("category", "Free");
-		offers.put("isAccessibleForFree", true);
-		offers.put("price", 0);
-		offers.put("priceCurrency", "CHF");
-		jsonLd.put("offers", offers);
+		SeoJsonLdHelper.putOffers(jsonLd, offers);
 
+		JSONObject instance = new JSONObject();
+		instance.put("@type", "CourseInstance");
+		instance.put("courseMode", SeoJsonLdHelper.courseMode(entry.getLocation()));
+		String workload = SeoJsonLdHelper.workloadDuration(entry.getExpenditureOfWork());
+		if (StringHelper.containsNonWhitespace(workload)) {
+			instance.put("courseWorkload", workload);
+		}
+		boolean withInstance = StringHelper.containsNonWhitespace(workload) || StringHelper.containsNonWhitespace(entry.getLocation());
 		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
-		if (lifecycle != null) {
-			JSONObject instance = new JSONObject();
-			instance.put("@type", "CourseInstance");
-			instance.put("courseMode", "Online");
-			if (lifecycle.isPrivateCycle()) {
-				if (lifecycle.getValidFrom() != null) {
-					instance.put("startDate", isoDate.format(lifecycle.getValidFrom()));
-				}
-				if (lifecycle.getValidTo() != null) {
-					instance.put("endDate", isoDate.format(lifecycle.getValidTo()));
-				}
-				if (lifecycle.getValidFrom() != null || lifecycle.getValidTo() != null) {
-					jsonLd.put("hasCourseInstance", instance);
-				}
-			} else if (StringHelper.containsNonWhitespace(lifecycle.getLabel())) {
-				instance.put("name", lifecycle.getLabel());
-				jsonLd.put("hasCourseInstance", instance);
+		if (lifecycle != null && lifecycle.isPrivateCycle()) {
+			if (lifecycle.getValidFrom() != null) {
+				instance.put("startDate", SeoJsonLdHelper.isoDate(lifecycle.getValidFrom()));
 			}
+			if (lifecycle.getValidTo() != null) {
+				instance.put("endDate", SeoJsonLdHelper.isoDate(lifecycle.getValidTo()));
+			}
+			withInstance |= lifecycle.getValidFrom() != null || lifecycle.getValidTo() != null;
+		} else if (lifecycle != null && StringHelper.containsNonWhitespace(lifecycle.getLabel())) {
+			instance.put("name", lifecycle.getLabel());
+			withInstance = true;
+		}
+		if (withInstance) {
+			jsonLd.put("hasCourseInstance", instance);
 		}
 
 		return jsonLd.toString();
 	}
 
 	private static void appendText(StringBuilder sb, String teaser, String description) {
-		String text = teaser;
-		if (!StringHelper.containsNonWhitespace(text)) {
-			text = description;
-		}
+		String text = SeoJsonLdHelper.firstPlainText(teaser, description);
 		if (StringHelper.containsNonWhitespace(text)) {
-			sb.append(FilterFactory.getHtmlTagsFilter().filter(text).trim());
+			sb.append(text);
 		}
+	}
+	
+	/**
+	 * @param mainLanguage The free text of the main language
+	 * @return The BCP 47 tag of the available language with this key or name, null if there is none
+	 */
+	public static String languageCode(String mainLanguage) {
+		I18nModule i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
+		I18nManager i18nManager = I18nManager.getInstance();
+		return SeoJsonLdHelper.languageCode(mainLanguage, i18nModule.getAvailableLanguageKeys(),
+				key -> List.of(i18nManager.getLanguageInEnglish(key, false), i18nManager.getLanguageTranslated(key, false)));
+	}
+	
+	public static List<String> translateTaxonomyLevels(Translator translator, List<TaxonomyLevel> levels) {
+		return levels == null ? List.of() : levels.stream()
+				.map(level -> TaxonomyUIFactory.translateDisplayName(translator, level))
+				.filter(StringHelper::containsNonWhitespace)
+				.toList();
 	}
 
 	private static void appendDates(StringBuilder sb, Locale locale, Date from, Date to) {
@@ -280,14 +297,9 @@ public class ResourceInfoHelper {
 	}
 
 	private static void appendTaxonomyLevels(StringBuilder sb, Translator translator, List<TaxonomyLevel> levels) {
-		if (levels != null && !levels.isEmpty()) {
-			for (TaxonomyLevel level : levels) {
-				String name = TaxonomyUIFactory.translateDisplayName(translator, level);
-				if (StringHelper.containsNonWhitespace(name)) {
-					appendSeparator(sb);
-					sb.append(name);
-				}
-			}
+		for (String name : translateTaxonomyLevels(translator, levels)) {
+			appendSeparator(sb);
+			sb.append(name);
 		}
 	}
 

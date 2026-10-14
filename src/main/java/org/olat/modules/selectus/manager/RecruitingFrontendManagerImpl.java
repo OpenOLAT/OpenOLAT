@@ -585,7 +585,7 @@ public class RecruitingFrontendManagerImpl implements RecruitingService, Initial
 	@Override
 	public void setDecision(Application app, int decision) {
 		applicationDao.setDecision(app, decision);
-		log.info(Tracing.M_AUDIT,"Set decision " + decision + " for application: " + app.toString());
+		log.info(Tracing.M_AUDIT,"Set decision " + decision + " for application: " + app.getKey());
 	}
 
 	@Override

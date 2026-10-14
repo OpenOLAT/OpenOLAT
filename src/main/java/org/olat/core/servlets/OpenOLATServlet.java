@@ -309,7 +309,7 @@ public class OpenOLATServlet extends HttpServlet {
 			dispatcher.forward(request, response);
 		} else if(dispatchers.containsKey(dispatcherName)) {
 			Dispatcher dispatcher = dispatchers.get(dispatcherName);
-			if (dispatcher.isSessionRequired()) {
+			if (dispatcher.isSessionRequired(request)) {
 				I18nManager.attachI18nInfoToThread(request);
 			}
 			dispatcher.execute(request, response);

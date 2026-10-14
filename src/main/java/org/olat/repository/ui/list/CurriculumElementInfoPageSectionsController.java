@@ -20,7 +20,6 @@
 package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -40,11 +39,8 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumInfoHelper;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.TaughtBy;
-import org.olat.modules.curriculum.model.CurriculumMember;
-import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosOutlineController;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -64,6 +60,7 @@ public class CurriculumElementInfoPageSectionsController extends BasicController
 	private InfoTaughtByController taughtByCtrl;
 
 	private final boolean hasContent;
+	private Set<Identity> taughtBys = Set.of();
 
 	@Autowired
 	private CurriculumService curriculumService;
@@ -94,7 +91,7 @@ public class CurriculumElementInfoPageSectionsController extends BasicController
 		}
 
 		if (!element.getTaughtBys().isEmpty()) {
-			Set<Identity> taughtBys = loadTaughtBys(element, lectureBlocks);
+			taughtBys = CurriculumInfoHelper.loadTaughtBys(element, lectureBlocks, curriculumService, lectureService);
 			taughtByCtrl = new InfoTaughtByController(ureq, wControl, taughtBys);
 			listenTo(taughtByCtrl);
 			if (!taughtByCtrl.isEmpty()) {
@@ -110,33 +107,6 @@ public class CurriculumElementInfoPageSectionsController extends BasicController
 		Sections sectionsCmp = SectionsFactory.createSections("sections", null);
 		sectionsCmp.setSections(sections);
 		putInitialPanel(sectionsCmp);
-	}
-
-	private Set<Identity> loadTaughtBys(CurriculumElement element, List<LectureBlock> lectureBlocks) {
-		Set<Identity> taughtBys = new HashSet<>();
-
-		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElementsDescendants(element);
-		curriculumElements.add(element);
-		List<CurriculumRoles> roles = new ArrayList<>(2);
-		if (element.getTaughtBys().contains(TaughtBy.coaches)) {
-			roles.add(CurriculumRoles.coach);
-		}
-		if (element.getTaughtBys().contains(TaughtBy.owners)) {
-			roles.add(CurriculumRoles.owner);
-		}
-		if (!roles.isEmpty()) {
-			SearchMemberParameters searchParams = new SearchMemberParameters(curriculumElements);
-			searchParams.setRoles(roles);
-			curriculumService.getCurriculumElementsMembers(searchParams)
-					.stream()
-					.map(CurriculumMember::getIdentity)
-					.forEach(taughtBys::add);
-		}
-
-		if (element.getTaughtBys().contains(TaughtBy.teachers) && lectureBlocks != null && !lectureBlocks.isEmpty()) {
-			taughtBys.addAll(lectureService.getTeachers(lectureBlocks));
-		}
-		return taughtBys;
 	}
 
 	private void addTextSection(List<Section> sections, String id, String titleI18nKey, String text, String baseUrl) {
@@ -158,6 +128,10 @@ public class CurriculumElementInfoPageSectionsController extends BasicController
 		return Formatter.formatLatexFormulas(formattedText);
 	}
 
+	public Set<Identity> getTaughtBys() {
+		return taughtBys;
+	}
+	
 	public boolean hasContent() {
 		return hasContent;
 	}

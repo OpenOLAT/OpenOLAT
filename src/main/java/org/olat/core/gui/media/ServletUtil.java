@@ -620,13 +620,13 @@ public class ServletUtil {
 		setNoCacheHeaders(response);
 	}
 	
-	public static void setCacheHeaders(HttpServletResponse response, long duration) {
-		if(duration == 0) {
+	public static void setCacheHeaders(HttpServletResponse response, long durationSeconds) {
+		if(durationSeconds == 0) {
 			setNoCacheHeaders(response);
 		} else {
 			long now = System.currentTimeMillis();
-			response.addHeader("Cache-Control", "max-age=" + duration);
-			response.setDateHeader("Expires", now + duration);
+			response.addHeader("Cache-Control", "max-age=" + durationSeconds);
+			response.setDateHeader("Expires", now + (durationSeconds * 1000));
 		}
 	}
 	
@@ -639,10 +639,11 @@ public class ServletUtil {
 	}
 
 	/**
-	 * Serve a public, cacheable string response (e.g. sitemap.xml, robots.txt)
-	 * without creating an HTTP session. Sets Cache-Control: public and prevents
-	 * the JSESSIONID cookie from being set, which is important for search engine
-	 * crawlers like Googlebot.
+	 * Serve a public, cacheable string response (e.g. sitemap.xml, robots.txt).
+	 * Sets Cache-Control: public. The calling dispatcher must return false from
+	 * {@link org.olat.core.dispatcher.Dispatcher#isSessionRequired(HttpServletRequest)}
+	 * for the request, otherwise the servlet creates a session and a JSESSIONID cookie,
+	 * which is unwanted for search engine crawlers like Googlebot.
 	 *
 	 * @param request the HTTP request
 	 * @param response the HTTP response
@@ -652,18 +653,6 @@ public class ServletUtil {
 	 */
 	public static void servePublicContent(HttpServletRequest request, HttpServletResponse response,
 			String content, String contentType, long cacheMaxAge) throws IOException {
-		// Prevent JSESSIONID cookie from being sent to crawlers:
-		// 1. Invalidate any new session created by the servlet/filter chain
-		jakarta.servlet.http.HttpSession session = request.getSession(false);
-		if (session != null && session.isNew()) {
-			session.invalidate();
-		}
-		// 2. Reset the response to clear any Set-Cookie headers already buffered
-		//    by the container. This must happen before the response is committed.
-		if (!response.isCommitted()) {
-			response.reset();
-		}
-
 		response.setContentType(contentType);
 		response.setCharacterEncoding("UTF-8");
 		// Public caching for search engine crawlers
