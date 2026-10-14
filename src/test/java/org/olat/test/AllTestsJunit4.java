@@ -755,6 +755,7 @@ import org.junit.runners.Suite;
 	org.olat.core.dispatcher.DispatcherModuleRedirectTest.class,
 	org.olat.modules.catalog.WebCatalogDispatcherTest.class,
 	org.olat.repository.ResourceInfoDispatcherTest.class,
+	org.olat.core.dispatcher.ErrorsDispatcherTest.class,
 	org.olat.core.dispatcher.mapper.MapperDAOTest.class,
 	org.olat.core.dispatcher.mapper.MapperServiceTest.class,
 	org.olat.restapi.audit.manager.ApiAuditLogDAOTest.class,
