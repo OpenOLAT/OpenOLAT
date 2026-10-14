@@ -108,6 +108,7 @@ import org.junit.runners.Suite;
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
 	org.olat.core.id.context.HistoryManagerTest.class,
 	org.olat.core.id.IdentityEnvironmentTest.class,
+	org.olat.core.gui.media.ServletUtilTest.class,
 	org.olat.core.gui.render.VelocityFactoryTest.class,
 	org.olat.core.gui.render.VelocityTemplateTest.class,
 	org.olat.core.gui.control.generic.iframe.IFrameDeliveryMapperTest.class,

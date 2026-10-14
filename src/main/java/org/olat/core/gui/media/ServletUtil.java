@@ -620,13 +620,13 @@ public class ServletUtil {
 		setNoCacheHeaders(response);
 	}
 	
-	public static void setCacheHeaders(HttpServletResponse response, long duration) {
-		if(duration == 0) {
+	public static void setCacheHeaders(HttpServletResponse response, long durationSeconds) {
+		if(durationSeconds == 0) {
 			setNoCacheHeaders(response);
 		} else {
 			long now = System.currentTimeMillis();
-			response.addHeader("Cache-Control", "max-age=" + duration);
-			response.setDateHeader("Expires", now + duration);
+			response.addHeader("Cache-Control", "max-age=" + durationSeconds);
+			response.setDateHeader("Expires", now + (durationSeconds * 1000));
 		}
 	}
 	
