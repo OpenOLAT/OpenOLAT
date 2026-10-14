@@ -68,6 +68,7 @@ public class ResourceInfoDispatcher implements Dispatcher {
 	public static final String RESOURCEINFO_PATH = "resourceinfo";
 	private static final Logger log = Tracing.createLoggerFor(ResourceInfoDispatcher.class);
 	private static final String CONTENT_ENCODING = "UTF-8";
+	private static final String SITEMAP = "sitemap.xml";
 
 
 	@Autowired
@@ -83,6 +84,12 @@ public class ResourceInfoDispatcher implements Dispatcher {
 				.append("/")
 				.append(requestedData)
 				.toString();
+	}
+
+	@Override
+	public boolean isSessionRequired(HttpServletRequest request) {
+		String pathInfo = request.getPathInfo();
+		return pathInfo == null || !pathInfo.contains(SITEMAP);
 	}
 
 	@Override
@@ -104,7 +111,7 @@ public class ResourceInfoDispatcher implements Dispatcher {
 			return;
 		}
 
-		if (pathInfo.contains("sitemap.xml")) {
+		if (pathInfo.contains(SITEMAP)) {
 			dispatchSitemap(request, response);
 			return;
 		}

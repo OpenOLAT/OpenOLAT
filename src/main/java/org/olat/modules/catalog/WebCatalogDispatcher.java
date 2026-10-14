@@ -100,7 +100,7 @@ public class WebCatalogDispatcher implements Dispatcher {
 		String restPart = extractRestPart(request, uriPrefix);
 		
 		// Before isWebPublishTemporarilyDisabled check to send bad request instead of redirect
-		if (restPart.toLowerCase().startsWith(SITEMAP)) {
+		if (isSitemap(restPart)) {
 			dispatchSitemap(request, response);
 			return;
 		}
@@ -195,7 +195,16 @@ public class WebCatalogDispatcher implements Dispatcher {
 		}
 	}
 
-	private String extractRestPart(HttpServletRequest request, String uriPrefix) {
+	@Override
+	public boolean isSessionRequired(HttpServletRequest request) {
+		return !isSitemap(extractRestPart(request, DispatcherModule.getLegacyUriPrefix(request)));
+	}
+
+	private static boolean isSitemap(String restPart) {
+		return restPart.toLowerCase().startsWith(SITEMAP);
+	}
+
+	private static String extractRestPart(HttpServletRequest request, String uriPrefix) {
 		String uri = request.getRequestURI();
 		String restPart = uri.substring(uriPrefix.length());
 		try {
