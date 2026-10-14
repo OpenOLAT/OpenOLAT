@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.services.sms;
 
-import java.util.List;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
@@ -28,7 +27,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyUsageContext;
+import org.olat.user.propertyhandlers.ui.UserPropertiesConfigAdjuster;
 import org.olat.user.propertyhandlers.ui.UsrPropCfgManager;
+import org.olat.user.propertyhandlers.ui.UsrPropCfgObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class SimpleMessageModule extends AbstractSpringModule implements ConfigOnOff {
+public class SimpleMessageModule extends AbstractSpringModule implements ConfigOnOff, UserPropertiesConfigAdjuster {
 	
 	private static final String SMS_ENABLED = "message.enabled";
 	private static final String PROVIDER_ID = "message.provider.id";
@@ -85,7 +86,7 @@ public class SimpleMessageModule extends AbstractSpringModule implements ConfigO
 		providerId = getStringPropertyValue(PROVIDER_ID, providerId);
 		
 		if(enabled) {//check
-			enableSmsUserProperty();
+			usrPropCfgMng.registerAdjuster(this);
 		}
 	}
 
@@ -104,22 +105,15 @@ public class SimpleMessageModule extends AbstractSpringModule implements ConfigO
 		setStringProperty(SMS_ENABLED, Boolean.toString(enabled), true);
 	}
 	
-	private void enableSmsUserProperty() {
-		List<UserPropertyHandler> handlers = usrPropCfgMng.getUserPropertiesConfigObject().getPropertyHandlers();
-		
-		UserPropertyHandler smsHandler = null;
-		UserPropertyHandler mobileHandler = null;
-		for(UserPropertyHandler handler:handlers) {
-			if(UserConstants.SMSTELMOBILE.equals(handler.getName())) {
-				smsHandler = handler;
-			} else if(UserConstants.TELMOBILE.equals(handler.getName())) {
-				mobileHandler = handler;
-			}
+	@Override
+	public void adjust(UsrPropCfgObject cfgObject) {
+		if(!enabled) {
+			return;
 		}
-		
+		UserPropertyHandler smsHandler = cfgObject.getPropertyHandler(UserConstants.SMSTELMOBILE);
 		if(smsHandler != null) {
-			UserPropertyUsageContext context = usrPropCfgMng.getUserPropertiesConfigObject()
-					.getUsageContexts().get("org.olat.user.ProfileFormController");
+			UserPropertyHandler mobileHandler = cfgObject.getPropertyHandler(UserConstants.TELMOBILE);
+			UserPropertyUsageContext context = cfgObject.getUsageContexts().get("org.olat.user.ProfileFormController");
 			if(!context.contains(smsHandler)) {
 				if(mobileHandler == null) {
 					context.addPropertyHandler(smsHandler);

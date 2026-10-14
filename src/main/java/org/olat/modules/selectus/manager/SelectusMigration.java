@@ -286,6 +286,7 @@ public class SelectusMigration implements InitializingBean {
 		UsrPropCfgObject userPropertyConfig = userPropertyConfigManager.getUserPropertiesConfigObject();
 		initUserPropertyConfiguration("typeOfUser", userPropertyTypeOf, userPropertyConfig);
 		initUserPropertyConfiguration("gender", userPropertyGender, userPropertyConfig);
+		userPropertyConfigManager.refreshUserManagerProperties();
 		log.info("Ebd migration of user properties gender and typeOf");
 	}
 	

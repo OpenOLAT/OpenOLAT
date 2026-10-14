@@ -40,7 +40,9 @@ import org.olat.core.util.mail.EmailAddressValidator;
 import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyUsageContext;
+import org.olat.user.propertyhandlers.ui.UserPropertiesConfigAdjuster;
 import org.olat.user.propertyhandlers.ui.UsrPropCfgManager;
+import org.olat.user.propertyhandlers.ui.UsrPropCfgObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,7 +62,7 @@ import org.springframework.stereotype.Service;
  *         the first time.
  */
 @Service("registrationModule")
-public class RegistrationModule extends AbstractSpringModule {
+public class RegistrationModule extends AbstractSpringModule implements UserPropertiesConfigAdjuster {
 	private static final Logger log = Tracing.createLoggerFor(RegistrationModule.class);
 	
 	public static final String SEPARATOR = ";";
@@ -269,18 +271,14 @@ public class RegistrationModule extends AbstractSpringModule {
 	}
 	
 	public void resetEmailUserProperty() {
-		List<UserPropertyHandler> handlers = usrPropCfgMng.getUserPropertiesConfigObject().getPropertyHandlers();
-		
-		UserPropertyHandler emailHandler = null;
-		for(UserPropertyHandler handler:handlers) {
-			if(UserConstants.EMAIL.equals(handler.getName())) {
-				emailHandler = handler;
-			}
-		}
-		
+		usrPropCfgMng.reloadFromPersistedProperties();
+	}
+
+	@Override
+	public void adjust(UsrPropCfgObject cfgObject) {
+		UserPropertyHandler emailHandler = cfgObject.getPropertyHandler(UserConstants.EMAIL);
 		if(emailHandler != null) {
-			UserPropertyUsageContext context = usrPropCfgMng.getUserPropertiesConfigObject()
-					.getUsageContexts().get(RegistrationPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER);
+			UserPropertyUsageContext context = cfgObject.getUsageContexts().get(RegistrationPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER);
 			context.addPropertyHandler(0, emailHandler);
 			context.setAsUserViewReadOnly(emailHandler, isEmailValidationEnabled());
 			context.setAsAdminstrativeUserOnly(emailHandler, false);
@@ -571,7 +569,7 @@ public class RegistrationModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(emailValidationObj)) {
 			emailValidationEnabled = Boolean.parseBoolean(emailValidationObj);
 		}
-		resetEmailUserProperty();
+		usrPropCfgMng.registerAdjuster(this);
 
 		String recurringUserObj = getStringPropertyValue(RECURRING_USERS_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(recurringUserObj)) {

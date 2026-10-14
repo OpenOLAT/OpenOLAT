@@ -76,6 +76,33 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 	}
 
 	@Test
+	public void refreshUserManagerProperties_publishesInMemoryContextChange() {
+		UsrPropCfgObject cfg = usrPropCfgManager.getUserPropertiesConfigObject();
+		UserPropertyHandler birthDay = cfg.getPropertyHandler("birthDay");
+		cfg.getUsageContexts().get(REGISTRATION_CTX).addPropertyHandler(0, birthDay);
+
+		assertThat(names(userManager.getUserPropertyHandlersFor(REGISTRATION_CTX, false))).doesNotContain("birthDay");
+
+		usrPropCfgManager.refreshUserManagerProperties();
+
+		assertThat(names(userManager.getUserPropertyHandlersFor(REGISTRATION_CTX, false))).startsWith("birthDay");
+	}
+
+	@Test
+	public void resetToSystemDefault_keepsEmailInRegistrationContext() {
+		usrPropCfgManager.resetToSystemDefault(JunitTestHelper.getDefaultActor());
+
+		assertThat(names(userManager.getUserPropertyHandlersFor(REGISTRATION_CTX, false))).startsWith("email");
+	}
+
+	@Test
+	public void resetToMinimal_keepsEmailInRegistrationContext() {
+		usrPropCfgManager.resetToMinimal(JunitTestHelper.getDefaultActor());
+
+		assertThat(names(userManager.getUserPropertyHandlersFor(REGISTRATION_CTX, false))).startsWith("email");
+	}
+
+	@Test
 	public void applyPreset_deactivatedHandlerLeavesUnknownContext() {
 		Properties props = new Properties();
 		props.setProperty("activeuserpropertyhandlers", "firstName,lastName,email,");
@@ -178,7 +205,7 @@ public class UsrPropCfgManagerTest extends OlatTestCase {
 		assertThat(names(userManager.getUserPropertyHandlersFor(PROFILE_CTX, true)))
 				.contains("nickName", "birthDay").doesNotContain("skype");
 		assertThat(names(userManager.getUserPropertyHandlersFor(REGISTRATION_CTX, true)))
-				.containsExactly("firstName", "lastName");
+				.containsExactly("email", "firstName", "lastName");
 	}
 
 	@Test
