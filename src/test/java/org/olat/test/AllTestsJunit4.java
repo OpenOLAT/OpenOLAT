@@ -50,6 +50,7 @@ import org.junit.runners.Suite;
 	org.olat.core.gui.components.table.TableMultiSelectEventTest.class,
 	org.olat.core.gui.components.table.SorterTest.class,
 	org.olat.core.commons.chiefcontrollers.ChiefControllerMessageEventTest.class,
+	org.olat.core.commons.fullWebApp.SeoJsonLdHelperTest.class,
 	org.olat.core.util.crypto.AesGcmCipherTest.class,
 	org.olat.core.util.crypto.PasswordGeneratorTest.class,
 	org.olat.core.util.vfs.VFSTest.class,

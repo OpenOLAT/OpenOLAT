@@ -19,24 +19,37 @@
  */
 package org.olat.modules.curriculum;
 
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.json.JSONObject;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.SeoJsonLdHelper;
 import org.olat.core.commons.fullWebApp.SeoMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.catalog.WebCatalogDispatcher;
+import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.oaipmh.OAIPmhModule;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ResourceInfoHelper;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.user.UserManager;
 
 /**
  * Helper to build SEO metadata for curriculum elements. Mirrors
@@ -63,11 +76,13 @@ public class CurriculumInfoHelper {
 	 * @param taxonomyTranslator Translator for taxonomy display names
 	 * @param repositoryService Service for image lookups
 	 * @param curriculumService Service for teaser image lookups
+	 * @param lectureBlocks The lecture blocks of the element, as shown on the page
+	 * @param taughtBys The persons of the "Taught by" section, as shown on the page
 	 */
 	public static void populateSeoMetadata(SeoMetadata seo, CurriculumElement element,
 			RepositoryEntry singleCourseEntry, String canonicalUrl, Locale locale,
 			Translator taxonomyTranslator, RepositoryService repositoryService,
-			CurriculumService curriculumService) {
+			CurriculumService curriculumService, List<LectureBlock> lectureBlocks, Set<Identity> taughtBys) {
 		seo.resetMetadata();
 		String metaDesc = ResourceInfoHelper.buildMetaDescription(element, locale, taxonomyTranslator);
 		if (StringHelper.containsNonWhitespace(metaDesc)) {
@@ -83,7 +98,15 @@ public class CurriculumInfoHelper {
 			if (ogImageUrl != null) {
 				seo.setOgImageUrl(ogImageUrl);
 			}
-			String jsonLd = buildCourseJsonLd(element, canonicalUrl, ogImageUrl, locale);
+			List<Offer> offers = CoreSpringFactory.getImpl(ACService.class).getOffers(element, true, true, null, false, Boolean.TRUE, null);
+			UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+			List<String> instructors = taughtBys.stream().map(userManager::getUserDisplayName).sorted().toList();
+			List<TaxonomyLevel> levels = element.getTaxonomyLevels().stream()
+					.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
+					.toList();
+			String jsonLd = buildCourseJsonLd(element, canonicalUrl, ogImageUrl, metaDesc,
+					ResourceInfoHelper.translateTaxonomyLevels(taxonomyTranslator, levels), offers,
+					element.isShowLectures() && CoreSpringFactory.getImpl(LectureModule.class).isEnabled() ? lectureBlocks : List.of(), instructors);
 			if (jsonLd != null) {
 				seo.setStructuredDataJson(jsonLd);
 			}
@@ -96,11 +119,16 @@ public class CurriculumInfoHelper {
 	 * @param element The curriculum element
 	 * @param url The canonical URL
 	 * @param imageUrl The OG image URL (may be null)
-	 * @param locale The locale for formatting
+	 * @param metaDescription The meta description, used if the element has no teaser and no description
+	 * @param taxonomyNames The translated taxonomy level names
+	 * @param offers The web published offers
+	 * @param lectureBlocks The lecture blocks to publish, empty if the page shows none
+	 * @param instructors The names of the taught by persons
 	 * @return JSON-LD string, or null if element has no displayname
 	 */
-	public static String buildCourseJsonLd(CurriculumElement element, String url,
-			String imageUrl, Locale locale) {
+	public static String buildCourseJsonLd(CurriculumElement element, String url, String imageUrl,
+			String metaDescription, List<String> taxonomyNames, List<Offer> offers,
+			List<LectureBlock> lectureBlocks, List<String> instructors) {
 		if (element == null || !StringHelper.containsNonWhitespace(element.getDisplayName())) {
 			return null;
 		}
@@ -109,27 +137,27 @@ public class CurriculumInfoHelper {
 		jsonLd.put("@type", "Course");
 		jsonLd.put("name", element.getDisplayName());
 
-		String description = element.getTeaser();
-		if (!StringHelper.containsNonWhitespace(description)) {
-			description = element.getDescription();
-		}
-		if (StringHelper.containsNonWhitespace(description)) {
-			jsonLd.put("description", FilterFactory.getHtmlTagsFilter().filter(description).trim());
-		}
+		jsonLd.put("description", SeoJsonLdHelper.firstPlainText(element.getTeaser(), element.getDescription(),
+				metaDescription, element.getDisplayName()));
 
 		if (StringHelper.containsNonWhitespace(url)) {
 			jsonLd.put("url", url);
 		}
+		SeoJsonLdHelper.putIdentity(jsonLd, url);
 		if (StringHelper.containsNonWhitespace(imageUrl)) {
 			jsonLd.put("image", imageUrl);
 		}
-		if (StringHelper.containsNonWhitespace(element.getMainLanguage())) {
-			jsonLd.put("inLanguage", element.getMainLanguage());
+		String languageCode = ResourceInfoHelper.languageCode(element.getMainLanguage());
+		if (StringHelper.containsNonWhitespace(languageCode)) {
+			jsonLd.put("inLanguage", languageCode);
 		}
+		SeoJsonLdHelper.putTaxonomy(jsonLd, taxonomyNames);
 
-		SimpleDateFormat isoDate = new SimpleDateFormat("yyyy-MM-dd");
+		if (element.getCreationDate() != null) {
+			jsonLd.put("datePublished", SeoJsonLdHelper.isoDate(element.getCreationDate()));
+		}
 		if (element.getLastModified() != null) {
-			jsonLd.put("dateModified", isoDate.format(element.getLastModified()));
+			jsonLd.put("dateModified", SeoJsonLdHelper.isoDate(element.getLastModified()));
 		}
 
 		if (StringHelper.containsNonWhitespace(element.getAuthors())) {
@@ -153,27 +181,42 @@ public class CurriculumInfoHelper {
 		provider.put("url", Settings.getServerContextPathURI());
 		jsonLd.put("provider", provider);
 
-		JSONObject offers = new JSONObject();
-		offers.put("@type", "Offer");
-		offers.put("category", "Free");
-		offers.put("isAccessibleForFree", true);
-		offers.put("price", 0);
-		offers.put("priceCurrency", "CHF");
-		jsonLd.put("offers", offers);
-
-		if (element.getBeginDate() != null || element.getEndDate() != null) {
-			JSONObject instance = new JSONObject();
-			instance.put("@type", "CourseInstance");
-			instance.put("courseMode", "Online");
-			if (element.getBeginDate() != null) {
-				instance.put("startDate", isoDate.format(element.getBeginDate()));
-			}
-			if (element.getEndDate() != null) {
-				instance.put("endDate", isoDate.format(element.getEndDate()));
-			}
-			jsonLd.put("hasCourseInstance", instance);
-		}
+		SeoJsonLdHelper.putOffers(jsonLd, offers);
+		SeoJsonLdHelper.putCourseInstance(jsonLd, lectureBlocks, instructors, element.getLocation(),
+				element.getBeginDate(), element.getEndDate(), SeoJsonLdHelper.workloadDuration(element.getExpenditureOfWork()), url);
 
 		return jsonLd.toString();
+	}
+	
+	/**
+	 * @return The persons of the "Taught by" section of the page
+	 */
+	public static Set<Identity> loadTaughtBys(CurriculumElement element, List<LectureBlock> lectureBlocks,
+			CurriculumService curriculumService, LectureService lectureService) {
+		Set<Identity> taughtBys = new HashSet<>();
+		
+		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElementsDescendants(element);
+		curriculumElements.add(element);
+		List<CurriculumRoles> roles = new ArrayList<>(2);
+		if (element.getTaughtBys().contains(TaughtBy.coaches)) {
+			roles.add(CurriculumRoles.coach);
+		}
+		if (element.getTaughtBys().contains(TaughtBy.owners)) {
+			roles.add(CurriculumRoles.owner);
+		}
+		if (!roles.isEmpty()) {
+			SearchMemberParameters searchParams = new SearchMemberParameters(curriculumElements);
+			searchParams.setRoles(roles);
+			curriculumService.getCurriculumElementsMembers(searchParams)
+					.stream()
+					.map(CurriculumMember::getIdentity)
+					.forEach(taughtBys::add);
+		}
+		
+		if (element.getTaughtBys().contains(TaughtBy.teachers) && lectureBlocks != null && !lectureBlocks.isEmpty()
+				&& CoreSpringFactory.getImpl(LectureModule.class).isEnabled()) {
+			taughtBys.addAll(lectureService.getTeachers(lectureBlocks));
+		}
+		return taughtBys;
 	}
 }

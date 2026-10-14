@@ -234,9 +234,10 @@ public class WebCatalogDispatcher implements Dispatcher {
 		chiefController.addBodyCssClass("o_dmz_catalog");
 		try {
 			WindowControl wControl = chiefController.getWindowControl();
-			NewControllerFactory.getInstance().launch(ureq, wControl);	
 			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
 			SeoMetadata seo = w.getSeoMetadata();
+			seo.resetMetadata();
+			NewControllerFactory.getInstance().launch(ureq, wControl);
 			seo.setRobotsMetaContent("index, follow");
 			seo.setCanonicalUrl(WebCatalogDispatcher.getBaseUrl().append(restPart).toString());
 

@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui;
 
 
 import java.util.List;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
@@ -80,6 +81,7 @@ public class CurriculumElementInfosController extends BasicController {
 	private final InfoPageFactsController factsCtrl;
 	private final CurriculumElementInfoPageSectionsController sectionsCtrl;
 	private LectureBlocksTimelineController lectureBlocksCtrl;
+	private final List<LectureBlock> lectureBlocks;
 
 	private final CurriculumElement element;
 	private final RepositoryEntry entry;
@@ -117,13 +119,14 @@ public class CurriculumElementInfosController extends BasicController {
 		mainVC = createVelocityContainer("info_page");
 		putInitialPanel(mainVC);
 
-		List<LectureBlock> lectureBlocks = List.of();
+		List<LectureBlock> loadedLectureBlocks = List.of();
 		if (lectureModule.isEnabled()) {
 			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 			searchParams.setLectureConfiguredRepositoryEntry(false);
 			searchParams.setCurriculumElementPath(element.getMaterializedPathKeys());
-			lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
+			loadedLectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
 		}
+		lectureBlocks = loadedLectureBlocks;
 
 		String shareUrl = headerConfig instanceof PreviewCurriculumElementHeaderConfig
 				? null
@@ -169,6 +172,14 @@ public class CurriculumElementInfosController extends BasicController {
 		mainVC.contextPut("isMember", isMember);
 	}
 
+	public List<LectureBlock> getLectureBlocks() {
+		return lectureBlocks;
+	}
+	
+	public Set<Identity> getTaughtBys() {
+		return sectionsCtrl.getTaughtBys();
+	}
+	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == getStartedCtrl) {
