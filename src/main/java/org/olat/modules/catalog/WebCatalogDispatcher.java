@@ -34,6 +34,7 @@ import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.SeoMetadata;
 import org.olat.core.commons.services.robots.SitemapWriter;
 import org.olat.core.commons.services.robots.model.SitemapItem;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -44,6 +45,7 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -51,13 +53,24 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.ArrayHelper;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
+import org.olat.modules.catalog.manager.CatalogQueries;
 import org.olat.modules.catalog.manager.CatalogRobotsProvider;
+import org.olat.modules.catalog.model.RepositoryEntryInfos;
 import org.olat.modules.catalog.ui.WebCatalogMainController;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementFileType;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,6 +85,14 @@ public class WebCatalogDispatcher implements Dispatcher {
 	
 	public static final String PATH_CATALOG = "catalog";
 	public static final String SITEMAP = "sitemap.xml";
+	public static final String PATH_IMAGE = "image";
+	private static final List<String> IMAGE_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif");
+	// Thumbnail instead of the original (uploads can be 5 MB and social networks limit the file size).
+	// 1140x760 is twice the recommended teaser format 570x380 and keeps the whole 3:2 image.
+	// The sizes are used without fill: the platforms crop the preview to their own ratio
+	// (e.g. 1.91:1 on Facebook), and the Java fill scaling crops the image wrongly.
+	private static final int IMAGE_MAX_WIDTH = 1140;
+	private static final int IMAGE_MAX_HEIGHT = 760;
 	private static final String PATH_TEMPORARILY_DISABLED = "catalogtemporarilydisabled";
 	private static final String URI_TEMPORARILY_DISABLED =
 			WebappHelper.getServletContextPath() + "/" + PATH_TEMPORARILY_DISABLED + "/";
@@ -84,10 +105,43 @@ public class WebCatalogDispatcher implements Dispatcher {
 				.append("/");
 	}
 	
+	public static String getImageUrl(VFSLeaf image, Long resourceKey) {
+		return image == null ? null : getImageUrl(image.getLastModified(), resourceKey, image.getName());
+	}
+	
+	// The last modified time is part of the URL because social networks like Facebook cache an
+	// image by its URL and update it only if the URL changes. It makes a changed teaser image
+	// get a new URL. dispatchImage() ignores it, so an old URL delivers the current image.
+	public static String getImageUrl(long lastModified, Long resourceKey, String filename) {
+		String extension = FileUtils.getFileSuffix(filename);
+		if (!IMAGE_EXTENSIONS.contains(extension)) {
+			return null;
+		}
+		return getBaseUrl()
+				.append(PATH_IMAGE)
+				.append("/")
+				.append(lastModified)
+				.append("/")
+				.append(resourceKey)
+				.append(".")
+				.append(extension)
+				.toString();
+	}
+	
 	@Autowired
 	private CatalogV2Module catalogModule;
 	@Autowired
 	private CatalogRobotsProvider robotsProvider;
+	@Autowired
+	private CatalogQueries catalogQueries;
+	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -102,6 +156,11 @@ public class WebCatalogDispatcher implements Dispatcher {
 		// Before isWebPublishTemporarilyDisabled check to send bad request instead of redirect
 		if (isSitemap(restPart)) {
 			dispatchSitemap(request, response);
+			return;
+		}
+		
+		if (isImage(restPart)) {
+			dispatchImage(request, response, restPart);
 			return;
 		}
 		
@@ -197,13 +256,18 @@ public class WebCatalogDispatcher implements Dispatcher {
 
 	@Override
 	public boolean isSessionRequired(HttpServletRequest request) {
-		return !isSitemap(extractRestPart(request, DispatcherModule.getLegacyUriPrefix(request)));
+		String restPart = extractRestPart(request, DispatcherModule.getLegacyUriPrefix(request));
+		return !isSitemap(restPart) && !isImage(restPart);
 	}
 
 	private static boolean isSitemap(String restPart) {
 		return restPart.toLowerCase().startsWith(SITEMAP);
 	}
 
+	private static boolean isImage(String restPart) {
+		return restPart.toLowerCase().startsWith(PATH_IMAGE + "/");
+	}
+	
 	private static String extractRestPart(HttpServletRequest request, String uriPrefix) {
 		String uri = request.getRequestURI();
 		String restPart = uri.substring(uriPrefix.length());
@@ -237,5 +301,55 @@ public class WebCatalogDispatcher implements Dispatcher {
 		} else {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 		}
+	}
+	
+	private void dispatchImage(HttpServletRequest request, HttpServletResponse response, String restPart) {
+		String[] restParts = extractRestParts(restPart);
+		if (catalogModule.isWebPublishTemporarilyDisabled() || restParts.length != 3) {
+			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
+			return;
+		}
+		
+		String filename = restParts[2];
+		String resourceKey = FileUtils.getFileNameWithoutSuffix(filename);
+		if (!StringHelper.isLong(resourceKey) || !IMAGE_EXTENSIONS.contains(FileUtils.getFileSuffix(filename))) {
+			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
+			return;
+		}
+		
+		VFSLeaf image = loadImage(Long.valueOf(resourceKey));
+		if (image == null) {
+			DispatcherModule.sendNotFound(request.getPathInfo(), response);
+			return;
+		}
+		
+		VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(image, IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT, false);
+		MediaResource resource = new VFSMediaResource(thumbnail != null ? thumbnail : image, ServletUtil.CACHE_ONE_YEAR);
+		String contentType = resource.getContentType();
+		if (contentType == null || !contentType.contains(WebappHelper.getMimeType(filename))) {
+			DispatcherModule.sendNotFound(request.getPathInfo(), response);
+			return;
+		}
+		
+		ServletUtil.serveResource(request, response, resource);
+	}
+	
+	private VFSLeaf loadImage(Long resourceKey) {
+		CatalogEntrySearchParams searchParams = new CatalogEntrySearchParams();
+		searchParams.setWebPublish(true);
+		searchParams.setResourceKeys(List.of(resourceKey));
+		
+		List<RepositoryEntryInfos> entries = catalogQueries.loadRepositoryEntries(searchParams);
+		if (!entries.isEmpty()) {
+			return repositoryService.getIntroductionImage(entries.get(0).entry());
+		}
+		
+		if (curriculumModule.isEnabled()) {
+			List<CurriculumElement> elements = catalogQueries.loadCurriculumElements(searchParams);
+			if (!elements.isEmpty()) {
+				return curriculumService.getCurriculumElemenFile(elements.get(0), CurriculumElementFileType.teaserImage);
+			}
+		}
+		return null;
 	}
 }

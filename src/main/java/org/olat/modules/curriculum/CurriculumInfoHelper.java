@@ -31,6 +31,8 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.catalog.WebCatalogDispatcher;
 import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -60,10 +62,12 @@ public class CurriculumInfoHelper {
 	 * @param locale The locale for date formatting
 	 * @param taxonomyTranslator Translator for taxonomy display names
 	 * @param repositoryService Service for image lookups
+	 * @param curriculumService Service for teaser image lookups
 	 */
 	public static void populateSeoMetadata(SeoMetadata seo, CurriculumElement element,
 			RepositoryEntry singleCourseEntry, String canonicalUrl, Locale locale,
-			Translator taxonomyTranslator, RepositoryService repositoryService) {
+			Translator taxonomyTranslator, RepositoryService repositoryService,
+			CurriculumService curriculumService) {
 		seo.resetMetadata();
 		String metaDesc = ResourceInfoHelper.buildMetaDescription(element, locale, taxonomyTranslator);
 		if (StringHelper.containsNonWhitespace(metaDesc)) {
@@ -71,12 +75,13 @@ public class CurriculumInfoHelper {
 		}
 		if (StringHelper.containsNonWhitespace(canonicalUrl)) {
 			seo.setCanonicalUrl(canonicalUrl);
-			String ogImageUrl = null;
-			if (singleCourseEntry != null) {
+			VFSLeaf teaserImage = curriculumService.getCurriculumElemenFile(element, CurriculumElementFileType.teaserImage);
+			String ogImageUrl = WebCatalogDispatcher.getImageUrl(teaserImage, element.getResource().getKey());
+			if (ogImageUrl == null && singleCourseEntry != null) {
 				ogImageUrl = ResourceInfoHelper.buildOgImageUrl(singleCourseEntry, repositoryService);
-				if (ogImageUrl != null) {
-					seo.setOgImageUrl(ogImageUrl);
-				}
+			}
+			if (ogImageUrl != null) {
+				seo.setOgImageUrl(ogImageUrl);
 			}
 			String jsonLd = buildCourseJsonLd(element, canonicalUrl, ogImageUrl, locale);
 			if (jsonLd != null) {

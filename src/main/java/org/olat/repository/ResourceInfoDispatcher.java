@@ -218,7 +218,8 @@ public class ResourceInfoDispatcher implements Dispatcher {
 				seo.setRobotsMetaContent("index, follow");
 				Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale());
 				ResourceInfoHelper.populateEntrySeoMetadata(seo, entry,
-						ResourceInfoDispatcher.getUrl(entryId.toString()), ureq.getLocale(),
+						ResourceInfoDispatcher.getUrl(entryId.toString()),
+						ResourceInfoHelper.buildOgImageUrl(entry, repositoryService), ureq.getLocale(),
 						taxonomyTranslator, repositoryService);
 				// dispatch and go
 				w.dispatchRequest(ureq, false); // renderOnly

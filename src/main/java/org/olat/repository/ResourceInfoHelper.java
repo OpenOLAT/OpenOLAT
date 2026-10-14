@@ -118,12 +118,13 @@ public class ResourceInfoHelper {
 	 * @param seo The SeoMetadata object to populate
 	 * @param entry The repository entry
 	 * @param canonicalUrl The canonical URL (null to skip canonical/OG/JSON-LD)
+	 * @param ogImageUrl The OG image URL (may be null)
 	 * @param locale The locale for date formatting
 	 * @param taxonomyTranslator Translator for taxonomy display names
-	 * @param repositoryService Service for taxonomy and image lookups
+	 * @param repositoryService Service for taxonomy lookups
 	 */
 	public static void populateEntrySeoMetadata(SeoMetadata seo, RepositoryEntry entry,
-			String canonicalUrl, Locale locale, Translator taxonomyTranslator,
+			String canonicalUrl, String ogImageUrl, Locale locale, Translator taxonomyTranslator,
 			RepositoryService repositoryService) {
 		seo.resetMetadata();
 		List<TaxonomyLevel> levels = repositoryService.getTaxonomy(entry);
@@ -133,7 +134,6 @@ public class ResourceInfoHelper {
 		}
 		if (StringHelper.containsNonWhitespace(canonicalUrl)) {
 			seo.setCanonicalUrl(canonicalUrl);
-			String ogImageUrl = buildOgImageUrl(entry, repositoryService);
 			if (ogImageUrl != null) {
 				seo.setOgImageUrl(ogImageUrl);
 			}

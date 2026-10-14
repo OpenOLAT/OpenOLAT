@@ -117,6 +117,7 @@ import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogFilterSearchParams;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.WebCatalogDispatcher;
 import org.olat.modules.catalog.filter.LifecyclePublicHandler;
 import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
 import org.olat.modules.creditpoint.CreditPointModule;
@@ -1079,7 +1080,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 			SeoMetadata seo = getWindowControl().getWindowBackOffice().getWindow().getSeoMetadata();
 			String canonicalUrl = searchParams.isWebPublish()
 					? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()) : null;
-			ResourceInfoHelper.populateEntrySeoMetadata(seo, entry, canonicalUrl,
+			String ogImageUrl = searchParams.isWebPublish()
+					? WebCatalogDispatcher.getImageUrl(repositoryService.getIntroductionImage(entry), entry.getOlatResource().getKey()) : null;
+			ResourceInfoHelper.populateEntrySeoMetadata(seo, entry, canonicalUrl, ogImageUrl,
 					getLocale(), getTranslator(), repositoryService);
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
@@ -1121,7 +1124,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			String canonicalUrl = searchParams.isWebPublish()
 					? CatalogBCFactory.get(true).getOfferUrl(curriculumElement.getResource()) : null;
 			CurriculumInfoHelper.populateSeoMetadata(seo, curriculumElement, entry,
-					canonicalUrl, getLocale(), getTranslator(), repositoryService);
+					canonicalUrl, getLocale(), getTranslator(), repositoryService, curriculumService);
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
 			tableEl.reloadData();

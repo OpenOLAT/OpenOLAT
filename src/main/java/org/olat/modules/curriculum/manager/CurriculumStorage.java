@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.manager;
 
 import java.io.File;
+import java.util.List;
 
 import jakarta.annotation.PostConstruct;
 
@@ -32,6 +33,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSRevisionsAndThumbnailsFilter;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,8 +137,9 @@ public class CurriculumStorage {
 	private VFSLeaf getFirstLeaf(CurriculumElementRef element, String path) {
 		if (element != null) {
 			VFSContainer imageContainer = getOrCreateContainer(element, path);
-			if (!imageContainer.getItems().isEmpty()) {
-				VFSItem vfsItem = imageContainer.getItems().get(0);
+			List<VFSItem> items = imageContainer.getItems(new VFSRevisionsAndThumbnailsFilter());
+			if (!items.isEmpty()) {
+				VFSItem vfsItem = items.get(0);
 				if (vfsItem instanceof VFSLeaf) {
 					return (VFSLeaf)vfsItem;
 				}

@@ -22,6 +22,7 @@ package org.olat.modules.catalog;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
@@ -50,6 +51,34 @@ public class WebCatalogDispatcherTest {
 		assertThat(sut.isSessionRequired(request("/catalog/Infos/0"))).isTrue();
 	}
 
+	@Test
+	public void imageRequiresNoSession() {
+		assertThat(sut.isSessionRequired(request("/catalog/image/1700000000000/42.png"))).isFalse();
+		assertThat(sut.isSessionRequired(request("/catalog/Image/1700000000000/42.png"))).isFalse();
+	}
+	
+	@Test
+	public void imageUrlContainsLastModifiedAndResourceKey() {
+		assertThat(WebCatalogDispatcher.getImageUrl(1700000000000l, 42l, "photo.png"))
+				.endsWith("/catalog/image/1700000000000/42.png");
+	}
+	
+	@Test
+	public void imageUrlLowersTheExtension() {
+		assertThat(WebCatalogDispatcher.getImageUrl(1l, 42l, "Photo.JPG")).endsWith("/42.jpg");
+	}
+	
+	@Test
+	public void imageUrlIsNullForUnsupportedExtension() {
+		assertThat(WebCatalogDispatcher.getImageUrl(1l, 42l, "photo.webp")).isNull();
+		assertThat(WebCatalogDispatcher.getImageUrl(1l, 42l, "photo")).isNull();
+	}
+	
+	@Test
+	public void imageUrlIsNullWithoutImage() {
+		assertThat(WebCatalogDispatcher.getImageUrl((VFSLeaf)null, 42l)).isNull();
+	}
+	
 	private MockHttpServletRequest request(String pathInfo) {
 		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/olat" + pathInfo);
 		request.setContextPath("/olat");
