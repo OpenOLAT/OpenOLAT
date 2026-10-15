@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -91,6 +92,7 @@ public class GTAResultsExport {
 	private static final Logger log = Tracing.createLoggerFor(GTAResultsExport.class);
 
 	private final Locale locale;
+	private final Identity doer;
 	private final ICourse course;
 	private final GTACourseNode gtaNode;
 	private final RepositoryEntry courseEntry;
@@ -116,9 +118,10 @@ public class GTAResultsExport {
 	@Autowired
 	private UserCourseInformationsManager userCourseInfosMgr;
 	
-	public GTAResultsExport(ICourse course, GTACourseNode gtaNode, Locale locale) {
+	public GTAResultsExport(ICourse course, GTACourseNode gtaNode, Identity doer, Locale locale) {
 		CoreSpringFactory.autowireObject(this);
 		
+		this.doer = doer;
 		this.course = course;
 		this.gtaNode = gtaNode;
 		this.locale = locale;
@@ -142,12 +145,18 @@ public class GTAResultsExport {
 	}
 	
 	public void exportWorkbook(List<Identity> assessedIdentities, List<BusinessGroup> businessGroups, OutputStream exportStream) {
-		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(exportStream, 1)) {
+		List<String> sheets = List.of(translator.translate("export.results"), translator.translate("export.infos"));
+		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(exportStream, 2, sheets)) {
 			//headers
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 			exportSheet.setHeaderRows(1);
 			writeHeaders(exportSheet);
 			writeData(assessedIdentities, businessGroups, exportSheet, workbook);
+			
+			// Informations
+			OpenXMLWorksheet infosSheet = workbook.nextWorksheet();
+			addInformations(workbook, infosSheet);
+			dbInstance.commitAndCloseSession();
 		} catch(Exception e) {
 			log.error("", e);
 		}
@@ -497,5 +506,56 @@ public class GTAResultsExport {
 		if (se.getCoachComment() != null) {
 			dataRow.addCell(dataColCnt, se.getCoachComment());
 		}
+	}
+	
+	private void addInformations(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		exportSheet.setHeaderRows(1);
+
+		Row headerRow = exportSheet.newRow();
+		headerRow.addCell(0, translator.translate("export.information.info"), workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(1, translator.translate("export.information.value"), workbook.getStyles().getHeaderStyle());
+		// URL
+		String businessPath = "[RepositoryEntry:" + courseEntry.getKey() + "][CourseNode:" + gtaNode.getIdent() + "]";
+		String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+		Row row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.information.url"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, url, null);
+		// Version
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.information.version"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, Settings.getVersion(), null);
+		
+		// Course
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.course.title"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, courseEntry.getDisplayname(), null);
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.course.reference"), workbook.getStyles().getHeaderStyle());
+		String identifier = StringHelper.containsNonWhitespace(courseEntry.getExternalRef())
+				? courseEntry.getExternalRef()
+				: courseEntry.getKey().toString();
+		row.addCell(1, identifier, null);
+		
+		// Course element
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.course.element.title"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, gtaNode.getShortTitle(), null);
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.course.element.reference"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, gtaNode.getIdent(), null);
+		
+		// Language
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.information.language"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, translator.getLocale().getDisplayLanguage(), null);
+		// Date
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.information.date"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, new Date(), workbook.getStyles().getDateTimeStyle());
+		// Acting user
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.information.by"), workbook.getStyles().getHeaderStyle());
+		String fullname = doer == null ? "" : userManager.getUserDisplayName(doer);
+		row.addCell(1, fullname, null);
 	}
 }

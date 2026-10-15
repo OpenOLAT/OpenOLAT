@@ -59,12 +59,14 @@ public class GroupBulkDownloadResource implements MediaResource {
 	private static final String encoding = "UTF-8";
 	
 	private final Locale locale;
+	private final Identity doer;
 	private final List<BusinessGroup> groups;
 	private final GTACourseNode courseNode;
 	private final OLATResourceable courseOres;
 	
 	public GroupBulkDownloadResource(GTACourseNode courseNode, OLATResourceable courseOres,
-			List<BusinessGroup> groups, Locale locale) {
+			List<BusinessGroup> groups, Identity doer, Locale locale) {
+		this.doer = doer;
 		this.groups = groups;
 		this.locale = locale;
 		this.courseNode = courseNode;
@@ -125,7 +127,7 @@ public class GroupBulkDownloadResource implements MediaResource {
 						.getMembers(groups, GroupRoles.participant.name());
 				String courseTitle = course.getCourseTitle();
 				String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
-				GTAResultsExport export = new GTAResultsExport(course, courseNode, locale);
+				GTAResultsExport export = new GTAResultsExport(course, courseNode, doer, locale);
 				export.export(fileName, assessableIdentities, groups, zout);
 			}
 

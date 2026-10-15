@@ -527,6 +527,7 @@ public class GTACoachGradingListController extends AbstractCoachWorkflowListCont
 			ArchiveOptions options = new ArchiveOptions();
 			options.setIdentities(identities);
 			options.setOnlySubmitted(true);
+			options.setDoer(getIdentity());
 			
 			OLATResource courseOres = coachCourseEnv.getCourseEnvironment()
 					.getCourseGroupManager().getCourseResource();

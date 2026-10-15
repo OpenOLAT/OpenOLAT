@@ -337,6 +337,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	
 	private void doDownload(UserRequest ureq, ArchiveOptions options) {
 		options.setOnlySubmitted(true);
+		options.setDoer(getIdentity());
 		OLATResource courseOres = getCourseRepositoryEntry().getOlatResource();
 		ArchiveResource resource = new ArchiveResource(courseNode, courseOres, options, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(resource);

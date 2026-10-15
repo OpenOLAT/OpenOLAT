@@ -441,7 +441,8 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 			showWarning("error.atleast.task");
 		} else {
 			OLATResource ores = courseEnv.getCourseGroupManager().getCourseResource();
-			GroupBulkDownloadResource resource = new GroupBulkDownloadResource(gtaNode, ores, groups, getLocale());
+			GroupBulkDownloadResource resource = new GroupBulkDownloadResource(gtaNode, ores, groups,
+					getIdentity(), getLocale());
 			ureq.getDispatchResult().setResultingMediaResource(resource);
 		}
 	}
