@@ -173,11 +173,13 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 			}
 			
 			// Transfer the user session only once
-			if(newSession.getIdentity() == null) {
+			if(newSession.getIdentity() == null && newSession.getSessionInfo() == null) {
 				Identity identity = parentSession.getIdentity();
-				Tracing.setIdentity(identity);
-				newSession.setIdentity(identity);
-				newSession.setRoles(parentSession.getRoles());
+				if(identity != null) {
+					Tracing.setIdentity(identity);
+					newSession.setIdentity(identity);
+					newSession.setRoles(parentSession.getRoles());
+				}
 				newSession.setLocale(parentSession.getLocale());
 				parentSession.addSandboxSession(newSession);
 			}
