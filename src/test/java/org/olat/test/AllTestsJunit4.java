@@ -293,6 +293,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.pf.manager.PFManagerTest.class,
 	org.olat.course.nodes.ProjectBrokerCourseNodeTest.class,
 	org.olat.course.assessment.AssessmentManagerTest.class,
+	org.olat.course.assessment.ui.tool.DefaultFormEvaluationSupplierTest.class,
 	org.olat.course.assessment.manager.AssessmentInspectionConfigurationDAOTest.class,
 	org.olat.course.assessment.manager.AssessmentInspectionDAOTest.class,
 	org.olat.course.assessment.manager.AssessmentInspectionLogDAOTest.class,
