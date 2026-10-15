@@ -265,7 +265,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		
 		//SCORM API calls get handled by this mapper
 		Mapper againMapper = new ScormAgainMapper(sessionController);
-		String mapperId = courseIdNodeId;
+		String mapperId = courseIdNodeId + "-" + getIdentity().getKey() + "-" + hashCode();
 		scormAgaingCallbackUri = registerCacheableMapper(ureq, mapperId, againMapper, EXPIRATION_TIME);
 		displayContent.contextPut("scormAgainCallbackUri", scormAgaingCallbackUri);
 	}
