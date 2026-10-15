@@ -67,8 +67,8 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>7.0.9</org.springframework.version>
-		<org.hibernate.version>7.3.9.Final</org.hibernate.version>
-		<org.hibernate.validator.version>9.1.3.Final</org.hibernate.validator.version>
+		<org.hibernate.version>7.3.13.Final</org.hibernate.version>
+		<org.hibernate.validator.version>9.1.5.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.9</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.2.4</apache.cxf>
 		<apache.pdfbox>3.0.8</apache.pdfbox>
@@ -80,7 +80,7 @@
 		<io.undertow>2.3.26.Final</io.undertow>
 		<jackson.version>2.22.3</jackson.version>
 		<jackson.annotations.version>2.22</jackson.annotations.version>
-		<swagger.ui.version>5.33.1</swagger.ui.version>
+		<swagger.ui.version>5.33.2</swagger.ui.version>
 		<com.mysql.version>26.7.0</com.mysql.version>
 		<org.postgresql.version>42.7.14</org.postgresql.version>
 		<org.infinispan.version>16.1.4</org.infinispan.version>
