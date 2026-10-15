@@ -38,6 +38,7 @@ import org.olat.core.gui.media.DefaultMediaResource;
 import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
@@ -69,7 +70,10 @@ public class ScormAgainMapper implements Mapper {
 		try {
 			// Prevent replay attack
 			UserSession usess = userSessionManager.getUserSessionIfAlreadySet(request);
-			if(usess == null || usess.getIdentity() == null || !usess.getIdentity().equals(sessionController.getIdentity())) {
+			Identity usessIdentity = usess == null || usess.getIdentity() == null ? null : usess.getIdentity(); 
+			if(usessIdentity == null || !usessIdentity.equals(sessionController.getIdentity())) {
+				log.warn("Try to replay scorm URL: owner: {} replayer: {}", sessionController.getIdentity().getKey(),
+						usessIdentity == null ? "-" : usessIdentity.getKey());
 				return new ForbiddenMediaResource();
 			}
 			
