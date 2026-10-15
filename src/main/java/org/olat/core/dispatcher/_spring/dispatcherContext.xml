@@ -212,6 +212,13 @@
 						</property>
 					</bean>
 				</entry>
+				<entry key="/impressum/">
+					<bean class="org.olat.core.gui.control.ChiefControllerCreator">
+						<property name="contentControllerCreator">
+							<bean class="org.olat.core.commons.controllers.impressum.DMZImpressumContentControllerCreator" />
+						</property>
+					</bean>
+				</entry>
 				<entry key="/shibdisclaimer/">
 					<bean
 						class="org.olat.core.gui.control.ChiefControllerCreator">

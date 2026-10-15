@@ -29,13 +29,12 @@ import org.olat.admin.layout.FooterInformations;
 import org.olat.admin.layout.LayoutModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.impressum.ImpressumInformations;
-import org.olat.core.commons.controllers.impressum.ImpressumMainController;
 import org.olat.core.commons.controllers.impressum.ImpressumModule;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.UserLoggedInCounter;
@@ -44,8 +43,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -71,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OlatFooterController extends BasicController implements LockableController { 
 	
-	private final Link impressumLink, aboutLink;
+	private final Link aboutLink;
 	private final VelocityContainer olatFootervc;
 	private ShareLinkController shareLinkCtr;
 	
@@ -107,11 +104,11 @@ public class OlatFooterController extends BasicController implements LockableCon
 		}
 		
 		olatFootervc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
-		impressumLink = LinkFactory.createLink("_footer_dmz_impressum", "topnav.impressum", olatFootervc, this);
-		impressumLink.setTitle("topnav.impressum.alt");
+		ExternalLink impressumLink = LinkFactory.createExternalLink("_footer_dmz_impressum", "_footer_dmz_impressum", Settings.getServerContextPathURI() + "/dmz/impressum/");
+		impressumLink.setName(translate("topnav.impressum"));
+		impressumLink.setTooltip(translate("topnav.impressum.alt"));
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
-		impressumLink.setAjaxEnabled(false);
-		impressumLink.setTarget("_blank");
+		olatFootervc.put("topnav.impressum", impressumLink);
 
 		// Push information about user
 		if (!isGuest && usess.isAuthenticated()) {
@@ -151,9 +148,7 @@ public class OlatFooterController extends BasicController implements LockableCon
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(impressumLink == source) {
-			doOpenImpressum(ureq);
-		} else if (source == aboutLink) {
+		if (source == aboutLink) {
 			doAbout(ureq);
 		}
 	}
@@ -176,21 +171,5 @@ public class OlatFooterController extends BasicController implements LockableCon
 		aboutCtr = new AboutController(ureq, getWindowControl());
 		listenTo(aboutCtr);
 		aboutCtr.activateAsModalDialog();
-	}
-	
-	protected void doOpenImpressum(UserRequest ureq) {
-		ControllerCreator impressumControllerCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				return new ImpressumMainController(lureq, lwControl);
-			}
-		};
-		PopupBrowserWindow popupBrowserWindow;
-		if(ureq.getUserSession().isAuthenticated()) {
-			popupBrowserWindow = Windows.getWindows(ureq).getWindowManager().createNewPopupBrowserWindowFor(ureq, impressumControllerCreator);
-		} else {
-			popupBrowserWindow = Windows.getWindows(ureq).getWindowManager().createNewUnauthenticatedPopupWindowFor(ureq, impressumControllerCreator);
-		}
-		popupBrowserWindow.open(ureq);
 	}
 }

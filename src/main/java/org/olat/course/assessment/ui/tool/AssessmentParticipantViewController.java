@@ -720,19 +720,14 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				List<RubricValue> values = new ArrayList<>(statsList.size());
 				for(RubricStatistic stats:statsList) {
 					Rubric rubric = stats.getRubric();
-					SlidersStatistic slidersStatistics = getSlidersStatistic(rubric);
-					RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(rubric, slidersStatistics);
-	
 					Double score = null;
-					Double maxScore = null;
 					if(scoreMode == FormEvaluationScoreMode.sum) {
 						score = stats.getTotalStatistic().getSum();
-						maxScore = rubricStatistic.getTotalStatistic().getSum();
 					} else if(scoreMode == FormEvaluationScoreMode.avg) {
 						score = stats.getTotalStatistic().getAvg();
-						maxScore = rubricStatistic.getTotalStatistic().getAvg();
 					}
-					
+					Double maxScore = getMaxScore(rubric, scoreMode, evaluationFormManager);
+
 					if(maxScore != null) {
 						double dScore = score == null ? 0.0d : score.doubleValue();
 						double scaledScore = dScore * scale;
@@ -745,9 +740,29 @@ public class AssessmentParticipantViewController extends BasicController impleme
 			return List.of();
 		}
 		
-		private SlidersStatistic getSlidersStatistic(Rubric rubric) {
+		static Double getMaxScore(Rubric rubric, FormEvaluationScoreMode scoreMode, EvaluationFormManager evaluationFormManager) {
+			SliderStatistic firstStep = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, 1)).getTotalStatistic();
+			SliderStatistic lastStep = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, rubric.getSteps())).getTotalStatistic();
+			if(scoreMode == FormEvaluationScoreMode.sum) {
+				return max(firstStep.getSum(), lastStep.getSum());
+			} else if(scoreMode == FormEvaluationScoreMode.avg) {
+				return max(firstStep.getAvg(), lastStep.getAvg());
+			}
+			return null;
+		}
+
+		private static Double max(Double a, Double b) {
+			if(a == null) {
+				return b;
+			}
+			if(b == null) {
+				return a;
+			}
+			return Math.max(a, b);
+		}
+
+		private static SlidersStatistic getSlidersStatistic(Rubric rubric, int step) {
 			SlidersStatisticImpl slidersStatisticImpl = new SlidersStatisticImpl();
-			int step = rubric.getSteps();
 			for (Slider slider : rubric.getSliders()) {
 				StepCounts stepCounts = StepCountsBuilder.builder(rubric.getSteps())
 						.withCount(step, Long.valueOf(1))

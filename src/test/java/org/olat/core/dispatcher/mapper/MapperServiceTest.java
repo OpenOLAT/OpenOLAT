@@ -215,6 +215,28 @@ public class MapperServiceTest extends OlatTestCase {
 		Assert.assertEquals(modKey, reloadedMapper2.getKey());
 	}
 	
+	@Test
+	public void testGetSandboxMapper_parentSessionWithoutIdentity() {
+		UserSession parentSession = createUserSession();
+		DummyMapper mapper = new DummyMapper();
+		MapperKey mapperKey = mapperService.sandbox(parentSession, UUID.randomUUID().toString(), mapper);
+		Assert.assertNull(parentSession.getIdentity());
+
+		HttpSession httpSession = new MockHttpSession();
+		UserSession sandboxSession = sessionManager.getUserSession(null, httpSession);
+		Mapper sandboxMapper = mapperService.getSandboxMapper(sandboxSession, mapperKey.getMapperId(), mapperKey.getToken());
+		Assert.assertEquals(mapper, sandboxMapper);
+		Assert.assertNull(sandboxSession.getIdentity());
+		Assert.assertEquals(parentSession.getLocale(), sandboxSession.getLocale());
+		Assert.assertEquals(1, parentSession.getSandboxSessions().size());
+
+		// the dispatcher sets the session info after the first request
+		sandboxSession.setSessionInfo(new SessionInfo(null, httpSession));
+		Mapper sandboxMapper2 = mapperService.getSandboxMapper(sandboxSession, mapperKey.getMapperId(), mapperKey.getToken());
+		Assert.assertEquals(mapper, sandboxMapper2);
+		Assert.assertEquals(1, parentSession.getSandboxSessions().size());
+	}
+
 	private UserSession createUserSession() {
 		HttpSession httpSession = new MockHttpSession();
 		UserSession userSession = sessionManager.getUserSession(null, httpSession);

@@ -106,7 +106,9 @@ public class MapperDispatcher implements Dispatcher {
 				return;
 			} else if(usess.getSessionInfo() == null) {
 				initSessionInfos(usess, hreq);
-				sessionManager.signOn(usess);
+				if(usess.getIdentity() != null) {
+					sessionManager.signOn(usess);
+				}
 			}
 		} else {
 			UserSession usess = sessionManager.getUserSession(hreq);
@@ -138,9 +140,11 @@ public class MapperDispatcher implements Dispatcher {
 	
 	private void initSessionInfos(UserSession usess, HttpServletRequest hreq) {
 		Identity identity = usess.getIdentity();
-		SessionInfo sinfo = new SessionInfo(identity.getKey(), hreq.getSession());
-		sinfo.setFirstname(identity.getUser().getProperty(UserConstants.FIRSTNAME, usess.getLocale()));
-		sinfo.setLastname(identity.getUser().getProperty(UserConstants.LASTNAME, usess.getLocale()));
+		SessionInfo sinfo = new SessionInfo(identity == null ? null : identity.getKey(), hreq.getSession());
+		if(identity != null) {
+			sinfo.setFirstname(identity.getUser().getProperty(UserConstants.FIRSTNAME, usess.getLocale()));
+			sinfo.setLastname(identity.getUser().getProperty(UserConstants.LASTNAME, usess.getLocale()));
+		}
 		sinfo.setAuthProvider("CDEL");
 		sinfo.setFromIP(hreq.getRemoteAddr());
 		sinfo.setUserAgent(hreq.getHeader("User-Agent"));
