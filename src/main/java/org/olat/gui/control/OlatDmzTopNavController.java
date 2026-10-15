@@ -34,6 +34,7 @@ import org.olat.core.commons.controllers.impressum.ImpressumModule;
 import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.commons.services.help.HelpModule;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.ExternalLink;
@@ -75,7 +76,7 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 		
 		// impressum
 		mainVC.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
-		ExternalLink impressumLink = LinkFactory.createExternalLink("_top_nav_dmz_impressum", "_top_nav_dmz_impressum", Settings.getServerContextPathURI() + "/dmz/impressum/");
+		ExternalLink impressumLink = LinkFactory.createExternalLink("_top_nav_dmz_impressum", "_top_nav_dmz_impressum", Settings.getServerContextPathURI() + DispatcherModule.getPathDefault() + "impressum/");
 		impressumLink.setName(translate("topnav.impressum"));
 		impressumLink.setTooltip(translate("topnav.impressum.alt"));
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");

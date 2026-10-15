@@ -32,6 +32,7 @@ import org.olat.core.commons.controllers.impressum.ImpressumInformations;
 import org.olat.core.commons.controllers.impressum.ImpressumModule;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.LockableController;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.ExternalLink;
@@ -104,7 +105,7 @@ public class OlatFooterController extends BasicController implements LockableCon
 		}
 		
 		olatFootervc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
-		ExternalLink impressumLink = LinkFactory.createExternalLink("_footer_dmz_impressum", "_footer_dmz_impressum", Settings.getServerContextPathURI() + "/dmz/impressum/");
+		ExternalLink impressumLink = LinkFactory.createExternalLink("_footer_dmz_impressum", "_footer_dmz_impressum", Settings.getServerContextPathURI() + DispatcherModule.getPathDefault() + "impressum/");
 		impressumLink.setName(translate("topnav.impressum"));
 		impressumLink.setTooltip(translate("topnav.impressum.alt"));
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
