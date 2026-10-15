@@ -32,11 +32,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.DefaultMediaResource;
+import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.UserSession;
+import org.olat.core.util.session.UserSessionManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -51,13 +57,26 @@ public class ScormAgainMapper implements Mapper {
 	
 	private final ScormSessionController sessionController;
 	
+	@Autowired
+	private UserSessionManager userSessionManager;
+	
 	public ScormAgainMapper(ScormSessionController controller) {
+		CoreSpringFactory.autowireObject(this);
 		this.sessionController = controller;
 	}
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		try {
+			// Prevent replay attack
+			UserSession usess = userSessionManager.getUserSessionIfAlreadySet(request);
+			Identity usessIdentity = usess == null || usess.getIdentity() == null ? null : usess.getIdentity(); 
+			if(usessIdentity == null || !usessIdentity.equals(sessionController.getIdentity())) {
+				log.warn("Try to replay scorm URL: owner: {} replayer: {}", sessionController.getIdentity().getKey(),
+						usessIdentity == null ? "-" : usessIdentity.getKey());
+				return new ForbiddenMediaResource();
+			}
+			
 			if(relPath.endsWith(".json")) {
 				commitData(relPath, request);
 				return new ResultMediaResource(true);
