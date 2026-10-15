@@ -87,6 +87,7 @@ public class TAIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		ArchiveOptions options = new ArchiveOptions();
 		options.setGroup(asOptions.getGroup());
 		options.setIdentities(asOptions.getIdentities());
+		options.setDoer(getIdentity());
 		
 		ArchiveResource resource = new ArchiveResource(courseNode, courseOres, options, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(resource);

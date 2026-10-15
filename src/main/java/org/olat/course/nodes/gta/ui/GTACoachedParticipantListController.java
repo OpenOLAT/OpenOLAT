@@ -1153,6 +1153,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		ArchiveOptions options = new ArchiveOptions();
 		options.setIdentities(identities);
 		options.setOnlySubmitted(true);
+		options.setDoer(getIdentity());
 		
 		OLATResource courseOres = coachCourseEnv.getCourseEnvironment()
 				.getCourseGroupManager().getCourseResource();

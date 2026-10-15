@@ -109,6 +109,10 @@ public class ScormSessionController {
 		this.assessableType = assessableType;
 		this.attemptsIncremented = attemptsIncremented;
 	}
+	
+	public Identity getIdentity() {
+		return identity;
+	}
 
 	/**
 	 * @param cpRoot

@@ -1052,10 +1052,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		List<Identity> users = null;
 		if(config.getBooleanSafe(GTASK_GRADING)) {
 			users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment(), options);
-			
 			String courseTitle = course.getCourseTitle();
+			Identity doer = options == null ? null : options.getDoer();
 			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
-			GTAResultsExport export = new GTAResultsExport(course, this, locale);
+			GTAResultsExport export = new GTAResultsExport(course, this, doer, locale);
 			export.export(dirName + "/" + fileName, users, null, exportStream);
 		}
 		

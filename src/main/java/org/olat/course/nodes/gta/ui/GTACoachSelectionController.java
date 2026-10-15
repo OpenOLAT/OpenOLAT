@@ -356,6 +356,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private void doBulkDownload(UserRequest ureq) {
 		if (participantListCtrl != null) {
 			ArchiveOptions asOptions = new ArchiveOptions();
+			asOptions.setDoer(getIdentity());
 			asOptions.setIdentities(getIdentitiesForBulkDownload(ureq));
 			asOptions.setOnlySubmitted(true);
 			OLATResource ores = courseEnv.getCourseGroupManager().getCourseResource();
@@ -363,7 +364,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			ureq.getDispatchResult().setResultingMediaResource(resource);
 		} else if (groupListCtrl != null) {
 			OLATResource ores = courseEnv.getCourseGroupManager().getCourseResource();
-			GroupBulkDownloadResource resource = new GroupBulkDownloadResource(gtaNode, ores, groupListCtrl.getCoachedGroups(), getLocale());
+			GroupBulkDownloadResource resource = new GroupBulkDownloadResource(gtaNode, ores, groupListCtrl.getCoachedGroups(),
+					getIdentity(), getLocale());
 			ureq.getDispatchResult().setResultingMediaResource(resource);
 		}
 	}

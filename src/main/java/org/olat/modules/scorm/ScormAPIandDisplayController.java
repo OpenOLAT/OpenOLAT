@@ -65,6 +65,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -274,7 +275,7 @@ public class ScormAPIandDisplayController extends BasicController implements Con
 		
 		//SCORM API calls get handled by this mapper
 		Mapper againMapper = new ScormAgainMapper(sessionController);
-		String mapperId = courseIdNodeId;
+		String mapperId = courseIdNodeId + "-" + CodeHelper.getUniqueID();
 		String scormAgaingCallbackUri = registerCacheableMapper(ureq, mapperId, againMapper, EXPIRATION_TIME);
 		String scormAgaingCallbackUrl = Settings.createContentServerURI() + scormAgaingCallbackUri;
 		displayContent.contextPut("scormAgainCallbackUri", scormAgaingCallbackUrl);
