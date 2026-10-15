@@ -33,23 +33,20 @@ import org.olat.admin.user.tools.UserTool;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.impressum.ImpressumInformations;
-import org.olat.core.commons.controllers.impressum.ImpressumMainController;
 import org.olat.core.commons.controllers.impressum.ImpressumModule;
 import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.Util;
 import org.olat.gui.control.OlatTopNavController.Tool;
 import org.olat.search.SearchModule;
@@ -64,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OlatGuestTopNavController extends BasicController implements LockableController {
 
-	private Link loginLink, impressumLink;
+	private Link loginLink;
 
 	@Autowired
 	private SearchModule searchModule;
@@ -81,11 +78,11 @@ public class OlatGuestTopNavController extends BasicController implements Lockab
 		
 		// impressum
 		vc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
-		impressumLink = LinkFactory.createLink("_top_nav_guest_impressum", "topnav.impressum", vc, this);
-		impressumLink.setTitle("topnav.impressum.alt");
+		ExternalLink impressumLink = LinkFactory.createExternalLink("_top_nav_guest_impressum", "_top_nav_guest_impressum", Settings.getServerContextPathURI() + "/dmz/impressum/");
+		impressumLink.setName(translate("topnav.impressum"));
+		impressumLink.setTooltip(translate("topnav.impressum.alt"));
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-fw o_icon-lg");
-		impressumLink.setAjaxEnabled(false);
-		impressumLink.setTarget("_blank");
+		vc.put("topnav.impressum", impressumLink);
 		
 		if(searchModule.isGuestEnabled()) {
 			SearchUserToolExtension search = CoreSpringFactory.getImpl(SearchUserToolExtension.class);
@@ -133,15 +130,6 @@ public class OlatGuestTopNavController extends BasicController implements Lockab
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == loginLink) {
 			AuthHelper.doLogout(ureq);
-		} else if (source == impressumLink) {
-			ControllerCreator impressumControllerCreator = new ControllerCreator() {
-				@Override
-				public Controller createController(UserRequest lureq, WindowControl lwControl) {
-					return new ImpressumMainController(lureq, lwControl);
-				}
-			};
-			PopupBrowserWindow popupBrowserWindow = Windows.getWindows(ureq).getWindowManager().createNewPopupBrowserWindowFor(ureq, impressumControllerCreator);
-			popupBrowserWindow.open(ureq);
 		}
 	}
 
