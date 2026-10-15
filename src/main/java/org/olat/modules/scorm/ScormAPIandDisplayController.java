@@ -274,7 +274,7 @@ public class ScormAPIandDisplayController extends BasicController implements Con
 		
 		//SCORM API calls get handled by this mapper
 		Mapper againMapper = new ScormAgainMapper(sessionController);
-		String mapperId = courseIdNodeId;
+		String mapperId = courseIdNodeId + "-" + getIdentity().getKey() + "-" + hashCode();
 		String scormAgaingCallbackUri = registerCacheableMapper(ureq, mapperId, againMapper, EXPIRATION_TIME);
 		String scormAgaingCallbackUrl = Settings.createContentServerURI() + scormAgaingCallbackUri;
 		displayContent.contextPut("scormAgainCallbackUri", scormAgaingCallbackUrl);

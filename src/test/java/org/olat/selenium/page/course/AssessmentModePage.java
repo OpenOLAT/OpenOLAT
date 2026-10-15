@@ -176,6 +176,10 @@ public class AssessmentModePage {
 	public AssessmentModePage assertOnEditAssessmentMode(String assessmentModeTitle) {
 		By startBy = By.xpath("//fieldset/legend[text()[contains(.,'" + assessmentModeTitle + "')]]");
 		OOGraphene.waitElement(startBy, browser);
+		// Make sure Tiny is loaded
+		By modeNameBy = By.cssSelector(".o_sel_assessment_mode_name input[type='text']");
+		OOGraphene.waitElement(modeNameBy, browser);
+		OOGraphene.waitTinymce(browser);
 		return this;
 	}
 	
