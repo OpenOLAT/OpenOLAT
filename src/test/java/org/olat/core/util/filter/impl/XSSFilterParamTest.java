@@ -72,14 +72,14 @@ public class XSSFilterParamTest {
 			{ "<img/>", "<img />" },
 			{ "<b/></b>", "<b></b>" }, // was empty
 			// test_balancing_angle_brackets()
-			{ "<img src=\"foo\"", "<img src=\"foo\" />" },
+			{ "<img src=\"foo\"", "" },
 			{ "b>", "b&gt;" },
-			{ "<img src=\"foo\"/", "<img src=\"foo\" />" },
+			{ "<img src=\"foo\"/", "" },
 			{ ">", "&gt;" },
-			{ "foo<b", "foo<b></b>" },
+			{ "foo<b", "foo" },
 			{ "<span>foo<b</span>", "<span>foo<b></b></span>" },
 			{ "b>foo", "b&gt;foo" },
-			{ "><b", "&gt;<b></b>" },
+			{ "><b", "&gt;" },
 			{ "><f", "&gt;" },
 /* 30 */	{ "b><", "b&gt;&lt;" },
 			{ "><b>", "&gt;<b></b>" },
