@@ -197,6 +197,9 @@ public class CourseArchivesWebService extends ExportArchivesWebService {
 			if(archiveOptionsVo.getCourseChat() != null) {
 				options.setCourseChat(archiveOptionsVo.getCourseChat().booleanValue());
 			}
+			if(archiveOptionsVo.getCourseMemberships() != null) {
+				options.setCourseMemberships(archiveOptionsVo.getCourseMemberships().booleanValue());
+			}
 			
 			if(archiveContext.isAllowedLogAuthors() &&  archiveOptionsVo.getLogFilesAuthors() != null) {
 				options.setLogFilesAuthors(archiveOptionsVo.getLogFilesAuthors().booleanValue());

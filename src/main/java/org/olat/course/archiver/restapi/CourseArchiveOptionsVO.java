@@ -40,6 +40,7 @@ public class CourseArchiveOptionsVO {
 	private Boolean logFiles;
 	private Boolean courseResults;
 	private Boolean courseChat;
+	private Boolean courseMemberships;
 	
 	private Boolean logFilesAuthors;
 	private Boolean logFilesUsers;
@@ -102,6 +103,14 @@ public class CourseArchiveOptionsVO {
 		this.courseChat = courseChat;
 	}
 
+	public Boolean getCourseMemberships() {
+		return courseMemberships;
+	}
+	
+	public void setCourseMemberships(Boolean courseMemberships) {
+		this.courseMemberships = courseMemberships;
+	}
+	
 	public Boolean getLogFilesAuthors() {
 		return logFilesAuthors;
 	}

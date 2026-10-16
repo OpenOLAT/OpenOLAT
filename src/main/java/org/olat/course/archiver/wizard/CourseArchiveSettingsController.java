@@ -212,6 +212,7 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 			archiveOptions.setLogFilesUsers(logSetting == LogSettings.PERSONALISED);	
 			archiveOptions.setLogFilesStatistics(true);
 			archiveOptions.setCourseChat(true);
+			archiveOptions.setCourseMemberships(true);
 			archiveOptions.setCourseResults(true);
 		}
 		
