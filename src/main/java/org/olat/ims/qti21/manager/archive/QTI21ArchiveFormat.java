@@ -36,9 +36,10 @@ import java.util.zip.ZipOutputStream;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -158,13 +159,16 @@ public class QTI21ArchiveFormat {
 
 	private final QTI21StatisticSearchParams searchParams;
 	private ExportFormat exportConfig;
-	
+
+	private final Identity doer;
 	private int numOfSections;
 	private CourseNode courseNode;
 	private ManifestBuilder manifestBuilder;
 	private List<AbstractInfos> elementInfos;
 	private final Map<String, InteractionArchive> interactionArchiveMap = new HashMap<>();
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -178,9 +182,10 @@ public class QTI21ArchiveFormat {
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
-	public QTI21ArchiveFormat(Locale locale, QTI21StatisticSearchParams searchParams) {
+	public QTI21ArchiveFormat(QTI21StatisticSearchParams searchParams, Identity doer, Locale locale) {
 		CoreSpringFactory.autowireObject(this);
 		
+		this.doer = doer;
 		this.searchParams = searchParams;
 		if(searchParams.getArchiveOptions() == null || searchParams.getArchiveOptions().getExportFormat() == null) {
 			exportConfig = new ExportFormat(true, true, true, true, true);
@@ -268,6 +273,11 @@ public class QTI21ArchiveFormat {
 	}
 	
 	public void exportWorkbook(OutputStream exportStream) {
+		if(courseNode == null && searchParams.getCourseEntry() != null
+				&& StringHelper.containsNonWhitespace(searchParams.getNodeIdent())) {
+			ICourse course = CourseFactory.loadCourse(searchParams.getCourseEntry());
+			courseNode = course.getRunStructure().getNode(searchParams.getNodeIdent());
+		}
 		RepositoryEntry testEntry = searchParams.getTestEntry();
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
@@ -306,8 +316,9 @@ public class QTI21ArchiveFormat {
 		final List<AssessmentTestSession> sessions = testSessionDao.getTestSessionsOfResponse(searchParams);
 		final List<String> sheetsNames = List.of(translator.translate("export.sheet.results"),
 				translator.translate("export.sheet.additional.infos"),
-				translator.translate("export.sheet.coverage.results"));
-		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 3, sheetsNames)) {	
+				translator.translate("export.sheet.coverage.results"),
+				translator.translate("export.sheet.course.infos"));
+		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 4, sheetsNames)) {	
 			//headers
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 			exportSheet.setHeaderRows(2);
@@ -329,7 +340,11 @@ public class QTI21ArchiveFormat {
 			writeCoverageResultsHeaders_3(coverageResultsSheet, workbook);
 			writeCoverageResultsHeaders_4(coverageResultsSheet, workbook);
 			writeCoverageResultsData(sessions, coverageResultsSheet);
-		
+			
+			// Informations
+			OpenXMLWorksheet infosSheet = workbook.nextWorksheet();
+			writeCourseInformations(workbook, infosSheet);
+			dbInstance.commitAndCloseSession();
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -530,7 +545,7 @@ public class QTI21ArchiveFormat {
 			sessionResponses.evaluateScoresAndAdjustements(getItemInfos());
 			
 			writeDataRow(i + 1, sessionResponses, exportSheet, workbook);	
-			DBFactory.getInstance().commitAndCloseSession();
+			dbInstance.commitAndCloseSession();
 		}
 	}
 	
@@ -879,7 +894,7 @@ public class QTI21ArchiveFormat {
 			}
 			
 			writeCoverageResultsDataRow(i + 1, sessionResponses, exportSheet);	
-			DBFactory.getInstance().commitAndCloseSession();
+			dbInstance.commitAndCloseSession();
 		}
 	}
 	
@@ -998,6 +1013,66 @@ public class QTI21ArchiveFormat {
 				collectElementInfos(subSection);
 			}
 		}
+	}
+	
+	private void writeCourseInformations(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		exportSheet.setHeaderRows(1);
+		
+		RepositoryEntry entry = searchParams.getCourseEntry() == null
+				? searchParams.getTestEntry()
+				: searchParams.getCourseEntry();
+
+		Row headerRow = exportSheet.newRow();
+		headerRow.addCell(0, translator.translate("export.information.info"), workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(1, translator.translate("export.information.value"), workbook.getStyles().getHeaderStyle());
+		// URL
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+		if(courseNode != null) {
+			businessPath += "[CourseNode:" + courseNode.getIdent() + "]";
+		}
+		String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+		Row row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.information.url"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, url, null);
+		// Version
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.information.version"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, Settings.getVersion(), null);
+		
+		// Course
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.course.title"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, entry.getDisplayname(), null);
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.course.reference"), workbook.getStyles().getHeaderStyle());
+		String identifier = StringHelper.containsNonWhitespace(entry.getExternalRef())
+				? entry.getExternalRef()
+				: entry.getKey().toString();
+		row.addCell(1, identifier, null);
+		
+		// Course element
+		if(courseNode != null) {
+			row = exportSheet.newRow();
+			row.addCell(0, translator.translate("export.course.element.title"), workbook.getStyles().getHeaderStyle());
+			row.addCell(1, courseNode.getShortTitle(), null);
+			row = exportSheet.newRow();
+			row.addCell(0, translator.translate("export.course.element.reference"), workbook.getStyles().getHeaderStyle());
+			row.addCell(1, courseNode.getIdent(), null);
+		}
+		
+		// Language
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.information.language"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, translator.getLocale().getDisplayLanguage(), null);
+		// Date
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.information.date"), workbook.getStyles().getHeaderStyle());
+		row.addCell(1, new Date(), workbook.getStyles().getDateTimeStyle());
+		// Acting user
+		row = exportSheet.newRow();
+		row.addCell(0, translator.translate("export.information.by"), workbook.getStyles().getHeaderStyle());
+		String fullname = doer == null ? "" : userManager.getUserDisplayName(doer);
+		row.addCell(1, fullname, null);
 	}
 	
 	private static class SessionResponses {

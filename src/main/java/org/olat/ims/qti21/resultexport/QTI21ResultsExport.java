@@ -306,7 +306,7 @@ public class QTI21ResultsExport {
 	}
 
 	private void exportExcelResults(RepositoryEntry testEntry, QTI21StatisticSearchParams searchParams, int pos, ZipOutputStream zout) {
-		QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(translator.getLocale(), searchParams);
+		QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(searchParams, identity, translator.getLocale());
 		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName() + "_" + testEntry.getDisplayname())
 				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())
 				+ "_" + pos

@@ -429,19 +429,9 @@ public class ScoDocument extends XMLDocument {
 		for (int i = 0; i < scoElementsPreUpdate.length; i++) {
 			keyedElements.put(scoElementsPreUpdate[i][0], scoElementsPreUpdate[i][1]);
 		}
-		// ***********************************************************************
-		// *** bug fix 2003-11-12
-		// We need to check to see if theres anything in cmi.core.session_time
-		// before
-		// we call "addTimes"
-		// first we'll update the total_time
-		if (loadFlag == false) {
-			if (keyedElements.containsKey("cmi.core.session_time") && !keyedElements.get("cmi.core.session_time").equals("")) {
-				String totalTime = ScoUtils.addTimes(keyedElements.get("cmi.core.total_time"), keyedElements
-						.get("cmi.core.session_time"));
-				keyedElements.put("cmi.core.total_time", totalTime);
-			}
-		}
+		// The total_time is not calculated here: adding the session_time on every
+		// commit counted the session twice together with the total_time sent by the
+		// client. ScormSessionController sets the final cmi.core.total_time.
 		if (loadFlag == true) {
 			String exitStatus = keyedElements.get("cmi.core.exit");
 			// now update the entry for next time...

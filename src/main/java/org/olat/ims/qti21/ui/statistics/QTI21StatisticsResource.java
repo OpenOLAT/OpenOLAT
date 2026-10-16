@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
@@ -38,10 +39,12 @@ public class QTI21StatisticsResource extends OpenXMLWorkbookResource {
 	private static final Logger log = Tracing.createLoggerFor(QTI21StatisticsResource.class);
 	
 	private final Locale locale;
+	private final Identity doer;
 	private final QTI21StatisticResourceResult resourceResult;
 	
-	public QTI21StatisticsResource(QTI21StatisticResourceResult resourceResult, String label, Locale locale) {
+	public QTI21StatisticsResource(QTI21StatisticResourceResult resourceResult, String label, Identity doer, Locale locale) {
 		super(label);
+		this.doer = doer;
 		this.locale = locale;
 		this.resourceResult = resourceResult;
 	}
@@ -49,7 +52,7 @@ public class QTI21StatisticsResource extends OpenXMLWorkbookResource {
 	@Override
 	protected void generate(OutputStream out) {
 		try {
-			new QTI21ArchiveFormat(locale, resourceResult.getSearchParams())
+			new QTI21ArchiveFormat(resourceResult.getSearchParams(), doer, locale)
 				.exportWorkbook(out);
 		} catch (Exception e) {
 			log.error("", e);
