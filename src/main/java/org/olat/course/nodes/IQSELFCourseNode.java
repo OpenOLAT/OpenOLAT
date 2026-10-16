@@ -219,9 +219,10 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		
 		try {
 			if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+				Identity doer = options == null ? null : options.getDoer();
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, re, courseEntry, getIdent());
-				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, searchParams);
+				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(searchParams, doer, locale);
 				qaf.exportCourseElement(exportStream, archivePath);
 				return true;	
 			}

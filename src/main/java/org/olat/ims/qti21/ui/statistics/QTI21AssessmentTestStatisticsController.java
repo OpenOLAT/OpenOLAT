@@ -339,7 +339,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 					+ StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName());
 		}
 		label += "_" + Formatter.formatDatetimeFilesystemSave(new Date()) + ".xlsx";
-		MediaResource resource = new QTI21StatisticsResource(resourceResult, label, getLocale());
+		MediaResource resource = new QTI21StatisticsResource(resourceResult, label, getIdentity(), getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 }

@@ -591,6 +591,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			}
 			
 			if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+				Identity doer = options == null ? null : options.getDoer();
 				// 2a) create export resource
 				List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
 				boolean withPdfs = options != null && options.getDoer() != null && options.getWindowControl() != null && options.isWithPdfs();
@@ -598,12 +599,12 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				String exportFolderName = ZipUtil.concat(archivePath, translator.translate("export.folder.name"));
 				boolean withEssayPdfs = false;
 				new QTI21ResultsExport(courseEnv, identities, true, withPdfs, withEssayPdfs, false, this, exportFolderName, locale,
-						options == null ? null : options.getDoer(), options == null ? null : options.getWindowControl())
+						doer, options == null ? null : options.getWindowControl())
 					.exportTestResults(exportStream);
 				// excel results
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, re, courseEntry, getIdent());
-				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, searchParams);
+				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(searchParams, doer, locale);
 				qaf.exportCourseElement(exportStream, archivePath);
 				return true;	
 			}
@@ -945,7 +946,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				ArchiveOptions options = new ArchiveOptions();
 				options.setIdentities(assessedIdentitities);
 				QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, re, courseEntry, getIdent());
-				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, searchParams);
+				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(searchParams, doer, locale);
 				qaf.exportCourseElement(archiveStream, path);
 			} catch (IOException e) {
 				log.error("", e);
