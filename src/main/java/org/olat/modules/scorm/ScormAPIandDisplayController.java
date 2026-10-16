@@ -275,15 +275,19 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		//previous / next navigation links
 		nextScoTop = LinkFactory.createCustomLink("nextScoTop", "nextsco", "", Link.NONTRANSLATED | Link.BUTTON, displayContent, this);
 		nextScoTop.setIconLeftCSS("o_icon o_icon_next_page");
+		nextScoTop.setTitle(translate("next"));
 		
 		previousScoTop = LinkFactory.createCustomLink("previousScoTop", "previoussco", "", Link.NONTRANSLATED | Link.BUTTON, displayContent, this);
 		previousScoTop.setIconLeftCSS("o_icon o_icon_previous_page");
+		previousScoTop.setTitle(translate("previous"));
 		
 		nextScoBottom = LinkFactory.createCustomLink("nextScoBottom", "nextsco", "", Link.NONTRANSLATED | Link.BUTTON, displayContent, this);
 		nextScoBottom.setIconLeftCSS("o_icon o_icon_next_page");
+		nextScoBottom.setTitle(translate("next"));
 		
 		previousScoBottom = LinkFactory.createCustomLink("previousScoBottom", "previoussco", "", Link.NONTRANSLATED | Link.BUTTON, displayContent, this);
 		previousScoBottom.setIconLeftCSS("o_icon o_icon_previous_page");
+		previousScoBottom.setTitle(translate("previous"));
 		
 		ListPanel scoTopButtons = new ListPanel("scoTopButtons", "o_scorm_navigation");
 		scoTopButtons.addContent(previousScoTop);
@@ -527,13 +531,14 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	}
 	
 	private void loadCmisData(String scoId) {
-		Set<String> readOnlyKeys = Set.of("cmi.interactions._count", "cmi.objectives._count");
+		// The session time of a previous session must not be sent to the SCO.
+		final Set<String> skippedKeys = Set.of("cmi.interactions._count", "cmi.objectives._count", ScormSessionController.CMI_SESSION_TIME);
 		String[][] cmis = sessionController.getScoCmis(scoId);
 		JSONObject obj = new JSONObject();
 		if(cmis != null) {
 			for(String[] cmi:cmis) {
 				String key = cmi[0];
-				if(key.endsWith("._count") || readOnlyKeys.contains(key)) {
+				if(key.endsWith("._count") || skippedKeys.contains(key)) {
 					continue;
 				}
 				if(key.startsWith("cmi.")) {
