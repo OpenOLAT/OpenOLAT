@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
@@ -70,11 +71,13 @@ public class ScormSessionController {
 
 	private static final Logger log = Tracing.createLoggerFor(ScormSessionController.class);
 	
-	private static final String SCORE_IDENT = "cmi.core.score.raw";
-	private static final String LESSON_STATUS_IDENT = "cmi.core.lesson_status";
-	private static final String CMI_STUDENT_ID = "cmi.core.student_id";
-	private static final String CMI_STUDENT_NAME = "cmi.core.student_name";
-	private static final String CMI_EXIT = "cmi.core.exit";
+	public static final String SCORE_IDENT = "cmi.core.score.raw";
+	public static final String LESSON_STATUS_IDENT = "cmi.core.lesson_status";
+	public static final String CMI_STUDENT_ID = "cmi.core.student_id";
+	public static final String CMI_STUDENT_NAME = "cmi.core.student_name";
+	public static final String CMI_EXIT = "cmi.core.exit";
+	
+	public static final Set<String> SERVER_READ_ONLY = Set.of(CMI_STUDENT_ID, CMI_STUDENT_NAME);
 
 	private String studentId;
 	private String studentName;
@@ -269,8 +272,17 @@ public class ScormSessionController {
 		lmsDataBean.setNextAction("5");
 		lmsDataBean.setLmsAction("update");
 		
+		String scormAgainStudentId = scormAgainData.get(CMI_STUDENT_ID);
+		if(StringHelper.containsNonWhitespace(scormAgainStudentId) && !scormAgainStudentId.equals(studentId)) {
+			log.warn("cmi.core.student_id mismatch between client ({}) and server ({})", scormAgainStudentId, studentId);
+		}
+		
 		if(!scormAgainData.isEmpty()) {
 			for(Map.Entry<String, String> entry:scormAgainData.entrySet()) {
+				if(SERVER_READ_ONLY.contains(entry.getKey())) {
+					// Don't override some read-only data.
+					continue;
+				}
 				status.putCmi(entry.getKey(), entry.getValue());
 			}
 		}
