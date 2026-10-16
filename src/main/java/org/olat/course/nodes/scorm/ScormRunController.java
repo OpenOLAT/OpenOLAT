@@ -318,6 +318,9 @@ public class ScormRunController extends BasicController implements GenericEventL
 		boolean attemptsIncremented = false;
 		boolean showMenu = config.getBooleanSafe(ScormEditController.CONFIG_SHOWMENU, true);
 		final ScormDisplayEnum fullWindow = ScormDisplayEnum.fromConfiguration(config);
+		
+		removeAsListenerAndDispose(scormDispC);
+		
 		if (isPreview) {
 			scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 					cpRoot, null, null, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
