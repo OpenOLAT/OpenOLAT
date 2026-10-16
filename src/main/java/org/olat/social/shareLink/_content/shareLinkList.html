@@ -1,6 +1,14 @@
 <div class="o_share_links">
 	#foreach($link in $links)$r.render($link)#end
 </div>
+<script>
+'use strict';
+jQuery(function() {
+	jQuery('.o_share_links a[target="_blank"]').on('click', function() {
+		jQuery('.o_callout_content .close').last().trigger('click');
+	});
+});
+</script>
 #if($r.available("copyLink"))
 <script>
 'use strict';
