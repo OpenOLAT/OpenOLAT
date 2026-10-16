@@ -2670,7 +2670,7 @@ function o_ffRegisterSubmit(formId, submElmId){
 }	
 
 function o_waitForVisibleThenFocusDialog(topDialog, attempt) {
-	if (topDialog.offsetParent === null && attempt < 20) {
+	if (topDialog.getClientRects().length === 0 && attempt < 20) {
 		requestAnimationFrame(function() {
 			o_waitForVisibleThenFocusDialog(topDialog, attempt + 1);
 		});
