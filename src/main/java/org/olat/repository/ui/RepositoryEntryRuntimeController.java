@@ -576,7 +576,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void initToolsMenuEditor(Dropdown toolsDropdown) {
-		if (reSecurity.isEntryAdmin() && handler.supportsEdit(re.getOlatResource(), getIdentity(), roles) == EditionSupport.yes) {
+		if (reSecurity.isEntryAdmin() && !reSecurity.isReadOnly()
+				&& handler.supportsEdit(re.getOlatResource(), getIdentity(), roles) == EditionSupport.yes) {
 			toolsDropdown.addComponent(new Spacer("editors-tools"));
 			
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
@@ -733,7 +734,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Editor".equalsIgnoreCase(type)) {
 				if(handler.supportsEdit(re, ureq.getIdentity(), ureq.getUserSession().getRoles()) == EditionSupport.yes
-						&& re.getEntryStatus() != RepositoryEntryStatusEnum.closed) {
+						&& !reSecurity.isReadOnly()) {
 					doEdit(ureq);
 				}
 			} else if("MembersMgmt".equalsIgnoreCase(type)) {
@@ -1144,7 +1145,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void doEdit(UserRequest ureq) {
-		if(!reSecurity.isEntryAdmin()) return;
+		if(!reSecurity.isEntryAdmin() || reSecurity.isReadOnly()) return;
 		removeAsListenerAndDispose(editorCtrl);
 		
 		WindowControl bwControl = getSubWindowControl("Editor");

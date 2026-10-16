@@ -68,7 +68,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 	
 	@Override
 	protected void initToolsMenuEditor(Dropdown toolsDropdown) {
-		if (reSecurity.isEntryAdmin()) {
+		if (reSecurity.isEntryAdmin() && !reSecurity.isReadOnly()) {
 			toolsDropdown.addComponent(new Spacer("video-editor"));
 			
 			editVideoLink = LinkFactory.createToolLink("editVideo", translate("tab.video.editor"), this);
@@ -94,7 +94,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 		entries = removeRepositoryEntry(entries);
 		if (entries != null && !entries.isEmpty()) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if ("Editor".equalsIgnoreCase(type)) {
+			if ("Editor".equalsIgnoreCase(type) && !reSecurity.isReadOnly()) {
 				doEditVideo(ureq);
 				return;
 			}
