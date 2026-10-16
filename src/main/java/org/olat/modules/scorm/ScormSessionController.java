@@ -60,6 +60,7 @@ import org.olat.modules.scorm.server.beans.LMSDataFormBean;
 import org.olat.modules.scorm.server.beans.LMSDataHandler;
 import org.olat.modules.scorm.server.beans.LMSResultsBean;
 import org.olat.modules.scorm.server.sequence.ItemSequence;
+import org.olat.modules.scorm.server.servermodels.ScoUtils;
 
 /**
  * 
@@ -76,8 +77,12 @@ public class ScormSessionController {
 	public static final String CMI_STUDENT_ID = "cmi.core.student_id";
 	public static final String CMI_STUDENT_NAME = "cmi.core.student_name";
 	public static final String CMI_EXIT = "cmi.core.exit";
+	public static final String CMI_TOTAL_TIME = "cmi.core.total_time";
+	public static final String CMI_SESSION_TIME = "cmi.core.session_time";
+	/** A session longer than this (e.g. a tab left open) is not counted completely */
+	private static final int MAX_SESSION_SECONDS = 24 * 60 * 60;
 	
-	public static final Set<String> SERVER_READ_ONLY = Set.of(CMI_STUDENT_ID, CMI_STUDENT_NAME);
+	public static final Set<String> SERVER_READ_ONLY = Set.of(CMI_STUDENT_ID, CMI_STUDENT_NAME, CMI_TOTAL_TIME);
 
 	private String studentId;
 	private String studentName;
@@ -85,6 +90,10 @@ public class ScormSessionController {
 	
 	//the sco id
 	private final ScoState status = new ScoState();
+	// the total_time of each SCO as stored when it was launched, key is the sco id
+	private final Map<String,String> launchTotalTimes = new HashMap<>();
+	// the time in milliseconds when each SCO was launched, key is the sco id
+	private final Map<String,Long> launchTimes = new HashMap<>();
 	
 	private LMSDataHandler odatahandler;
 	private ScormManager scormManager;
@@ -250,6 +259,14 @@ public class ScormSessionController {
 					log.debug("passing cmi data to api adapter: "+key +": "+ value);
 				}
 			}
+			// the session time of a previous session must not be added again
+			String totalTime = status.getCmi(CMI_TOTAL_TIME);
+			if(!StringHelper.containsNonWhitespace(totalTime)) {
+				totalTime = "0000:00:00.00";
+			}
+			launchTotalTimes.put(scoId, totalTime);
+			launchTimes.put(scoId, Long.valueOf(System.currentTimeMillis()));
+			status.putCmi(CMI_SESSION_TIME, "00:00:00");
 		}
 	}
 
@@ -288,6 +305,7 @@ public class ScormSessionController {
 		}
 
 		Map<String,String> cmiData = status.copyCmis();
+		updateTotalTime(scoId, cmiData);
 		
 		//work around for missing cmi's (needed by reload code, but not used in ilias code)
 		if(cmiData.get("cmi.interactions._count") != null && cmiData.get("cmi.interactions._count") != "0"){
@@ -341,6 +359,34 @@ public class ScormSessionController {
 		}
 	}
 	
+	/**
+	 * The total time is the total time at launch plus the session time of this session.
+	 * The total time sent by the browser is ignored, it already contains the elapsed
+	 * time of the session and adding the session time again would count it twice.
+	 * If the SCO doesn't report a session time, the time elapsed since its launch
+	 * (measured by the server) is used instead.
+	 * If the SCO was not launched by this controller or is already finished, the
+	 * stored total time is kept.
+	 */
+	private void updateTotalTime(String scoId, Map<String,String> cmiData) {
+		String launchTotalTime = launchTotalTimes.get(scoId);
+		if(!StringHelper.containsNonWhitespace(launchTotalTime)) {
+			// not launched or already finished: keep the stored total time, the one in the status is stale
+	        cmiData.remove(CMI_TOTAL_TIME);
+			return;
+		}
+		
+		String sessionTime = cmiData.get(CMI_SESSION_TIME);
+		Long launchTime = launchTimes.get(scoId);
+		if(ScoUtils.toSeconds(sessionTime) <= 0 && launchTime != null) {
+			long elapsedSeconds = (System.currentTimeMillis() - launchTime.longValue()) / 1000;
+			sessionTime = ScoUtils.formatSeconds(Math.max(0, elapsedSeconds));
+		}
+		String totalTime = ScoUtils.addCappedSessionTime(launchTotalTime, sessionTime, MAX_SESSION_SECONDS);
+		cmiData.put(CMI_TOTAL_TIME, totalTime);
+		log.debug("Total time: {} SCO: {}", totalTime, scoId);
+	}
+	
 	private synchronized void saveScoreProperties(String scoId, String rawScore) {
 		if(StringHelper.containsNonWhitespace(rawScore)) {
 			scoresProp.put(scoId, rawScore);
@@ -372,8 +418,11 @@ public class ScormSessionController {
 		String scoId = status.getScoId();
 		if (commit) {
 			// Stupid "implicit commit"
-			lmsCommit(scoId, false, cmis); 
+			lmsCommit(scoId, false, cmis);
 		}
+		// the session is closed, a late commit must not add time anymore
+		launchTotalTimes.remove(scoId);
+		launchTimes.remove(scoId);
 		archiveScoData(scoId);
 	}
 	
