@@ -47,6 +47,7 @@ public class CourseArchiveOtherObjectsController extends StepFormBasicController
 	private static final String LOG_FILES = "logfiles";
 	private static final String COURSE_RESULTS = "courseresults";
 	private static final String COURSE_CHAT = "coursechat";
+	private static final String COURSE_MEMBERSHIPS = "coursememberships";
 	
 	private static final String LOG_AUTHORS = "a";
 	private static final String LOG_USERS = "u";
@@ -75,12 +76,14 @@ public class CourseArchiveOtherObjectsController extends StepFormBasicController
 		FormLayoutContainer othersCont = uifactory.addDefaultFormLayout("others", null, formLayout);
 
 		SelectionValues othersPK = new SelectionValues();
+		othersPK.add(SelectionValues.entry(COURSE_MEMBERSHIPS, translate("others.objects.course.memberships")));
 		othersPK.add(SelectionValues.entry(LOG_FILES, translate("others.objects.log.files")));
 		othersPK.add(SelectionValues.entry(COURSE_RESULTS, translate("others.objects.course.results")));
 		othersPK.add(SelectionValues.entry(COURSE_CHAT, translate("others.objects.course.chat")));
 		othersEl = uifactory.addCheckboxesVertical("others.objects", "others.objects", othersCont,
 				othersPK.keys(), othersPK.values(), 1);
 		othersEl.addActionListener(FormEvent.ONCHANGE);
+		othersEl.select(COURSE_MEMBERSHIPS, archiveOptions.isCourseMemberships());
 		othersEl.select(LOG_FILES, archiveOptions.isLogFiles());
 		othersEl.select(COURSE_RESULTS, archiveOptions.isCourseResults());
 		othersEl.select(COURSE_CHAT, archiveOptions.isCourseChat());
@@ -147,6 +150,7 @@ public class CourseArchiveOtherObjectsController extends StepFormBasicController
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Collection<String> others = othersEl.getSelectedKeys();
+		archiveOptions.setCourseMemberships(others.contains(COURSE_MEMBERSHIPS));
 		archiveOptions.setLogFiles(others.contains(LOG_FILES));
 		archiveOptions.setCourseResults(others.contains(COURSE_RESULTS));
 		archiveOptions.setCourseChat(others.contains(COURSE_CHAT));

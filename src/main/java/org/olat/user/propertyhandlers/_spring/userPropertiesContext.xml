@@ -1287,6 +1287,18 @@
 					</bean>
 				</entry>
 
+				<entry key="org.olat.course.archiver.CourseMembershipsExport">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</list>
+						</property>
+					</bean>
+				</entry>
+
 				<entry key="org.olat.course.assessment.manager.EfficiencyStatementArchiver">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">

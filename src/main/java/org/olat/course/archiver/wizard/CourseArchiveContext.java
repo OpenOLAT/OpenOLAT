@@ -85,6 +85,7 @@ public class CourseArchiveContext {
 		options.setLogFiles(true);
 		options.setCourseResults(true);
 		options.setCourseChat(true);
+		options.setCourseMemberships(true);
 
 		CourseArchiveContext context = new CourseArchiveContext(options, courseEntry);
 		

@@ -60,6 +60,7 @@ public class BulkCoursesArchivesContext {
 		options.setLogFiles(true);
 		options.setCourseResults(true);
 		options.setCourseChat(true);
+		options.setCourseMemberships(true);
 		
 		boolean isAdministrator = roles.isAdministrator() || roles.isLearnResourceManager();
 		options.setLogFilesAuthors(true);

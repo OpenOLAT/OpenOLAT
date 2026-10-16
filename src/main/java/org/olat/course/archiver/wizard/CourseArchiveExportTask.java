@@ -63,6 +63,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.CourseArchiveListController;
+import org.olat.course.archiver.CourseMembershipsExport;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.archiver.wizard.CourseArchiveContext.LogSettings;
 import org.olat.course.nodes.ArchiveOptions;
@@ -184,6 +185,7 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 				}
 			}
 			
+			exportCourseMemberships(course, zout);
 			exportCourseChat(zout);
 			exportCourseResults( course, nodeOptions.getIdentities(), courseNodesIdents, zout);
 			exportCourseLogs(course, zout);
@@ -216,6 +218,18 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 		}
 	}
 
+	private void exportCourseMemberships(ICourse course, ZipOutputStream zout) {
+		if (options.isCourseMemberships()) {
+			try(OutputStream out = new ShieldOutputStream(zout)) {
+				zout.putNextEntry(new ZipEntry("course_memberships.xlsx"));
+				new CourseMembershipsExport(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), task.getCreator(), locale).export(out);
+				zout.closeEntry();
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		}
+	}
+	
 	private void exportCourseChat(ZipOutputStream zout) {
 		if (options.isCourseChat()) {
 			try(OutputStream out = new ShieldOutputStream(zout)) {
@@ -419,6 +433,9 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 	public static String getDescription(CourseArchiveOptions archiveOptions, List<CourseNode> courseNodes, Locale locale) {
 		Translator translator = Util.createPackageTranslator(CourseArchiveExportTask.class, locale);
 		List<String> objects = new ArrayList<>();
+		if(archiveOptions.isCourseMemberships()) {
+			objects.add(translator.translate("others.objects.course.memberships"));
+		}
 		if(archiveOptions.isLogFiles()) {
 			objects.add(translator.translate("log.files.options"));
 		}

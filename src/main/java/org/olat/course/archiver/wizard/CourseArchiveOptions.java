@@ -49,6 +49,7 @@ public class CourseArchiveOptions {
 	private boolean logFiles;
 	private boolean courseResults;
 	private boolean courseChat;
+	private boolean courseMemberships;
 	
 	private boolean logFilesAuthors;
 	private boolean logFilesUsers;
@@ -185,6 +186,14 @@ public class CourseArchiveOptions {
 		this.courseChat = courseChat;
 	}
 
+	public boolean isCourseMemberships() {
+		return courseMemberships;
+	}
+	
+	public void setCourseMemberships(boolean courseMemberships) {
+		this.courseMemberships = courseMemberships;
+	}
+	
 	public boolean isLogFilesAuthors() {
 		return logFilesAuthors;
 	}

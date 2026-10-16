@@ -58,6 +58,7 @@ public class ArchiveAndReportController extends MainLayoutBasicController implem
 	private GenericTreeNode courseChat;
 	private GenericTreeNode courseArchive;
 	private GenericTreeNode courseResults;
+	private GenericTreeNode memberships;
 
 	private Controller archiveCtrl;
 	private final LayoutMain3ColsController columnLayoutCtr;
@@ -113,7 +114,12 @@ public class ArchiveAndReportController extends MainLayoutBasicController implem
 		courseResults.setIconCssClass("o_icon_score");
 		reports.addChild(courseResults);
 		reports.setDelegate(courseResults);
-		
+
+		memberships = new GenericTreeNode("Memberships");
+		memberships.setTitle(translate("menu.memberships"));
+		memberships.setIconCssClass("o_icon_group");
+		reports.addChild(memberships);
+
 		courseChat = new GenericTreeNode("CourseChat");
 		courseChat.setTitle(translate("menu.chat"));
 		courseChat.setIconCssClass("o_icon_chat");
@@ -152,6 +158,8 @@ public class ArchiveAndReportController extends MainLayoutBasicController implem
 			menuTree.setSelectedNode(courseResults);
 		} else if(treeNode == courseResults) {
 			doOpenController(new ScoreAccountingArchiveController(ureq, getWindowControl(), ores));
+		} else if(treeNode == memberships) {
+			doOpenController(new CourseMembershipsArchiveController(ureq, getWindowControl(), courseEntry));
 		} else if(treeNode == courseChat) {
 			doOpenController(new IMArchiverController(ureq, getWindowControl(), ores));
 		} else if(treeNode == forums) {
