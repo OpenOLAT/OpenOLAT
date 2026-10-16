@@ -61,6 +61,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
@@ -575,7 +577,9 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 			} else if (source == downloadLink) {
 				VFSMediaResource vdr = new VFSMediaResource((VFSLeaf) solutionRow.downloadLink().getUserObject());
 				vdr.setDownloadable(true);
-				ureq.getDispatchResult().setResultingMediaResource(vdr);
+				close();
+				Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, vdr);
+				getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 			}
 		}
 

@@ -113,6 +113,8 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -2105,7 +2107,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			MediaResource mr = typeToDownload.getAsMediaResource(ores, RepositoryEntryImportExportLinkEnum.WITH_REFERENCE);
 			if(mr!=null) {
 				repositoryService.incrementDownloadCounter(entry);
-				ureq.getDispatchResult().setResultingMediaResource(mr);
+				Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, mr);
+				getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 			} else {
 				showError("error.export");
 				fireEvent(ureq, Event.FAILED_EVENT);

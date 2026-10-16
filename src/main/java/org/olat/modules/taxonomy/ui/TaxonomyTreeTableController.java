@@ -67,6 +67,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -507,7 +509,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 
 	private void doExportTaxonomyLevels(UserRequest ureq) {
-		ureq.getDispatchResult().setResultingMediaResource(new TaxonomyExportMediaResource(taxonomy, getIdentity(), getLocale()));
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, new TaxonomyExportMediaResource(taxonomy, getIdentity(), getLocale()));
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 
 	private void doAssignType(UserRequest ureq) {

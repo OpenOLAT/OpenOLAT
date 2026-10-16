@@ -956,7 +956,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		File logFile = qtiService.getAssessmentSessionAuditLogFile(session);
 		if(logFile != null && logFile.exists()) {
 			String filename = generateDownloadName("auditlog", session) + ".log";
-			ureq.getDispatchResult().setResultingMediaResource(new LogDownload(logFile, filename));
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, new LogDownload(logFile, filename));
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 		} else {
 			showWarning("warning.download.log");
 		}
@@ -982,7 +983,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		String filename = generateDownloadName("results_", session);
 		MediaResource pdf = pdfService.convert(filename, getIdentity(), creator,
 				getWindowControl(), PdfOutputOptions.defaultOptions());
-		ureq.getDispatchResult().setResultingMediaResource(pdf);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, pdf);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private void doOpenLogViewer(UserRequest ureq, AssessmentTestSession session) {

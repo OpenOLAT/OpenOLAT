@@ -96,6 +96,8 @@ import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationCont
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
@@ -990,7 +992,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private void doDownload(UserRequest ureq, ProjArtefact artefact, VFSLeaf vfsLeaf) {
 		VFSMediaResource resource = new VFSMediaResource(vfsLeaf);
 		resource.setDownloadable(true);
-		ureq.getDispatchResult().setResultingMediaResource(resource);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, resource);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 		projectService.createActivityDownload(getIdentity(), artefact);
 	}
 	

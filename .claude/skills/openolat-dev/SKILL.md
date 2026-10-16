@@ -441,6 +441,7 @@ You do NOT need to manually dispose:
 - **Breadcrumb navigation:** `BreadcrumbedStackedPanel` for drill-down views
 - **Modal dialogs:** `wControl.pushAsModalDialog(component)`
 - **Callouts:** `trigger.setAriaDialogOpener()` + `new CloseableCalloutWindowController(ureq, wControl, content, triggerLink, title, true, "", settings)`, then `listenTo()` and `activate()`. Pass the `Link`/`FormLink` (**New in 21.1.0**), not a DOM id: the controller handles `aria-expanded`, focus and the aria label (section 15)
+- **Downloads from a callout:** a callout action that triggers a download uses `getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createDownloadMediaResource(ureq, mr))`, not `ureq.getDispatchResult().setResultingMediaResource(mr)`
 - **Info/error messages:** `showInfo("key")`, `showError("key")`
 - **Module toggles:** `AbstractSpringModule` with `isEnabled()` and persisted config
 - **Toolbar actions:** `toolbarPanel.addTool(link)` for create/export/import buttons

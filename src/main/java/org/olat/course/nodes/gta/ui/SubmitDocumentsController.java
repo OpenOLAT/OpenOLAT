@@ -66,6 +66,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -599,7 +601,8 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 	private void doDownload(UserRequest ureq, VFSLeaf file) {
 		VFSMediaResource vdr = new VFSMediaResource(file);
 		vdr.setDownloadable(true);
-		ureq.getDispatchResult().setResultingMediaResource(vdr);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, vdr);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 
 	private void doOpenTools(UserRequest ureq, FormLink link, SubmittedSolution solution) {
@@ -966,6 +969,7 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 					doDownload(ureq, (VFSLeaf) submittedSolutionRow.getDownloadLink().getUserObject());
 				}
 			} else if (source == downloadLink) {
+				close();
 				doDownload(ureq, (VFSLeaf) downloadLink.getUserObject());
 			}
 		}

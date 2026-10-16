@@ -58,6 +58,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.util.Util;
@@ -325,7 +327,8 @@ public class ExportsAdminListController extends FormBasicController {
 		} else {
 			resource = new VFSMediaResource(archive);
 		}
-		ureq.getDispatchResult().setResultingMediaResource(resource);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, resource);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private void doOpenRepositoryEntry(UserRequest ureq, ExportRow row) {

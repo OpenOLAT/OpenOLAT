@@ -40,6 +40,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormPrintSelection;
@@ -180,7 +182,8 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 		}
 		MediaResource resource = pdfService.convert("report", getIdentity(), getControllerCreator(), getWindowControl(),
 				PdfOutputOptions.defaultOptions());
-		ureq.getDispatchResult().setResultingMediaResource(resource);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, resource);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private ControllerCreator getControllerCreator() {

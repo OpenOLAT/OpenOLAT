@@ -59,6 +59,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -501,7 +503,8 @@ public class DialogElementListController extends FormBasicController implements 
 		if (!items.isEmpty() && items.get(0) instanceof VFSLeaf vl) {
 			VFSMediaResource mediaResource = new VFSMediaResource(vl);
 			mediaResource.setDownloadable(true);
-			ureq.getDispatchResult().setResultingMediaResource(mediaResource);
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, mediaResource);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_DOWNLOADED, getClass(),
 					LoggingResourceable.wrapBCFile(vl.getName()));
 		} else {

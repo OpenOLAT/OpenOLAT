@@ -76,6 +76,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
@@ -691,7 +692,8 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		}
 		
 		StringMediaResource resource = ProjectUIFactory.createMediaResource(note);
-		ureq.getDispatchResult().setResultingMediaResource(resource);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, resource);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 		
 		projectService.createActivityDownload(getIdentity(), note.getArtefact());
 	}

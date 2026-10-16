@@ -71,6 +71,8 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -766,7 +768,9 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			} else if (source == downloadLink) {
 				VFSMediaResource vdr = new VFSMediaResource((VFSLeaf) taskDefinitionRow.downloadLink().getUserObject());
 				vdr.setDownloadable(true);
-				ureq.getDispatchResult().setResultingMediaResource(vdr);
+				close();
+				Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, vdr);
+				getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 			}
 		}
 

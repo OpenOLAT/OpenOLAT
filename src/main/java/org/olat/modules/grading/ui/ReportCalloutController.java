@@ -36,6 +36,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
@@ -169,7 +171,8 @@ public class ReportCalloutController extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		ReportResource resource = new ReportResource(roles, label, start, endInclusive, onlyClosedAssignments, referenceEntry,
 				grader, manager, getTranslator());
-		ureq.getDispatchResult().setResultingMediaResource(resource);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, resource);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

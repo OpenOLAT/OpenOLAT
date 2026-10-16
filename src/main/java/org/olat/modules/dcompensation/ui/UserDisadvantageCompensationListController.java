@@ -51,6 +51,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -297,7 +299,8 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
 				+ ".xlsx";
 		DisadvantageCompensationAuditLogExport export = new DisadvantageCompensationAuditLogExport(name, auditLogs, getTranslator());
-		ureq.getDispatchResult().setResultingMediaResource(export);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, export);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private class ToolsController extends BasicController {

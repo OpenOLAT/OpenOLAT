@@ -58,6 +58,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
@@ -455,7 +457,8 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		LectureBlockExport export = new LectureBlockExport(lectureBlock, teachers, isAdministrativeUser, authorizedAbsenceEnabled, getTranslator());
-		ureq.getDispatchResult().setResultingMediaResource(export);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, export);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private void doExportAttendanceListForSignature(UserRequest ureq, LectureBlock block) {
@@ -468,7 +471,8 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 			LecturesBlockSignaturePDFExport export = new LecturesBlockSignaturePDFExport(lectureBlock, getTranslator());
 			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
 			export.create(participants);
-			ureq.getDispatchResult().setResultingMediaResource(export);
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, export);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 		} catch (IOException | TransformerException e) {
 			logError("", e);
 		}
@@ -486,7 +490,8 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, authorizedAbsenceEnabled, getTranslator());
 			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
 			export.create(participants, rollCalls, notices);
-			ureq.getDispatchResult().setResultingMediaResource(export);
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, export);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 		} catch (IOException | TransformerException e) {
 			logError("", e);
 		}

@@ -53,6 +53,8 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
@@ -275,7 +277,8 @@ public class ContactTracingLocationListController extends FormBasicController {
 
             // Extract the location from the clicked link
             ContactTracingLocation location = (ContactTracingLocation) editLocationCalloutLink.getUserObject();
-            generateQrCodePDF(ureq, Collections.singletonList(location));
+            Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, createQrCodePdf(Collections.singletonList(location)));
+            getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
         } else if (source == editLocationCalloutLink) {
             // First close the callout
             cleanUp();
@@ -388,9 +391,12 @@ public class ContactTracingLocationListController extends FormBasicController {
             showWarning("contact.tracing.location.qr.selection.empty.warning");
             return;
         }
-        MediaResource pdf = pdfService.convert("Contact Tracing Locations.pdf", getIdentity(), new ContactTracingPDFControllerCreator(locations),
+        ureq.getDispatchResult().setResultingMediaResource(createQrCodePdf(locations));
+    }
+    
+    private MediaResource createQrCodePdf(List<ContactTracingLocation> locations) {
+        return pdfService.convert("Contact Tracing Locations.pdf", getIdentity(), new ContactTracingPDFControllerCreator(locations),
         		getWindowControl(), PdfOutputOptions.defaultOptions());
-        ureq.getDispatchResult().setResultingMediaResource(pdf);
     }
 
     private void cleanUp() {

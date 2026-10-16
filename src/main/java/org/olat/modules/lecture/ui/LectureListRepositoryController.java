@@ -104,6 +104,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -2017,7 +2019,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		List<LectureBlockAuditLog> auditLog = lectureService.getAuditLog(row);
 		RepositoryEntry re = entry == null ? lectureBlock.getEntry() : entry;
 		LectureBlockAuditLogExport export = new LectureBlockAuditLogExport(re, lectureBlock, auditLog, authorizedAbsenceEnabled, getTranslator());
-		ureq.getDispatchResult().setResultingMediaResource(export);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, export);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private void doReopen(UserRequest ureq, LectureBlockRow row) {
@@ -2294,7 +2297,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			Roles roles = ureq.getUserSession().getRoles();
 			boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 			LectureBlockExport export = new LectureBlockExport(lectureBlock, teachers, isAdministrativeUser, authorizedAbsenceEnabled, getTranslator());
-			ureq.getDispatchResult().setResultingMediaResource(export);
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, export);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 		}
 	}
 	
@@ -2314,7 +2318,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, authorizedAbsenceEnabled, getTranslator());
 				export.setTeacher(userManager.getUserDisplayName(getIdentity()));
 				export.create(participants, rollCalls, notices);
-				ureq.getDispatchResult().setResultingMediaResource(export);
+				Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, export);
+				getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 			} catch (IOException | TransformerException e) {
 				logError("", e);
 			}
@@ -2334,7 +2339,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				LecturesBlockSignaturePDFExport export = new LecturesBlockSignaturePDFExport(lectureBlock, getTranslator());
 				export.setTeacher(userManager.getUserDisplayName(getIdentity()));
 				export.create(participants);
-				ureq.getDispatchResult().setResultingMediaResource(export);
+				Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, export);
+				getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 			} catch (IOException | TransformerException e) {
 				logError("", e);
 			}

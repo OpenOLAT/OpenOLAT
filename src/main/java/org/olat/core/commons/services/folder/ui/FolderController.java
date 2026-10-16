@@ -148,6 +148,9 @@ import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationCont
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -2627,7 +2630,22 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void doDownload(UserRequest ureq, FolderRow row) {
-		if (isItemNotAvailable(ureq, row, true)) return;
+		MediaResource resource = createDownloadResource(ureq, row);
+		if (resource != null) {
+			ureq.getDispatchResult().setResultingMediaResource(resource);
+		}
+	}
+	
+	private void doDownloadFromCallout(UserRequest ureq, FolderRow row) {
+		MediaResource resource = createDownloadResource(ureq, row);
+		if (resource != null) {
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, resource);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
+		}
+	}
+	
+	private MediaResource createDownloadResource(UserRequest ureq, FolderRow row) {
+		if (isItemNotAvailable(ureq, row, true)) return null;
 		
 		VFSItem vfsItem = row.getVfsItem();
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
@@ -2636,11 +2654,11 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 			VFSMediaResource resource = new VFSMediaResource(vfsLeaf);
 			resource.setDownloadable(true);
-			ureq.getDispatchResult().setResultingMediaResource(resource);
+			return resource;
 		} else if (vfsItem instanceof VFSContainer vfsContainer) {
-			FolderZipMediaResource resource = new FolderZipMediaResource(List.of(vfsContainer));
-			ureq.getDispatchResult().setResultingMediaResource(resource);
+			return new FolderZipMediaResource(List.of(vfsContainer));
 		}
+		return null;
 	}
 	
 	private void doBulkDownload(UserRequest ureq) {
@@ -3570,7 +3588,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				} else if (CMD_FILE_EDITOR.equals(cmd)) {
 					doOpenFileInEditor(ureq, row);
 				} else if (CMD_DOWNLOAD.equals(cmd)) {
-					doDownload(ureq, row);
+					doDownloadFromCallout(ureq, row);
 				} else if (CMD_MOVE.equals(cmd)) {
 					doMoveSelectFolder(ureq, row);
 				} else if (CMD_COPY.equals(cmd)) {

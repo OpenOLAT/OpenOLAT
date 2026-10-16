@@ -74,7 +74,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
@@ -690,19 +692,20 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				.filter(Objects::nonNull)
 				.map(CurriculumRow::getCurriculum)
 				.toList();
-		doExport(ureq, curriculums);
+		ureq.getDispatchResult().setResultingMediaResource(createExportResource(curriculums));
 	}
 	
 	private void doExport(UserRequest ureq, CurriculumRow row) {
-		doExport(ureq, List.of(row.getCurriculum()));
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, createExportResource(List.of(row.getCurriculum())));
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 
-	private void doExport(UserRequest ureq, List<Curriculum> curriculums) {
+	private MediaResource createExportResource(List<Curriculum> curriculums) {
 		List<ContextEntry> entries = getWindowControl().getBusinessControl().getEntries();
 		String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
 		
 		CurriculumExport export = new CurriculumExport(curriculums, getIdentity(), roles, url, getTranslator());
-		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
+		return export.createMediaResource();
 	}
 	
 	private void doOpenCurriculumDetails(UserRequest ureq, CurriculumRow row) {

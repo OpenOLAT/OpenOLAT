@@ -58,6 +58,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -593,7 +595,8 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	
 	private void doExportLog(UserRequest ureq, RosterRow row) {
 		MediaResource log = chatLog.logMediaResource(chatResource, resSubPath, row.getChannel(), getLocale());
-		ureq.getDispatchResult().setResultingMediaResource(log);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, log);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private class ToolsController extends BasicController {

@@ -85,7 +85,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -1491,7 +1493,8 @@ public class CurriculumComposerController extends FormBasicController implements
 
 		CurriculumElement element = curriculumService.getCurriculumElement(row.getCurriculumElement());
 		List<CurriculumElement> elements = List.of(element);
-		doExport(ureq, curriculums, elements);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, createExportResource(ureq, curriculums, elements));
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private void doBulkCreateToDo(UserRequest ureq) {
@@ -1561,17 +1564,17 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(curriculumElements.isEmpty()) {
 			showWarning("curriculums.elements.bulk.delete.empty.selection");
 		} else {
-			doExport(ureq, curriculums, curriculumElements);
+			ureq.getDispatchResult().setResultingMediaResource(createExportResource(ureq, curriculums, curriculumElements));
 		}
 	}
 
-	private void doExport(UserRequest ureq, List<Curriculum> curriculums, List<CurriculumElement> implementations) {
+	private MediaResource createExportResource(UserRequest ureq, List<Curriculum> curriculums, List<CurriculumElement> implementations) {
 		List<ContextEntry> entries = getWindowControl().getBusinessControl().getEntries();
 		String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
 		Roles roles = ureq.getUserSession().getRoles();
 		
 		CurriculumExport export = new CurriculumExport(curriculums, implementations, getIdentity(), roles, url, getTranslator());
-		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
+		return export.createMediaResource();
 	}
 	
 	private void launch(UserRequest ureq, RepositoryEntryRef ref) {

@@ -58,6 +58,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -270,13 +273,13 @@ public class PoolsAdminController extends FormBasicController {
 
 	private void doExportMembers(UserRequest ureq) {
 		ResultInfos<Pool> pools = qpoolService.getPools(0, -1);
-		doExportMembers(ureq, pools.getObjects());
+		ureq.getDispatchResult().setResultingMediaResource(createMembersExport(ureq, pools.getObjects()));
 	}
 	
-	private void doExportMembers(UserRequest ureq, List<Pool> pools) {
+	private MediaResource createMembersExport(UserRequest ureq, List<Pool> pools) {
 		Roles roles = ureq.getUserSession().getRoles();
 		PoolMembersExport export = new PoolMembersExport("Pool_members", pools, roles, getTranslator());
-		ureq.getDispatchResult().setResultingMediaResource(export);
+		return export;
 	}
 	
 	private void doOpenTools(UserRequest ureq, Pool row, String targetId) {
@@ -379,7 +382,8 @@ public class PoolsAdminController extends FormBasicController {
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			if(exportLink == source) {
-				doExportMembers(ureq, List.of(row));
+				Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, createMembersExport(ureq, List.of(row)));
+				getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 			}
 		}
 	}

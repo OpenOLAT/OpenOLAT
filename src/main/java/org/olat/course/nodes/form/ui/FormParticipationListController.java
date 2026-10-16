@@ -74,6 +74,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -593,7 +595,8 @@ public class FormParticipationListController extends FormBasicController impleme
 		String filename = generateExportPdfName(identity);
 		MediaResource resource = pdfService.convert(filename, getIdentity(), printControllerCreator,
 				getWindowControl(), PdfOutputOptions.defaultOptions());
-		ureq.getDispatchResult().setResultingMediaResource(resource);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, resource);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private String generateExportPdfName(Identity identity) {

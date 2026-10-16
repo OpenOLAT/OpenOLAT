@@ -55,6 +55,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
@@ -303,7 +305,8 @@ public class ThreadListController extends FormBasicController {
 	
 	private void doArchiveForum(UserRequest ureq) {
 		ForumDownloadResource download = new ForumDownloadResource("Forum", forum, foCallback, null, getLocale());
-		ureq.getDispatchResult().setResultingMediaResource(download);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, download);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private void doNewThread(UserRequest ureq) {

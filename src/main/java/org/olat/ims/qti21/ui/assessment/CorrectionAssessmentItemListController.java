@@ -61,6 +61,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -706,7 +708,8 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	
 	private void doExportEssayPdfs(UserRequest ureq, CorrectionAssessmentItemRow row) {
 		MediaResource resource = new EssaysPdfMediaResource(model, row.getItemRef(), anonymous, getLocale(), getIdentity(), getWindowControl());
-		ureq.getDispatchResult().setResultingMediaResource(resource);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, resource);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private class ToolsController extends BasicController {

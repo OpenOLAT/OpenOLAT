@@ -40,6 +40,8 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -427,7 +429,8 @@ public abstract class AbstractToolsController extends BasicController {
 		String filename = generateExportPdfName(assessedIdentity);
 		MediaResource resource = pdfService.convert(filename, getIdentity(), printControllerCreator,
 				getWindowControl(), PdfOutputOptions.defaultOptions());
-		ureq.getDispatchResult().setResultingMediaResource(resource);
+		Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, resource);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 		
 	}
 
