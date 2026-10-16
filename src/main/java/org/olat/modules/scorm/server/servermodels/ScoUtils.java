@@ -128,6 +128,62 @@ public final class ScoUtils {
 
 
     /**
+     * Calculates the total_time to store for a SCO: the total time as it was when
+     * the SCO was launched plus the session time reported in the current session.
+     * Because the result is always derived from the launch value, repeated commits
+     * of the same session are idempotent and the session is counted exactly once.
+     * A session time above maxSessionSeconds (e.g. a browser tab left open for days)
+     * is capped, an empty or malformed session time is ignored.
+     *
+     * @param launchTotalTime the cmi.core.total_time stored when the SCO was launched
+     * @param sessionTime the cmi.core.session_time sent by the SCO, can be null or empty
+     * @param maxSessionSeconds the longest accepted session in seconds
+     * @return a CMITimespan, or the launch total time if there is no usable session time
+     */
+    public static String addCappedSessionTime(String launchTotalTime, String sessionTime, int maxSessionSeconds) {
+        long seconds = toSeconds(sessionTime);
+        if (seconds < 0) {
+            return launchTotalTime;
+        }
+        String cappedSessionTime = sessionTime.trim();
+        if (seconds > maxSessionSeconds) {
+            cappedSessionTime = formatSeconds(maxSessionSeconds);
+        }
+        try {
+            return addTimes(launchTotalTime, cappedSessionTime);
+        } catch (RuntimeException e) {
+            // malformed launch total time
+            return launchTotalTime;
+        }
+    }
+
+    /**
+     * @param time a CMITimespan, can be null or empty
+     * @return the number of whole seconds of the timespan, or -1 if the
+     *      timespan is empty or malformed
+     */
+    public static long toSeconds(String time) {
+        if (time == null || time.trim().isEmpty()) {
+            return -1;
+        }
+        try {
+            int[] bits = parseTime(time.trim());
+            return bits[0] * 3600L + bits[1] * 60L + bits[2];
+        } catch (RuntimeException e) {
+            // NumberFormatException or ArrayIndexOutOfBoundsException on a malformed timespan
+            return -1;
+        }
+    }
+
+    /**
+     * @param seconds a positive number of seconds
+     * @return a CMITimespan in the format HH:MM:SS
+     */
+    public static String formatSeconds(long seconds) {
+        return String.format("%02d:%02d:%02d", seconds / 3600, (seconds % 3600) / 60, seconds % 60);
+    }
+
+    /**
      * Method to take in a CMITimespan string value and return an integer
      * array of the values it contains, so that we can can perform arithmetic
      * @param strtime strin CMITimespan
