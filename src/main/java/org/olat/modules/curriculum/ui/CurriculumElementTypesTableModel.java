@@ -25,6 +25,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
@@ -34,10 +35,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class CurriculumElementTypesTableModel extends DefaultFlexiTableDataModel<CurriculumElementTypeRow>
-implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
+implements SortableFlexiTableDataModel<CurriculumElementTypeRow>, KeyedFlexiTableDataModel<CurriculumElementTypeRow> {
 	
 	public CurriculumElementTypesTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
+	}
+	
+	@Override
+	public Object getObjectKey(CurriculumElementTypeRow typeRow) {
+		return typeRow.getKey();
 	}
 	
 	@Override

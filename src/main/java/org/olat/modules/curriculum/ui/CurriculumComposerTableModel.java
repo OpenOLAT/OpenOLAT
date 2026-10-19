@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
@@ -54,7 +55,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  *
  */
 public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel<CurriculumElementRow>
-implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElementRow> {
+implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElementRow>, KeyedFlexiTableDataModel<CurriculumElementRow> {
 
 	private static final ElementCols[] COLS = ElementCols.values();
 	
@@ -66,6 +67,11 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 		this.flat = flat;
 		this.locale = locale;
 		setObjects(new ArrayList<>());
+	}
+	
+	@Override
+	public Object getObjectKey(CurriculumElementRow elementRow) {
+		return elementRow.getKey();
 	}
 
 	@Override

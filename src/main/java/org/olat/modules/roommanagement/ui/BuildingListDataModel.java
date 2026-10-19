@@ -28,6 +28,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class BuildingListDataModel extends DefaultFlexiTableDataModel<BuildingRow>
-		implements SortableFlexiTableDataModel<BuildingRow> {
+		implements SortableFlexiTableDataModel<BuildingRow>, KeyedFlexiTableDataModel<BuildingRow> {
 
 	private static final BuildingCols[] COLS = BuildingCols.values();
 	private final Locale locale;
@@ -44,6 +45,11 @@ public class BuildingListDataModel extends DefaultFlexiTableDataModel<BuildingRo
 	public BuildingListDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(BuildingRow buildingRow) {
+		return buildingRow.getBuilding().getKey();
 	}
 
 	@Override

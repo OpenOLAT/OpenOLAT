@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
@@ -39,7 +40,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonServer;
  *
  */
 public class BigBlueButtonMeetingTableModel extends DefaultFlexiTableDataModel<BigBlueButtonMeetingRow>
-implements SortableFlexiTableDataModel<BigBlueButtonMeetingRow> {
+implements SortableFlexiTableDataModel<BigBlueButtonMeetingRow>, KeyedFlexiTableDataModel<BigBlueButtonMeetingRow> {
 	
 	private static final BMeetingsCols[] COLS = BMeetingsCols.values();
 	
@@ -48,6 +49,11 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeetingRow> {
 	public BigBlueButtonMeetingTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(BigBlueButtonMeetingRow meetingRow) {
+		return meetingRow.getKey();
 	}
 
 	@Override

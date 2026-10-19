@@ -23,6 +23,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
@@ -31,12 +32,17 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<PendingMembershipRow> 
-		implements SortableFlexiTableDataModel<PendingMembershipRow> {
+		implements SortableFlexiTableDataModel<PendingMembershipRow>, KeyedFlexiTableDataModel<PendingMembershipRow> {
 	
 	private static final PendingMembershipCol[] COLS = PendingMembershipCol.values();
 
 	public PendingMembershipsTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(PendingMembershipRow membershipRow) {
+		return membershipRow.getReservationKey();
 	}
 
 	@Override

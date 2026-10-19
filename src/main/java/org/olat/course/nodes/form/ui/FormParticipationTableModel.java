@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
@@ -38,7 +39,7 @@ import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
  *
  */
 public class FormParticipationTableModel extends DefaultFlexiTableDataModel<FormParticipationRow>
-	implements SortableFlexiTableDataModel<FormParticipationRow> {
+	implements SortableFlexiTableDataModel<FormParticipationRow>, KeyedFlexiTableDataModel<FormParticipationRow> {
 	
 	public static final int USER_PROPS_OFFSET = 500;
 	public static final String USAGE_IDENTIFIER = FormParticipationTableModel.class.getCanonicalName();
@@ -49,6 +50,11 @@ public class FormParticipationTableModel extends DefaultFlexiTableDataModel<Form
 	public FormParticipationTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(FormParticipationRow participationRow) {
+		return participationRow.getIdentityKey();
 	}
 	
 	@Override

@@ -40,6 +40,7 @@ public class ActionsCellRenderer extends StaticFlexiCellRenderer {
 		super("", CMD_ACTIONS);
 		setIconLeftCSS("o_icon-lg o_icon-fws o_icon_actions");
 		setLinkTitle(translator.translate("action.more"));
+		setAriaDialogOpener();
 	}
 	
 	@Override

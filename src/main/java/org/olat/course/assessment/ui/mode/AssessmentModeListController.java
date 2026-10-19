@@ -573,6 +573,7 @@ public class AssessmentModeListController extends FormBasicController implements
 
 		public ToolsCellRenderer(String label, String action) {
 			super(null, action, false, false, null, "o_icon o_icon_actions o_icon-fw o_icon-lg", label);
+			setAriaDialogOpener();
 		}
 
 		@Override

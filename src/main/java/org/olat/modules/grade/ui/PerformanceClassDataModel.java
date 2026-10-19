@@ -22,6 +22,7 @@ package org.olat.modules.grade.ui;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 
 /**
  * 
@@ -29,13 +30,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.comm
  *
  */
-public class PerformanceClassDataModel extends DefaultFlexiTableDataModel<PerformanceClassRow> {
+public class PerformanceClassDataModel extends DefaultFlexiTableDataModel<PerformanceClassRow> implements KeyedFlexiTableDataModel<PerformanceClassRow> {
 	
 	private static final PerformanceClassCols[] COLS = PerformanceClassCols.values();
 	
 	
 	public PerformanceClassDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
+	}
+	
+	@Override
+	public Object getObjectKey(PerformanceClassRow performanceClassRow) {
+		return performanceClassRow.getIdentifier();
 	}
 
 	@Override

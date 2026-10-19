@@ -25,6 +25,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
@@ -34,10 +35,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class CalendarPersonalConfigurationDataModel extends DefaultFlexiTableDataModel<CalendarPersonalConfigurationRow>
-	implements SortableFlexiTableDataModel<CalendarPersonalConfigurationRow> {
+	implements SortableFlexiTableDataModel<CalendarPersonalConfigurationRow>, KeyedFlexiTableDataModel<CalendarPersonalConfigurationRow> {
 	
 	public CalendarPersonalConfigurationDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(CalendarPersonalConfigurationRow calendarRow) {
+		return calendarRow.getCalendarType() + "-" + calendarRow.getCalendarId();
 	}
 
 	@Override

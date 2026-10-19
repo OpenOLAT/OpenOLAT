@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 
 /**
  * 
@@ -31,12 +32,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CertificationProgramNotificationsTableModel extends DefaultFlexiTableDataModel<CertificationProgramNotificationRow> {
+public class CertificationProgramNotificationsTableModel extends DefaultFlexiTableDataModel<CertificationProgramNotificationRow>
+implements KeyedFlexiTableDataModel<CertificationProgramNotificationRow> {
 	
 	private static final NotificationsCols[] COLS = NotificationsCols.values();
 	
 	public CertificationProgramNotificationsTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
+	}
+	
+	@Override
+	public Object getObjectKey(CertificationProgramNotificationRow notificationRow) {
+		return notificationRow.getKey();
 	}
 	
 	public int getIndexByKey(Long notificationKey) {

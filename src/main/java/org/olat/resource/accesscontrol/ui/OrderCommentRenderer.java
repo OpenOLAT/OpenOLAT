@@ -79,15 +79,18 @@ public class OrderCommentRenderer implements FlexiCellRenderer, ActionDelegateCe
 		String id = source.getFormDispatchId();
 		Form rootForm = ftE.getRootForm();
 		String actionId = getId(row);
+		String title = StringHelper.escapeHtml(translator.translate("table.header.order.comment"));
 		
 		NameValuePair pair = new NameValuePair(CMD_COMMENT, Integer.toString(row));
 		String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, true, false, pair);
 		target.append("<a id=\"").append(actionId).append("\" href=\"javascript:;\" onclick=\"")
 		      .append(jsCode).append("; return false;\"")
-		      .append(FormJSHelper.triggerClickOnKeyDown(false))
+		      .append(FormJSHelper.triggerClickOnKeyDown(true))
+		      .append(" role=\"button\" aria-haspopup=\"dialog\" aria-expanded=\"false\"")
 		      .append(" class=\"o_validation_open_results\"")
-		      .append(" title=\"").append(translator.translate("table.header.order.comment")).append("\">")
-		      .append("<i class='o_icon o_icon-lg o_icon_notes'> </i> ")
+		      .append(" title=\"").append(title).append("\">")
+		      .append("<i class='o_icon o_icon-lg o_icon_notes' aria-hidden='true'> </i> ")
+		      .append("<span class='sr-only'>").append(title).append("</span>")
 		      .append("</a>");
 	}
 }

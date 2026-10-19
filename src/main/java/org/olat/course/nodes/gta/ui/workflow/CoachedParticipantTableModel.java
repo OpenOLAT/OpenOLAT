@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -48,7 +49,7 @@ import org.olat.course.nodes.gta.model.DueDate;
  *
  */
 public class CoachedParticipantTableModel  extends DefaultFlexiTableDataModel<CoachedParticipantRow>
-implements SortableFlexiTableDataModel<CoachedParticipantRow>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<CoachedParticipantRow>, FilterableFlexiTableModel, KeyedFlexiTableDataModel<CoachedParticipantRow> {
 	
 	private static final CoachCols[] COLS = CoachCols.values();
 	
@@ -60,6 +61,11 @@ implements SortableFlexiTableDataModel<CoachedParticipantRow>, FilterableFlexiTa
 		super(columnModel);
 		this.locale = locale;
 		this.identity = identity;
+	}
+	
+	@Override
+	public Object getObjectKey(CoachedParticipantRow participantRow) {
+		return participantRow.getIdentityKey();
 	}
 	
 	@Override

@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
@@ -42,7 +43,7 @@ import org.olat.modules.certificationprogram.ui.CertificationStatus;
  *
  */
 public class CertificatesListDataModel extends DefaultFlexiTableDataModel<CertificateRow>
-implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableModel, KeyedFlexiTableDataModel<CertificateRow> {
 	
 	private CertificateCols[] COLS = CertificateCols.values();
 	
@@ -52,6 +53,11 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 	public CertificatesListDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(CertificateRow certificateRow) {
+		return certificateRow.getKey();
 	}
 
 	@Override

@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class ReasonAdminDataModel extends DefaultFlexiTableDataModel<ReasonRow>
-implements SortableFlexiTableDataModel<ReasonRow> {
+implements SortableFlexiTableDataModel<ReasonRow>, KeyedFlexiTableDataModel<ReasonRow> {
 	
 	private static final ReasonCols[] COLS = ReasonCols.values();
 	private final Locale locale;
@@ -44,6 +45,11 @@ implements SortableFlexiTableDataModel<ReasonRow> {
 	public ReasonAdminDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(ReasonRow reasonRow) {
+		return reasonRow.getReason().getKey();
 	}
 
 	@Override

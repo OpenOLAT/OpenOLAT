@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.core.util.session.UserSessionManager;
@@ -38,7 +39,7 @@ import org.olat.instantMessaging.model.Presence;
  *
  */
 public class AssessmentInspectionOverviewListModel extends DefaultFlexiTableDataModel<AssessmentInspectionRow>
-implements SortableFlexiTableDataModel<AssessmentInspectionRow> {
+implements SortableFlexiTableDataModel<AssessmentInspectionRow>, KeyedFlexiTableDataModel<AssessmentInspectionRow> {
 	
 	private static final OverviewCols[] COLS = OverviewCols.values();
 
@@ -52,6 +53,11 @@ implements SortableFlexiTableDataModel<AssessmentInspectionRow> {
 		this.locale = locale;
 		this.identity = identity;
 		this.sessionManager = sessionManager;
+	}
+	
+	@Override
+	public Object getObjectKey(AssessmentInspectionRow inspectionRow) {
+		return inspectionRow.getInspection().getKey();
 	}
 	
 	@Override

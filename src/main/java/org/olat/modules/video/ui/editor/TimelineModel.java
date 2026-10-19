@@ -30,6 +30,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -37,7 +38,7 @@ import org.olat.core.util.StringHelper;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow> {
+public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow> implements KeyedFlexiTableDataModel<TimelineRow> {
 
 	// Video length in milliseconds
 	private long videoLength;
@@ -62,6 +63,11 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 
 	public TimelineModel(FlexiTableDataSourceDelegate<TimelineRow> dataSource, FlexiTableColumnModel columnModel) {
 		super(dataSource, columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(TimelineRow timelineRow) {
+		return timelineRow.getId();
 	}
 
 	@Override

@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -48,7 +49,7 @@ import org.olat.resource.accesscontrol.ResourceReservation;
  *
  */
 public class MemberManagementTableModel extends DefaultFlexiTableDataModel<MemberRow>
-implements SortableFlexiTableDataModel<MemberRow>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<MemberRow>, FilterableFlexiTableModel, KeyedFlexiTableDataModel<MemberRow> {
 	
 	private static final MemberCols[] COLS = MemberCols.values();
 	
@@ -63,6 +64,11 @@ implements SortableFlexiTableDataModel<MemberRow>, FilterableFlexiTableModel {
 		this.locale = locale;
 		this.translator = translator;
 		this.onlineStatusEnabled = onlineStatusEnabled;
+	}
+	
+	@Override
+	public Object getObjectKey(MemberRow memberRow) {
+		return memberRow.getIdentityKey();
 	}
 
 	@Override

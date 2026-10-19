@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -38,7 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class CertificationProgramOwnersTableModel extends DefaultFlexiTableDataModel<CertificationProgramOwnerRow>
-implements SortableFlexiTableDataModel<CertificationProgramOwnerRow>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<CertificationProgramOwnerRow>, FilterableFlexiTableModel, KeyedFlexiTableDataModel<CertificationProgramOwnerRow> {
 	
 	private static final CertificationProgramOwnersCols[] COLS = CertificationProgramOwnersCols.values();
 	
@@ -47,6 +48,11 @@ implements SortableFlexiTableDataModel<CertificationProgramOwnerRow>, Filterable
 	public CertificationProgramOwnersTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(CertificationProgramOwnerRow ownerRow) {
+		return ownerRow.getIdentityKey();
 	}
 	
 	@Override

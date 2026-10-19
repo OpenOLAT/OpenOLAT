@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.modules.lecture.ui.TeacherRollCallController;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -37,7 +38,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GradersListTableModel extends DefaultFlexiTableDataModel<GraderRow> implements SortableFlexiTableDataModel<GraderRow> {
+public class GradersListTableModel extends DefaultFlexiTableDataModel<GraderRow> implements SortableFlexiTableDataModel<GraderRow>, KeyedFlexiTableDataModel<GraderRow> {
 	
 	private static final GradersCol[] COLS = GradersCol.values();
 	
@@ -48,6 +49,11 @@ public class GradersListTableModel extends DefaultFlexiTableDataModel<GraderRow>
 		super(columnModel);
 		this.locale = locale;
 		this.userPropertyHandlers = userPropertyHandlers;
+	}
+	
+	@Override
+	public Object getObjectKey(GraderRow graderRow) {
+		return graderRow.getGrader() == null ? null : graderRow.getGrader().getKey();
 	}
 
 	@Override

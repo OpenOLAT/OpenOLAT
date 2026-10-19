@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -47,7 +48,7 @@ import org.olat.user.ui.identity.UserXlsFlexiTableExporter;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> implements SortableFlexiTableDataModel<MemberRow>, ExportableFlexiTableDataModel {
+public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> implements SortableFlexiTableDataModel<MemberRow>, ExportableFlexiTableDataModel, KeyedFlexiTableDataModel<MemberRow> {
 	
 	private static final Cols[] COLS = Cols.values();
 	
@@ -59,6 +60,11 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 		super(columnModel);
 		this.presenceTranslator = Util.createPackageTranslator(UserPortraitComponent.class, locale);
 		this.onlineStatusEnabled = onlineStatusEnabled;
+	}
+	
+	@Override
+	public Object getObjectKey(MemberRow memberRow) {
+		return memberRow.getIdentityKey();
 	}
 
 	@Override

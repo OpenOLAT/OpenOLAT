@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -42,7 +43,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  */
 public class AbsenceNoticesListTableModel extends DefaultFlexiTableDataModel<AbsenceNoticeRow>
-implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
+implements SortableFlexiTableDataModel<AbsenceNoticeRow>, KeyedFlexiTableDataModel<AbsenceNoticeRow> {
 	
 	private static final NoticeCols[] COLS = NoticeCols.values();
 	
@@ -56,6 +57,11 @@ implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
 		this.locale = locale;
 		this.userManager = userManager;
 		this.userPropertyHandlers = userPropertyHandlers;
+	}
+	
+	@Override
+	public Object getObjectKey(AbsenceNoticeRow noticeRow) {
+		return noticeRow.getKey();
 	}
 
 	@Override

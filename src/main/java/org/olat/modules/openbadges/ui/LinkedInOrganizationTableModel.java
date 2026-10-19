@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -35,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class LinkedInOrganizationTableModel extends DefaultFlexiTableDataModel<LinkedInOrganizationRow>
-		implements SortableFlexiTableDataModel<LinkedInOrganizationRow> {
+		implements SortableFlexiTableDataModel<LinkedInOrganizationRow>, KeyedFlexiTableDataModel<LinkedInOrganizationRow> {
 
 	private static final Columns[] COLS = Columns.values();
 	private final Locale locale;
@@ -43,6 +44,11 @@ public class LinkedInOrganizationTableModel extends DefaultFlexiTableDataModel<L
 	public LinkedInOrganizationTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(LinkedInOrganizationRow organizationRow) {
+		return organizationRow.getBadgeOrganization() == null ? null : organizationRow.getBadgeOrganization().getKey();
 	}
 
 	@Override

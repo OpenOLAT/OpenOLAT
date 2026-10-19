@@ -22,17 +22,23 @@ package org.olat.course.nodes.pf.ui;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 
 import java.util.List;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, https://www.frentix.com
  */
-public class PFFolderTemplateTreeTableModel extends DefaultFlexiTreeTableDataModel<PFFolderTemplateRow> {
+public class PFFolderTemplateTreeTableModel extends DefaultFlexiTreeTableDataModel<PFFolderTemplateRow> implements KeyedFlexiTableDataModel<PFFolderTemplateRow> {
 
     public PFFolderTemplateTreeTableModel(FlexiTableColumnModel tableColumnModel) {
         super(tableColumnModel);
     }
+	
+	@Override
+	public Object getObjectKey(PFFolderTemplateRow templateRow) {
+		return templateRow.getFolderPath();
+	}
 
     @Override
     public boolean hasChildren(int row) {

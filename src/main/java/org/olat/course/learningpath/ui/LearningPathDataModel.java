@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 
 /**
  * 
@@ -32,12 +33,17 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<LearningPathRow> {
+public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<LearningPathRow> implements KeyedFlexiTableDataModel<LearningPathRow> {
 	
 	private static final LearningPathCols[] COLS = LearningPathCols.values();
 
 	public LearningPathDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
+	}
+	
+	@Override
+	public Object getObjectKey(LearningPathRow pathRow) {
+		return pathRow.getCourseNode() == null ? null : pathRow.getCourseNode().getIdent();
 	}
 
 	@Override

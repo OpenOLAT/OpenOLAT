@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
@@ -57,7 +58,7 @@ import org.olat.modules.certificationprogram.ui.component.NextRecertificationInD
  *
  */
 public class CertificationProgramMembersTableModel extends DefaultFlexiTableDataModel<CertificationProgramMemberRow>
-implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, FilterableFlexiTableModel, KeyedFlexiTableDataModel<CertificationProgramMemberRow> {
 	
 	private static final CertificationProgramMembersCols[] COLS = CertificationProgramMembersCols.values();
 	
@@ -69,6 +70,11 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 		super(columnModel);
 		this.locale = locale;
 		this.creditPointsLimit = creditPointsLimit;
+	}
+	
+	@Override
+	public Object getObjectKey(CertificationProgramMemberRow memberRow) {
+		return memberRow.getIdentityKey();
 	}
 	
 	@Override

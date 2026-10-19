@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class OrganisationEmailDomainDataModel extends DefaultFlexiTableDataModel<OrganisationEmailDomainRow>
-implements SortableFlexiTableDataModel<OrganisationEmailDomainRow> {
+implements SortableFlexiTableDataModel<OrganisationEmailDomainRow>, KeyedFlexiTableDataModel<OrganisationEmailDomainRow> {
 	
 	private static final OrganisationEmailDomainCols[] COLS = OrganisationEmailDomainCols.values();
 	private final Locale locale;
@@ -44,6 +45,11 @@ implements SortableFlexiTableDataModel<OrganisationEmailDomainRow> {
 	public OrganisationEmailDomainDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(OrganisationEmailDomainRow domainRow) {
+		return domainRow.getEmailDomain() == null ? null : domainRow.getEmailDomain().getKey();
 	}
 
 	@Override

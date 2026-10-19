@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class BillingAddressDataModel extends DefaultFlexiTableDataModel<BillingAddressRow>
-implements SortableFlexiTableDataModel<BillingAddressRow> {
+implements SortableFlexiTableDataModel<BillingAddressRow>, KeyedFlexiTableDataModel<BillingAddressRow> {
 	
 	private static final BillingAddressCols[] COLS = BillingAddressCols.values();
 	private final Locale locale;
@@ -44,6 +45,11 @@ implements SortableFlexiTableDataModel<BillingAddressRow> {
 	public BillingAddressDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(BillingAddressRow addressRow) {
+		return addressRow.getBillingAddress().getKey();
 	}
 
 	@Override

@@ -22,18 +22,24 @@ package org.olat.modules.ceditor.ui;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 
 /**
  * Initial date: 2024-04-29<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class GalleryModel extends DefaultFlexiTableDataModel<GalleryRow> {
+public class GalleryModel extends DefaultFlexiTableDataModel<GalleryRow> implements KeyedFlexiTableDataModel<GalleryRow> {
 
 	private static final GalleryColumn[] COLS = GalleryColumn.values();
 
 	public GalleryModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(GalleryRow galleryRow) {
+		return galleryRow.getRelation() == null ? null : galleryRow.getRelation().getKey();
 	}
 
 	@Override

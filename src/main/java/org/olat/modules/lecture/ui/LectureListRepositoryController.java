@@ -1143,6 +1143,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			toolsLink.setDomReplacementWrapperRequired(false);
 			toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions");
 			toolsLink.setTitle(translate("action.more"));
+			toolsLink.setAriaDialogOpener();
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}

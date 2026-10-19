@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
@@ -35,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRow> implements SortableFlexiTableDataModel<ToDoTaskRow> {
+public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRow> implements SortableFlexiTableDataModel<ToDoTaskRow>, KeyedFlexiTableDataModel<ToDoTaskRow> {
 	
 	public static final ToDoTaskCols[] COLS = ToDoTaskCols.values();
 
@@ -50,6 +51,11 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 		this.groupFactory = groupFactory;
 		this.maxRows = maxRows;
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(ToDoTaskRow toDoTaskRow) {
+		return toDoTaskRow.getKey();
 	}
 	
 	public ToDoTaskRow getObjectByKey(Long key) {

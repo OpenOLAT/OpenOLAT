@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
@@ -37,7 +38,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
  *
  */
 public class BigBlueButtonRecordingTableModel extends DefaultFlexiTableDataModel<BigBlueButtonRecordingRow>
-implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow> {
+implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow>, KeyedFlexiTableDataModel<BigBlueButtonRecordingRow> {
 	
 	private static final BRecordingsCols[] COLS = BRecordingsCols.values();
 	
@@ -48,6 +49,11 @@ implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow> {
 		super(columnsModel);
 		this.locale = locale;
 		this.defaultPermanentRecording = defaultPermanentRecording;
+	}
+	
+	@Override
+	public Object getObjectKey(BigBlueButtonRecordingRow recordingRow) {
+		return recordingRow.getRecording().getRecordId();
 	}
 
 	@Override

@@ -856,9 +856,13 @@ public class RoomSchedulingController extends FormBasicController implements Fle
 
 			NameValuePair pair = new NameValuePair(CMD_WARNINGS, Integer.toString(row));
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, true, false, pair);
+			String title = translator.translate("room.scheduling.col.warnings");
 			target.append("<a id=\"").append(actionId).append("\" href=\"javascript:;\" onclick=\"")
-				  .append(jsCode).append("; return false;\">")
-				  .append("<i class=\"o_icon o_icon_warn\"> </i>")
+				  .append(jsCode).append("; return false;\"")
+				  .append(FormJSHelper.triggerClickOnKeyDown(true))
+				  .append(" role=\"button\" aria-haspopup=\"dialog\" aria-expanded=\"false\">")
+				  .append("<i class=\"o_icon o_icon_warn\" aria-hidden=\"true\" title=\"").appendHtmlAttributeEscaped(title).append("\"> </i>")
+				  .append("<span class=\"sr-only\">").appendHtmlEscaped(title).append("</span>")
 				  .append("</a>");
 		}
 	}

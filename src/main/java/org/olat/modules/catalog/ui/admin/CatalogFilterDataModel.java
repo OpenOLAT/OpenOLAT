@@ -22,6 +22,7 @@ package org.olat.modules.catalog.ui.admin;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 
 /**
  * 
@@ -29,13 +30,19 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.comm
  *
  */
-public class CatalogFilterDataModel extends DefaultFlexiTableDataModel<CatalogFilterRow> {
+public class CatalogFilterDataModel extends DefaultFlexiTableDataModel<CatalogFilterRow>
+implements KeyedFlexiTableDataModel<CatalogFilterRow> {
 	
 	private static final CatalogFilterCols[] COLS = CatalogFilterCols.values();
 	
 	
 	public CatalogFilterDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
+	}
+	
+	@Override
+	public Object getObjectKey(CatalogFilterRow filterRow) {
+		return filterRow.getCatalogFilter().getKey();
 	}
 
 	@Override

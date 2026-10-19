@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class OfferSurveyParticipationListTableModel extends DefaultFlexiTableDataModel<OfferSurveyParticipationRow>
-		implements SortableFlexiTableDataModel<OfferSurveyParticipationRow> {
+		implements SortableFlexiTableDataModel<OfferSurveyParticipationRow>, KeyedFlexiTableDataModel<OfferSurveyParticipationRow> {
 
 	private static final OfferSurveyParticipationCols[] COLS = OfferSurveyParticipationCols.values();
 
@@ -45,6 +46,11 @@ public class OfferSurveyParticipationListTableModel extends DefaultFlexiTableDat
 	public OfferSurveyParticipationListTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(OfferSurveyParticipationRow participationRow) {
+		return participationRow.getKey();
 	}
 
 	@Override

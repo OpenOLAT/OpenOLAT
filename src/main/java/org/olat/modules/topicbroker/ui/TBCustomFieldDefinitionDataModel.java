@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 
 /**
  * 
@@ -31,12 +32,17 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class TBCustomFieldDefinitionDataModel extends DefaultFlexiTableDataModel<TBCustomFieldDefinitionRow> {
+public class TBCustomFieldDefinitionDataModel extends DefaultFlexiTableDataModel<TBCustomFieldDefinitionRow> implements KeyedFlexiTableDataModel<TBCustomFieldDefinitionRow> {
 	
 	private static final CustomFieldDefinitionCols[] COLS = CustomFieldDefinitionCols.values();
 
 	public TBCustomFieldDefinitionDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
+	}
+	
+	@Override
+	public Object getObjectKey(TBCustomFieldDefinitionRow definitionRow) {
+		return definitionRow.getKey();
 	}
 	
 	public TBCustomFieldDefinitionRow getObjectByKey(Long key) {

@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.ims.qti21.ui.assessment.model.CorrectionAssessmentItemRow;
 
@@ -45,7 +46,7 @@ import org.olat.ims.qti21.ui.assessment.model.CorrectionAssessmentItemRow;
  *
  */
 public class CorrectionAssessmentItemTableModel extends DefaultFlexiTableDataModel<CorrectionAssessmentItemRow>
-implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow>, FilterableFlexiTableModel, KeyedFlexiTableDataModel<CorrectionAssessmentItemRow> {
 
 	private final Locale locale;
 	
@@ -54,6 +55,11 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow>, FilterableF
 	public CorrectionAssessmentItemTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(CorrectionAssessmentItemRow itemRow) {
+		return itemRow.getItemRef().getIdentifier().toString();
 	}
 	
 	@Override

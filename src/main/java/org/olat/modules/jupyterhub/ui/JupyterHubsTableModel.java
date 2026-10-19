@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
@@ -35,7 +36,7 @@ import org.olat.core.util.StringHelper;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class JupyterHubsTableModel extends DefaultFlexiTableDataModel<JupyterHubRow> implements SortableFlexiTableDataModel<JupyterHubRow> {
+public class JupyterHubsTableModel extends DefaultFlexiTableDataModel<JupyterHubRow> implements SortableFlexiTableDataModel<JupyterHubRow>, KeyedFlexiTableDataModel<JupyterHubRow> {
 
 	private static final JupyterHubCols[] COLS = JupyterHubCols.values();
 	private final Locale locale;
@@ -43,6 +44,11 @@ public class JupyterHubsTableModel extends DefaultFlexiTableDataModel<JupyterHub
 	public JupyterHubsTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(JupyterHubRow hubRow) {
+		return hubRow.getHub() == null ? null : hubRow.getHub().getKey();
 	}
 
 	@Override

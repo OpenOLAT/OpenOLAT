@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.curriculum.ui.member.AbstractMembersController;
@@ -40,7 +41,7 @@ import org.olat.modules.curriculum.ui.member.ModificationStatusSummary;
  *
  */
 public class UsersOverviewTableModel extends DefaultFlexiTableDataModel<UserRow>
-implements SortableFlexiTableDataModel<UserRow> {
+implements SortableFlexiTableDataModel<UserRow>, KeyedFlexiTableDataModel<UserRow> {
 	
 	private static final UserOverviewCols[] COLS = UserOverviewCols.values();
 	
@@ -49,6 +50,11 @@ implements SortableFlexiTableDataModel<UserRow> {
 	public UsersOverviewTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(UserRow userRow) {
+		return userRow.getIdentity().getKey();
 	}
 	
 	@Override

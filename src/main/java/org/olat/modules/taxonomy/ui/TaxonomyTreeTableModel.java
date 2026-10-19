@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
@@ -39,10 +40,15 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  *
  */
 public class TaxonomyTreeTableModel extends DefaultFlexiTreeTableDataModel<TaxonomyLevelRow>
-implements FilterableFlexiTableModel  {
+implements FilterableFlexiTableModel, KeyedFlexiTableDataModel<TaxonomyLevelRow>  {
 	
 	public TaxonomyTreeTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(TaxonomyLevelRow levelRow) {
+		return levelRow.getKey();
 	}
 	
 	public int indexOf(TaxonomyLevel level) {

@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.id.context.BusinessControlFactory;
 
@@ -38,7 +39,7 @@ import org.olat.core.id.context.BusinessControlFactory;
  *
  */
 public class CurriculumElementSearchDataModel extends DefaultFlexiTableDataModel<CurriculumElementSearchRow>
-implements SortableFlexiTableDataModel<CurriculumElementSearchRow>, FlexiBusinessPathModel {
+implements SortableFlexiTableDataModel<CurriculumElementSearchRow>, FlexiBusinessPathModel, KeyedFlexiTableDataModel<CurriculumElementSearchRow> {
 	
 	private static final SearchCols[] COLS = SearchCols.values();
 	
@@ -47,6 +48,11 @@ implements SortableFlexiTableDataModel<CurriculumElementSearchRow>, FlexiBusines
 	public CurriculumElementSearchDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(CurriculumElementSearchRow searchRow) {
+		return searchRow.getKey();
 	}
 
 	@Override

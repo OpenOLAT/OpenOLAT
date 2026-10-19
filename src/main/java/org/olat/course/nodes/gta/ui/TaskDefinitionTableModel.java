@@ -22,6 +22,7 @@ package org.olat.course.nodes.gta.ui;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.util.Formatter;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
@@ -31,10 +32,15 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDefinitionRow> {
+public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDefinitionRow> implements KeyedFlexiTableDataModel<TaskDefinitionRow> {
 
 	public TaskDefinitionTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(TaskDefinitionRow taskDefRow) {
+		return taskDefRow.taskDefinition().getFilename();
 	}
 
 	@Override

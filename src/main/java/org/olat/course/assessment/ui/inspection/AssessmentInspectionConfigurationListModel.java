@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
@@ -41,7 +42,7 @@ import org.olat.course.assessment.AssessmentInspectionConfiguration;
  *
  */
 public class AssessmentInspectionConfigurationListModel extends DefaultFlexiTableDataModel<AssessmentInspectionConfigurationRow>
-implements SortableFlexiTableDataModel<AssessmentInspectionConfigurationRow>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<AssessmentInspectionConfigurationRow>, FilterableFlexiTableModel, KeyedFlexiTableDataModel<AssessmentInspectionConfigurationRow> {
 	
 	private static final InspectionCols[] COLS = InspectionCols.values();
 	
@@ -51,6 +52,11 @@ implements SortableFlexiTableDataModel<AssessmentInspectionConfigurationRow>, Fi
 	public AssessmentInspectionConfigurationListModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(AssessmentInspectionConfigurationRow configurationRow) {
+		return configurationRow.getKey();
 	}
 
 	@Override

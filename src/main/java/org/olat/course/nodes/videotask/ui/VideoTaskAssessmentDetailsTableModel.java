@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
@@ -48,7 +49,7 @@ import org.olat.modules.video.VideoTaskSession;
  *
  */
 public class VideoTaskAssessmentDetailsTableModel extends DefaultFlexiTableDataModel<VideoTaskSessionRow>
-implements FlexiTableCssDelegate, FilterableFlexiTableModel {
+implements FlexiTableCssDelegate, FilterableFlexiTableModel, KeyedFlexiTableDataModel<VideoTaskSessionRow> {
 	
 	private static final DetailsCols[] COLS = DetailsCols.values();
 	
@@ -70,6 +71,11 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 
 	public VideoTaskAssessmentDetailsTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
+	}
+	
+	@Override
+	public Object getObjectKey(VideoTaskSessionRow sessionRow) {
+		return sessionRow.getTaskSessionKey();
 	}
 	
 	public VideoTaskSession getLastSession() {

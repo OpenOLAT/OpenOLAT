@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -35,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author cpfranger, christoph.pfranger@frentix.com, https://www.frentix.com
  *
  */
-public class ZoomProfilesTableModel extends DefaultFlexiTableDataModel<ZoomProfileRow> implements SortableFlexiTableDataModel<ZoomProfileRow> {
+public class ZoomProfilesTableModel extends DefaultFlexiTableDataModel<ZoomProfileRow> implements SortableFlexiTableDataModel<ZoomProfileRow>, KeyedFlexiTableDataModel<ZoomProfileRow> {
 
     private static final ZoomProfileCols[] COLS = ZoomProfileCols.values();
     private final Locale locale;
@@ -77,6 +78,11 @@ public class ZoomProfilesTableModel extends DefaultFlexiTableDataModel<ZoomProfi
         this.locale = locale;
     }
 
+	@Override
+	public Object getObjectKey(ZoomProfileRow profileRow) {
+		return profileRow.getZoomProfile().getKey();
+	}
+	
     @Override
     public Object getValueAt(int row, int col) {
         ZoomProfileRow zoomProfileRow = getObject(row);

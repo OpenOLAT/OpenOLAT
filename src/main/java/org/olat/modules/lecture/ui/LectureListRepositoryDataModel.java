@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
@@ -43,7 +44,7 @@ import org.olat.modules.lecture.model.LectureBlockRow;
  *
  */
 public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<LectureBlockRow>
-	implements SortableFlexiTableDataModel<LectureBlockRow>, FlexiBusinessPathModel {
+	implements SortableFlexiTableDataModel<LectureBlockRow>, FlexiBusinessPathModel, KeyedFlexiTableDataModel<LectureBlockRow> {
 	
 	private static final BlockCols[] COLS = BlockCols.values();
 	
@@ -52,6 +53,11 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 	public LectureListRepositoryDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(LectureBlockRow blockRow) {
+		return blockRow.getKey();
 	}
 	
 	@Override

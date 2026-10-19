@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -38,7 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class UserDisadvantageCompensationTableModel extends DefaultFlexiTableDataModel<UserDisadvantageCompensationRow>
-implements SortableFlexiTableDataModel<UserDisadvantageCompensationRow>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<UserDisadvantageCompensationRow>, FilterableFlexiTableModel, KeyedFlexiTableDataModel<UserDisadvantageCompensationRow> {
 	
 	private static final CompensationCols[] COLS = CompensationCols.values();
 	
@@ -46,6 +47,11 @@ implements SortableFlexiTableDataModel<UserDisadvantageCompensationRow>, Filtera
 	
 	public UserDisadvantageCompensationTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(UserDisadvantageCompensationRow compensationRow) {
+		return compensationRow.getKey();
 	}
 
 	@Override

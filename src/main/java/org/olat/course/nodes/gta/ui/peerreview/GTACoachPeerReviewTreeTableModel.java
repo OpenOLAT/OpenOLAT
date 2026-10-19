@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.util.StringHelper;
@@ -45,12 +46,20 @@ import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
  *
  */
 public class GTACoachPeerReviewTreeTableModel extends DefaultFlexiTreeTableDataModel<CoachPeerReviewRow>
-implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
+implements SortableFlexiTableDataModel<CoachPeerReviewRow>, KeyedFlexiTableDataModel<CoachPeerReviewRow> {
 	
 	private static final CoachReviewCols[] COLS = CoachReviewCols.values();
 	
 	public GTACoachPeerReviewTreeTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(CoachPeerReviewRow reviewRow) {
+		if(reviewRow.getAssignment() != null) {
+			return "a-" + reviewRow.getAssignment().getKey();
+		}
+		return reviewRow.getIdentity() == null ? null : "i-" + reviewRow.getIdentity().getKey();
 	}
 	
 	@Override

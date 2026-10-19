@@ -552,7 +552,7 @@ function o_aexecute(command, parameters) {
 				? parameters["triggerId"]
 				: (document.activeElement && document.activeElement.id ? document.activeElement.id : null);
 			if (pushId) {
-				o_info.focusReturnStack.push(pushId);
+				o_info.focusReturnStack.push(o_focusAnchor(pushId));
 			}
 			o_info.pendingDialogFocus = true;
 			break;
@@ -991,7 +991,7 @@ function o_ainvoke(r) {
  		o_ffSetFocusArray(focusArray);
 	}
 	if (o_info.pendingFocusReturn !== null) {
-		var retEl = document.getElementById(o_info.pendingFocusReturn);
+		var retEl = o_resolveFocusAnchor(o_info.pendingFocusReturn);
 		o_info.pendingFocusReturn = null;
 		if (retEl) {
 			retEl.focus({ preventScroll: true });
@@ -2668,6 +2668,78 @@ function o_submitByEnter(event) {
 function o_ffRegisterSubmit(formId, submElmId){
 	jQuery('#'+formId).data('FlexiSubmit', submElmId);
 }	
+
+var o_tableRowSelector = 'tr[id^="row_"], [data-row-key], .o_table_row, .o_vertical_timeline_item';
+
+/**
+ * Remember where the callout trigger is, so the focus can find it again after a table reload:
+ * the trigger id, the table container (its id survives the reload), the row key and position,
+ * and the slot (index of the trigger among the dialog openers of its row).
+ */
+function o_focusAnchor(id) {
+	var anchor = { id: id };
+	var el = document.getElementById(id);
+	if (!el) {
+		return anchor;
+	}
+	var row = el.closest(o_tableRowSelector);
+	var wrapper = row ? row.closest('.o_table_wrapper') : null;
+	if (wrapper && wrapper.parentElement && wrapper.parentElement.id) {
+		anchor.tableId = wrapper.parentElement.id;
+		anchor.rowKey = row.getAttribute('data-row-key');
+		anchor.rowIndex = Array.prototype.indexOf.call(wrapper.querySelectorAll(o_tableRowSelector), row);
+		anchor.slotSelector = el.hasAttribute('aria-haspopup') ? '[aria-haspopup="dialog"]' : 'a[href], button';
+		anchor.slot = Array.prototype.indexOf.call(row.querySelectorAll(anchor.slotSelector), el);
+	}
+	if (el.hasAttribute('aria-haspopup')) {
+		el.setAttribute('aria-expanded', 'true');
+	}
+	return anchor;
+}
+
+/**
+ * Find the element that gets the focus back after a callout closed.
+ * The table may have been reloaded, so the old trigger id can be gone.
+ * 1. the old trigger, if it still exists in the same row
+ * 2. the trigger at the same slot in the row with the same data-row-key
+ * 3. the trigger at the same slot in the row at the same position (or the one before)
+ * 4. the table itself (or its empty state), never the body
+ */
+function o_resolveFocusAnchor(anchor) {
+	var el = document.getElementById(anchor.id);
+	if (el && el.hasAttribute('aria-expanded')) {
+		el.setAttribute('aria-expanded', 'false');
+	}
+	var container = anchor.tableId ? document.getElementById(anchor.tableId) : null;
+	if (!container) {
+		return el;
+	}
+	var elRow = el ? el.closest(o_tableRowSelector) : null;
+	if (el && container.contains(el) && (!anchor.rowKey || (elRow && elRow.getAttribute('data-row-key') === anchor.rowKey))) {
+		return el;
+	}
+	var slotOf = function(row) {
+		var candidates = row.querySelectorAll(anchor.slotSelector);
+		return candidates[anchor.slot] || candidates[0] || null;
+	};
+	var rows = container.querySelectorAll(o_tableRowSelector);
+	if (anchor.rowKey) {
+		for (var i = 0; i < rows.length; i++) {
+			if (rows[i].getAttribute('data-row-key') === anchor.rowKey && slotOf(rows[i])) {
+				return slotOf(rows[i]);
+			}
+		}
+	}
+	for (var j = Math.min(anchor.rowIndex, rows.length - 1); j >= 0; j--) {
+		var sibling = slotOf(rows[j]);
+		if (sibling) {
+			return sibling;
+		}
+	}
+	var wrapper = container.querySelector('.o_table_wrapper, .o_empty_state') || container;
+	wrapper.setAttribute('tabindex', '-1');
+	return wrapper;
+}
 
 function o_waitForVisibleThenFocusDialog(topDialog, attempt) {
 	if (topDialog.getClientRects().length === 0 && attempt < 20) {

@@ -93,7 +93,8 @@ public class AddGroupMembershipStatusRenderer implements FlexiCellRenderer, Acti
 		String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, true, false, pair);
 		target.append("<a id=\"").append(actionId).append("\" href=\"javascript:;\" onclick=\"")
 		      .append(jsCode).append("; return false;\"")
-		      .append(FormJSHelper.triggerClickOnKeyDown(false))
+		      .append(FormJSHelper.triggerClickOnKeyDown(true))
+		      .append(" role=\"button\" aria-haspopup=\"dialog\" aria-expanded=\"false\"")
 		      .append(" class='o_validation_open_results'>")
 		      .append("<i class='o_icon o_icon-fw o_icon_plus'> </i> ").append(translator.translate("add"))
 		      .append("</a>");

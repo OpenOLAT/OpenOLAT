@@ -114,6 +114,7 @@ public class FlexiTableCustomRenderer extends AbstractFlexiCustomRenderer {
 			sb.append("o_table_row row");
 		}
 		sb.append("'");
+		renderRowKey(sb, ftC, row);
 		if(delegate != null) {
 			List<Data> dataAttributes = delegate.getRowDataAttributes(row);
 			if(dataAttributes != null) {

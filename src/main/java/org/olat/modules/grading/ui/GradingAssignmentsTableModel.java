@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
@@ -40,7 +41,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  */
 public class GradingAssignmentsTableModel extends DefaultFlexiTableDataModel<GradingAssignmentRow>
-implements SortableFlexiTableDataModel<GradingAssignmentRow> {
+implements SortableFlexiTableDataModel<GradingAssignmentRow>, KeyedFlexiTableDataModel<GradingAssignmentRow> {
 	
 	private static final GAssignmentsCol[] COLS = GAssignmentsCol.values();
 	
@@ -56,6 +57,11 @@ implements SortableFlexiTableDataModel<GradingAssignmentRow> {
 		this.translator = translator;
 		this.userPropertyHandlers = userPropertyHandlers;
 		this.assessedUserPropertyHandlers = assessedUserPropertyHandlers;
+	}
+	
+	@Override
+	public Object getObjectKey(GradingAssignmentRow assignmentRow) {
+		return assignmentRow.getKey();
 	}
 
 	@Override

@@ -215,6 +215,18 @@ options.setDefaultOrderBy(new SortKey(Cols.name.name(), true));
 tableEl.setSortSettings(options);
 ```
 
+**Row callouts and focus:** if an action in a row callout reloads the table, directly or after a modal or confirm dialog, the data model implements `KeyedFlexiTableDataModel<T>`. `getObjectKey(T object)` returns a key that is unique per row and stable across `loadModel()`: normally the key of the row entity, not a parent key; a composite String when the same entity can appear in two rows. The interface looks up the row and skips missing rows (lazy data source models); check only a wrapped entity that can be `null`. The table renders the key as `data-row-key`, and after a reload in the same request the focus returns to the trigger of the same entity, even when the row moved. Tables whose callouts only navigate, download or show information do not need it.
+
+```java
+public class ZoomProfilesTableModel extends DefaultFlexiTableDataModel<ZoomProfileRow>
+		implements SortableFlexiTableDataModel<ZoomProfileRow>, KeyedFlexiTableDataModel<ZoomProfileRow> {
+
+	@Override
+	public Object getObjectKey(ZoomProfileRow profileRow) {
+		return profileRow.getZoomProfile().getKey();
+	}
+```
+
 ## New Form Elements
 
 - **New in 21.1.0:** `FormSection` structures a long form (section 8 "Form Sections"):
@@ -441,6 +453,19 @@ You do NOT need to manually dispose:
 - **Breadcrumb navigation:** `BreadcrumbedStackedPanel` for drill-down views
 - **Modal dialogs:** `wControl.pushAsModalDialog(component)`
 - **Callouts:** `trigger.setAriaDialogOpener()` + `new CloseableCalloutWindowController(ureq, wControl, content, triggerLink, title, true, "", settings)`, then `listenTo()` and `activate()`. Pass the `Link`/`FormLink` (**New in 21.1.0**), not a DOM id: the controller handles `aria-expanded`, focus and the aria label (section 15)
+- **Callouts in table rows:**
+  - Trigger: a `FormLink` per row from `ActionsColumnModel.createLink(...)` is the default; pass the link to the callout. A renderer column (`ActionsCellRenderer`, or a `StaticFlexiCellRenderer` that calls `setAriaDialogOpener()` and overrides `getId(...)`) has no Link: pass the renderer id as DOM target, `aria-expanded` is then set on the client. A hand-written cell renderer writes `id`, `role="button" aria-haspopup="dialog" aria-expanded="false"`, `FormJSHelper.triggerClickOnKeyDown(true)` (Space key), and title plus sr-only text for an icon-only link.
+  - Close the callout in the same request as the reload: the tools controller fires `Event.CLOSE_EVENT` (the parent calls `calloutCtrl.deactivate()`), then runs the action that calls `loadModel()`. Do not try to keep FormLink ids stable across `loadModel()`; the row key covers it.
+
+```java
+} else if(event instanceof SelectionEvent se && ActionsCellRenderer.CMD_ACTIONS.equals(se.getCommand())) {
+	doOpenTools(ureq, tableModel.getObject(se.getIndex()), ActionsCellRenderer.getId(se.getIndex()));
+}
+...
+calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+		toolsCtrl.getInitialComponent(), targetId, "", true, "");
+```
+
 - **Downloads from a callout:** a callout action that triggers a download uses `getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createDownloadMediaResource(ureq, mr))`, not `ureq.getDispatchResult().setResultingMediaResource(mr)`
 - **Info/error messages:** `showInfo("key")`, `showError("key")`
 - **Module toggles:** `AbstractSpringModule` with `isEnabled()` and persisted config

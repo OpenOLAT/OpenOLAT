@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.id.UserConstants;
@@ -39,7 +40,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  */
 public class InvitationListTableModel extends DefaultFlexiTableDataModel<InvitationRow>
-implements SortableFlexiTableDataModel<InvitationRow> {
+implements SortableFlexiTableDataModel<InvitationRow>, KeyedFlexiTableDataModel<InvitationRow> {
 	
 	private static final InvitationCols[] COLS = InvitationCols.values();
 	
@@ -50,6 +51,11 @@ implements SortableFlexiTableDataModel<InvitationRow> {
 		super(columnModel);
 		this.locale = locale;
 		userPropertyHandlers = List.of();
+	}
+	
+	@Override
+	public Object getObjectKey(InvitationRow invitationRow) {
+		return invitationRow.getInvitation() == null ? null : invitationRow.getInvitation().getKey();
 	}
 	
 	public InvitationListTableModel(FlexiTableColumnModel columnModel, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {

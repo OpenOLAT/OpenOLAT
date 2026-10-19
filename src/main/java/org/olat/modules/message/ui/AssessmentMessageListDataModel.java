@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.logging.Tracing;
@@ -42,7 +43,7 @@ import org.olat.modules.message.AssessmentMessageStatusEnum;
  *
  */
 public class AssessmentMessageListDataModel extends DefaultFlexiTableDataModel<AssessmentMessageRow>
-implements SortableFlexiTableDataModel<AssessmentMessageRow> {
+implements SortableFlexiTableDataModel<AssessmentMessageRow>, KeyedFlexiTableDataModel<AssessmentMessageRow> {
 	
 	private static final Logger log = Tracing.createLoggerFor(AssessmentMessageListDataModel.class);
 	
@@ -54,6 +55,11 @@ implements SortableFlexiTableDataModel<AssessmentMessageRow> {
 	public AssessmentMessageListDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(AssessmentMessageRow messageRow) {
+		return messageRow.getKey();
 	}
 	
 	@Override

@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
@@ -37,12 +38,17 @@ import org.olat.modules.curriculum.ui.member.MembershipModification;
  *
  */
 public class RightsCurriculumElementsTableModel extends DefaultFlexiTreeTableDataModel<RightsCurriculumElementRow>
-implements FlexiTableFooterModel {
+implements FlexiTableFooterModel, KeyedFlexiTableDataModel<RightsCurriculumElementRow> {
 
 	private static final RightsElementsCols[] COLS = RightsElementsCols.values();
 
 	public RightsCurriculumElementsTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(RightsCurriculumElementRow elementRow) {
+		return elementRow.getKey();
 	}
 	
 	@Override

@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.util.Formatter;
 import org.olat.ims.qti21.AssessmentTestSession;
 
@@ -33,12 +34,17 @@ import org.olat.ims.qti21.AssessmentTestSession;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataModel<QTI21AssessmentTestSessionDetails> {
+public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataModel<QTI21AssessmentTestSessionDetails> implements KeyedFlexiTableDataModel<QTI21AssessmentTestSessionDetails> {
 	
 	private static final TSCols[] COLS = TSCols.values();
 
 	public QTI21AssessmentTestSessionTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(QTI21AssessmentTestSessionDetails sessionDetails) {
+		return sessionDetails.getTestSession().getKey();
 	}
 
 	@Override

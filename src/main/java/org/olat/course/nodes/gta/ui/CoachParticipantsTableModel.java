@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
@@ -37,7 +38,7 @@ import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<CoachedIdentityRow> implements SortableFlexiTableDataModel<CoachedIdentityRow> {
+public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<CoachedIdentityRow> implements SortableFlexiTableDataModel<CoachedIdentityRow>, KeyedFlexiTableDataModel<CoachedIdentityRow> {
 	
 	private static final CGCols[] COLS = CGCols.values();
 	
@@ -46,6 +47,11 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 	public CoachParticipantsTableModel(Locale locale, FlexiTableColumnModel columnModel) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(CoachedIdentityRow identityRow) {
+		return identityRow.getIdentityKey();
 	}
 	
 	@Override

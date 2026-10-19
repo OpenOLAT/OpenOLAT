@@ -90,6 +90,7 @@ public class IdentityOrganisationsCellRenderer implements FlexiCellRenderer, Act
 		
 		public OtherCellRenderer() {
 			super("", CMD_OTHER_ORGANISATIONS);
+			setAriaDialogOpener();
 		}
 
 		@Override

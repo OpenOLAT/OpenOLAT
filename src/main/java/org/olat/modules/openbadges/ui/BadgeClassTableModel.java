@@ -25,6 +25,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
@@ -39,13 +40,18 @@ import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassRow> 
-		implements SortableFlexiTableDataModel<BadgeClassRow> {
+		implements SortableFlexiTableDataModel<BadgeClassRow>, KeyedFlexiTableDataModel<BadgeClassRow> {
 
 	private final Translator translator;
 
 	public BadgeClassTableModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
 		this.translator = translator;
+	}
+	
+	@Override
+	public Object getObjectKey(BadgeClassRow badgeClassRow) {
+		return badgeClassRow.badgeClassWithSizeAndCount().badgeClass().getKey();
 	}
 
 	@Override

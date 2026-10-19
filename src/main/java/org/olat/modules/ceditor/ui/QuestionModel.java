@@ -22,18 +22,24 @@ package org.olat.modules.ceditor.ui;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 
 /**
  * Initial date: 2024-03-22<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class QuestionModel extends DefaultFlexiTableDataModel<QuestionRow> {
+public class QuestionModel extends DefaultFlexiTableDataModel<QuestionRow> implements KeyedFlexiTableDataModel<QuestionRow> {
 
 	private static final QuestionColumns[] COLS = QuestionColumns.values();
 
 	public QuestionModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(QuestionRow questionRow) {
+		return questionRow.getId();
 	}
 
 	@Override

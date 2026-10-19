@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
@@ -60,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CurriculumElementRepositoryTableModel extends DefaultFlexiTableDataModel<CurriculumElementRepositoryRow>
-		implements SortableFlexiTableDataModel<CurriculumElementRepositoryRow>, FilterableFlexiTableModel, FlexiBusinessPathModel {
+		implements SortableFlexiTableDataModel<CurriculumElementRepositoryRow>, FilterableFlexiTableModel, FlexiBusinessPathModel, KeyedFlexiTableDataModel<CurriculumElementRepositoryRow> {
 
 	private static final RepoCols[] COLS = RepoCols.values();
 
@@ -80,6 +81,11 @@ public class CurriculumElementRepositoryTableModel extends DefaultFlexiTableData
 		super(columnModel);
 		CoreSpringFactory.autowireObject(this);
 		translator = Util.createPackageTranslator(RepositoryService.class, locale);
+	}
+	
+	@Override
+	public Object getObjectKey(CurriculumElementRepositoryRow repositoryRow) {
+		return repositoryRow.getKey();
 	}
 
 	@Override

@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
@@ -57,7 +58,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class CurriculumManagerDataModel extends DefaultFlexiTableDataModel<CurriculumRow>
-implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel, FlexiBusinessPathModel {
+implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel, FlexiBusinessPathModel, KeyedFlexiTableDataModel<CurriculumRow> {
 	
 	private static final CurriculumCols[] COLS = CurriculumCols.values();
 	
@@ -67,6 +68,11 @@ implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel
 	public CurriculumManagerDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(CurriculumRow curriculumRow) {
+		return curriculumRow.getKey();
 	}
 
 	@Override

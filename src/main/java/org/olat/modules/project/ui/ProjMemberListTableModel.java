@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -36,7 +37,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjMemberListTableModel extends DefaultFlexiTableDataModel<ProjMemberRow> implements SortableFlexiTableDataModel<ProjMemberRow> {
+public class ProjMemberListTableModel extends DefaultFlexiTableDataModel<ProjMemberRow> implements SortableFlexiTableDataModel<ProjMemberRow>, KeyedFlexiTableDataModel<ProjMemberRow> {
 	
 	static final String USER_PROPS_ID = ProjMemberListTableModel.class.getCanonicalName();
 	static final int USER_PROPS_OFFSET = 500;
@@ -49,6 +50,11 @@ public class ProjMemberListTableModel extends DefaultFlexiTableDataModel<ProjMem
 		super(columnModel);
 		this.locale = locale;
 		this.userPropertyHandlers = userPropertyHandlers;
+	}
+	
+	@Override
+	public Object getObjectKey(ProjMemberRow memberRow) {
+		return memberRow.getIdentity().getKey();
 	}
 
 	@Override

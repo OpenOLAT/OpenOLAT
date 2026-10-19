@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
@@ -37,7 +38,7 @@ import org.olat.user.UserManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTableRow> {
+public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTableRow> implements KeyedFlexiTableDataModel<OrderTableRow> {
 	
 	private static final OrderCol[] COLS = OrderCol.values();
 	
@@ -48,6 +49,11 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		super(dataSource, columnModel);
 		this.locale = locale;
 		this.userManager = userManager;
+	}
+	
+	@Override
+	public Object getObjectKey(OrderTableRow orderRow) {
+		return orderRow.getOrderKey();
 	}
 
 	@Override

@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.vfs.VFSContainer;
 
@@ -35,7 +36,7 @@ import org.olat.core.util.vfs.VFSContainer;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> implements SortableFlexiTableDataModel<FolderRow> {
+public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> implements SortableFlexiTableDataModel<FolderRow>, KeyedFlexiTableDataModel<FolderRow> {
 	
 	static final FolderCols[] COLS = FolderCols.values();
 
@@ -46,6 +47,14 @@ public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> imple
 		super(columnsModel);
 		this.locale = locale;
 		this.selectionMode = selectionMode;
+	}
+	
+	@Override
+	public Object getObjectKey(FolderRow folderRow) {
+		if(folderRow.getMetadata() != null && folderRow.getMetadata().getKey() != null) {
+			return folderRow.getMetadata().getKey();
+		}
+		return folderRow.getVfsItem() == null ? null : folderRow.getVfsItem().getRelPath();
 	}
 
 	@Override

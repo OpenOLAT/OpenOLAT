@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -37,6 +38,7 @@ public class NoteCellRenderer extends StaticFlexiCellRenderer {
 	
 	public NoteCellRenderer() {
 		super("", CMD_NOTE);
+		setAriaDialogOpener();
 	}
 	
 	protected static final String getId(int row) {
@@ -52,7 +54,8 @@ public class NoteCellRenderer extends StaticFlexiCellRenderer {
 	protected String getLabel(Renderer renderer, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu,
 			Translator translator) {
 		if(Boolean.TRUE.equals(cellValue)) {
-			return "<span><i class='o_icon o_icon-fw o_icon_notes'> </i></span>";
+			String title = StringHelper.escapeHtml(translator.translate("note"));
+			return "<span title=\"" + title + "\"><i class='o_icon o_icon-fw o_icon_notes' aria-hidden='true'> </i><span class='sr-only'>" + title + "</span></span>";
 		}
 		return null;
 	}

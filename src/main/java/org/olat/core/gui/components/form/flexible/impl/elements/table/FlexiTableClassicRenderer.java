@@ -317,6 +317,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			target.append(" o_table_row_expanded");
 		}
 		target.append("'");
+		renderRowKey(target, ftC, row);
 		
 		if(ftC.getFormItem().getCssDelegate() != null) {
 			List<Data> dataAttributes = ftC.getFormItem().getCssDelegate().getRowDataAttributes(row);

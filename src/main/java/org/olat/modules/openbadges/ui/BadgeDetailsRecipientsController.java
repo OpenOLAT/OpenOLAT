@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
@@ -349,7 +350,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 	record Row(BadgeAssertion badgeAssertion, FormLink toolLink) {
 	}
 
-	private class TableModel extends DefaultFlexiTableDataModel<Row> implements SortableFlexiTableDataModel<Row> {
+	private class TableModel extends DefaultFlexiTableDataModel<Row> implements SortableFlexiTableDataModel<Row>, KeyedFlexiTableDataModel<Row> {
 		private final UserManager userManager;
 		private final Translator translator;
 
@@ -357,6 +358,11 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 			super(columnModel);
 			this.userManager = userManager;
 			this.translator = translator;
+		}
+		
+		@Override
+		public Object getObjectKey(Row recipientRow) {
+			return recipientRow.badgeAssertion().getKey();
 		}
 
 		@Override

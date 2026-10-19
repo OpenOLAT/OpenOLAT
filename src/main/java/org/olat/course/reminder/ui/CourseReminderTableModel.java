@@ -25,6 +25,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.course.reminder.model.ReminderRow;
 
@@ -34,10 +35,15 @@ import org.olat.course.reminder.model.ReminderRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseReminderTableModel extends DefaultFlexiTableDataModel<ReminderRow> implements SortableFlexiTableDataModel<ReminderRow> {
+public class CourseReminderTableModel extends DefaultFlexiTableDataModel<ReminderRow> implements SortableFlexiTableDataModel<ReminderRow>, KeyedFlexiTableDataModel<ReminderRow> {
 	
 	public CourseReminderTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(ReminderRow reminderRow) {
+		return reminderRow.getKey();
 	}
 	
 	@Override

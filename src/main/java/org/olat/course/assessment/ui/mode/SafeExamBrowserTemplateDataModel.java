@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
@@ -38,7 +39,7 @@ import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
  */
 public class SafeExamBrowserTemplateDataModel
 		extends DefaultFlexiTableDataModel<SafeExamBrowserTemplateRow>
-		implements SortableFlexiTableDataModel<SafeExamBrowserTemplateRow> {
+		implements SortableFlexiTableDataModel<SafeExamBrowserTemplateRow>, KeyedFlexiTableDataModel<SafeExamBrowserTemplateRow> {
 
 	private static final SEBTemplateCols[] COLS = SEBTemplateCols.values();
 
@@ -47,6 +48,11 @@ public class SafeExamBrowserTemplateDataModel
 	public SafeExamBrowserTemplateDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(SafeExamBrowserTemplateRow templateRow) {
+		return templateRow.getKey();
 	}
 
 	@Override

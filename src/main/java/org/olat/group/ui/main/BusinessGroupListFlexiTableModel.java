@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
@@ -42,7 +43,7 @@ import org.olat.group.BusinessGroupMembership;
  *
  */
 public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel<BGTableItem>
-	implements SortableFlexiTableDataModel<BGTableItem>, FlexiBusinessPathModel {
+	implements SortableFlexiTableDataModel<BGTableItem>, FlexiBusinessPathModel, KeyedFlexiTableDataModel<BGTableItem> {
 	
 	private static final Cols[] COLS = Cols.values();
 	
@@ -54,6 +55,11 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 	public BusinessGroupListFlexiTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(new ArrayList<>(), columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(BGTableItem groupItem) {
+		return groupItem.getBusinessGroupKey();
 	}
 	
 	@Override

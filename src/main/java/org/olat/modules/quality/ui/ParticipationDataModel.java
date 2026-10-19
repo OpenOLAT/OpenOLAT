@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class ParticipationDataModel extends DefaultFlexiTableDataModel<ParticipationRow>
-		implements SortableFlexiTableDataModel<ParticipationRow> {
+		implements SortableFlexiTableDataModel<ParticipationRow>, KeyedFlexiTableDataModel<ParticipationRow> {
 	
 	private final static ParticipationCols[] COLS = ParticipationCols.values();
 	
@@ -45,6 +46,11 @@ public class ParticipationDataModel extends DefaultFlexiTableDataModel<Participa
 	public ParticipationDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(ParticipationRow participationRow) {
+		return participationRow.getContextRef() == null ? null : participationRow.getContextRef().getKey();
 	}
 	
 	@Override

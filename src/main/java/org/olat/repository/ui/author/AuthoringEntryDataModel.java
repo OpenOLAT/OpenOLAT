@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 
@@ -36,7 +37,7 @@ import org.olat.core.id.Roles;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<AuthoringEntryRow> implements FlexiBusinessPathModel {
+class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<AuthoringEntryRow> implements FlexiBusinessPathModel, KeyedFlexiTableDataModel<AuthoringEntryRow> {
 	
 	private static final Cols[] COLS = Cols.values();
 
@@ -48,6 +49,11 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		super(source, columnModel);
 		this.identity = identity;
 		this.roles = roles;
+	}
+	
+	@Override
+	public Object getObjectKey(AuthoringEntryRow entryRow) {
+		return entryRow.getKey();
 	}
 
 	@Override

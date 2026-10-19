@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 
 /**
  * 
@@ -32,13 +33,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class TBTopicDataModel extends DefaultFlexiTableDataModel<TBTopicRow> {
+public class TBTopicDataModel extends DefaultFlexiTableDataModel<TBTopicRow> implements KeyedFlexiTableDataModel<TBTopicRow> {
 	
 	public static final int CUSTOM_FIELD_OFFSET = 100;
 	private static final TopicCols[] COLS = TopicCols.values();
 
 	public TBTopicDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
+	}
+	
+	@Override
+	public Object getObjectKey(TBTopicRow topicRow) {
+		return topicRow.getKey();
 	}
 	
 	public TBTopicRow getObjectByKey(Long key) {

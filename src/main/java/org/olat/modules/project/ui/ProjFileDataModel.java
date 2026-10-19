@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
@@ -34,7 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> implements SortableFlexiTableDataModel<ProjFileRow> {
+public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> implements SortableFlexiTableDataModel<ProjFileRow>, KeyedFlexiTableDataModel<ProjFileRow> {
 	
 	private static final FileCols[] COLS = FileCols.values();
 
@@ -43,6 +44,11 @@ public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> i
 	public ProjFileDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(ProjFileRow fileRow) {
+		return fileRow.getKey();
 	}
 
 	@Override

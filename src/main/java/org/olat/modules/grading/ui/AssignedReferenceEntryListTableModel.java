@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -37,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class AssignedReferenceEntryListTableModel extends DefaultFlexiTableDataModel<AssignedReferenceEntryRow>
-implements SortableFlexiTableDataModel<AssignedReferenceEntryRow> {
+implements SortableFlexiTableDataModel<AssignedReferenceEntryRow>, KeyedFlexiTableDataModel<AssignedReferenceEntryRow> {
 
 	private static final GEntryCol[] COLS = GEntryCol.values();
 	
@@ -46,6 +47,11 @@ implements SortableFlexiTableDataModel<AssignedReferenceEntryRow> {
 	public AssignedReferenceEntryListTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(AssignedReferenceEntryRow entryRow) {
+		return entryRow.getKey();
 	}
 	
 	@Override

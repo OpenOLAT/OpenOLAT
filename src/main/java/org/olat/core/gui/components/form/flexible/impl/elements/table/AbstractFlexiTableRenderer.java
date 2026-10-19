@@ -651,6 +651,15 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		// end of table table
 	}
 	
+	protected void renderRowKey(StringOutput target, FlexiTableComponent ftC, int row) {
+		if(ftC.getFormItem().getTableDataModel() instanceof KeyedFlexiTableDataModel<?> keyedModel) {
+			Object key = keyedModel.getRowKey(row);
+			if(key != null) {
+				target.append(" data-row-key=\"").appendHtmlAttributeEscaped(key.toString()).append("\"");
+			}
+		}
+	}
+	
 	protected abstract void renderZeroRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
 			URLBuilder ubu, Translator translator, RenderResult renderResult);
 	

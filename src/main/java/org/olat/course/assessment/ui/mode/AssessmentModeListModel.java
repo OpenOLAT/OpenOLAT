@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
@@ -52,7 +53,7 @@ import org.olat.repository.ui.author.copy.wizard.additional.AssessmentModeCopyIn
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> implements SortableFlexiTableDataModel<AssessmentMode> {
+public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> implements SortableFlexiTableDataModel<AssessmentMode>, KeyedFlexiTableDataModel<AssessmentMode> {
 	
 	private static final Logger log = Tracing.createLoggerFor(AssessmentModeListModel.class);
 	private static final Cols[] COLS = Cols.values();
@@ -67,6 +68,11 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		super(columnsModel);
 		this.translator = translator;
 		this.coordinationService = coordinationService;
+	}
+	
+	@Override
+	public Object getObjectKey(AssessmentMode mode) {
+		return mode.getKey();
 	}
 
 	@Override

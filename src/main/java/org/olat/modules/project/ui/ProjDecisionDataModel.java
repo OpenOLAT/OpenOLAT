@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -35,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjDecisionDataModel extends DefaultFlexiTableDataModel<ProjDecisionRow> implements SortableFlexiTableDataModel<ProjDecisionRow> {
+public class ProjDecisionDataModel extends DefaultFlexiTableDataModel<ProjDecisionRow> implements SortableFlexiTableDataModel<ProjDecisionRow>, KeyedFlexiTableDataModel<ProjDecisionRow> {
 	
 	private static final DecisionCols[] COLS = DecisionCols.values();
 
@@ -44,6 +45,11 @@ public class ProjDecisionDataModel extends DefaultFlexiTableDataModel<ProjDecisi
 	public ProjDecisionDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(ProjDecisionRow decisionRow) {
+		return decisionRow.getKey();
 	}
 	
 	public ProjDecisionRow getObjectByKey(Long key) {

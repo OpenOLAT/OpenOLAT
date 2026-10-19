@@ -56,6 +56,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 	private boolean dirtyCheck = true;
 	private boolean newWindow = false;
 	private boolean newWindowAfterDispatchUrl = false;
+	private boolean ariaDialogOpener = false;
 	private FlexiCellRenderer labelDelegate;
 	
 	public StaticFlexiCellRenderer(String label, String action) {
@@ -203,6 +204,10 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 		this.dirtyCheck = dirtyCheck;
 	}
 
+	public void setAriaDialogOpener() {
+		ariaDialogOpener = true;
+	}
+	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
@@ -239,7 +244,10 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 					
 				}
 				target.append(" href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\"");
-				target.append(FormJSHelper.triggerClickOnKeyDown(false));
+				target.append(FormJSHelper.triggerClickOnKeyDown(ariaDialogOpener));
+				if(ariaDialogOpener) {
+					target.append(" role=\"button\" aria-haspopup=\"dialog\" aria-expanded=\"false\"");
+				}
 			}
 			
 			// Same a11y proof HTML syntax like the LinkRenderer.

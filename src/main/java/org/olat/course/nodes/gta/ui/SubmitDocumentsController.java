@@ -54,6 +54,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -871,12 +872,17 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 		}
 	}
 	
-	private static class DocumentTableModel extends DefaultFlexiTableDataModel<SubmittedSolution>  {
+	private static class DocumentTableModel extends DefaultFlexiTableDataModel<SubmittedSolution> implements KeyedFlexiTableDataModel<SubmittedSolution> {
 		
 		private static final DocCols[] COLS = DocCols.values();
 		
 		public DocumentTableModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
+		}
+		
+		@Override
+		public Object getObjectKey(SubmittedSolution solution) {
+			return solution.getFile().getName();
 		}
 
 		@Override

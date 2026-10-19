@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.modules.webFeed.Item;
 
@@ -35,7 +36,7 @@ import org.olat.modules.webFeed.Item;
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class FeedItemTableModel extends DefaultFlexiTableDataModel<FeedItemRow>
-implements SortableFlexiTableDataModel<FeedItemRow> {
+implements SortableFlexiTableDataModel<FeedItemRow>, KeyedFlexiTableDataModel<FeedItemRow> {
 
 	private static final ItemsCols[] COLS = ItemsCols.values();
 	private final Locale locale;
@@ -43,6 +44,11 @@ implements SortableFlexiTableDataModel<FeedItemRow> {
 	public FeedItemTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(FeedItemRow itemRow) {
+		return itemRow.getKey();
 	}
 	
 	public boolean contains(Item item) {

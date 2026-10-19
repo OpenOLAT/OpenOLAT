@@ -22,6 +22,7 @@ package org.olat.modules.topicbroker.ui;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 
 /**
  * 
@@ -29,13 +30,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class TBSelectionDataModel extends DefaultFlexiTableDataModel<TBSelectionRow> {
+public class TBSelectionDataModel extends DefaultFlexiTableDataModel<TBSelectionRow> implements KeyedFlexiTableDataModel<TBSelectionRow> {
 	
 	public static final int CUSTOM_FIELD_OFFSET = 100;
 	private static final SelectionCols[] COLS = SelectionCols.values();
 
 	public TBSelectionDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
+	}
+	
+	@Override
+	public Object getObjectKey(TBSelectionRow selectionRow) {
+		return selectionRow.getTopic() == null ? null : selectionRow.getTopic().getKey();
 	}
 
 	@Override

@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class ExportsListDataModel extends DefaultFlexiTableDataModel<ExportRow>
-implements SortableFlexiTableDataModel<ExportRow> {
+implements SortableFlexiTableDataModel<ExportRow>, KeyedFlexiTableDataModel<ExportRow> {
 	
 	private static final ExportsCols[] COLS = ExportsCols.values();
 	private final Locale locale;
@@ -44,6 +45,11 @@ implements SortableFlexiTableDataModel<ExportRow> {
 	public ExportsListDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(ExportRow exportRow) {
+		return exportRow.getMetadataKey();
 	}
 
 	@Override

@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 
@@ -38,7 +39,7 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
  */
 public class LifecycleDataModel
 		extends DefaultFlexiTableDataModel<RepositoryEntryLifecycle>
-		implements SortableFlexiTableDataModel<RepositoryEntryLifecycle> {
+		implements SortableFlexiTableDataModel<RepositoryEntryLifecycle>, KeyedFlexiTableDataModel<RepositoryEntryLifecycle> {
 
 	private static final LCCols[] COLS = LCCols.values();
 
@@ -49,6 +50,11 @@ public class LifecycleDataModel
 	public LifecycleDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(RepositoryEntryLifecycle lifecycle) {
+		return lifecycle.getKey();
 	}
 
 	@Override

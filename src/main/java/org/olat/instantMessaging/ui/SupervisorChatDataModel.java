@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.translator.Translator;
@@ -54,7 +55,7 @@ import org.olat.instantMessaging.ui.component.RosterEntryWithUnreadCellRenderer;
  *
  */
 public class SupervisorChatDataModel extends DefaultFlexiTableDataModel<RosterRow>
-implements SortableFlexiTableDataModel<RosterRow>, FlexiTableCssDelegate {
+implements SortableFlexiTableDataModel<RosterRow>, FlexiTableCssDelegate, KeyedFlexiTableDataModel<RosterRow> {
 	
 	private static final Logger log = Tracing.createLoggerFor(SupervisorChatDataModel.class);
 	private static final SupervisedChatCols[] COLS = SupervisedChatCols.values();
@@ -74,6 +75,11 @@ implements SortableFlexiTableDataModel<RosterRow>, FlexiTableCssDelegate {
 		this.locale = translator.getLocale();
 		this.identity = identity;
 		this.videoMarker = "<span><i class='o_icon o_icon-fw o_livestream_icon'> </i> " + translator.translate("meeting.invitation") + "</span>";
+	}
+	
+	@Override
+	public Object getObjectKey(RosterRow rosterRow) {
+		return rosterRow.getChannel();
 	}
 	
 	@Override

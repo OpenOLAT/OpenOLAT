@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class CreditPointSystemTableModel extends DefaultFlexiTableDataModel<CreditPointSystemRow>
-implements SortableFlexiTableDataModel<CreditPointSystemRow> {
+implements SortableFlexiTableDataModel<CreditPointSystemRow>, KeyedFlexiTableDataModel<CreditPointSystemRow> {
 	
 	private static final SystemCols[] COLS = SystemCols.values();
 	
@@ -45,6 +46,11 @@ implements SortableFlexiTableDataModel<CreditPointSystemRow> {
 	public CreditPointSystemTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(CreditPointSystemRow systemRow) {
+		return systemRow.getKey();
 	}
 
 	@Override

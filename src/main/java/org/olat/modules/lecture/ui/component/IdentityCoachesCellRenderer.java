@@ -83,6 +83,7 @@ public class IdentityCoachesCellRenderer implements FlexiCellRenderer, ActionDel
 		
 		public OtherCellRenderer() {
 			super("", CMD_OTHER_TEACHERS);
+			setAriaDialogOpener();
 		}
 
 		@Override

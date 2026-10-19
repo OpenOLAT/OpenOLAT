@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class OrderFormListTableModel extends DefaultFlexiTableDataModel<OrderFormRow>
-		implements SortableFlexiTableDataModel<OrderFormRow> {
+		implements SortableFlexiTableDataModel<OrderFormRow>, KeyedFlexiTableDataModel<OrderFormRow> {
 
 	private static final OrderFormCols[] COLS = OrderFormCols.values();
 
@@ -45,6 +46,11 @@ public class OrderFormListTableModel extends DefaultFlexiTableDataModel<OrderFor
 	public OrderFormListTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(OrderFormRow orderFormRow) {
+		return orderFormRow.getKey();
 	}
 
 	@Override

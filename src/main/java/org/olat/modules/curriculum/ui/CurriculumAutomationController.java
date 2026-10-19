@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -397,7 +398,7 @@ public class CurriculumAutomationController extends FormBasicController {
 	}
 
 	private class AutomationRuleTableModel extends DefaultFlexiTableDataModel<AutomationRuleRow>
-			implements FilterableFlexiTableModel {
+			implements FilterableFlexiTableModel, KeyedFlexiTableDataModel<AutomationRuleRow> {
 
 		private static final AutomationCols[] COLS = AutomationCols.values();
 
@@ -412,6 +413,11 @@ public class CurriculumAutomationController extends FormBasicController {
 					translator.getLocale(), withDate);
 		}
 
+		@Override
+		public Object getObjectKey(AutomationRuleRow ruleRow) {
+			return ruleRow.getConfig().getKey();
+		}
+		
 		public List<AutomationRuleRow> getBackupRows() {
 			return backupRows;
 		}

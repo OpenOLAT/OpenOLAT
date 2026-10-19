@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class TeamsRecordingTableModel extends DefaultFlexiTableDataModel<TeamsRecordingRow>
-implements SortableFlexiTableDataModel<TeamsRecordingRow> {
+implements SortableFlexiTableDataModel<TeamsRecordingRow>, KeyedFlexiTableDataModel<TeamsRecordingRow> {
 	
 	private static final TeamsRecordingsCols[] COLS = TeamsRecordingsCols.values();
 	
@@ -45,6 +46,11 @@ implements SortableFlexiTableDataModel<TeamsRecordingRow> {
 	public TeamsRecordingTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(TeamsRecordingRow recordingRow) {
+		return recordingRow.getRecording().getKey();
 	}
 
 	@Override

@@ -196,7 +196,8 @@ public class ImportValueCellRenderer implements FlexiCellRenderer, ActionDelegat
 		String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, true, false, pair, colPair);
 		target.append("<a id=\"").append(actionId).append("\" href=\"javascript:;\" onclick=\"")
 		      .append(jsCode).append("; return false;\"")
-		      .append(FormJSHelper.triggerClickOnKeyDown(false))
+		      .append(FormJSHelper.triggerClickOnKeyDown(true))
+		      .append(" role=\"button\" aria-haspopup=\"dialog\" aria-expanded=\"false\"")
 		      .append(" class='o_validation_open_results'>");
 	}
 	

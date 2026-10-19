@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.modules.project.ProjectStatus;
 
@@ -37,7 +38,7 @@ import org.olat.modules.project.ProjectStatus;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProjectRow> implements SortableFlexiTableDataModel<ProjProjectRow>, FlexiBusinessPathModel {
+public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProjectRow> implements SortableFlexiTableDataModel<ProjProjectRow>, FlexiBusinessPathModel, KeyedFlexiTableDataModel<ProjProjectRow> {
 	
 	private static final ProjectCols[] COLS = ProjectCols.values();
 
@@ -46,6 +47,11 @@ public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProject
 	public ProjProjectDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(ProjProjectRow projectRow) {
+		return projectRow.getKey();
 	}
 	
 	public ProjProjectRow getObjectByKey(Long key) {

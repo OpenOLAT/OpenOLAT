@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class LectureListDetailsParticipantsGroupDataModel extends DefaultFlexiTableDataModel<LectureBlockParticipantGroupRow>
-implements SortableFlexiTableDataModel<LectureBlockParticipantGroupRow> {
+implements SortableFlexiTableDataModel<LectureBlockParticipantGroupRow>, KeyedFlexiTableDataModel<LectureBlockParticipantGroupRow> {
 	
 	private static final GroupCols[] COLS = GroupCols.values();
 	
@@ -45,6 +46,11 @@ implements SortableFlexiTableDataModel<LectureBlockParticipantGroupRow> {
 	public LectureListDetailsParticipantsGroupDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(LectureBlockParticipantGroupRow groupRow) {
+		return groupRow.getGroup() == null ? null : groupRow.getGroup().getKey();
 	}
 	
 	@Override

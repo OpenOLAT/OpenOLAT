@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
@@ -41,7 +42,7 @@ import org.olat.modules.creditpoint.CreditPointTransactionType;
  *
  */
 public class CreditPointUserTransactionsTableModel extends DefaultFlexiTableDataModel<CreditPointTransactionRow>
-implements SortableFlexiTableDataModel<CreditPointTransactionRow> {
+implements SortableFlexiTableDataModel<CreditPointTransactionRow>, KeyedFlexiTableDataModel<CreditPointTransactionRow> {
 	
 	private static final TransactionCols[] COLS = TransactionCols.values();
 	
@@ -51,6 +52,11 @@ implements SortableFlexiTableDataModel<CreditPointTransactionRow> {
 	public CreditPointUserTransactionsTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(CreditPointTransactionRow transactionRow) {
+		return transactionRow.getKey();
 	}
 	
 	@Override

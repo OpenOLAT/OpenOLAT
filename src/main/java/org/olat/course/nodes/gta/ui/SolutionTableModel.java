@@ -22,6 +22,7 @@ package org.olat.course.nodes.gta.ui;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 
 /**
  * 
@@ -29,10 +30,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> {
+public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> implements KeyedFlexiTableDataModel<SolutionRow> {
 	
 	public SolutionTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(SolutionRow solutionRow) {
+		return solutionRow.solution().getFilename();
 	}
 
 	@Override

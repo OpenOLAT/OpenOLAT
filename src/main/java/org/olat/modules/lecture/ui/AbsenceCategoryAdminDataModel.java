@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -36,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class AbsenceCategoryAdminDataModel extends DefaultFlexiTableDataModel<AbsenceCategoryRow>
-implements SortableFlexiTableDataModel<AbsenceCategoryRow> {
+implements SortableFlexiTableDataModel<AbsenceCategoryRow>, KeyedFlexiTableDataModel<AbsenceCategoryRow> {
 	
 	private static final CategoryCols[] COLS = CategoryCols.values();
 	private final Locale locale;
@@ -44,6 +45,11 @@ implements SortableFlexiTableDataModel<AbsenceCategoryRow> {
 	public AbsenceCategoryAdminDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(AbsenceCategoryRow categoryRow) {
+		return categoryRow.getCategory().getKey();
 	}
 
 	@Override

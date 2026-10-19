@@ -22,10 +22,13 @@ package org.olat.modules.project.ui;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -35,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjCalendarDataModel extends DefaultFlexiTableDataModel<ProjCalendarRow> implements SortableFlexiTableDataModel<ProjCalendarRow> {
+public class ProjCalendarDataModel extends DefaultFlexiTableDataModel<ProjCalendarRow> implements SortableFlexiTableDataModel<ProjCalendarRow>, KeyedFlexiTableDataModel<ProjCalendarRow> {
 	
 	private static final CalendarCols[] COLS = CalendarCols.values();
 
@@ -44,6 +47,12 @@ public class ProjCalendarDataModel extends DefaultFlexiTableDataModel<ProjCalend
 	public ProjCalendarDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(ProjCalendarRow calendarRow) {
+		KalendarEvent event = calendarRow.getKalendarEvent();
+		return calendarRow.getType() + "-" + calendarRow.getKey() + (event instanceof KalendarRecurEvent ? "-" + event.getBegin() : "");
 	}
 	
 	public ProjCalendarRow getObjectByKey(String type, Long key) {

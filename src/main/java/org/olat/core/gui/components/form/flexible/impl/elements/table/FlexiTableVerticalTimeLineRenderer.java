@@ -194,6 +194,7 @@ public class FlexiTableVerticalTimeLineRenderer extends AbstractFlexiCustomRende
 			sb.append("o_vertical_timeline_item");
 		}
 		sb.append("'");
+		renderRowKey(sb, ftC, row);
 		if(delegate != null) {
 			List<Data> dataAttributes = delegate.getRowDataAttributes(row);
 			if(dataAttributes != null) {

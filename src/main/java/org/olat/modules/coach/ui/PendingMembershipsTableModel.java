@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
@@ -35,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<PendingMembershipRow> 
-		implements SortableFlexiTableDataModel<PendingMembershipRow> {
+		implements SortableFlexiTableDataModel<PendingMembershipRow>, KeyedFlexiTableDataModel<PendingMembershipRow> {
 
 	private static final PendingMembershipsCol[] COLS = PendingMembershipsCol.values();
 
@@ -44,6 +45,11 @@ public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<Pen
 	public PendingMembershipsTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(PendingMembershipRow membershipRow) {
+		return membershipRow.getReservationKey();
 	}
 
 	@Override

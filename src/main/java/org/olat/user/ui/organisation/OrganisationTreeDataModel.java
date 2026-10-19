@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -33,10 +34,15 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<OrganisationRow> {
+public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<OrganisationRow> implements KeyedFlexiTableDataModel<OrganisationRow> {
 	
 	public OrganisationTreeDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public Object getObjectKey(OrganisationRow organisationRow) {
+		return organisationRow.getKey();
 	}
 
 	@Override

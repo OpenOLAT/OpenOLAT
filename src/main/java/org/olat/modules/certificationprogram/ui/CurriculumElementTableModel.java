@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.KeyedFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
@@ -47,7 +48,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
  *
  */
 public class CurriculumElementTableModel extends DefaultFlexiTableDataModel<CurriculumElementRow>
-implements SortableFlexiTableDataModel<CurriculumElementRow>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<CurriculumElementRow>, FilterableFlexiTableModel, KeyedFlexiTableDataModel<CurriculumElementRow> {
 	
 	private static final CurriculumElementCols[] COLS = CurriculumElementCols.values();
 
@@ -57,6 +58,11 @@ implements SortableFlexiTableDataModel<CurriculumElementRow>, FilterableFlexiTab
 	public CurriculumElementTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
+	}
+	
+	@Override
+	public Object getObjectKey(CurriculumElementRow elementRow) {
+		return elementRow.getKey();
 	}
 
 	@Override
