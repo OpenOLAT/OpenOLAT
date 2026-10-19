@@ -42,7 +42,7 @@ public class HistoryModule extends AbstractSpringModule {
 
 	@Value("${history.resume.enabled:true}")
 	private boolean resumeEnabled;
-	@Value("${history.resume.enabled.default:ondemand}")
+	@Value("${history.resume.enabled.default:none}")
 	private String resumeDefaultSetting;
 	
 	@Autowired

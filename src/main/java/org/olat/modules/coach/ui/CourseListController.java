@@ -19,6 +19,8 @@
  */
 package org.olat.modules.coach.ui;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -120,6 +122,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHa
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AccessRenderer;
+import org.olat.repository.ui.author.EducationalTypeRenderer;
 import org.olat.repository.ui.author.TechnicalTypeRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,6 +152,7 @@ public class CourseListController extends FormBasicController implements Activat
 	protected static final String FILTER_CURRICULUM = "Curriculum";
 	protected static final String FILTER_CERTIFICATES = "certificates";
 	protected static final String FILTER_RESOURCE_TYPE = "resourcetype";
+	protected static final String FILTER_EDUCATIONAL_TYPE = "EducationalType";
 	protected static final String FILTER_WITH_PARTICIPANTS = "WithParticipants";
 	protected static final String FILTER_WITHOUT_PARTICIPANTS = "WithoutParticipants";
 	
@@ -280,6 +284,9 @@ public class CourseListController extends FormBasicController implements Activat
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lifecycleEnd,
 				new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.educationalType,
+				new EducationalTypeRenderer()));
+
 		if(curriculumModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.references));
 		}
@@ -434,6 +441,14 @@ public class CourseListController extends FormBasicController implements Activat
 					FILTER_CURRICULUM, curriculumValues, true);
 			filters.add(curriculumFilter);
 		}
+		
+		// educational type
+		SelectionValues educationalTypeKV = new SelectionValues();
+		repositoryManager.getAllEducationalTypes()
+				.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), StringHelper.escapeHtml(translate(RepositoyUIFactory.getI18nKey(type))))));
+		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"),
+				FILTER_EDUCATIONAL_TYPE, educationalTypeKV, true));
 
 		SelectionValues resourceValues = new SelectionValues();
 		boolean hasOtherTypes = false;
