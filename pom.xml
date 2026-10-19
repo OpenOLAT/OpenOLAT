@@ -94,7 +94,8 @@
 		<qtiworks.version>1.0.37</qtiworks.version>
 		<org.commonmark>0.30.1</org.commonmark>
 		<dev.langchain4j>1.22.0</dev.langchain4j>
-		
+		<mcp.sdk.version>2.0.1</mcp.sdk.version>
+
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
 	    <!-- properties to define the testing environment -->
@@ -2407,6 +2408,39 @@
 			<version>${dev.langchain4j}-beta32</version>
 		</dependency>
 		<!-- end AI API -->
+
+		<!-- MCP server (spike S1, 2026-10-02): official MCP Java SDK, Jackson 2 binding -->
+		<dependency>
+			<groupId>io.modelcontextprotocol.sdk</groupId>
+			<artifactId>mcp-core</artifactId>
+			<version>${mcp.sdk.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-annotations</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.modelcontextprotocol.sdk</groupId>
+			<artifactId>mcp-json-jackson2</artifactId>
+			<version>${mcp.sdk.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.dataformat</groupId>
+					<artifactId>jackson-dataformat-yaml</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- end MCP server -->
 
 		<!-- Start test dependencies -->
 		<dependency>

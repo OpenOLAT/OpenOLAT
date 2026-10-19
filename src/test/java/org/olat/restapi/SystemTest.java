@@ -19,6 +19,7 @@
  */
 package org.olat.restapi;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -156,6 +157,8 @@ public class SystemTest extends OlatRestTestCase {
 		assertTrue(sessionInfos.getWebdavCount() >= 0);
 		assertTrue(sessionInfos.getRestCount() >= 0);
 		assertTrue(sessionInfos.getSecureRestCount() >= 0);
+		assertTrue(sessionInfos.getMcpCount() >= 0);
+		assertEquals(sessionInfos.getMcpCount(), sessionInfos.getSecureMcpCount());
 		
 		conn.shutdown();	
 	}

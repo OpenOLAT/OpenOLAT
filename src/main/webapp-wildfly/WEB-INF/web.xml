@@ -58,10 +58,21 @@
             </init-param>
      </filter>
 
+	<!-- MCP server: bearer token, grants, rate limit and audit of /mcp -->
+	<filter>
+		<filter-name>McpAuthFilter</filter-name>
+		<filter-class>org.olat.mcp.manager.McpAuthFilter</filter-class>
+	</filter>
+	
 	<!-- The mapping to the Login filter REST API -->
 	<filter-mapping>
 		<filter-name>RESTApiLoginFilter</filter-name>
 		<url-pattern>/restapi/*</url-pattern>
+	</filter-mapping>
+	<!-- The mapping of the MCP filter -->
+	<filter-mapping>
+		<filter-name>McpAuthFilter</filter-name>
+		<url-pattern>/mcp</url-pattern>
 	</filter-mapping>
 	
 	<filter-mapping>
@@ -121,6 +132,13 @@
 		<servlet-class>org.olat.commons.calendar.ICalServlet</servlet-class>
 		<load-on-startup>3</load-on-startup>
 	</servlet>	
+	<!-- MCP server endpoint -->
+	<servlet>
+		<servlet-name>mcpservlet</servlet-name>
+		<servlet-class>org.olat.mcp.manager.McpEndpointServlet</servlet-class>
+		<async-supported>true</async-supported>
+		<load-on-startup>3</load-on-startup>
+	</servlet>
 
 	<!-- 5.Servlet-Mapping -->
 	<!-- The mapping for the OLAT servlet -->
@@ -149,7 +167,13 @@
 	<servlet-mapping>
 		<servlet-name>ical</servlet-name>
 		<url-pattern>/ical/*</url-pattern>
-  	</servlet-mapping><!-- Spring loading -->
+  	</servlet-mapping>
+	<!-- The mapping to the MCP server -->
+	<servlet-mapping>
+		<servlet-name>mcpservlet</servlet-name>
+		<url-pattern>/mcp</url-pattern>
+	</servlet-mapping>
+<!-- Spring loading -->
 
 	<!-- 6. Session-Config -->
 	<!-- default session timeout -->

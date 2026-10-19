@@ -24,6 +24,8 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * 
  * <h3>Description:</h3>
@@ -55,6 +57,20 @@ public class SessionsVO {
 	private int contentCount;
 	@XmlAttribute(name="secureContentCount", required=true)
 	private int secureContentCount;
+	/**
+	 * The MCP sessions of this node: the entries of the MCP identity cache,
+	 * one per user and token in use.
+	 */
+	@Schema(description = "The MCP sessions of this node: one per user and token in use, the entries of the MCP identity cache")
+	@XmlAttribute(name="mcpCount", required=true)
+	private int mcpCount;
+	/**
+	 * The MCP sessions over HTTPS. MCP is a bearer token over HTTPS, the value
+	 * is the same as mcpCount.
+	 */
+	@Schema(description = "The MCP sessions over HTTPS. MCP uses a bearer token over HTTPS, the value is the same as mcpCount")
+	@XmlAttribute(name="secureMcpCount", required=true)
+	private int secureMcpCount;
 	@XmlAttribute(name="instantMessagingCount", required=true)
 	private int instantMessagingCount;
 	@XmlAttribute(name="authenticatedClickCountLastMinute", required=true)
@@ -154,6 +170,28 @@ public class SessionsVO {
 
 	public void setSecureContentCount(int secureContentCount) {
 		this.secureContentCount = secureContentCount;
+	}
+
+	/**
+	 * @return The MCP sessions of this node, one per user and token in use
+	 */
+	public int getMcpCount() {
+		return mcpCount;
+	}
+
+	public void setMcpCount(int mcpCount) {
+		this.mcpCount = mcpCount;
+	}
+
+	/**
+	 * @return The MCP sessions over HTTPS, the same as {@link #getMcpCount()}
+	 */
+	public int getSecureMcpCount() {
+		return secureMcpCount;
+	}
+
+	public void setSecureMcpCount(int secureMcpCount) {
+		this.secureMcpCount = secureMcpCount;
 	}
 
 	public int getInstantMessagingCount() {

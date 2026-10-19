@@ -88,6 +88,7 @@ How to add a new job:
             <ref bean="taxonomyEmbeddingIndexTrigger" />
             <ref bean="certificatesGenerationTrigger" />
             <ref bean="apiAuditRetentionTrigger" />
+            <ref bean="mcpTokenCleanupTrigger" />
         </list>
     </property>
 </bean>
@@ -126,6 +127,20 @@ How to add a new job:
 	<!-- dummy bean -->
 	<bean id="org.olat.search.job.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
 		<!-- NOTE: reusing the notifications.DummyJob here -->
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+
+	<!-- Deletes the expired MCP tokens -->
+	<bean id="mcpTokenCleanupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="mcpTokenCleanupJob.${cluster.singleton.services}" />
+		<!-- every day at 1:51 -->
+		<property name="cronExpression" value="0 51 1 * * ?" />
+		<property name="startDelay" value="90000" />
+	</bean>
+	<bean id="mcpTokenCleanupJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.mcp.manager.McpTokenCleanupJob" />
+	</bean>
+	<bean id="mcpTokenCleanupJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 

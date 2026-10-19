@@ -672,11 +672,34 @@ public class LoginModule extends AbstractSpringModule {
 	 * @return True if login is blocked by attack prevention mechanism
 	 */
 	public final boolean isLoginBlocked(String login) {
+		return isLoginBlocked(login, 1);
+	}
+	
+	/**
+	 * Tells whether a login is blocked, with the same factor as the
+	 * registration of the attempts.
+	 * 
+	 * @param login The user name or another key of the attack prevention
+	 * @param attemptsFactor The factor applied to the maximum number of attempts, see {@link #registerFailedLoginAttempt(String, int)}
+	 * @return True if login is blocked by attack prevention mechanism
+	 */
+	public final boolean isLoginBlocked(String login, int attemptsFactor) {
 		if (!attackPreventionEnabled) return false;
 		Integer numAttempts = failedLoginCache.get(login);
 		
 		if (numAttempts == null) return false;
-		else return (numAttempts.intValue() > attackPreventionMaxAttempts);
+		else return (numAttempts.intValue() > (attemptsFactor * attackPreventionMaxAttempts));
+	}
+	
+	public boolean isAttackPreventionEnabled() {
+		return attackPreventionEnabled;
+	}
+	
+	/**
+	 * @return Number of failed attempts after which a login is blocked.
+	 */
+	public int getAttackPreventionMaxAttempts() {
+		return attackPreventionMaxAttempts;
 	}
 	
 	/**

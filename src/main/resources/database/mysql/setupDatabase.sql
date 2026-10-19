@@ -6021,6 +6021,38 @@ create table o_api_audit_log (
    primary key (id)
 );
 
+-- MCP server
+create table o_mcp_profile (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   m_identifier varchar(64) not null,
+   m_name varchar(255) not null,
+   m_description mediumtext,
+   m_enabled bool default false not null,
+   m_type varchar(16) not null,
+   m_tools mediumtext,
+   m_org_roles varchar(1024),
+   m_ratelimit_rpm int,
+   primary key (id)
+);
+
+create table o_mcp_profile_to_identity (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_profile bigint not null,
+   fk_identity bigint not null,
+   primary key (id)
+);
+
+create table o_mcp_profile_to_organisation (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_profile bigint not null,
+   fk_organisation bigint not null,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -6504,6 +6536,9 @@ alter table o_rm_room ENGINE = InnoDB;
 alter table o_rm_room_booking ENGINE = InnoDB;
 alter table o_rm_module_log ENGINE = InnoDB;
 alter table o_api_audit_log ENGINE = InnoDB;
+alter table o_mcp_profile ENGINE = InnoDB;
+alter table o_mcp_profile_to_identity ENGINE = InnoDB;
+alter table o_mcp_profile_to_organisation ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -7850,6 +7885,15 @@ alter table o_api_audit_log add constraint api_audit_ident_idx foreign key (fk_i
 create index idx_api_audit_creation_idx on o_api_audit_log (creationdate);
 create index idx_api_audit_status_idx on o_api_audit_log (a_status);
 create index idx_api_audit_resclass_idx on o_api_audit_log (a_resource_class);
+
+-- MCP server
+create unique index idx_mcp_profile_ident_idx on o_mcp_profile (m_identifier);
+alter table o_mcp_profile_to_identity add constraint mcp_prof_to_id_prof_idx foreign key (fk_profile) references o_mcp_profile (id);
+alter table o_mcp_profile_to_identity add constraint mcp_prof_to_id_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create unique index idx_mcp_prof_to_id_uniq_idx on o_mcp_profile_to_identity (fk_profile, fk_identity);
+alter table o_mcp_profile_to_organisation add constraint mcp_prof_to_org_prof_idx foreign key (fk_profile) references o_mcp_profile (id);
+alter table o_mcp_profile_to_organisation add constraint mcp_prof_to_org_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+create unique index idx_mcp_prof_to_org_uniq_idx on o_mcp_profile_to_organisation (fk_profile, fk_organisation);
 
 -- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );

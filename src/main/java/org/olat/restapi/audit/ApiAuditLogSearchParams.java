@@ -19,6 +19,7 @@
  */
 package org.olat.restapi.audit;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ public class ApiAuditLogSearchParams {
 	private Date createdAfter;
 	private Date createdBefore;
 	private Long identityKey;
+	private Collection<Long> identityKeys;
 	private String userSearch;
 	private List<ApiAuditChannel> channels;
 	private List<String> methods;
@@ -66,6 +68,17 @@ public class ApiAuditLogSearchParams {
 	
 	public void setIdentityKey(Long identityKey) {
 		this.identityKey = identityKey;
+	}
+
+	/**
+	 * @return The keys of the identities of the rows, null or empty for all
+	 */
+	public Collection<Long> getIdentityKeys() {
+		return identityKeys;
+	}
+
+	public void setIdentityKeys(Collection<Long> identityKeys) {
+		this.identityKeys = identityKeys;
 	}
 	
 	/**

@@ -28,7 +28,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
-import org.olat.restapi.RestModule;
 import org.olat.restapi.audit.ApiAuditChannel;
 import org.olat.restapi.audit.ApiAuditEntry;
 import org.olat.restapi.audit.ApiAuditLog;
@@ -59,10 +58,13 @@ public class ApiAuditLogDAO {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private RestModule restModule;
 	
-	public ApiAuditLog create(ApiAuditEntry entry) {
+	/**
+	 * @param entry The data of the request
+	 * @param storeBody true to store the masked body, the setting of the channel
+	 * @return The persisted row
+	 */
+	public ApiAuditLog create(ApiAuditEntry entry, boolean storeBody) {
 		ApiAuditLogImpl logEntry = new ApiAuditLogImpl();
 		logEntry.setCreationDate(new Date());
 		logEntry.setChannel(entry.getChannel() == null ? ApiAuditChannel.rest : entry.getChannel());
@@ -79,7 +81,7 @@ public class ApiAuditLogDAO {
 		logEntry.setPathParams(entry.getPathParams());
 		logEntry.setStatus(entry.getStatus());
 		logEntry.setDurationMs(entry.getDurationMs());
-		logEntry.setRequestBody(restModule.isAuditLogBody() ? ApiAuditMasking.maskJson(entry.getRequestBody()) : null);
+		logEntry.setRequestBody(storeBody ? ApiAuditMasking.maskJson(entry.getRequestBody()) : null);
 		logEntry.setRef(truncate(entry.getRef(), MAX_REF));
 		logEntry.setNodeId(entry.getNodeId());
 		dbInstance.getCurrentEntityManager().persist(logEntry);
@@ -159,6 +161,9 @@ public class ApiAuditLogDAO {
 		if(params.getIdentityKey() != null) {
 			sb.and().append("ident.key = :identityKey");
 		}
+		if(params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {
+			sb.and().append("ident.key in (:identityKeys)");
+		}
 		if(params.getChannels() != null && !params.getChannels().isEmpty()) {
 			sb.and().append("log.channel in (:channels)");
 		}
@@ -209,6 +214,9 @@ public class ApiAuditLogDAO {
 		}
 		if(params.getIdentityKey() != null) {
 			query.setParameter("identityKey", params.getIdentityKey());
+		}
+		if(params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {
+			query.setParameter("identityKeys", params.getIdentityKeys());
 		}
 		if(params.getChannels() != null && !params.getChannels().isEmpty()) {
 			query.setParameter("channels", params.getChannels());

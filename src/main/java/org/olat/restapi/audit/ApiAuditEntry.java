@@ -55,6 +55,7 @@ public class ApiAuditEntry {
 	private String requestBody;
 	private String ref;
 	private Integer nodeId;
+	private Boolean readOperation;
 	
 	public ApiAuditEntry() {
 		//
@@ -256,5 +257,23 @@ public class ApiAuditEntry {
 	
 	public void setNodeId(Integer nodeId) {
 		this.nodeId = nodeId;
+	}
+	
+	/**
+	 * @return TRUE for a read, FALSE for a write, null if the HTTP method decides
+	 */
+	public Boolean getReadOperation() {
+		return readOperation;
+	}
+	
+	/**
+	 * Marks the request as a read or a write independently of the HTTP method.
+	 * The MCP channel sets it because every MCP request is a POST. The REST
+	 * channel leaves it null and the HTTP method decides.
+	 * 
+	 * @param readOperation TRUE for a read, FALSE for a write, null to derive it from the HTTP method
+	 */
+	public void setReadOperation(Boolean readOperation) {
+		this.readOperation = readOperation;
 	}
 }

@@ -70,7 +70,12 @@ public class ApiAuditMasking {
 		}
 	}
 	
-	private static void maskNode(JsonNode node) {
+	/**
+	 * Replaces the values of the secret keys in place, recursively.
+	 * 
+	 * @param node A parsed JSON tree, may be null
+	 */
+	public static void maskNode(JsonNode node) {
 		if(node instanceof ObjectNode object) {
 			List<String> names = new ArrayList<>();
 			object.fieldNames().forEachRemaining(names::add);

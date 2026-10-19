@@ -42,6 +42,7 @@ import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
+import org.olat.mcp.manager.McpIdentityCache;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.system.vo.IndexerStatisticsVO;
@@ -254,6 +255,23 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		return tasks;
 	}
 
+	/**
+	 * The sessions of this node per channel. The counts are per channel, not
+	 * per person: a person with a session in the web interface and an MCP
+	 * client counts in <code>authenticatedCount</code> and in
+	 * <code>mcpCount</code>.
+	 * <p>
+	 * <code>mcpCount</code> is the number of entries of the MCP identity
+	 * cache of this node, one per user and token in use. The detached MCP
+	 * session is never signed on and never appears in the authenticated
+	 * sessions. <code>secureMcpCount</code> is always <code>mcpCount</code>:
+	 * an MCP client sends a bearer token and is meant to use HTTPS only, and
+	 * the secure flag of the request (SessionInfo.isSecure()) can report the
+	 * connection from a proxy that terminates TLS instead of the connection
+	 * of the client.
+	 *
+	 * @return The sessions of this node
+	 */
 	protected SessionsVO getSessionsVO() {
 		SessionsVO vo = new SessionsVO();
 
@@ -317,6 +335,10 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		vo.setSecureRestCount(secureRestCount);
 		vo.setContentCount(contentCount);
 		vo.setSecureContentCount(secureContentCount);
+		// MCP: see the javadoc of the method for the double count and the secure count
+		int mcpCount = CoreSpringFactory.getImpl(McpIdentityCache.class).size();
+		vo.setMcpCount(mcpCount);
+		vo.setSecureMcpCount(mcpCount);
 		// Same as the UI
 		vo.setLoggedInUsersCount(loggedInUsersCount);
 		//Instant messaging

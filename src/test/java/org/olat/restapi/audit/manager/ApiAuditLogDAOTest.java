@@ -93,7 +93,7 @@ public class ApiAuditLogDAOTest extends OlatTestCase {
 		entry.setRef("I8f3c2a-J42");
 		entry.setNodeId(Integer.valueOf(1));
 		
-		ApiAuditLog auditLog = auditLogDao.create(entry);
+		ApiAuditLog auditLog = auditLogDao.create(entry, true);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auditLog.getKey());
 	

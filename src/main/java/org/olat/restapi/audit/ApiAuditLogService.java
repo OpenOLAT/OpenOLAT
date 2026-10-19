@@ -49,11 +49,27 @@ public interface ApiAuditLogService {
 	public static final String AUTH_NONE = "none";
 	
 	/**
+	 * Decides with the audit settings of the REST channel.
+	 * 
 	 * @param method The HTTP method of the request
 	 * @param status The HTTP status of the response
 	 * @return true if the request produces a row of the audit log
 	 */
 	boolean isAuditable(String method, int status);
+	
+	/**
+	 * Decides with the audit settings of the channel of the entry, the REST
+	 * settings if the entry has no channel or the channel has no settings.
+	 * A denied or failed call (401, 403, 429, 5xx) is always auditable. If
+	 * the entry is marked as a read or a write, the mark decides and not the
+	 * HTTP method: a write and a tool error (422) are auditable, a read only
+	 * if the channel audits the reads. Without a mark, the HTTP method
+	 * decides as in {@link #isAuditable(String, int)}.
+	 * 
+	 * @param entry The data collected about the request
+	 * @return true if the request produces a row of the audit log
+	 */
+	boolean isAuditable(ApiAuditEntry entry);
 	
 	/**
 	 * Writes the row in the transaction of the caller.

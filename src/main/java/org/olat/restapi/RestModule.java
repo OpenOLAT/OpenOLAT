@@ -27,6 +27,8 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.restapi.audit.ApiAuditChannel;
+import org.olat.restapi.audit.ApiAuditChannelSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,7 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com
  */
 @Service("restModule")
-public class RestModule extends AbstractSpringModule implements ConfigOnOff {
+public class RestModule extends AbstractSpringModule implements ConfigOnOff, ApiAuditChannelSettings {
 	
 	public static final String RESTAPI_AUTH = "API-Key";
 	
@@ -144,9 +146,15 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(USER_ALLOWED_GENERATE_APIKEY, enabledStr, true);
 	}
 
+	@Override
+	public ApiAuditChannel getAuditChannel() {
+		return ApiAuditChannel.rest;
+	}
+
 	/**
 	 * @return true if the REST API writes a row per write and per denied call in o_api_audit_log
 	 */
+	@Override
 	public boolean isAuditLogEnabled() {
 		return "true".equals(auditLogEnabled);
 	}
@@ -159,6 +167,7 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	/**
 	 * @return true if read requests (GET, HEAD) which succeed are logged too. High volume.
 	 */
+	@Override
 	public boolean isAuditLogReads() {
 		return "true".equals(auditLogReads);
 	}
@@ -171,6 +180,7 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	/**
 	 * @return true if the JSON request body is stored, with masked secrets
 	 */
+	@Override
 	public boolean isAuditLogBody() {
 		return "true".equals(auditLogBody);
 	}
@@ -183,6 +193,7 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	/**
 	 * @return the maximum number of bytes of the request body which are stored, larger bodies are truncated
 	 */
+	@Override
 	public int getAuditLogBodyMaxSize() {
 		return auditLogBodyMaxSize;
 	}

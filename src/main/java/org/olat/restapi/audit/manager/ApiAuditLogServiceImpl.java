@@ -20,7 +20,11 @@
 package org.olat.restapi.audit.manager;
 
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+
+import jakarta.annotation.PostConstruct;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +32,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.restapi.RestModule;
+import org.olat.restapi.audit.ApiAuditChannel;
+import org.olat.restapi.audit.ApiAuditChannelSettings;
 import org.olat.restapi.audit.ApiAuditEntry;
 import org.olat.restapi.audit.ApiAuditLog;
 import org.olat.restapi.audit.ApiAuditLogSearchParams;
@@ -52,16 +58,75 @@ public class ApiAuditLogServiceImpl implements ApiAuditLogService {
 	private RestModule restModule;
 	@Autowired
 	private ApiAuditLogDAO auditLogDao;
+	@Autowired
+	private List<ApiAuditChannelSettings> channelSettingsList;
+	
+	private Map<ApiAuditChannel, ApiAuditChannelSettings> channelSettings;
+	
+	/**
+	 * The settings of every channel, from the beans which implement
+	 * {@link ApiAuditChannelSettings}. The injected list is complete here.
+	 */
+	@PostConstruct
+	void initChannelSettings() {
+		Map<ApiAuditChannel, ApiAuditChannelSettings> settingsMap = new EnumMap<>(ApiAuditChannel.class);
+		if(channelSettingsList != null) {
+			for(ApiAuditChannelSettings settings:channelSettingsList) {
+				if(settings.getAuditChannel() != null) {
+					settingsMap.putIfAbsent(settings.getAuditChannel(), settings);
+				}
+			}
+		}
+		channelSettings = settingsMap;
+	}
 	
 	@Override
 	public boolean isAuditable(String method, int status) {
-		if(status == 401 || status == 403 || status == 429 || status >= 500) {
+		return isAuditable(method, status, restModule);
+	}
+	
+	@Override
+	public boolean isAuditable(ApiAuditEntry entry) {
+		if(entry == null) {
+			return false;
+		}
+		
+		int status = entry.getStatus();
+		ApiAuditChannelSettings settings = getChannelSettings(entry.getChannel());
+		Boolean readOperation = entry.getReadOperation();
+		if(readOperation == null) {
+			// REST: the HTTP method decides, unchanged
+			return isAuditable(entry.getMethod(), status, settings);
+		}
+		// a channel which marks reads and writes also audits the tool errors (422)
+		if(isDenied(status) || status == 422) {
+			return true;
+		}
+		return !readOperation.booleanValue() || settings.isAuditLogReads();
+	}
+	
+	private boolean isAuditable(String method, int status, ApiAuditChannelSettings settings) {
+		if(isDenied(status)) {
 			return true;
 		}
 		if("PUT".equals(method) || "POST".equals(method) || "DELETE".equals(method) || "PATCH".equals(method)) {
 			return true;
 		}
-		return restModule.isAuditLogReads();
+		return settings.isAuditLogReads();
+	}
+	
+	/**
+	 * @param channel The channel of the entry
+	 * @return The settings of the channel, the REST settings if the channel is
+	 * 		null or has no settings
+	 */
+	private ApiAuditChannelSettings getChannelSettings(ApiAuditChannel channel) {
+		if(channel == null) {
+			return restModule;
+		}
+		
+		ApiAuditChannelSettings settings = channelSettings.get(channel);
+		return settings == null ? restModule : settings;
 	}
 	
 	@Override
@@ -76,7 +141,7 @@ public class ApiAuditLogServiceImpl implements ApiAuditLogService {
 		}
 		
 		try {
-			auditLogDao.create(entry);
+			auditLogDao.create(entry, getChannelSettings(entry.getChannel()).isAuditLogBody());
 		} catch (Exception e) {
 			log.error("Cannot write the API audit row of {} {}", entry.getMethod(), entry.getPath(), e);
 		}
@@ -93,7 +158,7 @@ public class ApiAuditLogServiceImpl implements ApiAuditLogService {
 		}
 		
 		try {
-			auditLogDao.create(entry);
+			auditLogDao.create(entry, getChannelSettings(entry.getChannel()).isAuditLogBody());
 			dbInstance.commitAndCloseSession();
 		} catch (Exception e) {
 			log.error("Cannot write the API audit row of {} {}", entry.getMethod(), entry.getPath(), e);
@@ -122,7 +187,7 @@ public class ApiAuditLogServiceImpl implements ApiAuditLogService {
 		
 		if(isDenied(status)) {
 			accessLog.warn(Tracing.M_REST, line);
-		} else if(isRead(entry.getMethod())) {
+		} else if(isRead(entry)) {
 			accessLog.debug(Tracing.M_REST, line);
 		} else {
 			accessLog.info(Tracing.M_REST, line);
@@ -133,14 +198,22 @@ public class ApiAuditLogServiceImpl implements ApiAuditLogService {
 		if(isDenied(status)) {
 			return accessLog.isWarnEnabled();
 		}
-		return isRead(entry.getMethod()) ? accessLog.isDebugEnabled() : accessLog.isInfoEnabled();
+		return isRead(entry) ? accessLog.isDebugEnabled() : accessLog.isInfoEnabled();
 	}
 	
 	private boolean isDenied(int status) {
 		return status == 401 || status == 403 || status == 429 || status >= 500;
 	}
 	
-	private boolean isRead(String method) {
+	/**
+	 * The read flag of the entry wins (MCP sets it, every MCP request is a
+	 * POST), else the HTTP method decides as for REST.
+	 */
+	private boolean isRead(ApiAuditEntry entry) {
+		if(entry.getReadOperation() != null) {
+			return entry.getReadOperation().booleanValue();
+		}
+		String method = entry.getMethod();
 		return "GET".equals(method) || "HEAD".equals(method) || "OPTIONS".equals(method);
 	}
 	
@@ -163,8 +236,8 @@ public class ApiAuditLogServiceImpl implements ApiAuditLogService {
 	}
 	
 	private boolean isLoggable(ApiAuditEntry entry) {
-		return restModule.isAuditLogEnabled()
-				&& isAuditable(entry.getMethod(), entry.getStatus());
+		return getChannelSettings(entry.getChannel()).isAuditLogEnabled()
+				&& isAuditable(entry);
 	}
 	
 	@Override
