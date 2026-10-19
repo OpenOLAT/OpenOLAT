@@ -20,6 +20,7 @@
 	<import resource="classpath:/de/bps/_spring/bpsContext.xml"/>
 	
 	<import resource="classpath:/org/olat/modules/_spring/modulesContext.xml"/>
+	<import resource="classpath:/org/olat/mcp/_spring/mcpContext.xml"/>
 
 	<import resource="classpath:/org/olat/admin/_spring/adminContext.xml"/>
 

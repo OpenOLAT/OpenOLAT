@@ -48,6 +48,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.mcp.manager.McpIdentityCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -59,6 +60,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 */
 public class SysinfoController extends FormBasicController {
 	
+	@Autowired
+	private McpIdentityCache mcpIdentityCache;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -134,7 +137,7 @@ public class SysinfoController extends FormBasicController {
 		sessionAndClicksCont.contextPut("userslastweek", userLast6Days.toString());
 		
 		//last 5 minutes
-		long activeSessions = sessionStatsManager.getActiveSessions(300);
+		long activeSessions = countActiveSessions(300);
 		sessionAndClicksCont.contextPut("count5Minutes", String.valueOf(activeSessions));
 		SessionsStats stats = sessionStatsManager.getSessionsStatsLast(300);
 		sessionAndClicksCont.contextPut("click5Minutes", String.valueOf(stats.getAuthenticatedClickCalls()));
@@ -143,7 +146,7 @@ public class SysinfoController extends FormBasicController {
 		sessionAndClicksCont.contextPut("minutes", String.valueOf(5));
 		
 		//last minute
-		activeSessions = sessionStatsManager.getActiveSessions(60);
+		activeSessions = countActiveSessions(60);
 		sessionAndClicksCont.contextPut("count1Minute", String.valueOf(activeSessions));
 		stats = sessionStatsManager.getSessionsStatsLast(60);
 		sessionAndClicksCont.contextPut("click1Minute", String.valueOf(stats.getAuthenticatedClickCalls()));
@@ -191,6 +194,24 @@ public class SysinfoController extends FormBasicController {
 			logError("", e);
 		}
 		uifactory.addStaticTextElement("sysinfo.olatdata.db", "sysinfo.olatdata.db", fsDbStatus, serverCont);
+	}
+
+	/**
+	 * The active sessions of this node: the GUI sessions of the
+	 * SessionStatsManager plus the MCP sessions of the identity cache with a
+	 * request inside the window. The MCP sessions are not signed on in the
+	 * UserSessionManager, the SessionStatsManager does not know them.
+	 * <p>
+	 * The sum counts sessions, not persons: a person with a session in the
+	 * web interface and an MCP client counts twice, a person with two MCP
+	 * clients counts once per token. The hint sess.channels.hint says it
+	 * to the administrator.
+	 *
+	 * @param numOfSeconds The window in seconds
+	 * @return The number of active GUI and MCP sessions of this node
+	 */
+	private long countActiveSessions(int numOfSeconds) {
+		return sessionStatsManager.getActiveSessions(numOfSeconds) + mcpIdentityCache.countActive(numOfSeconds);
 	}
 
 	@Override

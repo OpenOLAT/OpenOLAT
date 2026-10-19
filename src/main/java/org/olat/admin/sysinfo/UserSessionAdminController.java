@@ -32,6 +32,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.mcp.ui.McpSessionListController;
 
 /**
  * 
@@ -41,7 +42,7 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class UserSessionAdminController extends BasicController implements BreadcrumbPanelAware {
 
-	private final Link sessionsLink, configLink, infosLink;
+	private final Link sessionsLink, configLink, infosLink, mcpLink;
 	private final SegmentViewComponent segmentView;
 	
 	private final VelocityContainer mainVC;
@@ -49,6 +50,7 @@ public class UserSessionAdminController extends BasicController implements Bread
 	private UserSessionController sessionListCtrl;
 	private UserSessionConfigAdminController configCtrl;
 	private UserSessionInformationsController infoCtrl;
+	private McpSessionListController mcpSessionsCtrl;
 	private BreadcrumbPanel stackedController;
 	
 	public UserSessionAdminController(UserRequest ureq, WindowControl wControl) {
@@ -65,6 +67,9 @@ public class UserSessionAdminController extends BasicController implements Bread
 
 		infosLink = LinkFactory.createLink("sess.details", mainVC, this);
 		segmentView.addSegment(infosLink, false);
+
+		mcpLink = LinkFactory.createLink("session.mcp", mainVC, this);
+		segmentView.addSegment(mcpLink, false);
 		
 		mainVC.put("segments", segmentView);
 		doOpenSessionList(ureq);
@@ -98,6 +103,8 @@ public class UserSessionAdminController extends BasicController implements Bread
 					doOpenConfiguration(ureq);
 				} else if (clickedLink == infosLink) {
 					doOpenInformations(ureq);
+				} else if (clickedLink == mcpLink) {
+					doOpenMcpSessions(ureq);
 				}
 			}
 		}
@@ -126,5 +133,13 @@ public class UserSessionAdminController extends BasicController implements Bread
 			listenTo(infoCtrl);
 		}
 		mainVC.put("segmentCmp", infoCtrl.getInitialComponent());
+	}
+
+	private void doOpenMcpSessions(UserRequest ureq) {
+		// a new controller per click, the list is a snapshot of the identity cache
+		removeAsListenerAndDispose(mcpSessionsCtrl);
+		mcpSessionsCtrl = new McpSessionListController(ureq, getWindowControl());
+		listenTo(mcpSessionsCtrl);
+		mainVC.put("segmentCmp", mcpSessionsCtrl.getInitialComponent());
 	}
 }

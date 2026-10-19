@@ -1,0 +1,44 @@
+<div class="o_mcp_access_check">
+#if($showResult)
+	<h4>$r.translate("access.check.result", $userName)</h4>
+	#if($moduleDisabled)
+	<div class="o_warning">$r.translate("access.check.module.disabled")</div>
+	#end
+	#if($hasAccess)
+	<dl class="o_sel_mcp_access_check_result">
+		<dt>$r.translate("access.check.profiles")</dt>
+		<dd>#foreach($profile in $profiles)<code>$r.escapeHtml($profile)</code>#if($foreach.hasNext), #end#end</dd>
+		<dt>$r.translate("access.check.rpm")</dt>
+		<dd>$r.escapeHtml($requestsPerMinute)</dd>
+		<dt>$r.translate("access.check.tokens")</dt>
+		<dd>$numOfTokens</dd>
+		<dt>$r.translate("access.check.tools")</dt>
+		<dd>
+		#if($packs.isEmpty() && $unknownTools.isEmpty())
+			$r.translate("access.check.tools.none")
+		#end
+		#foreach($pack in $packs)
+			<strong>$r.escapeHtml($pack.name)</strong>
+			<ul>#foreach($tool in $pack.tools)<li>$r.escapeHtml($tool)</li>#end</ul>
+		#end
+		#if(!$unknownTools.isEmpty())
+			<strong>$r.translate("access.check.tools.unknown")</strong>
+			<ul>#foreach($tool in $unknownTools)<li><code>$r.escapeHtml($tool)</code></li>#end</ul>
+		#end
+		</dd>
+	</dl>
+	#else
+	<div class="o_info o_sel_mcp_access_check_none">$r.translate("access.check.no.access")</div>
+	<p>$r.translate("access.check.tokens"): $numOfTokens</p>
+	#end
+	<div class="o_button_group">
+		$r.render("access.check.other")
+		$r.render("close")
+	</div>
+#else
+	<div class="o_hint">$r.translate("access.check.intro")</div>
+	#if($r.available("search"))
+		$r.render("search")
+	#end
+#end
+</div>

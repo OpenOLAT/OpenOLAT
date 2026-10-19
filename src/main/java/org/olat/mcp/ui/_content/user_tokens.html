@@ -1,0 +1,30 @@
+<fieldset class="o_form o_mcp_user_tokens">
+	<legend>$r.translate("user.title")</legend>
+	#if($hasAccess)
+		<p class="o_info_with_icon">$r.translate("user.intro")</p>
+		<div class="o_note o_sel_mcp_fair_use">$r.translate("user.fair.use")</div>
+	#else
+		<p class="o_info_with_icon o_sel_mcp_no_access">$r.translate("user.no.access")</p>
+	#end
+</fieldset>
+#if($hasAccess)
+<fieldset class="o_form o_mcp_user_tools o_sel_mcp_user_tools">
+	<legend>$r.translate("user.tools.title")</legend>
+	<div class="o_hint">$r.translate("user.tools.hint", $rateLimit)</div>
+	$r.render("tools")
+</fieldset>
+<fieldset class="o_form o_mcp_user_token_list">
+	<legend>$r.translate("user.tokens.title")</legend>
+	#if($generationDisabled)
+		<div class="o_hint">$r.translate("user.generate.disabled")</div>
+	#elseif($limitReached)
+		<div class="o_hint">$r.translate("user.generate.limit", $maxTokens)</div>
+	#end
+	#if($r.visible("user.generate"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("user.generate")
+	</div>
+	#end
+	$r.render("tokens")
+</fieldset>
+#end

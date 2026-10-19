@@ -1,0 +1,32 @@
+<div class="o_mcp_profile_preview o_sel_mcp_profile_preview">
+	<dl class="dl-horizontal">
+		<dt>$r.translate("profile.name")</dt>
+		<dd>$r.escapeHtml($name)</dd>
+		<dt>$r.translate("profile.identifier")</dt>
+		<dd><code>$r.escapeHtml($identifier)</code></dd>
+		<dt>$r.translate("profile.type")</dt>
+		<dd>$r.escapeHtml($type)</dd>
+		<dt>$r.translate("profile.enabled")</dt>
+		<dd>$r.escapeHtml($enabled)</dd>
+		#if($r.isNotEmpty($description))
+		<dt>$r.translate("profile.description")</dt>
+		<dd>$r.escapeHtml($description)</dd>
+		#end
+		<dt>$r.translate("profile.organisations")</dt>
+		<dd>#if($r.isNotEmpty($organisations))$r.escapeHtml($organisations)#else<span class="o_muted">-</span>#end</dd>
+		#if($system)
+		<dt>$r.translate("profile.roles")</dt>
+		<dd>$r.escapeHtml($roles)</dd>
+		#else
+		<dt>$r.translate("profile.col.members")</dt>
+		<dd>$r.escapeHtml($members)</dd>
+		#end
+		<dt>$r.translate("profile.ratelimit")</dt>
+		<dd>$r.escapeHtml($rateLimit)</dd>
+	</dl>
+	<h4>$r.translate("profile.section.tools")</h4>
+	$r.render("tools")
+	<div class="o_button_group">
+		$r.render("close")
+	</div>
+</div>

@@ -1,0 +1,17 @@
+<div class="o_mcp_token_created">
+	<div class="o_warning" role="alert">$r.translate("user.created.warning")</div>
+	<h4>$r.translate("user.created.token", $r.escapeHtml($label))</h4>
+	<div class="o_block">
+		<pre id="$r.getId("mcptoken")" class="o_sel_mcp_token_plaintext"><code>$r.escapeHtml($token)</code></pre>
+		<button type="button" class="btn btn-default btn-sm" onclick="navigator.clipboard.writeText(jQuery('#$r.getId("mcptoken")').text());"><i class="o_icon o_icon_copy" aria-hidden="true"> </i> $r.translate("user.created.copy.token")</button>
+	</div>
+	<h4>$r.translate("user.created.command")</h4>
+	<p>$r.translate("user.created.command.hint")</p>
+	<div class="o_block">
+		<pre id="$r.getId("mcpcmd")" class="o_sel_mcp_token_command"><code>$r.escapeHtml($command)</code></pre>
+		<button type="button" class="btn btn-default btn-sm" onclick="navigator.clipboard.writeText(jQuery('#$r.getId("mcpcmd")').text());"><i class="o_icon o_icon_copy" aria-hidden="true"> </i> $r.translate("user.created.copy.command")</button>
+	</div>
+	<div class="o_button_group">
+		$r.render("user.created.close")
+	</div>
+</div>

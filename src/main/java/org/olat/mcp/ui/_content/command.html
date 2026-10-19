@@ -1,0 +1,7 @@
+<div class="o_mcp_command">
+	<pre id="$r.getId("mcpcmd")" class="o_sel_mcp_command"><code>$r.escapeHtml($command)</code></pre>
+	<button type="button" class="btn btn-default btn-sm" onclick="navigator.clipboard.writeText(jQuery('#$r.getId("mcpcmd")').text());"><i class="o_icon o_icon_copy" aria-hidden="true"> </i> $r.translate("copy.to.clipboard")</button>
+	#if($commandHint)
+	<div class="o_form_example">$r.escapeHtml($commandHint)</div>
+	#end
+</div>

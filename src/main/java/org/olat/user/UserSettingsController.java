@@ -46,6 +46,8 @@ import org.olat.core.util.prefs.gui.ui.GuiPreferencesUserController;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.ui.IMPreferenceController;
+import org.olat.mcp.McpModule;
+import org.olat.mcp.ui.McpUserTokenController;
 import org.olat.registration.DisclaimerFormController;
 import org.olat.registration.RegistrationModule;
 import org.olat.user.ui.data.UserDataController;
@@ -62,6 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class UserSettingsController extends BasicController implements Activateable2 {
 	
 	private Link webdavLink;
+	private Link mcpLink;
 	private Link imLink;
 	private Link disclaimerLink;
 	private Link aiSettingsLink;
@@ -74,11 +77,14 @@ public class UserSettingsController extends BasicController implements Activatea
 	private IMPreferenceController imCtrl;
 	private DisclaimerFormController disclaimerCtrl;
 	private WebDAVPasswordController webdavCtrl;
+	private McpUserTokenController mcpCtrl;
 	private ChangePrefsController preferencesCtrl;
 	private UserDataController userDataCtrl;
 	private GuiPreferencesUserController guiPreferencesUserCtrl;
 	private AiUserSettingsController aiSettingsCtrl;
 
+	@Autowired
+	private McpModule mcpModule;
 	@Autowired
 	private WebDAVModule webDAVModule;
 	@Autowired
@@ -105,6 +111,11 @@ public class UserSettingsController extends BasicController implements Activatea
 			webdavLink = LinkFactory.createLink("tab.pwdav", mainVC, this);
 			webdavLink.setElementCssClass("o_sel_user_settings_webdav");
 			segmentView.addSegment(webdavLink, false);
+		}
+		if(hasMcpSettings(ureq)) {
+			mcpLink = LinkFactory.createLink("tab.mcp", mainVC, this);
+			mcpLink.setElementCssClass("o_sel_user_settings_mcp");
+			segmentView.addSegment(mcpLink, false);
 		}
 		if(imModule.isEnabled()) {
 			imLink = LinkFactory.createLink("tab.im", mainVC, this);
@@ -146,6 +157,9 @@ public class UserSettingsController extends BasicController implements Activatea
 		} else if("WebDAV".equalsIgnoreCase(name) && webdavLink != null && webDAVModule.isEnabled()) {
 			doOpenWebDAV(ureq);
 			segmentView.select(webdavLink);	
+		} else if("MCP".equalsIgnoreCase(name) && mcpLink != null && mcpModule.isEnabled()) {
+			doOpenMcp(ureq);
+			segmentView.select(mcpLink);
 		} else if("Chat".equalsIgnoreCase(name) && imLink != null && imModule.isEnabled()) {
 			doOpenIM(ureq);
 			segmentView.select(webdavLink);
@@ -174,6 +188,8 @@ public class UserSettingsController extends BasicController implements Activatea
 					doOpenPreferences(ureq);
 				} else if (clickedLink == webdavLink) {
 					doOpenWebDAV(ureq);
+				} else if (clickedLink == mcpLink) {
+					doOpenMcp(ureq);
 				} else if (clickedLink == imLink) {
 					doOpenIM(ureq);
 				} else if (clickedLink == disclaimerLink) {
@@ -209,6 +225,17 @@ public class UserSettingsController extends BasicController implements Activatea
 		}
 		mainVC.put("segmentCmp", webdavCtrl.getInitialComponent());
 		addToHistory(ureq, webdavCtrl);
+	}
+	
+	private void doOpenMcp(UserRequest ureq) {
+		if(mcpCtrl == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("MCP", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			mcpCtrl = new McpUserTokenController(ureq, bwControl);
+			listenTo(mcpCtrl);
+		}
+		mainVC.put("segmentCmp", mcpCtrl.getInitialComponent());
+		addToHistory(ureq, mcpCtrl);
 	}
 	
 	private void doOpenIM(UserRequest ureq) {
@@ -264,6 +291,16 @@ public class UserSettingsController extends BasicController implements Activatea
 		}
 		mainVC.put("segmentCmp", aiSettingsCtrl.getInitialComponent());
 		addToHistory(ureq, aiSettingsCtrl);
+	}
+
+	/**
+	 * The MCP segment is shown to a logged-in person, not to a guest or an
+	 * invitee, when the MCP server is enabled. The panel itself tells a person
+	 * without MCP access to ask the administrator.
+	 */
+	private boolean hasMcpSettings(UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		return mcpModule.isEnabled() && roles != null && !roles.isGuestOnly() && !roles.isInviteeOnly();
 	}
 
 	/**

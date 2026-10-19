@@ -1,4 +1,15 @@
+<fieldset class="o_sel_sessions_channels"><legend>$r.translate("sess.channels.title")</legend>
+	<div class="o_hint">$mcpHint</div>
+	<table class="table table-condensed o_sessions_channels">
+		<tbody>
+			<tr><th scope="row">$r.translate("sess.channel.web.users")</th><td>$webUsersCount</td></tr>
+			<tr><th scope="row">$r.translate("sess.channel.gui")</th><td>$guiCount</td></tr>
+			<tr><th scope="row">$r.translate("sess.channel.rest")</th><td>$restCount</td></tr>
+			<tr><th scope="row">$r.translate("sess.channel.webdav")</th><td>$webdavCount</td></tr>
+			<tr class="o_sel_sessions_channel_mcp"><th scope="row">$r.translate("sess.channel.mcp")</th><td>$mcpCount</td></tr>
+		</tbody>
+	</table>
+</fieldset>
 <fieldset><legend>$r.translate("usersession.title")</legend>
 $usersessions
 </fieldset>
-

@@ -78,6 +78,8 @@ public class ApiAuditLogAdminController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private ApiAuditLogTableModel tableModel;
 	private ApiAuditLogDataSource dataSource;
+	private FlexiTableMultiSelectionFilter channelFilter;
+	private final ApiAuditChannel presetChannel;
 	
 	private CloseableModalController cmc;
 	private ApiAuditLogDetailsController detailsCtrl;
@@ -86,7 +88,17 @@ public class ApiAuditLogAdminController extends FormBasicController {
 	private ApiAuditLogService auditLogService;
 	
 	public ApiAuditLogAdminController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, null);
+	}
+	
+	/**
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param presetChannel The channel the channel filter starts with, null for no preset
+	 */
+	public ApiAuditLogAdminController(UserRequest ureq, WindowControl wControl, ApiAuditChannel presetChannel) {
 		super(ureq, wControl, "auditlog");
+		this.presetChannel = presetChannel;
 		initForm(ureq);
 	}
 	
@@ -138,6 +150,10 @@ public class ApiAuditLogAdminController extends FormBasicController {
 		sortOptions.setDefaultOrderBy(new SortKey(ApiAuditLogCols.creationDate.sortKey(), false));
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setAndLoadPersistedPreferences(ureq, "rest-api-audit-log-v1");
+		if(presetChannel != null) {
+			// after the preferences, the preset wins over a persisted filter value
+			tableEl.setFilterValue(channelFilter, presetChannel.name());
+		}
 		
 		loadModel();
 	}
@@ -151,8 +167,9 @@ public class ApiAuditLogAdminController extends FormBasicController {
 		for(ApiAuditChannel channel:ApiAuditChannel.VALUES) {
 			channelValues.add(SelectionValues.entry(channel.name(), translate(channel.i18nKey())));
 		}
-		filters.add(new FlexiTableMultiSelectionFilter(translate("auditlog.filter.channel"),
-				ApiAuditLogDataSource.FILTER_CHANNEL, channelValues, false));
+		channelFilter = new FlexiTableMultiSelectionFilter(translate("auditlog.filter.channel"),
+				ApiAuditLogDataSource.FILTER_CHANNEL, channelValues, presetChannel != null);
+		filters.add(channelFilter);
 		
 		SelectionValues methodValues = new SelectionValues();
 		for(String method:List.of("GET", "HEAD", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")) {

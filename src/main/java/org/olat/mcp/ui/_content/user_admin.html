@@ -1,0 +1,32 @@
+<div class="o_mcp_user_admin">
+	<fieldset class="o_form o_block_large_bottom o_sel_mcp_user_admin_profiles">
+		<legend>$r.translate("user.admin.profiles")</legend>
+		<div class="o_hint">$r.translate("user.admin.profiles.hint")</div>
+		$r.render("profiles")
+	</fieldset>
+
+	<fieldset class="o_form o_block_large_bottom o_sel_mcp_user_admin_tools">
+		<legend>$r.translate("user.admin.tools")</legend>
+		#if($noAccess)
+			<p class="o_info_with_icon o_sel_mcp_no_access">$r.translate("access.check.no.access")</p>
+		#else
+			<div class="o_hint">$r.translate("user.admin.tools.hint")</div>
+			<dl class="dl-horizontal">
+				<dt>$r.translate("access.check.profiles")</dt>
+				<dd><code>$r.escapeHtml($profileIdentifiers)</code></dd>
+				<dt>$r.translate("access.check.rpm")</dt>
+				<dd>$r.escapeHtml($rateLimit)</dd>
+			</dl>
+		#end
+		$r.render("tools")
+	</fieldset>
+
+	<fieldset class="o_form o_sel_mcp_user_admin_tokens">
+		<legend>$r.translate("user.admin.tokens")</legend>
+		<div class="o_button_group o_button_group_right">
+			$r.render("user.admin.generate")
+		</div>
+		$r.render("tokens")
+		<div class="o_hint o_block_top">$r.translate("token.audited.hint")</div>
+	</fieldset>
+</div>

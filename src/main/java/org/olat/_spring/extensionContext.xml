@@ -475,7 +475,7 @@
 	
 	<!-- the REST API menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="7206" />
+		<property name="order" value="7203" />
 		<property name="navigationKey" value="restapi" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">

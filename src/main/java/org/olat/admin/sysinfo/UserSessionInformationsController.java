@@ -39,8 +39,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.mcp.McpModule;
+import org.olat.mcp.manager.McpIdentityCache;
 
 /**
  * 
@@ -64,6 +67,7 @@ public class UserSessionInformationsController extends BasicController {
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		
 		myContent = createVelocityContainer("usersession_infos");
+		putChannelCounts();
 		myContent.contextPut("usersessions", getUsersSessionAsString());
 		putInitialPanel(myContent);
 	}
@@ -73,6 +77,40 @@ public class UserSessionInformationsController extends BasicController {
 		//
 	}
 	
+	/**
+	 * The sessions per channel. The web interface count is the count of the
+	 * footer (cluster wide with a shared session cache); REST, WebDAV and the
+	 * web interface sessions are the signed on sessions of this node; MCP is
+	 * the number of entries of the MCP identity cache of this node, one per
+	 * user and token in use.
+	 */
+	private void putChannelCounts() {
+		int guiCount = 0;
+		int restCount = 0;
+		int webdavCount = 0;
+		for(UserSession usess:sessionManager.getAuthenticatedUserSessions()) {
+			SessionInfo sinfo = usess == null ? null : usess.getSessionInfo();
+			if(sinfo == null || sinfo.isContentDelivery()) {
+				continue;
+			}
+			if(sinfo.isREST()) {
+				restCount++;
+			} else if(sinfo.isWebDAV()) {
+				webdavCount++;
+			} else {
+				guiCount++;
+			}
+		}
+		int mcpCount = CoreSpringFactory.getImpl(McpIdentityCache.class).size();
+		myContent.contextPut("webUsersCount", Integer.toString(sessionManager.getUserSessionWebCounter()));
+		myContent.contextPut("guiCount", Integer.toString(guiCount));
+		myContent.contextPut("restCount", Integer.toString(restCount));
+		myContent.contextPut("webdavCount", Integer.toString(webdavCount));
+		myContent.contextPut("mcpCount", Integer.toString(mcpCount));
+		int mcpTimeout = CoreSpringFactory.getImpl(McpModule.class).getSessionTimeout();
+		myContent.contextPut("mcpHint", translate("sess.channels.hint", Integer.toString(mcpTimeout > 0 ? mcpTimeout : 300)));
+	}
+
 	private String getUsersSessionAsString() {
 		StringBuilder sb = new StringBuilder(50000);
 		int ucCnt = sessionManager.getUserSessionsCnt();

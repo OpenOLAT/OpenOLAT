@@ -68,6 +68,9 @@ import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListContr
 import org.olat.course.certificate.ui.CertificatesListOverviewController;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
+import org.olat.mcp.McpModule;
+import org.olat.mcp.McpService;
+import org.olat.mcp.ui.McpUserAdminController;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallback;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallbackFactory;
@@ -131,6 +134,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_EDIT_UACCOUNT		= "edit.uaccount";
 	private static final String NLS_EDIT_UPCRED 		= "edit.upwd";
 	private static final String NLS_EDIT_UAUTH 			= "edit.uauth";
+	private static final String NLS_EDIT_UMCP 			= "edit.umcp";
 	private static final String NLS_EDIT_UPROP			= "edit.uprop";
 	private static final String NLS_EDIT_GUIPREF		= "edit.uguipref";
 	private static final String NLS_EDIT_UROLES			= "edit.uroles";
@@ -183,6 +187,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private UserOpenOlatAuthenticationAdminController pwdCtr;
 	private ImplementationsListController implementationsCtrl;
 	private UserAuthenticationsEditorController authenticationsCtr;
+	private McpUserAdminController mcpCtrl;
 	private ProfileFormController profileCtr;
 	private ProfileAndHomePageEditController userProfileCtr;
 	private CloseableModalController cmc;
@@ -219,6 +224,10 @@ public class UserAdminController extends BasicController implements Activateable
 	private OrganisationService organisationService;
 	@Autowired
 	private UserPortraitService userPortraitService;
+	@Autowired
+	private McpModule mcpModule;
+	@Autowired
+	private McpService mcpService;
 
 	public UserAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity identity) {
 		this(ureq, wControl, stackPanel, identity, true); // default = true
@@ -554,7 +563,19 @@ public class UserAdminController extends BasicController implements Activateable
 				listenTo(authenticationsCtr);
 				return authenticationsCtr.getInitialComponent();
 			}, false);
+		}
 
+		if(!isInvitee && !isGuest && mcpModule.isEnabled() && mcpService.canManageMembers(managerRoles, identity)) {
+			// reload: a role changed in the tab roles changes the MCP access
+			userTabP.addTab(ureq, translate(NLS_EDIT_UMCP), "o_sel_mcp", uureq -> {
+				removeAsListenerAndDispose(mcpCtrl);
+				mcpCtrl = new McpUserAdminController(uureq, getWindowControl(), identity);
+				listenTo(mcpCtrl);
+				return mcpCtrl.getInitialComponent();
+			}, true);
+		}
+
+		if (isAdminOf) {
 			userTabP.addTab(ureq, translate(NLS_EDIT_UPROP), uureq -> {
 				propertiesCtr = new UserPropertiesController(uureq, getWindowControl(), identity, editedRoles);
 				listenTo(propertiesCtr);
