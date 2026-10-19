@@ -32,14 +32,15 @@ import org.olat.core.commons.services.ai.AiUserPreference;
 import org.olat.core.commons.services.ai.AiUserPreferenceService;
 import org.olat.core.commons.services.ai.essay.AiOverloadedException;
 import org.olat.core.commons.services.ai.essay.AiRateLimitExceededException;
+import org.olat.core.commons.services.ai.essay.EssayAiCorrectionService;
 import org.olat.core.commons.services.ai.essay.EssayAiGrading;
 import org.olat.core.commons.services.ai.essay.EssayAiGradingFileStore;
-import org.olat.core.commons.services.ai.essay.EssayAiCorrectionService;
 import org.olat.core.commons.services.ai.essay.FormativeFeedback;
 import org.olat.core.commons.services.ai.ui.AiCorrectionConsentController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -83,6 +84,7 @@ import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
@@ -1013,6 +1015,13 @@ public class QuizRunController extends BasicController implements PageRunElement
 			// (MC, upload, ...) produce no answer here.
 			String essayAnswer = extractEssayAnswer(stringResponseMap);
 			super.handleResponses(ureq, stringResponseMap, fileResponseMap, candidateComment, source);
+			if (isEndAttemptSubmit(source)) {
+				// The hint button (or any other endAttemptInteraction) submits the
+				// form as a response too. The learner did not answer the question,
+				// the AI correction must not start (OO-9786).
+				logDebug("AI correction skipped: endAttemptInteraction submit");
+				return;
+			}
 			// Kick off the async AI correction job (if the question is an essay
 			// backed by an EssayAiGrading row) AFTER super has persisted the
 			// item session — we need its key for provenance on the usage log.
@@ -1022,6 +1031,15 @@ public class QuizRunController extends BasicController implements PageRunElement
 		Long getItemSessionKey() {
 			return itemSession == null ? null : itemSession.getKey();
 		}
+	}
+
+	/**
+	 * @param source The form item which submitted the responses
+	 * @return true if the submit comes from the button of an endAttemptInteraction
+	 * 		(the hint button, for example) and not from the submit button of the item
+	 */
+	private static boolean isEndAttemptSubmit(FormItem source) {
+		return source instanceof FormLink link && link.getUserObject() instanceof EndAttemptInteraction;
 	}
 
 	/**
