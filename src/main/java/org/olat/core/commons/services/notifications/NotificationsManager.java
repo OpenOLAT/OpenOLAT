@@ -408,6 +408,8 @@ public interface NotificationsManager {
 	public String getDefaultNotificationInterval();
 	
 	public Date getDefaultCompareDate();
+	
+	public boolean hasPublisher(SubscriptionContext subsContext);
 
 	/**
 	 * @param subscriptionContext
