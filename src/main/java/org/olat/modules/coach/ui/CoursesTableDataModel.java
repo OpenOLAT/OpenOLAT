@@ -83,6 +83,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			final String certificates = getFiltered(filters, CourseListController.FILTER_CERTIFICATES);
 			final List<String> assessment = getFilteredList(filters, CourseListController.FILTER_ASSESSMENT);
 			final List<String> status = getFilteredList(filters, CourseListController.FILTER_STATUS);
+			List<String> educationalTypesList = getFilteredList(filters, CourseListController.FILTER_EDUCATIONAL_TYPE);
+			Set<String> educationalTypes = educationalTypesList == null ? Set.of() : Set.copyOf(educationalTypesList);
 			List<String> resourcesTypesList = getFilteredList(filters, CourseListController.FILTER_RESOURCE_TYPE);
 			if(resourcesTypesList != null && resourcesTypesList.contains("others")) {
 				resourcesTypesList = new ArrayList<>(resourcesTypesList);
@@ -106,6 +108,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 						&& acceptAssessment(assessment, row)
 						&& acceptStatus(status, row)
 						&& acceptResourceType(resourcesTypes, row)
+						&& acceptEducationalType(educationalTypes, row)
 						&& acceptMarked(marked, row)
 						&& acceptNotVisited(notVisited, row)
 						&& acceptWithParticipants(withParticipants, row)
@@ -135,6 +138,13 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		if(refs == null || refs.isEmpty()) return true;
 		return refs.stream()
 				.anyMatch(ref -> entry.getStatus() != null && ref.equals(entry.getStatus().name()));
+	}
+	
+	private boolean acceptEducationalType(Set<String> types, CourseStatEntryRow entry) {
+		if(types == null || types.isEmpty()) return true;
+		
+		String entryType = entry.getEducationalType() == null ? null : entry.getEducationalType().getKey().toString();
+		return entryType != null && types.contains(entryType);
 	}
 	
 	private boolean acceptResourceType(Set<String> types, CourseStatEntryRow entry) {
@@ -328,6 +338,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			case tools -> Boolean.TRUE;
 			case taxonomyLevels -> row.getTaxonomyLevelsLink();
 			case references -> row.getReferencesLink();
+			case educationalType -> row.getEducationalType();
 			default -> "ERROR";
 		};
 	}
@@ -364,7 +375,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		tools("action.more"),
 		taxonomyLevels("table.header.num.of.levels"),
 		resourceType("table.header.typeimg"),
-		references("table.header.references");
+		references("table.header.references"),
+		educationalType("table.header.educational.type");
 		
 		private final String i18nKey;
 		
