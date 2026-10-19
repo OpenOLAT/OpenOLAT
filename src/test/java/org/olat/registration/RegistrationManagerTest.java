@@ -311,12 +311,17 @@ public class RegistrationManagerTest extends OlatTestCase {
 		sleep(2000);//event based, asynchronous
 		String domains = registrationModule.getDomainListRaw();
 		assertEquals("frentix.com,cyberiacafe.ch,openolat.org,frentix.de", domains);
+		boolean organisationEnabled = organisationModule.isEnabled();
 		organisationModule.setEnabled(false);
-
-		//check equals matching
-		assertTrue(registrationManager.validateEmailUsername("aoi@cyberiacafe.ch"));
-		assertFalse(registrationManager.validateEmailUsername("aoi@cyberia.ch"));
-		assertFalse(registrationManager.validateEmailUsername("aoi@blog.cyberiacafe.ch"));
+		try {
+			//check equals matching
+			assertTrue(registrationManager.validateEmailUsername("aoi@cyberiacafe.ch"));
+			assertFalse(registrationManager.validateEmailUsername("aoi@cyberia.ch"));
+			assertFalse(registrationManager.validateEmailUsername("aoi@blog.cyberiacafe.ch"));
+		} finally {
+			// the setting is persisted, restore it for the following tests
+			organisationModule.setEnabled(organisationEnabled);
+		}
 	}
 	
 	@Test
@@ -326,11 +331,16 @@ public class RegistrationManagerTest extends OlatTestCase {
 		sleep(2000);//event based, asynchronous
 		String domains = registrationModule.getDomainListRaw();
 		assertEquals("frentix.com,*cyberiacafe.ch,openolat.org,frentix.de", domains);
+		boolean organisationEnabled = organisationModule.isEnabled();
 		organisationModule.setEnabled(false);
-		
-		//check equals matching
-		assertTrue(registrationManager.validateEmailUsername("aoi@cyberiacafe.ch"));
-		assertFalse(registrationManager.validateEmailUsername("aoi@cyberia.ch"));
-		assertTrue(registrationManager.validateEmailUsername("aoi@blog.cyberiacafe.ch"));
+		try {
+			//check equals matching
+			assertTrue(registrationManager.validateEmailUsername("aoi@cyberiacafe.ch"));
+			assertFalse(registrationManager.validateEmailUsername("aoi@cyberia.ch"));
+			assertTrue(registrationManager.validateEmailUsername("aoi@blog.cyberiacafe.ch"));
+		} finally {
+			// the setting is persisted, restore it for the following tests
+			organisationModule.setEnabled(organisationEnabled);
+		}
 	}
 }
