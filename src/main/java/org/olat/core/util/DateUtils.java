@@ -142,6 +142,23 @@ public class DateUtils {
 				&& date1.getDayOfYear() == date2.getDayOfYear();
 	}
 	
+	/**
+	 * Compare two dates at minute precision. Seconds and milliseconds are
+	 * ignored. Two null dates are the same, a null date and a date are not.
+	 * Works for a java.sql.Timestamp and a java.util.Date alike, which
+	 * Timestamp.equals(Object) does not.
+	 * 
+	 * @param date1 The first date
+	 * @param date2 The second date
+	 * @return true if both dates are in the same minute
+	 */
+	public static boolean isSameMinute(Date date1, Date date2) {
+		if (date1 == null || date2 == null) {
+			return date1 == date2;
+		}
+		return Math.floorDiv(date1.getTime(), 60000L) == Math.floorDiv(date2.getTime(), 60000L);
+	}
+	
 	public static boolean isSameTime(Date date1, Date date2) {
 		Calendar cal1 = Calendar.getInstance();
 		cal1.setTime(date1);

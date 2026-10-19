@@ -381,12 +381,9 @@ public class MilestoneModifyToolProviderTest extends OlatTestCase {
 		assertThat(actions(project, participant)).contains(Action.milestoneContentUpdate);
 		assertNewsAfter(project, before);
 
-		// an unchanged content writes no activity; a milestone without due date because the service compares
-		// the stored Timestamp with a Date and sees every due date as changed (see the report)
-		ProjMilestone noDueDate = createMilestone(owner, project, "No due date", "Description", null, "red");
-		dbInstance.commitAndCloseSession();
+		// an unchanged content writes no activity, the stored due date included
 		List<Action> actionsBefore = actions(project, participant);
-		invoke(context(participant), Map.of("action", "update", "milestoneKey", noDueDate.getKey(), "subject", "No due date"));
+		invoke(context(participant), Map.of("action", "update", "milestoneKey", milestone.getKey(), "subject", "Subject v2"));
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals(actionsBefore.size(), actions(project, participant).size());
 

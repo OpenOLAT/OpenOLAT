@@ -1718,17 +1718,6 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		updateReloadedDecision(doer, reloadedDecision, title, details, decisionDate);
 	}
 	
-	/**
-	 * A loaded date is a java.sql.Timestamp, which never equals a java.util.Date
-	 * (Timestamp.equals), so the dates are compared by their milliseconds.
-	 */
-	private static boolean isSameInstant(Date date1, Date date2) {
-		if (date1 == null || date2 == null) {
-			return date1 == date2;
-		}
-		return date1.getTime() == date2.getTime();
-	}
-	
 	private ProjDecision updateReloadedDecision(Identity doer, ProjDecision reloadedDecision, String title,
 			String details, Date decisionDate) {
 		String before = ProjectXStream.toXml(reloadedDecision);
@@ -1747,7 +1736,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			contentChanged = true;
 		}
 		Date cleanedDecisionDate = decisionDate != null? DateUtils.truncateSeconds(decisionDate): null;
-		if (!isSameInstant(reloadedDecision.getDecisionDate(), cleanedDecisionDate)) {
+		if (!DateUtils.isSameMinute(reloadedDecision.getDecisionDate(), cleanedDecisionDate)) {
 			reloadedDecision.setDecisionDate(cleanedDecisionDate);
 			contentChanged = true;
 		}
@@ -2067,12 +2056,12 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			contentChanged = true;
 		}
 		Date cleanedStartDate = startDate != null? DateUtils.truncateSeconds(startDate): null;
-		if (!isSameInstant(reloadedAppointment.getStartDate(), cleanedStartDate)) {
+		if (!DateUtils.isSameMinute(reloadedAppointment.getStartDate(), cleanedStartDate)) {
 			reloadedAppointment.setStartDate(cleanedStartDate);
 			contentChanged = true;
 		}
 		Date cleanedEndDate = endDate != null? DateUtils.truncateSeconds(endDate): null;
-		if (!isSameInstant(reloadedAppointment.getEndDate(), cleanedEndDate)) {
+		if (!DateUtils.isSameMinute(reloadedAppointment.getEndDate(), cleanedEndDate)) {
 			reloadedAppointment.setEndDate(cleanedEndDate);
 			contentChanged = true;
 		}
@@ -2373,7 +2362,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			contentChanged = true;
 		}
 		Date cleanedDueDate = dueDate != null? DateUtils.truncateSeconds(dueDate): null;
-		if (!isSameInstant(reloadedMilestone.getDueDate(), cleanedDueDate)) {
+		if (!DateUtils.isSameMinute(reloadedMilestone.getDueDate(), cleanedDueDate)) {
 			reloadedMilestone.setDueDate(cleanedDueDate);
 			contentChanged = true;
 		}

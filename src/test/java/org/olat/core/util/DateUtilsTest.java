@@ -22,6 +22,7 @@ package org.olat.core.util;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.core.util.DateUtils.toDate;
 
+import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -65,6 +66,37 @@ public class DateUtilsTest {
 				new GregorianCalendar(2020, 5, 1, 10, 0, 0).getTime(),
 				new GregorianCalendar(2020, 5, 1, 10, 0, 0).getTime())
 			).isEqualTo(new GregorianCalendar(2020, 5, 1, 10, 0, 0).getTime());
+		
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldBeSameMinute() {
+		SoftAssertions softly = new SoftAssertions();
+		Date date = new GregorianCalendar(2026, 9, 1, 10, 30, 0).getTime();
+		
+		// seconds and milliseconds are ignored
+		softly.assertThat(DateUtils.isSameMinute(date, date)).isTrue();
+		softly.assertThat(DateUtils.isSameMinute(date, DateUtils.addSeconds(date, 59))).isTrue();
+		softly.assertThat(DateUtils.isSameMinute(date, new Date(date.getTime() + 59999))).isTrue();
+		
+		// a loaded java.sql.Timestamp and a java.util.Date are the same
+		softly.assertThat(DateUtils.isSameMinute(new Timestamp(date.getTime()), date)).isTrue();
+		softly.assertThat(DateUtils.isSameMinute(date, new Timestamp(date.getTime() + 500))).isTrue();
+		
+		// the minute boundary separates
+		softly.assertThat(DateUtils.isSameMinute(date, new Date(date.getTime() - 1))).isFalse();
+		softly.assertThat(DateUtils.isSameMinute(date, DateUtils.addMinutes(date, 1))).isFalse();
+		softly.assertThat(DateUtils.isSameMinute(date, DateUtils.addDays(date, 1))).isFalse();
+		softly.assertThat(DateUtils.isSameMinute(
+				new GregorianCalendar(1969, 11, 31, 23, 59, 59).getTime(),
+				new GregorianCalendar(1970, 0, 1, 0, 0, 0).getTime())
+			).isFalse();
+		
+		// null handling
+		softly.assertThat(DateUtils.isSameMinute(null, null)).isTrue();
+		softly.assertThat(DateUtils.isSameMinute(date, null)).isFalse();
+		softly.assertThat(DateUtils.isSameMinute(null, date)).isFalse();
 		
 		softly.assertAll();
 	}
