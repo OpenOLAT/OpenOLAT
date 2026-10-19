@@ -30,6 +30,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
@@ -72,6 +73,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 	public static final Event SELECTION_EVENT = new Event("selection");
 	
 	private final VelocityContainer mainVC;
+	private final EmptyState emptyState;
 	private final IconPanel referencePanel;
 	private final Link previewLink;
 	private final Link selectLink;
@@ -108,9 +110,13 @@ public class RepositoryEntryReferenceController extends BasicController {
 		
 		mainVC = createVelocityContainer("repository_entry_reference");
 		putInitialPanel(mainVC);
-		
-		EmptyStateFactory.create("empty.state", mainVC, this, guiConfig.getEmptyStateConfig());
-		
+
+		emptyState = EmptyStateFactory.create("empty.state", mainVC, this, guiConfig.getEmptyStateConfig());
+		// When the empty-state config already has its own primary/secondary buttons
+		// (rendered inside the empty-state box), the separate select/create/import button row
+		// below it is redundant and must be suppressed by the template.
+		mainVC.contextPut("emptyStateHasButtons", guiConfig.getEmptyStateConfig().getPrimaryButton() != null);
+
 		referencePanel = new IconPanel("reference");
 		referencePanel.setElementCssClass("o_block_bottom");
 		mainVC.put("reference", referencePanel);
@@ -326,6 +332,20 @@ public class RepositoryEntryReferenceController extends BasicController {
 			doEditSettings(ureq);
 		} else if(source == referencesHistoryLink) {
 			doShowReferencesHistory(ureq);
+		} else if (source == emptyState) {
+			if (event instanceof EmptyState.PrimaryEvent) {
+				doSelectRepositoryEntry(ureq);
+			} else if (event instanceof EmptyState.SecondaryEvent secondaryEvent) {
+				String action = secondaryEvent.getAction();
+				if ("create".equals(action) && createCmp instanceof Link createLink
+						&& createLink.getUserObject() instanceof RepositoryHandler handler) {
+					doCreateRepositoryEntry(ureq, handler);
+				} else if ("import".equals(action)) {
+					doImportRepositoryEntry(ureq);
+				} else if ("import.url".equals(action)) {
+					doImportUrlRepositoryEntry(ureq);
+				}
+			}
 		}
 	}
 

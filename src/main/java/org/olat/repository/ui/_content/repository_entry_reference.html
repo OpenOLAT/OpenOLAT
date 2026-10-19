@@ -10,6 +10,7 @@
 		$r.render("reference")
 	#else
 		$r.render("empty.state")
+		#if(!$emptyStateHasButtons)
 		<div class="o_button_group">
 			$r.render("select")
 			#if($r.available("create"))
@@ -24,5 +25,6 @@
 				$r.render("import")
 			#end
 		</div>
+		#end
 	#end
 </div>
