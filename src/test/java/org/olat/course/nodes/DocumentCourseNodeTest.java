@@ -22,12 +22,14 @@ package org.olat.course.nodes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Locale;
 
 import org.junit.Test;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.PdfFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
@@ -43,11 +45,15 @@ import org.olat.test.OlatTestCase;
 public class DocumentCourseNodeTest extends OlatTestCase {
 
 	private static final String FILE_NAME = "document.pdf";
+	private static final String CONTENT = "%PDF-1.4";
 
 	@Test
 	public void exportImport_withReference() throws Exception {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("doc-exp");
 		RepositoryEntry source = createPdfEntry(author);
+		File media = new File(FileResourceManager.getInstance().getFileResourceRoot(source.getOlatResource()), "media");
+		media.mkdirs();
+		Files.writeString(new File(media, "thumbnail.jpg").toPath(), "thumbnail");
 		DocumentCourseNode exportNode = createNode(source);
 		File dir = Files.createTempDirectory("doc-node").toFile();
 
@@ -65,6 +71,9 @@ public class DocumentCourseNodeTest extends OlatTestCase {
 		assertThat(leaf).isNotNull();
 		assertThat(leaf.getName()).isEqualTo(FILE_NAME);
 		assertThat(imported.getOlatResource().getResourceableTypeName()).isEqualTo(PdfFileResource.TYPE_NAME);
+		try (InputStream in = leaf.getInputStream()) {
+			assertThat(new String(in.readAllBytes())).isEqualTo(CONTENT);
+		}
 	}
 
 	@Test
@@ -109,7 +118,7 @@ public class DocumentCourseNodeTest extends OlatTestCase {
 
 	private RepositoryEntry createPdfEntry(Identity author) throws Exception {
 		File file = new File(Files.createTempDirectory("doc-source").toFile(), FILE_NAME);
-		Files.writeString(file.toPath(), "%PDF-1.4");
+		Files.writeString(file.toPath(), CONTENT);
 		return RepositoryHandlerFactory.getInstance().getRepositoryHandler(PdfFileResource.TYPE_NAME)
 				.importResource(author, null, "Document", "", RepositoryEntryImportExportLinkEnum.NONE,
 						JunitTestHelper.getDefaultOrganisation(), Locale.GERMAN, file, FILE_NAME);

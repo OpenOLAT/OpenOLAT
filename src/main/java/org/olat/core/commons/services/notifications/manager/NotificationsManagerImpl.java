@@ -727,6 +727,11 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		}
 		return query.getResultList();
 	}
+	
+	public boolean hasPublisher(SubscriptionContext subsContext) {
+		long numOfPublishers = publisherDao.countPublishers(subsContext);
+		return numOfPublishers > 0l;
+	}
 
 	@Override
 	public Publisher updatePublisherData(SubscriptionContext subsContext, PublisherData data) {

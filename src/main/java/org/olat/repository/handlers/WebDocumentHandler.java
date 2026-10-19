@@ -52,6 +52,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.AnimationFileResource;
 import org.olat.fileresource.types.DocFileResource;
@@ -222,7 +223,11 @@ public class WebDocumentHandler extends FileHandler {
 
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res, RepositoryEntryImportExportLinkEnum withLinkedResource) {
-		return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);
+		File[] documents = FileResourceManager.getInstance().getFileResourceRoot(res).listFiles(file -> file.isFile() && !file.isHidden());
+		if (documents == null || documents.length == 0) {
+			return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);
+		}
+		return new DownloadeableMediaResource(documents[0]);
 	}
 
 	@Override
