@@ -55,7 +55,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	static final String[] paneKeys = { PANE_TAB_CONFIG, PANE_TAB_SCORING };
 	
 	private final VelocityContainer configContent;
-	private final PortfolioConfigForm configForm;
+	private final PortfolioConfigController configForm;
 	private final VelocityContainer scoringContent;
 	private final MSEditFormController scoringController;
 	private final Link enableEditingLink;
@@ -76,7 +76,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		this.config = config;
 		this.courseNode = node;
 		
-		configForm = new PortfolioConfigForm(ureq, wControl, stackPanel, course, node);
+		configForm = new PortfolioConfigController(ureq, wControl, stackPanel, course, node);
 		listenTo(configForm);
 		scoringController = new MSEditFormController(ureq, wControl, course, node, NodeAccessType.of(course), null, null);
 		listenTo(scoringController);
@@ -121,12 +121,9 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == configForm) {
-			if (event == Event.DONE_EVENT) {
-				configForm.getUpdatedConfig();
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-				configContent.setDirty(true);
-			} else if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(ureq, event);
+				configContent.setDirty(true);
 			}
 		} else if (source == scoringController) {
 			if (event == Event.CANCELLED_EVENT) {
