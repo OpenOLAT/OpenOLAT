@@ -95,6 +95,9 @@ public class WikiConfigController extends BasicController implements ReferenceCo
 				.withMessageTranslated(translate("no.wiki.resource.selected"))
 				.withDescTranslated(translate("no.wiki.resource.selected.text"))
 				.withIconCss("o_icon o_FileResource-WIKI_icon")
+				.withPrimaryButton("o_icon_search", "select", null)
+				.withSecondaryButton("o_icon_add", "create", null, "create")
+				.withSecondaryButton("o_icon_import", "import", null, "import")
 				.build();
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
