@@ -2254,6 +2254,16 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	}
 	
 	let targetUrl = jQuery('#' + formNam).attr("action");
+	if(!targetUrl) {
+		// The form is no longer in the DOM (e.g. a delayed/periodic dispatch firing after its
+		// dialog was already cancelled and disposed). jQuery.ajax() would otherwise fall back to
+		// posting to the current page URL, which can trigger a full-page reload.
+		if(newTargetWindow) {
+			newTargetWindow.close();
+		}
+		o_afterserver();
+		return;
+	}
 	jQuery.ajax(targetUrl,{
 		type:'POST',
 		data: data,
@@ -2302,6 +2312,12 @@ function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 	}
 	
 	let targetUrl = jQuery('#' + formNam).attr("action");
+	if(!targetUrl) {
+		// The form is no longer in the DOM, e.g. a delayed/periodic dispatch firing after its
+		// dialog was already cancelled and disposed. jQuery.ajax() would otherwise fall back to
+		// posting to the current page URL, which can trigger a spurious full-page reload.
+		return;
+	}
 	jQuery.ajax(targetUrl,{
 		type:'POST',
 		data: data,
