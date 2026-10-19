@@ -164,8 +164,16 @@ public class FileQueryToolProviderTest extends OlatTestCase {
 		projectService.updateTags(owner, first.getArtefact(), List.of("meeting", "alpha"));
 		// the metadata change moves the first file to the top of the list
 		projectService.updateFile(owner, first, null, "First title", "First description");
+		dbInstance.commit();
+		
+		// MySQL doesn't save milliseconds, we need a bigger time difference to make the order works
+		dbInstance.getCurrentEntityManager()
+	        .createQuery("update projartefact set contentModifiedDate=:date where key=:key")
+	        .setParameter("date", DateUtils.addMinutes(new Date(), -1))
+	        .setParameter("key", second.getArtefact().getKey())
+	        .executeUpdate();
 		dbInstance.commitAndCloseSession();
-
+		
 		McpToolResult result = invoke(context(participant), Map.of("projectKey", project.getKey()));
 		Map<String,Object> structured = structured(result);
 		List<Map<String,Object>> items = items(structured);

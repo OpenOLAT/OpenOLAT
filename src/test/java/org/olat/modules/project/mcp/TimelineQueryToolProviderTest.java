@@ -195,7 +195,7 @@ public class TimelineQueryToolProviderTest extends OlatTestCase {
 
 		List<String> noteActions = items(structured(invoke(context(owner), Map.of("projectKey", project.getKey(), "types", List.of("note")))))
 				.stream().map(item -> item.get("action").toString()).toList();
-		assertThat(noteActions).containsExactly("noteContentUpdate", "noteCreate");
+		assertThat(noteActions).containsExactlyInAnyOrder("noteContentUpdate", "noteCreate");
 
 		List<String> allNoteActions = items(structured(invoke(context(owner), Map.of("projectKey", project.getKey(), "types", List.of("note"), "allActions", true))))
 				.stream().map(item -> item.get("action").toString()).toList();

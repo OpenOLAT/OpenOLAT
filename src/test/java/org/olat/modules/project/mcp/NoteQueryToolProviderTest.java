@@ -160,6 +160,14 @@ public class NoteQueryToolProviderTest extends OlatTestCase {
 		projectService.updateTags(owner, first.getArtefact(), List.of("meeting", "alpha"));
 		// the content change moves the first note to the top of the list
 		projectService.updateNote(owner, first, UUID.randomUUID().toString(), "First", "# Heading\n\nSome **markdown** text.");
+		dbInstance.commit();
+		
+		// MySQL doesn't save milliseconds, we need a bigger time difference to make the order works
+		dbInstance.getCurrentEntityManager()
+	        .createQuery("update projartefact set contentModifiedDate=:date where key=:key")
+	        .setParameter("date", DateUtils.addMinutes(new Date(), -1))
+	        .setParameter("key", second.getArtefact().getKey())
+	        .executeUpdate();
 		dbInstance.commitAndCloseSession();
 
 		McpToolResult result = invoke(context(participant), Map.of("projectKey", project.getKey()));

@@ -147,7 +147,8 @@ public class PersistenceHelper {
 			} else {
 				sb.append(" lower(").append(field).append(") like :").append(key);
 			}
-			if(dbVendor.equals("oracle")) {
+			// Hibernate disables the default escape of MySQL with escape '', set it explicitly
+			if(dbVendor.equals("oracle") || dbVendor.equals("mysql")) {
 				sb.append(" escape '\\'");
 			}
 		} catch (IOException e) {
@@ -163,7 +164,8 @@ public class PersistenceHelper {
 			} else {
 				sb.append(" lower(").append(field).append(") not like :").append(key);
 			}
-			if(dbVendor.equals("oracle")) {
+			// Hibernate disables the default escape of MySQL with escape '', set it explicitly
+			if(dbVendor.equals("oracle") || dbVendor.equals("mysql")) {
 				sb.append(" escape '\\'");
 			}
 			sb.append(")");
