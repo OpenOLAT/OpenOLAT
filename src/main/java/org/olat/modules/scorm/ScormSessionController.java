@@ -79,6 +79,7 @@ public class ScormSessionController {
 	public static final String CMI_EXIT = "cmi.core.exit";
 	public static final String CMI_TOTAL_TIME = "cmi.core.total_time";
 	public static final String CMI_SESSION_TIME = "cmi.core.session_time";
+	public static final String CMI_RAW_SCORE = "cmi.core.score.raw";
 	/** A session longer than this (e.g. a tab left open) is not counted completely */
 	private static final int MAX_SESSION_SECONDS = 24 * 60 * 60;
 	
