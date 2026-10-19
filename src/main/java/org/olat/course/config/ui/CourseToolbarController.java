@@ -31,7 +31,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.notifications.NotificationsManager;
-import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -1200,13 +1199,12 @@ public class CourseToolbarController extends FormBasicController {
 		
 		SubscriptionContext subContext = CourseDocumentsFactory.getSubscriptionContext(entry);
 		NotificationsManager notifManager = CoreSpringFactory.getImpl(NotificationsManager.class);
-		Publisher publisher = notifManager.getPublisher(subContext);
-		if (publisher != null) {
+		boolean hasPublisher = notifManager.hasPublisher(subContext);
+		if (hasPublisher) {
 			String businessPath = getWindowControl().getBusinessControl().getAsString();
 			String data = "/" + relPath;
 			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(FolderModule.class), data, businessPath);
 			notifManager.updatePublisherData(subContext, pdata);
 		}
 	}
-
 }
