@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
@@ -84,6 +85,54 @@ public class ProjMemberQueriesTest extends OlatTestCase {
 		List<GroupMembership> memberships = sut.getProjMemberships(params);
 		
 		assertThat(memberships).hasSize(4);
+	}
+
+	@Test
+	public void shouldGetProjectKeyToRoles() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		ProjProject project1 = projectService.createProject(creator, new ProjectBCFactory(), creator);
+		ProjProject project2 = projectService.createProject(creator, new ProjectBCFactory(), creator);
+		ProjProject projectNotMember = projectService.createProject(creator, new ProjectBCFactory(), creator);
+		ProjProject projectNotInList = projectService.createProject(creator, new ProjectBCFactory(), creator);
+		projectService.updateMember(creator, new ProjectBCFactory(), project1, identity, Set.of(ProjectRole.client, ProjectRole.steeringCommitee), null);
+		projectService.updateMember(creator, new ProjectBCFactory(), project2, identity, Set.of(ProjectRole.participant), null);
+		projectService.updateMember(creator, new ProjectBCFactory(), projectNotInList, identity, Set.of(ProjectRole.leader), null);
+		dbInstance.commitAndCloseSession();
+		
+		Map<Long, Set<ProjectRole>> projectKeyToRoles = sut.getProjectKeyToRoles(
+				List.of(project1.getKey(), project2.getKey(), projectNotMember.getKey()), identity);
+		
+		assertThat(projectKeyToRoles).containsOnlyKeys(project1.getKey(), project2.getKey());
+		assertThat(projectKeyToRoles.get(project1.getKey())).containsExactlyInAnyOrder(ProjectRole.client, ProjectRole.steeringCommitee);
+		assertThat(projectKeyToRoles.get(project2.getKey())).containsExactly(ProjectRole.participant);
+		assertThat(sut.getProjectKeyToRoles(List.of(), identity)).isEmpty();
+	}
+	
+	@Test
+	public void shouldGetRolesOfProjects() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		ProjProject project1 = projectService.createProject(creator, new ProjectBCFactory(), creator);
+		ProjProject project2 = projectService.createProject(creator, new ProjectBCFactory(), creator);
+		ProjProject projectNotMember = projectService.createProject(creator, new ProjectBCFactory(), creator);
+		projectService.updateMember(creator, new ProjectBCFactory(), project1, identity, Set.of(ProjectRole.client, ProjectRole.supplier), null);
+		projectService.updateMember(creator, new ProjectBCFactory(), project2, identity, Set.of(ProjectRole.owner), null);
+		dbInstance.commitAndCloseSession();
+		
+		List<ProjProject> projects = List.of(project1, project2, projectNotMember);
+		Map<Long, Set<ProjectRole>> projectKeyToRoles = projectService.getRoles(projects, identity);
+		
+		// the same roles as the query per project
+		for (ProjProject project : projects) {
+			assertThat(projectKeyToRoles.getOrDefault(project.getKey(), Set.of()))
+					.containsExactlyInAnyOrderElementsOf(projectService.getRoles(project, identity));
+		}
+		assertThat(projectKeyToRoles.get(project1.getKey())).containsExactlyInAnyOrder(ProjectRole.client, ProjectRole.supplier);
+		assertThat(projectKeyToRoles).doesNotContainKey(projectNotMember.getKey());
+		assertThat(projectService.getRoles(List.<ProjProject>of(), identity)).isEmpty();
+		// the creator is owner of all three projects
+		assertThat(projectService.getRoles(projects, creator)).hasSize(3);
 	}
 
 }
