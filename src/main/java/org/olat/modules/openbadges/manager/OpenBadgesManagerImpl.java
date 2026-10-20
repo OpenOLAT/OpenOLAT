@@ -754,6 +754,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			Profile profile = new Profile(new JSONObject(sourceIssuerString));
 			String clonedUrl = Settings.getServerContextPathURI() + urlPart + targetEntry.getKey();
 			profile.setUrl(clonedUrl);
+			profile.setName(targetEntry.getDisplayname());
 			return profile.asJsonObject(Constants.TYPE_VALUE_ISSUER).toString();
 		}
 
