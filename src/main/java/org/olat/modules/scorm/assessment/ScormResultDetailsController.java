@@ -20,9 +20,9 @@
 package org.olat.modules.scorm.assessment;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -60,6 +60,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.scorm.ScormSessionController;
 import org.olat.modules.scorm.assessment.ScoSummaryTableModel.SummaryCols;
+import org.olat.modules.scorm.assessment.ScoSummaryTableSortDelegate.LastRunComparator;
 import org.olat.modules.scorm.server.servermodels.ScoUtils;
 
 /**
@@ -160,44 +161,27 @@ public class ScormResultDetailsController extends FormBasicController {
 		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
 		String username = assessedUserCourseEnv.getIdentityEnvironment().getIdentity().getName();
 
-		Map<Date, List<CmiData>> rawDatas = ScormAssessmentManager.getInstance().visitScoDatasMultiResults(username, courseEnv, node);
+		List<ScoCmiData> rawDatas = ScormAssessmentManager.getInstance().visitScoDatasMultiResults(username, courseEnv, node);
 		if(rawDatas == null) {
 			tableModel.setObjects(new ArrayList<>());
 		} else {
 			List<ScoSummaryRow> rows = new ArrayList<>(rawDatas.size());
-			for(Map.Entry<Date, List<CmiData>> entry:rawDatas.entrySet()) {
-				Date date = entry.getKey();
-				List<CmiData> cmiData = entry.getValue();
-				ScoId scoId = getScoId(date, cmiData);
+			for(ScoCmiData entry:rawDatas) {
+				Date date = entry.date();
+				List<CmiData> cmiData = entry.cmiData();
 				ScoreAndTotalTime timeScore =  totalTimeAndScore(cmiData);
-				rows.add(new ScoSummaryRow(scoId.id(), scoId.last(), date, timeScore.score(), timeScore.totalTime(), cmiData));
+				rows.add(new ScoSummaryRow(entry.scoId(), entry.current(), date, timeScore.score(), timeScore.totalTime(), cmiData));
+			}
+			
+			if(rows.size() > 1) {
+				Collections.sort(rows, new LastRunComparator());
+				Collections.reverse(rows);
 			}
 			tableModel.setObjects(rows);
 		}
 		tableEl.reset(true, true, true);
 	}
 
-	private ScoId getScoId(Date date, List<CmiData> cmiObject) {
-		if(cmiObject != null && !cmiObject.isEmpty()) {
-			CmiData data = cmiObject.get(0);
-			long time = date.getTime();
-			String itemId = data.getItemId();
-			int index = itemId.lastIndexOf('_');
-			if(index >= 0) {
-				String marker = itemId.substring(index + 1, itemId.length());
-				if(StringHelper.isLong(marker)) {
-					long longMarker = Long.parseLong(marker);
-					long diff = Math.abs(time - longMarker);
-					if(diff < 1000) {// less than a second
-						return new ScoId(itemId.substring(0, index), false);
-					}
-				}
-			}
-			return new ScoId(data.getItemId(), true);
-		}
-		return null;
-	}
-	
 	private ScoreAndTotalTime totalTimeAndScore(List<CmiData> cmiObject) {
 		Double score = null;
 		String totalTime = null;
@@ -302,13 +286,10 @@ public class ScormResultDetailsController extends FormBasicController {
 		cmiDataCtrl = new ScoCmiDetailsController(ureq, getWindowControl(), row.getCmiData());
 		listenTo(cmiDataCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), cmiDataCtrl.getInitialComponent());
+		String title = translate("cmi.data.title", row.getScoId());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), cmiDataCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
-	}
-	
-	private record ScoId(String id, boolean last) {
-		//
 	}
 	
 	private record ScoreAndTotalTime(Double score, String totalTime) {

@@ -104,7 +104,7 @@ public class ScormAPIandDisplayController extends BasicController implements Con
 	private Link previousScoTop;
 	private Link previousScoBottom;
 	
-	private String username;
+	private final String username;
 	private String scormLessonMode;
 
 	private String requestScoId;

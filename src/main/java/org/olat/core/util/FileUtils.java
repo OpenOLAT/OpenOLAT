@@ -1092,7 +1092,7 @@ public class FileUtils {
 	}
 	
 	public static String checksumSha256(File file) {
-		try(InputStream in= new FileInputStream(file)) {
+		try(InputStream in = new FileInputStream(file)) {
 			return DigestUtils.sha256Hex(in);
 		} catch(IOException e) {
 			log.error("", e);
