@@ -736,14 +736,14 @@ public class TeacherRollCallController extends FormBasicController {
 		int index = row.getIndexOfCheck(check);
 		List<Integer> indexList = Collections.singletonList(index);
 		
-		LectureBlockRollCall rollCall;
-		String before = lectureService.toAuditXml(row.getRollCall());
+		LectureBlockRollCall rollCall = lectureService.getRollCall(row.getRollCall());
+		String before = lectureService.toAuditXml(rollCall);
 		if(check.isAtLeastSelected(1)) {
-			rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), indexList);
+			rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, rollCall, indexList);
 			lectureService.auditLog(LectureBlockAuditLog.Action.addToRollCall, before, lectureService.toAuditXml(rollCall),
 					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), null, row.getIdentity(), getIdentity());
 		} else {
-			rollCall = lectureService.removeRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), indexList);
+			rollCall = lectureService.removeRollCall(row.getIdentity(), lectureBlock, rollCall, indexList);
 			lectureService.auditLog(LectureBlockAuditLog.Action.removeFromRollCall, before, lectureService.toAuditXml(rollCall),
 					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), null, row.getIdentity(), getIdentity());
 		}
