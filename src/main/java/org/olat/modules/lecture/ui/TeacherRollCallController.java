@@ -763,7 +763,7 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private void doAuthorizedAbsence(TeacherRollCallRow row, MultipleSelectionElement check) {
-		LectureBlockRollCall rollCall = row.getRollCall();
+		LectureBlockRollCall rollCall = lectureService.getRollCall(row.getRollCall());
 		boolean authorized = check.isAtLeastSelected(1);
 		if(rollCall == null) {
 			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, authorized, null, null);
@@ -796,7 +796,7 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private void doReason(TeacherRollCallRow row, String reason, AbsenceCategory category) {
-		LectureBlockRollCall rollCall = row.getRollCall();
+		LectureBlockRollCall rollCall = lectureService.getRollCall(row.getRollCall());
 		String before = lectureService.toAuditXml(rollCall);
 		if(rollCall == null) {
 			row.getAuthorizedAbsence().select(onKeys[0], true);
