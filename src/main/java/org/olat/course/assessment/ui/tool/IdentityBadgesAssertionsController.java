@@ -266,6 +266,9 @@ public class IdentityBadgesAssertionsController extends FormBasicController impl
 	}
 	
 	private void doSelectBadges(UserRequest ureq) {
+		if (!canGenerate) {
+			return;
+		}
 		List<BadgeAssertion> badges = courseEntry == null ? List.of()
 				: openBadgesManager.getBadgeAssertions(assessedIdentity, courseEntry, true);
 		List<BadgeClass> badgeClasses = badges.stream()
