@@ -296,11 +296,21 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			
 			String description = link.getTextReasonForDisabling();
 			// fallback to title
-			if (description == null) description = link.getTitle();
+			if (description == null) description = title;
 			if (description != null) {
 				sb.append(" title=\"").appendHtmlAttributeEscaped(description).append("\" ");
 			}
-			sb.append(cssSb).append(" href='#' onclick='return false;'>");
+			sb.append(cssSb).append(" href='#' onclick='return false;'");
+			if(link.getAriaRole() != null) {
+				sb.append(" role=\"").appendHtmlEscaped(link.getAriaRole()).append("\" aria-disabled=\"true\"");
+				if(link.getAriaHasPopup() != null) {
+					sb.append(" aria-haspopup=\"").appendHtmlAttributeEscaped(link.getAriaHasPopup()).append("\"");
+				}
+			}
+			if(ariaLabel != null && !ariaLabel.equals(linkText) && !ariaLabel.equals(description)) {
+				sb.append(" aria-label=\"").appendHtmlAttributeEscaped(ariaLabel).append("\"");
+			}
+			sb.append(">");
 
 			// CSS icon
 			if (link.getIconLeftCSS() != null) {
@@ -310,6 +320,8 @@ public class LinkRenderer extends DefaultComponentRenderer {
 
 			if (StringHelper.containsNonWhitespace(linkText)) {				
 				sb.append("<span>").append(linkText, link.getEscapeMode()).append("</span>");
+			} else if (isIconLink && StringHelper.containsNonWhitespace(title)) {
+				sb.append("<span class='sr-only'>").appendHtmlEscaped(title).append("</span>");
 			}
 			
 			// CSS icon

@@ -167,6 +167,7 @@ Collapsible sections need no per-instance script: one delegated handler in `func
 - Live regions: use `role="status"` / `aria-live="polite"` for async state (AI overlays, `#o_dashboard_edit_live`); `#o_messages` info boxes are NOT announced
 - Keyboard: `triggerClick(event, enter, space)` on link buttons; Escape closes the top layer via `o_doEscapeDispatch()`
 - Callout triggers: `Link/FormLink.setAriaDialogOpener()` → `role="button" aria-haspopup="dialog" aria-expanded`; `CloseableCalloutWindowController` toggles `aria-expanded` and returns the focus to the trigger (`pushdialogfocus`/`popdialogfocus`). Pass the trigger component, not its DOM id. **New in 21.1.0:** used on action columns, table tools and filters; the focus goes to the first visible element of the callout.
+- Disabled links: `LinkRenderer` writes `role`, `aria-disabled="true"` and `aria-haspopup` only for links with an ARIA role (all `Link.BUTTON*` presentations, `setAriaRole`, `setAriaDialogOpener`); plain links and breadcrumbs get no `aria-disabled`. Never `aria-expanded` on a disabled trigger. Do not add `aria-disabled` by hand. The tooltip is `setTextReasonForDisabling(...)`, fallback the translated title.
 
 ## Responsive Design
 
