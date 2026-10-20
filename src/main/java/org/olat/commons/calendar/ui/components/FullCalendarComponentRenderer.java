@@ -256,9 +256,6 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		  .append("  });\n")
 		  .append("  o_info.calendar = calendar;\n")
 		  .append("  calendar.render();\n")
-		  .append("  jQuery(calendarEl).on('keydown', '.fc-toolbar button', function(event) {\n")
-		  .append("    if(event.key === 'Enter') { event.preventDefault(); this.click(); }\n")
-		  .append("  });\n")
 		  .append(" } catch(e) { if(window.console) console.log(e);\n };\n")
 		  .append("});\n")
 		  .append("</script>");

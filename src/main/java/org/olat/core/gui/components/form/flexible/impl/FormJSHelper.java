@@ -498,7 +498,7 @@ public class FormJSHelper {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getJSStart())
 		  .append("jQuery('#").append(formName).append("').keypress(function(event) {\n")
-		  .append(" if (13 == event.keyCode) {\n")
+		  .append(" if (13 == event.keyCode && event.target.tagName !== 'BUTTON') {\n")
 		  .append("  event.preventDefault();\n")
 		  .append("  if (this.onsubmit()) { this.submit(); }\n")
 		  .append(" }\n")
