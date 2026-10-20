@@ -105,7 +105,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private Link previousScoTop;
 	private Link previousScoBottom;
 	
-	private String username;
+	private final String username;
 	private String scormLessonMode;
 	private String scormAgaingCallbackUri;
 

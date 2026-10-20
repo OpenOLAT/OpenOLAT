@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -1038,6 +1039,15 @@ public class VFSManager {
 			path += SEP;
 		}
 		return path;
+	}
+	
+	public static String checksumSha256(VFSLeaf file) {
+		try(InputStream in= file.getInputStream()) {
+			return DigestUtils.sha256Hex(in);
+		} catch(IOException e) {
+			log.error("", e);
+		}
+		return null;
 	}
 	
 }
