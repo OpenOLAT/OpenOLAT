@@ -392,8 +392,10 @@ public class BadgeCriteria {
 					log.debug("learningPathCourseElementConditionsMet(): check CompletionCriterionMetCondition");
 				}
 
+				boolean assessmentEntryFound = false;
 				for (AssessmentEntry assessmentEntry : assessmentEntries) {
 					if (completionCriterionMetCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
+						assessmentEntryFound = true;
 						if (assessmentEntry.getFullyAssessed() == null || !assessmentEntry.getFullyAssessed()) {
 							if (log.isDebugEnabled()) {
 								log.debug("completion criterion not met for course element {}", completionCriterionMetCondition.getSubIdent());
@@ -401,6 +403,12 @@ public class BadgeCriteria {
 							return false;
 						}
 					}
+				}
+				if (!assessmentEntryFound) {
+					if (log.isDebugEnabled()) {
+						log.debug("completion criterion not met for course element {}: no assessment entry found", completionCriterionMetCondition.getSubIdent());
+					}
+					return false;
 				}
 				if (log.isDebugEnabled()) {
 					log.debug("completion criterion met for course element {}", completionCriterionMetCondition.getSubIdent());
