@@ -19,6 +19,7 @@
  */
 package org.olat.modules.scorm.assessment;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -60,7 +61,7 @@ public class ScoCmiDetailsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CmiDataCols.itemId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CmiDataCols.itemId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CmiDataCols.translatedKey));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CmiDataCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CmiDataCols.value));
@@ -72,6 +73,9 @@ public class ScoCmiDetailsController extends FormBasicController {
 	}
 	
 	private void loadModel() {
+		if(cmiData.size() > 1) {
+			Collections.sort(cmiData, new CmiDataComparator());
+		}
 		tableModel.setObjects(cmiData);
 		tableEl.reset(true, true, true);
 	}
