@@ -412,7 +412,9 @@ public class TeacherRollCallController extends FormBasicController {
 			FormLayoutContainer absenceCont = uifactory.addCustomFormLayout("auth_cont_".concat(Integer.toString(++counter)), null, page, flc);
 
 			String authorizedAbsencedId = "auth_abs_".concat(Integer.toString(++counter));
-			MultipleSelectionElement authorizedAbsencedEl = uifactory.addCheckboxesHorizontal(authorizedAbsencedId, null, absenceCont, onKeys, onValues);
+			String[] authorizedAbsenceValues = new String[]{ "<span class='sr-only'>" + StringHelper.escapeHtml(translate("authorized.absence")) + "</span>" };
+			MultipleSelectionElement authorizedAbsencedEl = uifactory.addCheckboxesHorizontal(authorizedAbsencedId, null, absenceCont, onKeys, authorizedAbsenceValues);
+			authorizedAbsencedEl.setEscapeHtml(false);
 			authorizedAbsencedEl.setDomReplacementWrapperRequired(false);
 			authorizedAbsencedEl.addActionListener(FormEvent.ONCHANGE);
 			authorizedAbsencedEl.setUserObject(row);
@@ -442,6 +444,7 @@ public class TeacherRollCallController extends FormBasicController {
 				reasonLink.setTitle(translate("reason"));
 				reasonLink.setDomReplacementWrapperRequired(false);
 				reasonLink.setIconLeftCSS("o_icon o_icon_notes");
+				reasonLink.setAriaDialogOpener();
 				reasonLink.setVisible(hasAuthorization);
 				reasonLink.setUserObject(row);
 				row.setReasonLink(reasonLink);
@@ -572,7 +575,7 @@ public class TeacherRollCallController extends FormBasicController {
 			if(row.getAuthorizedAbsence() == check) {
 				doAuthorizedAbsence(row, check);
 				if(check.isAtLeastSelected(1)) {
-					doCalloutReasonAbsence(ureq, check.getFormDispatchId() + "_C_0", row);
+					doCalloutReasonAbsence(ureq, null, check.getFormDispatchId() + "_C_0", row);
 				}
 			} else {
 				doCheckRow(row, check);
@@ -595,7 +598,7 @@ public class TeacherRollCallController extends FormBasicController {
 			String cmd = link.getCmd();
 			if(cmd != null) {
 				if(cmd.startsWith("abs_reason_")) {
-					doCalloutReasonAbsence(ureq, link.getFormDispatchId(), (TeacherRollCallRow)link.getUserObject());
+					doCalloutReasonAbsence(ureq, link, null, (TeacherRollCallRow)link.getUserObject());
 				} else if(cmd.startsWith("all_")) {
 					if("all".equals(link.getI18nKey())) {
 						doCheckAllRow((TeacherRollCallRow)link.getUserObject());
@@ -785,13 +788,14 @@ public class TeacherRollCallController extends FormBasicController {
 		row.getRollCallStatusEl().getComponent().setDirty(true);
 	}
 	
-	private void doCalloutReasonAbsence(UserRequest ureq, String elementId, TeacherRollCallRow row) {
+	private void doCalloutReasonAbsence(UserRequest ureq, FormLink link, String elementId, TeacherRollCallRow row) {
 		boolean canEdit = secCallback.canEdit() && secCallback.canEditAuthorizedAbsences();
 		reasonCtrl = new ReasonController(ureq, getWindowControl(), row, canEdit);
 		listenTo(reasonCtrl);
 
-		reasonCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				reasonCtrl.getInitialComponent(), elementId, "", true, "");
+		reasonCalloutCtrl = link == null
+				? new CloseableCalloutWindowController(ureq, getWindowControl(), reasonCtrl.getInitialComponent(), elementId, "", true, "")
+				: new CloseableCalloutWindowController(ureq, getWindowControl(), reasonCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(reasonCalloutCtrl);
 		reasonCalloutCtrl.activate();
 	}

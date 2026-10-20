@@ -21,6 +21,7 @@ package org.olat.user.ui.organisation.structure;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
@@ -54,11 +55,12 @@ public class OrgStructureRenderer extends DefaultComponentRenderer {
 			sb.append("onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\" onclick=\"");
 				ubu.buildXHREvent(sb, "", false, true, new NameValuePair(VelocityContainer.COMMAND_ID, "show-tree"));
 				sb.append("\" ");
+			sb.append("aria-haspopup=\"dialog\" aria-expanded=\"false\"").append(FormJSHelper.triggerClickOnKeyDown(false)).append(" ");
 		} else {
 			sb.append("disabled=\"true\"");
 		}
 		sb.append(">"); // button
-		sb.append("<i class=\"o_icon o_icon-fw o_icon_levels\"></i> ");
+		sb.append("<i class=\"o_icon o_icon-fw o_icon_levels\" aria-hidden=\"true\"></i> ");
 		sb.append("<span class=\"sr-only\">").append(comp.getCompTranslator().translate("show.organisation.tree")).append("</span>");
 		sb.append("</button>");
 	}

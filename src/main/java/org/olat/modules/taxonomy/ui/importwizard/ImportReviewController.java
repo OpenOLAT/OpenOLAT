@@ -126,6 +126,7 @@ public class ImportReviewController extends StepFormBasicController {
 						+ translate("importexport.status.changed") + " (" + row.getChanges().size() + ")</span>";
 				FormLink link = uifactory.addFormLink("changes_" + (++counter), CMD_CHANGES, text, tableEl, Link.LINK | Link.NONTRANSLATED);
 				link.setTitle(translate("importexport.change.show"));
+				link.setAriaDialogOpener();
 				link.setUserObject(row);
 				changeLinks.put(row, link);
 			}
@@ -165,7 +166,7 @@ public class ImportReviewController extends StepFormBasicController {
 		changesCtrl = new ImportChangesController(ureq, getWindowControl(), row);
 		listenTo(changesCtrl);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), changesCtrl.getInitialComponent(),
-				link.getFormDispatchId(), "", true, "", new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
+				link, "", true, "", new CalloutSettings(true, CalloutOrientation.bottom, false, "", true));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

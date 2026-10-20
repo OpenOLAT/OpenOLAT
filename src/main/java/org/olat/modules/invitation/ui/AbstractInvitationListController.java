@@ -230,7 +230,8 @@ abstract class AbstractInvitationListController extends FormBasicController {
 	protected InvitationRow forgeRow(Invitation invitation, RepositoryEntry entry, BusinessGroup businessGroup, ProjProject projProject) {
 		FormLink urlLink = uifactory.addFormLink("url_" + (++counter), "url", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		urlLink.setIconLeftCSS("o_icon o_icon_link o_icon-fw");
-		urlLink.setTitle("invitation.url");
+		urlLink.setTitle(translate("invitation.url"));
+		urlLink.setAriaDialogOpener();
 		
 		FormLink toolsLink = null;
 		if(invitation.getStatus() == InvitationStatusEnum.inactive) {
@@ -298,9 +299,9 @@ abstract class AbstractInvitationListController extends FormBasicController {
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("url".equals(link.getCmd()) && link.getUserObject() instanceof InvitationRow) {
-				doOpenUrl(ureq, link.getFormDispatchId(), (InvitationRow)link.getUserObject());
+				doOpenUrl(ureq, link, (InvitationRow)link.getUserObject());
 			} else if("tools".equals(link.getCmd()) && link.getUserObject() instanceof InvitationRow) {
-				doOpenTools(ureq, link.getFormDispatchId(), (InvitationRow)link.getUserObject());
+				doOpenTools(ureq, link, (InvitationRow)link.getUserObject());
 			}
 		} else if(tableEl == source) {
 			if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
@@ -315,24 +316,24 @@ abstract class AbstractInvitationListController extends FormBasicController {
 		//
 	}
 
-	private void doOpenUrl(UserRequest ureq, String elementId, InvitationRow row) {
+	private void doOpenUrl(UserRequest ureq, FormLink link, InvitationRow row) {
 		String url = invitationService.toUrl(row.getInvitation());
 		invitationUrlCtrl = new InvitationURLController(ureq, getWindowControl(), url);
 		listenTo(invitationUrlCtrl);
 
 		String title = translate("invitation.url.title");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				invitationUrlCtrl.getInitialComponent(), elementId, title, true, "");
+				invitationUrlCtrl.getInitialComponent(), link, title, true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
 	
-	private void doOpenTools(UserRequest ureq, String elementId, InvitationRow row) {
+	private void doOpenTools(UserRequest ureq, FormLink link, InvitationRow row) {
 		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
 		listenTo(toolsCtrl);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				toolsCtrl.getInitialComponent(), elementId, "", true, "");
+				toolsCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

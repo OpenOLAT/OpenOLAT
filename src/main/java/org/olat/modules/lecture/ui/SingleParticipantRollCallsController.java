@@ -318,7 +318,9 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			flc.add(absenceCont);
 			
 			String authorizedAbsencedId = "auth_abs_".concat(Integer.toString(++counter));
-			MultipleSelectionElement authorizedAbsencedEl = uifactory.addCheckboxesHorizontal(authorizedAbsencedId, null, absenceCont, onKeys, onValues);
+			String[] authorizedAbsenceValues = new String[]{ "<span class='sr-only'>" + StringHelper.escapeHtml(translate("authorized.absence")) + "</span>" };
+			MultipleSelectionElement authorizedAbsencedEl = uifactory.addCheckboxesHorizontal(authorizedAbsencedId, null, absenceCont, onKeys, authorizedAbsenceValues);
+			authorizedAbsencedEl.setEscapeHtml(false);
 			authorizedAbsencedEl.setDomReplacementWrapperRequired(false);
 			authorizedAbsencedEl.addActionListener(FormEvent.ONCHANGE);
 			authorizedAbsencedEl.setUserObject(row);
@@ -348,6 +350,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 				reasonLink.setTitle(translate("reason"));
 				reasonLink.setDomReplacementWrapperRequired(false);
 				reasonLink.setIconLeftCSS("o_icon o_icon_notes");
+				reasonLink.setAriaDialogOpener();
 				reasonLink.setVisible(hasAuthorization);
 				reasonLink.setUserObject(row);
 				row.setReasonLink(reasonLink);
@@ -441,7 +444,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			if(row.getAuthorizedAbsence() == check) {
 				doAuthorizedAbsence(row, check);
 				if(check.isAtLeastSelected(1)) {
-					doCalloutReasonAbsence(ureq, check.getFormDispatchId() + "_C_0", row);
+					doCalloutReasonAbsence(ureq, null, check.getFormDispatchId() + "_C_0", row);
 				}
 			} else {
 				doCheckRow(row, check);
@@ -453,7 +456,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			if(cmd != null) {
 				if(cmd.startsWith("abs_reason_")) {
 					SingleParticipantRollCallRow row = (SingleParticipantRollCallRow)link.getUserObject();
-					doCalloutReasonAbsence(ureq, link.getFormDispatchId(), row);
+					doCalloutReasonAbsence(ureq, link, null, row);
 				} else if(cmd.startsWith("all_")) {
 					SingleParticipantRollCallRow row = (SingleParticipantRollCallRow)link.getUserObject();
 					doCheckAllRow(row);
@@ -596,14 +599,15 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		row.getRollCallStatusEl().getComponent().setDirty(true);
 	}
 	
-	private void doCalloutReasonAbsence(UserRequest ureq, String elementId, SingleParticipantRollCallRow row) {
+	private void doCalloutReasonAbsence(UserRequest ureq, FormLink link, String elementId, SingleParticipantRollCallRow row) {
 		RollCallSecurityCallback secCallback = secCallbacks.get(row.getLectureBlock());
 		boolean canEdit = secCallback.canEdit() && secCallback.canEditAuthorizedAbsences();
 		reasonCtrl = new ReasonController(ureq, getWindowControl(), row, canEdit);
 		listenTo(reasonCtrl);
 
-		reasonCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				reasonCtrl.getInitialComponent(), elementId, "", true, "");
+		reasonCalloutCtrl = link == null
+				? new CloseableCalloutWindowController(ureq, getWindowControl(), reasonCtrl.getInitialComponent(), elementId, "", true, "")
+				: new CloseableCalloutWindowController(ureq, getWindowControl(), reasonCtrl.getInitialComponent(), link, "", true, "");
 		listenTo(reasonCalloutCtrl);
 		reasonCalloutCtrl.activate();
 	}

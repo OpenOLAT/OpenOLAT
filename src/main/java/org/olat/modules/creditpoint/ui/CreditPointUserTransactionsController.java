@@ -302,6 +302,7 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 			noteLink.setDomReplacementWrapperRequired(false);
 			noteLink.setIconLeftCSS("o_icon o_icon_notes");
 			noteLink.setTitle(translate("note"));
+			noteLink.setAriaDialogOpener();
 			noteLink.setUserObject(row);
 			row.setNoteLink(noteLink);
 		}
@@ -502,7 +503,7 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 		String title = translate("note");
 		CalloutSettings settings = new CalloutSettings(title);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				noteCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "", settings);
+				noteCtrl.getInitialComponent(), link, title, true, "", settings);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
