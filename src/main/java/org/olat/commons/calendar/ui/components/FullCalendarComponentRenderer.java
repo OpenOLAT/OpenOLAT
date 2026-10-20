@@ -107,15 +107,17 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 			  .append("       }\n")
 			  .append("     },\n");
 		}
-		sb.append("     print: {\n")
-		  .append("       click: function() {\n")
-		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-		  .append("         o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, false, false, false, true, 'print', 'print');\n")
-		  .append("       }\n")
-		  .append("     }\n")
-		  .append("   },\n")
+		if(fcC.isPrintEnabled()) {
+			sb.append("     print: {\n")
+			  .append("       click: function() {\n")
+			  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
+			  .append("         o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, false, false, false, true, 'print', 'print');\n")
+			  .append("       }\n")
+			  .append("     }\n");
+		}
+		sb.append("   },\n")
 		  .append("   headerToolbar: {\n")
-		  .append("     left: 'prev,next today print").append(" configuration", fcC.isConfigurationEnabled()).append(" aggregatedfeed", fcC.isAggregatedFeedEnabled()).append("',\n")
+		  .append("     left: 'prev,next today").append(" print", fcC.isPrintEnabled()).append(" configuration", fcC.isConfigurationEnabled()).append(" aggregatedfeed", fcC.isAggregatedFeedEnabled()).append("',\n")
 		  .append("     center: 'title',\n")
 		  .append("     right: 'dayGridMonth,timeGridWeek,timeGridDay,listYear'\n")
 		  .append("   },\n")

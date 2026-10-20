@@ -183,6 +183,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		
 		calendarEl = new FullCalendarElement(ureq, "weeklyCalendar", calendarWrappers, getTranslator());
 		formLayout.add("calendar", calendarEl);
+		calendarEl.setPrintEnabled(true);
 		// configuration for all but curriculum calendars
 		calendarEl.setConfigurationEnabled(!caller.equals(CalendarController.CALLER_CURRICULUM));
 		// aggragted for all but curriculum calendars

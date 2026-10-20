@@ -61,6 +61,7 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 	private List<KalendarRenderWrapper> calendars = new ArrayList<>();
 	private Date currentDate;
 	private String viewName = FullCalendarViews.dayGridMonth.name();
+	private boolean printEnabled;
 	private boolean configurationEnabled;
 	private boolean aggregatedFeedEnabled;
 	private boolean differentiateManagedEvents;
@@ -116,6 +117,14 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 
 	public void setCurrentDate(Date currentDate) {
 		this.currentDate = currentDate;
+	}
+
+	public boolean isPrintEnabled() {
+		return printEnabled;
+	}
+
+	public void setPrintEnabled(boolean printEnabled) {
+		this.printEnabled = printEnabled;
 	}
 
 	public boolean isConfigurationEnabled() {
