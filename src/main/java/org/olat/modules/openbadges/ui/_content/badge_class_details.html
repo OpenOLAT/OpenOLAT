@@ -8,7 +8,9 @@
 			#if($r.isNotEmpty($row.createNewVersionLink()))
 				$r.render($row.createNewVersionLink().getName())
 			#end
-			$r.render($row.awardManuallyLink().getName())
+			#if($r.isNotEmpty($row.awardManuallyLink()))
+				$r.render($row.awardManuallyLink().getName())
+			#end
 		</div>
 	</div>
 </div>
