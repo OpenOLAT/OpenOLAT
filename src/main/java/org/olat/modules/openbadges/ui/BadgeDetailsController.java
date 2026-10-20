@@ -49,6 +49,7 @@ import org.olat.modules.openbadges.ui.wizard.IssueGlobalBadge01Step;
 import org.olat.modules.openbadges.ui.wizard.IssueGlobalBadgeFinish;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
@@ -145,14 +146,17 @@ public class BadgeDetailsController extends BasicController {
 			return;
 		}
 
+		RepositoryEntry courseEntry = badgeClass.getEntry();
+		boolean courseAwardable = courseEntry == null || RepositoryEntryStatusEnum.published.equals(courseEntry.getEntryStatus());
+
 		switch (badgeClass.getStatus()) {
 			case preparation -> {
-				awardManuallyButton.setVisible(true);
+				awardManuallyButton.setVisible(courseAwardable);
 				edit.setVisible(true);
 				createNewVersionAndEdit.setVisible(false);
 			}
 			case active ->  {
-				awardManuallyButton.setVisible(true);
+				awardManuallyButton.setVisible(courseAwardable);
 				edit.setVisible(false);
 				createNewVersionAndEdit.setVisible(true);
 			}
@@ -167,7 +171,6 @@ public class BadgeDetailsController extends BasicController {
 		mainVC.contextPut("badgeClass", badgeClass);
 		mainVC.contextPut("isCourseBadge", badgeClass.getEntry() != null);
 		
-		RepositoryEntry courseEntry = badgeClass.getEntry();
 		if (courseEntry != null) {
 			ICourse course = CourseFactory.loadCourse(courseEntry);
 			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(course.getCourseTitle()));
@@ -300,6 +303,11 @@ public class BadgeDetailsController extends BasicController {
 
 	private void doAwardManually(UserRequest ureq) {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
+
+		RepositoryEntry courseEntry = badgeClass.getEntry();
+		if (courseEntry != null && !RepositoryEntryStatusEnum.published.equals(courseEntry.getEntryStatus())) {
+			return;
+		}
 
 		if (badgeClass.getEntry() == null) {
 			Step start = new IssueGlobalBadge01Step(ureq);
