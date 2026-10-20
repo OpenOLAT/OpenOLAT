@@ -49,9 +49,11 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 		BreadcrumbedStackedPanel panel = bar.getPanel();
 		List<Link> breadCrumbs = panel.getBreadCrumbs();
 
-		if (breadCrumbs.size() > panel.getInvisibleCrumb()) {
+		boolean withCrumbs = breadCrumbs.size() > panel.getInvisibleCrumb();
+		if (withCrumbs) {
 			String id = "o_c" + source.getDispatchID();
-			sb.append("<div id='").append(id).append("' class='o_breadcrumb_bar o_breadcrumb'>")
+			sb.append("<nav id='").append(id).append("' class='o_breadcrumb_bar o_breadcrumb' aria-label=\"")
+			  .appendHtmlAttributeEscaped(panel.getTranslator().translate("breadcrumb.label")).append("\">")
 			  .append("<ol class='breadcrumb'>");
 	
 			Link rootLink = panel.getRootLink();
@@ -75,18 +77,18 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 				sb.append(">");
 				sb.append("<a href='#' class='dropdown-toggle'");
 				sb.append(" data-toggle='dropdown'");
-				sb.append(" role='button'");
+				sb.append(" role='button' aria-haspopup='menu' aria-expanded='false'");
 				sb.append(" id='").append(id).append("_dd'");
 				sb.append(">");
 				String moreLabel = translator.translate("action.more");
-				sb.append("<i class='o_icon o_icon_breadcrumb_more' aria-idden='true' title=\"").append(moreLabel).append("\">&nbsp;</i>");
+				sb.append("<i class='o_icon o_icon_breadcrumb_more' aria-hidden='true' title=\"").append(moreLabel).append("\">&nbsp;</i>");
 				sb.append("<span class='sr-only'>").append(moreLabel).append("</span>");
 				sb.append("</a>");
 				// Menu
-				sb.append("<ul class='o_breadcrumb_menu dropdown-menu' aria-describedby='").append(id).append("_dd'");
+				sb.append("<ul class='o_breadcrumb_menu dropdown-menu' aria-labelledby='").append(id).append("_dd'");
 				sb.append(" id='").append(id).append("_dm'");
 				sb.append(" role='menu'>");
-				for (Link menuCrumb : breadCrumbs) {
+				for (Link menuCrumb : breadCrumbs.subList(0, breadCrumbs.size() - 1)) {
 					sb.append("<li class='o_breadcrumb_menu_item' role='menuitem'>");
 					menuCrumb.setEscapeMode(EscapeMode.html);
 					renderer.render(menuCrumb, sb, args);
@@ -98,38 +100,30 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 				for (int i = 0; i < breadCrumbs.size(); i++) {
 					Link crumb = breadCrumbs.get(i);
 					crumb.setEscapeMode(EscapeMode.html);
-					sb.append("<li class='o_breadcrumb_crumb o_display_none");
-					if (i == 0) {
-						sb.append(" o_first_crumb'");
-						if (breadCrumbs.size() == 1) {
-							sb.append(" aria-current='true'");
-						}
-					} else if (i == breadCrumbs.size()-1) {
-						crumb.setEnabled(false);
-						sb.append(" o_last_crumb'");
-						sb.append(" aria-current='true'");
-					} else {
-						sb.append("'");						
-					}
-					sb.append(" role='menuitem'>");
+					boolean current = i == breadCrumbs.size()-1;
+					sb.append("<li class='o_breadcrumb_crumb o_display_none")
+					  .append(" o_first_crumb", i == 0)
+					  .append(" o_last_crumb", current)
+					  .append("'>");
 					
 					String displayText = crumb.getCustomDisplayText();
-					crumb.setTitle(displayText);
-					if (i != breadCrumbs.size()-1) {
+					if (current) {
+						sb.append("<span aria-current='page'>").appendHtmlEscaped(displayText).append("</span>");
+					} else {
+						crumb.setTitle(displayText);
 						crumb.setCustomDisplayText(Formatter.truncate(displayText, 40));
+						renderer.render(crumb, sb, args);
+						crumb.setTitle(null);
+						crumb.setCustomDisplayText(displayText);
 					}
-					renderer.render(crumb, sb, args);
-					crumb.setTitle(null);
-					crumb.setCustomDisplayText(displayText);
 					
 					sb.append("</li>");
-					crumb.setEnabled(true);
 				}
 			}
 			
 			Link closeLink = panel.getCloseLink();
 			if (closeLink.isVisible()) {
-				sb.append("<li class='o_breadcrumb_close' role='menuitem'>");
+				sb.append("<li class='o_breadcrumb_close'>");
 				closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
 				sb.append("</li>");				
 			}
@@ -156,6 +150,6 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 			panel.getCloseLink().setDirty(false);
 		}
 		
-		sb.append("</div>");
+		sb.append(withCrumbs ? "</nav>" : "</div>");
 	}
 }
