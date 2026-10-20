@@ -132,6 +132,7 @@ import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,6 +193,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private BadgeEntryConfigurationDAO badgeEntryConfigurationDAO;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -1379,7 +1382,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		UserCourseEnvironment uce = loadUserCourseEnvironment(reloadedCourseEntry, recipient);
 
 		List<AssessmentEntry> assessmentEntries = reloadedCourseEntry != null ? assessmentEntryDAO.loadAssessmentEntriesByAssessedIdentity(recipient, reloadedCourseEntry) : null;
-		issueAllBadges(recipient, awardedBy, uce, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
+		issueAllBadges(recipient, awardedBy, reloadedCourseEntry, uce, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
 
 		log.debug("issueBadgesAutomatically completed for recipient '{}' and context of {} badges.", recipient.getKey(), badgeIssuingContext.badgeClassesAndCriteria.size());
 	}
@@ -1460,15 +1463,25 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		
 		getParticipantsWithAssessmentEntries(courseEntry, awardedBy, secCallback, (participant, assessmentEntries) -> {
 			UserCourseEnvironment uce = loadUserCourseEnvironment(course, participant);
-			issueAllBadges(participant, awardedBy, uce, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
+			issueAllBadges(participant, awardedBy, courseEntry, uce, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
 		});
 	}
 
-	private void issueAllBadges(Identity recipient, Identity awardedBy, UserCourseEnvironment uce,
+	/**
+	 * Issues all badges of badgeClassesAndCriteria whose conditions are met for the recipient.
+	 *
+	 * @param triggeringCourseEntry The course whose assessment change or batch run triggered this call, or null
+	 *                              if triggered by a global badge. The recipient's relation to this course is
+	 *                              not checked here: it is the caller's responsibility (e.g. assessment data
+	 *                              for this course having just been computed for the recipient). Badge classes
+	 *                              belonging to any other course (reached via co-ownership) are only considered
+	 *                              if the recipient is currently a member of that other course.
+	 */
+	private void issueAllBadges(Identity recipient, Identity awardedBy, RepositoryEntry triggeringCourseEntry, UserCourseEnvironment uce,
 								List<BadgeClassAndCriteria> badgeClassesAndCriteria, List<AssessmentEntry> assessmentEntries) {
 		if (log.isDebugEnabled()) {
 			int nbAssessmentEntries = assessmentEntries != null ? assessmentEntries.size() : 0;
-			log.debug("issueAllBadges() for recipient {}, {} badges, {} assessment entries.", recipient.getKey(), 
+			log.debug("issueAllBadges() for recipient {}, {} badges, {} assessment entries.", recipient.getKey(),
 					badgeClassesAndCriteria.size(), nbAssessmentEntries);
 		}
 		Date issuedOn = new Date();
@@ -1478,6 +1491,17 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			issueBadges = false;
 			for (BadgeClassAndCriteria badgeClassAndCriteria : badgeClassesAndCriteria) {
 				if (issuedBadgeIds.contains(badgeClassAndCriteria.badgeClass.getKey())) {
+					continue;
+				}
+				RepositoryEntry badgeCourseEntry = badgeClassAndCriteria.badgeClass.getEntry();
+				boolean isOtherCourseBadge = badgeCourseEntry != null
+						&& (triggeringCourseEntry == null || !badgeCourseEntry.getKey().equals(triggeringCourseEntry.getKey()));
+				if (isOtherCourseBadge && !repositoryService.isMember(recipient, badgeCourseEntry)) {
+					if (log.isDebugEnabled()) {
+						log.debug("Badge '{}' not issued for user '{}'. User is not a member of course '{}' ({}).",
+								badgeClassAndCriteria.badgeClass.getName(), recipient.getName(),
+								badgeCourseEntry.getDisplayname(), badgeCourseEntry.getKey());
+					}
 					continue;
 				}
 				log.debug("Calling badgeCriteria.allConditionsMet() for badge '{}':", badgeClassAndCriteria.badgeClass.getName());
