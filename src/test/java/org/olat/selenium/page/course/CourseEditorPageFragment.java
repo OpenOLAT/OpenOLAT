@@ -45,10 +45,8 @@ public class CourseEditorPageFragment {
 	public static final By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
 	
 	public static final By chooseCpButton = By.className("o_sel_cp_choose_repofile");
-	public static final By chooseWikiButton = By.className("o_sel_re_reference_select");
 	public static final By chooseTestButton = By.className("o_sel_re_reference_select");
 	public static final By chooseScormButton = By.className("o_sel_scorm_choose_repofile");
-	public static final By choosePortfolioButton = By.className("o_sel_re_reference_select");
 	public static final By chooseSurveyButton = By.className("o_sel_survey_choose_repofile");
 	public static final By chooseFormButton = By.className("o_sel_form_choose_repofile");
 	
@@ -371,7 +369,8 @@ public class CourseEditorPageFragment {
 	}
 	
 	public CourseEditorPageFragment selectTabWikiContent() {
-		return selectTabContent(chooseWikiButton);
+		By configBy = By.cssSelector(".o_sel_wiki_config .o_re_reference");
+		return selectTabContent(configBy);
 	}
 	
 	private CourseEditorPageFragment selectTabContent(By targetBy) {
@@ -396,7 +395,8 @@ public class CourseEditorPageFragment {
 	 * @return Itself
 	 */
 	public CourseEditorPageFragment chooseWiki(String resourceTitle) {
-		return chooseResourceModern(chooseWikiButton, resourceTitle);
+		By chooseBy = By.cssSelector(".o_sel_wiki_config .o_re_reference .btn.btn-primary");
+		return chooseResourceModern(chooseBy, resourceTitle);
 	}
 	
 	/**
@@ -486,7 +486,8 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment createWiki(String resourceTitle) {
-		return createResource(chooseWikiButton, resourceTitle, null);
+		By createBy = By.xpath("//fieldset[contains(@class,'o_sel_wiki_config')]//div[@class='o_re_reference']//a[i[contains(@class,'o_icon_add')]]");
+		return createResourceModern(createBy, resourceTitle);
 	}
 	
 	/**
@@ -576,6 +577,22 @@ public class CourseEditorPageFragment {
 		}
 
 		OOGraphene.waitModalDialog(browser);
+		By inputBy = By.cssSelector("dialog.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
+		OOGraphene.waitElement(inputBy, browser)
+			.sendKeys(resourceTitle);
+		By submitBy = By.cssSelector("dialog.modal.o_sel_author_create_popup .o_sel_author_create_submit");
+		browser.findElement(submitBy).click();
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_repo_save_details");
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_search_referenceable_entries");
+
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return this;
+	}
+	
+	private CourseEditorPageFragment createResourceModern(By createBy, String resourceTitle) {
+		browser.findElement(createBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
 		By inputBy = By.cssSelector("dialog.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		OOGraphene.waitElement(inputBy, browser)
 			.sendKeys(resourceTitle);
