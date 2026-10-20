@@ -71,6 +71,7 @@ public class AddLayoutController extends BasicController {
 			String id = "add." + (++count);
 			String pseudoIcon = layout.pseudoIcons();
 			Link addLink = LinkFactory.createLink(id, id, "select.layout", pseudoIcon, getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+			addLink.setAriaLabel(translate("layout." + layout.name()));
 			addLink.setUserObject(handler);
 			mainVC.put(id, addLink);
 			layoutIds.add(id);

@@ -72,7 +72,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	
 	protected void renderDuplicateMenuItem(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		if(cmp.isCloneable()) {
-			sb.append("<a id='o_ccabe_").append(cmp.getDispatchID()).append("' ")
+			sb.append("<a id='o_ccdup_").append(cmp.getDispatchID()).append("' ")
 					.append("href='javascript:;' onclick=\"");
 			ubu.buildXHREvent(sb, "", false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "clone_element"),
@@ -168,7 +168,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	}
 	
 	protected void renderDragZone(StringOutput sb, ContentEditorFragment cmp, Translator translator) {
-		sb.append("<button id='o_ccclone_").append(cmp.getDispatchID()).append("' class='o_page_drag_handle'")
+		sb.append("<button id='o_ccdrag_").append(cmp.getDispatchID()).append("' class='o_page_drag_handle'")
 		  .append(" title='").append(translator.translate("drag.element")).append("'>")
 		  .append("<i class='o_icon o_icon-fw o_icon_move'> </i></button></a>");
 	}
