@@ -24,17 +24,21 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.course.nodes.CourseNode;
@@ -100,26 +104,108 @@ public class ScormAssessmentManager {
 	 * @param node
 	 * @return
 	 */
-	public Map<Date, List<CmiData>> visitScoDatasMultiResults(String username, CourseEnvironment courseEnv, CourseNode node) {
-		Map<Date, List<CmiData>> cmiDataObjects = new HashMap<>();
+	public List<ScoCmiData> visitScoDatasMultiResults(String username, CourseEnvironment courseEnv, CourseNode node) {
 		VFSContainer scoContainer = ScormDirectoryHelper.getScoDirectory(username, courseEnv, node);
 		if(scoContainer == null) {
 			return null;
 		}
+		
+		final List<ScoCmiData> cmiDataObjects = new ArrayList<>();
 
 		Calendar cal = Calendar.getInstance();
 		List<VFSItem> contents = scoContainer.getItems(new XMLFilter());
 		for(VFSItem file:contents) {
-			List<CmiData> item = collectData(file);
-			if (item != null) {
-				//modified date
-				cal.setTimeInMillis(file.getLastModified());
-				Collections.sort(item, new CmiDataComparator());
-				cmiDataObjects.put(cal.getTime(), item);
+			if (file instanceof VFSLeaf itemFile) {
+				List<CmiData> item = collectData(itemFile);
+				if(item != null) {
+					//modified date
+					cal.setTimeInMillis(file.getLastModified());
+					Date date = cal.getTime();
+					Sco sco = getScoId(date, item);
+					if(sco != null) {// empty file -> no data
+						cmiDataObjects.add(new ScoCmiData(sco.id(), sco.last(), date, itemFile, item));
+					}
+				}
 			}
 		}
 		
-		return cmiDataObjects;
+		List<ScoCmiData> deduplicatedCmiDataObjects = deduplicate(cmiDataObjects);
+		return deduplicatedCmiDataObjects;
+	}
+	
+	private List<ScoCmiData> deduplicate(List<ScoCmiData> dataList) {
+		Set<String> scoIds = dataList.stream()
+				.map(ScoCmiData::scoId)
+				.collect(Collectors.toSet());
+		
+		List<ScoCmiData> deduplicatedDataList = new ArrayList<>(dataList.size());
+		
+		for(String scoId:scoIds) {
+			List<ScoCmiData> scoDataList = dataList.stream()
+					.filter(r -> scoId.equals(r.scoId()))
+					.toList();
+			if(scoDataList.size() == 1) {
+				deduplicatedDataList.addAll(scoDataList);
+			} else if(scoDataList.size() > 1) {
+				deduplicatedDataList.addAll(deduplicateSco(scoDataList));
+			}
+		}
+		
+		return deduplicatedDataList;
+	}
+	
+	private List<ScoCmiData> deduplicateSco(List<ScoCmiData> rows) {
+		Optional<ScoCmiData> currentRow = rows.stream().filter(r -> r.current())
+				.findFirst();
+		List<ScoCmiData> notCurrentRows = rows.stream().filter(r -> !r.current())
+				.collect(Collectors.toList());
+		if(currentRow.isEmpty() || notCurrentRows.isEmpty()) {
+			return rows;
+		}
+		
+		if(notCurrentRows.size() > 1) {
+			Collections.sort(notCurrentRows, (r1, r2) -> {
+				return r1.date().compareTo(r2.date());
+			});
+		}
+		
+		ScoCmiData lastNotCurrentRow = notCurrentRows.get(notCurrentRows.size() - 1);
+		if(lastNotCurrentRow.itemFile().getSize() == currentRow.get().itemFile().getSize()) {
+			String hashCurrent = VFSManager.checksumSha256(currentRow.get().itemFile());
+			String hashNotCurrent = VFSManager.checksumSha256(lastNotCurrentRow.itemFile());
+			if(hashCurrent != null && hashNotCurrent != null && hashCurrent.equals(hashNotCurrent)) {
+				// The files are the same
+				List<ScoCmiData> data = new ArrayList<>(rows);
+				data.remove(lastNotCurrentRow);
+				return data;
+			}
+		}
+		return rows;
+	}
+	
+	private Sco getScoId(Date date, List<CmiData> cmiObject) {
+		if(cmiObject != null && !cmiObject.isEmpty()) {
+			CmiData data = cmiObject.get(0);
+			long time = date.getTime();
+			String itemId = data.getItemId();
+			int index = itemId.lastIndexOf('_');
+			if(index >= 0) {
+				String marker = itemId.substring(index + 1, itemId.length());
+				if(StringHelper.isLong(marker)) {
+					long longMarker = Long.parseLong(marker);
+					long diff = Math.abs(time - longMarker);
+					if(diff < 1000) {// less than a second
+						return new Sco(itemId.substring(0, index), false);
+					}
+				}
+			}
+			return new Sco(data.getItemId(), true);
+		}
+		return null;
+	}
+	
+	private record Sco(String id, boolean last) {
+		//
 	}
 	
 	/**
@@ -131,11 +217,10 @@ public class ScormAssessmentManager {
 		List<CmiData> datas = new ArrayList<>();
 		ScoDocument document = new ScoDocument(null);
 		try {
-			if(scoFile instanceof LocalFileImpl) {
-				document.loadDocument(((LocalFileImpl)scoFile).getBasefile());
-			}
-			else {
-				logger.warn("Cannot use this type of VSFItem to load a SCO Datamodel: " + scoFile.getClass().getName());
+			if(scoFile instanceof LocalFileImpl scoLeaf) {
+				document.loadDocument(scoLeaf.getBasefile());
+			} else {
+				logger.warn("Cannot use this type of VSFItem to load a SCO Datamodel: {}", scoFile.getClass().getName());
 				return null;
 			}
 			

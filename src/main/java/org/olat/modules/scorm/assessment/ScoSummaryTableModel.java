@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 
@@ -59,7 +58,7 @@ implements SortableFlexiTableDataModel<ScoSummaryRow>, FilterableFlexiTableModel
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<ScoSummaryRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<ScoSummaryRow> rows = new ScoSummaryTableSortDelegate(orderBy, this, locale).sort();
 			super.setObjects(rows);
 		}
 	}
