@@ -51,6 +51,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -78,6 +79,8 @@ import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
+import org.olat.modules.openbadges.v2.Constants;
+import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -395,7 +398,34 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		Assert.assertEquals(originalConfiguration.isCoachCanAward(), copiedConfiguration.isCoachCanAward());
 		Assert.assertTrue(copiedConfiguration.isOwnerCanAward());
 	}
-	
+
+	@Test
+	public void copyConfigurationAndBadgeClassesClonesIssuerNameAndUrl() {
+
+		// arrange
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-class-author-2");
+		RepositoryEntry sourceEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+		BadgeClassImpl originalBadgeClass = BadgeTestData.createTestBadgeClass("Course badge", "image.png", sourceEntry);
+		String sourceIssuerUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + sourceEntry.getKey();
+		Profile sourceIssuer = new Profile(new JSONObject(originalBadgeClass.getIssuer()));
+		sourceIssuer.setName(sourceEntry.getDisplayname());
+		sourceIssuer.setUrl(sourceIssuerUrl);
+		originalBadgeClass.setIssuer(sourceIssuer.asJsonObject(Constants.TYPE_VALUE_ISSUER).toString());
+		badgeClassDAO.updateBadgeClass(originalBadgeClass);
+
+		// act
+		RepositoryEntry targetEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+		openBadgesManager.copyConfigurationAndBadgeClasses(sourceEntry, targetEntry, author);
+
+		// assert
+		List<BadgeClass> copiedBadgeClasses = badgeClassDAO.getBadgeClasses(targetEntry);
+		Assert.assertEquals(1, copiedBadgeClasses.size());
+		Profile copiedIssuer = new Profile(new JSONObject(copiedBadgeClasses.get(0).getIssuer()));
+		Assert.assertEquals(targetEntry.getDisplayname(), copiedIssuer.getName());
+		Assert.assertEquals(Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + targetEntry.getKey(),
+				copiedIssuer.getUrl());
+	}
+
 	@Test
 	public void getRuleEarnedBadgeAssertions() {
 		
