@@ -59,6 +59,7 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String DEFAULT_SHOW_LECTURES = "curriculum.default.show.lectures";
 	private static final String DEFAULT_SHOW_CERTIFICATE = "curriculum.default.show.certificate";
 	private static final String DEFAULT_TAUGHT_BY = "curriculum.default.taught.by";
+	private static final String DEFAULT_SHOW_TEACHERS = "curriculum.default.show.teachers";
 
 	@Value("${curriculum.enabled:true}")
 	private boolean enabled;
@@ -81,6 +82,7 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	private boolean defaultShowCertificate;
 	@Value("${curriculum.default.taught.by:teachers,coaches}")
 	private String defaultTaughtByValue;
+	private boolean defaultShowTeachers;
 	@Value("${reports.accounting.fiscal.year.start.day:1}")
 	private int reportsAccountingFiscalYearStartDay;
 	@Value("${reports.accounting.fiscal.year.start.month:1}")
@@ -141,6 +143,10 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 		}
 
 		defaultTaughtByValue = getStringPropertyValue(DEFAULT_TAUGHT_BY, defaultTaughtByValue);
+		String defaultShowTeachersObj = getStringPropertyValue(DEFAULT_SHOW_TEACHERS, true);
+		defaultShowTeachers = StringHelper.containsNonWhitespace(defaultShowTeachersObj)
+				? "true".equals(defaultShowTeachersObj)
+				: !getDefaultTaughtBys().isEmpty();
 	}
 	
 	@Override
@@ -267,6 +273,15 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	public void setDefaultShowCertificate(boolean defaultShowCertificate) {
 		this.defaultShowCertificate = defaultShowCertificate;
 		setStringProperty(DEFAULT_SHOW_CERTIFICATE, Boolean.toString(defaultShowCertificate), true);
+	}
+
+	public boolean isDefaultShowTeachers() {
+		return defaultShowTeachers;
+	}
+
+	public void setDefaultShowTeachers(boolean defaultShowTeachers) {
+		this.defaultShowTeachers = defaultShowTeachers;
+		setStringProperty(DEFAULT_SHOW_TEACHERS, Boolean.toString(defaultShowTeachers), true);
 	}
 
 	public Set<TaughtBy> getDefaultTaughtBys() {

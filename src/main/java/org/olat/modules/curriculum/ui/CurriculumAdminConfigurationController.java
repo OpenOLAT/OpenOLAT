@@ -137,7 +137,7 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 		defaultShowInfoEl.setEvaluationOnlyVisible(true);
 		defaultShowInfoEl.select(OUTLINE_KEY, curriculumModule.isDefaultShowOutline());
 		defaultShowInfoEl.select(EVENTS_KEY, curriculumModule.isDefaultShowLectures());
-		defaultShowInfoEl.select(MEET_TEACHERS_KEY, !curriculumModule.getDefaultTaughtBys().isEmpty());
+		defaultShowInfoEl.select(MEET_TEACHERS_KEY, curriculumModule.isDefaultShowTeachers());
 		defaultShowInfoEl.select(CERTIFICATE_KEY, curriculumModule.isDefaultShowCertificate());
 
 		SelectionValues taughtByPK = new SelectionValues();
@@ -172,6 +172,7 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 			Collection<String> selectedInfo = defaultShowInfoEl.getSelectedKeys();
 			curriculumModule.setDefaultShowOutline(selectedInfo.contains(OUTLINE_KEY));
 			curriculumModule.setDefaultShowLectures(selectedInfo.contains(EVENTS_KEY));
+			curriculumModule.setDefaultShowTeachers(selectedInfo.contains(MEET_TEACHERS_KEY));
 			curriculumModule.setDefaultShowCertificate(selectedInfo.contains(CERTIFICATE_KEY));
 		} else if (defaultTaughtByEl == source) {
 			curriculumModule.setDefaultTaughtBys(defaultTaughtByEl.getSelectedKeys().stream()

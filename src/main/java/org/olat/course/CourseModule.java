@@ -76,6 +76,7 @@ public class CourseModule extends AbstractSpringModule {
 	private static final String COURSE_DEFAULT_SHOW_LECTURES = "course.default.show.lectures";
 	private static final String COURSE_DEFAULT_SHOW_CERTIFICATE = "course.default.show.certificate";
 	private static final String COURSE_DEFAULT_TAUGHT_BY = "course.default.taught.by";
+	private static final String COURSE_DEFAULT_SHOW_TEACHERS = "course.default.show.teachers";
 	private static final String COURSE_STYLE_TEASER_IMAGE_SOURCE_TYPE = "course.style.teaser.image.source.type";
 	private static final String COURSE_STYLE_TEASER_IMAGE_FILENAME = "course.style.teaser.image.filename";
 	private static final String COURSE_STYLE_TEASER_IMAGE_STYLE = "course.style.teaser.image.style";
@@ -106,6 +107,7 @@ public class CourseModule extends AbstractSpringModule {
 	private boolean defaultShowCertificate;
 	@Value("${course.default.taught.by:teachers,coaches}")
 	private String defaultTaughtByValue;
+	private boolean defaultShowTeachers;
 	@Value("${course.archive.log.table.on.delete:true}")
 	private String archiveLogTableOnDelete;
 	@Value("${course.info.details.enabled:false}")
@@ -176,6 +178,10 @@ public class CourseModule extends AbstractSpringModule {
 		}
 
 		defaultTaughtByValue = getStringPropertyValue(COURSE_DEFAULT_TAUGHT_BY, defaultTaughtByValue);
+		String defaultShowTeachersObj = getStringPropertyValue(COURSE_DEFAULT_SHOW_TEACHERS, true);
+		defaultShowTeachers = StringHelper.containsNonWhitespace(defaultShowTeachersObj)
+				? "true".equals(defaultShowTeachersObj)
+				: !getDefaultTaughtBys().isEmpty();
 		
 		String teaserImageSourceTypeObj = getStringPropertyValue(COURSE_STYLE_TEASER_IMAGE_SOURCE_TYPE, true);
 		if (StringHelper.containsNonWhitespace(teaserImageSourceTypeObj)) {
@@ -365,6 +371,15 @@ public class CourseModule extends AbstractSpringModule {
 		setStringProperty(COURSE_DEFAULT_SHOW_CERTIFICATE, Boolean.toString(defaultShowCertificate), true);
 	}
 
+	public boolean isDefaultShowTeachers() {
+		return defaultShowTeachers;
+	}
+
+	public void setDefaultShowTeachers(boolean defaultShowTeachers) {
+		this.defaultShowTeachers = defaultShowTeachers;
+		setStringProperty(COURSE_DEFAULT_SHOW_TEACHERS, Boolean.toString(defaultShowTeachers), true);
+	}
+
 	public Set<TaughtBy> getDefaultTaughtBys() {
 		return TaughtBy.split(defaultTaughtByValue);
 	}
@@ -377,7 +392,7 @@ public class CourseModule extends AbstractSpringModule {
 	public void applyInfoPageDefaults(RepositoryEntry entry) {
 		entry.setShowLectures(defaultShowLectures);
 		entry.setShowCertificateBenefit(defaultShowCertificate);
-		entry.setTaughtBys(getDefaultTaughtBys());
+		entry.setTaughtBys(defaultShowTeachers ? getDefaultTaughtBys() : Set.of());
 	}
 
 	public boolean isArchiveLogTableOnDelete() {
