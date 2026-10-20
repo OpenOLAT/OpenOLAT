@@ -76,6 +76,7 @@ import org.olat.modules.openbadges.ui.wizard.IssueGlobalBadge01Step;
 import org.olat.modules.openbadges.ui.wizard.IssueGlobalBadgeFinish;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -242,9 +243,12 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		}
 
 		String awardManuallyLinkId = "award_manually_" + bc.badgeClass().getUuid();
-		FormLink awardManuallyLink = uifactory.addFormLink(awardManuallyLinkId, CMD_AWARD_MANUALLY,
-				"award.manually", null, flc,  Link.BUTTON);
-		awardManuallyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_badge");
+		FormLink awardManuallyLink = null;
+		if (entry == null || RepositoryEntryStatusEnum.published.equals(entry.getEntryStatus())) {
+			awardManuallyLink = uifactory.addFormLink(awardManuallyLinkId, CMD_AWARD_MANUALLY,
+					"award.manually", null, flc,  Link.BUTTON);
+			awardManuallyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_badge");
+		}
 
 		String criteriaXmlString = bc.badgeClass().getCriteria();
 		CriteriaViewController criteriaViewController = new CriteriaViewController(ureq, getWindowControl(), entry,
@@ -261,7 +265,9 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			detailsVC.put(createNewVersionLinkId, createNewVersionLink.getComponent());
 		}
 
-		detailsVC.put(awardManuallyLinkId, awardManuallyLink.getComponent());
+		if (awardManuallyLink != null) {
+			detailsVC.put(awardManuallyLinkId, awardManuallyLink.getComponent());
+		}
 
 		FormLink toolLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		BadgeClassRow row = new BadgeClassRow(bc, toolLink, criteriaComponentName, editBadgeLink, awardManuallyLink,
@@ -273,7 +279,9 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		if (createNewVersionLink != null) {
 			createNewVersionLink.setUserObject(row);
 		}
-		awardManuallyLink.setUserObject(row);
+		if (awardManuallyLink != null) {
+			awardManuallyLink.setUserObject(row);
+		}
 		return row;
 	}
 
@@ -309,6 +317,11 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	private void doAwardManually(UserRequest ureq, BadgeClassRow row) {
 		BadgeClass reloadedBadgeClass = openBadgesManager.getBadgeClassByKey(row.badgeClassWithSizeAndCount().badgeClass().getKey());
+
+		RepositoryEntry courseEntry = reloadedBadgeClass.getEntry();
+		if (courseEntry != null && !RepositoryEntryStatusEnum.published.equals(courseEntry.getEntryStatus())) {
+			return;
+		}
 
 		if (reloadedBadgeClass.getEntry() == null) {
 			Step start = new IssueGlobalBadge01Step(ureq);
@@ -369,13 +382,16 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				mainVC.put("edit", editLink);
 			}
 			
+			boolean courseAwardable = entry == null || RepositoryEntryStatusEnum.published.equals(entry.getEntryStatus());
 			switch (badgeClass.getStatus()) {
 				case preparation:
 				case active:
-					awardManuallyLink = LinkFactory.createLink("award.manually", "awardManually", getTranslator(), mainVC, this, Link.LINK);
-					awardManuallyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_badge");
-					awardManuallyLink.setElementCssClass("o_sel_badges_issue");
-					mainVC.put("awardManually",  awardManuallyLink);
+					if (courseAwardable) {
+						awardManuallyLink = LinkFactory.createLink("award.manually", "awardManually", getTranslator(), mainVC, this, Link.LINK);
+						awardManuallyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_badge");
+						awardManuallyLink.setElementCssClass("o_sel_badges_issue");
+						mainVC.put("awardManually",  awardManuallyLink);
+					}
 					break;
 				default:
 					break;
