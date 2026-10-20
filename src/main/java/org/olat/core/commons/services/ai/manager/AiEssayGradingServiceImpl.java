@@ -21,6 +21,7 @@ package org.olat.core.commons.services.ai.manager;
 
 import java.time.Duration;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.ai.AiEssayGradingService;
@@ -145,15 +146,21 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 			} else {
 				difficultyInstruction = "Assume a moderate difficulty and grade generously and supportively.";
 			}
+			// Per-call random boundary around the student answer: a fixed
+			// delimiter can be reproduced inside the answer to end the
+			// untrusted block early (OO-9938).
+			String boundary = newBoundary();
+			String boundedAnswer = nullToEmpty(studentAnswer).replace(boundary, "");
 			GradingSuggestion suggestion = service.gradeEssayAnswer(
 					nullToEmpty(grading.getReferenceExcerpt()),
 					nullToEmpty(grading.getModelAnswer()),
 					nullToEmpty(grading.getKeyPointsJson()),
 					nullToEmpty(grading.getRubricCriteriaJson()),
 					nullToEmpty(grading.getGradingHints()),
-					nullToEmpty(studentAnswer),
+					boundedAnswer,
 					languageName,
-					difficultyInstruction);
+					difficultyInstruction,
+					boundary);
 			return new GradingRun(suggestion, loggingModel.getLogKey());
 		} catch (AiEssayGradingException e) {
 			throw e;
@@ -185,6 +192,15 @@ public class AiEssayGradingServiceImpl implements AiEssayGradingService {
 
 	private static String nullToEmpty(String s) {
 		return s == null ? "" : s;
+	}
+
+	/**
+	 * Random marker that delimits the student answer in the prompt. New for
+	 * every call so a learner cannot know and reproduce it.
+	 */
+	static String newBoundary() {
+		String random = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+		return "OO-" + random.toUpperCase(Locale.ROOT);
 	}
 
 }

@@ -60,11 +60,14 @@ import org.springframework.stereotype.Service;
  * Call sequence:
  * <ol>
  *   <li>Load grading + verify content hash.</li>
- *   <li>{@link LengthPreFilter} → {@link GibberishPreFilter} → {@link LanguagePreFilter}.</li>
+ *   <li>{@link LengthPreFilter} → {@link GibberishPreFilter} → {@link InjectionPreFilter}
+ *       → {@link LanguagePreFilter}.</li>
  *   <li>Tier classify; Lang tier refused inline.</li>
  *   <li>Router → {@link AiEssayGradingSPI}.</li>
  *   <li>SPI call via {@link AiEssayGradingServiceImpl}, bounded by the HTTP timeout.</li>
  *   <li>Free-form text sanitised via OpenOlat's XSS filter.</li>
+ *   <li>Result checked against the grading kit and the answer via
+ *       {@link GradingPlausibilityCheck}.</li>
  *   <li>Grading-run provenance written to the {@code EssayAiCorrection} row.</li>
  * </ol>
  *
@@ -158,11 +161,19 @@ public class EssayFormativeFeedbackService {
 			return FormativeFeedback.rejected(reason);
 		}
 
-		// 3. Language warning (non-fatal).
+		// 3. Injection pre-filter: instructions addressed to the grader (OO-9938).
+		Optional<RejectionReason> injectionReject = InjectionPreFilter.check(studentAnswer);
+		if (injectionReject.isPresent()) {
+			RejectionReason reason = injectionReject.get();
+			logPreFilterRejection(usageContext, reason);
+			return FormativeFeedback.rejected(reason);
+		}
+
+		// 4. Language warning (non-fatal).
 		List<RejectionReason> warnings = new ArrayList<>();
 		LanguagePreFilter.check(studentAnswer, grading.getLanguage()).ifPresent(warnings::add);
 
-		// 4. Tier.
+		// 5. Tier.
 		AiGradingTier tier = AiGradingTier.classify(studentAnswer, maxInputWords);
 		if (tier == AiGradingTier.LONG) {
 			// Defensive — LengthPreFilter should already have caught this.
@@ -172,7 +183,7 @@ public class EssayFormativeFeedbackService {
 			return FormativeFeedback.refusedLong(reason);
 		}
 
-		// 5. Precondition: grading must be configured.
+		// 6. Precondition: grading must be configured.
 		if (!aiEssayGradingService.isEnabled()) {
 			aiUsageLogDAO.createGuardLog(AiFeature.EssayGrading.getType(), usageContext,
 					"GradingNotConfigured", "Essay grading is not configured or not enabled.");
@@ -184,7 +195,7 @@ public class EssayFormativeFeedbackService {
 		// outcome — success, truncated response, timeout or error.
 		recordProvenance(correctionKey, grading, tier);
 
-		// 6. Service call, bounded by the HTTP client timeout of the SPI.
+		// 7. Service call, bounded by the HTTP client timeout of the SPI.
 		AiEssayGradingService.GradingRun run;
 		try {
 			run = aiEssayGradingService.gradeWithLog(
@@ -208,8 +219,18 @@ public class EssayFormativeFeedbackService {
 			throw e;
 		}
 
-		// 7. Sanitise free-form student feedback strings.
+		// 8. Sanitise free-form student feedback strings.
 		GradingSuggestion sanitised = sanitiseForStudent(run.suggestion());
+
+		// 9. Plausibility: the result must agree with the kit and the answer (OO-9938).
+		boolean languageMismatch = warnings.stream()
+				.anyMatch(w -> LanguagePreFilter.WARNING_LANGUAGE_MISMATCH.equals(w.messageKey()));
+		GradingPlausibilityCheck.Result checked = GradingPlausibilityCheck.apply(sanitised,
+				grading.getKeyPointsTyped(), studentAnswer, languageMismatch);
+		if (checked.adjusted() && log.isDebugEnabled()) {
+			log.debug("Essay grading plausibility adjustments (usage log {}): {}",
+					run.usageLogKey(), String.join("; ", checked.adjustments()));
+		}
 
 		if (log.isDebugEnabled()) {
 			log.debug("Essay graded via spi={} model={} tier={}",
@@ -217,7 +238,7 @@ public class EssayFormativeFeedbackService {
 					aiEssayGradingService.getConfiguredModel(), tier);
 		}
 
-		return FormativeFeedback.ok(tier, sanitised, warnings, run.usageLogKey());
+		return FormativeFeedback.ok(tier, checked.suggestion(), warnings, run.usageLogKey());
 	}
 
 	/**
