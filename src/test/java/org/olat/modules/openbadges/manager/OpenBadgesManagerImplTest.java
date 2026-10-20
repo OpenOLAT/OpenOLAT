@@ -65,9 +65,11 @@ import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
+import org.olat.modules.openbadges.criteria.CompletionCriterionMetCondition;
 import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.criteria.CoursesPassedCondition;
@@ -78,6 +80,7 @@ import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
@@ -152,6 +155,9 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 	@Autowired
 	RepositoryService repositoryService;
+
+	@Autowired
+	RepositoryManager repositoryManager;
 
 	@Test
 	public void bakePngHosted() throws IOException, JOSEException {
@@ -727,6 +733,57 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 		Assert.assertNotNull(badgeAssertionA);
 		Assert.assertNull(badgeAssertionB);
+	}
+
+	@Test
+	public void learningPathCompletionCriterionNotMetWithoutAssessmentEntry() {
+
+		// arrange:
+		//
+		// A learning-path course badge with a 'completion criterion met' condition for a course
+		// element. A recipient who has no assessment entry at all for that element (e.g. because
+		// they never started it, or - as in OO-9838 - because they are not a member of the
+		// course) must not be considered to have met the completion criterion.
+
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("learning-path-completion-author");
+		Identity recipient = JunitTestHelper.createAndPersistIdentityAsRndUser("learning-path-completion-recipient");
+
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(author);
+		course = repositoryManager.setTechnicalType(course, LearningPathNodeAccessProvider.TYPE);
+
+		String subIdent = UUID.randomUUID().toString();
+
+		BadgeCriteria badgeCriteria = new BadgeCriteria();
+		badgeCriteria.setAwardAutomatically(true);
+		badgeCriteria.getConditions().add(new CompletionCriterionMetCondition(subIdent));
+
+		dbInstance.commit();
+
+		// act & assert:
+		//
+		// No assessment entry at all for 'subIdent': the completion criterion must not be considered met.
+
+		boolean metWithoutAssessmentEntry = badgeCriteria.allConditionsMet(course, null, recipient, true, true, List.of());
+		Assert.assertFalse(metWithoutAssessmentEntry);
+
+		// An assessment entry exists for 'subIdent' but is not fully assessed yet: still not met.
+
+		AssessmentEntry assessmentEntry = assessmentEntryDAO.createAssessmentEntry(recipient, null, course, subIdent, false, null);
+		assessmentEntry.setFullyAssessed(false);
+		assessmentEntryDAO.updateAssessmentEntry(assessmentEntry);
+		dbInstance.commit();
+
+		boolean metWithUnfinishedEntry = badgeCriteria.allConditionsMet(course, null, recipient, true, true, List.of(assessmentEntry));
+		Assert.assertFalse(metWithUnfinishedEntry);
+
+		// The assessment entry is fully assessed: the completion criterion is met.
+
+		assessmentEntry.setFullyAssessed(true);
+		assessmentEntryDAO.updateAssessmentEntry(assessmentEntry);
+		dbInstance.commit();
+
+		boolean metWithFinishedEntry = badgeCriteria.allConditionsMet(course, null, recipient, true, true, List.of(assessmentEntry));
+		Assert.assertTrue(metWithFinishedEntry);
 	}
 
 	private void makeAutomaticAndDependent(BadgeClassImpl badge, BadgeClassImpl badgeDependency) {
