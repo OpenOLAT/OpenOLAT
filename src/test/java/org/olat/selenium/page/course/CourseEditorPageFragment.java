@@ -48,7 +48,7 @@ public class CourseEditorPageFragment {
 	public static final By chooseWikiButton = By.className("o_sel_re_reference_select");
 	public static final By chooseTestButton = By.className("o_sel_re_reference_select");
 	public static final By chooseScormButton = By.className("o_sel_scorm_choose_repofile");
-	public static final By choosePortfolioButton = By.className("o_sel_map_choose_repofile");
+	public static final By choosePortfolioButton = By.className("o_sel_re_reference_select");
 	public static final By chooseSurveyButton = By.className("o_sel_survey_choose_repofile");
 	public static final By chooseFormButton = By.className("o_sel_form_choose_repofile");
 	
@@ -366,7 +366,8 @@ public class CourseEditorPageFragment {
 	}
 	
 	public CourseEditorPageFragment selectTabPortfolioContent() {
-		return selectTabContent(choosePortfolioButton);
+		By configBy = By.cssSelector(".o_sel_portfolio_config .o_re_reference");
+		return selectTabContent(configBy);
 	}
 	
 	public CourseEditorPageFragment selectTabWikiContent() {
@@ -433,7 +434,8 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment choosePortfolio(String resourceTitle) {
-		return chooseResource(choosePortfolioButton, resourceTitle);
+		By chooseBy = By.cssSelector(".o_re_reference .btn.btn-primary");
+		return chooseResourceModern(chooseBy, resourceTitle);
 	}
 	
 	/**
