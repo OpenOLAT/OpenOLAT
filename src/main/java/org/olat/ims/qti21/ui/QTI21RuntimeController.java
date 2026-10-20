@@ -201,14 +201,14 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			}
 		} else if(exportTestsWizard == source) {
 			getWindowControl().pop();
-			cleanUp();
+			cleanUpModals();
 		}
 		super.event(ureq, source, event);
 	}
 
 	@Override
-	protected void cleanUp() {
-		super.cleanUp();
+	protected void cleanUpModals() {
+		super.cleanUpModals();
 		removeAsListenerAndDispose(exportTestsWizard);
 		exportTestsWizard = null;
 	}

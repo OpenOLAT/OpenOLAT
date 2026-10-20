@@ -951,7 +951,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if (guardDeleted(ureq)) return;
 		
 		if(cmc == source) {
-			cleanUp();
+			cleanUpModals();
 		} else if (source == accessController) {
 			if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
 				doPostSuccessfullAccess(ureq);
@@ -983,10 +983,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if(confirmDeleteCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
-				removeAsListenerAndDispose(confirmDeleteCtrl);
-				removeAsListenerAndDispose(cmc);
-				confirmDeleteCtrl = null;
-				cmc = null;
+				cleanUpModals();
 			} else if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				cmc.deactivate();
 				
@@ -997,9 +994,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				cleanUp();
 			}
 		} else if (source == copyWrapperCtrl) {
-			cleanUp();
+			cleanUpModals();
 		} else if(confirmRestoreCtrl == source) {
 			cmc.deactivate();
+			cleanUpModals();
 			if(event == Event.DONE_EVENT) {
 				doRestore(ureq);
 			}
@@ -1007,17 +1005,32 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			if(event == Event.DONE_EVENT) {
 				cmc.deactivate();
 				doCloseResource(ureq);
-				cleanUp();
+				cleanUpModals();
 			} else if(event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
-				cleanUp();
+				cleanUpModals();
 			}
 		} else if(aboutCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				cmc.deactivate();
-				cleanUp();
+				cleanUpModals();
 			}
 		}
+	}
+	
+	protected void cleanUpModals() {
+		removeAsListenerAndDispose(confirmRestoreCtrl);
+		removeAsListenerAndDispose(confirmDeleteCtrl);
+		removeAsListenerAndDispose(confirmCloseCtrl);
+		removeAsListenerAndDispose(copyWrapperCtrl);
+		removeAsListenerAndDispose(aboutCtrl);
+		removeAsListenerAndDispose(cmc);
+		confirmRestoreCtrl = null;
+		confirmDeleteCtrl = null;
+		confirmCloseCtrl = null;
+		copyWrapperCtrl = null;
+		aboutCtrl = null;
+		cmc = null;
 	}
 	
 	protected RepositoryEntryRuntimeController popToRoot(UserRequest ureq) {
@@ -1026,27 +1039,16 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void cleanUp() {		
+		cleanUpModals();
 		removeAsListenerAndDispose(membersEditController);
-		removeAsListenerAndDispose(confirmRestoreCtrl);
-		removeAsListenerAndDispose(confirmDeleteCtrl);
-		removeAsListenerAndDispose(confirmCloseCtrl);
-		removeAsListenerAndDispose(copyWrapperCtrl);
 		removeAsListenerAndDispose(detailsCtrl);
 		removeAsListenerAndDispose(editorCtrl);
 		removeAsListenerAndDispose(ordersCtlr);
-		removeAsListenerAndDispose(aboutCtrl);
-		removeAsListenerAndDispose(cmc);
 		
 		membersEditController = null;
-		confirmRestoreCtrl = null;
-		confirmDeleteCtrl = null;
-		confirmCloseCtrl = null;
-		copyWrapperCtrl = null;
 		detailsCtrl = null;
 		editorCtrl = null;
 		ordersCtlr = null;
-		aboutCtrl = null;
-		cmc = null;
 	}
 	
 	/**

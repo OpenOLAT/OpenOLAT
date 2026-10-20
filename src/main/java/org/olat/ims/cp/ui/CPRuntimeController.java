@@ -88,16 +88,16 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 		
 		if(notificationsCtrl == source) {
 			cmc.deactivate();
-			cleanUp();
+			cleanUpModals();
 		} else if(cmc == source) {
-			cleanUp();
+			cleanUpModals();
 		}
 		super.event(ureq, source, event);
 	}
 
 	@Override
-	protected void cleanUp() {
-		super.cleanUp();
+	protected void cleanUpModals() {
+		super.cleanUpModals();
 		removeAsListenerAndDispose(notificationsCtrl);
 		removeAsListenerAndDispose(cmc);
 		notificationsCtrl = null;

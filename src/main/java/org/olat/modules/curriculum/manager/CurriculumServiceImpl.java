@@ -574,7 +574,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		element.setShowOutline(curriculumModule.isDefaultShowOutline());
 		element.setShowLectures(curriculumModule.isDefaultShowLectures());
 		element.setShowCertificateBenefit(curriculumModule.isDefaultShowCertificate());
-		element.setTaughtBys(curriculumModule.getDefaultTaughtBys());
+		element.setTaughtBys(curriculumModule.isDefaultShowTeachers() ? curriculumModule.getDefaultTaughtBys() : Set.of());
 		if(element.getParent() != null) {
 			Group organisationGroup = element.getGroup();
 			List<GroupMembership> memberships = groupDao.getMemberships(element.getParent().getGroup(),

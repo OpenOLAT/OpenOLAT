@@ -87,6 +87,14 @@ public class FullCalendarElement extends FormItemImpl implements Disposable {
 		component.setViewName(view.name());
 	}
 	
+	public boolean isPrintEnabled() {
+		return component.isPrintEnabled();
+	}
+	
+	public void setPrintEnabled(boolean printEnabled) {
+		component.setPrintEnabled(printEnabled);
+	}
+	
 	public boolean isConfigurationEnabled() {
 		return component.isConfigurationEnabled();
 	}

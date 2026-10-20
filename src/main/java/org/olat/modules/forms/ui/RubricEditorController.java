@@ -141,11 +141,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 			addSliderButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 
 			showEndButton = uifactory.addFormLink("show.end", "show.end", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-			showEndButton.setTitle("show.end");
+			showEndButton.setTitle(translate("show.end"));
 			showEndButton.setIconLeftCSS("o_icon o_icon_eva_end_show");
 
 			hideEndButton = uifactory.addFormLink("hide.end", "hide.end", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-			hideEndButton.setTitle("hide.end");
+			hideEndButton.setTitle(translate("hide.end"));
 			hideEndButton.setIconLeftCSS("o_icon o_icon_eva_end_hide");
 		}
 		if(formLayout instanceof FormLayoutContainer) {

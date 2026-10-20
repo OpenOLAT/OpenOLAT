@@ -83,6 +83,7 @@ public class CatalogFilterTaxonomyLevelController extends AbstractFilterEditCont
 			SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);
 			taxonomyLevelEl = uifactory.addDropdownSingleselect("taxonomyLevels", "admin.taxonomy.levels", formLayout,
 					keyValues.keys(), keyValues.values());
+			taxonomyLevelEl.setEscapeHtml(false);
 			taxonomyLevelEl.setMandatory(true);
 			taxonomyLevelEl.addActionListener(FormEvent.ONCHANGE);
 			String key = getCatalogFilter() != null? getCatalogFilter().getConfig(): null;

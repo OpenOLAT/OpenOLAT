@@ -1633,14 +1633,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doLeave(ureq);
 			}
 			cmc.deactivate();
-			cleanUp();
+			cleanUpModals();
 		} else if (source == searchController) {
 			if (QuickSearchEvent.QUICKSEARCH.equals(event.getCommand())) {
 				doDeactivateQuickSearch();
 			}
 		} else if (source == unsupportedCourseNodesCtrl) {
 			cmc.deactivate();
-			cleanUp();
+			cleanUpModals();
 		} else if (source == fakeParticipantStopCtrl) {
 			if (event == FakeParticipantStopController.STOP_EVENT) {
 				doSwitchRole(ureq, reSecurity.getPreviousRole());
@@ -1653,11 +1653,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				String title = migrationSelectionCtrl.getTitle();
 				String extRef = migrationSelectionCtrl.getExtRef();
 				cmc.deactivate();
-				cleanUp();
+				cleanUpModals();
 				doMigrate(ureq, selectedKey, title, extRef);
 			} else {
 				cmc.deactivate();
-				cleanUp();
+				cleanUpModals();
 			}
 		} else if (source == instantiateAsCourseWizard) {
 			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -1821,9 +1821,18 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 
 	@Override
-	protected void cleanUp() {
+	protected void cleanUpModals() {
 		removeAsListenerAndDispose(migrationSelectionCtrl);
 		removeAsListenerAndDispose(unsupportedCourseNodesCtrl);
+		removeAsListenerAndDispose(leaveCtrl);
+		migrationSelectionCtrl = null;
+		unsupportedCourseNodesCtrl = null;
+		leaveCtrl = null;
+		super.cleanUpModals();
+	}
+	
+	@Override
+	protected void cleanUp() {
 		removeAsListenerAndDispose(lifeCycleChangeCtr);
 		removeAsListenerAndDispose(assessmentModeCtrl);
 		removeAsListenerAndDispose(lecturesAdminCtrl);
@@ -1838,9 +1847,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		removeAsListenerAndDispose(statsToolCtr);
 		removeAsListenerAndDispose(membersCtrl);
 		removeAsListenerAndDispose(areasCtrl);
-		removeAsListenerAndDispose(leaveCtrl);
-		migrationSelectionCtrl = null;
-		unsupportedCourseNodesCtrl = null;
 		lifeCycleChangeCtr = null;
 		assessmentModeCtrl = null;
 		lecturesAdminCtrl = null;

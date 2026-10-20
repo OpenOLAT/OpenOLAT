@@ -141,7 +141,7 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		defaultShowInfoEl.setHelpText(translate("cif.display.on.info.page.help"));
 		defaultShowInfoEl.addActionListener(FormEvent.ONCHANGE);
 		defaultShowInfoEl.select(EVENTS_KEY, courseModule.isDefaultShowLectures());
-		defaultShowInfoEl.select(MEET_TEACHERS_KEY, !courseModule.getDefaultTaughtBys().isEmpty());
+		defaultShowInfoEl.select(MEET_TEACHERS_KEY, courseModule.isDefaultShowTeachers());
 		defaultShowInfoEl.select(CERTIFICATE_KEY, courseModule.isDefaultShowCertificate());
 
 		SelectionValues taughtByPK = new SelectionValues();
@@ -197,6 +197,7 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		} else if (source == defaultShowInfoEl) {
 			Collection<String> selectedInfo = defaultShowInfoEl.getSelectedKeys();
 			courseModule.setDefaultShowLectures(selectedInfo.contains(EVENTS_KEY));
+			courseModule.setDefaultShowTeachers(selectedInfo.contains(MEET_TEACHERS_KEY));
 			courseModule.setDefaultShowCertificate(selectedInfo.contains(CERTIFICATE_KEY));
 		} else if (source == defaultTaughtByEl) {
 			courseModule.setDefaultTaughtBys(defaultTaughtByEl.getSelectedKeys().stream()
