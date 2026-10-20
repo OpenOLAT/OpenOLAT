@@ -185,6 +185,8 @@ public class NewsQueryToolProviderTest extends OlatTestCase {
 	public void computedAtRoundTrip() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mcp-news-4");
 		forumNews(id, "BusinessGroup", group(id).getKey(), "Round trip");
+		// MySQL rounds the dates to the second, the news date can be up to half a second in the future
+		sleep(1100);
 
 		Map<String,Object> first = structured(call(id));
 		Assertions.assertThat(first).containsEntry("total", Integer.valueOf(1));
