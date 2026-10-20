@@ -33,6 +33,7 @@ import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,16 +96,17 @@ public class BadgeClassDAO {
 	}
 
 	/**
-	 * Returns a list of badge classes that belong to courses owned by the owners of the course
-	 * identified by 'courseEntry'.
+	 * Returns a list of badge classes that belong to published courses owned by the owners of the
+	 * course identified by 'courseEntry'.
 	 *
 	 * Only returns badge classes that can be issued (no deleted or revoked badge classes,
-	 * no old badge class versions).
+	 * no old badge class versions), and only badge classes of courses that are published
+	 * (a course in preparation, review, closed etc. does not issue badges).
 	 *
 	 * Also returns the badge classes of the course identified by 'courseEntry'.
 	 *
  	 * @param courseEntry The course to start the search with.
-	 * @return All badge classes that can be issued and that are associated with a course via co-ownership.
+	 * @return All badge classes that can be issued and that are associated with a published course via co-ownership.
 	 */
 	public List<BadgeClass> getBadgeClassesInCoOwnedCourseSet(RepositoryEntry courseEntry) {
 		QueryBuilder sb = new QueryBuilder();
@@ -117,6 +119,7 @@ public class BadgeClassDAO {
 				.append(" where coMembership.role ").in(GroupRoles.owner)
 				.append(" and coBc.status ").in(BadgeClass.BadgeClassStatus.active, BadgeClass.BadgeClassStatus.preparation)
 				.append(" and coBc.nextVersion is null ")
+				.append(" and coRe.status = :publishedStatus ")
 				.append(" and coMembership.identity.key in (")
 				.append("  select membership.identity.key from repositoryentry re")
 				.append("   inner join re.groups as groupRel")
@@ -130,6 +133,7 @@ public class BadgeClassDAO {
 				.getCurrentEntityManager()
 				.createQuery(sb.toString(), BadgeClass.class)
 				.setParameter("courseEntryKey", courseEntry.getKey())
+				.setParameter("publishedStatus", RepositoryEntryStatusEnum.published.name())
 				.getResultList();
 	}
 

@@ -48,8 +48,10 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -64,9 +66,11 @@ import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
+import org.olat.modules.openbadges.criteria.CompletionCriterionMetCondition;
 import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.criteria.CoursesPassedCondition;
@@ -75,7 +79,12 @@ import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
+import org.olat.modules.openbadges.v2.Constants;
+import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -146,6 +155,12 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 	@Autowired
 	RepositoryEntryRelationDAO repositoryEntryRelationDAO;
+
+	@Autowired
+	RepositoryService repositoryService;
+
+	@Autowired
+	RepositoryManager repositoryManager;
 
 	@Test
 	public void bakePngHosted() throws IOException, JOSEException {
@@ -383,7 +398,34 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		Assert.assertEquals(originalConfiguration.isCoachCanAward(), copiedConfiguration.isCoachCanAward());
 		Assert.assertTrue(copiedConfiguration.isOwnerCanAward());
 	}
-	
+
+	@Test
+	public void copyConfigurationAndBadgeClassesClonesIssuerNameAndUrl() {
+
+		// arrange
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-class-author-2");
+		RepositoryEntry sourceEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+		BadgeClassImpl originalBadgeClass = BadgeTestData.createTestBadgeClass("Course badge", "image.png", sourceEntry);
+		String sourceIssuerUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + sourceEntry.getKey();
+		Profile sourceIssuer = new Profile(new JSONObject(originalBadgeClass.getIssuer()));
+		sourceIssuer.setName(sourceEntry.getDisplayname());
+		sourceIssuer.setUrl(sourceIssuerUrl);
+		originalBadgeClass.setIssuer(sourceIssuer.asJsonObject(Constants.TYPE_VALUE_ISSUER).toString());
+		badgeClassDAO.updateBadgeClass(originalBadgeClass);
+
+		// act
+		RepositoryEntry targetEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+		openBadgesManager.copyConfigurationAndBadgeClasses(sourceEntry, targetEntry, author);
+
+		// assert
+		List<BadgeClass> copiedBadgeClasses = badgeClassDAO.getBadgeClasses(targetEntry);
+		Assert.assertEquals(1, copiedBadgeClasses.size());
+		Profile copiedIssuer = new Profile(new JSONObject(copiedBadgeClasses.get(0).getIssuer()));
+		Assert.assertEquals(targetEntry.getDisplayname(), copiedIssuer.getName());
+		Assert.assertEquals(Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + targetEntry.getKey(),
+				copiedIssuer.getUrl());
+	}
+
 	@Test
 	public void getRuleEarnedBadgeAssertions() {
 		
@@ -583,6 +625,10 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		repositoryEntryRelationDAO.createRelation(group, courseB, false);
 		groupDAO.addMembershipOneWay(group, ownerAB, "owner");
 
+		// 'participant' must be a genuine member of courseB (reached only via co-ownership with courseA)
+		// for badgeB to be eligible: badges of co-owned sibling courses are only issued to actual members.
+		repositoryService.addRole(participant, courseB, GroupRoles.participant.name());
+
 		makeAutomaticOnPass(badgeA);
 		makeAutomaticOnPass(badgeB);
 		makeAutomaticOnPass(badgeC);
@@ -612,6 +658,162 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		Assert.assertNotNull(badgeAssertionA);
 		Assert.assertNotNull(badgeAssertionB);
 		Assert.assertNull(badgeAssertionC);
+	}
+
+	@Test
+	public void issueBadgesAutomaticallyDoesNotIssueBadgeOfCoOwnedCourseToNonMember() {
+
+		// arrange:
+		//
+		// courseA and courseB are co-owned (shared owner). 'participant' passes courseA, which
+		// triggers the automatic issuance, and also has assessment data for courseB (simulating
+		// stale or manually-crafted data), but was never enrolled in courseB. badgeB (of courseB)
+		// must not be issued to 'participant' since they are not a member of courseB.
+
+		Identity ownerAB = JunitTestHelper.createAndPersistIdentityAsRndUser("issue-badges-non-member-owner");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("issue-badges-non-member-participant");
+
+		RepositoryEntry courseA = JunitTestHelper.deployBasicCourse(ownerAB);
+		BadgeEntryConfiguration configA = badgeEntryConfigurationDAO.createConfiguration(courseA);
+		configA.setAwardEnabled(true);
+		badgeEntryConfigurationDAO.updateConfiguration(configA);
+		BadgeClassImpl badgeA = BadgeTestData.createTestBadgeClass("Non-member test: Badge A", "image.png", courseA);
+
+		RepositoryEntry courseB = JunitTestHelper.deployBasicCourse(ownerAB);
+		BadgeEntryConfiguration configB = badgeEntryConfigurationDAO.createConfiguration(courseB);
+		configB.setAwardEnabled(true);
+		badgeEntryConfigurationDAO.updateConfiguration(configB);
+		BadgeClassImpl badgeB = BadgeTestData.createTestBadgeClass("Non-member test: Badge B", "image.png", courseB);
+
+		Group group = groupDAO.createGroup();
+		repositoryEntryRelationDAO.createRelation(group, courseA, false);
+		repositoryEntryRelationDAO.createRelation(group, courseB, false);
+		groupDAO.addMembershipOneWay(group, ownerAB, "owner");
+
+		makeAutomaticOnPass(badgeA);
+		makeAutomaticOnPass(badgeB);
+
+		passCourse(courseA, participant);
+		passCourse(courseB, participant);
+
+		dbInstance.commit();
+
+		// act:
+
+		openBadgesManager.issueBadgesAutomatically(courseA, ownerAB);
+		dbInstance.commit();
+
+		// assert:
+
+		BadgeAssertion badgeAssertionA = badgeAssertionDAO.getBadgeAssertion(participant, badgeA);
+		BadgeAssertion badgeAssertionB = badgeAssertionDAO.getBadgeAssertion(participant, badgeB);
+
+		Assert.assertNotNull(badgeAssertionA);
+		Assert.assertNull(badgeAssertionB);
+	}
+
+	@Test
+	public void issueBadgesAutomaticallyDoesNotIssueBadgeOfUnpublishedCoOwnedCourse() {
+
+		// arrange:
+		//
+		// courseB (co-owned with courseA) is in status 'preparation'. Even though 'participant'
+		// is a member of courseB and meets the pass condition there, badgeB must not be issued
+		// because courseB has not been published.
+
+		Identity ownerAB = JunitTestHelper.createAndPersistIdentityAsRndUser("issue-badges-unpublished-owner");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("issue-badges-unpublished-participant");
+
+		RepositoryEntry courseA = JunitTestHelper.deployBasicCourse(ownerAB);
+		BadgeEntryConfiguration configA = badgeEntryConfigurationDAO.createConfiguration(courseA);
+		configA.setAwardEnabled(true);
+		badgeEntryConfigurationDAO.updateConfiguration(configA);
+		BadgeClassImpl badgeA = BadgeTestData.createTestBadgeClass("Unpublished test: Badge A", "image.png", courseA);
+
+		RepositoryEntry courseB = JunitTestHelper.deployBasicCourse(ownerAB, RepositoryEntryStatusEnum.preparation);
+		BadgeEntryConfiguration configB = badgeEntryConfigurationDAO.createConfiguration(courseB);
+		configB.setAwardEnabled(true);
+		badgeEntryConfigurationDAO.updateConfiguration(configB);
+		BadgeClassImpl badgeB = BadgeTestData.createTestBadgeClass("Unpublished test: Badge B", "image.png", courseB);
+
+		Group group = groupDAO.createGroup();
+		repositoryEntryRelationDAO.createRelation(group, courseA, false);
+		repositoryEntryRelationDAO.createRelation(group, courseB, false);
+		groupDAO.addMembershipOneWay(group, ownerAB, "owner");
+
+		repositoryService.addRole(participant, courseB, GroupRoles.participant.name());
+
+		makeAutomaticOnPass(badgeA);
+		makeAutomaticOnPass(badgeB);
+
+		passCourse(courseA, participant);
+		passCourse(courseB, participant);
+
+		dbInstance.commit();
+
+		// act:
+
+		openBadgesManager.issueBadgesAutomatically(courseA, ownerAB);
+		dbInstance.commit();
+
+		// assert:
+
+		BadgeAssertion badgeAssertionA = badgeAssertionDAO.getBadgeAssertion(participant, badgeA);
+		BadgeAssertion badgeAssertionB = badgeAssertionDAO.getBadgeAssertion(participant, badgeB);
+
+		Assert.assertNotNull(badgeAssertionA);
+		Assert.assertNull(badgeAssertionB);
+	}
+
+	@Test
+	public void learningPathCompletionCriterionNotMetWithoutAssessmentEntry() {
+
+		// arrange:
+		//
+		// A learning-path course badge with a 'completion criterion met' condition for a course
+		// element. A recipient who has no assessment entry at all for that element (e.g. because
+		// they never started it, or - as in OO-9838 - because they are not a member of the
+		// course) must not be considered to have met the completion criterion.
+
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("learning-path-completion-author");
+		Identity recipient = JunitTestHelper.createAndPersistIdentityAsRndUser("learning-path-completion-recipient");
+
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(author);
+		course = repositoryManager.setTechnicalType(course, LearningPathNodeAccessProvider.TYPE);
+
+		String subIdent = UUID.randomUUID().toString();
+
+		BadgeCriteria badgeCriteria = new BadgeCriteria();
+		badgeCriteria.setAwardAutomatically(true);
+		badgeCriteria.getConditions().add(new CompletionCriterionMetCondition(subIdent));
+
+		dbInstance.commit();
+
+		// act & assert:
+		//
+		// No assessment entry at all for 'subIdent': the completion criterion must not be considered met.
+
+		boolean metWithoutAssessmentEntry = badgeCriteria.allConditionsMet(course, null, recipient, true, true, List.of());
+		Assert.assertFalse(metWithoutAssessmentEntry);
+
+		// An assessment entry exists for 'subIdent' but is not fully assessed yet: still not met.
+
+		AssessmentEntry assessmentEntry = assessmentEntryDAO.createAssessmentEntry(recipient, null, course, subIdent, false, null);
+		assessmentEntry.setFullyAssessed(false);
+		assessmentEntryDAO.updateAssessmentEntry(assessmentEntry);
+		dbInstance.commit();
+
+		boolean metWithUnfinishedEntry = badgeCriteria.allConditionsMet(course, null, recipient, true, true, List.of(assessmentEntry));
+		Assert.assertFalse(metWithUnfinishedEntry);
+
+		// The assessment entry is fully assessed: the completion criterion is met.
+
+		assessmentEntry.setFullyAssessed(true);
+		assessmentEntryDAO.updateAssessmentEntry(assessmentEntry);
+		dbInstance.commit();
+
+		boolean metWithFinishedEntry = badgeCriteria.allConditionsMet(course, null, recipient, true, true, List.of(assessmentEntry));
+		Assert.assertTrue(metWithFinishedEntry);
 	}
 
 	private void makeAutomaticAndDependent(BadgeClassImpl badge, BadgeClassImpl badgeDependency) {
