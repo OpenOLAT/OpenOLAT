@@ -690,8 +690,8 @@ public class CourseEditorPageFragment {
 				.click();
 			OOGraphene.waitBusy(browser);
 			
-			By lastCrumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_last_crumb.o_nowrap");
-			OOGraphene.waitElementDisappears(lastCrumbBy, 10, browser);
+			By firstCrumbIsLastBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_first_crumb.o_last_crumb.o_nowrap");
+			OOGraphene.waitElement(firstCrumbIsLastBy, 10, browser);
 			By mainId = By.id("o_main");
 			OOGraphene.waitElement(mainId, browser);
 			return new CoursePageFragment(browser);

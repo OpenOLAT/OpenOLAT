@@ -344,8 +344,8 @@ public class AssessmentToolPage {
 			By firstCrumbBy = By.cssSelector("ol.breadcrumb>li:not(.o_display_none).o_breadcrumb_root>a");
 			OOGraphene.waitElement(firstCrumbBy, browser).click();
 			
-			By lastCrumbBy = By.cssSelector("ol.breadcrumb>li:not(.o_display_none).o_last_crumb");
-			OOGraphene.waitElementDisappears(lastCrumbBy, 5, browser);
+			By firstCrumbIsLastBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_first_crumb.o_last_crumb.o_nowrap");
+			OOGraphene.waitElement(firstCrumbIsLastBy, 10, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Assessment root crumb", browser);
 			throw e;
