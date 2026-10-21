@@ -1381,27 +1381,30 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 			
 			Form form = component.getQtiItem().getRootForm();
+			String essaySelector = "jQuery('#oo_" + responseUniqueId + "')";
 			sb.append(FormJSHelper.getJSStart())
 			  .append("jQuery(function() {\n")
-			  .append(" jQuery('#").append("oo_").append(responseUniqueId).append("').qtiAutosave({\n")
-			  .append("  responseUniqueId:'").append(responseUniqueId).append("',\n")
-			  .append("  formName:'").append(form.getFormName()).append("',\n")
-			  .append("  dispIdField:'").append(form.getDispatchFieldId()).append("',\n")
-			  .append("  dispId:'").append(component.getQtiItem().getFormDispatchId()).append("',\n")
-			  .append("  eventIdField:'").append(form.getEventFieldId()).append("',\n")
-			  .append("  csrf:'").append(renderer.getRenderer().getCsrfToken()).append("',\n")
-			  .append("  errorMessage:'").append(translator.translate("error.not.saved")).append("'\n")
-			  .append(" })");
+			  .append(" if (typeof jQuery.fn.qtiAutosave === 'function') {\n")
+			  .append("  ").append(essaySelector).append(".qtiAutosave({\n")
+			  .append("   responseUniqueId:'").append(responseUniqueId).append("',\n")
+			  .append("   formName:'").append(form.getFormName()).append("',\n")
+			  .append("   dispIdField:'").append(form.getDispatchFieldId()).append("',\n")
+			  .append("   dispId:'").append(component.getQtiItem().getFormDispatchId()).append("',\n")
+			  .append("   eventIdField:'").append(form.getEventFieldId()).append("',\n")
+			  .append("   csrf:'").append(renderer.getRenderer().getCsrfToken()).append("',\n")
+			  .append("   errorMessage:'").append(translator.translate("error.not.saved")).append("'\n")
+			  .append("  });\n")
+			  .append(" }\n");
 			if(copyPasteDisabled && !richText) {
 				String errorHeader = translator.translate("essay.copypaste.disabled.header");
 				String errorMessage = translator.translate("essay.copypaste.disabled");
-				sb.append(".qtiCopyPaste({\n")
+				sb.append(" ").append(essaySelector).append(".qtiCopyPaste({\n")
 				  .append("  errorHeader:'").append(StringHelper.escapeJavaScript(errorHeader)).append("',")
 				  .append("  errorMessage:'").append(StringHelper.escapeJavaScript(errorMessage)).append("'")
-				  .append("})\n");
+				  .append(" });\n");
 			}
 			if(!richText) {
-				sb.append(".qtiCountWord({\n")
+				sb.append(" ").append(essaySelector).append(".qtiCountWord({\n")
 				  .append("  responseUniqueId:'").append(responseUniqueId).append("',\n")
 				  .append("  labelSingular:'").append(translator.translate("word.count", wordCounterPlaceholder)).append("',\n")
 				  .append("  labelPlural:'").append(translator.translate("word.count.plural", wordCounterPlaceholder)).append("'\n")
