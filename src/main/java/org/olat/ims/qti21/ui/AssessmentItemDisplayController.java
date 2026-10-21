@@ -1216,7 +1216,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			formLayout.add("timer", timerEl);
 			
 			String[] jss = new String[] {
-					"js/jquery/qti/jquery.qtiCountDown.js"
+					"js/jquery/qti/jquery.qtiCountDown.js",
+					"js/jquery/qti/jquery.qtiAutosave.js"
 			};
 			JSAndCSSFormItem js = new JSAndCSSFormItem("js", jss);
 			formLayout.add("js", js);
