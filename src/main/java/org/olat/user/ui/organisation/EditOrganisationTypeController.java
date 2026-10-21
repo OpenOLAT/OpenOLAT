@@ -77,9 +77,6 @@ public class EditOrganisationTypeController extends FormBasicController {
 		identifierEl = uifactory.addTextElement("type.identifier", "type.identifier", 255, identifier, formLayout);
 		identifierEl.setEnabled(!OrganisationTypeManagedFlag.isManaged(organisationType, OrganisationTypeManagedFlag.identifier));
 		identifierEl.setMandatory(true);
-		if(!StringHelper.containsNonWhitespace(identifier)) {
-			identifierEl.setFocus(true);
-		}
 		
 		String displayName = organisationType == null ? "" : organisationType.getDisplayName();
 		displayNameEl = uifactory.addTextElement("type.displayname", "type.displayname", 255, displayName, formLayout);

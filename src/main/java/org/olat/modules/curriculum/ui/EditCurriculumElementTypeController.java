@@ -124,9 +124,6 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		displayNameEl = uifactory.addTextElement("type.displayname", "type.displayname", 255, displayName, commonContainer);
 		displayNameEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.displayName));
 		displayNameEl.setMandatory(true);
-		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {
-			displayNameEl.setFocus(true);
-		}
 
 		String identifier = curriculumElementType == null ? "" : curriculumElementType.getIdentifier();
 		identifierEl = uifactory.addTextElement("type.identifier", "type.identifier", 255, identifier, commonContainer);

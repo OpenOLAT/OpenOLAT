@@ -101,7 +101,6 @@ public class TBParticipantTopicSelectController extends FormBasicController {
 		topicEl = uifactory.addDropdownSingleselect("selection.topic", formLayout, topicsSV.keys(), topicsSV.values());
 		topicEl.setElementCssClass("o_sel_tb_topic");
 		topicEl.setMandatory(true);
-		topicEl.setFocus(true);
 		if (topicEl.getKeys().length > 0) {
 			topicEl.select(topicEl.getKey(0), true);
 		}

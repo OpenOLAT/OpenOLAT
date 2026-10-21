@@ -108,7 +108,6 @@ public class McpTokenGenerateController extends FormBasicController {
 		labelEl.setMandatory(true);
 		labelEl.setExampleKey("user.generate.label.hint", null);
 		labelEl.setElementCssClass("o_sel_mcp_token_label");
-		labelEl.setFocus(true);
 
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("user.generate.button", buttonsCont);

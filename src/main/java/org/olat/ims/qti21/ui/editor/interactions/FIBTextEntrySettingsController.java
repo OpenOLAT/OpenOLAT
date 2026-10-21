@@ -102,9 +102,6 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solution, formLayout);
 		solutionEl.setElementCssClass("o_sel_gap_entry_solution");
 		solutionEl.setEnabled(!restrictedEdit && !readOnly);
-		if(!StringHelper.containsNonWhitespace(solution)) {
-			solutionEl.setFocus(true);
-		}
 		
 		alternativesEl = uifactory.addToggleButton("add.alternative.toggle", "add.alternative.toggle", translate("on"), translate("off"), formLayout);
 		alternativesEl.setEnabled(!restrictedEdit && !readOnly);

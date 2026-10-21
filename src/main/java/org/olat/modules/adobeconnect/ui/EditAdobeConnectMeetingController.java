@@ -104,9 +104,6 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 		String name = meeting == null ? "" : meeting.getName();
 		nameEl = uifactory.addTextElement("meeting.name", "meeting.name", 128, name, formLayout);
 		nameEl.setMandatory(true);
-		if(!StringHelper.containsNonWhitespace(name)) {
-			nameEl.setFocus(true);
-		}
 		
 		String description = meeting == null ? "" : meeting.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("meeting.description", "meeting.description", 2000, 8, 72, false, false, description, formLayout);

@@ -91,9 +91,6 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solString, formLayout);
 		solutionEl.setElementCssClass("o_sel_gap_numeric_solution form-inline");
 		solutionEl.setEnabled(!restrictedEdit && !readOnly);
-		if(!restrictedEdit && !readOnly && !StringHelper.containsNonWhitespace(solString)) {
-			solutionEl.setFocus(true);
-		}
 		
 		toleranceEl = uifactory.addToggleButton("fib.tolerance", "fib.tolerance", translate("on"), translate("off"), formLayout);
 		toleranceEl.toggle(interaction.getToleranceMode() != null && interaction.getToleranceMode() != ToleranceMode.EXACT);

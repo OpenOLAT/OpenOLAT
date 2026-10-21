@@ -115,6 +115,7 @@ import org.junit.runners.Suite;
 	org.olat.core.gui.render.VelocityFactoryTest.class,
 	org.olat.core.gui.render.VelocityTemplateTest.class,
 	org.olat.core.gui.control.generic.iframe.IFrameDeliveryMapperTest.class,
+	org.olat.core.gui.control.guistack.GuiStackNiceImplTest.class,
 	org.olat.note.NoteTest.class,
 	org.olat.user.UserTest.class,
 	org.olat.user.UserPropertiesTest.class,

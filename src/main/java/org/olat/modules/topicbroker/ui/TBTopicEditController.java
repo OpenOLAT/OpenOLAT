@@ -114,7 +114,6 @@ public class TBTopicEditController extends FormBasicController {
 		identifierEl = uifactory.addTextElement("topic.identifier", TBTopic.IDENTIFIER_MAX_LENGTH, identifier, standardCont);
 		identifierEl.setElementCssClass("o_sel_tb_identifier");
 		identifierEl.setMandatory(true);
-		identifierEl.setFocus(true);
 		
 		String title = topic != null? topic.getTitle(): null;
 		titleEl = uifactory.addTextElement("topic.title", TBTopic.TITLE_MAX_LENGTH, title, standardCont);

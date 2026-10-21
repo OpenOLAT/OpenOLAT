@@ -117,9 +117,6 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		String name = template == null ? "" : template.getName();
 		nameEl = uifactory.addTextElement("template.name", "template.name", 128, name, formLayout);
 		nameEl.setMandatory(true);
-		if(!StringHelper.containsNonWhitespace(name)) {
-			nameEl.setFocus(true);
-		}
 		
 		String description = template == null ? "" : template.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("template.description", "template.description", 2000, 4, 72, false, false, description, formLayout);

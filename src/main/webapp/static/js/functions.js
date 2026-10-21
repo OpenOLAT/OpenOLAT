@@ -24,6 +24,9 @@ o_info.xhrCurrentUpload = null;
 o_info.focusReturnStack = [];
 o_info.pendingFocusReturn = null;
 o_info.pendingDialogFocus = false;
+o_info.focusBeforeServer = null;
+o_info.lastClickedEl = null;
+o_info.focusHandled = false;
 
 /**
  * The BLoader object can be used to :
@@ -223,6 +226,8 @@ function o_getMainWin() {
 function o_beforeserver() {
 //mal versuche mit jQuery().ready.. erst dann wieder clicks erlauben...
 	o_info.linkbusy = true;
+	const activeEl = document.activeElement;
+	o_info.focusBeforeServer = activeEl && activeEl !== document.body ? activeEl : o_info.lastClickedEl;
 	showAjaxBusy();
 	// execute iframe specific onunload code on the iframe
 	if (window.suppressOlatOnUnloadOnce) {
@@ -236,6 +241,8 @@ function o_beforeserver() {
 function o_afterserver(responseData) {
 	o2c = 0;
 	o_info.linkbusy = false;
+	o_info.focusBeforeServer = null;
+	o_info.lastClickedEl = null;
 	removeAjaxBusy();
 	
 	try {
@@ -249,7 +256,7 @@ function o_afterserver(responseData) {
 					if(co == 10) {
 						o2c = 1;
 						setFlexiFormDirty(acmd["cda"].dispatchFieldId, acmd["cda"].hideDirtyMarking);
-					} else if(co == 11) {
+					} else if(co == 11 && !o_info.focusHandled) {
 						o_ffSetFocus(acmd["cda"].type, acmd["cda"].formName, acmd["cda"].formItemId);
 					}
 				}
@@ -548,12 +555,21 @@ function o_aexecute(command, parameters) {
 			o_scrollInContainer(parameters["elemId"], parameters["containerCss"], parameters["behavior"])
 			break;
 		case "pushdialogfocus":
-			var pushId = parameters && parameters["triggerId"]
-				? parameters["triggerId"]
-				: (document.activeElement && document.activeElement.id ? document.activeElement.id : null);
-			if (pushId) {
-				o_info.focusReturnStack.push(o_focusAnchor(pushId));
+			var anchor = null;
+			if (parameters && parameters["triggerId"]) {
+				anchor = o_focusAnchor(document.getElementById(parameters["triggerId"]), parameters["triggerId"]);
+			} else if (o_info.pendingFocusReturn !== null) {
+				// a callout closed in this response and opened this modal: the modal takes over its trigger
+				anchor = o_info.pendingFocusReturn;
+				o_info.pendingFocusReturn = null;
+			} else {
+				var opener = o_info.focusBeforeServer || document.activeElement;
+				if (opener && opener !== document.body && !opener.closest('#o_ajax_busy')) {
+					anchor = o_focusAnchor(opener, opener.id);
+				}
 			}
+			// push also null, so that every pop matches its push
+			o_info.focusReturnStack.push(anchor);
 			o_info.pendingDialogFocus = true;
 			break;
 		case "popdialogfocus":
@@ -779,6 +795,8 @@ function o_ainvoke(r) {
 	
 	let scrollTop = false;
 	let focusArray = [];
+	o_info.pendingFocusReturn = null;
+	o_info.focusHandled = false;
 	
 	let cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
@@ -996,15 +1014,19 @@ function o_ainvoke(r) {
 		if (retEl) {
 			retEl.focus({ preventScroll: true });
 			o_scrollToElementIfInvisible(retEl);
+			o_info.focusHandled = true;
 		}
 	}
 	if (o_info.pendingDialogFocus) {
 		o_info.pendingDialogFocus = false;
 		var openDialogs = document.querySelectorAll('dialog[open]');
 		var topDialog = openDialogs[openDialogs.length - 1];
-		if (topDialog) {
+		if (topDialog && !document.querySelector('.basicLightbox')) {
+			o_info.focusHandled = true;
 			if (!topDialog.contains(document.activeElement)) {
 				o_waitForVisibleThenFocusDialog(topDialog, 0);
+			} else {
+				o_focusModalField(topDialog);
 			}
 		}
 	}
@@ -2692,9 +2714,8 @@ var o_tableRowSelector = 'tr[id^="row_"], [data-row-key], .o_table_row, .o_verti
  * the trigger id, the table container (its id survives the reload), the row key and position,
  * and the slot (index of the trigger among the dialog openers of its row).
  */
-function o_focusAnchor(id) {
-	var anchor = { id: id };
-	var el = document.getElementById(id);
+function o_focusAnchor(el, id) {
+	var anchor = { id: id, el: el };
 	if (!el) {
 		return anchor;
 	}
@@ -2722,7 +2743,7 @@ function o_focusAnchor(id) {
  * 4. the table itself (or its empty state), never the body
  */
 function o_resolveFocusAnchor(anchor) {
-	var el = document.getElementById(anchor.id);
+	var el = (anchor.id ? document.getElementById(anchor.id) : null) || (anchor.el && anchor.el.isConnected ? anchor.el : null);
 	if (el && el.hasAttribute('aria-expanded')) {
 		el.setAttribute('aria-expanded', 'false');
 	}
@@ -2791,6 +2812,37 @@ function o_waitForVisibleThenFocusDialog(topDialog, attempt) {
 			}
 			topDialog.focus({ preventScroll: true });
 		}
+	}
+	o_focusModalField(topDialog);
+}
+
+/**
+ * A modal opens with the focus on the close link in its header: showModal()
+ * focuses the first focusable element, which is that link. Move the focus to
+ * the autofocus field or the first text field of the body. Confirm boxes have
+ * no field and keep it.
+ */
+function o_focusModalField(dialog) {
+	if (!dialog.matches('dialog.modal') || !document.activeElement || !document.activeElement.matches('.modal-header .close')) {
+		return;
+	}
+	var body = dialog.querySelector('.modal-body');
+	if (!body) {
+		return;
+	}
+	var usable = function(f) {
+		return f.offsetParent !== null && !f.disabled && !f.readOnly && !f.classList.contains('o_date_day');
+	};
+	var field = Array.prototype.find.call(body.querySelectorAll('[autofocus]'), usable)
+		|| Array.prototype.find.call(body.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]):not([type=submit]), select, textarea'), usable);
+	if (field) {
+		var closeLink = document.activeElement;
+		field.focus({ preventScroll: true });
+		field.addEventListener('blur', function(event) {
+			if (!event.relatedTarget && field.offsetParent === null && dialog.open && closeLink.isConnected) {
+				closeLink.focus({ preventScroll: true });
+			}
+		}, { once: true });
 	}
 }
 
@@ -2874,7 +2926,16 @@ function o_ffSetFocus(type, formId, formItemId) {
 	}
 
 	if(type === "lightbox") {
-		document.querySelector('.basicLightbox__placeholder :first-child:not(div)').focus();
+		const placeholder = document.querySelector('.basicLightbox__placeholder');
+		if (placeholder) {
+			const first = Array.prototype.find.call(placeholder.querySelectorAll('a[href], button, input, select, textarea, [tabindex]'), function(el) {
+				return !el.disabled && el.offsetParent !== null;
+			});
+			if (!first) {
+				placeholder.setAttribute('tabindex', '-1');
+			}
+			(first || placeholder).focus();
+		}
 		return true;
 	}
 	
@@ -3635,6 +3696,12 @@ const BDebugger = {
 		}
 	}
 }
+
+// A mouse click does not focus links and buttons in all browsers: remember the
+// clicked element as opener of a dialog
+document.addEventListener('mousedown', function(event) {
+	o_info.lastClickedEl = event.target.closest ? event.target.closest('a, button, [role="button"]') : null;
+}, true);
 
 // Listen to all escape keyboard events
 jQuery( document ).on('keyup', function(event) {

@@ -235,7 +235,6 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		
 		displaynameEl = uifactory.addTextElement("cif.title", 100, "", generalCont);
 		displaynameEl.setElementCssClass("o_sel_author_displayname");
-		displaynameEl.setFocus(true);
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
 		displaynameEl.setInlineValidationOn(true);

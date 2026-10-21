@@ -90,9 +90,6 @@ public class ConfirmInstantiateTemplateController extends FormBasicController {
 		displayNameEl = uifactory.addTextElement("displayName", "repository.entry.displayName", 255, displayName, formLayout);
 		displayNameEl.setInlineValidationOn(true);
 		displayNameEl.setMandatory(true);
-		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {
-			displayNameEl.setFocus(true);
-		}
 		
 		String identifier = buildDefaultIdentifier();
 		externalRefEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 64, identifier, formLayout);

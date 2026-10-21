@@ -451,7 +451,7 @@ You do NOT need to manually dispose:
 ## Common Patterns
 
 - **Breadcrumb navigation:** `BreadcrumbedStackedPanel` for drill-down views
-- **Modal dialogs:** `wControl.pushAsModalDialog(component)`
+- **Modal dialogs:** `wControl.pushAsModalDialog(component)`. `GuiStackNiceImpl` returns the focus to the opener when the modal closes (also after a callout action and after a table reload) and puts it on the first field when it opens. Do not send `pushDialogFocus`/`popDialogFocus` from a modal controller, and do not call `setFocus(true)` on the first field of a modal form.
 - **Callouts:** `trigger.setAriaDialogOpener()` + `new CloseableCalloutWindowController(ureq, wControl, content, triggerLink, title, true, "", settings)`, then `listenTo()` and `activate()`. Pass the `Link`/`FormLink` (**New in 21.1.0**), not a DOM id: the controller handles `aria-expanded`, focus and the aria label (section 15)
 - **Callouts in table rows:**
   - Trigger: a `FormLink` per row from `ActionsColumnModel.createLink(...)` is the default; pass the link to the callout. A renderer column (`ActionsCellRenderer`, or a `StaticFlexiCellRenderer` that calls `setAriaDialogOpener()` and overrides `getId(...)`) has no Link: pass the renderer id as DOM target, `aria-expanded` is then set on the client. A hand-written cell renderer writes `id`, `role="button" aria-haspopup="dialog" aria-expanded="false"`, `FormJSHelper.triggerClickOnKeyDown(true)` (Space key), and title plus sr-only text for an icon-only link.
