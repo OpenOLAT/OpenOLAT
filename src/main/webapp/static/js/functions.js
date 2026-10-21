@@ -1709,30 +1709,6 @@ function o_popover(id, contentId, loc) {
 	});
 }
 
-function o_popoverWithTitle(id, contentId, title, loc) {
-	if(typeof(loc)==='undefined') loc = 'bottom';
-
-	const popover = jQuery('#' + id).popover({
-    	placement : loc,
-    	html: true,
-    	sanitize: false,
-    	title: title,
-    	trigger: 'click',
-    	container: 'body',
-    	content: function() { return jQuery('#' + contentId).clone().html(); }
-	});
-	popover.on('shown.bs.popover', function () {
-		const clickListener = function (e) {
-			jQuery('#' + id).popover('hide');
-			jQuery('body').off('click', clickListener);
-		};
-		setTimeout(function() {
-			jQuery('body').on('click', clickListener);
-		},5);
-	});
-	return popover;
-}
-
 function o_QRCodePopup(id, text, loc, containerSelector) {
 	if(typeof(loc) === 'undefined') {
 		loc = 'top';

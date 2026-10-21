@@ -66,7 +66,8 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
-import org.olat.core.commons.services.license.ui.LicenseRenderer;
+import org.olat.core.commons.services.license.ui.LicenseCellRenderer;
+import org.olat.core.commons.services.license.ui.LicenseInfoController;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -269,6 +270,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private LicenseInfoController licenseInfoCtrl;
 	private CloseableModalController cmc;
 	private FileBrowserController addFromBrowserCtrl;
 	private CreateDocumentController createDocumentCtrl;
@@ -700,7 +702,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FolderCols.versions));
 		}
 		if (licensesEnabled) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FolderCols.license, new LicenseRenderer(getLocale())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FolderCols.license, new LicenseCellRenderer(getLocale())));
 		}
 	}
 	
@@ -1429,6 +1431,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				FolderRow row = dataModel.getObject(se.getIndex());
 				if (CMD_DOWNLOAD.equals(cmd)) {
 					doDownload(ureq, row);
+				} else if (LicenseCellRenderer.CMD_LICENSE.equals(cmd)) {
+					doOpenLicense(ureq, row, se.getIndex());
 				}
 			}
 		} else if(addFileEl == source) {
@@ -1676,6 +1680,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		removeAsListenerAndDispose(deletePermanentlyConfirmationCtrl);
 		removeAsListenerAndDispose(restoreSelectFolderCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(licenseInfoCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		addFromBrowserCtrl = null;
@@ -1697,6 +1702,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		deletePermanentlyConfirmationCtrl = null;
 		restoreSelectFolderCtrl = null;
 		toolsCalloutCtrl = null;
+		licenseInfoCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
 		addFileEl.reset();
@@ -3460,9 +3466,26 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 	}
 	
+	private void doOpenLicense(UserRequest ureq, FolderRow row, int index) {
+		removeAsListenerAndDispose(licenseInfoCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
+		toolsCtrl = null;
+
+		licenseInfoCtrl = new LicenseInfoController(ureq, getWindowControl(), row.getLicense());
+		listenTo(licenseInfoCtrl);
+		
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), licenseInfoCtrl.getInitialComponent(),
+				LicenseCellRenderer.getId(index), translate(FolderCols.license.i18nHeaderKey()), true, null);
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
 	private void doOpenTools(UserRequest ureq, FolderRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(licenseInfoCtrl);
+		licenseInfoCtrl = null;
 		
 		if (isItemNotAvailable(ureq, row, true)) {
 			return;

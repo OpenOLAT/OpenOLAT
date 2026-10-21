@@ -26,12 +26,14 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.CodeHelper;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.DataStorage;
@@ -66,6 +68,10 @@ public class ImageRunController extends BasicController implements PageRunElemen
 
 	private final ImageComponent imageCmp;
 	protected final VelocityContainer mainVC;
+	private final Link descriptionLink;
+	private final Link sourceLink;
+	
+	private CloseableCalloutWindowController calloutCtrl;
 	
 	private final DataStorage dataStorage;
 
@@ -94,11 +100,24 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		}
 		updateImage(storedData);
 		
+		descriptionLink = createInfoLink("descriptionLink", "o_icon_help", "show.description");
+		sourceLink = createInfoLink("sourceLink", "o_icon_origin", "show.source");
+		
 		mainVC.contextPut("extendedMetadata", hints.isExtendedMetadata());
 
 		putInitialPanel(mainVC);
 	}
 
+	private Link createInfoLink(String name, String iconCss, String i18nTitle) {
+		Link link = LinkFactory.createCustomLink(name, name, "", Link.LINK + Link.NONTRANSLATED, mainVC, this);
+		link.setIconLeftCSS("o_icon o_icon-lg " + iconCss);
+		link.setTitle(translate(i18nTitle));
+		link.setCustomEnabledLinkCSS("o_popover");
+		link.setAriaDialogOpener();
+		link.setVisible(false);
+		return link;
+	}
+	
 	private void setBlockLayoutClass(ImageSettings imageSettings) {
 		mainVC.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(imageSettings, inForm));
 	}
@@ -137,6 +156,8 @@ public class ImageRunController extends BasicController implements PageRunElemen
 			imageCmp.setCssClasses(DEFAULT_STYLE);
 			mainVC.contextPut("style", DEFAULT_STYLE);
 			imageCmp.setDirty(true);
+			sourceLink.setVisible(false);
+			descriptionLink.setVisible(false);
 		}
 	}
 	
@@ -161,21 +182,13 @@ public class ImageRunController extends BasicController implements PageRunElemen
 			imageCmp.setDirty(true);
 		}
 
-		mainVC.contextPut("someId", CodeHelper.getRAMUniqueID());
-		
-		if(meta != null) {
-			boolean hasSource = settings.isShowSource() && StringHelper.containsNonWhitespace(meta.getSource());
-			if(hasSource) {
-				mainVC.contextPut("source", meta.getSource());
-				mainVC.contextPut("showSource", Boolean.valueOf(settings.isShowSource()));
-			}
-		}
+		boolean hasSource = meta != null && settings.isShowSource() && StringHelper.containsNonWhitespace(meta.getSource());
+		sourceLink.setUserObject(hasSource ? meta.getSource() : null);
+		sourceLink.setVisible(hasSource);
 		
 		boolean hasDescriptionToShow = settings.isShowDescription() && StringHelper.containsNonWhitespace(settings.getDescription());
-		mainVC.contextPut("showDescription", Boolean.valueOf(hasDescriptionToShow));
-		if(hasDescriptionToShow) {
-			mainVC.contextPut("description", settings.getDescription());
-		}
+		descriptionLink.setUserObject(settings.getDescription());
+		descriptionLink.setVisible(hasDescriptionToShow);
 		
 		boolean hasCaptionToShow = StringHelper.containsNonWhitespace(settings.getCaption());
 		mainVC.contextPut("showCaption", Boolean.valueOf(hasCaptionToShow));
@@ -209,7 +222,9 @@ public class ImageRunController extends BasicController implements PageRunElemen
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(source == descriptionLink || source == sourceLink) {
+			doOpenInfo(ureq, (Link)source);
+		}
 	}
 	
 	@Override
@@ -240,6 +255,16 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		updateImageSettings(element);
 	}
 
+	private void doOpenInfo(UserRequest ureq, Link link) {
+		removeAsListenerAndDispose(calloutCtrl);
+		
+		VelocityContainer infoVC = createVelocityContainer("image_info");
+		infoVC.contextPut("text", link.getUserObject());
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), infoVC, link, link.getTitle(), true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
+	}
+	
 	@Override
 	protected void doDispose() {
 		if(imageCmp != null) {

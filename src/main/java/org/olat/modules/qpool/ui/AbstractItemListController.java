@@ -34,7 +34,8 @@ import org.olat.core.commons.services.ai.AiMCQuestionService;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ResourceLicense;
-import org.olat.core.commons.services.license.ui.LicenseRenderer;
+import org.olat.core.commons.services.license.ui.LicenseCellRenderer;
+import org.olat.core.commons.services.license.ui.LicenseInfoController;
 import org.olat.core.commons.services.license.ui.LicenseSelectionConfig;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.mark.Mark;
@@ -63,7 +64,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
@@ -76,6 +76,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
@@ -123,6 +124,8 @@ public abstract class AbstractItemListController extends FormBasicController
 	
 	private QuestionItemPreviewController previewCtrl;
 	private QuickViewMetadataController quickViewMetadataCtrl;
+	private LicenseInfoController licenseInfoCtrl;
+	private CloseableCalloutWindowController licenseCalloutCtrl;
 	
 	@Autowired
 	private MarkManager markManager;
@@ -239,7 +242,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.statusLastModified));	
 		if (licenseModule.isEnabled(licenseHandler)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, Cols.license.i18nHeaderKey(), null, Cols.license.ordinal(), "license", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
-					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale()))));
+					 new LicenseCellRenderer(getLocale())));
 		}
 		initActionColumns(columnsModel);
 		
@@ -482,6 +485,11 @@ public abstract class AbstractItemListController extends FormBasicController
 					if(row != null) {
 						doSelect(ureq, row);
 					}
+				} else if(LicenseCellRenderer.CMD_LICENSE.equals(se.getCommand())) {
+					ItemRow row = getModel().getObject(se.getIndex());
+					if(row != null) {
+						doOpenLicense(ureq, row, se.getIndex());
+					}
 				}
 			} else if(event instanceof DetailsToggleEvent dte) {
 				if (dte.isVisible()) {
@@ -528,6 +536,17 @@ public abstract class AbstractItemListController extends FormBasicController
 		}
 	}
 
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(licenseCalloutCtrl == source) {
+			removeAsListenerAndDispose(licenseCalloutCtrl);
+			removeAsListenerAndDispose(licenseInfoCtrl);
+			licenseCalloutCtrl = null;
+			licenseInfoCtrl = null;
+		}
+		super.event(ureq, source, event);
+	}
+
 	public List<QuestionItemShort> getSelectedShortItems() {
 		return getItemsTable().getMultiSelectedIndex().stream()
 				.filter(index -> getModel().ensureLoaded(index.intValue(), itemsTable))
@@ -553,6 +572,19 @@ public abstract class AbstractItemListController extends FormBasicController
 			return qpoolService.loadItemById(row.getKey());
 		}
 		return null;
+	}
+	
+	private void doOpenLicense(UserRequest ureq, ItemRow row, int index) {
+		removeAsListenerAndDispose(licenseCalloutCtrl);
+		removeAsListenerAndDispose(licenseInfoCtrl);
+		
+		licenseInfoCtrl = new LicenseInfoController(ureq, getWindowControl(), row.getLicense());
+		listenTo(licenseInfoCtrl);
+		
+		licenseCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), licenseInfoCtrl.getInitialComponent(),
+				LicenseCellRenderer.getId(index), translate(Cols.license.i18nHeaderKey()), true, null);
+		listenTo(licenseCalloutCtrl);
+		licenseCalloutCtrl.activate();
 	}
 	
 	public ItemRow getRowByItemKey(Long itemKey) {

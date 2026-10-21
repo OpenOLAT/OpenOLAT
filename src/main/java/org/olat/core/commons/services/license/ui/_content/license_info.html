@@ -1,0 +1,20 @@
+<div class="o_lic_popup">
+	#if($r.isNotEmpty($type))
+	<div class="o_block_bottom">
+		<h5>$r.translate("license.popup.type")</h5>
+		<div><i class="o_icon $r.escapeHtml($typeCss)"> </i> <span>$r.escapeHtml($type)</span></div>
+	</div>
+	#end
+	#if($r.isNotEmpty($licensor))
+	<div class="o_block_bottom">
+		<h5>$r.translate("license.popup.licensor")</h5>
+		<div>$r.xssScan($licensor)</div>
+	</div>
+	#end
+	#if($r.isNotEmpty($text))
+	<div class="o_block_bottom">
+		<h5>$r.translate("license.popup.text")</h5>
+		<div>$r.xssScan($text)</div>
+	</div>
+	#end
+</div>

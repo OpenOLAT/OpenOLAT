@@ -50,7 +50,8 @@ import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
-import org.olat.core.commons.services.license.ui.LicenseRenderer;
+import org.olat.core.commons.services.license.ui.LicenseCellRenderer;
+import org.olat.core.commons.services.license.ui.LicenseInfoController;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -251,6 +252,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private CloseableCalloutWindowController calloutCtrl;
 	private ConfirmDeletePermanentlyController confirmDeletePermanentlyCtrl;
 	private RepositoryEntrySmallDetailsController infosCtrl;
+	private LicenseInfoController licenseInfoCtrl;
 	private MigrationSelectionController migrationSelectionCtrl;
 	private ModifyRuntimeTypeController modifyRuntimeTypeCtrl;
 	private StepsMainRunController coursesArchivesWizard;
@@ -609,7 +611,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		if (licenseModule.isEnabled(licenseHandler)) {
 			columnModelList.add(
 					new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), null, Cols.license.ordinal(),
-							"license", false, null, FlexiColumnModel.ALIGNMENT_LEFT, new LicenseRenderer(getLocale())));
+							"license", false, null, FlexiColumnModel.ALIGNMENT_LEFT, new LicenseCellRenderer(getLocale())));
 		}
 
 		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.deletedBy.i18nKey(), Cols.deletedBy.ordinal(),
@@ -1170,6 +1172,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		} else if(sendMailCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
+		} else if(calloutCtrl == source) {
+			cleanUp();
 		} else if(toolsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				calloutCtrl.deactivate();
@@ -1257,6 +1261,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(modifyStatusCtrl);
 		removeAsListenerAndDispose(copyWrapperCtrl);
+		removeAsListenerAndDispose(licenseInfoCtrl);
 		removeAsListenerAndDispose(userSearchCtr);
 		removeAsListenerAndDispose(importUrlCtrl);
 		removeAsListenerAndDispose(sendMailCtrl);
@@ -1266,6 +1271,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(wizardCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(closeCtrl);
+		removeAsListenerAndDispose(infosCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeletePermanentlyCtrl = null;
 		modifyOwnersWizardCtrl = null;
@@ -1276,6 +1282,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		confirmDeleteCtrl = null;
 		modifyStatusCtrl = null;
 		copyWrapperCtrl = null;
+		licenseInfoCtrl = null;
 		userSearchCtr = null;
 		importUrlCtrl = null;
 		sendMailCtrl = null;
@@ -1285,6 +1292,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		wizardCtrl = null;
 		toolsCtrl = null;
 		closeCtrl = null;
+		infosCtrl = null;
 		cmc = null;
 	}
 	
@@ -1413,6 +1421,8 @@ public class AuthorListController extends FormBasicController implements Activat
 					launchEditDescription(ureq, row);
 				} else if ("members".equals(cmd)) {
 					launchMembers(ureq, row);
+				} else if (LicenseCellRenderer.CMD_LICENSE.equals(cmd)) {
+					doOpenLicense(ureq, row, se.getIndex());
 				}
 			} else if (event instanceof FlexiTableFilterTabEvent fte) {
 				doSelectFilterTab(fte.getTab());
@@ -1517,6 +1527,19 @@ public class AuthorListController extends FormBasicController implements Activat
 			listenTo(calloutCtrl);
 			calloutCtrl.activate();
 		}
+	}
+	
+	private void doOpenLicense(UserRequest ureq, AuthoringEntryRow row, int index) {
+		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(licenseInfoCtrl);
+		
+		licenseInfoCtrl = new LicenseInfoController(ureq, getWindowControl(), row.getLicense());
+		listenTo(licenseInfoCtrl);
+		
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), licenseInfoCtrl.getInitialComponent(),
+				LicenseCellRenderer.getId(index), translate(Cols.license.i18nKey()), true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private void doImport(UserRequest ureq) {

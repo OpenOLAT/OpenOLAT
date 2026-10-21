@@ -52,12 +52,7 @@ public class LicenseRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof License license) {
-			if (renderer == null) {
-				// render for export
-				target.append(LicenseUIFactory.translate(license.getLicenseType(), locale));
-			} else {
-				renderLicense(target, license, false);	
-			}
+			target.appendHtmlEscaped(LicenseUIFactory.translate(license.getLicenseType(), locale));
 		} else if (renderer != null) {
 			renderMissingLicense(target);
 		}

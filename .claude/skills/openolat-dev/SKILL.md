@@ -466,6 +466,7 @@ calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 		toolsCtrl.getInitialComponent(), targetId, "", true, "");
 ```
 
+- **Info or action popups:** use a callout, not the client popover `o_popover` (no focus handling, no Escape, `role="tooltip"`). Example: `LicenseCellRenderer` + `LicenseInfoController` for the license in a table.
 - **Downloads from a callout:** a callout action that triggers a download uses `getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createDownloadMediaResource(ureq, mr))`, not `ureq.getDispatchResult().setResultingMediaResource(mr)`
 - **Info/error messages:** `showInfo("key")`, `showError("key")`
 - **Module toggles:** `AbstractSpringModule` with `isEnabled()` and persisted config
