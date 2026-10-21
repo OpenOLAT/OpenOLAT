@@ -26,6 +26,7 @@ o_info.pendingFocusReturn = null;
 o_info.pendingDialogFocus = false;
 o_info.focusBeforeServer = null;
 o_info.lastClickedEl = null;
+o_info.lastClickedTime = 0;
 o_info.focusHandled = false;
 
 /**
@@ -227,7 +228,8 @@ function o_beforeserver() {
 //mal versuche mit jQuery().ready.. erst dann wieder clicks erlauben...
 	o_info.linkbusy = true;
 	const activeEl = document.activeElement;
-	o_info.focusBeforeServer = activeEl && activeEl !== document.body ? activeEl : o_info.lastClickedEl;
+	const recentClickedEl = Date.now() - o_info.lastClickedTime < 2000 ? o_info.lastClickedEl : null;
+	o_info.focusBeforeServer = activeEl && activeEl !== document.body ? activeEl : recentClickedEl;
 	showAjaxBusy();
 	// execute iframe specific onunload code on the iframe
 	if (window.suppressOlatOnUnloadOnce) {
@@ -256,7 +258,7 @@ function o_afterserver(responseData) {
 					if(co == 10) {
 						o2c = 1;
 						setFlexiFormDirty(acmd["cda"].dispatchFieldId, acmd["cda"].hideDirtyMarking);
-					} else if(co == 11 && !o_info.focusHandled) {
+					} else if(co == 11) {
 						o_ffSetFocus(acmd["cda"].type, acmd["cda"].formName, acmd["cda"].formItemId);
 					}
 				}
@@ -1019,9 +1021,9 @@ function o_ainvoke(r) {
 	}
 	if (o_info.pendingDialogFocus) {
 		o_info.pendingDialogFocus = false;
-		var openDialogs = document.querySelectorAll('dialog[open]');
-		var topDialog = openDialogs[openDialogs.length - 1];
-		if (topDialog && !document.querySelector('.basicLightbox')) {
+		var topDialog = o_topDialog();
+		var lightboxOpens = cmdcnt > 0 && r["cmds"].some(function(c) { return c["cmd"] == 11 && c["cda"].type === "lightbox"; });
+		if (topDialog && !lightboxOpens) {
 			o_info.focusHandled = true;
 			if (!topDialog.contains(document.activeElement)) {
 				o_waitForVisibleThenFocusDialog(topDialog, 0);
@@ -2691,20 +2693,27 @@ var o_tableRowSelector = 'tr[id^="row_"], [data-row-key], .o_table_row, .o_verti
  * and the slot (index of the trigger among the dialog openers of its row).
  */
 function o_focusAnchor(el, id) {
+	// an item of a dropdown menu is hidden after the dialog closes: return to the toggle of the menu
+	var menuToggle = el && el.closest('.dropdown-menu') ? el.closest('.dropdown-menu').parentElement.querySelector('.dropdown-toggle') : null;
+	if (menuToggle) {
+		el = menuToggle;
+		id = menuToggle.id;
+	}
 	var anchor = { id: id, el: el };
 	if (!el) {
 		return anchor;
 	}
+	var opensDialog = el.getAttribute('aria-haspopup') === 'dialog';
 	var row = el.closest(o_tableRowSelector);
 	var wrapper = row ? row.closest('.o_table_wrapper') : null;
 	if (wrapper && wrapper.parentElement && wrapper.parentElement.id) {
 		anchor.tableId = wrapper.parentElement.id;
 		anchor.rowKey = row.getAttribute('data-row-key');
 		anchor.rowIndex = Array.prototype.indexOf.call(wrapper.querySelectorAll(o_tableRowSelector), row);
-		anchor.slotSelector = el.hasAttribute('aria-haspopup') ? '[aria-haspopup="dialog"]' : 'a[href], button';
+		anchor.slotSelector = opensDialog ? '[aria-haspopup="dialog"]' : 'a[href], button';
 		anchor.slot = Array.prototype.indexOf.call(row.querySelectorAll(anchor.slotSelector), el);
 	}
-	if (el.hasAttribute('aria-haspopup')) {
+	if (opensDialog) {
 		el.setAttribute('aria-expanded', 'true');
 	}
 	return anchor;
@@ -2754,6 +2763,28 @@ function o_resolveFocusAnchor(anchor) {
 	return wrapper;
 }
 
+function o_topDialog() {
+	var openDialogs = document.querySelectorAll('dialog[open]:not(#o_ajax_busy)');
+	return openDialogs[openDialogs.length - 1];
+}
+
+var o_focusableSelector = 'a[href], button, input, select, textarea, [tabindex]';
+
+function o_isClipped(el, container) {
+	for (var anc = el; anc && anc !== container.parentElement; anc = anc.parentElement) {
+		if (anc.offsetWidth <= 1 || anc.offsetHeight <= 1) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function o_visibleFocusables(container) {
+	return Array.prototype.filter.call(container.querySelectorAll(o_focusableSelector), function(el) {
+		return !el.disabled && !o_isClipped(el, container);
+	});
+}
+
 function o_waitForVisibleThenFocusDialog(topDialog, attempt) {
 	if (topDialog.getClientRects().length === 0 && attempt < 20) {
 		requestAnimationFrame(function() {
@@ -2762,20 +2793,9 @@ function o_waitForVisibleThenFocusDialog(topDialog, attempt) {
 		return;
 	}
 	if (!topDialog.contains(document.activeElement)) {
-		var candidates = topDialog.querySelectorAll('a[href], button, input, select, textarea, [tabindex]');
-		var isClipped = function(el) {
-			for (var anc = el; anc && anc !== topDialog.parentElement; anc = anc.parentElement) {
-				if (anc.offsetWidth <= 1 || anc.offsetHeight <= 1) {
-					return true;
-				}
-			}
-			return false;
-		};
-		var visibleCandidates = Array.prototype.filter.call(candidates, function(candidate) {
-			return !isClipped(candidate);
-		});
-		if (visibleCandidates.length > 0) {
-			candidates = visibleCandidates;
+		var candidates = o_visibleFocusables(topDialog);
+		if (candidates.length === 0) {
+			candidates = topDialog.querySelectorAll(o_focusableSelector);
 		}
 		var focused = false;
 		for (var di = 0; di < candidates.length && !focused; di++) {
@@ -2806,8 +2826,9 @@ function o_focusModalField(dialog) {
 	if (!body) {
 		return;
 	}
+	// fields which open a popup on focus (date picker, autocomplete) are skipped
 	var usable = function(f) {
-		return f.offsetParent !== null && !f.disabled && !f.readOnly && !f.classList.contains('o_date_day');
+		return !f.disabled && !f.readOnly && !o_isClipped(f, dialog) && !f.matches('.o_date_day, .tt-input, [role="combobox"], [aria-autocomplete]');
 	};
 	var field = Array.prototype.find.call(body.querySelectorAll('[autofocus]'), usable)
 		|| Array.prototype.find.call(body.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]):not([type=submit]), select, textarea'), usable);
@@ -2904,9 +2925,7 @@ function o_ffSetFocus(type, formId, formItemId) {
 	if(type === "lightbox") {
 		const placeholder = document.querySelector('.basicLightbox__placeholder');
 		if (placeholder) {
-			const first = Array.prototype.find.call(placeholder.querySelectorAll('a[href], button, input, select, textarea, [tabindex]'), function(el) {
-				return !el.disabled && el.offsetParent !== null;
-			});
+			const first = o_visibleFocusables(placeholder)[0];
 			if (!first) {
 				placeholder.setAttribute('tabindex', '-1');
 			}
@@ -2928,23 +2947,27 @@ function o_ffSetFocus(type, formId, formItemId) {
 	let errItem = jQuery('#' + formId + ' .has-error .form-control');
 	
 	let candidateFormItemId = "";
+	let weakCandidate = false;
 	if (errItem.length > 0) {
 		candidateFormItemId = errItem[0].getAttribute("id");
 	} else if (formItemId) {
 		candidateFormItemId = formItemId;
 	} else if(isInForm(formId, o_info.lastFormFocusEl)) {
 		candidateFormItemId = o_info.lastFormFocusEl;
+		weakCandidate = true;
 	} else if(autofocusEl.length == 1) {
 		candidateFormItemId = autofocusEl[0].getAttribute("id");
+		weakCandidate = true;
 	}
 
-	// 4) Now set focus
+	// 4) Now set focus, but the focus returned to a dialog opener or moved into a dialog wins over a weak candidate
 	let focused = false;
-	if (candidateFormItemId != "" && isElementVisible(candidateFormItemId)) {
+	if (candidateFormItemId != "" && isElementVisible(candidateFormItemId) && !(weakCandidate && o_info.focusHandled)) {
 		let candidateEl = jQuery("#" + candidateFormItemId);
 		let numOfModals = jQuery(".modal.show").length + jQuery(".popover").length;
 		let numOfClosest = candidateEl.parents('.modal.show').length + candidateEl.parents('.popover').length;
-		if(numOfModals > 0 && numOfClosest == 0) {
+		let topDialog = o_topDialog();
+		if((numOfModals > 0 && numOfClosest == 0) || (topDialog && !topDialog.contains(candidateEl[0]))) {
 			// Modal dialog opens, but try to focus under it
 			focused = false;
 		} else {
@@ -3677,6 +3700,7 @@ const BDebugger = {
 // clicked element as opener of a dialog
 document.addEventListener('mousedown', function(event) {
 	o_info.lastClickedEl = event.target.closest ? event.target.closest('a, button, [role="button"]') : null;
+	o_info.lastClickedTime = Date.now();
 }, true);
 
 // Listen to all escape keyboard events

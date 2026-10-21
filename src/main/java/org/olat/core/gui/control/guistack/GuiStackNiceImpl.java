@@ -24,9 +24,7 @@
 */
 package org.olat.core.gui.control.guistack;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -57,7 +55,6 @@ public class GuiStackNiceImpl implements GuiStack {
 	private final StackedPanel topModalPanel;
 	private int modalLayers = 0;
 	private int topModalLayers = 0;
-	private final Set<Component> modalInsets = new HashSet<>();
 	
 	private final ListPanel instantMessagePanel;
 
@@ -131,8 +128,7 @@ public class GuiStackNiceImpl implements GuiStack {
 		if(insetCmp instanceof VelocityContainer inset) {
 			Component modalContent = inset.getComponent("cont");
 			if(modalContent == content) {
-				modalLayers--;
-				popLayer(modalPanel);
+				popModalLayer();
 				return true;
 			}
 		}
@@ -174,7 +170,6 @@ public class GuiStackNiceImpl implements GuiStack {
 		inset.contextPut("zindexshim", zindex);
 		inset.contextPut("zindexarea", zindex + 5);
 		inset.contextPut("zindexextwindows", zindex + 50);
-		modalInsets.add(inset);
 		wbo.sendCommandTo(FunctionCommand.pushDialogFocus(null));
 		return inset;
 	}
@@ -185,8 +180,7 @@ public class GuiStackNiceImpl implements GuiStack {
 		if(insetCmp instanceof VelocityContainer inset) {
 			Component topModalContent = inset.getComponent("cont");
 			if(topModalContent == content) {
-				topModalLayers--;
-				popLayer(topModalPanel);
+				popTopModalLayer();
 				return true;
 			}
 		}
@@ -255,20 +249,28 @@ public class GuiStackNiceImpl implements GuiStack {
 	public Component popContent() {
 		Component popComponent;
 		if(topModalLayers > 0) {
-			topModalLayers--;
-			popComponent = popLayer(topModalPanel);
+			popComponent = popTopModalLayer();
 		} else if (modalLayers > 0) {
-			modalLayers--;
-			popComponent = popLayer(modalPanel);
+			popComponent = popModalLayer();
 		} else {
 			popComponent = panel.popContent();
 		}
 		return popComponent;
 	}
 	
+	private Component popModalLayer() {
+		modalLayers--;
+		return popLayer(modalPanel);
+	}
+	
+	private Component popTopModalLayer() {
+		topModalLayers--;
+		return popLayer(topModalPanel);
+	}
+	
 	private Component popLayer(StackedPanel layerPanel) {
 		Component popComponent = layerPanel.popContent();
-		if(popComponent != null && modalInsets.remove(popComponent)) {
+		if(popComponent != null && "topinset".equals(popComponent.getComponentName())) {
 			wbo.sendCommandTo(FunctionCommand.popDialogFocus());
 		}
 		return popComponent;
