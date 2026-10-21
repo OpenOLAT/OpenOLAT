@@ -36,6 +36,7 @@ import org.olat.core.util.Util;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.ui.CertificatesOptionsController;
+import org.olat.modules.certificationprogram.ui.component.DurationType;
 import org.olat.modules.creditpoint.CreditPointFormat;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CurriculumElementCreditPointConfiguration;
@@ -96,7 +97,8 @@ public class InfoPageFactsController extends BasicController {
 			String certificateValidity = null;
 			int expiration = certificateConfig.getValidityTimelapse();
 			if (expiration >= 0 && certificateConfig.isValidityEnabled() && certificateConfig.getValidityTimelapseUnit() != null) {
-				String unit = translate(certificateConfig.getValidityTimelapseUnit().name());
+				DurationType unitType = DurationType.valueOf(certificateConfig.getValidityTimelapseUnit().name());
+				String unit = translate(expiration <= 1 ? unitType.i18nSingular() : unitType.i18nPlural());
 				certificateValidity = translate("details.valid.for", Integer.toString(expiration), unit);
 			}
 			facts.add(certificateFact(certificateValidity));

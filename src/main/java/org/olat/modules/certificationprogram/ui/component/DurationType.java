@@ -31,10 +31,10 @@ import org.olat.core.gui.translator.Translator;
  *
  */
 public enum DurationType {
-	day("unit.day", "unit.days", "period.day", "period.days"),
-	week("unit.week", "unit.weeks", "period.week", "period.weeks"),
-	month("unit.month", "unit.months", "period.month", "period.months"),
-	year("unit.year", "unit.years", "period.year", "period.years");
+	day("unit.concatenation.day", "unit.concatenation.days", "period.day", "period.days"),
+	week("unit.concatenation.week", "unit.concatenation.weeks", "period.week", "period.weeks"),
+	month("unit.concatenation.month", "unit.concatenation.months", "period.month", "period.months"),
+	year("unit.concatenation.year", "unit.concatenation.years", "period.year", "period.years");
 	
 	private final String i18nSingular;
 	private final String i18nPlural;

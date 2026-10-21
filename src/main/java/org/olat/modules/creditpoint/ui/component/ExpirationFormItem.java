@@ -71,9 +71,9 @@ public class ExpirationFormItem extends FormItemImpl implements FormItemCollecti
 		if(withDefault) {
 			unitPK.add(SelectionValues.entry(CreditPointExpirationType.DEFAULT.name(), translator.translate("expiration.type.default")));
 		}
-		unitPK.add(SelectionValues.entry(CreditPointExpirationType.DAY.name(), translator.translate("expiration.unit.day")));
-		unitPK.add(SelectionValues.entry(CreditPointExpirationType.MONTH.name(), translator.translate("expiration.unit.month")));
-		unitPK.add(SelectionValues.entry(CreditPointExpirationType.YEAR.name(), translator.translate("expiration.unit.year")));
+		unitPK.add(SelectionValues.entry(CreditPointExpirationType.DAY.name(), translator.translate("unit.concatenation.days")));
+		unitPK.add(SelectionValues.entry(CreditPointExpirationType.MONTH.name(), translator.translate("unit.concatenation.months")));
+		unitPK.add(SelectionValues.entry(CreditPointExpirationType.YEAR.name(), translator.translate("unit.concatenation.years")));
 		typeEl.setKeysAndValues(unitPK.keys(), unitPK.values(), null);
 		
 		component = new ExpirationComponent(this, name);

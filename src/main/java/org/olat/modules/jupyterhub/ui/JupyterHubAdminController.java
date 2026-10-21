@@ -166,7 +166,8 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 	private void initTable(FormItemContainer formLayout, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.name));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.status));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.status,
+				(renderer, target, cellValue, row, source, ubu, translator) -> target.append(translator.translate("hub.status." + cellValue))));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.clientId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.cpu));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(JupyterHubsTableModel.JupyterHubCols.ram));

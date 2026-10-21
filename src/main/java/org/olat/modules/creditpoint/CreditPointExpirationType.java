@@ -28,9 +28,9 @@ package org.olat.modules.creditpoint;
 public enum CreditPointExpirationType {
 	
 	DEFAULT(null, null),
-	DAY("expiration.unit.day", "expiration.unit.days"),
-	MONTH("expiration.unit.month", "expiration.unit.months"),
-	YEAR("expiration.unit.year", "expiration.unit.years");
+	DAY("unit.concatenation.day", "unit.concatenation.days"),
+	MONTH("unit.concatenation.month", "unit.concatenation.months"),
+	YEAR("unit.concatenation.year", "unit.concatenation.years");
 	
 	private final String i18nSingular;
 	private final String i18nPlural;

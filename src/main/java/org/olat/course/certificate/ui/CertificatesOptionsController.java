@@ -229,8 +229,8 @@ public class CertificatesOptionsController extends FormBasicController {
 		validityTimelapseEl.setEnabled(editable);
 		
 		String[] timelapseUnitValues = new String[] {
-			translate("recertification.day"), translate("recertification.week"),
-			translate("recertification.month"), translate("recertification.year")
+			translate("unit.concatenation.days"), translate("unit.concatenation.weeks"),
+			translate("unit.concatenation.months"), translate("unit.concatenation.years")
 		};
 		CertificationTimeUnit timelapseUnit = certificateConfig.getValidityTimelapseUnit();
 		validityTimelapseUnitEl = uifactory.addDropdownSingleselect("timelapse.unit", null, validityCont, timelapseUnitKeys, timelapseUnitValues, null);
