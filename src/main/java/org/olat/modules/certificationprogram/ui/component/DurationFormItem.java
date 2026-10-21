@@ -84,10 +84,10 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 		if(withNone) {
 			unitPK.add(SelectionValues.entry(NONE_KEY, translator.translate("unit.none")));
 		}
-		unitPK.add(SelectionValues.entry(DurationType.day.name(), translator.translate("unit.days")));
-		unitPK.add(SelectionValues.entry(DurationType.week.name(), translator.translate("unit.weeks")));
-		unitPK.add(SelectionValues.entry(DurationType.month.name(), translator.translate("unit.months")));
-		unitPK.add(SelectionValues.entry(DurationType.year.name(), translator.translate("unit.years")));
+		unitPK.add(SelectionValues.entry(DurationType.day.name(), translator.translate("unit.concatenation.days")));
+		unitPK.add(SelectionValues.entry(DurationType.week.name(), translator.translate("unit.concatenation.weeks")));
+		unitPK.add(SelectionValues.entry(DurationType.month.name(), translator.translate("unit.concatenation.months")));
+		unitPK.add(SelectionValues.entry(DurationType.year.name(), translator.translate("unit.concatenation.years")));
 		typeEl.setKeysAndValues(unitPK.keys(), unitPK.values(), null);
 		
 		component = new DurationComponent(this, name);

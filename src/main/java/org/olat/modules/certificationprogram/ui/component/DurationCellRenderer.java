@@ -68,17 +68,17 @@ public class DurationCellRenderer implements FlexiCellRenderer {
 			
 			if(duration.value() <= 1) {
 				switch(duration.unit()) {
-					case day: sb.append(transl.translate("unit.day")); break;
-					case week: sb.append(transl.translate("unit.week")); break;
-					case month: sb.append(transl.translate("unit.month")); break;
-					case year: sb.append(transl.translate("unit.year")); break;
+					case day: sb.append(transl.translate("unit.concatenation.day")); break;
+					case week: sb.append(transl.translate("unit.concatenation.week")); break;
+					case month: sb.append(transl.translate("unit.concatenation.month")); break;
+					case year: sb.append(transl.translate("unit.concatenation.year")); break;
 				}
 			} else {
 				switch(duration.unit()) {
-					case day: sb.append(transl.translate("unit.days")); break;
-					case week: sb.append(transl.translate("unit.weeks")); break;
-					case month: sb.append(transl.translate("unit.months")); break;
-					case year: sb.append(transl.translate("unit.years")); break;
+					case day: sb.append(transl.translate("unit.concatenation.days")); break;
+					case week: sb.append(transl.translate("unit.concatenation.weeks")); break;
+					case month: sb.append(transl.translate("unit.concatenation.months")); break;
+					case year: sb.append(transl.translate("unit.concatenation.years")); break;
 				}
 			}
 		} catch (IOException e) {
