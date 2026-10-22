@@ -118,7 +118,8 @@ public class ApiAuditLogAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ApiAuditLogCols.identity,
 				UserDisplayNameCellRenderer.get()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ApiAuditLogCols.loginAttempt));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ApiAuditLogCols.authProvider));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ApiAuditLogCols.authProvider,
+				new ApiAuditAuthenticationPorviderCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ApiAuditLogCols.ip));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ApiAuditLogCols.userAgent));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ApiAuditLogCols.method));

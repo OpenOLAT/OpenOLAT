@@ -331,6 +331,16 @@ form .o_form, form.o_form {
 		margin-top: 0;
 	}
 	
+	.form-control-static.o_code {
+  		font-family: $font-family-monospace;
+  		padding-left: 4px;
+  		padding-right: 4px;
+  		color: $pre-color;
+  		background-color: $pre-bg;
+  		border-radius: $border-radius-base;
+  		border: 1px solid $pre-border-color;
+	}
+	
 	.o_form_two_cols input.o_form_number {
 		width: auto;
 	}
