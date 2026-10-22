@@ -92,7 +92,7 @@ public class TeamsModule extends AbstractSpringModule implements ConfigOnOff {
 	@Value("${vc.teams.permanent.meetings:true}")
 	private String permanentMeetingsEnabled;
 	
-	@Value("${vc.teams.recording:true}")
+	@Value("${vc.teams.recording:false}")
 	private String recordingsEnabled;
 	@Value("${vc.teams.recording.default:false}")
 	private String recordingsDefault;
