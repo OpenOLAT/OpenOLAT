@@ -110,12 +110,20 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 					.withMessageTranslated(translate("no.feed.resource.selected"))
 					.withDescTranslated(translate("no.feed.resource.selected.text"))
 					.withIconCss("o_icon o_blog_icon")
+					.withPrimaryButton("o_icon_search", "select", null)
+					.withSecondaryButton("o_icon_add", "create", null, "create")
+					.withSecondaryButton("o_icon_import", "import", null, "import")
+					.withSecondaryButton("o_icon_link", "cmd.import.url.ressource", null, "import.url")
 					.build();
 		} else {
 			emptyStateConfig = EmptyStateConfig.builder()
 					.withMessageTranslated(translate("no.feed.resource.selected"))
 					.withDescTranslated(translate("no.feed.resource.selected.text"))
 					.withIconCss("o_icon o_podcast_icon")
+					.withPrimaryButton("o_icon_search", "select", null)
+					.withSecondaryButton("o_icon_add", "create", null, "create")
+					.withSecondaryButton("o_icon_import", "import", null, "import")
+					.withSecondaryButton("o_icon_link", "cmd.import.url.ressource", null, "import.url")
 					.build();
 		}
 
