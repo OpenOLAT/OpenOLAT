@@ -25,27 +25,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Organisation;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.course.duedate.DueDateConfig;
@@ -65,7 +60,6 @@ import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.repository.RepositoryCoachCandidates;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,18 +77,13 @@ public class FormConfigController extends FormBasicController implements Referen
 	
 	private static final String[] ON_KEYS = new String[]{ "on" };
 
-	private FormLink evaluationFormLink;
-	private FormLink replaceLink;
-	private FormLink editLink;
 	private FormToggle multiExecutionEl;
 	private MultipleSelectionElement relativeDatesEl;
 	private DueDateConfigFormItem participationDeadlineEl;
 	private MultipleSelectionElement confirmationEl;
 	private TextElement externalMailTextEl;
 	private MultipleSelectionElement reportUserEl;
-	
-	private CloseableModalController cmc;
-	private ReferencableEntriesSearchController searchCtrl;
+
 	private LayoutMain3ColsPreviewController previewCtr;
 	
 	private final IconPanelLabelTextContent iconPanelContent;
@@ -159,17 +148,7 @@ public class FormConfigController extends FormBasicController implements Referen
 		setFormTitle("edit.title");
 		setFormContextHelp("manual_user/learningresources/Course_Element_Form/");
 		formLayout.setElementCssClass("o_sel_form_config_form");
-		
-		evaluationFormLink = uifactory.addFormLink("edit.evaluation.form", "", translate("edit.evaluation.form"), formLayout,
-				Link.NONTRANSLATED);
-		evaluationFormLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
-		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("eva.buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
-		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, Link.BUTTON_XSMALL);
-		editLink = uifactory.addFormLink("edit.edit", buttonsCont, Link.BUTTON_XSMALL);
-		
+
 		multiExecutionEl = uifactory.addToggleButton("multi.execution", "edit.multi.execution", translate("on"), translate("off"), formLayout);
 		multiExecutionEl.toggle(config.getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION));
 		
@@ -233,21 +212,9 @@ public class FormConfigController extends FormBasicController implements Referen
 	}
 	
 	private void updateUI() {
-		boolean replacePossible = formManager.isFormUpdateable(survey);
-		boolean formSelected = formEntry != null;
-		
 		if (survey != null && formEntry == null) {
 			showError("error.repo.entry.missing");
 		}
-		
-		if (formEntry != null) {
-			String displayname = StringHelper.escapeHtml(formEntry.getDisplayname());
-			evaluationFormLink.setI18nKey(displayname);
-			flc.setDirty(true);
-		}
-		evaluationFormLink.setVisible(formSelected);
-		replaceLink.setVisible(formSelected && replacePossible);
-		editLink.setVisible(formSelected);
 		externalMailTextEl.setVisible(confirmationEl.isKeySelected(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL));
 		
 		reportUserEl.setVisible(confirmationEl.isAtLeastSelected(1));
@@ -263,13 +230,7 @@ public class FormConfigController extends FormBasicController implements Referen
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == replaceLink) {
-			doChooseEvaluationForm(ureq);
-		} else if (source == editLink) {
-			doEditEvaluationForm(ureq);
-		} else if (source == evaluationFormLink) {
-			doPreviewEvaluationForm(ureq);
-		} else if(relativeDatesEl == source) {
+		if (relativeDatesEl == source) {
 			updateParticipationDeadlineUI();
 		} else if (reportUserEl == source) {
 			reportUserEmail = reportUserEl.isAtLeastSelected(1);
@@ -286,15 +247,7 @@ public class FormConfigController extends FormBasicController implements Referen
 			} else if (event == RepositoryEntryReferenceController.PREVIEW_EVENT) {
 				doPreviewEvaluationForm(ureq);
 			}
-		} else if (searchCtrl == source) {
-			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				doReplaceEvaluationForm();
-			}
-			cmc.deactivate();
-			cleanUp();
 		} else if (source == previewCtr) {
-			cleanUp();
-		} else if (cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -302,30 +255,7 @@ public class FormConfigController extends FormBasicController implements Referen
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(previewCtr);
-		removeAsListenerAndDispose(searchCtrl);
-		removeAsListenerAndDispose(cmc);
 		previewCtr = null;
-		searchCtrl = null;
-		cmc = null;
-	}
-
-	private void doChooseEvaluationForm(UserRequest ureq) {
-		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
-		searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				EvaluationFormResource.TYPE_NAME, defaultOrganisations, translate("edit.choose.evaluation.form"));
-		this.listenTo(searchCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				searchCtrl.getInitialComponent(), true, translate("edit.choose.evaluation.form"));
-		cmc.activate();
-	}
-
-	private void doReplaceEvaluationForm() {
-		RepositoryEntry selectedFormEntry = searchCtrl.getSelectedEntry();
-		if (selectedFormEntry != null) {
-			this.formEntry = selectedFormEntry;
-			updateUI();
-			markDirty();
-		}
 	}
 
 	private void doChangeEvaluationForm(UserRequest ureq, RepositoryEntry newFormEntry) {
@@ -339,15 +269,6 @@ public class FormConfigController extends FormBasicController implements Referen
 		SurveyCourseNode.setEvaluationFormReference(newFormEntry, config);
 		updateReferenceContentUI(newFormEntry);
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-	}
-
-	private void doEditEvaluationForm(UserRequest ureq) {
-		if (formEntry == null) {
-			showError("error.repo.entry.missing");
-		} else {
-			String bPath = "[RepositoryEntry:" + formEntry.getKey() + "][Editor:0]";
-			NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
-		}
 	}
 
 	private void doPreviewEvaluationForm(UserRequest ureq) {
@@ -389,11 +310,10 @@ public class FormConfigController extends FormBasicController implements Referen
 			allOk &= isValidEMail();
 		}
 
-		evaluationFormLink.clearError();
 		if (survey != null && formEntry != null) {
 			boolean isFormUpdateable = formManager.isFormUpdateable(survey);
 			if (!isFormUpdateable && !formEntry.getKey().equals(survey.getFormEntry().getKey())) {
-				evaluationFormLink.setErrorKey("error.repo.entry.not.replaceable");
+				showError("error.repo.entry.not.replaceable");
 				allOk &= false;
 			}
 		}
