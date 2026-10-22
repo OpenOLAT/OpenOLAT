@@ -46,6 +46,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
@@ -171,7 +172,27 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void testUploadTraversalFile() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		CourseWithBC courseWithBc = deployCourse();
+		
+		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").build();
+		
+		//create single page
+		URL fileUrl = CoursesFoldersTest.class.getResource("singlepage.html");
+		Assert.assertNotNull(fileUrl);
+		File file = new File(fileUrl.toURI());
+		
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addMultipart(method, "../../" + file.getName(), file);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(406, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
 
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testUploadFileWithSpecialCharacter() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 

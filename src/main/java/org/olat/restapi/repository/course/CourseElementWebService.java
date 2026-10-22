@@ -21,6 +21,7 @@
 package org.olat.restapi.repository.course;
 
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
 import java.io.File;
@@ -43,6 +44,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -217,6 +219,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			CustomConfigDelegate config = new StructureFullConfig(displayType, in, filename);
 			return update(courseId, nodeId, shortTitle, longTitle, description, objectives, instruction,
 					instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
+		} catch (WebApplicationException wex) {
+			throw wex;
 		} catch (Exception e) {
 			log.error("", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
@@ -281,6 +285,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			CustomConfigDelegate config = new StructureFullConfig(displayType, in, filename);
 			return attach(courseId, parentNodeId, "st", position, shortTitle, longTitle, description, objectives,
 					instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
+		} catch (WebApplicationException wex) {
+			throw wex;
 		} catch (Exception e) {
 			log.error("", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
@@ -385,6 +391,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			SinglePageCustomConfig config = new SinglePageCustomConfig(in, filename);
 			return update(courseId, nodeId, shortTitle, longTitle, description, objectives, instruction,
 					instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
+		} catch (WebApplicationException wex) {
+			throw wex;
 		} catch (Exception e) {
 			log.error("", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
@@ -482,6 +490,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			SinglePageCustomConfig config = new SinglePageCustomConfig(in, filename);
 			return attach(courseId, parentNodeId, "sp", position, shortTitle, longTitle, description, objectives,
 					instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
+		} catch (WebApplicationException wex) {
+			throw wex;
 		} catch (Exception e) {
 			log.error("", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
@@ -1461,16 +1471,17 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			String filename = reader.getValue("filename", "task");
 			String taskFolderPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course, parentNode.getCourseNode());
 			VFSContainer taskFolder = VFSManager.olatRootContainer(taskFolderPath, null);
+			if(filename != null && !taskFolder.isInPath(VFSManager.trimSlash(filename))) {
+				return Response.status(Status.NOT_ACCEPTABLE).build();
+			}
+			
 			VFSLeaf singleFile = (VFSLeaf)taskFolder.resolve(filename);
 			if (singleFile == null) {
 				singleFile = taskFolder.createChildLeaf(filename);
 			}
 			File file = reader.getFile();
 			if(file != null) {
-				in = new FileInputStream(file);
-				OutputStream out = singleFile.getOutputStream(false);
-				IOUtils.copy(in, out);
-				IOUtils.closeQuietly(out);
+				VFSManager.copyContent(file, singleFile, getIdentity(request));
 			} else {
 				return Response.status(Status.NOT_ACCEPTABLE).build();
 			}
@@ -2146,6 +2157,12 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		return getTestReportConfiguration(courseId, nodeId, request);
 	}
 	
+	private static boolean isSafeFilename(String name) {
+		if(name == null) return true;
+		String n = VFSManager.trimSlash(name);
+		return !n.startsWith("/") && !n.contains("..");
+	}
+	
 	public class ExternalPageCustomConfig implements CustomConfigDelegate {
 		private URL url;
 		
@@ -2385,7 +2402,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 
 		@Override
 		public boolean isValid() {
-			return true;
+			return isSafeFilename(filename);
 		}
 
 		@Override
@@ -2400,6 +2417,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			if(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(moduleConfig.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE))) {
 				if(in != null && StringHelper.containsNonWhitespace(filename)) {
 					VFSContainer rootContainer = course.getCourseFolderContainer();
+					if(filename != null && !rootContainer.isInPath(VFSManager.trimSlash(filename))) {
+						FileUtils.closeSafely(in);
+				    	throw new WebApplicationException(Status.NOT_ACCEPTABLE);
+					}
+					
 					VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve(filename);
 					if (singleFile == null) {
 						singleFile = rootContainer.createChildLeaf(filename);
@@ -2412,6 +2434,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 					FileUtils.closeSafely(in);
 				} else if (StringHelper.containsNonWhitespace(filename)) {
 					VFSContainer rootContainer = course.getCourseFolderContainer();
+					if(filename != null && !rootContainer.isInPath(VFSManager.trimSlash(filename))) {
+				    	throw new WebApplicationException(Status.NOT_ACCEPTABLE);
+					}
 					VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve(filename);
 					if(singleFile != null) {
 						moduleConfig.set(STCourseNodeEditController.CONFIG_KEY_FILE, "/" + filename);
@@ -2566,19 +2591,24 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		
 		@Override
 		public boolean isValid() {
-			return in != null || StringHelper.containsNonWhitespace(path);
+			return (in != null || StringHelper.containsNonWhitespace(path));
 		}
 
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			newNode.setDisplayOption(CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT);
 			VFSContainer rootContainer = course.getCourseFolderContainer();
-			VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve(filename);
-			if (singleFile == null) {
-				singleFile = rootContainer.createChildLeaf(filename);
-			}
-
 			if(in != null) {
+				if(filename != null && !rootContainer.isInPath(VFSManager.trimSlash(filename))) {
+					FileUtils.closeSafely(in);
+			    	throw new WebApplicationException(Status.NOT_ACCEPTABLE);
+				}
+				
+				VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve(filename);
+				if (singleFile == null) {
+					singleFile = rootContainer.createChildLeaf(filename);
+				}
+				
 				moduleConfig.set(SPEditController.CONFIG_KEY_FILE, "/" + filename);
 				
 				OutputStream out = singleFile.getOutputStream(false);
@@ -2595,6 +2625,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 					}
 				} else {
 					path = "/";
+				}
+				
+				String fullPath = path + filename;
+				if(!rootContainer.isInPath(VFSManager.trimSlash(fullPath))) {
+			    	throw new WebApplicationException(Status.NOT_ACCEPTABLE);
 				}
 				moduleConfig.set(SPEditController.CONFIG_KEY_FILE, path + filename);
 			}

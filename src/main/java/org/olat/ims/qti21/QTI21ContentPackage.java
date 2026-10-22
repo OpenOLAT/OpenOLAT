@@ -45,13 +45,18 @@ import java.util.List;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathFactory;
 
+import org.olat.core.util.xml.XMLFactories;
+import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class QTI21ContentPackage {
 	public static final String MANIFEST_FILE_NAME = "imsmanifest.xml";
@@ -185,14 +190,16 @@ public class QTI21ContentPackage {
 		return result;
 	}
 
-	private NodeList getNodeList(String expression) {
+	private NodeList getNodeList(String expression)  {
 		try (InputStream input=Files.newInputStream(manifestFile)) {
+			DocumentBuilderFactory factory = XMLFactories.newDocumentBuilderFactory();
+			factory.setNamespaceAware(true);
+			Document document = factory.newDocumentBuilder().parse(new InputSource(input));
+			
 			XPath xpath = XPathFactory.newInstance().newXPath();
 			xpath.setNamespaceContext(new QTINamespaceContext());
-			InputSource source = new InputSource(input);
-
-			return (NodeList) xpath.evaluate(expression, source, XPathConstants.NODESET);
-		} catch (IOException | XPathException ex) {
+			return (NodeList) xpath.evaluate(expression, document, XPathConstants.NODESET);
+		} catch (IOException | XPathException | ParserConfigurationException | SAXException ex) {
 			throw new RuntimeException("", ex);
 		}
 	}
