@@ -402,7 +402,7 @@ public class ForumTest extends OlatRestTestCase {
 		HttpPost attachMethod = conn.createPost(attachUri, MediaType.APPLICATION_JSON);
 		conn.addMultipart(attachMethod, "../../portrait.jpg", portrait);
 		HttpResponse attachResponse = conn.execute(attachMethod);
-		assertEquals(200, attachResponse.getStatusLine().getStatusCode());
+		assertEquals(406, attachResponse.getStatusLine().getStatusCode());
 		
 		//check if the file exists
 		VFSContainer container = forumManager.getMessageContainer(message.getForumKey(), message.getKey());

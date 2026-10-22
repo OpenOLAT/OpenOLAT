@@ -75,6 +75,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -2013,6 +2014,58 @@ public class UserMgmtTest extends OlatRestTestCase {
 		assertNotNull(files);
 		assertFalse(files.isEmpty());
 		assertEquals(2, files.size()); //private and public
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testUserPersonalFolderUpload() throws Exception {
+		RestConnection conn = new RestConnection(id1);
+		
+		URL fileUrl = CoursesFoldersTest.class.getResource("singlepage.html");
+		Assert.assertNotNull(fileUrl);
+		File file = new File(fileUrl.toURI());
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
+				.path("personal").path("private").build();
+
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addMultipart(method, file.getName(), file);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		Roles roles = Roles.userRoles();
+		VFSContainer myFolder = new BriefcaseWebDAVProvider().getContainer(id1.getIdentity(), roles);
+		VFSItem item = myFolder.resolve("private/singlepage.html");
+		Assert.assertNotNull(item);
+		Assert.assertTrue(item instanceof VFSLeaf);
+		Assert.assertTrue(item.exists());
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testUserPersonalFolderTraversalUpload() throws Exception {
+		RestConnection conn = new RestConnection(id1);
+		
+		URL fileUrl = CoursesFoldersTest.class.getResource("singlepage.html");
+		Assert.assertNotNull(fileUrl);
+		File file = new File(fileUrl.toURI());
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
+				.path("personal").path("private").build();
+
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addMultipart(method, "../public/" + file.getName(), file);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(406, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		Roles roles = Roles.userRoles();
+		VFSContainer myFolder = new BriefcaseWebDAVProvider().getContainer(id1.getIdentity(), roles);
+		VFSItem item = myFolder.resolve("public/singlepage.html");
+		Assert.assertNull(item);
+		
 		conn.shutdown();
 	}
 	
