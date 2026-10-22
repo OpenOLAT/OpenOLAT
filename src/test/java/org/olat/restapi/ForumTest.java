@@ -185,6 +185,26 @@ public class ForumTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void testGetThreadTraversal() throws IOException, URISyntaxException  {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
+		Forum otherForum = forumManager.addAForum();
+		Message o1 = forumManager.createMessage(otherForum, id1.getIdentity(), false);
+		o1.setTitle("Traversal-2");
+		o1.setBody("Body of Traversal-2");
+		o1 = forumManager.addTopMessage(o1);
+		dbInstance.commitAndCloseSession();
+		
+		URI uri = getForumUriBuilder().path("posts").path(o1.getKey().toString()).build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(406, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testGetThreadWithPaging() throws IOException, URISyntaxException  {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		

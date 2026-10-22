@@ -297,7 +297,10 @@ public class ForumWebService {
 			@Context Request request) {
 		
 		if(forum == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
+		}
+		if(!fom.isMessageInForum(forum.getKey(), threadKey)) {
+			return Response.status(Status.NOT_ACCEPTABLE).build();
 		}
 
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {

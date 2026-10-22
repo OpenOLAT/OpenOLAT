@@ -399,6 +399,21 @@ public class ForumManager {
 				? false : messages.get(0).longValue() > -1;
 	}
 	
+	public boolean isMessageInForum(Long forumKey, Long messageKey) {
+		String query = """
+			select msg.key from fomessage as msg
+		    where msg.forum.key=:forumKey and msg.key=:messageKey""";
+		
+		List<Number> messages = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Number.class)
+				.setParameter("messageKey", messageKey)
+				.setParameter("forumKey", forumKey)
+				.setFirstResult(0).setMaxResults(1)
+				.getResultList();
+		return  messages != null && !messages.isEmpty()
+				&& messages.get(0) != null && messages.get(0).longValue() > 0;
+	}
+	
 	public Message getMessageById(Long messageKey) {
 		StringBuilder query = new StringBuilder();
 		query.append("select msg from fomessage as msg")
