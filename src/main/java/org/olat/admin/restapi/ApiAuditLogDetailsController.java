@@ -21,9 +21,11 @@ package org.olat.admin.restapi;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.audit.ApiAuditLog;
@@ -91,7 +93,9 @@ public class ApiAuditLogDetailsController extends FormBasicController {
 			return;
 		}
 		String escaped = StringHelper.escapeHtml(value);
-		uifactory.addStaticTextElement(name, i18nLabel, "<pre class=\"o_code\">" + escaped + "</pre>", formLayout);
+		StaticTextElement codeEl = uifactory.addStaticTextElement(name, i18nLabel, escaped, formLayout);
+		codeEl.setDomWrapperElement(DomWrapperElement.div);
+		codeEl.setElementCssClass("o_code");
 	}
 	
 	@Override
