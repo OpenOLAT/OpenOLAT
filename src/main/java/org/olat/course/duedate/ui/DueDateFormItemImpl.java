@@ -247,7 +247,10 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 
 	@Override
 	public void setRelative(boolean relative) {
-		this.relative = relative;
+		if(this.relative != relative) {
+			this.relative = relative;
+			setComponentDirty();
+		}
 		clearError();
 	}
 
