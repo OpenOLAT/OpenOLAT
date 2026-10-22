@@ -175,6 +175,9 @@ public class IQConfigurationController extends BasicController implements Refere
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.test.resource.selected"))
 				.withIconCss("o_icon o_FileResource-IMSQTI21_icon")
+				.withPrimaryButton("o_icon_search", "select", null)
+				.withSecondaryButton("o_icon_add", "create", null, "create")
+				.withSecondaryButton("o_icon_import", "import", null, "import")
 				.build();
 		String selectionTitle = translate("select.test");
 		RepositoryEntry iqEntry = getIQReference();
