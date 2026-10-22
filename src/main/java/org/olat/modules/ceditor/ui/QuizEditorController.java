@@ -150,12 +150,12 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
-		commandsButton.setTitle("action.more");
+		commandsButton.setTitle(translate("action.more"));
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel upColumn = new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.up);
 		upColumn.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, UP_ACTION, null,
-				"o_icon o_icon o_icon-lg o_icon_move_up", translate("quit.up.title")), null));
+				"o_icon o_icon o_icon-lg o_icon_move_up", translate("quiz.up.title")), null));
 		upColumn.setIconHeader("o_icon o_icon o_icon-lg o_icon_move_up");
 		upColumn.setColumnCssClass("o_up");
 		upColumn.setAlwaysVisible(true);
@@ -163,7 +163,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		
 		DefaultFlexiColumnModel downColumn = new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.down);
 		downColumn.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, DOWN_ACTION, null,
-				"o_icon o_icon o_icon-lg o_icon_move_down", translate("quit.down.title")), null));
+				"o_icon o_icon o_icon-lg o_icon_move_down", translate("quiz.down.title")), null));
 		downColumn.setIconHeader("o_icon o_icon o_icon-lg o_icon_move_down");
 		downColumn.setColumnCssClass("o_down");
 		downColumn.setAlwaysVisible(true);
