@@ -229,7 +229,7 @@ public class MergeSource extends AbstractVirtualContainer {
 
 	@Override
 	public boolean isInPath(String path) {
-		return rootWriteContainer.isInPath(path);
+		return rootWriteContainer != null && rootWriteContainer.isInPath(path);
 	}
 
 	@Override

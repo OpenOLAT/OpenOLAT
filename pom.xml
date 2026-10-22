@@ -81,8 +81,8 @@
 		<io.undertow.ee>2.0.3.Final</io.undertow.ee>
 		<jackson.version>2.22.4</jackson.version>
 		<jackson.annotations.version>2.22</jackson.annotations.version>
-		<swagger.ui.version>5.33.2</swagger.ui.version>
-		<com.mysql.version>26.7.0</com.mysql.version>
+		<swagger.ui.version>5.34.0</swagger.ui.version>
+		<com.mysql.version>26.10.0</com.mysql.version>
 		<org.postgresql.version>42.7.14</org.postgresql.version>
 		<org.infinispan.version>16.2.3</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>

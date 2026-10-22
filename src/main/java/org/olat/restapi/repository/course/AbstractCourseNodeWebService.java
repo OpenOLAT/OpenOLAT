@@ -29,6 +29,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.support.ObjectFactory.get;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
@@ -126,6 +127,8 @@ public abstract class AbstractCourseNodeWebService {
 						nodeAccessType, position, identity);
 			}
 			return Response.ok(node).build();
+		} catch(WebApplicationException wex) {
+			throw wex;
 		} catch(Exception ex) {
 			log.error("Error while adding an enrolment building block", ex);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();

@@ -297,7 +297,10 @@ public class ForumWebService {
 			@Context Request request) {
 		
 		if(forum == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).build();
+		}
+		if(!fom.isMessageInForum(forum.getKey(), threadKey)) {
+			return Response.status(Status.NOT_ACCEPTABLE).build();
 		}
 
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
@@ -503,13 +506,17 @@ public class ForumWebService {
 		}
 		
 		VFSContainer container = fom.getMessageContainer(mess.getForum().getKey(), mess.getKey());
+		if(filename != null && !container.isInPath(VFSManager.trimSlash(filename))) {
+			return Response.status(Status.NOT_ACCEPTABLE).build();
+			
+		}
 		VFSItem item = container.resolve(filename);
-		if(item instanceof LocalFileImpl) {
+		if(item instanceof LocalFileImpl localItem) {
 			//local file -> the length is given to the client which is good
 			Date lastModified = new Date(item.getLastModified());
 			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
 			if(response == null) {
-				File attachment = ((LocalFileImpl)item).getBasefile();
+				File attachment = localItem.getBasefile();
 				String mimeType = WebappHelper.getMimeType(attachment.getName());
 				if (mimeType == null) mimeType = "application/octet-stream";
 				response = Response.ok(attachment).lastModified(lastModified).type(mimeType).cacheControl(cc);
@@ -628,6 +635,10 @@ public class ForumWebService {
 		}
 
 		VFSContainer container = fom.getMessageContainer(mess.getForum().getKey(), mess.getKey());
+		if(filename != null && !container.isInPath(VFSManager.trimSlash(filename))) {
+			return Response.status(Status.NOT_ACCEPTABLE).build();
+		}
+		
 		VFSItem item = container.resolve(filename);
 		VFSLeaf attachment = null;
 		if(item == null) {
