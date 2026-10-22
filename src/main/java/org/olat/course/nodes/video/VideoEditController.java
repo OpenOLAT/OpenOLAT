@@ -140,7 +140,11 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 		String selectionTitle = translate("select.video.learning.resource");
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.video.resource.selected"))
-				.withIconCss("o_icon o_FileResource-MOVIE_icon").build();
+				.withIconCss("o_icon o_FileResource-MOVIE_icon")
+				.withPrimaryButton("o_icon_search", "select", null)
+				.withSecondaryButton("o_icon_add", "import", null, "import")
+				.withSecondaryButton("o_icon_link", "cmd.import.url.ressource", null, "import.url")
+				.build();
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 		CourseNodeReferenceProvider referenceProvider = new CourseNodeReferenceProvider(repositoryService,
