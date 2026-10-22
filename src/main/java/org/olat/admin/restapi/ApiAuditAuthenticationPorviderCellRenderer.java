@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.mcp.McpTokenService;
 import org.olat.restapi.audit.ApiAuditLogService;
 
 /**
@@ -51,7 +52,7 @@ public class ApiAuditAuthenticationPorviderCellRenderer implements FlexiCellRend
 				case ApiAuditLogService.AUTH_TOKEN: target.append(translator.translate("auditlog.auth.token")); break;
 				case ApiAuditLogService.AUTH_SESSION: target.append(translator.translate("auditlog.auth.session")); break;
 				case ApiAuditLogService.AUTH_IP: target.append(translator.translate("auditlog.auth.ip")); break;
-				case "MCP": target.append(translator.translate("auditlog.auth.mcp")); break;
+				case McpTokenService.MCP_AUTH_PROVIDER: target.append(translator.translate("auditlog.auth.mcp")); break;
 				case ApiAuditLogService.AUTH_NONE: target.append(translator.translate("auditlog.auth.none")); break;
 				default: target.append(type);
 			}
