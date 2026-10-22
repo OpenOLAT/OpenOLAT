@@ -26,11 +26,13 @@
 package org.olat.course.nodes.scorm;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
@@ -45,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.IconPanelLabelTextContent;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -53,7 +56,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
@@ -62,6 +64,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
+import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -81,7 +84,8 @@ import org.olat.modules.scorm.ScormWrapperController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.ui.RepositoryEntryReferenceController;
+import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -92,7 +96,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Felix Jost
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class ScormEditController extends ActivateableTabbableDefaultController {
+public class ScormEditController extends ActivateableTabbableDefaultController implements ReferenceContentProvider {
 
 	public static final String PANE_TAB_CPCONFIG = "pane.tab.cpconfig";
 	private static final String PANE_TAB_DELIVERY = "pane.tab.delivery";
@@ -120,20 +124,14 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 	public static final String CONFIG_ADVANCESCORE = "advancescore";
 	public static final String CONFIG_ATTEMPTSDEPENDONSCORE = "scoreattampts";
 
-	private static final String VC_CHOSENCP = "chosencp";
-
 	private static final String[] paneKeys = { PANE_TAB_CPCONFIG };
 
-	// NLS support:
-	
-	private static final String NLS_NO_CP_CHOSEN = "no.cp.chosen";
-	
 	private Panel main;
 	private VelocityContainer cpConfigurationVc;
 
 	private ModuleConfiguration config;
-	private ReferencableEntriesSearchController searchController;
-	private CloseableModalController cmc;
+	private final IconPanelLabelTextContent iconPanelContent;
+	private final RepositoryEntryReferenceController referenceCtrl;
 	
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	private ScormCourseNode scormNode;
@@ -145,10 +143,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 
 	private VarForm scorevarform;
 
-	private Link previewLink;
-	private Link chooseCPButton;
-	private Link changeCPButton;
-	
 	@Autowired
 	private ScormMainManager scormMainManager;
 	@Autowired
@@ -167,45 +161,48 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 		main = new Panel("cpmain");
 		cpConfigurationVc = this.createVelocityContainer("edit");
 		
-		chooseCPButton = LinkFactory.createButtonSmall("command.select.import", cpConfigurationVc, this);
-		chooseCPButton.setElementCssClass("o_sel_scorm_choose_repofile");
-		changeCPButton = LinkFactory.createButtonSmall("command.replace", cpConfigurationVc, this);
-		changeCPButton.setElementCssClass("o_sel_scorm_change_repofile");
-		
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config, course);
 		listenTo(highScoreNodeConfigController);
 		
+		iconPanelContent = new IconPanelLabelTextContent("content");
+
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
+
+		RepositoryEntry scormEntry = null;
 		DeliveryOptions parentConfig = null;
 		if (config.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
-			// fetch repository entry to display the repository entry title of the
-			// chosen cp
-			RepositoryEntry re = getScormCPReference(config, false);
-			if (re == null) { // we cannot display the entries name, because the repository entry had been deleted 
-												// between the time when it was chosen here, and now				
+			scormEntry = getScormCPReference(config, false);
+			if (scormEntry == null) { // the repository entry had been deleted
 				showError("error.resource.deleted");
-				cpConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
-				cpConfigurationVc.contextPut(VC_CHOSENCP, translate(NLS_NO_CP_CHOSEN));
 			} else {
-				cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
-				String displayname = StringHelper.escapeHtml(re.getDisplayname());
-				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, cpConfigurationVc, this);
-				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
-				previewLink.setCustomEnabledLinkCSS("o_preview");
-				previewLink.setTitle(getTranslator().translate("command.preview"));
-				
-				ScormPackageConfig scormConfig = scormMainManager.getScormPackageConfig(re.getOlatResource());
+				ScormPackageConfig scormConfig = scormMainManager.getScormPackageConfig(scormEntry.getOlatResource());
 				parentConfig = scormConfig == null ? null : scormConfig.getDeliveryOptions();
+				updateReferenceContentUI(scormEntry);
 			}
-		} else {
-			// no valid config yet
-			cpConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
-			cpConfigurationVc.contextPut(VC_CHOSENCP, translate(NLS_NO_CP_CHOSEN));
 		}
 		
+		// Empty state config with Select/Import buttons inside the box (SCORM packages are imported, not created)
+		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+				.withMessageTranslated(translate("no.scorm.resource.selected"))
+				.withDescTranslated(translate("no.scorm.resource.selected.text"))
+				.withIconCss("o_icon o_FileResource-SCORMCP_icon")
+				.withPrimaryButton("o_icon_search o_sel_scorm_choose_repofile", "select", null)
+				.withSecondaryButton("o_icon_import", "import", null, "import")
+				.build();
+		ScormCourseNodeReferenceProvider referenceProvider = new ScormCourseNodeReferenceProvider(repositoryService,
+				List.of(ScormCPFileResource.TYPE_NAME), defaultOrganisations, emptyStateConfig,
+				translate("command.select"), this);
+		referenceCtrl = new RepositoryEntryReferenceController(ureq, wControl, scormEntry, referenceProvider);
+		listenTo(referenceCtrl);
+
+		// Render the reference controller (empty state or card) in the velocity container
+		cpConfigurationVc.put("reference", referenceCtrl.getInitialComponent());
+
 		// add the form for choosing the score variable
 		boolean showMenu = config.getBooleanSafe(CONFIG_SHOWMENU, true);
 		boolean showNavButtons = config.getBooleanSafe(CONFIG_SHOWNAVBUTTONS, true);
-		boolean skipLaunchPage = config.getBooleanSafe(CONFIG_SKIPLAUNCHPAGE,false);
+		boolean skipLaunchPage = config.getBooleanSafe(CONFIG_SKIPLAUNCHPAGE, false);
 		
 		boolean assessable = config.getBooleanSafe(CONFIG_ISASSESSABLE, true);
 		String assessableType = null;
@@ -227,7 +224,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 		boolean fullWindowWidthHeightWithBack = config.getBooleanSafe(CONFIG_FULLWINDOW_WIDTH_HEIGHT_WITH_BACK, false);
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
 		
-		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		boolean hasAssessments = assessmentService.hasAssessments(courseEntry, scormNode.getIdent());
 
 		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons, assessableType, maxScore,
@@ -247,72 +243,20 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == chooseCPButton || source == changeCPButton) { // those must be links
-			removeAsListenerAndDispose(searchController);
-			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
-			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-					ScormCPFileResource.TYPE_NAME, defaultOrganisations, translate("command.select"));
-			listenTo(searchController);
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("command.select.import"));
-			listenTo(cmc);
-			cmc.activate();
-		} else if (source == previewLink){
-			// Preview as modal dialogue
-			// only if the config is valid
-			RepositoryEntry re = getScormCPReference(config, false);
-			if (re == null) { // we cannot preview it, because the repository entry
-												// had been deleted between the time when it was
-												// chosen here, and now				
-				showError("error.resource.deleted");
-			} else {
-				File cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
-				boolean showMenu = config.getBooleanSafe(CONFIG_SHOWMENU, true);
-				ScormDisplayEnum fullWindow = ScormDisplayEnum.fromConfiguration(config);
-				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
-				ScormWrapperController previewController = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(),
-						showMenu, cpRoot, null, course.getResourceableId().toString(), ScormConstants.SCORM_MODE_BROWSE,
-						ScormConstants.SCORM_MODE_NOCREDIT, null, true, false, fullWindow, true, null);				
-				// configure some display options
-				boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
-				previewController.showNavButtons(showNavButtons);
-				
-				DeliveryOptions deliveryOptions = deliveryOptionsCtrl.getOptionsForPreview();
-				previewController.setDeliveryOptions(deliveryOptions);
-				previewController.activate();
-			}
-		}
+		// No component-level events handled here; all SCORM resource events go through the reference controller.
 	}
 
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
-		if (source == searchController) {			
-			cmc.deactivate();
-			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) { 
-				// search controller done
-				RepositoryEntry re = searchController.getSelectedEntry();
-				if (re != null) {
-					setScormCPReference(re, config);
-					cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
-					String displayname = StringHelper.escapeHtml(re.getDisplayname());
-					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, cpConfigurationVc, this);
-					previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
-					previewLink.setCustomEnabledLinkCSS("o_preview");
-					previewLink.setTitle(getTranslator().translate("command.preview"));
-					// fire event so the updated config is saved by the
-					// editormaincontroller
-					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-					
-					ScormPackageConfig scormConfig = scormMainManager.getScormPackageConfig(re.getOlatResource());
-					DeliveryOptions parentConfig = scormConfig == null ? null : scormConfig.getDeliveryOptions();
-					deliveryOptionsCtrl.setParentDeliveryOptions(parentConfig);
-				}
-				// else cancelled repo search
+		if (source == referenceCtrl) {
+			if (event == RepositoryEntryReferenceController.SELECTION_EVENT) {
+				doChangeScormCP(urequest, referenceCtrl.getRepositoryEntry());
+			} else if (event == RepositoryEntryReferenceController.PREVIEW_EVENT) {
+				doPreviewScormCP(urequest);
 			}
 		} else if (source == scorevarform) {
 			if (event == Event.DONE_EVENT) {
-				//save form-values to config
+				// save form-values to config
 				
 				config.setBooleanEntry(CONFIG_SKIPLAUNCHPAGE, scorevarform.isSkipLaunchPage());
 				config.setBooleanEntry(CONFIG_CLOSE_ON_FINISH, scorevarform.isCloseOnFinish());
@@ -324,7 +268,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 				boolean ignoreInCourseAssessment = scorevarform.isIgnoreInCourseAssessment();
 				config.setBooleanEntry(CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 				boolean scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
-				if(ignoreInCourseAssessment || !scoreScalingEnabled
+				if (ignoreInCourseAssessment || !scoreScalingEnabled
 						|| ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED.equals(assessmentType)) {
 					config.remove(MSCourseNode.CONFIG_KEY_SCORE_SCALING);
 				} else {
@@ -350,23 +294,71 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				fireEvent(urequest, NodeEditController.REMINDER_VISIBILITY_EVENT);
 			}
-		} else if(source == deliveryOptionsCtrl) {
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+		} else if (source == deliveryOptionsCtrl) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				config.set(CONFIG_DELIVERY_OPTIONS, deliveryOptionsCtrl.getDeliveryOptions());
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (source == highScoreNodeConfigController){
+		} else if (source == highScoreNodeConfigController) {
 			if (event == Event.DONE_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}
 	}
 	
+	private void doChangeScormCP(UserRequest ureq, RepositoryEntry newScormEntry) {
+		if (newScormEntry == null) {
+			return;
+		}
+		setScormCPReference(newScormEntry, config);
+		// fire event so the updated config is saved by the editormaincontroller
+		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+
+		ScormPackageConfig scormConfig = scormMainManager.getScormPackageConfig(newScormEntry.getOlatResource());
+		DeliveryOptions parentConfig = scormConfig == null ? null : scormConfig.getDeliveryOptions();
+		deliveryOptionsCtrl.setParentDeliveryOptions(parentConfig);
+
+		updateReferenceContentUI(newScormEntry);
+	}
+
+	private void doPreviewScormCP(UserRequest ureq) {
+		RepositoryEntry re = getScormCPReference(config, false);
+		if (re == null) { // we cannot preview it, because the repository entry
+			// had been deleted between the time when it was
+			// chosen here, and now
+			showError("error.resource.deleted");
+		} else {
+			File cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
+			boolean showMenu = config.getBooleanSafe(CONFIG_SHOWMENU, true);
+			ScormDisplayEnum fullWindow = ScormDisplayEnum.fromConfiguration(config);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
+			ScormWrapperController previewController = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(),
+					showMenu, cpRoot, null, course.getResourceableId().toString(), ScormConstants.SCORM_MODE_BROWSE,
+					ScormConstants.SCORM_MODE_NOCREDIT, null, true, false, fullWindow, true, null);
+			// configure some display options
+			boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
+			previewController.showNavButtons(showNavButtons);
+
+			DeliveryOptions deliveryOptions = deliveryOptionsCtrl.getOptionsForPreview();
+			previewController.setDeliveryOptions(deliveryOptions);
+			previewController.activate();
+		}
+	}
+
 	private void updateHighscoreTab() {
 		if (highScoreNodeConfigController != null) {
-			Boolean sf = scormNode.getModuleConfiguration().getBooleanSafe(CONFIG_ISASSESSABLE,true);
+			Boolean sf = scormNode.getModuleConfiguration().getBooleanSafe(CONFIG_ISASSESSABLE, true);
 			myTabbedPane.setEnabled(myTabbedPane.indexOfTab(highScoreNodeConfigController.getInitialComponent()), sf);
 		}
+	}
+
+	private void updateReferenceContentUI(RepositoryEntry repositoryEntry) {
+		List<IconPanelLabelTextContent.LabelText> labelTexts = new ArrayList<>(1);
+		int maxScore = config.getIntegerSafe(CONFIG_KEY_MAX_SCORE, -1);
+		if (maxScore >= 0) {
+			labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("achievable.score"), String.valueOf(maxScore)));
+		}
+		iconPanelContent.setLabelTexts(labelTexts);
 	}
 
 	@Override
@@ -417,416 +409,451 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 	public TabbedPane getTabbedPane() {
 		return myTabbedPane;
 	}
-}
 
-class VarForm extends FormBasicController {
-	private static final int IDX_DON_T_TRANSFER_SCORING_INFORMATION = 0;
-	private static final int IDX_TRANSFER_SCORE_VALUE = 1;
-	private static final int IDX_TRANSFER_PASSED_VALUE = 2;
-
-	private SingleSelection fullWindowEl;
-	private SelectionElement showMenuEl;
-	private SelectionElement showNavButtonsEl;
-	private SelectionElement closeOnFinishEl;
-	private SingleSelection isAssessableEl;
-	private SelectionElement skipLaunchPageEl;
-	private TextElement maxScoreEl;
-	private TextElement cutValueEl;
-	private FormToggle incorporateInCourseAssessmentEl;
-	private TextElement scoreScalingEl;
-	private SpacerElement spacerAfterInclude;
-	private SingleSelection attemptsEl;
-	private MultipleSelectionElement advanceScoreEl;
-	private MultipleSelectionElement scoreAttemptsEl;
-	private Link enableEditingLink;
-	private FormSubmit saveButton;
-	private FormLayoutContainer warningCont;
-	private FormLayoutContainer gradingCont;
-
-	private boolean showMenu;
-	private boolean showNavButtons;
-	private boolean skipLaunchPage;
-	private String assessableType;
-	private Integer maxScore;
-	private int cutValue;
-	private final boolean ignoreInCourseAssessmentAvailable;
-	private final boolean scoreScalingEnabled;
-	private boolean ignoreInCourseAssessment;
-	private boolean fullWindow;
-	private boolean fullWindowWidthHeight;
-	private boolean fullWindowWidthHeightWithBack;
-	private boolean closeOnFinish;
-	private String[] assessableKeys;
-	private String[] assessableValues;
-	private String scoreScaling;
-	
-	private boolean advanceScore;
-	private boolean scoreAttempts;
-	private int maxattempts;
-	private final boolean hasAssessments;
-
-	public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage,
-			boolean showNavButtons, String assessableType, int maxScore, int cutValue,
-			boolean ignoreInCourseAssessmentAvailable, boolean ignoreInCourseAssessment,
-			boolean scoreScalingEnabled, String scoreScaling,
-			boolean fullWindow, boolean fullWindowWidthHeight, boolean fullWindowWidthHeightWithBack,
-			boolean closeOnFinish, int maxattempts, boolean advanceScore, boolean attemptsDependOnScore,
-			boolean hasAssessments) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
-		this.hasAssessments = hasAssessments;
-		this.showMenu = showMenu;
-		this.skipLaunchPage = skipLaunchPage;
-		this.showNavButtons = showNavButtons;
-		this.assessableType = assessableType;
-		this.maxScore = maxScore;
-		this.cutValue = cutValue;
-		this.ignoreInCourseAssessmentAvailable = ignoreInCourseAssessmentAvailable;
-		this.ignoreInCourseAssessment = ignoreInCourseAssessment;
-		this.scoreScaling = scoreScaling;
-		this.scoreScalingEnabled = scoreScalingEnabled;
-		this.fullWindow = fullWindow;
-		this.fullWindowWidthHeight = fullWindowWidthHeight;
-		this.fullWindowWidthHeightWithBack = fullWindowWidthHeightWithBack;
-		this.closeOnFinish = closeOnFinish;
-
-		this.advanceScore = advanceScore;
-		this.scoreAttempts = attemptsDependOnScore;
-		this.maxattempts = maxattempts;
-		
-		assessableKeys = new String[]{
-				"off", ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE, ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED
-			};
-		assessableValues = new String[] {
-				translate("assessable.type.none"), translate("assessable.type.score"), translate("assessable.type.passed")
-			};
-		initForm (ureq);
-		updateUI();
-		if (hasAssessments) {
-			setDisplayOnly(true);
-		}
-	}
-	
-	public Integer getMaxScore() {
-		String val = maxScoreEl.getValue();
-		if(StringHelper.containsNonWhitespace(val) && StringHelper.isLong(val)) {
-			return Integer.parseInt(val);
-		}
-		return -1;
-	}
-
-	public int getCutValue() {
-		String val = cutValueEl.getValue();
-		if(StringHelper.containsNonWhitespace(val) && StringHelper.isLong(val)) {
-			return Integer.parseInt(val);
-		}
-		return 0;
-	}
-	
-	public boolean isIgnoreInCourseAssessment() {
-		return incorporateInCourseAssessmentEl.isVisible() && !incorporateInCourseAssessmentEl.isOn();
-	}
-	
-	public String getScoreScaling() {
-		return scoreScalingEl.getValue();
-	}
-	
-	public boolean isFullWindow() {
-		return fullWindowEl.isOneSelected() && "fullwindow".equals(fullWindowEl.getSelectedKey());
-	}
-	
-	public boolean isFullWindowWidthHeight() {
-		return fullWindowEl.isOneSelected() && "fullwidthheight".equals(fullWindowEl.getSelectedKey());
-	}
-	
-	public boolean isFullWindowWidthHeightWithBack() {
-		return fullWindowEl.isOneSelected() && "fullwidthheightwithback".equals(fullWindowEl.getSelectedKey());
-	}
-	
-	public boolean isCloseOnFinish() {
-		return closeOnFinishEl.isMultiselect() && closeOnFinishEl.isSelected(0);
-	}
-
-	public boolean isShowMenu() {
-		return showMenuEl.isVisible() && showMenuEl.isSelected(0);
-	}
-	
-	public boolean isSkipLaunchPage() {
-		return skipLaunchPageEl.isSelected(0);
-	}
-
-	public boolean isShowNavButtons() {
-		return showNavButtonsEl.isVisible() && showNavButtonsEl.isSelected(0);
-	}
-
-	public boolean isAssessable() {
-		return !isAssessableEl.isSelected(IDX_DON_T_TRANSFER_SCORING_INFORMATION);
-	}
-	
-	public String getAssessableType() {
-		if(isAssessableEl.isSelected(IDX_DON_T_TRANSFER_SCORING_INFORMATION)) {
-			return null;
-		} else if(isAssessableEl.isSelected(IDX_TRANSFER_SCORE_VALUE)) {
-			return ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE;
-		} else if(isAssessableEl.isSelected(IDX_TRANSFER_PASSED_VALUE)) {
-			return ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED;
-		}
-		return null;
-	}
-	
 	@Override
-	protected void formOK(UserRequest ureq) {
-		fireEvent (ureq, Event.DONE_EVENT);
+	public Component getContent(RepositoryEntry repositoryEntry) {
+		return iconPanelContent;
 	}
 
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == enableEditingLink) {
-			setDisplayOnly(false);
-			warningCont.contextPut("isOverwriting", true);
-		}
-		super.event(ureq, source, event);
+	public void refresh(Component cmp, RepositoryEntry repositoryEntry) {
+		// Refresh is handled on change event.
 	}
 
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(isAssessableEl == source || advanceScoreEl == source
-				|| fullWindowEl == source || incorporateInCourseAssessmentEl == source) {
+	class VarForm extends FormBasicController {
+		private static final int IDX_DON_T_TRANSFER_SCORING_INFORMATION = 0;
+		private static final int IDX_TRANSFER_SCORE_VALUE = 1;
+		private static final int IDX_TRANSFER_PASSED_VALUE = 2;
+
+		private SingleSelection fullWindowEl;
+		private SelectionElement showMenuEl;
+		private SelectionElement showNavButtonsEl;
+		private SelectionElement closeOnFinishEl;
+		private SingleSelection isAssessableEl;
+		private SelectionElement skipLaunchPageEl;
+		private TextElement maxScoreEl;
+		private TextElement cutValueEl;
+		private FormToggle incorporateInCourseAssessmentEl;
+		private TextElement scoreScalingEl;
+		private SpacerElement spacerAfterInclude;
+		private SingleSelection attemptsEl;
+		private MultipleSelectionElement advanceScoreEl;
+		private MultipleSelectionElement scoreAttemptsEl;
+		private Link enableEditingLink;
+		private FormSubmit saveButton;
+		private FormLayoutContainer warningCont;
+		private FormLayoutContainer gradingCont;
+
+		private boolean showMenu;
+		private boolean showNavButtons;
+		private boolean skipLaunchPage;
+		private String assessableType;
+		private Integer maxScore;
+		private int cutValue;
+		private final boolean ignoreInCourseAssessmentAvailable;
+		private final boolean scoreScalingEnabled;
+		private boolean ignoreInCourseAssessment;
+		private boolean fullWindow;
+		private boolean fullWindowWidthHeight;
+		private boolean fullWindowWidthHeightWithBack;
+		private boolean closeOnFinish;
+		private String[] assessableKeys;
+		private String[] assessableValues;
+		private String scoreScaling;
+
+		private boolean advanceScore;
+		private boolean scoreAttempts;
+		private int maxattempts;
+		private final boolean hasAssessments;
+
+		public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage,
+				boolean showNavButtons, String assessableType, int maxScore, int cutValue,
+				boolean ignoreInCourseAssessmentAvailable, boolean ignoreInCourseAssessment,
+				boolean scoreScalingEnabled, String scoreScaling,
+				boolean fullWindow, boolean fullWindowWidthHeight, boolean fullWindowWidthHeightWithBack,
+				boolean closeOnFinish, int maxattempts, boolean advanceScore, boolean attemptsDependOnScore,
+				boolean hasAssessments) {
+			super(ureq, wControl, LAYOUT_VERTICAL);
+			this.hasAssessments = hasAssessments;
+			this.showMenu = showMenu;
+			this.skipLaunchPage = skipLaunchPage;
+			this.showNavButtons = showNavButtons;
+			this.assessableType = assessableType;
+			this.maxScore = maxScore;
+			this.cutValue = cutValue;
+			this.ignoreInCourseAssessmentAvailable = ignoreInCourseAssessmentAvailable;
+			this.ignoreInCourseAssessment = ignoreInCourseAssessment;
+			this.scoreScaling = scoreScaling;
+			this.scoreScalingEnabled = scoreScalingEnabled;
+			this.fullWindow = fullWindow;
+			this.fullWindowWidthHeight = fullWindowWidthHeight;
+			this.fullWindowWidthHeightWithBack = fullWindowWidthHeightWithBack;
+			this.closeOnFinish = closeOnFinish;
+
+			this.advanceScore = advanceScore;
+			this.scoreAttempts = attemptsDependOnScore;
+			this.maxattempts = maxattempts;
+
+			assessableKeys = new String[]{
+					"off", ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE, ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED
+				};
+			assessableValues = new String[] {
+					translate("assessable.type.none"), translate("assessable.type.score"), translate("assessable.type.passed")
+				};
+			initForm(ureq);
 			updateUI();
-			markDirty();
+			if (hasAssessments) {
+				setDisplayOnly(true);
+			}
 		}
-		super.formInnerEvent(ureq, source, event);
-	}
 
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-		
-		maxScoreEl.clearError();
-		if(maxScoreEl.isVisible() && maxScoreEl.isEnabled()) {
-			if(StringHelper.containsNonWhitespace(maxScoreEl.getValue())) {
-				try {
-					int score = Integer.parseInt(maxScoreEl.getValue());
-					if (score < 0 || score > 100) {
+		public Integer getMaxScore() {
+			String val = maxScoreEl.getValue();
+			if (StringHelper.containsNonWhitespace(val) && StringHelper.isLong(val)) {
+				return Integer.parseInt(val);
+			}
+			return -1;
+		}
+
+		public int getCutValue() {
+			String val = cutValueEl.getValue();
+			if (StringHelper.containsNonWhitespace(val) && StringHelper.isLong(val)) {
+				return Integer.parseInt(val);
+			}
+			return 0;
+		}
+
+		public boolean isIgnoreInCourseAssessment() {
+			return incorporateInCourseAssessmentEl.isVisible() && !incorporateInCourseAssessmentEl.isOn();
+		}
+
+		public String getScoreScaling() {
+			return scoreScalingEl.getValue();
+		}
+
+		public boolean isFullWindow() {
+			return fullWindowEl.isOneSelected() && "fullwindow".equals(fullWindowEl.getSelectedKey());
+		}
+
+		public boolean isFullWindowWidthHeight() {
+			return fullWindowEl.isOneSelected() && "fullwidthheight".equals(fullWindowEl.getSelectedKey());
+		}
+
+		public boolean isFullWindowWidthHeightWithBack() {
+			return fullWindowEl.isOneSelected() && "fullwidthheightwithback".equals(fullWindowEl.getSelectedKey());
+		}
+
+		public boolean isCloseOnFinish() {
+			return closeOnFinishEl.isMultiselect() && closeOnFinishEl.isSelected(0);
+		}
+
+		public boolean isShowMenu() {
+			return showMenuEl.isVisible() && showMenuEl.isSelected(0);
+		}
+
+		public boolean isSkipLaunchPage() {
+			return skipLaunchPageEl.isSelected(0);
+		}
+
+		public boolean isShowNavButtons() {
+			return showNavButtonsEl.isVisible() && showNavButtonsEl.isSelected(0);
+		}
+
+		public boolean isAssessable() {
+			return !isAssessableEl.isSelected(IDX_DON_T_TRANSFER_SCORING_INFORMATION);
+		}
+
+		public String getAssessableType() {
+			if (isAssessableEl.isSelected(IDX_DON_T_TRANSFER_SCORING_INFORMATION)) {
+				return null;
+			} else if (isAssessableEl.isSelected(IDX_TRANSFER_SCORE_VALUE)) {
+				return ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE;
+			} else if (isAssessableEl.isSelected(IDX_TRANSFER_PASSED_VALUE)) {
+				return ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED;
+			}
+			return null;
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
+
+		@Override
+		public void event(UserRequest ureq, Component source, Event event) {
+			if (source == enableEditingLink) {
+				setDisplayOnly(false);
+				warningCont.contextPut("isOverwriting", true);
+			}
+			super.event(ureq, source, event);
+		}
+
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if (isAssessableEl == source || advanceScoreEl == source
+					|| fullWindowEl == source || incorporateInCourseAssessmentEl == source) {
+				updateUI();
+				markDirty();
+			}
+			super.formInnerEvent(ureq, source, event);
+		}
+
+		@Override
+		protected boolean validateFormLogic(UserRequest ureq) {
+			boolean allOk = super.validateFormLogic(ureq);
+
+			maxScoreEl.clearError();
+			if (maxScoreEl.isVisible() && maxScoreEl.isEnabled()) {
+				if (StringHelper.containsNonWhitespace(maxScoreEl.getValue())) {
+					try {
+						int score = Integer.parseInt(maxScoreEl.getValue());
+						if (score < 0 || score > 100) {
+							maxScoreEl.setErrorKey("max.score.validation");
+							allOk &= false;
+						}
+					} catch (NumberFormatException e) {
 						maxScoreEl.setErrorKey("max.score.validation");
 						allOk &= false;
 					}
-				} catch (NumberFormatException e) {
-					maxScoreEl.setErrorKey("max.score.validation");
-					allOk &= false;
 				}
 			}
-		}
-		
-		cutValueEl.clearError();
-		if(cutValueEl.isVisible() && cutValueEl.isEnabled()) {
-			if(StringHelper.containsNonWhitespace(cutValueEl.getValue())) {
-				try {
-					Integer.parseInt(cutValueEl.getValue());
-				} catch (NumberFormatException e) {
+
+			cutValueEl.clearError();
+			if (cutValueEl.isVisible() && cutValueEl.isEnabled()) {
+				if (StringHelper.containsNonWhitespace(cutValueEl.getValue())) {
+					try {
+						Integer.parseInt(cutValueEl.getValue());
+					} catch (NumberFormatException e) {
+						cutValueEl.setErrorKey("cutvalue.validation");
+						allOk &= false;
+					}
+				} else {
 					cutValueEl.setErrorKey("cutvalue.validation");
 					allOk &= false;
 				}
-			} else {
-				cutValueEl.setErrorKey("cutvalue.validation");
-				allOk &= false;
+			}
+
+			allOk &= ScoreScalingHelper.validateScoreScaling(scoreScalingEl);
+
+			return allOk;
+		}
+
+		private String decorateDescription(String i18nKey) {
+			return "<ul class='o_list_narrow'>" + translate(i18nKey) + "</ul>";
+		}
+
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			FormLayoutContainer configurationCont = uifactory.addDefaultFormLayout("configuration", null, formLayout);
+			initConfigurationForm(configurationCont);
+
+			initAssessmentWarning(formLayout);
+
+			gradingCont = uifactory.addDefaultFormLayout("config.grading", null, formLayout);
+			initGradingForm(gradingCont);
+		}
+
+		private void initAssessmentWarning(FormItemContainer formLayout) {
+			warningCont = FormLayoutContainer.createCustomFormLayout("warningCont", getTranslator(),
+					velocity_root + "/scorm_warning.html");
+			warningCont.setRootForm(mainForm);
+			formLayout.add(warningCont);
+
+			if (hasAssessments) {
+				enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", warningCont.getFormItemComponent(), this);
+				enableEditingLink.setPrimary(true);
+				enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
+				warningCont.contextPut("hasAssessments", true);
 			}
 		}
-		
-		allOk &= ScoreScalingHelper.validateScoreScaling(scoreScalingEl);
-		
-		return allOk;
-	}
-	
-	private String decorateDescription(String i18nKey) {
-		return "<ul class='o_list_narrow'>" + translate(i18nKey) + "</ul>";
-	}
 
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer configurationCont = uifactory.addDefaultFormLayout("configuration", null, formLayout);
-		initConfigurationForm(configurationCont);
-		
-		initAssessmentWarning(formLayout);
+		private void initConfigurationForm(FormLayoutContainer formLayout) {
+			formLayout.setFormTitle(translate("headerform"));
 
-		gradingCont = uifactory.addDefaultFormLayout("config.grading", null, formLayout);
-		initGradingForm(gradingCont);
-	}
-	
-	private void initAssessmentWarning(FormItemContainer formLayout) {
-		warningCont = FormLayoutContainer.createCustomFormLayout("warningCont", getTranslator(),
-				velocity_root + "/scorm_warning.html");
-		warningCont.setRootForm(mainForm);
-		formLayout.add(warningCont);
+			SelectionValues windowValues = new SelectionValues();
+			windowValues.add(new SelectionValue("none", translate("mode.window.none"), decorateDescription("mode.window.none.desc")));
+			windowValues.add(new SelectionValue("fullwindow", translate("mode.window.fullwindow"), decorateDescription("mode.window.fullwindow.desc")));
+			windowValues.add(new SelectionValue("fullwidthheightwithback", translate("mode.window.fullscreen.with.back"), decorateDescription("mode.window.fullscreen.with.back.desc")));
+			windowValues.add(new SelectionValue("fullwidthheight", translate("mode.window.fullscreen"), decorateDescription("mode.window.fullscreen.desc")));
+			fullWindowEl = uifactory.addCardSingleSelectHorizontal("mode.window", formLayout,
+					windowValues.keys(), windowValues.values(), windowValues.descriptions(), null);
+			fullWindowEl.setElementCssClass("o_radio_cards_lg");
+			fullWindowEl.addActionListener(FormEvent.ONCHANGE);
+			if (fullWindow) {
+				fullWindowEl.select("fullwindow", true);
+			} else if (fullWindowWidthHeight) {
+				fullWindowEl.select("fullwidthheight", true);
+			} else if (fullWindowWidthHeightWithBack) {
+				fullWindowEl.select("fullwidthheightwithback", true);
+			} else {
+				fullWindowEl.select("none", true);
+			}
 
-		if (hasAssessments) {
-			enableEditingLink = LinkFactory.createButtonSmall("enable.edit.mode", warningCont.getFormItemComponent(), this);
-			enableEditingLink.setPrimary(true);
-			enableEditingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_unlocked");
-			warningCont.contextPut("hasAssessments", true);
-		}
-	}
+			showMenuEl = uifactory.addCheckboxesHorizontal("showmenu", "showmenu.label", formLayout, new String[]{"xx"}, new String[]{null});
+			showMenuEl.select("xx", showMenu);
 
-	private void initConfigurationForm(FormLayoutContainer formLayout) {	
-		formLayout.setFormTitle(translate("headerform"));
+			showNavButtonsEl = uifactory.addCheckboxesHorizontal("shownavbuttons", "shownavbuttons.label", formLayout, new String[]{"xx"}, new String[]{null});
+			showNavButtonsEl.select("xx", showNavButtons);
 
-		SelectionValues windowValues = new SelectionValues();
-		windowValues.add(new SelectionValue("none", translate("mode.window.none"), decorateDescription("mode.window.none.desc")));
-		windowValues.add(new SelectionValue("fullwindow", translate("mode.window.fullwindow"), decorateDescription("mode.window.fullwindow.desc")));
-		windowValues.add(new SelectionValue("fullwidthheightwithback", translate("mode.window.fullscreen.with.back"), decorateDescription("mode.window.fullscreen.with.back.desc")));
-		windowValues.add(new SelectionValue("fullwidthheight", translate("mode.window.fullscreen"), decorateDescription("mode.window.fullscreen.desc")));
-		fullWindowEl = uifactory.addCardSingleSelectHorizontal("mode.window", formLayout,
-				windowValues.keys(), windowValues.values(), windowValues.descriptions(), null);
-		fullWindowEl.setElementCssClass("o_radio_cards_lg");
-		fullWindowEl.addActionListener(FormEvent.ONCHANGE);
-		if(fullWindow) {
-			fullWindowEl.select("fullwindow", true);
-		} else if(fullWindowWidthHeight) {
-			fullWindowEl.select("fullwidthheight", true);
-		} else if(fullWindowWidthHeightWithBack) {
-			fullWindowEl.select("fullwidthheightwithback", true);
-		} else {
-			fullWindowEl.select("none", true);
-		}
-		
-		showMenuEl = uifactory.addCheckboxesHorizontal("showmenu", "showmenu.label", formLayout, new String[]{"xx"}, new String[]{null});
-		showMenuEl.select("xx", showMenu);
+			skipLaunchPageEl = uifactory.addCheckboxesHorizontal("skiplaunchpage", "skiplaunchpage.label", formLayout, new String[]{"xx"}, new String[]{null});
+			skipLaunchPageEl.select("xx", skipLaunchPage);
 
-		showNavButtonsEl = uifactory.addCheckboxesHorizontal("shownavbuttons", "shownavbuttons.label", formLayout, new String[]{"xx"}, new String[]{null});
-		showNavButtonsEl.select("xx", showNavButtons);
-		
-		skipLaunchPageEl = uifactory.addCheckboxesHorizontal("skiplaunchpage", "skiplaunchpage.label", formLayout, new String[]{"xx"}, new String[]{null});
-		skipLaunchPageEl.select("xx", skipLaunchPage);
-		
-		closeOnFinishEl = uifactory.addCheckboxesHorizontal("closeonfinish", "closeonfinish.label", formLayout, new String[]{"closeonfinish"}, new String[]{null});
-		closeOnFinishEl.select("closeonfinish", closeOnFinish);
-	}
-		
-	private void initGradingForm(FormLayoutContainer formLayout) {
-		
-		// Transfer score from SCORM
-		isAssessableEl = uifactory.addRadiosVertical("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues);
-		isAssessableEl.addActionListener(FormEvent.ONCHANGE);
-		if(ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(assessableType)) {
-			isAssessableEl.select(assessableKeys[IDX_TRANSFER_SCORE_VALUE], true);
-		} else if(ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED.equals(assessableType)) {
-			isAssessableEl.select(assessableKeys[IDX_TRANSFER_PASSED_VALUE], true);
-		} else {
-			isAssessableEl.select(assessableKeys[IDX_DON_T_TRANSFER_SCORING_INFORMATION], true);
-		}
-		
-		// Maximum score
-		String maxScoreVal = maxScore < 0 ? "" : Integer.toString(maxScore);
-		maxScoreEl = uifactory.addTextElement("max.score", 5, maxScoreVal, formLayout);
-		
-		// Score needed to pass
-		String val = cutValue < 0 ? "" : Integer.toString(cutValue);
-		cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 5, val, formLayout);
-		cutValueEl.setDisplaySize(3);
-		
-		
-		// Prevent the score from decreasing on subsequent attempts
-		advanceScoreEl = uifactory.addCheckboxesHorizontal("advanceScore", "advance.score.label", formLayout, new String[]{ "ison" }, new String[]{ "" });
-		advanceScoreEl.select("ison", advanceScore);
-		advanceScoreEl.addActionListener(FormEvent.ONCHANGE);
-		
-		uifactory.addSpacerElement("spacer.attempts", formLayout, false);
-		
-		// Include in course assessment
-		incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
-				translate("on"), translate("off"), formLayout);
-		incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
-
-		// Scaling factor for course assessment
-		scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scoreScaling, formLayout);
-		scoreScalingEl.setExampleKey("score.scaling.example", null);
-
-		spacerAfterInclude = uifactory.addSpacerElement("spacer.after.include", formLayout, false);
-		
-		// Count attempts only if score is transferred
-		scoreAttemptsEl = uifactory.addCheckboxesHorizontal("scoreAttempts", "attempts.depends.label", formLayout, new String[]{"ison"}, new String[]{null});
-		scoreAttemptsEl.select("ison", scoreAttempts);
-
-		// Max number of attempts
-		int maxNumber = 21;
-		SelectionValues attemptsKeyValues = new SelectionValues();
-		attemptsKeyValues.add(SelectionValues.entry("0", translate("attempts.noLimit")));
-		for (int i = 1; i < maxNumber; i++) {
-			String attemptsKey = String.valueOf(i);
-			attemptsKeyValues.add(SelectionValues.entry(attemptsKey, String.valueOf(i) + " x"));
-		}
-		if (maxattempts >= maxNumber) {
-			maxattempts = 0;
+			closeOnFinishEl = uifactory.addCheckboxesHorizontal("closeonfinish", "closeonfinish.label", formLayout, new String[]{"closeonfinish"}, new String[]{null});
+			closeOnFinishEl.select("closeonfinish", closeOnFinish);
 		}
 
-		attemptsEl = uifactory.addDropdownSingleselect("attempts.label", formLayout, attemptsKeyValues.keys(), attemptsKeyValues.values(), null);
-		attemptsEl.select("" + maxattempts, true);
-		
-		saveButton = uifactory.addFormSubmitButton("save", formLayout);
+		private void initGradingForm(FormLayoutContainer formLayout) {
+
+			// Transfer score from SCORM
+			isAssessableEl = uifactory.addRadiosVertical("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues);
+			isAssessableEl.addActionListener(FormEvent.ONCHANGE);
+			if (ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(assessableType)) {
+				isAssessableEl.select(assessableKeys[IDX_TRANSFER_SCORE_VALUE], true);
+			} else if (ScormEditController.CONFIG_ASSESSABLE_TYPE_PASSED.equals(assessableType)) {
+				isAssessableEl.select(assessableKeys[IDX_TRANSFER_PASSED_VALUE], true);
+			} else {
+				isAssessableEl.select(assessableKeys[IDX_DON_T_TRANSFER_SCORING_INFORMATION], true);
+			}
+
+			// Maximum score
+			String maxScoreVal = maxScore < 0 ? "" : Integer.toString(maxScore);
+			maxScoreEl = uifactory.addTextElement("max.score", 5, maxScoreVal, formLayout);
+
+			// Score needed to pass
+			String val = cutValue < 0 ? "" : Integer.toString(cutValue);
+			cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 5, val, formLayout);
+			cutValueEl.setDisplaySize(3);
+
+			// Prevent the score from decreasing on subsequent attempts
+			advanceScoreEl = uifactory.addCheckboxesHorizontal("advanceScore", "advance.score.label", formLayout, new String[]{"ison"}, new String[]{""});
+			advanceScoreEl.select("ison", advanceScore);
+			advanceScoreEl.addActionListener(FormEvent.ONCHANGE);
+
+			uifactory.addSpacerElement("spacer.attempts", formLayout, false);
+
+			// Include in course assessment
+			incorporateInCourseAssessmentEl = uifactory.addToggleButton("incorporate.in.course.assessment", "incorporate.in.course.assessment",
+					translate("on"), translate("off"), formLayout);
+			incorporateInCourseAssessmentEl.toggle(!ignoreInCourseAssessment);
+
+			// Scaling factor for course assessment
+			scoreScalingEl = uifactory.addTextElement("score.scaling", "score.scaling", 10, scoreScaling, formLayout);
+			scoreScalingEl.setExampleKey("score.scaling.example", null);
+
+			spacerAfterInclude = uifactory.addSpacerElement("spacer.after.include", formLayout, false);
+
+			// Count attempts only if score is transferred
+			scoreAttemptsEl = uifactory.addCheckboxesHorizontal("scoreAttempts", "attempts.depends.label", formLayout, new String[]{"ison"}, new String[]{null});
+			scoreAttemptsEl.select("ison", scoreAttempts);
+
+			// Max number of attempts
+			int maxNumber = 21;
+			SelectionValues attemptsKeyValues = new SelectionValues();
+			attemptsKeyValues.add(SelectionValues.entry("0", translate("attempts.noLimit")));
+			for (int i = 1; i < maxNumber; i++) {
+				String attemptsKey = String.valueOf(i);
+				attemptsKeyValues.add(SelectionValues.entry(attemptsKey, String.valueOf(i) + " x"));
+			}
+			if (maxattempts >= maxNumber) {
+				maxattempts = 0;
+			}
+
+			attemptsEl = uifactory.addDropdownSingleselect("attempts.label", formLayout, attemptsKeyValues.keys(), attemptsKeyValues.values(), null);
+			attemptsEl.select("" + maxattempts, true);
+
+			saveButton = uifactory.addFormSubmitButton("save", formLayout);
+		}
+
+		/**
+		 * Disables (or re-enables) every grading form item and hides the submit button, used to
+		 * make the grading configuration read-only once assessments already exist for this node.
+		 * Configuration settings unrelated to grading (window mode, menu, nav buttons) are unaffected.
+		 */
+		public void setDisplayOnly(boolean displayOnly) {
+			Map<String, FormItem> formItems = gradingCont.getFormComponents();
+			for (FormItem formItem : formItems.values()) {
+				if (formItem != saveButton && formItem != scoreAttemptsEl && formItem != attemptsEl && formItem != advanceScoreEl) {
+					formItem.setEnabled(!displayOnly);
+					formItem.setLabelIconCss(displayOnly ? "o_icon o_icon-fw o_icon_locked text-primary" : null);
+				}
+			}
+			if (!displayOnly) {
+				updateUI();
+			}
+		}
+
+		private void updateUI() {
+			// Display module
+			boolean fullWidthHeight = fullWindowEl.isOneSelected()
+					&& ("fullwidthheight".equals(fullWindowEl.getSelectedKey()) || "fullwidthheightwithback".equals(fullWindowEl.getSelectedKey()));
+			showMenuEl.setVisible(!fullWidthHeight);
+			showNavButtonsEl.setVisible(!fullWidthHeight);
+
+			// Transfer score from SCORM
+			String transferKey = isAssessableEl.isOneSelected() ? isAssessableEl.getSelectedKey() : null;
+			boolean doNotTransfer = assessableKeys[IDX_DON_T_TRANSFER_SCORING_INFORMATION].equals(transferKey);
+			boolean transferScore = assessableKeys[IDX_TRANSFER_SCORE_VALUE].equals(transferKey);
+
+			// Maximum score
+			maxScoreEl.setVisible(transferScore);
+
+			// Score needed to pass
+			cutValueEl.setVisible(transferScore);
+
+			// Prevent the score from decreasing on subsequent attempts
+			advanceScoreEl.setVisible(transferScore);
+			advanceScoreEl.getComponent().setDirty(true);
+
+			// Include in course assessment
+			incorporateInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && !doNotTransfer);
+
+			boolean hasScore = isAssessableEl.isOneSelected() && !ScormEditController
+					.CONFIG_ASSESSABLE_TYPE_PASSED.equals(isAssessableEl.getSelectedKey());
+			scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible() && hasScore
+					&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
+
+			spacerAfterInclude.setVisible(incorporateInCourseAssessmentEl.isVisible());
+
+			// Count attempts only if score is transferred
+			scoreAttemptsEl.setVisible(transferScore);
+		}
+
+		public int getAttemptsValue() {
+			return Integer.valueOf(attemptsEl.getSelectedKey());
+		}
+
+		public boolean isAdvanceScore() {
+			return advanceScoreEl.isSelected(0);
+		}
+
+		public boolean getAttemptsDependOnScore() {
+			return scoreAttemptsEl.isSelected(0);
+		}
 	}
 
 	/**
-	 * Disables (or re-enables) every grading form item and hides the submit button, used to
-	 * make the grading configuration read-only once assessments already exist for this node.
-	 * Configuration settings unrelated to grading (window mode, menu, nav buttons) are unaffected.
+	 * Reference provider for the scorm course node. SCORM packages can only be imported, never created from scratch,
+	 * so only Select and Import are offered. Replace is unconditional (matches the previous behaviour).
 	 */
-	public void setDisplayOnly(boolean displayOnly) {
-		Map<String, FormItem> formItems = gradingCont.getFormComponents();
-		for (FormItem formItem : formItems.values()) {
-			if (formItem != saveButton && formItem != scoreAttemptsEl && formItem != attemptsEl && formItem != advanceScoreEl) {
-				formItem.setEnabled(!displayOnly);
-				formItem.setLabelIconCss(displayOnly ? "o_icon o_icon-fw o_icon_locked text-primary" : null);
-			}
+	public class ScormCourseNodeReferenceProvider extends CourseNodeReferenceProvider {
+
+		public ScormCourseNodeReferenceProvider(RepositoryService repositoryService, List<String> resourceTypes,
+				List<Organisation> defaultOrganisations, EmptyStateConfig emptyStateConfig, String selectionTitle,
+				ReferenceContentProvider referenceContentProvider) {
+			super(repositoryService, resourceTypes, defaultOrganisations, emptyStateConfig, selectionTitle,
+					referenceContentProvider);
 		}
-		if (!displayOnly) {
-			updateUI();
+
+		@Override
+		public boolean canCreate() {
+			return false;
+		}
+
+		@Override
+		public Confirm confirmCanReplace(UserRequest ureq) {
+			// Replace is unconditional for SCORM, matching the previous behaviour.
+			return new Confirm(true, null);
 		}
 	}
-	
-	private void updateUI() {
-		// Display module		
-		boolean fullWidthHeight = fullWindowEl.isOneSelected()
-				&& ("fullwidthheight".equals(fullWindowEl.getSelectedKey()) || "fullwidthheightwithback".equals(fullWindowEl.getSelectedKey()));
-		showMenuEl.setVisible(!fullWidthHeight);
-		showNavButtonsEl.setVisible(!fullWidthHeight);
 
-		// Transfer score from SCORM
-		String transferKey = isAssessableEl.isOneSelected() ? isAssessableEl.getSelectedKey() : null;
-		boolean doNotTransfer = assessableKeys[IDX_DON_T_TRANSFER_SCORING_INFORMATION].equals(transferKey);
-		boolean transferScore = assessableKeys[IDX_TRANSFER_SCORE_VALUE].equals(transferKey);
-
-		// Maximum score
-		maxScoreEl.setVisible(transferScore);
-		
-		// Score needed to pass
-		cutValueEl.setVisible(transferScore);
-		
-		// Prevent the score from decreasing on subsequent attempts
-		advanceScoreEl.setVisible(transferScore);
-		advanceScoreEl.getComponent().setDirty(true);
-		
-		// Include in course assessment
-		incorporateInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable && !doNotTransfer);
-
-		boolean hasScore = isAssessableEl.isOneSelected() && !ScormEditController
-				.CONFIG_ASSESSABLE_TYPE_PASSED.equals(isAssessableEl.getSelectedKey());
-		scoreScalingEl.setVisible(incorporateInCourseAssessmentEl.isVisible() && hasScore
-				&& incorporateInCourseAssessmentEl.isOn() && scoreScalingEnabled);
-		
-		spacerAfterInclude.setVisible(incorporateInCourseAssessmentEl.isVisible());
-
-		// Count attempts only if score is transferred
-		scoreAttemptsEl.setVisible(transferScore);
-	}
-	
-	public int getAttemptsValue() {
-		return Integer.valueOf(attemptsEl.getSelectedKey()); 
-	}
-	
-	public boolean isAdvanceScore() {
-		return advanceScoreEl.isSelected(0);
-	}
-	
-	public boolean getAttemptsDependOnScore() {
-		return scoreAttemptsEl.isSelected(0);
-	}
 }

@@ -473,10 +473,14 @@ public class RepositoryEntryReferenceController extends BasicController {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(searchCtrl);
 			
+			boolean canCreateAndImport = referenceProvider.canCreate() && referenceProvider.canImport() && 
+					referenceProvider.getEmptyStateConfig().getPrimaryButton() == null;
+			
 			List<Organisation> defaultOrganisations = referenceProvider.getDefaultOrganisations();
 			// The commandLabel is used to get the stored prefs, but it is never displayed in the gui?!
 			searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-					referenceProvider.getResourceTypes().stream().toArray(String[]::new), defaultOrganisations, "keep.prefs");
+					referenceProvider.getResourceTypes().stream().toArray(String[]::new), defaultOrganisations, 
+					"keep.prefs", canCreateAndImport, canCreateAndImport);
 			listenTo(searchCtrl);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchCtrl.getInitialComponent(),
 					true, referenceProvider.getSelectionTitle());

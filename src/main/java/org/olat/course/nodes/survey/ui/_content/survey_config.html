@@ -1,0 +1,30 @@
+## for odd reason bootstrap calls vertial horizontal
+<fieldset #if(!$!f.domReplacementWrapperRequired  && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
+#if ($off_title)
+    <legend>
+        #if ($off_chelp_url)
+            $r.contextHelpWithWrapper("$off_chelp_url")
+        #end
+        #if ($off_icon)
+            <i class="$off_icon"> </i>
+        #end
+        $!off_title
+    </legend>
+#elseif ($off_chelp_url)
+    <div class="clearfix">$r.contextHelpWithWrapper("$off_chelp_url")</div>
+#end
+
+#if ($off_desc || $off_warn || $off_info)
+    <div class="clearfix"><div class="col-sm-12">
+        #if ($off_desc) <div class="o_info_with_icon">$off_desc</div> #end
+        #if ($off_warn) <div class="o_warning_with_icon">$off_warning</div> #end
+        #if ($off_info) <div class="o_hint">$off_info#if($r.isNotNull($off_info_help_url)) $r.contextHelpAdditionalInfo($off_info_help_url)#end</div> #end
+    </div></div>
+#end
+
+$r.render("reference")
+
+#foreach ($item in $formitemnames)
+    $r.render(${item}, "3_9", "form")
+#end
+</fieldset>
