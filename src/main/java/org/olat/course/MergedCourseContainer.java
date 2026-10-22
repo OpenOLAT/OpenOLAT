@@ -89,6 +89,14 @@ public class MergedCourseContainer extends MergeSource {
 		}
 		return super.getItems(filter);
 	}
+	
+	@Override
+	public boolean isInPath(String path) {
+		if(!initialized) {
+			init();
+		}
+		return super.isInPath(path);
+	}
 
 	@Override
 	public VFSItem resolve(String path) {

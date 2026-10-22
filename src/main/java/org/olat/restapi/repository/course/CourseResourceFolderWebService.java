@@ -348,6 +348,10 @@ public class CourseResourceFolderWebService {
 
 		VFSContainer container = course.getCourseFolderContainer();
 		for(PathSegment segment:path) {
+			if(!container.isInPath(segment.getPath())) {
+				return Response.status(Status.NOT_ACCEPTABLE).build();
+			}
+			
 			VFSItem item = container.resolve(segment.getPath());
 			if(item instanceof VFSContainer) {
 				container = (VFSContainer)item;
@@ -355,6 +359,10 @@ public class CourseResourceFolderWebService {
 				//create the folder
 				container = container.createChildContainer(segment.getPath());
 			}
+		}
+		
+		if (filename == null || !container.isInPath(VFSManager.trimSlash(filename)))  {
+			return Response.status(Status.NOT_ACCEPTABLE).build();
 		}
 
 		VFSItem newFile;
@@ -372,8 +380,7 @@ public class CourseResourceFolderWebService {
 				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 
-			if (existingVFSItem instanceof VFSLeaf && existingVFSItem.canVersion() == VFSStatus.YES) {
-				VFSLeaf existingLeaf = (VFSLeaf)existingVFSItem;
+			if (existingVFSItem instanceof VFSLeaf existingLeaf && existingVFSItem.canVersion() == VFSStatus.YES) {
 				vfsRepositoryService.addVersion(existingLeaf, ureq.getIdentity(), false, "REST upload", file);
 				newFile = existingLeaf;
 			} else {

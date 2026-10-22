@@ -61,6 +61,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.restapi.support.MultipartReader;
@@ -492,15 +493,19 @@ public class VFSWebservice {
 		if(container.getLocalSecurityCallback() != null && !container.getLocalSecurityCallback().canWrite()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		
+
 		VFSContainer directory = resolveContainer(path, true);
 		if(directory == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		
+
 		if(filename == null && file == null) {
 			//only create folders
 			if(foldername != null) {
+				if(!directory.isInPath(VFSManager.trimSlash(foldername))) {
+					return Response.status(Status.NOT_ACCEPTABLE).build();
+				}
+				
 				VFSItem newFolder = directory.resolve(foldername);
 				if(newFolder instanceof VFSContainer) {
 					return Response.ok(createFileVO(newFolder, uriInfo)).build();
@@ -514,12 +519,16 @@ public class VFSWebservice {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 		
+		if(filename != null && !directory.isInPath(VFSManager.trimSlash(filename))) {
+			return Response.status(Status.NOT_ACCEPTABLE).build();
+		}
+		
 		VFSItem newItem = directory.resolve(filename);
 		VFSLeaf newFile;
 		if(newItem == null) {
 			newFile = directory.createChildLeaf(filename);
-		} else if (newItem instanceof VFSLeaf) {
-			newFile = (VFSLeaf)newItem;
+		} else if (newItem instanceof VFSLeaf newLeaf) {
+			newFile = newLeaf;
 		} else {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
@@ -590,7 +599,7 @@ public class VFSWebservice {
 		}
 		return Response.serverError().status(Status.BAD_REQUEST).build();
 	}
-	
+
 	protected VFSContainer resolveContainer(List<PathSegment> path, boolean create)
 	throws VFSDepthException {
 		VFSContainer directory = container;
