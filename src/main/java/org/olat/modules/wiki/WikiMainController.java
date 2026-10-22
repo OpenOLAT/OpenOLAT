@@ -376,12 +376,16 @@ public class WikiMainController extends BasicController implements Activateable2
 	}
 	
 	private void updateFileAndLinkList(Wiki wiki) {
-		List<VFSItem> mediaFiles = wiki.getMediaFileList();
+		List<VFSItem> mediaFiles = wiki.getMediaFileList().stream()
+				.filter(file -> !file.getName().contains("'"))
+				.collect(Collectors.toList());
 		Collections.sort(mediaFiles, new WikiFileComparator(getLocale()));
 		editContent.contextPut("fileList", mediaFiles);
+		
 		List<String> linkList = wiki.getAllPages().stream()
 				.filter(Wiki.REGULAR_PAGE_FILTER)
 				.map(WikiPage::getPageName)
+				.filter(name -> !name.contains("'"))
 				.sorted(new WikiPageNameComparator(getLocale()))
 				.collect(Collectors.toList());
 		editContent.contextPut("linkList", linkList);
@@ -390,6 +394,7 @@ public class WikiMainController extends BasicController implements Activateable2
 	private void updateWikiMenu(Wiki wiki) {
 		List<WikiPage> pages = wiki.getAllPages().stream()
 				.filter(Wiki.REGULAR_PAGE_FILTER)
+				.filter(page -> !page.getPageName().contains("'"))
 				.sorted(WikiPageSort.PAGENAME_ORDER)
 				.collect(Collectors.toList());
 		
