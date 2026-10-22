@@ -179,9 +179,9 @@ public class ResourcesMapper implements Mapper {
 	}
 	
 	private MediaResource toResource(File storage, String filename) {
-		if(storage != null && StringHelper.containsNonWhitespace(filename)) {
+		if(storage != null && StringHelper.containsNonWhitespace(filename) ) {
 			File submissionFile = new File(storage, filename);
-			if(submissionFile.exists()) {
+			if(submissionFile.exists() && FileUtils.isInSubDirectory(storage, submissionFile)) {
 				return new FileMediaResource(submissionFile, true);
 			}
 		}
