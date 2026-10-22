@@ -819,8 +819,8 @@ public class QTI21EditForm extends FormBasicController {
 		resultStartDateEl.setRelative(relativeDates);
 		resultEndDateEl.setRelative(relativeDates);
 		resultFailedStartDateEl.setRelative(relativeDates);
+		resultFailedEndDateEl.setRelative(relativeDates);
 		resultPassedStartDateEl.setRelative(relativeDates);
-		testStartDateEl.setRelative(relativeDates);
 		resultPassedEndDateEl.setRelative(relativeDates);
 		
 	}
