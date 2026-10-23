@@ -111,6 +111,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String DOCUMENTS_ENABLED = "DOCUMENTS_ENABLED";
 	public static final transient String DOCUMENTS_PATH = "DOCUMENTS_PATH";
 	public static final transient String KEY_CALENDAR_ENABLED = "KEY_CALENDAR_ENABLED";
+	public static final transient String KEY_CALENDAR_COACH_WRITE = "KEY_CALENDAR_COACH_WRITE";
 	public static final transient String TEAMS_ENABLED = "TEAMS_ENABLED";
 	public static final transient String BIGBLUEBUTTON_ENABLED = "BIGBLUEBUTTON_ENABLED";
 	public static final transient String BIGBLUEBUTTON_MODERATOR_STARTS_MEETING = "BIGBLUEBUTTON_MODERATOR_STARTS_MEETING";
@@ -188,6 +189,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(KEY_EFFICENCY_ENABLED, Boolean.FALSE);
 		// version 7
 		configuration.put(KEY_CALENDAR_ENABLED, Boolean.FALSE);
+		configuration.put(KEY_CALENDAR_COACH_WRITE, Boolean.FALSE);
 		// version 8
 		// added glossary configuration. no default configuration needed
 		// version 9
@@ -632,6 +634,19 @@ public class CourseConfig implements Serializable, Cloneable {
 
 	public void setCalendarEnabled(boolean b) {
 		configuration.put(KEY_CALENDAR_ENABLED, Boolean.valueOf(b));
+		if (!b) {
+			// Disabling the calendar also disables coach write access to it.
+			configuration.put(KEY_CALENDAR_COACH_WRITE, Boolean.FALSE);
+		}
+	}
+
+	public boolean isCalendarCoachWriteEnabled() {
+		Boolean bool = (Boolean) configuration.get(KEY_CALENDAR_COACH_WRITE);
+		return bool != null && bool.booleanValue();
+	}
+
+	public void setCalendarCoachWriteEnabled(boolean b) {
+		configuration.put(KEY_CALENDAR_COACH_WRITE, Boolean.valueOf(b));
 	}
 
 	public boolean isMenuEnabled() {
@@ -1070,6 +1085,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	public CourseConfig clone() {
 		CourseConfig clone = new CourseConfig();
 		clone.setCalendarEnabled(((Boolean) configuration.get(KEY_CALENDAR_ENABLED)).booleanValue());
+		clone.setCalendarCoachWriteEnabled(isCalendarCoachWriteEnabled());
 		clone.setChatIsEnabled(((Boolean) configuration.get(KEY_CHAT_ENABLED)).booleanValue());
 		clone.setCssLayoutRef((String) configuration.get(KEY_CSS_FILEREF));
 		clone.setEfficiencyStatementIsEnabled(isEfficiencyStatementEnabled());
