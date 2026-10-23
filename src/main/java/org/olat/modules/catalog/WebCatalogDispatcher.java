@@ -28,6 +28,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
@@ -244,7 +245,7 @@ public class WebCatalogDispatcher implements Dispatcher {
 			String[] restParts = extractRestParts(restPart);
 			if (restParts.length > 0 && restParts.length % 2 == 0) {
 				String businessPath = BusinessControlFactory.getInstance().formatFromSplittedURI(restParts);
-				List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
+				List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath, Level.DEBUG);
 				w.getDTabs().activate(ureq, null, ces);
 			}
 			
