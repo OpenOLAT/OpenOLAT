@@ -257,7 +257,7 @@ public class UserRequestImpl implements UserRequest {
 			appendFormattedKeyValue(sb, "Character Encoding", hreq.getCharacterEncoding());
 			appendFormattedKeyValue(sb, "Content Length", Integer.valueOf(hreq.getContentLength()));
 			appendFormattedKeyValue(sb, "Content Type", hreq.getContentType());
-			appendFormattedKeyValue(sb, "Locale", hreq.getLocale());
+			appendFormattedKeyValue(sb, "Locale", ServletUtil.getLocale(hreq));
 			appendFormattedKeyValue(sb, "QueryString", hreq.getQueryString());
 			sb.append("\n\nHeaders in this hreq:\n");
 			Enumeration<String> e = hreq.getHeaderNames();

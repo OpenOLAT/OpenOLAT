@@ -78,9 +78,15 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		CUSTOM
 	}
 
+	/**
+	 *  Templates, customized configuration, a list of keys
+	 */
 	protected SingleSelection typeOfUseEl;
 	protected SingleSelection templateEl;
 	protected StaticTextElement typeEl;
+	/**
+	 * System or custom
+	 */
 	protected SingleSelection templateTypeEl;
 	protected TextElement templateFileEl;
 	protected FormLink uploadConfigurationLink;
@@ -200,18 +206,18 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		safeExamBrowserEl.addActionListener(FormEvent.ONCHANGE);
 		safeExamBrowserEl.setEnabled(editable);
 		
-		SelectionValues typeOfUse = new SelectionValues();
-		typeOfUse.add(SelectionValues.entry(TypeOfUse.CONFIG.name(), translate("mode.safeexambrowser.type.inOpenOlat"),
+		SelectionValues typeOfUsePK = new SelectionValues();
+		typeOfUsePK.add(SelectionValues.entry(TypeOfUse.CONFIG.name(), translate("mode.safeexambrowser.type.inOpenOlat"),
 				translate("mode.safeexambrowser.type.inOpenOlat.descr"), null, null, true));
-		typeOfUse.add(SelectionValues.entry(TypeOfUse.OWN.name(), translate("mode.safeexambrowser.type.custom"),
+		typeOfUsePK.add(SelectionValues.entry(TypeOfUse.OWN.name(), translate("mode.safeexambrowser.type.custom"),
 				translate("mode.safeexambrowser.type.custom.descr"), null, null, true));
-		typeOfUse.add(SelectionValues.entry(TypeOfUse.KEYS.name(), translate("mode.safeexambrowser.type.keys"),
+		typeOfUsePK.add(SelectionValues.entry(TypeOfUse.KEYS.name(), translate("mode.safeexambrowser.type.keys"),
 				translate("mode.safeexambrowser.type.keys.descr"), null, null, true));
 		typeOfUseEl = uifactory.addCardSingleSelectHorizontal("mode.safeexambrowser.typeofuse", "mode.safeexambrowser.typeofuse", enableCont,
-				typeOfUse.keys(), typeOfUse.values(), typeOfUse.descriptions(), typeOfUse.icons());
+				typeOfUsePK.keys(), typeOfUsePK.values(), typeOfUsePK.descriptions(), typeOfUsePK.icons());
 		typeOfUseEl.setEnabled(editable);
 		typeOfUseEl.addActionListener(FormEvent.ONCHANGE);
-		
+
 		String templatePage = velocity_root + "/select_template.html";
 		templateCont = uifactory.addCustomFormLayout("template.cont", null, templatePage, enableCont);
 		templateCont.setLabel("mode.safeexambrowser.template", null);
@@ -264,26 +270,40 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 		copyTemplateLink.setIconLeftCSS("o_icon o_icon_copy");
 		copyTemplateLink.setGhost(true);
 		
+		TypeOfUse typeOfUse;
+		String templateKey = null;
+		TemplateType templateType = TemplateType.SYSTEM;
 		if(StringHelper.containsNonWhitespace(configuration.getSafeExamBrowserKey())) {
-			typeOfUseEl.select(TypeOfUse.KEYS.name(), true);
+			typeOfUse = TypeOfUse.KEYS;
 		} else if(currentTemplate != null) {
-			typeOfUseEl.select(TypeOfUse.CONFIG.name(), true);
-			templateTypeEl.select(TemplateType.SYSTEM.name(), true);
+			typeOfUse = TypeOfUse.CONFIG;
+			templateKey = currentTemplate.getKey().toString();
 			
-			String templateKey = currentTemplate.getKey().toString();
-			if(templateEl.containsKey(templateKey)) {
-				templateEl.select(templateKey, true);
-			}
 		} else if(StringHelper.containsNonWhitespace(configuration.getSafeExamBrowserConfigurationPListFilename())) {
 			// Custom SEB file
-			typeOfUseEl.select(TypeOfUse.CONFIG.name(), true);	
-			templateTypeEl.select(TemplateType.CUSTOM.name(), true);
+			typeOfUse = TypeOfUse.CONFIG;	
+			templateType = TemplateType.CUSTOM;
 			templateFileEl.setUserObject(new CustomConfiguration(configuration.getSafeExamBrowserConfigurationPListFilename(),
 					configuration.getSafeExamBrowserRawConfigurationPList()));
 		} else if(configuration.getSafeExamBrowserConfiguration() != null) {
-			typeOfUseEl.select(TypeOfUse.OWN.name(), true);
+			typeOfUse = TypeOfUse.OWN;
+		} else {
+			typeOfUse = TypeOfUse.CONFIG;
 		}
 		
+		typeOfUseEl.select(typeOfUse.name(), true);
+		templateTypeEl.select(templateType.name(), true);
+		if(templateKey != null && templateEl.containsKey(templateKey)) {
+			templateEl.select(templateKey, true);
+		} else {
+			SafeExamBrowserTemplate defaultTemplate = templates.stream()
+					.filter(SafeExamBrowserTemplate::isDefault)
+					.findFirst().orElse(templates.isEmpty() ? null : templates.get(0));
+			if(defaultTemplate != null) {
+				templateEl.select(defaultTemplate.getKey().toString(), true);
+			}
+		}
+			
 		informationsForAuthorsEl = uifactory.addStaticTextElement("mode.safeexambrowser.hint.author", null, enableCont);
 		informationsForAuthorsEl.setDomWrapperElement(DomWrapperElement.div);
 		informationsForAuthorsEl.setVisible(false);
@@ -1016,13 +1036,11 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 				initDefaults();
 			}
 			updateUI(true);
-		} else if(templateEl == source || templateTypeEl == source) {
+		} else if(templateEl == source || templateTypeEl == source || typeOfUseEl == source) {
 			updateUI(true);
 		} else if(allowToExitEl == source || showAudioOptionsEl == source || showSebTaskListEl == source
 				|| urlFilterEl == source) {
 			updateUIOptions();
-		} else if(typeOfUseEl == source || templateEl == source) {
-			updateUI(false);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
