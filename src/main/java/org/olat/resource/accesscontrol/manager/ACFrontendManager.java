@@ -86,6 +86,7 @@ import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryMailing;
 import org.olat.repository.RepositoryManager;
@@ -1026,7 +1027,7 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 			return reserveAccessToCurriculumElement(identity, resource, confirmationBy, expirationDate, mailing, doer, adminNote);
 		}
 		RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
-		if (entry != null) {
+		if (entry != null && RepositoryEntryRuntimeType.template != entry.getRuntimeType()) {
 			if(!repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
 				Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(entry);
 				groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
@@ -1202,7 +1203,7 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 			}
 		} else {
 			RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
-			if(entry != null) {
+			if(entry != null && RepositoryEntryRuntimeType.template != entry.getRuntimeType()) {
 				if(!repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
 					Group group = repositoryEntryRelationDao.getDefaultGroup(entry);
 					repositoryEntryRelationDao.addRole(identity, group, GroupRoles.participant.name());

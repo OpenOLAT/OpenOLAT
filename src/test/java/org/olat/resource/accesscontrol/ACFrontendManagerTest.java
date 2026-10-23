@@ -70,7 +70,9 @@ import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.Reference;
@@ -136,6 +138,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	private EvaluationFormTestsHelper evaluationFormTestsHelper;
 	@Autowired
 	private ReferenceManager referenceManager;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
 	@Test
 	public void testManagers() {
@@ -677,7 +681,26 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		CodeHelper.printMilliSecondTime(start, "One click");
 	}
-	
+
+	@Test
+	public void accessResourceRefusedForTemplate() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("acc-template");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		re = repositoryManager.setRuntimeType(re, RepositoryEntryRuntimeType.template);
+
+		Offer offer = acService.createOffer(re.getOlatResource(), "Template");
+		offer = acService.save(offer);
+		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
+		OfferAccess offerAccess = acService.saveOfferAccess(acService.createOfferAccess(offer, freeMethods.get(0)));
+		dbInstance.commitAndCloseSession();
+
+		AccessResult result = acService.accessResource(id, offerAccess, OrderStatus.PAYED, null, id);
+		dbInstance.commitAndCloseSession();
+
+		Assertions.assertThat(result.isAccessible()).isFalse();
+		Assertions.assertThat(repositoryEntryRelationDao.hasRole(id, re, GroupRoles.participant.name())).isFalse();
+	}
+
 	@Test
 	public void getAvailableMethods() {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("ac-method-mgr");
