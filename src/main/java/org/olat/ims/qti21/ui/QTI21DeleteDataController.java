@@ -24,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
@@ -111,6 +110,7 @@ public class QTI21DeleteDataController extends FormBasicController {
 		this.courseEnv = courseEnv;
 		
 		options = new ArchiveOptions();
+		options.setDoer(getIdentity());
 		if(asOptions.getGroup() == null && asOptions.getIdentities() == null) {
 			identities = ScoreAccountingHelper.loadUsers(courseEnv);
 			options.setIdentities(identities);
@@ -122,18 +122,6 @@ public class QTI21DeleteDataController extends FormBasicController {
 			options.setGroup(asOptions.getGroup());
 		}
 		
-		initForm(ureq);
-	}
-	
-	public QTI21DeleteDataController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
-			IQTESTCourseNode courseNode, Identity assessedIdentity) {
-		super(ureq, wControl, "confirm_reset_data");
-		this.courseNode = courseNode;
-		courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
-		
-		options = new ArchiveOptions();
-		identities = Collections.singletonList(assessedIdentity);
-		options.setIdentities(identities);
 		initForm(ureq);
 	}
 	

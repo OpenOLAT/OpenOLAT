@@ -30,6 +30,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -211,7 +212,9 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 	private List<RepositoryEntry> findRepositoryEntries(AdvanceOrder advanceOrder) {
 		IdentifierKey identifierKey = advanceOrder.getIdentifierKey();
 		String identifierValue = advanceOrder.getIdentifierValue();
-		return identifierHandler.findRepositoryEntries(identifierKey, identifierValue);
+		return identifierHandler.findRepositoryEntries(identifierKey, identifierValue).stream()
+				.filter(entry -> RepositoryEntryRuntimeType.template != entry.getRuntimeType())
+				.toList();
 	}
 
 	private boolean hasNoAccess(AdvanceOrder advanceOrder, RepositoryEntry entry) {

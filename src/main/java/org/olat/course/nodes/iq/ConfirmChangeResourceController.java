@@ -55,6 +55,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -279,7 +280,9 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		
 		try(OutputStream out= new FileOutputStream(archiveFile);
 				ZipOutputStream exportStream = new ZipOutputStream(out)) {
-			courseNode.archiveNodeData(getLocale(), course, null, exportStream, "", "UTF8");
+			ArchiveOptions options = new ArchiveOptions();
+			options.setDoer(getIdentity());
+			courseNode.archiveNodeData(getLocale(), course, options, exportStream, "", "UTF8");
 			return archiveFile;
 		} catch(Exception e) {
 			logError("", e);

@@ -238,6 +238,7 @@
 	<bean class="org.olat.modules.cemedia.MediaCenterExtension" name="personal.tool.media.center" init-method="initExtensionPoints" >
 		<property name="order" value="304" />
 		<property name="navigationKey" value="MediaCenter" />
+		<property name="enabled" value="${minimalhome.ext.mediacenter}"></property>
 		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_media" />
 		<property name="actionController">
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
@@ -401,6 +402,7 @@
 	<bean class="org.olat.modules.todo.ToDoExtension" name="personal.tool.todo" init-method="initExtensionPoints" >
 		<property name="order" value="308" />
 		<property name="navigationKey" value="ToDos" />
+		<property name="enabled" value="${minimalhome.ext.todo}"></property>
 		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_todo_task" />
 		<property name="actionController">
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
