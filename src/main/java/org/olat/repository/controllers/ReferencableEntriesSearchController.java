@@ -124,7 +124,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, 
 											   List<Organisation> defaultOrganisations, String commandLabel,
-											   boolean canCreate, boolean canImport) {
+											   boolean canImport, boolean canCreate) {
 		this(wControl, ureq, limitTypes, defaultOrganisations, null, null, commandLabel, canImport,
 				canCreate, false, false, false, false, Can.referenceable);
 	}

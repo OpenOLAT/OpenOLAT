@@ -103,29 +103,17 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 	}
 
 	protected void initForm(UserRequest ureq) {
-		// empty state configurations for blog and podcast
-		EmptyStateConfig emptyStateConfig;
-		if (Objects.equals(resourceTypeName, BlogFileResource.TYPE_NAME)) {
-			emptyStateConfig = EmptyStateConfig.builder()
-					.withMessageTranslated(translate("no.feed.resource.selected"))
-					.withDescTranslated(translate("no.feed.resource.selected.text"))
-					.withIconCss("o_icon o_blog_icon")
-					.withPrimaryButton("o_icon_search", "select", null)
-					.withSecondaryButton("o_icon_add", "create", null, "create")
-					.withSecondaryButton("o_icon_import", "import", null, "import")
-					.withSecondaryButton("o_icon_link", "cmd.import.url.ressource", null, "import.url")
-					.build();
-		} else {
-			emptyStateConfig = EmptyStateConfig.builder()
-					.withMessageTranslated(translate("no.feed.resource.selected"))
-					.withDescTranslated(translate("no.feed.resource.selected.text"))
-					.withIconCss("o_icon o_podcast_icon")
-					.withPrimaryButton("o_icon_search", "select", null)
-					.withSecondaryButton("o_icon_add", "create", null, "create")
-					.withSecondaryButton("o_icon_import", "import", null, "import")
-					.withSecondaryButton("o_icon_link", "cmd.import.url.ressource", null, "import.url")
-					.build();
-		}
+		// empty state configuration for blog and podcast, differing only in the icon
+		boolean isBlog = Objects.equals(resourceTypeName, BlogFileResource.TYPE_NAME);
+		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+				.withMessageTranslated(translate("no.feed.resource.selected"))
+				.withDescTranslated(translate("no.feed.resource.selected.text"))
+				.withIconCss(isBlog ? "o_icon o_blog_icon" : "o_icon o_podcast_icon")
+				.withPrimaryButton("o_icon_search", "select", null)
+				.withSecondaryButton("o_icon_add", "create", null, "create")
+				.withSecondaryButton("o_icon_import", "import", null, "import")
+				.withSecondaryButton("o_icon_link", "cmd.import.url.ressource", null, "import.url")
+				.build();
 
 		// CourseNodeReferenceProvider for handling references
 		RepositoryEntry refRepoEntry = feedCourseNode.getReferencedRepositoryEntry();
