@@ -28,7 +28,7 @@ import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.modules.selectus.RecruitingModule;
 
 
@@ -56,13 +56,13 @@ public class PositionLocaleNegotiator {
 		}
 
 		RecruitingModule recruitingModule = CoreSpringFactory.getImpl(RecruitingModule.class);
-		Locale queryingLocale = getNegotiatedLocale(ureq.getHttpReq().getLocale(), recruitingModule);
+		Locale queryingLocale = getNegotiatedLocale(ServletUtil.getLocale(ureq.getHttpReq()), recruitingModule);
 		if (queryingLocale != null) {
 			return queryingLocale;
 		}
 		
 		//next try with the other accepted languages
-		for(Enumeration<Locale> en=ureq.getHttpReq().getLocales(); en.hasMoreElements(); ) {
+		for(Enumeration<Locale> en=ServletUtil.getLocales(ureq.getHttpReq()); en.hasMoreElements(); ) {
 			Locale nextQueryingLocale = getNegotiatedLocale(en.nextElement(), recruitingModule);
 			if (nextQueryingLocale != null) {
 				return nextQueryingLocale;
