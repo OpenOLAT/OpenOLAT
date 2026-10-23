@@ -38,7 +38,9 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.CurriculumElementInPreparation;
 import org.olat.repository.model.RepositoryEntryInPreparation;
@@ -69,6 +71,8 @@ public class InPreparationQueriesTest extends OlatTestCase {
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private ACReservationDAO reservationDao;
 
@@ -526,6 +530,43 @@ public class InPreparationQueriesTest extends OlatTestCase {
 		Assertions.assertThat(elementsInPreparation)
 				.extracting(CurriculumElementInPreparation::element)
 				.doesNotContain(implementation);
+	}
+	
+	@Test
+	public void searchCurriculumElementsInPreparation_educationalType() {
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, JunitTestHelper.getDefaultOrganisation());
+		CurriculumElementType structureType = curriculumService.createCurriculumElementType(random(), "Structure", null, null);
+		structureType.setMaxRepositoryEntryRelations(3);
+		structureType.setSingleElement(false);
+		structureType = curriculumService.updateCurriculumElementType(structureType);
+		RepositoryEntryEducationalType educationalType = repositoryManager.createEducationalType(random());
+		
+		Identity implementationMember = JunitTestHelper.createAndPersistIdentityAsRndUser(USER_PREFIX);
+		CurriculumElement implementation = create(curriculum, structureType, CurriculumElementStatus.preparation, null, implementationMember, CE_PARTICIPANT, false, null, false).element();
+		setEducationalType(implementation, educationalType, implementationMember);
+		assertEducationalType(implementationMember, implementation, educationalType);
+		
+		Identity subElementMember = JunitTestHelper.createAndPersistIdentityAsRndUser(USER_PREFIX);
+		CurriculumElement subMemberImplementation = create(curriculum, structureType, CurriculumElementStatus.preparation, structureType, CurriculumElementStatus.preparation, subElementMember, false);
+		setEducationalType(subMemberImplementation, educationalType, subElementMember);
+		assertEducationalType(subElementMember, subMemberImplementation, educationalType);
+	}
+	
+	private void setEducationalType(CurriculumElement element, RepositoryEntryEducationalType educationalType, Identity doer) {
+		element.setEducationalType(educationalType);
+		curriculumService.updateCurriculumElement(doer, element);
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private void assertEducationalType(Identity identity, CurriculumElement element, RepositoryEntryEducationalType educationalType) {
+		List<CurriculumElementInPreparation> elementsInPreparation = inPreparationQueries.searchCurriculumElementsInPreparation(identity);
+		dbInstance.commitAndCloseSession();
+		
+		Assertions.assertThat(elementsInPreparation)
+			.extracting(CurriculumElementInPreparation::element)
+			.filteredOn(element::equals)
+			.extracting(el -> el.getEducationalType().getCssClass())
+			.containsExactly(educationalType.getCssClass());
 	}
 	
 	private ElementEntry create(Curriculum curriculum, CurriculumElementType elementType,

@@ -200,6 +200,7 @@ public class InPreparationQueries {
 		  .append(" inner join fetch el.group as baseGroup")
 		  .append(" inner join fetch el.type as type")
 		  .append(" left join fetch el.resource as rsrc")
+		  .append(" left join fetch el.educationalType as elEducationalType")
 		  .append(" left join repoentrytogroup as rel on (baseGroup.key = rel.group.key)")
 		  .append(" left join rel.entry as v")
 		  .append(" left join fetch v.olatResource as res")
@@ -264,6 +265,7 @@ public class InPreparationQueries {
 		  .append(" inner join fetch implementation.curriculum as curriculum")
 		  .append(" inner join fetch implementation.type as type")
 		  .append(" left join fetch implementation.resource as implementationRsrc")
+		  .append(" left join fetch implementation.educationalType as educationalType")
 		  .and().append("(type.singleElement=false or type.maxRepositoryEntryRelations<>1) and el.parent.key is not null")
 		  .and().append("implementation.status").in(CE_RESERVATION_SUB_STATUS);
 		// is member in sub element
@@ -296,6 +298,7 @@ public class InPreparationQueries {
 		  .append(" inner join fetch implementation.curriculum as curriculum")
 		  .append(" inner join fetch implementation.type as type")
 		  .append(" left join fetch implementation.resource as implementationRsrc")
+		  .append(" left join fetch implementation.educationalType as educationalType")
 		  .and().append("(type.singleElement=false or type.maxRepositoryEntryRelations<>1) and el.parent.key is not null")
 		  .and().append("implementation.status").in(CE_RESERVATION_SUB_STATUS);
 		// has reservation in sub element
