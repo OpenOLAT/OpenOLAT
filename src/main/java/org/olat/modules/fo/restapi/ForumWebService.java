@@ -52,7 +52,6 @@ import jakarta.ws.rs.core.Request;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.StreamingOutput;
-import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 
 import org.apache.commons.codec.binary.Base64;
@@ -376,7 +375,6 @@ public class ForumWebService {
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") @Parameter(description = "The title for the first post in the thread") String title,
 			@QueryParam("body") @Parameter(description = "The body for the first post in the thread") String body, @QueryParam("authorKey") @Parameter(description = "The author user key (optional)") Long authorKey,
 			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
-		ServletUtil.printOutRequestHeaders(httpRequest);
 		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest, uriInfo);
 	}
 	
@@ -671,16 +669,10 @@ public class ForumWebService {
 		VFSContainer container = fom.getMessageContainer(mess.getForum().getKey(), mess.getKey());
 		List<FileVO> attachments = new ArrayList<>();
 		for(VFSItem item: container.getItems(new VFSSystemItemFilter())) {
-			UriBuilder attachmentUri = uriInfo.getBaseUriBuilder().path("repo")
-					.path("forums").path(mess.getForum().getKey().toString())
-					.path("posts").path(mess.getKey().toString())
-					.path("attachments").path(format(item.getName()));
-
-			String uri = attachmentUri.build().toString();
 			if(item instanceof VFSLeaf) {
-				attachments.add(new FileVO("self", uri, item.getName(), ((VFSLeaf)item).getSize()));
+				attachments.add(new FileVO("self", null, item.getName(), ((VFSLeaf)item).getSize()));
 			} else {
-				attachments.add(new FileVO("self", uri, item.getName()));
+				attachments.add(new FileVO("self", null, item.getName()));
 			}
 		}
 		
