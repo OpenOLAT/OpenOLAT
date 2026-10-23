@@ -192,6 +192,7 @@
 	<bean class="org.olat.modules.taxonomy.CompetencesExtension" name="personal.tool.competences" init-method="initExtensionPoints" >
 		<property name="order" value="215" />
 		<property name="navigationKey" value="Competences" />
+		<property name="enabled" value="${minimalhome.ext.competences}"></property>
 		<property name="category" value="achievements" />
 		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_competences" />
 		<property name="actionController">
