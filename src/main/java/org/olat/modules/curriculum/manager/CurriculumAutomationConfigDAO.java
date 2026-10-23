@@ -33,6 +33,7 @@ import org.olat.modules.curriculum.CurriculumAutomationConfig;
 import org.olat.modules.curriculum.CurriculumAutomationRule;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.model.CurriculumAutomationConfigImpl;
 import org.olat.modules.curriculum.model.CurriculumAutomationRuleImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,7 +129,7 @@ public class CurriculumAutomationConfigDAO {
 		return dbInstance.getCurrentEntityManager().merge(config);
 	}
 
-	public void deleteConfigs(CurriculumElementType type) {
+	public void deleteConfigs(CurriculumElementTypeRef type) {
 		String ruleKeysQuery = "select config.rule.key from curriculumautomationconfig config where config.elementType.key=:typeKey";
 		List<Long> ruleKeys = dbInstance.getCurrentEntityManager()
 				.createQuery(ruleKeysQuery, Long.class)

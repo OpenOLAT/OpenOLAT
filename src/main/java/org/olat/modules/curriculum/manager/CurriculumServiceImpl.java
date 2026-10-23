@@ -241,6 +241,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Autowired
 	private CurriculumElementTypeToTypeDAO curriculumElementTypeToTypeDao;
 	@Autowired
+	private CurriculumAutomationConfigDAO curriculumAutomationConfigDao;
+	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
@@ -518,6 +520,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			return false;
 		}
 		curriculumElementTypeToTypeDao.deleteAllowedSubTypes(elementType);
+		curriculumAutomationConfigDao.deleteConfigs(elementType);
 		curriculumElementTypeDao.deleteCurriculumElementType(elementType);
 		return true;
 	}
