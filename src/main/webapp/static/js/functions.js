@@ -28,6 +28,9 @@ o_info.focusBeforeServer = null;
 o_info.lastClickedEl = null;
 o_info.lastClickedTime = 0;
 o_info.focusHandled = false;
+// Key which opens a Bootstrap dropdown, and whether the last Escape closed one
+o_info.dropdownOpenKey = null;
+o_info.dropdownEscape = false;
 
 /**
  * The BLoader object can be used to :
@@ -3502,6 +3505,11 @@ function o_doPrint() {
  * The escape key event loop for OpenOlat components 
  */
 function o_doEscapeDispatch(event) {
+	// The Escape closed a dropdown, not the dialog around it
+	if (o_info.dropdownEscape) {
+		o_info.dropdownEscape = false;
+		return;
+	}
 	// Ignore when target is a standard form selection element
 	// Note: we can not know if the selection dropdown is actually opened or not. We opt 
 	// for this scenario to prevent unintended data loss when user just want to close the dropdown.
@@ -3708,6 +3716,77 @@ jQuery( document ).on('keyup', function(event) {
     if (event.key == "Escape") {
         o_doEscapeDispatch(event);
     }
+});
+
+var o_dropdownKeys = { Escape: true, Tab: true, Enter: true, ' ': true, ArrowDown: true, ArrowUp: true };
+
+function o_dropdownItems(menu) {
+	var selector = menu.getAttribute('role') === 'menu' ? 'li:not(.disabled) a'
+		: 'a[href], a[tabindex], button:not(:disabled), input:not([type=hidden]):not(:disabled), select:not(:disabled), textarea:not(:disabled)';
+	return jQuery(menu).find(selector).filter(':visible').get();
+}
+
+// Capture phase: runs before the delegated keydown handler of Bootstrap
+document.addEventListener('keydown', function(event) {
+	if (!o_dropdownKeys[event.key] || !event.target.closest) {
+		return;
+	}
+	var toggleEl = event.target.closest('[data-toggle="dropdown"]');
+	var menu = event.target.closest('.dropdown-menu');
+	var parent = (toggleEl || menu) ? (toggleEl || menu).parentElement : null;
+	var isOpen = parent !== null && parent.classList.contains('open');
+	if (toggleEl) {
+		o_info.dropdownOpenKey = event.key;
+		setTimeout(function() {
+			o_info.dropdownOpenKey = null;
+		});
+	}
+	if (event.key === 'Escape' && !event.repeat) {
+		o_info.dropdownEscape = isOpen;
+	}
+	if (!isOpen) {
+		return;
+	}
+	var toggle = parent.querySelector(':scope > [data-toggle="dropdown"]');
+	if (!toggle) {
+		return;
+	}
+	if (event.key === 'Escape' && /input|textarea/i.test(event.target.tagName)) {
+		// Bootstrap ignores keys in fields. Vivaldi removes the focus from a field after Escape: focus later
+		event.preventDefault();
+		jQuery(toggle).dropdown('toggle');
+		setTimeout(function() {
+			toggle.focus();
+		});
+	} else if (event.key === 'Tab' && menu && menu.getAttribute('role') === 'menu') {
+		// the menu is closed before the browser moves on from the toggle
+		jQuery(toggle).dropdown('toggle');
+		toggle.focus();
+	} else if (event.key === 'Tab') {
+		setTimeout(function() {
+			if (parent.classList.contains('open') && !parent.contains(document.activeElement)) {
+				jQuery(toggle).dropdown('toggle');
+			}
+		});
+	}
+}, true);
+
+jQuery(document).on('show.bs.dropdown', function(event) {
+	jQuery(event.target).find('> .dropdown-menu[role="menu"] [role^="menuitem"]').attr('tabindex', '-1');
+}).on('shown.bs.dropdown', function(event) {
+	var menu = event.target.querySelector(':scope > .dropdown-menu');
+	if (menu && o_info.dropdownOpenKey) {
+		var items = o_dropdownItems(menu);
+		var item = o_info.dropdownOpenKey === 'ArrowUp' ? items[items.length - 1] : items[0];
+		if (item) {
+			item.focus();
+		}
+	}
+}).on('hide.bs.dropdown', function(event) {
+	var menu = event.target.querySelector(':scope > .dropdown-menu');
+	if (menu && event.relatedTarget && menu.contains(document.activeElement)) {
+		event.relatedTarget.focus();
+	}
 });
 
 // Section header (org.olat.core.gui.components.sections.Sections and FormSection):

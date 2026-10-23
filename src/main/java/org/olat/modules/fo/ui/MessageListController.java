@@ -247,18 +247,24 @@ public class MessageListController extends BasicController implements GenericEve
 		
 		stickyButton = LinkFactory.createLink("msg.sticky", mainVC, this);
 		stickyButton.setIconLeftCSS("o_icon o_icon-fw o_forum_status_sticky_icon");
+		stickyButton.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 		removeStickyButton = LinkFactory.createLink("remove.sticky", mainVC, this);
 		removeStickyButton.setIconLeftCSS("o_icon o_icon-fw o_forum_status_thread_icon");
+		removeStickyButton.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 
 		closeThreadButton = LinkFactory.createLink("close.thread", mainVC, this);
 		closeThreadButton.setIconLeftCSS("o_icon o_icon-fw o_forum_status_closed_icon");
+		closeThreadButton.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 		openThreadButton = LinkFactory.createLink("open.thread", mainVC, this);
 		openThreadButton.setIconLeftCSS("o_icon o_icon-fw o_forum_status_opened_icon");	
+		openThreadButton.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 
 		hideThreadButton = LinkFactory.createLink("hide.thread", mainVC, this);
 		hideThreadButton.setIconLeftCSS("o_icon o_icon-fw o_forum_status_hidden_icon");
+		hideThreadButton.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 		showThreadButton = LinkFactory.createLink("show.thread", mainVC, this);
 		showThreadButton.setIconLeftCSS("o_icon o_icon-fw o_forum_status_visible_icon");
+		showThreadButton.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 
 		allButton = LinkFactory.createButtonSmall("viewswitch.threadview", mainVC, this);
 		allButton.setIconLeftCSS("o_icon o_icon-fw o_icon-flip-vertical o_forum_all_icon");
@@ -721,14 +727,17 @@ public class MessageListController extends BasicController implements GenericEve
 				if (!threadTop) { 
 					Link splitLink = LinkFactory.createCustomLink("split_".concat(keyString), "split", "msg.split", Link.LINK, mainVC, this);
 					splitLink.setIconLeftCSS("o_icon o_icon-fw o_icon_split");
+					splitLink.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 					splitLink.setUserObject(messageView);
 					
 					Link moveLink = LinkFactory.createCustomLink("move_".concat(keyString), "move", "msg.move", Link.LINK, mainVC, this);
 					moveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_move");
+					moveLink.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 					moveLink.setUserObject(messageView);
 				}
 				Link exileLink = LinkFactory.createCustomLink("exile_".concat(keyString), "exile", "msg.exile", Link.LINK, mainVC, this);
 				exileLink.setIconLeftCSS("o_icon o_icon-fw o_forum_status_thread_icon");
+				exileLink.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 				exileLink.setUserObject(messageView);				
 			}
 		}

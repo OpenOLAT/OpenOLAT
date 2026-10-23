@@ -159,13 +159,13 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			// Show menu to opt for all or just current page check
 			target.append("<div id='").append(dispatchId).append("_sm' style='position: relative; ")
 				.append("display:none;", numOfChecked > 0)
-				.append("'><a class='dropdown-toggle' data-toggle='dropdown' href='javascript:;' ")
+				.append("'><a id='").append(dispatchId).append("_smt' class='dropdown-toggle' data-toggle='dropdown' href='javascript:;' role='button' aria-haspopup='menu' aria-expanded='false' ")
 				.append(" title=\"").append(translator.translate("form.checkall")).append("\"")
 				.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i>")					
 				.append("<span class='sr-only'>").append(translator.translate("form.checkall")).append("</span></a>")
-				.append("<ul class='dropdown-menu dropdown-menu-left'>")
+				.append("<ul class='dropdown-menu dropdown-menu-left' role='menu' aria-labelledby='").append(dispatchId).append("_smt'>")
 				// page
-				.append("<li><a id='").append(dispatchId).append("_sp' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
+				.append("<li role='none'><a id='").append(dispatchId).append("_sp' role='menuitem' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
 				.append(formName).append("', true);")
 				.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 						new NameValuePair("select", "checkpage")))
@@ -173,7 +173,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				.append(translator.translate("form.checkpage"))
 				.append("</span></a></li>")
 				// all 
-				.append("<li><a id='").append(dispatchId).append("_sa' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
+				.append("<li role='none'><a id='").append(dispatchId).append("_sa' role='menuitem' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
 				.append(formName).append("', true);")
 				.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 						new NameValuePair("select", "checkall")))

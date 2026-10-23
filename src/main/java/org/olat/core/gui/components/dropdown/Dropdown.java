@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
@@ -31,8 +32,12 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementComponent;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -43,6 +48,7 @@ import org.olat.core.util.StringHelper;
  */
 public class Dropdown extends FormBaseComponentImpl implements ComponentCollection {
 	
+	private static final Logger log = Tracing.createLoggerFor(Dropdown.class);
 	private static final ComponentRenderer RENDERER = new DropdownRenderer();
 	
 	public enum ButtonSize { extraSmall, small, regular, large }
@@ -195,17 +201,31 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 
 	public void addComponent(Component component) {
 		if(component != null) {
+			setMenuItemRole(component);
 			components.add(component);
 		}
 	}
 	
 	public void addComponent(int index, Component component) {
 		if(component != null) {
+			setMenuItemRole(component);
 			if(index >= 0 && index < components.size()) {
 				components.add(index, component);
 			} else {
 				components.add(component);
 			}
+		}
+	}
+	
+	private void setMenuItemRole(Component component) {
+		if(component instanceof Link link) {
+			link.setAriaRole(Link.ARIA_ROLE_MENUITEM);
+		} else if(component instanceof ExternalLink link) {
+			link.setAriaRole(Link.ARIA_ROLE_MENUITEM);
+		} else if(Settings.isDebuging() && !(component instanceof Spacer)
+				&& !(component instanceof DropdownText) && !(component instanceof SpacerElementComponent)) {
+			log.warn("A11y: component {} ({}) added to dropdown {} gets no role automatically, make sure its focusable element has role=\"menuitem\"",
+					component.getComponentName(), component.getClass().getSimpleName(), getComponentName());
 		}
 	}
 	

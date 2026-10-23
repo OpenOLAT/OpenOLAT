@@ -167,8 +167,18 @@
 				i {
 					font-size: $o-toolbar-size-icon-xs;
 				}
+				span:not(.badge) {
+					// a11y: hidden, but kept in the accessible name; @extend %sr-only cannot be used inside @media
+					position: absolute;
+					width: 1px;
+					height: 1px;
+					padding: 0;
+					margin: -1px;
+					overflow: hidden;
+					clip: rect(0, 0, 0, 0);
+					border: 0;
+				}
 				span {
-					display: none;
 					&.badge {
 						display: block;
 						position: relative;
@@ -318,7 +328,14 @@
 					font-size: $o-toolbar-size-icon-xs;
 				}
 				span.o_label {
-					display: none;
+					position: absolute;
+					width: 1px;
+					height: 1px;
+					padding: 0;
+					margin: -1px;
+					overflow: hidden;
+					clip: rect(0, 0, 0, 0);
+					border: 0;
 				}
 			}				
 		}
@@ -374,7 +391,14 @@
 				}
 				span.o_inner_text,
 				span.o_label {
-					display: none;
+					position: absolute;
+					width: 1px;
+					height: 1px;
+					padding: 0;
+					margin: -1px;
+					overflow: hidden;
+					clip: rect(0, 0, 0, 0);
+					border: 0;
 				}
 			}				
 			

@@ -48,7 +48,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	
 	protected void renderAddAbove(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		if(cmp.isCreate()) {
-			sb.append("<a id='o_ccaab_").append(cmp.getDispatchID()).append("' ")
+			sb.append("<a id='o_ccaab_").append(cmp.getDispatchID()).append("' role='menuitem' ")
 				  .append("href='javascript:;' onclick=\"");// add elements directly in container
 			ubu.buildXHREvent(sb, "", false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "add_element_above"),
@@ -60,7 +60,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	
 	protected void renderAddBelow(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		if(cmp.isCreate()) {
-			sb.append("<a id='o_ccabe_").append(cmp.getDispatchID()).append("' ")
+			sb.append("<a id='o_ccabe_").append(cmp.getDispatchID()).append("' role='menuitem' ")
 				  .append("href='javascript:;' onclick=\"");// add elements directly in container
 			ubu.buildXHREvent(sb, "", false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "add_element_below"),
@@ -72,7 +72,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	
 	protected void renderDuplicateMenuItem(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		if(cmp.isCloneable()) {
-			sb.append("<a id='o_ccdup_").append(cmp.getDispatchID()).append("' ")
+			sb.append("<a id='o_ccdup_").append(cmp.getDispatchID()).append("' role='menuitem' ")
 					.append("href='javascript:;' onclick=\"");
 			ubu.buildXHREvent(sb, "", false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, "clone_element"),
@@ -134,7 +134,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 	
 	protected void renderDelete(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		if(cmp.isDeleteable()) {
-			sb.append("<a id='o_ccdelete_").append(cmp.getDispatchID()).append("' ");
+			sb.append("<a id='o_ccdelete_").append(cmp.getDispatchID()).append("' role='menuitem' ");
 			if(!cmp.isDeleteLinkDisabled()) {
 				sb.append("href='javascript:;' onclick=\"");// add elements directly in container
 				ubu.buildXHREvent(sb, "", false, true,
@@ -148,7 +148,7 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 			}
 			sb.append("' ");
 			if(cmp.isDeleteLinkDisabled()) {
-				sb.append("role='link' aria-disabled='true' ");
+				sb.append("aria-disabled='true' ");
 			}
 			sb.append("title='").append(translator.translate("delete"))
 			  .append("'><i class='o_icon o_icon-fw o_icon_delete_item'> </i> <span>").append(translator.translate("delete")).append("</span></a>");
@@ -177,30 +177,30 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 		if(!cmp.isDeleteable() && !cmp.isCreate()) return;
 		
 		// More button
-		sb.append("<button id='o_cmore_").append(cmp.getDispatchID()).append("' tabindex='0' type='button' class='dropdown-toggle' data-toggle='dropdown' aria-expanded='false'")
+		sb.append("<button id='o_cmore_").append(cmp.getDispatchID()).append("' tabindex='0' type='button' class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='menu' aria-expanded='false'")
 		  .append(" title='").append(translator.translate("more.title")).append("'>")
 		  .append("<i class='o_icon o_icon-fw o_icon_commands' aria-hidden='true' title=\"").appendHtmlAttributeEscaped(translator.translate("action.more")).append("\"> </i>")
 		  .append("<span class='sr-only'>").appendHtmlAttributeEscaped(translator.translate("action.more")).append("</span></button>");
 		// Menu
-		sb.append("<ul class='dropdown-menu dropdown-menu-right' role='menu' style=''>");
+		sb.append("<ul class='dropdown-menu dropdown-menu-right' role='menu' aria-labelledby='o_cmore_").append(cmp.getDispatchID()).append("' style=''>");
 		
 		if(cmp.isCreate()) {
-			sb.append("<li role='menuitem'>");
+			sb.append("<li role='none'>");
 			renderAddAbove(sb, cmp, ubu, translator);
-			sb.append("</li><li role='menuitem'>");
+			sb.append("</li><li role='none'>");
 			renderAddBelow(sb, cmp, ubu, translator);
 			sb.append("</li>");
 		}
 		
 		if(cmp.isCloneable()) {
-			sb.append("<li role='menuitem'>");
+			sb.append("<li role='none'>");
 			renderDuplicateMenuItem(sb, cmp, ubu, translator);
 			sb.append("</li>");
 		}
 		
 		if(cmp.isDeleteable()) {
-			sb.append("<li class='divider'></li>")
-			  .append("<li role='menuitem'>");
+			sb.append("<li class='divider' role='separator'></li>")
+			  .append("<li role='none'>");
 			renderDelete(sb, cmp, ubu, translator);
 			sb.append("</li>");
 		}

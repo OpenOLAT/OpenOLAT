@@ -63,8 +63,9 @@ public class IconSelectorRenderer extends DefaultComponentRenderer {
 		sb.append("<button style='padding-left: ").append(iconSelected ? "32" : "12")
 				.append("px;' class='btn btn-default dropdown-toggle o_icon_selector_button o_can_have_focus o_button_printed' type='button' ")
 				.append("id='").append(buttonId).append("' data-toggle='dropdown' ")
-				.append("aria-haspopup='true' aria-expanded='true' ")
-				.append("aria-label='" + ariaLabel + "' ", StringHelper.containsNonWhitespace(ariaLabel))
+				.append("aria-expanded='false' ")
+				.append("aria-label=\"" + StringHelper.escapeHtml(ariaLabel) + "\" ", StringHelper.containsNonWhitespace(ariaLabel))
+				.append("aria-labelledby='o_cl" + iconSelectorComponent.getDispatchID() + " " + buttonId + "' ", iconSelectorEl.hasLabel())
 				.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ")
 				.append(!iconSelectorEl.isEnabled() ? " disabled" : "").append(">")
 				.append("<i class='o_icon o_icon_selector_icon ")
@@ -83,17 +84,18 @@ public class IconSelectorRenderer extends DefaultComponentRenderer {
 				.append("' aria-labelledby='").append(buttonId).append("'>");
 
 		for (IconSelectorElement.Icon icon : icons) {
+			boolean selected = selectedIcon != null && icon.id().equals(selectedIcon.id());
 			sb.append("<li data-icon='").append(icon.id()).append("' class='");
-			if (selectedIcon != null && icon.id().equals(selectedIcon.id())) {
+			if (selected) {
 				sb.append("o_selected ");
 			}
 			sb.append(" o_compact", iconSelectorEl.isCompact());
-			sb.append("' ");
+			sb.append("'>");
+			sb.append("<a tabindex='0' role='button' aria-pressed='").append(selected).append("' ");
 			if (iconSelectorEl.isCompact()) {
-				sb.append("aria-label='").append(icon.translatedName()).append("' ");
+				sb.append("aria-label=\"").appendHtmlAttributeEscaped(icon.translatedName()).append("\" ");
 			}
-			sb.append(">");
-			sb.append("<a tabindex='0' role='button' aria-pressed='false' class='dropdown-item o_icon_selector_link' ");
+			sb.append("class='dropdown-item o_icon_selector_link' ");
 
 			String name = !iconSelectorEl.isCompact() ? icon.translatedName() : "";
 			String updateFunctionCall = "o_is_set_icon('" + icon.id() + "', '" +
@@ -138,8 +140,8 @@ public class IconSelectorRenderer extends DefaultComponentRenderer {
 		sb.append("  jQuery('#' + buttonId).css('padding-left', '32px');\n");
 		sb.append("  jQuery('#' + buttonId + ' i').removeClass(oldCssClass).addClass(cssClass);\n");
 		sb.append("  jQuery('#' + buttonId + ' span').text(text);\n");
-		sb.append("  jQuery('#' + dropdownId + ' li[data-icon=\"' + oldIconId + '\"]').removeClass('o_selected');\n");
-		sb.append("  jQuery('#' + dropdownId + ' li[data-icon=\"' + iconId + '\"]').addClass('o_selected');\n");
+		sb.append("  jQuery('#' + dropdownId + ' li[data-icon=\"' + oldIconId + '\"]').removeClass('o_selected').children('a').attr('aria-pressed', 'false');\n");
+		sb.append("  jQuery('#' + dropdownId + ' li[data-icon=\"' + iconId + '\"]').addClass('o_selected').children('a').attr('aria-pressed', 'true');\n");
 		sb.append("  setFlexiFormDirty(formDispatchFieldId);\n");
 		sb.append("}\n");
 		sb.append("</script>");

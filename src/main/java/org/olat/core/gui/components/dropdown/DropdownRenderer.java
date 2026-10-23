@@ -81,6 +81,10 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		String btnDomID = "dd_btn_" + dropdown.getDispatchID();
 		sb.append("' id='").append(btnDomID);
 		sb.append("' data-toggle='dropdown'");
+		if (hasComponents && dropdown.isEnabled()) {
+			sb.append(" role='button'", !dropdown.isButton());
+			sb.append(" aria-haspopup='menu' aria-expanded='false'");
+		}
 		if (StringHelper.containsNonWhitespace(dropdown.getAriaLabel())) {
 			sb.append(" aria-label=\"");
 			sb.appendHtmlAttributeEscaped(dropdown.getAriaLabel());
@@ -144,7 +148,7 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 				sb.append(" dropdown-menu-right");
 			}		
 			sb.append("' id='").append(itemsDomID).append("'");
-			sb.append(" role='menu'>");
+			sb.append(" role='menu' aria-labelledby='").append(btnDomID).append("'>");
 
 			boolean wantSpacer = false;
 			for(Component component:components) {
@@ -155,14 +159,14 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 					spacer.setDirty(false);
 				} else if(component.isVisible()) {
 					if(wantSpacer) {
-						sb.append("<li class='divider'></li>");
+						sb.append("<li class='divider' role='separator'></li>");
 						wantSpacer = false;
 					}
 					
 					if(component.isEnabled()) {
-						sb.append("<li role='menuitem'>");
+						sb.append("<li role='none'>");
 					} else {
-						sb.append("<li role='menuitem' class='disabled'>");
+						sb.append("<li role='none' class='disabled'>");
 					}
 					renderer.render(component, sb, null);
 					sb.append("</li>");
@@ -201,7 +205,12 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			if (dropdown.getTranslator() != null) {
 				sb.append(" title=\"").appendHtmlAttributeEscaped(dropdown.getTranslator().translate("action.more")).append("\"");				
 				sb.append("> </i>");
-				sb.append("<span class='sr-only'>").appendHtmlAttributeEscaped(dropdown.getTranslator().translate("action.more")).append("</span>");				
+				boolean labelled = StringHelper.containsNonWhitespace(dropdown.getInnerText())
+						|| StringHelper.containsNonWhitespace(dropdown.getI18nKey())
+						|| StringHelper.containsNonWhitespace(dropdown.getAriaLabel());
+				if (!labelled) {
+					sb.append("<span class='sr-only'>").appendHtmlAttributeEscaped(dropdown.getTranslator().translate("action.more")).append("</span>");
+				}
 			} else {
 				sb.append("> </i>");
 			}

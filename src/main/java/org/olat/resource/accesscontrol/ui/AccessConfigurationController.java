@@ -316,7 +316,6 @@ public class AccessConfigurationController extends FormBasicController {
 				addMethodDropdown = uifactory.addDropdownMenu("create.more", null, null, formLayout, getTranslator());
 				addMethodDropdown.setElementCssClass("o_sel_accesscontrol_create");
 				addMethodDropdown.setOrientation(DropdownOrientation.right);
-				addMethodDropdown.setAriaLabel("action.nore");
 				addMethodDropdown.setExpandContentHeight(true);
 				
 				boolean addGuest = isAddGuest();

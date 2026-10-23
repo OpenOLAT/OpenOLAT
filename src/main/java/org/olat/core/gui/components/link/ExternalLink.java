@@ -42,6 +42,7 @@ public class ExternalLink extends AbstractComponent implements FormBaseComponent
 	private String iconLeftCSS;
 	private String iconRightCSS;
 	private String cssClass;
+	private String ariaRole;
 	private EscapeMode escapeMode = EscapeMode.html;
 	
 	private final ExternalLinkItem formItem;
@@ -108,6 +109,14 @@ public class ExternalLink extends AbstractComponent implements FormBaseComponent
 		this.iconRightCSS = iconRightCSS;
 	}
 
+	public String getAriaRole() {
+		return ariaRole;
+	}
+	
+	public void setAriaRole(String ariaRole) {
+		this.ariaRole = ariaRole;
+	}
+	
 	public String getCssClass() {
 		return cssClass;
 	}

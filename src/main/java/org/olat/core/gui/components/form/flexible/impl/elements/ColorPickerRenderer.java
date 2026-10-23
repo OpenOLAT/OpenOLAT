@@ -64,7 +64,8 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("<button style='padding-left: ").append(selectedColor != null ? "32" : "12")
 				.append("px;' class='btn btn-default dropdown-toggle o_color_picker_button o_can_have_focus o_button_printed' type='button' ")
 				.append("id='").append(buttonId).append("' data-toggle='dropdown' ")
-				.append("aria-haspopup='true' aria-expanded='true'")
+				.append("aria-expanded='false' ")
+				.append("aria-labelledby='o_cl" + colorPickerComponent.getDispatchID() + " " + buttonId + "' ", colorPickerEl.hasLabel())
 				.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ")
 				.append(!colorPickerEl.isEnabled() ? " disabled" : "").append(">");
 		if (selectedColor != null) {
@@ -123,8 +124,8 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("  jQuery('#' + buttonId).css('padding-left', '32px');\n");
 		sb.append("  jQuery('#' + buttonId + ' i.o_color_background').removeClass(oldCssClass).addClass('o_color_picker_colored_area o_icon_a ' + cssClass);\n");
 		sb.append("  jQuery('#' + buttonId + ' span').text(text);\n");
-		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + oldColorId + '\"]').removeClass('o_selected');\n");
-		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + colorId + '\"]').addClass('o_selected');\n");
+		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + oldColorId + '\"]').removeClass('o_selected').children('a').attr('aria-pressed', 'false');\n");
+		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + colorId + '\"]').addClass('o_selected').children('a').attr('aria-pressed', 'true');\n");
 		sb.append("  setFlexiFormDirty(formDispatchFieldId);\n");
 		sb.append("}\n");
 		if (colorPickerEl.getResetButtonId() != null) {
@@ -141,7 +142,7 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 			sb.append(" class='o_selected'");
 		}
 		sb.append(">");
-		sb.append("<a tabindex='0' role='button' aria-pressed='false' class='dropdown-item o_color_picker_link' ");
+		sb.append("<a tabindex='0' role='button' aria-pressed='").append(selected).append("' class='dropdown-item o_color_picker_link' ");
 
 		String updateFunctionCall = "o_cp_set_color('" + colorId + "', '" +
 				colorName + "', '" +

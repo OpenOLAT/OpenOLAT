@@ -127,12 +127,15 @@ public class InstantMessagingMainController extends BasicController implements G
 		// status changer links
 		available = LinkFactory.createLink("presence.available", main, this);
 		available.setIconLeftCSS("o_icon o_icon_status_available o_icon-fw");
+		available.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 		available.setUserObject(Presence.available.name());
 		dnd = LinkFactory.createLink("presence.dnd", main, this);
 		dnd.setIconLeftCSS("o_icon o_icon_status_dnd o_icon-fw");
+		dnd.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 		dnd.setUserObject(Presence.dnd.name());
 		unavailable = LinkFactory.createLink("presence.unavailable", main, this);
 		unavailable.setIconLeftCSS("o_icon o_icon_status_unavailable o_icon-fw");
+		unavailable.setAriaRole(Link.ARIA_ROLE_MENUITEM);
 		unavailable.setUserObject(Presence.unavailable.name());
 		updateStatusCss(null);
 
@@ -327,6 +330,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		}
 		String cssClass = "o_icon o_icon_status_" + imStatus;
 		main.contextPut("statusClass", cssClass);
+		main.contextPut("statusLabel", translate("presence." + imStatus));
 	}
 	
 	private void processAssessmentEvent(AssessmentEvent event) {

@@ -79,6 +79,7 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 
 	public static final String ARIA_ROLE_LINK = "link";
 	public static final String ARIA_ROLE_BUTTON = "button";
+	public static final String ARIA_ROLE_MENUITEM = "menuitem";
 
 	/**
 	 * can be added to one of the following:

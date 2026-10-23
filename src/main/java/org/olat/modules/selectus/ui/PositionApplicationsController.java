@@ -540,7 +540,9 @@ public class PositionApplicationsController extends FormBasicController implemen
 			tableEl.setMultiSelect(true);
 			batchSendApplicationEmailsButton = uifactory.addFormLink("send.application.mails", formLayout, buttonOrLink);
 			batchSendApplicationEmailsButton.setElementCssClass("o_sel_send_app_emails");
-			moreDropdown.addElement(batchSendApplicationEmailsButton);
+			if(buttonOrLink == Link.LINK) {
+				moreDropdown.addElement(batchSendApplicationEmailsButton);
+			}
 		}
 		
 		if(canReferences)  {
@@ -549,11 +551,15 @@ public class PositionApplicationsController extends FormBasicController implemen
 			addComparativeExpertsButton = uifactory.addFormLink("add.comparative.expert", formLayout, buttonOrLink);
 			addComparativeExpertsButton.setElementCssClass("o_sel_add_comparative_experts");
 			addComparativeExpertsButton.setVisible(recruitingModule.isComparativeAssessmentExpertsEnabled() && position.isComparativeAssessmentExpertEnabled());
-			moreDropdown.addElement(addComparativeExpertsButton);
+			if(buttonOrLink == Link.LINK) {
+				moreDropdown.addElement(addComparativeExpertsButton);
+			}
 			
 			batchSendReferencesEmailsButton = uifactory.addFormLink("send.reference.mails", formLayout, buttonOrLink);
 			batchSendReferencesEmailsButton.setElementCssClass("o_sel_send_ref_emails");
-			moreDropdown.addElement(batchSendReferencesEmailsButton);
+			if(buttonOrLink == Link.LINK) {
+				moreDropdown.addElement(batchSendReferencesEmailsButton);
+			}
 		}
 		
 		if(canAppsFeedback) {

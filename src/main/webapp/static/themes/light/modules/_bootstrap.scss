@@ -338,6 +338,8 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 
 /* a11y: accessibility fix: visually set focus for drop-down toggles */
 .dropdown-toggle:focus-visible {
+	// Firefox drops the WebKit color of tab-focus and would keep the outline 0 of Bootstrap
+	outline: 5px auto;
 	@include tab-focus;
 }
 /* a11y: set max contrast for a11y checker tools */

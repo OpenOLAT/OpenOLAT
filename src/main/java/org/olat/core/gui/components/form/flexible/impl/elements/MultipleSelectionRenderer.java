@@ -105,9 +105,9 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("'>");
 		if (stC.isEnabled()) {
-			sb.append("<button type='button' class='btn btn-default dropdown-toggle o_button_printed o_ms_button' data-toggle='dropdown'");
+			sb.append("<button type='button' class='btn btn-default dropdown-toggle o_button_printed o_ms_button' data-toggle='dropdown' aria-expanded='").append(stF.getFormRequestEval().isTrue()).append("'");
 			if (stF.hasLabel()) {
-				sb.append(" aria-labelledby=\"o_cl").append(stC.getDispatchID()).append("\"");
+				sb.append(" aria-labelledby=\"o_cl").append(stC.getDispatchID()).append(" ").append(buttonTitleId).append("\"");
 			}
 			sb.append(">");
 			sb.append("<span id='").append(buttonTitleId).append("'></span>&nbsp;<span class='caret o_ms_carret'></span>");

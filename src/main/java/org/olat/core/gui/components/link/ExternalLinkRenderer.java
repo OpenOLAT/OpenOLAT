@@ -67,6 +67,10 @@ public class ExternalLinkRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(link.getTarget())) {
 			sb.append(" target=\"").append(link.getTarget()).append("\"");
 		}
+		if(StringHelper.containsNonWhitespace(link.getAriaRole())) {
+			sb.append(" role=\"").appendHtmlEscaped(link.getAriaRole()).append("\"");
+			sb.append(" aria-disabled=\"true\"", !link.isEnabled());
+		}
 		if(!isIconLink && StringHelper.containsNonWhitespace(title)) {
 			sb.append(" title=\"").appendHtmlAttributeEscaped(title).append("\"");
 		}

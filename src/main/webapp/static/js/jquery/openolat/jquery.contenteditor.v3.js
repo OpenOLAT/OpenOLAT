@@ -236,6 +236,8 @@
 						|| jTarget.closest(".o_page_run_image_comparison .twentytwenty-handle").length > 0
 						|| (jTarget.closest("a").length > 0 && jTarget.closest(".o_tools_container").length == 0 && jTarget.closest(".o_ceditor_inspector_header").length == 0)
 						|| jTarget.closest("button").length > 0
+						// Bootstrap closes a dropdown on Escape with a click on its menu
+						|| jTarget.is(".dropdown-menu")
 						|| e.target.nodeName == 'BODY'
 						// callout of an editor is open
 						|| jQuery(".o_ceditor_callout").length > 0;

@@ -4,15 +4,15 @@
 	</div>
 
 	<div id="o_im_status" class="dropdown">
-		<a id="o_im_status_toggle" href="javascript:;" class="o_undecorated dropdown-toggle" data-toggle="dropdown">
+		<a id="o_im_status_toggle" href="javascript:;" class="o_undecorated dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="menu" aria-expanded="false">
 			<i class="$statusClass" aria-hidden="true" title="$r.translateInAttribute("im.status.change.long")"></i>
-			<span class="sr-only">$r.translate("im.status.change.long")</span>
+			<span class="sr-only">$r.translate("im.status.change.long")#if($statusLabel) ($r.escapeHtml($statusLabel))#end</span>
 		</a>
 		<ul class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="o_im_status_toggle">
-			<li role="menuitem">$r.contextHelpWithWrapper("manual_user/basic_concepts/Chat/")</li>
-			<li role="menuitem">$r.render("presence.available")</li>
-			<li role="menuitem">$r.render("presence.dnd")</li>
-			<li role="menuitem">$r.render("presence.unavailable")</li>
+			<li role="none">$r.contextHelpWithWrapper("manual_user/basic_concepts/Chat/").toString().replace('<a ', '<a role="menuitem" ')</li>
+			<li role="none">$r.render("presence.available")</li>
+			<li role="none">$r.render("presence.dnd")</li>
+			<li role="none">$r.render("presence.unavailable")</li>
 		</ul>
 	</div>
 

@@ -99,7 +99,7 @@ public class ToolBarRenderer extends DefaultComponentRenderer {
 	private void renderTools(List<Tool> tools, Renderer renderer, ToolsSlot slot, StringOutput sb, Translator translator, String[] args) {
 		if(!tools.isEmpty()) {
 			Align align = slot.getSlot();
-			sb.append("<ul class='o_tools ").append(align.cssClass()).append(" list-inline' role='menu'>");
+			sb.append("<ul class='o_tools ").append(align.cssClass()).append(" list-inline'>");
 			
 			int limit = slot.getLimitOfTools();
 			for(int i=0; i<tools.size() && i<limit-1; i++) {
@@ -107,23 +107,23 @@ public class ToolBarRenderer extends DefaultComponentRenderer {
 			}
 			if(tools.size() > limit) {
 				List<Tool> droppedTools = tools.subList(limit - 1, tools.size());
-				renderDropDown(droppedTools, renderer, slot, sb, translator, args); 
+				renderDropDown(droppedTools, renderer, slot, sb, translator); 
 			}
 			sb.append("</ul>");
 		}
 	}
 	
-	private void renderDropDown(List<Tool> tools, Renderer renderer, ToolsSlot slot, StringOutput sb, Translator translator, String[] args) {
+	private void renderDropDown(List<Tool> tools, Renderer renderer, ToolsSlot slot, StringOutput sb, Translator translator) {
 		String label = translator == null ? slot.getToolDropdownI18nKey() : translator.translate(slot.getToolDropdownI18nKey());// paranoia
 		
 		sb.append("<li class='o_tool_dropdown dropdown'>")
-		  .append("<a href='#' class='dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<a href='#' class='dropdown-toggle' data-toggle='dropdown' role='button' aria-expanded='false'>")
 		  .append("<span class='o_inner_wrapper'><i class='o_icon o_icon_tools'>\u00A0</i></span> <i class='o_icon o_icon_caret'> </i> <span class='o_label'>")
 		  .append(label).append("</span></a>")
-		  .append("<ul class='dropdown-menu").append(" dropdown-menu-right", slot.getSlot() == Align.right || slot.getSlot() == Align.rightEdge).append("' role='menu'>");
+		  .append("<ul class='dropdown-menu").append(" dropdown-menu-right", slot.getSlot() == Align.right || slot.getSlot() == Align.rightEdge).append("'>");
 		for(Tool tool:tools) {
-			sb.append("<li role='menuitem'>");
-			renderer.render(tool.getComponent(), sb, args);
+			sb.append("<li>");
+			renderer.render(tool.getComponent(), sb, null);
 			sb.append("</li>");
 		}
 		sb.append("</ul></li>");
@@ -142,7 +142,7 @@ public class ToolBarRenderer extends DefaultComponentRenderer {
 				cssClass = "o_tool";
 			}				
 		}
-		sb.append("<li role='menuitem' class='").append(cssClass).append("'>");
+		sb.append("<li class='").append(cssClass).append("'>");
 		renderer.render(cmp, sb, args);
 		sb.append("</li>");
 	}

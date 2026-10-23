@@ -701,10 +701,12 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		String dispatchId = ftE.getFormDispatchId();
 		
 		int pageSize = ftE.getPageSize();
+		String pageSizeId = dispatchId.concat("_ps");
+		String labelledBy = pageSizeId + "_a " + pageSizeId + " " + pageSizeId + "_b";
 		sb.append("<div class='o_table_rows_infos o_noprint'>")
-		  .append(translator.translate("page.size.a.small"))
+		  .append("<span id='").append(pageSizeId).append("_a'>").append(translator.translate("page.size.a.small")).append("</span>")
 		  .append(" ")
-		  .append("<div class='btn-group dropup'><button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-expanded='false'>")
+		  .append("<div class='btn-group dropup'><button type='button' id='").append(pageSizeId).append("' class='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-haspopup='menu' aria-expanded='false' aria-labelledby='").append(labelledBy).append("'>")
 	      .append("<span>");
 		if(pageSize < 0) {
 			sb.append(translator.translate("show.all"));
@@ -713,7 +715,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		
 		sb.append("</span> <span class='caret'></span></button>")
-	      .append("<ul class='dropdown-menu' role='menu'>");
+	      .append("<ul class='dropdown-menu' role='menu' aria-labelledby='").append(labelledBy).append("'>");
 		
 		int[] sizes = new int[]{ 20, 50, 100, 250 };
 		int defaultPageSize = ftE.getDefaultPageSize();
@@ -722,21 +724,21 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			Arrays.sort(sizes);
 		}
 		for(int size:sizes) {
-			sb.append("<li role='menuitem'><a href=\"javascript:")
+			sb.append("<li role='none'><a role='menuitemradio' aria-checked='").append(size == pageSize).append("' href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("pagesize", Integer.toString(size))))
 			  .append("\" draggable=\"false\">").append(Integer.toString(size)).append("</a></li>");
 		}
 		
 		if(ftE.isShowAllRowsEnabled()) {
-			sb.append("<li role='menuitem'><a href=\"javascript:")
+			sb.append("<li role='none'><a role='menuitemradio' aria-checked='").append(pageSize < 0).append("' href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("pagesize", "all")))
 			  .append("\" draggable=\"false\">").append(translator.translate("show.all")).append("</a></li>");
 		}
 		  
 		sb.append("</ul></div>")
-		  .append(" ").append(translator.translate("page.size.b"))
+		  .append(" <span id='").append(pageSizeId).append("_b'>").append(translator.translate("page.size.b")).append("</span>")
 		  .append("</div> ");
 	}
 	
