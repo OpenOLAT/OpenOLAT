@@ -4,8 +4,9 @@
 		$r.contextHelpWithWrapper($helpUrl)
 	#end
 	$repEntryTitle</legend>
+	$r.render("reference")
+	#if($r.available("iqeditform"))
+		$r.render("iqeditform")
+	#end
 </fieldset>
-$r.render("reference")
-#if($r.available("iqeditform"))
-	$r.render("iqeditform")
-#end
+
