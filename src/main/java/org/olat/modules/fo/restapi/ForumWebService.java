@@ -52,7 +52,6 @@ import jakarta.ws.rs.core.Request;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.StreamingOutput;
-import jakarta.ws.rs.core.UriInfo;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -61,7 +60,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.services.vfs.restapi.VFSStreamingOutput;
-import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
@@ -157,7 +155,6 @@ public class ForumWebService {
 	 * @param orderBy (value name,creationDate)
 	 * @param asc (value true/false)
 	 * @param httpRequest The HTTP request
-	 * @param uriInfo The URI informations
 	 * @param request The REST request
 	 * @return The list of threads
 	 */
@@ -174,7 +171,7 @@ public class ForumWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getThreads(@QueryParam("start") @Parameter(description = "Set the date for the earliest thread.")@DefaultValue("0") Integer start,
 			@QueryParam("limit") @Parameter(description = "Limit the amount of threads to be returned.") @DefaultValue("25") Integer limit,  @QueryParam("orderBy") @Parameter(description = "orderBy (value name,creationDate)") @DefaultValue("creationDate") String orderBy,
-			@QueryParam("asc") @Parameter(description = "Determine the type of order.") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
+			@QueryParam("asc") @Parameter(description = "Determine the type of order.") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest,
 			@Context Request request) {
 		if(forum == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -184,14 +181,14 @@ public class ForumWebService {
 			int totalCount = fom.countThreadsByForumID(forum.getKey());
 			Message.OrderBy order = toEnum(orderBy);
 			List<Message> threads = fom.getThreadsByForumID(forum.getKey(), start, limit, order, asc);
-			MessageVO[] vos = toArrayOfVO(threads, uriInfo);
+			MessageVO[] vos = toArrayOfVO(threads);
 			MessageVOes voes = new MessageVOes();
 			voes.setMessages(vos);
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
 			List<Message> threads = fom.getThreadsByForumID(forum.getKey(), 0, -1, null, true);
-			MessageVO[] voes = toArrayOfVO(threads, uriInfo);
+			MessageVO[] voes = toArrayOfVO(threads);
 			return Response.ok(voes).build();
 		}
 	}
@@ -275,7 +272,6 @@ public class ForumWebService {
 	 * @param orderBy (value name, creationDate)
 	 * @param asc (value true/false)
 	 * @param httpRequest The HTTP request
-	 * @param uriInfo The URI informations
 	 * @param request The REST request
 	 * @return The messages of the thread
 	 */
@@ -292,7 +288,7 @@ public class ForumWebService {
 	@ApiResponse(responseCode = "404", description = "The author, forum or message not found.")
 	public Response getMessages( @PathParam("threadKey") Long threadKey, @QueryParam("start") @Parameter(description = "Set the date for the earliest thread") @DefaultValue("0") Integer start,
 			@QueryParam("limit")@Parameter(description = "Limit the amount of threads to be returned.") @DefaultValue("25") Integer limit, @QueryParam("orderBy")@Parameter(description = "orderBy (value name,creationDate)") @DefaultValue("creationDate") String orderBy,
-			@QueryParam("asc") @Parameter(description = "Determine the type of order.") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
+			@QueryParam("asc") @Parameter(description = "Determine the type of order.") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest,
 			@Context Request request) {
 		
 		if(forum == null) {
@@ -306,14 +302,14 @@ public class ForumWebService {
 			int totalCount = fom.countThread(threadKey);
 			Message.OrderBy order = toEnum(orderBy);
 			List<Message> threads = fom.getThread(threadKey, start, limit, order, asc);
-			MessageVO[] vos = toArrayOfVO(threads, uriInfo);
+			MessageVO[] vos = toArrayOfVO(threads);
 			MessageVOes voes = new MessageVOes();
 			voes.setMessages(vos);
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
 			List<Message> messages = fom.getThread(threadKey);
-			MessageVO[] messageArr = toArrayOfVO(messages, uriInfo);
+			MessageVO[] messageArr = toArrayOfVO(messages);
 			return Response.ok(messageArr).build();
 		}
 	}
@@ -326,7 +322,6 @@ public class ForumWebService {
 	 * @param body The body for the first post in the thread
 	 * @param authorKey The author key
 	 * @param httpRequest The HTTP request
-	 * @param uriInfo The URI informations
 	 * @return The new message
 	 */
 	@POST
@@ -344,8 +339,8 @@ public class ForumWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPostPost(@PathParam("messageKey") Long messageKey, @FormParam("title") String title,
 			@FormParam("body") String body, @FormParam("authorKey") Long authorKey,
-			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
-		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest, uriInfo);
+			@Context HttpServletRequest httpRequest) {
+		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest);
 	}
 	
 	/**
@@ -356,7 +351,6 @@ public class ForumWebService {
 	 * @param body The body for the first post in the thread
 	 * @param authorKey The author user key (optional)
 	 * @param httpRequest The HTTP request
-	 * @param uriInfo The URI informations
 	 * @return The new Message
 	 */
 	@PUT
@@ -374,8 +368,8 @@ public class ForumWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") @Parameter(description = "The title for the first post in the thread") String title,
 			@QueryParam("body") @Parameter(description = "The body for the first post in the thread") String body, @QueryParam("authorKey") @Parameter(description = "The author user key (optional)") Long authorKey,
-			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
-		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest, uriInfo);
+			@Context HttpServletRequest httpRequest) {
+		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest);
 	}
 	
 	/**
@@ -401,13 +395,12 @@ public class ForumWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, ReplyVO reply,
-			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
-		ServletUtil.printOutRequestHeaders(httpRequest);
-		return replyToPost(messageKey, reply, null, httpRequest, uriInfo);
+			@Context HttpServletRequest httpRequest) {
+		return replyToPost(messageKey, reply, null, httpRequest);
 	}
 	
 		
-	private Response replyToPost(Long messageKey, ReplyVO reply, Long authorKey, HttpServletRequest httpRequest, UriInfo uriInfo) {
+	private Response replyToPost(Long messageKey, ReplyVO reply, Long authorKey, HttpServletRequest httpRequest) {
 		Identity identity = getIdentity(httpRequest);
 		if(identity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -430,7 +423,7 @@ public class ForumWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!forum.equalsByPersistableKey(mess.getForum())) {
-			return Response.serverError().status(Status.CONFLICT).build();
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
 
 		// creating the thread (a message without a parent message)
@@ -447,7 +440,7 @@ public class ForumWebService {
 		}
 
 		MessageVO vo = new MessageVO(newMessage);
-		vo.setAttachments(getAttachments(newMessage, uriInfo));
+		vo.setAttachments(getAttachments(newMessage));
 		return Response.ok(vo).build();
 	}
 
@@ -455,7 +448,6 @@ public class ForumWebService {
 	 * Retrieves the attachments of the message
 	 * 
 	 * @param messageKey The key of the message
-	 * @param uriInfo The URI information
 	 * @return The attachments
 	 */
 	@GET
@@ -464,17 +456,17 @@ public class ForumWebService {
 	@ApiResponse(responseCode = "200", description = "Ok.")
 	@ApiResponse(responseCode = "404", description = "The message not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response getAttachments(@PathParam("messageKey") Long messageKey, @Context UriInfo uriInfo) {
+	public Response getAttachments(@PathParam("messageKey") Long messageKey) {
 		//load message
 		Message mess = fom.loadMessage(messageKey);
 		if(mess == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!forum.equalsByPersistableKey(mess.getForum())) {
-			return Response.serverError().status(Status.CONFLICT).build();
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
 		
-		FileVO[] attachments = getAttachments(mess, uriInfo);
+		FileVO[] attachments = getAttachments(mess);
 		return Response.ok(attachments).build();
 	}
 	
@@ -500,7 +492,7 @@ public class ForumWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!forum.equalsByPersistableKey(mess.getForum())) {
-			return Response.serverError().status(Status.CONFLICT).build();
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
 		
 		VFSContainer container = fom.getMessageContainer(mess.getForum().getKey(), mess.getKey());
@@ -617,7 +609,7 @@ public class ForumWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!forum.equalsByPersistableKey(mess.getForum())) {
-			return Response.serverError().status(Status.CONFLICT).build();
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
 		return attachToPost(mess, filename, file, request);
 	}
@@ -660,12 +652,7 @@ public class ForumWebService {
 		return Response.ok().build();
 	}
 	
-	public String format(String segment) {
-		segment = segment.replace(" ", "_");
-		return segment;
-	}
-	
-	private FileVO[] getAttachments(Message mess, UriInfo uriInfo) {
+	private FileVO[] getAttachments(Message mess) {
 		VFSContainer container = fom.getMessageContainer(mess.getForum().getKey(), mess.getKey());
 		List<FileVO> attachments = new ArrayList<>();
 		for(VFSItem item: container.getItems(new VFSSystemItemFilter())) {
@@ -681,12 +668,12 @@ public class ForumWebService {
 		return attachmentArr;
 	}
 	
-	private MessageVO[] toArrayOfVO(List<Message> threads, UriInfo uriInfo) {
+	private MessageVO[] toArrayOfVO(List<Message> threads) {
 		MessageVO[] threadArr = new MessageVO[threads.size()];
 		int i=0;
 		for(Message thread:threads) {
 			MessageVO msg = new MessageVO(thread);
-			msg.setAttachments(getAttachments(thread, uriInfo));
+			msg.setAttachments(getAttachments(thread));
 			threadArr[i++] = msg;
 		}
 		return threadArr;
@@ -712,7 +699,7 @@ public class ForumWebService {
 		} else {
 			author = getIdentity(httpRequest);
 			if(!authorKey.equals(author.getKey())) {
-				throw new WebApplicationException(Status.CONFLICT);
+				throw new WebApplicationException(Status.NOT_ACCEPTABLE);
 			}
 		}
 		

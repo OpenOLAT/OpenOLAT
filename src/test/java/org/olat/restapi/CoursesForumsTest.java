@@ -195,6 +195,123 @@ public class CoursesForumsTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void testGetThreads() throws IOException, URISyntaxException  {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
+		URI uri = UriBuilder.fromUri(getForumURI()).path("threads").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<MessageVO> threads = conn.parseList(response, MessageVO.class);
+		
+		Assert.assertNotNull(threads);
+		Assert.assertFalse(threads.isEmpty());	
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetThreadsWithPaging() throws IOException, URISyntaxException  {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
+		URI uri = UriBuilder.fromUri(getForumURI()).path("threads")
+				.queryParam("start", "0").queryParam("limit", "2").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		MessageVOes threads = conn.parse(response, MessageVOes.class);
+		
+		Assert.assertNotNull(threads);
+		Assert.assertNotNull(threads.getMessages());
+		Assert.assertTrue(threads.getTotalCount() >= 1);
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetThread() throws IOException, URISyntaxException  {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
+		URI uri = UriBuilder.fromUri(getForumURI()).path("posts").path(m1.getKey().toString()).build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<MessageVO> threads = conn.parseList(response, MessageVO.class);
+		
+		Assert.assertNotNull(threads);
+		Assert.assertFalse(threads.isEmpty());
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetThreadTraversal() throws IOException, URISyntaxException  {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
+		Forum otherForum = forumManager.addAForum();
+		Message o1 = forumManager.createMessage(otherForum, id1.getIdentity(), false);
+		o1.setTitle("Traversal-2");
+		o1.setBody("Body of Traversal-2");
+		o1 = forumManager.addTopMessage(o1);
+		dbInstance.commitAndCloseSession();
+		
+		URI uri = UriBuilder.fromUri(getForumURI()).path("posts").path(o1.getKey().toString()).build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(406, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetThreadWithPaging() throws IOException, URISyntaxException  {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
+		URI uri = UriBuilder.fromUri(getForumURI()).path("posts").path(m1.getKey().toString())
+				.queryParam("start", "0").queryParam("limit", "2").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		MessageVOes threads = conn.parse(response, MessageVOes.class);
+		
+		Assert.assertNotNull(threads);
+		Assert.assertNotNull(threads.getMessages());
+		Assert.assertTrue(threads.getTotalCount() >= 1);
+		
+		conn.shutdown();
+	}
+
+	@Test
+	public void testNewThread() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
+		URI uri = UriBuilder.fromUri(getForumURI()).path("threads").queryParam("authorKey", id1.getKey())
+			.queryParam("title", "New thread")
+			.queryParam("body", "A very interesting thread").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		MessageVO thread = conn.parse(response, MessageVO.class);
+		assertNotNull(thread);
+		assertNotNull(thread.getKey());
+		assertEquals(thread.getForumKey(), forum.getKey());
+		assertEquals(thread.getAuthorKey(), id1.getKey());
+		
+		//really saved?
+		boolean saved = false;
+		List<Message> allMessages = forumManager.getMessagesByForum(forum);
+		for(Message message:allMessages) {
+			if(message.getKey().equals(thread.getKey())) {
+				saved = true;
+			}
+		}
+		assertTrue(saved);
+		
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testNewMessage() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
