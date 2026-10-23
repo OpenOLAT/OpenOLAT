@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.util.i18n.I18nModule;
 
 
@@ -45,13 +46,13 @@ public class LocaleNegotiator {
 			return locale;
 		}
 		
-		Locale queryingLocale = getNegotiatedLocale(ureq.getHttpReq().getLocale());
+		Locale queryingLocale = getNegotiatedLocale(ServletUtil.getLocale(ureq.getHttpReq()));
 		if (queryingLocale != null) {
 			return queryingLocale;
 		}
 		
 	//next try with the other accepted languages
-		for(Enumeration<Locale> en=ureq.getHttpReq().getLocales(); en.hasMoreElements(); ) {
+		for(Enumeration<Locale> en=ServletUtil.getLocales(ureq.getHttpReq()); en.hasMoreElements(); ) {
 			Locale nextQueryingLocale = getNegotiatedLocale(en.nextElement());
 			if (nextQueryingLocale != null) {
 				return nextQueryingLocale;
