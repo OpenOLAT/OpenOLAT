@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>7.0.9</org.springframework.version>
+		<org.springframework.version>7.0.10</org.springframework.version>
 		<org.hibernate.version>7.3.13.Final</org.hibernate.version>
 		<org.hibernate.validator.version>9.1.5.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.9</org.glassfish.jaxb.runtime>
@@ -91,7 +91,7 @@
 		<jakarta.xml.bind-api>4.0.5</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.32</qtiworks.version>
-		<org.commonmark>0.30.1</org.commonmark>
+		<org.commonmark>0.31.0</org.commonmark>
 		<dev.langchain4j>1.22.0</dev.langchain4j>
 		
 	    <!-- properties for testing and Q&A -->
@@ -2206,7 +2206,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.71.0</version>
+			<version>6.72.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
