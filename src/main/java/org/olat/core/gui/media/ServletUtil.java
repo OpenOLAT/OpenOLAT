@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 import jakarta.servlet.http.Cookie;
@@ -56,6 +57,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nModule;
 
 /**
  * @author Felix Jost
@@ -130,6 +132,24 @@ public class ServletUtil {
 	
 	public static final String getUserAgent(HttpServletRequest request) {
 		return request == null ? null : request.getHeader("User-Agent");
+	}
+	
+	public static final Locale getLocale(HttpServletRequest request) {
+		try {
+			return request.getLocale();
+		} catch (IllegalArgumentException e) {
+			log.warn("Cannot read the browser languages (define maxLocaleCount in Tomcat): {}", e.getMessage());
+			return I18nModule.getDefaultLocale();
+		}
+	}
+	
+	public static final Enumeration<Locale> getLocales(HttpServletRequest request) {
+		try {
+			return request.getLocales();
+		} catch (IllegalArgumentException e) {
+			log.warn("Cannot read the browser languages (define maxLocaleCount in Tomcat): {}", e.getMessage());
+			return Collections.enumeration(List.of(I18nModule.getDefaultLocale()));
+		}
 	}
 	
 	/**
