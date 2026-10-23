@@ -337,9 +337,14 @@ public class RepositoryEntryReferenceController extends BasicController {
 				doSelectRepositoryEntry(ureq);
 			} else if (event instanceof EmptyState.SecondaryEvent secondaryEvent) {
 				String action = secondaryEvent.getAction();
-				if ("create".equals(action) && createCmp instanceof Link createLink
-						&& createLink.getUserObject() instanceof RepositoryHandler handler) {
-					doCreateRepositoryEntry(ureq, handler);
+				if ("create".equals(action)) {
+					if (createCmp instanceof Link createLink && createLink.getUserObject() instanceof RepositoryHandler handler) {
+						doCreateRepositoryEntry(ureq, handler);
+					} else {
+						// If createCmp is a Dropdown, not a Link, meaning we could create more than one resource type (never the case so far).
+						log.warn("Empty state 'create' action has no single creatable resource type for {}; ignoring click.",
+								referenceProvider.getResourceTypes());
+					}
 				} else if ("import".equals(action)) {
 					doImportRepositoryEntry(ureq);
 				} else if ("import.url".equals(action)) {
