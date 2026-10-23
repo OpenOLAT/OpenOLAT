@@ -250,6 +250,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	private void deleteTopicGroup(Topic topic) {
 		Group group = topic.getGroup();
 		if (group != null) {
+			topicDao.setGroup(topic, null);
 			groupDao.removeMemberships(group);
 			groupDao.removeGroup(group);
 		}

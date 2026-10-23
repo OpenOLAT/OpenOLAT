@@ -34,8 +34,10 @@ import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
+import org.olat.repository.ui.author.ConfirmRestoreController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,7 +88,10 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 		}
 
 		// reload everything
-		if (feedMainCtrl != null && feedResource != null) {
+		if (source instanceof ConfirmRestoreController && event instanceof EntryChangedEvent ece
+				&& "restored".equals(ece.getSource())) {
+			feedMainCtrl.restoreDisplay(ureq, getWindowControl());
+		} else if (feedMainCtrl != null && feedResource != null) {
 			feedMainCtrl.setInfos(feedResource, ureq, getWindowControl());
 		}
 

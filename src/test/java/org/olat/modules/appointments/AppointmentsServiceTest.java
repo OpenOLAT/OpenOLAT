@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.appointments.ParticipationResult.Status;
@@ -53,6 +54,9 @@ public class AppointmentsServiceTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	
+	@Autowired
+	private GroupDAO groupDao;
+
 	@Autowired
 	private AppointmentsService sut;
 	
@@ -753,6 +757,36 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		softly.assertThat(result.getStatus()).isEqualTo(Status.ok);
 		softly.assertThat(result.getParticipations()).hasSize(1);
 		softly.assertAll();
+	}
+
+	@Test
+	public void shouldDeleteTopicWithUserRestriction() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Topic topic = createRandomTopic();
+		sut.addTopicRestriction(topic, participant);
+		dbInstance.commitAndCloseSession();
+		Long groupKey = sut.getTopic(topic).getGroup().getKey();
+
+		sut.deleteTopic(topic);
+		dbInstance.commitAndCloseSession();
+
+		assertThat(sut.getTopic(topic)).isNull();
+		assertThat(groupDao.loadGroup(groupKey)).isNull();
+	}
+
+	@Test
+	public void shouldDeleteTopicsWithUserRestriction() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("ap");
+		Topic topic = createRandomTopic();
+		sut.addTopicRestriction(topic, participant);
+		dbInstance.commitAndCloseSession();
+		Long groupKey = sut.getTopic(topic).getGroup().getKey();
+
+		sut.deleteTopics(topic.getEntry(), topic.getSubIdent());
+		dbInstance.commitAndCloseSession();
+
+		assertThat(sut.getTopics(topic.getEntry(), topic.getSubIdent())).isEmpty();
+		assertThat(groupDao.loadGroup(groupKey)).isNull();
 	}
 
 	private Topic createRandomTopic() {

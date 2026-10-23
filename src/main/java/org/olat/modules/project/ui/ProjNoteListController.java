@@ -587,7 +587,8 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		if ("ONCLICK".equals(event.getCommand())) {
 			String key = ureq.getParameter("select");
 			if (StringHelper.containsNonWhitespace(key) && StringHelper.isLong(key)) {
-				doSelectNote(ureq, () -> Long.valueOf(key), false);
+				ProjNoteRow row = dataModel.getObjectByKey(Long.valueOf(key));
+				doSelectNote(ureq, row, false);
 			}
 		} else if (source == stackPanel) {
 			if (event instanceof PopEvent) {

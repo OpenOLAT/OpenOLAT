@@ -49,6 +49,7 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
@@ -182,6 +183,21 @@ public class CurriculumServiceTest extends OlatTestCase {
 		RepositoryEntryLectureConfiguration configuration = lectureService.getRepositoryEntryLectureConfiguration(courseEntry);
 		Assert.assertNotNull(configuration);
 		Assert.assertTrue(configuration.isLectureEnabled());
+	}
+	
+	@Test
+	public void deleteCurriculumElementTypeWithAutomationConfigs() {
+		CurriculumElementType type = curriculumService.createCurriculumElementType("TYPE-AUTO-DEL", "Type with automation", null, null);
+		curriculumAutomationService.updateConfigs(type, curriculumAutomationService.getDefaultConfig(true, 1));
+		dbInstance.commitAndCloseSession();
+		Assertions.assertThat(curriculumAutomationService.getConfigs(type)).isNotEmpty();
+	
+		boolean deleted = curriculumService.deleteCurriculumElementType(type);
+		dbInstance.commitAndCloseSession();
+	
+		Assertions.assertThat(deleted).isTrue();
+		Assertions.assertThat(curriculumService.getCurriculumElementType(type)).isNull();
+		Assertions.assertThat(curriculumAutomationService.getConfigs(type)).isEmpty();
 	}
 	
 	@Test
