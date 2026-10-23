@@ -38,6 +38,7 @@ import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -140,6 +141,8 @@ public class FeedMainController extends BasicController implements Activateable2
 			putInitialPanel(vcMain);
 		} else {
 			RepositoryEntry feedEntry = repositoryManager.lookupRepositoryEntry(feed, false);
+			helper = new FeedViewHelper(feed, getIdentity(), ureq.getUserSession().getRoles(), uiFactory.getTranslator(), courseId, nodeId);
+			
 			if (RepositoryEntryStatusEnum.deleted == feedEntry.getEntryStatus()
 				|| RepositoryEntryStatusEnum.trash == feedEntry.getEntryStatus()) {
 				EmptyStateConfig emptyState = EmptyStateConfig.builder()
@@ -152,8 +155,7 @@ public class FeedMainController extends BasicController implements Activateable2
 				putInitialPanel(emptyStateCmp);
 				return;
 			}
-
-			helper = new FeedViewHelper(feed, getIdentity(), ureq.getUserSession().getRoles(), uiFactory.getTranslator(), courseId, nodeId);
+			
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), feed);
 			display(ureq, wControl);
 			// do logging
@@ -182,6 +184,17 @@ public class FeedMainController extends BasicController implements Activateable2
 		setInfos(feed, ureq, wControl);
 
 		putInitialPanel(vcMain);
+	}
+	
+	protected void restoreDisplay(UserRequest ureq, WindowControl wControl) {
+		vcMain = createVelocityContainer("feed_main");
+
+		vcInfo = feedUIFactory.createInfoVelocityContainer(this);
+		setInfos(feed, ureq, wControl);
+		
+		if(getInitialComponent() instanceof StackedPanel panel) {
+			panel.setContent(vcMain);
+		}
 	}
 
 	protected void setInfos(Feed feed, UserRequest ureq, WindowControl wControl) {
