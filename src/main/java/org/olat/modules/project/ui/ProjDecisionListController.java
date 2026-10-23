@@ -572,7 +572,8 @@ abstract class ProjDecisionListController extends FormBasicController implements
 		if ("ONCLICK".equals(event.getCommand())) {
 			String key = ureq.getParameter("select");
 			if (StringHelper.containsNonWhitespace(key) && StringHelper.isLong(key)) {
-				doOpenDecision(ureq, () -> Long.valueOf(key));
+				ProjDecisionRow row = dataModel.getObjectByKey(Long.valueOf(key));
+				doOpenDecision(ureq, row);
 			}
 		}
 		super.event(ureq, source, event);

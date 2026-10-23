@@ -996,7 +996,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	private void doOpenOrDownload(UserRequest ureq, Long key) {
 		ProjFile file = projectService.getFile(() -> key);
-		if (file != null) {
+		if (file != null && project.equals(file.getArtefact().getProject())) {
 			VFSMetadata vfsMetadata = file.getVfsMetadata();
 			VFSContainer projectContainer = projectService.getProjectContainer(project);
 			VFSItem vfsItem = projectContainer.resolve(file.getVfsMetadata().getFilename());
