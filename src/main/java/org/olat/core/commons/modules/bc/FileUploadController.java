@@ -584,6 +584,9 @@ public class FileUploadController extends FormBasicController {
 		if(metaDataCtr != null && StringHelper.containsNonWhitespace(metaDataCtr.getFilename())) {
 			fileName = metaDataCtr.getFilename();
 		}
+		if(uriValidation) {// With URI validation, we replace ambiguous characters like +
+			fileName = fileName.replace('+', '_');
+		}
 		
 		File uploadedFile = fileEl.getUploadFile();
 		if(resizeImg && fileName != null && imageExtPattern.matcher(fileName.toLowerCase()).find()
@@ -950,11 +953,6 @@ public class FileUploadController extends FormBasicController {
 				itemEl.setErrorKey("cfile.name.notvalid.uri");
 				allOk &= false;
 			}
-		}
-		
-		if(allOk && (filename.contains("+") || filename.contains("'"))) {
-			itemEl.setErrorKey("cfile.name.notvalid");
-			allOk &= false;
 		}
 		
 		return allOk;

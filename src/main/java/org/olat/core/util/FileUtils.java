@@ -86,7 +86,7 @@ public class FileUtils {
 	//linux: invalid characters for file/folder names: /, but you have to escape certain chars, like ";$%&*"
 	//zip: may cause errors: =
 	//OLAT reserved char: ":"	
-	private static final char[] FILE_NAME_FORBIDDEN_CHARS = { '/', '\n', '\r', '\t', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':', ',', '=' };
+	private static final char[] FILE_NAME_FORBIDDEN_CHARS = { '/', '\n', '\r', '\t', '\f', '`', '\'', '?', '*', '\\', '<', '>', '|', '\"', ':', ',', '=' };
 
 	private static final char[] FILE_NAME_ACCEPTED_CHARS = { '\u0228', '\u0196', '\u0252', '\u0220', '\u0246', '\u0214', ' '};
 	// known metadata files
