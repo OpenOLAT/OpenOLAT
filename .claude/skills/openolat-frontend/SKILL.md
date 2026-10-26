@@ -115,7 +115,7 @@ Filter buttons: active state `o_filter_active` goes on the `<a>`, NOT the `<li>`
 
 **Tree Menu:** `.o_tree > ul[role=tree] > li[role=treeitem] > div.o_tree_l{n}` > `a.o_tree_oc_l{n}` (opener) + `span.o_tree_link > a > span.o_tree_item`; levels `o_tree_l{0-11}`
 
-**Toolbar:** `.o_toolbar > .o_breadcrumb + .o_tools_container > .o_tools.o_tools_{left|center|right|right_edge}`; segments `ul.o_tools_segments > li > div.o_segments.btn-group` (selected `a.btn-primary`)
+**Toolbar:** `.o_toolbar > .o_breadcrumb + .o_tools_container > .container-fluid (flex) > ul.o_tools.o_tools_{left|center|right|right_edge}` in this DOM order; segments `ul.o_tools_segments > li > div.o_segments.btn-group` (selected `a.btn-primary`)
 
 **Modal:** `div.o_layered_panel.o_layer_{n} > dialog.dialog.modal.show[aria-modal] > .modal-dialog > .modal-content > .modal-header + .modal-body + .modal-footer`
 
@@ -168,6 +168,7 @@ Collapsible sections need no per-instance script: one delegated handler in `func
 - Keyboard: `triggerClick(event, enter, space)` on link buttons; Escape closes the top layer via `o_doEscapeDispatch()`
 - Callout triggers: `Link/FormLink.setAriaDialogOpener()` → `role="button" aria-haspopup="dialog" aria-expanded`; `CloseableCalloutWindowController` toggles `aria-expanded` and returns the focus to the trigger (`pushdialogfocus`/`popdialogfocus`). Pass the trigger component, not its DOM id. **New in 21.1.0:** used on action columns, table tools and filters; the focus goes to the first visible element of the callout.
 - Disabled links: `LinkRenderer` writes `role`, `aria-disabled="true"` and `aria-haspopup` only for links with an ARIA role (all `Link.BUTTON*` presentations, `setAriaRole`, `setAriaDialogOpener`); plain links and breadcrumbs get no `aria-disabled`. Never `aria-expanded` on a disabled trigger. Do not add `aria-disabled` by hand. The tooltip is `setTextReasonForDisabling(...)`, fallback the translated title.
+- Toolbar (`ToolBarRenderer`): the slot lists are in the DOM in visual order (left, center, right, rightEdge), so the tab order is the visual order. `.container-fluid` is the flex container, the center list takes the free space (`flex: 1 1 0`) and wraps its tools inside, right/rightEdge get `margin-left: auto`. Never position slots with floats, CSS `order` or a positive `tabindex` (WCAG 2.4.3, F44).
 - Breadcrumb (`BreadcrumbBarRenderer`): `<nav aria-label>` > `<ol>` > plain `<li>`; the current crumb is `<span aria-current="page">`, not a link. `role="menuitem"` only inside the "more" menu (`ul role="menu"`).
 
 ## Responsive Design

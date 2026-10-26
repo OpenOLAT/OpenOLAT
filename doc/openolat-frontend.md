@@ -237,6 +237,8 @@ The toolbar (`#o_main_toolbar .o_toolbar`) is rendered by `TooledStackedPanel` a
 | rightEdge | `o_tools_right_edge` | Far right (settings, close) |
 | segment | `o_tools_segments` | Below toolbar as tab-like buttons |
 
+`ToolBarRenderer` writes the slot lists in the visual order left, center, right, rightEdge, so the tab order and the reading order follow the visual order (WCAG 2.4.3). `.container-fluid` is a flex container: the center list takes the free space between left and right (`flex: 1 1 0`) and wraps its tools inside that space, so left and right stay in the first row; right and rightEdge get `margin-left: auto`. Do not position the slots with floats, CSS `order` or a positive `tabindex`.
+
 Toolbar markup:
 
 ```
@@ -251,10 +253,13 @@ Toolbar markup:
     </ol>
   </div>
   <div class="o_tools_container">
-    <ul class="o_tools o_tools_left list-inline"><li class="o_tool"><a class="btn btn-sm">Action</a></li></ul>
-    <ul class="o_tools o_tools_center list-inline">...</ul>
-    <ul class="o_tools o_tools_right list-inline">...</ul>
-    <ul class="o_tools o_tools_right_edge list-inline">...</ul>
+    <div class="container-fluid">
+      <ul class="o_tools o_tools_left list-inline"><li class="o_tool"><a class="btn btn-sm">Action</a></li></ul>
+      <ul class="o_tools o_tools_center list-inline">...</ul>
+      <ul class="o_tools o_tools_right list-inline">...</ul>
+      <ul class="o_tools o_tools_right_edge list-inline">...</ul>
+    </div>
+    <ul class="o_tools o_tools_segments list-inline">...</ul>
   </div>
 </div>
 ```

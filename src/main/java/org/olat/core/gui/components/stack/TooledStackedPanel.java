@@ -20,7 +20,6 @@
 package org.olat.core.gui.components.stack;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,7 +34,6 @@ import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -59,7 +57,6 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 	private Controller navigationBindController;
 	private final ToolBar toolBar;
 	private final SimpleStackedPanel messageCmp;
-	private final EnumMap<Align,ToolsSlot> toolsSlots;
 	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener) {
 		this(name, translator, listener, null);
@@ -68,10 +65,6 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener, String cssClass) {
 		super(name, translator, listener, cssClass);
 		setDomReplacementWrapperRequired(false); // renders own div in Renderer
-		toolsSlots = new EnumMap<>(Align.class);
-		for(Align val:Align.values()) {
-			toolsSlots.put(val, new ToolsSlot(val));
-		}
 		toolBar = new ToolBar(getDispatchID().concat("_tbar"));
 		messageCmp = new SimpleStackedPanel(getDispatchID().concat("_tmsg")) ;
 	}
@@ -316,28 +309,6 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 		this.breadcrumbEnabled = breadcrumbEnabled;
 	}
 	
-	public void setToolsLimit(Align slot, int maxNumberOfTools, String dropdownI18nKey) {
-		setToolsLimit(slot, maxNumberOfTools, dropdownI18nKey, null);
-	}
-
-	/**
-	 * 
-	 * @param slot The slot to limit
-	 * @param maxNumberOfTools The maximum of tools visible in the toolbar
-	 * @param dropdownI18nKey The i18n key to label the dropdown
-	 * @param dropdownIconCss The CSS class to decorate the dropdown
-	 */
-	public void setToolsLimit(Align slot, int maxNumberOfTools, String dropdownI18nKey, String dropdownIconCss) {
-		ToolsSlot config = toolsSlots.get(slot);
-		config.setLimitOfTools(maxNumberOfTools);
-		config.setToolDropdownI18nKey(dropdownI18nKey);
-		if(StringHelper.containsNonWhitespace(dropdownIconCss)) {
-			config.setToolDropdownIconCss(dropdownIconCss);
-		} else {
-			config.setToolDropdownIconCss("o_icon o_icon_menuhandel");
-		}
-	}
-
 	public String getMessage() {
 		return message;
 	}
@@ -427,46 +398,6 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 		}
 	}
 	
-	public class ToolsSlot {
-		
-		private final Align slot;
-		private int limitOfTools = 32;
-		private String toolDropdownI18nKey;
-		private String toolDropdownIconCss;
-		
-		public ToolsSlot(Align slot) {
-			this.slot = slot;
-		}
-
-		public int getLimitOfTools() {
-			return limitOfTools;
-		}
-
-		public void setLimitOfTools(int limitOfTools) {
-			this.limitOfTools = limitOfTools;
-		}
-
-		public Align getSlot() {
-			return slot;
-		}
-
-		public String getToolDropdownI18nKey() {
-			return toolDropdownI18nKey;
-		}
-
-		public void setToolDropdownI18nKey(String i18nKey) {
-			toolDropdownI18nKey = i18nKey;
-		}
-
-		public String getToolDropdownIconCss() {
-			return toolDropdownIconCss;
-		}
-
-		public void setToolDropdownIconCss(String toolDropdownIconCss) {
-			this.toolDropdownIconCss = toolDropdownIconCss;
-		}
-	}
-	
 	public class ToolBar extends AbstractComponent implements ComponentCollection {
 		
 		public ToolBar(String id) {
@@ -476,10 +407,6 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 		
 		public TooledStackedPanel getPanel() {
 			return TooledStackedPanel.this;
-		}
-		
-		public ToolsSlot getSlot(Align align) {
-			return toolsSlots.get(align);
 		}
 		
 		@Override

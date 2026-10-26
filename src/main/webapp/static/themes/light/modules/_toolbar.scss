@@ -405,20 +405,21 @@
 		}
 	}	
 	
-	.o_tools_left {
-		float: left;
-	}
-	.o_tools_right {
-		float: right;
-	}
-	.o_tools_right_edge {
-		// at the right edge of the toolbar, even on small screens
-		float: right;
+	.o_tools_container > .container-fluid {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		&:before, &:after {
+			content: none;
+		}
 	}
 	.o_tools_center {
-		float:both;
-    	margin-left: auto;
-    	margin-right: auto;
+		flex: 1 1 0;
+		min-width: 0;
+		margin-left: 0;
+	}
+	.o_tools_right, .o_tools_right_edge:not(.o_tools_right + *) {
+		margin-left: auto;
 	}
 	
 	.o_tools_segments {
@@ -484,9 +485,6 @@
 		.o_tools_segments.o_tools_segments_alone {
 			margin-top: 1.5em;
 		}
-		.o_tools_center {
-			float: left;
-		}		
 		.o_tool, .o_text, .o_tool_dropdown {
 			margin: 0 0;
 			//this allows full-width dropdown menus

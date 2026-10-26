@@ -29,7 +29,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel.Tool;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.stack.TooledStackedPanel.ToolBar;
-import org.olat.core.gui.components.stack.TooledStackedPanel.ToolsSlot;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -60,10 +59,10 @@ public class ToolBarRenderer extends DefaultComponentRenderer {
 				&& (!leftTools.isEmpty() || !rightTools.isEmpty() || !rightEdgeTools.isEmpty() || !centerTools.isEmpty() || !segmentsTools.isEmpty()))) {
 			sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='o_tools_container'><div class='container-fluid'>");
 
-			renderTools(leftTools, renderer, toolBar.getSlot(Align.left), sb, translator, args);
-			renderTools(rightEdgeTools, renderer, toolBar.getSlot(Align.rightEdge), sb, translator, args);
-			renderTools(rightTools, renderer, toolBar.getSlot(Align.right), sb, translator, args);
-			renderTools(centerTools, renderer, toolBar.getSlot(Align.center), sb, translator, args);
+			renderTools(leftTools, Align.left, renderer, sb, args);
+			renderTools(centerTools, Align.center, renderer, sb, args);
+			renderTools(rightTools, Align.right, renderer, sb, args);
+			renderTools(rightEdgeTools, Align.rightEdge, renderer, sb, args);
 
 			sb.append("</div>"); // container-fluid,
 			
@@ -96,37 +95,14 @@ public class ToolBarRenderer extends DefaultComponentRenderer {
 		return visibleTools;
 	}
 	
-	private void renderTools(List<Tool> tools, Renderer renderer, ToolsSlot slot, StringOutput sb, Translator translator, String[] args) {
+	private void renderTools(List<Tool> tools, Align align, Renderer renderer, StringOutput sb, String[] args) {
 		if(!tools.isEmpty()) {
-			Align align = slot.getSlot();
 			sb.append("<ul class='o_tools ").append(align.cssClass()).append(" list-inline'>");
-			
-			int limit = slot.getLimitOfTools();
-			for(int i=0; i<tools.size() && i<limit-1; i++) {
-				renderTool(tools.get(i), renderer, sb, args);
-			}
-			if(tools.size() > limit) {
-				List<Tool> droppedTools = tools.subList(limit - 1, tools.size());
-				renderDropDown(droppedTools, renderer, slot, sb, translator); 
+			for(Tool tool:tools) {
+				renderTool(tool, renderer, sb, args);
 			}
 			sb.append("</ul>");
 		}
-	}
-	
-	private void renderDropDown(List<Tool> tools, Renderer renderer, ToolsSlot slot, StringOutput sb, Translator translator) {
-		String label = translator == null ? slot.getToolDropdownI18nKey() : translator.translate(slot.getToolDropdownI18nKey());// paranoia
-		
-		sb.append("<li class='o_tool_dropdown dropdown'>")
-		  .append("<a href='#' class='dropdown-toggle' data-toggle='dropdown' role='button' aria-expanded='false'>")
-		  .append("<span class='o_inner_wrapper'><i class='o_icon o_icon_tools'>\u00A0</i></span> <i class='o_icon o_icon_caret'> </i> <span class='o_label'>")
-		  .append(label).append("</span></a>")
-		  .append("<ul class='dropdown-menu").append(" dropdown-menu-right", slot.getSlot() == Align.right || slot.getSlot() == Align.rightEdge).append("'>");
-		for(Tool tool:tools) {
-			sb.append("<li>");
-			renderer.render(tool.getComponent(), sb, null);
-			sb.append("</li>");
-		}
-		sb.append("</ul></li>");
 	}
 	
 	private void renderTool(Tool tool, Renderer renderer, StringOutput sb, String[] args) {
