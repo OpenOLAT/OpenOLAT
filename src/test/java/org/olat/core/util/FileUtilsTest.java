@@ -63,7 +63,7 @@ public class FileUtilsTest {
 		assertCleanedFilename("wer\rwer", "wer_wer");
 		assertCleanedFilename("ert\tert", "ert_ert");
 		assertCleanedFilename("rtz\frtz", "rtz_rtz");
-		assertCleanedFilename("tzu'tzu", "tzu'tzu");
+		assertCleanedFilename("tzu'tzu", "tzu_tzu");
 		assertCleanedFilename("zui?zui", "zui_zui");
 		assertCleanedFilename("uio*uio", "uio_uio");
 		assertCleanedFilename("asd<asd", "asd_asd");
