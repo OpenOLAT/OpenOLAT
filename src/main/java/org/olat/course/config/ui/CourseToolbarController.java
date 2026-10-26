@@ -115,6 +115,7 @@ public class CourseToolbarController extends FormBasicController {
 	private StaticTextElement explainEl;
 	private SelectionElement searchEl;
 	private SelectionElement calendarEl;
+	private SelectionElement calendarCoachWriteEl;
 	private SelectionElement participantListEl;
 	private SelectionElement participantInfoEl;
 	private SelectionElement emailEl;
@@ -255,10 +256,19 @@ public class CourseToolbarController extends FormBasicController {
 			calendarEl.setElementCssClass("o_sel_course_options_calendar");
 			calendarEl.select("xx", calendarEnabled);
 			calendarEl.setEnabled(editable && !managedCal);
+			calendarEl.addActionListener(FormEvent.ONCHANGE);
 			
 			if(managedCal && calendarEnabled) {
 				canHideToolbar &= false;
 			}
+			
+			boolean calendarCoachWriteEnabled = courseConfig.isCalendarCoachWriteEnabled();
+			calendarCoachWriteEl = uifactory.addCheckboxesHorizontal("calCoachWriteIsOn", "chkbx.calendar.coach.write.onoff", formLayout, onKeys, onValues);
+			calendarCoachWriteEl.setElementCssClass("o_sel_course_options_calendar_coach_write");
+			calendarCoachWriteEl.select("xx", calendarCoachWriteEnabled);
+			calendarCoachWriteEl.setEnabled(editable && !managedCal);
+			calendarCoachWriteEl.setVisible(calendarEnabled);
+			calendarCoachWriteEl.setHelpTextKey("chkbx.calendar.coach.write.hint", null);
 		}
 		
 		boolean participantListEnabled = courseConfig.isParticipantListEnabled();
@@ -581,6 +591,8 @@ public class CourseToolbarController extends FormBasicController {
 			doSelectDocumentsFolder(ureq);
 		} else if(bigBlueButtonEl == source) {
 			bigBlueButtonModeratorStartsMeetingEl.setVisible(bigBlueButtonEl.isAtLeastSelected(1));
+		} else if(calendarEl == source) {
+			calendarCoachWriteEl.setVisible(calendarEl.isSelected(0));
 		} else if(toolbarEl == source) {
 			if(!toolbarEl.isSelected(0) && isAnyToolSelected()) {
 				showWarning("chkbx.toolbar.off.warning");
@@ -630,6 +642,7 @@ public class CourseToolbarController extends FormBasicController {
 		searchEl.setVisible(enabled);
 		if(calendarEl != null) {
 			calendarEl.setVisible(enabled);
+			calendarCoachWriteEl.setVisible(enabled && calendarEl.isSelected(0));
 		}
 		participantListEl.setVisible(enabled);
 		participantInfoEl.setVisible(enabled);
@@ -844,6 +857,11 @@ public class CourseToolbarController extends FormBasicController {
 		boolean updateCalendar = courseConfig.isCalendarEnabled() != enableCalendar && calendarModule.isEnableCourseToolCalendar();
 		courseConfig.setCalendarEnabled(enableCalendar && toolbarEnabled);
 		
+		boolean enableCalendarCoachWrite = calendarCoachWriteEl != null && calendarCoachWriteEl.isSelected(0)
+				&& enableCalendar && toolbarEnabled;
+		boolean updateCalendarCoachWrite = courseConfig.isCalendarCoachWriteEnabled() != enableCalendarCoachWrite;
+		courseConfig.setCalendarCoachWriteEnabled(enableCalendarCoachWrite);
+		
 		boolean enableParticipantList = participantListEl.isSelected(0);
 		boolean updateParticipantList = courseConfig.isParticipantListEnabled() != enableParticipantList;
 		courseConfig.setParticipantListEnabled(enableParticipantList && toolbarEnabled);
@@ -972,6 +990,18 @@ public class CourseToolbarController extends FormBasicController {
 			ILoggingAction loggingAction = enableCalendar ?
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_ENABLED:
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_DISABLED;
+
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.calendar, course.getResourceableId()), course);
+		}
+		
+		if(updateCalendarCoachWrite) {
+			ILoggingAction loggingAction = enableCalendarCoachWrite ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_COACH_WRITE_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_COACH_WRITE_DISABLED;
 
 			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()

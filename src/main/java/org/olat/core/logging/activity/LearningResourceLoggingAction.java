@@ -165,6 +165,10 @@ public class LearningResourceLoggingAction extends BaseLoggingAction {
 		new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.calendar).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_CALENDAR_DISABLED = 
 		new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.remove, ActionObject.calendar).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_CALENDAR_COACH_WRITE_ENABLED =
+		new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.open, ActionObject.calendar).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_CALENDAR_COACH_WRITE_DISABLED =
+		new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.close, ActionObject.calendar).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_EFFICIENCY_STATEMENT_ENABLED = 
 		new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.efficency).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_EFFICIENCY_STATEMENT_DISABLED = 
