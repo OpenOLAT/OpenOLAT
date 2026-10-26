@@ -268,7 +268,7 @@ public class CourseToolbarController extends FormBasicController {
 			calendarCoachWriteEl.select("xx", calendarCoachWriteEnabled);
 			calendarCoachWriteEl.setEnabled(editable && !managedCal);
 			calendarCoachWriteEl.setVisible(calendarEnabled);
-			calendarCoachWriteEl.setHelpTextKey("chkbx.calendar.coach.write.hint", null);
+			calendarCoachWriteEl.setExampleKey("chkbx.calendar.coach.write.hint", null);
 		}
 		
 		boolean participantListEnabled = courseConfig.isParticipantListEnabled();

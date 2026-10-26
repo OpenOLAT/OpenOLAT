@@ -34,7 +34,9 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class CalSecurityCallbackFactory {
 	
 	public static CalSecurityCallback createCourseCalendarCallback(UserCourseEnvironment userCourseEnv) {
-		boolean canWrite = !userCourseEnv.isCourseReadOnly() && userCourseEnv.isAdmin();
+		boolean coachCanWrite = userCourseEnv.isCoach()
+				&& userCourseEnv.getCourseEnvironment().getCourseConfig().isCalendarCoachWriteEnabled();
+		boolean canWrite = !userCourseEnv.isCourseReadOnly() && (userCourseEnv.isAdmin() || coachCanWrite);
 		boolean canReadPrivateEvents = userCourseEnv.isAdmin() || userCourseEnv.isCoach() || userCourseEnv.isMemberParticipant();
 		
 		return new CalSecurityCallbackImpl(canWrite, canReadPrivateEvents);
