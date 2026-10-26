@@ -184,7 +184,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.startElements));
 		
 		removeStartElementButton = uifactory.addFormLink("choose.remove.element", "", null, startCont, Link.NONTRANSLATED);
-		removeStartElementButton.setTitle("choose.remove.element");
+		removeStartElementButton.setTitle(translate("choose.remove.element"));
 		removeStartElementButton.setIconLeftCSS("o_icon o_icon_remove");
 		removeStartElementButton.setEnabled(status != Status.end
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.startElements));
