@@ -41,7 +41,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XMLFactories;
 import org.olat.modules.selectus.ui.PositionController;
-import org.olat.modules.selectus.ui.RecruitingMainController;
 import org.springframework.stereotype.Service;
 
 /**
@@ -54,36 +53,40 @@ import org.springframework.stereotype.Service;
 public class TemplatesCache {
 	private static final Logger log = Tracing.createLoggerFor(TemplatesCache.class);
 	private static final Map<String, Templates> templates = new ConcurrentHashMap<>();
+	public static final String STATIC_FOLDER = "/customizing/selectus/";
 
 	public Transformer getTransformer(String templateName)
 	throws TransformerConfigurationException, TransformerFactoryConfigurationError {
-		
+		File path = new File(WebappHelper.getUserDataRoot(), STATIC_FOLDER);
+		if(!path.exists() && !path.mkdirs()) {
+			log.error("/customizing/selectus/ folder cannot be created");
+		}
+		File customTemplateFile = new File(path, templateName);
+		final File templateFile = customTemplateFile.exists()
+				? customTemplateFile
+				: new File(new File(WebappHelper.getSourcePath().replace("/java", "/resources"),"org/olat/modules/selectus/ui"), templateName);
+
 		Templates template;
 		if (Settings.isDebuging()) {			
-			File path = new File(WebappHelper.getSourcePath().replace("/java", "/resources"),"org/olat/modules/selectus/ui");
-			try(InputStream inXslt = new FileInputStream(new File(path, templateName));	) {
-				StreamSource sourceXslt = new StreamSource(inXslt);
-				TransformerFactory factory = XMLFactories.newTransformerFactory();
-				factory.setURIResolver(new ClasspathResourceURIResolver());
-				template = factory.newTemplates(sourceXslt);
-			} catch (Exception e) {
-				log.error("Cannot found stylesheet at: {} / {}", path, templateName, e);
-				return null;
-			}
+			template = loadTemplates(templateName, templateFile);
 		} else {
 			template = templates.computeIfAbsent(templateName, name -> {
-				try(InputStream inXslt = RecruitingMainController.class.getResourceAsStream(name)) {
-					StreamSource sourceXslt = new StreamSource(inXslt);
-					TransformerFactory factory = XMLFactories.newTransformerFactory();
-					factory.setURIResolver(new ClasspathResourceURIResolver());
-					return factory.newTemplates(sourceXslt);
-				} catch(Exception e) {
-					log.error("Cannot read stylesheet: {}", name, e);
-					return null;
-				}
+				return loadTemplates(name, templateFile);
 			});
 		}
 		return template.newTransformer();
+	}
+	
+	private Templates loadTemplates(String name, File templateFile) {
+		try(InputStream inXslt = new FileInputStream(templateFile)) {
+			StreamSource sourceXslt = new StreamSource(inXslt);
+			TransformerFactory factory = XMLFactories.newTransformerFactory();
+			factory.setURIResolver(new ClasspathResourceURIResolver());
+			return factory.newTemplates(sourceXslt);
+		} catch(Exception e) {
+			log.error("Cannot read stylesheet: {}", name, e);
+			return null;
+		}
 	}
 	
 	private static class ClasspathResourceURIResolver implements URIResolver {
