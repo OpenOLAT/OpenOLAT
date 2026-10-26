@@ -952,6 +952,11 @@ public class FileUploadController extends FormBasicController {
 			}
 		}
 		
+		if(allOk && (filename.contains("+") || filename.contains("'"))) {
+			itemEl.setErrorKey("cfile.name.notvalid");
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 	
