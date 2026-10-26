@@ -198,6 +198,9 @@ public class FeedMainController extends BasicController implements Activateable2
 	}
 
 	protected void setInfos(Feed feed, UserRequest ureq, WindowControl wControl) {
+		if (vcInfo == null) {
+			return;
+		}
 		this.feed = feed;
 		// update helper uris with given feed
 		helper.setURIs(feed);
