@@ -47,6 +47,14 @@ public class DayNavElementImpl extends FormItemImpl implements DayNavElement {
 		return component;
 	}
 
+	/**
+	 * Prevent parent to be set as dirty for every request
+	 */
+	@Override
+	public boolean isInlineEditingElement() {
+		return true;
+	}
+	
 	@Override
 	protected void rootFormAvailable() {
 		//
@@ -96,6 +104,16 @@ public class DayNavElementImpl extends FormItemImpl implements DayNavElement {
 	@Override
 	public void setMarkedDays(boolean[] markedDays) {
 		component.setMarkedDays(markedDays);
+	}
+	
+	@Override
+	public DayNavWeekComponent getWeekComponent() {
+		return component.getWeekComponent();
+	}
+	
+	@Override
+	public int getWeekOfYear() {
+		return component.getWeekOfYear();
 	}
 
 }

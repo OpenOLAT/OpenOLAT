@@ -302,9 +302,9 @@ public class CourseWidgetController extends TableWidgetController {
     }
 
     @Override
-    protected String createIndicators(FormLayoutContainer widgetCont) {
-        // Create and return indicator components (key figures)
-        // Return the component name, or null if no indicators
+    protected String createTopArea(FormLayoutContainer widgetCont) {
+        // Create and return the component of the top area (key figure cards, day navigation)
+        // Return the component name, or null if no top area
         return null;
     }
 
@@ -338,6 +338,7 @@ public class CourseWidgetController extends TableWidgetController {
 ### TableWidgetController features
 
 - Standard layout with title, indicators, table, empty state, and "Show all" footer
+- Optional `createHeaderTools()`: a component in the header between the title and the settings button (e.g. the week navigation of the event widget)
 - Built-in per-widget preferences (key figures, visible columns, row count) via `TableWidgetConfigProvider`.
   The settings button is only visible when `getConfigProvider()` returns a provider with a non-empty ID.
   The preferences are stored in `GuiPreferences` under `TableWidgetController.class` and the provider ID.

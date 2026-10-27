@@ -520,9 +520,9 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
     }
 
     @Override
-    protected String createIndicators(FormLayoutContainer widgetCont) {
-        // Create and return indicator components (key figures)
-        // Return the component name, or null if no indicators
+    protected String createTopArea(FormLayoutContainer widgetCont) {
+        // Create and return the component of the top area (key figure cards, day navigation)
+        // Return the component name, or null if no top area
         return null;
     }
 
@@ -555,6 +555,7 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
 <h3 id="tablewidgetcontroller-features">TableWidgetController features</h3>
 <ul>
   <li>Standard layout with title, indicators, table, empty state, and "Show all" footer</li>
+  <li>Optional <code>createHeaderTools()</code>: a component in the header between the title and the settings button (e.g. the week navigation of the event widget)</li>
   <li>Built-in per-widget preferences (key figures, visible columns, row count) via <code>TableWidgetConfigProvider</code>.
     The settings button is only visible when <code>getConfigProvider()</code> returns a provider with a non-empty ID.
     The preferences are stored in <code>GuiPreferences</code> under <code>TableWidgetController.class</code> and the provider ID.</li>

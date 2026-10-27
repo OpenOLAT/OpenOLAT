@@ -101,7 +101,7 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 	private FigureCardsItem figuresEl;
 	private ImplementationTableModel dataModel;
 	private FlexiTableElement tableEl;
-	protected Map<String, FormLink> keyToIndicatorLink;
+	protected Map<String, FormLink> keyToFigureCard;
 	private FormLink showAllLink;
 
 	private CloseableCalloutWindowController calloutCtrl;
@@ -132,10 +132,10 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 	protected abstract void reload();
 
 	@Override
-	protected String createIndicators(FormLayoutContainer widgetCont) {
+	protected String createTopArea(FormLayoutContainer widgetCont) {
 		figuresEl = FigureCardsFactory.createItem("figures", widgetCont);
 
-		keyToIndicatorLink = new LinkedHashMap<>();
+		keyToFigureCard = new LinkedHashMap<>();
 		figureValues = new SelectionValues();
 		createIndicator(widgetCont, "all", "all", "[Implementations:0][All:0]");
 		createIndicator(widgetCont, "relevant", "relevant", "[Implementations:0][Relevant:0]");
@@ -150,7 +150,7 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 	}
 
 	protected void updatePendingIndicator(long pendingCount) {
-		keyToIndicatorLink.get("pendingMemberships").setI18nKey(FigureCardsFactory.createCardText(null, null,
+		keyToFigureCard.get("pendingMemberships").setI18nKey(FigureCardsFactory.createCardText(null, null,
 				String.valueOf(pendingCount), translate("filter.pending.memberships")));
 	}
 
@@ -189,7 +189,7 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 	@Override
 	public void update(TableWidgetConfigPrefs prefs) {
 		keyFigureKey = prefs.getKeyFigureKey();
-		figuresEl.setCards(getFigureCards(keyToIndicatorLink, prefs));
+		figuresEl.setCards(getFigureCards(keyToFigureCard, prefs));
 
 		tableEl.setPageSize(prefs.getNumRows());
 
@@ -245,7 +245,7 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 	protected void createIndicator(FormLayoutContainer widgetCont, String name, String figureValueI18n, String businessPath) {
 		FormLink link = FigureCardsFactory.createCardLink(name, CMD_OPEN, widgetCont);
 		setUrl(link, businessPath, getBaseBusinessPath() + businessPath);
-		keyToIndicatorLink.put(name, link);
+		keyToFigureCard.put(name, link);
 		figureValues.add(SelectionValues.entry(name, translate(figureValueI18n)));
 	}
 
@@ -319,7 +319,7 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 
 	private void updateStatusIndicatorLink(CurriculumElementStatus status, Map<CurriculumElementStatus, Long> statusToCount) {
 		String statusName = status.name();
-		keyToIndicatorLink.get(statusName).setI18nKey(FigureCardsFactory.createCardText(
+		keyToFigureCard.get(statusName).setI18nKey(FigureCardsFactory.createCardText(
 				"o_curriculum_widget_icon o_icon_curriculum_status_" + statusName, null,
 				String.valueOf(statusToCount.getOrDefault(status, Long.valueOf(0))), translate("status." + statusName)));
 	}
@@ -334,9 +334,9 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 				relevantCount += count;
 			}
 		}
-		keyToIndicatorLink.get("all").setI18nKey(FigureCardsFactory.createCardText(null, null,
+		keyToFigureCard.get("all").setI18nKey(FigureCardsFactory.createCardText(null, null,
 				String.valueOf(allCount), translate("all")));
-		keyToIndicatorLink.get("relevant").setI18nKey(FigureCardsFactory.createCardText(null, null,
+		keyToFigureCard.get("relevant").setI18nKey(FigureCardsFactory.createCardText(null, null,
 				String.valueOf(relevantCount), translate("relevant")));
 	}
 

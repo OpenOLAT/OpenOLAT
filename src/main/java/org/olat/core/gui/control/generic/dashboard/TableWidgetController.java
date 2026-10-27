@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -79,7 +80,8 @@ public abstract class TableWidgetController extends FormBasicController implemen
 		prefsLink.setAriaDialogOpener();
 		
 		widgetCont.contextPut("title", getTitle());
-		widgetCont.contextPut("indicatorsComponentName", createIndicators(widgetCont));
+		widgetCont.contextPut("topAreaComponentName", createTopArea(widgetCont));
+		widgetCont.contextPut("headerToolsComponentName", createHeaderTools(widgetCont));
 		widgetCont.contextPut("tableComponentName", createTable(widgetCont));
 		widgetCont.contextPut("emptyComponentName", createEmptyState(widgetCont));
 		widgetCont.contextPut("showAllComponentName", createShowAll(widgetCont));
@@ -88,7 +90,7 @@ public abstract class TableWidgetController extends FormBasicController implemen
 	}
 	
 	protected abstract String getTitle();
-	protected abstract String createIndicators(FormLayoutContainer widgetCont);
+	protected abstract String createTopArea(FormLayoutContainer widgetCont);
 	protected abstract String createTable(FormLayoutContainer widgetCont);
 	protected abstract String createShowAll(FormLayoutContainer widgetCont);
 
@@ -104,12 +106,21 @@ public abstract class TableWidgetController extends FormBasicController implemen
 		return null;
 	}
 	
+	/**
+	 * @param widgetCont 
+	 */
+	protected String createHeaderTools(FormLayoutContainer widgetCont) {
+		return null;
+	}
+	
 	protected TableWidgetConfigProvider getConfigProvider() {
 		return null;
 	}
 	
 	protected void setFooterText(String footerText) {
-		widgetCont.contextPut("footerText", footerText);
+		if (!Objects.equals(widgetCont.contextGet("footerText"), footerText)) {
+			widgetCont.contextPut("footerText", footerText);
+		}
 	}
 	
 	protected void setFooterText(int numShown, long numTotal, String figureLabel) {

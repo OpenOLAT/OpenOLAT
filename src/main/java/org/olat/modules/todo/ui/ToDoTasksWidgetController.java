@@ -88,7 +88,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	private FormLink showAllLink;
 	private ToDoTasksWidgetDataModel dataModel;
 	private FlexiTableElement tableEl;
-	private Map<String, FormLink> keyToIndicatorLink;
+	private Map<String, FormLink> keyToFigureCard;
 
 	private SelectionValues figureValues;
 	private String keyFigureKey;
@@ -133,7 +133,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	@Override
 	public void update(TableWidgetConfigPrefs prefs) {
 		keyFigureKey = prefs.getKeyFigureKey();
-		figuresEl.setCards(getFigureCards(keyToIndicatorLink, prefs));
+		figuresEl.setCards(getFigureCards(keyToFigureCard, prefs));
 
 		tableEl.setPageSize(prefs.getNumRows());
 
@@ -146,10 +146,10 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	}
 
 	@Override
-	protected String createIndicators(FormLayoutContainer widgetCont) {
+	protected String createTopArea(FormLayoutContainer widgetCont) {
 		figuresEl = FigureCardsFactory.createItem("figures", widgetCont);
 
-		keyToIndicatorLink = new LinkedHashMap<>();
+		keyToFigureCard = new LinkedHashMap<>();
 		figureValues = new SelectionValues();
 		createIndicator(widgetCont, "myToDos", "widget.todo.my", "[ToDos:0][" + ToDoTaskListController.TAB_ID_MY + ":0]");
 		createIndicator(widgetCont, "open", "widget.todo.open", "[ToDos:0][" + ToDoTaskListController.TAB_ID_OPEN + ":0]");
@@ -161,7 +161,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	private void createIndicator(FormLayoutContainer widgetCont, String name, String labelI18nKey, String businessPath) {
 		FormLink link = FigureCardsFactory.createCardLink(name, CMD_OPEN, widgetCont);
 		setUrl(link, businessPath, getBaseBusinessPath() + businessPath);
-		keyToIndicatorLink.put(name, link);
+		keyToFigureCard.put(name, link);
 		figureValues.add(SelectionValues.entry(name, translate(labelI18nKey)));
 	}
 
@@ -224,7 +224,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	}
 
 	protected void updateIndicator(String key, long count, String i18nKey) {
-		FormLink link = keyToIndicatorLink.get(key);
+		FormLink link = keyToFigureCard.get(key);
 		if (link != null) {
 			link.setI18nKey(FigureCardsFactory.createCardText(null, null, String.valueOf(count), translate(i18nKey)));
 		}

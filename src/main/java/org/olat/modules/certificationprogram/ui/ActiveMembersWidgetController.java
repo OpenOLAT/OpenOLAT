@@ -103,7 +103,7 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 	}
 
 	@Override
-	protected String createIndicators(FormLayoutContainer widgetCont) {
+	protected String createTopArea(FormLayoutContainer widgetCont) {
 		figuresEl = FigureCardsFactory.createItem("figures", widgetCont);
 		
 		indicatorActiveLink = FigureCardsFactory.createCardLink("active", CMD_OPEN, widgetCont);

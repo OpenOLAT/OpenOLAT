@@ -2326,118 +2326,103 @@ ul.o_list_narrow {
 }
 
 /* Day navigation */
-.o_day_nav {
+.o_day_nav_week {
 	display: flex;
-	gap: 10px;
-	flex-direction: column;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 5px 10px;
 	
-	button {
-		background: none;
-		border: none;
-		border-radius: 4px;
+	.o_day_nav_period {
 		display: flex;
 		align-items: center;
-		justify-content: center;
-	
-		&:hover {
-			background-color: #f9f9f9;
-		}
-	}
-	
-	.o_day_nav_header {
-		display: flex;
-		gap:5px;
-		align-items: baseline;
-		flex-wrap: wrap;
+		gap: 5px;
+		font-size: $o-day-nav-period-font-size;
 		
-		.o_today {
-			display: flex;
-			align-items: center;
-			
-			.o_today_day_button {
-				height: 40px;
-				padding: $o-day-nav-today-button-padding;
-				margin-left: -$o-day-nav-today-button-padding;
-				
-				font-size: $o-day-nav-today-button-font-size;
-				color: $o-datepicker-today-color;
-			}
-			.o_today_text {
-				display: flex;
-				flex-direction: column;
-				
-				font-size: $o-day-nav-today-month-font-size;
-				.o_today_month {
-					@extend %o_muted;
-				}
-			}
+		.o_day_nav_period_dates {
+			font-weight: bold;
+			white-space: nowrap;
 		}
-		
-		.o_week_steper {
-			display: flex;
-			align-items: center;
-			margin-left: auto;
+		.o_day_nav_period_week {
+			@extend %o_muted;
+			white-space: nowrap;
 			
-			.o_week {
+			&::before {
+				content: "\00B7";
+				content: "\00B7" / "";
 				margin-right: 5px;
-				font-size: $o-day-nav-week-font-size;
-			}
-			.o_week_button {
-				height: 30px;
 			}
 		}
 	}
+	
+	.o_day_nav_week_button {
+		padding: 2px;
+		background: none;
+		border: none;
+		border-radius: $border-radius-base;
+		color: $link-color;
+		
+		&:hover {
+			color: $link-hover-color;
+		}
+	}
+}
 
-	ul {
+.o_day_nav {
+	.o_day_nav_days {
 		display: grid;
 		grid-template-columns: repeat(7, minmax(0, 1fr));
-		gap: 10px;
+		gap: $o-day-nav-days-gap;
+		margin: 0;
+	}
+	
+	.o_day_button {
+		@extend %o_card;
+		position: relative;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: $o-day-nav-day-padding;
+		background-color: $o-day-nav-day-bg-color;
+		color: $text-color;
+		line-height: 1.2;
 		
-		.o_day_nav_day {
-			width: 100%;
-			
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: $o-day-nav-day-gap;
-			
-			&.o_day_weekend {
-				@extend %o_muted;
-			}
-			
-			&.o_day_abbr {
-				font-size: $o-day-nav-abbr-font-size;
-			}
-			.o_day_button {
-				height: 40px;
-				aspect-ratio: 1;
-				display: grid;
-				grid-template-columns: 1fr;
-				>* {
-					grid-area: 1 / 1;
-				}
-				
-				font-size: $o-day-nav-num-font-size;
-				
-				.o_day_dot {
-					width: 4px;
-					height: 4px;
-					border-radius: 50%;
-					background-color: currentColor;
-					align-self: end;
-					justify-self: center;
-					margin-bottom: 3px;
-				}
-				&.o_day_selected {
-					background-color: hsl(217, 71%, 53%);
-					color: #fff;
-					font-weight: 600;
-				}
-				&.o_day_today {
-					color: $o-datepicker-today-color;
-					border: 1px solid $o-datepicker-today-border-color;
-				}
-			}
+		&:hover {
+			border-color: $o-day-nav-day-hover-border-color;
+		}
+		.o_day_abbr {
+			font-size: $o-day-nav-abbr-font-size;
+		}
+		.o_day_num {
+			font-size: $o-day-nav-num-font-size;
+		}
+		.o_day_dot {
+			position: absolute;
+			bottom: 3px;
+			left: 50%;
+			width: 4px;
+			height: 4px;
+			margin-left: -2px;
+			border-radius: 50%;
+			background-color: currentColor;
+		}
+		&.o_day_today {
+			color: $o-datepicker-today-color;
+			border-color: $o-datepicker-today-border-color;
+		}
+		&.o_day_selected {
+			background-color: $o-day-nav-day-selected-bg-color;
+			border-color: $o-day-nav-day-selected-bg-color;
+			color: $o-day-nav-day-selected-color;
+			font-weight: 600;
+		}
+	}
+	.o_day_weekend .o_day_button:not(.o_day_selected) {
+		background-color: $o-day-nav-day-weekend-bg-color;
+		
+		&:not(.o_day_today) {
+			color: $text-muted;
 		}
 	}
 }

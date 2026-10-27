@@ -1896,7 +1896,6 @@ $o-dashboard-widget-header-margin				: 20px $o-dashboard-widget-base-margin !def
 $o-dashboard-widget-header-button-margin			: 15px $o-dashboard-widget-base-margin 20px $o-dashboard-widget-base-margin !default;
 $o-dashboard-widget-title-font-size				: 16px !default;
 $o-dashboard-widget-indicators-margin-bottom		: 20px !default;
-$o-dashboard-widget-indicators-min-height		: 66px !default;
 $o-dashboard-widget-header-footer-bg-color		: #fcfcfc !default;
 $o-dashboard-widget-table-bg-color				: #fff !default;
 $o-dashboard-widget-table-th-font-size			: 12px !default;
@@ -2009,12 +2008,17 @@ $o-figure-card-icon-size						: 22px !default;
 $o-figure-card-icon-color					: $brand-primary !default;
 $o-figure-card-icon-bg-color					: rgb($brand-primary, 0.1) !default;
 $o-figure-card-chevron-color					: $text-muted !default;
+$o-dashboard-widget-indicators-min-height		: math.ceil(max($o-figure-card-figure-font-size * $line-height-base, $o-figure-card-icon-size) + $o-figure-card-label-font-size * $line-height-base + 2 * nth($o-figure-card-padding, 1) + 2 * nth($o-card-border, 1)) !default;
 
 /* day navigation */
-$o-day-nav-today-button-padding				: 5px !default;
-$o-day-nav-today-button-font-size			: 40px !default;
-$o-day-nav-today-month-font-size				: 14px !default;
-$o-day-nav-week-font-size					: 18px !default;
-$o-day-nav-day-gap							: 5px !default;
+$o-day-nav-header-one-line-min-width		: 640px !default;
+$o-day-nav-period-font-size					: 16px !default;
+$o-day-nav-days-gap							: 6px !default;
+$o-day-nav-day-padding						: 4px 2px 9px 2px !default;
+$o-day-nav-day-bg-color						: #fff !default;
+$o-day-nav-day-weekend-bg-color				: #fcfcfc !default;
+$o-day-nav-day-hover-border-color			: #98a2b3 !default;
+$o-day-nav-day-selected-bg-color				: hsl(217, 71%, 53%) !default;
+$o-day-nav-day-selected-color				: #fff !default;
 $o-day-nav-abbr-font-size					: 14px !default;
 $o-day-nav-num-font-size						: 20px !default;

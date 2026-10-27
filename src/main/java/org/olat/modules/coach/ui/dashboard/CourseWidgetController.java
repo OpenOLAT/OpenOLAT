@@ -94,7 +94,7 @@ public class CourseWidgetController extends TableWidgetController
 	private FlexiTableElement tableEl;
 	private CompletionCellRenderer completionCellRenderer;
 	private SuccessStatusCellRenderer successStatusCellRenderer;
-	private Map<String, FormLink> keyToIndicatorLink;
+	private Map<String, FormLink> keyToFigureCard;
 	private FormLink showAllLink;
 
 	private final CoachingSecurity coachingSec;
@@ -131,10 +131,10 @@ public class CourseWidgetController extends TableWidgetController
 	}
 
 	@Override
-	protected String createIndicators(FormLayoutContainer widgetCont) {
+	protected String createTopArea(FormLayoutContainer widgetCont) {
 		figuresEl = FigureCardsFactory.createItem("figures", widgetCont);
 		
-		keyToIndicatorLink = new LinkedHashMap<>();
+		keyToFigureCard = new LinkedHashMap<>();
 		figureValues = new SelectionValues();
 		createIndicator(widgetCont, "marked", "search.mark", "[CoachSite:0][Courses:0][coach:0][Bookmarks:0]");
 		createIndicator(widgetCont, "all", "all", "[CoachSite:0][Courses:0][coach:0][All:0]");
@@ -149,7 +149,7 @@ public class CourseWidgetController extends TableWidgetController
 	private void createIndicator(FormLayoutContainer widgetCont, String name, String figureValueI18n, String url) {
 		FormLink link = FigureCardsFactory.createCardLink(name, CMD_OPEN, widgetCont);
 		setUrl(link, url);
-		keyToIndicatorLink.put(name, link);
+		keyToFigureCard.put(name, link);
 		figureValues.add(SelectionValues.entry(name, translate(figureValueI18n)));
 	}
 	
@@ -181,7 +181,7 @@ public class CourseWidgetController extends TableWidgetController
 	@Override
 	public void update(TableWidgetConfigPrefs prefs) {
 		keyFigureKey = prefs.getKeyFigureKey();
-		figuresEl.setCards(getFigureCards(keyToIndicatorLink, prefs));
+		figuresEl.setCards(getFigureCards(keyToFigureCard, prefs));
 		
 		tableEl.setPageSize(prefs.getNumRows());
 		
@@ -243,7 +243,7 @@ public class CourseWidgetController extends TableWidgetController
 	}
 
 	private void updateIndicators(List<CourseStatEntry> courseStatistics, Set<Long> markedKeys) {
-		keyToIndicatorLink.get("all").setI18nKey(FigureCardsFactory.createCardText(null, null,
+		keyToFigureCard.get("all").setI18nKey(FigureCardsFactory.createCardText(null, null,
 				String.valueOf(courseStatistics.size()), translate("all")));
 		
 		int numMarked = 0;
@@ -264,15 +264,15 @@ public class CourseWidgetController extends TableWidgetController
 			}
 		}
 		
-		keyToIndicatorLink.get("relevant").setI18nKey(FigureCardsFactory.createCardText(null, null,
+		keyToFigureCard.get("relevant").setI18nKey(FigureCardsFactory.createCardText(null, null,
 				String.valueOf(numCoachPublished + numPublished), translate("relevant")));
-		keyToIndicatorLink.get("marked").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_bookmark", null,
+		keyToFigureCard.get("marked").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_bookmark", null,
 				String.valueOf(numMarked), translate("search.mark")));
-		keyToIndicatorLink.get("access").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_coach", null,
+		keyToFigureCard.get("access").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_coach", null,
 				String.valueOf(numCoachPublished), translate("filter.access.for.coach")));
-		keyToIndicatorLink.get("published").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_repo_status_published", null,
+		keyToFigureCard.get("published").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_repo_status_published", null,
 				String.valueOf(numPublished), translate("filter.published")));
-		keyToIndicatorLink.get("finished").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_repo_status_closed", null,
+		keyToFigureCard.get("finished").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_repo_status_closed", null,
 				String.valueOf(numFinished), translate("filter.finished")));
 	}
 

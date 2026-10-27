@@ -20,6 +20,7 @@
 package org.olat.core.gui.components.daynav;
 
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 
 /**
@@ -34,6 +35,7 @@ public class DayNavFactory {
 		DayNavComponent cmp = new DayNavComponent(name);
 		if (vc != null) {
 			vc.put(cmp.getComponentName(), cmp);
+			vc.put(cmp.getWeekComponent().getComponentName(), cmp.getWeekComponent());
 		}
 		return cmp;
 	}
@@ -42,6 +44,9 @@ public class DayNavFactory {
 		DayNavElementImpl element = new DayNavElementImpl(name);
 		if (formLayout != null) {
 			formLayout.add(element);
+		}
+		if (formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.put(element.getWeekComponent().getComponentName(), element.getWeekComponent());
 		}
 		return element;
 	}

@@ -20,6 +20,7 @@
 package org.olat.core.gui.components.daynav;
 
 import java.time.DayOfWeek;
+import java.time.temporal.WeekFields;
 import java.util.Date;
 
 import org.olat.core.gui.UserRequest;
@@ -47,6 +48,7 @@ public class DayNavComponent extends FormBaseComponentImpl {
 	static final String CMD_SELECT_DAY_INDEX = "select_day";
 	
 	private final DayNavElementImpl element;
+	private final DayNavWeekComponent weekComponent;
 	private Date startDate;
 	private int selectedDateIndex;
 	private boolean[] markedDays = new boolean[DAYS_PER_WEEK];
@@ -54,6 +56,7 @@ public class DayNavComponent extends FormBaseComponentImpl {
 	DayNavComponent(String name) {
 		super(name);
 		this.element = null;
+		this.weekComponent = new DayNavWeekComponent(name + "_week", this);
 		
 		init();
 	}
@@ -61,6 +64,7 @@ public class DayNavComponent extends FormBaseComponentImpl {
 	DayNavComponent(DayNavElementImpl element) {
 		super(element.getFormItemId(), element.getName());
 		this.element = element;
+		this.weekComponent = new DayNavWeekComponent(element.getName() + "_week", this);
 		
 		init();
 	}
@@ -77,6 +81,26 @@ public class DayNavComponent extends FormBaseComponentImpl {
 	@Override
 	public DayNavElement getFormItem() {
 		return element;
+	}
+	
+	public DayNavWeekComponent getWeekComponent() {
+		return weekComponent;
+	}
+	
+	@Override
+	public void setDirty(boolean dirty) {
+		super.setDirty(dirty);
+		if (dirty && weekComponent != null) {
+			weekComponent.setDirty(true);
+		}
+	}
+	
+	@Override
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
+		if (weekComponent != null) {
+			weekComponent.setVisible(visible);
+		}
 	}
 
 	@Override
@@ -149,12 +173,16 @@ public class DayNavComponent extends FormBaseComponentImpl {
 	}
 
 	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
+		this.startDate = DateUtils.getPreviousDay(DateUtils.addDays(startDate, 1), DayOfWeek.MONDAY);
 		setDirty(true);
 	}
 
 	public Date getEndDate() {
 		return DateUtils.addDays(startDate, 6);
+	}
+	
+	public int getWeekOfYear() {
+		return DateUtils.toLocalDate(startDate).get(WeekFields.ISO.weekOfWeekBasedYear());
 	}
 
 	int getSelectedDateIndex() {

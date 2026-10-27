@@ -85,6 +85,11 @@ public class GuiDemoTableWidgetsController extends BasicController {
 				wControl, DateUtils.addDays(new Date(), 17));
 		listenTo(lectureBlockCtrl2);
 		mainVC.put("lecures2", lectureBlockCtrl2.getInitialComponent());
+		
+		GuiDemoLectureBlocksWidgetController lectureBlockCtrl3 = new GuiDemoLectureBlocksWidgetController(ureq,
+				wControl, new Date());
+		listenTo(lectureBlockCtrl3);
+		mainVC.put("lecures3", lectureBlockCtrl3.getInitialComponent());
 	}
 
 	@Override

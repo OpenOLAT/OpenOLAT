@@ -106,7 +106,7 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 	}
 
 	@Override
-	protected String createIndicators(FormLayoutContainer widgetCont) {
+	protected String createTopArea(FormLayoutContainer widgetCont) {
 		FigureCardsItem figureCardsItem = FigureCardsFactory.createItem("figures", widgetCont);
 		
 		List<FormLink> cards = IntStream.rangeClosed(1, numFigures)

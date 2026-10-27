@@ -85,9 +85,14 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	}
 
 	@Override
-	protected String createIndicators(FormLayoutContainer widgetCont) {
+	protected String createTopArea(FormLayoutContainer widgetCont) {
 		dayNavEl = DayNavFactory.createElement("day.nav", widgetCont);
 		return dayNavEl.getComponent().getComponentName();
+	}
+	
+	@Override
+	protected String createHeaderTools(FormLayoutContainer widgetCont) {
+		return dayNavEl.getWeekComponent().getComponentName();
 	}
 
 	@Override
@@ -188,6 +193,13 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 		dayNavEl.setMarkedDays(markedDays);
 
 		updateTable(visible, nextScheduledBlock);
+		
+		if (allWeekBlocks.isEmpty()) {
+			setFooterText(null);
+		} else {
+			String i18nKey = allWeekBlocks.size() == 1 ? "dashboard.widget.footer.event" : "dashboard.widget.footer.events";
+			setFooterText(translate(i18nKey, String.valueOf(allWeekBlocks.size()), String.valueOf(dayNavEl.getWeekOfYear())));
+		}
 	}
 	
 	protected abstract List<LectureBlock> loadLectureBlocks(Date fromDate, Date toDate);
@@ -250,6 +262,10 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollInContainer(scrollToId, ".o_table_body", "instant"));
 		}
 		
+		// Redraw the widget only when it switches between the table and the empty state
+		if (rows.isEmpty() == tableEl.isVisible()) {
+			flc.setDirty(true);
+		}
 		if (rows.isEmpty()) {
 			tableEl.setVisible(false);
 			emptyCont.setVisible(true);

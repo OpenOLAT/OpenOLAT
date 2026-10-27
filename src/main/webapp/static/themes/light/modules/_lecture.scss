@@ -848,6 +848,7 @@ tr.o_rm_room_preselected {
 .o_lecture_widget_day_group {
 	display: flex;
 	align-items: flex-start;
+	background-color: $o-dashboard-widget-table-bg-color;
 
 	margin-left: ($grid-gutter-width * -0.5);
 	margin-right: ($grid-gutter-width * -0.5);
