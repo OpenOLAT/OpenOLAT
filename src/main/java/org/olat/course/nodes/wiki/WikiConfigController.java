@@ -102,7 +102,17 @@ public class WikiConfigController extends BasicController implements ReferenceCo
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 		CourseNodeReferenceProvider referenceProvider = new CourseNodeReferenceProvider(repositoryService,
-				List.of(WikiResource.TYPE_NAME), defaultOrganisations, emptyStateConfig, translate("select.wiki"), this);
+				List.of(WikiResource.TYPE_NAME), defaultOrganisations, emptyStateConfig, translate("select.wiki"), this) {
+			@Override
+			public boolean useNewSelectionDialog() {
+				return true;
+			}
+
+			@Override
+			public String getMyTabLabel() {
+				return translate("my.wikis");
+			}
+		};
 		referenceCtrl = new RepositoryEntryReferenceController(ureq, wControl, wikiEntry, referenceProvider);
 		listenTo(referenceCtrl);
 		mainVC.put("reference", referenceCtrl.getInitialComponent());
