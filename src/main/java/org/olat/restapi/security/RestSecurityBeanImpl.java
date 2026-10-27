@@ -22,18 +22,27 @@ package org.olat.restapi.security;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpSession;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.manager.AuthenticationDAO;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,18 +58,28 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("restSecurityBean")
-public class RestSecurityBeanImpl implements RestSecurityBean {
-	
+public class RestSecurityBeanImpl implements RestSecurityBean, GenericEventListener {
+
 	public static final String REST_AUTH_PROVIDER = "REST";
+	private static final OLATResourceable ORES_REST_TOKENS = OresHelper.createOLATResourceableType(RestSecurityBean.class);
 
 	private Map<String,Long> tokenToIdentity = new ConcurrentHashMap<>();
 	private Map<String,List<String>> tokenToSessionIds = new ConcurrentHashMap<>();
 	private Map<String,String> sessionIdToTokens = new ConcurrentHashMap<>();
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private AuthenticationDAO authenticationDao;
+	@Autowired
+	private CoordinatorManager coordinator;
+
+	@PostConstruct
+	public void initBean() {
+		coordinator.getCoordinator().getEventBus().registerFor(this, null, ORES_REST_TOKENS);
+	}
 
 	@Override
 	public String generateToken(Identity identity, HttpSession session) {
@@ -178,6 +197,68 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 			securityManager.deleteAuthentication(authentication);
 		}
 		return authentications.size();
+	}
+
+	@Override
+	public void invalidateTokens(Identity identity, HttpSession excludeFromInvalidation) {
+		if(identity == null || identity.getKey() == null) return;
+
+		Long identityKey = identity.getKey();
+		String excludedToken = excludeFromInvalidation == null
+				? null : sessionIdToTokens.get(excludeFromInvalidation.getId());
+
+		// Delete the tokens on the database first, a concurrent isTokenRegistrated()
+		// cannot load them anymore and put them back in the cache.
+		Set<String> tokens = new HashSet<>();
+		List<Authentication> authentications = securityManager.findAuthentications(identity, List.of(REST_AUTH_PROVIDER));
+		for(Authentication authentication:authentications) {
+			String token = authentication.getCredential();
+			if(excludedToken == null || !excludedToken.equals(token)) {
+				if(StringHelper.containsNonWhitespace(token)) {
+					tokens.add(token);
+				}
+				securityManager.deleteAuthentication(authentication);
+			}
+		}
+		dbInstance.commit();
+
+		removeTokensFromCache(identityKey, tokens, excludedToken);
+		coordinator.getCoordinator().getEventBus()
+			.fireEventToListenersOf(new InvalidateTokensEvent(identityKey, excludedToken), ORES_REST_TOKENS);
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof InvalidateTokensEvent ite && !ite.isEventOnThisNode()) {
+			removeTokensFromCache(ite.getIdentityKey(), new HashSet<>(), ite.getExcludedToken());
+		}
+	}
+
+	/**
+	 * Remove the specified tokens and all the cached tokens of the
+	 * identity from the 3 maps, except the excluded token.
+	 */
+	private void removeTokensFromCache(Long identityKey, Set<String> tokens, String excludedToken) {
+		for(Map.Entry<String,Long> entry:tokenToIdentity.entrySet()) {
+			if(identityKey.equals(entry.getValue())) {
+				tokens.add(entry.getKey());
+			}
+		}
+		if(excludedToken != null) {
+			tokens.remove(excludedToken);
+		}
+
+		synchronized(tokenToSessionIds) {//cluster notOK -> need probably a mapping on the DB
+			for(String token:tokens) {
+				tokenToIdentity.remove(token);
+				List<String> sessionIds = tokenToSessionIds.remove(token);
+				if(sessionIds != null) {
+					for(String sessionId:sessionIds) {
+						sessionIdToTokens.remove(sessionId);
+					}
+				}
+			}
+		}
 	}
 
 	public void clearCaches() {

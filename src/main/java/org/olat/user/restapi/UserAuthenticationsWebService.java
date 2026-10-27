@@ -297,7 +297,7 @@ public class UserAuthenticationsWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		boolean ok = authManager.changePassword(doer, identity, newPassword);
+		boolean ok = authManager.changePassword(doer, identity, newPassword, request.getSession());
 		return (ok ? Response.ok() : Response.notModified()).build();
 	}
 	

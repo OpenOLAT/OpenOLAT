@@ -568,7 +568,8 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 	private void doFinishChangePassword(UserRequest ureq) {
 		String newPwd = newPasswordCtrl.getNewPasswordValue();
 		Identity identityToChange = newPasswordCtrl.getIdentityToChange();
-		if(olatAuthenticationSpi.changePassword(identityToChange, identityToChange, newPwd)) {		
+		if(olatAuthenticationSpi.changePassword(identityToChange, identityToChange, newPwd,
+				ureq.getHttpReq().getSession(false))) {		
 			getLogger().info(Tracing.M_AUDIT, "Changed password for identity: {}", identityToChange.getKey());
 			authenticatedIdentity = identityToChange;
 			fireEvent(ureq, new AuthenticationEvent(identityToChange, BaseSecurityModule.getDefaultAuthProviderIdentifier()));

@@ -252,7 +252,7 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 				&& newPasswordCtrl.getUserObject() instanceof PasskeyLevels level) {
 			// Change password controller does nothing
 			if(event == Event.DONE_EVENT) {
-				doFinishChangePassword(newPasswordCtrl.getNewPasswordValue(), level);
+				doFinishChangePassword(ureq, newPasswordCtrl.getNewPasswordValue(), level);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -337,7 +337,8 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 		if (provenIdent == null || !provenIdent.equals(getIdentity())) {
 			showError("error.password.noauth");	
 		} else {
-			if(olatAuthenticationSpi.changePassword(getIdentity(), getIdentity(), newPwd)) {			
+			if(olatAuthenticationSpi.changePassword(getIdentity(), getIdentity(), newPwd,
+					ureq.getHttpReq().getSession(false))) {			
 				fireEvent(ureq, Event.DONE_EVENT);
 				getLogger().info(Tracing.M_AUDIT, "Changed password for identity: {}", getIdentity().getKey());
 				showInfo("password.successful");
@@ -363,8 +364,9 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 		listenTo(cmc);
 	}
 	
-	private void doFinishChangePassword(String newPwd, PasskeyLevels level) {
-		if(olatAuthenticationSpi.changePassword(getIdentity(), getIdentity(), newPwd)) {		
+	private void doFinishChangePassword(UserRequest ureq, String newPwd, PasskeyLevels level) {
+		if(olatAuthenticationSpi.changePassword(getIdentity(), getIdentity(), newPwd,
+				ureq.getHttpReq().getSession(false))) {		
 			getLogger().info(Tracing.M_AUDIT, "Changed password for identity: {}", getIdentity().getKey());
 			if(level == PasskeyLevels.level1) {
 				deletePasskeys();

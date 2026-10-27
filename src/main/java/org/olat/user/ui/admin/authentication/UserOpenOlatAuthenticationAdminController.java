@@ -309,7 +309,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 			}
 		} else if(resetPasswordCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				doFinishResetPassword(resetPasswordCtrl.getNewPassword());
+				doFinishResetPassword(ureq, resetPasswordCtrl.getNewPassword());
 				updateUI(ureq);
 			}
 			cmc.deactivate();
@@ -394,8 +394,9 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 		listenTo(cmc);
 	}
 
-	private void doFinishResetPassword(String newPwd) {
-		if (olatAuthenticationSpi.changePassword(getIdentity(), identityToModify, newPwd)) {
+	private void doFinishResetPassword(UserRequest ureq, String newPwd) {
+		if (olatAuthenticationSpi.changePassword(getIdentity(), identityToModify, newPwd,
+				ureq.getHttpReq().getSession(false))) {
 			showInfo("changeuserpwd.successful");
 			logAudit("user password changed successfully of " + identityToModify.getKey());
 		} else {
