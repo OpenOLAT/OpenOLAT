@@ -94,10 +94,10 @@ public interface CoachingService {
 	 * @param role The role to search for, coach or owner only
 	 * @return A list of courses statistics
 	 */
-	public List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role,
+	public List<CourseStatEntry> getCoursesStatistics(Identity identity, List<GroupRoles> roles,
 			CoursesStatisticsParams coursesStatisticsParams);
 
-	public List<Curriculum> getCoursesCurriculums(Identity identity, GroupRoles role,
+	public List<Curriculum> getCoursesCurriculums(Identity identity, List<GroupRoles> roles,
 			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
 	
 	public List<CourseStatEntry> getCoursesStatistics(CurriculumElement curriculumElement);

@@ -171,11 +171,11 @@ public class CourseListController extends FormBasicController implements Activat
 	protected static final String VISIT_LESS_12_MONTHS = "less-12-months";
 	protected static final String VISIT_MORE_12_MONTS = "more-12-months";
 	
-	private static final String CMD_SELECT = "select";
-	private static final String CMD_ASSESSMENT = "assessment";
-	private static final String CMD_INFOS = "infos";
-	private static final String CMD_LEVELS = "levels";
-	private static final String CMD_REFERENCES = "refs";
+	protected static final String CMD_SELECT = "select";
+	protected static final String CMD_ASSESSMENT = "assessment";
+	protected static final String CMD_INFOS = "infos";
+	protected static final String CMD_LEVELS = "levels";
+	protected static final String CMD_REFERENCES = "refs";
 	
 	private static final String ALL_TAB_ID = "All";
 	private static final String RELEVANT_TAB_ID = "Relevant";
@@ -192,7 +192,7 @@ public class CourseListController extends FormBasicController implements Activat
 	private CoursesTableDataModel tableModel;
 
 	private int counter = 0;
-	private GroupRoles role;
+	private List<GroupRoles> roles;
 	private final CourseListConfig config;
 	private final MapperKey mapperThumbnailKey;
 	private final CurriculumElement curriculumElement;
@@ -227,7 +227,7 @@ public class CourseListController extends FormBasicController implements Activat
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public CourseListController(UserRequest ureq, WindowControl wControl,
-			GroupRoles role, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup, CourseListConfig config) {
+			List<GroupRoles> roles, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup, CourseListConfig config) {
 		super(ureq, wControl, "course_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
@@ -237,7 +237,7 @@ public class CourseListController extends FormBasicController implements Activat
 		this.runtimeTypesGroup = runtimeTypesGroup;
 		curriculumElement = null;
 		this.config = config;
-		this.role = role;
+		this.roles = roles;
 		
 		initForm(ureq);
 	}
@@ -414,7 +414,7 @@ public class CourseListController extends FormBasicController implements Activat
 		}
 		
 		SelectionValues statusPK = new SelectionValues();
-		boolean owner = role == GroupRoles.owner || role == null;
+		boolean owner = roles.contains(GroupRoles.owner);
 		if(owner) {
 			statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate(RepositoryEntryStatusEnum.preparation.i18nKey())));
 			statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.review.name(), translate(RepositoryEntryStatusEnum.review.i18nKey())));
@@ -563,7 +563,7 @@ public class CourseListController extends FormBasicController implements Activat
 	}
 	
 	private List<Curriculum> loadCurriculumsForFilter() {
-		return coachingService.getCoursesCurriculums(getIdentity(), role, runtimeTypesGroup);
+		return coachingService.getCoursesCurriculums(getIdentity(), roles, runtimeTypesGroup);
 	}
 
 	private void loadModel() {
@@ -580,7 +580,7 @@ public class CourseListController extends FormBasicController implements Activat
 		Instant statisticsStart = Instant.now();
 		List<CourseStatEntry> courseStatistics = curriculumElement != null
 				? coachingService.getCoursesStatistics(curriculumElement)
-				: coachingService.getCoursesStatistics(getIdentity(), role, coursesStatisticsParams);
+				: coachingService.getCoursesStatistics(getIdentity(), roles, coursesStatisticsParams);
 		log.debug("Statistics loaded in {} millis", Duration.between(statisticsStart, Instant.now()).toMillis());
 		Map<Long,VFSThumbnailInfos> thumbnails = mapperThumbnail.getResourceableThumbnails(courseStatistics);
 
@@ -862,6 +862,7 @@ public class CourseListController extends FormBasicController implements Activat
 	}
 	
 	private void doOpenReferences(UserRequest ureq, CourseStatEntryRow entry, FormLink link) {
+		GroupRoles role = null;//TODO
 		referencesCtrl = new CourseReferencesController(ureq, getWindowControl(), entry, role);
 		listenTo(referencesCtrl);
 		

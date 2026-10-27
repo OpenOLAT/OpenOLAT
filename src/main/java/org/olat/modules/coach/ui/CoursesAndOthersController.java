@@ -41,6 +41,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.CoachingService;
+import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,30 +54,28 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CoursesAndOthersController extends BasicController implements Activateable2 {
 	
-	private static final String SCOPE_COACH = GroupRoles.coach.name();
-	private static final String SCOPE_OWNER = GroupRoles.owner.name();
+	private static final String SCOPE_COURSES = GroupRoles.owner.name();
 	private static final String SCOPE_OTHERS = "Others";
 	
 	private final List<Scope> scopes;
 	private final ScopeSelection scopeEl;
 	private final VelocityContainer mainVC;
 	
+	private final CoachingSecurity coachingSec;
+	
 	private CourseListController coursesListCtrl;
 	
 	@Autowired
 	private CoachingService coachingService;
 	
-	public CoursesAndOthersController(UserRequest ureq, WindowControl wControl) {
+	public CoursesAndOthersController(UserRequest ureq, WindowControl wControl, CoachingSecurity coachingSec) {
 		super(ureq, wControl);
+		this.coachingSec = coachingSec;
 		
 		mainVC = createVelocityContainer("courses_and_others");
 		
 		scopes = new ArrayList<>(4);
-		scopes.add(ScopeFactory.createScope(SCOPE_COACH, translate("lectures.teacher.menu.title"), null, "o_icon o_icon_coaching_tool"));
-		
-		if(coachingService.hasResourcesAsOwner(getIdentity(), CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular)) {
-			scopes.add(ScopeFactory.createScope(GroupRoles.owner.name(), translate("coaching.courses.owner"), null, "o_icon o_icon_gear"));
-		}
+		scopes.add(ScopeFactory.createScope(SCOPE_COURSES, translate("scope.courses"), null, "o_icon o_icon_coaching_tool"));
 	
 		Roles roles = ureq.getUserSession().getRoles();
 		if(!roles.isAuthor() && !roles.isLearnResourceManager() && !roles.isAdministrator()
@@ -92,27 +91,23 @@ public class CoursesAndOthersController extends BasicController implements Activ
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			doOpenCoach(ureq).activate(ureq, List.of(), null);
-			scopeEl.setSelectedKey(SCOPE_COACH);
+			doOpenCourses(ureq).activate(ureq, List.of(), null);
+			scopeEl.setSelectedKey(SCOPE_COURSES);
 			return;
 		}
 		
 		String scope = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(SCOPE_OWNER.equalsIgnoreCase(scope)) {
+		if(SCOPE_COURSES.equalsIgnoreCase(scope)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			doOpenOwner(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
-			scopeEl.setSelectedKey(SCOPE_OWNER);
-		} else if(SCOPE_COACH.equalsIgnoreCase(scope)) {
-			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			doOpenCoach(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
-			scopeEl.setSelectedKey(SCOPE_COACH);
+			doOpenCourses(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+			scopeEl.setSelectedKey(SCOPE_COURSES);
 		} else if(SCOPE_OTHERS.equalsIgnoreCase(scope)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenOthers(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 			scopeEl.setSelectedKey(SCOPE_OTHERS);
 		} else {
-			doOpenCoach(ureq).activate(ureq, entries, null);
-			scopeEl.setSelectedKey(SCOPE_COACH);
+			doOpenCourses(ureq).activate(ureq, entries, null);
+			scopeEl.setSelectedKey(SCOPE_COURSES);
 		}
 	}
 
@@ -120,10 +115,8 @@ public class CoursesAndOthersController extends BasicController implements Activ
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(scopeEl == source) {
 			if (event instanceof ScopeEvent se) {
-				if(SCOPE_COACH.equals(se.getSelectedKey())) {
-					doOpenCoach(ureq).activate(ureq, List.of(), null);
-				} else if(SCOPE_OWNER.equals(se.getSelectedKey())) {
-					doOpenOwner(ureq).activate(ureq, List.of(), null);
+				if(SCOPE_COURSES.equals(se.getSelectedKey())) {
+					doOpenCourses(ureq).activate(ureq, List.of(), null);
 				} else if(SCOPE_OTHERS.equals(se.getSelectedKey())) {
 					doOpenOthers(ureq).activate(ureq, List.of(), null);
 				}
@@ -131,26 +124,31 @@ public class CoursesAndOthersController extends BasicController implements Activ
 		}
 	}
 	
-	private CourseListController doOpenCoach(UserRequest ureq) {
-		return doOpenCourses(ureq, SCOPE_COACH, GroupRoles.coach, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
-	}
-	
-	private CourseListController doOpenOwner(UserRequest ureq) {
-		return doOpenCourses(ureq, SCOPE_OWNER, GroupRoles.owner, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+	private CourseListController doOpenCourses(UserRequest ureq) {
+		List<GroupRoles> roles = new ArrayList<>();
+		if(coachingSec.owner()) {
+			roles.add(GroupRoles.owner);
+		}
+		if(coachingSec.coach()) {
+			roles.add(GroupRoles.coach);
+		}
+		return doOpenCourses(ureq, SCOPE_COURSES, roles,
+				CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 	}
 	
 	private CourseListController doOpenOthers(UserRequest ureq) {
-		return doOpenCourses(ureq, SCOPE_OTHERS, GroupRoles.owner, CoursesStatisticsRuntimeTypesGroup.embeddedAndTemplate);
+		return doOpenCourses(ureq, SCOPE_OTHERS, List.of(GroupRoles.owner),
+				CoursesStatisticsRuntimeTypesGroup.embeddedAndTemplate);
 	}
 	
-	private CourseListController doOpenCourses(UserRequest ureq, String scope, GroupRoles role, CoursesStatisticsRuntimeTypesGroup runtimesGroup) {
+	private CourseListController doOpenCourses(UserRequest ureq, String scope, List<GroupRoles> roles, CoursesStatisticsRuntimeTypesGroup runtimesGroup) {
 		removeAsListenerAndDispose(coursesListCtrl);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(scope, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		CourseListConfig config = CourseListConfig.defaultConfig();
-		coursesListCtrl = new CourseListController(ureq, bwControl, role, runtimesGroup, config);
+		coursesListCtrl = new CourseListController(ureq, bwControl, roles, runtimesGroup, config);
 		listenTo(coursesListCtrl);
 		mainVC.put("component", coursesListCtrl.getInitialComponent());
 		return coursesListCtrl;

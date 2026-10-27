@@ -290,7 +290,7 @@ public class CoachingLargeTest extends OlatTestCase {
 		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams
 				.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> courseStatEntries = coachingService.getCoursesStatistics(coach10,
-				GroupRoles.coach, coursesStatisticsParams);
+				List.of(GroupRoles.coach), coursesStatisticsParams);
 		Assert.assertNotNull(courseStatEntries);
 		List<Long> coachedCourses = coachToCourseMap.get(coach10.getKey());
 		Assert.assertNotNull(coachedCourses);

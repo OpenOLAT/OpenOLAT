@@ -41,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CoachDashboardController extends BasicController {
 
 	private DashboardController dashbordCtrl;
-	private CourseWidgetController courseCoachCtrl;
+	private CourseWidgetController coursesCtrl;
 	private CoachLectureBlocksWidgetController lectureBlocksCtrl;
 	
 	private boolean hasWidgets = false;
@@ -58,9 +58,9 @@ public class CoachDashboardController extends BasicController {
 		putInitialPanel(dashbordCtrl.getInitialComponent());
 		
 		if (coachingSec.coach()) {
-			courseCoachCtrl = new CourseWidgetController(ureq, wControl);
-			listenTo(courseCoachCtrl);
-			dashbordCtrl.addWidget("courseCoach", translate("course.as.coach"), courseCoachCtrl, BentoBoxSize.box_4_1);
+			coursesCtrl = new CourseWidgetController(ureq, wControl, coachingSec);
+			listenTo(coursesCtrl);
+			dashbordCtrl.addWidget("courseCoach", translate("courses"), coursesCtrl, BentoBoxSize.box_4_1);
 			
 			hasWidgets = true;
 		}
@@ -85,8 +85,8 @@ public class CoachDashboardController extends BasicController {
 	}
 	
 	public void reload() {
-		if (courseCoachCtrl != null) {
-			courseCoachCtrl.reload();
+		if (coursesCtrl != null) {
+			coursesCtrl.reload();
 		}
 		if (lectureBlocksCtrl != null) {
 			lectureBlocksCtrl.reload();

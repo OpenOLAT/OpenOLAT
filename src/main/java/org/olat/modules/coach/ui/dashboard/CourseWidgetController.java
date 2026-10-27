@@ -19,6 +19,7 @@
  */
 package org.olat.modules.coach.ui.dashboard;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -66,6 +67,7 @@ import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.coach.CoachingService;
+import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
@@ -96,6 +98,7 @@ public class CourseWidgetController extends TableWidgetController
 	private Map<String, FormLink> keyToIndicatorLink;
 	private FormLink showAllLink;
 
+	private final CoachingSecurity coachingSec;
 	private final MapperKey mapperThumbnailKey;
 	private final RepositoryEntryImageMapper mapperThumbnail;
 	private SelectionValues figureValues;
@@ -110,10 +113,11 @@ public class CourseWidgetController extends TableWidgetController
 	@Autowired
 	private NodeAccessService nodeAccessService;
 
-	public CourseWidgetController(UserRequest ureq, WindowControl wControl) {
+	public CourseWidgetController(UserRequest ureq, WindowControl wControl, CoachingSecurity coachingSec) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CourseListController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		this.coachingSec = coachingSec;
 		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 		completionCellRenderer = new CompletionCellRenderer(getTranslator());
@@ -124,7 +128,7 @@ public class CourseWidgetController extends TableWidgetController
 
 	@Override
 	protected String getTitle() {
-		return "<i class=\"o_icon o_CourseModule_icon\"> </i> " + translate("course.as.coach");
+		return "<i class=\"o_icon o_CourseModule_icon\"> </i> " + translate("courses");
 	}
 
 	@Override
@@ -231,10 +235,18 @@ public class CourseWidgetController extends TableWidgetController
 				.map(Mark::getOLATResourceable)
 				.map(OLATResourceable::getResourceableId)
 				.collect(Collectors.toSet());
-
+		
+		List<GroupRoles> roles = new ArrayList<>();
+		if(coachingSec.owner()) {
+			roles.add(GroupRoles.owner);
+		}
+		if(coachingSec.coach()) {
+			roles.add(GroupRoles.coach);
+		}
+		
 		CoursesStatisticsParams coursesStatisticsParams = new CoursesStatisticsParams(true, false, true, false, false,
 				CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular.runtimeTypes());
-		List<CourseStatEntry> courseStatistics = coachingService.getCoursesStatistics(getIdentity(), GroupRoles.coach,
+		List<CourseStatEntry> courseStatistics = coachingService.getCoursesStatistics(getIdentity(), roles,
 				coursesStatisticsParams);
 		updateIndicators(courseStatistics, markedKeys);
 		updateTable(courseStatistics, markedKeys);

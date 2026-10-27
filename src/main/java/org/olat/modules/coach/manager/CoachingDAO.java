@@ -62,8 +62,8 @@ import org.olat.modules.coach.model.ParticipantStatisticsEntry.Entries;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
-import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.ui.LectureRoles;
@@ -505,23 +505,43 @@ public class CoachingDAO {
 		return new ArrayList<>(map.values());
 	}
 	
-	protected List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role, CoursesStatisticsParams params) {
+	protected List<CourseStatEntry> getCoursesStatistics(Identity identity, List<GroupRoles> roles, CoursesStatisticsParams params) {
 		final List<RepositoryEntryRuntimeType> runtimeTypes = params.runtimeTypes();
-		final List<RepositoryEntryStatusEnum> status = role == GroupRoles.owner
-		  		? List.of(RepositoryEntryStatusEnum.preparationToClosed())
-		  		: List.of(RepositoryEntryStatusEnum.coachPublishedToClosed());
+
+		Map<Long,CourseStatEntry> mapOwner = roles.contains(GroupRoles.owner)
+				? getCourses(null, identity, GroupRoles.owner, List.of(RepositoryEntryStatusEnum.preparationToClosed()), runtimeTypes)
+				: Map.of();
+		Map<Long,CourseStatEntry> mapCoach = roles.contains(GroupRoles.coach)
+				? getCourses(null, identity, GroupRoles.coach, List.of(RepositoryEntryStatusEnum.coachPublishedToClosed()), runtimeTypes)
+				: Map.of();
 		
-		Map<Long,CourseStatEntry> map = getCourses(null, identity, role, status, runtimeTypes);
-		if(!map.isEmpty()) {
-			if(params.withStatistics() || params.withCertificates()) {
-				loadCoursesStatistics(null, identity, role, params.withCertificates(), map);
-			}
-			loadCoursesStatementsAndCompletions(null, identity, role, params.withStatements(), params.withCompletions(), map);
-			if(params.withReferences()) {
-				loadCoursesReferences(identity, role, map);
-			}
+		if(!mapOwner.isEmpty()) {
+			loadCoursesStatistics(identity, GroupRoles.owner, params, mapOwner);
 		}
-		return new ArrayList<>(map.values());
+		if(!mapCoach.isEmpty()) {
+			for(Long courseKey:mapOwner.keySet()) {
+				mapCoach.remove(courseKey);
+			}
+			loadCoursesStatistics(identity, GroupRoles.coach, params, mapCoach);
+		}
+		
+		List<CourseStatEntry> list = new ArrayList<>(mapOwner.size() + mapCoach.size());
+		list.addAll(mapOwner.values());
+		list.addAll(mapCoach.values());
+		return list;
+	}
+	
+
+	private void loadCoursesStatistics(Identity identity, GroupRoles role,
+			CoursesStatisticsParams params, Map<Long,CourseStatEntry> map) {
+		if(params.withStatistics() || params.withCertificates()) {
+			loadCoursesStatistics(null, identity, role, params.withCertificates(), map);
+		}
+		loadCoursesStatementsAndCompletions(null, identity, role, params.withStatements(), params.withCompletions(), map);
+		if(params.withReferences()) {
+			loadCoursesReferences(identity, role, map);
+		}
+		
 	}
 	
 	private Map<Long,CourseStatEntry> getCourses(CurriculumElement element, IdentityRef coach, GroupRoles role,
@@ -600,6 +620,8 @@ public class CoachingDAO {
 	
 	private void loadCoursesStatistics(CurriculumElement element, IdentityRef coach, GroupRoles role,
 			boolean withCertificates, Map<Long,CourseStatEntry> map) {
+		if(map.isEmpty()) return;
+		
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key,")
 		  .append("  count(distinct participantMembers.identity.key) as numOfParticipants,")
@@ -674,6 +696,9 @@ public class CoachingDAO {
 	private void loadCoursesStatementsAndCompletions(CurriculumElement element, Identity coach, GroupRoles role,
 			boolean withStatements, boolean withCompletions, Map<Long,CourseStatEntry> map) {
 		if(!withStatements && !withCompletions) {
+			return;
+		}
+		if(map.isEmpty()) {
 			return;
 		}
 
@@ -753,6 +778,8 @@ public class CoachingDAO {
 	}
 
 	private void loadCoursesReferences(Identity coach, GroupRoles role, Map<Long,CourseStatEntry> map) {
+		if(map.isEmpty()) return;
+		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
 		  .append("  re.key,")
@@ -848,7 +875,7 @@ public class CoachingDAO {
 		  .append(" inner join curriculumelement as curEl on (curEl.group.key=rGroup.key)")
 		  .append(" inner join curriculum as cur")
 		  .where()
-		  .append(" v.status ").in(role == GroupRoles.owner
+		  .append(" v.status ").in(role == null || role == GroupRoles.owner
 		  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .and()
 		  .append(" v.runtimeTypeString in :runtimeTypes")

@@ -359,7 +359,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Courses", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		courseListCtrl = new CoursesAndOthersController(ureq, bwControl);
+		courseListCtrl = new CoursesAndOthersController(ureq, bwControl, coachingSec);
 		listenTo(courseListCtrl);
 		content.pushController(translate("courses.menu.title"), courseListCtrl);
 		return courseListCtrl;

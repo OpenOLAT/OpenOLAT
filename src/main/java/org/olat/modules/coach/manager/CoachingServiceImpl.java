@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -67,8 +69,8 @@ import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.model.StudentStatEntry;
-import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.RepositoryEntry;
@@ -199,22 +201,32 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
-	public List<CourseStatEntry> getCoursesStatistics(Identity coach, GroupRoles role, CoursesStatisticsParams params) {
-		if(role != GroupRoles.coach && role != GroupRoles.owner) {
-			log.warn("Search courses in course with illegal role: {}", role);
+	public List<CourseStatEntry> getCoursesStatistics(Identity coach, List<GroupRoles> roles, CoursesStatisticsParams params) {
+		if(!roles.contains(GroupRoles.coach) && !roles.contains(GroupRoles.owner)) {
+			log.warn("Search courses in course with illegal role: {}", roles);
 			return new ArrayList<>();
 		}
-		return coachingDao.getCoursesStatistics(coach, role, params);
+		return coachingDao.getCoursesStatistics(coach, roles, params);
 	}
 
 	@Override
 	public List<CourseStatEntry> getCoursesStatistics(CurriculumElement curriculumElement) {
 		return coachingDao.getCoursesStatistics(curriculumElement);
 	}
-	
-	public List<Curriculum> getCoursesCurriculums(Identity identity, GroupRoles role,
+
+	@Override
+	public List<Curriculum> getCoursesCurriculums(Identity identity, List<GroupRoles> roles,
 			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
-		return coachingDao.getCoursesReferences(identity, role, runtimeTypesGroup.runtimeTypes());
+		Set<Curriculum> curriculums = new HashSet<>();
+		if(roles.contains(GroupRoles.owner)) {
+			List<Curriculum> list = coachingDao.getCoursesReferences(identity, GroupRoles.owner, runtimeTypesGroup.runtimeTypes());
+			curriculums.addAll(list);
+		}
+		if(roles.contains(GroupRoles.coach)) {
+			List<Curriculum> list = coachingDao.getCoursesReferences(identity, GroupRoles.coach, runtimeTypesGroup.runtimeTypes());
+			curriculums.addAll(list);
+		}
+		return new ArrayList<>(curriculums);
 	}
 
 	@Override
