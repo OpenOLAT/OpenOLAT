@@ -389,6 +389,9 @@
 		display: flex;
 		align-items: center;
 
+		.o_dashboard_widget_footer_text {
+			font-size: $font-size-small;
+		}
 		.o_dashboard_widget_footer_buttons {
 			margin-left: auto;
 		}
@@ -399,6 +402,8 @@
 	
 }
 .o_dashboard_table_widget {
+	background-color: $o-dashboard-widget-header-footer-bg-color;
+	
 	.table {
 		th {
 			color: $text-muted;
@@ -482,6 +487,13 @@
 }
 .o_dashboard_widget_empty {
 	background-color: $o-dashboard-widget-table-bg-color;
+}
+
+// Same height of the upper area if the bento shows two widgets side by side
+@container (width >= #{$o-bento-half-columns-width}) {
+	.o_bento_box:is(.o_bento_box_4_1, .o_bento_box_4_2, .o_bento_box_4_4) .o_dashboard_table_widget .o_dashboard_widget_indicators {
+		min-height: $o-dashboard-widget-indicators-min-height;
+	}
 }
 
 /* Dashboard edit button */

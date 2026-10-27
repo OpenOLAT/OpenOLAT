@@ -25,12 +25,13 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.figurecards.FigureCardsFactory;
+import org.olat.core.gui.components.figurecards.FigureCardsItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -44,8 +45,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
-import org.olat.core.gui.components.indicators.IndicatorsFactory;
-import org.olat.core.gui.components.indicators.IndicatorsItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
@@ -85,7 +84,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	private static final String CMD_DOIT_PREFIX = "o_do_";
 
 	private final Formatter formatter;
-	private IndicatorsItem indicatorsEl;
+	private FigureCardsItem figuresEl;
 	private FormLink showAllLink;
 	private ToDoTasksWidgetDataModel dataModel;
 	private FlexiTableElement tableEl;
@@ -127,23 +126,14 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 		TableWidgetConfigPrefs prefs = new TableWidgetConfigPrefs();
 		prefs.setKeyFigureKey("myToDos");
 		prefs.setFocusFigureKeys(Set.of("open", "overdue", "new"));
-		prefs.setNumRows(5);
+		prefs.setNumRows(10);
 		return prefs;
 	}
 
 	@Override
 	public void update(TableWidgetConfigPrefs prefs) {
 		keyFigureKey = prefs.getKeyFigureKey();
-
-		FormLink keyIndicator = keyToIndicatorLink.get(keyFigureKey);
-		indicatorsEl.setKeyIndicator(keyIndicator);
-
-		List<FormItem> focusIndicators = keyToIndicatorLink.entrySet().stream()
-				.filter(e -> prefs.getFocusFigureKeys().contains(e.getKey()))
-				.map(Entry::getValue)
-				.map(FormItem.class::cast)
-				.toList();
-		indicatorsEl.setFocusIndicatorsItems(focusIndicators);
+		figuresEl.setCards(getFigureCards(keyToIndicatorLink, prefs));
 
 		tableEl.setPageSize(prefs.getNumRows());
 
@@ -157,7 +147,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 
 	@Override
 	protected String createIndicators(FormLayoutContainer widgetCont) {
-		indicatorsEl = IndicatorsFactory.createItem("indicators", widgetCont);
+		figuresEl = FigureCardsFactory.createItem("figures", widgetCont);
 
 		keyToIndicatorLink = new LinkedHashMap<>();
 		figureValues = new SelectionValues();
@@ -165,11 +155,11 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 		createIndicator(widgetCont, "open", "widget.todo.open", "[ToDos:0][" + ToDoTaskListController.TAB_ID_OPEN + ":0]");
 		createIndicator(widgetCont, "overdue", "widget.todo.overdue", "[ToDos:0][" + ToDoTaskListController.TAB_ID_OVERDUE + ":0]");
 
-		return indicatorsEl.getComponent().getComponentName();
+		return figuresEl.getComponent().getComponentName();
 	}
 
 	private void createIndicator(FormLayoutContainer widgetCont, String name, String labelI18nKey, String businessPath) {
-		FormLink link = IndicatorsFactory.createIndicatorFormLink(name, CMD_OPEN, "", "", widgetCont);
+		FormLink link = FigureCardsFactory.createCardLink(name, CMD_OPEN, widgetCont);
 		setUrl(link, businessPath, getBaseBusinessPath() + businessPath);
 		keyToIndicatorLink.put(name, link);
 		figureValues.add(SelectionValues.entry(name, translate(labelI18nKey)));
@@ -236,7 +226,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	protected void updateIndicator(String key, long count, String i18nKey) {
 		FormLink link = keyToIndicatorLink.get(key);
 		if (link != null) {
-			link.setI18nKey(IndicatorsFactory.createLinkText(translate(i18nKey), String.valueOf(count)));
+			link.setI18nKey(FigureCardsFactory.createCardText(null, null, String.valueOf(count), translate(i18nKey)));
 		}
 	}
 	
@@ -256,6 +246,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 		};
 		List<ToDoTask> tasks = toDoService.getToDoTasks(rowParams);
 		updateTableRows(tasks);
+		setFooterText(dataModel.getRowCount(), tasks.size(), getFigureLabel(keyFigureKey));
 	}
 
 	private void updateTableRows(List<ToDoTask> tasks) {

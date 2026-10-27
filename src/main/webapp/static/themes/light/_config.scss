@@ -1896,6 +1896,8 @@ $o-dashboard-widget-header-margin				: 20px $o-dashboard-widget-base-margin !def
 $o-dashboard-widget-header-button-margin			: 15px $o-dashboard-widget-base-margin 20px $o-dashboard-widget-base-margin !default;
 $o-dashboard-widget-title-font-size				: 16px !default;
 $o-dashboard-widget-indicators-margin-bottom		: 20px !default;
+$o-dashboard-widget-indicators-min-height		: 66px !default;
+$o-dashboard-widget-header-footer-bg-color		: #fcfcfc !default;
 $o-dashboard-widget-table-bg-color				: #fff !default;
 $o-dashboard-widget-table-th-font-size			: 12px !default;
 $o-dashboard-widget-table-th-font-weight			: normal !default;
@@ -1992,6 +1994,21 @@ $o-indicator-indicator-figure-height			: 50px !default;
 $o-indicator-figure-font-size				: 40px !default;
 $o-indicator-focus-figure-padding-top		: 0.15 * $o-indicator-figure-font-size !default;
 $o-indicator-focus-figure-font-size			: 0.85 * $o-indicator-figure-font-size !default;
+
+/* Figure cards */
+$o-figure-cards-gap							: 6px !default;
+$o-figure-card-two-line-min-width			: 150px !default;
+$o-figure-card-one-line-min-width			: 160px !default;
+$o-figure-card-padding						: 9px 10px !default;
+$o-figure-card-one-line-padding				: 3px 10px !default;
+$o-figure-card-bg-color						: #fff !default;
+$o-figure-card-figure-font-size				: 18px !default;
+$o-figure-card-figure-color					: $brand-primary !default;
+$o-figure-card-label-font-size				: 14px !default;
+$o-figure-card-icon-size						: 22px !default;
+$o-figure-card-icon-color					: $brand-primary !default;
+$o-figure-card-icon-bg-color					: rgb($brand-primary, 0.1) !default;
+$o-figure-card-chevron-color					: $text-muted !default;
 
 /* day navigation */
 $o-day-nav-today-button-padding				: 5px !default;

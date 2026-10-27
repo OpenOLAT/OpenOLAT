@@ -2228,6 +2228,103 @@ ul.o_list_narrow {
 	
 }
 
+/* Figure cards component */
+@mixin o-figure-cards-two-line($n) {
+	grid-template-columns: repeat($n, minmax(0, 1fr));
+	
+	.o_figure_card {
+		padding: $o-figure-card-padding;
+		> span {
+			grid-template-areas: "icon figure . chevron" "label label label label";
+		}
+	}
+	.o_figure_card_figure {
+		font-size: $o-figure-card-figure-font-size;
+	}
+}
+
+.o_figure_cards_container {
+	container-type: inline-size;
+}
+.o_figure_cards {
+	display: grid;
+	gap: $o-figure-cards-gap;
+	margin: 0;
+	grid-template-columns: repeat(auto-fill, minmax($o-figure-card-one-line-min-width, 1fr));
+	
+	// Two-line cards only if all cards fit in one row
+	@for $n from 1 through 8 {
+		&.o_figure_cards_n#{$n} {
+			@container (width >= #{$n * $o-figure-card-two-line-min-width + ($n - 1) * $o-figure-cards-gap}) {
+				@include o-figure-cards-two-line($n);
+			}
+		}
+	}
+	
+	.o_figure_card {
+		@extend %o_card;
+		display: block;
+		height: 100%;
+		padding: $o-figure-card-one-line-padding;
+		background-color: $o-figure-card-bg-color;
+		color: $text-color;
+		text-decoration: none;
+		
+		// The link wraps its content in a span
+		> span {
+			display: grid;
+			grid-template-columns: auto auto minmax(0, 1fr) auto;
+			grid-template-areas: "icon figure label chevron";
+			align-items: center;
+			column-gap: 6px;
+		}
+	}
+	
+	.o_figure_card_icon {
+		grid-area: icon;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: $o-figure-card-icon-size;
+		height: $o-figure-card-icon-size;
+		border-radius: 50%;
+		font-size: 11px;
+		color: $o-figure-card-icon-color;
+		background-color: $o-figure-card-icon-bg-color;
+	}
+	@each $name, $color, $bg-color in
+			("blue", $o-labeled-blue-mega-color, $o-labeled-blue-mega-bg-color),
+			("green", $o-labeled-green-mega-color, $o-labeled-green-mega-bg-color),
+			("yellow", $o-labeled-yellow-mega-color, $o-labeled-yellow-mega-bg-color),
+			("orange", $o-labeled-orange-mega-color, $o-labeled-orange-mega-bg-color),
+			("red", $o-labeled-red-mega-color, $o-labeled-red-mega-bg-color),
+			("grey", $o-labeled-grey-mega-color, $o-labeled-grey-mega-bg-color) {
+		.o_figure_card_icon_#{$name} {
+			color: $color;
+			background-color: $bg-color;
+		}
+	}
+	
+	.o_figure_card_figure {
+		grid-area: figure;
+		font-weight: bold;
+		color: $o-figure-card-figure-color;
+	}
+	
+	.o_figure_card_label {
+		grid-area: label;
+		font-size: $o-figure-card-label-font-size;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+	.o_figure_card_chevron {
+		grid-area: chevron;
+		color: $o-figure-card-chevron-color;
+	}
+}
+
 /* Day navigation */
 .o_day_nav {
 	display: flex;

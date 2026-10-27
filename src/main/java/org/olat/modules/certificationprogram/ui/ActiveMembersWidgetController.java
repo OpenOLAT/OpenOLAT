@@ -26,6 +26,8 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.figurecards.FigureCardsFactory;
+import org.olat.core.gui.components.figurecards.FigureCardsItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -39,8 +41,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
-import org.olat.core.gui.components.indicators.IndicatorsFactory;
-import org.olat.core.gui.components.indicators.IndicatorsItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
@@ -70,7 +70,7 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 
 	private static final String CMD_OPEN = "open";
 
-	private IndicatorsItem indicatorsEl;
+	private FigureCardsItem figuresEl;
 	private FormLink showAllLink;
 	private FormLink indicatorActiveLink;
 	private FormLink indicatorCertifiedLink;
@@ -104,56 +104,47 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 
 	@Override
 	protected String createIndicators(FormLayoutContainer widgetCont) {
-		indicatorsEl = IndicatorsFactory.createItem("indicators", widgetCont);
+		figuresEl = FigureCardsFactory.createItem("figures", widgetCont);
 		
-		indicatorActiveLink = IndicatorsFactory.createIndicatorFormLink("active", CMD_OPEN, "", "", widgetCont);
+		indicatorActiveLink = FigureCardsFactory.createCardLink("active", CMD_OPEN, widgetCont);
 		setUrl(indicatorActiveLink, membersAreaBusinessPath + "[Active:0][All:0]");
-		indicatorsEl.setKeyIndicator(indicatorActiveLink);
 		
-		List<FormItem> focusIndicators = new ArrayList<>(4);
-		indicatorCertifiedLink = IndicatorsFactory.createIndicatorFormLink("certified", CMD_OPEN, "", "", widgetCont);
+		indicatorCertifiedLink = FigureCardsFactory.createCardLink("certified", CMD_OPEN, widgetCont);
 		setUrl(indicatorCertifiedLink, membersAreaBusinessPath + "[Active:0][Certified:0]");
-		focusIndicators.add(indicatorCertifiedLink);
 		
-		expiringSoonLink = IndicatorsFactory.createIndicatorFormLink("expiring.soon", CMD_OPEN, "", "", widgetCont);
+		expiringSoonLink = FigureCardsFactory.createCardLink("expiring.soon", CMD_OPEN, widgetCont);
 		setUrl(expiringSoonLink, membersAreaBusinessPath + "[Active:0][ExpiringSoon:0]");
 		expiringSoonLink.setVisible(certificationProgram.isValidityEnabled());
-		focusIndicators.add(expiringSoonLink);
 
-		inRecertificationLink = IndicatorsFactory.createIndicatorFormLink("certifying", CMD_OPEN, "", "", widgetCont);
+		inRecertificationLink = FigureCardsFactory.createCardLink("certifying", CMD_OPEN, widgetCont);
 		inRecertificationLink.setVisible(certificationProgram.isRecertificationEnabled());
 		setUrl(inRecertificationLink, membersAreaBusinessPath + "[Active:0][InRecertification:0]");
-		focusIndicators.add(inRecertificationLink);
 
-		indicatorsEl.setFocusIndicatorsItems(focusIndicators);
-		return indicatorsEl.getComponent().getComponentName();
+		figuresEl.setCards(List.of(indicatorActiveLink, indicatorCertifiedLink, expiringSoonLink, inRecertificationLink));
+		return figuresEl.getComponent().getComponentName();
 	}
 	
 	public void reload(UserRequest ureq) {
-		updateIndicators(ureq);
-		updateTable(ureq);
-	}
-	
-	private void updateIndicators(UserRequest ureq) {
 		CertificationProgramActiveMemberStatistics stats = certificationProgramService
 				.getCertificationProgramActiveMembersStatistics(certificationProgram, ureq.getRequestTimestamp());
-				
-		indicatorActiveLink.setI18nKey(IndicatorsFactory.createLinkText(
-				translate("widget.active"),
-				Long.toString(stats.active())));
-		
-		indicatorCertifiedLink.setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_course_widget_icon o_icon_certification_certified\"></i> " + translate("widget.certified"),
-				Long.toString(stats.certified())));
+		updateIndicators(stats);
+		updateTable(ureq);
+		setFooterText(dataModel.getRowCount(), stats.active(), translate("widget.active"));
+	}
 
-		expiringSoonLink.setI18nKey(IndicatorsFactory.createLinkText(
-			"<i class=\"o_icon o_course_widget_icon o_icon_recertification_warning\"></i> " + translate("widget.expiring.soon"),
-			Long.toString(stats.expiringSoon())));
+	private void updateIndicators(CertificationProgramActiveMemberStatistics stats) {
+		indicatorActiveLink.setI18nKey(FigureCardsFactory.createCardText(null, null,
+				Long.toString(stats.active()), translate("widget.active")));
+		
+		indicatorCertifiedLink.setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_certification_certified", null,
+				Long.toString(stats.certified()), translate("widget.certified")));
+		
+		expiringSoonLink.setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_recertification_warning", null,
+				Long.toString(stats.expiringSoon()), translate("widget.expiring.soon")));
 		expiringSoonLink.setVisible(certificationProgram.isValidityEnabled());
 		
-		inRecertificationLink.setI18nKey(IndicatorsFactory.createLinkText(
-			"<i class=\"o_icon o_course_widget_icon o_icon_certification_certifying\"></i> " + translate("widget.in.recertification"),
-			Long.toString(stats.inRecertification())));
+		inRecertificationLink.setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_certification_certifying", null,
+				Long.toString(stats.inRecertification()), translate("widget.in.recertification")));
 		inRecertificationLink.setVisible(certificationProgram.isRecertificationEnabled());
 	}
 	

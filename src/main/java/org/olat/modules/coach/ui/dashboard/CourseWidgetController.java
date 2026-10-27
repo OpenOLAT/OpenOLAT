@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -38,6 +37,8 @@ import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.figurecards.FigureCardsFactory;
+import org.olat.core.gui.components.figurecards.FigureCardsItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -48,8 +49,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.indicators.IndicatorsFactory;
-import org.olat.core.gui.components.indicators.IndicatorsItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
@@ -90,7 +89,7 @@ public class CourseWidgetController extends TableWidgetController
 
 	private static final String CMD_OPEN = "open";
 	
-	private IndicatorsItem indicatorsEl;
+	private FigureCardsItem figuresEl;
 	private CourseTableModel dataModel;
 	private FlexiTableElement tableEl;
 	private CompletionCellRenderer completionCellRenderer;
@@ -133,7 +132,7 @@ public class CourseWidgetController extends TableWidgetController
 
 	@Override
 	protected String createIndicators(FormLayoutContainer widgetCont) {
-		indicatorsEl = IndicatorsFactory.createItem("indicators", widgetCont);
+		figuresEl = FigureCardsFactory.createItem("figures", widgetCont);
 		
 		keyToIndicatorLink = new LinkedHashMap<>();
 		figureValues = new SelectionValues();
@@ -144,11 +143,11 @@ public class CourseWidgetController extends TableWidgetController
 		createIndicator(widgetCont, "access", "filter.access.for.coach", "[CoachSite:0][Courses:0][coach:0][AccessForCoach:0]");
 		createIndicator(widgetCont, "finished", "filter.finished", "[CoachSite:0][Courses:0][coach:0][Finished:0]");
 		
-		return indicatorsEl.getComponent().getComponentName();
+		return figuresEl.getComponent().getComponentName();
 	}
 
 	private void createIndicator(FormLayoutContainer widgetCont, String name, String figureValueI18n, String url) {
-		FormLink link = IndicatorsFactory.createIndicatorFormLink(name, CMD_OPEN, "", "", widgetCont);
+		FormLink link = FigureCardsFactory.createCardLink(name, CMD_OPEN, widgetCont);
 		setUrl(link, url);
 		keyToIndicatorLink.put(name, link);
 		figureValues.add(SelectionValues.entry(name, translate(figureValueI18n)));
@@ -175,23 +174,14 @@ public class CourseWidgetController extends TableWidgetController
 		prefs.setKeyFigureKey("relevant");
 		Set<String> figureKeys = Set.of("marked", "published", "access");
 		prefs.setFocusFigureKeys(figureKeys);
-		prefs.setNumRows(5);
+		prefs.setNumRows(10);
 		return prefs;
 	}
 
 	@Override
 	public void update(TableWidgetConfigPrefs prefs) {
 		keyFigureKey = prefs.getKeyFigureKey();
-		
-		FormLink keyIndicator = keyToIndicatorLink.get(keyFigureKey);
-		indicatorsEl.setKeyIndicator(keyIndicator);
-		
-		List<FormItem> focusIndicators = keyToIndicatorLink.entrySet().stream()
-				.filter(keyToLink -> prefs.getFocusFigureKeys().contains(keyToLink.getKey()))
-				.map(Entry::getValue)
-				.map(FormItem.class::cast)
-				.toList();
-		indicatorsEl.setFocusIndicatorsItems(focusIndicators);
+		figuresEl.setCards(getFigureCards(keyToIndicatorLink, prefs));
 		
 		tableEl.setPageSize(prefs.getNumRows());
 		
@@ -253,9 +243,8 @@ public class CourseWidgetController extends TableWidgetController
 	}
 
 	private void updateIndicators(List<CourseStatEntry> courseStatistics, Set<Long> markedKeys) {
-		keyToIndicatorLink.get("all").setI18nKey(IndicatorsFactory.createLinkText(
-				translate("all"),
-				String.valueOf(courseStatistics.size())));
+		keyToIndicatorLink.get("all").setI18nKey(FigureCardsFactory.createCardText(null, null,
+				String.valueOf(courseStatistics.size()), translate("all")));
 		
 		int numMarked = 0;
 		int numCoachPublished = 0;
@@ -275,27 +264,24 @@ public class CourseWidgetController extends TableWidgetController
 			}
 		}
 		
-		keyToIndicatorLink.get("relevant").setI18nKey(IndicatorsFactory.createLinkText(
-				translate("relevant"),
-				String.valueOf(numCoachPublished + numPublished)));
-		keyToIndicatorLink.get("marked").setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_course_widget_icon o_icon_bookmark\"></i> " + translate("search.mark"),
-				String.valueOf(numMarked)));
-		keyToIndicatorLink.get("access").setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_course_widget_icon o_icon_coach\"></i> " + translate("filter.access.for.coach"),
-				String.valueOf(numCoachPublished)));
-		keyToIndicatorLink.get("published").setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_course_widget_icon o_icon_repo_status_published\"></i> " + translate("filter.published"),
-				String.valueOf(numPublished)));
-		keyToIndicatorLink.get("finished").setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_course_widget_icon o_icon_repo_status_closed\"></i> " + translate("filter.finished"),
-				String.valueOf(numFinished)));
+		keyToIndicatorLink.get("relevant").setI18nKey(FigureCardsFactory.createCardText(null, null,
+				String.valueOf(numCoachPublished + numPublished), translate("relevant")));
+		keyToIndicatorLink.get("marked").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_bookmark", null,
+				String.valueOf(numMarked), translate("search.mark")));
+		keyToIndicatorLink.get("access").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_coach", null,
+				String.valueOf(numCoachPublished), translate("filter.access.for.coach")));
+		keyToIndicatorLink.get("published").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_repo_status_published", null,
+				String.valueOf(numPublished), translate("filter.published")));
+		keyToIndicatorLink.get("finished").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_repo_status_closed", null,
+				String.valueOf(numFinished), translate("filter.finished")));
 	}
 
 	private void updateTable(List<CourseStatEntry> courseStatistics, Set<Long> markedKeys) {
 		Predicate<? super CourseStatEntry> filterPredicate = getFilterPredicate(markedKeys);
-		List<CourseRow> rows = courseStatistics.stream()
+		List<CourseStatEntry> filteredStatistics = courseStatistics.stream()
 				.filter(filterPredicate)
+				.toList();
+		List<CourseRow> rows = filteredStatistics.stream()
 				.sorted(Comparator.comparing(CourseStatEntry::getLastVisit, Comparator.nullsFirst(Date::compareTo).reversed()))
 				.limit(tableEl.getPageSize())
 				.map(this::toRow)
@@ -306,6 +292,7 @@ public class CourseWidgetController extends TableWidgetController
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+		setFooterText(rows.size(), filteredStatistics.size(), getFigureLabel(keyFigureKey));
 	}
 	
 	private Predicate<CourseStatEntry> getFilterPredicate(Set<Long> markedKeys) {

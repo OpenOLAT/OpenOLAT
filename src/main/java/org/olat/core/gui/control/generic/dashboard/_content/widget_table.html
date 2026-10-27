@@ -29,11 +29,17 @@
 		</div>
 	#end
 	<div class="o_dashboard_widget_space"></div>
-	#if($r.available($showAllComponentName) && $r.visible($showAllComponentName))
+	#set($showAllVisible = $r.available($showAllComponentName) && $r.visible($showAllComponentName))
+	#if($r.isNotEmpty($footerText) || $showAllVisible)
 		<div class="o_dashboard_widget_footer">
-			<div class="o_dashboard_widget_footer_buttons">
-				$r.render($showAllComponentName)
-			</div>
+			#if($r.isNotEmpty($footerText))
+				<div class="o_dashboard_widget_footer_text">$footerText</div>
+			#end
+			#if($showAllVisible)
+				<div class="o_dashboard_widget_footer_buttons">
+					$r.render($showAllComponentName)
+				</div>
+			#end
 		</div>
 	#end
 </div>

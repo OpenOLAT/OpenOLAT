@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.figurecards.FigureCardsFactory;
+import org.olat.core.gui.components.figurecards.FigureCardsItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -39,8 +41,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
-import org.olat.core.gui.components.indicators.IndicatorsFactory;
-import org.olat.core.gui.components.indicators.IndicatorsItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -64,6 +64,8 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 		implements TableWidgetConfigProvider, FlexiTableComponentDelegate {
 	
 	private static final String CMD_INDICATOR = "indicator";
+	private static final String[] ICONS = { null, "o_icon_user", "o_icon_pencil", "o_icon_objectives" };
+	private static final String[] COLORS = { null, "o_figure_card_icon_blue", null, "o_figure_card_icon_red" };
 	
 	private SampleFlexiTableModel dataModel;
 	private FlexiTableElement tableEl;
@@ -74,11 +76,12 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 	private final boolean linkCells;
 	private final boolean listView;
 	private final String prefsId;
+	private final int numFigures;
 	private final SelectionValues figureValues;
 
 
 	protected GuiDemoTableWidgetController(UserRequest ureq, WindowControl wControl, String title, boolean showHeader,
-			boolean linkCells, boolean listView, String prefsId) {
+			boolean linkCells, boolean listView, String prefsId, int numFigures) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(GuiDemoFlexiTablesController.class, getLocale(), getTranslator()));
 		this.title = title;
@@ -86,15 +89,15 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 		this.linkCells = linkCells;
 		this.listView = listView;
 		this.prefsId = prefsId;
+		this.numFigures = numFigures;
 		
 		figureValues = new SelectionValues();
-		figureValues.add(SelectionValues.entry("1", translate("select.1")));
-		figureValues.add(SelectionValues.entry("2", translate("select.2")));
-		figureValues.add(SelectionValues.entry("3", translate("select.3")));
-		figureValues.add(SelectionValues.entry("4", translate("select.4")));
-		figureValues.add(SelectionValues.entry("5", ""));
+		for (int i = 1; i <= numFigures; i++) {
+			figureValues.add(SelectionValues.entry(String.valueOf(i), getFigureLabel(i)));
+		}
 		
 		initForm(ureq);
+		setFooterText(dataModel.getRowCount(), 195, getFigureLabel(1));
 	}
 
 	@Override
@@ -104,30 +107,29 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 
 	@Override
 	protected String createIndicators(FormLayoutContainer widgetCont) {
-		IndicatorsItem indicatorsItem = IndicatorsFactory.createItem("indicators", widgetCont);
+		FigureCardsItem figureCardsItem = FigureCardsFactory.createItem("figures", widgetCont);
 		
-		FormLink keyIndicator = createIndicatorLink(widgetCont, "3", translate("select.3"), "3");
-		indicatorsItem.setKeyIndicator(keyIndicator);
+		List<FormLink> cards = IntStream.rangeClosed(1, numFigures)
+				.mapToObj(i -> createCardLink(widgetCont, i))
+				.toList();
+		figureCardsItem.setCards(cards);
 		
-		FormLink indicatorLink4 = createIndicatorLink(widgetCont, "4", translate("select.4"), "4");
-		indicatorLink4.setEnabled(false);
-		
-		List<FormItem> focusIndicators = List.of(
-				createIndicatorLink(widgetCont, "1", translate("select.1"), "1"),
-				createIndicatorLink(widgetCont, "2", translate("select.2"), "22"),
-				indicatorLink4,
-				createIndicatorLink(widgetCont, "5", null, "500")
-			);
-		indicatorsItem.setFocusIndicatorsItems(focusIndicators);
-		
-		return indicatorsItem.getComponent().getComponentName();
+		return figureCardsItem.getComponent().getComponentName();
+	}
+	
+	private String getFigureLabel(int i) {
+		return i == 8? translate("select.long"): translate("select." + i);
 	}
 
-	private FormLink createIndicatorLink(FormLayoutContainer widgetCont, String name, String label, String figure) {
-		FormLink indicatorLink = IndicatorsFactory.createIndicatorFormLink(name, CMD_INDICATOR, label, figure, widgetCont);
-		indicatorLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
-		indicatorLink.setUserObject(new LabelFigure(label, figure));
-		return indicatorLink;
+	private FormLink createCardLink(FormLayoutContainer widgetCont, int i) {
+		String label = getFigureLabel(i);
+		String figure = String.valueOf(i == 1? 195: i * 7);
+		FormLink cardLink = FigureCardsFactory.createCardLink("figure_" + i, CMD_INDICATOR, widgetCont);
+		cardLink.setI18nKey(FigureCardsFactory.createCardText(ICONS[(i - 1) % ICONS.length],
+				COLORS[(i - 1) % COLORS.length], figure, label));
+		cardLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
+		cardLink.setUserObject(new LabelFigure(label, figure));
+		return cardLink;
 	}
 
 	@Override
@@ -198,9 +200,9 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 	@Override
 	public TableWidgetConfigPrefs getDefault() {
 		TableWidgetConfigPrefs prefs = new TableWidgetConfigPrefs();
-		prefs.setKeyFigureKey("3");
+		prefs.setKeyFigureKey("1");
 		prefs.setFocusFigureKeys(Set.of(figureValues.keys()));
-		prefs.setNumRows(5);
+		prefs.setNumRows(10);
 		return prefs;
 	}
 

@@ -19,6 +19,11 @@
  */
 package org.olat.core.gui.control.generic.dashboard;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -68,6 +73,7 @@ public abstract class TableWidgetController extends FormBasicController implemen
 		formLayout.add(widgetCont);
 		
 		prefsLink = uifactory.addFormLink("prefs", "prefs", "", null, widgetCont, Link.BUTTON_SMALL + Link.NONTRANSLATED);
+		prefsLink.setElementCssClass("o_button_ghost");
 		prefsLink.setIconLeftCSS("o_icon o_icon_customize");
 		prefsLink.setLinkTitle(translate("settings.change"));
 		prefsLink.setAriaDialogOpener();
@@ -100,6 +106,38 @@ public abstract class TableWidgetController extends FormBasicController implemen
 	
 	protected TableWidgetConfigProvider getConfigProvider() {
 		return null;
+	}
+	
+	protected void setFooterText(String footerText) {
+		widgetCont.contextPut("footerText", footerText);
+	}
+	
+	protected void setFooterText(int numShown, long numTotal, String figureLabel) {
+		if (numTotal > 0 && StringHelper.containsNonWhitespace(figureLabel)) {
+			setFooterText(translate("table.widget.footer", String.valueOf(numShown), String.valueOf(numTotal), figureLabel));
+		} else {
+			setFooterText(null);
+		}
+	}
+
+	protected String getFigureLabel(String figureKey) {
+		TableWidgetConfigProvider configProvider = getConfigProvider();
+		if (configProvider == null || figureKey == null) {
+			return null;
+		}
+		return configProvider.getFigureValues().getValue(figureKey);
+	}
+	
+	/**
+	 * @return the cards of the key figure and of the focus figures. The card of the key figure is the first one.
+	 */
+	protected List<FormLink> getFigureCards(Map<String, FormLink> keyToCard, TableWidgetConfigPrefs prefs) {
+		String keyFigureKey = prefs.getKeyFigureKey();
+		return keyToCard.entrySet().stream()
+				.filter(keyToLink -> keyToLink.getKey().equals(keyFigureKey) || prefs.getFocusFigureKeys().contains(keyToLink.getKey()))
+				.sorted(Comparator.comparing(keyToLink -> !keyToLink.getKey().equals(keyFigureKey)))
+				.map(Entry::getValue)
+				.toList();
 	}
 	
 	protected FlexiCellRenderer wrapCellLink(FlexiCellRenderer renderer) {
