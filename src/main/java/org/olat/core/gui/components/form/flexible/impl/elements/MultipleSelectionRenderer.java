@@ -221,10 +221,6 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 				sb.append("   }, 0);");
 				sb.append("   return false;");
 				sb.append("});");
-				// remember last focus position, see FormJSHelper.getRawJSFor()
-				sb.append("jQuery('#").append(check.getFormDispatchId()).append("').on('focus',function(event) {");
-				sb.append("o_info.lastFormFocusEl='").append(check.getFormDispatchId()).append("';"); 
-				sb.append("});");
 				sb.append("</script>");
 			}
 		}
@@ -293,7 +289,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 	}
 
 	private String getRawJSFor(CheckboxElement check) {
-		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction(), false, null, check.getFormDispatchId());
+		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction(), false, null);
 		String onKeyword = "onchange=";
 		int onPos = eventHandlers.indexOf(onKeyword);
 		String substring = "";
@@ -478,9 +474,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			  .append(";\"");
 		} else {
 			//use the selection form dispatch id and not the one of the element!
-			sb.append(FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction(), false, null, check.getFormDispatchId()));
-			//TODO editor force focus to move on
-			sb.append(" onmousedown=\"o_info.lastFormFocusEl='").append(check.getFormDispatchId()).append("';\"");
+			sb.append(FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction(), false, null));
 		}
 		sb.append(">");
 		String iconLeftCSS = check.getIconLeftCSS();

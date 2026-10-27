@@ -25,6 +25,7 @@ o_info.focusReturnStack = [];
 o_info.pendingFocusReturn = null;
 o_info.pendingDialogFocus = false;
 o_info.focusBeforeServer = null;
+o_info.focusAfterBusy = null;
 o_info.lastClickedEl = null;
 o_info.lastClickedTime = 0;
 o_info.focusHandled = false;
@@ -230,9 +231,8 @@ function o_getMainWin() {
 function o_beforeserver() {
 //mal versuche mit jQuery().ready.. erst dann wieder clicks erlauben...
 	o_info.linkbusy = true;
-	const activeEl = document.activeElement;
 	const recentClickedEl = Date.now() - o_info.lastClickedTime < 2000 ? o_info.lastClickedEl : null;
-	o_info.focusBeforeServer = activeEl && activeEl !== document.body ? activeEl : recentClickedEl;
+	o_info.focusBeforeServer = o_realActiveElement() || recentClickedEl;
 	showAjaxBusy();
 	// execute iframe specific onunload code on the iframe
 	if (window.suppressOlatOnUnloadOnce) {
@@ -262,7 +262,7 @@ function o_afterserver(responseData) {
 						o2c = 1;
 						setFlexiFormDirty(acmd["cda"].dispatchFieldId, acmd["cda"].hideDirtyMarking);
 					} else if(co == 11) {
-						o_ffSetFocus(acmd["cda"].type, acmd["cda"].formName, acmd["cda"].formItemId);
+						o_ffSetFocus(acmd["cda"].type, acmd["cda"].formName, acmd["cda"].formItemId, acmd["cda"].validation);
 					}
 				}
 			}
@@ -351,7 +351,7 @@ function o_postInvoke(r, newWindow) {
 	}
 }
 
-function o_aexecute(command, parameters) {
+function o_aexecute(command, parameters, opener) {
 	'use strict';
 	
 	function setCourseDataAttributes(nodeId, nodeInfo) {
@@ -568,10 +568,14 @@ function o_aexecute(command, parameters) {
 				anchor = o_info.pendingFocusReturn;
 				o_info.pendingFocusReturn = null;
 			} else {
-				var opener = o_info.focusBeforeServer || document.activeElement;
-				if (opener && opener !== document.body && !opener.closest('#o_ajax_busy')) {
-					anchor = o_focusAnchor(opener, opener.id);
+				var openerEl = opener || o_realActiveElement();
+				if (openerEl) {
+					anchor = o_focusAnchor(openerEl, openerEl.id);
 				}
+			}
+			// the opener of a dialog is expanded while the dialog is open
+			if (anchor && anchor.el && anchor.el.getAttribute('aria-haspopup') === 'dialog') {
+				anchor.el.setAttribute('aria-expanded', 'true');
 			}
 			// push also null, so that every pop matches its push
 			o_info.focusReturnStack.push(anchor);
@@ -802,6 +806,10 @@ function o_ainvoke(r) {
 	let focusArray = [];
 	o_info.pendingFocusReturn = null;
 	o_info.focusHandled = false;
+	// command 6 calls o_afterserver(), which clears focusBeforeServer before the redraw
+	const opener = o_info.focusBeforeServer;
+	const busyFocusAtStart = o_info.focusAfterBusy;
+	let lostFocus = null;
 	
 	let cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
@@ -841,6 +849,9 @@ function o_ainvoke(r) {
 							}
 							
 							if (newc != null) {
+								if (!lostFocus) {
+									lostFocus = o_redrawFocusAnchor(newc[0], opener);
+								}
 								let eds = jQuery('div.o_richtext_mce textarea', newc);
 								for(let t=0; t<eds.length; t++) {
 									try {
@@ -903,7 +914,7 @@ function o_ainvoke(r) {
 						break;
 					case 4:
 						try {
-							o_aexecute(cda["func"], cda["fparams"]);
+							o_aexecute(cda["func"], cda["fparams"], opener);
 						} catch(e) {
 							console.log(e);
 						}
@@ -965,7 +976,7 @@ function o_ainvoke(r) {
 					case 10: // dirty form, executed in o_afterserver
 						break;
 					case 11:
-						focusArray.push({ type: cda.type, formName: cda.formName, formItemId: cda.formItemId });
+						focusArray.push({ type: cda.type, formName: cda.formName, formItemId: cda.formItemId, validation: cda.validation });
 						break;
 					case 12:
 						o_downloadUrl(cda["filename"], cda["rurl"]);
@@ -1005,6 +1016,10 @@ function o_ainvoke(r) {
 		});
 	}
 	
+	if (lostFocus) {
+		// the redraw restores the focus, a weak form focus candidate must not take it
+		o_info.focusHandled = true;
+	}
 	// Scroll or focus, but not both to prevent jumping up and down
 	if(scrollTop && focusArray.length > 0) {
 		o_scrollTopAndFocus(focusArray);
@@ -1013,15 +1028,18 @@ function o_ainvoke(r) {
 	} else if(focusArray.length > 0) {
  		o_ffSetFocusArray(focusArray);
 	}
-	if (o_info.pendingFocusReturn !== null) {
-		var retEl = o_resolveFocusAnchor(o_info.pendingFocusReturn);
+	var focusReturned = o_info.pendingFocusReturn !== null;
+	if (focusReturned) {
+		var retAnchor = o_info.pendingFocusReturn;
+		var retEl = o_resolveFocusTarget(retAnchor);
 		o_info.pendingFocusReturn = null;
-		if (retEl) {
-			retEl.focus({ preventScroll: true });
-			o_scrollToElementIfInvisible(retEl);
-			o_info.focusHandled = true;
+		var retOpener = (retAnchor.id && document.getElementById(retAnchor.id)) || (retAnchor.el && retAnchor.el.isConnected ? retAnchor.el : null);
+		if (retOpener && retOpener.hasAttribute('aria-expanded')) {
+			retOpener.setAttribute('aria-expanded', 'false');
 		}
+		o_restoreFocus(retEl, null, scrollTop);
 	}
+	var dialogOpens = o_info.pendingDialogFocus;
 	if (o_info.pendingDialogFocus) {
 		o_info.pendingDialogFocus = false;
 		var topDialog = o_topDialog();
@@ -1034,6 +1052,11 @@ function o_ainvoke(r) {
 				o_focusModalField(topDialog);
 			}
 		}
+	}
+	// a focus deferred by this response (busy dialog open) wins, an older one does not
+	var deferredNow = o_info.focusAfterBusy && o_info.focusAfterBusy !== busyFocusAtStart;
+	if (lostFocus && !dialogOpens && !focusReturned && !o_realActiveElement() && !deferredNow) {
+		o_restoreFocus(o_resolveFocusTarget(lostFocus), lostFocus.selection, scrollTop);
 	}
 /* minimalistic debugger / profiler
 	BDebugger.logDOMCount();
@@ -1084,6 +1107,11 @@ function removeAjaxBusy() {
 	try {
 		jQuery('#o_body').removeClass('o_ajax_busy');
 		document.getElementById('o_ajax_busy').close();
+		const focusAfterBusy = o_info.focusAfterBusy;
+		o_info.focusAfterBusy = null;
+		if (focusAfterBusy) {
+			focusAfterBusy();
+		}
 	} catch (e) {
 		if(window.console) console.log(e);
 	}
@@ -2695,16 +2723,21 @@ var o_tableRowSelector = 'tr[id^="row_"], [data-row-key], .o_table_row, .o_verti
  * the trigger id, the table container (its id survives the reload), the row key and position,
  * and the slot (index of the trigger among the dialog openers of its row).
  */
-function o_focusAnchor(el, id) {
+function o_focusAnchor(el, id, keepMenuItem) {
 	// an item of a dropdown menu is hidden after the dialog closes: return to the toggle of the menu
-	var menuToggle = el && el.closest('.dropdown-menu') ? el.closest('.dropdown-menu').parentElement.querySelector('.dropdown-toggle') : null;
+	var menuToggle = !keepMenuItem && el && el.closest('.dropdown-menu') ? el.closest('.dropdown-menu').parentElement.querySelector('.dropdown-toggle') : null;
 	if (menuToggle) {
 		el = menuToggle;
 		id = menuToggle.id;
 	}
-	var anchor = { id: id, el: el };
+	var anchor = { id: id, el: el, ancestorIds: [] };
 	if (!el) {
 		return anchor;
+	}
+	for (var anc = el.parentElement; anc; anc = anc.parentElement) {
+		if (anc.id) {
+			anchor.ancestorIds.push(anc.id);
+		}
 	}
 	var opensDialog = el.getAttribute('aria-haspopup') === 'dialog';
 	var row = el.closest(o_tableRowSelector);
@@ -2715,9 +2748,6 @@ function o_focusAnchor(el, id) {
 		anchor.rowIndex = Array.prototype.indexOf.call(wrapper.querySelectorAll(o_tableRowSelector), row);
 		anchor.slotSelector = opensDialog ? '[aria-haspopup="dialog"]' : 'a[href], button';
 		anchor.slot = Array.prototype.indexOf.call(row.querySelectorAll(anchor.slotSelector), el);
-	}
-	if (opensDialog) {
-		el.setAttribute('aria-expanded', 'true');
 	}
 	return anchor;
 }
@@ -2732,9 +2762,6 @@ function o_focusAnchor(el, id) {
  */
 function o_resolveFocusAnchor(anchor) {
 	var el = (anchor.id ? document.getElementById(anchor.id) : null) || (anchor.el && anchor.el.isConnected ? anchor.el : null);
-	if (el && el.hasAttribute('aria-expanded')) {
-		el.setAttribute('aria-expanded', 'false');
-	}
 	var container = anchor.tableId ? document.getElementById(anchor.tableId) : null;
 	if (!container) {
 		return el;
@@ -2761,9 +2788,126 @@ function o_resolveFocusAnchor(anchor) {
 			return sibling;
 		}
 	}
-	var wrapper = container.querySelector('.o_table_wrapper, .o_empty_state') || container;
-	wrapper.setAttribute('tabindex', '-1');
-	return wrapper;
+	return o_focusableUntilBlur(container.querySelector('.o_table_wrapper, .o_empty_state') || container);
+}
+
+function o_focusableUntilBlur(el) {
+	if (!el.matches(o_focusableSelector)) {
+		el.setAttribute('tabindex', '-1');
+		el.dataset.oFocusFallback = 'true';
+		el.addEventListener('blur', function() {
+			el.removeAttribute('tabindex');
+			delete el.dataset.oFocusFallback;
+		}, { once: true });
+	}
+	return el;
+}
+
+function o_realActiveElement() {
+	var el = document.activeElement;
+	return el && el !== document.body && !el.closest('#o_ajax_busy') ? el : null;
+}
+
+/**
+ * Remember the focused element (or the clicked opener) when a redraw replaces
+ * the container that holds it.
+ */
+function o_redrawFocusAnchor(container, opener) {
+	var el = o_realActiveElement() || opener;
+	if (!container || !el || !container.contains(el)) {
+		return null;
+	}
+	var menu = el.closest('.dropdown-menu');
+	var anchor = o_focusAnchor(el, el.id, menu !== null && menu.contains(container));
+	if (typeof el.selectionStart === 'number') {
+		anchor.selection = { start: el.selectionStart, end: el.selectionEnd, value: el.value };
+	}
+	return anchor;
+}
+
+/**
+ * The same element (id, row key and slot), else the closest visible ancestor
+ * which survived the redraw, never the body.
+ */
+function o_resolveFocusTarget(anchor) {
+	var el = o_resolveFocusAnchor(anchor);
+	if (el && el.getClientRects().length > 0) {
+		return el;
+	}
+	for (var i = 0; i < anchor.ancestorIds.length; i++) {
+		var container = document.getElementById(anchor.ancestorIds[i]);
+		if (container && container.getClientRects().length > 0) {
+			return o_focusableUntilBlur(container);
+		}
+	}
+	return null;
+}
+
+/**
+ * Put the focus back without selecting the text; the caret or selection of
+ * a field is restored when its value did not change.
+ */
+function o_restoreFocus(el, selection, noScroll) {
+	if (el && selection && typeof el.selectionStart === 'number' && el.value === selection.value) {
+		el.setSelectionRange(selection.start, selection.end);
+	}
+	if (el && o_applyFocus(el, false, noScroll)) {
+		o_info.focusHandled = true;
+	}
+}
+
+/**
+ * Focus the element and report whether it got the focus. While the busy dialog
+ * is open the focus is deferred. noScroll: a scroll to the top runs.
+ */
+function o_applyFocus(el, selectText, noScroll) {
+	if (el.disabled) {
+		return false;
+	}
+	if (document.getElementById('o_ajax_busy') && document.getElementById('o_ajax_busy').open) {
+		if (!el.isConnected || el.getClientRects().length === 0 || !el.matches(o_focusableSelector)) {
+			return false;
+		}
+		// the busy dialog makes the page inert: focus when it closes
+		o_info.focusAfterBusy = function() {
+			if (el.isConnected) {
+				o_applyFocus(el, selectText, noScroll);
+			}
+		};
+		return true;
+	}
+	o_info.focusAfterBusy = null;
+	if (el.classList.contains('o_date_day') && el.datepicker !== undefined) {
+		el.datepicker.setOptions({ showOnFocus: false });
+		el.focus({ preventScroll: true });
+		el.datepicker.setOptions({ showOnFocus: true });
+	} else {
+		if (selectText && el.tagName === "INPUT" && el.type === "text" && el.value != "") {
+			el.select();
+		}
+		if (document.activeElement !== el) {
+			el.focus({ preventScroll: true });
+		}
+		if (document.activeElement === el) {
+			// Some widgets initialize asynchronously right after this DOM
+			// update (e.g. typeahead.js re-wrapping its input) and can
+			// silently steal focus back on the next tick. Re-apply once
+			// more after such late re-inits have already run.
+			setTimeout(function() {
+				if (document.activeElement && document.activeElement.closest('dialog[open]')) {
+					return;
+				}
+				if (document.activeElement !== el) {
+					el.focus({ preventScroll: true });
+				}
+			}, 0);
+		}
+	}
+	// a fallback container is often taller than the window: scrolling to it makes the page jump
+	if (!noScroll && !el.dataset.oFocusFallback) {
+		o_scrollToElementIfInvisible(el);
+	}
+	return document.activeElement === el;
 }
 
 function o_topDialog() {
@@ -2772,6 +2916,7 @@ function o_topDialog() {
 }
 
 var o_focusableSelector = 'a[href], button, input, select, textarea, [tabindex]';
+var o_errorFieldSelector = '.form-control, input[type=checkbox], input[type=radio]';
 
 function o_isClipped(el, container) {
 	for (var anc = el; anc && anc !== container.parentElement; anc = anc.parentElement) {
@@ -2847,71 +2992,22 @@ function o_focusModalField(dialog) {
 }
 
 function o_ffSetFocusArray(focusArray) {
-	if(document.activeElement && document.activeElement.closest('dialog[open]')) {
+	if(document.activeElement && document.activeElement.closest('dialog[open]:not(#o_ajax_busy)')) {
 		return;
 	}
 	if(focusArray) {
 		for(let i=0;i<focusArray.length; i++) {
 			const f = focusArray[i];
-			if(o_ffSetFocus(f.type, f.formName, f.formItemId)) {
+			if(o_ffSetFocus(f.type, f.formName, f.formItemId, f.validation)) {
 				return;
 			}
 		}
 	}
 }
 
-// Set the focus in a flexi form to a specific form item, the first error 
-// in the form or the last element focused by a user action 
-function o_ffSetFocus(type, formId, formItemId) {
-	
-	let applyFocus = function(el) {
-		let tagName = el.tagName;
-		let focusApplied = false;
-		let buttonWithFocus = tagName == "BUTTON" && el.classList.contains('o_can_have_focus');
-		let linkWithFocus = tagName === "A" && el.classList.contains('o_can_have_focus') && el.classList.contains('btn');
-		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION" || buttonWithFocus || linkWithFocus) {
-			
-			if(el.classList.contains('o_date_day')) {
-				const datepicker = el.datepicker;
-				if(datepicker !== undefined) {
-					datepicker.setOptions({ showOnFocus: false });
-					jQuery(el).focus();
-					datepicker.setOptions({ showOnFocus: true });
-					focusApplied = true;
-				}
-			} else if(!el.disabled) {
-				if(tagName == "INPUT"
-					&& el.type === "text" && el.value != "") {
-					el.select();
-				}
-				if(document.activeElement == null
-					|| el.getAttribute('id') !== document.activeElement.getAttribute('id')) {
-					el.focus();
-				}
-				// Some widgets initialize asynchronously right after this DOM
-				// update (e.g. typeahead.js re-wrapping its input) and can
-				// silently steal focus back on the next tick. Re-apply once
-				// more after such late re-inits have already run.
-				setTimeout(function() {
-					if (document.activeElement && document.activeElement.closest('dialog[open]')) {
-						return;
-					}
-					if(document.activeElement == null
-						|| el.getAttribute('id') !== document.activeElement.getAttribute('id')) {
-						el.focus();
-					}
-				}, 0);
-				focusApplied = true;
-			}
-		} else {
-			o_info.lastFormFocusEl = 0;
-		}
-		return focusApplied;
-	}
-	
-	let isInForm = function(formElementId, elementId) {
-		return jQuery("#" + elementId).parents("#" + formElementId).length > 0;
-	}
+// Set the focus in a flexi form to the first error, a specific form item
+// or the element with autofocus
+function o_ffSetFocus(type, formId, formItemId, validation) {
 	
 	let isElementVisible = function(elementId) {
 		if(elementId == null || elementId === "") return false;
@@ -2937,33 +3033,31 @@ function o_ffSetFocus(type, formId, formItemId) {
 		return true;
 	}
 	
-	// 1) Focus on element stored in 
-	// o_info.lastFormFocusEl
-
-	// 2) Override focus on specific form item if provided. Priority is:
-	//    - Focus on a field with an error
+	// Priority is:
+	//    - Focus on the first field with an error after a validation
 	//    - Wanted element
-	//    - last focused element
-	//    - element with autofocus
+	//    - field with an error (weak)
+	//    - element with autofocus (weak)
 	
 	let autofocusEl = jQuery("#" + formId + " input[autofocus]");
-	let errItem = jQuery('#' + formId + ' .has-error .form-control');
+	let errItem = jQuery('#' + formId + ' .has-error').find(o_errorFieldSelector);
 	
 	let candidateFormItemId = "";
 	let weakCandidate = false;
-	if (errItem.length > 0) {
+	if (validation && errItem.length > 0) {
 		candidateFormItemId = errItem[0].getAttribute("id");
 	} else if (formItemId) {
 		candidateFormItemId = formItemId;
-	} else if(isInForm(formId, o_info.lastFormFocusEl)) {
-		candidateFormItemId = o_info.lastFormFocusEl;
+	} else if (errItem.length > 0) {
+		// without a validation, an error shown in the form does not take the focus from the user
+		candidateFormItemId = errItem[0].getAttribute("id");
 		weakCandidate = true;
 	} else if(autofocusEl.length == 1) {
 		candidateFormItemId = autofocusEl[0].getAttribute("id");
 		weakCandidate = true;
 	}
 
-	// 4) Now set focus, but the focus returned to a dialog opener or moved into a dialog wins over a weak candidate
+	// Now set focus, but the focus returned to a dialog opener or moved into a dialog wins over a weak candidate
 	let focused = false;
 	if (candidateFormItemId != "" && isElementVisible(candidateFormItemId) && !(weakCandidate && o_info.focusHandled)) {
 		let candidateEl = jQuery("#" + candidateFormItemId);
@@ -2973,13 +3067,9 @@ function o_ffSetFocus(type, formId, formItemId) {
 		if((numOfModals > 0 && numOfClosest == 0) || (topDialog && !topDialog.contains(candidateEl[0]))) {
 			// Modal dialog opens, but try to focus under it
 			focused = false;
-		} else {
-			focused = applyFocus(candidateEl[0]);
+		} else if(candidateEl.length > 0) {
+			focused = o_applyFocus(candidateEl[0], true);
 		}
-	}
-	
-	if (focused) {
-		o_info.lastFormFocusEl = candidateFormItemId;
 	}
 	return focused;
 }
@@ -3704,10 +3794,11 @@ const BDebugger = {
 	}
 }
 
-// A mouse click does not focus links and buttons in all browsers: remember the
-// clicked element as opener of a dialog
+// A mouse click does not focus links, buttons and form controls in all browsers:
+// remember the clicked element as opener of a dialog and as focus target after a redraw
 document.addEventListener('mousedown', function(event) {
-	o_info.lastClickedEl = event.target.closest ? event.target.closest('a, button, [role="button"]') : null;
+	var clickedEl = event.target.closest ? event.target.closest('a, button, [role="button"], input, select, textarea, label') : null;
+	o_info.lastClickedEl = clickedEl && clickedEl.tagName === 'LABEL' ? clickedEl.control : clickedEl;
 	o_info.lastClickedTime = Date.now();
 }, true);
 

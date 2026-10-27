@@ -65,7 +65,7 @@ public class FormJSHelper {
 	 * @return
 	 */
 	public static StringBuilder getRawJSFor(Form form, String id, int actions) {
-		return getRawJSFor(form, id, actions, false, null, id);
+		return getRawJSFor(form, id, actions, false, null);
 	}
 	
 	/**
@@ -75,12 +75,9 @@ public class FormJSHelper {
 	 * @param actions    The action
 	 * @param newWindow  true if a new window is wanted
 	 * @param tmpCommand Write a temporary cid in the form submit
-	 * @param focusId    The element id that will get the focus event (not the same
-	 *                   for special cases such as radios) or NULL if re-focus feature
-	 *                   shall not be used
 	 * @return The on... event with the o_ffEvent call
 	 */
-	public static StringBuilder getRawJSFor(Form form, String id, int actions, boolean newWindow, String tmpCommand, String focusId) {
+	public static StringBuilder getRawJSFor(Form form, String id, int actions, boolean newWindow, String tmpCommand) {
 		StringBuilder sb = new StringBuilder(64);
 		// find correct action! only one action supported
 		for (int i = FormEvent.ON_DOTDOTDOT.length - 1; i >= 0; i--) {
@@ -93,10 +90,6 @@ public class FormJSHelper {
 				sb.append("\"");
 				break;
 			}
-		}
-		// Remember the form item when being focused for next server roundtrip
-		if (focusId != null) {
-			sb.append(" onfocus=\"o_info.lastFormFocusEl='").append(focusId).append("'; \"");					
 		}
 		return sb;
 	}
@@ -518,5 +511,15 @@ public class FormJSHelper {
 	 */
 	public static Command getFormFocusCommand(String formName, String formItemId) {
 		return CommandFactory.createFlexiFocus(formName, formItemId);
+	}
+	
+	/**
+	 * JS command to set the focus to the first field with an error after a validation
+	 *
+	 * @param formName The root form name
+	 * @return A JSCommand object
+	 */
+	public static Command getFormValidationFocusCommand(String formName) {
+		return CommandFactory.createFlexiFocus(formName, null, true);
 	}
 }

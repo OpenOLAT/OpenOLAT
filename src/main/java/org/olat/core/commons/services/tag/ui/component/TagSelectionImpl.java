@@ -219,8 +219,6 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 		component.setExpanded(false);
 		component.setAriaControls(null);
 		
-		Command focusCommand = FormJSHelper.getFormFocusCommand(getRootForm().getFormName(), getFormDispatchId());
-		getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
 	
 	private <T extends Controller> T cleanUp(T ctrl) {

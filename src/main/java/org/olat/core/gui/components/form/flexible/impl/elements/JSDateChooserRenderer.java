@@ -439,7 +439,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 	      .append(" name=\"").append(id).append("\" size='2'")
 		  .append(" maxlength='4' value='").append(time > 9 ? "" + time : "0" + time).append("'")
 		  .append(" data-oo-validation-group='").append(onChangeId).append("' ")
-		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), onChangeId, action, false, null, id))
+		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), onChangeId, action, false, null))
 		  .append(" aria-required='true'", teC.getFormItem().isMandatory())
 		  .append(" autocomplete=\"off\">");
 		return dc;

@@ -258,39 +258,41 @@ public class AssessmentForm extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
 		if (assessableElement.hasScoreConfigured()) {
+			Float fscore = null;
 			try {
-				if(parseFloat(score) == null) {
+				fscore = parseFloat(score);
+				if(fscore == null) {
 					score.setErrorKey("form.error.wrongFloat");
-					return false;
+					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
 				score.setErrorKey("form.error.wrongFloat");
-				return false;
+				allOk &= false;
 			}
 			
-			Float fscore = parseFloat(score);
 			if(fscore != null) {
 				if (min != null && fscore < min.floatValue()) {
 					score.setErrorKey("form.error.score.out.min.max",
 							AssessmentHelper.getRoundedOrNA(getTranslator(), min),
 							AssessmentHelper.getRoundedOrNA(getTranslator(), max));
-					return false;
+					allOk &= false;
 				} else if (max != null && fscore > max.floatValue()) {
 					score.setErrorKey("form.error.score.out.min.max",
 							AssessmentHelper.getRoundedOrNA(getTranslator(), min),
 							AssessmentHelper.getRoundedOrNA(getTranslator(), max));
-					return false;
+					allOk &= false;
 				} else if (fscore < AssessmentHelper.MIN_SCORE_SUPPORTED) {
 					score.setErrorKey("form.error.scoreOutOfRange");
-					return false;
+					allOk &= false;
 				} else if (fscore > AssessmentHelper.MAX_SCORE_SUPPORTED) {
 					score.setErrorKey("form.error.scoreOutOfRange");
-					return false;
+					allOk &= false;
 				}
 			}
 		}	
-		return true;
+		return allOk;
 	}
 	
 	private Float parseFloat(TextElement textEl) throws NumberFormatException {

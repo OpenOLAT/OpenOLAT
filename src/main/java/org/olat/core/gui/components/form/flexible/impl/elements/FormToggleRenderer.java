@@ -54,7 +54,6 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 			sb.append("id=\"").append(elementId).append("\" ");
 		}
 		sb.append("class=\"");
-		sb.append("o_can_have_focus ");
 		sb.append("o_toggle_block ", args != null && Arrays.asList(args).contains("vertical"));
 		sb.append(getCssClass(cmp));
 		if(StringHelper.containsNonWhitespace(cmp.getElementCssClass())) {
@@ -89,8 +88,7 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append("disabled=\"true\" aria-disabled=\"true\" ");
 		}
-		sb.append("onfocus=\"o_info.lastFormFocusEl='").append(elementId).append("';\" ")
-		  .append("aria-checked=\"").append("true", "false", cmp.isOn()).append("\" ")
+		sb.append("aria-checked=\"").append("true", "false", cmp.isOn()).append("\" ")
 		  .append(">");
 
 		if (Presentation.SWITCH == cmp.getPresentation()) {

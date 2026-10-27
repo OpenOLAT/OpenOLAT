@@ -71,7 +71,6 @@ public class ObjectSelectionComponentRenderer extends DefaultComponentRenderer {
 		if(!cmp.isEnabled()) {
 			sb.append(" disabled=\"disabled\"");
 		}
-		sb.append(" onfocus=\"o_info.lastFormFocusEl='").append(browseButtonId).append("';\"");
 		sb.append(" onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\"");
 		sb.append(" onclick=\"");
 		sb.append(FormJSHelper.getXHRFnCallFor(cmp.getFormItem().getRootForm(), dispatchId, 1, false, false, true,

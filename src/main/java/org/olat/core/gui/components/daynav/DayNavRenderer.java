@@ -189,7 +189,6 @@ public class DayNavRenderer extends DefaultComponentRenderer {
 		sb.append("<button type=\"button\" ");
 		sb.append("id = \"").append(buttonId).append("\" ");
 		sb.append("class=\"");
-		sb.append("o_can_have_focus ");
 		if (StringHelper.containsNonWhitespace(buttonCss)) {
 			sb.append(" ").append(buttonCss);
 		}
@@ -204,7 +203,6 @@ public class DayNavRenderer extends DefaultComponentRenderer {
 				ubu.buildXHREvent(sb, "", false, true, nameValue);
 				sb.append("\" ");
 			}
-			sb.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ");
 		} else {
 			sb.append("disabled=\"true\" ");
 		}

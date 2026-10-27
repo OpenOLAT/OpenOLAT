@@ -234,11 +234,20 @@ public class CommandFactory {
 	}
 	
 	public static Command createFlexiFocus(String formName, String formItemId) {
+		return createFlexiFocus(formName, formItemId, false);
+	}
+	
+	/**
+	 * @param validation true if the form was validated in this request: the
+	 * 		first field with an error gets the focus
+	 */
+	public static Command createFlexiFocus(String formName, String formItemId, boolean validation) {
 		JSONObject root = new JSONObject();
 		try {
 			root.put("type", "flexi");
 			root.put("formName", formName);
 			root.put("formItemId", formItemId);
+			root.put("validation", validation);
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
 		}

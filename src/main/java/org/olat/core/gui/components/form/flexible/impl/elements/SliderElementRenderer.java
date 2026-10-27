@@ -58,7 +58,8 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append("o_no_value");
 		}
-		sb.append("'> </div>");
+		sb.append("'><span id='").append(sliderId).append("_handle' class='ui-slider-handle'")
+		  .append(" tabindex='0'", sec.isEnabled()).append("></span></div>");
 		sb.append("<input id='").append(inputId).append("' type='hidden' name='").append(sec.getFormDispatchId()).append("' value=''/>");
 		
 		sb.append("<script>/* <![CDATA[ */\n")
@@ -76,7 +77,6 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 		sb.append("  slide: function(event, ui) {\n")
 		  .append("    jQuery('#").append(inputId).append("').val(ui.value);\n")
 		  .append("    setFlexiFormDirty('").append(formDispatchFieldId).append("');\n")
-		  .append("    o_info.lastFormFocusEl='").append(formDispatchFieldId).append("';")
 		  .append("  },\n")
 		  .append("  stop: function(event, ui) {\n")
 		  .append("    jQuery('#").append(inputId).append("').val(ui.value);\n");
@@ -84,7 +84,6 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 			sb.append("    ").append(FormJSHelper.getJSFnCallFor(sel.getRootForm(), sec.getFormDispatchId(), 2)).append(";\n");
 		}
 		sb.append("    setFlexiFormDirty('").append(formDispatchFieldId).append("');\n")
-		  .append("    o_info.lastFormFocusEl='").append(formDispatchFieldId).append("';")
 		  .append("  }\n")
 		  .append(" })");
 		if(!sec.isEnabled()) {
@@ -97,9 +96,8 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 			  .append("})");
 		}
 		sb.append(";\n");
-		// do this in renderer and not using lastFormFocusEl, because slider handle is created dynamically by jQuery and has no ID:
 		if (sel.hasFocus()) {
-			sb.append("setTimeout(function() { jQuery('#").append(sliderId).append(" .ui-slider-handle').focus(); }, 0);\n");
+			sb.append("setTimeout(function() { jQuery('#").append(sliderId).append("_handle').focus(); }, 0);\n");
 		}
 
 		sb.append("});\n")

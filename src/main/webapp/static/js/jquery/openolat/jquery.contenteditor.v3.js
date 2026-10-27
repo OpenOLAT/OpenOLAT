@@ -184,12 +184,6 @@
 	
 	function unfocusEditor() {
 		try {
-			if(o_info.lastFormFocusEl) {
-				let focusedEl = jQuery(".o_page_content_editor #" + o_info.lastFormFocusEl);
-				if(focusedEl.length > 0) {
-					o_info.lastFormFocusEl = 0;
-				}
-			}
 			if(document.activeElement) {
 				document.activeElement.blur();
 			}

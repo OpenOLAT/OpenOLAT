@@ -39,7 +39,6 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
@@ -49,7 +48,6 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -427,8 +425,6 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		if(fiSrc == showInfoEl) {
 			displayCont.setDirty(true);
-			Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);
-			getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 			markDirtinessToContainer(fiSrc, event);
 		} else {
 			super.propagateDirtinessToContainer(fiSrc, event);

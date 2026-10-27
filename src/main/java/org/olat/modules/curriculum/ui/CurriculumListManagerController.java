@@ -528,6 +528,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			}
 		} else if(importCurriculumCtrl == source || deleteCurriculumCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				tableEl.deselectAll();
 				loadModel(tableEl.getQuickSearchString(), false);
 			}
 			cmc.deactivate();
@@ -657,6 +658,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		for(CurriculumRow curriculum:toDelete.curriculums()) {
 			curriculumService.deleteSoftlyCurriculum(curriculum, getIdentity(), false);
 		}
+		tableEl.deselectAll();
 		loadModel(tableEl.getQuickSearchString(), false);
 	}
 	

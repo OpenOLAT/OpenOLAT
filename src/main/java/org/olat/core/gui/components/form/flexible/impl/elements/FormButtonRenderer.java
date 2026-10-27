@@ -62,7 +62,7 @@ class FormButtonRenderer extends DefaultComponentRenderer {
 			sb.append(" autofocus");
 		}
 		
-		StringBuilder js = FormJSHelper.getRawJSFor(fs.getRootForm(), id, fs.getAction(), fs.isNewWindowAfterDispatchUrl(), null, id);
+		StringBuilder js = FormJSHelper.getRawJSFor(fs.getRootForm(), id, fs.getAction(), fs.isNewWindowAfterDispatchUrl(), null);
 		sb.append(js)
 		// Prevent 2 submits by onchange and click (button or submit) events
 		  .append(" onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\" class=\"btn");

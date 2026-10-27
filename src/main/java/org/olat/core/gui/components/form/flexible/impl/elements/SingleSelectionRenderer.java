@@ -190,7 +190,6 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append("<div>");
 		sb.append("<label")
 		  .append(" for=\"").append(formDispatchId).append("\"")
-		  .append(" onmousedown=\"o_info.lastFormFocusEl='").append(formDispatchId).append("';\"")
 		  .append(">");
 		sb.append("<input id='").append(formDispatchId).append("' ")
 		  .append("type='radio' ").append(subStrName)
@@ -199,8 +198,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		  .append(" disabled ", disabled);
 
 		if (source.isEnabled()) {
-			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction(), false, null, formDispatchId));
-			sb.append(" onmousedown=\"o_info.lastFormFocusEl='").append(formDispatchId).append("';\"");
+			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction(), false, null));
 		} else {
 			sb.append(" disabled='disabled' ");
 		}
@@ -287,7 +285,6 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		}
 		
 		sb.append(" for=\"").append(formDispatchId).append("\"")
-		  .append(" onmousedown=\"o_info.lastFormFocusEl='").append(formDispatchId).append("';\"")
 		  .append(">");
 		sb.append("<input id='").append(formDispatchId).append("' ")
 		  .append("type='radio' ").append(subStrName)
@@ -297,9 +294,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 
 		if(source.isEnabled()){
 			// use the selection elements formDispId instead of the one of this element.
-			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction(), false, null, formDispatchId));
-			//TODO editor force focus to move on
-			sb.append(" onmousedown=\"o_info.lastFormFocusEl='").append(formDispatchId).append("';\"");
+			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction(), false, null));
 		} else {
 			//mark as disabled and do not add javascript
 			sb.append(" disabled='disabled' ");
@@ -382,7 +377,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 			  .append(" value='").append(ssec.getKey()).append("' ")
 			  .append(" checked='checked' ", ssec.isSelected())
 			  .append(" disabled ", !ssec.isEnabled());
-			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction(), false, null, formDispatchId));
+			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction(), false, null));
 			sb.append(">");
 			FormJSHelper.appendFlexiFormDirtyForCheckbox(sb, ssec.getRootForm(), formDispatchId);
 		}

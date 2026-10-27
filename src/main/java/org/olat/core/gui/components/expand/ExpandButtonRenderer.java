@@ -54,7 +54,7 @@ public class ExpandButtonRenderer extends DefaultComponentRenderer {
 		sb.append("<button type=\"button\"");
 		sb.append("id=\"").append(elementId).append("\" ");
 		sb.append("class=\"");
-		sb.append("o_expand_button o_can_have_focus ");
+		sb.append("o_expand_button ");
 		if (StringHelper.containsNonWhitespace(cmp.getCssClass())) {
 			sb.append(cmp.getCssClass());
 			if (!cmp.isEnabled() && cmp.getCssClass().contains("btn")) {
@@ -75,7 +75,6 @@ public class ExpandButtonRenderer extends DefaultComponentRenderer {
 			sb.append("aria-controls=\"").appendHtmlEscaped(cmp.getAriaControls()).append("\" ");
 		}
 		sb.append("aria-expanded=\"").append(cmp.isExpanded()).append("\" ");
-		sb.append("onfocus=\"o_info.lastFormFocusEl='").append(elementId).append("';\" ");
 		if (cmp.isEnabled()) {
 			sb.append("onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\" onclick=\"");
 			if(cmp.getFormItem() != null) {

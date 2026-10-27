@@ -1044,7 +1044,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		boolean assessmentLock = isAssessmentLock();
 		UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
 
-		myCourse = new Dropdown("myCourse", "header.tools.mycourse", false, getTranslator());
+		if(myCourse == null) {
+			myCourse = new Dropdown("myCourse", "header.tools.mycourse", false, getTranslator());
+		} else {
+			myCourse.removeAllComponents();
+		}
 		myCourse.setElementCssClass("o_sel_dropdown_mycourse dropdown-menu-right");
 		myCourse.setIconCSS("o_icon o_icon_user");
 
@@ -1311,7 +1315,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock && disclaimerAccepted) {
-			glossary = new Dropdown("glossary", "command.glossary", false, getTranslator());
+			if(glossary == null) {
+				glossary = new Dropdown("glossary", "command.glossary", false, getTranslator());
+			} else {
+				glossary.removeAllComponents();
+			}
 			glossary.setIconCSS("o_icon o_FileResource-GLOSSARY_icon");
 			glossary.setVisible(cc.hasGlossary() && cc.isGlossaryEnabled());
 	

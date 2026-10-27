@@ -94,6 +94,8 @@ public abstract class FormBasicController extends BasicController {
 
 	protected StackedPanel initialPanel;
 
+	private boolean formValidated;
+	
 	protected final FormUIFactory uifactory = FormUIFactory.getInstance();
 	
 	protected FormBasicController(UserRequest ureq, WindowControl wControl) {
@@ -414,6 +416,7 @@ public abstract class FormBasicController extends BasicController {
 				// Set container dirty to rendered error messages. Do this before calling
 				// formNOK() to let formNOK override the dirtiness flag
 				flc.setDirty(true);
+				sendValidationFocusCommand();
 				formNOK(ureq);
 			} else if (event == FormEvent.RESET) {
 				// Set container dirty to render everything from scratch, remove error
@@ -438,7 +441,11 @@ public abstract class FormBasicController extends BasicController {
 				FormItem fiSrc = fe.getFormItemSource();
 				propagateDirtinessToContainer(fiSrc, fe);
 				//
+				formValidated = false;
 				formInnerEvent(ureq, fiSrc, fe);
+				if(formValidated && fiSrc instanceof FormLink) {
+					sendValidationFocusCommand();
+				}
 				// no need to set container dirty, up to controller code if something is dirty
 			}
 		}
@@ -477,11 +484,13 @@ public abstract class FormBasicController extends BasicController {
 	
 	private void applyDirtinessToContainer(FormItem source, FormEvent event) {
 		flc.setDirty(true);
-		// Trigger re-focusing of current focused element
-		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);						
-		getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 
 		markDirtinessToContainer(source, event);
+	}
+	
+	private void sendValidationFocusCommand() {
+		Command focusCommand = FormJSHelper.getFormValidationFocusCommand(flc.getRootForm().getFormName());
+		getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
 	
 	protected void markDirtinessToContainer(FormItem source, FormEvent event) {
@@ -720,6 +729,7 @@ public abstract class FormBasicController extends BasicController {
 	 * @return
 	 */
 	protected boolean validateFormLogic(@SuppressWarnings("unused") UserRequest ureq) {
+		formValidated = true;
 		return flc.validate();
 	}
 	

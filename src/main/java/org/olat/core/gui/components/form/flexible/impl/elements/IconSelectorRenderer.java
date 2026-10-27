@@ -61,12 +61,11 @@ public class IconSelectorRenderer extends DefaultComponentRenderer {
 		sb.append("<div id='").append(dropdownId).append("'").append(" class='button-group dropdown").append("'>");
 
 		sb.append("<button style='padding-left: ").append(iconSelected ? "32" : "12")
-				.append("px;' class='btn btn-default dropdown-toggle o_icon_selector_button o_can_have_focus o_button_printed' type='button' ")
+				.append("px;' class='btn btn-default dropdown-toggle o_icon_selector_button o_button_printed' type='button' ")
 				.append("id='").append(buttonId).append("' data-toggle='dropdown' ")
 				.append("aria-expanded='false' ")
 				.append("aria-label=\"" + StringHelper.escapeHtml(ariaLabel) + "\" ", StringHelper.containsNonWhitespace(ariaLabel))
 				.append("aria-labelledby='o_cl" + iconSelectorComponent.getDispatchID() + " " + buttonId + "' ", iconSelectorEl.hasLabel())
-				.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ")
 				.append(!iconSelectorEl.isEnabled() ? " disabled" : "").append(">")
 				.append("<i class='o_icon o_icon_selector_icon ")
 				.append(iconCssClass, iconSelected)
@@ -109,9 +108,8 @@ public class IconSelectorRenderer extends DefaultComponentRenderer {
 			submitFunctionCall = "setTimeout(function() { " + submitFunctionCall + " }, 0);";
 			String functionCall = updateFunctionCall + submitFunctionCall;
 			sb.append("onclick=\"").append(functionCall).append("\" ");
-			sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(functionCall)
+			sb.append("onKeyDown=\"if (event.keyCode === 13 || event.keyCode === 32) { event.preventDefault(); ").append(functionCall)
 					.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
-			sb.append("onKeyPress=\"if (event.keyCode === 13) ").append(functionCall).append("\"");
 
 			sb.append(">");
 
@@ -148,7 +146,7 @@ public class IconSelectorRenderer extends DefaultComponentRenderer {
 	}
 
 	private String getRawJSFor(Form form, String formItemDispatchId, int action) {
-		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(form, formItemDispatchId, action, false, null, null);
+		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(form, formItemDispatchId, action, false, null);
 		String onKeyword = "onchange=";
 		int onPos = eventHandlers.indexOf(onKeyword);
 		if (onPos != -1) {

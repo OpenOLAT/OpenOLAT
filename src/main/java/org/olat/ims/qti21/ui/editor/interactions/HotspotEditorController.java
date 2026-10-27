@@ -55,7 +55,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -222,7 +221,6 @@ public class HotspotEditorController extends FormBasicController {
 		hotspotsCont.setRootForm(mainForm);
 		hotspotsCont.contextPut("mapperUri", backgroundMapperUri);
 		hotspotsCont.contextPut("restrictedEdit", restrictedEdit || readOnly);
-		hotspotsCont.contextPut("focusOnEditor", new ConsumableBoolean(false));
 		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] {
 				(Settings.isDebuging() ? "js/interactjs/interact.js" : "js/interactjs/interact.min.js"),		
 				"js/jquery/openolat/jquery.drawing.v2.js"
@@ -475,7 +473,6 @@ public class HotspotEditorController extends FormBasicController {
 		itemBuilder.createHotspotChoice(identifier, shape, coords);
 		rebuildWrappersAndCorrectSelection();
 
-		hotspotsCont.contextPut("focusOnEditor", new ConsumableBoolean(true));
 	}
 	
 	private void rebuildWrappersAndCorrectSelection() {

@@ -47,9 +47,8 @@ public class OrgStructureRenderer extends DefaultComponentRenderer {
 		sb.append("<button");
 		sb.append(" id=\"").append(elementId).append("\"");
 		sb.append(" type=\"button\"");
-		sb.append(" class=\"btn btn-default o_organisation_tree_button o_can_have_focus o_button_printed ");
+		sb.append(" class=\"btn btn-default o_organisation_tree_button o_button_printed ");
 		sb.append("\""); // class
-		sb.append(" onfocus=\"o_info.lastFormFocusEl='").append(elementId).append("';\" ");
 		if(comp.isEnabled()) {
 			sb.append("onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\" onclick=\"");
 				ubu.buildXHREvent(sb, "", false, true, new NameValuePair(VelocityContainer.COMMAND_ID, "show-tree"));

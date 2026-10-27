@@ -390,19 +390,28 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected final void initToolbar() {
 		toolbarPanel.removeAllTools();
 		
-		tools = new Dropdown("toolbox.tools", "toolbox.tools", false, getTranslator());
+		if(tools == null) {
+			tools = new Dropdown("toolbox.tools", "toolbox.tools", false, getTranslator());
+		} else {
+			tools.removeAllComponents();
+			tools.setI18nKey("toolbox.tools");
+		}
 		tools.setElementCssClass("o_sel_repository_tools");
 		tools.setIconCSS("o_icon o_icon_tools");
 		
 		initRole();
 		initToolbar(tools);
 		
-		if(tools.size() > 0) {
+		if(tools.size() > 0 && toolbarPanel.getTools().stream().noneMatch(tool -> tool.getComponent() == tools)) {
 			toolbarPanel.addTool(tools, Align.left, true);
 		}
 		
 		if (reSecurity.isEntryAdmin() || reSecurity.isCurriculumManager()) {
-			status = new Dropdown("toolbox.status", "cif.status", false, getTranslator());
+			if(status == null) {
+				status = new Dropdown("toolbox.status", "cif.status", false, getTranslator());
+			} else {
+				status.removeAllComponents();
+			}
 			status.setElementCssClass("o_sel_repository_status");
 			status.setIconCSS("o_icon o_icon_edit");
 			initStatus(status);
@@ -461,7 +470,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void initRole() {
-		rolesDropdown = new Dropdown("toolbox.roles", "role.switch", false, getTranslator());
+		if(rolesDropdown == null) {
+			rolesDropdown = new Dropdown("toolbox.roles", "role.switch", false, getTranslator());
+		} else {
+			rolesDropdown.removeAllComponents();
+		}
 		rolesDropdown.setOrientation(DropdownOrientation.right);
 		rolesDropdown.setElementCssClass("o_sel_switch_role");
 		rolesDropdown.setLabeled(true, false);

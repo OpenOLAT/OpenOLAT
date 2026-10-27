@@ -62,11 +62,10 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("'>");
 
 		sb.append("<button style='padding-left: ").append(selectedColor != null ? "32" : "12")
-				.append("px;' class='btn btn-default dropdown-toggle o_color_picker_button o_can_have_focus o_button_printed' type='button' ")
+				.append("px;' class='btn btn-default dropdown-toggle o_color_picker_button o_button_printed' type='button' ")
 				.append("id='").append(buttonId).append("' data-toggle='dropdown' ")
 				.append("aria-expanded='false' ")
 				.append("aria-labelledby='o_cl" + colorPickerComponent.getDispatchID() + " " + buttonId + "' ", colorPickerEl.hasLabel())
-				.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ")
 				.append(!colorPickerEl.isEnabled() ? " disabled" : "").append(">");
 		if (selectedColor != null) {
 			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_a ")
@@ -129,7 +128,7 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("  setFlexiFormDirty(formDispatchFieldId);\n");
 		sb.append("}\n");
 		if (colorPickerEl.getResetButtonId() != null) {
-			sb.append("jQuery('#").append(colorPickerEl.getResetButtonId()).append("').on('click', function() { o_info.lastFormFocusEl = '").append(buttonId).append("'; });\n");
+			sb.append("jQuery('#").append(colorPickerEl.getResetButtonId()).append("').on('click', function() { jQuery('#").append(buttonId).append("').focus(); });\n");
 		}
 		sb.append("</script>");
 	}
@@ -155,9 +154,8 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		submitFunctionCall = "setTimeout(function() { " + submitFunctionCall + " }, 0);";
 		String functionCall = updateFunctionCall + submitFunctionCall;
 		sb.append("onclick=\"").append(functionCall).append("\" ");
-		sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(functionCall)
+		sb.append("onKeyDown=\"if (event.keyCode === 13 || event.keyCode === 32) { event.preventDefault(); ").append(functionCall)
 				.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
-		sb.append("onKeyPress=\"if (event.keyCode === 13) ").append(functionCall).append("\"");
 
 		sb.append(">");
 
@@ -171,7 +169,7 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 	}
 
 	private String getRawJSFor(Form form, String formItemDispatchId, int action) {
-		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(form, formItemDispatchId, action, false, null, null);
+		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(form, formItemDispatchId, action, false, null);
 		String onKeyword = "onchange=";
 		int onPos = eventHandlers.indexOf(onKeyword);
 		if (onPos != -1) {

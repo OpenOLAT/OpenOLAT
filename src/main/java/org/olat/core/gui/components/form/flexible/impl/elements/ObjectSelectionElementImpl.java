@@ -190,8 +190,6 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		expandFormItem.setExpanded(false);
 		expandFormItem.setAriaControls(null);
 		
-		Command focusCommand = FormJSHelper.getFormFocusCommand(getRootForm().getFormName(), getForId());
-		getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
 	
 	private void cleanUpBrowse() {

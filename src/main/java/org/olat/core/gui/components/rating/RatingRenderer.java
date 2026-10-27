@@ -141,7 +141,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderYesOrNoButton(StringOutput sb, RatingComponent rating, String label, String val, boolean selected, URLBuilder ubu, Translator translator) {
-		sb.append("<button class='btn btn-default").append(" btn-primary", selected).append(" o_can_have_focus'");
+		sb.append("<button class='btn btn-default").append(" btn-primary", selected).append("'");
 		// Add onclick
 		renderAction(sb, rating, val, ubu);
 		// Add title
@@ -180,7 +180,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			} else {
 				sb.append(" o_icon_rating_off");
 			}								
-			sb.append(" o_can_have_focus'");
+			sb.append("'");
 			renderAction(sb, rating, Integer.toString(i+1), ubu);
 			
 			// Add item label
@@ -199,14 +199,12 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			} else {
 				sb.append(" onclick=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(rfi.getRootForm(), rfi.getFormDispatchId(), 1, false, false, true, cmd))
-				  .append("; o_info.lastFormFocusEl='o_c").append(rating.getDispatchID() + "-" + val).append("';")
 				  .append("\"");
 			}
 		} else if(rfi != null && rfi.getAction() == FormEvent.ONCLICK) {
 			NameValuePair cmd = new NameValuePair(VelocityContainer.COMMAND_ID, RatingComponent.CMD_CLICK);
 			sb.append(" onclick=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(rfi.getRootForm(), rfi.getFormDispatchId(), 1, false, false, true, cmd))
-			  .append("; o_info.lastFormFocusEl='o_c").append(rating.getDispatchID() + "-" + val).append("';")
 			  .append("\"");
 		} else {
 			// Disabled link
