@@ -256,7 +256,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
     <span>Velocity</span>
     <span>Hibernate 7 / JPA</span>
     <span>Release 21.1.0</span>
-    <span>Updated 2026-09-25</span>
+    <span>Updated 2026-10-27</span>
   </div>
 </header>
 
@@ -342,7 +342,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
 <h1>OpenOlat Architecture Reference</h1>
 <p>A comprehensive guide to the architecture, design patterns, and internal workings of the OpenOlat Learning Management System.</p>
-<p><strong>Covers release:</strong> OpenOlat 21.1.0 &middot; <strong>Document version:</strong> 2.0 &middot; <strong>Last updated:</strong> 2026-09-25</p>
+<p><strong>Covers release:</strong> OpenOlat 21.1.0 &middot; <strong>Document version:</strong> 2.0 &middot; <strong>Last updated:</strong> 2026-10-27</p>
 <div class="aside"><strong>Version markers:</strong> <span class="version-badge">New in 21.1.0</span> after a heading marks a new mechanism. <span class="version-badge">New in 21.1.0</span> or <span class="version-badge changed">Changed in 21.1.0</span> at the start of a paragraph marks a change inside a section. Mechanisms that shipped with 21.0.x carry no marker, except where the reader needs the version. See <a href="#about">section 39</a> for the list of changes in this revision.</div>
 
 <!-- ============================================================ -->
@@ -2450,9 +2450,22 @@ calloutCtrl = <span class="kw">new</span> CloseableCalloutWindowController(ureq,
 
 <p><span class="version-badge changed">Changed in 21.1.0</span> The constructors accept the trigger <code>Link</code> or <code>FormLink</code> in place of a DOM ID (OO-9727). Without a title or an <code>aria-label</code> in <code>CalloutSettings</code>, the callout takes the title or the <code>aria-label</code> of the trigger as its label. The focus goes to the first visible element in the callout, not to the hidden close button. Buttons and FlexiTable action columns use the pattern.</p>
 
+<h3>Focus after a Server Response</h3>
+
+<p><span class="version-badge changed">Changed in 21.2.0</span> When a server response redraws the component that holds the focus, <code>functions.js</code> puts the focus back on the same element or on its closest replacement (OO-9603). <a href="openolat-frontend.html#accessibility">Frontend reference, 36.1 Focus Management</a> describes the client part. Java code follows these rules:</p>
+
+<ul>
+<li>Keep component objects when a controller rebuilds a part of the page. A new component gets a new DOM id, and the focus can then only return to the closest surviving container. Example: <code>RepositoryEntryRuntimeController.initToolbar()</code> creates the status and role dropdowns once and refills them with <code>removeAllComponents()</code>.</li>
+<li>A focusable element that a renderer writes needs an id that stays the same across redraws (for example the filter tab links <code>&lt;form dispatch id&gt;_&lt;tab id&gt;</code>, e.g. <code>o_fi1000000940_All</code>, in <code>FlexiFilterTabsComponentRenderer</code>).</li>
+<li>Do not send a focus command (<code>FormJSHelper.getFormFocusCommand()</code>) to restore the focus after a redraw. Use <code>FormItem.setFocus()</code> or <code>Link.setFocus()</code> only when the focus must move to a new place.</li>
+<li>Validation errors: <code>FormBasicController</code> sends <code>FormJSHelper.getFormValidationFocusCommand()</code> on <code>EVNT_VALIDATION_NOK</code> and after <code>formInnerEvent()</code> when the source is a <code>FormLink</code> and its <code>validateFormLogic()</code> ran. An override calls <code>super.validateFormLogic(ureq)</code>, so a link that validates in <code>formInnerEvent()</code> also moves the focus to the first error field. A field change that validates does not move the focus.</li>
+<li>Do not add focus opt-in classes or <code>onfocus</code> hooks. <code>o_info.lastFormFocusEl</code> and <code>o_can_have_focus</code> are removed.</li>
+<li>A link in a form that handles Enter itself calls <code>preventDefault()</code> on <code>keydown</code> (like <code>triggerClick()</code> of <code>LinkRenderer</code>). Otherwise <code>FormJSHelper.submitOnKeypressEnter()</code> also submits the form.</li>
+</ul>
+
 <h3>Form Label Association</h3>
 
-<p>The FlexiForm layout templates (<code>form_inputgroup.html</code>, <code>form_default.html</code>) automatically generate <code>&lt;label&gt;</code> elements with the correct <code>for</code> attribute pointing to the form element's DOM ID. When the element has an error, <code>aria-describedby</code> links the input to the error message. Mandatory fields get <code>aria-required="true"</code> automatically.</p>
+<p>The FlexiForm layout templates (<code>form_inputgroup.html</code>, <code>form_default.html</code>) automatically generate <code>&lt;label&gt;</code> elements with the correct <code>for</code> attribute pointing to the form element's DOM ID. When a text field has an error, <code>aria-describedby</code> links it to the error message (<code>TextElementRenderer</code>); other field types have no link and no field has <code>aria-invalid</code>. Mandatory fields get <code>aria-required="true"</code> automatically.</p>
 
 <h3>Keyboard Navigation</h3>
 
@@ -4539,7 +4552,7 @@ String key = <span class="str">"myfeature:id:"</span> + identity.getKey();
 <tbody>
 <tr><td>Document version</td><td>2.0</td></tr>
 <tr><td>Covered release</td><td>OpenOlat 21.1.0 (master, <code>21.1-SNAPSHOT</code>)</td></tr>
-<tr><td>Last updated</td><td>2026-09-25</td></tr>
+<tr><td>Last updated</td><td>2026-10-27</td></tr>
 <tr><td>Previous content update</td><td>2026-05-19 (commit <code>519afaf02c</code>)</td></tr>
 <tr><td>HTML view</td><td><code>doc/openolat-architecture.html</code> (same sections, with diagrams)</td></tr>
 </tbody>
@@ -4609,7 +4622,7 @@ See the <code>NOTICE.TXT</code> file in the project root for a full list of depe
 
 <hr>
 <p style="text-align:center; color:#888; margin-top:2rem; font-size:0.85rem;">
-OpenOlat Architecture Reference &middot; Document version 2.0 &middot; Covers OpenOlat 21.1.0 &middot; Updated 2026-09-25
+OpenOlat Architecture Reference &middot; Document version 2.0 &middot; Covers OpenOlat 21.1.0 &middot; Updated 2026-10-27
 </p>
 
 </main>

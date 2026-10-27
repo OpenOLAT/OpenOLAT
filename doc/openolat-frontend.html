@@ -92,7 +92,7 @@ p>.version-badge:first-child,li>.version-badge:first-child{margin-left:0;margin-
   <div class="subtitle">CSS/SASS framework, DOM structure, component rendering, and theme customization for the OpenOlat LMS</div>
   <div class="meta">
     <span>Release 21.1.0</span>
-    <span>Updated 2026-09-25</span>
+    <span>Updated 2026-10-27</span>
     <span>Bootstrap 3.4.1</span>
     <span>SASS/SCSS</span>
     <span>Font Awesome 6.7.2</span>
@@ -2191,17 +2191,91 @@ if (itemDeleted) {
 <p>This chapter collects the accessibility mechanisms of the frontend layer. Markers show what changed in 21.1.0; the rest is documented here for the first time.</p>
 
 <h3>36.1 Focus Management</h3>
+<p><span class="version-badge changed">Changed in 21.2.0</span> One rule in <code>o_ainvoke()</code> puts the focus back after a server redraw. It replaces <code>o_info.lastFormFocusEl</code> and the class <code>o_can_have_focus</code>, which are removed (OO-9603).</p>
 <table>
 <thead><tr><th>Mechanism</th><th>Behaviour</th></tr></thead>
 <tbody>
-<tr><td>Focus after AJAX</td><td>The server sends focus commands; <code>o_ffSetFocusArray()</code> tries each target with <code>o_ffSetFocus()</code>. Only inputs, selects, textareas, and buttons or <code>.btn</code> links with <code>o_can_have_focus</code> receive focus. A text input gets its content selected. A second attempt runs after the next tick because typeahead.js can steal the focus. Nothing happens while the focus is inside an open <code>&lt;dialog&gt;</code>.</td></tr>
-<tr><td><code>o_info.lastFormFocusEl</code></td><td>Form elements record the last focused element in <code>onfocus</code>, so a re-rendered form can restore it.</td></tr>
-<tr><td>Scroll and focus</td><td><code>o_scrollTopAndFocus()</code> scrolls to the top first, then sets the focus, so the page does not jump twice.</td></tr>
+<tr><td>Intentional focus move</td><td><code>FormItem.setFocus()</code> and <code>Link.setFocus()</code> render <code>autofocus</code> or an inline <code>focus()</code>. Use them only when the focus must move to a new place.</td></tr>
+<tr><td>Form focus (command 11)</td><td>The server sends command 11 with <code>formName</code>, <code>formItemId</code> and <code>validation</code>. <code>o_ffSetFocusArray()</code> tries each target with <code>o_ffSetFocus()</code>. Priority: 1. the first error field (<code>o_errorFieldSelector</code>) when <code>validation</code> is <code>true</code>; 2. the given <code>formItemId</code>; 3. weak: an error field without the flag, then <code>[autofocus]</code>. A weak candidate does not act when the response restores the focus after a redraw or returns it to a dialog opener. Only command 11 selects the text of an input. Nothing happens while the focus is inside an open <code>&lt;dialog&gt;</code>.</td></tr>
+<tr><td>Validation flag</td><td><code>FormBasicController</code> sets <code>validation: true</code> on <code>EVNT_VALIDATION_NOK</code> and after <code>formInnerEvent()</code> when the source is a <code>FormLink</code> and the base <code>validateFormLogic()</code> ran in that event (for example a confirm link that validates the form). Inner events without a validation, and field changes that validate, keep the focus where it is.</td></tr>
+<tr><td>Redraw rule</td><td>When command 2 replaces a component, <code>o_redrawFocusAnchor()</code> records the focused element (after a mouse click: the clicked element, see "Mouse opener"). At the end of the response, <code>o_restoreFocus(o_resolveFocusTarget(anchor))</code> puts the focus back, but only when the focus is on <code>body</code>, no dialog opens, no dialog opener got the focus back and no deferred focus is pending. The rule also covers a redraw that arrives with a later poll (for example after a download).</td></tr>
+<tr><td>Fallback chain</td><td><code>o_resolveFocusTarget()</code>: the same id, else the table row with the same <code>data-row-key</code> and the same slot, else the table, else the closest visible ancestor that survived the redraw. The ancestor gets a temporary <code>tabindex="-1"</code> (<code>o_focusableUntilBlur()</code>) and the focus moves there without scrolling, because a container is often taller than the window. The focus never falls back to <code>body</code>.</td></tr>
+<tr><td>Busy dialog</td><td>While <code>#o_ajax_busy</code> is open, <code>o_applyFocus()</code> defers the focus of a visible, focusable element; <code>removeAjaxBusy()</code> applies it. Any other element is not deferred, so the next candidate gets its chance.</td></tr>
+<tr><td>Mouse opener</td><td>Safari and Firefox do not focus a button or link on click. A <code>mousedown</code> listener in the capture phase records the clicked link, button, form control or <code>label.control</code> in <code>o_info.lastClickedEl</code>. <code>o_beforeserver()</code> keeps it as <code>o_info.focusBeforeServer</code>; <code>o_ainvoke()</code> reads this value once and uses it for the dialog stack and the redraw rule.</td></tr>
+<tr><td>Scroll and focus</td><td><code>o_scrollTopAndFocus()</code> scrolls to the top first, then sets the focus, so the page does not jump twice. A redraw with a scroll to the top restores the focus without scrolling.</td></tr>
 <tr><td>Dialogs and callouts</td><td><code>o_waitForVisibleThenFocusDialog()</code> waits until the new dialog is visible and focuses its first focusable element. <span class="version-badge changed">Changed in 21.1.0</span> Clipped (hidden) elements are skipped, so the focus no longer lands on the <code>sr-only</code> close button.</td></tr>
-<tr><td>Focus return</td><td><code>pushdialogfocus</code> / <code>popdialogfocus</code> keep a stack of trigger IDs (<code>o_info.focusReturnStack</code>). After the close, <code>o_ainvoke()</code> focuses <code>o_info.pendingFocusReturn</code> and scrolls it into view only when needed (<code>o_scrollToElementIfInvisible()</code>). See <a href="#callout-a11y">Callout Triggers and Focus</a>.</td></tr>
+<tr><td>Focus return</td><td><code>pushdialogfocus</code> / <code>popdialogfocus</code> keep a stack of focus anchors (<code>o_info.focusReturnStack</code>). After the close, <code>o_ainvoke()</code> resolves <code>o_info.pendingFocusReturn</code> with <code>o_resolveFocusTarget()</code> (same fallback chain as the redraw rule) and scrolls it into view only when needed (<code>o_scrollToElementIfInvisible()</code>). See <a href="#callout-a11y">Callout Triggers and Focus</a>.</td></tr>
+<tr><td>Dropdown return</td><td>An action in a Bootstrap dropdown returns the focus to the toggle (<code>hide.bs.dropdown</code>). A focus anchor of a menu item points to the toggle of its menu, except when a redraw replaces only a part inside the open menu.</td></tr>
 <tr><td>Skip link</td><td>The first element of the page is <code>&lt;a href="#o_main_container" class="sr-only"&gt;</code> "Skip to main content" (<code>fullwebapplayout.html</code>).</td></tr>
 </tbody>
 </table>
+
+<div class="diagram-box">
+<svg viewBox="0 0 800 470" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif" role="img" aria-label="Focus after a server response">
+  <defs><marker id="ar36" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#64748b"/></marker></defs>
+
+  <rect x="200" y="10" width="400" height="46" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+  <text x="400" y="29" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Request: o_beforeserver()</text>
+  <text x="400" y="45" text-anchor="middle" font-size="9" fill="#1e40af">focusBeforeServer = focused element or mouse opener (mousedown capture)</text>
+  <line x1="400" y1="56" x2="400" y2="76" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar36)"/>
+
+  <rect x="200" y="78" width="400" height="46" rx="6" fill="#f0fdf4" stroke="#22c55e" stroke-width="1"/>
+  <text x="400" y="97" text-anchor="middle" font-size="10" font-weight="600" fill="#166534">o_ainvoke(): command 2 replaces a component</text>
+  <text x="400" y="113" text-anchor="middle" font-size="9" fill="#166534">o_redrawFocusAnchor(): id, ancestor ids, table, row key, slot</text>
+  <line x1="400" y1="124" x2="400" y2="144" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar36)"/>
+
+  <text x="400" y="158" text-anchor="middle" font-size="9" font-weight="600" fill="#475569">At the end of the response, in this order; the first that sets the focus wins</text>
+
+  <rect x="20" y="168" width="180" height="88" rx="6" fill="#faf5ff" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="110" y="188" text-anchor="middle" font-size="10" font-weight="600" fill="#6d28d9">1. Command 11</text>
+  <text x="110" y="205" text-anchor="middle" font-size="9" fill="#6d28d9">validation: first error field</text>
+  <text x="110" y="220" text-anchor="middle" font-size="9" fill="#6d28d9">else formItemId</text>
+  <text x="110" y="235" text-anchor="middle" font-size="9" fill="#6d28d9">weak: error field, [autofocus]</text>
+  <text x="110" y="248" text-anchor="middle" font-size="8" fill="#6d28d9">(weak loses after a redraw)</text>
+
+  <rect x="215" y="168" width="180" height="88" rx="6" fill="#faf5ff" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="305" y="188" text-anchor="middle" font-size="10" font-weight="600" fill="#6d28d9">2. Dialog return</text>
+  <text x="305" y="205" text-anchor="middle" font-size="9" fill="#6d28d9">popdialogfocus</text>
+  <text x="305" y="220" text-anchor="middle" font-size="9" fill="#6d28d9">pendingFocusReturn</text>
+  <text x="305" y="235" text-anchor="middle" font-size="9" fill="#6d28d9">-&gt; o_resolveFocusTarget()</text>
+
+  <rect x="410" y="168" width="180" height="88" rx="6" fill="#faf5ff" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="500" y="188" text-anchor="middle" font-size="10" font-weight="600" fill="#6d28d9">3. Dialog opens</text>
+  <text x="500" y="205" text-anchor="middle" font-size="9" fill="#6d28d9">pendingDialogFocus</text>
+  <text x="500" y="220" text-anchor="middle" font-size="9" fill="#6d28d9">first field or first</text>
+  <text x="500" y="235" text-anchor="middle" font-size="9" fill="#6d28d9">focusable element</text>
+
+  <rect x="605" y="168" width="180" height="88" rx="6" fill="#fff7ed" stroke="#f97316" stroke-width="1"/>
+  <text x="695" y="188" text-anchor="middle" font-size="10" font-weight="600" fill="#9a3412">4. Redraw rule</text>
+  <text x="695" y="205" text-anchor="middle" font-size="9" fill="#9a3412">only if the focus is on body,</text>
+  <text x="695" y="220" text-anchor="middle" font-size="9" fill="#9a3412">no dialog opens or returns</text>
+  <text x="695" y="235" text-anchor="middle" font-size="9" fill="#9a3412">-&gt; o_restoreFocus()</text>
+
+  <line x1="305" y1="256" x2="305" y2="300" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar36)"/>
+  <line x1="695" y1="256" x2="695" y2="280" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="695" y1="280" x2="420" y2="280" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="420" y1="280" x2="420" y2="300" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar36)"/>
+
+  <rect x="150" y="302" width="500" height="80" rx="6" fill="#fef9c3" stroke="#eab308" stroke-width="1"/>
+  <text x="400" y="322" text-anchor="middle" font-size="10" font-weight="600" fill="#854d0e">o_resolveFocusTarget(anchor): fallback chain</text>
+  <text x="400" y="340" text-anchor="middle" font-size="9" fill="#854d0e">1. same id  2. same data-row-key and slot  3. same row position  4. the table</text>
+  <text x="400" y="356" text-anchor="middle" font-size="9" fill="#854d0e">5. closest visible ancestor that survived (temporary tabindex="-1")</text>
+  <text x="400" y="372" text-anchor="middle" font-size="9" font-weight="600" fill="#854d0e">never body</text>
+  <line x1="400" y1="382" x2="400" y2="402" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar36)"/>
+
+  <rect x="200" y="404" width="400" height="50" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="400" y="424" text-anchor="middle" font-size="10" font-weight="600" fill="#334155">o_applyFocus()</text>
+  <text x="400" y="441" text-anchor="middle" font-size="9" fill="#334155">deferred while #o_ajax_busy is open; second attempt after the next tick</text>
+</svg>
+<div class="diagram-caption">Figure 9: Focus after a server response &mdash; command 2 records the focused element, then command 11, the dialog return, the dialog open focus and the redraw rule run in this order; the dialog return and the redraw rule share the fallback chain</div>
+</div>
+
+<p>Rules for new code:</p>
+<ul>
+<li>Do not add focus opt-in classes or <code>onfocus</code> hooks. The redraw rule covers every focusable element.</li>
+<li>A focusable element needs a DOM id that stays the same across redraws. Give it an id in the renderer, and keep component objects when a controller rebuilds its toolbar (for example <code>RepositoryEntryRuntimeController.initToolbar()</code> reuses the status and role dropdowns).</li>
+<li>Do not send command 11 to restore the focus after a redraw. Use <code>setFocus()</code> only for an intentional move.</li>
+</ul>
 
 <h3>36.2 ARIA Patterns</h3>
 <table>
@@ -2237,7 +2311,10 @@ if (itemDeleted) {
 <tr><td>Escape</td><td><code>o_doEscapeDispatch()</code> closes the top layer: lightbox, then the last layered panel, callout or modal (its close button). Ignored in selects and in the date picker.</td></tr>
 <tr><td>Enter / Escape in search fields</td><td>Enter searches by AJAX instead of submitting the form; in the typeahead variant Escape resets (<span class="version-badge">New in 21.1.0</span>).</td></tr>
 <tr><td>Enter / Space on section headers</td><td>Toggles the section (<span class="version-badge">New in 21.1.0</span>).</td></tr>
-<tr><td>Space / Enter in the colour picker</td><td>Selects the colour and closes the dropdown.</td></tr>
+<tr><td>Space / Enter in the colour picker and the icon selector</td><td>Selects the entry and closes the dropdown. <span class="version-badge changed">Changed in 21.2.0</span> One <code>keydown</code> handler with <code>preventDefault()</code>: Enter no longer submits the surrounding form.</td></tr>
+<tr><td>Enter / Space / Arrow Down / Arrow Up on a dropdown toggle</td><td>Opens the menu. When a key opened it, the focus moves to the first item (Arrow Up: the last item).</td></tr>
+<tr><td>Escape in a dropdown</td><td>Closes the menu and returns the focus to the toggle, also when the focus is in a field of the menu.</td></tr>
+<tr><td>Tab in a dropdown</td><td>Closes the menu when the focus leaves it; in a <code>role="menu"</code> menu the focus moves on from the toggle.</td></tr>
 </tbody>
 </table>
 
@@ -2245,7 +2322,12 @@ if (itemDeleted) {
 <table>
 <thead><tr><th>Function / command</th><th>Purpose</th></tr></thead>
 <tbody>
-<tr><td><code>o_ffSetFocus()</code>, <code>o_ffSetFocusArray()</code></td><td>Programmatic focus after AJAX updates</td></tr>
+<tr><td><code>o_ffSetFocus()</code>, <code>o_ffSetFocusArray()</code></td><td>Form focus (command 11): error field, <code>formItemId</code>, <code>[autofocus]</code></td></tr>
+<tr><td><code>o_redrawFocusAnchor()</code></td><td>Records the focused element when command 2 replaces its component (<span class="version-badge changed">Changed in 21.2.0</span>)</td></tr>
+<tr><td><code>o_focusAnchor()</code>, <code>o_resolveFocusAnchor()</code></td><td>Anchor of an element (id, ancestor ids, table, row key, slot) and its lookup after a table reload</td></tr>
+<tr><td><code>o_resolveFocusTarget()</code></td><td>Anchor lookup with the fallback to the closest surviving ancestor, never <code>body</code> (<span class="version-badge changed">Changed in 21.2.0</span>)</td></tr>
+<tr><td><code>o_restoreFocus()</code></td><td>Puts the focus back without selecting the text; keeps the caret when the value did not change (<span class="version-badge changed">Changed in 21.2.0</span>)</td></tr>
+<tr><td><code>o_applyFocus()</code></td><td>Focuses an element, defers it while the busy dialog is open, reports success; when the focus succeeded, a second attempt after the next tick keeps it against typeahead.js (<span class="version-badge changed">Changed in 21.2.0</span>)</td></tr>
 <tr><td><code>o_waitForVisibleThenFocusDialog()</code></td><td>Initial focus in dialogs and callouts</td></tr>
 <tr><td><code>pushdialogfocus</code>, <code>popdialogfocus</code></td><td>Focus return to the trigger</td></tr>
 <tr><td><code>setattribute</code></td><td>Change one attribute (e.g. <code>aria-expanded</code>) without re-render</td></tr>
@@ -2265,10 +2347,11 @@ if (itemDeleted) {
 <li><strong>Icons:</strong> icon fonts are decorative; links render them with <code>aria-hidden="true"</code> and put the text in a <code>span</code> or <code>sr-only</code> span.</li>
 </ul>
 
-<h3>36.7 Known Gaps (verified 2026-09-25)</h3>
+<h3>36.7 Known Gaps (verified 2026-09-25, updated 2026-10-27)</h3>
 <ul>
-<li>Object selection: the button <code>aria-label</code> contains raw HTML from <code>IdentitySelectionSource</code>; <code>label for</code> points to a non-existent id; after the callout closes the focus lands on <code>body</code>.</li>
-<li>Colour picker: <code>ColorPickerRenderer</code> writes <code>aria-expanded='true'</code> also when the dropdown is closed, and omits the space before <code>onfocus</code>.</li>
+<li>Object selection: the button <code>aria-label</code> contains raw HTML from <code>IdentitySelectionSource</code>; <code>label for</code> points to a non-existent id.</li>
+<li>Error fields have no <code>aria-invalid</code>. Only <code>TextElementRenderer</code> links the error text with <code>aria-describedby</code>.</li>
+<li>An element without a stable id falls back to the closest surviving ancestor. Example: after a stack panel pop (assessment form "Zwischenspeichern") the focus goes to the stack panel container.</li>
 <li><code>#o_messages</code> info boxes are not announced (no live region).</li>
 <li>AI essay marks carry the meaning by colour and <code>title</code> only.</li>
 <li>Question pool AI overlay: the classes <code>o_ai_questions_overlay</code> and <code>o_ai_questions_generating</code> have no rule in the light theme.</li>

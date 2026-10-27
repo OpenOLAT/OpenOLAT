@@ -390,12 +390,12 @@ AJAX form data: `o_ffXHREvent()` sends `{name, value}` pairs (all values of chec
 
 ## 11. Accessibility (chapter 36 of the reference)
 
-- Focus: `o_ffSetFocus()` / `o_ffSetFocusArray()` after AJAX (only inputs, selects, textareas, buttons and `.btn` links with `o_can_have_focus`; skipped while an open `<dialog>` has focus); `o_waitForVisibleThenFocusDialog()` for new dialogs (**New in 21.1.0:** skips clipped elements); `pushdialogfocus`/`popdialogfocus` focus return; skip link `a.sr-only[href="#o_main_container"]`.
+- Focus: **Changed in 21.2.0 (OO-9603):** redraw rule in `o_ainvoke()`: command 2 records the focused element (`o_redrawFocusAnchor()`), the end of the response restores it with `o_restoreFocus(o_resolveFocusTarget(anchor))` when the focus is on `body`. Order: command 11 (`o_ffSetFocus()`: first error field only with `validation: true`, set on `EVNT_VALIDATION_NOK` and after a validating `FormLink`; else `formItemId`; weak: error field, `[autofocus]`), dialog return, dialog open focus, redraw rule. Fallback chain: id, row key + slot, table, closest surviving ancestor, never `body`. `o_info.lastFormFocusEl` and `o_can_have_focus` are removed. Skipped while an open `<dialog>` has focus; `o_waitForVisibleThenFocusDialog()` for new dialogs (**New in 21.1.0:** skips clipped elements); `pushdialogfocus`/`popdialogfocus` focus return; skip link `a.sr-only[href="#o_main_container"]`.
 - ARIA: `dialog.modal[aria-modal][aria-labelledby=o_md_*]`; dialog opener `role=button aria-haspopup=dialog aria-expanded`; disclosure `role=button aria-expanded aria-controls` + `collapse`; FormToggle `role=switch`; scopes `role=checkbox`; tabs/tree roles; search `role=search`/`searchbox`.
 - Live regions: `role=status` (+ `aria-live=polite`) on AI overlays, `#o_dashboard_edit_live`; `role=alert` on the AI correction error. Gap: `#o_messages` info boxes are not announced.
-- Keyboard: `triggerClick(event, enter, space)`; Escape → `o_doEscapeDispatch()` closes the top layer.
+- Keyboard: `triggerClick(event, enter, space)`; Escape → `o_doEscapeDispatch()` closes the top layer; dropdown: a key on the toggle focuses the first item (Arrow Up: last), Escape returns to the toggle; colour picker and icon selector entries handle Enter and Space on `keydown` with `preventDefault()` (no form submit).
 - Theme: `o-a11y-color()`, `.sr-only` forced black on white, `.dropdown-toggle:focus-visible` (tab-focus), `prefers-reduced-motion` in 10 modules.
-- Known gaps: object selection aria-label with raw HTML, `label for` mismatch, focus lost after callout close; colour picker `aria-expanded='true'` when closed.
+- Known gaps: object selection aria-label with raw HTML, `label for` mismatch; error fields without `aria-invalid` (`aria-describedby` only on text fields); an element without a stable id falls back to the closest surviving container.
 
 ## 12. Info Page Pattern (**New in 21.1.0**, chapter 35)
 

@@ -1,10 +1,10 @@
 # OpenOlat Frontend Architecture Reference
 
-**Release:** OpenOlat 21.1.0 | **Last updated:** 2026-09-25 | **Companion pages:** `doc/openolat-frontend.html` (visual version with diagrams), `doc/component-library/index.html` (live component examples)
+**Release:** OpenOlat 21.1.0 | **Last updated:** 2026-10-27 | **Companion pages:** `doc/openolat-frontend.html` (visual version with diagrams), `doc/component-library/index.html` (live component examples)
 
 This Markdown file and the HTML version have the same 37 chapters with the same numbering and headings. The HTML version adds the SVG diagrams; the Markdown names them with their caption.
 
-Markers: `**New in 21.1.0**` under a heading and `**New in 21.1.0:**` / `**Changed in 21.1.0:**` at the start of a paragraph flag elements and behaviour that came with release 21.1.0. Changes that shipped in 21.0.x have no marker. Chapter 37 lists all changes of this update.
+Markers: `**New in 21.1.0**` under a heading and `**New in 21.1.0:**` / `**Changed in 21.1.0:**` at the start of a paragraph flag elements and behaviour that came with release 21.1.0. Changes that shipped in 21.0.x have no marker. `**Changed in 21.2.0:**` flags the focus changes of OO-9603 (development of 21.2.0). Chapter 37 lists all changes of this update.
 
 ## 1. Architecture Overview
 
@@ -1538,14 +1538,40 @@ This chapter collects the accessibility mechanisms of the frontend layer. Marker
 
 ### 36.1 Focus Management
 
+**Changed in 21.2.0:** One rule in `o_ainvoke()` puts the focus back after a server redraw. It replaces `o_info.lastFormFocusEl` and the class `o_can_have_focus`, which are removed (OO-9603).
+
 | Mechanism | Behaviour |
 |---|---|
-| Focus after AJAX | The server sends focus commands; `o_ffSetFocusArray()` tries each target with `o_ffSetFocus()`. Only inputs, selects, textareas, and buttons or `.btn` links with `o_can_have_focus` receive focus. A text input gets its content selected. A second attempt runs after the next tick because typeahead.js can steal the focus. Nothing happens while the focus is inside an open `<dialog>`. |
-| `o_info.lastFormFocusEl` | Form elements record the last focused element in `onfocus`, so a re-rendered form can restore it. |
-| Scroll and focus | `o_scrollTopAndFocus()` scrolls to the top first, then sets the focus, so the page does not jump twice. |
+| Intentional focus move | `FormItem.setFocus()` and `Link.setFocus()` render `autofocus` or an inline `focus()`. Use them only when the focus must move to a new place. |
+| Form focus (command 11) | The server sends command 11 with `formName`, `formItemId` and `validation`. `o_ffSetFocusArray()` tries each target with `o_ffSetFocus()`. Priority: 1. the first error field (`o_errorFieldSelector`) when `validation` is `true`; 2. the given `formItemId`; 3. weak: an error field without the flag, then `[autofocus]`. A weak candidate does not act when the response restores the focus after a redraw or returns it to a dialog opener. Only command 11 selects the text of an input. Nothing happens while the focus is inside an open `<dialog>`. |
+| Validation flag | `FormBasicController` sets `validation: true` on `EVNT_VALIDATION_NOK` and after `formInnerEvent()` when the source is a `FormLink` and the base `validateFormLogic()` ran in that event (for example a confirm link that validates the form). Inner events without a validation, and field changes that validate, keep the focus where it is. |
+| Redraw rule | When command 2 replaces a component, `o_redrawFocusAnchor()` records the focused element (after a mouse click: the clicked element, see "Mouse opener"). At the end of the response, `o_restoreFocus(o_resolveFocusTarget(anchor))` puts the focus back, but only when the focus is on `body`, no dialog opens, no dialog opener got the focus back and no deferred focus is pending. The rule also covers a redraw that arrives with a later poll (for example after a download). |
+| Fallback chain | `o_resolveFocusTarget()`: the same id, else the table row with the same `data-row-key` and the same slot, else the table, else the closest visible ancestor that survived the redraw. The ancestor gets a temporary `tabindex="-1"` (`o_focusableUntilBlur()`) and the focus moves there without scrolling, because a container is often taller than the window. The focus never falls back to `body`. |
+| Busy dialog | While `#o_ajax_busy` is open, `o_applyFocus()` defers the focus of a visible, focusable element; `removeAjaxBusy()` applies it. Any other element is not deferred, so the next candidate gets its chance. |
+| Mouse opener | Safari and Firefox do not focus a button or link on click. A `mousedown` listener in the capture phase records the clicked link, button, form control or `label.control` in `o_info.lastClickedEl`. `o_beforeserver()` keeps it as `o_info.focusBeforeServer`; `o_ainvoke()` reads this value once and uses it for the dialog stack and the redraw rule. |
+| Scroll and focus | `o_scrollTopAndFocus()` scrolls to the top first, then sets the focus, so the page does not jump twice. A redraw with a scroll to the top restores the focus without scrolling. |
 | Dialogs and callouts | `o_waitForVisibleThenFocusDialog()` waits until the new dialog is visible and focuses its first focusable element. **(Changed in 21.1.0)** Clipped (hidden) elements are skipped, so the focus no longer lands on the `sr-only` close button. |
-| Focus return | `pushdialogfocus` / `popdialogfocus` keep a stack of trigger IDs (`o_info.focusReturnStack`). After the close, `o_ainvoke()` focuses `o_info.pendingFocusReturn` and scrolls it into view only when needed (`o_scrollToElementIfInvisible()`). See [Callout Triggers and Focus](#161-callout-triggers-and-focus-a11y). |
+| Focus return | `pushdialogfocus` / `popdialogfocus` keep a stack of focus anchors (`o_info.focusReturnStack`). After the close, `o_ainvoke()` resolves `o_info.pendingFocusReturn` with `o_resolveFocusTarget()` (same fallback chain as the redraw rule) and scrolls it into view only when needed (`o_scrollToElementIfInvisible()`). See [Callout Triggers and Focus](#161-callout-triggers-and-focus-a11y). |
+| Dropdown return | An action in a Bootstrap dropdown returns the focus to the toggle (`hide.bs.dropdown`). A focus anchor of a menu item points to the toggle of its menu, except when a redraw replaces only a part inside the open menu. |
 | Skip link | The first element of the page is `<a href="#o_main_container" class="sr-only">` "Skip to main content" (`fullwebapplayout.html`). |
+
+*Figure 9: Focus after a server response — command 2 records the focused element, then command 11, the dialog return, the dialog open focus and the redraw rule run in this order; the dialog return and the redraw rule share the fallback chain (diagram in the HTML version)*
+
+Order at the end of `o_ainvoke()`:
+
+```
+command 2   record the anchor of the focused element (first replaced component only)
+1.          command 11: first error (validation), formItemId, weak candidates
+2.          dialog return (pendingFocusReturn)
+3.          focus into a newly opened dialog (pendingDialogFocus)
+4.          redraw rule, only when the focus is on body
+```
+
+Rules for new code:
+
+- Do not add focus opt-in classes or `onfocus` hooks. The redraw rule covers every focusable element.
+- A focusable element needs a DOM id that stays the same across redraws. Give it an id in the renderer, and keep component objects when a controller rebuilds its toolbar (for example `RepositoryEntryRuntimeController.initToolbar()` reuses the status and role dropdowns).
+- Do not send command 11 to restore the focus after a redraw. Use `setFocus()` only for an intentional move.
 
 ### 36.2 ARIA Patterns
 
@@ -1578,13 +1604,21 @@ This chapter collects the accessibility mechanisms of the frontend layer. Marker
 | Escape | `o_doEscapeDispatch()` closes the top layer: lightbox, then the last layered panel, callout or modal (its close button). Ignored in selects and in the date picker. |
 | Enter / Escape in search fields | Enter searches by AJAX instead of submitting the form; in the typeahead variant Escape resets (**New in 21.1.0**). |
 | Enter / Space on section headers | Toggles the section (**New in 21.1.0**). |
-| Space / Enter in the colour picker | Selects the colour and closes the dropdown. |
+| Space / Enter in the colour picker and the icon selector | Selects the entry and closes the dropdown. **(Changed in 21.2.0)** One `keydown` handler with `preventDefault()`: Enter no longer submits the surrounding form. |
+| Enter / Space / Arrow Down / Arrow Up on a dropdown toggle | Opens the menu. When a key opened it, the focus moves to the first item (Arrow Up: the last item). |
+| Escape in a dropdown | Closes the menu and returns the focus to the toggle, also when the focus is in a field of the menu. |
+| Tab in a dropdown | Closes the menu when the focus leaves it; in a `role="menu"` menu the focus moves on from the toggle. |
 
 ### 36.5 A11y Helpers in the JS Layer
 
 | Function / command | Purpose |
 |---|---|
-| `o_ffSetFocus()`, `o_ffSetFocusArray()` | Programmatic focus after AJAX updates |
+| `o_ffSetFocus()`, `o_ffSetFocusArray()` | Form focus (command 11): error field, `formItemId`, `[autofocus]` |
+| `o_redrawFocusAnchor()` | Records the focused element when command 2 replaces its component (**Changed in 21.2.0**) |
+| `o_focusAnchor()`, `o_resolveFocusAnchor()` | Anchor of an element (id, ancestor ids, table, row key, slot) and its lookup after a table reload |
+| `o_resolveFocusTarget()` | Anchor lookup with the fallback to the closest surviving ancestor, never `body` (**Changed in 21.2.0**) |
+| `o_restoreFocus()` | Puts the focus back without selecting the text; keeps the caret when the value did not change (**Changed in 21.2.0**) |
+| `o_applyFocus()` | Focuses an element, defers it while the busy dialog is open, reports success; when the focus succeeded, a second attempt after the next tick keeps it against typeahead.js (**Changed in 21.2.0**) |
 | `o_waitForVisibleThenFocusDialog()` | Initial focus in dialogs and callouts |
 | `pushdialogfocus`, `popdialogfocus` | Focus return to the trigger |
 | `setattribute` | Change one attribute (e.g. `aria-expanded`) without re-render |
@@ -1601,10 +1635,11 @@ This chapter collects the accessibility mechanisms of the frontend layer. Marker
 - **Reduced motion:** `prefers-reduced-motion` rules in 10 modules, for example ghost button transitions (`_helpers.scss`), the AI pulse (all animation off) and the wavy AI marks (solid).
 - **Icons:** icon fonts are decorative; links render them with `aria-hidden="true"` and put the text in a `span` or `sr-only` span.
 
-### 36.7 Known Gaps (verified 2026-09-25)
+### 36.7 Known Gaps (verified 2026-09-25, updated 2026-10-27)
 
-- Object selection: the button `aria-label` contains raw HTML from `IdentitySelectionSource`; `label for` points to a non-existent id; after the callout closes the focus lands on `body`.
-- Colour picker: `ColorPickerRenderer` writes `aria-expanded='true'` also when the dropdown is closed, and omits the space before `onfocus`.
+- Object selection: the button `aria-label` contains raw HTML from `IdentitySelectionSource`; `label for` points to a non-existent id.
+- Error fields have no `aria-invalid`. Only `TextElementRenderer` links the error text with `aria-describedby`.
+- An element without a stable id falls back to the closest surviving ancestor. Example: after a stack panel pop (assessment form "Zwischenspeichern") the focus goes to the stack panel container.
 - `#o_messages` info boxes are not announced (no live region).
 - AI essay marks carry the meaning by colour and `title` only.
 - Question pool AI overlay: the classes `o_ai_questions_overlay` and `o_ai_questions_generating` have no rule in the light theme.

@@ -468,6 +468,12 @@ calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 
 - **Info or action popups:** use a callout, not the client popover `o_popover` (no focus handling, no Escape, `role="tooltip"`). Example: `LicenseCellRenderer` + `LicenseInfoController` for the license in a table.
 - **Downloads from a callout:** a callout action that triggers a download uses `getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createDownloadMediaResource(ureq, mr))`, not `ureq.getDispatchResult().setResultingMediaResource(mr)`
+- **Focus after a redraw** (`doc/openolat-frontend.md` 36.1): `functions.js` returns the focus to the same element after a redraw. Java code helps it:
+  - Keep component objects when a controller rebuilds a part of the page, so the DOM ids stay (e.g. `RepositoryEntryRuntimeController.initToolbar()` reuses the status and role dropdowns and refills them with `removeAllComponents()`).
+  - A focusable element written by a renderer needs a stable id.
+  - Do not send `FormJSHelper.getFormFocusCommand()` to restore the focus after a redraw; `setFocus()` only for an intentional move.
+  - Validation errors get the focus through the flagged command 11 on `EVNT_VALIDATION_NOK` and after a `FormLink` that validates in `formInnerEvent()`. Overrides of `validateFormLogic` call `super.validateFormLogic(ureq)`. A field change that validates keeps the focus.
+  - A link in a form that handles Enter itself calls `preventDefault()` on `keydown` (like `triggerClick()`), otherwise `FormJSHelper.submitOnKeypressEnter()` submits the form.
 - **Info/error messages:** `showInfo("key")`, `showError("key")`
 - **Module toggles:** `AbstractSpringModule` with `isEnabled()` and persisted config
 - **Toolbar actions:** `toolbarPanel.addTool(link)` for create/export/import buttons

@@ -163,7 +163,9 @@ Collapsible sections need no per-instance script: one delegated handler in `func
 - Used extensively in `_config.scss` for button text, toolbar links, etc.
 - Bootstrap 3 ARIA attributes on tabs, modals, forms
 - `$r.screenreaderOnly("text")` → `<span class="sr-only">` in templates
-- Focus: `o_ffSetFocus()` only focuses inputs, selects, textareas and buttons or `.btn` links with `o_can_have_focus`; nothing happens while an open `<dialog>` has the focus
+- Focus after a redraw: one rule in `o_ainvoke()` (since OO-9603). Command 2 records the focused element, the end of the response puts it back when the focus is on `body`. Order: command 11 (first error field only with `validation: true`, else `formItemId`, weak: error field, `[autofocus]`), dialog return, dialog open focus, redraw rule. Nothing happens while an open `<dialog>` has the focus
+- Fallback chain (`o_resolveFocusTarget()`): same id, table row key + slot, table, closest surviving ancestor (temporary `tabindex="-1"`), never `body`
+- No new focus opt-in classes or `onfocus` hooks (`o_can_have_focus` and `o_info.lastFormFocusEl` are removed); a focusable element needs a DOM id that stays the same across redraws
 - Live regions: use `role="status"` / `aria-live="polite"` for async state (AI overlays, `#o_dashboard_edit_live`); `#o_messages` info boxes are NOT announced
 - Keyboard: `triggerClick(event, enter, space)` on link buttons; Escape closes the top layer via `o_doEscapeDispatch()`
 - Callout triggers: `Link/FormLink.setAriaDialogOpener()` → `role="button" aria-haspopup="dialog" aria-expanded`; `CloseableCalloutWindowController` toggles `aria-expanded` and returns the focus to the trigger (`pushdialogfocus`/`popdialogfocus`). Pass the trigger component, not its DOM id. **New in 21.1.0:** used on action columns, table tools and filters; the focus goes to the first visible element of the callout.

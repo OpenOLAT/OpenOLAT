@@ -2,7 +2,7 @@
 
 A comprehensive guide to the architecture, design patterns, and internal workings of the OpenOlat Learning Management System.
 
-**Covers release:** OpenOlat 21.1.0 · **Document version:** 2.0 · **Last updated:** 2026-09-25
+**Covers release:** OpenOlat 21.1.0 · **Document version:** 2.0 · **Last updated:** 2026-10-27
 
 > **Version markers:** `**New in 21.1.0**` under a heading marks a new mechanism. `**New in 21.1.0:**` or `**Changed in 21.1.0:**` at the start of a paragraph marks a change inside a section. Mechanisms that shipped with 21.0.x carry no marker, except where the reader needs the version. See section 39 for the list of changes in this revision.
 
@@ -1306,9 +1306,20 @@ calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 
 **Changed in 21.1.0:** The constructors accept the trigger `Link` or `FormLink` in place of a DOM ID (OO-9727). Without a title or an `aria-label` in `CalloutSettings`, the callout takes the title or the `aria-label` of the trigger as its label. The focus goes to the first visible element in the callout, not to the hidden close button. Buttons and FlexiTable action columns use the pattern.
 
+### Focus after a Server Response
+
+**Changed in 21.2.0:** When a server response redraws the component that holds the focus, `functions.js` puts the focus back on the same element or on its closest replacement (OO-9603). `doc/openolat-frontend.md` §36.1 "Focus Management" describes the client part. Java code follows these rules:
+
+- Keep component objects when a controller rebuilds a part of the page. A new component gets a new DOM id, and the focus can then only return to the closest surviving container. Example: `RepositoryEntryRuntimeController.initToolbar()` creates the status and role dropdowns once and refills them with `removeAllComponents()`.
+- A focusable element that a renderer writes needs an id that stays the same across redraws (for example the filter tab links `<form dispatch id>_<tab id>`, e.g. `o_fi1000000940_All`, in `FlexiFilterTabsComponentRenderer`).
+- Do not send a focus command (`FormJSHelper.getFormFocusCommand()`) to restore the focus after a redraw. Use `FormItem.setFocus()` or `Link.setFocus()` only when the focus must move to a new place.
+- Validation errors: `FormBasicController` sends `FormJSHelper.getFormValidationFocusCommand()` on `EVNT_VALIDATION_NOK` and after `formInnerEvent()` when the source is a `FormLink` and its `validateFormLogic()` ran. An override calls `super.validateFormLogic(ureq)`, so a link that validates in `formInnerEvent()` also moves the focus to the first error field. A field change that validates does not move the focus.
+- Do not add focus opt-in classes or `onfocus` hooks. `o_info.lastFormFocusEl` and `o_can_have_focus` are removed.
+- A link in a form that handles Enter itself calls `preventDefault()` on `keydown` (like `triggerClick()` of `LinkRenderer`). Otherwise `FormJSHelper.submitOnKeypressEnter()` also submits the form.
+
 ### Form Label Association
 
-FlexiForm layout templates auto-generate `<label>` with `for` attribute. Errors linked via `aria-describedby`. Mandatory fields get `aria-required="true"`.
+FlexiForm layout templates auto-generate `<label>` with `for` attribute. Errors of text fields are linked via `aria-describedby` (`TextElementRenderer`); other field types have no link and no field has `aria-invalid`. Mandatory fields get `aria-required="true"`.
 
 ### Keyboard Navigation
 
