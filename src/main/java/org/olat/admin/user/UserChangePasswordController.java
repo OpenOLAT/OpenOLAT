@@ -91,7 +91,8 @@ public class UserChangePasswordController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (chPwdForm == source && event.equals(Event.DONE_EVENT)) {
-			if (olatAuthenticationSpi.changePassword(ureq.getIdentity(), identityToModify, chPwdForm.getNewPassword())) {
+			if (olatAuthenticationSpi.changePassword(ureq.getIdentity(), identityToModify, chPwdForm.getNewPassword(),
+					ureq.getHttpReq().getSession(false))) {
 				showInfo("changeuserpwd.successful");
 				logAudit("user password changed successfully of " + identityToModify.getKey());
 			} else {

@@ -155,7 +155,7 @@ public class UserBulkChangeManager implements InitializingBean {
 						password = null;
 					}
 					
-					olatAuthManager.changePassword(actingIdentity, identity, password);
+					olatAuthManager.changePassword(actingIdentity, identity, password, null);
 				}
 	
 				// set language

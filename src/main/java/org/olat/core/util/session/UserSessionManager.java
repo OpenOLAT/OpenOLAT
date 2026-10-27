@@ -38,6 +38,7 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
@@ -56,6 +57,7 @@ import org.olat.core.logging.activity.OlatLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.logging.activity.UserActivityLoggerImpl;
+import org.olat.core.util.InvalidateSessionEvent;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.SignOnOffEvent;
 import org.olat.core.util.StringHelper;
@@ -514,9 +516,10 @@ public class UserSessionManager implements GenericEventListener {
 	 */
 	@Override
 	public void event(Event event) {
-		if(event instanceof SignOnOffEvent) {
-			SignOnOffEvent se = (SignOnOffEvent) event;
+		if(event instanceof SignOnOffEvent se) {
 			processSignOnOffEvent(se);
+		} else if(event instanceof InvalidateSessionEvent ise) {
+			processInvalidateSessionEvent(ise);
 		}
 	}
 	
@@ -556,6 +559,79 @@ public class UserSessionManager implements GenericEventListener {
 		}
 	}
 	
+	private void processInvalidateSessionEvent(InvalidateSessionEvent se) {
+		try {
+			if (!se.isEventOnThisNode()) {
+				IdentityRef identity = new IdentityRefImpl(se.getIdentityKey());
+				internInvalidateSessions(identity, null, false);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+
+	public int invalidateSessions(IdentityRef identity, HttpSession excludeInvalidation) {
+		return internInvalidateSessions(identity, excludeInvalidation, true);
+	}
+	
+	private int internInvalidateSessions(IdentityRef identity, HttpSession excludeInvalidation, boolean sendEvents) {
+		int invalidateCounter = 0;
+		//clusterNOK ?? invalidate only locale sessions ?
+		Set<UserSession> userSessions = getAuthenticatedUserSessions();
+		for(UserSession userSession : userSessions) {
+			if(userSession == null) continue;
+
+			if(userSession.getIdentity() != null
+					&& userSession.getIdentity().getKey().equals(identity.getKey())) {
+				try {
+					SessionInfo sessionInfos = userSession.getSessionInfo();
+					if(excludeInvalidation == null || sessionInfos == null || sessionInfos.getSession() == null 
+							|| !sessionInfos.getSession().getId().equals(excludeInvalidation.getId())) {
+						internSignOffAndClear(userSession);
+						if(sessionInfos != null && sessionInfos.getSession() != null) {
+							sessionInfos.getSession().invalidate();
+						}
+						invalidateCounter++;
+					}
+				} catch(Exception ex) {
+					// Session already signed off => do nothing and continues
+				}
+			}
+		}
+		log.info(Tracing.M_AUDIT, "{} sessions of {} were invalidated", invalidateCounter, identity.getKey());
+		if(sendEvents) {
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new InvalidateSessionEvent(identity.getKey()), ORES_USERSESSION);
+		}
+		return invalidateCounter;
+	}
+	
+	public int invalidateWebDAVSessions(Identity identity) {
+		int invalidateCounter = 0;
+		//clusterNOK ?? invalidate only locale sessions ?
+		Set<UserSession> userSessions = getAuthenticatedUserSessions();
+		for(UserSession userSession : userSessions) {
+			if(userSession == null) continue;
+			
+			SessionInfo sessionInfos = userSession.getSessionInfo();
+			if(sessionInfos != null && sessionInfos.isWebDAV()
+					&& userSession.getIdentity() != null
+					&& userSession.getIdentity().getKey().equals(identity.getKey())) {
+				try {
+					internSignOffAndClear(userSession);
+					if(sessionInfos.getSession() != null) {
+						sessionInfos.getSession().invalidate();
+					}
+					invalidateCounter++;
+				} catch(Exception ex) {
+					// Session already signed off => do nothing and continues
+				}
+			}
+		}
+		log.info(Tracing.M_AUDIT, "{} WebDAV sessions of {} were invalidated", invalidateCounter, identity.getKey());
+		return invalidateCounter;
+	}
+	
 	/**
 	 * Invalidate all sessions except admin-sessions.
 	 * @return  Number of invalidated sessions.
@@ -567,8 +643,10 @@ public class UserSessionManager implements GenericEventListener {
 		//clusterNOK ?? invalidate only locale sessions ?
 		Set<UserSession> userSessions = getAuthenticatedUserSessions();
 		for (UserSession userSession : userSessions) {
-			Roles userRoles = userSession != null ? userSession.getRoles() : null; 
-			if (userRoles != null && !userRoles.isAdministrator() && !userRoles.isSystemAdmin()) {
+			if(userSession == null) continue;
+			
+			Roles userRoles = userSession.getRoles(); 
+			if(userRoles != null && !userRoles.isAdministrator() && !userRoles.isSystemAdmin()) {
 				//do not logout administrators
 				try {
 					internSignOffAndClear(userSession);
