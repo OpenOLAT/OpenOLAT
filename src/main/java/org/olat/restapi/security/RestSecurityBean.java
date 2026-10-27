@@ -63,8 +63,14 @@ public interface RestSecurityBean {
 	 */
 	public String renewToken(String token);
 	
-	/**
-	 * 
-	 */
 	public int removeTooOldRestToken();
+	
+	/**
+	 * Remove all tokens associated with the specified identity, except
+	 * the token bound to the specified session.
+	 *
+	 * @param identity The identity
+	 * @param excludeFromInvalidation The session which keeps its token (optional)
+	 */
+	public void invalidateTokens(Identity identity, HttpSession excludeFromInvalidation);
 }

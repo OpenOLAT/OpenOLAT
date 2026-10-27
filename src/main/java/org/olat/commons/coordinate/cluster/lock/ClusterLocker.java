@@ -120,7 +120,12 @@ public class ClusterLocker implements Locker, GenericEventListener {
 	 */
 	@Override
 	public void event(Event event) {
-		SignOnOffEvent se = (SignOnOffEvent) event;
+		if(event instanceof SignOnOffEvent se) {
+			processSignOnOffEvent(se);
+		}
+	}
+	
+	private void processSignOnOffEvent(SignOnOffEvent se) {
 		if (!se.isSignOn() && se.isEventOnThisNode()) {
 			// it is a "logout" event - we are only interested in logout events
 			// and it is from our VM => only release all locks from within one VM
