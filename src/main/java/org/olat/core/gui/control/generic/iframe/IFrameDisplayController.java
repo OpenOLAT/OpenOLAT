@@ -165,29 +165,45 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			iFrameId = frameId;
 		}
 		
-		String contentSecurityPolicy = (iframeSettings != null && iframeSettings.getContentSecurityPolicy() != null)
-				? iframeSettings.getContentSecurityPolicy() : null;
-		String courseDBId = iframeSettings != null ? iframeSettings.getCourseDBId() : null;
+		String contentSecurityPolicy =  iframeSettings.getContentSecurityPolicy();
+		String courseDBId = iframeSettings.getCourseDBId();
+		
+		// add default iframe height
+		boolean adjustAutoHeight;
+		if(deliveryOptions == null || DeliveryOptions.CONFIG_HEIGHT_AUTO.equals(deliveryOptions.getHeight())
+				|| deliveryOptions.getHeight() == null) {
+			myContent.contextPut("iframeHeight", 600); // used as fallback
+			adjustAutoHeight = true;
+		} else if(DeliveryOptions.CONFIG_HEIGHT_IGNORE.equals(deliveryOptions.getHeight())) {
+			myContent.contextPut("iframeHeight", 600);
+			adjustAutoHeight = false;
+		} else {
+			myContent.contextPut("iframeHeight", deliveryOptions.getHeight());
+			adjustAutoHeight = false;
+		}
+		myContent.contextPut("adjustAutoHeight", Boolean.valueOf(adjustAutoHeight));
 
 		//Delivers content files via local mapper to enable session based browser caching for at least this instance
 		if(iframeSettings.isPersistMapper()) {
-			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking, iframeSettings.isIframeResizer(),
-					iFrameId, themeBaseUri, contentSecurityPolicy, courseDBId);
+			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking,
+					adjustAutoHeight && iframeSettings.isIframeResizer(), iFrameId, themeBaseUri,
+					contentSecurityPolicy, courseDBId);
 		} else {
-			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, iframeSettings.isIframeResizer(),
-					iFrameId, themeBaseUri, contentSecurityPolicy, courseDBId);
+			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking,
+					adjustAutoHeight && iframeSettings.isIframeResizer(), iFrameId, themeBaseUri,
+					contentSecurityPolicy, courseDBId);
 		}
-		contentMapper.setStrictSanitize(iframeSettings != null && iframeSettings.isStrictSanitize());
+		contentMapper.setStrictSanitize(iframeSettings.isStrictSanitize());
 		contentMapper.setDeliveryOptions(deliveryOptions);
 
-		if(iframeSettings.isIframeResizer()) {
+		if(adjustAutoHeight && iframeSettings.isIframeResizer()) {
 			JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/iFrameResizerHelper.js" }, null);
 			myContent.put("js", js);
 			myContent.contextPut("iframeResizer", Boolean.TRUE);
 		}
 
 		String token = "";
-		if(iframeSettings != null && iframeSettings.isUseContentDomain() && Settings.isContentDomainNameEnabled()) {
+		if(iframeSettings.isUseContentDomain() && Settings.isContentDomainNameEnabled()) {
 			contentMapper.setUseContentDomain(true);
 			MapperKey mKey = registerSandboxedMapper(ureq, contentMapper);
 			String serverUri = Settings.isContentDomainNameEnabled()
@@ -217,20 +233,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		main.setContent(myContent);
 		myContent.contextPut("frameId", iFrameId);
 		myContent.put("newUriEvent", newUriEventPanel);
-		// add default iframe height
-		if(deliveryOptions == null || DeliveryOptions.CONFIG_HEIGHT_AUTO.equals(deliveryOptions.getHeight())
-				|| deliveryOptions.getHeight() == null) {
-			myContent.contextPut("iframeHeight", 600); // used as fallback
-			myContent.contextPut("adjustAutoHeight", Boolean.TRUE);
-		} else if(DeliveryOptions.CONFIG_HEIGHT_IGNORE.equals(deliveryOptions.getHeight())) {
-			myContent.contextPut("iframeHeight", 600);
-			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);	
-		} else {
-			myContent.contextPut("iframeHeight", deliveryOptions.getHeight());
-			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);
-		}
-		myContent.contextPut("iframeResize", Boolean.FALSE);
-		
 		myContent.contextPut("debug", Boolean.valueOf(log.isDebugEnabled()));
 
 		// Add us as cycle listener to be notified when current dispatch cycle is
