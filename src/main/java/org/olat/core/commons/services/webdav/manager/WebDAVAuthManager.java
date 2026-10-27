@@ -39,6 +39,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationSPI;
 import org.olat.login.auth.AuthenticationStatus;
@@ -88,6 +89,8 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	private WebDAVModule webDAVModule;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private UserSessionManager userSessionManager;
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
 	
@@ -256,6 +259,11 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		
 		//For Digest
 		changeDigestPassword(doer, identity, login, newPwd);
+		try {
+			userSessionManager.invalidateWebDAVSessions(identity);
+		} catch (Exception e) {
+			log.error("", e);
+		}
 		return true;
 	}
 	

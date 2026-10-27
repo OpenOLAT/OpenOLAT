@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import jakarta.servlet.http.HttpSession;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
@@ -57,6 +59,7 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.ldap.LDAPError;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
@@ -69,6 +72,7 @@ import org.olat.login.validation.PasswordValidationRulesFactory;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.UsernameValidationRulesFactory;
 import org.olat.login.validation.ValidationResult;
+import org.olat.restapi.security.RestSecurityBean;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,6 +111,10 @@ public class OLATAuthManager implements AuthenticationSPI {
 	private LDAPLoginManager ldapLoginManager;
 	@Autowired
 	private AuthenticationDAO authenticationDao;
+	@Autowired
+	private UserSessionManager userSessionManager;
+	@Autowired
+	private RestSecurityBean restSecurityBean;
 	@Autowired
 	private AuthenticationHistoryDAO authenticationHistoryDao;
 	@Autowired
@@ -326,7 +334,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 	 *            New password.
 	 * @return True upon success.
 	 */
-	public boolean changePassword(Identity doer, Identity identity, String newPwd) {
+	public boolean changePassword(Identity doer, Identity identity, String newPwd, HttpSession excludeFromInvalidation) {
 		if (doer==null) throw new AssertException("password changing identity cannot be undefined!");
 		if (identity.getKey() == null) throw new AssertException("cannot change password on a nonpersisted identity");
 
@@ -356,6 +364,8 @@ public class OLATAuthManager implements AuthenticationSPI {
 			try {
 				loginModule.clearFailedLoginAttempts(identity.getName());
 				loginModule.clearFailedLoginAttempts(identity.getUser().getEmail());
+				userSessionManager.invalidateSessions(identity, excludeFromInvalidation);
+				restSecurityBean.invalidateTokens(identity, excludeFromInvalidation);
 			} catch (Exception e) {
 				log.error("", e);
 			}
@@ -419,7 +429,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 	 * @param newPwd
 	 * @return
 	 */
-	public boolean changeOlatPassword(Identity doer, Identity identity, String newPwd) {
+	private boolean changeOlatPassword(Identity doer, Identity identity, String newPwd) {
 		String username;
 		Authentication auth = securityManager.findAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		if (auth == null) { // create new authentication for provider OLAT
@@ -478,6 +488,6 @@ public class OLATAuthManager implements AuthenticationSPI {
 	 * @return
 	 */
 	public boolean changePasswordByPasswordForgottenLink(Identity identity, String newPwd) {
-		return changePassword(identity, identity, newPwd);
+		return changePassword(identity, identity, newPwd, null);
 	}
 }

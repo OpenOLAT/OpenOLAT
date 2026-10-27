@@ -34,6 +34,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import jakarta.servlet.http.HttpSession;
+
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -227,7 +229,7 @@ public class UserImportController extends BasicController {
 		return ident;
 	}
 	
-	private Identity doUpdateIdentity(UpdateIdentity userToUpdate, Boolean updateUsers, Boolean updatePassword, ImportReport report) {
+	private Identity doUpdateIdentity(UserRequest ureq, UpdateIdentity userToUpdate, Boolean updateUsers, Boolean updatePassword, ImportReport report) {
 		Identity identity = userToUpdate.getIdentity();
 		Roles roles = securityManager.getRoles(identity, true);
 		boolean canManagedCritical = securityModule.isUserAllowedCriticalUserChanges(actingRoles, roles);
@@ -259,7 +261,7 @@ public class UserImportController extends BasicController {
 			} else if(updatePassword != null && updatePassword.booleanValue()) {
 				Authentication auth = securityManager.findAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 				if(auth != null) {
-					olatAuthManager.changePassword(getIdentity(), identity, password);
+					olatAuthManager.changePassword(getIdentity(), identity, password, getSession(ureq));
 					report.incrementUpdatedPassword();
 				}
 			}
@@ -275,6 +277,15 @@ public class UserImportController extends BasicController {
 		}
 
 		return identity;
+	}
+	
+	private HttpSession getSession(UserRequest ureq) {
+		try {
+			return ureq.getUserSession().getSessionInfo().getSession();
+		} catch (IllegalStateException e) {
+			getLogger().warn("Cannot retrieve session: {}", e.getMessage());
+			return null;
+		}
 	}
 	
 	private boolean doUpdateExternalProvider(Identity identity, String password, String marker, String provider) {
@@ -349,7 +360,7 @@ public class UserImportController extends BasicController {
 					@SuppressWarnings("unchecked")
 					List<UpdateIdentity> updateIdents = (List<UpdateIdentity>) runContext.get("updateIdents");
 					for (UpdateIdentity updateIdent:updateIdents) {
-						Identity updatedIdentity = doUpdateIdentity(updateIdent, updateUsers, updatePasswords, report);
+						Identity updatedIdentity = doUpdateIdentity(ureq, updateIdent, updateUsers, updatePasswords, report);
 						allIdentitiesForGroups.add(updatedIdentity);
 						if(++count % 10 == 0) {
 							dbInstance.commitAndCloseSession();
