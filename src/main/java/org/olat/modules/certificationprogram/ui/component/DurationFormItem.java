@@ -79,6 +79,7 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 		typeEl.setTranslator(getTranslator());
 		typeEl.setDomReplacementWrapperRequired(false);
 		typeEl.addActionListener(FormEvent.ONCHANGE);
+		typeEl.setAriaLabel(translator.translate("unit"));
 		
 		SelectionValues unitPK = new SelectionValues();
 		if(withNone) {
@@ -97,6 +98,11 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 	@Override
 	protected DurationComponent getFormItemComponent() {
 		return component;
+	}
+
+	@Override
+	public String getForId() {
+		return valueEl.getFormDispatchId();
 	}
 
 	@Override
