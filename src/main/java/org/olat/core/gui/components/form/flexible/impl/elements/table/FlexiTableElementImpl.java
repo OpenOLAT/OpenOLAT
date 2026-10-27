@@ -2310,8 +2310,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(this, FormEvent.ONCLICK));
 		}
 	}
-	
 
+	@Override
+	public void resetSearchField(UserRequest ureq) {
+		if(searchEl != null) {
+			searchEl.reset();
+		}
+	}
 
 	@Override
 	public Set<Integer> getMultiSelectedIndex() {

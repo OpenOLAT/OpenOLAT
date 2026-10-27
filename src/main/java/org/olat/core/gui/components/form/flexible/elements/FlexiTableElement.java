@@ -573,6 +573,15 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 */
 	public void resetSearch(UserRequest ureq);
 	
+	/**
+	 * Clears the quick-search text field itself (not just the data reload that
+	 * {@link #resetSearch(UserRequest)} does). Uses the reset() method of the search field, 
+	 * which discards the raw posted request parameter for it as well.
+	 *
+	 * @param ureq
+	 */
+	public void resetSearchField(UserRequest ureq);
+
 	public void reloadData();
 
 	/**
