@@ -47,9 +47,9 @@ public class VideoConfigurationPage {
 	}
 	
 	public VideoConfigurationPage selectVideoUrl(String resourceTitle, String url) {
-		By chooseBy = By.cssSelector("fieldset.o_sel_video_configuration_form a.o_sel_re_reference_import_url");
-		browser.findElement(chooseBy).click();
-		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_re_import_url_form");
+		By importByUrlBy = By.xpath("//div[@class='o_re_reference']//a[i[contains(@class,'o_icon_link')]]");
+		OOGraphene.waitElement(importByUrlBy, browser).click();
+		OOGraphene.waitModalDialog(browser);
 		
 		By urlBy = By.cssSelector("fieldset.o_sel_re_import_url_form div.o_sel_import_url input[type='text']");
 		browser.findElement(urlBy).sendKeys(url);
@@ -61,21 +61,21 @@ public class VideoConfigurationPage {
 		
 		browser.findElement(displayNameBy).clear();
 		browser.findElement(displayNameBy).sendKeys(resourceTitle);
-		
+
 		By submitBy = By.cssSelector("fieldset.o_sel_re_import_url_form .o_sel_repo_save_details button.btn.btn-primary");
 		browser.findElement(submitBy).click();
-		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_re_import_url_form");
 		
-		//double check that the resource is selected (search the header of the learning resource reference)
-		By landingBy = By.xpath("//fieldset[contains(@class,'o_sel_video_configuration_form')]//div[contains(@class,'o_icon_panel_header')][h4/text()[contains(.,'" + resourceTitle + "')]]");
-		OOGraphene.waitElementSlowly(landingBy, 15, browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		
+		By resourceTitleBy = By.xpath("//div[contains(@class,'o_re_reference')]//h4[text()[contains(.,'" + resourceTitle + "')]]");
+		OOGraphene.waitElementSlowly(resourceTitleBy, 10, browser);
 		return this;
 	}
 
 	public VideoConfigurationPage selectVideoResource(String resourceTitle) {
-		By chooseVideoButton = By.className("o_sel_re_reference_select");
+		By chooseBy = By.cssSelector(".o_sel_video_configuration_form .o_re_reference .btn.btn-primary");
 		CourseEditorPageFragment fragment = new CourseEditorPageFragment(browser);
-		fragment.chooseResourceModern(chooseVideoButton, resourceTitle);
+		fragment.chooseResourceModern(chooseBy, resourceTitle);
 		return this;
 	}
 	

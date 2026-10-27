@@ -81,12 +81,6 @@ public class CourseEditorPageFragment {
 		return this;
 	}
 	
-	public CourseEditorPageFragment assertOnResource(String resourceTitle) {
-		By landingBy = By.xpath("//div[@class='o_course_editor']//a/span[text()[contains(.,'" + resourceTitle + "')]]");
-		OOGraphene.waitElement(landingBy, browser);
-		return this;
-	}
-	
 	public CourseEditorPageFragment assertOnPanelResourceTitle(String resourceTitle) {
 		By landingBy = By.xpath("//div[@class='o_course_editor']//div[@class='o_icon_panel_header']//h4[text()[contains(.,'" + resourceTitle + "')]]");
 		OOGraphene.waitElement(landingBy, browser);
@@ -406,7 +400,8 @@ public class CourseEditorPageFragment {
 	 * @return Itself
 	 */
 	public CourseEditorPageFragment chooseSurvey(String resourceTitle) {
-		return chooseResource(chooseSurveyButton, resourceTitle);
+		By chooseBy = By.cssSelector(".o_sel_survey_config_form .o_re_reference .btn.btn-primary");
+		return chooseResourceModern(chooseBy, resourceTitle);
 	}
 	
 	/**

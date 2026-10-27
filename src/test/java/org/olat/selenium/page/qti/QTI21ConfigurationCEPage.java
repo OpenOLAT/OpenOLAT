@@ -33,12 +33,10 @@ import org.openqa.selenium.support.ui.Select;
 /**
  * 
  * Initial date: 2 mars 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class QTI21ConfigurationCEPage {
-	
-	public static final By chooseTestButton = By.className("o_sel_re_reference_select");
 	
 	private final WebDriver browser;
 	
@@ -197,7 +195,8 @@ public class QTI21ConfigurationCEPage {
 	public QTI21ConfigurationCEPage selectLearnContent() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_repo_entry>a");
 		OOGraphene.waitElement(tabBy, browser).click();
-		OOGraphene.waitElement(chooseTestButton, browser);
+		By chooseBy = By.cssSelector(".o_re_reference .btn.btn-primary");
+		OOGraphene.waitElement(chooseBy, browser);
 		return this;
 	}
 
@@ -211,7 +210,8 @@ public class QTI21ConfigurationCEPage {
 	
 	private QTI21ConfigurationCEPage chooseTest(String resourceTitle, boolean closeInfoBox) {
 		CourseEditorPageFragment fragment = new CourseEditorPageFragment(browser);
-		fragment.chooseResourceModern(chooseTestButton, resourceTitle);
+		By chooseBy = By.cssSelector(".o_re_reference .btn.btn-primary");
+		fragment.chooseResourceModern(chooseBy, resourceTitle);
 		if(closeInfoBox) {
 			OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		}

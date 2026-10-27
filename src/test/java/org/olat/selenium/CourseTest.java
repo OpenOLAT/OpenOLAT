@@ -2347,12 +2347,12 @@ public class CourseTest extends Deployments {
 			.edit()
 			.selectNode("Form")
 			.selectTabFormContent()
-			.assertOnResource(formTitle);
+			.assertOnPanelResourceTitle(formTitle);
 		
 		courseEditor
 			.selectNode("Survey")
 			.selectTabSurveyContent()
-			.assertOnResource(formTitle);
+			.assertOnPanelResourceTitle(formTitle);
 		
 		//publish the course
 		courseEditor
