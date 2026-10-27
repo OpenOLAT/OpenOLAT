@@ -1,0 +1,16 @@
+<dialog class="dialog modal show o_modal_selection $!windowCssClass" id='$r.getId("o_footermodalwapper_")' aria-modal="true" #if ($title) aria-labelledby="$r.getId('o_md_')" #end>
+	<div id='$r.getId("o_modal_dialog_")' class="modal-dialog modal-lg"><div class="modal-content">
+	<div class="modal-header">
+		$r.render("closeIcon")
+		#if ($title)
+			<h4 id="$r.getId('o_md_')">$!title</h4>
+		#end
+	</div>
+	<div class="modal-body">
+		$r.render("guimessage")
+		$r.render("modalContent")
+	</div>
+	<div class="modal-footer">
+		$r.render("footerContent")
+	</div>
+</dialog>

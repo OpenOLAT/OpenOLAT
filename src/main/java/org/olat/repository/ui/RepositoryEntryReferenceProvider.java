@@ -65,6 +65,14 @@ public interface RepositoryEntryReferenceProvider {
 	
 	public String getWarningMessage();
 	
+	public default boolean useNewSelectionDialog() {
+		return false;
+	}
+
+	public default String getMyTabLabel() {
+		return null;
+	}
+
 	public static interface ReferenceContentProvider {
 		
 		public Component getContent(RepositoryEntry repositoryEntry);

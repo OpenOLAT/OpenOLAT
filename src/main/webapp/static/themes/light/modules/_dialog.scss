@@ -256,6 +256,11 @@ body#o_body:has(dialog.dialog.modal.show) {
 	overflow: hidden;
 }
 
+/* learning-resource selection dialogs: keep a minimal height to increase visual stability. */
+.o_modal_selection .modal-dialog .modal-content {
+	min-height: 60vh;
+}
+
 /* extend bootstrap modal classes for extra large modal views that should us entire available space, e.g. in wizards */
 .modal {
 	.modal-content {

@@ -42,6 +42,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.closablewrapper.FooterModalController;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -90,6 +91,8 @@ public class RepositoryEntryReferenceController extends BasicController {
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController searchCtrl;
+	private FooterModalController footerCmc;
+	private RepositoryEntrySelectionController selectionCtrl;
 	private CreateEntryController createCtrl;
 	private ImportRepositoryEntryController importCtrl;
 	private ImportURLRepositoryEntryController importUrlCtrl;
@@ -424,7 +427,18 @@ public class RepositoryEntryReferenceController extends BasicController {
 		} else if(source == referencesHistoryCtrl) {
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == cmc) {
+		} else if (source == selectionCtrl) {
+			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				repositoryEntry = selectionCtrl.getSelectedEntry();
+				updateUI(ureq);
+				footerCmc.deactivate();
+				cleanUp();
+				fireEvent(ureq, SELECTION_EVENT);
+			} else {
+				footerCmc.deactivate();
+				cleanUp();
+			}
+		} else if (source == cmc || source == footerCmc) {
 			cleanUp();
 		}
 	}
@@ -435,13 +449,17 @@ public class RepositoryEntryReferenceController extends BasicController {
 		removeAsListenerAndDispose(importCtrl);
 		removeAsListenerAndDispose(createCtrl);
 		removeAsListenerAndDispose(searchCtrl);
+		removeAsListenerAndDispose(selectionCtrl);
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(footerCmc);
 		referencesHistoryCtrl = null;
 		importUrlCtrl = null;
 		importCtrl = null;
 		createCtrl = null;
 		searchCtrl = null;
+		selectionCtrl = null;
 		cmc = null;
+		footerCmc = null;
 	}
 	
 	private boolean isImportLinkVisible() {
@@ -475,6 +493,11 @@ public class RepositoryEntryReferenceController extends BasicController {
 	private void doSelectRepositoryEntry(UserRequest ureq) {
 		Confirm confirmation = referenceProvider.confirmCanReplace(ureq);
 		if(confirmation.canReplace()) {
+			if (referenceProvider.useNewSelectionDialog()) {
+				doSelectRepositoryEntryNewDialog(ureq);
+				return;
+			}
+
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(searchCtrl);
 			
@@ -494,6 +517,26 @@ public class RepositoryEntryReferenceController extends BasicController {
 		} else {
 			getWindowControl().setWarning(confirmation.errorMessage());
 		}
+	}
+
+	/**
+	 * The redesigned, AuthorListController-based selection dialog.
+	 * Set using provider: {@link RepositoryEntryReferenceProvider#useNewSelectionDialog()}.
+	 */
+	private void doSelectRepositoryEntryNewDialog(UserRequest ureq) {
+		removeAsListenerAndDispose(footerCmc);
+		removeAsListenerAndDispose(selectionCtrl);
+
+		List<String> resourceTypes = referenceProvider.getResourceTypes();
+		List<Organisation> defaultOrganisations = referenceProvider.getDefaultOrganisations();
+		String tableId = "re-selection-v1-" + resourceTypes.get(0);
+		selectionCtrl = new RepositoryEntrySelectionController(ureq, getWindowControl(), tableId,
+				resourceTypes, defaultOrganisations, referenceProvider.getMyTabLabel());
+		listenTo(selectionCtrl);
+		footerCmc = new FooterModalController(getWindowControl(), translate("close"), selectionCtrl.getBodyComponent(),
+				selectionCtrl.getFooterComponent(), referenceProvider.getSelectionTitle());
+		listenTo(footerCmc);
+		footerCmc.activate();
 	}
 	
 	private void doCreateRepositoryEntry(UserRequest ureq, RepositoryHandler handler) {

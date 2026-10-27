@@ -68,6 +68,9 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFilterEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -220,6 +223,7 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	private FlexiTableElement tableEl;
 	
+	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab myTab;
 	private FlexiFiltersTab allCoursesTab;
 	private FlexiFiltersTab myCoursesTab;
@@ -698,7 +702,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected void initFilterTabs() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
-		if(!isGuestOnly) {
+		if(!isGuestOnly && !configuration.isRedesignedSelectionDialog()) {
 			bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Bookmarks", translate("search.mark"),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.MARKED, "marked")));
 			bookmarkTab.setElementCssClass("o_sel_author_bookmarks");
@@ -706,6 +710,16 @@ public class AuthorListController extends FormBasicController implements Activat
 			tabs.add(bookmarkTab);
 		}
 		
+		if(configuration.isRedesignedSelectionDialog() && !configuration.isOnlyAllowedResourceType("CourseModule")) {
+			List<String> allStatus = List.of(RepositoryEntryStatusEnum.preparation.name(), RepositoryEntryStatusEnum.review.name(),
+					RepositoryEntryStatusEnum.coachpublished.name(), RepositoryEntryStatusEnum.published.name());
+			allTab = FlexiFiltersTabFactory.tabWithImplicitFilters("All", translate("search.all"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, allStatus)));
+			allTab.setElementCssClass("o_sel_author_all");
+			allTab.setFiltersExpanded(true);
+			tabs.add(allTab);
+		}
+
 		if(configuration.isResourceTypeAllowed("CourseModule")) {
 			if (configuration.isTemplateMode()) {
 				allCoursesTab = FlexiFiltersTabFactory.tabWithImplicitFilters("AllCourses",
@@ -736,7 +750,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		if(!configuration.isOnlyAllowedResourceType("CourseModule")) {
-			myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", translate("search.my"),
+			String myTabLabel = StringHelper.containsNonWhitespace(configuration.getMyTabLabel())
+					? configuration.getMyTabLabel() : translate("search.my");
+			myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", myTabLabel,
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "owned")));
 			myTab.setElementCssClass("o_sel_author_my");
 			myTab.setFiltersExpanded(true);
@@ -752,7 +768,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			tabs.add(sharedWithMeTab);
 		}
 		
-		searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.generic"), TabSelectionBehavior.clear);
+		String searchTabLabel = configuration.isRedesignedSelectionDialog() ? translate("search") : translate("search.generic");
+		searchTab = FlexiFiltersTabFactory.tab("Search", searchTabLabel, TabSelectionBehavior.clear);
 		searchTab.setElementCssClass("o_sel_author_search");
 		searchTab.setPosition(FlexiFilterTabPosition.right);
 		searchTab.setLargeSearch(true);
@@ -923,6 +940,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			}).toList();
 		}
 		tableEl.setFilters(true, filters, true, false);
+
+		updateEmptyStateConfig(tableEl.getSelectedFilterTab());
 	}
 	
 	private SelectionValues getTaxonomyLevels() {
@@ -1426,6 +1445,14 @@ public class AuthorListController extends FormBasicController implements Activat
 				}
 			} else if (event instanceof FlexiTableFilterTabEvent fte) {
 				doSelectFilterTab(fte.getTab());
+			} else if (event instanceof FlexiTableFilterEvent || event instanceof FlexiTableSearchEvent) {
+				updateEmptyStateConfig(tableEl.getSelectedFilterTab());
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				tableEl.setFiltersValues(null, List.of(), List.of());
+				tableEl.resetSearchField(ureq);
+				tableEl.resetSearch(ureq);
+				updateEmptyStateConfig(tableEl.getSelectedFilterTab());
+				flc.setDirty(true);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -1720,16 +1747,70 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(deletePermanentlyButton != null) {
 			deletePermanentlyButton.setVisible(deletedTab == tab);
 		}
-		if(searchTab == tab) {
+		updateEmptyStateConfig(tab);
+	}
+
+	/**
+	 * Sets the empty-state message matching the current tab/filter state.
+	 *
+	 * Outside of a selection dialog (the main author list), behavior is unchanged:
+	 * a generic message for the search tab, another for everything else.
+	 */
+	private void updateEmptyStateConfig(FlexiFiltersTab tab) {
+		if (!configuration.isRedesignedSelectionDialog()) {
+			if(searchTab == tab) {
+				tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+						.withMessageI18nKey("author.search.empty")
+						.withHintI18nKey("author.search.empty.hint")
+						.withIconCss("o_CourseModule_icon")
+						.build());
+			} else {
+				tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+						.withMessageI18nKey("author.list.empty")
+						.withHintI18nKey("author.list.empty.hint")
+						.withIconCss("o_CourseModule_icon")
+						.build());
+			}
+			return;
+		}
+
+		if (myTab == tab || sharedWithMeTab == tab) {
 			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
-					.withMessageI18nKey("author.search.empty")
-					.withHintI18nKey("author.search.empty.hint")
+					.withMessageI18nKey("author.select.empty.view")
+					.withHintI18nKey("author.select.empty.view.hint")
 					.withIconCss("o_CourseModule_icon")
+					.build());
+			return;
+		}
+
+		boolean filtered = StringHelper.containsNonWhitespace(tableEl.getQuickSearchString())
+				|| tableEl.getExtendedFilters().stream().anyMatch(FlexiTableExtendedFilter::isSelected);
+		if (searchTab == tab) {
+			if (filtered) {
+				tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+						.withMessageI18nKey("author.select.empty.noresults")
+						.withHintI18nKey("author.select.empty.noresults.hint")
+						.withIconCss("o_icon_search")
+						.withPrimaryButton("o_icon_refresh", "author.select.reset.filters", null)
+						.build());
+			} else {
+				tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+						.withMessageI18nKey("author.select.empty.search")
+						.withHintI18nKey("author.select.empty.search.hint")
+						.withIconCss("o_icon_search")
+						.build());
+			}
+		} else if (filtered) {
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("author.select.empty.noresults")
+					.withHintI18nKey("author.select.empty.noresults.hint")
+					.withIconCss("o_icon_search")
+					.withPrimaryButton("o_icon_refresh", "author.select.reset.filters", null)
 					.build());
 		} else {
 			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
-					.withMessageI18nKey("author.list.empty")
-					.withHintI18nKey("author.list.empty.hint")
+					.withMessageI18nKey("author.select.empty.all")
+					.withHintI18nKey("author.select.empty.all.hint")
 					.withIconCss("o_CourseModule_icon")
 					.build());
 		}

@@ -57,6 +57,8 @@ public class AuthorListConfiguration {
 	private boolean templatesMode = false;
 	private boolean templateMode = false;
 	private boolean sharedWithMeTab = false;
+	private String myTabLabel;
+	private boolean redesignedSelectionDialog = false;
 	
 	private AuthorListConfiguration(String tableId) {
 		this.tableId = tableId;
@@ -285,5 +287,21 @@ public class AuthorListConfiguration {
 
 	public void setSharedWithMeTab(boolean sharedWithMeTab) {
 		this.sharedWithMeTab = sharedWithMeTab;
+	}
+
+	public String getMyTabLabel() {
+		return myTabLabel;
+	}
+
+	public void setMyTabLabel(String myTabLabel) {
+		this.myTabLabel = myTabLabel;
+	}
+
+	public boolean isRedesignedSelectionDialog() {
+		return redesignedSelectionDialog;
+	}
+
+	public void setRedesignedSelectionDialog(boolean redesignedSelectionDialog) {
+		this.redesignedSelectionDialog = redesignedSelectionDialog;
 	}
 }
