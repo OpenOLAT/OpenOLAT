@@ -92,8 +92,8 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			if(StringHelper.containsNonWhitespace(te.getAriaLabel())) {
 				sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
 			}
-			if(te.hasError() || te.hasWarning()) {
-				sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
+			if(te.hasError()) {
+				sb.append(" aria-invalid=\"true\"");
 			}
 			appendErrorAriaDescribedby(sb, te);
 			if (StringHelper.containsNonWhitespace(te.getAriaControls())) {
