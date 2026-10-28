@@ -230,7 +230,6 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 
 	private void updateLectureBlock(LectureBlock lectureBlock, ImportedRow importedRow, Identity doer) {
 		lectureBlock.setTitle(importedRow.getDisplayName());
-		lectureBlock.setDescription(importedRow.getDescription());
 		lectureBlock.setLocation(importedRow.getLocation());
 		
 		Date startDate = AbstractExcelReader.toDate(importedRow.getStartDate(), importedRow.getStartTime());
