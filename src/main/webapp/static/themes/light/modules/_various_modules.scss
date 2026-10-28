@@ -2363,16 +2363,8 @@ $o-figure-card-icon-colors:
 		}
 	}
 	
-	.o_day_nav_week_button {
-		padding: 2px;
-		background: none;
-		border: none;
-		border-radius: $border-radius-base;
-		color: $link-color;
-		
-		&:hover {
-			color: $link-hover-color;
-		}
+	.o_day_nav_today_num {
+		display: none;
 	}
 }
 

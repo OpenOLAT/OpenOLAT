@@ -70,10 +70,14 @@ public class DayNavRenderer extends DefaultComponentRenderer {
 		renderWeekButton(sb, ubu, cmpTranslator, cmp, "next_week", "day.nav.week.next", "o_icon_course_next", DayNavComponent.CMD_NEXT_WEEK);
 		sb.append("</div>");
 		
-		String todayText = cmpTranslator.translate("day.nav.today.weekday", format(cmpTranslator, "day.nav.pattern.today", new Date()));
+		Date today = new Date();
+		String todayTitle = StringHelper.escapeForHtmlAttribute(cmpTranslator.translate("day.nav.today.weekday", format(cmpTranslator, "day.nav.pattern.today", today)));
+		String attributes = "title=\"" + todayTitle + "\" aria-label=\"" + todayTitle + "\"";
+		String todayText = "<span class=\"o_day_nav_today_text\">" + StringHelper.escapeHtml(cmpTranslator.translate("day.nav.today")) + "</span>"
+				+ "<span class=\"o_day_nav_today_num\">" + DateUtils.dayFromDate(today) + "</span>";
 		NameValuePair nameValue = new NameValuePair(VelocityContainer.COMMAND_ID, DayNavComponent.CMD_TODAY);
-		renderButton(sb, ubu, cmp, getElementId(cmp, "today"), "btn btn-default btn-sm o_button_ghost o_day_nav_today", null,
-				StringHelper.escapeHtml(todayText), nameValue);
+		renderButton(sb, ubu, cmp, getElementId(cmp, "today"), "btn btn-default btn-sm o_button_primary_light o_day_nav_today", attributes,
+				todayText, nameValue);
 		sb.append("</div>");
 	}
 
@@ -104,7 +108,7 @@ public class DayNavRenderer extends DefaultComponentRenderer {
 		String buttonText = "<i class=\"o_icon o_icon-fw " + iconCss + "\" aria-hidden=\"true\"></i><span class=\"sr-only\">"
 				+ StringHelper.escapeHtml(text) + "</span>";
 		NameValuePair nameValue = new NameValuePair(VelocityContainer.COMMAND_ID, command);
-		renderButton(sb, ubu, cmp, getElementId(cmp, suffix), "o_day_nav_week_button", attributes, buttonText, nameValue);
+		renderButton(sb, ubu, cmp, getElementId(cmp, suffix), "btn btn-default btn-sm o_button_ghost o_day_nav_week_button", attributes, buttonText, nameValue);
 	}
 	
 	private void renderDays(StringOutput sb, URLBuilder ubu, Translator cmpTranslator, DayNavComponent cmp) {

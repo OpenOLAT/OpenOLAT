@@ -194,12 +194,8 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 
 		updateTable(visible, nextScheduledBlock);
 		
-		if (allWeekBlocks.isEmpty()) {
-			setFooterText(null);
-		} else {
-			String i18nKey = allWeekBlocks.size() == 1 ? "dashboard.widget.footer.event" : "dashboard.widget.footer.events";
-			setFooterText(translate(i18nKey, String.valueOf(allWeekBlocks.size()), String.valueOf(dayNavEl.getWeekOfYear())));
-		}
+		String i18nKey = allWeekBlocks.size() == 1 ? "dashboard.widget.footer.event" : "dashboard.widget.footer.events";
+		setFooterText(translate(i18nKey, String.valueOf(allWeekBlocks.size()), String.valueOf(dayNavEl.getWeekOfYear())));
 	}
 	
 	protected abstract List<LectureBlock> loadLectureBlocks(Date fromDate, Date toDate);
