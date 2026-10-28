@@ -2287,6 +2287,7 @@ $o-figure-card-icon-colors:
 	.o_figure_card {
 		@extend %o_card;
 		display: block;
+		align-content: center;
 		height: 100%;
 		padding: $o-figure-card-one-line-padding;
 		background-color: $o-figure-card-bg-color;

@@ -500,6 +500,9 @@
 					opacity: 0;
 					transition: .3s opacity;
 				}
+				&::before {
+					margin-bottom: -10px;
+				}
 				&.o_scrollable_top::before {
 					top: 0;
 					opacity: 1;
@@ -544,8 +547,19 @@
 
 // Same height of the upper area if the bento shows two widgets side by side
 @container (width >= #{$o-bento-half-columns-width}) {
-	.o_bento_box:is(.o_bento_box_4_1, .o_bento_box_4_2, .o_bento_box_4_4) .o_dashboard_table_widget .o_dashboard_widget_indicators {
-		min-height: $o-dashboard-widget-indicators-min-height;
+	.o_bento_box:is(.o_bento_box_4_1, .o_bento_box_4_2, .o_bento_box_4_4) .o_dashboard_table_widget {
+		.o_dashboard_widget_indicators {
+			display: grid;
+			min-height: $o-dashboard-widget-indicators-min-height;
+		}
+		.o_figure_cards_container {
+			display: grid;
+			height: 100%;
+		}
+		.o_day_button {
+			min-height: $o-dashboard-widget-indicators-min-height;
+			justify-content: center;
+		}
 	}
 }
 
