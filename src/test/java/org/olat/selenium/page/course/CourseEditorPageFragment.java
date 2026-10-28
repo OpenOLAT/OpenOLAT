@@ -391,7 +391,7 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment chooseWiki(String resourceTitle) {
 		By chooseBy = By.cssSelector(".o_sel_wiki_config .o_re_reference .btn.btn-primary");
-		return chooseResourceModern(chooseBy, resourceTitle);
+		return chooseResourceModernV2(chooseBy, resourceTitle);
 	}
 	
 	/**
@@ -471,6 +471,36 @@ public class CourseEditorPageFragment {
 		//find the row
 		By rowBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + resourceTitle + "')]]");
 		OOGraphene.waitElement(rowBy, browser).click();
+		OOGraphene.waitModalDialogDisappears(browser);
+		
+		//double check that the resource is selected (search the preview link)
+		OOGraphene.waitElement(landingBy, browser);
+		return this;
+	}
+	
+	public CourseEditorPageFragment chooseResourceModernV2(By chooseButton, String resourceTitle) {
+		By landingBy = By.xpath("//div[@class='o_re_reference']//div[@class='o_icon_panel_header']/h4[text()[contains(.,'" + resourceTitle + "')]]");
+		return chooseResourceV2(chooseButton, resourceTitle, landingBy);
+	}
+	
+	private CourseEditorPageFragment chooseResourceV2(By chooseButton, String resourceTitle, By landingBy) {
+		browser.findElement(chooseButton).click();
+		OOGraphene.waitModalDialog(browser);
+	
+		By entriesBy = By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab");
+		OOGraphene.waitElement(entriesBy, browser);
+		By myEntriesBy = By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab > li > a.o_sel_author_my.btn-primary");
+		if(!browser.findElements(myEntriesBy).isEmpty()) {
+			browser.findElement(By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab > li > a.o_sel_author_my")).click();
+			OOGraphene.waitElement(myEntriesBy, browser);
+		}
+
+		//find the row
+		By selectRowBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + resourceTitle + "')]]]/td[contains(@class,'o_singleselect')]/input[@type='radio']");
+		OOGraphene.click(selectRowBy, browser);
+		
+		By selectBy = By.cssSelector(".o_modal_selection .modal-footer .o_button_group a.btn-primary.o_sel_re_selection_select");
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		//double check that the resource is selected (search the preview link)
