@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.ui.importwizard;
 
+import static org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsValidator.validate;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -48,7 +50,17 @@ public class ImportCurriculumsReviewMembershipsStep extends BasicStep {
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return PrevNextFinishConfig.BACK_FINISH;
+		if(validateContext()) {
+			return PrevNextFinishConfig.BACK_FINISH;
+		}
+		return PrevNextFinishConfig.BACK;
+	}
+	
+	private boolean validateContext() {
+		return validate(context.getImportedCurriculumsRows())
+				&& validate(context.getImportedElementsRows())
+				&& (context.getImportedUsersRows() == null || validate(context.getImportedUsersRows()))
+				&& (context.getImportedMembershipsRows() == null || validate(context.getImportedMembershipsRows()));
 	}
 
 	@Override

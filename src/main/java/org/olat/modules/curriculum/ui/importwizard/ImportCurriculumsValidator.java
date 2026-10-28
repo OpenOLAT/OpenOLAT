@@ -1370,4 +1370,9 @@ public class ImportCurriculumsValidator {
 			return false;
 		}
 	}
+	
+	protected static boolean validate(List<? extends AbstractImportRow> rows) {
+		boolean errors = rows.stream().anyMatch(row -> row.hasValidationErrors());
+		return !errors;
+	}
 }
