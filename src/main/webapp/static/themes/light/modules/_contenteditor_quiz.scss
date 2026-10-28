@@ -72,12 +72,15 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 			background-color: white;
 			padding: 12px 20px 20px 20px;
 
-			h4.itemTitle {
+			.itemTitle {
 				padding: 0;
 				border: none;
 				background: unset;
-				font-weight: 400;
 				line-height: 32px;
+				
+				h4 {
+					font-weight: 400;
+				}
 			}
 
 			.o_qti_item_body {

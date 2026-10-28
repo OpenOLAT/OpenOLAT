@@ -724,9 +724,16 @@ body>li.o_assessmentitem_order_item  {
 		margin-top: 0;
 		margin-bottom: 0;
 		padding: $padding-small-vertical $padding-small-horizontal;
+		font-size: $font-size-h4;
 		line-height: 1.5em;
 		position: relative;
 		@include clearfix();
+		
+		h4 {
+			margin: 0;
+			font-size: inherit;
+			line-height: inherit;
+		}
 		
 		
 		.o_qti_item_max_score {

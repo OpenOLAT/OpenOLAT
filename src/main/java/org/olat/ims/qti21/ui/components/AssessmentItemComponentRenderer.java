@@ -179,7 +179,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 
 		sb.append("<div class='o_assessmentitem_wrapper'>");
 		//title + status
-		sb.append("<h4 class='itemTitle'>");
+		sb.append("<div class='itemTitle'>");
 		sb.append("<span class='o_qti_item_meta'>");
 		if(component.isShowStatus()) {
 			renderItemStatus(renderer, sb, itemSessionState, translator);
@@ -199,7 +199,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 			renderQuestionLevels(component.getQuestionLevel(), component.getMaxQuestionLevel(), sb, translator);
 		}
 		sb.append("</span>");
-		sb.append(StringHelper.escapeHtml(assessmentItem.getTitle())).append("</h4>")
+		sb.append("<h4>").append(StringHelper.escapeHtml(assessmentItem.getTitle())).append("</h4></div>")
 		  .append("<div id='itemBody' class='o_qti_item_body clearfix'>");
 		
 		//TODO prompt

@@ -1,14 +1,14 @@
 <div id="o_qti_container"><div id="o_qti_run">
 	<div class="qtiworks o_assessmentitem">
 		<div class="o_assessmentitem_wrapper">
-			<h4 class="itemTitle">$r.escapeHtml($itemTitle) <span class="o_qti_item_meta"><span class='o_assessmentitem_level'>$r.translate("table.header.level")
+			<div class="itemTitle"><span class="o_qti_item_meta"><span class='o_assessmentitem_level'>$r.translate("table.header.level")
 			#foreach($i in $globalLevels)
 				#if($r.isNotNull($itemLevel) && $i <= $itemLevel)
 					<i class='o_icon o_icon_circle_color'> </i>
 				#else
 					<i class='o_icon o_icon_disabled'> </i>
 				#end
-			#end</span></span></h4>
+			#end</span></span><h4>$r.escapeHtml($itemTitle)</h4></div>
 			<div id="itemBody" class="o_qti_item_body clearfix">
 			$r.render("userResponseItem")
 			</div>

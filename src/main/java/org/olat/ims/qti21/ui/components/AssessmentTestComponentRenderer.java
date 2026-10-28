@@ -481,7 +481,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 
 		sb.append("<div class='o_assessmentitem_wrapper'>");
 		//title + status
-		sb.append("<h4 class='itemTitle'>");
+		sb.append("<div class='itemTitle'>");
 		sb.append("<span class='o_qti_item_meta'>");
 		renderItemStatus(renderer, sb, itemSessionState, options, translator);
 		renderMaxScoreItem(sb, component, itemSessionState, translator);
@@ -493,8 +493,8 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			int num = component.getCandidateSessionContext().getNumber(itemNode);
 			title = translator.translate("question.title", new String[] { Integer.toString(num) });
 		}
-		sb.append(title)
-		  .append("</h4>")
+		sb.append("<h4>").append(title)
+		  .append("</h4></div>")
 		  .append("<div id='itemBody' class='o_qti_item_body clearfix'>");
 
 		//render itemBody
