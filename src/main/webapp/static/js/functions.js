@@ -1016,8 +1016,8 @@ function o_ainvoke(r) {
 		});
 	}
 	
-	if (lostFocus) {
-		// the redraw restores the focus, a weak form focus candidate must not take it
+	if (lostFocus && o_resolveFocusAnchor(lostFocus)) {
+		// the redraw restores the focus to the same element, a weak form focus candidate must not take it
 		o_info.focusHandled = true;
 	}
 	// Scroll or focus, but not both to prevent jumping up and down
@@ -2836,7 +2836,7 @@ function o_resolveFocusTarget(anchor) {
 	}
 	for (var i = 0; i < anchor.ancestorIds.length; i++) {
 		var container = document.getElementById(anchor.ancestorIds[i]);
-		if (container && container.getClientRects().length > 0) {
+		if (container && container.offsetHeight > 0) {
 			return o_focusableUntilBlur(container);
 		}
 	}
