@@ -73,10 +73,8 @@ public class CoachingPage {
 	}
 	
 
-	public CoachingPage scopeOwner() {
-		By ownerBy = By.xpath("//div[@class='o_coaching_course_list']//ul/li[2]/button[contains(@class,'o_scope_toggle')]");
-		OOGraphene.waitElement(ownerBy, browser).click();
-		By ownerOnBy = By.xpath("//div[@class='o_coaching_course_list']//ul/li[2]/button[contains(@class,'o_toggle_on')]");
+	public CoachingPage assertCourseList() {
+		By ownerOnBy = By.xpath("//div[@class='o_coaching_course_list']//div[contains(@class,'o_table_flexi')]");
 		OOGraphene.waitElement(ownerOnBy, browser);
 		return this;
 	}
