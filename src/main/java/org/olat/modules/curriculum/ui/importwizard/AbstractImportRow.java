@@ -179,6 +179,11 @@ public class AbstractImportRow {
 		return values != null && values.values().stream().anyMatch(v -> v.isError());
 	}
 	
+	public boolean hasValidationWarning(ImportCurriculumsCols col) {
+		CurriculumImportedValues values = validationMap.get(col);
+		return values != null && values.values().stream().anyMatch(v -> v.isWarning());
+	}
+	
 	public boolean hasValidationErrors() {
 		for(CurriculumImportedValues values:validationMap.values()) {
 			for(CurriculumImportedValue val:values.values()) {

@@ -61,6 +61,7 @@ import org.olat.modules.curriculum.ui.CurriculumExport;
 import org.olat.modules.curriculum.ui.CurriculumExportType;
 import org.olat.modules.curriculum.ui.EditCurriculumController;
 import org.olat.modules.curriculum.ui.EditCurriculumElementMetadataController;
+import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.roommanagement.Room;
@@ -242,7 +243,7 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 		if(StringHelper.isLong(unit)) {
 			int lectures = Integer.parseInt(unit);
 			if(lectures > 0 && lectures <= LectureBlock.MAX_PLANNED_LECTURES) {
-				plannedLectures = lectures;
+				lectureBlock.setPlannedLecturesNumber(lectures);
 			}
 		}
 		lectureBlock.setPlannedLecturesNumber(plannedLectures);
@@ -254,9 +255,12 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 		}
 		lectureBlock = lectureService.save(lectureBlock, groups);
 		
-		Set<Long> taxonomyLevelsKeys = importedRow.getTaxonomyLevelsKeys();
-		if(!taxonomyLevelsKeys.isEmpty()) {
-			lectureService.updateTaxonomyLevels(lectureBlock, taxonomyLevelsKeys);
+		// Don't apply changes if taxonomy is not consistent (OO-9857)
+		if(!importedRow.hasValidationWarning(ImportCurriculumsCols.taxonomyLevels)) {
+			Set<Long> taxonomyLevelsKeys = importedRow.getTaxonomyLevelsKeys();
+			if(!taxonomyLevelsKeys.isEmpty()) {
+				lectureService.updateTaxonomyLevels(lectureBlock, taxonomyLevelsKeys);
+			}
 		}
 		
 		List<Room> rooms = importedRow.getRoomsList() == null
