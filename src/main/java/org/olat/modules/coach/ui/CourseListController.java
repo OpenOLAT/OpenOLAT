@@ -197,8 +197,8 @@ public class CourseListController extends FormBasicController implements Activat
 	private final MapperKey mapperThumbnailKey;
 	private final CurriculumElement curriculumElement;
 	private final RepositoryEntryImageMapper mapperThumbnail;
-	private List<RepositoryEntryEducationalType> educationalTypes;
-	private Map<Long,RepositoryEntryEducationalType> educationalTypesMap;
+	private final List<RepositoryEntryEducationalType> educationalTypes;
+	private final Map<Long,RepositoryEntryEducationalType> educationalTypesMap;
 	private final CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup;
 	
 	private ToolsController toolsCtrl;
@@ -249,6 +249,8 @@ public class CourseListController extends FormBasicController implements Activat
 		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 		educationalTypes = repositoryManager.getAllEducationalTypes();
+		educationalTypesMap = educationalTypes.stream()
+				.collect(Collectors.toMap(RepositoryEntryEducationalType::getKey, t -> t, (u, v) -> u));
 		runtimeTypesGroup = CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular;
 		this.curriculumElement = curriculumElement;
 		this.config = config;
