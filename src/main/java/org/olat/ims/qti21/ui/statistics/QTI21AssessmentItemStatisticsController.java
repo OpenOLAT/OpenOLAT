@@ -236,7 +236,7 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		
 		long rightAnswers = itemStats.getNumOfCorrectAnswers();
 		long wrongAnswers = itemStats.getNumOfIncorrectAnswers();
-		long notAnswered = numOfParticipants - rightAnswers - wrongAnswers;
+		long notAnswered = itemStats.getNumOfNotAnsweredQuestions();
 
 		mainVC.contextPut("maxScore", maxScore);
 		mainVC.contextPut("rightAnswers", rightAnswers);

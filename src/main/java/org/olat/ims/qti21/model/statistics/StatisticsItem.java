@@ -31,7 +31,8 @@ public class StatisticsItem {
 	private double difficulty;
 	private long numOfAdjustements;
 	private long numOfCorrectAnswers;
-	private long numOfIncorrectAnswers = 0;
+	private long numOfIncorrectAnswers = 0l;
+	private long numOfNotAnsweredQuestions = 0l;
 	private double averageAdjustement;
 	
 	public int getNumOfResults() {
@@ -86,6 +87,14 @@ public class StatisticsItem {
 
 	public void setNumOfIncorrectAnswers(long numOfIncorrectAnswers) {
 		this.numOfIncorrectAnswers = numOfIncorrectAnswers;
+	}
+
+	public long getNumOfNotAnsweredQuestions() {
+		return numOfNotAnsweredQuestions;
+	}
+
+	public void setNumOfNotAnsweredQuestions(long numOfNotAnsweredQuestions) {
+		this.numOfNotAnsweredQuestions = numOfNotAnsweredQuestions;
 	}
 
 	public long getNumOfAdjustements() {
