@@ -64,9 +64,12 @@ import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoade
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoader.TaxonomyKey;
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.RoomStatus;
+import org.olat.modules.roommanagement.model.SearchRoomParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -94,6 +97,7 @@ public class ImportCurriculumsValidator {
 	public static final String OFF = "OFF";
 	public static final String DEFAULT = "DEFAULT";
 	
+	private List<Room> availableRooms;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final Set<String> curriculumsNoPermissions = new HashSet<>();
 
@@ -957,9 +961,17 @@ public class ImportCurriculumsValidator {
 		}
 		
 		String column = translate(ImportCurriculumsCols.rooms.i18nHeaderKey());
+		
+		if(availableRooms == null) {
+			SearchRoomParameters params = new SearchRoomParameters();
+			params.setStatus(List.of(RoomStatus.active));
+			params.setIdentity(identity);
+			availableRooms = roomManagementService.searchRooms(params, roles);
+		}
 
 		for(RoomKey roomKey:roomsList) {
-			if(importedRow.getRoom(roomKey) == null) {
+			Room room = importedRow.getRoom(roomKey);
+			if(room == null) {
 				if(importedRow.isNew()) {
 					importedRow.addValidationError(ImportCurriculumsCols.rooms, column, null,
 							translator.translate("error.not.exist", rooms));
@@ -970,6 +982,14 @@ public class ImportCurriculumsValidator {
 					allOk &= false;
 				}
 				break;// only one error per field
+			} else if(room.getStatus() == RoomStatus.inactive || room.getStatus() == RoomStatus.deleted) {
+				importedRow.addValidationError(ImportCurriculumsCols.rooms, column, null,
+						translator.translate("error.room.inactive", rooms));
+				allOk &= false;
+			} else if(!availableRooms.contains(room)) {
+				importedRow.addValidationError(ImportCurriculumsCols.rooms, column, null,
+						translator.translate("error.permissions", rooms));
+				allOk &= false;
 			}
 		}
 		
