@@ -737,7 +737,7 @@ public class ImportCurriculumsValidator {
 		}
 		
 		// Unit
-		if(StringHelper.containsNonWhitespace(importedRow.getLocation())
+		if(StringHelper.containsNonWhitespace(importedRow.getUnit())
 				&& validatePlannedLectures(importedRow, importedRow.getUnit(), ImportCurriculumsCols.unit)
 				&& !importedRow.isNew()) {
 			String col = translate(ImportCurriculumsCols.unit.i18nHeaderKey());
