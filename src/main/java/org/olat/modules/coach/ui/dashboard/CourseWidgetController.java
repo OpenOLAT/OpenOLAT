@@ -136,12 +136,12 @@ public class CourseWidgetController extends TableWidgetController
 		
 		keyToFigureCard = new LinkedHashMap<>();
 		figureValues = new SelectionValues();
-		createIndicator(widgetCont, "marked", "search.mark", "[CoachSite:0][Courses:0][coach:0][Bookmarks:0]");
-		createIndicator(widgetCont, "all", "all", "[CoachSite:0][Courses:0][coach:0][All:0]");
-		createIndicator(widgetCont, "relevant", "relevant", "[CoachSite:0][Courses:0][coach:0][Relevant:0]");
-		createIndicator(widgetCont, "published", "filter.published", "[CoachSite:0][Courses:0][coach:0][Published:0]");
-		createIndicator(widgetCont, "access", "filter.access.for.coach", "[CoachSite:0][Courses:0][coach:0][AccessForCoach:0]");
-		createIndicator(widgetCont, "finished", "filter.finished", "[CoachSite:0][Courses:0][coach:0][Finished:0]");
+		createIndicator(widgetCont, "marked", "search.mark", "[CoachSite:0][Courses:0][owner:0][Bookmarks:0]");
+		createIndicator(widgetCont, "all", "all", "[CoachSite:0][Courses:0][owner:0][All:0]");
+		createIndicator(widgetCont, "relevant", "relevant", "[CoachSite:0][Courses:0][owner:0][Relevant:0]");
+		createIndicator(widgetCont, "published", "filter.published", "[CoachSite:0][Courses:0][owner:0][Published:0]");
+		createIndicator(widgetCont, "access", "filter.access.for.coach", "[CoachSite:0][Courses:0][owner:0][AccessForCoach:0]");
+		createIndicator(widgetCont, "finished", "filter.finished", "[CoachSite:0][Courses:0][owner:0][Finished:0]");
 		
 		return figuresEl.getComponent().getComponentName();
 	}
@@ -216,7 +216,7 @@ public class CourseWidgetController extends TableWidgetController
 	@Override
 	protected String createShowAll(FormLayoutContainer widgetCont) {
 		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
-		setUrl(showAllLink, "[CoachSite:0][Courses:0][coach:0][All:0]");
+		setUrl(showAllLink, "[CoachSite:0][Courses:0][owner:0][All:0]");
 		return showAllLink.getComponent().getComponentName();
 	}
 	

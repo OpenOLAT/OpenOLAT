@@ -59,7 +59,7 @@ public class FigureCardsFactory {
 		if (StringHelper.containsNonWhitespace(colorCss)) {
 			sb.append(" ").append(colorCss);
 		}
-		sb.append("'><i class='o_icon ");
+		sb.append("'><i class='o_icon o_icon-fw ");
 		sb.append(StringHelper.containsNonWhitespace(iconCss)? iconCss: DEFAULT_ICON);
 		sb.append("' aria-hidden='true'> </i></span>");
 		sb.append("<span class='o_figure_card_figure'>").append(StringHelper.blankIfNull(figure)).append("</span>");

@@ -2229,6 +2229,14 @@ ul.o_list_narrow {
 }
 
 /* Figure cards component */
+$o-figure-card-icon-colors:
+		("blue", $o-labeled-blue-mega-color, $o-labeled-blue-mega-bg-color),
+		("green", $o-labeled-green-mega-color, $o-labeled-green-mega-bg-color),
+		("yellow", $o-labeled-yellow-mega-color, $o-labeled-yellow-mega-bg-color),
+		("orange", $o-labeled-orange-mega-color, $o-labeled-orange-mega-bg-color),
+		("red", $o-labeled-red-mega-color, $o-labeled-red-mega-bg-color),
+		("grey", $o-labeled-grey-mega-color, $o-labeled-grey-mega-bg-color);
+
 @mixin o-figure-cards-two-line($n) {
 	grid-template-columns: repeat($n, minmax(0, 1fr));
 	
@@ -2236,6 +2244,21 @@ ul.o_list_narrow {
 		padding: $o-figure-card-padding;
 		> span {
 			grid-template-areas: "icon figure . chevron" "label label label label";
+		}
+	}
+	.o_figure_card_icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: $o-figure-card-icon-size;
+		height: $o-figure-card-icon-size;
+		border-radius: 50%;
+		font-size: 11px;
+		background-color: $o-figure-card-icon-bg-color;
+	}
+	@each $name, $color, $bg-color in $o-figure-card-icon-colors {
+		.o_figure_card_icon_#{$name} {
+			background-color: $bg-color;
 		}
 	}
 	.o_figure_card_figure {
@@ -2282,26 +2305,11 @@ ul.o_list_narrow {
 	
 	.o_figure_card_icon {
 		grid-area: icon;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: $o-figure-card-icon-size;
-		height: $o-figure-card-icon-size;
-		border-radius: 50%;
-		font-size: 11px;
 		color: $o-figure-card-icon-color;
-		background-color: $o-figure-card-icon-bg-color;
 	}
-	@each $name, $color, $bg-color in
-			("blue", $o-labeled-blue-mega-color, $o-labeled-blue-mega-bg-color),
-			("green", $o-labeled-green-mega-color, $o-labeled-green-mega-bg-color),
-			("yellow", $o-labeled-yellow-mega-color, $o-labeled-yellow-mega-bg-color),
-			("orange", $o-labeled-orange-mega-color, $o-labeled-orange-mega-bg-color),
-			("red", $o-labeled-red-mega-color, $o-labeled-red-mega-bg-color),
-			("grey", $o-labeled-grey-mega-color, $o-labeled-grey-mega-bg-color) {
+	@each $name, $color, $bg-color in $o-figure-card-icon-colors {
 		.o_figure_card_icon_#{$name} {
 			color: $color;
-			background-color: $bg-color;
 		}
 	}
 	
