@@ -745,8 +745,7 @@ public class ImportCurriculumsValidator {
 		}
 		
 		// Location
-		if(StringHelper.containsNonWhitespace(importedRow.getLocation())
-				&& validateTruncateLength(importedRow, importedRow.getLocation(), 128, ImportCurriculumsCols.location)
+		if(validateTruncateLength(importedRow, importedRow.getLocation(), 128, ImportCurriculumsCols.location)
 				&& !importedRow.isNew()) {
 			String col = translate(ImportCurriculumsCols.location.i18nHeaderKey());
 			importedRow.addChanged(col, importedRow.getLectureBlock().getLocation(), importedRow.getLocation(), ImportCurriculumsCols.location);
