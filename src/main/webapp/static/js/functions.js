@@ -3424,7 +3424,7 @@ function o_initDayNavHeaderFit(domId) {
 		return;
 	}
 	const todayEl = weekEl.querySelector('.o_day_nav_today');
-	const states = ['o_day_nav_fit_1', 'o_day_nav_fit_2', 'o_day_nav_fit_3', 'o_day_nav_fit_4'];
+	const states = ['o_day_nav_fit_1', 'o_day_nav_fit_2', 'o_day_nav_fit_3', 'o_day_nav_fit_4', 'o_day_nav_fit_5'];
 	
 	function fit() {
 		for (const state of states) {

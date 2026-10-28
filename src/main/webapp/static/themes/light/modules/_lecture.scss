@@ -881,7 +881,10 @@ tr.o_rm_room_preselected {
 		min-width: 0;
 	}
 
-	&:not(:last-child) .o_lecture_widget_day_rows .o_table_row:last-child {
-		border-bottom: 0;
+	&:first-child {
+		.o_lecture_widget_day_header,
+		.o_table_row:first-child .o_cell_top_border {
+			border-top: 0;
+		}
 	}
 }

@@ -2348,9 +2348,13 @@ $o-figure-card-icon-colors:
 		gap: 5px;
 		font-size: $o-day-nav-period-font-size;
 		
-		.o_day_nav_period_dates {
+		.o_day_nav_period_dates,
+		.o_day_nav_period_months {
 			font-weight: bold;
 			white-space: nowrap;
+		}
+		.o_day_nav_period_months {
+			display: none;
 		}
 		.o_day_nav_period_week {
 			@extend %o_muted;

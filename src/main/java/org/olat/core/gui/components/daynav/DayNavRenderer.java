@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.daynav;
 
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -64,6 +65,7 @@ public class DayNavRenderer extends DefaultComponentRenderer {
 		sb.append("<div class=\"o_day_nav_period\">");
 		renderWeekButton(sb, ubu, cmpTranslator, cmp, "prev_week", "day.nav.week.prev", "o_icon_course_previous", DayNavComponent.CMD_PREV_WEEK);
 		sb.append("<span class=\"o_day_nav_period_dates\">").append(StringHelper.escapeHtml(getPeriod(cmpTranslator, cmp))).append("</span>");
+		sb.append("<span class=\"o_day_nav_period_months\">").append(StringHelper.escapeHtml(getPeriodMonths(cmpTranslator, cmp))).append("</span>");
 		sb.append("<span class=\"o_day_nav_period_week\">")
 				.append(StringHelper.escapeHtml(cmpTranslator.translate("day.nav.week", String.valueOf(cmp.getWeekOfYear()))))
 				.append("</span>");
@@ -85,12 +87,32 @@ public class DayNavRenderer extends DefaultComponentRenderer {
 	private String getPeriod(Translator cmpTranslator, DayNavComponent cmp) {
 		Date startDate = cmp.getStartDate();
 		Date endDate = cmp.getEndDate();
-		String startPatternKey = DateUtils.yearFromDate(startDate) == DateUtils.yearFromDate(endDate)
-				? "day.nav.pattern.day.month"
-				: "day.nav.pattern.day.month.year";
+		String startPatternKey = "day.nav.pattern.day";
+		if (DateUtils.yearFromDate(startDate) != DateUtils.yearFromDate(endDate)) {
+			startPatternKey = "day.nav.pattern.day.month.year";
+		} else if (!isSameMonth(startDate, endDate)) {
+			startPatternKey = "day.nav.pattern.day.month";
+		}
 		return cmpTranslator.translate("day.nav.period",
 				format(cmpTranslator, startPatternKey, startDate),
 				format(cmpTranslator, "day.nav.pattern.day.month.year", endDate));
+	}
+	
+	private String getPeriodMonths(Translator cmpTranslator, DayNavComponent cmp) {
+		Date startDate = cmp.getStartDate();
+		Date endDate = cmp.getEndDate();
+		String endMonth = format(cmpTranslator, "day.nav.pattern.month.year", endDate);
+		if (isSameMonth(startDate, endDate)) {
+			return endMonth;
+		}
+		String startPatternKey = DateUtils.yearFromDate(startDate) == DateUtils.yearFromDate(endDate)
+				? "day.nav.pattern.month"
+				: "day.nav.pattern.month.year";
+		return cmpTranslator.translate("day.nav.period", format(cmpTranslator, startPatternKey, startDate), endMonth);
+	}
+	
+	private boolean isSameMonth(Date date1, Date date2) {
+		return YearMonth.from(DateUtils.toLocalDate(date1)).equals(YearMonth.from(DateUtils.toLocalDate(date2)));
 	}
 
 	private String format(Translator cmpTranslator, String patternKey, Date date) {
