@@ -78,6 +78,7 @@ public class DayNavRenderer extends DefaultComponentRenderer {
 		NameValuePair nameValue = new NameValuePair(VelocityContainer.COMMAND_ID, DayNavComponent.CMD_TODAY);
 		renderButton(sb, ubu, cmp, getElementId(cmp, "today"), "btn btn-default btn-sm o_button_primary_light o_day_nav_today", attributes,
 				todayText, nameValue);
+		sb.append("<script>\"use strict\";o_initDayNavHeaderFit('o_c").append(weekCmp.getDispatchID()).append("');</script>");
 		sb.append("</div>");
 	}
 

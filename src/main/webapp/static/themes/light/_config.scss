@@ -2011,8 +2011,6 @@ $o-figure-card-chevron-color					: $text-muted !default;
 $o-dashboard-widget-indicators-min-height		: math.ceil(max($o-figure-card-figure-font-size * $line-height-base, $o-figure-card-icon-size) + $o-figure-card-label-font-size * $line-height-base + 2 * nth($o-figure-card-padding, 1) + 2 * nth($o-card-border, 1)) !default;
 
 /* day navigation */
-$o-day-nav-header-one-line-min-width		: 460px !default;
-$o-day-nav-header-full-min-width			: 640px !default;
 $o-day-nav-period-font-size					: 16px !default;
 $o-day-nav-days-gap							: 6px !default;
 $o-day-nav-day-padding						: 4px 2px 9px 2px !default;

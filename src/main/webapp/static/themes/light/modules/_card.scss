@@ -377,17 +377,22 @@
 	}
 	
 	.o_dashboard_widget_header:has(.o_day_nav_week) {
-		container-type: inline-size;
-		
 		.o_dashboard_widget_header_content {
 			display: grid;
-			grid-template-columns: minmax(0, 1fr) auto;
-			grid-template-areas: "title today" "period period";
+			grid-template-columns: auto 1fr auto;
+			grid-template-areas: "title period today";
 			align-items: center;
 			gap: 10px;
 			
 			.o_dashboard_widget_title {
 				grid-area: title;
+				margin-right: 0;
+				
+				h3 {
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
 			}
 			.o_day_nav_week {
 				display: contents;
@@ -398,22 +403,25 @@
 			}
 			.o_day_nav_today {
 				grid-area: today;
-				justify-self: end;
 			}
-			
-			@container (width >= #{$o-day-nav-header-one-line-min-width}) {
-				grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-				grid-template-areas: "title period today";
+		}
+		
+		&.o_day_nav_fit_2 .o_day_nav_period_week {
+			display: none;
+		}
+		&.o_day_nav_fit_3,
+		&.o_day_nav_fit_4 {
+			.o_day_nav_period_week,
+			.o_day_nav_today_text {
+				display: none;
 			}
-			@container (width < #{$o-day-nav-header-full-min-width}) {
-				.o_day_nav_period_week,
-				.o_day_nav_today_text {
-					display: none;
-				}
-				.o_day_nav_today_num {
-					display: inline;
-				}
+			.o_day_nav_today_num {
+				display: inline;
 			}
+		}
+		&.o_day_nav_fit_4 .o_dashboard_widget_header_content {
+			grid-template-columns: minmax(0, 1fr) auto;
+			grid-template-areas: "title today" "period period";
 		}
 	}
 	

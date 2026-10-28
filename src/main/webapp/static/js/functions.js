@@ -3417,6 +3417,46 @@ function o_initScrollableVerticalOverflowIndicator(domId) {
 	scrollableEl.scroll(onScroll);
 }
 
+function o_initDayNavHeaderFit(domId) {
+	const weekEl = document.getElementById(domId);
+	const headerEl = weekEl ? weekEl.closest('.o_dashboard_widget_header') : null;
+	if (!headerEl) {
+		return;
+	}
+	const todayEl = weekEl.querySelector('.o_day_nav_today');
+	const states = ['o_day_nav_fit_1', 'o_day_nav_fit_2', 'o_day_nav_fit_3', 'o_day_nav_fit_4'];
+	
+	function fit() {
+		for (const state of states) {
+			headerEl.classList.remove(...states);
+			headerEl.classList.add(state);
+			if (state === states[states.length - 1] || todayEl.getBoundingClientRect().right <= headerEl.getBoundingClientRect().right + 1) {
+				return;
+			}
+		}
+	}
+	
+	if (headerEl.oDayNavFitObserver) {
+		headerEl.oDayNavFitObserver.disconnect();
+	}
+	fit();
+	if (document.fonts.status === 'loading') {
+		document.fonts.ready.then(fit);
+	}
+	let width = headerEl.clientWidth;
+	const observer = new ResizeObserver(() => {
+		if (!headerEl.isConnected) {
+			observer.disconnect();
+			delete headerEl.oDayNavFitObserver;
+		} else if (headerEl.clientWidth !== width) {
+			width = headerEl.clientWidth;
+			requestAnimationFrame(fit);
+		}
+	});
+	observer.observe(headerEl);
+	headerEl.oDayNavFitObserver = observer;
+}
+
 
 /*
  * For menu tree
