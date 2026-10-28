@@ -502,11 +502,10 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			QTI21StatisticSearchParams searchParams, AssessmentItem assessmentItem) {
 		
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select isession.score, isession.manualScore, count(isession.key), avg(isession.duration) from qtiassessmentitemsession isession ")
+		sb.append("select isession.key, isession.score, isession.manualScore, isession.duration from qtiassessmentitemsession isession ")
 		  .append(" inner join isession.assessmentTestSession asession");
 		boolean fakeParticipantParam = decorateRSet(sb, searchParams, true);
-		sb.append(" and isession.assessmentItemIdentifier=:itemIdent")
-		  .append(" group by isession.score, isession.manualScore");
+		sb.append(" and isession.assessmentItemIdentifier=:itemIdent");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
@@ -516,54 +515,54 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			return new StatisticsItem();
 		}
 
-		int totalResults = 0;
 		double totalScore = 0.0;
 		double totalDuration = 0.0;
 		long numOfAdjustements = 0;
 		long numOfCorrectAnswers = 0;
 		long numOfIncorrectAnswers = 0;
+		long numOfNotAnsweredQuestions = 0;
 		double totalAdjustements = 0.0;
 		final boolean manualCorrection = AssessmentTestHelper.needManualCorrection(assessmentItem);
 		
 		for(Object[] result:results) {
-			BigDecimal score = (BigDecimal)result[0];
+			BigDecimal score = (BigDecimal)result[1];
 			BigDecimal initialScore = score;
-			BigDecimal manualScore = (BigDecimal)result[1];
+			BigDecimal manualScore = (BigDecimal)result[2];
 			if(score == null) {
 				score = manualScore;
 			} else if(manualScore != null) {
 				score = score.add(manualScore);
 			}
-			
-			long numOfResults = ((Number)result[2]).longValue();
-			
+			Long duration = (Long)result[3];
+			boolean notAnswered = duration == null || duration.longValue() == 0l;
+
 			if(!manualCorrection && manualScore != null) {
-				numOfAdjustements += numOfResults;
+				numOfAdjustements++;
 				
 				BigDecimal aScore = initialScore == null ? BigDecimal.ZERO : initialScore;
 				BigDecimal diff = manualScore.subtract(aScore);
-				totalAdjustements = totalAdjustements + (diff.doubleValue() * numOfResults);
+				totalAdjustements += diff.doubleValue();
 			}
 			
-			//average
+			//Score, not answered counts as 0
 			double dScore = score == null ? 0.0d : score.doubleValue();
-			totalScore += (dScore * numOfResults);
-			totalResults += numOfResults;
+			totalScore += dScore;
 			
 			if((maxScore - dScore) < 0.0001) {
-				numOfCorrectAnswers += numOfResults;
+				numOfCorrectAnswers++;
+			} else if(notAnswered) {
+				numOfNotAnsweredQuestions++;
 			} else {
-				numOfIncorrectAnswers += numOfResults;
+				numOfIncorrectAnswers++;
 			}
 			
 			// duration
-			Number duration = (Number)result[3];
-			if(duration != null) {
-				double averageDuration = duration.doubleValue();
-				totalDuration += (averageDuration * numOfResults);
+			if(notAnswered && duration != null) {
+				totalDuration += duration.doubleValue();
 			}
 		}
 
+		int totalResults = results.size();
 		double averageScore = totalScore / totalResults;
 		//difficulty (p-value)
 		double difficulty = numOfCorrectAnswers / (double)totalResults;
@@ -576,6 +575,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		stats.setDifficulty(difficulty);
 		stats.setNumOfCorrectAnswers(numOfCorrectAnswers);
 		stats.setNumOfIncorrectAnswers(numOfIncorrectAnswers);
+		stats.setNumOfNotAnsweredQuestions(numOfNotAnsweredQuestions);
 		stats.setNumOfAdjustements(numOfAdjustements);
 		if(numOfAdjustements > 0) {
 			stats.setAverageAdjustement(totalAdjustements / numOfAdjustements);
