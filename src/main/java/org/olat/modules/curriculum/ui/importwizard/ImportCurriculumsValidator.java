@@ -65,6 +65,7 @@ import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsObjectsLoade
 import org.olat.modules.curriculum.ui.importwizard.ImportCurriculumsReviewTableModel.ImportCurriculumsCols;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
@@ -108,6 +109,8 @@ public class ImportCurriculumsValidator {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
 	@Autowired
 	private RoomManagementService roomManagementService;
 	
@@ -751,7 +754,9 @@ public class ImportCurriculumsValidator {
 			importedRow.addChanged(col, importedRow.getLectureBlock().getLocation(), importedRow.getLocation(), ImportCurriculumsCols.location);
 		}
 		// Rooms
-		validateRooms(importedRow);
+		if(roomManagementModule.isEnabled()) {
+			validateRooms(importedRow);
+		}
 		
 		// Taxonomy
 		validateTaxonomy(importedRow);

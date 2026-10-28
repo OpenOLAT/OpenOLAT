@@ -36,6 +36,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.AbstractExcelReader;
 import org.olat.modules.curriculum.ui.CurriculumExport;
+import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,15 +57,19 @@ public class ImportCurriculumsFileReader extends AbstractExcelReader {
 	
 	public static final String usageIdentifyer = CurriculumExport.usageIdentifyer;
 	
+	private final boolean withRooms;
 	private final List<UserPropertyHandler> mandatoryUserPropertyHandlers;
 	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
 	
 	public ImportCurriculumsFileReader(Roles roles) {
 		CoreSpringFactory.autowireObject(this);
+		withRooms = roomManagementModule.isEnabled();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		mandatoryUserPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser)
 				.stream()
@@ -88,34 +93,35 @@ public class ImportCurriculumsFileReader extends AbstractExcelReader {
 	
 	private ImportedRow readElementRow(Row r) {
 		// Prod. ext. ref, Impl. ext. ref., Object type, Title, Ext. ref., Organisation ref., absences, description, creation date, last modified
-		String curriculumIdentifier = getString(r, 0);
-		String implementationIdentifier = getString(r, 1);
-		String type = getString(r, 2);
-		String level = getHierarchicalNumber(r, 3);
+		int pos = 0;
+		String curriculumIdentifier = getString(r, pos++);
+		String implementationIdentifier = getString(r, pos++);
+		String type = getString(r, pos++);// 2
+		String level = getHierarchicalNumber(r, pos++);
 		
-		String title = getString(r, 4);
-		String externalRef = getString(r, 5);
-		String elementStatus = getString(r, 6);
+		String title = getString(r, pos++);// 4
+		String externalRef = getString(r, pos++);
+		String elementStatus = getString(r, pos++);
 		
-		ReaderLocalDate startDate = getDate(r, 7);
-		ReaderLocalTime startTime = getTime(r, 8);
-		ReaderLocalDate endDate = getDate(r, 9);
-		ReaderLocalTime endTime = getTime(r, 10);
+		ReaderLocalDate startDate = getDate(r, pos++); // 7
+		ReaderLocalTime startTime = getTime(r, pos++);
+		ReaderLocalDate endDate = getDate(r, pos++);
+		ReaderLocalTime endTime = getTime(r, pos++);
 		
-		String unit = getNumberAsString(r, 11);
-		String referenceExternalRef = getString(r, 12);
-		String location = getString(r, 13);
-		String rooms = getString(r, 14);
-		String curriculumElementType = getString(r, 15);
+		String unit = getNumberAsString(r, pos++); // 11
+		String referenceExternalRef = getString(r, pos++);
+		String location = getString(r, pos++);
+		String rooms = withRooms ? getString(r, pos++) : null;
+		String curriculumElementType = getString(r, pos++);
 		
-		String calendar = getString(r, 16);
-		String absences = getString(r, 17);
-		String progress = getString(r, 18);
+		String calendar = getString(r, pos++); // 16 with rooms
+		String absences = getString(r, pos++);
+		String progress = getString(r, pos++);
 		
-		String subjects = getString(r, 19);
+		String subjects = getString(r, pos++); // 19 with rooms
 		
-		LocalDateTime creationDate = getDateTime(r, 20);
-		LocalDateTime lastModified = getDateTime(r, 21);
+		LocalDateTime creationDate = getDateTime(r, pos++); // 20 with rooms
+		LocalDateTime lastModified = getDateTime(r, pos++);
 		
 		if(!StringHelper.containsNonWhitespace(type)
 				&& !StringHelper.containsNonWhitespace(curriculumIdentifier)

@@ -72,6 +72,7 @@ import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
@@ -107,6 +108,8 @@ public class CurriculumExport {
 	private final Identity identity;
 	private final Formatter formatter;
 	
+	private final boolean withRooms;
+	
 	private final List<Curriculum> curriculums;
 	private final List<CurriculumElement> implementations;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -123,6 +126,8 @@ public class CurriculumExport {
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
 	@Autowired
 	private RoomManagementService roomManagementService;
 	@Autowired
@@ -141,6 +146,7 @@ public class CurriculumExport {
 		this.identity = identity;
 		this.curriculums = curriculums;
 		this.implementations = implementations;
+		withRooms = roomManagementModule.isEnabled();
 		formatter = Formatter.getInstance(translator.getLocale());
 		this.translator = userManager.getPropertyHandlerTranslator(translator);
 		
@@ -362,7 +368,9 @@ public class CurriculumExport {
 		headerRow.addCell(col++, translator.translate("export.lectures"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("export.reference.external.ref"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.location"), workbook.getStyles().getHeaderStyle());
-		headerRow.addCell(col++, translator.translate("table.header.rooms"), workbook.getStyles().getHeaderStyle());
+		if(withRooms) {
+			headerRow.addCell(col++, translator.translate("table.header.rooms"), workbook.getStyles().getHeaderStyle());
+		}
 		headerRow.addCell(col++, translator.translate("export.element.type"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.calendars"), workbook.getStyles().getHeaderStyle());
 		headerRow.addCell(col++, translator.translate("table.header.lectures"), workbook.getStyles().getHeaderStyle());
@@ -508,7 +516,9 @@ public class CurriculumExport {
 		row.addCell(col++, null);// No lectures
 		row.addCell(col++, null);// No ref. id.
 		row.addCell(col++, null);// No location
-		row.addCell(col++, null);// No rooms
+		if(withRooms) {
+			row.addCell(col++, null);// No rooms
+		}
 		
 		String elementType = element.getType() != null
 				? element.getType().getIdentifier()
@@ -603,7 +613,9 @@ public class CurriculumExport {
 		row.addCell(col++, null);// No lectures
 		row.addCell(col++, null);// No ref. id.
 		row.addCell(col++, null);// No location
-		row.addCell(col++, null);// No rooms
+		if(withRooms) {
+			row.addCell(col++, null);// No rooms
+		}
 		
 		row.addCell(col++, null); // No element type
 		row.addCell(col++, null); // No calendar option
@@ -665,8 +677,10 @@ public class CurriculumExport {
 				: null;
 		row.addCell(col++, entryExternalRef);// Ref. to course
 		row.addCell(col++, lectureBlock.getLocation());// Location
-		String roomsList = getRooms(rooms);
-		row.addCell(col++, roomsList);// Rooms
+		if(withRooms) {
+			String roomsList = getRooms(rooms);
+			row.addCell(col++, roomsList);// Rooms
+		}
 		
 		row.addCell(col++, null); // No element type
 		row.addCell(col++, null); // No calendar option

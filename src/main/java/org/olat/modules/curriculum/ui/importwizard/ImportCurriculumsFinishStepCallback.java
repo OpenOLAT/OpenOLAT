@@ -66,6 +66,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
@@ -104,6 +105,8 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
+	@Autowired
+	private RoomManagementModule roomManagementModule;
 	@Autowired
 	private RoomManagementService roomManagementService;
 
@@ -265,23 +268,25 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 			}
 		}
 		
-		List<Room> rooms = importedRow.getRoomsList() == null
-				? List.of()
-				: importedRow.getRoomsList();
-		List<RoomBooking> currentBookings = roomManagementService.getBookings(lectureBlock);
-		List<Room> currentRooms = currentBookings.stream()
-				.map(RoomBooking::getRoom)
-				.toList();
-		for(Room room:rooms) {
-			if(!currentRooms.contains(room)) {
-				roomManagementService.bookRoom(room, lectureBlock,
-						lectureBlock.getStartDate(), lectureBlock.getEndDate(), 0, 0, doer);
+		if(roomManagementModule.isEnabled()) {
+			List<Room> rooms = importedRow.getRoomsList() == null
+					? List.of()
+					: importedRow.getRoomsList();
+			List<RoomBooking> currentBookings = roomManagementService.getBookings(lectureBlock);
+			List<Room> currentRooms = currentBookings.stream()
+					.map(RoomBooking::getRoom)
+					.toList();
+			for(Room room:rooms) {
+				if(!currentRooms.contains(room)) {
+					roomManagementService.bookRoom(room, lectureBlock,
+							lectureBlock.getStartDate(), lectureBlock.getEndDate(), 0, 0, doer);
+				}
 			}
-		}
-		
-		for(RoomBooking currentBooking:currentBookings) {
-			if(!rooms.contains(currentBooking.getRoom())) {
-				roomManagementService.deleteBooking(currentBooking, doer);
+			
+			for(RoomBooking currentBooking:currentBookings) {
+				if(!rooms.contains(currentBooking.getRoom())) {
+					roomManagementService.deleteBooking(currentBooking, doer);
+				}
 			}
 		}
 	}
