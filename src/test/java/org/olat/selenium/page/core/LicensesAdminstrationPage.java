@@ -40,7 +40,11 @@ public class LicensesAdminstrationPage {
 	}
 	
 	public LicensesAdminstrationPage enableForResources(String license) {
-		By resourceCheckBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + license + "')]]]/td[10]/fieldset/div/label/input[@type='checkbox']");
+		return enableFor(license, 12);
+	}
+	
+	private LicensesAdminstrationPage enableFor(String license, int index) {
+		By resourceCheckBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + license + "')]]]/td[" + index + "]/fieldset/div/label/input[@type='checkbox']");
 		if(browser instanceof ChromeDriver) {
 			OOGraphene.scrollTableRight(resourceCheckBy, browser);
 			OOGraphene.waitingALittleBit();
@@ -51,5 +55,4 @@ public class LicensesAdminstrationPage {
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
-
 }
