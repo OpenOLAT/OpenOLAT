@@ -1449,10 +1449,11 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else if (event instanceof FlexiTableFilterEvent || event instanceof FlexiTableSearchEvent) {
 				updateEmptyStateConfig(tableEl.getSelectedFilterTab());
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
-				tableEl.setFiltersValues(null, List.of(), List.of());
+				FlexiFiltersTab currentTab = tableEl.getSelectedFilterTab();
+				tableEl.setFiltersValues(null, currentTab.getImplicitFilters(), currentTab.getDefaultFiltersValues());
 				tableEl.resetSearchField(ureq);
 				tableEl.resetSearch(ureq);
-				updateEmptyStateConfig(tableEl.getSelectedFilterTab());
+				updateEmptyStateConfig(currentTab);
 				flc.setDirty(true);
 			}
 		}
@@ -1779,14 +1780,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				|| 
 				tableEl.getExtendedFilters().stream()
 						.anyMatch(filter -> isNonImplicitFilterActive(filter, tab));
-		System.err.println("filtered is " + filtered);
-		System.err.println("  search = " + tableEl.getQuickSearchString());
-		for (FlexiTableExtendedFilter filter : tableEl.getExtendedFilters()) {
-			if (filter.isSelected()) {
-				System.err.println("    filter = " + filter.getFilter());
-			}
-		}
-		System.err.println("implicitFilters = " + (tab != null ? tab.getImplicitFilters() : null));
 
 		if (filtered) {
 			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
