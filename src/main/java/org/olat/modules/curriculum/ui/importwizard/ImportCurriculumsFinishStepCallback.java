@@ -268,7 +268,8 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 			}
 		}
 		
-		if(roomManagementModule.isEnabled()) {
+		if(roomManagementModule.isEnabled()
+				&& !importedRow.hasValidationWarning(ImportCurriculumsCols.rooms)) {
 			List<Room> rooms = importedRow.getRoomsList() == null
 					? List.of()
 					: importedRow.getRoomsList();
