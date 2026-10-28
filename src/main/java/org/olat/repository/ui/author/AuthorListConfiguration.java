@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.repository.RepositoryEntryRuntimeType;
+import org.olat.repository.ui.EmptyScreenData;
 
 /**
  * 
@@ -59,6 +60,9 @@ public class AuthorListConfiguration {
 	private boolean sharedWithMeTab = false;
 	private String myTabLabel;
 	private boolean redesignedSelectionDialog = false;
+	private EmptyScreenData emptyScreenDataForNoEntriesYet;
+	private EmptyScreenData emptyScreenDataForNoEntriesInView;
+	private String enterSearchTermMessage;
 	
 	private AuthorListConfiguration(String tableId) {
 		this.tableId = tableId;
@@ -303,5 +307,29 @@ public class AuthorListConfiguration {
 
 	public void setRedesignedSelectionDialog(boolean redesignedSelectionDialog) {
 		this.redesignedSelectionDialog = redesignedSelectionDialog;
+	}
+
+	public void setEmptyScreenDataForNoEntriesYet(EmptyScreenData emptyScreenDataForNoEntriesYet) {
+		this.emptyScreenDataForNoEntriesYet = emptyScreenDataForNoEntriesYet;
+	}
+
+	public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+		return emptyScreenDataForNoEntriesYet;
+	}
+
+	public void setEmptyScreenDataForNoEntriesInView(EmptyScreenData emptyScreenDataForNoEntriesInView) {
+		this.emptyScreenDataForNoEntriesInView = emptyScreenDataForNoEntriesInView;
+	}
+
+	public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+		return emptyScreenDataForNoEntriesInView;
+	}
+
+	public void setEnterSearchTermMessage(String enterSearchTermMessage) {
+		this.enterSearchTermMessage = enterSearchTermMessage;
+	}
+
+	public String getEnterSearchTermMessage() {
+		return enterSearchTermMessage;
 	}
 }

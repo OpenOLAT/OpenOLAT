@@ -72,6 +72,18 @@ public interface RepositoryEntryReferenceProvider {
 	public default String getMyTabLabel() {
 		return null;
 	}
+	
+	public default EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+		return null;
+	}
+
+	public default EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+		return null;
+	}
+
+	public default String getEnterSearchTermMessage() {
+		return null;
+	}
 
 	public static interface ReferenceContentProvider {
 		

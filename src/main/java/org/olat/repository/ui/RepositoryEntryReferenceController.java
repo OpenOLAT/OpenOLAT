@@ -531,7 +531,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 		List<Organisation> defaultOrganisations = referenceProvider.getDefaultOrganisations();
 		String tableId = "re-selection-v1-" + resourceTypes.get(0);
 		selectionCtrl = new RepositoryEntrySelectionController(ureq, getWindowControl(), tableId,
-				resourceTypes, defaultOrganisations, referenceProvider.getMyTabLabel());
+				resourceTypes, defaultOrganisations, referenceProvider);
 		listenTo(selectionCtrl);
 		footerCmc = new FooterModalController(getWindowControl(), translate("close"), selectionCtrl.getBodyComponent(),
 				selectionCtrl.getFooterComponent(), referenceProvider.getSelectionTitle());

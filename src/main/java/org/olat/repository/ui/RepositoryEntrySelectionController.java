@@ -66,13 +66,17 @@ public class RepositoryEntrySelectionController extends BasicController {
 	private RepositoryManager repositoryManager;
 
 	public RepositoryEntrySelectionController(UserRequest ureq, WindowControl wControl, String tableId,
-			List<String> resourceTypes, List<Organisation> defaultOrganisations, String myTabLabel) {
+											  List<String> resourceTypes, List<Organisation> defaultOrganisations, 
+											  RepositoryEntryReferenceProvider referenceProvider) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
 		AuthorListConfiguration configuration = AuthorListConfiguration.selectRessource(tableId, resourceTypes);
 		configuration.setSharedWithMeTab(true);
-		configuration.setMyTabLabel(myTabLabel);
+		configuration.setMyTabLabel(referenceProvider.getMyTabLabel());
+		configuration.setEmptyScreenDataForNoEntriesYet(referenceProvider.getEmptyScreenDataForNoEntriesYet());
+		configuration.setEmptyScreenDataForNoEntriesInView(referenceProvider.getEmptyScreenDataForNoEntriesInView());
+		configuration.setEnterSearchTermMessage(referenceProvider.getEnterSearchTermMessage());
 		configuration.setRedesignedSelectionDialog(true);
 		configuration.setImportRessources(false);
 		configuration.setCreateRessources(false);

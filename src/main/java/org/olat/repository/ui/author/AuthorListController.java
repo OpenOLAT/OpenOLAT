@@ -196,6 +196,7 @@ import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
+import org.olat.repository.ui.EmptyScreenData;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
 import org.olat.repository.ui.author.AuthoringEntryDataSource.AuthorSourceFilter;
@@ -1774,38 +1775,50 @@ public class AuthorListController extends FormBasicController implements Activat
 			return;
 		}
 
-		if (myTab == tab || sharedWithMeTab == tab) {
-			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
-					.withMessageI18nKey("author.select.empty.view")
-					.withHintI18nKey("author.select.empty.view.hint")
-					.withIconCss("o_CourseModule_icon")
-					.build());
-			return;
-		}
-
 		boolean filtered = StringHelper.containsNonWhitespace(tableEl.getQuickSearchString())
-				|| tableEl.getExtendedFilters().stream().anyMatch(FlexiTableExtendedFilter::isSelected);
-		if (searchTab == tab) {
-			if (filtered) {
-				tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
-						.withMessageI18nKey("author.select.empty.noresults")
-						.withHintI18nKey("author.select.empty.noresults.hint")
-						.withIconCss("o_icon_search")
-						.withPrimaryButton("o_icon_refresh", "author.select.reset.filters", null)
-						.build());
-			} else {
-				tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
-						.withMessageI18nKey("author.select.empty.search")
-						.withHintI18nKey("author.select.empty.search.hint")
-						.withIconCss("o_icon_search")
-						.build());
+				|| 
+				tableEl.getExtendedFilters().stream()
+						.anyMatch(filter -> isNonImplicitFilterActive(filter, tab));
+		System.err.println("filtered is " + filtered);
+		System.err.println("  search = " + tableEl.getQuickSearchString());
+		for (FlexiTableExtendedFilter filter : tableEl.getExtendedFilters()) {
+			if (filter.isSelected()) {
+				System.err.println("    filter = " + filter.getFilter());
 			}
-		} else if (filtered) {
+		}
+		System.err.println("implicitFilters = " + (tab != null ? tab.getImplicitFilters() : null));
+
+		if (filtered) {
 			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
 					.withMessageI18nKey("author.select.empty.noresults")
 					.withHintI18nKey("author.select.empty.noresults.hint")
 					.withIconCss("o_icon_search")
 					.withPrimaryButton("o_icon_refresh", "author.select.reset.filters", null)
+					.build());
+			return;
+		}
+		
+		
+		if (allTab == tab) {
+			EmptyScreenData emptyScreenData = configuration.getEmptyScreenDataForNoEntriesYet();
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageTranslated(emptyScreenData.message())
+					.withHintTranslated(emptyScreenData.hint())
+					.withIconCss(emptyScreenData.iconCss())
+					.build());
+		} else if (myTab == tab || sharedWithMeTab == tab) {
+			EmptyScreenData emptyScreenData = configuration.getEmptyScreenDataForNoEntriesInView();
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageTranslated(emptyScreenData.message())
+					.withHintTranslated(emptyScreenData.hint())
+					.withIconCss(emptyScreenData.iconCss())
+					.build());
+		} else if (searchTab == tab) {
+			String messageText = configuration.getEnterSearchTermMessage();
+			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+					.withMessageI18nKey("author.select.empty.search")
+					.withHintTranslated(messageText)
+					.withIconCss("o_icon_search")
 					.build());
 		} else {
 			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
@@ -1814,6 +1827,18 @@ public class AuthorListController extends FormBasicController implements Activat
 					.withIconCss("o_CourseModule_icon")
 					.build());
 		}
+	}
+	
+	private boolean isNonImplicitFilterActive(FlexiTableExtendedFilter filter, FlexiFiltersTab tab) {
+		if (!filter.isSelected()) {
+			return false;
+		}
+		
+		if (tab == null || tab.getImplicitFilters() == null) {
+			return true;
+		}
+		
+		return tab.getImplicitFilters().stream().noneMatch(f -> f.equals(filter.getFilter()));
 	}
 	
 	private void doSendMail(UserRequest ureq, List<AuthoringEntryRow> rows) {

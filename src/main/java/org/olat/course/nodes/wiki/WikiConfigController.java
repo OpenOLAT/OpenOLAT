@@ -51,6 +51,7 @@ import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.EmptyScreenData;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,6 +112,25 @@ public class WikiConfigController extends BasicController implements ReferenceCo
 			@Override
 			public String getMyTabLabel() {
 				return translate("my.wikis");
+			}
+
+			@Override
+			public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+				return new EmptyScreenData("o_FileResource-WIKI_icon", 
+						translate("select.no.wiki.yet"),
+						translate("select.no.wiki.yet.hint"));
+			}
+
+			@Override
+			public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+				return new EmptyScreenData("o_FileResource-WIKI_icon", 
+						translate("select.no.wikis.in.view"),
+						translate("select.no.wikis.in.view.hint"));
+			}
+
+			@Override
+			public String getEnterSearchTermMessage() {
+				return translate("select.enter.search.term");
 			}
 		};
 		referenceCtrl = new RepositoryEntryReferenceController(ureq, wControl, wikiEntry, referenceProvider);
