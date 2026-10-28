@@ -68,7 +68,7 @@ public class TextInputController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("wizard.import.input.description");
-		setFormContextHelp("manual_user/area_modules/Data_Management/#import");
+		setFormContextHelp("manual_user/area_modules/Question_Bank_Import_Questions/#excelimport");
 		
 		FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), velocity_root + "/example.html");
 		formLayout.add(textContainer);

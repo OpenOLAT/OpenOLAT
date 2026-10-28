@@ -67,7 +67,7 @@ public class ImportController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/area_modules/Data_Management/#import");
+		setFormContextHelp("manual_user/area_modules/Question_Bank_Import_Questions/#import_options");
 
 		if(source.askEditable()) {
 			String[] values = new String[]{
