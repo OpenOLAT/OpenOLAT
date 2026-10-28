@@ -239,11 +239,13 @@ public class ImportCurriculumsFinishStepCallback implements StepRunnerCallback {
 		lectureBlock.setEndDate(endDate);
 		
 		String unit = importedRow.getUnit();
-		int plannedLectures = 1;
+		int plannedLectures = lectureBlock.getPlannedLecturesNumber() < 1
+				? 1
+				: lectureBlock.getPlannedLecturesNumber();
 		if(StringHelper.isLong(unit)) {
 			int lectures = Integer.parseInt(unit);
 			if(lectures > 0 && lectures <= LectureBlock.MAX_PLANNED_LECTURES) {
-				lectureBlock.setPlannedLecturesNumber(lectures);
+				plannedLectures = lectures;
 			}
 		}
 		lectureBlock.setPlannedLecturesNumber(plannedLectures);
