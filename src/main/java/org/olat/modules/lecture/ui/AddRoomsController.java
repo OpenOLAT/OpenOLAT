@@ -92,6 +92,7 @@ import org.olat.modules.roommanagement.manager.RoomBookingDAO;
 import org.olat.modules.roommanagement.model.RoomBookingRefImpl;
 import org.olat.modules.roommanagement.ui.RoomCalendarRenderer;
 import org.olat.modules.roommanagement.ui.RoomSchedulingBookingCalloutController;
+import org.olat.modules.roommanagement.ui.RoomUIHelper;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomStatus;
@@ -502,10 +503,7 @@ public class AddRoomsController extends FormBasicController {
 			KalendarRenderWrapper wrapper = new KalendarRenderWrapper(calendar, displayName, calId);
 			wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 			wrapper.setPrivateEventsVisible(true);
-			String colorCss = row.getRoom().getBuilding() != null
-					&& StringHelper.containsNonWhitespace(row.getRoom().getBuilding().getColorCss())
-					? row.getRoom().getBuilding().getColorCss()
-					: colorService.getDefaultColor();
+			String colorCss = RoomUIHelper.getColorCss(row.getRoom().getBuilding(), colorService);
 			wrapper.setCssClass("o_rm_cal_pastel o_color_border " + colorCss);
 			wrappers.add(wrapper);
 		}

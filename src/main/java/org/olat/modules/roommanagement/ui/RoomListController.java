@@ -771,8 +771,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			KalendarRenderWrapper wrapper = new KalendarRenderWrapper(calendar, displayName, calId);
 			wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 			wrapper.setPrivateEventsVisible(true);
-			String colorCss = StringHelper.containsNonWhitespace(building.getColorCss())
-					? building.getColorCss() : colorService.getDefaultColor();
+			String colorCss = RoomUIHelper.getColorCss(building, colorService);
 			wrapper.setCssClass("o_rm_cal_pastel o_color_border " + colorCss);
 			wrappers.add(wrapper);
 		}
@@ -786,7 +785,7 @@ public class RoomListController extends FormBasicController implements FlexiTabl
 			KalendarRenderWrapper wrapper = new KalendarRenderWrapper(calendar, "", calId);
 			wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 			wrapper.setPrivateEventsVisible(true);
-			wrapper.setCssClass("o_rm_cal_pastel o_color_border " + colorService.getDefaultColor());
+			wrapper.setCssClass("o_rm_cal_pastel o_color_border " + RoomUIHelper.getDefaultColorCss(colorService));
 			wrappers.add(wrapper);
 		}
 

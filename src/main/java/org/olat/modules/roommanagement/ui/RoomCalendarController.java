@@ -47,7 +47,6 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.roommanagement.Building;
 import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.lecture.LectureService;
@@ -115,9 +114,7 @@ public class RoomCalendarController extends FormBasicController {
 		KalendarRenderWrapper wrapper = new KalendarRenderWrapper(calendar, displayName, calId);
 		wrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 		wrapper.setPrivateEventsVisible(true);
-		Building building = room.getBuilding();
-		String colorCss = building != null && StringHelper.containsNonWhitespace(building.getColorCss())
-				? building.getColorCss() : colorService.getDefaultColor();
+		String colorCss = RoomUIHelper.getColorCss(room.getBuilding(), colorService);
 		wrapper.setCssClass("o_rm_cal_pastel o_color_border " + colorCss);
 
 		calendarEl = new FullCalendarElement(ureq, "roomCalendar", List.of(wrapper), getTranslator());

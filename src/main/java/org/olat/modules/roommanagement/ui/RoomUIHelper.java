@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -58,6 +59,27 @@ public class RoomUIHelper {
 
 	private static final int MAX_COLUMN_INFO_TEXT_LENGTH = 250;
 	private static final int MAX_DESC_LENGTH = 40;
+	/** Prefix of the color CSS classes stored on a building, see {@link EditBuildingController}. */
+	private static final String COLOR_CSS_PREFIX = "o_color_";
+
+	/**
+	 * The default color as CSS class (e.g. "o_color_lightblue"), ready to be used like
+	 * {@link Building#getColorCss()}. {@link ColorService#getDefaultColor()} returns the
+	 * bare color id without the "o_color_" prefix.
+	 */
+	public static String getDefaultColorCss(ColorService colorService) {
+		return COLOR_CSS_PREFIX + colorService.getDefaultColor();
+	}
+
+	/**
+	 * The color CSS class of the building, or the default color CSS class if the
+	 * building is null or has no color.
+	 */
+	public static String getColorCss(Building building, ColorService colorService) {
+		return building != null && StringHelper.containsNonWhitespace(building.getColorCss())
+				? building.getColorCss() : getDefaultColorCss(colorService);
+	}
+
 	/**
 	 * Business path to the given lecture block in the curriculum admin "Events" list,
 	 * opening and expanding its row detail view there.
