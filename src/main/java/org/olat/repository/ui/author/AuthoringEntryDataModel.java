@@ -173,7 +173,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		externalId("table.header.externalid"),
 		externalRef("table.header.externalref"),
 		displayName("cif.displayname", "cif.title"),
-		author("table.header.author"),
+		author("created.by"),
 		authors("table.header.authors"),
 		license("table.header.license"),
 		location("table.header.location"),

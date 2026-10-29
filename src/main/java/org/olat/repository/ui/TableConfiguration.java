@@ -24,8 +24,9 @@ package org.olat.repository.ui;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public record ColumnConfiguration(boolean showTypeColumn, boolean showTechnicalTypeColumn, boolean showUsage) {
+public record TableConfiguration(boolean showTypeColumn, boolean showTechnicalTypeColumn, boolean showUsageColumn, 
+								 boolean showUsageFilter) {
 
-	public static final ColumnConfiguration DEFAULT = new ColumnConfiguration(false, false, true);
+	public static final TableConfiguration DEFAULT = new TableConfiguration(false, false, true, true);
 
 }

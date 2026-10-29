@@ -196,7 +196,7 @@ import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
-import org.olat.repository.ui.ColumnConfiguration;
+import org.olat.repository.ui.TableConfiguration;
 import org.olat.repository.ui.EmptyScreenData;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
@@ -530,21 +530,23 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 
 		List<FlexiColumnModel> columnModelList = new ArrayList<>();
+		
 		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
+		
 		DefaultFlexiColumnModel markColumn = new DefaultFlexiColumnModel(configuration.isDefaultBookmark(),
 				Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name());
 		markColumn.setExportable(false);
 		markColumn.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
 		columnModelList.add(markColumn);
 
-		ColumnConfiguration columnConfiguration = configuration.getColumnConfiguration();
-		if (columnConfiguration == null || columnConfiguration.showTypeColumn()) {
+		TableConfiguration tableConfiguration = configuration.getTableConfiguration();
+		if (tableConfiguration == null || tableConfiguration.showTypeColumn()) {
 			columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultIconType(),
 					Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
 					FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));
 		}
 
-		if (columnConfiguration == null || columnConfiguration.showTechnicalTypeColumn()) {
+		if (tableConfiguration == null || tableConfiguration.showTechnicalTypeColumn()) {
 			DefaultFlexiColumnModel technicalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.technicalType.i18nKey(), Cols.technicalType.ordinal(),
 					true, OrderBy.technicalType.name());
 			technicalTypeColumnModel.setCellRenderer(new TechnicalTypeRenderer());
@@ -555,29 +557,48 @@ public class AuthorListController extends FormBasicController implements Activat
 		columnModelList.add(new DefaultFlexiColumnModel(
 				configuration.isTemplatesMode() ? Cols.displayName.templateI18nKey() : Cols.displayName.i18nKey(), 
 				Cols.displayName.ordinal(), "select", true, OrderBy.displayname.name(), renderer));
-		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.authors.i18nKey(), Cols.authors.ordinal(),
-				true, OrderBy.authors.name()));
-		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
-				true, OrderBy.location.name()));
+		
+		if (!configuration.isRedesignedSelectionDialog()) {
+			columnModelList.add(new DefaultFlexiColumnModel(false, Cols.authors.i18nKey(), Cols.authors.ordinal(),
+					true, OrderBy.authors.name()));
+			columnModelList.add(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
+					true, OrderBy.location.name()));
+		}
+		
+		columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultExternalRef(), Cols.externalRef.i18nKey(), Cols.externalRef.ordinal(),
+				true, OrderBy.externalRef.name()));
+
 		if(repositoryModule.isManagedRepositoryEntries()) {
 			columnModelList.add(new DefaultFlexiColumnModel(false, Cols.externalId.i18nKey(), Cols.externalId.ordinal(),
 					true, OrderBy.externalId.name()));
 		}
-		columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultExternalRef(), Cols.externalRef.i18nKey(), Cols.externalRef.ordinal(),
-				true, OrderBy.externalRef.name()));
-		if (lifecycleModule.isEnabled()) {
-			columnModelList.add(new DefaultFlexiColumnModel(true, Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),
-					true, OrderBy.lifecycleSoftkey.name()));
-			columnModelList.add(new DefaultFlexiColumnModel(false, Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
-					true, OrderBy.lifecycleLabel.name()));
+
+		columnModelList.add(new DefaultFlexiColumnModel(true,
+				configuration.isTemplatesMode() ? Cols.access.templateI18nKey() : Cols.access.i18nKey(), Cols.access.ordinal(),
+				true, OrderBy.access.name(), FlexiColumnModel.ALIGNMENT_LEFT, new AccessRenderer(getLocale())));
+
+		if (!configuration.isRedesignedSelectionDialog()) {
+			if (lifecycleModule.isEnabled()) {
+				columnModelList.add(new DefaultFlexiColumnModel(true, Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),
+						true, OrderBy.lifecycleSoftkey.name()));
+				columnModelList.add(new DefaultFlexiColumnModel(false, Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
+						true, OrderBy.lifecycleLabel.name()));
+			}
+			columnModelList.add(new DefaultFlexiColumnModel(true, Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
+					true, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
+			columnModelList.add(new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
+					true, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
 		}
-		columnModelList.add(new DefaultFlexiColumnModel(true, Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
-				true, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
-		columnModelList.add(new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
-				true, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
-		
+
+		if (tableConfiguration == null || tableConfiguration.showUsageColumn()) {
+			DefaultFlexiColumnModel runtimeTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.runtimeType.i18nKey(),
+					Cols.runtimeType.ordinal(), true, OrderBy.runtimeType.name());
+			runtimeTypeColumnModel.setCellRenderer(new RuntimeTypeRenderer());
+			columnModelList.add(runtimeTypeColumnModel);
+		}
+
 		if (taxonomyEnabled) {
-			DefaultFlexiColumnModel taxonomyLevelColumnModel = new DefaultFlexiColumnModel(true, Cols.taxonomyLevels.i18nKey(),
+			DefaultFlexiColumnModel taxonomyLevelColumnModel = new DefaultFlexiColumnModel(false, Cols.taxonomyLevels.i18nKey(),
 					Cols.taxonomyLevels.ordinal(), false, null);
 			taxonomyLevelColumnModel.setCellRenderer(new TaxonomyLevelRenderer(getLocale()));
 			columnModelList.add(taxonomyLevelColumnModel);
@@ -586,56 +607,57 @@ public class AuthorListController extends FormBasicController implements Activat
 			taxonomyLevelPathColumnModel.setCellRenderer(new TaxonomyPathsRenderer(getLocale()));
 			columnModelList.add(taxonomyLevelPathColumnModel);
 		}
-		DefaultFlexiColumnModel educationalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.educationalType.i18nKey(),
-				Cols.educationalType.ordinal(), false, null);
-		educationalTypeColumnModel.setCellRenderer(new EducationalTypeRenderer());
-		columnModelList.add(educationalTypeColumnModel);
+
+		if (!configuration.isRedesignedSelectionDialog()) {
+			DefaultFlexiColumnModel educationalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.educationalType.i18nKey(),
+					Cols.educationalType.ordinal(), false, null);
+			educationalTypeColumnModel.setCellRenderer(new EducationalTypeRenderer());
+			columnModelList.add(educationalTypeColumnModel);
+		}
 		
-		if (columnConfiguration == null || columnConfiguration.showUsage()) {
-			DefaultFlexiColumnModel runtimeTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.runtimeType.i18nKey(),
-					Cols.runtimeType.ordinal(), true, OrderBy.runtimeType.name());
-			runtimeTypeColumnModel.setCellRenderer(new RuntimeTypeRenderer());
-			columnModelList.add(runtimeTypeColumnModel);
+		if (!configuration.isRedesignedSelectionDialog()) {
+			columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultAccessControl(),
+					Cols.ac.i18nKey(), Cols.ac.ordinal(), true, OrderBy.ac.name(), FlexiColumnModel.ALIGNMENT_LEFT, new ACRenderer()));
+			if(loginModule.isGuestLoginEnabled()) {
+				columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultGuest(),
+						Cols.guests.i18nKey(), Cols.guests.ordinal(), true, OrderBy.guests.name(), FlexiColumnModel.ALIGNMENT_LEFT,
+						new GuestAccessRenderer(getLocale())));
+			}
 		}
 
-		columnModelList.add(new DefaultFlexiColumnModel(true, Cols.author.i18nKey(), Cols.author.ordinal(),
-				true, OrderBy.author.name()));
-		columnModelList.add(new DefaultFlexiColumnModel(true, 
-				configuration.isTemplatesMode() ? Cols.access.templateI18nKey() : Cols.access.i18nKey(), Cols.access.ordinal(),
-				true, OrderBy.access.name(), FlexiColumnModel.ALIGNMENT_LEFT, new AccessRenderer(getLocale())));
-		columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultAccessControl(),
-				Cols.ac.i18nKey(), Cols.ac.ordinal(), true, OrderBy.ac.name(), FlexiColumnModel.ALIGNMENT_LEFT, new ACRenderer()));
-		if(loginModule.isGuestLoginEnabled()) {
-			columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultGuest(),
-					Cols.guests.i18nKey(), Cols.guests.ordinal(), true, OrderBy.guests.name(), FlexiColumnModel.ALIGNMENT_LEFT,
-					new GuestAccessRenderer(getLocale())));
-		}
+		columnModelList.add(new DefaultFlexiColumnModel(true, Cols.lastUsage.i18nKey(), Cols.lastUsage.ordinal(),
+				true, OrderBy.lastUsage.name()));
+
 		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.creationDate.i18nKey(), Cols.creationDate.ordinal(),
 				true, OrderBy.creationDate.name()));
-		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.lastUsage.i18nKey(), Cols.lastUsage.ordinal(),
-				true, OrderBy.lastUsage.name()));
-		if(!configuration.isOnlyAllowedResourceType("CourseModule")) {
-			columnModelList.add(new DefaultFlexiColumnModel(true, Cols.references.i18nKey(), Cols.references.ordinal(),
-					true, OrderBy.references.name()));
-		}
-		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.oerPub.i18nKey(), Cols.oerPub.ordinal(),
-				true, OrderBy.oer.name(), FlexiColumnModel.ALIGNMENT_LEFT,
-				new OerPubRenderer(getLocale())));
-		if(lectureModule.isEnabled()) {
-			columnModelList.add(new DefaultFlexiColumnModel(false, Cols.lectureInfos.i18nKey(), Cols.lectureInfos.ordinal(),
-				true, OrderBy.lectureEnabled.name(), FlexiColumnModel.ALIGNMENT_LEFT, new LectureInfosRenderer(getTranslator())));
-		}
-		if (licenseModule.isEnabled(licenseHandler)) {
-			columnModelList.add(
-					new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), null, Cols.license.ordinal(),
-							"license", false, null, FlexiColumnModel.ALIGNMENT_LEFT, new LicenseCellRenderer(getLocale())));
-		}
 
-		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.deletedBy.i18nKey(), Cols.deletedBy.ordinal(),
-				true, OrderBy.deletedBy.name()));
-		columnModelList.add(new DefaultFlexiColumnModel(false, false, Cols.deletionDate.i18nKey(), null,
-				Cols.deletionDate.ordinal(), null, true, OrderBy.deletionDate.name(),
-				FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
+		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.author.i18nKey(), Cols.author.ordinal(),
+				true, OrderBy.author.name()));
+		
+		if (!configuration.isRedesignedSelectionDialog()) {
+			if(!configuration.isOnlyAllowedResourceType("CourseModule")) {
+				columnModelList.add(new DefaultFlexiColumnModel(true, Cols.references.i18nKey(), Cols.references.ordinal(),
+						true, OrderBy.references.name()));
+			}
+			columnModelList.add(new DefaultFlexiColumnModel(false, Cols.oerPub.i18nKey(), Cols.oerPub.ordinal(),
+					true, OrderBy.oer.name(), FlexiColumnModel.ALIGNMENT_LEFT,
+					new OerPubRenderer(getLocale())));
+			if(lectureModule.isEnabled()) {
+				columnModelList.add(new DefaultFlexiColumnModel(false, Cols.lectureInfos.i18nKey(), Cols.lectureInfos.ordinal(),
+						true, OrderBy.lectureEnabled.name(), FlexiColumnModel.ALIGNMENT_LEFT, new LectureInfosRenderer(getTranslator())));
+			}
+			if (licenseModule.isEnabled(licenseHandler)) {
+				columnModelList.add(
+						new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), null, Cols.license.ordinal(),
+								"license", false, null, FlexiColumnModel.ALIGNMENT_LEFT, new LicenseCellRenderer(getLocale())));
+			}
+
+			columnModelList.add(new DefaultFlexiColumnModel(false, Cols.deletedBy.i18nKey(), Cols.deletedBy.ordinal(),
+					true, OrderBy.deletedBy.name()));
+			columnModelList.add(new DefaultFlexiColumnModel(false, false, Cols.deletionDate.i18nKey(), null,
+					Cols.deletionDate.ordinal(), null, true, OrderBy.deletionDate.name(),
+					FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
+		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		for (FlexiColumnModel columnModel : columnModelList) {
@@ -680,7 +702,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			infosColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_info_resource");
 			infosColumn.setHeaderLabel(translate("infos"));
 			infosColumn.setExportable(false);
-			infosColumn.setAlwaysVisible(true);
+			infosColumn.setDefaultVisible(true);
+			infosColumn.setAlwaysVisible(false);
 			columnsModel.addFlexiColumnModel(infosColumn);
 		}
 		if(configuration.isTools() && hasAuthorRight) {
@@ -804,13 +827,19 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	protected void initFilters() {
+		TableConfiguration tableConfiguration = configuration.getTableConfiguration();
+
 		tableEl.setSearchEnabled(true);
 
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
 		boolean admin = roles.isAdministrator() || roles.isSystemAdmin();
-		// external id
-		filters.add(new FlexiTableTextFilter(translate("cif.id"), AuthorSourceFilter.ID.name(), admin));
+
+		if (!configuration.isRedesignedSelectionDialog()) {
+			
+			// external id
+			filters.add(new FlexiTableTextFilter(translate("cif.id"), AuthorSourceFilter.ID.name(), admin));
+		}
 		
 		// bookmarked
 		SelectionValues markedKeyValue = new SelectionValues();
@@ -818,42 +847,44 @@ public class AuthorListController extends FormBasicController implements Activat
 		filters.add(new FlexiTableOneClickSelectionFilter(translate("search.mark"),
 				AuthorSourceFilter.MARKED.name(), markedKeyValue, true));
 		
-		// my resources
-		SelectionValues myResourcesKeyValue = new SelectionValues();
-		myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
-		filters.add(new FlexiTableOneClickSelectionFilter(translate("cif.owned.resources.only"),
-				AuthorSourceFilter.OWNED.name(), myResourcesKeyValue, true));
+		if (!configuration.isRedesignedSelectionDialog()) {
 		
-		// author
-		filters.add(new FlexiTableTextFilter(translate("cif.author.search"), AuthorSourceFilter.AUTHOR.name(), false));
-		
-		filters.add(new FlexiTableTextFilter(translate("cif.displayname"), AuthorSourceFilter.DISPLAYNAME.name(), false));
-		
-		filters.add(new FlexiTableTextFilter(translate("cif.description"), AuthorSourceFilter.DESCRIPTION.name(), false));
-		
-		// technical type
-		ColumnConfiguration columnConfiguration = configuration.getColumnConfiguration();
-		if (columnConfiguration == null || columnConfiguration.showTechnicalTypeColumn()) {
-			SelectionValues technicalTypeKV = new SelectionValues();
-			for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
-				String name = identifier.getDisplayName(getLocale());
-				technicalTypeKV.add(entry(identifier.getType(), name));
-			}
-			technicalTypeKV.sort(SelectionValues.VALUE_ASC);
-			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.technical.type"),
-					AuthorSourceFilter.TECHNICALTYPE.name(), technicalTypeKV, true));
-		}
+			// my resources
+			SelectionValues myResourcesKeyValue = new SelectionValues();
+			myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
+			filters.add(new FlexiTableOneClickSelectionFilter(translate("cif.owned.resources.only"),
+					AuthorSourceFilter.OWNED.name(), myResourcesKeyValue, true));
 
-		// educational type
-		SelectionValues educationalTypeKV = new SelectionValues();
-		repositoryManager.getAllEducationalTypes()
-				.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), StringHelper.escapeHtml(translate(RepositoyUIFactory.getI18nKey(type))))));
-		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
-		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"),
-				AuthorSourceFilter.EDUCATIONALTYPE.name(), educationalTypeKV, true));
+			// author
+			filters.add(new FlexiTableTextFilter(translate("cif.author.search"), AuthorSourceFilter.AUTHOR.name(), false));
+
+			filters.add(new FlexiTableTextFilter(translate("cif.displayname"), AuthorSourceFilter.DISPLAYNAME.name(), false));
+
+			filters.add(new FlexiTableTextFilter(translate("cif.description"), AuthorSourceFilter.DESCRIPTION.name(), false));
+
+			// technical type
+			if (tableConfiguration == null || tableConfiguration.showTechnicalTypeColumn()) {
+				SelectionValues technicalTypeKV = new SelectionValues();
+				for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
+					String name = identifier.getDisplayName(getLocale());
+					technicalTypeKV.add(entry(identifier.getType(), name));
+				}
+				technicalTypeKV.sort(SelectionValues.VALUE_ASC);
+				filters.add(new FlexiTableMultiSelectionFilter(translate("cif.technical.type"),
+						AuthorSourceFilter.TECHNICALTYPE.name(), technicalTypeKV, true));
+			}
+
+			// educational type
+			SelectionValues educationalTypeKV = new SelectionValues();
+			repositoryManager.getAllEducationalTypes()
+					.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), StringHelper.escapeHtml(translate(RepositoyUIFactory.getI18nKey(type))))));
+			educationalTypeKV.sort(SelectionValues.VALUE_ASC);
+			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"),
+					AuthorSourceFilter.EDUCATIONALTYPE.name(), educationalTypeKV, true));
+		}
 		
 		// runtime type
-		if (columnConfiguration == null || columnConfiguration.showUsage()) {
+		if (tableConfiguration == null || (tableConfiguration.showUsageColumn() && tableConfiguration.showUsageFilter())) {
 			SelectionValues runtimeTypeKV = new SelectionValues();
 
 			for(RepositoryEntryRuntimeType runtimeType:RepositoryEntryRuntimeType.ORDERED) {
@@ -867,64 +898,67 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 		}
 
-		// life-cycle
-		SelectionValues lifecycleValues = new SelectionValues();
-		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate(RepositoryEntryStatusEnum.preparation.i18nKey())));
-		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.review.name(), translate(RepositoryEntryStatusEnum.review.i18nKey())));
-		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate(RepositoryEntryStatusEnum.coachpublished.i18nKey())));
-		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate(RepositoryEntryStatusEnum.published.i18nKey())));
-		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate(RepositoryEntryStatusEnum.closed.i18nKey())));
-		if(roles.isAuthor() || hasAdministratorRight) {
-			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.trash.name(), translate(RepositoryEntryStatusEnum.trash.i18nKey())));
-		}
-		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.resources.status"),
-				AuthorSourceFilter.STATUS.name(), lifecycleValues, true));
-		
-		// type of resources
-		SelectionValues resourceValues = new SelectionValues();
-		boolean hasOtherTypes = false;
-		List<OrderedRepositoryHandler> supportedHandlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
-		for(OrderedRepositoryHandler handler:supportedHandlers) {
-			String type = handler.getHandler().getSupportedType();
-			if(configuration.isResourceTypeAllowed(type)) {
-				if(handler.getOrder() >= RepositoryHandlerFactory.OTHER_TYPES_ORDER) {
-					hasOtherTypes = true;
-				} else {
-					String iconLeftCss = RepositoyUIFactory.getIconCssClass(type);
-					resourceValues.add(new SelectionValue(type, translate(type), null, "o_icon o_icon-fw ".concat(iconLeftCss), null, true));
+		if (!configuration.isRedesignedSelectionDialog()) {
+
+			// life-cycle
+			SelectionValues lifecycleValues = new SelectionValues();
+			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate(RepositoryEntryStatusEnum.preparation.i18nKey())));
+			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.review.name(), translate(RepositoryEntryStatusEnum.review.i18nKey())));
+			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate(RepositoryEntryStatusEnum.coachpublished.i18nKey())));
+			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate(RepositoryEntryStatusEnum.published.i18nKey())));
+			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate(RepositoryEntryStatusEnum.closed.i18nKey())));
+			if(roles.isAuthor() || hasAdministratorRight) {
+				lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.trash.name(), translate(RepositoryEntryStatusEnum.trash.i18nKey())));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.resources.status"),
+					AuthorSourceFilter.STATUS.name(), lifecycleValues, true));
+
+			// type of resources
+			SelectionValues resourceValues = new SelectionValues();
+			boolean hasOtherTypes = false;
+			List<OrderedRepositoryHandler> supportedHandlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
+			for(OrderedRepositoryHandler handler:supportedHandlers) {
+				String type = handler.getHandler().getSupportedType();
+				if(configuration.isResourceTypeAllowed(type)) {
+					if(handler.getOrder() >= RepositoryHandlerFactory.OTHER_TYPES_ORDER) {
+						hasOtherTypes = true;
+					} else {
+						String iconLeftCss = RepositoyUIFactory.getIconCssClass(type);
+						resourceValues.add(new SelectionValue(type, translate(type), null, "o_icon o_icon-fw ".concat(iconLeftCss), null, true));
+					}
 				}
 			}
-		}
-		if(hasOtherTypes) {
-			resourceValues.add(new SelectionValue("others", translate("cif.type.others"), null, null, null, true));
-		}
-		if(resourceValues.size() > 1) {
-			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.type"),
-				AuthorSourceFilter.TYPE.name(), resourceValues, true));
-		}
-		
-		// organizations
-		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
-				OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
-		List<Organisation> organisationList = new ArrayList<>(organisations);
-		Collections.sort(organisationList, new OrganisationNameComparator(getLocale()));
-		
-		SelectionValues organisationValues = new SelectionValues();
-		for(Organisation organisation:organisationList) {
-			String key = organisation.getKey().toString();
-			organisationValues.add(SelectionValues.entry(key, StringHelper.escapeHtml(organisation.getDisplayName())));
-		}
-		if(organisationValues.size() > 1) {
-			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.organisations"),
-				AuthorSourceFilter.ORGANISATION.name(), organisationValues, false));
-		}
+			if(hasOtherTypes) {
+				resourceValues.add(new SelectionValue("others", translate("cif.type.others"), null, null, null, true));
+			}
+			if(resourceValues.size() > 1) {
+				filters.add(new FlexiTableMultiSelectionFilter(translate("cif.type"),
+						AuthorSourceFilter.TYPE.name(), resourceValues, true));
+			}
 
-		// OER-release
-		SelectionValues oerValues = new SelectionValues();
-		oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.released.name(), translate("filter.released")));
-		oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.notReleased.name(), translate("filter.not.released")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("details.index.metadata"),
-				AuthorSourceFilter.OERRELASE.name(), oerValues, false));
+			// organizations
+			List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
+					OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+			List<Organisation> organisationList = new ArrayList<>(organisations);
+			Collections.sort(organisationList, new OrganisationNameComparator(getLocale()));
+
+			SelectionValues organisationValues = new SelectionValues();
+			for(Organisation organisation:organisationList) {
+				String key = organisation.getKey().toString();
+				organisationValues.add(SelectionValues.entry(key, StringHelper.escapeHtml(organisation.getDisplayName())));
+			}
+			if(organisationValues.size() > 1) {
+				filters.add(new FlexiTableMultiSelectionFilter(translate("cif.organisations"),
+						AuthorSourceFilter.ORGANISATION.name(), organisationValues, false));
+			}
+
+			// OER-release
+			SelectionValues oerValues = new SelectionValues();
+			oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.released.name(), translate("filter.released")));
+			oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.notReleased.name(), translate("filter.not.released")));
+			filters.add(new FlexiTableSingleSelectionFilter(translate("details.index.metadata"),
+					AuthorSourceFilter.OERRELASE.name(), oerValues, false));
+		}
 		
 		// taxonomy
 		if (taxonomyEnabled) {
@@ -935,30 +969,34 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 		}
 		
-		// license
-		SelectionValues licenseValues = getLicenseValues();
-		if(licenseValues != null) {
-			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.license"),
-					AuthorSourceFilter.LICENSE.name(), licenseValues, false));
+		if (!configuration.isRedesignedSelectionDialog()) {
+
+			// license
+			SelectionValues licenseValues = getLicenseValues();
+			if(licenseValues != null) {
+				filters.add(new FlexiTableMultiSelectionFilter(translate("cif.license"),
+						AuthorSourceFilter.LICENSE.name(), licenseValues, false));
+			}
+
+			SelectionValues usageValues = new SelectionValues();
+			usageValues.add(SelectionValues.entry(ResourceUsage.used.name(), translate("cif.owned.resources.usage.used")));
+			usageValues.add(SelectionValues.entry(ResourceUsage.notUsed.name(), translate("cif.owned.resources.usage.notUsed")));
+			filters.add(new FlexiTableSingleSelectionFilter(translate("cif.owned.resources.usage"),
+					AuthorSourceFilter.USAGE.name(), usageValues, false));
+
+			if (configuration.isTemplatesMode()) {
+				filters = filters.stream().filter(f -> {
+					if (AuthorSourceFilter.MARKED.name().equals(f.getFilter())) {
+						return true;
+					}
+					if (AuthorSourceFilter.OWNED.name().equals(f.getFilter())) {
+						return true;
+					}
+					return false;
+				}).toList();
+			}
 		}
 
-		SelectionValues usageValues = new SelectionValues();
-		usageValues.add(SelectionValues.entry(ResourceUsage.used.name(), translate("cif.owned.resources.usage.used")));
-		usageValues.add(SelectionValues.entry(ResourceUsage.notUsed.name(), translate("cif.owned.resources.usage.notUsed")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.owned.resources.usage"),
-				AuthorSourceFilter.USAGE.name(), usageValues, false));
-
-		if (configuration.isTemplatesMode()) {
-			filters = filters.stream().filter(f -> {
-				if (AuthorSourceFilter.MARKED.name().equals(f.getFilter())) {
-					return true;
-				}
-				if (AuthorSourceFilter.OWNED.name().equals(f.getFilter())) {
-					return true;
-				}
-				return false;
-			}).toList();
-		}
 		tableEl.setFilters(true, filters, true, false);
 
 		updateEmptyStateConfig(tableEl.getSelectedFilterTab());
@@ -2221,16 +2259,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 	}
 
-	protected void doIndexMetadata(AuthoringEntryRow row) {
-		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
-		if (entry.getCanIndexMetadata()) {
-			entry.setCanIndexMetadata(false);
-		} else {
-			entry.setCanIndexMetadata(true);
-		}
-		reloadRows();
-	}
-	
 	protected void doDownload(UserRequest ureq, AuthoringEntryRow row) {
 		RepositoryHandler typeToDownload = repositoryHandlerFactory.getRepositoryHandler(row.getResourceType());
 		if (typeToDownload == null) {

@@ -73,7 +73,7 @@ public class RepositoryEntrySelectionController extends BasicController {
 
 		AuthorListConfiguration configuration = AuthorListConfiguration.selectRessource(tableId, resourceTypes);
 		configuration.setSharedWithMeTab(true);
-		configuration.setColumnConfiguration(referenceProvider.getColumnConfiguration());
+		configuration.setTableConfiguration(referenceProvider.getTableConfiguration());
 		configuration.setMyTabLabel(referenceProvider.getMyTabLabel());
 		configuration.setEmptyScreenDataForNoEntriesYet(referenceProvider.getEmptyScreenDataForNoEntriesYet());
 		configuration.setEmptyScreenDataForNoEntriesInView(referenceProvider.getEmptyScreenDataForNoEntriesInView());

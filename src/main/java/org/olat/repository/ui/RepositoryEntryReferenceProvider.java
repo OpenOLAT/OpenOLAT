@@ -69,8 +69,8 @@ public interface RepositoryEntryReferenceProvider {
 		return false;
 	}
 
-	public default ColumnConfiguration getColumnConfiguration() {
-		return ColumnConfiguration.DEFAULT;
+	public default TableConfiguration getTableConfiguration() {
+		return TableConfiguration.DEFAULT;
 	}
 
 	public default String getMyTabLabel() {
