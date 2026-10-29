@@ -85,6 +85,7 @@ public class RepositoryEntrySelectionController extends BasicController {
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(
 				getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setResourceTypes(resourceTypes);
+		searchParams.setCanReference(true);
 		if (defaultOrganisations != null && !defaultOrganisations.isEmpty()) {
 			List<OrganisationRef> organisationRefs = defaultOrganisations.stream()
 					.map(OrganisationRef.class::cast)

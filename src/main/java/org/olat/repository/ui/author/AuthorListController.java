@@ -847,13 +847,13 @@ public class AuthorListController extends FormBasicController implements Activat
 		filters.add(new FlexiTableOneClickSelectionFilter(translate("search.mark"),
 				AuthorSourceFilter.MARKED.name(), markedKeyValue, true));
 		
+		// my resources
+		SelectionValues myResourcesKeyValue = new SelectionValues();
+		myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("cif.owned.resources.only"),
+				AuthorSourceFilter.OWNED.name(), myResourcesKeyValue, true));
+
 		if (!configuration.isRedesignedSelectionDialog()) {
-		
-			// my resources
-			SelectionValues myResourcesKeyValue = new SelectionValues();
-			myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
-			filters.add(new FlexiTableOneClickSelectionFilter(translate("cif.owned.resources.only"),
-					AuthorSourceFilter.OWNED.name(), myResourcesKeyValue, true));
 
 			// author
 			filters.add(new FlexiTableTextFilter(translate("cif.author.search"), AuthorSourceFilter.AUTHOR.name(), false));
@@ -898,20 +898,22 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 		}
 
-		if (!configuration.isRedesignedSelectionDialog()) {
+		// life-cycle
+		// Registered unconditionally for the same reason as OWNED above: the
+		// "All" and "Shared with me" tabs apply STATUS as an implicit filter.
+		SelectionValues lifecycleValues = new SelectionValues();
+		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate(RepositoryEntryStatusEnum.preparation.i18nKey())));
+		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.review.name(), translate(RepositoryEntryStatusEnum.review.i18nKey())));
+		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate(RepositoryEntryStatusEnum.coachpublished.i18nKey())));
+		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate(RepositoryEntryStatusEnum.published.i18nKey())));
+		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate(RepositoryEntryStatusEnum.closed.i18nKey())));
+		if(roles.isAuthor() || hasAdministratorRight) {
+			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.trash.name(), translate(RepositoryEntryStatusEnum.trash.i18nKey())));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.resources.status"),
+				AuthorSourceFilter.STATUS.name(), lifecycleValues, true));
 
-			// life-cycle
-			SelectionValues lifecycleValues = new SelectionValues();
-			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate(RepositoryEntryStatusEnum.preparation.i18nKey())));
-			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.review.name(), translate(RepositoryEntryStatusEnum.review.i18nKey())));
-			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate(RepositoryEntryStatusEnum.coachpublished.i18nKey())));
-			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate(RepositoryEntryStatusEnum.published.i18nKey())));
-			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate(RepositoryEntryStatusEnum.closed.i18nKey())));
-			if(roles.isAuthor() || hasAdministratorRight) {
-				lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.trash.name(), translate(RepositoryEntryStatusEnum.trash.i18nKey())));
-			}
-			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.resources.status"),
-					AuthorSourceFilter.STATUS.name(), lifecycleValues, true));
+		if (!configuration.isRedesignedSelectionDialog()) {
 
 			// type of resources
 			SelectionValues resourceValues = new SelectionValues();
