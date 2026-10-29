@@ -36,31 +36,9 @@
 					<td>$organisations</td>
 				</tr>
 			#end
-			<tr><th scope="row">$r.translate("details.extlink")</th><td>
-				<div class="o_copy_code o_nowrap">
-					<a href="javascript:;" id="o_extlink_${v.getKey()}" title="$r.translateInAttribute("qr.code")" aria-label="$r.translateInAttribute("qr.code")"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode" aria-hidden="true">&nbsp;</i></a>
-					<input type="text" value="$extLink" onclick="this.select()" aria-label="$r.translateInAttribute("details.extlink")" readonly/>
-					<script>
-						"use strict";
-						jQuery(function() {
-							o_QRCodePopup('o_extlink_${v.getKey()}', '$extLink', 'right');
-						});
-					</script>
-				</div>
-			</td></tr>
-			#if ($isGuestAllowed)
-				<tr><th scope="row">$r.translate("details.extlink.guest")</th><td>
-					<div class="o_copy_code o_nowrap">
-						<a href="javascript:;" id="o_extlink_guest_${v.getKey()}" title="$r.translateInAttribute("qr.code")" aria-label="$r.translateInAttribute("qr.code")"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode" aria-hidden="true">&nbsp;</i></a>
-						<input type="text" value="${extLink}?guest=true&amp;lang=$r.getLanguageCode()" onclick="this.select()" aria-label="$r.translateInAttribute("details.extlink.guest")" readonly/>
-						<script>
-							"use strict";
-							jQuery(function() {
-								o_QRCodePopup('o_extlink_guest_${v.getKey()}', '${extLink}?guest=true&lang=$r.getLanguageCode()', 'right');
-							});
-						</script>
-					</div>
-				</td></tr>
+			<tr><th scope="row">$r.translate("details.extlink")</th><td>$r.render("extLink")</td></tr>
+			#if ($r.available("guestExtLink"))
+				<tr><th scope="row">$r.translate("details.extlink.guest")</th><td>$r.render("guestExtLink")</td></tr>
 			#end
 			#if($r.isNotEmpty($curriculums))
 				<tr>

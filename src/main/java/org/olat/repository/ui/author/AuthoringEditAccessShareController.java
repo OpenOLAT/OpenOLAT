@@ -20,7 +20,6 @@
 package org.olat.repository.ui.author;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationModule;
@@ -86,7 +85,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private static final String[] accessKey = new String[] { KEY_PRIVATE, KEY_PUBLIC };
 
 	private SingleSelection accessEl;
-	private FormLayoutContainer repoLinkCont;
 	private FormLayoutContainer oaiCont;
 	private SingleSelection leaveEl;
 	private SingleSelection statusEl;
@@ -220,12 +218,8 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		boolean notCurricularCourse = !isCurricularCourse();
 		if (notCurricularCourse) {
-			repoLinkCont = FormLayoutContainer.createCustomFormLayout("catalogLinks", getTranslator(), velocity_root + "/repo_links.html");
-			repoLinkCont.setLabel("cif.repo.link", null);
-			repoLinkCont.setRootForm(mainForm);
-			generalCont.add("repoLink", repoLinkCont);
 			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
-			repoLinkCont.contextPut("repoLink", new ExtLink(entry.getKey().toString(), url, null));
+			uifactory.addUrlElement("repoLink", "cif.repo.link", url, generalCont);
 		}
 
 		initLeaveOption(generalCont);
@@ -523,37 +517,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		public RepositoryEntryStatusEnum getStatus() {
 			return status;
-		}
-	}
-
-	public static class ExtLink {
-
-		private final String key;
-		private final String url;
-		private final String name;
-		private final String id;
-
-		public ExtLink(String key, String url, String name) {
-			this.key = key;
-			this.url = url;
-			this.name = name;
-			this.id = UUID.randomUUID().toString().replace("-", "");
-		}
-
-		public String getKey() {
-			return key;
-		}
-
-		public String getUrl() {
-			return url;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public String getId() {
-			return id;
 		}
 	}
  }

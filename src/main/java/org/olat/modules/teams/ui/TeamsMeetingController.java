@@ -225,7 +225,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 		
 		if((administrator || moderator) && StringHelper.containsNonWhitespace(meeting.getReadableIdentifier())) {
 			String url = TeamsDispatcher.getMeetingUrl(meeting.getReadableIdentifier());
-			layoutCont.contextPut("externalUrl", url);
+			uifactory.addUrlElement("externalUrl", null, url, layoutCont);
 		}
 		
 		if(graphUser != null && oauth2Tokens != null

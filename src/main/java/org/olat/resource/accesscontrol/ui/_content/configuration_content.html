@@ -72,21 +72,12 @@
 	</div>
 #end
 
-#if($offer.guestUrl)
+#if($r.available("guestUrl"))
 	<div>
-		<label class="control-label col-sm-3" for="o_ac_guest_url_${offer.offer.key}">$r.translate("access.info.external.link.guest")</label>
+		<label class="control-label col-sm-3" for="$f.getItemId("guestUrl")">$r.translate("access.info.external.link.guest")</label>
 	</div>
 	<div class="form-control-static col-sm-9">
-		<div class="o_copy_code o_nowrap">
-			<a href="javascript:;" id="o_extlink_guest_${offer.offer.key}" title="$r.translateInAttribute("qr.code")" aria-label="$r.translateInAttribute("qr.code")"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode" aria-hidden="true">&nbsp;</i></a>
-			<input type="text" id="o_ac_guest_url_${offer.offer.key}" value="$offer.guestUrl" onclick="this.select()" readonly/>
-			<script>
-				"use strict";
-				jQuery(function() {
-					o_QRCodePopup('o_extlink_guest_${offer.offer.key}', '$offer.guestUrl', 'right');
-				});
-			</script>
-		</div>
+		$r.render("guestUrl")
 	</div>
 #end
 

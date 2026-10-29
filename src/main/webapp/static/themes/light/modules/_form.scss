@@ -1605,3 +1605,37 @@ dialog {
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
 }
+
+.o_url_component {
+	.o_url_input[readonly] {
+		background-color: $input-bg;
+		cursor: text;
+	}
+	.o_url_qr.active {
+		background-color: $brand-primary;
+		border-color: $brand-primary;
+		color: #fff;
+	}
+	.o_url_qr_panel {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: $padding-base-vertical * 2;
+		width: fit-content;
+		margin: $padding-base-vertical 0 0 auto;
+		padding: $padding-base-horizontal;
+		border: 1px solid $input-border;
+		border-radius: $border-radius-base;
+		&[hidden] {
+			display: none;
+		}
+		.o_qrcode {
+			width: 200px;
+			height: 200px;
+			img, canvas {
+				width: 100%;
+				height: auto;
+			}
+		}
+	}
+}

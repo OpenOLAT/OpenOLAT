@@ -24,6 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.url.UrlComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -49,7 +50,9 @@ public class WebDAVController extends BasicController {
 		if (!StringHelper.containsNonWhitespace(webdavUrl)) {
 			webdavUrl = FolderManager.getWebDAVHttp();
 		}
-		mainVC.contextPut("webdavUrl", webdavUrl);
+		UrlComponent webdavUrlCmp = new UrlComponent("webdavUrl", webdavUrl);
+		webdavUrlCmp.setAriaLabel(translate("link.resource"));
+		mainVC.put("webdavUrl", webdavUrlCmp);
 		
 		closeButton = LinkFactory.createButton("close", mainVC, this);
 	}

@@ -287,12 +287,7 @@ public class MetaInfoController extends FormBasicController {
 		}
 		
 		if(StringHelper.containsNonWhitespace(resourceUrl) && !xssErrors) {
-			String externalUrlPage = velocity_root + "/external_url.html";
-			FormLayoutContainer extUrlCont = FormLayoutContainer.createCustomFormLayout("external.url", getTranslator(), externalUrlPage);
-			extUrlCont.setLabel("external.url", null);
-			extUrlCont.contextPut("resourceUrl", resourceUrl);
-			extUrlCont.setRootForm(mainForm);
-			formLayout.add(extUrlCont);
+			uifactory.addUrlElement("externalUrl", "external.url", resourceUrl, formLayout);
 		}
 
 		// cancel buttons
