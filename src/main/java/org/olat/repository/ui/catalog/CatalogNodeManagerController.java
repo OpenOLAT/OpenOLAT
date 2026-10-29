@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.UrlElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -296,10 +297,12 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		
 		String url = Settings.getServerContextPathURI() + "/url/CatalogEntry/" + catalogEntry.getKey();
 		if(loginModule.isGuestLoginLinksEnabled()) {
-			flc.contextPut("guestExtLink", url + "?guest=true&amp;lang=" + getLocale().getLanguage());
+			UrlElement guestExtLinkEl = uifactory.addUrlElement("guestExtLink", null, url + "?guest=true&lang=" + getLocale().getLanguage(), formLayout);
+			guestExtLinkEl.setAriaLabel(translate("cat.externalLink"));
 		}
 		if (!isGuest) {
-			flc.contextPut("extLink", url);
+			UrlElement extLinkEl = uifactory.addUrlElement("extLink", null, url, formLayout);
+			extLinkEl.setAriaLabel(translate("cat.externalLink"));
 		}
 		
 		leafColumns = new ArrayList<>();

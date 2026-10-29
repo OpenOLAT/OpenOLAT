@@ -37,6 +37,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.url.UrlComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -141,7 +142,9 @@ public class HomePageDisplayController extends BasicController {
 			StringBuilder extLink = new StringBuilder();
 			extLink.append(Settings.getServerContextPathURI())
 				.append("/url/HomeSite/").append(homeIdentity.getKey());
-			mainVC.contextPut("extLink", extLink);
+			UrlComponent extLinkCmp = new UrlComponent("extLink", extLink.toString());
+			extLinkCmp.setAriaLabel(translate("extlink"));
+			mainVC.put("extLink", extLinkCmp);
 		}
 
 		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, PortraitSize.medium, false);

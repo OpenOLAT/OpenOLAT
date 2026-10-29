@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.UrlElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -123,10 +124,15 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 
 			// External link
 			String extLink = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
-			layoutCont.contextPut("extLink", extLink);
+			UrlElement extLinkEl = uifactory.addUrlElement("extLink", null, extLink, layoutCont);
+			extLinkEl.setAriaLabel(translate("details.extlink"));
 			// Guest access uses the same URL with a guest parameter appended
 			boolean guestAllowed = entry.isPublicVisible() && acService.isGuestAccessible(entry, false);
-			layoutCont.contextPut("isGuestAllowed", Boolean.valueOf(guestAllowed));
+			if (guestAllowed) {
+				String guestExtLink = extLink + "?guest=true&lang=" + getLocale().toString();
+				UrlElement guestExtLinkEl = uifactory.addUrlElement("guestExtLink", null, guestExtLink, layoutCont);
+				guestExtLinkEl.setAriaLabel(translate("details.extlink.guest"));
+			}
 			
 			// Responsible persons
 			responsiblePersonsCtrl = new RepositoryEntryDetailsResponsiblePersonsController(ureq, getWindowControl(), entry, isOwner);

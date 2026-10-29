@@ -30,11 +30,13 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.url.UrlComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 
 /**
  * <h3>Description:</h3>
@@ -58,6 +60,7 @@ public class ShareLinkListController extends BasicController {
 
 	public ShareLinkListController(UserRequest ureq, WindowControl wControl, List<String> enabledLinks, String url, String title) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(UrlComponent.class, getLocale(), getTranslator()));
 		VelocityContainer mainVC = createVelocityContainer("shareLinkList");
 
 		List<String> linkNames = new ArrayList<>();
@@ -73,11 +76,11 @@ public class ShareLinkListController extends BasicController {
 				linkNames.add(copyLink.getComponentName());
 				mainVC.contextPut("copyUrl", url);
 				mainVC.contextPut("copyInfoTitle", translate("info.header"));
-				mainVC.contextPut("copyLinkCopiedMessage", translate("share.link.copied"));
+				mainVC.contextPut("copyLinkCopiedMessage", translate("url.copied"));
 
 				qrLink = LinkFactory.createCustomLink("qr.link", "qr", "", Link.LINK + Link.NONTRANSLATED, mainVC, this);
 				qrLink.setIconLeftCSS("o_icon o_icon_qrcode o_icon-lg");
-				qrLink.setTitle(translate("share.qrcode"));
+				qrLink.setTitle(translate("url.qr.show"));
 				linkNames.add(qrLink.getComponentName());
 				continue;
 			}

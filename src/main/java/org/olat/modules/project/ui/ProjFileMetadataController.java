@@ -24,9 +24,9 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.UrlElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
@@ -107,13 +107,8 @@ public class ProjFileMetadataController extends FormBasicController {
 		uifactory.addStaticTextElement("file.locked.by", lockedBy, formLayout);
 		
 		if (StringHelper.containsNonWhitespace(fileUrl)) {
-			String externalUrlPage = velocity_root + "/external_url.html";
-			FormLayoutContainer extUrlCont = FormLayoutContainer.createCustomFormLayout("external.url", getTranslator(), externalUrlPage);
-			extUrlCont.setElementCssClass("o_two_span");
-			extUrlCont.setLabel("external.link", null);
-			extUrlCont.contextPut("externalUrl", fileUrl);
-			extUrlCont.setRootForm(mainForm);
-			formLayout.add(extUrlCont);
+			UrlElement externalUrlEl = uifactory.addUrlElement("externalUrl", "external.link", fileUrl, formLayout);
+			externalUrlEl.setElementCssClass("o_two_span");
 		}
 		
 		activityLogCtrl = new ProjActivityLogController(ureq, getWindowControl(), mainForm, artefact);

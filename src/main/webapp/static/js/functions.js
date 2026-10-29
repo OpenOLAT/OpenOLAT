@@ -1707,52 +1707,6 @@ function o_popoverWithTitle(id, contentId, title, loc) {
 	return popover;
 }
 
-function o_QRCodePopup(id, text, loc, containerSelector) {
-	if(typeof(loc) === 'undefined') {
-		loc = 'top';
-	}
-	if(typeof(containerSelector) === 'undefined') {
-		containerSelector = 'body';
-	}
-	const elem = jQuery('#' + id);
-	elem.popover({
-    	placement : loc,
-    	html: true,
-    	trigger: 'click',
-    	container: containerSelector,
-    	content: '<div id="' + id + '_pop" class="o_qrcode"></div>'
-	}).on('shown.bs.popover', function () {
-		if (!o_info.qr || typeof o_info.qr !== 'object') {
-			o_info.qr = {};
-		}
-		o_info.qr[id] = o_QRCode(id + '_pop', (typeof text === 'function' ? text() : text));
-		const clickListener = function (e) {
-			if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) {
-				elem.popover('hide');
-				const popover = elem.data('bs.popover');
-				if (popover && popover.inState) {
-					popover.inState.click = false; // simulate hide by click
-				}
-				jQuery('body').off('click', clickListener);
-			}
-		};
-		setTimeout(function() {
-			jQuery('body').on('click', clickListener);
-		}, 5);
-	}).on('hidden.bs.popover', function () {
-		if (o_info.qr && typeof o_info.qr === 'object') {
-			if (o_info.qr[id]) {
-				try {
-					o_info.qr[id].clear();
-					delete o_info.qr[id];
-				} catch(e) {
-				}
-			}
-		}
-	});
-	// make mouse over link text work again
-	elem.attr('title',elem.attr('data-original-title'));
-}
 function o_QRCode(id, text) {
 	// dynamically load qr code library
 	try {
@@ -1761,6 +1715,57 @@ function o_QRCode(id, text) {
 	} catch(e) {
 		return null;
 	}
+}
+
+function o_urlComponent(id) {
+	const root = document.getElementById(id);
+	if (!root) {
+		return;
+	}
+	root.addEventListener('keypress', function(e) {
+		if (e.key === 'Enter' && e.target.tagName === 'BUTTON') {
+			e.stopPropagation();
+		}
+	});
+	const input = root.querySelector('.o_url_input');
+	input.addEventListener('click', function() {
+		input.select();
+	});
+	root.querySelector('.o_url_copy').addEventListener('click', function() {
+		o_copyToClipboardInfo(input.value, root.dataset.infoTitle, root.dataset.copied).catch(function() {
+			input.focus();
+			input.select();
+		});
+	});
+	
+	const qrButton = root.querySelector('.o_url_qr');
+	if (!qrButton) {
+		return;
+	}
+	const panel = document.getElementById(id + '_qr');
+	let qrCode = null;
+	qrButton.addEventListener('click', function() {
+		const open = panel.hidden;
+		if (open && !qrCode) {
+			qrCode = o_QRCode(id + '_qr_code', input.value);
+		}
+		panel.hidden = !open;
+		qrButton.classList.toggle('active', open);
+		qrButton.setAttribute('aria-expanded', open);
+		const title = open ? root.dataset.qrHide : root.dataset.qrShow;
+		qrButton.setAttribute('title', title);
+		qrButton.setAttribute('aria-label', title);
+	});
+	root.querySelector('.o_url_qr_download').addEventListener('click', function() {
+		const canvas = panel.querySelector('canvas');
+		if (!canvas) {
+			return;
+		}
+		const link = document.createElement('a');
+		link.href = canvas.toDataURL('image/png');
+		link.download = 'qrcode.png';
+		link.click();
+	});
 }
 
 function b_resizeIframeToMainMaxHeight(iframeId) {
@@ -3299,10 +3304,21 @@ function o_copyToClipboard(selector) {
 	navigator.clipboard.writeText(copyText);
 }
 
-function o_shareCopyLink(text, title, message) {
-	navigator.clipboard.writeText(text).then(function() {
+function o_copyToClipboardInfo(text, title, message) {
+	if (!navigator.clipboard) {
+		return Promise.reject(new Error('Clipboard not available'));
+	}
+	return navigator.clipboard.writeText(text).then(function() {
 		showInfoBox(title, message);
-		jQuery('.o_callout_content .close').last().trigger('click');
+	});
+}
+
+function o_shareCopyLink(text, title, message) {
+	o_copyToClipboardInfo(text, title, message).then(function() {
+		const closeButtons = document.querySelectorAll('.o_callout_content .close');
+		if (closeButtons.length > 0) {
+			closeButtons[closeButtons.length - 1].click();
+		}
 	});
 }
 

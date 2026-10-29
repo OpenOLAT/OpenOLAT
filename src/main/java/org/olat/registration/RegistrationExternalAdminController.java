@@ -22,7 +22,7 @@ package org.olat.registration;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.UrlElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -55,30 +55,9 @@ public class RegistrationExternalAdminController extends FormBasicController {
 		externalContainer.setFormTitle(translate("remote.login.title"));
 		formLayout.add(externalContainer);
 
-		StaticTextElement regExampleStaticEl = uifactory.addStaticTextElement("admin.registration.code.reg", generateExampleCode(), externalContainer);
-		regExampleStaticEl.setVisible(registrationModule.isSelfRegistrationLinkEnabled());
-		regExampleStaticEl.setElementCssClass("o_code_self_reg");
-	}
-
-	private String generateExampleCode() {
 		String selfRegLink = Settings.getServerContextPathURI() + "/url/registration/0";
-
-		StringBuilder code = new StringBuilder();
-		code.append("<div class=\"o_copy_code\">")
-				.append("    <a href=\"javascript:;\" id=\"o_selfreglink\">")
-				.append("        <i class=\"o_icon o_icon-lg o_icon-fw o_icon_qrcode\" aria-hidden='true' title='")
-				.append("            $r.translateInAttribute(\"qr.code\")'>&nbsp;</i>")
-				.append("        <span class='sr-only'>$r.translate(\"link.resource\")</span>")
-				.append("    </a>")
-				.append("    <input type=\"text\" value=\"").append(selfRegLink).append("\" onclick=\"this.select()\" aria-labelledby=\"o_selfreglink\"/>")
-				.append("    <script>")
-				.append("        jQuery(function() {")
-				.append("            o_QRCodePopup('o_selfreglink', '").append(selfRegLink).append("', 'right');")
-				.append("        });")
-				.append("    </script>")
-				.append("</div>");
-
-		return code.toString();
+		UrlElement selfRegLinkEl = uifactory.addUrlElement("admin.registration.code.reg", "admin.registration.code.reg", selfRegLink, externalContainer);
+		selfRegLinkEl.setVisible(registrationModule.isSelfRegistrationLinkEnabled());
 	}
 
 	@Override

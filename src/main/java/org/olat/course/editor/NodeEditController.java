@@ -29,6 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.url.UrlComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -139,7 +140,9 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		StringBuilder intLink = new StringBuilder();
 		intLink.append("javascript:parent.gotonode(").append(courseNode.getIdent()).append(")");
 		
-		descriptionVc.contextPut("extLink", extLink.toString());
+		UrlComponent extLinkCmp = new UrlComponent("extLink", extLink.toString());
+		extLinkCmp.setAriaLabel(translate("nodeEdit.extLink"));
+		descriptionVc.put("extLink", extLinkCmp);
 		descriptionVc.contextPut("intLink", intLink.toString());
 		descriptionVc.contextPut("nodeId", courseNode.getIdent());
 		

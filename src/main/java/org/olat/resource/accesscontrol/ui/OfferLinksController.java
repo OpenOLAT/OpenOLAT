@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.UrlElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -35,7 +36,6 @@ import org.olat.modules.catalog.ui.CatalogBCFactory;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.ui.author.AuthoringEditAccessShareController.ExtLink;
 import org.olat.resource.accesscontrol.CatalogInfo;
 
 /**
@@ -59,33 +59,41 @@ public class OfferLinksController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		flc.contextPut("showQRCode", catalogInfo.isShowQRCode());
-		
 		if (StringHelper.containsNonWhitespace(catalogInfo.getWebCatalogBusinessPath())) {
-			flc.contextPut("catalogUrlExtern", catalogInfo.getWebCatalogBusinessPath());
+			addUrlElement("catalogUrlExtern", catalogInfo.getWebCatalogBusinessPath(), formLayout);
 		}
 		if (StringHelper.containsNonWhitespace(catalogInfo.getCatalogBusinessPath())) {
-			flc.contextPut("catalogUrlIntern", catalogInfo.getCatalogBusinessPath());
+			addUrlElement("catalogUrlIntern", catalogInfo.getCatalogBusinessPath(), formLayout);
 		}
 		if (catalogInfo.getMicrosites() != null && !catalogInfo.getMicrosites().isEmpty()) {
 			HashSet<TaxonomyLevel> taxonomyLevels = new HashSet<>(catalogInfo.getMicrosites());
-			List<ExtLink> taxonomyLinks = new ArrayList<>(taxonomyLevels.size());
+			List<TaxonomyLink> taxonomyLinks = new ArrayList<>(taxonomyLevels.size());
 			for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
 				String url = CatalogBCFactory.get(false).getTaxonomyLevelUrl(taxonomyLevel);
 				String name = translate("cif.catalog.links.microsite", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
-				ExtLink extLink = new ExtLink(taxonomyLevel.getKey().toString(), url, name);
-				taxonomyLinks.add(extLink);
-				taxonomyLinks.sort((l1, l2) -> l1.getName().toLowerCase().compareTo(l2.getName().toLowerCase()));
-				flc.contextPut("taxonomyLinks", taxonomyLinks);
+				String componentName = "taxonomyLink_" + taxonomyLevel.getKey();
+				addUrlElement(componentName, url, formLayout);
+				taxonomyLinks.add(new TaxonomyLink(name, componentName));
 			}
+			taxonomyLinks.sort((l1, l2) -> l1.name().toLowerCase().compareTo(l2.name().toLowerCase()));
+			flc.contextPut("taxonomyLinks", taxonomyLinks);
 		}
 		
 		uifactory.addFormSubmitButton("close", formLayout);
 	}
 
+	private void addUrlElement(String name, String url, FormItemContainer formLayout) {
+		UrlElement urlEl = uifactory.addUrlElement(name, null, url, formLayout);
+		urlEl.setQrCodeEnabled(catalogInfo.isShowQRCode());
+	}
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
+	public record TaxonomyLink(String name, String componentName) {
+		//
+	}
+	
 }

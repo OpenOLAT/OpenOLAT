@@ -698,7 +698,10 @@ public class AccessConfigurationController extends FormBasicController {
 		infos.setConfigCont(cont);
 		
 		infos.setOffer(offer);
-		infos.setGuestUrl(getGuestUrl());
+		String guestUrl = getGuestUrl();
+		if (StringHelper.containsNonWhitespace(guestUrl)) {
+			uifactory.addUrlElement("guestUrl", null, guestUrl, cont);
+		}
 		cont.contextPut("offer", infos);
 		
 		if (!readOnly) {
@@ -1103,7 +1106,6 @@ public class AccessConfigurationController extends FormBasicController {
 		private Offer offer;
 		private OfferCatalogInfo offerCatalogInfo;
 		private String dates;
-		private String guestUrl;
 		private final int numOfOrders;
 		private Collection<Organisation> offerOrganisations;
 		private OfferAccess link;
@@ -1163,14 +1165,6 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		public String getDates() {
 			return dates;
-		}
-
-		public String getGuestUrl() {
-			return guestUrl;
-		}
-
-		public void setGuestUrl(String guestUrl) {
-			this.guestUrl = guestUrl;
 		}
 
 		private void initDates() {

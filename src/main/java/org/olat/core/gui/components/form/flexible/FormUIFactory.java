@@ -72,6 +72,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.UrlElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -110,6 +111,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.StaticTextElemen
 import org.olat.core.gui.components.form.flexible.impl.elements.TextAreaElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.UrlElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
@@ -1738,6 +1740,15 @@ public class FormUIFactory {
 			flexiTable.addFormItem(link);
 		}
 		return link;
+	}
+	
+	public UrlElement addUrlElement(String name, String i18nLabel, String url, FormItemContainer formLayout) {
+		UrlElementImpl item = new UrlElementImpl(name, url);
+		setLabelIfNotNull(i18nLabel, item);
+		if(formLayout != null) {
+			formLayout.add(item);
+		}
+		return item;
 	}
 	
 	public EmptyStateItem addEmptyState(String name, String i18nLabel, FormItemContainer formLayout) {

@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.UrlElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -53,7 +54,7 @@ public class ParticipationPublicLinkController extends FormBasicController {
 	
 	private FormToggle enabledEl;
 	private TextElement identifierEl;
-	private FormLayoutContainer urlCont;
+	private UrlElement urlEl;
 	
 	private QualityDataCollection dataCollection;
 	private DataCollectionSecurityCallback secCallback;
@@ -89,11 +90,7 @@ public class ParticipationPublicLinkController extends FormBasicController {
 		identifierEl.setEnabled(secCallback.canEditPublicParticipation());
 		identifierEl.addActionListener(FormEvent.ONCHANGE);
 		
-		String externalUrlPage = velocity_root + "/participation_public_url.html";
-		urlCont = FormLayoutContainer.createCustomFormLayout("preview", getTranslator(), externalUrlPage);
-		urlCont.setLabel("participation.public.preview", null);
-		urlCont.setRootForm(mainForm);
-		formLayout.add(urlCont);
+		urlEl = uifactory.addUrlElement("preview", "participation.public.preview", null, formLayout);
 	
 		if (secCallback.canEditPublicParticipation()) {
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -114,13 +111,13 @@ public class ParticipationPublicLinkController extends FormBasicController {
 			identifierEl.setValue(UUID.randomUUID().toString().replace("-", ""));
 		}
 		
-		urlCont.setVisible(enabled);
+		urlEl.setVisible(enabled);
 		if (enabled) {
 			String publicParticipationIdentifier = identifierEl.getValue();
 			publicParticipationIdentifier = FilterFactory.getHtmlTagAndDescapingFilter().filter(publicParticipationIdentifier);
 			identifierEl.setValue(publicParticipationIdentifier);
 			String url = EvaluationFormDispatcher.getPublicParticipationUrl(blankIfNull(publicParticipationIdentifier));
-			urlCont.contextPut("url", url);
+			urlEl.setUrl(url);
 		}
 	}
 
