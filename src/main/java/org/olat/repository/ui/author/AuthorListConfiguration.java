@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.repository.RepositoryEntryRuntimeType;
+import org.olat.repository.ui.ColumnConfiguration;
 import org.olat.repository.ui.EmptyScreenData;
 
 /**
@@ -63,6 +64,7 @@ public class AuthorListConfiguration {
 	private EmptyScreenData emptyScreenDataForNoEntriesYet;
 	private EmptyScreenData emptyScreenDataForNoEntriesInView;
 	private String enterSearchTermMessage;
+	private ColumnConfiguration columnConfiguration;
 	
 	private AuthorListConfiguration(String tableId) {
 		this.tableId = tableId;
@@ -331,5 +333,13 @@ public class AuthorListConfiguration {
 
 	public String getEnterSearchTermMessage() {
 		return enterSearchTermMessage;
+	}
+
+	public void setColumnConfiguration(ColumnConfiguration columnConfiguration) {
+		this.columnConfiguration = columnConfiguration;
+	}
+
+	public ColumnConfiguration getColumnConfiguration() {
+		return columnConfiguration;
 	}
 }
