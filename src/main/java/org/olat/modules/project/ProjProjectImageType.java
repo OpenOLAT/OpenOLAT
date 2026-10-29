@@ -45,7 +45,7 @@ public enum ProjProjectImageType {
 			"o_proj_avatar_light_green"
 	);
 	public static final String getRandmonAvatarCssClass() {
-		return AVATAR_CSS_CLASSES.get(new Random().nextInt(AVATAR_CSS_CLASSES.size() - 1));
+		return AVATAR_CSS_CLASSES.get(new Random().nextInt(AVATAR_CSS_CLASSES.size()));
 	}
 	
 

@@ -166,7 +166,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	}
 	
 	public String getRandomInitialsColorCss() {
-		return USER_INITIALS_CSS.get(new Random().nextInt(USER_INITIALS_CSS.size() - 1));
+		return USER_INITIALS_CSS.get(new Random().nextInt(USER_INITIALS_CSS.size()));
 	}
 	
 	@Override
