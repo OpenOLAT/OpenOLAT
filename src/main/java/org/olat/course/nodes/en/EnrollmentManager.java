@@ -599,9 +599,8 @@ public class EnrollmentManager implements GenericEventListener {
 
 	@Override
 	public void event(Event event) {
-		if (event instanceof BusinessGroupModifiedEvent) {
+		if (event instanceof BusinessGroupModifiedEvent bgmEvent && bgmEvent.isEventOnThisNode()) {
 			try {
-				BusinessGroupModifiedEvent bgmEvent = (BusinessGroupModifiedEvent) event;
 				if (BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(bgmEvent.getCommand())
 						|| BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(bgmEvent.getCommand())) {
 					processBusinessGroupModifiedEvent(bgmEvent);

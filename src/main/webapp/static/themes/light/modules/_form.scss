@@ -1624,6 +1624,7 @@ dialog {
 		width: fit-content;
 		margin: $padding-base-vertical 0 0 auto;
 		padding: $padding-base-horizontal;
+		background-color: #fff;
 		border: 1px solid $input-border;
 		border-radius: $border-radius-base;
 		&[hidden] {
