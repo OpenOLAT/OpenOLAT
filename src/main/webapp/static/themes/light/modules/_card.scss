@@ -466,7 +466,6 @@
 	.o_dashboard_widget_table,
 	.o_dashboard_widget_empty {
 		flex-grow: 1;
-		min-height: $o-dashboard-widget-table-max-height;
 		background-color: $o-dashboard-widget-table-bg-color;
 		border-top: $o-dashboard-widget-border;
 		border-bottom: $o-dashboard-widget-border;
