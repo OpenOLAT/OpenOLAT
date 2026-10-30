@@ -47,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiC
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
+import org.olat.core.gui.control.generic.dashboard.MaxHeightScrollableDelegate;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigProvider;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
@@ -181,6 +182,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setShowSmallPageSize(false);
+		tableEl.setCssDelegate(MaxHeightScrollableDelegate.DELEGATE);
 
 		return tableEl.getComponent().getComponentName();
 	}

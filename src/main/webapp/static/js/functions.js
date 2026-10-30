@@ -3395,7 +3395,10 @@ function o_initScrollableOverflowIndicator(domId) {
 	});
 }
 function o_initScrollableVerticalOverflowIndicator(domId) {
-	const scrollableEl = jQuery('#' + domId + ' .o_scrollable_vertical');
+	let scrollableEl = jQuery('#' + domId + ' .o_scrollable_vertical');
+	if (scrollableEl.is('table')) {
+		scrollableEl = scrollableEl.parent();
+	}
 	if (!scrollableEl.length) {
 		return;
 	}

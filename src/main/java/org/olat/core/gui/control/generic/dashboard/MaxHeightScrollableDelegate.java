@@ -39,7 +39,9 @@ public class MaxHeightScrollableDelegate implements FlexiTableCssDelegate {
 
 	@Override
 	public String getTableCssClass(FlexiTableRendererType type) {
-		return "o_table_body container-fluid o_dashboard_table_max_height o_scrollable_vertical";
+		return type == FlexiTableRendererType.classic
+				? "o_dashboard_table_max_height o_scrollable_vertical"
+				: "o_table_body container-fluid o_dashboard_table_max_height o_scrollable_vertical";
 	}
 
 	@Override
