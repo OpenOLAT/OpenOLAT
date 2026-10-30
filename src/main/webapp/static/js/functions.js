@@ -2840,7 +2840,9 @@ function showInfoBox(title, content) {
 	const info = '<div id="' + uuid
 	     + '" class="o_alert_info"><div class="alert alert-info clearfix o_sel_info_message"><a class="o_alert_close o_sel_info_close" href="javascript:;" onclick="dismissInfoBox(\'' + uuid + '\')"><i class="o_icon o_icon_close"> </i></a><h3><i class="o_icon o_icon_info"> </i> '
 		 + title + '</h3><p>' + content + '</p></div></div>';
-    jQuery('#o_messages').prepend(info);
+    // Modal dialogs live in the browser top layer, the message must be inside the topmost one to be visible
+    const modals = document.querySelectorAll('dialog:modal:not(#o_ajax_busy)');
+    jQuery(modals.length > 0 ? modals[modals.length - 1] : '#o_messages').prepend(info);
     // Hide message automatically based on content length
     const time = (content.length > 150) ? 10000 : ((content.length > 70) ? 8000 : 6000);
 
