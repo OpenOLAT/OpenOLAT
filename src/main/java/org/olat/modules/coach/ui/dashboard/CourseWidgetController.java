@@ -182,6 +182,7 @@ public class CourseWidgetController extends TableWidgetController
 	public void update(TableWidgetConfigPrefs prefs) {
 		keyFigureKey = prefs.getKeyFigureKey();
 		figuresEl.setCards(getFigureCards(keyToFigureCard, prefs));
+		setEmptyState(tableEl, "o_CourseModule_icon", translate("widget.course.objects"), keyFigureKey);
 		
 		tableEl.setPageSize(prefs.getNumRows());
 		

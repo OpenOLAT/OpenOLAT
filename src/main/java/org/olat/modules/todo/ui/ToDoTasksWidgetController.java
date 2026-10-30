@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
-import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.figurecards.FigureCardsFactory;
 import org.olat.core.gui.components.figurecards.FigureCardsItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -134,6 +133,7 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	public void update(TableWidgetConfigPrefs prefs) {
 		keyFigureKey = prefs.getKeyFigureKey();
 		figuresEl.setCards(getFigureCards(keyToFigureCard, prefs));
+		setEmptyState(tableEl, "o_icon_todo_task", translate("widget.todo.objects"), keyFigureKey);
 
 		tableEl.setPageSize(prefs.getNumRows());
 
@@ -181,10 +181,6 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setShowSmallPageSize(false);
-		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
-				.withMessageI18nKey("widget.todo.empty")
-				.withIconCss("o_icon_todo_task")
-				.build());
 
 		return tableEl.getComponent().getComponentName();
 	}

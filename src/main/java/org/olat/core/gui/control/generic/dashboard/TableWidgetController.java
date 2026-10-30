@@ -26,8 +26,10 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -131,6 +133,15 @@ public abstract class TableWidgetController extends FormBasicController implemen
 		}
 	}
 
+	protected void setEmptyState(FlexiTableElement tableEl, String iconCss, String objects, String figureKey) {
+		String figureLabel = getFigureLabel(figureKey);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withIconCss(iconCss)
+				.withMessageTranslated(translate("table.widget.empty.message", objects, figureLabel))
+				.withHintTranslated(translate("table.widget.empty.hint", objects, figureLabel))
+				.build());
+	}
+	
 	protected String getFigureLabel(String figureKey) {
 		TableWidgetConfigProvider configProvider = getConfigProvider();
 		if (configProvider == null || figureKey == null) {

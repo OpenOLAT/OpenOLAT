@@ -368,9 +368,6 @@
 	
 	.o_dashboard_widget_header {
 		margin: $o-dashboard-widget-header-margin;
-		&:has(.btn) {
-			margin: $o-dashboard-widget-header-button-margin	;
-		}
 		h3 {
 			margin: 0;
 		}

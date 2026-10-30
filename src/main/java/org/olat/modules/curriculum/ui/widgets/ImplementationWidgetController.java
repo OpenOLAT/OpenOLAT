@@ -190,6 +190,7 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 	public void update(TableWidgetConfigPrefs prefs) {
 		keyFigureKey = prefs.getKeyFigureKey();
 		figuresEl.setCards(getFigureCards(keyToFigureCard, prefs));
+		setEmptyState(tableEl, "o_icon_curriculum_implementations", translate("widget.implementation.objects"), keyFigureKey);
 
 		tableEl.setPageSize(prefs.getNumRows());
 
