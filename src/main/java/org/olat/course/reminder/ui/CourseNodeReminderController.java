@@ -61,7 +61,7 @@ public class CourseNodeReminderController extends BasicController {
 		
 		String warningI18nKey = editor? "node.reminders.publish": null;
 		remindersCtrl = new CourseReminderListController(ureq, wControl, toolbarPanel, repositoryEntry,
-				reminderProvider, warningI18nKey, true);
+				reminderProvider, warningI18nKey, true, false);
 		listenTo(remindersCtrl);
 		mainVC.put("reminders", remindersCtrl.getInitialComponent());
 		

@@ -2394,7 +2394,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				
 				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Reminders", 0l), null);
 				CourseReminderListController ctrl = new CourseReminderListController(ureq, swControl, toolbarPanel, getRepositoryEntry(),
-						CourseProvider.create(), null, true);
+						CourseProvider.create(), null, true, false);
 				remindersCtrl = pushController(ureq, translate("command.reminders"), ctrl);
 				setActiveTool(reminderLink);
 				currentToolCtr = remindersCtrl;

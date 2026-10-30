@@ -188,7 +188,7 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	private void doOpenPosterConfig(UserRequest ureq) {
 		entry = repositoryService.loadByKey(entry.getKey());
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Poster"), null);
-		posterEditController = new VideoPosterEditController(ureq, swControl, entry.getOlatResource());
+		posterEditController = new VideoPosterEditController(ureq, swControl, entry.getOlatResource(), readOnly);
 		listenTo(posterEditController);
 		mainPanel.setContent(posterEditController.getInitialComponent());
 		buttonsGroup.setSelectedButton(posterEditLink);
@@ -197,7 +197,7 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	private void doOpenSubtitles(UserRequest ureq) {
 		entry = repositoryService.loadByKey(entry.getKey());
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Subtitles"), null);
-		trackEditController = new VideoTrackEditController(ureq, swControl, entry.getOlatResource());
+		trackEditController = new VideoTrackEditController(ureq, swControl, entry.getOlatResource(), readOnly);
 		listenTo(trackEditController);
 		mainPanel.setContent(trackEditController.getInitialComponent());
 		buttonsGroup.setSelectedButton(trackEditLink);
@@ -206,7 +206,7 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	private void doOpenQualities(UserRequest ureq) {
 		entry = repositoryService.loadByKey(entry.getKey());
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Qualities"), null);
-		qualityEditController = new VideoQualityTableFormController(ureq, swControl, entry);
+		qualityEditController = new VideoQualityTableFormController(ureq, swControl, entry, readOnly);
 		listenTo(qualityEditController);
 		mainPanel.setContent(qualityEditController.getInitialComponent());
 		buttonsGroup.setSelectedButton(qualityConfigLink);
@@ -216,7 +216,7 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 		if (videoMetadata.getVideoFormat() != null && videoMetadata.getVideoFormat().equals(VideoFormat.mp4)) {
 			entry = repositoryService.loadByKey(entry.getKey());
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Download"), null);
-			downloadSettingsController = new VideoDownloadSettingsController(ureq, swControl, videoMetadata);
+			downloadSettingsController = new VideoDownloadSettingsController(ureq, swControl, videoMetadata, readOnly);
 			listenTo(downloadSettingsController);
 			mainPanel.setContent(downloadSettingsController.getInitialComponent());
 			buttonsGroup.setSelectedButton(downloadConfigLink);

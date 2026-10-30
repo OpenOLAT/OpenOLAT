@@ -113,6 +113,7 @@ public class CourseReminderListController extends FormBasicController
 	private final RepositoryEntry repositoryEntry;
 	private final CourseNodeReminderProvider reminderProvider;
 	private final String warningI18nKey;
+	private final boolean readOnly;
 	
 	@Autowired
 	private ReminderModule reminderModule;
@@ -120,12 +121,13 @@ public class CourseReminderListController extends FormBasicController
 	private ReminderService reminderService;
 	
 	public CourseReminderListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel toolbarPanel,
-			RepositoryEntry repositoryEntry, CourseNodeReminderProvider reminderProvider, String warningI18nKey, boolean fieldset) {
+			RepositoryEntry repositoryEntry, CourseNodeReminderProvider reminderProvider, String warningI18nKey, boolean fieldset, boolean readOnly) {
 		super(ureq, wControl, fieldset ? "reminder_list" : "reminder_list_simple");
 		this.toolbarPanel = toolbarPanel;
 		this.repositoryEntry = repositoryEntry;
 		this.reminderProvider = reminderProvider;
 		this.warningI18nKey = warningI18nKey;
+		this.readOnly = readOnly;
 		
 		initForm(ureq);
 		reload(ureq);
@@ -162,12 +164,14 @@ public class CourseReminderListController extends FormBasicController
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.id));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.description, "edit"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.description, readOnly ? null : "edit"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.creator));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.send));
-		columnsModel.addFlexiColumnModel(new ActionsColumnModel(ReminderCols.tools));
+		if(!readOnly) {
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(ReminderCols.tools));
+		}
 		
 		tableModel = new CourseReminderTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -188,7 +192,7 @@ public class CourseReminderListController extends FormBasicController
 	}
 	
 	private void updateUI() {
-		boolean addVisible = reminderProvider.getMainRuleSPITypes() == null || !reminderProvider.getMainRuleSPITypes().isEmpty();
+		boolean addVisible = !readOnly && (reminderProvider.getMainRuleSPITypes() == null || !reminderProvider.getMainRuleSPITypes().isEmpty());
 		addButton.setVisible(addVisible);
 		
 		if (addVisible) {
@@ -218,6 +222,7 @@ public class CourseReminderListController extends FormBasicController
 				
 				FormLink emailLink = uifactory.addFormLink("email_" + counter.incrementAndGet(), "email", "show.email", null, flc, Link.BUTTON);
 				FormLink sendLink = uifactory.addFormLink("send_" + counter.incrementAndGet(), "send", "send", null, flc, Link.BUTTON);
+				sendLink.setVisible(!readOnly);
 				
 				Controller rulesCtrl = new RulesViewController(ureq, getWindowControl(), repositoryEntry, reminder.getConfiguration());
 				listenTo(rulesCtrl);

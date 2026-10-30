@@ -278,6 +278,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		enableMetadataIndexingEl.setHelpUrlForManualPage("manual_admin/administration/Modules_OAI/");
 		enableMetadataIndexingEl.setHelpTextKey("cif.metadata.help", null);
 		enableMetadataIndexingEl.addActionListener(FormEvent.ONCHANGE);
+		enableMetadataIndexingEl.setEnabled(!readOnly);
 		enableMetadataIndexingEl.setVisible(oaiPmhModule.isEnabled() && notTemplateRuntimeType && notCurricularCourse);
 
 		boolean isEntryPublished = entry.getEntryStatus() == RepositoryEntryStatusEnum.published;

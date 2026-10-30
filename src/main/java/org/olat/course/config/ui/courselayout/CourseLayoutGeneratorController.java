@@ -407,6 +407,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 				.forEach(style -> teaserImageStyleKV.add(entry(style.name(), translate(CourseStyleUIFactory.getI18nKey(style)))));
 		teaserImageStyleEl = uifactory.addRadiosHorizontal("teaser.image.style", styleCont, teaserImageStyleKV.keys(), teaserImageStyleKV.values());
 		teaserImageStyleEl.addActionListener(FormEvent.ONCHANGE);
+		teaserImageStyleEl.setEnabled(editable);
 		if (teaserImageStyle == null || !teaserImageStyleEl.containsKey(teaserImageStyle.name())) {
 			teaserImageStyle = TeaserImageStyle.DEFAULT_COURSE;
 		}

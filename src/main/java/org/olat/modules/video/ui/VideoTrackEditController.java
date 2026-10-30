@@ -60,13 +60,15 @@ public class VideoTrackEditController extends FormBasicController {
 	private CloseableModalController cmc;
 
 	private OLATResource videoResource;
+	private final boolean readOnly;
 	
 	@Autowired
 	private VideoManager videoManager;
 
-	public VideoTrackEditController(UserRequest ureq, WindowControl wControl, OLATResource videoResource) {
+	public VideoTrackEditController(UserRequest ureq, WindowControl wControl, OLATResource videoResource, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.videoResource = videoResource;
+		this.readOnly = readOnly;
 		initForm(ureq);
 	}
 
@@ -82,7 +84,9 @@ public class VideoTrackEditController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TrackTableCols.file));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TrackTableCols.language));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TrackTableCols.delete));
+		if(!readOnly) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TrackTableCols.delete));
+		}
 		tableModel = new VideoTracksTableModel(columnsModel, getLocale());
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), generalCont);
@@ -101,6 +105,7 @@ public class VideoTrackEditController extends FormBasicController {
 		buttonLayout.setRootForm(mainForm);
 		generalCont.add(buttonLayout);
 		addButton = uifactory.addFormLink("add.track", buttonLayout, Link.BUTTON);
+		addButton.setVisible(!readOnly);
 	}
 	
 	private TrackTableRow forgeRow(String language, VFSLeaf track) {

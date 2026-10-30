@@ -270,12 +270,14 @@ public class CourseOptionsController extends FormBasicController {
 		SelectionValues enableSV = new SelectionValues(new SelectionValue("enabled", translate("on")));
 		enableCoachFolderEl = uifactory.addCheckboxesHorizontal("coach.folder.settings.enabled", coachFolderCont, enableSV.keys(), enableSV.values());
 		enableCoachFolderEl.addActionListener(FormEvent.ONCHANGE);
+		enableCoachFolderEl.setEnabled(editable);
 		
 		SelectionValue generatedFolder = new SelectionValue(COACH_FOLDER_AUTOMATIC, translate("pathChoose.auto"));
 		SelectionValue selectedFolder = new SelectionValue(COACH_FOLDER_CUSTOM, translate("pathChoose.custom"));
 		SelectionValues coachFolderOptions = new SelectionValues(generatedFolder, selectedFolder);
 		coachFolderModeEl = uifactory.addRadiosVertical("pathChoose", coachFolderCont, coachFolderOptions.keys(), coachFolderOptions.values());
 		coachFolderModeEl.addActionListener(FormEvent.ONCHANGE);
+		coachFolderModeEl.setEnabled(editable);
 		
 		coachFolderPathEl = uifactory.addStaticTextElement("subPathLab.label", translate("coach.folder.not.configured"), coachFolderCont);
 		
@@ -285,6 +287,7 @@ public class CourseOptionsController extends FormBasicController {
 		
 		choachToDoTasksEl = uifactory.addCheckboxesHorizontal("coach.todo.tasks.enabled", coachFolderCont, enableSV.keys(), enableSV.values());
 		choachToDoTasksEl.select(choachToDoTasksEl.getKey(0), courseConfig.isCoachToDoTaskEdit());
+		choachToDoTasksEl.setEnabled(editable);
 		
 		if(editable) {
 			FormLayoutContainer saveCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
@@ -638,7 +641,7 @@ public class CourseOptionsController extends FormBasicController {
 		
 		coachFolderPathEl.setVisible(isCustomMode);
 		
-		selectCoachFolderLink.setVisible(isCustomMode);
+		selectCoachFolderLink.setVisible(isCustomMode && editable);
 	}
 	
 	private void updateCoachFolderUI() {
@@ -647,7 +650,7 @@ public class CourseOptionsController extends FormBasicController {
 		
 		boolean isCustomMode = coachFolderEnabled && coachFolderModeEl.isKeySelected(COACH_FOLDER_CUSTOM);
 		coachFolderPathEl.setVisible(isCustomMode);
-		selectCoachFolderLink.setVisible(isCustomMode);
+		selectCoachFolderLink.setVisible(isCustomMode && editable);
 	}
 	
 	private boolean validateCoachFolderPath() {

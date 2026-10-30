@@ -41,14 +41,16 @@ public class VideoDownloadSettingsController extends FormBasicController {
 	private MultipleSelectionElement allowDownloadEl;
 	
 	private VideoMeta videoMeta; 
+	private final boolean readOnly;
 	
 	@Autowired
 	private VideoManager videoManager;
 	
-	public VideoDownloadSettingsController(UserRequest ureq, WindowControl wControl, VideoMeta videoMeta) {
+	public VideoDownloadSettingsController(UserRequest ureq, WindowControl wControl, VideoMeta videoMeta, boolean readOnly) {
 		super(ureq, wControl);
 		
 		this.videoMeta = videoMeta;
+		this.readOnly = readOnly;
 		
 		initForm(ureq);
 		loadData();
@@ -60,9 +62,11 @@ public class VideoDownloadSettingsController extends FormBasicController {
 		
 		SelectionValues options = new SelectionValues(SelectionValues.entry(DownloadOptions.allowed.name(), translate("download.options.allowed")));
 		allowDownloadEl = uifactory.addCheckboxesVertical("download.options", formLayout, options.keys(), options.values(), 1);
+		allowDownloadEl.setEnabled(!readOnly);
 		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
+		buttonContainer.setVisible(!readOnly);
 		uifactory.addFormSubmitButton("submit", buttonContainer);		
 	}
 	

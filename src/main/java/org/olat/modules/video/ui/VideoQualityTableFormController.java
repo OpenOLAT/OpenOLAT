@@ -68,6 +68,7 @@ public class VideoQualityTableFormController extends FormBasicController impleme
 	private CloseableModalController cmc;
 	private VelocityContainer previewVC;
 	private OLATResource videoResource;
+	private final boolean readOnly;
 	private FormLink refreshbtn;
 
 	private int count = 0;
@@ -79,9 +80,10 @@ public class VideoQualityTableFormController extends FormBasicController impleme
 	@Autowired
 	private VideoModule videoModule;
 
-	public VideoQualityTableFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry) {
+	public VideoQualityTableFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry, boolean readOnly) {
 		super(ureq, wControl, "video_quality");
 		this.videoResource = videoEntry.getOlatResource();
+		this.readOnly = readOnly;
 		initForm(ureq);
 
 		videoManager.registerForStatusEvent(this);
@@ -100,7 +102,9 @@ public class VideoQualityTableFormController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.dimension));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.size, new TranscodingErrorIconRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.format));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.delete));
+		if(!readOnly) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.delete));
+		}
 
 		tableModel = new VideoQualityTableModel(columnsModel);
 		

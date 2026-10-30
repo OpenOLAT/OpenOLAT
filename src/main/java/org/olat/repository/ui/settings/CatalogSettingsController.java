@@ -93,8 +93,10 @@ public class CatalogSettingsController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("catalog.path", 0));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", translate("remove"), "remove"));
-		
+		if(!readOnly) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", translate("remove"), "remove"));
+		}
+
 		model = new CatalogListModel(new ArrayList<>(), columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 200, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);

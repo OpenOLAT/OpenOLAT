@@ -88,6 +88,7 @@ public class VideoCollectionAccessController extends FormBasicController {
 		videoCollectionEl = uifactory.addToggleButton("video.collection.access", "video.collection.access", translate("on"), translate("off"), formLayout);
 		videoCollectionEl.toggle(entry.isVideoCollection());
 		videoCollectionEl.addActionListener(FormEvent.ONCHANGE);
+		videoCollectionEl.setEnabled(!readOnly);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
@@ -105,6 +106,7 @@ public class VideoCollectionAccessController extends FormBasicController {
 		taxonomyEl.setVisible(StringHelper.containsNonWhitespace(levels));
 		
 		FormLayoutContainer layoutCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		layoutCont.setVisible(!readOnly);
 		uifactory.addFormSubmitButton("save", "save", layoutCont);
 	}
 	

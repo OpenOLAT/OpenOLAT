@@ -343,6 +343,7 @@ public class CourseToolbarController extends FormBasicController {
 			}
 
 			zoomProfileEl = uifactory.addDropdownSingleselect("chkbx.zoom.profile", formLayout, new String[0], new String[0]);
+			zoomProfileEl.setEnabled(editable);
 		}
 
 		boolean blogEnabled = courseConfig.isBlogEnabled();
@@ -400,6 +401,7 @@ public class CourseToolbarController extends FormBasicController {
 		String[] docLocationValues = {translate("pathChoose.auto"), translate("pathChoose.custom")};
 		documentsTargetEl = uifactory.addRadiosVertical("pathChoose", formLayout, DOC_LOCATION_KEYS, docLocationValues);
 		documentsTargetEl.addActionListener(FormEvent.ONCLICK);
+		documentsTargetEl.setEnabled(editable);
 		if (documentsPath == null) {
 			documentsTargetEl.select(DOC_LOCATION_CUSTOM, true);
 		} else {
@@ -517,8 +519,8 @@ public class CourseToolbarController extends FormBasicController {
 		boolean courseFolder = documentsTargetEl.isOneSelected()
 				&& documentsTargetEl.getSelectedKey().equals(DOC_LOCATION_COURSE_FOLDER);
 		documentsPathEl.setVisible(documentsEnabled && courseFolder);
-		docButtonsCont.setVisible(documentsEnabled && courseFolder);
-		selectFolderLink.setVisible(documentsEnabled && courseFolder);
+		docButtonsCont.setVisible(documentsEnabled && courseFolder && editable);
+		selectFolderLink.setVisible(documentsEnabled && courseFolder && editable);
 	}
 
 	private void updateUI() {

@@ -146,7 +146,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 		mainVC.put("recertification", recertificationCtrl.getInitialComponent());
 		
 		certificateReminderProvider = new CertificateReminderProvider();
-		remindersCtrl = new CourseReminderListController(ureq, wControl, stackPanel, entry, certificateReminderProvider, null, false);
+		remindersCtrl = new CourseReminderListController(ureq, wControl, stackPanel, entry, certificateReminderProvider, null, false, !editableAndLocked);
 		listenTo(remindersCtrl);
 		mainVC.put("reminders", remindersCtrl.getInitialComponent());
 

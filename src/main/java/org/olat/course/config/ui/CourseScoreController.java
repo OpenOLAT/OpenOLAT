@@ -325,6 +325,7 @@ public class CourseScoreController extends FormBasicController {
 		passedByPassedEnableSV.add(SelectionValues.entry(PASSED_BY_PASSED_ENABLED, translate("options.passed.by.passed.elements")));
 		passedByPassedEnableEl = uifactory.addCheckboxesVertical("options.passed.by.passed", settingsCont, passedByPassedEnableSV.keys(), passedByPassedEnableSV.values(), 1);
 		passedByPassedEnableEl.addActionListener(FormEvent.ONCHANGE);
+		passedByPassedEnableEl.setEnabled(editable);
 		if(moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL)
 				|| moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER)) {
 			passedByPassedEnableEl.select(PASSED_BY_PASSED_ENABLED, true);	

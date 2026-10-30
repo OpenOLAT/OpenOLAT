@@ -145,7 +145,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 			}
 			setFormWarning("form.managedflags.intro", new String[]{ flagsFormatted });
 			
-			if(isAllowedToOverrideManaged(ureq)) {
+			if(!readOnly && isAllowedToOverrideManaged(ureq)) {
 				overrideLink = uifactory.addFormLink("override.lecture", formLayout, Link.BUTTON);
 				overrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
 			
@@ -226,7 +226,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		}
 		long attendanceRatePerCent = Math.round(attendanceRate * 100.0d);
 		attendanceRateEl.setValue(Long.toString(attendanceRatePerCent));
-		attendanceRateEl.setEnabled(overrideModuleDefaults && (!lectureConfigManaged || overrideManaged));
+		attendanceRateEl.setEnabled(overrideModuleDefaults && (!lectureConfigManaged || overrideManaged) && !readOnly);
 
 		updateOverrideElement(enableAssessmentModeEl, lectureConfig.getAssessmentModeEnabled(), lectureModule.isAssessmentModeEnabledDefault());
 		updateOverrideElement(assessmentLeadTimeEl, lectureConfig.getAssessmentModeLeadTime(), lectureModule.getAssessmentModeLeadTime());

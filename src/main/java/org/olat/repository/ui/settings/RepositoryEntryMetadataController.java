@@ -255,6 +255,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
 					translate(labelI18nKey));
 			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, formLayout, getWindowControl(), true, source);
+			taxonomyLevelEl.setEnabled(!readOnly);
 			if (catalogModule.isEnabled()) {
 				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
 			}

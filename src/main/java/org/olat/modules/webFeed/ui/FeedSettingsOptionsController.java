@@ -81,6 +81,7 @@ public class FeedSettingsOptionsController extends FormBasicController {
 		if (readOnly) {
 			ratingToggle.setEnabled(false);
 			commentToggle.setEnabled(false);
+			pushEmailEl.setEnabled(false);
 		}
 	}
 

@@ -60,13 +60,15 @@ public class VideoPosterEditController extends FormBasicController {
 	
 	private VideoMeta videoMetadata;
 	private OLATResource videoResource;
+	private final boolean readOnly;
 	
 	@Autowired
 	private VideoManager videoManager;
 
-	public VideoPosterEditController(UserRequest ureq, WindowControl wControl, OLATResource videoResource) {
+	public VideoPosterEditController(UserRequest ureq, WindowControl wControl, OLATResource videoResource, boolean readOnly) {
 		super(ureq, wControl);
 		this.videoResource = videoResource;
+		this.readOnly = readOnly;
 		videoMetadata = videoManager.getVideoMetadata(videoResource);
 		if(!StringHelper.containsNonWhitespace(videoMetadata.getUrl()) && videoMetadata.getVideoFormat() == null) {
 			videoMetadata = videoManager.checkUnkownVideoFormat(videoMetadata);
@@ -89,6 +91,7 @@ public class VideoPosterEditController extends FormBasicController {
 
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
+		buttonGroupLayout.setVisible(!readOnly);
 
 		replaceImage = uifactory.addFormLink("replaceimg", "video.config.poster.replace", null, buttonGroupLayout, Link.BUTTON);
 		replaceImage.setIconLeftCSS("o_icon o_icon_browse o_icon-fw");

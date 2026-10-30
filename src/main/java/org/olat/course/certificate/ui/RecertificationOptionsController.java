@@ -109,6 +109,7 @@ public class RecertificationOptionsController extends FormBasicController {
 		reCertificationTimelapseEl.setTextAddOn("recertification.after.days.addon");
 
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		buttonsCont.setVisible(editable);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	

@@ -95,7 +95,9 @@ public class CourseInvitationsAndDeploymentsSettingsController extends FormBasic
 			lti13DeploymentEnableEl.select("on", true);
 		}
 		
-		uifactory.addFormSubmitButton("save", formLayout);
+		if(editable) {
+			uifactory.addFormSubmitButton("save", formLayout);
+		}
 	}
 
 	@Override
