@@ -101,7 +101,10 @@ public class XMLFactories {
 	
 	public static final DocumentBuilder newSVGDocumentBuilder()
 			throws ParserConfigurationException {
-		DocumentBuilder builder = newDocumentBuilderFactory().newDocumentBuilder();
+		DocumentBuilderFactory documentBuilderFactory = newDocumentBuilderFactory();
+		// SVG needs a lot of them
+        documentBuilderFactory.setAttribute("http://www.oracle.com/xml/jaxp/properties/maxParameterEntitySizeLimit", "64000");
+		DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 		builder.setEntityResolver(new SVGEntityResolver());
 		return builder;
 	}
