@@ -837,8 +837,12 @@ tr.o_rm_room_preselected {
 		width: 160px;
 		flex-shrink: 0;
 	}
-	@container (max-width: 500px) {
-		.o_row_location,
+	@container (max-width: 600px) {
+		.o_row_location {
+			display: none;
+		}
+	}
+	@container (max-width: 300px) {
 		.o_row_time {
 			display: none;
 		}
