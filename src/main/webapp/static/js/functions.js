@@ -1257,8 +1257,6 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 	}
 	
 	function fileErrorElement(fileInputElement, errorElementId, errorEl, errorMsg) {
-		fileInputElement.setCustomValidity(errorMsg);
-
 		if (!errorEl) {
 			errorEl = document.createElement('div');
 			errorEl.setAttribute('class','o_error');
@@ -1411,6 +1409,7 @@ function o_handleFileFormatSize(size) {
 function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveButton) {
 
 	fileInputElement.setCustomValidity('');
+	jQuery(document.getElementById(fileInputElement.getAttribute('id') + "_validation_error")).remove();
 	
 	if (fileInputElement.hasAttribute('data-max-num-files')) {
 		let maxNumFiles = fileInputElement.getAttribute('data-max-num-files');
@@ -1436,7 +1435,21 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 				let msgLimitExceeded = trans.translate('file.upload.error.limit.exeeded');
 				let msgUploadLimit = trans.translate('file.upload.limit');
 				let maxSizeFormatted = o_handleFileFormatSize(maxSize);
-				fileInputElement.setCustomValidity(msgLimitExceeded + " (" + msgUploadLimit + ": " + maxSizeFormatted + ")");
+				let errorElementId = fileInputElement.getAttribute('id') + "_validation_error";
+				let errorEl = document.getElementById(errorElementId);
+				if (!errorEl) {
+					errorEl = document.createElement('div');
+					errorEl.setAttribute('class','o_error');
+					errorEl.setAttribute('id', errorElementId);
+					fileInputElement.parentNode.parentNode.appendChild(errorEl);
+				}
+				errorEl.textContent = msgLimitExceeded + " (" + msgUploadLimit + ": " + maxSizeFormatted + ")";
+				fileInputElement.value = '';
+				o_resetFileMetadata(fileInputElement);
+				if (fakeInputElement) {
+					fakeInputElement.value = '';
+				}
+				return false;
 			}
 		}
 	}
