@@ -1673,6 +1673,7 @@ create table o_as_user_course_infos (
    initiallaunchdate datetime,
    recentlaunchdate datetime,
    visit mediumint,
+   activity double default 0,
    run bigint default 1 not null,
    timespend bigint,
    fk_identity bigint,

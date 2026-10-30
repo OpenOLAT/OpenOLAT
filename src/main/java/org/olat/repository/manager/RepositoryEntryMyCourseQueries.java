@@ -20,6 +20,7 @@
 package org.olat.repository.manager;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -44,6 +45,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
@@ -95,6 +97,8 @@ public class RepositoryEntryMyCourseQueries {
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	
@@ -195,7 +199,8 @@ public class RepositoryEntryMyCourseQueries {
 		Identity identity = params.getIdentity();
 		List<String> resourceTypes = params.getResourceTypes();
 
-		boolean needIdentityKey = false;
+		AdditionalParameters additionalParameters = new AdditionalParameters();
+		Date now = new Date();
 		boolean count = Number.class.equals(type);
 		boolean oracle = "oracle".equals(dbInstance.getDbVendor());
 		QueryBuilder sb = new QueryBuilder(2048);
@@ -210,7 +215,7 @@ public class RepositoryEntryMyCourseQueries {
 			if(params.getMarked() != null && params.getMarked().booleanValue()) {
 				sb.append(" 1 as marks,");
 			} else {
-				needIdentityKey = true;
+				additionalParameters.needIdentity();
 				sb.append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 				  .append("   where mark.creator.key=:identityKey and mark.resId=v.key and mark.resName='RepositoryEntry'")
 				  .append(" ) as marks,");
@@ -222,7 +227,7 @@ public class RepositoryEntryMyCourseQueries {
 			} else {
 				sb.append(" 0 as offers ");
 			}
-			needIdentityKey |= appendOrderByInSelect(params, sb);
+			appendOrderByInSelect(params, sb, additionalParameters);
 			sb.append(" from repositoryentry as v")
 			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res");
 			if(repositoryModule.isRatingEnabled() || repositoryModule.isCommentEnabled()) {
@@ -244,19 +249,17 @@ public class RepositoryEntryMyCourseQueries {
 		sb.append(" where ");
 		
 		boolean membershipMandatory = params.isMembershipMandatory() || params.isMembershipOnly();
-		AddParams addParams = appendMyViewAccessSubSelect(sb, roles, params.getFilters(),
+		appendMyViewAccessSubSelect(sb, roles, params.getFilters(),
 				membershipMandatory, params.isParticipantsOnly(), params.getOfferValidAt(), params.getOfferOrganisations(),
-				params.getEntryStatus());
+				params.getEntryStatus(), additionalParameters);
 		// Permissions on the status of the entries is unsolvable, abort search
-		if(addParams.isVeto()) {
+		if(additionalParameters.isVeto()) {
 			return null;
 		}
 		
-		needIdentityKey |= addParams.isIdentity();
-		
 		if(params.getFilters() != null) {
 			for(Filter filter:params.getFilters()) {
-				needIdentityKey |= appendFiltersInWhereClause(filter, sb);
+				appendFiltersInWhereClause(filter, sb, additionalParameters);
 			}
 		}
 		
@@ -397,10 +400,10 @@ public class RepositoryEntryMyCourseQueries {
 
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), type);
-		if (addParams.isOfferValidAt() && params.getOfferValidAt() != null) {
+		if (additionalParameters.isOfferValidAt() && params.getOfferValidAt() != null) {
 			dbQuery.setParameter( "offerValidAt", params.getOfferValidAt());
 		}
-		if (addParams.isOfferOrganisations() && params.getOfferOrganisations() != null && !params.getOfferOrganisations().isEmpty()) {
+		if (additionalParameters.isOfferOrganisations() && params.getOfferOrganisations() != null && !params.getOfferOrganisations().isEmpty()) {
 			dbQuery.setParameter("organisationKeys", params.getOfferOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
 		}
 		if(params.getParentEntry() != null) {
@@ -415,7 +418,7 @@ public class RepositoryEntryMyCourseQueries {
 			dbQuery.setParameter("resourcetypes", resourceTypes);
 		}
 		if(params.isLifecycleFilterDefined()) {
-			dbQuery.setParameter("now", new Date());
+			dbQuery.setParameter("now", now);
 		}
 		if(params.getRepositoryEntries() != null && !params.getRepositoryEntries().isEmpty()) {
 			List<Long> keys = params.getRepositoryEntries().stream()
@@ -455,16 +458,28 @@ public class RepositoryEntryMyCourseQueries {
 		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
 			dbQuery.setParameter("author", author);
 		}
-		if(needIdentityKey) {
+		if(additionalParameters.isIdentity()) {
 			dbQuery.setParameter("identityKey", identity.getKey());
 		}
+		if(additionalParameters.isNeedHalflife()) {
+			long halflife = userCourseInformationsManager.getNewnessHalflifeInSeconds();
+			dbQuery.setParameter("hnSeconds", Double.valueOf(halflife));
+		}
+		if(additionalParameters.isNeedScale()) {
+			double scale = userCourseInformationsManager.getNewnessScale(now);
+			dbQuery.setParameter("scale", Double.valueOf(scale));
+		}
+		if(additionalParameters.isNeedNow()) {
+			dbQuery.setParameter("now", LocalDateTime.now());
+		}
+		
 		return dbQuery;
 	}
 	
-	private AddParams appendMyViewAccessSubSelect(QueryBuilder sb, Roles roles, List<Filter> filters,
+	private void appendMyViewAccessSubSelect(QueryBuilder sb, Roles roles, List<Filter> filters,
 			boolean membershipMandatory, boolean participantsOnly,
 			Date offerValidAt, List<? extends OrganisationRef> offerOrganisations,
-			RepositoryEntryStatusEnum[] entryStatus) {
+			RepositoryEntryStatusEnum[] entryStatus, AdditionalParameters parameters) {
 		if(roles.isGuestOnly()) {
 			RepositoryEntryStatusEnum[] activeGuestStatus = subSetOf(ACService.RESTATUS_ACTIVE_GUEST, entryStatus);
 			sb.append(" v.publicVisible=true and v.status ").in(activeGuestStatus);
@@ -475,7 +490,10 @@ public class RepositoryEntryMyCourseQueries {
 			sb.append("    where offer.valid = true");
 			sb.append("      and offer.guestAccess = true");
 			sb.append(")");
-			return new AddParams(false, false, false, activeGuestStatus.length == 0);
+			if(activeGuestStatus.length == 0) {
+				parameters.veto();
+			}
+			return;
 		}
 
 		List<GroupRoles> inRoles = new ArrayList<>();
@@ -606,7 +624,17 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		
 		sb.append(")");
-		return new AddParams(true, offerValidAtUsed, offerOrganisationsUsed, numOfStatus == 0);
+		if(numOfStatus == 0) {
+			parameters.veto();
+		} else {
+			parameters.needIdentity();
+			if(offerValidAtUsed) {
+				parameters.needOfferValidAt();
+			}
+			if(offerOrganisationsUsed) {
+				parameters.needOfferOrganisations();
+			}
+		}
 	}
 	
 	private void appendMethodOfferExistsPrefix(QueryBuilder sb, List<? extends OrganisationRef> offerOrganisations) {
@@ -649,8 +677,7 @@ public class RepositoryEntryMyCourseQueries {
 		return allowed;
 	}
 	
-	private boolean appendFiltersInWhereClause(Filter filter, QueryBuilder sb) {
-		boolean needIdentityKey = false;
+	private void appendFiltersInWhereClause(Filter filter, QueryBuilder sb, AdditionalParameters needParameters) {
 		switch(filter) {
 			case showAll: break;
 			case onlyCourses:
@@ -660,26 +687,25 @@ public class RepositoryEntryMyCourseQueries {
 				  .append(" )");
 				break;
 			case passed:
-				needIdentityKey = true;
+				needParameters.needIdentity();
 				sb.append(" and exists (select ae2.key from assessmententry as ae2")
 				  .append("    where ae2.repositoryEntry.key = v.key and ae2.passed=true and ae2.entryRoot = true and ae2.identity.key=:identityKey")
 				  .append(" )");
 				break;
 			case notPassed:
-				needIdentityKey = true;
+				needParameters.needIdentity();
 				sb.append(" and exists (select ae3.key from assessmententry as ae3")
 				  .append("    where ae3.repositoryEntry.key = v.key and ae3.entryRoot = true and ae3.identity.key=:identityKey and ae3.passed=false")
 				  .append(" )");
 				break;
 			case withoutPassedInfos:
-				needIdentityKey = true;
+				needParameters.needIdentity();
 				sb.append(" and exists (select ae4.key from assessmententry as ae4")
 				  .append("    where ae4.repositoryEntry.key = v.key  and ae4.entryRoot = true and ae4.identity.key=:identityKey and ae4.passed is null")
 				  .append(" )");
 				break;
 			default: {}
 		}
-		return needIdentityKey;
 	}
 	
 	/**
@@ -690,26 +716,25 @@ public class RepositoryEntryMyCourseQueries {
 	 * @param sb
 	 * @return
 	 */
-	private boolean appendOrderByInSelect(SearchMyRepositoryEntryViewParams params, QueryBuilder sb) {
-		boolean needIdentityKey = false;
+	private void appendOrderByInSelect(SearchMyRepositoryEntryViewParams params, QueryBuilder sb, AdditionalParameters needParameters) {
 		OrderBy orderBy = params.getOrderBy();
 		if(orderBy != null) {
 			switch(orderBy) {
 				case automatic://need lastVisited
 				case lastVisited:
-					needIdentityKey = true;
+					needParameters.needIdentity();
 					sb.append(" ,(select infos2.recentLaunch from usercourseinfos as infos2")
 					  .append("    where infos2.resource=res and infos2.identity.key=:identityKey")
 					  .append(" ) as recentLaunch");
 					break;
 				case passed:
-					needIdentityKey = true;
+					needParameters.needIdentity();
 					sb.append(" ,(select eff3.passed from effstatement as eff3")
 					  .append("    where eff3.resource=res and eff3.identity.key=:identityKey and eff3.lastStatement=true")
 					  .append(" ) as passed");
 					break;
 				case score:
-					needIdentityKey = true;
+					needParameters.needIdentity();
 					sb.append(" ,(select ae2.score")
 					  .append("     from assessmententry as ae2")
 					  .append("    where ae2.repositoryEntry.key = v.key")
@@ -718,7 +743,7 @@ public class RepositoryEntryMyCourseQueries {
 					  .append("  ) as score");
 					break;
 				case completion:
-					needIdentityKey = true;
+					needParameters.needIdentity();
 					sb.append(" ,(select ae.completion")
 					  .append("     from assessmententry as ae")
 					  .append("    where ae.repositoryEntry.key = v.key")
@@ -726,10 +751,39 @@ public class RepositoryEntryMyCourseQueries {
 					  .append("      and ae.identity.key=:identityKey")
 					  .append("  ) as completion");
 					break;
+				case activity:
+					needParameters.needIdentity();
+					sb.append(" , (select infos3.activity from usercourseinfos as infos3")
+					  .append("   where infos3.resource.key=res.key and infos3.identity.key=:identityKey")
+					  .append(" ) as activity");
+					break;
+				case newest:
+					needParameters.needIdentity();
+					sb.append(" ,(select min(membership.creationDate) from repoentrytogroup rel ")
+					  .append("   inner join rel.group g")
+					  .append("   inner join g.members membership")
+					  .append("   where rel.entry.key=v.key and membership.identity.key=:identityKey and membership.role").in(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant)
+					  .append(" ) as memberSince");
+					break;
+				case relevance:
+					needParameters.needIdentity();
+					needParameters.needHalflife();
+					needParameters.needScale();
+					needParameters.needNow();
+					sb.append(" ,(coalesce((select infos3.activity from usercourseinfos as infos3")
+					  .append("     where infos3.resource.key=res.key and infos3.identity.key=:identityKey), 0)")
+					  .append("   + coalesce(:scale * (case when coalesce((select infos4.visit from usercourseinfos as infos4")
+					  .append("        where infos4.resource.key=res.key and infos4.identity.key=:identityKey), 0) <= 2 then 1.0 else 0.0 end)")
+					  .append("     * power(2.0, -((:now - (select min(membership.creationDate) from repoentrytogroup rel")
+					  .append("        inner join rel.group g")
+					  .append("        inner join g.members membership")
+					  .append("        where rel.entry.key=v.key and membership.identity.key=:identityKey and membership.role").in(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant)
+					  .append("       )) by second) / :hnSeconds), 0)")
+					  .append(" ) as relevance");
+					break;
 				default: //do nothing
 			}
 		}
-		return needIdentityKey;
 	}
 	
 	private void appendOrderBy(SearchMyRepositoryEntryViewParams params, QueryBuilder sb) {
@@ -870,6 +924,15 @@ public class RepositoryEntryMyCourseQueries {
 						}
 					}					
 					break;
+				case activity:
+					sb.append(" order by activity ").append("desc", "asc", asc).append(" nulls last, lower(v.displayname) asc, v.key asc ");
+					break;
+				case newest:
+					sb.append(" order by memberSince ").append("desc", "asc", asc).append(" nulls last, lower(v.displayname) asc, v.key asc ");
+					break;
+				case relevance:
+					sb.append(" order by relevance ").append("desc", "asc", asc).append(" nulls last, lower(v.displayname) asc, v.key asc ");
+					break;
 				default:
 					if(asc) {
 						sb.append(" order by lower(v.displayname) asc, lifecycle.validFrom desc nulls last, lower(v.externalRef) asc nulls last, v.key asc");
@@ -890,31 +953,72 @@ public class RepositoryEntryMyCourseQueries {
 		return sb;
 	}
 	
-	private static final class AddParams {
+	private static final class AdditionalParameters {
 		
-		private final boolean identity;
-		private final boolean offerValidAt;
-		private final boolean offerOrganisations;
+		private boolean identity;
+		private boolean offerValidAt;
+		private boolean offerOrganisations;
 		
-		private final boolean veto;
+		private boolean now;
+		private boolean scale;
+		private boolean halflife;
 		
-		public AddParams(boolean identity, boolean offerValidAt, boolean offerOrganisations, boolean veto) {
-			this.identity = identity;
-			this.offerValidAt = offerValidAt;
-			this.offerOrganisations = offerOrganisations;
-			this.veto = veto;
+		private boolean veto;
+		
+		public AdditionalParameters() {
+			//
+		}
+		
+		public void needIdentity() {
+			identity = true;
 		}
 		
 		public boolean isIdentity() {
 			return identity;
 		}
 		
+		public void needOfferValidAt() {
+			offerValidAt = true;
+		}
+		
 		public boolean isOfferValidAt() {
 			return offerValidAt;
 		}
 		
+		public void needOfferOrganisations() {
+			offerOrganisations = true;
+		}
+		
 		public boolean isOfferOrganisations() {
 			return offerOrganisations;
+		}
+		
+		public void needScale() {
+			scale = true;
+		}
+		
+		public boolean isNeedScale() {
+			return scale;
+		}
+		
+		public void needHalflife() {
+			halflife = true;
+		}
+		
+		public boolean isNeedHalflife() {
+			return halflife;
+		}
+		
+		public void needNow() {
+			now = true;
+		}
+		
+		public boolean isNeedNow() {
+			return now;
+		}
+		
+		public void veto() {
+			veto = true;
 		}
 		
 		public boolean isVeto() {

@@ -1692,6 +1692,7 @@ create table o_as_user_course_infos (
    initiallaunchdate timestamp,
    recentlaunchdate timestamp,
    visit int4,
+   activity float8 default 0,
    run int8 default 1,
    timespend int8,
    fk_identity int8,

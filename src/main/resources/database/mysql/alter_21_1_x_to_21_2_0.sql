@@ -40,3 +40,6 @@ create unique index idx_mcp_prof_to_id_uniq_idx on o_mcp_profile_to_identity (fk
 alter table o_mcp_profile_to_organisation add constraint mcp_prof_to_org_prof_idx foreign key (fk_profile) references o_mcp_profile (id);
 alter table o_mcp_profile_to_organisation add constraint mcp_prof_to_org_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 create unique index idx_mcp_prof_to_org_uniq_idx on o_mcp_profile_to_organisation (fk_profile, fk_organisation);
+
+-- User course infos
+alter table o_as_user_course_infos add column activity double default 0;

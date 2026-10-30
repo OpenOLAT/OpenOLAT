@@ -68,9 +68,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFilterEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -86,7 +84,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFilterEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
@@ -196,9 +197,9 @@ import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
-import org.olat.repository.ui.TableConfiguration;
 import org.olat.repository.ui.EmptyScreenData;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.repository.ui.TableConfiguration;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
 import org.olat.repository.ui.author.AuthoringEntryDataSource.AuthorSourceFilter;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryController;
@@ -688,8 +689,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
 		}
-		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(OrderBy.displayname.name(), true)));
-		
+		initSort(columnsModel);
 		initBatchButtons(formLayout);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, configuration.getTableId());
@@ -1002,6 +1002,30 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setFilters(true, filters, true, false);
 
 		updateEmptyStateConfig(tableEl.getSelectedFilterTab());
+	}
+	
+	private void initSort(FlexiTableColumnModel columnsModel) {
+		List<FlexiTableSort> sorts = new ArrayList<>(50);
+		sorts.add(new FlexiTableSort(translate("orderby.activity"), OrderBy.activity.name()));
+		sorts.add(new FlexiTableSort(translate("orderby.newest"), OrderBy.newest.name()));
+		sorts.add(new FlexiTableSort(translate("sort.relevance"), OrderBy.relevance.name()));
+		sorts.add(FlexiTableSort.SPACER);
+		
+		for(int i=0; i<columnsModel.getColumnCount(); i++) {
+			FlexiColumnModel fcm = columnsModel.getColumnModel(i);
+			if (fcm.isSortable() && fcm.getSortKey() != null) {
+				String header;
+				if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
+					header = fcm.getHeaderLabel();
+				} else {
+					header = translate(fcm.getHeaderKey());
+				}
+				sorts.add(new FlexiTableSort(header, fcm.getSortKey()));
+			}
+		}
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions(false, new SortKey(OrderBy.displayname.name(), true));
+		sortOptions.setSorts(sorts);
+		tableEl.setSortSettings(sortOptions);
 	}
 	
 	private SelectionValues getTaxonomyLevels() {

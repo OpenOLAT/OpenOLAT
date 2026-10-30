@@ -302,6 +302,9 @@ public class SearchMyRepositoryEntryViewParams {
 	public enum OrderBy {
 		automatic,
 		favorit,
+		activity,
+		relevance,
+		newest,
 		lastVisited,
 		passed,
 		score,

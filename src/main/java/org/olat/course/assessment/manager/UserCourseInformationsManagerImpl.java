@@ -49,6 +49,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -62,9 +63,21 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 	
 	private static final Logger log = Tracing.createLoggerFor(UserCourseInformationsManagerImpl.class);
 
+	private static final long DAY_IN_SECONDS = 24 * 60 * 60;
+	
 	@Autowired
 	private DB dbInstance;
-
+	
+	/**
+	 * Course activity half-life in days
+	 */
+	@Value("${course.activity.halflife.days:14}")
+	private long courseActivityHalflife;
+	@Value("${course.newness.weight:40}")
+	private long courseNewnessWeight;
+	@Value("${course.newness.halflife.days:7}")
+	private long courseNewnessHalflife;
+	
 	@Override
 	public UserCourseInfosImpl getUserCourseInformations(OLATResource resource, IdentityRef identity) {
 		try {
@@ -146,9 +159,11 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 	 * @return
 	 */
 	protected int lowLevelUpdate(OLATResource courseResource, Identity identity) {
+		double activity = activityIncrement(new Date());
 		return dbInstance.getCurrentEntityManager().createNamedQuery("updateLaunchDates")
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("resourceKey", courseResource.getKey())
+			.setParameter("increment", Double.valueOf(activity))
 			.setParameter("now", new Date())
 			.executeUpdate();
 	}
@@ -170,14 +185,16 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 					try {
 						int retryUpdatedRows = lowLevelUpdate(courseResource, identity);
 						if(retryUpdatedRows == 0) {
+							final Date now = new Date();
 							UserCourseInfosImpl infos = new UserCourseInfosImpl();
 							infos.setIdentity(identity);
-							infos.setCreationDate(new Date());
-							infos.setInitialLaunch(new Date());
-							infos.setLastModified(new Date());
-							infos.setRecentLaunch(new Date());
+							infos.setCreationDate(now);
+							infos.setInitialLaunch(now);
+							infos.setLastModified(now);
+							infos.setRecentLaunch(now);
 							infos.setVisit(1);
 							infos.setRun(1);
+							infos.setActivity(activityIncrement(now));
 							infos.setResource(courseResource);
 							dbInstance.getCurrentEntityManager().persist(infos);
 						}
@@ -189,6 +206,41 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 		}
 	}
 	
+	public double activityIncrement(Date now) {
+		double nowInSeconds = now.getTime() / 1000d;
+		double activityEpoch = ACTIVITY_EPOCH.toEpochMilli() / 1000d;
+		double h = courseActivityHalflife * DAY_IN_SECONDS;
+		return Math.pow(2.0d, (nowInSeconds - activityEpoch) / h);
+	}
+
+	@Override
+	public double calculateActivity(int visit, Date now) {
+		double nowInSeconds = now.getTime() / 1000d;
+		double activityEpoch = ACTIVITY_EPOCH.toEpochMilli() / 1000d;
+		double h = courseActivityHalflife * DAY_IN_SECONDS;
+		double activity = visit * Math.pow(2.0d, (nowInSeconds - activityEpoch) / h);
+		if(activity < 0.0d) {
+			activity = 0.0d;
+		}
+		return activity;
+	}
+	
+	
+	@Override
+	public long getNewnessWeight() {
+		return courseNewnessWeight;
+	}
+
+	@Override
+	public double getNewnessScale(Date now) {
+		return courseNewnessWeight * activityIncrement(now);
+	}
+
+	@Override
+	public long getNewnessHalflifeInSeconds() {
+		return courseNewnessHalflife * DAY_IN_SECONDS;
+	}
+
 	@Override
 	public void incrementUserCourseInformationsRun(OLATResource courseResource, Identity identity) {
 		UserCourseInfosImpl userCourseInfos = getUserCourseInformations(courseResource, identity);

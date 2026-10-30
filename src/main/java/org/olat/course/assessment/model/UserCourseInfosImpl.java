@@ -45,7 +45,9 @@ import org.olat.resource.OLATResourceImpl;
 
 @Entity(name="usercourseinfos")
 @Table(name="o_as_user_course_infos")
-@NamedQuery(name="updateLaunchDates", query="update usercourseinfos set visit=visit+1, recentLaunch=:now, lastModified=:now where identity.key=:identityKey and resource.key=:resourceKey")
+@NamedQuery(name="updateLaunchDates", query="""
+		update usercourseinfos set visit=visit+1, recentLaunch=:now, lastModified=:now, activity=activity+:increment
+		where identity.key=:identityKey and resource.key=:resourceKey""")
 public class UserCourseInfosImpl implements UserCourseInformations, Persistable, ModifiedInfo {
 
 	private static final long serialVersionUID = -6933599547069673655L;
@@ -84,6 +86,8 @@ public class UserCourseInfosImpl implements UserCourseInformations, Persistable,
 	private int visit;
 	@Column(name="timespend", nullable=false, insertable=true, updatable=true)
 	private long timeSpend;
+	@Column(name="activity", nullable=false, insertable=true, updatable=true)
+	private double activity;
 	
 	@Column(name="run", nullable=false, insertable=true, updatable=true)
 	private int run;
@@ -147,6 +151,15 @@ public class UserCourseInfosImpl implements UserCourseInformations, Persistable,
 
 	public void setVisit(int visit) {
 		this.visit = visit;
+	}
+
+	@Override
+	public double getActivity() {
+		return activity;
+	}
+
+	public void setActivity(double activity) {
+		this.activity = activity;
 	}
 
 	@Override

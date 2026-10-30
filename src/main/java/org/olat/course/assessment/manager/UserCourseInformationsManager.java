@@ -19,6 +19,9 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -37,6 +40,23 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public interface UserCourseInformationsManager {
+	
+	static final Instant ACTIVITY_EPOCH = LocalDateTime.of(2026, 1, 1, 0, 0, 0).toInstant(ZoneOffset.UTC);
+	
+	long getNewnessWeight();
+	
+	long getNewnessHalflifeInSeconds();
+
+	/**
+	 * The newness weight scaled to the same base as the stored activity
+	 * (relative to ACTIVITY_EPOCH): N * 2 ^ ((now - EPOCH) / H)
+	 *
+	 * @param now The current date
+	 * @return The scaled newness weight
+	 */
+	double getNewnessScale(Date now);
+
+	double calculateActivity(int visit, Date now);
 	
 	public List<UserCourseInformations> getUserCourseInformations(IdentityRef identity);
 	

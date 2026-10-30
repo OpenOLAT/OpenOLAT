@@ -19,9 +19,11 @@
  */
 package org.olat.repository.manager;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +45,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -87,6 +90,8 @@ public class RepositoryEntryAuthorQueries {
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
+	@Autowired
+	private UserCourseInformationsManager userCourseInformationsManager;
 	
 	public int countViews(SearchAuthorRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {
@@ -128,7 +133,7 @@ public class RepositoryEntryAuthorQueries {
 
 			boolean lectureEnabled = false;
 			boolean rollCallEnabled = false;
-			if(object.length > 5) {
+			if(lectureModule.isEnabled()) {
 				lectureEnabled = PersistenceHelper.extractBoolean(object, 6, false);
 				rollCallEnabled = PersistenceHelper.extractBoolean(object, 7, false);
 			}
@@ -155,7 +160,8 @@ public class RepositoryEntryAuthorQueries {
 		boolean oracle = "oracle".equals(dbInstance.getDbVendor());
 
 		boolean count = Number.class.equals(type);
-		boolean needIdentity = false;
+		AdditionalParameters additionalParameters = new AdditionalParameters();
+		
 		QueryBuilder sb = new QueryBuilder(2048);
 		if(count) {
 			sb.append("select count(v.key) ")
@@ -170,7 +176,7 @@ public class RepositoryEntryAuthorQueries {
 				sb.append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 				  .append("   where mark.creator.key=:identityKey and mark.resId=v.key and mark.resName='RepositoryEntry'")
 				  .append(" ) as marks,");
-				needIdentity = true;
+				additionalParameters.needIdentity();
 			}
 			sb.append(" (select count(offer.key) from acoffer as offer ")
 			  .append("   where offer.resource.key=res.key and offer.valid=true")
@@ -191,6 +197,7 @@ public class RepositoryEntryAuthorQueries {
 				sb.append(", lectureConfig.lectureEnabled")
 				  .append(", case when lectureConfig.rollCallEnabled=true then true else ").append(lectureModule.isRollCallDefaultEnabled()).append(" end as rollCallEnabled");
 			}
+			appendOrderByInSelect(params, sb, additionalParameters);
 			sb.append(" from repositoryentry as v")
 			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res")
 			  .append(" inner join fetch v.statistics as stats")
@@ -225,9 +232,9 @@ public class RepositoryEntryAuthorQueries {
 		sb.append(" where");
 		
 		if (params.isOwned() || params.isShared()) {
-			needIdentity |= appendOwnerAccessSubSelect(sb, params);
+			appendOwnerAccessSubSelect(sb, params, additionalParameters);
 		} else {
-			needIdentity |= appendAccessSubSelect(sb, params);
+			appendAccessSubSelect(sb, params, additionalParameters);
 		}
 
 		if (params.getOerRelease() != null && params.getOerRelease() != SearchAuthorRepositoryEntryViewParams.OERRelease.all) {
@@ -259,7 +266,7 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" and v.runtimeTypeString in (:runtimeTypes)");
 		}
 		if(params.getMarked() != null && params.getMarked().booleanValue()) {
-			needIdentity = true;
+			additionalParameters.needIdentity();
 			sb.append(" and exists (select mark2.key from ").append(MarkImpl.class.getName()).append(" as mark2 ")
 			  .append("   where mark2.creator.key=:identityKey and mark2.resId=v.key and mark2.resName='RepositoryEntry'")
 			  .append(" )");
@@ -426,9 +433,21 @@ public class RepositoryEntryAuthorQueries {
 		if (StringHelper.containsNonWhitespace(desc)) {
 			dbQuery.setParameter("desc", desc);
 		}
-		if(needIdentity) {
+		if(additionalParameters.isIdentity()) {
 			dbQuery.setParameter("identityKey", identity.getKey());
 		}
+		if(additionalParameters.isNeedNow()) {
+			dbQuery.setParameter("now", LocalDateTime.now());
+		}
+		if(additionalParameters.isNeedHalflife()) {
+			long halflife = userCourseInformationsManager.getNewnessHalflifeInSeconds();
+			dbQuery.setParameter("hnSeconds", Double.valueOf(halflife));
+		}
+		if(additionalParameters.isNeedScale()) {
+			double scale = userCourseInformationsManager.getNewnessScale(new Date());
+			dbQuery.setParameter("scale", Double.valueOf(scale));
+		}
+		
 		if (params.isLicenseTypeDefined()) {
 			dbQuery.setParameter("licenseTypeKeys", params.getLicenseTypeKeys());
 		}
@@ -465,7 +484,9 @@ public class RepositoryEntryAuthorQueries {
 		return dbQuery;
 	}
 	
-	private boolean appendAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
+	private void appendAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params,
+			AdditionalParameters addParams) {
+		
 		sb.append(" (");
 
 		if (params.isAdditionalOrganisationsAccessDefined()) {
@@ -562,7 +583,7 @@ public class RepositoryEntryAuthorQueries {
 		}
 
 		sb.append(")");
-		return true;
+		addParams.needIdentity();
 	}
 
 	private boolean isPublishedStatusAllowed(SearchAuthorRepositoryEntryViewParams params) {
@@ -588,7 +609,8 @@ public class RepositoryEntryAuthorQueries {
 		return list.toArray(new Enum<?>[list.size()]);
 	}
 	
-	private boolean appendOwnerAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
+	private void appendOwnerAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params,
+			AdditionalParameters addParams) {
 		boolean withOrClause = params.isOwned() && params.isShared();
 		if (withOrClause) {
 			sb.append(" ((");
@@ -643,8 +665,8 @@ public class RepositoryEntryAuthorQueries {
 		if (withOrClause) {
 			sb.append(" ))");
 		}
-
-		return true;
+		
+		addParams.needIdentity();
 	}
 
 	private boolean hasOnly(SearchAuthorRepositoryEntryViewParams params, RepositoryEntryStatusEnum[] allowed) {
@@ -657,6 +679,45 @@ public class RepositoryEntryAuthorQueries {
 			}
 		}
 		return true;
+	}
+	
+	private void appendOrderByInSelect(SearchAuthorRepositoryEntryViewParams params, QueryBuilder sb, AdditionalParameters addParams) {
+		OrderBy orderBy = params.getOrderBy();
+		if(orderBy != null) {
+			switch(orderBy) {
+			case activity:
+				addParams.needIdentity();
+				sb.append(" , (select infos3.activity from usercourseinfos as infos3")
+				  .append("   where infos3.resource.key=res.key and infos3.identity.key=:identityKey")
+				  .append(" ) as activity");
+				break;
+			case newest:
+				addParams.needIdentity();
+				sb.append(" ,(select min(membership.creationDate) from repoentrytogroup rel ")
+				  .append("   inner join rel.group g")
+				  .append("   inner join g.members membership")
+				  .append("   where rel.entry.key=v.key and membership.identity.key=:identityKey and membership.role").in(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant)
+				  .append(" ) as memberSince");
+				break;
+			case relevance:
+				addParams.needIdentity();
+				addParams.needHalflife();
+				addParams.needScale();
+				addParams.needNow();
+				sb.append(" ,(coalesce((select infos3.activity from usercourseinfos as infos3")
+				  .append("     where infos3.resource.key=res.key and infos3.identity.key=:identityKey), 0)")
+				  .append("   + coalesce(:scale * (case when coalesce((select infos4.visit from usercourseinfos as infos4")
+				  .append("        where infos4.resource.key=res.key and infos4.identity.key=:identityKey), 0) <= 2 then 1.0 else 0.0 end)")
+				  .append("     * power(2.0, -((:now - (select min(membership.creationDate) from repoentrytogroup rel")
+				  .append("        inner join rel.group g")
+				  .append("        inner join g.members membership")
+				  .append("        where rel.entry.key=v.key and membership.identity.key=:identityKey and membership.role").in(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant)
+				  .append("       )) by second) / :hnSeconds), 0)")
+				  .append(" ) as relevance");
+				break;
+				default: break;
+			}
+		}
 	}
 	
 	private void appendAuthorViewOrderBy(SearchAuthorRepositoryEntryViewParams params, QueryBuilder sb) {
@@ -807,6 +868,15 @@ public class RepositoryEntryAuthorQueries {
 					}
 					sb.append(", lower(v.displayname) asc");
 					break;
+				case activity:
+					sb.append(" order by activity ").append("desc", "asc", asc).append(" nulls last, lower(v.displayname) asc, v.key asc ");
+					break;
+				case newest:
+					sb.append(" order by memberSince ").append("desc", "asc", asc).append(" nulls last, lower(v.displayname) asc, v.key asc ");
+					break;
+				case relevance:
+					sb.append(" order by relevance ").append("desc", "asc", asc).append(" nulls last, lower(v.displayname) asc, v.key asc ");
+					break;
 			}
 		}
 	}
@@ -818,5 +888,50 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" desc");
 		}
 		return sb;
+	}
+	
+
+	private static final class AdditionalParameters {
+		
+		private boolean now;
+		private boolean scale;
+		private boolean halflife;
+		private boolean identity;
+		
+		public AdditionalParameters() {
+			//
+		}
+		
+		public void needIdentity() {
+			identity = true;
+		}
+		
+		public boolean isIdentity() {
+			return identity;
+		}
+		
+		public void needScale() {
+			scale = true;
+		}
+		
+		public boolean isNeedScale() {
+			return scale;
+		}
+		
+		public void needHalflife() {
+			halflife = true;
+		}
+		
+		public boolean isNeedHalflife() {
+			return halflife;
+		}
+		
+		public void needNow() {
+			now = true;
+		}
+		
+		public boolean isNeedNow() {
+			return now;
+		}
 	}
 }

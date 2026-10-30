@@ -489,7 +489,9 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	private void initSorters(FlexiTableElement tableElement) {
 		List<FlexiTableSort> sorters = new ArrayList<>(14);
-		sorters.add(new FlexiTableSort(translate("sort.relevance"), OrderBy.automatic.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.activity"), OrderBy.activity.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.newest"), OrderBy.newest.name()));
+		sorters.add(new FlexiTableSort(translate("sort.relevance"), OrderBy.relevance.name()));
 		if (searchParams.getParentEntry() != null) {
 			sorters.add(new FlexiTableSort(translate("orderby.custom"), OrderBy.custom.name()));
 		}
@@ -507,6 +509,7 @@ public class RepositoryEntryListController extends FormBasicController
 		if(repositoryModule.isRatingEnabled()) {
 			sorters.add(new FlexiTableSort(translate("orderby.rating"), OrderBy.rating.name()));
 		}
+		sorters.add(new FlexiTableSort(translate("sort.relevance"), OrderBy.automatic.name()));
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
 		options.setDefaultOrderBy(new SortKey(OrderBy.title.name(), true));
