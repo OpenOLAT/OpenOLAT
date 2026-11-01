@@ -1,0 +1,161 @@
+<div class="o_block_top" id="o_gd_col_ch_$r.getCId()">
+<p>Select a chooser to see the palette colors it uses. The other colors are muted.
+<strong>All choosers</strong> shows every color in use, the number tells how many choosers use it.
+The chips render the CSS class each chooser stores, through the alias classes of the theme.</p>
+
+<div class="o_gd_col_choosers" role="group" aria-label="Color choosers">
+	<button type="button" class="o_gd_col_chooser o_gd_col_active" data-chooser="all" aria-pressed="true">
+		<span class="o_gd_col_name">All choosers</span>
+		<span class="o_gd_col_count">$choosers.size() choosers on the palette</span>
+		<span class="o_gd_col_chips">
+		#foreach($chooser in $choosers)
+			#foreach($key in $chooser.keys)
+			#if($foreach.index < 3)<span class="o_gd_col_chip $r.escapeHtml($key.cssClass)"></span>#end
+			#end
+		#end
+		</span>
+	</button>
+	#foreach($chooser in $choosers)
+	<button type="button" class="o_gd_col_chooser" data-chooser="$chooser.id" data-cells="$r.escapeHtml($chooser.cellKeysAsString)" aria-pressed="false">
+		<span class="o_gd_col_name">$chooser.name</span>
+		<span class="o_gd_col_count">$chooser.keys.size() keys, $chooser.numOfCells palette colors#if(!$chooser.unmapped.isEmpty()), $chooser.unmapped.size() not on the palette#end</span>
+		<span class="o_gd_col_chips">
+			#foreach($key in $chooser.keys)<span class="o_gd_col_chip $r.escapeHtml($key.cssClass)" title="$r.escapeHtml($key.key)"></span>#end
+		</span>
+	</button>
+	#end
+</div>
+
+<div class="o_gd_col_scroll">
+<table class="o_gd_col_grid o_gd_col_compact">
+	<thead><tr>
+		<th></th>
+		#foreach($step in $steps)
+		#if($step == 500)<th class="o_gd_col_dead" title="dead zone"></th>#end
+		<th>$step</th>
+		#end
+	</tr></thead>
+	<tbody>
+	#set($themeGap = false)
+	#foreach($row in $rows)
+	#if($row.themeColor && !$themeGap)
+	#set($themeGap = true)
+	<tr class="o_gd_col_gap_row"><th></th><td colspan="11">Theme colors</td></tr>
+	#end
+	<tr>
+		<th class="o_gd_col_hue" scope="row">$row.label</th>
+		#foreach($cell in $row.cells)
+		#if($cell.step == 500)<td class="o_gd_col_dead"></td>#end
+		<td class="o_gd_col_cell" data-cell="$cell.id" data-count="$cell.choosers.size()" style="background: var(--o-${cell.hue}-${cell.step}, $cell.hex); color: $cell.fg;" title="$cell.id $cell.hex">
+			<span class="o_gd_col_keys"></span>
+		</td>
+		#end
+	</tr>
+	#end
+	</tbody>
+</table>
+</div>
+
+<div class="o_gd_col_detail">
+	<div data-detail="all">
+		<h4>All choosers</h4>
+		<table class="table table-condensed">
+			<thead><tr><th>Chooser</th><th>Source of the keys</th><th>Keys</th><th>Palette colors</th></tr></thead>
+			<tbody>
+			#foreach($chooser in $choosers)
+				<tr><td>$chooser.name</td><td>$chooser.source</td><td>$chooser.keys.size()</td><td>$chooser.numOfCells</td></tr>
+			#end
+			</tbody>
+		</table>
+		<h4>Color choosers not on the palette</h4>
+		<ul>
+			<li>Course layout generator (legacy): HTML color names or free hex</li>
+			<li>Selectus category: free hex</li>
+			<li>QTI drawing interaction: 7 pen colors</li>
+			<li>HTML editor (TinyMCE): text and background colors of the editor</li>
+			<li>Content editor table style: <code>b_*</code> classes of <code>olat.properties</code></li>
+			<li>Custom color categories of the administration: free CSS class</li>
+		</ul>
+	</div>
+	#foreach($chooser in $choosers)
+	<div data-detail="$chooser.id" style="display: none;">
+		<h4>$chooser.name</h4>
+		<div class="o_gd_col_picker">
+		#if($chooser.picker)
+			<p class="o_hint">The real color picker, built with the same colors as in its original place. Nothing is saved.</p>
+			$r.render($chooser.picker)
+		#else
+			<p class="o_hint">$chooser.noPickerHint</p>
+		#end
+		</div>
+		<p>Source of the keys: $chooser.source</p>
+		<p>Used in:</p>
+		<ul>
+		#foreach($use in $chooser.usedIn)
+			<li>$use</li>
+		#end
+		</ul>
+		<table class="table table-condensed">
+			<thead><tr><th>Key</th><th>Stored CSS class</th><th>Rendered</th><th>Hue</th><th>Variant</th><th>Step</th><th>Fill</th></tr></thead>
+			<tbody>
+			#foreach($key in $chooser.keys)
+				<tr>
+					<td>$r.escapeHtml($key.key)</td>
+					<td><code>$r.escapeHtml($key.cssClass)</code></td>
+					<td><span class="o_gd_col_chip $r.escapeHtml($key.cssClass)"></span></td>
+					<td>$key.hue</td>
+					<td>$key.variant</td>
+					<td>$key.step</td>
+					<td><code>$key.hex</code></td>
+				</tr>
+			#end
+			#foreach($key in $chooser.unmapped)
+				<tr>
+					<td>$r.escapeHtml($key.key)</td>
+					<td><code>#if($key.cssClass)$r.escapeHtml($key.cssClass)#end</code></td>
+					<td colspan="5">not on the palette</td>
+				</tr>
+			#end
+			</tbody>
+		</table>
+	</div>
+	#end
+</div>
+</div>
+<script>
+"use strict";
+jQuery(function() {
+	var root = jQuery("#o_gd_col_ch_$r.getCId()");
+	function show(chooser, cells) {
+		root.find(".o_gd_col_chooser").each(function() {
+			var active = jQuery(this).data("chooser") === chooser;
+			jQuery(this).toggleClass("o_gd_col_active", active).attr("aria-pressed", active ? "true" : "false");
+		});
+		root.find("[data-detail]").each(function() {
+			jQuery(this).toggle(jQuery(this).data("detail") === chooser);
+		});
+		var keys = {};
+		if (cells) {
+			cells.split(" ").forEach(function(entry) {
+				var i = entry.indexOf(":");
+				keys[entry.substring(0, i)] = entry.substring(i + 1).split(",").join(", ");
+			});
+		}
+		root.find("td[data-cell]").each(function() {
+			var cell = jQuery(this);
+			var count = +cell.data("count");
+			var used = chooser === "all" ? count > 0 : keys.hasOwnProperty(cell.data("cell"));
+			cell.toggleClass("o_gd_col_used", used).toggleClass("o_gd_col_muted", !used);
+			cell.find(".o_gd_col_badge").remove();
+			cell.find(".o_gd_col_keys").text(used && chooser !== "all" ? keys[cell.data("cell")] : "");
+			if (used && chooser === "all") {
+				cell.append("<span class='o_gd_col_badge' title='Used by " + count + " choosers'>" + count + "</span>");
+			}
+		});
+	}
+	root.find(".o_gd_col_chooser").on("click", function() {
+		show(jQuery(this).data("chooser"), jQuery(this).attr("data-cells"));
+	});
+	show("all");
+});
+</script>

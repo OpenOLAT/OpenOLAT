@@ -1,0 +1,76 @@
+<div class="o_block_top" id="o_gd_col_sw_$r.getCId()">
+<p>A swatch is the set of roles of one hue. The class <code>.o_swatch_{hue}</code> sets the role tokens as CSS custom properties,
+the modifiers <code>.o_swatch_tint</code> and <code>.o_swatch_dark</code> replace the solid fill roles. Components read the tokens and set no colors of their own.
+The contrast ratios below are measured in the browser from the computed colors; a red outline marks a value below 4.5:1.</p>
+
+<table class="table table-condensed">
+	<thead><tr><th>Token</th><th>Use</th><th>Rule</th></tr></thead>
+	<tbody>
+		<tr><td><code>--o-sw-bg</code></td><td>solid fill: category bar, avatar, calendar event</td><td>solid 400 (bright) or 500 (deep), tint 300, dark 500 (bright) or 700 (deep)</td></tr>
+		<tr><td><code>--o-sw-fg</code></td><td>text and icons on the fill</td><td>white or step 900, 4.5:1 on <code>--o-sw-bg</code></td></tr>
+		<tr><td><code>--o-sw-border</code></td><td>border of the fill</td><td>one step darker than the fill, 3:1 on white</td></tr>
+		<tr><td><code>--o-sw-soft-bg</code></td><td>tinted block: page editor background, alert box</td><td>step 50</td></tr>
+		<tr><td><code>--o-sw-soft-fg</code></td><td>text on the tinted block</td><td>step 700 or darker, 4.5:1 on <code>--o-sw-soft-bg</code></td></tr>
+		<tr><td><code>--o-sw-soft-border</code></td><td>border of the tinted block</td><td>step 200</td></tr>
+		<tr><td><code>--o-sw-text</code></td><td>colored text and icons on white</td><td>step 500 or darker, 4.5:1 on white</td></tr>
+	</tbody>
+</table>
+
+<div class="o_gd_col_swatches">
+#set($themeGap = false)
+#foreach($row in $rows)
+	#if($row.themeColor && !$themeGap)
+	#set($themeGap = true)
+	<h3 class="o_gd_col_theme_head">Theme colors <small>brand colors of the current theme</small></h3>
+	#end
+	<div class="o_gd_col_swatch o_swatch_$row.hue">
+		<h4>$row.label <small>#if($row.themeColor) <code>$row.hue</code>, #end#if($row.bright) bright #else deep #end</small></h4>
+		<div class="o_gd_col_samples">
+			<div class="o_gd_col_sample">
+				<div class="o_gd_col_solid" data-o-contrast>Solid <i class="o_icon o_icon_check"> </i></div>
+				<code>.o_swatch_$row.hue</code>
+			</div>
+			<div class="o_gd_col_sample o_swatch_$row.hue o_swatch_tint">
+				<div class="o_gd_col_solid" data-o-contrast>Tint <i class="o_icon o_icon_check"> </i></div>
+				<code>+ .o_swatch_tint</code>
+			</div>
+			<div class="o_gd_col_sample o_swatch_$row.hue o_swatch_dark">
+				<div class="o_gd_col_solid" data-o-contrast>Dark <i class="o_icon o_icon_check"> </i></div>
+				<code>+ .o_swatch_dark</code>
+			</div>
+			<div class="o_gd_col_sample">
+				<div class="o_gd_col_soft" data-o-contrast>Soft <i class="o_icon o_icon_info"> </i></div>
+				<code>--o-sw-soft-*</code>
+			</div>
+			<div class="o_gd_col_sample">
+				<div class="o_gd_col_text" data-o-contrast>Text <i class="o_icon o_icon_star"> </i></div>
+				<code>--o-sw-text</code>
+			</div>
+		</div>
+	</div>
+#end
+</div>
+</div>
+<script>
+"use strict";
+jQuery(function() {
+	function channel(c) {
+		c = c / 255;
+		return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+	}
+	function luminance(rgb) {
+		var m = rgb.match(/\d+(\.\d+)?/g);
+		return 0.2126 * channel(+m[0]) + 0.7152 * channel(+m[1]) + 0.0722 * channel(+m[2]);
+	}
+	jQuery("#o_gd_col_sw_$r.getCId() [data-o-contrast]").each(function() {
+		var style = window.getComputedStyle(this);
+		var l1 = luminance(style.color);
+		var l2 = luminance(style.backgroundColor);
+		var ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+		jQuery(this).append("<span class='o_gd_col_ratio'>" + ratio.toFixed(2) + ":1</span>");
+		if (ratio < 4.5) {
+			jQuery(this).addClass("o_gd_col_fail");
+		}
+	});
+});
+</script>

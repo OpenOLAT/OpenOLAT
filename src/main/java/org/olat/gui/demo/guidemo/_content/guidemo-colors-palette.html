@@ -1,0 +1,60 @@
+<div class="o_block_top">
+<p>15 hues with 10 steps each. Every step of a hue has the same relative luminance as the same step of the other hues,
+so a step number stands for the same lightness in every hue. Each cell shows the hex value, the contrast of its text color
+and the roles the step has in the swatches. The cell color is <code>var(--o-{hue}-{step})</code> of the current theme.
+Below the 15 hues, separated, are the theme colors: the brand colors of the current theme, generated from <code>&#36;o-theme-colors</code>
+(default <code>&#36;brand-primary</code>) with the same rule. They change with the theme; the 15 hues do not.</p>
+<div class="o_gd_col_scroll">
+<table class="o_gd_col_grid">
+	<thead><tr>
+		<th></th>
+		#foreach($step in $steps)
+		#if($step == 500)<th class="o_gd_col_dead" title="dead zone"></th>#end
+		<th>$step</th>
+		#end
+	</tr></thead>
+	<tbody>
+	#set($themeGap = false)
+	#foreach($row in $rows)
+	#if($row.themeColor && !$themeGap)
+	#set($themeGap = true)
+	<tr class="o_gd_col_gap_row"><th></th><td colspan="11">Theme colors <span class="o_small">brand colors of the current theme, <code>&#36;o-theme-colors</code></span></td></tr>
+	#end
+	<tr>
+		<th class="o_gd_col_hue" scope="row">$row.label<br><span class="o_small">#if($row.themeColor) brand, #end#if($row.bright) bright #else deep #end</span></th>
+		#foreach($cell in $row.cells)
+		#if($cell.step == 500)<td class="o_gd_col_dead"></td>#end
+		<td class="o_gd_col_cell" style="background: var(--o-${cell.hue}-${cell.step}, $cell.hex); color: $cell.fg;" title="--o-${cell.hue}-${cell.step}, $cell.ratio:1 text, $cell.onWhite:1 on white">
+			<span class="o_gd_col_hex">$cell.hex</span><br>
+			$cell.ratio:1
+			#if($cell.roles != "")<span class="o_gd_col_roles">$cell.roles</span>#end
+		</td>
+		#end
+	</tr>
+	#end
+	</tbody>
+</table>
+</div>
+
+<h4>Rules</h4>
+<ul>
+	<li><strong>Steps 50 to 400</strong> are tints. Their text is step 900 of the same hue (8:1 and more).</li>
+	<li><strong>Steps 500 to 900</strong> are shades. Their text is white (4.85:1 and more). Step 500 is also the first step that reaches 4.5:1 as text on white.</li>
+	<li><strong>Dead zone</strong> (dashed line): between 400 and 500 the scale skips the lightness where neither white nor dark text reaches 4.5:1.</li>
+	<li><strong>Bright hues</strong> (yellow, orange, lime, green, cyan) use step 400 as solid fill with dark text. A yellow with white text reads as brown.</li>
+	<li><strong>Deep hues</strong> (all others) use step 500 as solid fill with white text.</li>
+	<li><strong>Theme colors</strong> use the brand color itself as solid fill ("solid brand"): it replaces the step with the same text polarity and the nearest luminance. A brand color where neither white nor dark text reaches 4.5:1 uses the generated step 500. Tint is step 300 (50 for a solid fill of 300 or lighter), dark is two steps darker than the solid fill.</li>
+	<li>Contrast rule: 4.5:1 for every text on every fill, also for large and bold text. The theme compile fails when a pair is below.</li>
+</ul>
+
+<h4>Roles in the cells</h4>
+<dl class="o_gd_col_legend">
+	<div><dt>solid</dt><dd>default fill of the swatch</dd></div>
+	<div><dt>tint</dt><dd>light fill, variant <code>o_swatch_tint</code></dd></div>
+	<div><dt>dark</dt><dd>dark fill, variant <code>o_swatch_dark</code></dd></div>
+	<div><dt>soft-bg</dt><dd>tinted block background</dd></div>
+	<div><dt>soft-border</dt><dd>border of the tinted block</dd></div>
+	<div><dt>soft-fg</dt><dd>text on the tinted block</dd></div>
+	<div><dt>text</dt><dd>colored text and icons on white</dd></div>
+</dl>
+</div>

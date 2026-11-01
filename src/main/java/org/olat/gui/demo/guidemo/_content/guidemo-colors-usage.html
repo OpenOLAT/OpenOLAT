@@ -1,0 +1,83 @@
+#[[
+<div class="o_block_top">
+<h4>Sources</h4>
+<p>The palette has one source: <code>$o-palette</code> in the Sass of the theme. Everything else is computed from it.</p>
+<table class="table table-condensed">
+	<thead><tr><th>Where</th><th>What</th></tr></thead>
+	<tbody>
+		<tr><td><code>themes/light/_palette.scss</code></td><td><code>$o-palette</code> (15 hues &times; 10 steps), <code>$o-palette-bright</code>, the computed roles <code>$o-swatches</code>, the legacy alias tables and the functions <code>o-palette()</code>, <code>o-swatch-alias-color()</code>, <code>o-swatch-alias-on-white()</code>, <code>o-swatch-alias-selector()</code></td></tr>
+		<tr><td><code>themes/light/_functions.scss</code></td><td><code>o-on-color()</code>: selects the foreground from a fixed list and stops the build below 4.5:1</td></tr>
+		<tr><td><code>themes/light/modules/_palette_vars.scss</code></td><td>emits <code>--o-{hue}-{step}</code> on <code>:root</code> in <code>theme.css</code> and <code>content.css</code> (not in <code>email.css</code>)</td></tr>
+		<tr><td><code>themes/light/modules/_swatches.scss</code></td><td><code>.o_swatch_{hue}</code>, <code>.o_swatch_tint</code>, <code>.o_swatch_dark</code>; every legacy chooser class (<code>.o_cal_blue</code>, <code>.o_colcat_red</code>, ...) extends its swatch</td></tr>
+		<tr><td><code>themes/light/_config.scss</code></td><td><code>$o-color-*</code>, <code>$o-cn-style-cat-*-color</code>, <code>$o-edu-type-*</code> and the course quota colors read the swatches, no literal hex</td></tr>
+		<tr><td><code>org.olat.core.commons.services.color</code></td><td><code>ColorService</code> (<code>resolve()</code>, <code>getPalette()</code>, <code>getBackgroundColor()</code>), <code>Palette</code>, <code>Swatch</code>, <code>ColorFamily</code></td></tr>
+		<tr><td><code>org.olat.core.gui.themes.Theme</code></td><td><code>init()</code> reads the palette from <code>theme.css</code> of the selected theme, fallback <code>light/theme.css</code></td></tr>
+		<tr><td><code>olat.properties</code></td><td><code>color.list</code> and <code>color.default</code>: the keys of the color list chooser</td></tr>
+	</tbody>
+</table>
+
+<h4>1. A component that shows a chooser color</h4>
+<p>Put the stored class or the swatch class on the element. Read the role tokens in the module. Write the rule once for all colors.</p>
+<pre><code>&lt;div class="o_my_item o_swatch_blue"&gt;...&lt;/div&gt;
+&lt;div class="o_my_item o_swatch_blue o_swatch_dark"&gt;...&lt;/div&gt;
+&lt;div class="o_my_item o_cal_navy"&gt;...&lt;/div&gt;   &lt;!-- legacy class, same tokens --&gt;</code></pre>
+<pre><code>// modules/_my_module.scss
+.o_my_item {
+	background: var(--o-sw-bg);
+	color: var(--o-sw-fg);
+	border: 1px solid var(--o-sw-border);
+}
+.o_my_item.o_my_soft {
+	background: var(--o-sw-soft-bg);
+	color: var(--o-sw-soft-fg);
+	border-color: var(--o-sw-soft-border);
+}
+.o_my_label { color: var(--o-sw-text); }   // text on white</code></pre>
+
+<h4>2. A fixed palette color in Sass</h4>
+<pre><code>$o-my-color: o-palette("blue", 500);                         // a primitive
+$o-my-fg: map.get(map.get($o-swatches, "blue"), "fg");       // a role of a hue
+$o-my-cat: o-swatch-alias-color("o_colcat_red");             // fill of a legacy class
+$o-my-label: o-swatch-alias-on-white("o_colcat_orange");     // text on white, close to the fill
+$o-my-text: o-on-color($o-my-bg, (#FFFFFF, o-palette("blue", 900)));  // build fails below 4.5:1</code></pre>
+
+<h4>3. A palette color in plain CSS or content</h4>
+<pre><code>.o_my_chart_line { stroke: var(--o-green-500); }</code></pre>
+
+<h4>4. A palette color in Java</h4>
+<p>Use Java only when a hex value is needed outside the browser CSS, e.g. a baked SVG or a chart library.</p>
+<pre><code>Swatch swatch = colorService.resolve(storedValue, ColorFamily.CALENDAR);  // "blue", "o_cal_blue" -&gt; blue, dark
+String fill = colorService.getBackgroundColor(swatch, "#717171");
+Palette palette = colorService.getPalette();                               // palette of the current theme
+String text = palette.fg(swatch);                                          // white or step 900
+String onWhite = palette.text("blue");                                     // step 500</code></pre>
+
+<h4>Rules</h4>
+<ul>
+	<li>Do not write chooser hex values in modules or Java. The only hex values are in <code>$o-palette</code>.</li>
+	<li>Do not store hex values. Store the key or the legacy class, the alias maps resolve it to a swatch.</li>
+	<li>Do not use <code>o-a11y-color()</code> on chooser colors. It shifts the hue (gold becomes olive). Use <code>o-on-color()</code> or <code>o-swatch-alias-on-white()</code>.</li>
+	<li>A new chooser key needs an alias entry in <code>_palette.scss</code> and in <code>ColorServiceImpl</code>. Keep both tables in sync.</li>
+	<li>Every text on a fill has 4.5:1, also for large and bold text. Borders of fills have 3:1 on white.</li>
+</ul>
+
+<h4>Client themes</h4>
+<ul>
+	<li>A client theme can override the values of <code>$o-palette</code> in its config before the import of the light theme. It must keep all 15 hue names, the alias tables need them. Every step needs a foreground with 4.5:1, otherwise the compile fails.</li>
+	<li>OpenOlat reads the palette from the compiled <code>theme.css</code> of the active theme. Badges and report charts follow the client palette.</li>
+	<li>A theme without the <code>--o-{hue}-{step}</code> properties, e.g. a theme compiled before the palette, uses the palette of the light theme, without theme colors.</li>
+	<li><code>compiletheme.sh</code> compiles the theme and writes nothing else.</li>
+</ul>
+
+<h4>Theme colors</h4>
+<p>The brand colors of a theme, in addition to the 15 hues. Default: one color, <code>$brand-primary</code>. Needs Dart Sass 1.79.0 or later.</p>
+<pre><code>// client config, before the import of the light theme
+$o-theme-colors: ($brand-primary, $brand-accent, #0090C5);</code></pre>
+<ul>
+	<li><code>themes/light/_palette_theme.scss</code> generates the 10 steps per color and appends <code>theme1</code> ... <code>themeN</code> to <code>$o-palette</code> and <code>$o-swatches</code>.</li>
+	<li>CSS: <code>--o-theme{n}-{step}</code>, <code>--o-theme{n}</code> (the solid fill) and <code>.o_swatch_theme{n}</code>.</li>
+	<li>Java: <code>Palette.getThemeColors()</code> and <code>ColorService.getThemeColors()</code> return only the colors the theme defines. <code>resolve("theme3")</code> returns <code>theme1</code> when the theme has fewer colors.</li>
+	<li>Store the key <code>theme{n}</code>, never the hex value: the object then follows the theme.</li>
+</ul>
+</div>
+]]#

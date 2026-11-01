@@ -1,0 +1,53 @@
+<h2>Colors</h2>
+<p class="o_block">The color palette of the current theme, the swatch roles, how to use them, and the palette colors each color chooser uses.
+All values on this page come from the compiled <code>theme.css</code> of the current theme and from <code>ColorService</code>.</p>
+#if($hasPalette)
+<style>
+.o_gd_col .o_gd_col_scroll { overflow-x: auto; }
+.o_gd_col table.o_gd_col_grid { border-collapse: separate; border-spacing: 3px; }
+.o_gd_col .o_gd_col_grid th { font-weight: normal; font-size: 12px; color: #595959; text-align: center; padding: 0 2px; }
+.o_gd_col .o_gd_col_grid th.o_gd_col_hue { text-align: right; padding-right: 8px; white-space: nowrap; }
+.o_gd_col .o_gd_col_cell { position: relative; min-width: 62px; height: 58px; padding: 4px 5px; border-radius: 4px; font-size: 11px; line-height: 1.3; vertical-align: top; }
+.o_gd_col .o_gd_col_cell .o_gd_col_hex { font-family: monospace; font-size: 11px; }
+.o_gd_col .o_gd_col_cell .o_gd_col_roles { display: block; margin-top: 2px; opacity: .85; }
+.o_gd_col .o_gd_col_compact .o_gd_col_cell { min-width: 48px; height: 44px; }
+.o_gd_col .o_gd_col_dead { width: 0; min-width: 0; padding: 0; border-left: 2px dashed #717171; }
+.o_gd_col .o_gd_col_legend { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 12px 0; }
+.o_gd_col .o_gd_col_legend dt { font-family: monospace; }
+.o_gd_col .o_gd_col_legend dd { margin: 0; }
+.o_gd_col .o_gd_col_swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); gap: 16px; }
+.o_gd_col .o_gd_col_swatch { border: 1px solid #DDDDDD; border-radius: 6px; padding: 12px; }
+.o_gd_col .o_gd_col_swatch h4 { margin: 0 0 8px 0; }
+.o_gd_col .o_gd_col_samples { display: flex; flex-wrap: wrap; gap: 8px; }
+.o_gd_col .o_gd_col_sample { flex: 1 1 76px; }
+.o_gd_col .o_gd_col_sample > div { padding: 6px 8px; border-radius: 4px; min-height: 52px; font-size: 12px; }
+.o_gd_col .o_gd_col_sample code { display: block; font-size: 10px; margin-top: 4px; padding: 0; background: none; color: #595959; white-space: normal; }
+.o_gd_col .o_gd_col_solid { background: var(--o-sw-bg); color: var(--o-sw-fg); border: 1px solid var(--o-sw-border); }
+.o_gd_col .o_gd_col_soft { background: var(--o-sw-soft-bg); color: var(--o-sw-soft-fg); border: 1px solid var(--o-sw-soft-border); }
+.o_gd_col .o_gd_col_text { background: #FFFFFF; color: var(--o-sw-text); border: 1px solid #DDDDDD; }
+.o_gd_col .o_gd_col_ratio { display: block; font-weight: bold; }
+.o_gd_col .o_gd_col_fail { outline: 3px solid #D2343C; }
+.o_gd_col .o_gd_col_chip { display: inline-block; min-width: 22px; height: 22px; border-radius: 4px; background: var(--o-sw-bg); border: 1px solid var(--o-sw-border); vertical-align: middle; }
+.o_gd_col .o_gd_col_choosers { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-bottom: 16px; }
+.o_gd_col button.o_gd_col_chooser { text-align: left; white-space: normal; padding: 8px 10px; border: 2px solid #DDDDDD; border-radius: 6px; background: #FFFFFF; }
+.o_gd_col button.o_gd_col_chooser:hover { border-color: #717171; }
+.o_gd_col button.o_gd_col_chooser.o_gd_col_active { border-color: #222222; box-shadow: 0 0 0 2px #CBCBCB; }
+.o_gd_col button.o_gd_col_chooser .o_gd_col_name { display: block; font-weight: bold; margin-bottom: 2px; }
+.o_gd_col button.o_gd_col_chooser .o_gd_col_count { display: block; font-size: 12px; color: #595959; margin-bottom: 6px; }
+.o_gd_col button.o_gd_col_chooser .o_gd_col_chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.o_gd_col .o_gd_col_picker { max-width: 320px; margin-bottom: 16px; }
+.o_gd_col .o_gd_col_gap_row td { padding: 18px 0 4px 0; font-weight: bold; border-top: 2px solid #DDDDDD; }
+.o_gd_col .o_gd_col_theme_head { grid-column: 1 / -1; margin: 16px 0 0 0; padding-top: 12px; border-top: 2px solid #DDDDDD; }
+.o_gd_col .o_gd_col_muted { opacity: .12; }
+.o_gd_col .o_gd_col_used { box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #222222; }
+.o_gd_col .o_gd_col_badge { position: absolute; top: -8px; right: -8px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #222222; color: #FFFFFF; font-size: 11px; line-height: 20px; text-align: center; font-weight: bold; }
+.o_gd_col .o_gd_col_keys { display: block; font-size: 10px; word-break: break-word; }
+.o_gd_col .o_gd_col_detail h4 { margin-top: 16px; }
+.o_gd_col pre { font-size: 12px; }
+</style>
+<div class="o_gd_col">
+	$r.render("tabs")
+</div>
+#else
+<div class="o_warning">The current theme has no palette, and the palette of the light theme could not be read. See the log for the message of <code>Theme.init()</code>.</div>
+#end
