@@ -21,9 +21,15 @@ package org.olat.modules.forms.ui;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.Palette;
+import org.olat.core.commons.services.color.Swatch;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -40,9 +46,10 @@ import org.olat.modules.forms.EvaluationFormSession;
 public class ReportHelper {
 
 	private static final String DEFAULT_COLOR = "#777";
-	private static final String[] DEFAULT_COLORS = new String[]{
-			"#EDC951", "#CC333F", "#00A0B0", "#4E4E6C", "#8DC1A1",
-			"#F7BC00", "#BB6511", "#B28092", "#003D40", "#FF69D1"
+	/** Hues of the series, the solid swatch of each hue is used */
+	private static final String[] SERIES_HUES = {
+			"blue", "orange", "green", "violet", "red",
+			"cyan", "yellow", "pink", "lime", "brown"
 	};
 	
 	private final Legend anonymousLegend;
@@ -75,7 +82,12 @@ public class ReportHelper {
 		
 		String[] colors;
 		if (builder.hasColors) {
-			colors = DEFAULT_COLORS;
+			Palette palette = builder.palette;
+			if (palette == null) {
+				ColorService colorService = CoreSpringFactory.getImpl(ColorService.class);
+				palette = colorService == null ? null : colorService.getPalette();
+			}
+			colors = seriesColors(palette);
 		} else {
 			colors = new String[] { DEFAULT_COLOR };
 		}
@@ -149,12 +161,35 @@ public class ReportHelper {
 		return new Builder(locale);
 	}
 	
+	/**
+	 * @return The palette hues of the series, in the order of use
+	 */
+	public static List<String> getSeriesHues() {
+		return List.of(SERIES_HUES);
+	}
+
+	/**
+	 * @return The solid fill of each series hue of the palette, or the
+	 * 		default colour if there is no palette
+	 */
+	static String[] seriesColors(Palette palette) {
+		if (palette == null) {
+			return new String[] { DEFAULT_COLOR };
+		}
+		String[] colors = Stream.of(SERIES_HUES)
+				.filter(hue -> palette.getHues().contains(hue))
+				.map(hue -> palette.bg(new Swatch(hue, Swatch.SOLID)))
+				.toArray(String[]::new);
+		return colors.length == 0 ? new String[] { DEFAULT_COLOR } : colors;
+	}
+	
 	public static class Builder {
 		
 		private Locale locale;
 		private String anonymousName = null;
 		private String anonymousColor = null;
 		private boolean hasColors = false;
+		private Palette palette;
 		private LegendNameGenerator legendNameGenerator;
 		private Comparator<EvaluationFormSession> comparator;
 		private boolean legendDependentOnExecutor = true;
@@ -173,8 +208,26 @@ public class ReportHelper {
 			return this;
 		}
 
+		/**
+		 * Use the palette of the current GUI theme for the series colours.
+		 * 
+		 * @return Itself
+		 */
 		public Builder withColors() {
 			this.hasColors = true;
+			return this;
+		}
+		
+		/**
+		 * Use the given palette for the series colours, e.g. in a test without
+		 * Spring.
+		 * 
+		 * @param palette The palette
+		 * @return Itself
+		 */
+		public Builder withColors(Palette palette) {
+			this.hasColors = true;
+			this.palette = palette;
 			return this;
 		}
 		

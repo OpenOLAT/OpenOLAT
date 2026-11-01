@@ -21,10 +21,12 @@ package org.olat.core.gui.themes;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.Palette;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.GUISettings;
@@ -57,12 +59,14 @@ public class Theme {
 	private static final String CUSTOM_MANIFEST_FILENAME = "meta/manifest.json";
 	private static final String CUSTOM_MS_APPLICATION_CONFIG_FILENAM = "meta/msapplication-config.xml";
 	private static final String CUSTOM_EMAIL_CSS_FILENAME = "email.css";
+	private static final String THEME_CSS_FILENAME = "theme.css";
 	
 	private String identifyer;
 	private String baseURI;
 	private String relPathToThemesDir;
 	private String htmlHeaderElements;
 	private String emailCss;
+	private Palette palette;
 
 	/**
 	 * Theme is cached and shared with all sessions.
@@ -119,6 +123,15 @@ public class Theme {
 	}
 
 	/**
+	 * @return The colour palette of the theme, read from the custom properties
+	 * 		in its theme.css, fallback the palette of the light theme. Null if
+	 * 		neither CSS has a palette.
+	 */
+	public Palette getPalette() {
+		return palette;
+	}
+
+	/**
 	 * Update values in this theme with the values from the given identifyer.
 	 * 
 	 * @param theme
@@ -135,6 +148,7 @@ public class Theme {
 		this.htmlHeaderElements = buildHTMLHeaderElements();
 		
 		this.emailCss = loadEmailCss();
+		this.palette = loadPalette();
 	}
 
 	
@@ -206,6 +220,43 @@ public class Theme {
 			}
 		}
 		return "";
+	}
+
+	/**
+	 * Reads the palette from the theme.css of the theme. If the file is missing
+	 * or has no palette, the palette of the light theme of the release is used.
+	 */
+	private Palette loadPalette() {
+		Path themeCss = getThemeFolder().toPath().resolve(THEME_CSS_FILENAME);
+		Palette themePalette = loadPalette(themeCss);
+		if (themePalette != null) {
+			log.info("Colour palette with {} hues and {} theme colours loaded from the theme: {}",
+					themePalette.getHues().size(), themePalette.getThemeColors().size(), themeCss);
+			return themePalette;
+		}
+
+		Path lightCss = Path.of(getThemesFolderPath(), DEFAULTTHEME, THEME_CSS_FILENAME);
+		Palette lightPalette = themeCss.equals(lightCss) ? null : loadPalette(lightCss);
+		if (lightPalette != null) {
+			// the brand colours of light are not the brand colours of this theme
+			lightPalette = lightPalette.withoutThemeColors();
+			log.info("Colour palette with {} hues loaded from the fallback theme: {} (no palette in {})",
+					lightPalette.getHues().size(), lightCss, themeCss);
+		} else {
+			log.error("No colour palette found in {} nor in {}", themeCss, lightCss);
+		}
+		return lightPalette;
+	}
+
+	private Palette loadPalette(Path css) {
+		if (Files.isRegularFile(css)) {
+			try {
+				return Palette.fromCss(new String(Files.readAllBytes(css), StandardCharsets.UTF_8));
+			} catch (IOException e) {
+				log.error("Loading the CSS file {} of the theme failed.", css, e);
+			}
+		}
+		return null;
 	}
 
 	private Path getEmailCssPath() {

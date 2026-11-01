@@ -156,6 +156,8 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.ai.manager.AiTaskExecutorServiceTest.class,
 	org.olat.core.commons.services.ai.manager.AiUsageLogDAOTest.class,
 	org.olat.core.commons.services.ai.spi.localonnx.LocalOnnxSPITest.class,
+	org.olat.core.commons.services.color.PaletteTest.class,
+	org.olat.core.commons.services.color.ColorServiceResolveTest.class,
 	org.olat.core.commons.services.csp.CSPDispatcherTest.class,
 	org.olat.core.commons.services.csp.manager.CSPManagerTest.class,
 	org.olat.core.commons.services.doceditor.manager.DocEditorIdentityServiceTest.class,

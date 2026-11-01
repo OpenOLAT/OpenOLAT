@@ -218,52 +218,21 @@
 			@include alert_box($o-box-success-color, $o-box-success-bg);
 		}
 
-		&.o_alert_box_color_lightgray {
-			@include alert_box($o-color-light-gray, $o-color-light-gray-bg);
-		}
+		// Custom colour: o_alert_box_color_<key> sets the swatch tokens --o-sw-*
+		// through $o-swatch-aliases (_palette.scss)
+		@at-root #{o-swatch-alias-selector("o_alert_box_color_", &)} {
+			box-shadow: $o-cc-box-shadow;
+			border-color: var(--o-sw-soft-border);
+			background-color: var(--o-sw-soft-bg);
+			color: var(--o-sw-soft-fg);
 
-		&.o_alert_box_color_lightblue {
-			@include alert_box($o-color-light-blue, $o-color-light-blue-bg);
-		}
+			> .o_container_block > .o_container_block_alert > .o_alert_icon {
+				color: var(--o-sw-text);
+			}
 
-		&.o_alert_box_color_purple {
-			@include alert_box($o-color-purple, $o-color-purple-bg);
-		}
-
-		&.o_alert_box_color_yellow {
-			@include alert_box($o-color-yellow, $o-color-yellow-bg);
-		}
-
-		&.o_alert_box_color_red {
-			@include alert_box($o-color-red, $o-color-red-bg);
-		}
-
-		&.o_alert_box_color_lightgreen {
-			@include alert_box($o-color-light-green, $o-color-light-green-bg);
-		}
-
-		&.o_alert_box_color_orange {
-			@include alert_box($o-color-orange, $o-color-orange-bg);
-		}
-
-		&.o_alert_box_color_brown {
-			@include alert_box($o-color-brown, $o-color-brown-bg);
-		}
-
-		&.o_alert_box_color_orchid {
-			@include alert_box($o-color-orchid, $o-color-orchid-bg);
-		}
-
-		&.o_alert_box_color_cobaltblue {
-			@include alert_box($o-color-cobalt-blue, $o-color-cobalt-blue-bg);
-		}
-
-		&.o_alert_box_color_darkblue {
-			@include alert_box($o-color-dark-blue, $o-color-dark-blue-bg);
-		}
-
-		&.o_alert_box_color_seagreen {
-			@include alert_box($o-color-sea-green, $o-color-sea-green-bg);
+			&.o_page_layout {
+				box-shadow: none;
+			}
 		}
 
 		.o_container_block, .o_page_container_slot-inner {
@@ -2816,41 +2785,11 @@ table.o_ce_table {
 		}
 	}
 
-	div.o_color_lightgray hr {
-		border-top-color: mix($o-color-light-gray, white, 30%);
-	}
-	div.o_color_yellow hr {
-		border-top-color: mix($o-color-yellow, white, 30%);
-	}
-	div.o_color_orange hr {
-		border-top-color: mix($o-color-orange, white, 30%);
-	}
-	div.o_color_brown hr {
-		border-top-color: mix($o-color-brown, white, 30%);
-	}
-	div.o_color_red hr {
-		border-top-color: mix($o-color-red, white, 30%);
-	}
-	div.o_color_orchid hr {
-		border-top-color: mix($o-color-orchid, white, 30%);
-	}
-	div.o_color_purple hr {
-		border-top-color: mix($o-color-purple, white, 30%);
-	}
-	div.o_color_lightblue hr {
-		border-top-color: mix($o-color-light-blue, white, 30%);
-	}
-	div.o_color_cobaltblue hr {
-		border-top-color: mix($o-color-cobalt-blue, white, 30%);
-	}
-	div.o_color_darkblue hr {
-		border-top-color: mix($o-color-dark-blue, white, 30%);
-	}
-	div.o_color_lightgreen hr {
-		border-top-color: mix($o-color-light-green, white, 30%);
-	}
-	div.o_color_seagreen hr {
-		border-top-color: mix($o-color-sea-green, white, 30%);
+	// o_color_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
+	#{o-swatch-alias-selector("o_color_", "div")} {
+		hr {
+			border-top-color: var(--o-sw-soft-border);
+		}
 	}
 
 	.o_alert_box_active {

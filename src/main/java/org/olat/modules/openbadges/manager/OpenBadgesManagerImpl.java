@@ -65,6 +65,10 @@ import org.json.JSONObject;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorFamily;
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.Palette;
+import org.olat.core.commons.services.color.Swatch;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.Tag;
@@ -187,6 +191,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private MovieService movieService;
 	@Autowired
 	private ImageService imageService;
+	@Autowired
+	private ColorService colorService;
 	@Autowired
 	private TagService tagService;
 	@Autowired
@@ -354,24 +360,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public String getColorAsRgb(String colorId) {
-		return switch (colorId) {
-			case "lightgray" -> "rgb(192,192,192)";
-			case "yellow" -> "rgb(255,255,0)";
-			case "orange" -> "rgb(255,192,0)";
-			case "brown" -> "rgb(192,128,0)";
-			case "red" -> "rgb(255,0,0)";
-			case "orchid" -> "rgb(255,0,255)";
-			case "purple" -> "rgb(192,0,255)";
-			case "lightblue" -> "rgb(128,128,255)";
-			case "cobaltblue" -> "rgb(64,64,192)";
-			case "darkblue" -> "rgb(0,0,128)";
-			case "lightgreen" -> "rgb(128,255,128)";
-			case "seagreen" -> "rgb(0,192,0)";
-			case "gold" -> "rgb(255,216,42)";
-			case "silver" -> "rgb(192,192,192)";
-			case "bronze" -> "rgb(255,160,128)";
-			default -> "rgb(255,255,255)";
-		};
+		Swatch swatch = colorService.resolve(colorId, ColorFamily.COLOR_SERVICE);
+		return colorService.getBackgroundColor(swatch, Palette.WHITE);
 	}
 
 	@Override

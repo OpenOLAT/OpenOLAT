@@ -3,49 +3,28 @@
 	background-image: repeating-linear-gradient(135deg, transparent 0%, transparent 47%, red, transparent 53%, transparent 100%);
 }
 
-// See below in o_cn_styled as well
-.o_colcat_dark_blue.o_colcat_bg { background-color: $o-cn-style-cat-dark-blue-color; }
-.o_colcat_dark_blue.o_colcat_left { border-left-color: $o-cn-style-cat-dark-blue-color; border-left-width: $o-cn-style-border-width; }
-.o_colcat_dark_blue.o_colcat_top { border-top-color: $o-cn-style-cat-dark-blue-color; border-top-width: $o-cn-style-border-width; }
-
-.o_colcat_light_blue.o_colcat_bg { background-color: $o-cn-style-cat-light-blue-color; }
-.o_colcat_light_blue.o_colcat_left { border-left-color: $o-cn-style-cat-light-blue-color; border-left-width: $o-cn-style-border-width; }
-.o_colcat_light_blue.o_colcat_top { border-top-color: $o-cn-style-cat-light-blue-color; border-top-width: $o-cn-style-border-width; }
-
-.o_colcat_purple.o_colcat_bg { background-color: $o-cn-style-cat-purple-color; }
-.o_colcat_purple.o_colcat_left { border-left-color: $o-cn-style-cat-purple-color; border-left-width: $o-cn-style-border-width; }
-.o_colcat_purple.o_colcat_top { border-top-color: $o-cn-style-cat-purple-color; border-top-width: $o-cn-style-border-width; }
-
-.o_colcat_red.o_colcat_bg { background-color: $o-cn-style-cat-red-color; }
-.o_colcat_red.o_colcat_left { border-left-color: $o-cn-style-cat-red-color; border-left-width: $o-cn-style-border-width; }
-.o_colcat_red.o_colcat_top { border-top-color: $o-cn-style-cat-red-color; border-top-width: $o-cn-style-border-width; }
-
-.o_colcat_orange.o_colcat_bg { background-color: $o-cn-style-cat-orange-color; }
-.o_colcat_orange.o_colcat_left { border-left-color: $o-cn-style-cat-orange-color; border-left-width: $o-cn-style-border-width; }
-.o_colcat_orange.o_colcat_top { border-top-color: $o-cn-style-cat-orange-color; border-top-width: $o-cn-style-border-width; }
-
-.o_colcat_yellow.o_colcat_bg { background-color: $o-cn-style-cat-yellow-color; }
-.o_colcat_yellow.o_colcat_left { border-left-color: $o-cn-style-cat-yellow-color; border-left-width: $o-cn-style-border-width; }
-.o_colcat_yellow.o_colcat_top { border-top-color: $o-cn-style-cat-yellow-color; border-top-width: $o-cn-style-border-width; }
-
-.o_colcat_light_green.o_colcat_bg { background-color: $o-cn-style-cat-light-green-color; }
-.o_colcat_light_green.o_colcat_left  { border-left-color: $o-cn-style-cat-light-green-color; border-left-width: $o-cn-style-border-width; }
-.o_colcat_light_green.o_colcat_top  { border-top-color: $o-cn-style-cat-light-green-color; border-top-width: $o-cn-style-border-width; }
-
-.o_colcat_dark_green.o_colcat_bg { background-color: $o-cn-style-cat-dark-green-color; }
-.o_colcat_dark_green.o_colcat_left { border-left-color: $o-cn-style-cat-dark-green-color; border-left-width: $o-cn-style-border-width; }
-.o_colcat_dark_green.o_colcat_top { border-top-color: $o-cn-style-cat-dark-green-color; border-top-width: $o-cn-style-border-width; }
+// Colour categories: each o_colcat_<key> sets the swatch tokens --o-sw-*
+// through $o-swatch-aliases (_palette.scss). See below in o_cn_styled as well.
+// Admin-defined categories bring their own rules and are not affected.
+#{o-swatch-alias-selector("o_colcat_", ".o_colcat_bg")} {
+	background-color: var(--o-sw-bg);
+	color: var(--o-sw-fg);
+}
+#{o-swatch-alias-selector("o_colcat_", ".o_colcat_left")} {
+	border-left-color: var(--o-sw-bg);
+	border-left-width: $o-cn-style-border-width;
+}
+#{o-swatch-alias-selector("o_colcat_", ".o_colcat_top")} {
+	border-top-color: var(--o-sw-bg);
+	border-top-width: $o-cn-style-border-width;
+}
 
 .o_color_picker_wrapper {
 	.o_colcat_nocolor { background-color: $o-cn-style-image-bg; }
-	.o_colcat_dark_blue { background-color: $o-cn-style-cat-dark-blue-color; color: #FFFFFF; }
-	.o_colcat_light_blue { background-color: $o-cn-style-cat-light-blue-color; color: #FFFFFF; }
-	.o_colcat_purple { background-color: $o-cn-style-cat-purple-color; color: #FFFFFF; }
-	.o_colcat_red { background-color: $o-cn-style-cat-red-color; color: #FFFFFF; }
-	.o_colcat_orange { background-color: $o-cn-style-cat-orange-color; color: #000000; }
-	.o_colcat_yellow { background-color: $o-cn-style-cat-yellow-color; color: #000000; }
-	.o_colcat_light_green { background-color: $o-cn-style-cat-light-green-color; color: #000000; }
-	.o_colcat_dark_green { background-color: $o-cn-style-cat-dark-green-color; color: #000000; }
+	#{o-swatch-alias-selector("o_colcat_")} {
+		background-color: var(--o-sw-bg);
+		color: var(--o-sw-fg);
+	}
 }
 
 .o_colcal_ele {
@@ -99,14 +78,7 @@
 	&.o_cover > .o_top {
 		background-repeat: no-repeat;
 		&.o_colcat_nocolor { background-color: $o-cn-style-image-bg; }
-		&.o_colcat_dark_blue { background-color: $o-cn-style-cat-dark-blue-color; }
-		&.o_colcat_light_blue { background-color: $o-cn-style-cat-light-blue-color; }
-		&.o_colcat_purple { background-color: $o-cn-style-cat-purple-color; }
-		&.o_colcat_red { background-color: $o-cn-style-cat-red-color; }
-		&.o_colcat_orange { background-color: $o-cn-style-cat-orange-color; }
-		&.o_colcat_yellow { background-color: $o-cn-style-cat-yellow-color; }
-		&.o_colcat_light_green { background-color: $o-cn-style-cat-light-green-color; }
-		&.o_colcat_dark_green { background-color: $o-cn-style-cat-dark-green-color; }
+		@at-root #{o-swatch-alias-selector("o_colcat_", &)} { background-color: var(--o-sw-bg); }
 	}
 	.o_image {
 		max-height: $o-cn-style-image-height;

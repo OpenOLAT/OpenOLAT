@@ -29,6 +29,8 @@
 @use "sass:color";
 
 @import "functions";
+// the colour variables below read the palette swatches
+@import "palette";
 
 /* To add place for the scroll bar */
 $modal-lg						: 920px !default;
@@ -712,14 +714,17 @@ $o-cn-style-image-height			: 120px !default;
 $o-cn-style-image-width				: 240px !default;
 $o-cn-style-cover-text-bg			: rgba(255, 255, 255, 0.95) !default;
 $o-cn-style-cover-text-padding		: 8px !default;
-$o-cn-style-cat-dark-blue-color		: #000080 !default;
-$o-cn-style-cat-light-blue-color	: #4169E1 !default;
-$o-cn-style-cat-purple-color		: #800080 !default;
-$o-cn-style-cat-red-color			: #DC143C !default;
-$o-cn-style-cat-orange-color		: #FF8C00 !default;
-$o-cn-style-cat-yellow-color		: #FFD700 !default;
-$o-cn-style-cat-light-green-color	: #32CD32 !default;
-$o-cn-style-cat-dark-green-color	: #228B22 !default;
+// Colour category colours: the "bg" of the same palette swatch the category
+// chooser (o_colcat_*) uses, see $o-swatch-alias-keys-category in _palette.scss.
+// Also used by educational types, course benefits, practice and course quota.
+$o-cn-style-cat-dark-blue-color		: o-swatch-alias-color("o_colcat_dark_blue") !default;
+$o-cn-style-cat-light-blue-color	: o-swatch-alias-color("o_colcat_light_blue") !default;
+$o-cn-style-cat-purple-color		: o-swatch-alias-color("o_colcat_purple") !default;
+$o-cn-style-cat-red-color			: o-swatch-alias-color("o_colcat_red") !default;
+$o-cn-style-cat-orange-color		: o-swatch-alias-color("o_colcat_orange") !default;
+$o-cn-style-cat-yellow-color		: o-swatch-alias-color("o_colcat_yellow") !default;
+$o-cn-style-cat-light-green-color	: o-swatch-alias-color("o_colcat_light_green") !default;
+$o-cn-style-cat-dark-green-color	: o-swatch-alias-color("o_colcat_dark_green") !default;
 $o-cn-style-peekview-bg				: rgba(16, 24, 40, 0.02) !default;
 $o-st-peekview-bg					: $body-bg !default;
 $o-st-peekview-text-padding			: 2px 15px !default;
@@ -1570,42 +1575,42 @@ $o-authentication-label-bg		: $brand-primary;
 $o-cal-color-width 					: 20px !default;
 $o-cal-sec-border-width				: 5px !default;
 $o-cal-desc-background-color			: $o-toolbar-bg-color !default;
-$o-cal-orange-bg					: #ffc266 !default;
-$o-cal-orange-border-color			: #ff9900 !default;
-$o-cal-orange-color					: #575757 !default;
-$o-cal-green-bg						: #66c266 !default;
-$o-cal-green-border-color			: #009900 !default;
-$o-cal-green-color					: #424242 !default;
-$o-cal-blue-bg						: #4d6e9f !default;
-$o-cal-blue-border-color				: #2e5894 !default;
-$o-cal-blue-color					: #FFF !default;
-$o-cal-yellow-bg					: #ffe066 !default;
-$o-cal-yellow-border-color			: #ffcc00 !default;
-$o-cal-yellow-color					: #5D5D5D !default;
-$o-cal-red-bg						: #c26666 !default;
-$o-cal-red-border-color				: #990000 !default;
-$o-cal-red-color					: #191919 !default;
-$o-cal-rebeccapurple-bg				: #663399 !default;
-$o-cal-rebeccapurple-border-color	: #663399 !default;
-$o-cal-rebeccapurple-color			: #FFF!default;
-$o-cal-fuchsia-bg					: #FF00FF !default;
-$o-cal-fuchsia-border-color			: #dd00dd !default;
-$o-cal-fuchsia-color				: #2B2B2B !default;
-$o-cal-olive-bg						: #7A7A00 !default;
-$o-cal-olive-border-color			: #636300 !default;
-$o-cal-olive-color					: #FFF !default;
-$o-cal-navy-bg						: #000080 !default;
-$o-cal-navy-border-color				: #000057 !default;
-$o-cal-navy-color					: #FFF !default;
-$o-cal-maroon-bg					: #800000 !default;
-$o-cal-maroon-border-color			: #740000 !default;
-$o-cal-maroon-color					: #FFF !default;
-$o-cal-lime-bg						: #00FF00 !default;
-$o-cal-lime-border-color				: #00e200 !default;
-$o-cal-lime-color					: #004d00 !default;
-$o-cal-grey-bg						: #5d5d5d !default;
-$o-cal-grey-border-color				: #5d5d5d !default;
-$o-cal-grey-color					: #FFF !default;
+$o-cal-orange-bg					: o-swatch-alias-color("o_cal_orange", "bg") !default;
+$o-cal-orange-border-color			: o-swatch-alias-color("o_cal_orange", "border") !default;
+$o-cal-orange-color					: o-swatch-alias-color("o_cal_orange", "fg") !default;
+$o-cal-green-bg						: o-swatch-alias-color("o_cal_green", "bg") !default;
+$o-cal-green-border-color			: o-swatch-alias-color("o_cal_green", "border") !default;
+$o-cal-green-color					: o-swatch-alias-color("o_cal_green", "fg") !default;
+$o-cal-blue-bg						: o-swatch-alias-color("o_cal_blue", "bg") !default;
+$o-cal-blue-border-color				: o-swatch-alias-color("o_cal_blue", "border") !default;
+$o-cal-blue-color					: o-swatch-alias-color("o_cal_blue", "fg") !default;
+$o-cal-yellow-bg					: o-swatch-alias-color("o_cal_yellow", "bg") !default;
+$o-cal-yellow-border-color			: o-swatch-alias-color("o_cal_yellow", "border") !default;
+$o-cal-yellow-color					: o-swatch-alias-color("o_cal_yellow", "fg") !default;
+$o-cal-red-bg						: o-swatch-alias-color("o_cal_red", "bg") !default;
+$o-cal-red-border-color				: o-swatch-alias-color("o_cal_red", "border") !default;
+$o-cal-red-color					: o-swatch-alias-color("o_cal_red", "fg") !default;
+$o-cal-rebeccapurple-bg				: o-swatch-alias-color("o_cal_rebeccapurple", "bg") !default;
+$o-cal-rebeccapurple-border-color	: o-swatch-alias-color("o_cal_rebeccapurple", "border") !default;
+$o-cal-rebeccapurple-color			: o-swatch-alias-color("o_cal_rebeccapurple", "fg") !default;
+$o-cal-fuchsia-bg					: o-swatch-alias-color("o_cal_fuchsia", "bg") !default;
+$o-cal-fuchsia-border-color			: o-swatch-alias-color("o_cal_fuchsia", "border") !default;
+$o-cal-fuchsia-color				: o-swatch-alias-color("o_cal_fuchsia", "fg") !default;
+$o-cal-olive-bg						: o-swatch-alias-color("o_cal_olive", "bg") !default;
+$o-cal-olive-border-color			: o-swatch-alias-color("o_cal_olive", "border") !default;
+$o-cal-olive-color					: o-swatch-alias-color("o_cal_olive", "fg") !default;
+$o-cal-navy-bg						: o-swatch-alias-color("o_cal_navy", "bg") !default;
+$o-cal-navy-border-color				: o-swatch-alias-color("o_cal_navy", "border") !default;
+$o-cal-navy-color					: o-swatch-alias-color("o_cal_navy", "fg") !default;
+$o-cal-maroon-bg					: o-swatch-alias-color("o_cal_maroon", "bg") !default;
+$o-cal-maroon-border-color			: o-swatch-alias-color("o_cal_maroon", "border") !default;
+$o-cal-maroon-color					: o-swatch-alias-color("o_cal_maroon", "fg") !default;
+$o-cal-lime-bg						: o-swatch-alias-color("o_cal_lime", "bg") !default;
+$o-cal-lime-border-color				: o-swatch-alias-color("o_cal_lime", "border") !default;
+$o-cal-lime-color					: o-swatch-alias-color("o_cal_lime", "fg") !default;
+$o-cal-grey-bg						: o-swatch-alias-color("o_cal_grey", "bg") !default;
+$o-cal-grey-border-color				: o-swatch-alias-color("o_cal_grey", "border") !default;
+$o-cal-grey-color					: o-swatch-alias-color("o_cal_grey", "fg") !default;
 
 /* Files and Folders */
 $o-files-size-okay								: #61E868;
@@ -1663,46 +1668,36 @@ $o-competences-selected-bg-color	: #fff;
 $o-competences-selected-color		: $o-button-dirty-bg;
 $o-competences-selected-border-color: $o-button-dirty-border;
 
-/* Selection Background Colors */
-$o-selection-dark-blue	: #00008033; 
-$o-selection-light-blue	: #4169E133;
-$o-selection-purple		: #80008033;
-$o-selection-red		: #DD141433;
-$o-selection-orange		: #FF8C0033;
-$o-selection-yellow		: #FFD70033;
-$o-selection-light-green: #32CD3233;
-$o-selection-dark-green : #228B2233;
+/* Shared Colors: the fill of the swatch alias of o_color_<key> in _palette.scss */
+$o-color-light-gray  : o-swatch-alias-color("o_color_lightgray");
+$o-color-yellow      : o-swatch-alias-color("o_color_yellow");
+$o-color-orange      : o-swatch-alias-color("o_color_orange");
+$o-color-brown       : o-swatch-alias-color("o_color_brown");
+$o-color-red         : o-swatch-alias-color("o_color_red");
+$o-color-orchid      : o-swatch-alias-color("o_color_orchid");
+$o-color-purple      : o-swatch-alias-color("o_color_purple");
+$o-color-light-blue  : o-swatch-alias-color("o_color_lightblue");
+$o-color-cobalt-blue : o-swatch-alias-color("o_color_cobaltblue");
+$o-color-dark-blue   : o-swatch-alias-color("o_color_darkblue");
+$o-color-light-green : o-swatch-alias-color("o_color_lightgreen");
+$o-color-sea-green   : o-swatch-alias-color("o_color_seagreen");
+$o-color-gold        : o-swatch-alias-color("o_color_gold");
+$o-color-silver      : o-swatch-alias-color("o_color_silver");
+$o-color-bronze      : o-swatch-alias-color("o_color_bronze");
 
-/* Shared Colors */
-$o-color-light-gray  : #344054;
-$o-color-yellow      : #C69B02;
-$o-color-orange      : #C06613;
-$o-color-brown       : #855E3A;
-$o-color-red         : #D73939;
-$o-color-orchid      : #BE0C87;
-$o-color-purple      : #6F199D;
-$o-color-light-blue  : #2276D9;
-$o-color-cobalt-blue : #2422DB;
-$o-color-dark-blue   : #18188F;
-$o-color-light-green : #407303;
-$o-color-sea-green   : #00644F;
-$o-color-gold        : #FFD82A;
-$o-color-silver      : #C0C0C0;
-$o-color-bronze      : #FFA080;
-
-/* Background variants */
-$o-color-light-gray-bg  : mix($o-color-light-gray, white, 10%);
-$o-color-yellow-bg      : mix($o-color-yellow, white, 10%);
-$o-color-orange-bg      : mix($o-color-orange, white, 10%);
-$o-color-brown-bg       : mix($o-color-brown, white, 10%);
-$o-color-red-bg         : mix($o-color-red, white, 10%);
-$o-color-orchid-bg      : mix($o-color-orchid, white, 10%);
-$o-color-purple-bg      : mix($o-color-purple, white, 10%);
-$o-color-light-blue-bg  : mix($o-color-light-blue, white, 10%);
-$o-color-cobalt-blue-bg : mix($o-color-cobalt-blue, white, 10%);
-$o-color-dark-blue-bg   : mix($o-color-dark-blue, white, 10%);
-$o-color-light-green-bg : mix($o-color-light-green, white, 10%);
-$o-color-sea-green-bg   : mix($o-color-sea-green, white, 10%);
+/* Background variants: the soft fill of the swatch alias */
+$o-color-light-gray-bg  : o-swatch-alias-color("o_color_lightgray", "soft-bg");
+$o-color-yellow-bg      : o-swatch-alias-color("o_color_yellow", "soft-bg");
+$o-color-orange-bg      : o-swatch-alias-color("o_color_orange", "soft-bg");
+$o-color-brown-bg       : o-swatch-alias-color("o_color_brown", "soft-bg");
+$o-color-red-bg         : o-swatch-alias-color("o_color_red", "soft-bg");
+$o-color-orchid-bg      : o-swatch-alias-color("o_color_orchid", "soft-bg");
+$o-color-purple-bg      : o-swatch-alias-color("o_color_purple", "soft-bg");
+$o-color-light-blue-bg  : o-swatch-alias-color("o_color_lightblue", "soft-bg");
+$o-color-cobalt-blue-bg : o-swatch-alias-color("o_color_cobaltblue", "soft-bg");
+$o-color-dark-blue-bg   : o-swatch-alias-color("o_color_darkblue", "soft-bg");
+$o-color-light-green-bg : o-swatch-alias-color("o_color_lightgreen", "soft-bg");
+$o-color-sea-green-bg   : o-swatch-alias-color("o_color_seagreen", "soft-bg");
 
 $o-bright-text-and-border : #FCFCFC;
 $o-dark-text-and-border   : #555555;
@@ -1710,19 +1705,6 @@ $o-dark-text-and-border   : #555555;
 /* Video Colors */
 $o-video-color             : $o-bright-text-and-border;
 
-$o-video-color-silver      : $o-color-silver;
-$o-video-color-light-gray  : $o-color-light-gray;
-$o-video-color-yellow      : $o-color-yellow;
-$o-video-color-orange      : $o-color-orange;
-$o-video-color-brown       : $o-color-brown;
-$o-video-color-red         : $o-color-red;
-$o-video-color-orchid      : $o-color-orchid;
-$o-video-color-purple      : $o-color-purple;
-$o-video-color-light-blue  : $o-color-light-blue;
-$o-video-color-cobalt-blue : $o-color-cobalt-blue;
-$o-video-color-dark-blue   : $o-color-dark-blue;
-$o-video-color-light-green : $o-color-light-green;
-$o-video-color-sea-green   : $o-color-sea-green;
 $o-video-color-practice    : #FFFFFF;
 
 $o-video-border-color      : $o-bright-text-and-border;
@@ -1744,17 +1726,17 @@ $o-selectus-table-c-decision-bg-hover		: mix($o-selectus-table-c-decision-bg, bl
 
 /* Educational course types */
 $o-edu-type-standard-course-color 			: o-a11y-color($gray) !default;
-$o-edu-type-exam-course-color 				: o-a11y-color($o-cn-style-cat-red-color)  !default;
-$o-edu-type-certification-course-color		: o-a11y-color($o-cn-style-cat-orange-color)  !default;
-$o-edu-type-date-course-color				: o-a11y-color($o-cn-style-cat-purple-color)  !default;
-$o-edu-type-seminar-course-color			: o-a11y-color($o-cn-style-cat-light-blue-color)  !default;
-$o-edu-type-lecture-course-color			: o-a11y-color($o-cn-style-cat-light-green-color)  !default;
-$o-edu-type-blendedlearning-course-color	: o-a11y-color($o-cn-style-cat-yellow-color)  !default;
-$o-edu-type-selfstudy-course-color			: o-a11y-color($o-cn-style-cat-dark-green-color)  !default;
+$o-edu-type-exam-course-color 				: o-swatch-alias-on-white("o_colcat_red") !default;
+$o-edu-type-certification-course-color		: o-swatch-alias-on-white("o_colcat_orange") !default;
+$o-edu-type-date-course-color				: o-swatch-alias-on-white("o_colcat_purple") !default;
+$o-edu-type-seminar-course-color			: o-swatch-alias-on-white("o_colcat_light_blue") !default;
+$o-edu-type-lecture-course-color			: o-swatch-alias-on-white("o_colcat_light_green") !default;
+$o-edu-type-blendedlearning-course-color	: o-swatch-alias-on-white("o_colcat_yellow") !default;
+$o-edu-type-selfstudy-course-color			: o-swatch-alias-on-white("o_colcat_dark_green") !default;
 
 /* Course benefits */
-$o-entry-benefit-border-color 				: o-a11y-color($o-cn-style-cat-dark-blue-color) !default;
-$o-entry-benefit-color 						: o-a11y-color($o-cn-style-cat-dark-blue-color)  !default;
+$o-entry-benefit-border-color 				: o-swatch-alias-on-white("o_colcat_dark_blue") !default;
+$o-entry-benefit-color 						: o-swatch-alias-on-white("o_colcat_dark_blue") !default;
 
 /* Export area */
 $o-export-area-meta-color					: #777;
@@ -1809,15 +1791,15 @@ $o-proj-avatar-font-size-small				: 14px !default;
 $o-proj-avatar-border-radius					: 12px !default;
 $o-proj-avatar-border-radius-small			: 6px !default;
 $o-proj-avatar-color						: #fff !default;
-$o-proj-avatar-dark-blue-bg-color			: #000080 !default;
-$o-proj-avatar-light-blue-bg-color			: #4169E1 !default;
-$o-proj-avatar-purple-bg-color				: #800080 !default;
-$o-proj-avatar-red-bg-color					: #DC143C !default;
-$o-proj-avatar-orange-bg-color				: #FF8C00 !default;
-$o-proj-avatar-yellow-bg-color				: #FFD700 !default;
-$o-proj-avatar-yellow-color					: $gray-dark !default;
-$o-proj-avatar-light-green-bg-color			: #32CD32 !default;
-$o-proj-avatar-dark-green-bg-color			: #228B22 !default;
+$o-proj-avatar-dark-blue-bg-color			: o-swatch-alias-color("o_proj_avatar_dark_blue") !default;
+$o-proj-avatar-light-blue-bg-color			: o-swatch-alias-color("o_proj_avatar_light_blue") !default;
+$o-proj-avatar-purple-bg-color				: o-swatch-alias-color("o_proj_avatar_purple") !default;
+$o-proj-avatar-red-bg-color					: o-swatch-alias-color("o_proj_avatar_red") !default;
+$o-proj-avatar-orange-bg-color				: o-swatch-alias-color("o_proj_avatar_orange") !default;
+$o-proj-avatar-yellow-bg-color				: o-swatch-alias-color("o_proj_avatar_yellow") !default;
+$o-proj-avatar-yellow-color					: o-swatch-alias-color("o_proj_avatar_yellow", "fg") !default;
+$o-proj-avatar-light-green-bg-color			: o-swatch-alias-color("o_proj_avatar_light_green") !default;
+$o-proj-avatar-dark-green-bg-color			: o-swatch-alias-color("o_proj_avatar_dark_green") !default;
 // Upload example text: 2 * ($o-proj-header-background-width-max $o-proj-header-background-height-max)
 $o-proj-header-avatar-offset-bottom			: 30px !default;
 $o-proj-header-avatar-offset-left			: 20px !default;
@@ -1905,6 +1887,9 @@ $o-dashboard-widget-rowelem-visual-border-radius	: $border-radius-base  !default
 $o-course-quota-progress-iq-bg-color		: $o-cn-style-cat-light-blue-color;
 $o-course-quota-progress-i-bg-color			: $o-cn-style-cat-orange-color;
 $o-course-quota-progress-ex-bg-color		: $o-cn-style-cat-purple-color;
+$o-course-quota-progress-iq-text-color		: o-swatch-alias-on-white("o_colcat_light_blue") !default;
+$o-course-quota-progress-i-text-color		: o-swatch-alias-on-white("o_colcat_orange") !default;
+$o-course-quota-progress-ex-text-color		: o-swatch-alias-on-white("o_colcat_purple") !default;
 
 /* Scope */
 $o-scopes-gap								: 10px !default;

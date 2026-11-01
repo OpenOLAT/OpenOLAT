@@ -153,14 +153,11 @@
 		border: 2px solid #fff;
 	}
 }
-.o_proj_avatar_color.o_proj_avatar_dark_blue { background-color: $o-proj-avatar-dark-blue-bg-color; }
-.o_proj_avatar_color.o_proj_avatar_light_blue { background-color: $o-proj-avatar-light-blue-bg-color; }
-.o_proj_avatar_color.o_proj_avatar_purple { background-color: $o-proj-avatar-purple-bg-color; }
-.o_proj_avatar_color.o_proj_avatar_red { background-color: $o-proj-avatar-red-bg-color; }
-.o_proj_avatar_color.o_proj_avatar_orange { background-color: $o-proj-avatar-orange-bg-color; }
-.o_proj_avatar_color.o_proj_avatar_yellow { background-color: $o-proj-avatar-yellow-bg-color; color: $o-proj-avatar-yellow-color;}
-.o_proj_avatar_color.o_proj_avatar_dark_green { background-color: $o-proj-avatar-dark-green-bg-color;}
-.o_proj_avatar_color.o_proj_avatar_light_green { background-color: $o-proj-avatar-light-green-bg-color;}
+// o_proj_avatar_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
+#{o-swatch-alias-selector("o_proj_avatar_", ".o_proj_avatar_color")} {
+	background-color: var(--o-sw-bg);
+	color: var(--o-sw-fg);
+}
 
 
 /* Calculation for the project header */
@@ -474,76 +471,11 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 			color: initial;
 		}
 		
-		&.o_cal_orange { 
-			border-left: 3px solid $o-cal-orange-bg;
+		// o_cal_<key> sets the swatch tokens --o-sw-*
+		@at-root #{o-swatch-alias-selector("o_cal_", &)} {
+			border-left: 3px solid var(--o-sw-bg);
 			.o_proj_card_meta {
-				background-color: rgba($o-cal-orange-bg, 0.1);
-			}
-		}
-		&.o_cal_green { 
-			border-left: 3px solid $o-cal-green-bg;
-			.o_proj_card_meta {
-				background-color: rgba($o-cal-green-bg, 0.1);
-			}
-		}
-		&.o_cal_blue { 
-			border-left: 3px solid $o-cal-blue-bg;
-			.o_proj_card_meta {
-				background-color: rgba($o-cal-blue-bg, 0.1);
-			}
-		}
-		&.o_cal_yellow { 
-			border-left: 3px solid $o-cal-yellow-bg;
-			.o_proj_card_meta {
-				background-color: rgba($o-cal-yellow-bg, 0.1);
-			}
-		}
-		&.o_cal_red { 
-			border-left: 3px solid $o-cal-red-bg;
-			.o_proj_card_meta {
-				background-color: rgba($o-cal-red-bg, 0.1);
-			}
-		}
-		&.o_cal_rebeccapurple { 
-			border-left: 3px solid $o-cal-rebeccapurple-bg;
-			.o_proj_card_meta {
-				background-color: rgba($o-cal-rebeccapurple-bg, 0.1);
-			}
-		}
-		&.o_cal_fuchsia { 
-			border-left: 3px solid $o-cal-fuchsia-bg;
-			.o_proj_card_meta {
-				background-color: rgba($o-cal-fuchsia-bg, 0.1);
-			}
-		}
-		&.o_cal_olive { 
-			border-left: 3px solid $o-cal-olive-bg;
-			.o_proj_card_meta {
-				background-color: rgba($o-cal-olive-bg, 0.1);
-			}
-		}
-		&.o_cal_navy { 
-			border-left: 3px solid $o-cal-navy-bg;
-			.o_proj_card_meta {
-				background-color: rgba($o-cal-navy-bg, 0.1);
-			}
-		}
-		&.o_cal_maroon { 
-			border-left: 3px solid $o-cal-maroon-bg;
-			.o_proj_card_meta {
-				background-color: rgba($o-cal-maroon-bg, 0.1);
-			}
-		}
-		&.o_cal_lime { 
-			border-left: 3px solid $o-cal-lime-bg;
-			.o_proj_card_meta {
-				background-color: rgba($o-cal-lime-bg, 0.1);
-			}
-		}
-		&.o_cal_grey { 
-			border-left: 3px solid $o-cal-grey-bg;
-			.o_proj_card_meta {
-				background-color: rgba($o-cal-grey-bg, 0.1);
+				background-color: var(--o-sw-soft-bg);
 			}
 		}
 	}

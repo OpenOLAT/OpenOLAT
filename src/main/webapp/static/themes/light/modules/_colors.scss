@@ -1,342 +1,49 @@
-.o_color_background {
-	&.o_color_lightgray {
-		background-color: $o-color-light-gray;
-	}
-	&.o_color_yellow {
-		background-color: $o-color-yellow;
-	}
-	&.o_color_orange {
-		background-color: $o-color-orange;
-	}
-	&.o_color_brown {
-		background-color: $o-color-brown;
-	}
-	&.o_color_red {
-		background-color: $o-color-red;
-	}
-	&.o_color_orchid {
-		background-color: $o-color-orchid;
-	}
-	&.o_color_purple {
-		background-color: $o-color-purple;
-	}
-	&.o_color_lightblue {
-		background-color: $o-color-light-blue;
-	}
-	&.o_color_cobaltblue {
-		background-color: $o-color-cobalt-blue;
-	}
-	&.o_color_darkblue {
-		background-color: $o-color-dark-blue;
-	}
-	&.o_color_lightgreen {
-		background-color: $o-color-light-green;
-	}
-	&.o_color_seagreen {
-		background-color: $o-color-sea-green;
-	}
-	&.o_color_gold {
-		background-color: $o-color-gold;
-	}
-	&.o_color_silver {
-		background-color: $o-color-silver;
-	}
-	&.o_color_bronze {
-		background-color: $o-color-bronze;
-	}
+/*
+ * Colours of the ColorService chooser (o_color_<key>).
+ *
+ * Each o_color_<key> class sets the swatch tokens --o-sw-* through
+ * $o-swatch-aliases (_palette.scss, _swatches.scss). The rules below
+ * read the tokens, one rule per role for all colours. They are scoped
+ * to the alias classes, so an element without a colour class keeps
+ * its other styles.
+ */
+
+// Solid fill, e.g. the colour picker swatch and room management building
+#{o-swatch-alias-selector("o_color_", ".o_color_background")} {
+	background-color: var(--o-sw-bg);
+	color: var(--o-sw-fg);
 }
 
-.o_color {
-	&.o_color_lightgray {
-		color: $o-color-light-gray;
-	}
-	&.o_color_yellow {
-		color: $o-color-yellow;
-	}
-	&.o_color_orange {
-		color: $o-color-orange;
-	}
-	&.o_color_brown {
-		color: $o-color-brown;
-	}
-	&.o_color_red {
-		color: $o-color-red;
-	}
-	&.o_color_orchid {
-		color: $o-color-orchid;
-	}
-	&.o_color_purple {
-		color: $o-color-purple;
-	}
-	&.o_color_lightblue {
-		color: $o-color-light-blue;
-	}
-	&.o_color_cobaltblue {
-		color: $o-color-cobalt-blue;
-	}
-	&.o_color_darkblue {
-		color: $o-color-dark-blue;
-	}
-	&.o_color_lightgreen {
-		color: $o-color-light-green;
-	}
-	&.o_color_seagreen {
-		color: $o-color-sea-green;
-	}
-	&.o_color_gold {
-		color: $o-color-gold;
-	}
-	&.o_color_silver {
-		color: $o-color-silver;
-	}
-	&.o_color_bronze {
-		color: $o-color-bronze;
-	}
+// Text and icons on white
+#{o-swatch-alias-selector("o_color_", ".o_color")} {
+	color: var(--o-sw-text);
 }
 
-.o_color_border {
-	&.o_color_lightgray {
-		border-color: $o-color-light-gray;
-	}
-	&.o_color_yellow {
-		border-color: $o-color-yellow;
-	}
-	&.o_color_orange {
-		border-color: $o-color-orange;
-	}
-	&.o_color_brown {
-		border-color: $o-color-brown;
-	}
-	&.o_color_red {
-		border-color: $o-color-red;
-	}
-	&.o_color_orchid {
-		border-color: $o-color-orchid;
-	}
-	&.o_color_purple {
-		border-color: $o-color-purple;
-	}
-	&.o_color_lightblue {
-		border-color: $o-color-light-blue;
-	}
-	&.o_color_cobaltblue {
-		border-color: $o-color-cobalt-blue;
-	}
-	&.o_color_darkblue {
-		border-color: $o-color-dark-blue;
-	}
-	&.o_color_lightgreen {
-		border-color: $o-color-light-green;
-	}
-	&.o_color_seagreen {
-		border-color: $o-color-sea-green;
-	}
-	&.o_color_gold {
-		border-color: $o-color-gold;
-	}
-	&.o_color_silver {
-		border-color: $o-color-silver;
-	}
-	&.o_color_bronze {
-		border-color: $o-color-bronze;
-	}
+// Border of a solid fill
+#{o-swatch-alias-selector("o_color_", ".o_color_border")},
+#{o-swatch-alias-selector("o_color_", ".o_color_border_darken")} {
+	border-color: var(--o-sw-border);
 }
 
-.o_color_border_darken {
-	&.o_color_lightgray {
-		border-color: darken($o-color-light-gray, 10);
-	}
-	&.o_color_yellow {
-		border-color: darken($o-color-yellow, 10);
-	}
-	&.o_color_orange {
-		border-color: darken($o-color-orange, 10);
-	}
-	&.o_color_brown {
-		border-color: darken($o-color-brown, 10);
-	}
-	&.o_color_red {
-		border-color: darken($o-color-red, 10);
-	}
-	&.o_color_orchid {
-		border-color: darken($o-color-orchid, 10);
-	}
-	&.o_color_purple {
-		border-color: darken($o-color-purple, 10);
-	}
-	&.o_color_lightblue {
-		border-color: darken($o-color-light-blue, 10);
-	}
-	&.o_color_cobaltblue {
-		border-color: darken($o-color-cobalt-blue, 10);
-	}
-	&.o_color_darkblue {
-		border-color: darken($o-color-dark-blue, 10);
-	}
-	&.o_color_lightgreen {
-		border-color: darken($o-color-light-green, 10);
-	}
-	&.o_color_seagreen {
-		border-color: darken($o-color-sea-green, 10);
-	}
-	&.o_color_gold {
-		border-color: darken($o-color-gold, 10);
-	}
-	&.o_color_silver {
-		border-color: darken($o-color-silver, 10);
-	}
-	&.o_color_bronze {
-		border-color: darken($o-color-bronze, 10);
-	}
-}
-
-
+// Tinted fill, e.g. the page editor block background
 .o_color_background_10 {
 	border-radius: $border-radius-base;
 	border: 1px solid gray;
-	
-	&.o_color_lightgray {
-		background-color: mix($o-color-light-gray-bg, white, 66%);
-		border-color: rgba($o-color-light-gray, 15%);
-	}
-	&.o_color_yellow {
-		background-color: mix($o-color-yellow-bg, white, 66%);
-		border-color: rgba($o-color-yellow, 15%);
-	}
-	&.o_color_orange {
-		background-color: mix($o-color-orange-bg, white, 66%);
-		border-color: rgba($o-color-orange, 15%);
-	}
-	&.o_color_brown {
-		background-color: mix($o-color-brown-bg, white, 66%);
-		border-color: rgba($o-color-brown, 15%);
-	}
-	&.o_color_red {
-		background-color: mix($o-color-red-bg, white, 66%);
-		border-color: rgba($o-color-red, 15%);
-	}
-	&.o_color_orchid {
-		background-color: mix($o-color-orchid-bg, white, 66%);
-		border-color: rgba($o-color-orchid, 15%);
-	}
-	&.o_color_purple {
-		background-color: mix($o-color-purple-bg, white, 66%);
-		border-color: rgba($o-color-purple, 15%);
-	}
-	&.o_color_lightblue {
-		background-color: mix($o-color-light-blue-bg, white, 66%);
-		border-color: rgba($o-color-light-blue, 15%);
-	}
-	&.o_color_cobaltblue {
-		background-color: mix($o-color-cobalt-blue-bg, white, 66%);
-		border-color: rgba($o-color-cobalt-blue, 15%);
-	}
-	&.o_color_darkblue {
-		background-color: mix($o-color-dark-blue-bg, white, 66%);
-		border-color: rgba($o-color-dark-blue, 15%);
-	}
-	&.o_color_lightgreen {
-		background-color: mix($o-color-light-green-bg, white, 66%);
-		border-color: rgba($o-color-light-green, 15%);
-	}
-	&.o_color_seagreen {
-		background-color: mix($o-color-sea-green-bg, white, 66%);
-		border-color: rgba($o-color-sea-green, 15%);
-	}
+}
+#{o-swatch-alias-selector("o_color_", ".o_color_background_10")} {
+	background-color: var(--o-sw-soft-bg);
+	color: var(--o-sw-soft-fg);
+	border-color: var(--o-sw-soft-border);
 }
 
+// Border of the colour picker swatch: the border role of the swatch,
+// 3:1 on white. Works for every chooser class that sets the tokens
+// (o_color_, o_cal_, o_colcat_, ...), else the text colour.
 .o_color_contrast_border {
-	&.o_color_lightgray {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_yellow {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_orange {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_brown {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_red {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_orchid {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_purple {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_lightblue {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_cobaltblue {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_darkblue {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_lightgreen {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_seagreen {
-		border-color: $o-bright-text-and-border;
-	}
-	&.o_color_gold {
-		border-color: $o-dark-text-and-border;
-	}
-	&.o_color_silver {
-		border-color: $o-dark-text-and-border;
-	}
-	&.o_color_bronze {
-		border-color: $o-dark-text-and-border;
-	}
+	border-color: var(--o-sw-border, currentColor);
 }
 
-.o_color_text_on_background {
-	&.o_color_lightgray {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_yellow {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_orange {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_brown {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_red {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_orchid {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_purple {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_lightblue {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_cobaltblue {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_darkblue {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_lightgreen {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_seagreen {
-		color: $o-bright-text-and-border;
-	}
-	&.o_color_gold {
-		color: $o-dark-text-and-border;
-	}
-	&.o_color_silver {
-		color: $o-dark-text-and-border;
-	}
-	&.o_color_bronze {
-		color: $o-dark-text-and-border;
-	}
+// Text on a solid fill (colour picker)
+#{o-swatch-alias-selector("o_color_", ".o_color_text_on_background")} {
+	color: var(--o-sw-fg);
 }

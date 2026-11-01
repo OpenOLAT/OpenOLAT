@@ -25,13 +25,13 @@ div.panel.o_course_quota_overview {
       }
 
       .o_course_quota_intern_quota {
-        color: $o-course-quota-progress-iq-bg-color;
+        color: $o-course-quota-progress-iq-text-color;
       }
       .o_course_quota_intern {
-        color: $o-course-quota-progress-i-bg-color;
+        color: $o-course-quota-progress-i-text-color;
       }
       .o_course_quota_extern {
-        color: $o-course-quota-progress-ex-bg-color;
+        color: $o-course-quota-progress-ex-text-color;
       }
     }
   }

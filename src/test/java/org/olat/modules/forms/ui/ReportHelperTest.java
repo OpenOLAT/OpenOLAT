@@ -27,6 +27,7 @@ import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.commons.services.color.PaletteTest;
 import org.olat.core.id.Identity;
 import org.olat.modules.ceditor.PageBody;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -56,7 +57,7 @@ public class ReportHelperTest {
 		sut = ReportHelper.builder(Locale.CANADA)
 				.withAnonymousName(ANONYMOUS_NAME)
 				.withAnonymousColor(ANONYMOUS_COLOR)
-				.withColors()
+				.withColors(PaletteTest.lightPalette())
 				.withLegendNameGenrator(new IdentityNameGenarator())
 				.build();
 	}

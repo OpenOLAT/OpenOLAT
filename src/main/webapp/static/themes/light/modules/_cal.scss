@@ -1,75 +1,27 @@
+@use "sass:string";
+
 /* calender colors for events: must be the last thing in the file !! */
-.o_cal_orange { background: $o-cal-orange-bg; border-color: $o-cal-orange-border-color; color: $o-cal-orange-color; }
-.o_cal_orange .fc-list-event-dot {border-color: $o-cal-orange-bg	;}
-.o_cal_orange div.fc-event-main { color: $o-cal-orange-color; } 
-.o_cal_class.o_cal_orange { border-left: $o-cal-color-width solid $o-cal-orange-bg;}
-.o_cal_sec.o_cal_orange_sec { border-left: $o-cal-sec-border-width solid $o-cal-orange-bg; }
+// Each o_cal_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
+// (_palette.scss). The class sits on the FullCalendar event element, on the
+// colour chooser and on the print view bar; the tokens inherit to children.
+#{o-swatch-alias-selector("o_cal_")} {
+	background: var(--o-sw-bg);
+	border-color: var(--o-sw-border);
+	color: var(--o-sw-fg);
 
-.o_cal_green { background: $o-cal-green-bg; border-color: $o-cal-green-border-color; color: $o-cal-green-color; }
-.o_cal_green .fc-list-event-dot {border-color: $o-cal-green-bg	;}
-.o_cal_green div.fc-event-main { color: $o-cal-green-color; } 
-.o_cal_class.o_cal_green { border-left: $o-cal-color-width solid $o-cal-green-bg;}
-.o_cal_sec.o_cal_green_sec { border-left: $o-cal-sec-border-width solid $o-cal-green-bg; }
+	.fc-list-event-dot { border-color: var(--o-sw-bg); }
+	div.fc-event-main { color: var(--o-sw-fg); }
+}
+#{o-swatch-alias-selector("o_cal_", ".o_cal_class")} { border-left: $o-cal-color-width solid var(--o-sw-bg); }
 
-.o_cal_blue { background: $o-cal-blue-bg; border-color: $o-cal-blue-border-color; color: $o-cal-blue-color; }
-.o_cal_blue .fc-list-event-dot {border-color: $o-cal-blue-bg	;}
-.o_cal_blue div.fc-event-main { color: $o-cal-blue-color; } 
-.o_cal_class.o_cal_blue { border-left: $o-cal-color-width solid $o-cal-blue-bg;}
-.o_cal_sec.o_cal_blue_sec { border-left: $o-cal-sec-border-width solid $o-cal-blue-bg; }
-
-.o_cal_yellow { background: $o-cal-yellow-bg; border-color: $o-cal-yellow-border-color; color: $o-cal-yellow-color; }
-.o_cal_yellow .fc-list-event-dot {border-color: $o-cal-yellow-bg	;}
-.o_cal_yellow div.fc-event-main { color: $o-cal-yellow-color; } 
-.o_cal_class.o_cal_yellow { border-left: $o-cal-color-width solid $o-cal-yellow-bg;}
-.o_cal_sec.o_cal_yellow_sec { border-left: $o-cal-sec-border-width solid $o-cal-yellow-bg; }
-
-.o_cal_red { background: $o-cal-red-bg; border-color: $o-cal-red-border-color; color: $o-cal-red-color; }
-.o_cal_red .fc-list-event-dot {border-color: $o-cal-red-bg	;}
-.o_cal_red div.fc-event-main { color: $o-cal-red-color; } 
-.o_cal_class.o_cal_red { border-left: $o-cal-color-width solid $o-cal-red-bg;}
-.o_cal_sec.o_cal_red_sec { border-left: $o-cal-sec-border-width solid $o-cal-red-bg; }
-
-.o_cal_rebeccapurple { background: $o-cal-rebeccapurple-bg; border-color: $o-cal-rebeccapurple-border-color; color: $o-cal-rebeccapurple-color; }
-.o_cal_rebeccapurple .fc-list-event-dot {border-color: $o-cal-rebeccapurple-bg	;}
-.o_cal_rebeccapurple div.fc-event-main { color: $o-cal-rebeccapurple-color; } 
-.o_cal_class.o_cal_rebeccapurple { border-left: $o-cal-color-width solid $o-cal-rebeccapurple-bg;}
-.o_cal_sec.o_cal_rebeccapurple_sec { border-left: $o-cal-sec-border-width solid $o-cal-rebeccapurple-bg; }
-
-.o_cal_fuchsia { background: $o-cal-fuchsia-bg; border-color: $o-cal-fuchsia-border-color; color: $o-cal-fuchsia-color; }
-.o_cal_fuchsia .fc-list-event-dot {border-color: $o-cal-fuchsia-bg	;}
-.o_cal_fuchsia div.fc-event-main { color: $o-cal-fuchsia-color; } 
-.o_cal_class.o_cal_fuchsia { border-left: $o-cal-color-width solid $o-cal-fuchsia-bg;}
-.o_cal_sec.o_cal_fuchsia_sec { border-left: $o-cal-sec-border-width solid $o-cal-fuchsia-bg; }
-
-.o_cal_olive { background: $o-cal-olive-bg; border-color: $o-cal-olive-border-color; color: $o-cal-olive-color; }
-.o_cal_olive .fc-list-event-dot {border-color: $o-cal-olive-bg	;}
-.o_cal_olive div.fc-event-main { color: $o-cal-olive-color; } 
-.o_cal_class.o_cal_olive { border-left: $o-cal-color-width solid $o-cal-olive-bg;}
-.o_cal_sec.o_cal_olive_sec { border-left: $o-cal-sec-border-width solid $o-cal-olive-bg; }
-
-.o_cal_navy { background: $o-cal-navy-bg; border-color: $o-cal-navy-border-color; color: $o-cal-navy-color; }
-.o_cal_navy .fc-list-event-dot {border-color: $o-cal-navy-bg	;}
-.o_cal_navy div.fc-event-main { color: $o-cal-navy-color; } 
-.o_cal_class.o_cal_navy { border-left: $o-cal-color-width solid $o-cal-navy-bg;}
-.o_cal_sec.o_cal_navy_sec { border-left: $o-cal-sec-border-width solid $o-cal-navy-bg; }
-
-.o_cal_maroon { background: $o-cal-maroon-bg; border-color: $o-cal-maroon-border-color; color: $o-cal-maroon-color; }
-.o_cal_maroon .fc-list-event-dot {border-color: $o-cal-maroon-bg	;}
-.o_cal_maroon div.fc-event-main { color: $o-cal-maroon-color; } 
-.o_cal_class.o_cal_maroon { border-left: $o-cal-color-width solid $o-cal-maroon-bg;}
-.o_cal_sec.o_cal_maroon_sec { border-left: $o-cal-sec-border-width solid $o-cal-maroon-bg; }
-
-.o_cal_lime { background: $o-cal-lime-bg; border-color: $o-cal-lime-border-color; color: $o-cal-lime-color; }
-.o_cal_lime .fc-list-event-dot {border-color: $o-cal-lime-bg	;}
-.o_cal_lime div.fc-event-main { color: $o-cal-lime-color; } 
-.o_cal_class.o_cal_lime { border-left: $o-cal-color-width solid $o-cal-lime-bg;}
-.o_cal_sec.o_cal_lime_sec { border-left: $o-cal-sec-border-width solid $o-cal-lime-bg; }
-
-.o_cal_grey { background: $o-cal-grey-bg; border-color: $o-cal-grey-border-color; color: $o-cal-grey-color; }
-.o_cal_grey .fc-list-event-dot {border-color: $o-cal-grey-bg	;}
-.o_cal_grey div.fc-event-main { color: $o-cal-grey-color; } 
-.o_cal_class.o_cal_grey { border-left: $o-cal-color-width solid $o-cal-grey-bg;}
-.o_cal_sec.o_cal_grey_sec { border-left: $o-cal-sec-border-width solid $o-cal-grey-bg; }
+// Secondary colour: the calendar colour on an event with its own colour,
+// e.g. "o_cal_red o_cal_sec o_cal_blue_sec". The element carries the
+// tokens of the event colour, the calendar colour is set as a value.
+@each $class, $alias in $o-swatch-aliases {
+	@if string.index($class, "o_cal_") == 1 {
+		.o_cal_sec.#{$class}_sec { border-left: $o-cal-sec-border-width solid o-swatch-alias-color($class); }
+	}
+}
 
 
 .o_sel_calendar_print_chooser {
