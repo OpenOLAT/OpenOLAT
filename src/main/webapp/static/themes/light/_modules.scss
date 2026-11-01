@@ -122,3 +122,7 @@
 
 @import "modules/highscore";
 
+/* palette primitives --o-{hue}-{step} and swatch role tokens --o-sw-* */
+@import "modules/palette_vars";
+@import "modules/swatches";
+

@@ -1,0 +1,21 @@
+/*
+ * =================================================
+ *
+ * Palette primitives as CSS custom properties:
+ * --o-{hue}-{step}, e.g. --o-blue-500. Values from $o-palette
+ * in _palette.scss. Not used in email.scss, mail clients do
+ * not support custom properties.
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date October 2026
+ * =================================================
+ */
+@use "sass:map";
+
+:root {
+	@each $hue, $steps in $o-palette {
+		@each $step, $value in $steps {
+			--o-#{$hue}-#{$step}: #{o-hex($value)};
+		}
+	}
+}

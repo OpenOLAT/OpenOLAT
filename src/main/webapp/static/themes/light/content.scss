@@ -14,6 +14,7 @@
  */
 @import "license";
 @import "functions";
+@import "palette";
 
 /* 	
 	Configuration 
@@ -46,3 +47,6 @@
 @import "modules/content";
 
 @import "modules/print";
+
+/* palette primitives --o-{hue}-{step} */
+@import "modules/palette_vars";

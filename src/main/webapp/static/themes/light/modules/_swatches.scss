@@ -1,0 +1,55 @@
+/*
+ * =================================================
+ *
+ * Palette swatches: .o_swatch_{hue} sets the role tokens
+ * --o-sw-bg, --o-sw-fg, --o-sw-border, --o-sw-soft-bg,
+ * --o-sw-soft-fg, --o-sw-soft-border and --o-sw-text from
+ * $o-swatches (_palette.scss). The modifiers .o_swatch_tint
+ * and .o_swatch_dark replace the solid fill roles.
+ * Components read the tokens, this file sets no colours.
+ *
+ * Each legacy chooser class of $o-swatch-aliases (_palette.scss)
+ * extends the swatch of its hue and variant, e.g. .o_cal_blue
+ * sets the tokens of .o_swatch_blue.o_swatch_dark.
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date October 2026
+ * =================================================
+ */
+@use "sass:list";
+@use "sass:map";
+
+@each $hue, $swatch in $o-swatches {
+	// The placeholders keep the legacy classes out of the
+	// .o_swatch_<hue>.o_swatch_tint compound selectors
+	.o_swatch_#{$hue}, %o_swatch_#{$hue} {
+		--o-sw-bg: #{o-hex(map.get($swatch, "bg"))};
+		--o-sw-fg: #{o-hex(map.get($swatch, "fg"))};
+		--o-sw-border: #{o-hex(map.get($swatch, "border"))};
+		--o-sw-soft-bg: #{o-hex(map.get($swatch, "soft-bg"))};
+		--o-sw-soft-fg: #{o-hex(map.get($swatch, "soft-fg"))};
+		--o-sw-soft-border: #{o-hex(map.get($swatch, "soft-border"))};
+		--o-sw-text: #{o-hex(map.get($swatch, "text"))};
+	}
+	.o_swatch_#{$hue}.o_swatch_tint, %o_swatch_#{$hue}_tint {
+		--o-sw-bg: #{o-hex(map.get($swatch, "tint-bg"))};
+		--o-sw-fg: #{o-hex(map.get($swatch, "tint-fg"))};
+		--o-sw-border: #{o-hex(map.get($swatch, "tint-border"))};
+	}
+	.o_swatch_#{$hue}.o_swatch_dark, %o_swatch_#{$hue}_dark {
+		--o-sw-bg: #{o-hex(map.get($swatch, "dark-bg"))};
+		--o-sw-fg: #{o-hex(map.get($swatch, "dark-fg"))};
+		--o-sw-border: #{o-hex(map.get($swatch, "dark-border"))};
+	}
+}
+
+@each $class, $alias in $o-swatch-aliases {
+	$hue: list.nth($alias, 1);
+	$variant: list.nth($alias, 2);
+	.#{$class} {
+		@extend %o_swatch_#{$hue};
+		@if $variant != "solid" {
+			@extend %o_swatch_#{$hue}_#{$variant};
+		}
+	}
+}
