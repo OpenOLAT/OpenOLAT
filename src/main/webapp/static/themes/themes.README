@@ -51,6 +51,8 @@ the light theme and extends on top of it.
 - theme.js (optional): javascript code that should be embedded to the page to add some more complex
   features that can't be done with CSS alone
 - _config.scss: all OpenOLAT and bootstrap SASS variables
+- _palette.scss: the colour palette for all user colour choosers (15 hues x 10 steps) and the swatch roles
+- _palette_theme.scss: the theme colours, the brand colours of the theme the choosers offer after the 15 hues
 - modules/*: tons of include files for different aspects of OpenOLAT
 
 
@@ -75,6 +77,19 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
   override. As references yo can look at the following files:
   - for all bootstrap variables: ../../bootstrap/stylesheets/bootstrap/_variables.scss
   - for all OpenOLAT variables: light/_config.scss
+  - for the chooser colour palette: light/_palette.scss. You can override the values of $o-palette.
+    Keep all 15 hue names, the alias tables need them, otherwise the compile stops. Every step needs
+    a foreground with a contrast of 4.5:1, otherwise the compile fails. OpenOLAT reads the palette
+    from the compiled theme.css of the active theme, so badges and report charts follow your
+    palette. A theme without the --o-{hue}-{step} properties in its theme.css uses the palette of
+    the light theme, without theme colours.
+  - for the theme colours: light/_palette_theme.scss. Set $o-theme-colors to the brand colours of
+    the client, default is ($brand-primary). Example with 3 colours:
+      $o-theme-colors: ($brand-primary, $brand-accent, #0090C5);
+    The compile generates 10 steps per colour; the colour itself is the solid fill when a text
+    colour reaches 4.5:1 on it. The choosers show them as "Theme 1" ... "Theme n" after the 15 hues.
+    An entry can also be a map with all 10 steps (50: ..., 900: ...). The theme colours need
+    Dart Sass 1.79.0 or later.
 - Open mytheme/_mytheme_theme.scss and override or extend styles from the light theme. Best is to use the 
   browser to lookup the CSS classes and then search in the light theme for the definitions. Don't miss the 
   tag hierarchies and the responsive rules!

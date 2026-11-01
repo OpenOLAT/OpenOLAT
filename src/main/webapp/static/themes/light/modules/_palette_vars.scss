@@ -18,4 +18,8 @@
 			--o-#{$hue}-#{$step}: #{o-hex($value)};
 		}
 	}
+	// theme colours (_palette_theme.scss): the solid fill, Java reads its step
+	@each $key, $step in $o-theme-bg-steps {
+		--o-#{$key}: #{o-hex(map.get(map.get($o-palette, $key), $step))};
+	}
 }

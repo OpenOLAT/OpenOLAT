@@ -15,6 +15,12 @@ $o-brand-black					: rgb(45,41,38);
 
 /* General colors */
 $brand-primary 					: $o-brand-sea; 		
+
+/* Theme colours: the brand colours the colour choosers offer after the 15
+   hues of the palette, as "Theme 1" ... "Theme 4" (light/_palette_theme.scss).
+   Dark teal and Forest are left out, they are shades of Sea; Chocolate is a
+   near neutral for text. */
+$o-theme-colors					: ($brand-primary, $o-brand-peach, $o-brand-berry, $o-brand-sprout);
 $text-color						: $o-brand-black;
 $link-color						: $o-brand-sea;
 $link-hover-color				: darken($o-brand-sea, 10%);

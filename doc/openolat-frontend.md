@@ -152,6 +152,31 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 }
 ```
 
+### 6.1 Colour Palette for User Colour Choosers
+
+Every colour a user can pick (calendar, course element category, video markers, project avatar, user initials, rooms, page editor blocks, badges, evaluation form report series) comes from one palette in `light/_palette.scss`.
+
+```
+$o-palette      15 hues × 10 steps: red, orange, yellow, lime, green, teal, cyan,
+                blue, indigo, violet, magenta, pink, brown, slate, gray; steps 50 … 900,
+                plus the theme colours theme1 … themeN (_palette_theme.scss)
+$o-swatches     per hue: bg, fg, border, soft-bg, soft-fg, soft-border, text,
+                tint-* and dark-* variants; fg chosen by o-on-color() at compile time,
+                the compile fails below 4.5:1
+.o_swatch_{hue} sets --o-sw-bg, --o-sw-fg, --o-sw-border, … (modules/_swatches.scss)
+--o-{hue}-{step} every palette value on :root in theme.css and content.css
+                (modules/_palette_vars.scss), not in email.css
+```
+
+Rules:
+
+- Chooser components read `var(--o-sw-*)`. They never carry a hex literal.
+- Stored legacy keys and classes (`o_color_lightblue`, `o_cal_blue`, `o_colcat_light_blue`, ...) stay valid: the alias map in `_palette.scss` extends them from the swatch classes, and `ColorService.resolve()` maps them in Java.
+- Java reads the palette from the compiled CSS. `Theme.init()` parses the `--o-{hue}-{step}` properties of the selected theme's `theme.css`, with fallback to `light/theme.css`, in the same way it loads `email.css`. `ColorService.getPalette()` returns the palette of the current GUI theme. There is no generated palette file, and `compiletheme.sh` writes nothing but CSS.
+- A client theme may override the values of `$o-palette` (declared `!default`). It must keep all 15 hue names, the alias tables need them. Its `theme.css` then carries the client values, and badges and report series follow.
+- **Theme colours:** `light/_palette_theme.scss` (imported after `_config.scss`) generates 10 steps for each colour of `$o-theme-colors` (default `($brand-primary)`), in OKLCH with the luminance targets of the palette. The brand colour itself is the solid fill when a text colour reaches 4.5:1 on it, never lighter than step 300; otherwise the generated step 500 (400 for a light colour). Output: `--o-theme{n}-{step}`, `--o-theme{n}` (the solid fill), `.o_swatch_theme{n}`. Java: `Palette.getThemeColors()` / `ColorService.getThemeColors()` return only the colours the theme defines (`theme1` up to the first gap); `resolve("theme3")` falls back to `theme1`. The openolat theme defines 4 (Sea, Peach, Berry, Sprout). Needs Dart Sass 1.79.0 or later.
+- Live reference with contrast values: `doc/component-library/colors.html`.
+
 ## 7. Theme Customization
 
 To create a custom theme, copy `openolat/`, rename files, and override variables + CSS rules:

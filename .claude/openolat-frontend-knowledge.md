@@ -39,7 +39,9 @@ src/main/webapp/static/
       email.scss                # Email notification styles
       oo-docs.scss              # Icons only → oo-docs.css for the user manual
       _config.scss              # ALL variables (~2000 lines, !default)
-      _functions.scss           # luminance(), contrast(), o-a11y-color()
+      _functions.scss           # luminance(), contrast(), o-a11y-color(), o-on-color()
+      _palette.scss             # Colour palette: $o-palette (15 hues x 10 steps), $o-swatches, aliases
+      _palette_theme.scss       # Theme colours theme1..N from $o-theme-colors (brand colours)
       _modules.scss             # Import manifest (~100 modules)
       modules/                  # SCSS partials by feature
     openolat/                   # PRODUCT THEME (derives from light)
@@ -93,6 +95,7 @@ Line numbers as of 21.1.0. Borders: `$btn-default-border` `#6c757d` (buttons, dr
 luminance($color)                              // Relative luminance (0=black, 1=white)
 contrast($color1, $color2)                     // Contrast ratio
 o-a11y-color($color, $background, $target:4.5) // Auto-adjust for WCAG 4.5:1
+o-on-color($bg, $candidates, $ratio:4.5)       // First candidate with enough contrast on $bg; compile error if none
 ```
 
 ### Custom Theme Creation Pattern
@@ -299,6 +302,15 @@ Widget content types: `.o_widget_main.o_widget_main_figure` (figure), `.o_widget
 | Grey | `#595959` | grey border, white bg | `#F6F6F6` |
 
 Variables: `$o-labeled-{color}-{variant}-{property}` (color/bg-color/border-color)
+
+## 6a. Colour Palette (user colour choosers)
+
+One palette in `_palette.scss`: `$o-palette` with 15 hues (red, orange, yellow, lime, green, teal, cyan, blue, indigo, violet, magenta, pink, brown, slate, gray) × 10 steps (50 to 900), plus the theme colours `theme1` … `themeN` from `$o-theme-colors` (`_palette_theme.scss`, default `$brand-primary`, Dart Sass >= 1.79). Emitted as `--o-{hue}-{step}` on `:root` in `theme.css` and `content.css`, not in `email.css`.
+
+- `$o-swatches`: per hue the roles `bg`, `fg`, `border`, `soft-bg`, `soft-fg`, `soft-border`, `text`, tint and dark variants. Foreground chosen by `o-on-color()` at compile time (4.5:1 enforced).
+- `modules/_swatches.scss`: `.o_swatch_{hue}`, `.o_swatch_tint`, `.o_swatch_dark` set `--o-sw-*`. Chooser components (`_colors`, `_cal`, `_course`, `_video*`, `_projects`, `_user`, `_room_management`, `_contenteditor`) read `var(--o-sw-*)`. Legacy classes (`o_color_*`, `o_cal_*`, `o_colcat_*`, ...) extend the swatch classes via the alias map.
+- Java: `Theme.init()` parses `--o-{hue}-{step}` from the selected theme's `theme.css` (fallback `light`) into `Palette`; `ColorService.getPalette()`, `resolve()`, `toCssClass()`. No generated file. Used by badges and report series. `getThemeColors()` returns only the theme colours the CSS defines; `resolve("theme3")` falls back to `theme1`.
+- Reference: `doc/component-library/colors.html` (all swatches with live contrast values).
 
 ## 7. Key SCSS Modules
 

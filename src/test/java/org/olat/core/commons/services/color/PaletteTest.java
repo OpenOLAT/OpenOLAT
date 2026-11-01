@@ -171,6 +171,80 @@ public class PaletteTest {
 	}
 
 	@Test
+	public void lightThemeColor() {
+		Assert.assertEquals(List.of("theme1"), palette.getThemeColors());
+		Assert.assertFalse(palette.getHues().contains("theme1"));
+		Assert.assertTrue(palette.contains("theme1"));
+		// $brand-primary of light, white text with 4.5:1, exact at step 500
+		Assert.assertEquals("#2E6BBF", palette.bg(new Swatch("theme1", Swatch.SOLID)));
+		for (String variant : VARIANTS) {
+			Swatch swatch = new Swatch("theme1", variant);
+			Assert.assertTrue("theme1 " + variant, ColorContrast.contrast(palette.fg(swatch), palette.bg(swatch)) >= Palette.MIN_CONTRAST);
+		}
+		Assert.assertTrue(ColorContrast.contrast(Palette.WHITE, palette.text("theme1")) >= Palette.MIN_CONTRAST);
+		Assert.assertTrue(palette.withoutThemeColors().getThemeColors().isEmpty());
+	}
+
+	@Test
+	public void openolatThemeColors() throws IOException {
+		Path openolatCss = Path.of("src/main/webapp/static/themes/openolat/theme.css");
+		Palette openolat = Palette.fromCss(new String(Files.readAllBytes(openolatCss), StandardCharsets.UTF_8));
+		Assert.assertNotNull(openolat);
+		// Sea, Peach, Berry, Sprout of _openolat_config.scss, each exact at its step
+		Assert.assertEquals(List.of("theme1", "theme2", "theme3", "theme4"), openolat.getThemeColors());
+		Assert.assertEquals("#126365", openolat.bg(new Swatch("theme1", Swatch.SOLID)));
+		Assert.assertEquals("#F2AF40", openolat.bg(new Swatch("theme2", Swatch.SOLID)));
+		Assert.assertEquals("#8F1F40", openolat.bg(new Swatch("theme3", Swatch.SOLID)));
+		Assert.assertEquals("#B2CF42", openolat.bg(new Swatch("theme4", Swatch.SOLID)));
+		Assert.assertTrue(openolat.isBrightColor("theme2"));
+		Assert.assertFalse(openolat.isBrightColor("theme3"));
+		for (String themeColor : openolat.getThemeColors()) {
+			for (String variant : VARIANTS) {
+				Swatch swatch = new Swatch(themeColor, variant);
+				Assert.assertTrue(themeColor + " " + variant,
+						ColorContrast.contrast(openolat.fg(swatch), openolat.bg(swatch)) >= Palette.MIN_CONTRAST);
+			}
+		}
+	}
+
+	@Test
+	public void themeColorsCountedUntilGap() {
+		StringBuilder css = new StringBuilder(":root{");
+		for (Integer step : Palette.STEPS) {
+			css.append("--o-red-").append(step).append(": #D2343C;");
+			css.append("--o-theme1-").append(step).append(": #10").append(step.intValue() == 600 ? "6365" : "0000").append(";");
+			css.append("--o-theme3-").append(step).append(": #200000;");
+		}
+		css.append("--o-theme1: #106365;--o-theme3: #200000}");
+
+		Palette themed = Palette.fromCss(css.toString());
+		Assert.assertNotNull(themed);
+		// theme2 is missing, theme3 is not a theme colour
+		Assert.assertEquals(List.of("theme1"), themed.getThemeColors());
+		Assert.assertFalse(themed.contains("theme3"));
+		// the fill is step 600: tint 300, dark two steps darker
+		Assert.assertEquals(600, themed.getBgStep(new Swatch("theme1", Swatch.SOLID)));
+		Assert.assertEquals(300, themed.getBgStep(new Swatch("theme1", Swatch.TINT)));
+		Assert.assertEquals(800, themed.getBgStep(new Swatch("theme1", Swatch.DARK)));
+		Assert.assertFalse(themed.isBrightColor("theme1"));
+		Assert.assertEquals("#106365", themed.text("theme1"));
+	}
+
+	@Test
+	public void themeWithoutThemeColors() {
+		StringBuilder css = new StringBuilder(":root{");
+		for (Integer step : Palette.STEPS) {
+			css.append("--o-red-").append(step).append(": #D2343C;");
+		}
+		css.append("}");
+		Palette plain = Palette.fromCss(css.toString());
+		Assert.assertNotNull(plain);
+		Assert.assertTrue(plain.getThemeColors().isEmpty());
+		Assert.assertFalse(Palette.isThemeColor("red"));
+		Assert.assertTrue(Palette.isThemeColor("theme12"));
+	}
+
+	@Test
 	public void contrast() {
 		Assert.assertEquals(21.0d, ColorContrast.contrast("#000000", "#FFFFFF"), 0.001d);
 		Assert.assertEquals(1.0d, ColorContrast.contrast("#4166E8", "#4166E8"), 0.001d);

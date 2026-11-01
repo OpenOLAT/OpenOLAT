@@ -1,0 +1,268 @@
+/*
+ * =================================================
+ *
+ * OpenOLAT theme colours (OO-colors spec 4.7)
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ *
+ * The brand colours of the theme, in addition to the 15 hues of
+ * $o-palette. The list $o-theme-colors defines 1 to n colours, the
+ * default is $brand-primary. A client theme sets the list in its config
+ * before the import of the light theme, e.g.
+ *
+ *   $o-theme-colors: ($brand-primary, $brand-accent, #0090C5);
+ *
+ * An entry is a colour or a map with all 10 steps (50: ..., 900: ...).
+ * For a colour this file generates the 10 steps with the rule of palette
+ * v2 (_palette.scss): hue angle and chroma of the colour (OKLCH), the
+ * luminance targets of the palette steps. The exact colour replaces the
+ * step with the same text polarity and the nearest luminance (the anchor),
+ * never lighter than step 300. Without an anchor the fill is the generated
+ * step 500, or 400 for a light colour: a colour in the dead zone, where
+ * neither white nor step 900 reaches 4.5:1, or a colour that is almost
+ * white (below 1.5:1 on white).
+ *
+ * Output: theme{n} entries are appended to $o-palette and $o-swatches,
+ * so modules/_palette_vars.scss emits --o-theme{n}-{step} and
+ * modules/_swatches.scss emits .o_swatch_theme{n}. --o-theme{n} holds the
+ * solid fill, Java reads the fill step from it.
+ *
+ * Needs Dart Sass 1.79.0 or later (colour spaces, OO-10000).
+ * Imported after _config.scss, $brand-primary is not set before.
+ * =================================================
+ */
+@use "sass:color";
+@use "sass:list";
+@use "sass:map";
+@use "sass:math";
+@use "sass:meta";
+
+@if not meta.function-exists("to-space", "color") {
+	@error "The theme colours need Dart Sass 1.79.0 or later (colour spaces), see OO-10000 and themes.README.";
+}
+
+$o-theme-colors: ($brand-primary) !default;
+
+// Relative luminance per step, same values as palette v2
+$o-palette-luminance: (50: 0.93, 100: 0.84, 200: 0.72, 300: 0.60, 400: 0.48, 500: 0.165, 600: 0.10, 700: 0.062, 800: 0.036, 900: 0.016);
+
+// OKLCH chroma per step of the reference hue, scaled per theme colour
+$o-palette-chroma: (50: 0.020, 100: 0.050, 200: 0.100, 300: 0.150, 400: 0.200, 500: 0.215, 600: 0.200, 700: 0.180, 800: 0.150, 900: 0.110);
+
+// Relative luminance (WCAG) with the colour module, no global functions
+@function o-theme-luminance($c) {
+	$sum: 0;
+	@each $channel, $weight in ("red": 0.2126, "green": 0.7152, "blue": 0.0722) {
+		$v: math.div(color.channel($c, $channel, $space: rgb), 255);
+		@if $v <= 0.04045 {
+			$v: math.div($v, 12.92);
+		} @else {
+			$v: math.pow(math.div($v + 0.055, 1.055), 2.4);
+		}
+		$sum: $sum + $weight * $v;
+	}
+	@return $sum;
+}
+
+@function o-theme-contrast($c1, $c2) {
+	$l1: o-theme-luminance($c1);
+	$l2: o-theme-luminance($c2);
+	@return math.div(math.max($l1, $l2) + 0.05, math.min($l1, $l2) + 0.05);
+}
+
+// The OKLCH lightness with hue $h and chroma $c that has the relative
+// luminance $target (binary search)
+@function o-theme-lightness($h, $c, $target) {
+	$lo: 0;
+	$hi: 1;
+	@for $i from 1 through 30 {
+		$m: math.div($lo + $hi, 2);
+		@if o-theme-luminance(color.to-space(oklch($m $c $h), rgb)) < $target {
+			$lo: $m;
+		} @else {
+			$hi: $m;
+		}
+	}
+	@return $lo;
+}
+
+// A sRGB colour with hue $h, the largest chroma up to $c inside the gamut,
+// and the relative luminance $target. Out of the gamut, a binary search on
+// the chroma finds the largest chroma that fits; the luminance is kept.
+@function o-theme-step($h, $c, $target) {
+	// no sRGB colour has an OKLCH chroma above 0.37
+	$c: math.min($c, 0.37);
+	$l: o-theme-lightness($h, $c, $target);
+	@if not color.is-in-gamut(oklch($l $c $h), $space: srgb) {
+		$lo: 0;
+		$hi: $c;
+		@for $i from 1 through 12 {
+			$m: math.div($lo + $hi, 2);
+			@if color.is-in-gamut(oklch(o-theme-lightness($h, $m, $target) $m $h), $space: srgb) {
+				$lo: $m;
+			} @else {
+				$hi: $m;
+			}
+		}
+		$c: $lo;
+		$l: o-theme-lightness($h, $c, $target);
+	}
+	// back to a plain sRGB value, as in $o-palette
+	$rgb: color.to-gamut(color.to-space(oklch($l $c $h), rgb), $method: clip);
+	@return rgb(math.round(color.channel($rgb, "red", $space: rgb)),
+		math.round(color.channel($rgb, "green", $space: rgb)),
+		math.round(color.channel($rgb, "blue", $space: rgb)));
+}
+
+// The step in $steps with the nearest luminance to $y (log scale)
+@function o-theme-nearest-step($y, $steps) {
+	$best: list.nth($steps, 1);
+	$distance: 1000;
+	@each $step in $steps {
+		$d: math.abs(math.log(map.get($o-palette-luminance, $step)) - math.log(math.max($y, 0.0001)));
+		@if $d < $distance {
+			$distance: $d;
+			$best: $step;
+		}
+	}
+	@return $best;
+}
+
+// Returns ("steps": (50: ..., 900: ...), "anchor": step or null)
+@function o-theme-scale($brand) {
+	@if meta.type-of($brand) == "map" {
+		@return ("steps": $brand, "anchor": null, "fill": 500);
+	}
+	$oklch: color.to-space($brand, oklch);
+	$chroma: 0;
+	$hue: 0;
+	@if not color.is-missing($oklch, "chroma") {
+		$chroma: color.channel($oklch, "chroma");
+	}
+	@if not color.is-missing($oklch, "hue") {
+		$hue: color.channel($oklch, "hue");
+	}
+	$y: o-theme-luminance($brand);
+
+	// scale the chroma curve so that the nearest step gets the brand chroma
+	$nearest: o-theme-nearest-step($y, $o-palette-steps);
+	$k: math.div($chroma, map.get($o-palette-chroma, $nearest));
+	$steps: ();
+	@each $step in $o-palette-steps {
+		$steps: map.merge($steps, ($step: o-theme-step($hue, map.get($o-palette-chroma, $step) * $k, map.get($o-palette-luminance, $step))));
+	}
+
+	// anchor: the step with the same text polarity and the nearest luminance.
+	// A fill lighter than step 300 or below 1.5:1 on white disappears on a
+	// white page, such a colour has no anchor.
+	$white: o-theme-contrast($brand, #FFFFFF) >= 4.5;
+	$dark: o-theme-contrast($brand, map.get($steps, 900)) >= 4.5;
+	$visible: o-theme-contrast($brand, #FFFFFF) >= 1.5;
+	$anchor: null;
+	@if $visible and ($white or $dark) {
+		$slots: (500, 600, 700, 800, 900);
+		@if $dark and ($y >= 0.165 or not $white) {
+			$slots: (300, 400);
+		}
+		$step: o-theme-nearest-step($y, $slots);
+		$i: list.index($o-palette-steps, $step);
+		$lighter: 2;
+		$darker: -1;
+		@if $i > 1 {
+			$lighter: o-theme-luminance(map.get($steps, list.nth($o-palette-steps, $i - 1)));
+		}
+		@if $i < list.length($o-palette-steps) {
+			$darker: o-theme-luminance(map.get($steps, list.nth($o-palette-steps, $i + 1)));
+		}
+		@if $darker < $y and $y < $lighter {
+			$anchor: $step;
+			$steps: map.merge($steps, ($step: $brand));
+		}
+	}
+	// without anchor: the generated step 400 for a light colour, else 500
+	$fill: $anchor;
+	@if $fill == null {
+		$fill: 500;
+		@if $y >= 0.25 {
+			$fill: 400;
+		}
+	}
+	@return ("steps": $steps, "anchor": $anchor, "fill": $fill);
+}
+
+// The first step from $from to 900 that reaches 3:1 on white
+@function o-theme-border($steps, $from) {
+	$candidates: ();
+	@each $step in $o-palette-steps {
+		@if $step >= $from {
+			$candidates: list.append($candidates, map.get($steps, $step));
+		}
+	}
+	@return o-on-color(#FFFFFF, $candidates, 3);
+}
+
+// The step $n positions darker than $step, 900 at most
+@function o-theme-darker($step, $n) {
+	$i: math.min(list.index($o-palette-steps, $step) + $n, list.length($o-palette-steps));
+	@return list.nth($o-palette-steps, $i);
+}
+
+// The swatch roles of a theme colour, same keys as o-palette-swatches().
+// The solid fill is the anchor step (the exact brand colour), else 500.
+@function o-theme-swatch($steps, $bg-step) {
+	$c900: map.get($steps, 900);
+	$tint-step: 300;
+	@if $bg-step <= 300 {
+		$tint-step: 50;
+	}
+	$dark-step: o-theme-darker($bg-step, 2);
+	$bg: map.get($steps, $bg-step);
+	$soft-bg: map.get($steps, 50);
+	$tint-bg: map.get($steps, $tint-step);
+	$dark-bg: map.get($steps, $dark-step);
+	$text-candidates: (map.get($steps, 500), map.get($steps, 600), map.get($steps, 700));
+	@if $bg-step >= 500 {
+		$text-candidates: list.join(($bg,), $text-candidates);
+	}
+	@return (
+		"bg": $bg,
+		"fg": o-on-color($bg, (#FFFFFF, $c900, #000000)),
+		"border": o-theme-border($steps, o-theme-darker($bg-step, 1)),
+		"soft-bg": $soft-bg,
+		"soft-fg": o-on-color($soft-bg, (map.get($steps, 700), map.get($steps, 800), $c900)),
+		"soft-border": map.get($steps, 200),
+		"text": o-on-color(#FFFFFF, $text-candidates),
+		"tint-bg": $tint-bg,
+		"tint-fg": o-on-color($tint-bg, ($c900, #000000)),
+		"tint-border": o-theme-border($steps, 400),
+		"dark-bg": $dark-bg,
+		"dark-fg": o-on-color($dark-bg, (#FFFFFF, $c900, #000000)),
+		"dark-border": o-theme-border($steps, o-theme-darker($dark-step, 1))
+	);
+}
+
+// theme1 ... themeN: steps, solid fill step and roles
+$o-theme-palette: ();
+$o-theme-bg-steps: ();
+$o-theme-swatches: ();
+$_o-theme-n: 0;
+// a single map of steps is one entry, not a list of its pairs
+$_o-theme-entries: $o-theme-colors;
+@if meta.type-of($o-theme-colors) == "map" {
+	$_o-theme-entries: ($o-theme-colors,);
+}
+@each $entry in $_o-theme-entries {
+	$_o-theme-n: $_o-theme-n + 1;
+	$_o-theme-key: "theme#{$_o-theme-n}";
+	$_o-theme-scale: o-theme-scale($entry);
+	$_o-theme-steps: map.get($_o-theme-scale, "steps");
+	$_o-theme-bg-step: map.get($_o-theme-scale, "fill");
+	$o-theme-palette: map.merge($o-theme-palette, ($_o-theme-key: $_o-theme-steps));
+	$o-theme-bg-steps: map.merge($o-theme-bg-steps, ($_o-theme-key: $_o-theme-bg-step));
+	$o-theme-swatches: map.merge($o-theme-swatches, ($_o-theme-key: o-theme-swatch($_o-theme-steps, $_o-theme-bg-step)));
+}
+
+// Appended after the 15 hues: the emitters and Java see them last
+$o-palette: map.merge($o-palette, $o-theme-palette);
+$o-swatches: map.merge($o-swatches, $o-theme-swatches);
