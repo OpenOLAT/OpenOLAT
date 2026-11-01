@@ -60,6 +60,17 @@ public class ColorServiceImpl implements ColorService {
 		return mutableList;
 	}
 
+	@Override
+	public String toCssClass(String colorKey) {
+		return colorKey == null ? null : CSS_CLASS_PREFIX + colorKey;
+	}
+
+	@Override
+	public String toColorKey(String cssClass) {
+		return cssClass != null && cssClass.startsWith(CSS_CLASS_PREFIX)
+				? cssClass.substring(CSS_CLASS_PREFIX.length()) : cssClass;
+	}
+
 	private List<String> listStringToList(String listString) {
 		List<String> list = new ArrayList<>();
 		if (StringHelper.containsNonWhitespace(listString)) {

@@ -59,8 +59,6 @@ public class RoomUIHelper {
 
 	private static final int MAX_COLUMN_INFO_TEXT_LENGTH = 250;
 	private static final int MAX_DESC_LENGTH = 40;
-	/** Prefix of the color CSS classes stored on a building, see {@link EditBuildingController}. */
-	private static final String COLOR_CSS_PREFIX = "o_color_";
 
 	/**
 	 * The default color as CSS class (e.g. "o_color_lightblue"), ready to be used like
@@ -68,7 +66,7 @@ public class RoomUIHelper {
 	 * bare color id without the "o_color_" prefix.
 	 */
 	public static String getDefaultColorCss(ColorService colorService) {
-		return COLOR_CSS_PREFIX + colorService.getDefaultColor();
+		return colorService.toCssClass(colorService.getDefaultColor());
 	}
 
 	/**

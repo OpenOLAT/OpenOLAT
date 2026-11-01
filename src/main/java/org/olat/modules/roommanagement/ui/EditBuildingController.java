@@ -131,7 +131,7 @@ public class EditBuildingController extends FormBasicController {
 		colorEl = uifactory.addColorPickerElement("building.color", "building.col.color", formLayout, colors);
 		colorEl.setElementCssClass("o_building_color_picker");
 		if (building != null && StringHelper.containsNonWhitespace(building.getColorCss())) {
-			colorEl.setColor(toColorId(building.getColorCss()));
+			colorEl.setColor(colorService.toColorKey(building.getColorCss()));
 		} else {
 			colorEl.setColor(colorService.getDefaultColor());
 		}
@@ -333,10 +333,5 @@ public class EditBuildingController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
-
-	private static String toColorId(String colorCss) {
-		return colorCss != null && colorCss.startsWith("o_color_")
-				? colorCss.substring("o_color_".length()) : colorCss;
 	}
 }

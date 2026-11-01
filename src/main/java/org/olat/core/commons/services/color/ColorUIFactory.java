@@ -64,6 +64,6 @@ public class ColorUIFactory {
 	 * @return list of color objects
 	 */
 	public static List<ColorPickerElement.Color> createColors(List<String> colorNames, Locale locale) {
-		return createColors(colorNames, locale, "o_color_");
+		return createColors(colorNames, locale, ColorService.CSS_CLASS_PREFIX);
 	}
 }

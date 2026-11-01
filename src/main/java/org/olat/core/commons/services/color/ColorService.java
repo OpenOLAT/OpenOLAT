@@ -27,9 +27,26 @@ import java.util.List;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public interface ColorService {
+
+	/** Prefix of the color CSS classes, e.g. "o_color_lightblue". */
+	String CSS_CLASS_PREFIX = "o_color_";
+
 	List<String> getColors();
 
 	String getDefaultColor();
 
 	List<String> getColorsForBadges();
+
+	/**
+	 * @param colorKey The bare color key, e.g. "lightblue"
+	 * @return The color CSS class, e.g. "o_color_lightblue", or null if the key is null
+	 */
+	String toCssClass(String colorKey);
+
+	/**
+	 * @param cssClass The color CSS class, e.g. "o_color_lightblue"
+	 * @return The bare color key, e.g. "lightblue". A value without the prefix is
+	 * 		returned unchanged, null returns null.
+	 */
+	String toColorKey(String cssClass);
 }

@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.PageElement;
@@ -228,7 +229,7 @@ public class FragmentRendererHelper {
 		sb.append("<div class='").append(mainDivClass);
 
 		if (withBackgroundColor) {
-			sb.append(" ").append("o_color_background_10 ").append("o_color_").append(generalStyleSettings.getBackgroundColor());
+			sb.append(" ").append("o_color_background_10 ").append(ColorService.CSS_CLASS_PREFIX).append(generalStyleSettings.getBackgroundColor());
 		}
 
 		if (collapsible) {

@@ -27,9 +27,9 @@
  
 @function luminance($color) {
   $colors: (
-    'red': red($color),
-    'green': green($color),
-    'blue': blue($color)
+    'red': color.channel($color, "red", $space: rgb),
+    'green': color.channel($color, "green", $space: rgb),
+    'blue': color.channel($color, "blue", $space: rgb)
   );
 
   @each $name, $value in $colors {
@@ -43,10 +43,10 @@
       $value: math.pow($value, 2.4);
     }
 
-    $colors: map-merge($colors, ($name: $value));
+    $colors: map.merge($colors, ($name: $value));
   }
 
-  @return (map-get($colors, 'red') * .2126) + (map-get($colors, 'green') * .7152) + (map-get($colors, 'blue') * .0722);
+  @return (map.get($colors, 'red') * .2126) + (map.get($colors, 'green') * .7152) + (map.get($colors, 'blue') * .0722);
 }
 
 /* Helper method to calculate the contrast based on the luminance
@@ -76,9 +76,9 @@
 	
 	@while $currentRatio < $targetRatio and $i < 100  {
 		@if (luminance($color) > luminance($background) and $ligherAllowed) {
-	    	$color: lighten($color, 1%);
+	    	$color: color.adjust($color, $lightness: 1%);
 		} @else {
-		   	$color: darken($color, 1%);
+		   	$color: color.adjust($color, $lightness: -1%);
 		}
     	$currentRatio: contrast($color, $background);
     	$i: $i + 1;
@@ -87,4 +87,38 @@
     	}
   	}
   	@return $color;
+}
+
+/* Helper method to select a readable text color (white or black) for
+ * the given background color. Returns white when it has at least the
+ * same contrast as black, otherwise black.
+ *
+ * @param {Color} $bg - The background color
+ * @return {Color}
+ */
+@function o-contrast-text($bg) {
+	@if contrast(#FFFFFF, $bg) >= contrast(#000000, $bg) {
+		@return #FFFFFF;
+	}
+	@return #000000;
+}
+
+/* Helper method to select the foreground color for a background color.
+ * Unlike o-a11y-color() it does not modify a color. It returns the first
+ * candidate that reaches the contrast ratio on the background and stops
+ * the build when no candidate does. Used for the palette swatches, see
+ * _palette.scss.
+ *
+ * @param {Color} $bg - The background color
+ * @param {List} $candidates - The foreground colors to try, in order
+ * @param {Number} $ratio - The minimum contrast ratio, default 4.5 (WCAG AA)
+ * @return {Color}
+ */
+@function o-on-color($bg, $candidates, $ratio: 4.5) {
+	@each $c in $candidates {
+		@if contrast($c, $bg) >= $ratio {
+			@return $c;
+		}
+	}
+	@error "o-on-color: no candidate of (#{$candidates}) reaches #{$ratio}:1 on #{$bg}";
 }
