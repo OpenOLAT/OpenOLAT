@@ -19,6 +19,11 @@
  */
 package org.olat.core.commons.services.video.dispatcher;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
@@ -27,14 +32,23 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -52,6 +66,7 @@ import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.manager.VideoTranscodingDAO;
+import org.olat.modules.video.model.VideoTranscodingMode;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -61,6 +76,14 @@ import org.springframework.test.util.ReflectionTestUtils;
  * token signed for a different job are all rejected with 403, and none of
  * the business-logic collaborators (file download, VFS/DB writes) are ever
  * reached.
+ * <p>
+ * Also covers the unit-testable rows of WP4 (hardening, independent of the
+ * token): H4 (the download must come from the configured service host), H7
+ * (a download that exceeds the size limit is stopped and cleaned up) and H8
+ * (a failed download never touches an existing target file). These call the
+ * private {@code download(...)} method directly, with a stubbed Apache
+ * HttpClient response, rather than going through the full result-handling
+ * business logic.
  *
  * Initial date: 2026-11-02<br>
  *
@@ -99,10 +122,12 @@ public class TranscodingDeliveryDispatcherTest {
 	private TranscoderHelper transcoderHelperMock;
 
 	private TranscodingDeliveryDispatcher dispatcher;
+	private File tempDir;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws IOException {
 		MockitoAnnotations.openMocks(this);
+		tempDir = Files.createTempDirectory("transcoding-dispatcher-test").toFile();
 		dispatcher = new TranscodingDeliveryDispatcher();
 		ReflectionTestUtils.setField(dispatcher, "avModule", avModuleMock);
 		ReflectionTestUtils.setField(dispatcher, "vfsMetadataDao", vfsMetadataDaoMock);
@@ -123,6 +148,11 @@ public class TranscodingDeliveryDispatcherTest {
 				.thenReturn(true);
 		// Every other (token, type, uuid, referenceId) combination is left
 		// unstubbed and therefore returns Mockito's default of false.
+
+		// OO-9999, WP4 H1: these tests exercise the token gate (WP3), so the feature
+		// gate added for videoConversion by H1 must be open, not the thing under test here.
+		when(avModuleMock.isVideoRecordingEnabled()).thenReturn(true);
+		when(avModuleMock.getVideoConversionMode()).thenReturn(VideoTranscodingMode.service);
 	}
 
 	private HttpServletRequest mockRequest(String pathAfterNamespace, String body) throws IOException {
@@ -222,6 +252,101 @@ public class TranscodingDeliveryDispatcherTest {
 		verify(transcoderHelperMock).verifyCallbackToken(eq("wrong-token"), eq(TranscoderJobType.videoConversion), eq(UUID_A), eq(REFERENCE_ID_A));
 		verify(response).sendError(HttpServletResponse.SC_FORBIDDEN);
 		verifyNoBusinessLogicInteractions();
+	}
+
+	@Test
+	public void rejectsADownloadFromAnUnconfiguredHostH4() throws Exception {
+		when(avModuleMock.getVideoConversionServiceUrl()).thenReturn("https://service.example.org/api");
+		File targetFile = new File(tempDir, "target.bin");
+
+		assertThrows(IOException.class, () -> invokeDownload(TranscoderJobType.videoConversion,
+				"https://evil.example.org/payload.bin", targetFile, 1_000_000L));
+
+		verifyNoInteractions(httpClientServiceMock);
+		assertFalse("A rejected download must not create the target file", targetFile.exists());
+		assertEquals("No temporary file must be left behind", 0, tempDir.listFiles().length);
+	}
+
+	@Test
+	public void stopsADownloadThatExceedsTheSizeLimitH7() throws Exception {
+		when(avModuleMock.getVideoConversionServiceUrl()).thenReturn("https://service.example.org");
+		stubHttpGet(HttpServletResponse.SC_OK, new byte[2000]);
+		File targetFile = new File(tempDir, "target.bin");
+
+		assertThrows(IOException.class, () -> invokeDownload(TranscoderJobType.videoConversion,
+				"https://service.example.org/payload.bin", targetFile, 1000L));
+
+		assertFalse("An oversized download must not produce a target file", targetFile.exists());
+		assertEquals("The partial download must be deleted, not left behind", 0, tempDir.listFiles().length);
+	}
+
+	@Test
+	public void leavesTheExistingTargetFileUnchangedOnAFailedDownloadH8() throws Exception {
+		when(avModuleMock.getVideoConversionServiceUrl()).thenReturn("https://service.example.org");
+		File targetFile = new File(tempDir, "target.bin");
+		byte[] originalContent = "original content, must survive a failed download".getBytes(StandardCharsets.UTF_8);
+		Files.write(targetFile.toPath(), originalContent);
+		// Fails mid-stream, after already having delivered some bytes, to prove this is not
+		// merely "nothing was written yet" but an in-progress download that gets aborted.
+		stubHttpGet(HttpServletResponse.SC_OK, () -> new InputStream() {
+			private final byte[] prefix = "partial-data-before-the-connection-drops".getBytes(StandardCharsets.UTF_8);
+			private int position = 0;
+
+			@Override
+			public int read() throws IOException {
+				if (position < prefix.length) {
+					return prefix[position++];
+				}
+				throw new IOException("Simulated network failure mid-download");
+			}
+		});
+
+		assertThrows(IOException.class, () -> invokeDownload(TranscoderJobType.videoConversion,
+				"https://service.example.org/payload.bin", targetFile, 1_000_000L));
+
+		assertArrayEquals("The existing target file must be left exactly as it was", originalContent,
+				Files.readAllBytes(targetFile.toPath()));
+		File[] filesAfter = tempDir.listFiles();
+		assertEquals("No temporary file must be left behind", 1, filesAfter.length);
+		assertEquals("target.bin", filesAfter[0].getName());
+	}
+
+	/**
+	 * Invokes the private {@code download(TranscoderJobType, String, File, long)}, unwrapping the
+	 * {@link IOException} that {@link ReflectionTestUtils} would otherwise hide inside an
+	 * {@link UndeclaredThrowableException}.
+	 */
+	private void invokeDownload(TranscoderJobType type, String url, File targetFile, long maxSizeBytes) throws IOException {
+		try {
+			ReflectionTestUtils.invokeMethod(dispatcher, "download", type, url, targetFile, maxSizeBytes);
+		} catch (UndeclaredThrowableException e) {
+			if (e.getCause() instanceof IOException ioException) {
+				throw ioException;
+			}
+			throw e;
+		}
+	}
+
+	private void stubHttpGet(int statusCode, byte[] content) {
+		stubHttpGet(statusCode, () -> new ByteArrayInputStream(content));
+	}
+
+	private void stubHttpGet(int statusCode, java.util.function.Supplier<InputStream> contentSupplier) {
+		CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
+		CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
+		StatusLine statusLineMock = Mockito.mock(StatusLine.class);
+		HttpEntity httpEntityMock = Mockito.mock(HttpEntity.class);
+
+		try {
+			when(httpClientServiceMock.createHttpClient()).thenReturn(httpClientMock);
+			when(httpClientMock.execute(any(HttpGet.class))).thenReturn(httpResponseMock);
+			when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
+			when(statusLineMock.getStatusCode()).thenReturn(statusCode);
+			when(httpResponseMock.getEntity()).thenReturn(httpEntityMock);
+			when(httpEntityMock.getContent()).thenAnswer(invocation -> contentSupplier.get());
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/**
