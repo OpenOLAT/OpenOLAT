@@ -25,7 +25,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Locale;
 
@@ -51,6 +55,7 @@ import org.olat.core.commons.services.video.TranscoderHelper;
 import org.olat.core.commons.services.video.model.TranscoderJob;
 import org.olat.core.commons.services.video.model.TranscoderJobResult;
 import org.olat.core.commons.services.video.model.TranscoderJobStatus;
+import org.olat.core.commons.services.video.model.TranscoderJobType;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.ServletUtil;
@@ -95,6 +100,12 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	private static final String AUDIO_CONVERSION_TYPE = "audioConversion/";
 	private static final String VIDEO_CONVERSION_TYPE = "videoConversion/";
 	private static final String VIDEO_TRANSCODING_TYPE = "videoTranscoding/";
+
+	/** OO-9999, WP4 H7. Margin added on top of 2x the original file size. Exact value: open point O2 of the plan. */
+	private static final long DOWNLOAD_SIZE_MARGIN_BYTES = 50L * 1024 * 1024;
+	
+	/** OO-9999, WP4 H7. Subtitle tracks are small text files, so a fixed cap is enough; there is no "original" to size against. */
+	private static final long SUBTITLES_MAX_DOWNLOAD_SIZE_BYTES = 10L * 1024 * 1024;
 
 	@Autowired
 	private AVModule avModule;
@@ -217,6 +228,31 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		return remainder.substring(1);
 	}
 
+	/**
+	 * Feature gate (OO-9999, WP4 H1): a callback for a type that is disabled, or
+	 * not running in {@code service} mode, cannot come from a transcoder service
+	 * this instance is configured to use.
+	 */
+	private boolean isEnabledForService(TranscoderJobType type) {
+		return switch (type) {
+			case videoTranscoding -> videoModule.isTranscodingEnabled()
+					&& VideoTranscodingMode.service.equals(videoModule.getVideoTranscodingMode());
+			case videoConversion -> avModule.isVideoRecordingEnabled()
+					&& VideoTranscodingMode.service.equals(avModule.getVideoConversionMode());
+			case audioConversion -> avModule.isAudioRecordingEnabled()
+					&& VideoTranscodingMode.service.equals(avModule.getAudioConversionMode());
+		};
+	}
+
+	/** The configured transcoder/conversion service URL for a job type (OO-9999, WP4 H4). */
+	private String getServiceUrl(TranscoderJobType type) {
+		return switch (type) {
+			case videoTranscoding -> videoModule.getTranscodingServiceUrl();
+			case videoConversion -> avModule.getVideoConversionServiceUrl();
+			case audioConversion -> avModule.getAudioConversionServiceUrl();
+		};
+	}
+
 	private static boolean isValidDashlessUuid(String dashlessUuid) {
 		return dashlessUuid != null && dashlessUuid.matches("^[0-9a-fA-F]{32}$");
 	}
@@ -281,7 +317,12 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
-		
+		if (!isEnabledForService(status.getType())) {
+			log.warn("Job status: Feature disabled [type={}, remoteAddr={}]", status.getType(), request.getRemoteAddr());
+			response.sendError(HttpServletResponse.SC_FORBIDDEN);
+			return;
+		}
+
 		handleNotifyStatus(response, status);
 	}
 
@@ -321,6 +362,11 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		TranscoderJobResult result = readResult(request.getInputStream());
 		if (!transcoderHelper.verifyCallbackToken(token, result.getType(), result.getUuid(), result.getReferenceId())) {
 			log.warn("Conversion job result: Missing or invalid callback token [remoteAddr={}]", request.getRemoteAddr());
+			response.sendError(HttpServletResponse.SC_FORBIDDEN);
+			return;
+		}
+		if (!isEnabledForService(result.getType())) {
+			log.warn("Conversion job result: Feature disabled [type={}, remoteAddr={}]", result.getType(), request.getRemoteAddr());
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
@@ -386,6 +432,11 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			return;
 		}
 
+		if (!isPendingConversion(metadata.getTranscodingStatus())) {
+			log.info("Ignoring conversion job result: not pending [uuid={}, status={}]", result.getUuid(), metadata.getTranscodingStatus());
+			return;
+		}
+
 		VFSItem destinationItem = vfsTranscodingService.getDestinationItem(metadata);
 		if (destinationItem == null) {
 			log.warn("Missing destination item for conversion job result [uuid={}]", result.getUuid());
@@ -394,21 +445,38 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		}
 
 		String targetPath = vfsTranscodingService.getTargetFilePath(metadata);
-		log.debug("Writing conversion job result to target path [uuid={}, targetPath='{}']", result.getUuid(), 
+		log.debug("Writing conversion job result to target path [uuid={}, targetPath='{}']", result.getUuid(),
 				targetPath);
 
 		File targetFile = new File(targetPath);
 
 		try {
-			download(result, targetFile);
+			download(result, targetFile, originalFileSize(destinationItem));
 			updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_DONE);
 			vfsTranscodingService.fireDoneEvent(metadata);
 			vfsTranscodingService.deleteGeneratedInService(result.getType(), result.getUuid());
 		} catch (Exception e) {
-			log.warn("Failed to download conversion job result [uuid={}, targetPath='{}']: {}", 
+			log.warn("Failed to download conversion job result [uuid={}, targetPath='{}']: {}",
 					result.getUuid(), targetPath, e);
 			updateStatus(metadata, VFSMetadata.TRANSCODING_STATUS_ERROR);
 		}
+	}
+
+	/** OO-9999, WP4 H2: accept a conversion result only while the metadata is waiting for, or in, transcoding. */
+	private static boolean isPendingConversion(Integer status) {
+		return status != null && (status == VFSMetadata.TRANSCODING_STATUS_WAITING
+				|| (status >= VFSMetadata.TRANSCODING_STATUS_STARTED && status <= 99));
+	}
+
+	/** The size of the original (pre-conversion) file, or 0 if it cannot be determined (OO-9999, WP4 H7). */
+	private long originalFileSize(VFSItem destinationItem) {
+		if (destinationItem instanceof LocalFileImpl localFile) {
+			File masterFile = vfsTranscodingService.getMasterFile(localFile.getBasefile());
+			if (masterFile != null) {
+				return masterFile.length();
+			}
+		}
+		return 0L;
 	}
 
 	private void updateStatus(VFSMetadata metadata, int status) {
@@ -424,14 +492,27 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		}
 
 		RepositoryEntry entry = repositoryEntryDao.loadByResourceKey(result.getReferenceId());
+		if (entry == null) {
+			log.warn("Repository entry not found for job result [uuid={}, referenceId={}]", result.getUuid(), result.getReferenceId());
+			return;
+		}
 		OLATResource videoResource = entry.getOlatResource();
 		if (videoResource == null) {
 			log.warn("Video resource not found for job result [uuid={}]", result.getUuid());
 			return;
 		}
 
+		// OO-9999, WP4 H3: accept a result only for a row this instance is actually waiting on for this uuid.
+		List<VideoTranscoding> jobTranscodings = videoTranscodingDao.getVideoTranscodings(videoResource.getKey(), result.getUuid());
+		boolean hasPendingJob = jobTranscodings.stream().anyMatch(t -> t.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE);
+		if (!hasPendingJob) {
+			log.info("Ignoring transcoding job result: no pending job for this uuid [uuid={}, resKey={}]", result.getUuid(), videoResource.getKey());
+			return;
+		}
+
+		// H5: subtitles only after the job check above has passed.
 		handleVideoTranscodingSubtitles(result, videoResource);
-		handleVideoTranscodingMedia(result, videoResource, status);
+		handleVideoTranscodingMedia(result, videoResource, jobTranscodings, status);
 	}
 
 	private void handleVideoTranscodingSubtitles(TranscoderJobResult result, OLATResource videoResource) {
@@ -446,7 +527,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		File tmpFile = new File(masterFolder, tmpTrackName);
 
 		try {
-			download(subtitlesUrl, tmpFile);
+			download(TranscoderJobType.videoTranscoding, subtitlesUrl, tmpFile, SUBTITLES_MAX_DOWNLOAD_SIZE_BYTES);
 			String text = FileUtils.load(tmpFile, "UTF-8");
 			Locale locale = textService.detectLocale(text);
 			if (locale == null) {
@@ -484,7 +565,8 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		tmpFile.delete();
 	}
 	
-	private void handleVideoTranscodingMedia(TranscoderJobResult result, OLATResource videoResource, int status) {
+	private void handleVideoTranscodingMedia(TranscoderJobResult result, OLATResource videoResource,
+			List<VideoTranscoding> jobTranscodings, int status) {
 		String url = result.getGenerated().getUrl();
 		if (!StringHelper.containsNonWhitespace(url)) {
 			return;
@@ -496,15 +578,11 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			return;
 		}
 
-		List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodings(videoResource);
-		if (videoTranscodings == null || videoTranscodings.isEmpty()) {
-			log.warn("No video transcodings found [uuid={}, resKey={}]", result.getUuid(), videoResource.getKey());
-			return;
-		}
-		
+		// OO-9999, WP4 H3: pick the row among this uuid's own rows, and only if it is not already done (replay).
 		int resolution = result.getGenerated().getResolution();
-		VideoTranscoding videoTranscoding = videoTranscodings.stream()
+		VideoTranscoding videoTranscoding = jobTranscodings.stream()
 				.filter(t -> t.getResolution() == resolution)
+				.filter(t -> t.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE)
 				.findFirst()
 				.orElse(null);
 		if (videoTranscoding == null) {
@@ -522,7 +600,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		File targetFile = new File(transcodingFolder, resolution + masterFile.getName());
 
 		try {
-			download(result, targetFile);
+			download(result, targetFile, masterFile.length());
 			videoTranscoding.setStatus(status);
 			videoTranscoding.setSize(targetFile.length());
 			Size displaySize = movieService.getSize(new LocalFileImpl(targetFile), VideoManagerImpl.FILETYPE_MP4);
@@ -545,7 +623,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		}
 		
 		videoManager.optimizeMemoryForVideo(videoResource);
-		if (allDone(videoTranscodings)) {
+		if (allDone(videoManager.getVideoTranscodings(videoResource))) {
 			videoManager.deleteGeneratedInService(result.getUuid());
 			videoManager.fireVideoTranscodingStatusEvent(videoResource.getKey());
 		}
@@ -579,25 +657,91 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		DBFactory.getInstance().commitAndCloseSession();
 	}
 
-	private void download(TranscoderJobResult result, File targetFile) throws IOException {
-		download(result.getGenerated().getUrl(), targetFile);
+	private void download(TranscoderJobResult result, File targetFile, long originalSize) throws IOException {
+		download(result.getType(), result.getGenerated().getUrl(), targetFile, maxDownloadSize(originalSize));
 	}
-	
-	private void download(String url, File targetFile) throws IOException {
-		HttpGet get = new HttpGet(url);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(TranscoderHelper.PROTECTION_PROFILE);
-			 CloseableHttpResponse httpResponse = httpClient.execute(get)) {
-			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			if (statusCode != HttpServletResponse.SC_OK) {
-				log.warn("File download: [url={}, statusCode={}]", url, statusCode);
-				throw new IOException("Failed to download");
-			} else {
-				log.debug("File download: [url={}, statusCode={}]", url, statusCode);
-			}
 
-			InputStream inputStream = httpResponse.getEntity().getContent();
-			OutputStream outputStream = new FileOutputStream(targetFile);
-			FileUtils.copy(inputStream, outputStream);
+	/** OO-9999, WP4 H7: 2x the original size plus a margin, so a transcoding can legitimately grow a little. */
+	private static long maxDownloadSize(long originalSize) {
+		return 2 * originalSize + DOWNLOAD_SIZE_MARGIN_BYTES;
+	}
+
+	private void download(TranscoderJobType type, String url, File targetFile, long maxSizeBytes) throws IOException {
+		String serviceUrl = getServiceUrl(type);
+		if (!isAllowedDownloadOrigin(url, serviceUrl)) {
+			log.warn("File download: URL is not the configured transcoder service [url={}, serviceUrl={}]", url, serviceUrl);
+			throw new IOException("Download URL is not the configured transcoder service");
 		}
+
+		// OO-9999, WP4 H8: download to a temporary file next to the target, and only replace the
+		// target once the download fully succeeded, so a failed download never destroys an existing file.
+		File tmpFile = File.createTempFile("transcoder-download-", ".tmp", targetFile.getAbsoluteFile().getParentFile());
+		try {
+			HttpGet get = new HttpGet(url);
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(TranscoderHelper.PROTECTION_PROFILE);
+				 CloseableHttpResponse httpResponse = httpClient.execute(get)) {
+				int statusCode = httpResponse.getStatusLine().getStatusCode();
+				if (statusCode != HttpServletResponse.SC_OK) {
+					log.warn("File download: [url={}, statusCode={}]", url, statusCode);
+					throw new IOException("Failed to download");
+				} else {
+					log.debug("File download: [url={}, statusCode={}]", url, statusCode);
+				}
+
+				try (InputStream inputStream = httpResponse.getEntity().getContent();
+					 OutputStream outputStream = new FileOutputStream(tmpFile)) {
+					copyWithLimit(inputStream, outputStream, maxSizeBytes, url);
+				}
+			}
+			Files.move(tmpFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} finally {
+			tmpFile.delete();
+		}
+	}
+
+	/** OO-9999, WP4 H7: stop and let the caller delete the partial download once it exceeds the limit. */
+	private void copyWithLimit(InputStream inputStream, OutputStream outputStream, long maxSizeBytes, String url) throws IOException {
+		byte[] buffer = new byte[8192];
+		long total = 0;
+		int read;
+		while ((read = inputStream.read(buffer)) != -1) {
+			total += read;
+			if (total > maxSizeBytes) {
+				log.warn("File download: exceeded size limit, aborting [url={}, limitBytes={}]", url, maxSizeBytes);
+				throw new IOException("Download exceeds the configured size limit");
+			}
+			outputStream.write(buffer, 0, read);
+		}
+	}
+
+	/** OO-9999, WP4 H4: the download must come from the configured transcoder/conversion service, not anywhere else. */
+	private static boolean isAllowedDownloadOrigin(String url, String serviceUrl) {
+		if (!StringHelper.containsNonWhitespace(url) || !StringHelper.containsNonWhitespace(serviceUrl)) {
+			return false;
+		}
+		try {
+			URI downloadUri = new URI(url);
+			URI serviceUri = new URI(serviceUrl);
+			return sameOrigin(downloadUri, serviceUri);
+		} catch (URISyntaxException e) {
+			return false;
+		}
+	}
+
+	private static boolean sameOrigin(URI a, URI b) {
+		return equalsIgnoreCaseNullSafe(a.getScheme(), b.getScheme())
+				&& equalsIgnoreCaseNullSafe(a.getHost(), b.getHost())
+				&& effectivePort(a) == effectivePort(b);
+	}
+
+	private static boolean equalsIgnoreCaseNullSafe(String a, String b) {
+		return a != null && a.equalsIgnoreCase(b);
+	}
+
+	private static int effectivePort(URI uri) {
+		if (uri.getPort() != -1) {
+			return uri.getPort();
+		}
+		return "https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80;
 	}
 }
