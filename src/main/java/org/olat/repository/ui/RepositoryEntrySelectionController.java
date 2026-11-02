@@ -86,6 +86,7 @@ public class RepositoryEntrySelectionController extends BasicController {
 				getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setResourceTypes(resourceTypes);
 		searchParams.setCanReference(true);
+		searchParams.setExcludeDecommissionedStatus(true);
 		if (defaultOrganisations != null && !defaultOrganisations.isEmpty()) {
 			List<OrganisationRef> organisationRefs = defaultOrganisations.stream()
 					.map(OrganisationRef.class::cast)

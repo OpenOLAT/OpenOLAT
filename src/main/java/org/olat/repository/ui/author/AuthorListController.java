@@ -747,12 +747,10 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		if(configuration.isRedesignedSelectionDialog() && !configuration.isOnlyAllowedResourceType("CourseModule")) {
-			List<String> allStatus = List.of(RepositoryEntryStatusEnum.preparation.name(), RepositoryEntryStatusEnum.review.name(),
-					RepositoryEntryStatusEnum.coachpublished.name(), RepositoryEntryStatusEnum.published.name());
-			allTab = FlexiFiltersTabFactory.tabWithImplicitFilters("All", translate("search.all"),
-					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, allStatus)));
+			allTab = FlexiFiltersTabFactory.tab("All", translate("search.all"), TabSelectionBehavior.reloadData);
 			allTab.setElementCssClass("o_sel_author_all");
 			allTab.setFiltersExpanded(true);
+			allTab.setEnabledFilters(redesignedDialogVisibleFiltersWithoutOwned());
 			tabs.add(allTab);
 		}
 
@@ -798,9 +796,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(configuration.isSharedWithMeTab()) {
 			List<String> sharedWithMeStatus = List.of(RepositoryEntryStatusEnum.review.name(),
 					RepositoryEntryStatusEnum.coachpublished.name(), RepositoryEntryStatusEnum.published.name());
-			sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters("SharedWithMe", translate("search.shared.with.me"),
-					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "shared"),
-							FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, sharedWithMeStatus)));
+			sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitAndDefaultFilters("SharedWithMe", translate("search.shared.with.me"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "shared")),
+					List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, sharedWithMeStatus)));
 			sharedWithMeTab.setElementCssClass("o_sel_author_shared_with_me");
 			sharedWithMeTab.setFiltersExpanded(true);
 			tabs.add(sharedWithMeTab);
@@ -812,6 +810,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchTab.setPosition(FlexiFilterTabPosition.right);
 		searchTab.setLargeSearch(true);
 		searchTab.setFiltersExpanded(true);
+		if(configuration.isRedesignedSelectionDialog()) {
+			searchTab.setEnabledFilters(redesignedDialogVisibleFiltersWithoutOwned());
+		}
 		tabs.add(searchTab);
 		
 		if(!configuration.isSelectRepositoryEntries() && (roles.isAuthor() || hasAdministratorRight)) {
@@ -825,7 +826,12 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		tableEl.setFilterTabs(true, tabs);
 	}
-	
+
+	private List<String> redesignedDialogVisibleFiltersWithoutOwned() {
+		return List.of(AuthorSourceFilter.MARKED.name(), AuthorSourceFilter.STATUS.name(),
+				AuthorSourceFilter.RUNTIMETYPE.name(), AuthorSourceFilter.TAXONOMYLEVEL.name());
+	}
+
 	protected void initFilters() {
 		TableConfiguration tableConfiguration = configuration.getTableConfiguration();
 
@@ -851,7 +857,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		SelectionValues myResourcesKeyValue = new SelectionValues();
 		myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
 		filters.add(new FlexiTableOneClickSelectionFilter(translate("cif.owned.resources.only"),
-				AuthorSourceFilter.OWNED.name(), myResourcesKeyValue, true));
+				AuthorSourceFilter.OWNED.name(), myResourcesKeyValue, !configuration.isRedesignedSelectionDialog()));
 
 		if (!configuration.isRedesignedSelectionDialog()) {
 
@@ -899,16 +905,17 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 
 		// life-cycle
-		// Registered unconditionally for the same reason as OWNED above: the
-		// "All" and "Shared with me" tabs apply STATUS as an implicit filter.
-		SelectionValues lifecycleValues = new SelectionValues();
-		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate(RepositoryEntryStatusEnum.preparation.i18nKey())));
-		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.review.name(), translate(RepositoryEntryStatusEnum.review.i18nKey())));
-		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate(RepositoryEntryStatusEnum.coachpublished.i18nKey())));
-		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate(RepositoryEntryStatusEnum.published.i18nKey())));
-		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate(RepositoryEntryStatusEnum.closed.i18nKey())));
+		List<RepositoryEntryStatusEnum> offerableStatus = new ArrayList<>(
+				List.of(RepositoryEntryStatusEnum.preparationToClosed()));
 		if(roles.isAuthor() || hasAdministratorRight) {
-			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.trash.name(), translate(RepositoryEntryStatusEnum.trash.i18nKey())));
+			offerableStatus.add(RepositoryEntryStatusEnum.trash);
+		}
+		if(configuration.isSharedWithMeTab()) {
+			offerableStatus.removeIf(RepositoryEntryStatusEnum::decommissioned);
+		}
+		SelectionValues lifecycleValues = new SelectionValues();
+		for(RepositoryEntryStatusEnum status:offerableStatus) {
+			lifecycleValues.add(SelectionValues.entry(status.name(), translate(status.i18nKey())));
 		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.resources.status"),
 				AuthorSourceFilter.STATUS.name(), lifecycleValues, true));

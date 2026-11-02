@@ -493,11 +493,7 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" exists (select reToGroupOrg.entry.key from repoentrytogroup as reToGroupOrg");
 			sb.append("  where reToGroupOrg.entry.key=v.key and reToGroupOrg.group.key in (:additionalGroupKeys)");
 			sb.append("  and v.status ");
-			if (params.hasStatus()) {
-				sb.in(params.getStatus());
-			} else {
-				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-			}
+			sb.in(statusOrDefault(params, RepositoryEntryStatusEnum.preparationToClosed()));
 			sb.append(") or ");
 		}
 		
@@ -513,11 +509,7 @@ public class RepositoryEntryAuthorQueries {
 		if(roles == null) {
 			sb.append(" and membership.role ").in( GroupRoles.owner)
 					.append("   and v.status ");
-			if(params.hasStatus()) {
-				sb.in(params.getStatus());
-			} else {
-				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-			}
+			sb.in(statusOrDefault(params, RepositoryEntryStatusEnum.preparationToClosed()));
 			sb.append(" )");
 
 		} else {
@@ -525,11 +517,7 @@ public class RepositoryEntryAuthorQueries {
 			// owner, principal, learning resource manager and administrator which can see all
 			sb.append(" and ((membership.role ").in(mRoles)
 			  .append("  and v.status ");
-			if(params.hasStatus()) {
-				sb.in(params.getStatus());
-			} else {
-				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-			}
+			sb.in(statusOrDefault(params, RepositoryEntryStatusEnum.preparationToClosed()));
 
 			sb.append(")");
 
@@ -537,11 +525,7 @@ public class RepositoryEntryAuthorQueries {
 					&& (params.isCanCopy() || params.isCanDownload() || params.isCanReference())) {
 				sb.append(" or ( membership.role ='").append(OrganisationRoles.author).append("'")
 						.append("   and v.status ");
-				if(params.hasStatus()) {
-					sb.in(params.getStatus());
-				} else {
-					sb.in(RepositoryEntryStatusEnum.reviewToClosed());
-				}
+				sb.in(statusOrDefault(params, RepositoryEntryStatusEnum.reviewToClosed()));
 				sb.append(" and (");
 				if(params.isCanCopy()) {
 					sb.append(" v.canCopy=true");
@@ -654,11 +638,7 @@ public class RepositoryEntryAuthorQueries {
 				  .append("  where reToOrg.entry.key=v.key and reToOrg.organisation.key in (:sharedOrganisationKeys))");
 			}
 			sb.append(" and v.status");
-			if (params.hasStatus()) {
-				sb.in(params.getStatus());
-			} else {
-				sb.in(RepositoryEntryStatusEnum.reviewToClosed());
-			}
+			sb.in(nonDecommissionedStatus(params.hasStatus() ? params.getStatus() : RepositoryEntryStatusEnum.reviewToClosed()));
 			sb.append(params.isCanReference() ? " and v.canReference=true" : " and v.canCopy=true");
 		}
 		
@@ -667,6 +647,55 @@ public class RepositoryEntryAuthorQueries {
 		}
 		
 		addParams.needIdentity();
+	}
+
+	/**
+	 * Filters the given array of status values to exclude any statuses that are considered decommissioned.
+	 *
+	 * @param status an array of repository entry status enums to filter.
+	 * @return a filtered array containing only non-decommissioned repository entry statuses.
+	 */
+	private RepositoryEntryStatusEnum[] nonDecommissionedStatus(RepositoryEntryStatusEnum[] status) {
+		return nonDecommissionedStatus(status, RepositoryEntryStatusEnum.reviewToPublished());
+	}
+
+	/**
+	 * Filters the given arrays of status values to exclude any that are marked as decommissioned.
+	 * If the filtered result from the first array is empty, it falls back to the filtered result 
+	 * of the second array. If both arrays result in no non-decommissioned statuses, a default 
+	 * set of status values is returned.
+	 *
+	 * @param status the primary array of RepositoryEntryStatusEnum to filter.
+	 * @param fallback the fallback array of RepositoryEntryStatusEnum to filter if the primary array 
+	 *                 results in no non-decommissioned statuses.
+	 * @return an array of non-decommissioned RepositoryEntryStatusEnum values. If neither the primary
+	 *         nor fallback arrays contain non-decommissioned statuses, a default array of 
+	 *         RepositoryEntryStatusEnum values is returned.
+	 */
+	private RepositoryEntryStatusEnum[] nonDecommissionedStatus(RepositoryEntryStatusEnum[] status, RepositoryEntryStatusEnum[] fallback) {
+		RepositoryEntryStatusEnum[] filtered = Arrays.stream(status)
+				.filter(s -> !s.decommissioned())
+				.toArray(RepositoryEntryStatusEnum[]::new);
+		if (filtered.length > 0) {
+			return filtered;
+		}
+		RepositoryEntryStatusEnum[] filteredFallback = Arrays.stream(fallback)
+				.filter(s -> !s.decommissioned())
+				.toArray(RepositoryEntryStatusEnum[]::new);
+		return filteredFallback.length > 0 ? filteredFallback : RepositoryEntryStatusEnum.reviewToPublished();
+	}
+
+	/**
+	 * Determines the status based on the provided parameters or returns a default status.
+	 * If decommissioned statuses are to be excluded, filters the statuses accordingly.
+	 *
+	 * @param params the search parameters containing status information and exclusion rules
+	 * @param defaultStatus the default statuses to return if the parameters contain no specific statuses
+	 * @return an array of statuses determined by the parameters or the default statuses 
+	 */
+	private RepositoryEntryStatusEnum[] statusOrDefault(SearchAuthorRepositoryEntryViewParams params, RepositoryEntryStatusEnum[] defaultStatus) {
+		RepositoryEntryStatusEnum[] status = params.hasStatus() ? params.getStatus() : defaultStatus;
+		return params.isExcludeDecommissionedStatus() ? nonDecommissionedStatus(status, defaultStatus) : status;
 	}
 
 	private boolean hasOnly(SearchAuthorRepositoryEntryViewParams params, RepositoryEntryStatusEnum[] allowed) {

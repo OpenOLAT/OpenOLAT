@@ -53,6 +53,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private boolean canCopy = false;
 	private boolean canDownload = false;
 	private boolean canReference = false;
+	private boolean excludeDecommissionedStatus = false;
 	
 	private String idAndRefs;
 	private String idRefsAndTitle;
@@ -188,6 +189,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setCanReference(boolean canReference) {
 		this.canReference = canReference;
+	}
+
+	public boolean isExcludeDecommissionedStatus() {
+		return excludeDecommissionedStatus;
+	}
+
+	public void setExcludeDecommissionedStatus(boolean excludeDecommissionedStatus) {
+		this.excludeDecommissionedStatus = excludeDecommissionedStatus;
 	}
 
 	public OrderBy getOrderBy() {

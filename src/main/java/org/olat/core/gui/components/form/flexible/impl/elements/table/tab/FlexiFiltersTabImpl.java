@@ -119,6 +119,7 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 		return enabledFilters;
 	}
 
+	@Override
 	public void setEnabledFilters(List<String> enabledFilters) {
 		this.enabledFilters = enabledFilters;
 	}

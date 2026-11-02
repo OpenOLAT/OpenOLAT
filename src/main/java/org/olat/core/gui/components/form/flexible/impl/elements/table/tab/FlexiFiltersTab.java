@@ -70,11 +70,22 @@ public interface FlexiFiltersTab {
 	/**
 	 * defined the list of visible filter buttons. If NULL, fallback
 	 * to the preferences of the filters.
-	 * 
+	 *
 	 * @return List of visible filter buttons.
 	 */
 	public List<String> getEnabledFilters();
-	
+
+	/**
+	 * Restrict which non-implicit filter buttons are visible when this tab is
+	 * selected (a filter not in the list is disabled, and a disabled filter is
+	 * never shown regardless of this list - see {@link #getImplicitFilters()}
+	 * for filters that are always hidden and fixed). Pass null to leave every
+	 * registered filter's visibility as-is (the default).
+	 *
+	 * @param enabledFilters List of filter IDs to show, or null for no restriction.
+	 */
+	public void setEnabledFilters(List<String> enabledFilters);
+
 	public List<FlexiTableFilterValue> getDefaultFiltersValues();
 	
 	/**
