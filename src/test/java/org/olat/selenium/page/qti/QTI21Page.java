@@ -563,9 +563,7 @@ public class QTI21Page {
 	public QTI21Page answerSelectPoint(int x, int y) {
 		By canvasBy = By.xpath("//div[contains(@class,'selectPointInteraction')]/div/canvas");
 		OOGraphene.waitElement(canvasBy, browser);
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.scrollBottom(canvasBy, browser);
-		}
+		OOGraphene.scrollBottom(canvasBy, browser);
 		
 		WebElement canvasEl = browser.findElement(canvasBy);
 		Dimension dimension = canvasEl.getSize();
