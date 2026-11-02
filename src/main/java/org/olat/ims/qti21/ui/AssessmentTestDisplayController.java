@@ -65,6 +65,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.render.DomWrapperElement;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
@@ -223,6 +224,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * Additional time in seconds
 	 */
 	private Integer extraTime;
+	private final UserSession usess;
 	private final BigDecimal scoreScale;
 	private Integer compensationExtraTime;
 	private boolean sessionDeleted = false;
@@ -274,6 +276,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		this.overrideOptions = overrideOptions;
 		this.showCloseResults = showCloseResults;
 		this.authorMode = authorMode;
+		this.usess = ureq.getUserSession();
 		
 		UserSession usess = ureq.getUserSession();
 		guestOnly = usess.getRoles().isGuestOnly();
@@ -544,6 +547,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			compensationExtraTime = candidateSession.getCompensationExtraTime();
 			if(extraTime != null || compensationExtraTime != null || hasCurrentlyExtraTime) {
 				qtiWorksCtrl.extraTime();
+				getWindow().getWindowBackOffice().requestImmediateRender();
+			}
+			if(checkConcurrentExit(new SyntheticUserRequest(getIdentity(), getLocale(), usess))) {
+				showInfo("warning.pull.assessmenttest.data");
 				getWindow().getWindowBackOffice().requestImmediateRender();
 			}
 		}
