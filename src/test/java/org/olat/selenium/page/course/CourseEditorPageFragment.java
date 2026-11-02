@@ -263,19 +263,12 @@ public class CourseEditorPageFragment {
 		By openerBy = By.cssSelector("a.o_opener");
 		browser.findElement(openerBy).click();
 
-		By urlBy = By.cssSelector("div.o_copy_code input");
-		OOGraphene.waitElement(urlBy, browser);
-		
-		String url = null;
-		List<WebElement> urlEls = browser.findElements(urlBy);
-		for(WebElement urlEl:urlEls) {
-			String text = urlEl.getDomAttribute("value");
-			if(text.contains("http")) {
-				url = text.trim();
-				break;
-			}
-		}
+		By urlBy = By.cssSelector("div.o_url_component input.o_url_input");
+		WebElement urlEl = OOGraphene.waitElement(urlBy, browser);
+
+		String url = urlEl.getDomAttribute("value");
 		Assert.assertNotNull(url);
+		Assert.assertTrue(url.contains("http"));
 		return url;
 	}
 	
