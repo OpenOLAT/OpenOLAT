@@ -118,7 +118,7 @@ public class BigBlueButtonPage {
 	 * @return An URL
 	 */
 	public String getExternalUrl() {
-		By externalUrlBy = By.id("externalusersmeetingurl");
+		By externalUrlBy = By.cssSelector(".o_url_component input.o_url_input");
 		WebElement externalUrlEl = browser.findElement(externalUrlBy);
 		return externalUrlEl.getDomAttribute("value");
 	}
