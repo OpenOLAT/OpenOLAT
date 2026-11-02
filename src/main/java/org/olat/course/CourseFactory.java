@@ -1110,7 +1110,7 @@ public class CourseFactory {
 	 */
 	public static PersistingCourseImpl openCourseEditSession(Long resourceableId) {
 		PersistingCourseImpl course = courseEditSessionMap.get(resourceableId);
-		if(course != null) {
+		if(course != null) {// Replace it with CourseConfigLockedException ???
 			throw new AssertException("There is already an edit session open for this course: " + resourceableId);
 		}
 		
