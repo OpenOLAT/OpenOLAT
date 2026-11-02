@@ -155,8 +155,7 @@ public class CategoryImpl implements Category, Persistable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CategoryImpl) {
-			CategoryImpl cat = (CategoryImpl)obj;
+		if(obj instanceof CategoryImpl cat) {
 			return getKey() != null && getKey().equals(cat.getKey());
 		}
 		return false;

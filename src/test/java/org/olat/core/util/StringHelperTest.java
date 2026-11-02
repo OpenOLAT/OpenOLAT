@@ -281,4 +281,21 @@ public class StringHelperTest {
 		Assert.assertFalse(StringHelper.searchWildcard(null, null));
 	}
 
+	
+	@Test
+	public void isCssColor() {
+		Assert.assertTrue(StringHelper.isCssColor("pink"));
+		Assert.assertTrue(StringHelper.isCssColor("#fff"));
+		Assert.assertTrue(StringHelper.isCssColor("#70beff"));
+		Assert.assertTrue(StringHelper.isCssColor(" #70BEFF80 "));
+		
+		Assert.assertFalse(StringHelper.isCssColor(null));
+		Assert.assertFalse(StringHelper.isCssColor(""));
+		Assert.assertFalse(StringHelper.isCssColor("70beff"));
+		Assert.assertFalse(StringHelper.isCssColor("#ggg"));
+		Assert.assertFalse(StringHelper.isCssColor("red;display:none"));
+		Assert.assertFalse(StringHelper.isCssColor("\"onclick=alert()"));
+		Assert.assertFalse(StringHelper.isCssColor("rgb(0,0,0)"));
+	}
+
 }

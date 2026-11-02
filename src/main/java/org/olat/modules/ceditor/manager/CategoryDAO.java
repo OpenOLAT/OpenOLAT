@@ -31,14 +31,12 @@ import jakarta.persistence.Tuple;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.OLATResourceable;
-import org.olat.modules.ceditor.Page;
-import org.olat.modules.ceditor.model.jpa.CategoryImpl;
-import org.olat.modules.ceditor.model.jpa.CategoryLight;
-import org.olat.modules.ceditor.model.jpa.CategoryStatistics;
-import org.olat.modules.ceditor.model.jpa.CategoryToElementImpl;
 import org.olat.modules.ceditor.Category;
 import org.olat.modules.ceditor.CategoryToElement;
 import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.model.jpa.CategoryImpl;
+import org.olat.modules.ceditor.model.jpa.CategoryToElementImpl;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.SectionRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,7 +108,36 @@ public class CategoryDAO {
 			.createQuery(sb.toString(), Category.class)
 			.getResultList();
 	}
-	
+
+	/**
+	 * @param identity The owner
+	 * @return The categories used on the pages, sections and binders owned by the identity
+	 */
+	public List<Category> getOwnedCategories(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(1024);
+		sb.append("select distinct category from pfcategoryrelation as rel")
+		  .append(" inner join rel.category as category")
+		  .append(" where (rel.resName='Page' and exists (select page.key from cepage as page")
+		  .append("   left join page.section as pSection")
+		  .append("   left join pSection.binder as pBinder")
+		  .append("   inner join bgroupmember as pMember on (pMember.group.key=page.baseGroup.key or pMember.group.key=pBinder.baseGroup.key)")
+		  .append("   where page.key=rel.resId and pMember.identity.key=:identityKey and pMember.role=:role")
+		  .append(" )) or (rel.resName='Section' and exists (select section.key from pfsection as section")
+		  .append("   inner join section.binder as sBinder")
+		  .append("   inner join bgroupmember as sMember on (sMember.group.key=sBinder.baseGroup.key)")
+		  .append("   where section.key=rel.resId and sMember.identity.key=:identityKey and sMember.role=:role")
+		  .append(" )) or (rel.resName='Binder' and exists (select binder.key from pfbinder as binder")
+		  .append("   inner join bgroupmember as bMember on (bMember.group.key=binder.baseGroup.key)")
+		  .append("   where binder.key=rel.resId and bMember.identity.key=:identityKey and bMember.role=:role")
+		  .append(" ))");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Category.class)
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("role", ContentRoles.owner.name())
+			.getResultList();
+	}
+
 	public List<CategoryToElement> getCategorizedSectionsAndPages(BinderRef binder) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select rel from pfcategoryrelation as rel")
@@ -157,49 +184,6 @@ public class CategoryDAO {
 			.createQuery(sb.toString(), CategoryToElement.class)
 			.setParameter("ownerKey", identity.getKey())
 			.getResultList();
-	}
-	
-	public List<CategoryStatistics> getMediaCategoriesStatistics(IdentityRef owner) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select category.name, count(media.key) from pfcategoryrelation as rel")
-		  .append(" inner join rel.category as category")
-		  .append(" inner join mmedia as media on (rel.resId=media.key and rel.resName='Media')")
-		  .append(" where media.author.key=:identityKey")
-		  .append(" group by category.name");
-		
-		List<Object[]> objects = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Object[].class)
-			.setParameter("identityKey", owner.getKey())
-			.getResultList();
-		
-		List<CategoryStatistics> stats = new ArrayList<>(objects.size());
-		for(Object[] object:objects) {
-			String name = (String)object[0];
-			int count = object[1] == null ? 0 : ((Number)object[1]).intValue();
-			stats.add(new CategoryStatistics(name, count));
-		}
-		return stats;
-	}
-	
-	public List<CategoryLight> getMediaCategories(IdentityRef owner) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select category.name, media.key from pfcategoryrelation as rel")
-		  .append(" inner join rel.category as category")
-		  .append(" inner join mmedia as media on (rel.resId=media.key and rel.resName='Media')")
-		  .append(" where media.author.key=:identityKey");
-		
-		List<Object[]> objects = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Object[].class)
-			.setParameter("identityKey", owner.getKey())
-			.getResultList();
-		
-		List<CategoryLight> stats = new ArrayList<>(objects.size());
-		for(Object[] object:objects) {
-			String name = (String)object[0];
-			Long mediaKey = (Long)object[1];
-			stats.add(new CategoryLight(name, mediaKey));
-		}
-		return stats;
 	}
 	
 	public void updateCategories(OLATResourceable oresource, List<String> categories) {

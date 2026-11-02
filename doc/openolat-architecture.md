@@ -698,7 +698,6 @@ protected void initForm(FormItemContainer formLayout, Controller listener, UserR
 | | `SpacerElement` | Visual separator |
 | | `FormLink` | Clickable link/button within a form — wraps a `Link` component |
 | | `MemoryElement` | Hidden element preserving a value across form rebuilds |
-| **Multi-Value** | `TextBoxListElement` | Tag-style input — multiple values as removable chips |
 | | `AutoCompletionMultiSelection` | Autocomplete with multiple selections |
 | **Layout** | `FormSection` | **New in 21.1.0:** Titled, optionally collapsible part of a form. See "Form Sections" below. |
 | **Buttons** | `FormSubmit` | Triggers validation then `formOK()` |

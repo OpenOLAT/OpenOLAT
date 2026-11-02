@@ -98,6 +98,9 @@ public class StringHelper {
 	private static final String CSS_CLASS_REGEXP = "[^a-zA-Z0-9\\s-_]";
 	private static final Pattern CSS_CLASS_PATTERN = Pattern.compile(CSS_CLASS_REGEXP);
 	
+	private static final String CSS_COLOR_REGEXP = "#[0-9a-fA-F]{3,8}|[a-zA-Z]{3,30}";
+	private static final Pattern CSS_COLOR_PATTERN = Pattern.compile(CSS_COLOR_REGEXP);
+	
 	private static final int LONG_MAX_LENGTH = Long.toString(Long.MAX_VALUE).length();
 
     public static final CharSequenceTranslator ESCAPE_ECMASCRIPT_ISO_EXTENDED;
@@ -618,6 +621,17 @@ public class StringHelper {
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * Check if the string is a hexadecimal color (#fff, #70beff, #70beff80) or
+	 * a named color (pink). It's safe to use it in a style attribute.
+	 * 
+	 * @param color The color
+	 * @return true if the string is a color
+	 */
+	public static boolean isCssColor(String color) {
+		return color != null && CSS_COLOR_PATTERN.matcher(color.trim()).matches();
 	}
 	
 	public static String cleanUTF8ForXml(String string) {

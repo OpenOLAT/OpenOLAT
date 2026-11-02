@@ -1893,7 +1893,7 @@ a.o_labeled_light {
 	color: $o-files-size-large;
 }
 
-/* Tagify */
+/* Tags */
 .o_tag_admin {
 	background: repeating-linear-gradient(135deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
 }
@@ -1903,40 +1903,6 @@ a.o_labeled_light {
 	@include o-add-icon-font();
 	&:before {
 		padding-right: 0.5em;
-	}
-}
-
-body {
-	.tagify {
-		width: 100%;
-		
-		.tagify__tag-text {
-			font-weight: bold;
-		}
-		
-		&.o_textbox {
-			border: 1px solid $input-border;
-			border-radius: $input-border-radius;
-			background-color: white;
-			@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075));
-			@include transition(border-color ease-in-out .15s, box-shadow ease-in-out .15s);
-		}
-		
-		
-		
-		.tagify__tag.o_tag_admin>div::before {
-			box-shadow: none;
-			background: var(--tag-bg) repeating-linear-gradient(135deg, var(--tag-bg), var(--tag-bg) 3px, rgba(0, 0, 0, 0.2) 3px, rgba(0, 0, 0, 0.2) 6px);
-		}
-		
-		.tagify__tag.o_tag_admin:before {
-			padding-right: 0em;
-			padding-left: 0.5em;
-		}
-	}
-	
-	div.tagify__dropdown__item {
-		text-align: left;
 	}
 }
 

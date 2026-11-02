@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -74,6 +75,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 	private final List<? extends TagInfo> allTags;
 	private Set<Long> selectedKeys;
 	private Set<String> newTags = new HashSet<>(1);
+	private boolean canCreateNewTags = true;
 	private boolean dirtyCheck = true;
 
 	public TagSelectionImpl(WindowControl wControl, String name, List<? extends TagInfo> allTags) {
@@ -90,9 +92,13 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 	@Override
 	public void setSelectedTags(Collection<? extends TagRef> tags) {
 		selectedKeys = tags == null 
-				? selectedKeys = new HashSet<>(3)
+				? new HashSet<>(3)
 				: tags.stream().map(TagRef::getKey).collect(Collectors.toSet());
 		updateDisplayUI();
+	}
+
+	public void setCanCreateNewTags(boolean canCreateNewTags) {
+		this.canCreateNewTags = canCreateNewTags;
 	}
 
 	@Override
@@ -256,11 +262,18 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 	}
 	
 	private String toLabel(String displayName) {
-		return "<span class=\"o_tag o_selection_tag\">" + StringHelper.escapeHtml(displayName) + "</span>";
+		Optional<? extends TagInfo> tagInfo = allTags.stream()
+			.filter(tag -> displayName.equals(tag.getDisplayName()))
+			.findFirst();
+		String color = tagInfo.map(TagInfo::getColor).orElse(null);
+		String style = StringHelper.isCssColor(color)
+			? " style=\"background-color:" + color.trim() + ";color:#fff\""
+			: "";
+		return "<span class=\"o_tag o_selection_tag\"" + style + ">" + StringHelper.escapeHtml(displayName) + "</span>";
 	}
 	
 	private void doOpenSelection(UserRequest ureq) {
-		selectionCtrl = new TagSelectionController(ureq, wControl, allTags, selectedKeys, newTags);
+		selectionCtrl = new TagSelectionController(ureq, wControl, allTags, selectedKeys, newTags, canCreateNewTags);
 		selectionCtrl.addControllerListener(this);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, selectionCtrl.getInitialComponent(),
@@ -272,5 +285,4 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 		// see ObjectSelectionElementImpl
 		component.setAriaControls(Renderer.getComponentPrefix(selectionCtrl.getInitialComponent()));
 	}
-
 }

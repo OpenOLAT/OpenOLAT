@@ -70,7 +70,6 @@ import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticListElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.elements.UrlElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -109,7 +108,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementImp
 import org.olat.core.gui.components.form.flexible.impl.elements.StaticListElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.StaticTextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextAreaElementImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.UrlElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextElementImpl;
@@ -132,7 +130,6 @@ import org.olat.core.gui.components.scope.FormDateScopeSelection;
 import org.olat.core.gui.components.scope.FormScopeSelection;
 import org.olat.core.gui.components.scope.Scope;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -809,31 +806,11 @@ public class FormUIFactory {
 		formLayout.add(te);
 		return te;
 	}
-	
-	/**
-	 * adds a component to choose text elements with autocompletion
-	 * see also TextBoxListComponent
-	 * @param name
-	 * @param i18nLabel
-	 * @param inputHint if empty ("") a default will be used
-	 * @param initialItems
-	 * @param formLayout
-	 * @param translator
-	 * @return
-	 */
-	public TextBoxListElement addTextBoxListElement(String name, final String i18nLabel, String inputHint, List<TextBoxItem> initialItems, FormItemContainer formLayout, Translator translator){
-		TextBoxListElement tbe = new TextBoxListElementImpl(name, inputHint, initialItems, translator);
-		setLabelIfNotNull(i18nLabel, tbe);
-		formLayout.add(tbe);
-		return tbe;
-	}
 
 	public TextElement addPasswordElement(String name, final String i18nLabel, final int maxLen, String initialValue,
 			FormItemContainer formLayout) {
 		return addPasswordElement(null, name, i18nLabel, maxLen, initialValue, formLayout);
 	}
-	
-	
 	
 	public TextElement addPasswordElement(String id, String name, final String i18nLabel, final int maxLen, String initialValue,
 			FormItemContainer formLayout) {

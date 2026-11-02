@@ -71,15 +71,17 @@ public class TagSelectionController extends FormBasicController {
 	private final List<? extends TagInfo> allTags;
 	private final Set<Long> currentSelectionKeys;
 	private final Set<String> initialNewTags;
+	private final boolean canCreateNewTags;
 	private List<TagItem> tagItems;
 	private int counter;
 
 	public TagSelectionController(UserRequest ureq, WindowControl wControl, List<? extends TagInfo> allTags,
-			Set<Long> currentSelectionKeys, Set<String> initialNewTags) {
+			Set<Long> currentSelectionKeys, Set<String> initialNewTags, boolean canCreateNewTags) {
 		super(ureq, wControl, "tag_selection", Util.createPackageTranslator(TagUIFactory.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(ObjectSelectionController.class, ureq.getLocale(), getTranslator()));
 		this.allTags = allTags;
 		this.currentSelectionKeys = currentSelectionKeys;
+		this.canCreateNewTags = canCreateNewTags;
 		this.initialNewTags = initialNewTags;
 		this.comparator = createComparator();
 		
@@ -141,6 +143,9 @@ public class TagSelectionController extends FormBasicController {
 		tagItem.setDisplayValue(tagInfo.getDisplayName());
 		tagItem.setCount(tagInfo.getCount() != null? tagInfo.getCount().longValue(): 0l);
 		tagItem.setSelected(currentSelectionKeys.contains(tagInfo.getKey()));
+		tagItem.setEditable(tagInfo.isEditable());
+		tagItem.setColor(tagInfo.getColor());
+		tagItem.setIconCssClass(tagInfo.getIconCssClass());
 		
 		createToggle(tagItem);
 		
@@ -152,6 +157,7 @@ public class TagSelectionController extends FormBasicController {
 		tagItem.setDisplayValue(tag);
 		tagItem.setCount(1l);
 		tagItem.setSelected(true);
+		tagItem.setEditable(true);
 		
 		createToggle(tagItem);
 		
@@ -161,6 +167,9 @@ public class TagSelectionController extends FormBasicController {
 	private void createToggle(TagItem tagItem) {
 		FormToggle toggle = uifactory.addToggleButton("tag_" + counter++, null, null, null, tagsCont);
 		toggle.setPresentation(Presentation.CHECK_CUSTOM);
+		toggle.setColor(tagItem.getColor());
+		toggle.setIconCssClass(tagItem.getIconCssClass());
+		toggle.setEnabled(tagItem.isEditable());
 		tagItem.setToggle(toggle);
 		toggle.setUserObject(tagItem);
 		updateToggleUI(toggle, tagItem);
@@ -212,7 +221,7 @@ public class TagSelectionController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (createLink.isVisible()) {
+		if (canCreateNewTags && createLink.isVisible()) {
 			// Create a new tag on enter...
 			doCreateTag();
 		} else {
@@ -264,7 +273,7 @@ public class TagSelectionController extends FormBasicController {
 			tagItems.forEach(item -> item.getToggle().setVisible(item.getDisplayValue().toLowerCase().contains(searchText)));
 			if (isTagExists(searchText)) {
 				createLink.setVisible(false);
-			} else {
+			} else if(canCreateNewTags) {
 				createLink.setI18nKey(translate("create.new.tag", StringHelper.escapeHtml(searchEl.getValue())));
 				createLink.setVisible(true);
 			}

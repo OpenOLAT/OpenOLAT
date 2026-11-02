@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublishingInformations;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,7 +45,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -52,8 +52,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -72,6 +70,7 @@ import org.olat.modules.ceditor.PageImageAlign;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.CategoryInfos;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaLog;
@@ -121,7 +120,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private SingleSelection sectionsEl;
 	private SingleSelection evaluationFormEl;
 	private SingleSelection assignmentsTemplatesEl;
-	private TextBoxListElement categoriesEl;
+	private TagSelection categoriesEl;
 	private ObjectSelectionElement competencesEl;
 	private DownloadLink downloadAssignmentDocEl;
 	private FileElement assignmentDocUploadEl;
@@ -147,9 +146,8 @@ public class PageMetadataEditController extends FormBasicController {
 	private final boolean editTitleAndSummary;
 	private final boolean taxonomyLinkingEnabled;
 
+	private List<Category> categories;
 	private List<FileInfos> documents = new ArrayList<>();
-	private List<TextBoxItem> categories = new ArrayList<>();
-	private Map<String,Category> categoriesMap = new HashMap<>();
 	private Map<String,Assignment> assignmentTemplatesMap = new HashMap<>();
 
 	@Autowired
@@ -184,7 +182,7 @@ public class PageMetadataEditController extends FormBasicController {
 		this.chooseSection = chooseSection;
 		editTitleAndSummary = true;
 		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
-		
+
 		initForm(ureq);
 		
 		if(assignmentsTemplatesEl != null && assignmentsTemplatesEl.getKeys().length > 0) {
@@ -219,7 +217,7 @@ public class PageMetadataEditController extends FormBasicController {
 		this.chooseSection = chooseSection;
 		editTitleAndSummary = true;
 		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
-		
+
 		initForm(ureq);
 		
 		assignmentsTemplatesEl.select(assignmentTemplate.getKey().toString(), true);
@@ -245,13 +243,8 @@ public class PageMetadataEditController extends FormBasicController {
 		this.chooseSection = chooseSection;
 		
 		if(page != null) {
-			List<Category> tags = portfolioService.getCategories(page);
-			for(Category tag:tags) {
-				categories.add(new TextBoxItemImpl(tag.getName(), tag.getName()));
-				categoriesMap.put(tag.getName(), tag);
-			}
+			categories = portfolioService.getCategories(page);
 		}
-		
 		initForm(ureq);
 	}
 	
@@ -366,10 +359,12 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 		}
 		
-		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
+		List<CategoryInfos> allCategories = CategoryInfos.valueOf(categories, portfolioService.getOwnedCategories(getIdentity()));
+		categoriesEl = uifactory.addTagSelection("categories", "categories", formLayout, getWindowControl(), allCategories);
 		categoriesEl.setHelpText(translate("categories.hint"));
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
-		categoriesEl.setAllowDuplicates(false);
+		categoriesEl.addActionListener(FormEvent.ONCHANGE);
+		categoriesEl.setDirtyCheck(false);
 		
 		if (taxonomyLinkingEnabled) {
 			Collection<TaxonomyLevel> existingCompetences = page != null
@@ -723,7 +718,7 @@ public class PageMetadataEditController extends FormBasicController {
 			page = portfolioService.updatePage(page, newParent);
 		}
 		
-		List<String> updatedCategories = categoriesEl.getValueList();
+		List<String> updatedCategories = categoriesEl.getDisplayNames();
 		portfolioService.updateCategories(page, updatedCategories);
 		
 		if (taxonomyLinkingEnabled) {

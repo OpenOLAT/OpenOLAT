@@ -947,6 +947,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 		}
 		return null;
 	}
+	
+	@Override
+	public List<Category> getOwnedCategories(IdentityRef identity) {
+		return categoryDao.getOwnedCategories(identity);
+	}
 
 	@Override
 	public List<Category> getCategories(ContentElement element) {

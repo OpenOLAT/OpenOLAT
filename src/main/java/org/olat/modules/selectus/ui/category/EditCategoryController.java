@@ -115,6 +115,9 @@ public class EditCategoryController extends FormBasicController {
 			if(color.length() > colorEl.getMaxLength()) {
 				colorEl.setErrorKey("error.color.too.long", new String[] { Integer.toString(colorEl.getMaxLength()) });
 				allOk &= false;
+			} else if(!StringHelper.isCssColor(color)) {
+				colorEl.setErrorKey("error.color.invalid");
+				allOk &= false;
 			}
 		}
 		

@@ -32,10 +32,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.ceditor.Category;
 import org.olat.modules.ceditor.CategoryToElement;
 import org.olat.modules.ceditor.Page;
-import org.olat.modules.ceditor.model.jpa.CategoryLight;
-import org.olat.modules.ceditor.model.jpa.CategoryStatistics;
-import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -58,8 +54,6 @@ public class CategoryDAOTest extends OlatTestCase {
 	private PageDAO pageDao;
 	@Autowired
 	private BinderDAO binderDao;
-	@Autowired
-	private MediaDAO mediaDao;
 	@Autowired
 	private CategoryDAO categoryDao;
 	@Autowired
@@ -92,43 +86,6 @@ public class CategoryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(categories);
 		Assert.assertEquals(1, categories.size());
 		Assert.assertEquals(category, categories.get(0));
-	}
-	
-	@Test
-	public void getMediaCategories() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-1");
-		Media media = mediaDao.createMediaAndVersion("Media to categorize", "Media category", "", "Media content", "text", "[Media:0]", null, 10, id);
-		dbInstance.commit();
-
-		Category category = categoryDao.createAndPersistCategory("Cool");
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Media.class, media.getKey());
-		categoryDao.appendRelation(ores, category);
-		dbInstance.commitAndCloseSession();
-		
-		// load medias
-		List<CategoryLight> categories = categoryDao.getMediaCategories(id);
-		Assert.assertNotNull(categories);
-		Assert.assertEquals(1, categories.size());
-		Assert.assertEquals(category.getName(), categories.get(0).getCategory());
-	}
-	
-	@Test
-	public void getMediaCategoriesStatistics() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-1");
-		Media media = mediaDao.createMediaAndVersion("Media to categorize", "Media category", "", "Media content", "text", "[Media:0]", null, 10, id);
-		dbInstance.commit();
-
-		Category category = categoryDao.createAndPersistCategory("Cool");
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Media.class, media.getKey());
-		categoryDao.appendRelation(ores, category);
-		dbInstance.commitAndCloseSession();
-		
-		// load medias
-		List<CategoryStatistics> catStatistics = categoryDao.getMediaCategoriesStatistics(id);
-		Assert.assertNotNull(catStatistics);
-		Assert.assertEquals(1, catStatistics.size());
-		Assert.assertEquals(category.getName(), catStatistics.get(0).getName());
-		Assert.assertTrue(1 <= catStatistics.get(0).getCount());
 	}
 	
 	@Test
@@ -171,6 +128,42 @@ public class CategoryDAOTest extends OlatTestCase {
 		Assert.assertEquals(12, categories.size());
 	}
 	
+	@Test
+	public void getOwnedCategories() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-6");
+		Identity otherAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-7");
+		Binder binder = portfolioService.createNewBinder("Binder owned", "A binder with categories", null, author);
+		Section section = binderDao.createSection("Section", "First section", null, null, binder);
+		Binder otherBinder = portfolioService.createNewBinder("Binder other", "A binder from someone else", null, otherAuthor);
+		Section otherSection = binderDao.createSection("Section", "Other section", null, null, otherBinder);
+		dbInstance.commitAndCloseSession();
+
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		Page page = pageDao.createAndPersist("Jules Verne", "Michel Strogoff", null, null, true, reloadedSection, null);
+		Section reloadedOtherSection = binderDao.loadSectionByKey(otherSection.getKey());
+		Page otherPage = pageDao.createAndPersist("Jules Verne", "Mathias Sandorf", null, null, true, reloadedOtherSection, null);
+		dbInstance.commitAndCloseSession();
+
+		String binderCategory = ("Binder-" + UUID.randomUUID()).substring(0, 30);
+		String sectionCategory = ("Section-" + UUID.randomUUID()).substring(0, 31);
+		String pageCategory = ("Page-" + UUID.randomUUID()).substring(0, 32);
+		String otherCategory = ("Other-" + UUID.randomUUID()).substring(0, 29);
+		portfolioService.updateCategories(binder, List.of(binderCategory));
+		portfolioService.updateCategories(section, List.of(sectionCategory));
+		portfolioService.updateCategories(page, List.of(pageCategory));
+		portfolioService.updateCategories(otherPage, List.of(otherCategory));
+		dbInstance.commitAndCloseSession();
+
+		List<String> ownedCategories = categoryDao.getOwnedCategories(author).stream()
+				.map(Category::getName)
+				.toList();
+		Assert.assertEquals(3, ownedCategories.size());
+		Assert.assertTrue(ownedCategories.contains(binderCategory));
+		Assert.assertTrue(ownedCategories.contains(sectionCategory));
+		Assert.assertTrue(ownedCategories.contains(pageCategory));
+		Assert.assertFalse(ownedCategories.contains(otherCategory));
+	}
+
 	@Test
 	public void getCategorizedSectionsAndPages() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-1");

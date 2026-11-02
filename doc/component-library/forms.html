@@ -1048,67 +1048,6 @@ Peter;Test;peter@example.com</textarea>
   </div>
 </section>
 
-<!-- ==================== TAG INPUT ==================== -->
-<section class="cl-section">
-  <h2>Tag Input (TextBoxList)</h2>
-
-  <div class="cl-component">
-    <div class="cl-component-header">
-      <h3>Tag Input (Tagify)</h3>
-      <p>Tag input field using the Tagify library. Tags are displayed as pill-shaped elements with the <code>o_tag</code> class. The container uses the <code>o_textbox</code> class for styling consistent with standard form inputs. Tags can be selected (<code>o_tag_selected</code>) or clickable (<code>o_tag_clickable</code>).</p>
-      <div class="cl-classes">
-        <code>tagify</code> <code>o_textbox</code> <code>o_tag</code> <code>o_tag_selected</code> <code>o_tag_clickable</code>
-      </div>
-    </div>
-    <div class="cl-component-body">
-      <div class="o_component_example">
-        <div class="cl-example">
-          <form class="o_form form-horizontal">
-            <div class="form-group">
-              <label class="col-sm-3 control-label">Tags</label>
-              <div class="col-sm-9">
-                <div style="display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; background: #fff; min-height: 34px; align-items: center;">
-                  <span class="o_tag o_tag_selected">Mathematik</span>
-                  <span class="o_tag o_tag_selected">Grundlagen</span>
-                  <span class="o_tag o_tag_selected">Semester 1</span>
-                  <input type="text" placeholder="Tag hinzufuegen..." style="border: none; outline: none; flex-grow: 1; min-width: 100px;">
-                </div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-3 control-label">Verfuegbare Tags</label>
-              <div class="col-sm-9">
-                <div style="display: flex; flex-wrap: wrap; gap: 4px; padding: 6px;">
-                  <a href="#" class="o_tag o_tag_clickable" onclick="return false">Physik</a>
-                  <a href="#" class="o_tag o_tag_clickable" onclick="return false">Chemie</a>
-                  <a href="#" class="o_tag o_tag_selected o_tag_clickable" onclick="return false">Mathematik</a>
-                  <a href="#" class="o_tag o_tag_clickable" onclick="return false">Biologie</a>
-                  <a href="#" class="o_tag o_tag_clickable" onclick="return false">Informatik</a>
-                </div>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-      <div class="cl-code">
-        <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;!-- Tagify input (rendered by JS) --&gt;
-&lt;tags class="tagify o_textbox"&gt;
-  &lt;tag&gt;&lt;div&gt;&lt;span class="tagify__tag-text"&gt;Mathematik&lt;/span&gt;&lt;/div&gt;
-    &lt;span class="tagify__tag__removeBtn"&gt;&lt;/span&gt;
-  &lt;/tag&gt;
-  &lt;span class="tagify__input" contenteditable&gt;&lt;/span&gt;
-&lt;/tags&gt;
-
-&lt;!-- Tag selection (clickable tags) --&gt;
-&lt;a href="#" class="o_tag o_tag_clickable"&gt;Physik&lt;/a&gt;
-&lt;a href="#" class="o_tag o_tag_selected o_tag_clickable"&gt;Mathematik&lt;/a&gt;</pre>
-      </div>
-    </div>
-  </div>
-
-</section>
-
 <!-- ==================== HELP TOOLTIP ==================== -->
 <section class="cl-section">
   <h2>Help Tooltip</h2>

@@ -131,7 +131,7 @@ public class ApplicationController extends FormBasicController {
 			formLayout.add("notes", notesController.getInitialFormItem());
 		}
 		
-		if(secCallback.canViewParalellApplications() && formLayout instanceof FormLayoutContainer) {
+		if(secCallback.canViewParalellApplications() && formLayout instanceof FormLayoutContainer layoutCont) {
 			ParallelApplicationScope scope = recruitingModule.getParallelApplicationScope();
 			RecruitingDuplicateApplicationAlgorithm algorithm = recruitingModule.getApplicationDuplicateAlgorithm();
 			List<PositionLight> parallelApps =  erFrontendManager.getParallelApplications(application, position, scope, algorithm);
@@ -145,7 +145,7 @@ public class ApplicationController extends FormBasicController {
 						infos.add(new PositionInfo(positionTitle));
 					}
 				}
-				((FormLayoutContainer)formLayout).contextPut("parallelApplications", infos);
+				layoutCont.contextPut("parallelApplications", infos);
 			}
 		}
 	}

@@ -53,6 +53,13 @@ public interface TagSelection extends FormItem {
 	 * @param displayNames The tag display names to add
 	 */
 	public void addNewDisplayNames(Collection<String> displayNames);
+	
+	/**
+	 * Enable or disable creation of new tags.
+	 * 
+	 * @param canCreateNewTags true/false
+	 */
+	public void setCanCreateNewTags(boolean canCreateNewTags);
 
 	/**
 	 * @param dirtyCheck false to suppress the dirty check when changing tags. Default: true

@@ -20,28 +20,23 @@
 package org.olat.modules.portfolio.ui;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -50,6 +45,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.Category;
 import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.ui.CategoryInfos;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
@@ -75,14 +71,13 @@ public class BinderMetadataEditController extends FormBasicController {
 	
 	private TextElement titleEl;
 	private RichTextElement summaryEl;
-	private TextBoxListElement categoriesEl;
+	private TagSelection categoriesEl;
 	
 	private FileElement fileUpload;
 	private static final int picUploadlimitKB = 5120;
 	
 	private Binder binder;
-	private List<TextBoxItem> categories = new ArrayList<>();
-	private Map<String,Category> categoriesMap = new HashMap<>();
+	private List<Category> categories;
 	
 	private PortfolioImportEntriesContext wizardContext;
 	private boolean usedInWizard; 
@@ -96,19 +91,15 @@ public class BinderMetadataEditController extends FormBasicController {
 
 	public BinderMetadataEditController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, (Binder)null);
-		initForm(ureq);
 	}
 	
 	public BinderMetadataEditController(UserRequest ureq, WindowControl wControl, Binder binder) {
 		super(ureq, wControl);
 		this.binder = binder;
 		if(binder != null) {
-			List<Category> tags = portfolioService.getCategories(binder);
-			for(Category tag:tags) {
-				categories.add(new TextBoxItemImpl(tag.getName(), tag.getName()));
-				categoriesMap.put(tag.getName(), tag);
-			}
+			categories = portfolioService.getCategories(binder);
 		}
+
 		initForm(ureq);
 	}
 	
@@ -149,11 +140,12 @@ public class BinderMetadataEditController extends FormBasicController {
 				fileUpload.setInitialFile(posterImg);
 			}
 		}
-		
-		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
-		categoriesEl.setHelpText(translate("categories.hint"));
+
+		List<CategoryInfos> allCategories = CategoryInfos.valueOf(categories, portfolioService.getOwnedCategories(getIdentity()));
+		categoriesEl = uifactory.addTagSelection("categories", "categories", formLayout, getWindowControl(), allCategories);
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
-		categoriesEl.setAllowDuplicates(false);
+		categoriesEl.addActionListener(FormEvent.ONCHANGE);
+		categoriesEl.setDirtyCheck(false);
 		
 		if (!usedInWizard) {
 			// owners 		
@@ -207,7 +199,6 @@ public class BinderMetadataEditController extends FormBasicController {
 		if (wizardContext.getNewBinderImageName() != null) {
 			fileUpload.setUploadFileName(wizardContext.getNewBinderImageName());
 		}
-		categoriesEl.setCurrentItems(wizardContext.getNewBinderCategories());
 	}
 	
 	public Binder getBinder() {
@@ -255,7 +246,7 @@ public class BinderMetadataEditController extends FormBasicController {
 				binder = portfolioService.updateBinder(binder);
 			}
 			
-			List<String> updatedCategories = categoriesEl.getValueList();
+			List<String> updatedCategories = categoriesEl.getDisplayNames();
 			portfolioService.updateCategories(binder, updatedCategories);
 			dbInstance.commit();
 			
@@ -265,7 +256,7 @@ public class BinderMetadataEditController extends FormBasicController {
 			wizardContext.setNewBinderDescription(summaryEl.getValue());
 			wizardContext.setNewBinderImage(fileUpload.getUploadFile());
 			wizardContext.setNewBinderImageName(fileUpload.getUploadFileName());
-			wizardContext.setNewBinderCategories(categoriesEl.getValueItems());
+			wizardContext.setNewBinderCategories(categoriesEl.getDisplayNames());
 		}
 	}
 

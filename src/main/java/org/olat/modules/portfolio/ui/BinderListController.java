@@ -827,6 +827,9 @@ public class BinderListController extends FormBasicController
 				imagePath = portfolioService.addPosterImageForBinder(context.getNewBinderImage(), context.getNewBinderImageName());
 			}
 			Binder newBinder = portfolioService.createNewBinder(context.getNewBinderTitle(), context.getNewBinderDescription(), imagePath, getIdentity());
+			if(context.getNewBinderCategories() != null && !context.getNewBinderCategories().isEmpty()) {
+				portfolioService.updateCategories(newBinder, context.getNewBinderCategories());
+			}
 			
 			// Create section
 			SectionRef newSectionRef = portfolioService.appendNewSection(context.getNewSectionTitle(), context.getNewSectionDescription(), null, null, newBinder);

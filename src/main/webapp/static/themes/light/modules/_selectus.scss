@@ -268,20 +268,6 @@ div.o_app_details_categories {
 		width: 90%;
 		padding: 0 5px;
 	}
-	
-	.o_app_details_categories_buttons {
-		display: table-cell;
-		width: 2%;
-		
-		button {
-			border: none;
-			background: none;
-			color: black;
-			text-shadow: none;
-			box-shadow: none;
-			padding: 6px;
-		}
-	}
 }
 
 
@@ -589,7 +575,7 @@ fieldset.o_letter_preview legend {
 	}
 }
 
-/* Tags / tagify */
+/* Tags */
 .o_app_details_categories_input, .o_app_details_categories {
 	.o_tag {
 		border: none;

@@ -212,15 +212,11 @@
 	}
 }
 
+/* the categories edit form */
 .o_portfolio_categories {
-	/* the categories edit form */
-	div, form {
-		display: inline-block;
-	}
-	
-	.input-group {
-		margin-bottom: 2px;
-	}
+	display: flex;
+	align-items: center;
+	gap: 5px;
 }
 
 .o_portfolio_competences_edit {
@@ -251,9 +247,6 @@
 			}
 		}
 	}
-}
-.o_portfolio_categories_edit .o_portfolio_categories .tagify__input {
-	min-width: 180px;
 }
 
 .o_pf_page, .o_pf_assignment, .o_pf_section {

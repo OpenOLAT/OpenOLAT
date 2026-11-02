@@ -27,21 +27,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.olat.modules.selectus.RecruitingPositionSecurityCallback;
 import org.olat.modules.selectus.RecruitingService;
 import org.olat.modules.selectus.TaggingService;
@@ -53,8 +50,8 @@ import org.olat.modules.selectus.model.category.ApplicationCategoryInfos;
 import org.olat.modules.selectus.ui.PositionController;
 import org.olat.modules.selectus.ui.RecruitingHelper;
 import org.olat.modules.selectus.ui.comparator.ApplicationCategoryInfosComparator;
-import org.olat.modules.selectus.ui.comparator.TextBoxItemComparator;
 import org.olat.modules.selectus.ui.model.ApplicationLightRow;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,7 +61,7 @@ import org.olat.modules.selectus.ui.model.ApplicationLightRow;
  */
 public class BatchApplicationCategoriesController extends FormBasicController {
 
-	private TextBoxListElement addCategoriesEl;
+	private TagSelection addCategoriesEl;
 	private MultipleSelectionElement removeCategoriesEl;
 
 	private final Position position;
@@ -88,11 +85,10 @@ public class BatchApplicationCategoriesController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("batch.categories.descr");
-		
-		// add categories
-		addCategoriesEl = uifactory.addTextBoxListElement("add.categories", "add.categories", null, new ArrayList<>(), formLayout, getTranslator());
-		addCategoriesEl.setAllowDuplicates(false);
-		addCategoriesEl.setAllowNewValues(secCallback.canEditPositionCategories());
+
+		List<TagInfo> allCategories = getAllCategories();
+		addCategoriesEl = uifactory.addTagSelection("add.categories", "add.categories", formLayout, getWindowControl(), allCategories);
+		addCategoriesEl.setCanCreateNewTags(secCallback.canEditPositionCategories());
 		String hint = translate("add.categories.plural.hint");
 		if(secCallback.canEditPositionCategories()) {
 			hint += "<br>" + translate("add.categories.plural.new.hint");
@@ -101,9 +97,6 @@ public class BatchApplicationCategoriesController extends FormBasicController {
 			hint += "<br>" + translate("add.categories.plural.administrative.hint");
 		}
 		addCategoriesEl.setHelpText(hint);
-
-		List<TextBoxItem> allCategoryItems = getAllCategories();
-		addCategoriesEl.setAutoCompleteContent(allCategoryItems);
 		
 		SelectionValues removeKeyValues = getRemovableCategoriesKeyValues();
 		removeCategoriesEl = uifactory.addCheckboxesVertical("remove.categories", "remove.categories", formLayout,
@@ -139,19 +132,18 @@ public class BatchApplicationCategoriesController extends FormBasicController {
 		return removeKeyValues;
 	}
 	
-	private List<TextBoxItem> getAllCategories() {
-		List<TextBoxItem> items = new ArrayList<>();
+	private List<TagInfo> getAllCategories() {
+		List<TagInfo> items = new ArrayList<>();
 		List<Category> allCategories = taggingService.getAvailableCategoriesFor(position);
 		if(secCallback.canEditApplicationAdministrativeCategories()) {
 			for(Category category:allCategories) {
-				String name = "a:".concat(category.getName());
-				items.add(new TextBoxItemImpl(name, name, category.getColor(), true, category));
+				items.add(new ApplicationTagInfoImpl(category, true, true));
 			}
 		}
 		for(Category category:allCategories) {
-			items.add(new TextBoxItemImpl(category.getName(), category.getName(), category.getColor(), true, category));
+			items.add(new ApplicationTagInfoImpl(category, false, true));
 		}
-		Collections.sort(items, new TextBoxItemComparator());
+		Collections.sort(items, new ApplicationTagInfoComparator());
 		return items;
 	}
 
@@ -163,12 +155,8 @@ public class BatchApplicationCategoriesController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// add categories
-		List<TextBoxItem> addedCategories = addCategoriesEl.getValueItems();
-		List<String> addedCategoriesNames = null;
-		if(addedCategories != null && !addedCategories.isEmpty()) {
-			addedCategoriesNames = addedCategories.stream()
-					.map(TextBoxItem::getValue)
-					.collect(Collectors.toList());
+		List<String> addedCategoriesNames = addCategoriesEl.getDisplayNames();
+		if(addedCategoriesNames != null && !addedCategoriesNames.isEmpty()) {
 			for(ApplicationLightRow application:applications) {
 				Long applicationKey = application.getApplication().getKey();
 				Application app = recruitingService.getApplicationByKey(applicationKey);

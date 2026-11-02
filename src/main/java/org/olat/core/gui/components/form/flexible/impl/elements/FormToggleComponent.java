@@ -45,6 +45,8 @@ public class FormToggleComponent extends FormBaseComponentImpl {
 	private String toggleOffText;
 	private String title;
 	private String text;
+	private String color;
+	private String iconCssClass;
 	private String ariaLabel;
 	private String ariaLabelledBy;
 	private Presentation presentation = Presentation.SWITCH;
@@ -152,6 +154,22 @@ public class FormToggleComponent extends FormBaseComponentImpl {
 
 	public void setText(String text) {
 		this.text = text;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
+	}
+
+	public String getIconCssClass() {
+		return iconCssClass;
+	}
+
+	public void setIconCssClass(String iconCssClass) {
+		this.iconCssClass = iconCssClass;
 	}
 
 	public String getAriaLabel() {

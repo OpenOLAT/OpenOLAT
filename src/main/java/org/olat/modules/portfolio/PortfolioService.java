@@ -441,6 +441,12 @@ public interface PortfolioService {
 	 */
 	public void removeAccessRights(Binder binder, Identity identity, ContentRoles... roles);
 	
+	/**
+	 * @param identity The owner
+	 * @return The categories used on the pages, sections and binders owned by the identity
+	 */
+	public List<Category> getOwnedCategories(IdentityRef identity);
+
 	public List<Category> getCategories(ContentElement element);
 	
 	/**

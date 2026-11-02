@@ -125,6 +125,16 @@ public class FormToggleImpl extends FormItemImpl implements FormToggle {
 	public void setText(String text) {
 		component.setText(text);
 	}
+	
+	@Override
+	public void setColor(String color) {
+		component.setColor(color);
+	}
+	
+	@Override
+	public void setIconCssClass(String iconCssColor) {
+		component.setIconCssClass(iconCssColor);
+	}
 
 	@Override
 	public void setAriaLabel(String ariaLabel) {
