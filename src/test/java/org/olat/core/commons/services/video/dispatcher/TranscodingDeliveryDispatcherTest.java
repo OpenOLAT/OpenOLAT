@@ -62,7 +62,6 @@ import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.commons.services.video.TranscoderHelper;
 import org.olat.core.commons.services.video.model.TranscoderJobType;
 import org.olat.core.util.httpclient.HttpClientService;
-import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
@@ -339,7 +338,7 @@ public class TranscodingDeliveryDispatcherTest {
 		HttpEntity httpEntityMock = Mockito.mock(HttpEntity.class);
 
 		try {
-			when(httpClientServiceMock.createHttpClient(any(ProtectionProfile.class))).thenReturn(httpClientMock);
+			when(httpClientServiceMock.createHttpClient()).thenReturn(httpClientMock);
 			when(httpClientMock.execute(any(HttpGet.class))).thenReturn(httpResponseMock);
 			when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
 			when(statusLineMock.getStatusCode()).thenReturn(statusCode);
