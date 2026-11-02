@@ -296,7 +296,16 @@ public class VFSTranscodingServiceImpl implements VFSTranscodingService {
 			log.warn("Cannot find metadata for job: [uuid={}, referenceId={}] ", status.getUuid(), status.getReferenceId());
 			return;
 		}
-		
+
+		// OO-9999, WP4 H2: accept a status update only while the metadata is waiting for, or in, transcoding.
+		Integer currentStatus = metadata.getTranscodingStatus();
+		if (currentStatus == null || !(currentStatus == VFSMetadata.TRANSCODING_STATUS_WAITING
+				|| (currentStatus >= VFSMetadata.TRANSCODING_STATUS_STARTED && currentStatus <= 99))) {
+			log.info("Ignoring conversion job status: not pending [uuid={}, referenceId={}, status={}]",
+					status.getUuid(), status.getReferenceId(), currentStatus);
+			return;
+		}
+
 		int statusInt = Math.round(status.getStatus());
 		statusInt = Math.max(1, statusInt);
 		statusInt = Math.min(99, statusInt);
