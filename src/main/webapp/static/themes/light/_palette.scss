@@ -102,11 +102,13 @@ $o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
 // soft-bg / soft-fg / soft-border tinted fill, its text, its border
 // text                            coloured text on white
 // tint-bg / tint-fg / tint-border variant "tint", lighter solid fill
+// light-bg / light-fg / light-border variant "light", fill between tint and soft
 // dark-bg / dark-fg / dark-border variant "dark", darker solid fill
 //
 // Borders are validated with 3:1 on white (non-text contrast). The border
 // is one step darker than its fill; the tint fill (step 300) uses the first
-// step from 400 that passes, which is 500 in palette v2.
+// step from 400 that passes, which is 500 in palette v2; the light fill
+// (step 200) uses the first step from 300 that passes.
 //
 @function o-palette-swatches($palette, $bright) {
 	$swatches: ();
@@ -123,6 +125,7 @@ $o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
 		$bg: map.get($steps, $bg-step);
 		$soft-bg: map.get($steps, 50);
 		$tint-bg: map.get($steps, 300);
+		$light-bg: map.get($steps, 200);
 		$dark-bg: map.get($steps, $dark-step);
 
 		$swatch: (
@@ -136,6 +139,9 @@ $o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
 			"tint-bg": $tint-bg,
 			"tint-fg": o-on-color($tint-bg, ($c900,)),
 			"tint-border": o-on-color(#FFFFFF, (map.get($steps, 400), map.get($steps, 500)), 3),
+			"light-bg": $light-bg,
+			"light-fg": o-on-color($light-bg, ($c900,)),
+			"light-border": o-on-color(#FFFFFF, (map.get($steps, 300), map.get($steps, 400), map.get($steps, 500)), 3),
 			"dark-bg": $dark-bg,
 			"dark-fg": o-on-color($dark-bg, (#FFFFFF, $c900)),
 			"dark-border": o-on-color(#FFFFFF, (map.get($steps, o-palette-darker-step($dark-step)),), 3)
@@ -154,7 +160,8 @@ $o-swatches: o-palette-swatches($o-palette, $o-palette-bright) !default;
  * The CSS classes stored in the database and in XML files keep their old
  * names. Each legacy class renders as one swatch: a hue of $o-palette and a
  * variant. Variants: "solid" uses the roles bg/fg/border, "tint" the roles
- * tint-bg/tint-fg/tint-border, "dark" the roles dark-bg/dark-fg/dark-border.
+ * tint-bg/tint-fg/tint-border, "light" the roles light-bg/light-fg/light-border,
+ * "dark" the roles dark-bg/dark-fg/dark-border.
  * The other roles (soft-*, text) do not depend on the variant.
  *
  * Keep in sync with ColorService.resolve() in Java.
@@ -229,7 +236,7 @@ $o-swatch-alias-families: (
 			@if not map.has-key($o-palette, $hue) {
 				@error "o-swatch-aliases: unknown hue '#{$hue}' for '#{$prefix}#{$key}'";
 			}
-			@if not list.index(("solid", "tint", "dark"), $variant) {
+			@if not list.index(("solid", "tint", "light", "dark"), $variant) {
 				@error "o-swatch-aliases: unknown variant '#{$variant}' for '#{$prefix}#{$key}'";
 			}
 			$aliases: map.merge($aliases, ("#{$prefix}#{$key}": $alias));

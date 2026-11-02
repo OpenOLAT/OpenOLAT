@@ -210,16 +210,20 @@ $o-palette-chroma: (50: 0.020, 100: 0.050, 200: 0.100, 300: 0.150, 400: 0.200, 5
 
 // The swatch roles of a theme colour, same keys as o-palette-swatches().
 // The solid fill is the anchor step (the exact brand colour), else 500.
+// Tint 300 and light 200; for a solid fill at 300, tint 200 and light 100.
 @function o-theme-swatch($steps, $bg-step) {
 	$c900: map.get($steps, 900);
 	$tint-step: 300;
+	$light-step: 200;
 	@if $bg-step <= 300 {
-		$tint-step: 50;
+		$tint-step: 200;
+		$light-step: 100;
 	}
 	$dark-step: o-theme-darker($bg-step, 2);
 	$bg: map.get($steps, $bg-step);
 	$soft-bg: map.get($steps, 50);
 	$tint-bg: map.get($steps, $tint-step);
+	$light-bg: map.get($steps, $light-step);
 	$dark-bg: map.get($steps, $dark-step);
 	$text-candidates: (map.get($steps, 500), map.get($steps, 600), map.get($steps, 700));
 	@if $bg-step >= 500 {
@@ -235,7 +239,10 @@ $o-palette-chroma: (50: 0.020, 100: 0.050, 200: 0.100, 300: 0.150, 400: 0.200, 5
 		"text": o-on-color(#FFFFFF, $text-candidates),
 		"tint-bg": $tint-bg,
 		"tint-fg": o-on-color($tint-bg, ($c900, #000000)),
-		"tint-border": o-theme-border($steps, 400),
+		"tint-border": o-theme-border($steps, o-theme-darker($tint-step, 1)),
+		"light-bg": $light-bg,
+		"light-fg": o-on-color($light-bg, ($c900, #000000)),
+		"light-border": o-theme-border($steps, o-theme-darker($light-step, 1)),
 		"dark-bg": $dark-bg,
 		"dark-fg": o-on-color($dark-bg, (#FFFFFF, $c900, #000000)),
 		"dark-border": o-theme-border($steps, o-theme-darker($dark-step, 1))

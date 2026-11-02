@@ -42,7 +42,7 @@ public class PaletteTest {
 	/** The compiled light theme, relative to the project directory */
 	public static final Path LIGHT_THEME_CSS = Path.of("src/main/webapp/static/themes/light/theme.css");
 
-	private static final List<String> VARIANTS = List.of(Swatch.SOLID, Swatch.TINT, Swatch.DARK);
+	private static final List<String> VARIANTS = List.of(Swatch.SOLID, Swatch.TINT, Swatch.LIGHT, Swatch.DARK);
 
 	private final Palette palette = lightPalette();
 
@@ -102,6 +102,8 @@ public class PaletteTest {
 		Assert.assertEquals(500, Palette.bgStep(new Swatch("blue", Swatch.SOLID)));
 		Assert.assertEquals(300, Palette.bgStep(new Swatch("yellow", Swatch.TINT)));
 		Assert.assertEquals(300, Palette.bgStep(new Swatch("blue", Swatch.TINT)));
+		Assert.assertEquals(200, Palette.bgStep(new Swatch("yellow", Swatch.LIGHT)));
+		Assert.assertEquals(200, Palette.bgStep(new Swatch("blue", Swatch.LIGHT)));
 		Assert.assertEquals(500, Palette.bgStep(new Swatch("yellow", Swatch.DARK)));
 		Assert.assertEquals(700, Palette.bgStep(new Swatch("blue", Swatch.DARK)));
 	}
@@ -197,6 +199,10 @@ public class PaletteTest {
 		Assert.assertEquals("#8F1F40", openolat.bg(new Swatch("theme3", Swatch.SOLID)));
 		Assert.assertEquals("#B2CF42", openolat.bg(new Swatch("theme4", Swatch.SOLID)));
 		Assert.assertTrue(openolat.isBrightColor("theme2"));
+		// Sprout is exact at 300: tint and light move one step lighter
+		Assert.assertEquals(300, openolat.getBgStep(new Swatch("theme4", Swatch.SOLID)));
+		Assert.assertEquals(200, openolat.getBgStep(new Swatch("theme4", Swatch.TINT)));
+		Assert.assertEquals(100, openolat.getBgStep(new Swatch("theme4", Swatch.LIGHT)));
 		Assert.assertFalse(openolat.isBrightColor("theme3"));
 		for (String themeColor : openolat.getThemeColors()) {
 			for (String variant : VARIANTS) {
@@ -222,9 +228,10 @@ public class PaletteTest {
 		// theme2 is missing, theme3 is not a theme colour
 		Assert.assertEquals(List.of("theme1"), themed.getThemeColors());
 		Assert.assertFalse(themed.contains("theme3"));
-		// the fill is step 600: tint 300, dark two steps darker
+		// the fill is step 600: tint 300, light 200, dark two steps darker
 		Assert.assertEquals(600, themed.getBgStep(new Swatch("theme1", Swatch.SOLID)));
 		Assert.assertEquals(300, themed.getBgStep(new Swatch("theme1", Swatch.TINT)));
+		Assert.assertEquals(200, themed.getBgStep(new Swatch("theme1", Swatch.LIGHT)));
 		Assert.assertEquals(800, themed.getBgStep(new Swatch("theme1", Swatch.DARK)));
 		Assert.assertFalse(themed.isBrightColor("theme1"));
 		Assert.assertEquals("#106365", themed.text("theme1"));

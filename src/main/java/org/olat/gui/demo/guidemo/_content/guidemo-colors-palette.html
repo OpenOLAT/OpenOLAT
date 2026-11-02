@@ -43,14 +43,15 @@ Below the 15 hues, separated, are the theme colors: the brand colors of the curr
 	<li><strong>Dead zone</strong> (dashed line): between 400 and 500 the scale skips the lightness where neither white nor dark text reaches 4.5:1.</li>
 	<li><strong>Bright hues</strong> (yellow, orange, lime, green, cyan) use step 400 as solid fill with dark text. A yellow with white text reads as brown.</li>
 	<li><strong>Deep hues</strong> (all others) use step 500 as solid fill with white text.</li>
-	<li><strong>Theme colors</strong> use the brand color itself as solid fill ("solid brand"): it replaces the step with the same text polarity and the nearest luminance. A brand color where neither white nor dark text reaches 4.5:1 uses the generated step 500. Tint is step 300 (50 for a solid fill of 300 or lighter), dark is two steps darker than the solid fill.</li>
+	<li><strong>Theme colors</strong> use the brand color itself as solid fill ("solid brand"): it replaces the step with the same text polarity and the nearest luminance. A brand color where neither white nor dark text reaches 4.5:1 uses the generated step 500. Tint is step 300 and light is step 200 (200 and 100 for a solid fill of 300), dark is two steps darker than the solid fill.</li>
 	<li>Contrast rule: 4.5:1 for every text on every fill, also for large and bold text. The theme compile fails when a pair is below.</li>
 </ul>
 
 <h4>Roles in the cells</h4>
 <dl class="o_gd_col_legend">
 	<div><dt>solid</dt><dd>default fill of the swatch</dd></div>
-	<div><dt>tint</dt><dd>light fill, variant <code>o_swatch_tint</code></dd></div>
+	<div><dt>tint</dt><dd>lighter fill, variant <code>o_swatch_tint</code></dd></div>
+	<div><dt>light</dt><dd>lightest fill, variant <code>o_swatch_light</code></dd></div>
 	<div><dt>dark</dt><dd>dark fill, variant <code>o_swatch_dark</code></dd></div>
 	<div><dt>soft-bg</dt><dd>tinted block background</dd></div>
 	<div><dt>soft-border</dt><dd>border of the tinted block</dd></div>

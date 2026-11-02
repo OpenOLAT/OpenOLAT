@@ -138,6 +138,7 @@ public class GuiDemoColorsController extends BasicController {
 		if (step == 50) roles.add("soft-bg");
 		if (step == 200) roles.add("soft-border");
 		if (step == palette.getBgStep(new Swatch(hue, Swatch.TINT))) roles.add("tint");
+		if (step == palette.getBgStep(new Swatch(hue, Swatch.LIGHT))) roles.add("light");
 		if (step == palette.getBgStep(new Swatch(hue, Swatch.SOLID))) roles.add(Palette.isThemeColor(hue) ? "solid brand" : "solid");
 		if (step == palette.getBgStep(new Swatch(hue, Swatch.DARK))) roles.add("dark");
 		if (palette.hex(hue, step).equals(palette.text(hue))) roles.add("text");

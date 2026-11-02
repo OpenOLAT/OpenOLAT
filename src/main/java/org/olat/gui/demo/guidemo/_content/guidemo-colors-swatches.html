@@ -1,12 +1,12 @@
 <div class="o_block_top" id="o_gd_col_sw_$r.getCId()">
 <p>A swatch is the set of roles of one hue. The class <code>.o_swatch_{hue}</code> sets the role tokens as CSS custom properties,
-the modifiers <code>.o_swatch_tint</code> and <code>.o_swatch_dark</code> replace the solid fill roles. Components read the tokens and set no colors of their own.
+the modifiers <code>.o_swatch_dark</code>, <code>.o_swatch_tint</code> and <code>.o_swatch_light</code> replace the solid fill roles. The samples run from the darkest fill on the left to colored text on the right. Components read the tokens and set no colors of their own.
 The contrast ratios below are measured in the browser from the computed colors; a red outline marks a value below 4.5:1.</p>
 
 <table class="table table-condensed">
 	<thead><tr><th>Token</th><th>Use</th><th>Rule</th></tr></thead>
 	<tbody>
-		<tr><td><code>--o-sw-bg</code></td><td>solid fill: category bar, avatar, calendar event</td><td>solid 400 (bright) or 500 (deep), tint 300, dark 500 (bright) or 700 (deep)</td></tr>
+		<tr><td><code>--o-sw-bg</code></td><td>solid fill: category bar, avatar, calendar event</td><td>dark 500 (bright) or 700 (deep), solid 400 (bright) or 500 (deep), tint 300, light 200</td></tr>
 		<tr><td><code>--o-sw-fg</code></td><td>text and icons on the fill</td><td>white or step 900, 4.5:1 on <code>--o-sw-bg</code></td></tr>
 		<tr><td><code>--o-sw-border</code></td><td>border of the fill</td><td>one step darker than the fill, 3:1 on white</td></tr>
 		<tr><td><code>--o-sw-soft-bg</code></td><td>tinted block: page editor background, alert box</td><td>step 50</td></tr>
@@ -26,6 +26,10 @@ The contrast ratios below are measured in the browser from the computed colors; 
 	<div class="o_gd_col_swatch o_swatch_$row.hue">
 		<h4>$row.label <small>#if($row.themeColor) <code>$row.hue</code>, #end#if($row.bright) bright #else deep #end</small></h4>
 		<div class="o_gd_col_samples">
+			<div class="o_gd_col_sample o_swatch_$row.hue o_swatch_dark">
+				<div class="o_gd_col_solid" data-o-contrast>Dark <i class="o_icon o_icon_check"> </i></div>
+				<code>+ .o_swatch_dark</code>
+			</div>
 			<div class="o_gd_col_sample">
 				<div class="o_gd_col_solid" data-o-contrast>Solid <i class="o_icon o_icon_check"> </i></div>
 				<code>.o_swatch_$row.hue</code>
@@ -34,9 +38,9 @@ The contrast ratios below are measured in the browser from the computed colors; 
 				<div class="o_gd_col_solid" data-o-contrast>Tint <i class="o_icon o_icon_check"> </i></div>
 				<code>+ .o_swatch_tint</code>
 			</div>
-			<div class="o_gd_col_sample o_swatch_$row.hue o_swatch_dark">
-				<div class="o_gd_col_solid" data-o-contrast>Dark <i class="o_icon o_icon_check"> </i></div>
-				<code>+ .o_swatch_dark</code>
+			<div class="o_gd_col_sample o_swatch_$row.hue o_swatch_light">
+				<div class="o_gd_col_solid" data-o-contrast>Light <i class="o_icon o_icon_check"> </i></div>
+				<code>+ .o_swatch_light</code>
 			</div>
 			<div class="o_gd_col_sample">
 				<div class="o_gd_col_soft" data-o-contrast>Soft <i class="o_icon o_icon_info"> </i></div>

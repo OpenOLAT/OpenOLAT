@@ -133,7 +133,7 @@
       <h3>Swatch roles per hue</h3>
       <p>The class <code>o_swatch_{hue}</code> sets the role tokens of one hue. Components read the tokens and never a hex value. The foregrounds are selected at compile time with <code>o-on-color()</code>, the build stops when a pair has less than 4.5:1. The modifiers <code>o_swatch_tint</code> (step 300) and <code>o_swatch_dark</code> (step 500 for bright hues, 700 for deep hues) replace <code>--o-sw-bg</code>, <code>--o-sw-fg</code> and <code>--o-sw-border</code>. The classes set only custom properties, no colours.</p>
       <div class="cl-classes">
-        <code>o_swatch_{hue}</code> <code>o_swatch_tint</code> <code>o_swatch_dark</code> <code>--o-sw-bg</code> <code>--o-sw-fg</code> <code>--o-sw-border</code> <code>--o-sw-soft-bg</code> <code>--o-sw-soft-fg</code> <code>--o-sw-soft-border</code> <code>--o-sw-text</code>
+        <code>o_swatch_{hue}</code> <code>o_swatch_dark</code> <code>o_swatch_tint</code> <code>o_swatch_light</code> <code>--o-sw-bg</code> <code>--o-sw-fg</code> <code>--o-sw-border</code> <code>--o-sw-soft-bg</code> <code>--o-sw-soft-fg</code> <code>--o-sw-soft-border</code> <code>--o-sw-text</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -176,6 +176,7 @@
           <tr><td><code>soft-border</code></td><td>border of the tinted fill</td><td>step 200</td><td>&ndash;</td></tr>
           <tr><td><code>text</code></td><td>coloured text on white</td><td>first of step 500, 600, 700</td><td>&ge; 4.5:1 on white</td></tr>
           <tr><td><code>o_swatch_tint</code></td><td>lighter solid fill</td><td>bg 300, fg 900, border first of step 400, 500</td><td>fg &ge; 4.5:1, border &ge; 3:1 on white</td></tr>
+          <tr><td><code>o_swatch_light</code></td><td>lightest solid fill, between tint and soft</td><td>bg 200, fg 900, border first of step 300, 400, 500</td><td>fg &ge; 4.5:1, border &ge; 3:1 on white</td></tr>
           <tr><td><code>o_swatch_dark</code></td><td>darker solid fill</td><td>bg 500 (bright) or 700 (deep), fg first of white, 900, border one step darker</td><td>fg &ge; 4.5:1, border &ge; 3:1 on white</td></tr>
         </tbody>
       </table>
@@ -322,9 +323,10 @@
         { bg: '#FFFFFF', fg: '--o-sw-border', min: BORDER_MIN, label: 'border' }
       ];
       var defs = [
+        ['dark', 'cl-sw-solid o_swatch_' + hue + ' o_swatch_dark', 'Dark label', solidPairs],
         ['solid', 'cl-sw-solid', 'Solid label', solidPairs],
         ['tint', 'cl-sw-solid o_swatch_' + hue + ' o_swatch_tint', 'Tint label', solidPairs],
-        ['dark', 'cl-sw-solid o_swatch_' + hue + ' o_swatch_dark', 'Dark label', solidPairs],
+        ['light', 'cl-sw-solid o_swatch_' + hue + ' o_swatch_light', 'Light label', solidPairs],
         ['soft', 'cl-sw-soft', 'Soft block', [{ bg: '--o-sw-soft-bg', fg: '--o-sw-soft-fg', min: TEXT_MIN }]],
         ['text', 'cl-sw-text', 'Text on white', [{ bg: '#FFFFFF', fg: '--o-sw-text', min: TEXT_MIN }]]
       ];

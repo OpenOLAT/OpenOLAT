@@ -21,7 +21,7 @@ package org.olat.core.commons.services.color;
 
 /**
  * A swatch of the {@link Palette}: a hue (e.g. "blue") and a variant
- * ({@link #SOLID}, {@link #TINT} or {@link #DARK}). The colour values of
+ * ({@link #SOLID}, {@link #TINT}, {@link #LIGHT} or {@link #DARK}). The colour values of
  * the roles are resolved by the {@link Palette}.
  *
  * Initial date: 29 Oct 2026<br>
@@ -31,6 +31,7 @@ public record Swatch(String hue, String variant) {
 
 	public static final String SOLID = "solid";
 	public static final String TINT = "tint";
+	public static final String LIGHT = "light";
 	public static final String DARK = "dark";
 
 }

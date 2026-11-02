@@ -244,8 +244,9 @@ public class Palette {
 	/**
 	 * @return The step of the fill, for the hues and the theme colours. A theme
 	 * 		colour has the solid fill at its own step (the brand colour), the
-	 * 		tint at 300 (50 if the solid fill is 300 or lighter), the dark
-	 * 		variant two steps darker than the solid fill, 900 at most.
+	 * 		tint at 300 and light at 200 (200 and 100 if the solid fill is 300
+	 * 		or lighter), the dark variant two steps darker than the solid
+	 * 		fill, 900 at most.
 	 */
 	public int getBgStep(Swatch swatch) {
 		Integer fill = themeColorFillSteps.get(swatch.hue());
@@ -255,14 +256,15 @@ public class Palette {
 		int solid = fill.intValue();
 		return switch (swatch.variant()) {
 			case Swatch.SOLID -> solid;
-			case Swatch.TINT -> solid <= 300 ? 50 : 300;
+			case Swatch.TINT -> solid <= 300 ? 200 : 300;
+			case Swatch.LIGHT -> solid <= 300 ? 100 : 200;
 			case Swatch.DARK -> STEPS.get(Math.min(STEPS.indexOf(fill) + 2, STEPS.size() - 1)).intValue();
 			default -> throw new IllegalArgumentException("Unknown variant " + swatch.variant());
 		};
 	}
 
 	/**
-	 * @return The step of the fill: tint 300; solid 400 (bright hues) or 500;
+	 * @return The step of the fill: tint 300; light 200; solid 400 (bright hues) or 500;
 	 * 		dark 500 (bright hues) or 700
 	 */
 	public static int bgStep(Swatch swatch) {
@@ -270,6 +272,7 @@ public class Palette {
 		return switch (swatch.variant()) {
 			case Swatch.SOLID -> bright ? 400 : 500;
 			case Swatch.TINT -> 300;
+			case Swatch.LIGHT -> 200;
 			case Swatch.DARK -> bright ? 500 : 700;
 			default -> throw new IllegalArgumentException("Unknown variant " + swatch.variant());
 		};

@@ -4,8 +4,8 @@
  * Palette swatches: .o_swatch_{hue} sets the role tokens
  * --o-sw-bg, --o-sw-fg, --o-sw-border, --o-sw-soft-bg,
  * --o-sw-soft-fg, --o-sw-soft-border and --o-sw-text from
- * $o-swatches (_palette.scss). The modifiers .o_swatch_tint
- * and .o_swatch_dark replace the solid fill roles.
+ * $o-swatches (_palette.scss). The modifiers .o_swatch_tint,
+ * .o_swatch_light and .o_swatch_dark replace the solid fill roles.
  * Components read the tokens, this file sets no colours.
  *
  * Each legacy chooser class of $o-swatch-aliases (_palette.scss)
@@ -35,6 +35,11 @@
 		--o-sw-bg: #{o-hex(map.get($swatch, "tint-bg"))};
 		--o-sw-fg: #{o-hex(map.get($swatch, "tint-fg"))};
 		--o-sw-border: #{o-hex(map.get($swatch, "tint-border"))};
+	}
+	.o_swatch_#{$hue}.o_swatch_light, %o_swatch_#{$hue}_light {
+		--o-sw-bg: #{o-hex(map.get($swatch, "light-bg"))};
+		--o-sw-fg: #{o-hex(map.get($swatch, "light-fg"))};
+		--o-sw-border: #{o-hex(map.get($swatch, "light-border"))};
 	}
 	.o_swatch_#{$hue}.o_swatch_dark, %o_swatch_#{$hue}_dark {
 		--o-sw-bg: #{o-hex(map.get($swatch, "dark-bg"))};
