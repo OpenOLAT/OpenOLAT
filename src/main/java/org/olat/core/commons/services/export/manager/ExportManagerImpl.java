@@ -86,7 +86,7 @@ public class ExportManagerImpl implements ExportManager {
 	
 	@Override
 	public VFSContainer getExportContainer(RepositoryEntry entry, String resSubPath) {
-		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+		if(entry != null && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseEnvironment courseEnv = course.getCourseEnvironment();
 			VFSContainer rootFolder = VFSManager.getOrCreateContainer(courseEnv.getCourseBaseContainer(), ROOT_FOLDER);
@@ -267,10 +267,12 @@ public class ExportManagerImpl implements ExportManager {
 					// try to clean the mess eventually
 					String taskEnding = "_" + task.getKey() + ".zip";
 					VFSContainer exportContainer = getExportContainer(entry, resSubPath);
-					List<VFSItem> zipItems = exportContainer.getItems(new ZIPLeafFilter());
-					for(VFSItem zipItem:zipItems) {
-						if(zipItem.getName().endsWith(taskEnding)) {
-							zipItem.deleteSilently();
+					if(exportContainer != null) {
+						List<VFSItem> zipItems = exportContainer.getItems(new ZIPLeafFilter());
+						for(VFSItem zipItem:zipItems) {
+							if(zipItem.getName().endsWith(taskEnding)) {
+								zipItem.deleteSilently();
+							}
 						}
 					}
 				}
