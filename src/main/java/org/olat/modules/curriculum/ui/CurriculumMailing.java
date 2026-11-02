@@ -373,6 +373,7 @@ public class CurriculumMailing {
 		private static final String CURRICULUM_ELEMENT_TYPE_NAME = "curriculumElementTypeName";
 		private static final String MY_COURSES_URL = "myCoursesUrl";
 		private static final String FEE = "fee";
+		private static final String CANCELLATION_FEE_ITEM = "cancellationFeeItem";
 		
 		private final Locale locale;
 		private final Curriculum curriculum;
@@ -409,6 +410,7 @@ public class CurriculumMailing {
 			variableNames.add(CURRICULUM_ELEMENT_IDENTIFIER);
 			variableNames.add(CURRICULUM_ELEMENT_TYPE_NAME);
 			variableNames.add(FEE);
+			variableNames.add(CANCELLATION_FEE_ITEM);
 			variableNames.add(MY_COURSES_URL);
 			return variableNames;
 		}
@@ -459,12 +461,16 @@ public class CurriculumMailing {
 			putVariablesInMailContext("curriculumTypeName", curriculumElementTypeName);
 			
 			String feeStr = "-";
+			String feeItem = "";
 			if(identity != null && cancellationFees != null
 					&& cancellationFees.containsKey(identity.getKey())) {
 				Price fee = cancellationFees.get(identity.getKey());
 				feeStr = PriceFormat.fullFormat(fee);
+				feeItem = Util.createPackageTranslator(CurriculumMailing.class, locale)
+						.translate("notification.mail.cancellation.fee.item", feeStr);
 			}
 			putVariablesInMailContext(FEE, feeStr);
+			putVariablesInMailContext(CANCELLATION_FEE_ITEM, feeItem);
 		}
 	}
 }

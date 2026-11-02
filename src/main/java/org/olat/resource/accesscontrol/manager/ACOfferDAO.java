@@ -279,7 +279,6 @@ public class ACOfferDAO {
 			resourceTypeName = resourceTypeName.substring(0, 250);
 		}
 		offer.setResourceTypeName(resourceTypeName);
-		offer.setCancellingEnabled(true);
 		return offer;
 	}
 	
@@ -288,6 +287,7 @@ public class ACOfferDAO {
 		offerCopy.setAutoBooking(offer.isAutoBooking());
 		offerCopy.setPrice(offer.getPrice());
 		offerCopy.setCancellingEnabled(offer.isCancellingEnabled());
+		offerCopy.setCancellingAnytime(offer.isCancellingAnytime());
 		offerCopy.setCancellingFee(offer.getCancellingFee());
 		offerCopy.setCancellingFeeDeadlineDays(offer.getCancellingFeeDeadlineDays());
 		offerCopy.setCatalogPublish(offer.isCatalogPublish());

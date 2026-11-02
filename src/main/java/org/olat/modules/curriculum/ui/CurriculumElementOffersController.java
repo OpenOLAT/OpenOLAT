@@ -118,7 +118,7 @@ public class CurriculumElementOffersController extends BasicController {
 				editBusinessPath, translate("access.open.metadata"),
 				CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
 				catalogV2Module.isWebPublishEnabled() ? CatalogBCFactory.get(true).getOfferUrl(element.getResource()) : null,
-				taxonomyLevels, true, getSortOrderProvider(element), getOrderFormProvider(element));
+				taxonomyLevels, true, getSortOrderProvider(element), getOrderFormProvider(element), true);
 
 		accessConfigCtrl = new AccessSegmentedOverviewController(ureq, wControl, element.getResource(),
 				element.getDisplayName(), true, false, false, true, defaultOfferOrganisations, catalogInfo,

@@ -19,11 +19,9 @@
  */
 package org.olat.modules.catalog.ui;
 
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
-import org.olat.core.util.DateUtils;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
@@ -92,17 +90,13 @@ public class CatalogCurriculumElementBasicHeaderConfig extends BasicDetailsHeade
 			return;
 		}
 
-		if (curriculumElement.getBeginDate() == null || DateUtils.getStartOfDay(curriculumElement.getBeginDate()).before(new Date())) {
-			return;
-		}
-
 		List<Order> orders = acService.findOrders(identity, curriculumElement.getResource(),
 				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
 		if (orders.isEmpty()) {
 			return;
 		}
 
-		if (!acService.isCancellingEnabled(curriculumElement.getResource(), orders)) {
+		if (!acService.isCancellingEnabled(curriculumElement.getResource(), curriculumElement.getBeginDate(), orders)) {
 			return;
 		}
 		cancelAvailable = true;

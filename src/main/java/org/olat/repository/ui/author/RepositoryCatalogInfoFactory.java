@@ -100,7 +100,7 @@ public class RepositoryCatalogInfoFactory {
 					taxonomyLevels,
 					showRQCode,
 					catalogV2Module.isPrioritySortingEnabled()? new RepositoryEntryCatalogSortPriorityProvider(entry): null,
-				null);
+				null, false);
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
 			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
@@ -133,7 +133,7 @@ public class RepositoryCatalogInfoFactory {
 					lifecycle != null ? lifecycle.getValidFrom() : null,
 					lifecycle != null ? lifecycle.getValidTo() : null,
 					editBusinessPath, translator.translate("access.open.catalog"),
-					null, null, null, showRQCode, null, null);
+					null, null, null, showRQCode, null, null, false);
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}

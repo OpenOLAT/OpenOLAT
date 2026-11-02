@@ -98,11 +98,15 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private static final String DATE_MODE_RELATIVE = "relative";
 	private static final String CATALOG_OO = "openolat";
 	private static final String CATALOG_WEB = "web";
+	private static final String CANCELLING_ANYTIME = "anytime";
+	private static final String CANCELLING_BEGIN = "begin";
 	protected static final String CONFIRMATION_BY_MANAGER_NO = "confirmation.by.manager.no";
 	protected static final String CONFIRMATION_BY_MANAGER_YES = "confirmation.by.manager.yes";
 	
 	protected TextElement descEl;
 	private TextElement labelEl;
+	private FormToggle cancellingEnabledEl;
+	private SingleSelection cancellingPeriodEl;
 	private SingleSelection periodEl;
 	private StaticTextElement conditionHeaderEl;
 	private MultipleSelectionElement statusEl;
@@ -180,6 +184,10 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		descEl.setElementCssClass("o_sel_accesscontrol_description");
 		descEl.setHelpTextKey("offer.description.help", null);
 
+		if (catalogInfo.isCancellingSupported() && isCancellingSupported()) {
+			initCancellingElements(generalCont);
+		}
+		
 		FormLayoutContainer catalogCont = FormLayoutContainer.createDefaultFormLayout("catalogCont", getTranslator());
 		catalogCont.setFormTitle(translate("offer.catalog.title"));
 		catalogCont.setRootForm(mainForm);
@@ -351,6 +359,39 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	}
 
 	/**
+	 * @return true if the provider uses the generic cancelling elements
+	 */
+	protected boolean isCancellingSupported() {
+		return false;
+	}
+	
+	private void initCancellingElements(FormItemContainer formLayout) {
+		Offer offer = link.getOffer();
+		boolean cancellingEnabled = offer != null && offer.isCancellingEnabled();
+		cancellingEnabledEl = uifactory.addToggleButton("cancelling.enabled", "cancelling.enabled",
+				translate("on"), translate("off"), formLayout);
+		cancellingEnabledEl.toggle(cancellingEnabled);
+		cancellingEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		
+		SelectionValues cancellingPeriodSV = new SelectionValues();
+		cancellingPeriodSV.add(SelectionValues.entry(CANCELLING_ANYTIME, translate("cancelling.period.anytime")));
+		cancellingPeriodSV.add(SelectionValues.entry(CANCELLING_BEGIN, translate("cancelling.period.begin")));
+		cancellingPeriodEl = uifactory.addRadiosVertical("cancelling.period", formLayout,
+				cancellingPeriodSV.keys(), cancellingPeriodSV.values());
+		cancellingPeriodEl.select(cancellingEnabled && !offer.isCancellingAnytime() ? CANCELLING_BEGIN : CANCELLING_ANYTIME, true);
+		cancellingPeriodEl.addActionListener(FormEvent.ONCHANGE);
+		updateCancellingUI();
+	}
+	
+	private void updateCancellingUI() {
+		cancellingPeriodEl.setVisible(cancellingEnabledEl.isOn());
+		cancellingPeriodEl.clearWarning();
+		if (cancellingPeriodEl.isVisible() && cancellingPeriodEl.isKeySelected(CANCELLING_BEGIN) && catalogInfo.getStartDate() == null) {
+			cancellingPeriodEl.setWarningKey("cancelling.period.begin.missing");
+		}
+	}
+	
+	/**
 	 * @return false to exclude a provider from the booking order forms section (PayPal Checkout)
 	 */
 	protected boolean isOfferSurveySupported() {
@@ -459,6 +500,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			updateUI();
 		} else if (source == catalogEl) {
 			updateCatalogUI();
+		} else if (source == cancellingEnabledEl || source == cancellingPeriodEl) {
+			updateCancellingUI();
 		} else if (source == fromModeEl || source == untilModeEl) {
 			updateUI();
 		} else if (source == fromDateRelEl) {
@@ -803,6 +846,10 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		offer.setConfirmationEmail(confirmationEmailEl.isAtLeastSelected(1));
 		if (confirmationByManagerEl != null) {
 			offer.setConfirmationByManagerRequired(confirmationByManagerEl.isOneSelected() && confirmationByManagerEl.isKeySelected(CONFIRMATION_BY_MANAGER_YES));
+		}
+		if (cancellingEnabledEl != null) {
+			offer.setCancellingEnabled(cancellingEnabledEl.isOn());
+			offer.setCancellingAnytime(cancellingEnabledEl.isOn() && cancellingPeriodEl.isKeySelected(CANCELLING_ANYTIME));
 		}
 		link.setValidFrom(validFrom);
 		link.setValidTo(validTo);

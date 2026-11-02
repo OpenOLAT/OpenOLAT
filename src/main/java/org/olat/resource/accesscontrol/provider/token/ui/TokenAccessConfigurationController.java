@@ -67,6 +67,11 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 	}
 	
 	@Override
+	protected boolean isCancellingSupported() {
+		return true;
+	}
+	
+	@Override
 	protected void updateCustomChanges() {
 		Offer offer = link.getOffer();
 		if(offer instanceof OfferImpl) {

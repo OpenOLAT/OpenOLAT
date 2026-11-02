@@ -61,6 +61,19 @@ public interface AccessMethodHandler {
 	
 	public String getDescription(Locale locale);
 	
+	/**
+	 * Best guess decision, may be changed in the future: the cancelling conditions
+	 * of a method with a fee (invoice) are part of the contract and are fixed at
+	 * booking (copied to the order line). All other methods follow the current
+	 * configuration of the offer, so a change applies to existing bookings too.
+	 * 
+	 * @return true if the cancelling conditions of the order line apply, false
+	 * 		if the current conditions of the offer apply
+	 */
+	public default boolean isCancellingFixedAtBooking() {
+		return false;
+	}
+	
 	public AccessMethodSecurityCallback getSecurityCallback(OLATResource resource, Identity identity, Roles roles);
 	
 	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity);

@@ -524,6 +524,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
 		Offer offer = acService.createOffer(implementationElement.getResource(), "Invoice curriculum element");
+		offer.setCancellingEnabled(true);
 		BigDecimal cancellingFeeAmount = new BigDecimal("10.00");
 		offer.setCancellingFee(new PriceImpl(cancellingFeeAmount, "CHF"));
 		offer.setPrice(new PriceImpl(new BigDecimal("20.00"), "CHF"));
@@ -581,6 +582,110 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Assert.assertNotNull(reloadedOrder.getCancellationFees());
 	}
 
+	@Test
+	public void createOfferNotCancelling() {
+		Offer offer = acService.createOffer(createRandomResource(), random());
+		
+		assertThat(offer.isCancellingEnabled()).isFalse();
+		assertThat(offer.isCancellingAnytime()).isFalse();
+	}
+	
+	@Test
+	public void isCancellingEnabled() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("cancel-1");
+		OLATResource disabledResource = createRandomResource();
+		Order disabledOrder = createFreeOrder(id, disabledResource, false, false);
+		OLATResource anytimeResource = createRandomResource();
+		Order anytimeOrder = createFreeOrder(id, anytimeResource, true, true);
+		OLATResource beginResource = createRandomResource();
+		Order beginOrder = createFreeOrder(id, beginResource, true, false);
+		dbInstance.commit();
+		
+		Date tomorrow = DateUtils.addDays(new Date(), 1);
+		Date today = new Date();
+		Date yesterday = DateUtils.addDays(new Date(), -1);
+		assertThat(acService.isCancellingEnabled(disabledResource, tomorrow, List.of(disabledOrder))).isFalse();
+		assertThat(acService.isCancellingEnabled(anytimeResource, tomorrow, List.of(anytimeOrder))).isTrue();
+		assertThat(acService.isCancellingEnabled(anytimeResource, today, List.of(anytimeOrder))).isTrue();
+		assertThat(acService.isCancellingEnabled(anytimeResource, yesterday, List.of(anytimeOrder))).isTrue();
+		assertThat(acService.isCancellingEnabled(anytimeResource, null, List.of(anytimeOrder))).isTrue();
+		assertThat(acService.isCancellingEnabled(beginResource, tomorrow, List.of(beginOrder))).isTrue();
+		assertThat(acService.isCancellingEnabled(beginResource, today, List.of(beginOrder))).isFalse();
+		assertThat(acService.isCancellingEnabled(beginResource, yesterday, List.of(beginOrder))).isFalse();
+		assertThat(acService.isCancellingEnabled(beginResource, null, List.of(beginOrder))).isFalse();
+		assertThat(acService.isCancellingEnabled(anytimeResource, tomorrow, List.of(beginOrder))).isFalse();
+		assertThat(anytimeOrder.getParts().get(0).isCancellingAnytime()).isTrue();
+		assertThat(beginOrder.getParts().get(0).isCancellingAnytime()).isFalse();
+	}
+	
+	@Test
+	public void isCancellingEnabledFollowsCurrentOffer() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("cancel-2");
+		OLATResource freeResource = createRandomResource();
+		createOrder(id, freeResource, FreeAccessMethod.class, false, false);
+		OLATResource tokenResource = createRandomResource();
+		createOrder(id, tokenResource, TokenAccessMethod.class, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		Date tomorrow = DateUtils.addDays(new Date(), 1);
+		Date yesterday = DateUtils.addDays(new Date(), -1);
+		updateCancelling(freeResource, true, true);
+		updateCancelling(tokenResource, true, true);
+		assertThat(isCancellingEnabled(id, freeResource, yesterday)).isTrue();
+		assertThat(isCancellingEnabled(id, tokenResource, yesterday)).isTrue();
+		
+		updateCancelling(freeResource, true, false);
+		assertThat(isCancellingEnabled(id, freeResource, tomorrow)).isTrue();
+		assertThat(isCancellingEnabled(id, freeResource, yesterday)).isFalse();
+		
+		updateCancelling(freeResource, false, false);
+		assertThat(isCancellingEnabled(id, freeResource, tomorrow)).isFalse();
+	}
+	
+	@Test
+	public void isCancellingEnabledInvoiceFixedAtBooking() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("cancel-3");
+		OLATResource enabledResource = createRandomResource();
+		createOrder(id, enabledResource, InvoiceAccessMethod.class, true, false);
+		OLATResource disabledResource = createRandomResource();
+		createOrder(id, disabledResource, InvoiceAccessMethod.class, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		Date tomorrow = DateUtils.addDays(new Date(), 1);
+		updateCancelling(enabledResource, false, false);
+		updateCancelling(disabledResource, true, true);
+		assertThat(isCancellingEnabled(id, enabledResource, tomorrow)).isTrue();
+		assertThat(isCancellingEnabled(id, disabledResource, tomorrow)).isFalse();
+	}
+	
+	private Order createFreeOrder(Identity identity, OLATResource resource, boolean cancellingEnabled, boolean cancellingAnytime) {
+		return createOrder(identity, resource, FreeAccessMethod.class, cancellingEnabled, cancellingAnytime);
+	}
+	
+	private Order createOrder(Identity identity, OLATResource resource, Class<? extends AccessMethod> methodType,
+			boolean cancellingEnabled, boolean cancellingAnytime) {
+		Offer offer = acService.createOffer(resource, random());
+		offer.setCancellingEnabled(cancellingEnabled);
+		offer.setCancellingAnytime(cancellingAnytime);
+		offer = acService.save(offer);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(methodType);
+		OfferAccess offerAccess = acService.saveOfferAccess(acService.createOfferAccess(offer, methods.get(0)));
+		return acService.createAndSaveOrder(identity, offerAccess, OrderStatus.PAYED, null, null, null);
+	}
+	
+	private void updateCancelling(OLATResource resource, boolean cancellingEnabled, boolean cancellingAnytime) {
+		Offer offer = acService.findOfferByResource(resource, true, null, null).get(0);
+		offer.setCancellingEnabled(cancellingEnabled);
+		offer.setCancellingAnytime(cancellingAnytime);
+		acService.save(offer);
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private boolean isCancellingEnabled(Identity identity, OLATResource resource, Date resourceBeginDate) {
+		List<Order> orders = acService.findOrders(identity, resource, OrderStatus.PAYED);
+		return acService.isCancellingEnabled(resource, resourceBeginDate, orders);
+	}
+	
 	@Test
 	public void enableOfferSurveyBackfillsPrepaymentOrders() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pay-24");

@@ -1654,11 +1654,31 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	}
 	
 	@Override
-	public boolean isCancellingEnabled(OLATResource resource, List<Order> orders) {
+	public boolean isCancellingEnabled(OLATResource resource, Date resourceBeginDate, List<Order> orders) {
+		boolean beforeBegin = resourceBeginDate != null && !DateUtils.getStartOfDay(resourceBeginDate).before(new Date());
 		return orders.stream()
 				.flatMap(o -> o.getParts().stream())
 				.flatMap(p -> p.getOrderLines().stream())
-				.anyMatch(line -> resource.equals(line.getOffer().getResource()) && line.isCancellingEnabled());
+				.filter(line -> resource.equals(line.getOffer().getResource()))
+				.anyMatch(line -> isCancellingEnabled(line, beforeBegin));
+	}
+	
+	private boolean isCancellingEnabled(OrderLine line, boolean beforeBegin) {
+		if (isCancellingFixedAtBooking(line.getOffer())) {
+			return line.isCancellingEnabled() && (line.isCancellingAnytime() || beforeBegin);
+		}
+		Offer offer = line.getOffer();
+		return offer.isCancellingEnabled() && (offer.isCancellingAnytime() || beforeBegin);
+	}
+	
+	private boolean isCancellingFixedAtBooking(Offer offer) {
+		List<OfferAccess> offerAccesses = methodManager.getOfferAccess(offer, true);
+		if (offerAccesses.isEmpty()) {
+			offerAccesses = methodManager.getOfferAccess(offer, false);
+		}
+		return offerAccesses.stream()
+				.map(offerAccess -> accessModule.getAccessMethodHandler(offerAccess.getMethod().getType()))
+				.anyMatch(handler -> handler != null && handler.isCancellingFixedAtBooking());
 	}
 
 	@Override
