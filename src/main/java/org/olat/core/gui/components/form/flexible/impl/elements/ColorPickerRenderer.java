@@ -70,18 +70,18 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		if (selectedColor != null) {
 			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_a ")
 					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(selectedColor != null ? selectedColor.cssClass() : "")
-					.append("'></i>");
+					.append("' aria-hidden='true'></i>");
 			sb.append("<span>").append(selectedColor.translatedName()).append("</span>");
 		} else {
 			sb.append("<i class='o_icon ")
-					.append("o_color_background o_color_contrast_border o_color_text_on_background'></i>");
+					.append("o_color_background o_color_contrast_border o_color_text_on_background' aria-hidden='true'></i>");
 			if (StringHelper.containsNonWhitespace(colorPickerEl.getNonSelectedText())) {
 				sb.append("<span>").append(colorPickerEl.getNonSelectedText()).append("</span>");
 			} else {
 				sb.append("<span></span>");
 			}
 		}
-		sb.append("<i class='o_icon o_icon-fw o_icon_caret o_color_picker_icon'></i>");
+		sb.append("<i class='o_icon o_icon-fw o_icon_caret o_color_picker_icon' aria-hidden='true'></i>");
 
 		sb.append("<input type='hidden' id='").append(inputId).append("' name='").append(inputId)
 				.append("' value='")
@@ -161,7 +161,7 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 
 		sb.append("<i class='o_color_picker_colored_area o_icon o_icon_a ")
 				.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(colorCss)
-				.append("'>").append("</i>");
+				.append("' aria-hidden='true'></i>");
 		sb.append("<span>").append(colorName).append("</span>");
 
 		sb.append("</a>");
