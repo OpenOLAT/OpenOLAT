@@ -85,6 +85,7 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.restapi.CourseArchivesWebService;
 import org.olat.course.assessment.restapi.CourseAssessmentModeWebService;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.disclaimer.restapi.CourseDisclaimerWebService;
 import org.olat.course.nodes.cal.CalSecurityCallback;
 import org.olat.course.nodes.cal.CalSecurityCallbackFactory;
 import org.olat.course.nodes.cal.CourseCalendars;
@@ -137,6 +138,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Description:<br>
@@ -147,6 +149,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
  * Initial Date:  27 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Tag(name = "Repo")
 public class CourseWebService {
 
 	private static final Logger log = Tracing.createLoggerFor(CourseWebService.class);
@@ -309,6 +312,20 @@ public class CourseWebService {
 		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		boolean administrator = isManager(request);
 		RemindersWebService service = new RemindersWebService(courseRe, administrator);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
+	/**
+	 * To get the web service for the disclaimer (terms of use and data protection) of a specific course.
+	 *
+	 * @return The web service for the course disclaimer.
+	 */
+	@Path("disclaimer")
+	public CourseDisclaimerWebService getDisclaimerWebService(@Context HttpServletRequest request) {
+		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		boolean administrator = isManager(request);
+		CourseDisclaimerWebService service = new CourseDisclaimerWebService(courseRe, administrator);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}

@@ -840,6 +840,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.CoursePublishTest.class,
 	org.olat.restapi.CoursesInfosTest.class,
 	org.olat.restapi.CourseTest.class,
+	org.olat.restapi.CourseDisclaimerTest.class,
 	org.olat.restapi.CreditPointSystemWebServiceTest.class,
 	org.olat.restapi.CreditPointWalletWebServiceTest.class,
 	org.olat.restapi.CreditPointTransactionWebServiceTest.class,
