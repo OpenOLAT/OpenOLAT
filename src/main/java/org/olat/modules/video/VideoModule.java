@@ -22,6 +22,7 @@ package org.olat.modules.video;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,7 @@ import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.crypto.RandomUtils;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.model.VideoTranscodingMode;
@@ -64,6 +66,8 @@ public class VideoModule extends AbstractSpringModule {
 	private static final String VIDEO_TRANSCODING_SERVICE_URL = "video.transcoding.service.url";
 	private static final String TRANSCODING_RESOLUTIONS = "video.transcoding.resolutions";
 	private static final String PREFERRED_RESOLUTION = "video.transcoding.resolution.preferred";
+	private static final String CALLBACK_SECRET = "transcoder.callback.secret";
+	private static final int CALLBACK_SECRET_BYTES = 32;
 	private static final String MARKER_STYLE_PREFIX = "o_video_marker_";
 
 	@Value("${video.enabled:true}")
@@ -98,6 +102,7 @@ public class VideoModule extends AbstractSpringModule {
 	
 	private int[] transcodingResolutionsArr; //  1080, 720, 480
 	private Integer preferredDefaultResolution;// 720
+	private String callbackSecret;
 
 	@Autowired
 	private VideoHandler videoHandler;
@@ -169,6 +174,8 @@ public class VideoModule extends AbstractSpringModule {
 			transcodingServiceUrl = transcodingServiceUrlObj;
 		}
 		
+		initCallbackSecret();
+
 		String transcodingResolutionsObj = getStringPropertyValue(TRANSCODING_RESOLUTIONS, true);
 		if(StringHelper.containsNonWhitespace(transcodingResolutionsObj)) {
 			transcodingResolutions = transcodingResolutionsObj.replaceAll("\\[|\\]| ", "");
@@ -200,6 +207,30 @@ public class VideoModule extends AbstractSpringModule {
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(VideoSite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(VideoSite.class));
 
+	}
+
+	/**
+	 * Loads the secret that signs and verifies the HMAC token of the transcoder
+	 * callback URLs (notifyResultUrl, notifyStatusUrl), or generates it once on
+	 * first use.
+	 * <p>
+	 * Two cluster nodes that start at the same time with an empty property can
+	 * each generate a secret; the last write to persist wins, and every other
+	 * node reloads it through {@link #initFromChangedProperties()}. A callback
+	 * signed with a secret from this narrow race window fails verification, and
+	 * the job is retried like any other failed job. This risk is accepted: a
+	 * cluster lock around the generation was considered but is not implemented.
+	 */
+	private void initCallbackSecret() {
+		String secretObj = getStringPropertyValue(CALLBACK_SECRET, true);
+		if (StringHelper.containsNonWhitespace(secretObj)) {
+			callbackSecret = secretObj;
+			return;
+		}
+		byte[] secret = new byte[CALLBACK_SECRET_BYTES];
+		RandomUtils.secureRandom().nextBytes(secret);
+		callbackSecret = Base64.getUrlEncoder().withoutPadding().encodeToString(secret);
+		setSecretStringProperty(CALLBACK_SECRET, callbackSecret, true);
 	}
 
 	private void initMode() {
@@ -385,6 +416,16 @@ public class VideoModule extends AbstractSpringModule {
 	public void setTranscodingServiceUrl(String transcodingServiceUrl) {
 		this.transcodingServiceUrl = transcodingServiceUrl;
 		setStringProperty(VIDEO_TRANSCODING_SERVICE_URL, transcodingServiceUrl, true);
+	}
+
+	/**
+	 * @return The secret that signs and verifies the HMAC token of the
+	 *         transcoder callback URLs. Generated once per instance
+	 *         (see {@link #initCallbackSecret()}), not configurable in the
+	 *         administration, never logged in clear text.
+	 */
+	public String getCallbackSecret() {
+		return callbackSecret;
 	}
 
 	public void setVideoTranscodingProfile(String profile) {
