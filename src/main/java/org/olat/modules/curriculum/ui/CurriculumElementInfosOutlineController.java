@@ -89,7 +89,12 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 				row.setParent(keyToRows.get(row.getParentKey()));
 			}
 		}
-		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
+		
+		try {
+			Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
+		} catch (Exception e) {
+			getLogger().error("Error sorting curriculum element: {}", rootElement, e);
+		}
 		
 		Map<Long, Set<Long>> repositoryEntryToCurriculumElementKeys = curriculumService
 				.getRepositoryEntryKeyToCurriculumElementKeys(elements).stream()
