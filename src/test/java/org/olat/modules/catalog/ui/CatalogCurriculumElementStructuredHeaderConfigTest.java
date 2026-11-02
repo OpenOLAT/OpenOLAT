@@ -41,6 +41,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -277,6 +278,42 @@ public class CatalogCurriculumElementStructuredHeaderConfigTest extends OlatTest
 		softly.assertThat(sut.isAdministrativOpenAvailable()).isFalse();
 		softly.assertThat(sut.isAdministrativOpenEnabled()).isFalse();
 		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldGetConfig_cancel() {
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(sutCancel(false, false, 1).isCancelAvailable()).as("cancelling disabled").isFalse();
+		softly.assertThat(sutCancel(true, false, 1).isCancelAvailable()).as("until begin, begin tomorrow").isTrue();
+		softly.assertThat(sutCancel(true, false, 0).isCancelAvailable()).as("until begin, begin today").isFalse();
+		softly.assertThat(sutCancel(true, false, -1).isCancelAvailable()).as("until begin, begin yesterday").isFalse();
+		softly.assertThat(sutCancel(true, false, null).isCancelAvailable()).as("until begin, no begin").isFalse();
+		softly.assertThat(sutCancel(true, true, 1).isCancelAvailable()).as("anytime, begin tomorrow").isTrue();
+		softly.assertThat(sutCancel(true, true, 0).isCancelAvailable()).as("anytime, begin today").isTrue();
+		softly.assertThat(sutCancel(true, true, -1).isCancelAvailable()).as("anytime, begin yesterday").isTrue();
+		softly.assertThat(sutCancel(true, true, null).isCancelAvailable()).as("anytime, no begin").isTrue();
+		softly.assertAll();
+	}
+	
+	private DetailsHeaderConfig sutCancel(boolean cancellingEnabled, boolean cancellingAnytime, Integer beginInDays) {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(USER_PREFIX);
+		CurriculumElement curriculumElement = createCurriculumElement(CurriculumElementStatus.active);
+		if (beginInDays != null) {
+			curriculumElement.setBeginDate(DateUtils.addDays(new Date(), beginInDays.intValue()));
+			curriculumElement = curriculumService.updateCurriculumElement(JunitTestHelper.getDefaultActor(), curriculumElement);
+		}
+		
+		Offer offer = acService.createOffer(curriculumElement.getResource(), random());
+		offer.setCancellingEnabled(cancellingEnabled);
+		offer.setCancellingAnytime(cancellingAnytime);
+		offer = acService.save(offer);
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		OfferAccess offerAccess = acService.saveOfferAccess(acService.createOfferAccess(offer, method));
+		acService.createAndSaveOrder(identity, offerAccess, OrderStatus.PAYED, null, null, null);
+		curriculumService.addMember(curriculumElement, identity, CurriculumRoles.participant, identity);
+		dbInstance.commitAndCloseSession();
+		
+		return sut(curriculumElement, identity);
 	}
 	
 	private DetailsHeaderConfig sut(boolean participant, boolean coach, boolean owner, boolean reservationAvailable,

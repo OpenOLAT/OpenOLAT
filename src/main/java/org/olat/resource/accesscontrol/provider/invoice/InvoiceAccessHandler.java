@@ -70,6 +70,11 @@ public class InvoiceAccessHandler implements AccessMethodHandler {
 	public String getType() {
 		return METHOD_TYPE;
 	}
+	
+	@Override
+	public boolean isCancellingFixedAtBooking() {
+		return true;
+	}
 
 	@Override
 	public String getMethodName(Locale locale) {

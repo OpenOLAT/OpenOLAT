@@ -429,7 +429,7 @@ public interface ACService {
 	
 	public Date getBeginDate(OLATResource resource);
 	
-	public boolean isCancellingEnabled(OLATResource resource, List<Order> orders);
+	public boolean isCancellingEnabled(OLATResource resource, Date resourceBeginDate, List<Order> orders);
 
 	public Price getCancellationFee(OLATResource recource, Date resourceBeginDate, List<Order> orders);
 	

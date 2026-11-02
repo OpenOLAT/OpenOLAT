@@ -41,6 +41,8 @@ public interface OrderLine {
 	
 	public boolean isCancellingEnabled();
 
+	public boolean isCancellingAnytime();
+	
 	public Price getCancellationFee();
 
 	public Integer getCancellingFeeDeadlineDays();

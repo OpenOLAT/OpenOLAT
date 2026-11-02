@@ -140,6 +140,8 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	private PriceImpl price;
 	@Column(name="cancelling_enabled", nullable=false, insertable=true, updatable=true)
 	private boolean cancellingEnabled;
+	@Column(name="cancelling_anytime", nullable=false, insertable=true, updatable=true)
+	private boolean cancellingAnytime;
 	@Embedded
 	@AttributeOverride(name="amount", column = @Column(name="cancelling_fee_amount"))
 	@AttributeOverride(name="currencyCode", column = @Column(name="cancelling_fee_currency_code"))
@@ -421,6 +423,16 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 		this.cancellingEnabled = cancellingEnabled;
 	}
 
+	@Override
+	public boolean isCancellingAnytime() {
+		return cancellingAnytime;
+	}
+	
+	@Override
+	public void setCancellingAnytime(boolean cancellingAnytime) {
+		this.cancellingAnytime = cancellingAnytime;
+	}
+	
 	@Override
 	public Price getCancellingFee() {
 		return cancellingFee;

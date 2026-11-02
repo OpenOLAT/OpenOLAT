@@ -320,7 +320,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		} else {
 			tableCtr.loadAll();
 		}
-		stackedPanel.pushController("Results", tableCtr);
+		stackedPanel.pushController(translate("search.results"), tableCtr);
 	}
 
 	private void doPushList(UserRequest ureq) {
@@ -336,7 +336,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		listenTo(tableCtr);
 		
 		tableCtr.loadModel(identities);
-		stackedPanel.pushController("Results", tableCtr);
+		stackedPanel.pushController(translate("search.results"), tableCtr);
 	}
 	
 	private void doPushSearch(UserRequest ureq, boolean withTableSearch) {
@@ -354,7 +354,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 						showStatusFilters, showOrganisationsFilters, withTableSearch));
 		listenTo(tableCtr);
 		tableCtr.loadModel(identityQueryParams);
-		stackedPanel.pushController("Results", tableCtr);
+		stackedPanel.pushController(translate("search.results"), tableCtr);
 
 		if(searchFormCtrl != null) {
 			ContextEntry currentEntry = getWindowControl().getBusinessControl().getCurrentContextEntry();

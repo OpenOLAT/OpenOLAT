@@ -81,6 +81,10 @@ public interface Offer extends OfferRef, CreateInfo {
 
 	public void setCancellingEnabled(boolean cancellingEnabled);
 
+	public boolean isCancellingAnytime();
+	
+	public void setCancellingAnytime(boolean cancellingAnytime);
+	
 	public Price getCancellingFee();
 
 	public void setCancellingFee(Price cancellingFee);

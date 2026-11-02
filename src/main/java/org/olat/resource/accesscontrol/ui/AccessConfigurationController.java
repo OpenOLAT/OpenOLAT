@@ -1275,8 +1275,13 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 
 		public String getCancelable() {
-			if (offer == null || !(handler instanceof InvoiceAccessHandler) || !offer.isCancellingEnabled()) {
+			if (offer == null || !offer.isCancellingEnabled()) {
 				return null;
+			}
+			if (!(handler instanceof InvoiceAccessHandler)) {
+				return offer.isCancellingAnytime()
+						? translate("cancelling.period.anytime")
+						: translate("cancelling.period.begin");
 			}
 			Price fee = offer.getCancellingFee();
 			if (fee == null || fee.isEmpty()) {

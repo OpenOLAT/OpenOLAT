@@ -87,6 +87,8 @@ public class OrderLineImpl implements Persistable, OrderLine {
 	private PriceImpl totalPrice;
 	@Column(name="cancelling_enabled", nullable=false, insertable=true, updatable=true)
 	private boolean cancellingEnabled;
+	@Column(name="cancelling_anytime", nullable=false, insertable=true, updatable=true)
+	private boolean cancellingAnytime;
 	@Embedded
     @AttributeOverride(name="amount", column = @Column(name="cancellation_fee_amount"))
     @AttributeOverride(name="currencyCode", column = @Column(name="cancellation_currency_code"))
@@ -151,6 +153,15 @@ public class OrderLineImpl implements Persistable, OrderLine {
 		this.cancellingEnabled = cancellingEnabled;
 	}
 
+	@Override
+	public boolean isCancellingAnytime() {
+		return cancellingAnytime;
+	}
+	
+	public void setCancellingAnytime(boolean cancellingAnytime) {
+		this.cancellingAnytime = cancellingAnytime;
+	}
+	
 	@Override
 	public Price getCancellationFee() {
 		return cancellationFee;

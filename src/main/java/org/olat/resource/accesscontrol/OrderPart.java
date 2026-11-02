@@ -38,6 +38,8 @@ public interface OrderPart {
 	
 	public boolean isCancellingEnabled();
 
+	public boolean isCancellingAnytime();
+	
 	public Price getCancellationFees();
 
 }

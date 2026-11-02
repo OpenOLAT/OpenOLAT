@@ -29,7 +29,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public class CatalogInfo {
 
 	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, false, false, null, null, null,
-			null, null, null, null, false, null, null, null, null, null, null, null, true, null, null);
+			null, null, null, null, false, null, null, null, null, null, null, null, true, null, null, false);
 	public static final TrueStatusEvaluator TRUE_STATUS_EVALUATOR = new TrueStatusEvaluator();
 
 	private final boolean catalogSupported;
@@ -55,6 +55,7 @@ public class CatalogInfo {
 	private final boolean showQRCode;
 	private final SortPriorityProvider sortPriorityProvider;
 	private final OrderFormProvider orderFormProvider;
+	private final boolean cancellingSupported;
 
 	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, boolean publishedGroupsSupported,
 			boolean autoBookingSupported, boolean showDetails, String detailsLabel, String details,
@@ -62,7 +63,8 @@ public class CatalogInfo {
 			SelectionValues availableStatuses, Set<String> defaultStatuses, boolean fullyBooked,
 			Date startDate, Date endDate, String editBusinessPath, String editLabel,
 			String catalogBusinessPath, String webCatalogBusinessPath, Collection<TaxonomyLevel> microsites,
-			boolean showQRCode, SortPriorityProvider sortPriorityProvider, OrderFormProvider orderFormProvider) {
+			boolean showQRCode, SortPriorityProvider sortPriorityProvider, OrderFormProvider orderFormProvider,
+			boolean cancellingSupported) {
 		this.catalogSupported = catalogSupported;
 		this.webCatalogSupported = webCatalogSupported;
 		this.publishedGroupsSupported = publishedGroupsSupported;
@@ -86,6 +88,7 @@ public class CatalogInfo {
 		this.showQRCode = showQRCode;
 		this.sortPriorityProvider = sortPriorityProvider;
 		this.orderFormProvider = orderFormProvider;
+		this.cancellingSupported = cancellingSupported;
 	}
 
 	public boolean isCatalogSupported() {
@@ -180,6 +183,10 @@ public class CatalogInfo {
 		return orderFormProvider;
 	}
 
+	public boolean isCancellingSupported() {
+		return cancellingSupported;
+	}
+	
 	public interface CatalogStatusEvaluator {
 
 		boolean isVisibleStatusNoPeriod();

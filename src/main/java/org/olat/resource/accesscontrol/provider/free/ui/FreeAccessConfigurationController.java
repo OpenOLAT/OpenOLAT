@@ -64,6 +64,11 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 	}
 
 	@Override
+	protected boolean isCancellingSupported() {
+		return true;
+	}
+	
+	@Override
 	protected void initCustomMembershipElements(FormItemContainer formLayout) {
 		if (catalogInfo.isAutoBookingSupported()) {
 			String[] autoValues = new String[]{ translate("auto.booking.option") };
