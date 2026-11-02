@@ -173,7 +173,11 @@ public class SharedFolderManager {
 			String filename = file.getFileName().toString();
 			if(RepositoryEntryImportExport.PROPERTIES_FILE.equals(filename)) {
 				importExportData = RepositoryEntryImportExport.readFromXml(file);
-				sharedFolder = SharedFolderFileResource.TYPE_NAME.equals(importExportData.getResourceType());
+				if(importExportData != null) {
+					sharedFolder = SharedFolderFileResource.TYPE_NAME.equals(importExportData.getResourceType());
+				} else {
+					return FileVisitResult.TERMINATE;
+				}
 			}
 			return sharedFolder ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
 		}

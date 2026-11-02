@@ -47,6 +47,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.commons.services.video.MovieService;
+import org.olat.core.commons.services.video.TranscoderHelper;
 import org.olat.core.commons.services.video.model.TranscoderJob;
 import org.olat.core.commons.services.video.model.TranscoderJobResult;
 import org.olat.core.commons.services.video.model.TranscoderJobStatus;
@@ -128,6 +129,9 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
+	@Autowired
+	private TranscoderHelper transcoderHelper;
+
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
@@ -145,9 +149,9 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			} else if (typeUri.startsWith(VIDEO_TRANSCODING_TYPE)) {
 				handleVideoTranscoding(request, response, typeUri.substring(VIDEO_TRANSCODING_TYPE.length()));
 			} else if (typeUri.startsWith(TranscoderJob.NOTIFY_RESULT_COMMAND)) {
-				handleNotifyResult(request, response);
+				handleNotifyResult(request, response, extractCallbackToken(typeUri, TranscoderJob.NOTIFY_RESULT_COMMAND));
 			} else if (typeUri.startsWith(TranscoderJob.NOTIFY_STATUS_COMMAND)) {
-				handleNotifyStatus(request, response);
+				handleNotifyStatus(request, response, extractCallbackToken(typeUri, TranscoderJob.NOTIFY_STATUS_COMMAND));
 			} else {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			}
@@ -194,6 +198,23 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 
 		log.warn("Get original [uuid={}]: No file found.", uuid);
 		response.sendError(HttpServletResponse.SC_NOT_FOUND);
+	}
+
+	/**
+	 * Extracts the callback token from the path segment that follows the
+	 * {@code notifyResult} or {@code notifyStatus} command, e.g. {@code <token>}
+	 * in {@code notifyResult/<token>}. OO-9999, WP3.
+	 *
+	 * @param typeUri The dispatched URI, without the dispatcher's own prefix
+	 * @param command {@link TranscoderJob#NOTIFY_RESULT_COMMAND} or {@link TranscoderJob#NOTIFY_STATUS_COMMAND}
+	 * @return The token, or null if the path carries none
+	 */
+	private static String extractCallbackToken(String typeUri, String command) {
+		String remainder = typeUri.substring(command.length());
+		if (remainder.length() <= 1 || remainder.charAt(0) != '/') {
+			return null;
+		}
+		return remainder.substring(1);
 	}
 
 	private static boolean isValidDashlessUuid(String dashlessUuid) {
@@ -246,7 +267,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		ServletUtil.serveResource(request, response, masterMediaResource);
 	}
 
-	private void handleNotifyStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	private void handleNotifyStatus(HttpServletRequest request, HttpServletResponse response, String token) throws IOException {
 		String method = request.getMethod();
 		if (!"POST".equalsIgnoreCase(method)) {
 			log.warn("Job status: Method not allowed: {}", method);
@@ -255,15 +276,9 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		}
 
 		TranscoderJobStatus status = readStatus(request.getInputStream());
-		if (!StringHelper.containsNonWhitespace(status.getUuid())) {
-			log.warn("Job status: Invalid UUID: {}", status.getUuid());
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-			return;
-		}
-
-		if (status.getType() == null) {
-			log.warn("Job status: type missing");
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		if (!transcoderHelper.verifyCallbackToken(token, status.getType(), status.getUuid(), status.getReferenceId())) {
+			log.warn("Job status: Missing or invalid callback token [remoteAddr={}]", request.getRemoteAddr());
+			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 		
@@ -278,12 +293,6 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	}
 
 	private void handleNotifyStatus(HttpServletResponse response, TranscoderJobStatus status) throws IOException {
-		if (status.getReferenceId() == null) {
-			log.warn("Job status: 'referenceId' missing");
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-			return;
-		}
-
 		Float percentage = status.getStatus();
 		if (percentage == null) {
 			log.warn("Job status: 'status' missing");
@@ -301,7 +310,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		}
 	}
 	
-	private void handleNotifyResult(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	private void handleNotifyResult(HttpServletRequest request, HttpServletResponse response, String token) throws IOException {
 		String method = request.getMethod();
 		if (!"POST".equalsIgnoreCase(method)) {
 			log.warn("Conversion job result: Method not allowed: {}", method);
@@ -310,15 +319,9 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		}
 		
 		TranscoderJobResult result = readResult(request.getInputStream());
-		if (!StringHelper.containsNonWhitespace(result.getUuid())) {
-			log.warn("Conversion job result: uuid missing");
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-			return;
-		}
-		
-		if (result.getType() == null) {
-			log.warn("Conversion job result: type missing");
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		if (!transcoderHelper.verifyCallbackToken(token, result.getType(), result.getUuid(), result.getReferenceId())) {
+			log.warn("Conversion job result: Missing or invalid callback token [remoteAddr={}]", request.getRemoteAddr());
+			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 
@@ -335,12 +338,6 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 	private void handleNotifyResult(HttpServletResponse response, TranscoderJobResult result) throws IOException {
 		if (!resultHasDataUrl(result)) {
 			log.warn("Conversion job result: no data");
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-			return;
-		}
-		
-		if (result.getReferenceId() == null) {
-			log.warn("Conversion job result: 'referenceId' missing");
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
