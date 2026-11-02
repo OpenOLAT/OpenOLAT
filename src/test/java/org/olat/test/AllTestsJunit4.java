@@ -535,6 +535,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.video.manager.VideoXStreamTest.class,
 	org.olat.modules.video.manager.VideoMetaXStreamTest.class,
 	org.olat.modules.video.manager.VideoManagerTest.class,
+	org.olat.modules.video.manager.VideoManagerImplTest.class,
 	org.olat.modules.video.manager.VideoTaskSessionDAOTest.class,
 	org.olat.modules.video.manager.VideoTaskSegmentSelectionDAOTest.class,
 	org.olat.modules.video.manager.VideoAssessmentServiceTest.class,
