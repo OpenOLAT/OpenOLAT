@@ -71,6 +71,10 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		if (StringHelper.containsNonWhitespace(cmp.getTitle())) {
 			sb.append("title=\"").append(cmp.getTitle()).append("\" ");
 		}
+		if (StringHelper.isCssColor(cmp.getColor())) {
+			sb.append("style=\"background-color: ").append(cmp.getColor().trim()).append("; color:#fff\" ");
+		}
+		
 		if(StringHelper.containsNonWhitespace(cmp.getAriaLabelledBy())) {
 			sb.append("aria-labelledby=\"").append(cmp.getAriaLabelledBy()).append("\" ");
 		}
@@ -95,6 +99,7 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 			if(!cmp.isOn()) {
 				sb.append("<i class=\"o_icon o_icon_toggle\"></i> ");
 			}
+			renderIconCssClass(cmp, sb);
 			String onText = cmp.getToggleOnText();
 			sb.append("<span class=\"o_on\">").append(onText, "&nbsp;&nbsp;", StringHelper.containsNonWhitespace(onText)).append("</span>");
 			String offText = cmp.getToggleOffText();
@@ -108,7 +113,9 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 			} else {
 				sb.append("<i class=\"o_icon o_icon_toggle_check_off\"></i>");
 			}
+			renderIconCssClass(cmp, sb);
 		} else if (Presentation.CHECK_CUSTOM == cmp.getPresentation()) {
+			renderIconCssClass(cmp, sb);
 			if (cmp.isOn()) {
 				sb.append(cmp.getToggleOnText());
 			} else {
@@ -125,6 +132,7 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 			} else if (!cmp.isOn() && StringHelper.containsNonWhitespace(cmp.getIconOffCss())) {
 				sb.append("<i class=\"").append(cmp.getIconOffCss()).append("\"></i>");
 			}
+			renderIconCssClass(cmp, sb);
 			if (StringHelper.containsNonWhitespace(cmp.getToggleOnText()) || StringHelper.containsNonWhitespace(cmp.getToggleOffText())) {
 				// Both texts are rendered to keep the same width of the button.
 				sb.append("<div class=\"o_toggle_button_text\">");
@@ -146,6 +154,12 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		String text = cmp.getText();
 		if(StringHelper.containsNonWhitespace(text)) {
 			sb.append(" <span class='o_toggle_block'>").append(text).append("</span>");
+		}
+	}
+	
+	private void renderIconCssClass(FormToggleComponent cmp, StringOutput sb) {
+		if(StringHelper.containsNonWhitespace(cmp.getIconCssClass())) {
+			sb.append("<i class=\"o_icon ").append(cmp.getIconCssClass()).append("\"> </i> ");
 		}
 	}
 	

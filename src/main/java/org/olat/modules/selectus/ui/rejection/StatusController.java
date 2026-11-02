@@ -24,17 +24,16 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -51,13 +50,14 @@ import org.olat.modules.selectus.TaggingService;
 import org.olat.modules.selectus.model.Category;
 import org.olat.modules.selectus.model.mail.EmailVariables;
 import org.olat.modules.selectus.ui.PositionController;
-import org.olat.modules.selectus.ui.comparator.TextBoxItemComparator;
+import org.olat.modules.selectus.ui.application.ApplicationTagInfoComparator;
+import org.olat.modules.selectus.ui.application.ApplicationTagInfoImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 13 nov. 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class StatusController extends StepFormBasicController {
@@ -65,7 +65,7 @@ public class StatusController extends StepFormBasicController {
 	private TextElement statusCommentEl;
 	private DateChooser statusDateEl;
 	private SingleSelection changeStatusEl;
-	private TextBoxListElement categoriesEl;
+	private TagSelection categoriesEl;
 	
 	private final EmailVariables emailVar;
 	private final RecruitingPositionSecurityCallback secCallback;
@@ -119,30 +119,25 @@ public class StatusController extends StepFormBasicController {
 		statusCommentEl.setVisible(false);
 		
 		if(recruitingModule.isCategoriesEnabledFor(emailVar.getPosition())) {
-			categoriesEl = uifactory.addTextBoxListElement("add.categories", "add.categories", null,
-					new ArrayList<>(), formLayout, getTranslator());
+			List<TagInfo> allCategories = getAllCategories();
+			categoriesEl = uifactory.addTagSelection("add.categories", "add.categories", formLayout, getWindowControl(), allCategories);
 			categoriesEl.setHelpText(translate("categories.plural.hint"));
-			categoriesEl.setAllowDuplicates(false);
-			categoriesEl.setAllowNewValues(secCallback.canEditPositionCategories());
-
-			List<TextBoxItem> allCategoryItems = getAllCategories();
-			categoriesEl.setAutoCompleteContent(allCategoryItems);
+			categoriesEl.setCanCreateNewTags(secCallback.canEditPositionCategories());
 		}
 	}
 	
-	private List<TextBoxItem> getAllCategories() {
-		List<TextBoxItem> items = new ArrayList<>();
+	private List<TagInfo> getAllCategories() {
+		List<TagInfo> items = new ArrayList<>();
 		List<Category> allCategories = taggingService.getAvailableCategoriesFor(emailVar.getPosition());
 		if(secCallback.canEditApplicationAdministrativeCategories()) {
 			for(Category category:allCategories) {
-				String name = "a:".concat(category.getName());
-				items.add(new TextBoxItemImpl(name, name, category.getColor(), true, category));
+				items.add(new ApplicationTagInfoImpl(category, true, true));
 			}
 		}
 		for(Category category:allCategories) {
-			items.add(new TextBoxItemImpl(category.getName(), category.getName(), category.getColor(), true, category));
+			items.add(new ApplicationTagInfoImpl(category, false, true));
 		}
-		Collections.sort(items, new TextBoxItemComparator());
+		Collections.sort(items, new ApplicationTagInfoComparator());
 		return items;
 	}
 	
@@ -241,7 +236,7 @@ public class StatusController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(categoriesEl != null) {
-			emailVar.setCategoriesToAdd(categoriesEl.getValueList());
+			emailVar.setCategoriesToAdd(categoriesEl.getDisplayNames());
 		}
 		if(changeStatusEl.isOneSelected() && !"-".equals(changeStatusEl.getSelectedKey())) {
 			ApplicationStatus status = ApplicationStatus.valueOf(changeStatusEl.getSelectedKey());

@@ -23,21 +23,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -55,7 +55,6 @@ import org.olat.modules.selectus.model.Position;
 import org.olat.modules.selectus.model.RecruitingAuditLog.ActionTarget;
 import org.olat.modules.selectus.model.category.ApplicationCategoryInfos;
 import org.olat.modules.selectus.ui.PositionController;
-import org.olat.modules.selectus.ui.comparator.TextBoxItemComparator;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -74,7 +73,7 @@ public class ApplicationEditStatusController extends FormBasicController {
 	private SingleSelection statusElement;
 	private DateChooser statusDateEl;
 	private TextElement statusCommentEl;
-	private TextBoxListElement committeeCategoriesEl;
+	private TagSelection committeeCategoriesEl;
 	
 	private Application application;
 	private final boolean editableStatus;
@@ -170,11 +169,13 @@ public class ApplicationEditStatusController extends FormBasicController {
 		updateStatusCommentPlaceholder();
 
 		if(categoriesEnabled) {
-			List<TextBoxItem> currentCategoriesNames = getCategories();
-			Collections.sort(currentCategoriesNames, new TextBoxItemComparator());
-			committeeCategoriesEl = uifactory.addTextBoxListElement("committee.categories", "categories", null, currentCategoriesNames, formLayout, getTranslator());
+			List<TagInfo> currentCategoriesNames = getCategories();
+			List<TagInfo> allCategories = getAllCategories(currentCategoriesNames);
+			Collections.sort(currentCategoriesNames, new ApplicationTagInfoComparator());
+			committeeCategoriesEl = uifactory.addTagSelection("committee.categories", "categories", formLayout, getWindowControl(), allCategories);
 			committeeCategoriesEl.setEnabled(secCallback.canEditApplicationCategories());
 			committeeCategoriesEl.setElementCssClass("o_app_details_categories");
+			committeeCategoriesEl.setSelectedTags(currentCategoriesNames);
 			
 			if(canEditCategories) {
 				String hint = translate("add.categories.details.hint");
@@ -186,40 +187,39 @@ public class ApplicationEditStatusController extends FormBasicController {
 				}
 				hint += "<br>" + translate("remove.categories.details.hint");
 				committeeCategoriesEl.setHelpText(hint);
-				committeeCategoriesEl.setAllowDuplicates(false);
-				committeeCategoriesEl.setAllowNewValues(secCallback.canEditApplicationCategories());
-				List<TextBoxItem> allItems = getAllCategories();
-				committeeCategoriesEl.setAutoCompleteContent(allItems);
+				committeeCategoriesEl.setCanCreateNewTags(secCallback.canEditPositionCategories());
 			}
 		}
 	}
 	
-	private List<TextBoxItem> getAllCategories() {
-		List<TextBoxItem> items = new ArrayList<>();
-		if(secCallback.canEditApplicationCategories() || secCallback.canEditApplicationAdministrativeCategories()) {
-			List<Category> allCategories = taggingService.getAvailableCategoriesFor(position);
-			if(secCallback.canEditApplicationAdministrativeCategories()) {
-				for(Category category:allCategories) {
-					String name = "a:".concat(category.getName());
-					items.add(new TextBoxItemImpl(name, name, category.getColor(), true, category));
-				}
-			}
+	private List<TagInfo> getAllCategories(List<TagInfo> currentCategories) {
+		List<TagInfo> items = new ArrayList<>();
+		List<Category> allCategories = taggingService.getAvailableCategoriesFor(position);
+		if(secCallback.canSeeApplicationAdministrativeCategories()) {
 			for(Category category:allCategories) {
-				items.add(new TextBoxItemImpl(category.getName(), category.getName(), category.getColor(), true, category));
+				items.add(new ApplicationTagInfoImpl(category, true, secCallback.canEditApplicationAdministrativeCategories()));
 			}
 		}
-		Collections.sort(items, new TextBoxItemComparator());
+		for(Category category:allCategories) {
+			items.add(new ApplicationTagInfoImpl(category, false, secCallback.canEditApplicationCategories()));
+		}
+		// categories of the application which are not available anymore
+		Set<Long> keys = items.stream().map(TagInfo::getKey).collect(Collectors.toSet());
+		for(TagInfo currentCategory:currentCategories) {
+			if(keys.add(currentCategory.getKey())) {
+				items.add(currentCategory);
+			}
+		}
+		Collections.sort(items, new ApplicationTagInfoComparator());
 		return items;
 	}
 	
-	private List<TextBoxItem> getCategories() {
+	private List<TagInfo> getCategories() {
 		List<ApplicationCategoryInfos> currentCategories = taggingService.getApplicationCategories(position, application,
 				secCallback.canSeeApplicationAdministrativeCategories());
 		boolean canEditAdministrative = secCallback.canEditApplicationAdministrativeCategories();
 		return currentCategories.stream()
-				.map(cat -> new TextBoxItemImpl(cat.tagName(), cat.tagName(), cat.getCategory().getColor(),
-						canEditAdministrative || !cat.isAdministrative(),
-						cat))
+				.map(cat -> new ApplicationTagInfoImpl(cat, true, canEditAdministrative || !cat.isAdministrative()))
 				.collect(Collectors.toList());
 	}
 
@@ -297,7 +297,7 @@ public class ApplicationEditStatusController extends FormBasicController {
 
 		//sync categories
 		if(committeeCategoriesEl != null && committeeCategoriesEl.isEnabled()) {
-			List<String> selectedCategories = committeeCategoriesEl.getValueList();
+			List<String> selectedCategories = committeeCategoriesEl.getDisplayNames();
 			taggingService.setCategories(app, selectedCategories, secCallback.canEditApplicationAdministrativeCategories(),
 					position, getIdentity(), getLocale());
 		}

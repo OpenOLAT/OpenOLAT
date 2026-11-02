@@ -79,6 +79,14 @@ public interface FormToggle extends FormItem {
 	
 	public void setPresentation(Presentation presentation);
 	
+	/**
+	 * 
+	 * @param color CSS compatible color
+	 */
+	public void setColor(String color);
+	
+	public void setIconCssClass(String iconCssColor);
+	
 	public enum Presentation { SWITCH, CHECK, CHECK_CUSTOM, BUTTON_LARGE, BUTTON, BUTTON_SMALL, BUTTON_XSMALL }
 	
 }

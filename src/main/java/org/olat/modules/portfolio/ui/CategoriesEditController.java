@@ -19,27 +19,24 @@
  */
 package org.olat.modules.portfolio.ui;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.ui.CategoryInfos;
+import org.olat.modules.portfolio.PortfolioService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Reusable controller to show the list of categories / tags and edit them with
@@ -52,22 +49,17 @@ import org.olat.modules.ceditor.Category;
  */
 public class CategoriesEditController extends FormBasicController {
 	
-	private TextBoxListElement categoriesEl;
 	private FormLink editLink;
-	private FormSubmit saveButton;
+	private TagSelection categoriesEl;
 
-	List<Category> categories;
-	
-	private List<TextBoxItem> categoriesNames = new ArrayList<>();
-	private Map<String,Category> categoriesMap = new HashMap<>();
+	private List<CategoryInfos> categories;
+
+	@Autowired
+	private PortfolioService portfolioService;
 	
 	CategoriesEditController(UserRequest ureq, WindowControl wControl, Form mainForm, List<Category> categories) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "categories_edit", mainForm);
-		this.categories = categories;
-		for(Category category:categories) {
-			categoriesNames.add(new TextBoxItemImpl(category.getName(), category.getName()));
-			categoriesMap.put(category.getName(), category);
-		}
+		this.categories = CategoryInfos.valueOf(categories, portfolioService.getOwnedCategories(getIdentity()));
 		initForm(ureq);
 		/* we add domID to categories_edit.html to reduce DIV count */
 		flc.getFormItemComponent().setDomReplacementWrapperRequired(false);
@@ -77,25 +69,15 @@ public class CategoriesEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_pf_edit_entry_tags_form");
 		
-		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categoriesNames, formLayout, getTranslator());
+		categoriesEl = uifactory.addTagSelection("categories", "categories", formLayout, getWindowControl(), categories);
 		categoriesEl.setHelpText(translate("categories.hint"));
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
-		categoriesEl.setAllowDuplicates(false);
-		categoriesEl.setElementCssClass("o_block_inline");
-		categoriesEl.getComponent().setSpanAsDomReplaceable(true);
-		categoriesEl.setIcon("o_icon_tags");
-		categoriesEl.setShowSaveButton(true);
-		categoriesEl.setLabel("categories", null);
-		categoriesEl.setShowInlineLabel(true);
-		categoriesEl.setIconTitleKey("categories");
+		categoriesEl.addActionListener(FormEvent.ONCHANGE);
+		categoriesEl.setDirtyCheck(false);
 		
 		editLink = uifactory.addFormLink("edit", "edit", "edit", null, formLayout, Link.LINK);
 		editLink.setCustomEnabledLinkCSS("o_button_textstyle");
 		editLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
-		
-		saveButton = uifactory.addFormSubmitButton("save", formLayout);
-		saveButton.setVisible(false);
-		saveButton.setElementCssClass("btn-xs");
 		
 		// on init set to read-only
 		initFormEditableState(false);
@@ -110,9 +92,8 @@ public class CategoriesEditController extends FormBasicController {
 	private void initFormEditableState(boolean editable) {
 		categoriesEl.setEnabled(editable);
 		editLink.setVisible(!editable);
-		saveButton.setVisible(editable);
 		// Special label when no categories are there
-		if (categoriesEl.getValueList().isEmpty()) {
+		if (categoriesEl.getDisplayNames().isEmpty()) {
 			editLink.setI18nKey("add");			
 		} else {
 			editLink.setI18nKey("edit");
@@ -149,6 +130,6 @@ public class CategoriesEditController extends FormBasicController {
 	 * @return The list of categories as visually configured in the box
 	 */
 	public List<String> getUpdatedCategories() {
-		return categoriesEl.getValueList();
+		return categoriesEl.getDisplayNames();
 	}
 }

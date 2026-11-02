@@ -32,6 +32,17 @@ public interface TagInfo extends Tag {
 	 * @return Long value about the usage
 	 */
 	public Long getCount();
+	
+	/** get an optional color
+	 * @return Color in CSS compatible format
+	 */
+	public default String getColor() {
+		return null;
+	}
+	
+	public default String getIconCssClass() {
+		return null;
+	}
 
 	/**
 	 * information if the tag is selected or not
@@ -45,4 +56,11 @@ public interface TagInfo extends Tag {
 	 */
 	public void setSelected(boolean selected);
 	
+	/**
+	 * true if the tag can be selected or unselected
+	 * @return true/false
+	 */
+	public default boolean isEditable() {
+		return true;
+	}
 }

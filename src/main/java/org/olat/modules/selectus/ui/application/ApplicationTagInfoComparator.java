@@ -17,40 +17,40 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.selectus.ui.comparator;
+package org.olat.modules.selectus.ui.application;
 
 import java.util.Comparator;
 
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
+import org.olat.core.commons.services.tag.TagInfo;
 
 /**
  * 
- * Initial date: 14 mars 2024<br>
+ * Initial date: 29 oct. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TextBoxItemComparator implements Comparator<TextBoxItem> {
+public class ApplicationTagInfoComparator implements Comparator<TagInfo> {
 	
 	@Override
-	public int compare(TextBoxItem o1, TextBoxItem o2) {
+	public int compare(TagInfo o1, TagInfo o2) {
 		if(o1 == null || o2 == null) {
 			return compareNulls(o1, o2);
 		}
 
-		String l1 = o1.getLabel();
-		String l2 = o2.getLabel();
+		String l1 = o1.getDisplayName();
+		String l2 = o2.getDisplayName();
 		if(l1 == null || l2 == null) {
 			return compareNulls(l1, l2);
 		}
 		
 		int c = l1.compareToIgnoreCase(l2);
 		if(c == 0) {
-			String v1 = o1.getValue();
-			String v2 = o2.getValue();
+			Long v1 = o1.getKey();
+			Long v2 = o2.getKey();
 			if(v1 == null || v2 == null) {
 				c = compareNulls(v1, v2);
 			} else {
-				c = v1.compareToIgnoreCase(v2);
+				c = v1.compareTo(v2);
 			}
 		}
 		return c;

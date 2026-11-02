@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Section;
@@ -48,7 +47,7 @@ public class PortfolioImportEntriesContext {
 	private String newBinderDescription;
 	private File newBinderImage;
 	private String newBinderImageName;
-	private List<TextBoxItem> newBinderCategories = new ArrayList<>();
+	private List<String> newBinderCategories = new ArrayList<>();
 	
 	private Section currentSection;
 	private String newSectionTitle;
@@ -159,11 +158,11 @@ public class PortfolioImportEntriesContext {
 		this.newBinderImageName = newBinderImageName;
 	}
 	
-	public List<TextBoxItem> getNewBinderCategories() {
+	public List<String> getNewBinderCategories() {
 		return newBinderCategories;
 	}
 	
-	public void setNewBinderCategories(List<TextBoxItem> newBinderCategories) {
+	public void setNewBinderCategories(List<String> newBinderCategories) {
 		this.newBinderCategories = newBinderCategories;
 	}
 }

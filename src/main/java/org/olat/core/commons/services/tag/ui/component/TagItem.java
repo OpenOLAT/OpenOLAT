@@ -34,6 +34,9 @@ public class TagItem {
 	private String displayValue;
 	private long count;
 	private boolean selected;
+	private boolean editable = true;
+	private String color;
+	private String iconCssClass;
 	private FormLink link;
 	private FormToggle toggle;
 	
@@ -69,6 +72,30 @@ public class TagItem {
 		this.selected = selected;
 	}
 	
+	public boolean isEditable() {
+		return editable;
+	}
+
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
+	}
+	
+	public String getIconCssClass() {
+		return iconCssClass;
+	}
+
+	public void setIconCssClass(String iconCssClass) {
+		this.iconCssClass = iconCssClass;
+	}
+
 	public FormLink getLink() {
 		return link;
 	}
