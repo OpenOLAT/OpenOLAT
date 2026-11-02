@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
@@ -83,8 +82,6 @@ public class UserProfileInfoController extends UserInfoController {
 	private UserManager userManager;
 	@Autowired
 	private OrganisationService organisationService;
-	@Autowired
-	private BaseSecurity securityManager;
 
 	public UserProfileInfoController(UserRequest ureq, WindowControl wControl,
 									 UserInfoProfileConfig profileConfig, PortraitUser portraitUser,
@@ -205,7 +202,7 @@ public class UserProfileInfoController extends UserInfoController {
 	}
 
 	private void addUsername(FormLayoutContainer itemsCont) {
-		String name = securityManager.findAuthenticationName(identity);
+		String name = identity.getUser().getNickName();
 		uifactory.addStaticTextElement("username", "user.username", name, itemsCont);
 	}
 
