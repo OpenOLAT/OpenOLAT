@@ -43,6 +43,10 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
+import org.olat.course.config.CourseConfigLockedException;
+import org.olat.course.disclaimer.model.CourseDisclaimerError;
+import org.olat.course.disclaimer.model.CourseDisclaimerSettings;
+import org.olat.course.disclaimer.model.CourseDisclaimerSettings.Disclaimer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -269,5 +273,217 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertFalse(courseDisclaimerManager.hasAnyConsent(repositoryEntry));
+	}
+	
+	@Test
+	public void getSettings() {
+		initDisclaimer();
+		
+		CourseDisclaimerSettings settings = courseDisclaimerManager.getSettings(repositoryEntry);
+		Assert.assertTrue(settings.getTermsOfUse().isEnabled());
+		Assert.assertEquals(disclaimer1Title, settings.getTermsOfUse().getTitle());
+		Assert.assertEquals(disclaimer1Terms, settings.getTermsOfUse().getTerms());
+		Assert.assertEquals(disclaimer1Label1, settings.getTermsOfUse().getLabel1());
+		Assert.assertEquals(disclaimer1Label2, settings.getTermsOfUse().getLabel2());
+		Assert.assertTrue(settings.getDataProtection().isEnabled());
+		Assert.assertEquals(disclaimer2Title, settings.getDataProtection().getTitle());
+		Assert.assertEquals(disclaimer2Terms, settings.getDataProtection().getTerms());
+		Assert.assertEquals(disclaimer2Label1, settings.getDataProtection().getLabel1());
+		Assert.assertEquals(disclaimer2Label2, settings.getDataProtection().getLabel2());
+	}
+	
+	@Test
+	public void validate() {
+		CourseDisclaimerSettings settings = new CourseDisclaimerSettings(
+				new Disclaimer(true, "Title", "Terms", "Label", null),
+				new Disclaimer(false, null, null, null, null));
+		assertThat(courseDisclaimerManager.validate(settings, ConsentHandling.KEEP)).isEmpty();
+		assertThat(courseDisclaimerManager.validate(settings, ConsentHandling.REVOKE)).isEmpty();
+	}
+	
+	@Test
+	public void validateMandatory() {
+		CourseDisclaimerSettings settings = new CourseDisclaimerSettings(
+				new Disclaimer(true, " ", null, "", "Optional"),
+				new Disclaimer(true, "Title", "Terms", null, null));
+		List<CourseDisclaimerError> errors = courseDisclaimerManager.validate(settings, ConsentHandling.KEEP);
+		assertThat(errors)
+			.containsExactlyInAnyOrder(
+				new CourseDisclaimerError(1, "title", CourseDisclaimerError.Type.MANDATORY, -1),
+				new CourseDisclaimerError(1, "terms", CourseDisclaimerError.Type.MANDATORY, -1),
+				new CourseDisclaimerError(1, "label1", CourseDisclaimerError.Type.MANDATORY, -1),
+				new CourseDisclaimerError(2, "label1", CourseDisclaimerError.Type.MANDATORY, -1));
+	}
+	
+	@Test
+	public void validateLength() {
+		CourseDisclaimerSettings settings = new CourseDisclaimerSettings(
+				new Disclaimer(true, "t".repeat(256), "x".repeat(30001), "l".repeat(256), "l".repeat(256)),
+				new Disclaimer(true, "t".repeat(255), "x".repeat(30000), "l".repeat(255), "l".repeat(255)));
+		List<CourseDisclaimerError> errors = courseDisclaimerManager.validate(settings, ConsentHandling.KEEP);
+		assertThat(errors)
+			.containsExactlyInAnyOrder(
+				new CourseDisclaimerError(1, "title", CourseDisclaimerError.Type.TOO_LONG, 255),
+				new CourseDisclaimerError(1, "terms", CourseDisclaimerError.Type.TOO_LONG, 30000),
+				new CourseDisclaimerError(1, "label1", CourseDisclaimerError.Type.TOO_LONG, 255),
+				new CourseDisclaimerError(1, "label2", CourseDisclaimerError.Type.TOO_LONG, 255));
+	}
+	
+	@Test
+	public void validateLengthAfterFilter() {
+		// 29'999 characters before the filter, more than 30'000 after (& is escaped as &amp;)
+		String terms = "x".repeat(29990) + "&".repeat(9);
+		CourseDisclaimerSettings settings = new CourseDisclaimerSettings(
+				new Disclaimer(true, "Title", terms, "Label", null),
+				new Disclaimer(false, null, null, null, null));
+		List<CourseDisclaimerError> errors = courseDisclaimerManager.validate(settings, ConsentHandling.KEEP);
+		assertThat(errors)
+			.containsExactly(new CourseDisclaimerError(1, "terms", CourseDisclaimerError.Type.TOO_LONG, 30000));
+	}
+	
+	@Test
+	public void validateTermsEmptyAfterFilter() {
+		CourseDisclaimerSettings settings = new CourseDisclaimerSettings(
+				new Disclaimer(true, "Title", "<script>alert('XSS');</script>", "Label", null),
+				new Disclaimer(false, null, null, null, null));
+		List<CourseDisclaimerError> errors = courseDisclaimerManager.validate(settings, ConsentHandling.KEEP);
+		assertThat(errors)
+			.containsExactly(new CourseDisclaimerError(1, "terms", CourseDisclaimerError.Type.MANDATORY, -1));
+	}
+	
+	@Test
+	public void validateDisabledNotChecked() {
+		CourseDisclaimerSettings settings = new CourseDisclaimerSettings(
+				new Disclaimer(false, null, null, null, null),
+				new Disclaimer(false, "t".repeat(300), null, null, null));
+		assertThat(courseDisclaimerManager.validate(settings, ConsentHandling.REMOVE)).isEmpty();
+	}
+	
+	@Test
+	public void validateRemoveNotAllowed() {
+		CourseDisclaimerSettings settings = new CourseDisclaimerSettings(
+				new Disclaimer(false, null, null, null, null),
+				new Disclaimer(true, "Title", "Terms", "Label", null));
+		assertThat(courseDisclaimerManager.validate(settings, ConsentHandling.REMOVE))
+			.containsExactly(new CourseDisclaimerError(0, "consents", CourseDisclaimerError.Type.REMOVE_NOT_ALLOWED, -1));
+	}
+	
+	@Test
+	public void updateSettings() throws CourseConfigLockedException {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("disc-doer");
+		CourseDisclaimerSettings settings = new CourseDisclaimerSettings(
+				new Disclaimer(true, "New title", "<p>New terms</p>", "I accept", "I really accept"),
+				new Disclaimer(false, null, null, null, null));
+		CourseDisclaimerSettings savedSettings = courseDisclaimerManager.updateSettings(repositoryEntry, settings, ConsentHandling.KEEP, doer);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertTrue(savedSettings.getTermsOfUse().isEnabled());
+		Assert.assertFalse(savedSettings.getDataProtection().isEnabled());
+		
+		CourseConfig config = CourseFactory.loadCourse(repositoryEntry).getCourseEnvironment().getCourseConfig();
+		Assert.assertTrue(config.isDisclaimerEnabled(1));
+		Assert.assertFalse(config.isDisclaimerEnabled(2));
+		Assert.assertEquals("New title", config.getDisclaimerTitel(1));
+		Assert.assertEquals("<p>New terms</p>", config.getDisclaimerTerms(1));
+		Assert.assertEquals("I accept", config.getDisclaimerLabel(1, 1));
+		Assert.assertEquals("I really accept", config.getDisclaimerLabel(1, 2));
+		Assert.assertFalse(CourseFactory.isCourseEditSessionOpen(repositoryEntry.getOlatResource().getResourceableId()));
+	}
+	
+	@Test
+	public void updateSettingsDisabledKeepsTexts() throws CourseConfigLockedException {
+		initDisclaimer();
+		
+		CourseDisclaimerSettings settings = courseDisclaimerManager.getSettings(repositoryEntry);
+		settings.setDataProtection(new Disclaimer(false, null, null, null, null));
+		courseDisclaimerManager.updateSettings(repositoryEntry, settings, ConsentHandling.KEEP, null);
+		dbInstance.commitAndCloseSession();
+		
+		CourseConfig config = CourseFactory.loadCourse(repositoryEntry).getCourseEnvironment().getCourseConfig();
+		Assert.assertTrue(config.isDisclaimerEnabled(1));
+		Assert.assertFalse(config.isDisclaimerEnabled(2));
+		Assert.assertEquals(disclaimer2Title, config.getDisclaimerTitel(2));
+		Assert.assertEquals(disclaimer2Terms, config.getDisclaimerTerms(2));
+		Assert.assertEquals(disclaimer2Label1, config.getDisclaimerLabel(2, 1));
+	}
+	
+	@Test
+	public void updateSettingsXss() throws CourseConfigLockedException {
+		CourseDisclaimerSettings settings = new CourseDisclaimerSettings(
+				new Disclaimer(true, "Title", "<p>Terms</p><script>alert('XSS');</script>", "I accept", null),
+				new Disclaimer(false, null, null, null, null));
+		CourseDisclaimerSettings savedSettings = courseDisclaimerManager.updateSettings(repositoryEntry, settings, ConsentHandling.KEEP, null);
+		dbInstance.commitAndCloseSession();
+		
+		String terms = savedSettings.getTermsOfUse().getTerms();
+		Assert.assertTrue(terms.contains("<p>Terms</p>"));
+		Assert.assertFalse(terms.contains("<script"));
+		Assert.assertFalse(terms.contains("alert"));
+	}
+	
+	@Test
+	public void updateSettingsKeepConsents() throws CourseConfigLockedException {
+		initDisclaimer();
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, roles1, true, true);
+		dbInstance.commitAndCloseSession();
+		
+		CourseDisclaimerSettings settings = courseDisclaimerManager.getSettings(repositoryEntry);
+		settings.getTermsOfUse().setTitle("Changed title");
+		courseDisclaimerManager.updateSettings(repositoryEntry, settings, ConsentHandling.KEEP, null);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1, roles1));
+		Assert.assertEquals("Changed title", courseDisclaimerManager.getSettings(repositoryEntry).getTermsOfUse().getTitle());
+	}
+	
+	@Test
+	public void updateSettingsRevokeConsents() throws CourseConfigLockedException {
+		initDisclaimer();
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, roles1, true, true);
+		dbInstance.commitAndCloseSession();
+		Assert.assertTrue(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1, roles1));
+		
+		CourseDisclaimerSettings settings = courseDisclaimerManager.getSettings(repositoryEntry);
+		settings.getTermsOfUse().setTerms("<p>Changed terms</p>");
+		courseDisclaimerManager.updateSettings(repositoryEntry, settings, ConsentHandling.REVOKE, null);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertFalse(courseDisclaimerManager.isAccessGranted(repositoryEntry, id1, roles1));
+		Assert.assertFalse(courseDisclaimerManager.hasAnyConsent(repositoryEntry));
+		Assert.assertTrue(courseDisclaimerManager.hasAnyEntry(repositoryEntry));
+	}
+	
+	@Test
+	public void updateSettingsRemoveConsents() throws CourseConfigLockedException {
+		initDisclaimer();
+		courseDisclaimerManager.acceptDisclaimer(repositoryEntry, id1, roles1, true, true);
+		dbInstance.commitAndCloseSession();
+		
+		CourseDisclaimerSettings settings = courseDisclaimerManager.getSettings(repositoryEntry);
+		settings.getTermsOfUse().setEnabled(false);
+		settings.getDataProtection().setEnabled(false);
+		courseDisclaimerManager.updateSettings(repositoryEntry, settings, ConsentHandling.REMOVE, null);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertFalse(courseDisclaimerManager.hasAnyEntry(repositoryEntry));
+		Assert.assertFalse(courseDisclaimerManager.getSettings(repositoryEntry).isAnyEnabled());
+	}
+	
+	@Test
+	public void updateSettingsLocked() {
+		initDisclaimer();
+		
+		Long courseResId = repositoryEntry.getOlatResource().getResourceableId();
+		CourseFactory.openCourseEditSession(courseResId);
+		try {
+			CourseDisclaimerSettings settings = courseDisclaimerManager.getSettings(repositoryEntry);
+			settings.getTermsOfUse().setTitle("Changed title");
+			Assert.assertThrows(CourseConfigLockedException.class,
+					() -> courseDisclaimerManager.updateSettings(repositoryEntry, settings, ConsentHandling.KEEP, null));
+		} finally {
+			CourseFactory.closeCourseEditSession(courseResId, true);
+		}
+		
+		Assert.assertEquals(disclaimer1Title, courseDisclaimerManager.getSettings(repositoryEntry).getTermsOfUse().getTitle());
 	}
 }
