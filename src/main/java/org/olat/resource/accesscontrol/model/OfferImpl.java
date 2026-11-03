@@ -399,13 +399,7 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 
 	@Override
 	public Price getPrice() {
-		if(price == null) {
-			PriceImpl p = new PriceImpl();
-			p.setAmount(BigDecimal.ZERO);
-			p.setCurrencyCode("CHF");
-			price = p;
-		}
-		return price;
+		return price == null ? new PriceImpl(BigDecimal.ZERO, "CHF") : price;
 	}
 
 	@Override

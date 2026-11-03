@@ -36,7 +36,9 @@ public class ResponseFormater {
 			sb.append("[]");
 		} else {
 			for (String stringResponse :stringResponses) {
-				sb.append("[").append(quoteSpecialQTIResultCharacters(stringResponse)).append("]");
+				if(stringResponse != null) {
+					sb.append("[").append(quoteSpecialQTIResultCharacters(stringResponse)).append("]");
+				}
 			}
 		}
 		return sb.toString();

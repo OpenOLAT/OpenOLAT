@@ -460,7 +460,28 @@ public class ACOrderManagerTest extends OlatTestCase {
 		List<Order> ordersResource2 = acOrderManager.findOrdersByResource(randomOres2);
 		assertEquals(2, ordersResource2.size());
 	}
-	
+
+	@Test
+	public void saveOneClickOrderKeepsOfferWithoutPriceUnchanged() {
+		OLATResource randomOres = createResource();
+		Offer offer = acService.createOffer(randomOres, "TestSaveOneClickOfferWithoutPrice");
+		offer = acService.save(offer);
+		AccessMethod method = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class).get(0);
+		OfferAccess editedAccess = acMethodManager.save(acMethodManager.createOfferAccess(offer, method));
+		dbInstance.commitAndCloseSession();
+
+		OfferAccess bookedAccess = acMethodManager.getValidOfferAccess(randomOres, method).get(0);
+		acOrderManager.saveOneClick(ident1, bookedAccess);
+		dbInstance.commitAndCloseSession();
+
+		editedAccess.getOffer().setCancellingAnytime(true);
+		acService.saveOfferAccess(editedAccess);
+		dbInstance.commitAndCloseSession();
+
+		Offer reloadedOffer = acMethodManager.getValidOfferAccess(randomOres, method).get(0).getOffer();
+		Assertions.assertThat(reloadedOffer.isCancellingAnytime()).isTrue();
+	}
+
 	@Test
 	public void saveOneClickOrder() {
 	//make extensiv test on one order
