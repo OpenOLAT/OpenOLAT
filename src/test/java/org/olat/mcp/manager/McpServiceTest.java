@@ -930,7 +930,8 @@ public class McpServiceTest extends OlatTestCase {
 		Assert.assertEquals(McpProfileType.system, author.getType());
 		assertThat(author.getOrganisationRoles()).containsExactly(OrganisationRoles.author);
 		assertThat(author.getTools())
-			.containsExactlyInAnyOrder("openolat_whoami", "course_query", "lecture_query", "project_query", "note_query", "file_query", "timeline_query", "todo_query", "news_query");
+			.containsExactlyInAnyOrder("openolat_whoami", "course_query", "lecture_query", "project_query", "note_query", "file_query", "timeline_query",
+					"appointment_query", "milestone_query", "decision_query", "todo_query", "news_query");
 
 		McpProfile pilot = mcpService.getProfileByIdentifier(McpServiceImpl.DEFAULT_PROJECT_PILOT);
 		Assert.assertEquals(McpProfileType.user, pilot.getType());

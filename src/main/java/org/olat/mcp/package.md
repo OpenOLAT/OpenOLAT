@@ -740,7 +740,7 @@ Invitees and guests never get a grant:
 |------------|------|------|-------|-------|
 | `default-learner` | Learner | system | `user` | `openolat_whoami`, `course_query`, `lecture_query`, `todo_query`, `news_query` |
 | `default-lecturemanager` | Lecture manager | system | `lecturemanager` | same as Learner |
-| `default-author` | Author | system | `author` | Learner tools plus `project_query`, `note_query`, `file_query`, `timeline_query` |
+| `default-author` | Author | system | `author` | Learner tools plus the seven project read tools: `project_query`, `note_query`, `file_query`, `timeline_query`, `appointment_query`, `milestone_query`, `decision_query` |
 | `default-project-pilot` | Project pilot | user | (grants by the administrator) | `openolat_whoami`, all 13 project tools, `todo_query`, `todo_modify`, `news_query` |
 
 The administrator edits, enables or deletes them like any other profile.
@@ -948,7 +948,7 @@ public record McpBinaryContent(String uri, String mimeType, byte[] data) {
 | Argument does not match the input schema | SDK, `McpJsonSchemaValidator` | `isError`: "Arguments do not match the input schema of the tool: ..." | 422 |
 | Invalid value the schema cannot refuse (date format, unknown key, length) | `McpInvalidArgumentException` | `isError`: "Invalid argument: <message>" | 422 |
 | Tool returns `McpToolResult.error(...)` | Tool | `isError` with the message | 422 |
-| Security callback denies | `McpPermissionException(objectDescription, permission)` | `isError`: "Permission denied: this account may not <permission> on <object>." | 403 |
+| Security callback denies | `McpPermissionException(objectDescription, permission)` | `isError`: "Permission denied for <object>: this account may not <permission>." | 403 |
 | Tool not granted or unknown | Decorator or registry | `isError`: "Tool X is not available for this account. Call openolat_whoami to see the granted tools." | 403 |
 | Pack disabled (registry check) | Registry | `isError`: "Tool X is disabled on this OpenOlat instance." | 403 |
 | Any other exception | Tool or service | `isError`: "The tool X failed with an internal error. Report the reference <uuid> to the OpenOlat administrator." | 500 |

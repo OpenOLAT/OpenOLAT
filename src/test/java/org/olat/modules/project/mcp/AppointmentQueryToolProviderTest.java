@@ -98,7 +98,7 @@ public class AppointmentQueryToolProviderTest extends OlatTestCase {
 		Assert.assertEquals(ProjectMcpPack.NAME, sut.getPack());
 		Assert.assertEquals(McpToolScope.READ, sut.getScope());
 		assertThat(sut.getDefinition().description()).contains("project_query").contains("appointment_modify")
-				.contains("A recurring appointment is listed once with its rule");
+				.contains("A recurring appointment is listed once per occurrence in the window");
 		Assert.assertFalse(sut.getDefinition().destructive());
 		Assert.assertTrue(sut.getDefinition().idempotent());
 		Assert.assertTrue(sut.isAvailable());
@@ -251,8 +251,13 @@ public class AppointmentQueryToolProviderTest extends OlatTestCase {
 				.containsExactly(theirs.getKey());
 	}
 
+	/**
+	 * A series is listed once per occurrence in the window, as the calendar
+	 * shows it; a changed occurrence replaces its occurrence (test9 finding
+	 * 2026-11-03: a weekly series was missing in a later window).
+	 */
 	@Test
-	public void list_seriesOnce() {
+	public void list_seriesOccurrences() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("mcp-ap-7");
 		ProjProject project = createProject(owner);
 		ProjAppointment series = createAppointment(owner, project, "Weekly", at(2030, 3, 4, 9), at(2030, 3, 4, 10));
@@ -266,19 +271,27 @@ public class AppointmentQueryToolProviderTest extends OlatTestCase {
 
 		McpToolResult result = invoke(context(owner), Map.of("projectKey", project.getKey(), "from", "2030-03-01", "to", "2030-03-31"));
 		List<Map<String,Object>> items = items(structured(result));
-		assertThat(keys(items)).containsExactly(series.getKey());
-		Map<String,Object> item = items.get(0);
+		assertThat(keys(items)).containsExactly(series.getKey(), occurrence.getKey(), series.getKey(), series.getKey());
+		assertThat(items).extracting(item -> item.get("start"))
+			.containsExactly(iso(at(2030, 3, 4, 9)), iso(at(2030, 3, 11, 9)), iso(at(2030, 3, 18, 9)), iso(at(2030, 3, 25, 9)));
+		Map<String,Object> item = items.get(2);
 		Assert.assertEquals("weekly", item.get("recurrence"));
 		Assert.assertEquals(rule, item.get("recurrenceRule"));
 		Assert.assertEquals("2030-04-29", item.get("recurrenceEnd"));
-		Assert.assertEquals(iso(at(2030, 3, 4, 9)), item.get("start"));
+		Assert.assertEquals(iso(at(2030, 3, 18, 10)), item.get("end"));
+		Assert.assertEquals(iso(at(2030, 3, 18, 9)), item.get("occurrence"));
+		Assert.assertFalse(items.get(1).containsKey("occurrence"));
 		assertThat(result.text()).contains("weekly until 2030-04-29");
+		Assert.assertTrue(VALIDATOR.validate(sut.getDefinition().outputSchema(), structured(result)).valid());
 
-		// the window test uses the dates of the first occurrence
-		assertThat(keys(items(structured(invoke(context(owner), Map.of("projectKey", project.getKey(),
-				"from", "2030-03-20", "to", "2030-03-31")))))).isEmpty();
+		// a later window holds the occurrences of the series too
+		List<Map<String,Object>> later = items(structured(invoke(context(owner), Map.of("projectKey", project.getKey(),
+				"from", "2030-03-20", "to", "2030-03-31"))));
+		assertThat(keys(later)).containsExactly(series.getKey());
+		Assert.assertEquals(iso(at(2030, 3, 25, 9)), later.get(0).get("start"));
 
-		// the occurrence itself is readable by its key
+		// get returns the series with its first occurrence, the changed occurrence by its key
+		Assert.assertEquals(iso(at(2030, 3, 4, 9)), item(structured(invoke(context(owner), Map.of("action", "get", "appointmentKey", series.getKey())))).get("start"));
 		Map<String,Object> occurrenceItem = item(structured(invoke(context(owner), Map.of("action", "get", "appointmentKey", occurrence.getKey()))));
 		Assert.assertEquals("none", occurrenceItem.get("recurrence"));
 		Assert.assertEquals(iso(at(2030, 3, 11, 9)), occurrenceItem.get("start"));

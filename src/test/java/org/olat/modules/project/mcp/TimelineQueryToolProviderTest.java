@@ -50,6 +50,7 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
+import org.olat.modules.project.manager.ProjActivityDAO;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.test.JunitTestHelper;
@@ -79,6 +80,8 @@ public class TimelineQueryToolProviderTest extends OlatTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private ProjectService projectService;
+	@Autowired
+	private ProjActivityDAO activityDao;
 	@Autowired
 	private TimelineQueryToolProvider sut;
 
@@ -177,6 +180,23 @@ public class TimelineQueryToolProviderTest extends OlatTestCase {
 		Assert.assertEquals(username(participant), ((Map<?,?>)memberRow.get("member")).get("username"));
 		Assert.assertEquals(username(owner), ((Map<?,?>)memberRow.get("doer")).get("username"));
 		assertThat(result.text()).contains("activities between").contains("noteContentUpdate by").contains("note \"Kickoff note\" (key " + note.getKey() + ")");
+	}
+
+	/**
+	 * allActions returns the whiteboard activities too, the target of the
+	 * output schema accepts them (test9 finding 2026-11-03: output validation
+	 * failed).
+	 */
+	@Test
+	public void list_allActionsWhiteboardMatchesOutputSchema() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("mcp-tl-wb");
+		ProjProject project = createProject(owner);
+		activityDao.create(Action.whiteboardCreate, null, null, owner, project);
+		dbInstance.commitAndCloseSession();
+
+		Map<String,Object> result = structured(invoke(context(owner), Map.of("projectKey", project.getKey(), "allActions", true)));
+		assertThat(items(result)).extracting(item -> item.get("target")).contains("whiteboard");
+		Assert.assertTrue(VALIDATOR.validate(sut.getDefinition().outputSchema(), result).valid());
 	}
 
 	@Test

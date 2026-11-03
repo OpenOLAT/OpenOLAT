@@ -25,11 +25,15 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.mcp.tool.McpPermissionException;
 import org.olat.mcp.tool.McpToolContext;
 import org.olat.mcp.tool.McpToolDefinition;
@@ -50,8 +54,9 @@ import org.springframework.stereotype.Service;
 /**
  * The appointments of one project in a time window, as the calendar of the
  * project shows them (ProjCalendarAllController), and one appointment with
- * its links to other artefacts of the project. A series is listed once with
- * its rule, the occurrences are not expanded.
+ * its links to other artefacts of the project. A series is listed once per
+ * occurrence in the window, unfolded by the calendar as the project calendar
+ * does; an occurrence changed in the calendar replaces its occurrence.
  *
  * Initial date: 3 Oct 2026<br>
  * @author gnaegi, gnaegi@frentix.com, https://www.frentix.com
@@ -78,8 +83,9 @@ public class AppointmentQueryToolProvider implements McpToolProvider {
 			+ "(ToDos, notes, files, appointments, milestones, decisions). "
 			+ "Use action list with projectKey (from project_query) and a window from and to (ISO dates, default today plus "
 			+ WINDOW_DEFAULT_DAYS + " days, at most " + WINDOW_MAX_DAYS + " days); an appointment matches when it overlaps the window. "
-			+ "A recurring appointment is listed once with its rule: start and end of the first occurrence, the repetition and its last day; "
-			+ "the occurrences are not expanded. datesOnly=false adds the appointments without dates. "
+			+ "A recurring appointment is listed once per occurrence in the window, as the calendar shows it: the key of the series, start and end of the occurrence, "
+			+ "the field occurrence, the repetition and its last day; an occurrence changed in OpenOlat is an appointment with its own key. "
+			+ "datesOnly=false adds the appointments without dates. "
 			+ "Further filters: status and createdByMe; list is sorted by start. "
 			+ "Use action get with appointmentKey for one appointment with its links; to change an appointment call appointment_modify.",
 			inputSchema(), outputSchema(), false, true);
@@ -157,40 +163,55 @@ public class AppointmentQueryToolProvider implements McpToolProvider {
 			throw new McpPermissionException(ProjectToolSupport.describeProject(projectKey), "view the appointments");
 		}
 
-		// The search parameters of ProjCalendarAllController: the series masters, not the edited occurrences
+		// The search parameters of ProjCalendarAllController: the series, their changed occurrences and the single appointments
 		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
 		searchParams.setProject(project);
 		if(!status.isEmpty()) {
 			searchParams.setStatus(status);
 		}
-		searchParams.setRecurrenceIdAvailable(Boolean.FALSE);
-		if(datesOnly) {
-			searchParams.setDatesNull(Boolean.FALSE);
-		}
 		// ProjectService has neither a date window nor a creator filter for appointments; the calendar loads the same set
-		Date windowStart = Date.from(from.atStartOfDay(zone).toInstant());
-		Date windowEnd = Date.from(to.plusDays(1).atStartOfDay(zone).toInstant());
-		List<ProjAppointmentInfo> infos = new ArrayList<>();
-		for(ProjAppointmentInfo info:projectService.getAppointmentInfos(searchParams, ProjArtefactInfoParams.of(true, false, true))) {
+		List<ProjAppointmentInfo> infos = projectService.getAppointmentInfos(searchParams, ProjArtefactInfoParams.of(true, false, true));
+		Map<String,ProjAppointmentInfo> identifierToInfo = new HashMap<>();
+		List<ProjAppointment> withDates = new ArrayList<>();
+		List<Entry> entries = new ArrayList<>();
+		for(ProjAppointmentInfo info:infos) {
 			ProjAppointment appointment = info.getAppointment();
 			if(createdByMe && !context.identity().getKey().equals(appointment.getArtefact().getCreator().getKey())) {
 				continue;
 			}
-			Date start = appointment.getStartDate();
-			Date end = appointment.getEndDate();
-			boolean withDates = start != null && end != null;
-			if((withDates && start.before(windowEnd) && !end.before(windowStart)) || (!withDates && !datesOnly)) {
-				infos.add(info);
+			if(appointment.getStartDate() != null && appointment.getEndDate() != null) {
+				identifierToInfo.put(appointment.getIdentifier(), info);
+				withDates.add(appointment);
+			} else if(!datesOnly && !StringHelper.containsNonWhitespace(appointment.getRecurrenceId())) {
+				entries.add(new Entry(info, null, null, false));
 			}
 		}
-		infos.sort(Comparator.comparing((ProjAppointmentInfo info) -> info.getAppointment().getStartDate(), Comparator.nullsLast(Comparator.naturalOrder()))
-				.thenComparing(info -> info.getAppointment().getKey()));
-		int total = infos.size();
+		// The calendar unfolds a series into the occurrences in the window, an occurrence changed in the calendar replaces its occurrence
+		Date windowStart = Date.from(from.atStartOfDay(zone).toInstant());
+		Date windowEnd = Date.from(to.plusDays(1).atStartOfDay(zone).toInstant());
+		for(KalendarEvent event:AppointmentToolSupport.events(projectService, calendarManager, withDates, windowStart, windowEnd)) {
+			ProjAppointmentInfo info = identifierToInfo.get(event.getExternalId());
+			if(info != null) {
+				// the calendar wraps a changed occurrence as a recurring event too, only the series has the rule
+				boolean occurrence = StringHelper.containsNonWhitespace(info.getAppointment().getRecurrenceRule());
+				entries.add(new Entry(info, DateUtils.toDate(event.getBegin()), DateUtils.toDate(event.getEnd()), occurrence));
+			}
+		}
+		entries.sort(Comparator.comparing(Entry::start, Comparator.nullsLast(Comparator.naturalOrder()))
+				.thenComparing(entry -> entry.info().getAppointment().getKey()));
+		int total = entries.size();
 
 		List<Map<String,Object>> items = new ArrayList<>();
 		List<String> lines = new ArrayList<>();
-		for(ProjAppointmentInfo info:infos.subList(0, Math.min(limit, total))) {
-			Map<String,Object> item = AppointmentToolSupport.appointmentItem(support, calendarManager, info, false);
+		for(Entry entry:entries.subList(0, Math.min(limit, total))) {
+			Map<String,Object> item = AppointmentToolSupport.appointmentItem(support, calendarManager, entry.info(), false);
+			if(entry.start() != null) {
+				item.put("start", McpToolSupport.iso(entry.start()));
+				item.put("end", McpToolSupport.iso(entry.end()));
+			}
+			if(entry.occurrence()) {
+				item.put("occurrence", McpToolSupport.iso(entry.start()));
+			}
 			items.add(item);
 			lines.add(AppointmentToolSupport.appointmentLine(item));
 		}
@@ -223,6 +244,16 @@ public class AppointmentQueryToolProvider implements McpToolProvider {
 			text.append("\n\n").append(item.get("description"));
 		}
 		return McpToolResult.of(result, text.toString());
+	}
+
+	/**
+	 * One line of the list: an appointment, of a series one occurrence.
+	 *
+	 * @param start The start of the occurrence, null without dates
+	 * @param occurrence true for an unchanged occurrence of a series
+	 */
+	private record Entry(ProjAppointmentInfo info, Date start, Date end, boolean occurrence) {
+		//
 	}
 
 	private static Map<String,Object> inputSchema() {

@@ -130,6 +130,9 @@ public class McpServiceImpl implements McpService, UserDataDeletable, Organisati
 		authorTools.add("note_query");
 		authorTools.add("file_query");
 		authorTools.add("timeline_query");
+		authorTools.add("appointment_query");
+		authorTools.add("milestone_query");
+		authorTools.add("decision_query");
 
 		int created = 0;
 		created += createDefaultProfile(DEFAULT_LEARNER, "Learner", McpProfileType.system,

@@ -245,7 +245,8 @@ public class McpToolRegistry implements InitializingBean {
 			dbInstance.rollbackAndCloseSession();
 			trace.setOutcome(McpRequestTrace.Outcome.denied);
 			log.info("MCP permission denied for identity {} on tool {}: {}", identityKey(context), provider.getToolName(), e.getMessage());
-			return error("Permission denied: this account may not " + e.getPermission() + " on " + e.getObjectDescription() + ".");
+			// object first: a permission names its object often itself ("delete the decision")
+			return error("Permission denied for " + e.getObjectDescription() + ": this account may not " + e.getPermission() + ".");
 		} catch (Exception e) {
 			dbInstance.rollbackAndCloseSession();
 			String reference = UUID.randomUUID().toString();

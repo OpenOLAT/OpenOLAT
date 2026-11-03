@@ -154,7 +154,8 @@ public class ProjCalendarHelper {
 	public String getExclusionRecurrenceRule(String recurrenceRule, Date exclusionDate) {
 		try {
 			Recur<Temporal> recur = new Recur<>(recurrenceRule);
-			recur.setUntil(DateUtils.toZonedDateTime(exclusionDate, calendarModule.getDefaultZoneId()));
+			// UNTIL is inclusive: end the series just before the excluded occurrence, which is deleted too
+			recur.setUntil(DateUtils.toZonedDateTime(exclusionDate, calendarModule.getDefaultZoneId()).minusSeconds(1));
 			RRule<Temporal> rrule = new RRule<>(recur);
 			return rrule.getValue();
 		} catch (Exception e) {

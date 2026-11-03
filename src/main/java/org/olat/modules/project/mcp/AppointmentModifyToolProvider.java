@@ -31,6 +31,8 @@ import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.CalendarColors;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
@@ -51,6 +53,7 @@ import org.olat.modules.project.ProjArtefactInfoParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectService;
+import org.olat.modules.project.model.ProjAppointmentImpl;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,8 +62,9 @@ import org.springframework.stereotype.Service;
  * Creates, edits and deletes the appointments of a project through the
  * ProjectService, the sequence of ProjAppointmentEditController with its
  * sub controllers (content with ProjAppointmentContentEditForm, references,
- * members). A series is edited and deleted as a whole; an occurrence of a
- * series changed in the calendar is edited in OpenOlat only.
+ * members). A series is edited and deleted as a whole or, with the
+ * argument occurrence, one occurrence as the cascade once, single and
+ * future of ProjCalendarAllController.
  *
  * Initial date: 3 Oct 2026<br>
  * @author gnaegi, gnaegi@frentix.com, https://www.frentix.com
@@ -98,7 +102,9 @@ public class AppointmentModifyToolProvider implements McpToolProvider {
 			+ "update changes only the arguments you pass; a new start moves the end by the same time unless you pass end; "
 			+ "tags, members and links replace the current lists, an empty array clears tags or links, members needs at least one member; an empty string clears the description, "
 			+ "the location or the color; recurrence none ends the repetition. "
-			+ "update and delete act on the whole series of a recurring appointment; an occurrence changed in the calendar is edited in OpenOlat. "
+			+ "update and delete act on the whole series of a recurring appointment; with occurrence (the field of appointment_query list) "
+			+ "update changes and delete removes only this occurrence, delete with following also removes the later ones. "
+			+ "An occurrence changed before has its own key and is updated and deleted like a single appointment. "
 			+ "delete is a soft delete.",
 			inputSchema(), outputSchema(), true, false);
 
@@ -203,13 +209,17 @@ public class AppointmentModifyToolProvider implements McpToolProvider {
 		if(!secCallback.canEditAppointment(appointment)) {
 			throw new McpPermissionException("appointment with key " + appointment.getKey(), "edit the appointment");
 		}
-		if(StringHelper.containsNonWhitespace(appointment.getRecurrenceId())) {
-			return McpToolResult.error("The appointment " + appointment.getKey() + " is a single occurrence of a recurring appointment, "
-					+ "changed in the calendar. Edit it in OpenOlat: " + url(appointment));
+		// A changed occurrence and an occurrence of a series have no repetition of their own
+		KalendarRecurEvent occurrence = occurrence(arguments, appointment);
+		boolean single = occurrence != null || StringHelper.containsNonWhitespace(appointment.getRecurrenceId());
+		if(single && (arguments.containsKey("recurrence") || arguments.containsKey("recurrenceEnd"))) {
+			throw new McpInvalidArgumentException("A single occurrence of a series has no repetition. Omit recurrence and recurrenceEnd, "
+					+ "or change the whole series without occurrence.");
 		}
 		// Validate every argument before anything is written; an absent argument keeps the value, an empty string clears it
+		ProjAppointment current = occurrence == null ? appointment : occurrenceView(appointment, occurrence);
 		boolean contentChanged = CONTENT_ARGUMENTS.stream().anyMatch(arguments::containsKey);
-		Content content = contentChanged ? content(arguments, appointment, ProjectToolSupport.isTemplate(project)) : null;
+		Content content = contentChanged ? content(arguments, current, ProjectToolSupport.isTemplate(project)) : null;
 		List<String> tags = support.tags(arguments, project);
 		List<Identity> members = arguments.containsKey("members") ? support.resolveMembers(arguments, "members", project, "this appointment") : null;
 		Set<ProjArtefact> links = arguments.containsKey("links") ? support.resolveLinks(arguments, project, appointment.getArtefact()) : null;
@@ -217,6 +227,12 @@ public class AppointmentModifyToolProvider implements McpToolProvider {
 		// The sequence of ProjAppointmentEditController.formOK
 		Identity doer = context.identity();
 		ProjectBCFactory bcFactory = ProjectBCFactory.createFactory(project);
+		if(occurrence != null) {
+			// ProjCalendarAllController.doEditRecurringAppointment with the cascade once: the occurrence becomes an appointment of its own
+			KalendarEvent occurrenceEvent = calendarManager.createKalendarEventRecurringOccurence(occurrence);
+			appointment = projectService.createAppointmentOcurrence(doer, bcFactory, appointment.getIdentifier(),
+					occurrenceEvent.getRecurrenceID(), DateUtils.toDate(occurrenceEvent.getBegin()), DateUtils.toDate(occurrenceEvent.getEnd()));
+		}
 		if(content != null) {
 			update(doer, bcFactory, appointment, content);
 		}
@@ -229,7 +245,7 @@ public class AppointmentModifyToolProvider implements McpToolProvider {
 		if(members != null) {
 			projectService.updateMembers(doer, bcFactory, appointment.getArtefact(), new ArrayList<IdentityRef>(members));
 		}
-		return result(appointment.getKey(), "Updated: ");
+		return result(appointment.getKey(), occurrence == null ? "Updated: " : "Updated the occurrence, now an appointment with its own key: ");
 	}
 
 	private McpToolResult delete(McpToolContext context, Map<String,Object> arguments) {
@@ -246,13 +262,70 @@ public class AppointmentModifyToolProvider implements McpToolProvider {
 		if(!secCallback.canDeleteAppointment(appointment, context.identity())) {
 			throw new McpPermissionException("appointment with key " + appointment.getKey(), "delete the appointment");
 		}
+		boolean following = McpToolSupport.bool(arguments, "following", false);
+		KalendarRecurEvent occurrence = occurrence(arguments, appointment);
+		if(following && occurrence == null) {
+			throw new McpInvalidArgumentException("The argument following needs the argument occurrence, the start of an occurrence of a series.");
+		}
+		ProjectBCFactory bcFactory = ProjectBCFactory.createFactory(project);
+		if(occurrence != null) {
+			// ProjCalendarAllController.doDeleteAppointment with the cascade single or future: an exclusion in the series
+			Date occurrenceStart = DateUtils.toDate(occurrence.getBegin());
+			projectService.addAppointmentExclusion(context.identity(), bcFactory, appointment.getIdentifier(), occurrenceStart, !following);
+			return result(appointment.getKey(), "Deleted the occurrence of "
+					+ McpToolSupport.iso(occurrenceStart) + (following ? " and all following ones, the series stays: " : ", the series stays: "));
+		}
 		if(StringHelper.containsNonWhitespace(appointment.getRecurrenceId())) {
-			return McpToolResult.error("The appointment " + appointment.getKey() + " is a single occurrence of a recurring appointment, "
-					+ "changed in the calendar. Delete it in OpenOlat: " + url(appointment));
+			// ProjCalendarAllController.doDeleteAppointment of a changed occurrence: excluded in the series and deleted
+			Date replaced = AppointmentToolSupport.replacedOccurrence(appointment);
+			if(replaced == null) {
+				return McpToolResult.error("The appointment " + appointment.getKey() + " is a changed occurrence of a series whose date cannot be read. "
+						+ "Delete it in OpenOlat: " + url(appointment));
+			}
+			projectService.deleteAppointmentSoftly(context.identity(), bcFactory, appointment.getIdentifier(), replaced);
+			return result(appointment.getKey(), "Deleted: ");
 		}
 		// ProjCalendarAllController.doDeleteAppointment with the cascade all: the series with its changed occurrences
-		projectService.deleteAppointmentSoftly(context.identity(), ProjectBCFactory.createFactory(project), appointment.getIdentifier(), null);
+		projectService.deleteAppointmentSoftly(context.identity(), bcFactory, appointment.getIdentifier(), null);
 		return result(appointment.getKey(), "Deleted: ");
+	}
+
+	/**
+	 * @return The occurrence of the series named by the argument occurrence,
+	 *         null without the argument
+	 */
+	private KalendarRecurEvent occurrence(Map<String,Object> arguments, ProjAppointment appointment) {
+		if(!arguments.containsKey("occurrence")) {
+			return null;
+		}
+		if(!StringHelper.containsNonWhitespace(appointment.getRecurrenceRule()) || StringHelper.containsNonWhitespace(appointment.getRecurrenceId())) {
+			throw new McpInvalidArgumentException("The appointment " + appointment.getKey() + " is no series, omit occurrence.");
+		}
+		Date start = AppointmentToolSupport.dateTime(arguments, "occurrence", appointment.isAllDay());
+		KalendarRecurEvent occurrence = AppointmentToolSupport.occurrence(projectService, calendarManager, appointment, start);
+		if(occurrence == null) {
+			throw new McpInvalidArgumentException("The series " + appointment.getKey() + " has no occurrence at " + McpToolSupport.iso(start)
+					+ ". Pass the occurrence of appointment_query list; a changed occurrence has its own key.");
+		}
+		return occurrence;
+	}
+
+	/**
+	 * @return A transient copy of the series with the dates of the occurrence
+	 *         and no repetition, the current values for the validation of
+	 *         the arguments before the occurrence is created; never persisted
+	 */
+	private static ProjAppointment occurrenceView(ProjAppointment series, KalendarRecurEvent occurrence) {
+		ProjAppointmentImpl view = new ProjAppointmentImpl();
+		view.setArtefact(series.getArtefact());
+		view.setSubject(series.getSubject());
+		view.setDescription(series.getDescription());
+		view.setLocation(series.getLocation());
+		view.setColor(series.getColor());
+		view.setAllDay(series.isAllDay());
+		view.setStartDate(DateUtils.toDate(occurrence.getBegin()));
+		view.setEndDate(DateUtils.toDate(occurrence.getEnd()));
+		return view;
 	}
 
 	private void update(Identity doer, ProjectBCFactory bcFactory, ProjAppointment appointment, Content content) {
@@ -436,7 +509,7 @@ public class AppointmentModifyToolProvider implements McpToolProvider {
 		colorValues.add("");
 		Map<String,Object> properties = new LinkedHashMap<>();
 		properties.put("action", Map.of("type", "string", "enum", ACTIONS,
-				"description", "create: a new appointment in a project; update: change the passed fields; delete: soft delete of the appointment or the whole series"));
+				"description", "create: a new appointment in a project; update: change the passed fields; delete: soft delete of the appointment, the whole series or with occurrence one occurrence"));
 		properties.put("projectKey", Map.of("type", "integer", "description", "create only, required: the key of the project"));
 		properties.put("appointmentKey", Map.of("type", "integer", "description", "update and delete, required: the key of the appointment"));
 		properties.put("subject", Map.of("type", "string", "maxLength", SUBJECT_MAX_LENGTH, "description", "create: required; cannot be cleared"));
@@ -456,6 +529,11 @@ public class AppointmentModifyToolProvider implements McpToolProvider {
 		properties.put("recurrenceEnd", Map.of("type", "string", "format", "date",
 				"description", "the last day of the series (yyyy-MM-dd), required with a recurrence other than none; a later day than the start day, "
 						+ "except for an all day appointment"));
+		properties.put("occurrence", Map.of("type", "string",
+				"description", "update and delete of a series: the start of one occurrence, the field occurrence of appointment_query list; "
+						+ "the action acts on this occurrence only, the series stays; no recurrence with it"));
+		properties.put("following", Map.of("type", "boolean", "default", Boolean.FALSE,
+				"description", "delete with occurrence: true deletes this occurrence and all following ones"));
 		properties.put("tags", ProjectToolSupport.tagsInputSchema());
 		properties.put("members", ProjectToolSupport.membersInputSchema("appointment"));
 		properties.put("links", ProjectToolSupport.linksInputSchema());

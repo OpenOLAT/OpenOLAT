@@ -28,6 +28,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,14 +40,23 @@ import java.util.Map;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
+import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.core.util.StringHelper;
 import org.olat.mcp.tool.McpInvalidArgumentException;
 import org.olat.mcp.tool.McpToolSupport;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentInfo;
 import org.olat.modules.project.ProjArtefact;
+import org.olat.modules.project.ProjAppointmentSearchParams;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjectService;
+import org.olat.modules.project.ProjectStatus;
+
+import net.fortuna.ical4j.model.ParameterList;
+import net.fortuna.ical4j.model.parameter.Value;
+import net.fortuna.ical4j.model.property.RecurrenceId;
 
 /**
  * The appointment of the wire format, shared by appointment_query and
@@ -154,6 +165,79 @@ class AppointmentToolSupport {
 	}
 
 	/**
+	 * The appointments in a window as the project calendar shows them
+	 * (ProjCalendarAllController, ProjCalendarWidgetController): a series
+	 * unfolded into its occurrences, an occurrence changed in the calendar in
+	 * place of the occurrence it replaces.
+	 *
+	 * @param appointments The appointments with dates: series, changed occurrences and single appointments
+	 * @return The events, the external ID is the identifier of the appointment
+	 */
+	static List<KalendarEvent> events(ProjectService projectService, CalendarManager calendarManager,
+			List<ProjAppointment> appointments, Date from, Date to) {
+		Kalendar kalendar = projectService.getAppointmentsKalendar(appointments);
+		ZoneId zone = ZoneId.systemDefault();
+		return calendarManager.getEvents(kalendar, from.toInstant().atZone(zone), to.toInstant().atZone(zone), true);
+	}
+
+	/**
+	 * The occurrence of a series which starts at the passed date, computed by
+	 * the calendar with the changed occurrences of the series. An occurrence
+	 * changed in the calendar is an appointment of its own and not found here.
+	 *
+	 * @param series The series
+	 * @param start The start of the occurrence, for an all day series any time of the day
+	 * @return The occurrence or null if the series has no unchanged occurrence at this start
+	 */
+	static KalendarRecurEvent occurrence(ProjectService projectService, CalendarManager calendarManager,
+			ProjAppointment series, Date start) {
+		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+		searchParams.setProject(series.getArtefact().getProject());
+		searchParams.setEventIds(List.of(series.getEventId()));
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		searchParams.setDatesNull(Boolean.FALSE);
+		List<ProjAppointment> family = projectService.getAppointments(searchParams);
+		ZoneId zone = ZoneId.systemDefault();
+		ZonedDateTime zStart = start.toInstant().atZone(zone);
+		Date from = Date.from(zStart.minusDays(1).toInstant());
+		Date to = Date.from(zStart.plusDays(2).toInstant());
+		for(KalendarEvent event:events(projectService, calendarManager, family, from, to)) {
+			if(event instanceof KalendarRecurEvent recurEvent && series.getIdentifier().equals(recurEvent.getExternalId())) {
+				ZonedDateTime begin = recurEvent.getBegin().withZoneSameInstant(zone);
+				boolean same = series.isAllDay()
+						? begin.toLocalDate().equals(zStart.toLocalDate())
+						: begin.truncatedTo(ChronoUnit.MINUTES).toInstant().equals(zStart.truncatedTo(ChronoUnit.MINUTES).toInstant());
+				if(same) {
+					return recurEvent;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @param appointment An occurrence changed in the calendar
+	 * @return The start of the occurrence of the series it replaces, from its
+	 *         recurrence ID, or null if the ID cannot be read
+	 */
+	static Date replacedOccurrence(ProjAppointment appointment) {
+		String recurrenceId = appointment.getRecurrenceId();
+		if(!StringHelper.containsNonWhitespace(recurrenceId)) {
+			return null;
+		}
+		try {
+			// a VALUE=DATE recurrence ID of an all day series, as ICalFileCalendarManager reads it
+			RecurrenceId<Temporal> recurId = recurrenceId.length() < 9
+					? new RecurrenceId<>(new ParameterList(List.of(new Value("DATE"))), recurrenceId)
+					: new RecurrenceId<>(recurrenceId);
+			ZonedDateTime date = CalendarUtils.convertTemporal(recurId.getDate(), ZoneId.systemDefault());
+			return date == null ? null : Date.from(date.toInstant());
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	/**
 	 * @param support The shared project tool support for persons and links
 	 * @param calendarManager For the end of the recurrence
 	 * @param info The appointment with members and tags
@@ -248,9 +332,12 @@ class AppointmentToolSupport {
 		properties.put("description", Map.of("type", "string", "description", "plain text; absent when empty"));
 		properties.put("location", Map.of("type", "string", "description", "absent when empty"));
 		properties.put("start", Map.of("type", "string", "format", "date-time",
-				"description", "start of the appointment, of the first occurrence of a series; absent for an appointment without dates"));
+				"description", "start of the appointment; of a series: in list of the occurrence, in get of the first occurrence; absent for an appointment without dates"));
 		properties.put("end", Map.of("type", "string", "format", "date-time",
-				"description", "end of the appointment, of the first occurrence of a series; absent for an appointment without dates"));
+				"description", "end of the appointment; of a series: in list of the occurrence, in get of the first occurrence; absent for an appointment without dates"));
+		properties.put("occurrence", Map.of("type", "string", "format", "date-time",
+				"description", "list only: this item is one occurrence of a series, key is the series; pass this value as occurrence to appointment_modify "
+						+ "to change or delete only this occurrence"));
 		properties.put("allDay", Map.of("type", "boolean", "description", "true: start and end are days, the time is the start of the day"));
 		properties.put("color", Map.of("type", "string", "description", "the calendar color; absent for the default color"));
 		properties.put("recurrence", Map.of("type", "string", "enum", recurrences,

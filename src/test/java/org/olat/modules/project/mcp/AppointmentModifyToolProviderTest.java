@@ -577,34 +577,72 @@ public class AppointmentModifyToolProviderTest extends OlatTestCase {
 		assertThat(endOnly.text()).contains("recurrenceEnd needs a recurrence");
 	}
 
+	/**
+	 * One occurrence of a series is changed or deleted with the argument
+	 * occurrence, as the cascade once, single and future of the calendar; a
+	 * changed occurrence is updated and deleted by its own key (test9 finding
+	 * 2026-11-03).
+	 */
 	@Test
-	public void update_delete_occurrenceRefused() {
+	public void update_delete_occurrences() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("mcp-ap-117");
 		ProjProject project = createProject(owner);
 		ProjAppointment series = createAppointment(owner, project, "Weekly", at(2030, 3, 4, 9), at(2030, 3, 4, 10));
 		Map<String,Object> weekly = item(invoke(context(owner), Map.of("action", "update", "appointmentKey", series.getKey(),
 				"recurrence", "weekly", "recurrenceEnd", "2030-04-29")));
 		Assert.assertEquals("weekly", weekly.get("recurrence"));
-		ProjAppointment occurrence = createOccurrence(owner, series, at(2030, 3, 11, 9));
+		ProjAppointment changed = createOccurrence(owner, series, at(2030, 3, 11, 9));
 		dbInstance.commitAndCloseSession();
 
-		McpToolResult update = invoke(context(owner), Map.of("action", "update", "appointmentKey", occurrence.getKey(), "subject", "x"));
-		Assert.assertTrue(update.error());
-		assertThat(update.text()).contains("single occurrence of a recurring appointment").contains("Edit it in OpenOlat")
-				.contains("/Appointment/" + occurrence.getKey());
-		McpToolResult delete = invoke(context(owner), Map.of("action", "delete", "appointmentKey", occurrence.getKey()));
-		Assert.assertTrue(delete.error());
-		assertThat(delete.text()).contains("Delete it in OpenOlat");
+		// a changed occurrence is updated like a single appointment, without repetition
+		Map<String,Object> renamed = item(invoke(context(owner), Map.of("action", "update", "appointmentKey", changed.getKey(), "subject", "Moved")));
+		Assert.assertEquals("Moved", renamed.get("subject"));
+		assertError(owner, Map.of("action", "update", "appointmentKey", changed.getKey(), "recurrence", "daily", "recurrenceEnd", "2030-04-29"),
+				"has no repetition");
+
+		// update of one occurrence: a new appointment of its own, the series keeps its values
+		McpToolResult moved = invoke(context(owner), Map.of("action", "update", "appointmentKey", series.getKey(),
+				"occurrence", "2030-03-18T09:00", "start", "2030-03-18T14:00", "location", "Room 2"));
+		Assert.assertFalse(moved.text(), moved.error());
+		assertThat(moved.text()).contains("Updated the occurrence");
+		Map<String,Object> movedItem = item(moved);
+		Assert.assertNotEquals(series.getKey(), movedItem.get("key"));
 		dbInstance.commitAndCloseSession();
-		Assert.assertEquals("Weekly", projectService.getAppointment(occurrence).getSubject());
-		Assert.assertEquals(ProjectStatus.active, projectService.getAppointment(occurrence).getArtefact().getStatus());
+		ProjAppointment movedAppointment = projectService.getAppointment(() -> (Long)movedItem.get("key"));
+		Assert.assertEquals(toDate(at(2030, 3, 18, 14)), movedAppointment.getStartDate());
+		Assert.assertEquals(toDate(at(2030, 3, 18, 15)), movedAppointment.getEndDate());
+		Assert.assertEquals("Room 2", movedAppointment.getLocation());
+		Assert.assertEquals("Weekly", movedAppointment.getSubject());
+		Assert.assertNull(movedAppointment.getRecurrenceRule());
+		Assert.assertEquals("Room 1", projectService.getAppointment(series).getLocation());
+
+		// delete of one occurrence and of an occurrence with the following ones
+		item(invoke(context(owner), Map.of("action", "delete", "appointmentKey", series.getKey(), "occurrence", "2030-03-25T09:00")));
+		item(invoke(context(owner), Map.of("action", "delete", "appointmentKey", series.getKey(), "occurrence", "2030-04-15T09:00", "following", Boolean.TRUE)));
+		dbInstance.commitAndCloseSession();
+		assertThat(starts(project)).containsExactly(at(2030, 3, 4, 9), at(2030, 3, 11, 9), at(2030, 3, 18, 14), at(2030, 4, 1, 9), at(2030, 4, 8, 9));
+
+		// delete of a changed occurrence: its occurrence does not come back
+		Map<String,Object> deletedChanged = item(invoke(context(owner), Map.of("action", "delete", "appointmentKey", changed.getKey())));
+		Assert.assertEquals("deleted", deletedChanged.get("status"));
+		dbInstance.commitAndCloseSession();
+		assertThat(starts(project)).containsExactly(at(2030, 3, 4, 9), at(2030, 3, 18, 14), at(2030, 4, 1, 9), at(2030, 4, 8, 9));
+
+		// refusals: no occurrence at this start, no series, following without occurrence, the series still active
+		assertError(owner, Map.of("action", "delete", "appointmentKey", series.getKey(), "occurrence", "2030-03-25T09:00"), "has no occurrence at");
+		assertError(owner, Map.of("action", "update", "appointmentKey", movedAppointment.getKey(), "occurrence", "2030-03-18T14:00", "subject", "x"),
+				"is no series");
+		assertError(owner, Map.of("action", "delete", "appointmentKey", series.getKey(), "following", Boolean.TRUE), "needs the argument occurrence");
+		assertError(owner, Map.of("action", "update", "appointmentKey", series.getKey(), "occurrence", "2030-04-01T09:00", "recurrence", "none"),
+				"has no repetition");
+		Assert.assertEquals(ProjectStatus.active, projectService.getAppointment(series).getArtefact().getStatus());
 
 		// the series is deleted with its changed occurrences
 		Map<String,Object> deleted = item(invoke(context(owner), Map.of("action", "delete", "appointmentKey", series.getKey())));
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals("deleted", deleted.get("status"));
 		Assert.assertEquals(ProjectStatus.deleted, projectService.getAppointment(series).getArtefact().getStatus());
-		Assert.assertEquals(ProjectStatus.deleted, projectService.getAppointment(occurrence).getArtefact().getStatus());
+		Assert.assertEquals(ProjectStatus.deleted, projectService.getAppointment(movedAppointment).getArtefact().getStatus());
 	}
 
 	@Test
@@ -811,6 +849,22 @@ public class AppointmentModifyToolProviderTest extends OlatTestCase {
 		String recurrenceId = CalendarUtils.formatRecurrenceDate(start.atZone(ZoneId.systemDefault()), false);
 		return projectService.createAppointmentOcurrence(doer, new ProjectBCFactory(), series.getIdentifier(), recurrenceId,
 				toDate(start), toDate(start.plusHours(1)));
+	}
+
+	/**
+	 * @return The starts of the active appointments of the project in March and April 2030, as the calendar shows them
+	 */
+	private List<LocalDateTime> starts(ProjProject project) {
+		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+		searchParams.setProject(project);
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		searchParams.setDatesNull(Boolean.FALSE);
+		List<ProjAppointment> appointments = projectService.getAppointments(searchParams);
+		return AppointmentToolSupport.events(projectService, calendarManager, appointments, toDate(at(2030, 3, 1, 0)), toDate(at(2030, 5, 1, 0)))
+				.stream()
+				.map(event -> event.getBegin().withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+				.sorted()
+				.toList();
 	}
 
 	private ProjNote createNote(Identity doer, ProjProject project, String title) {

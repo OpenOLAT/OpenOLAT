@@ -69,8 +69,10 @@ import org.springframework.stereotype.Service;
  * flags, but create can copy a template the account may use, as the create
  * from template of ProjProjectListController does.
  * <p>
- * Organisations of a new project, with and without template: see
- * newProjectOrganisations. Without any organisation create is refused, the
+ * Organisations of a new project without template: see
+ * newProjectOrganisations. A copy of a template keeps the organisations of
+ * copyProjectFromTemplate, all user organisations of the creator, as in the
+ * UI. Without any organisation create is refused, the
  * form cannot be saved either. With the organisation module disabled the
  * service assigns the default organisation.
  * <p>
@@ -131,7 +133,8 @@ public class ProjectModifyToolProvider implements McpToolProvider {
 			+ "A project keeps at least one owner. Call project_query for the projectKey. "
 			+ "create with templateKey copies a template with its artefacts (project_query list with templates true lists the templates the account may use); "
 			+ "the passed title, externalRef, teaser and description replace the values of the template. "
-			+ "create assigns the organisations in which the account is a user and manages or may create projects, else all organisations in which it is a user. "
+			+ "create without template assigns the organisations in which the account is a user and manages or may create projects, else all organisations in which it is a user; "
+			+ "create with template assigns all organisations in which the account is a user, as OpenOlat does. "
 			+ "Templates cannot be created or changed into projects, other organisations and images are managed in OpenOlat.",
 			inputSchema(), outputSchema(), true, false);
 
@@ -250,8 +253,8 @@ public class ProjectModifyToolProvider implements McpToolProvider {
 			if(project == null) {
 				throw new IllegalStateException("The new project disappeared before its update");
 			}
-			// The copy has the user organisations already, mostly the same set: no add and remove activities without a change
-			if(template == null || !sameOrganisations(projectService.getOrganisations(project), organisations)) {
+			// The copy keeps the organisations of copyProjectFromTemplate, as in the UI
+			if(template == null) {
 				projectService.updateProjectOrganisations(doer, project, organisations);
 			}
 			dbInstance.commit();
@@ -277,10 +280,10 @@ public class ProjectModifyToolProvider implements McpToolProvider {
 	}
 
 	/**
-	 * The organisations of a new project, with and without template.
+	 * The organisations of a new project without template. Without any
+	 * organisation, create is refused also for a template copy.
 	 * <p>
-	 * Rule (option B of the verification, decided by James for Florian, who
-	 * may overrule it): the organisations in which the creator is
+	 * Rule: the organisations in which the creator is
 	 * administrator, project manager or has a role of the setting "create
 	 * projects", intersected with the organisations in which the creator is a
 	 * user. If the intersection is empty, the organisations in which the
@@ -291,11 +294,8 @@ public class ProjectModifyToolProvider implements McpToolProvider {
 	 * organisations without preselection and the user chooses; the tool has no
 	 * choice. The full manager list is never taken: an administrator of a
 	 * parent organisation manages every child organisation, the project must
-	 * not land in all of them. The user organisations are the organisations of
-	 * the copy of a template (ProjectCopyServiceImpl.copyProjectFromTemplate)
-	 * and the preselection of the form for a creator without manager
-	 * organisation. The result is always a subset of the user organisations,
-	 * so for a copy it mostly equals the organisations the copy already has.
+	 * not land in all of them. The user organisations are the preselection of
+	 * the form for a creator without manager organisation.
 	 *
 	 * @return The organisations, empty if the creator is a user in no organisation
 	 */
@@ -313,14 +313,6 @@ public class ProjectModifyToolProvider implements McpToolProvider {
 				.filter(userOrganisations::contains)
 				.toList();
 		return homeOrganisations.isEmpty() ? userOrganisations : homeOrganisations;
-	}
-
-	private static boolean sameOrganisations(List<Organisation> current, List<Organisation> target) {
-		Set<Long> currentKeys = new HashSet<>();
-		current.forEach(organisation -> currentKeys.add(organisation.getKey()));
-		Set<Long> targetKeys = new HashSet<>();
-		target.forEach(organisation -> targetKeys.add(organisation.getKey()));
-		return currentKeys.equals(targetKeys);
 	}
 
 	/**

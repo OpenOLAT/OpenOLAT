@@ -41,7 +41,7 @@ public class McpPermissionException extends RuntimeException {
 	 * @param permission What is missing, e.g. "create ToDos"
 	 */
 	public McpPermissionException(String objectDescription, String permission) {
-		super("Permission denied: " + permission + " on " + objectDescription);
+		super("Permission denied for " + objectDescription + ": " + permission);
 		this.objectDescription = objectDescription;
 		this.permission = permission;
 	}

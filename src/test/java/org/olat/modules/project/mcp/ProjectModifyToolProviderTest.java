@@ -420,13 +420,13 @@ public class ProjectModifyToolProviderTest extends OlatTestCase {
 	}
 
 	/**
-	 * F1: the copy of a template follows the same rule as a plain create. A
-	 * project manager of B without user membership in B gets the project in
-	 * the user organisation A, as the copy service puts it; no add and remove
-	 * activities.
+	 * F1: the copy of a template keeps the organisations of the copy service,
+	 * all user organisations of the creator, as the create from template of
+	 * the UI. A project manager of B without user membership in B gets the
+	 * project in the user organisation A; no remove activities.
 	 */
 	@Test
-	public void create_fromTemplate_organisationsOfTheRule() {
+	public void create_fromTemplate_organisationsOfTheCopy() {
 		Organisation userOrganisation = organisationService.createOrganisation(random(), random(), random(), null,
 				null, JunitTestHelper.getDefaultActor());
 		Organisation managerOrganisation = organisationService.createOrganisation(random(), random(), random(), null,
@@ -444,7 +444,7 @@ public class ProjectModifyToolProviderTest extends OlatTestCase {
 		assertThat(actions).filteredOn(Action.projectOrganisationAdd::equals).hasSize(1);
 		assertThat(actions).doesNotContain(Action.projectOrganisationRemove);
 
-		// a second user organisation which is also a manager organisation: the copy is in both, the rule keeps one
+		// a second user organisation which is also a manager organisation: the copy stays in both, as in the UI (test9 finding 2026-11-03)
 		Organisation home = organisationService.createOrganisation(random(), random(), random(), null,
 				null, JunitTestHelper.getDefaultActor());
 		organisationService.addMember(home, creator, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
@@ -453,8 +453,8 @@ public class ProjectModifyToolProviderTest extends OlatTestCase {
 		Map<String,Object> homeItem = item(invoke(context(creator), Map.of("action", "create", "templateKey", template.getKey(), "title", "Home " + random())));
 		dbInstance.commitAndCloseSession();
 		ProjProject homeProject = projectService.getProject(() -> (Long)homeItem.get("key"));
-		assertThat(projectService.getOrganisations(homeProject)).containsExactly(home);
-		assertThat(actions(homeProject, creator)).contains(Action.projectOrganisationRemove);
+		assertThat(projectService.getOrganisations(homeProject)).containsExactlyInAnyOrder(userOrganisation, home);
+		assertThat(actions(homeProject, creator)).doesNotContain(Action.projectOrganisationRemove);
 	}
 
 	/**

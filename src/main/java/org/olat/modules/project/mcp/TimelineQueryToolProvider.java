@@ -367,7 +367,8 @@ public class TimelineQueryToolProvider implements McpToolProvider {
 		itemProperties.put("key", Map.of("type", "integer"));
 		itemProperties.put("date", Map.of("type", "string", "format", "date-time"));
 		itemProperties.put("action", Map.of("type", "string", "description", "the activity action of OpenOlat, e.g. toDoCreate, noteContentUpdate, projectMemberAdd"));
-		itemProperties.put("target", Map.of("type", "string", "enum", McpToolSupport.names(TYPES)));
+		// all targets: allActions also returns the whiteboard activities, which are no type of the filter
+		itemProperties.put("target", Map.of("type", "string", "enum", McpToolSupport.names(List.of(ActionTarget.values()))));
 		itemProperties.put("doer", McpToolSupport.personSchema());
 		itemProperties.put("member", Map.of("type", "object", "properties", Map.of("username", Map.of("type", "string"), "displayName", Map.of("type", "string")),
 				"description", "the affected member of a member action"));
