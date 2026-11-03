@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.mcp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,7 +39,6 @@ import org.olat.mcp.tool.McpToolResult;
 import org.olat.mcp.tool.McpToolScope;
 import org.olat.mcp.tool.McpToolSupport;
 import org.olat.modules.lecture.LectureBlock;
-import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
@@ -48,6 +48,8 @@ import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntry;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -80,6 +82,10 @@ public class LectureQueryToolProvider implements McpToolProvider {
 	/** Maximum length of the date window in days, keeps the unpaged service query bounded */
 	public static final int MAX_WINDOW_DAYS = 366;
 
+	/** The status values of the lecture list, see LectureBlockStatusCellRenderer.calculateStatus */
+	private static final List<String> STATUS_VALUES = Arrays.stream(LectureBlockVirtualStatus.values())
+			.map(status -> status.name().toLowerCase()).toList();
+
 	private static final Map<String,Object> ITEM_SCHEMA = Map.of("type", "object",
 			"properties", Map.ofEntries(
 				Map.entry("key", Map.of("type", "integer", "description", "Key of the event (lecture block)")),
@@ -91,8 +97,8 @@ public class LectureQueryToolProvider implements McpToolProvider {
 						"properties", Map.of(
 							"key", Map.of("type", "integer"),
 							"displayName", Map.of("type", "string")))),
-				Map.entry("status", Map.of("type", "string", "enum", McpToolSupport.names(LectureBlockStatus.values()),
-						"description", "The status of the event: active (Active), done (Done), cancelled (Canceled)")),
+				Map.entry("status", Map.of("type", "string", "enum", STATUS_VALUES,
+						"description", "The status of the event as the lecture list shows it: planned (Scheduled), running (Running), done (Done, the end has passed), cancelled (Canceled)")),
 				Map.entry("rollCallStatus", Map.of("type", "string", "enum", McpToolSupport.names(LectureRollCallStatus.values()),
 						"description", "The roll call status: open (Open), closed (Closed), reopen (Reopen), autoclosed (Auto-closed)")),
 				Map.entry("compulsory", Map.of("type", "boolean")),
@@ -106,7 +112,7 @@ public class LectureQueryToolProvider implements McpToolProvider {
 							"authorizedAbsence", Map.of("type", "boolean"),
 							"absenceNotice", Map.of("type", "boolean")))),
 				Map.entry("url", Map.of("type", "string", "description", "Link to the event in the lectures of the course"))),
-			"required", List.of("key", "title", "start", "end", "status", "rollCallStatus", "compulsory", "teachers", "url"));
+			"required", List.of("key", "title", "start", "end", "rollCallStatus", "compulsory", "teachers", "url"));
 
 	private static final McpToolDefinition DEFINITION = new McpToolDefinition(
 			"OpenOlat: lectures and events",
@@ -114,7 +120,8 @@ public class LectureQueryToolProvider implements McpToolProvider {
 			"Returns the lecture events (lecture blocks) of the current user with date, location, course, status, roll call status and teachers. "
 			+ "Use action events to see the schedule as participant or as teacher in a date window (from defaults to today, to defaults to from plus 14 days, at most 366 days), "
 			+ "optionally for one course with courseKey; as participant with a courseKey each item also carries the own attendance. "
-			+ "Use action pending_rollcalls to find the events running now where the user as teacher still has to take the roll call. "
+			+ "Without as the tool answers as participant: when a user asks for the own schedule and may teach, call it also with as teacher. "
+			+ "Use action pending_rollcalls to find the ended events where the user as teacher still has to record the absences (the Pending tab of the lecture list). "
 			+ "It does not return events of other users or courses without the lectures enabled, and it changes nothing.",
 			Map.of("type", "object",
 				"properties", Map.of(
@@ -263,6 +270,9 @@ public class LectureQueryToolProvider implements McpToolProvider {
 		String noun = as == LectureRoles.teacher ? "events as teacher" : "events as participant";
 		String text = McpToolSupport.listText(lines, total, noun + " from " + McpToolSupport.isoDate(from)
 				+ " to " + McpToolSupport.isoDate(to));
+		if(total == 0 && as == LectureRoles.participant) {
+			text += " If the user teaches, call again with as teacher.";
+		}
 		return McpToolResult.of(McpToolSupport.listResult(items, total, limit), text);
 	}
 	
@@ -274,21 +284,30 @@ public class LectureQueryToolProvider implements McpToolProvider {
 		}
 		
 		Long courseKey = McpToolSupport.longValue(arguments, "courseKey");
-		// Same query as RollCallInterceptorController: running now, not closed, roll call enabled
-		List<LectureBlock> blocks = new ArrayList<>(lectureService.getRollCallAsTeacher(context.identity()));
+		// Same parameters as the Pending tab and the open roll call warning of LectureListRepositoryController:
+		// the teacher's events with the end passed and the roll call open or reopened
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setTeacher(context.identity());
+		searchParams.setEndDate(new Date());
+		searchParams.addRollCallStatus(LectureRollCallStatus.open, LectureRollCallStatus.reopen);
+		searchParams.setLectureConfiguredRepositoryEntry(true);
+		List<LectureBlockWithTeachers> blocks = new ArrayList<>(lectureService.getLectureBlocksWithOptionalTeachers(searchParams));
+		blocks.removeIf(block -> !isCourseStatusVisible(block.getLectureBlock().getEntry(), LectureRoles.teacher));
 		if(courseKey != null) {
-			blocks.removeIf(block -> block.getEntry() == null || !courseKey.equals(block.getEntry().getKey()));
+			blocks.removeIf(block -> block.getLectureBlock().getEntry() == null
+					|| !courseKey.equals(block.getLectureBlock().getEntry().getKey()));
 		}
-		blocks.sort(Comparator.comparing(LectureBlock::getStartDate, Comparator.nullsLast(Comparator.naturalOrder()))
-				.thenComparing(LectureBlock::getKey));
+		// Oldest first: the longest open roll call comes first
+		blocks.sort(Comparator.comparing((LectureBlockWithTeachers b) -> b.getLectureBlock().getStartDate(), Comparator.nullsLast(Comparator.naturalOrder()))
+				.thenComparing(b -> b.getLectureBlock().getKey()));
 		
 		int limit = McpToolSupport.limit(arguments);
 		int total = blocks.size();
 		List<Map<String,Object>> items = new ArrayList<>(Math.min(total, limit));
 		List<String> lines = new ArrayList<>(Math.min(total, limit));
-		for(LectureBlock block:blocks.subList(0, Math.min(total, limit))) {
-			items.add(toItem(block, lectureService.getTeachers(block)));
-			lines.add(toLine(block));
+		for(LectureBlockWithTeachers block:blocks.subList(0, Math.min(total, limit))) {
+			items.add(toItem(block.getLectureBlock(), block.getTeachers()));
+			lines.add(toLine(block.getLectureBlock()));
 		}
 		String text = McpToolSupport.listText(lines, total, "events with a pending roll call");
 		return McpToolResult.of(McpToolSupport.listResult(items, total, limit), text);
@@ -350,7 +369,10 @@ public class LectureQueryToolProvider implements McpToolProvider {
 			course.put("displayName", entry.getDisplayname());
 			item.put("course", course);
 		}
-		item.put("status", block.getStatus() == null ? null : block.getStatus().name());
+		String status = status(block);
+		if(status != null) {
+			item.put("status", status);
+		}
 		item.put("rollCallStatus", block.getRollCallStatus() == null ? null : block.getRollCallStatus().name());
 		item.put("compulsory", Boolean.valueOf(block.isCompulsory()));
 		List<String> teacherNames = new ArrayList<>(teachers == null ? 0 : teachers.size());
@@ -362,6 +384,15 @@ public class LectureQueryToolProvider implements McpToolProvider {
 		item.put("teachers", teacherNames);
 		item.put("url", entry == null ? null : McpToolSupport.url("RepositoryEntry", entry.getKey(), "LectureBlock", block.getKey()));
 		return item;
+	}
+	
+	/**
+	 * The status the lecture list shows: derived from the dates, cancelled
+	 * from the stored status. Null for an event without dates.
+	 */
+	static String status(LectureBlock block) {
+		LectureBlockVirtualStatus status = LectureBlockStatusCellRenderer.calculateStatus(block);
+		return status == null ? null : status.name().toLowerCase();
 	}
 	
 	private static Map<String,Object> toRollCall(LectureBlockAndRollCall rollCall) {
@@ -388,7 +419,7 @@ public class LectureQueryToolProvider implements McpToolProvider {
 		if(block.getLocation() != null) {
 			sb.append(", ").append(block.getLocation());
 		}
-		sb.append(", ").append(block.getStatus()).append(", roll call ").append(block.getRollCallStatus())
+		sb.append(", ").append(status(block)).append(", roll call ").append(block.getRollCallStatus())
 		  .append(", key ").append(block.getKey());
 		return sb.toString();
 	}

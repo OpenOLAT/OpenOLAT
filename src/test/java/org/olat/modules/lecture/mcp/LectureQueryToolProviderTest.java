@@ -42,7 +42,9 @@ import org.olat.mcp.tool.McpToolResult;
 import org.olat.mcp.tool.McpToolScope;
 import org.olat.mcp.tool.McpToolSupport;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.manager.LectureParticipantSummaryDAO;
@@ -135,7 +137,7 @@ public class LectureQueryToolProviderTest extends OlatTestCase {
 			.containsEntry("key", f.running.getKey())
 			.containsEntry("title", f.running.getTitle())
 			.containsEntry("location", "Room 101")
-			.containsEntry("status", "active")
+			.containsEntry("status", "running")
 			.containsEntry("compulsory", Boolean.TRUE)
 			.containsEntry("start", McpToolSupport.iso(f.running.getStartDate()))
 			.containsEntry("url", McpToolSupport.url("RepositoryEntry", f.course.getKey(), "LectureBlock", f.running.getKey()))
@@ -344,17 +346,29 @@ public class LectureQueryToolProviderTest extends OlatTestCase {
 	@Test
 	public void pendingRollCalls() {
 		Fixture f = new Fixture();
+		Date now = new Date();
+		LectureBlock ended = f.createBlock(f.course, "Yesterday", DateUtils.addDays(now, -1), DateUtils.addMinutes(DateUtils.addDays(now, -1), 90), f.teacher);
+		LectureBlock reopened = f.createBlock(f.course, "Reopened", DateUtils.addDays(now, -3), DateUtils.addMinutes(DateUtils.addDays(now, -3), 90), f.teacher);
+		f.setRollCallStatus(reopened, LectureRollCallStatus.reopen);
+		LectureBlock closed = f.createBlock(f.course, "Closed", DateUtils.addDays(now, -2), DateUtils.addMinutes(DateUtils.addDays(now, -2), 90), f.teacher);
+		f.setRollCallStatus(closed, LectureRollCallStatus.closed);
+		LectureBlock otherTeacher = f.createBlock(f.course, "Other teacher", DateUtils.addDays(now, -1), DateUtils.addMinutes(DateUtils.addDays(now, -1), 90), null);
 
+		// The Pending tab of the lecture list: ended, roll call open or reopened, oldest first;
+		// the running event, the closed roll call and the events of other teachers are not pending
 		McpToolResult result = provider.execute(context(f.teacher), Map.of("action", "pending_rollcalls"));
 		Assertions.assertThat(result.error()).isFalse();
-		Assertions.assertThat(keys(result)).containsExactly(f.running.getKey());
-		Assertions.assertThat(result.text()).startsWith("1 events with a pending roll call");
-		Assertions.assertThat(items(result).get(0))
-			.containsEntry("url", McpToolSupport.url("RepositoryEntry", f.course.getKey(), "LectureBlock", f.running.getKey()));
+		Assertions.assertThat(keys(result)).containsExactly(reopened.getKey(), ended.getKey())
+			.doesNotContain(f.running.getKey(), closed.getKey(), otherTeacher.getKey());
+		Assertions.assertThat(result.text()).startsWith("2 events with a pending roll call");
+		Assertions.assertThat(items(result).get(1))
+			.containsEntry("status", "done")
+			.containsEntry("rollCallStatus", "open")
+			.containsEntry("url", McpToolSupport.url("RepositoryEntry", f.course.getKey(), "LectureBlock", ended.getKey()));
 
 		McpToolResult explicit = provider.execute(context(f.teacher), Map.of("action", "pending_rollcalls", "as", "teacher",
 				"courseKey", f.course.getKey()));
-		Assertions.assertThat(keys(explicit)).containsExactly(f.running.getKey());
+		Assertions.assertThat(keys(explicit)).containsExactly(reopened.getKey(), ended.getKey());
 
 		McpToolResult otherCourse = provider.execute(context(f.teacher), Map.of("action", "pending_rollcalls",
 				"courseKey", f.otherCourse.getKey()));
@@ -364,13 +378,56 @@ public class LectureQueryToolProviderTest extends OlatTestCase {
 	@Test
 	public void pendingRollCallsLimit() {
 		Fixture f = new Fixture();
-		LectureBlock secondRunning = f.createBlock(f.course, "Second running", runningStart(), DateUtils.addMinutes(new Date(), 60), f.teacher);
+		Date now = new Date();
+		LectureBlock first = f.createBlock(f.course, "First", DateUtils.addDays(now, -2), DateUtils.addMinutes(DateUtils.addDays(now, -2), 90), f.teacher);
+		f.createBlock(f.course, "Second", DateUtils.addDays(now, -1), DateUtils.addMinutes(DateUtils.addDays(now, -1), 90), f.teacher);
 
 		McpToolResult result = provider.execute(context(f.teacher), Map.of("action", "pending_rollcalls", "limit", 1));
 		Assertions.assertThat(items(result)).hasSize(1);
 		Assertions.assertThat(total(result)).isEqualTo(2);
 		Assertions.assertThat(truncated(result)).isTrue();
-		Assertions.assertThat(keys(result)).containsAnyOf(f.running.getKey(), secondRunning.getKey());
+		Assertions.assertThat(keys(result)).containsExactly(first.getKey());
+	}
+
+	@Test
+	public void statusAsInLectureList() {
+		Fixture f = new Fixture();
+		Date now = new Date();
+		LectureBlock ended = f.createBlock(f.course, "Ended", DateUtils.addMinutes(now, -120), DateUtils.addMinutes(now, -30), f.teacher);
+		LectureBlock cancelled = f.createBlock(f.course, "Cancelled", DateUtils.addDays(now, 1), DateUtils.addMinutes(DateUtils.addDays(now, 1), 90), f.teacher);
+		cancelled.setStatus(LectureBlockStatus.cancelled);
+		lectureService.save(cancelled, null);
+		dbInstance.commitAndCloseSession();
+
+		Assertions.assertThat(LectureQueryToolProvider.status(f.running)).isEqualTo("running");
+		Assertions.assertThat(LectureQueryToolProvider.status(f.in3Days)).isEqualTo("planned");
+		Assertions.assertThat(LectureQueryToolProvider.status(ended)).isEqualTo("done");
+		Assertions.assertThat(LectureQueryToolProvider.status(cancelled)).isEqualTo("cancelled");
+
+		McpToolResult result = provider.execute(context(f.teacher), Map.of("as", "teacher",
+				"from", McpToolSupport.isoDate(DateUtils.addDays(now, -1)), "to", McpToolSupport.isoDate(DateUtils.addDays(now, 4))));
+		Map<Object,Object> statusByKey = new HashMap<>();
+		for(Map<String,Object> item:items(result)) {
+			statusByKey.put(item.get("key"), item.get("status"));
+		}
+		Assertions.assertThat(statusByKey)
+			.containsEntry(ended.getKey(), "done")
+			.containsEntry(f.running.getKey(), "running")
+			.containsEntry(cancelled.getKey(), "cancelled")
+			.containsEntry(f.in3Days.getKey(), "planned");
+	}
+
+	@Test
+	public void eventsAsParticipantEmptyHintsTeacherRole() {
+		Fixture f = new Fixture();
+
+		// The teacher is no participant: the empty answer points to the role teacher
+		McpToolResult result = provider.execute(context(f.teacher), Map.of());
+		Assertions.assertThat(items(result)).isEmpty();
+		Assertions.assertThat(result.text()).contains("call again with as teacher");
+		// A list with events carries no hint
+		McpToolResult participant = provider.execute(context(f.participant), Map.of());
+		Assertions.assertThat(participant.text()).doesNotContain("as teacher");
 	}
 
 	@Test
@@ -473,6 +530,13 @@ public class LectureQueryToolProviderTest extends OlatTestCase {
 			dbInstance.commitAndCloseSession();
 			defaultGroups.put(entry, repositoryService.getDefaultGroup(entry));
 			return entry;
+		}
+
+		void setRollCallStatus(LectureBlock block, LectureRollCallStatus status) {
+			LectureBlock reloaded = lectureService.getLectureBlock(block);
+			reloaded.setRollCallStatus(status);
+			lectureService.save(reloaded, null);
+			dbInstance.commitAndCloseSession();
 		}
 
 		LectureBlock createBlock(RepositoryEntry entry, String title, Date start, Date end, Identity blockTeacher) {
