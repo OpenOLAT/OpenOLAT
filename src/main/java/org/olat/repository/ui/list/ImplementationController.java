@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.list;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -32,7 +34,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
+import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.catalog.ui.CatalogBCFactory;
+import org.olat.modules.catalog.ui.CatalogCurriculumElementSingleCourseHeaderConfig;
+import org.olat.modules.catalog.ui.CatalogCurriculumElementStructuredHeaderConfig;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -40,6 +45,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.modules.curriculum.ui.CurriculumElementListController;
 import org.olat.modules.curriculum.ui.ImplementationsListConfig;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +61,7 @@ public class ImplementationController extends BasicController {
 	private final BreadcrumbedStackedPanel stackPanel;
 	
 	private final CurriculumElement rootElement;
+	private final ImplementationsListConfig config;
 	
 	private CurriculumElementInfosController infosCtrl;
 	private final ImplementationHeaderController headerCtrl;
@@ -73,6 +80,7 @@ public class ImplementationController extends BasicController {
 		
 		this.stackPanel = stackPanel;
 		this.rootElement = rootElement;
+		this.config = config;
 		
 		VelocityContainer mainVC = createVelocityContainer("implementation");
 		
@@ -104,6 +112,10 @@ public class ImplementationController extends BasicController {
 			if(event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);
 			}
+		} else if(infosCtrl == source) {
+			if(event instanceof LeavingEvent || event instanceof BookedEvent) {
+				fireEvent(ureq, event);
+			}
 		}
 	}
 
@@ -120,7 +132,20 @@ public class ImplementationController extends BasicController {
 		OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		
-		infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, null, new BasicDetailsHeaderConfig(getIdentity()));
+		RepositoryEntry entry = null;
+		BasicDetailsHeaderConfig headerConfig;
+		if (!config.withCatalogDetailsHeader()) {
+			headerConfig = new BasicDetailsHeaderConfig(getIdentity());
+		} else if (curriculumElement.isSingleCourseImplementation()) {
+			List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
+			entry = entries.size() == 1 ? entries.get(0) : null;
+			headerConfig = new CatalogCurriculumElementSingleCourseHeaderConfig(curriculumElement, entry, getIdentity(), ureq.getUserSession().getRoles());
+			headerConfig.hideOpenButtons();
+		} else {
+			headerConfig = new CatalogCurriculumElementStructuredHeaderConfig(curriculumElement, getIdentity());
+			headerConfig.hideOpenButtons();
+		}
+		infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, headerConfig);
 		listenTo(infosCtrl);
 		addToHistory(ureq, infosCtrl);
 		

@@ -97,7 +97,7 @@
 				max-width: $o-ac-offers-container-max-width;
 				margin-bottom: math.div($o-radio-cards-gap, 2);
 			}
-			// Open/cancel/admin always stacked, one below the other.
+			// Open/admin always stacked, one below the other.
 			.o_start_inner {
 				display: flex;
 				flex-direction: column;
@@ -106,10 +106,6 @@
 				> .o_button_call_to_action {
 					max-width: 100%;
 					margin-top: 0;
-				}
-
-				.o_cancel_space {
-					display: none;
 				}
 			}
 		}
@@ -272,7 +268,12 @@
 		}
 
 		.o_info_page_get_started:not(:has(.o_ac_offer_details > *)),
-		&.o_info_page_member .o_info_page_get_started {
+		&.o_info_page_member .o_info_page_get_started,
+		.o_info_page_my_course:not(:has(.o_facts > *)) {
+			display: none;
+		}
+		
+		.o_info_page_my_course .o_fact_sheet_footer {
 			display: none;
 		}
 

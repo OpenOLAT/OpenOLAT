@@ -35,7 +35,7 @@ public record ImplementationsListConfig(
 		Identity coachIdentity,
 		boolean withPreparation,
 		boolean withPreparationWarning,
-		boolean withEnhancedInfoHeader,
+		boolean withCatalogDetailsHeader,
 		boolean withFormTitle,
 		boolean withFormLegend,
 		String helpUrl,
@@ -58,7 +58,7 @@ public record ImplementationsListConfig(
 		private Identity coachIdentity;
 		private boolean withPreparation;
 		private boolean withPreparationWarning;
-		private boolean withEnhancedInfoHeader;
+		private boolean withCatalogDetailsHeader;
 		private boolean withFormTitle;
 		private boolean withFormLegend;
 		private String helpUrl;
@@ -90,8 +90,8 @@ public record ImplementationsListConfig(
 			return this;
 		}
 
-		public Builder enableEnhancedInfoHeader() {
-			this.withEnhancedInfoHeader = true;
+		public Builder enableCatalogDetailsHeader() {
+			this.withCatalogDetailsHeader = true;
 			return this;
 		}
 
@@ -152,7 +152,7 @@ public record ImplementationsListConfig(
 
 		public ImplementationsListConfig build() {
 			return new ImplementationsListConfig(asRoles, coachIdentity, withPreparation, withPreparationWarning,
-					withEnhancedInfoHeader, withFormTitle, withFormLegend, helpUrl, withBookmarks, withId,
+					withCatalogDetailsHeader, withFormTitle, withFormLegend, helpUrl, withBookmarks, withId,
 					extRefVisibilityDefault, withRoles, withStatus, withCompletion, withCalendar,
 					withCancelledFilter);
 		}

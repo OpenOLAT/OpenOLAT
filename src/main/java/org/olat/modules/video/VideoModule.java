@@ -217,9 +217,10 @@ public class VideoModule extends AbstractSpringModule {
 	 * Two cluster nodes that start at the same time with an empty property can
 	 * each generate a secret; the last write to persist wins, and every other
 	 * node reloads it through {@link #initFromChangedProperties()}. A callback
-	 * signed with a secret from this narrow race window fails verification, and
-	 * the job is retried like any other failed job. This risk is accepted: a
-	 * cluster lock around the generation was considered but is not implemented.
+	 * signed with a secret from this narrow race window fails verification. The
+	 * job is not retried automatically: it stays in progress until an
+	 * administrator restarts it. This risk is accepted: a cluster lock around
+	 * the generation was considered but is not implemented.
 	 */
 	private void initCallbackSecret() {
 		String secretObj = getStringPropertyValue(CALLBACK_SECRET, true);
