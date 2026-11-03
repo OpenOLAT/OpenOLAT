@@ -205,7 +205,7 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		long effectiveToDos = context.getToDosCopySetting() != CopyToDos.dont ? toDos : 0;
 		CopyInfos numOfToDos = new CopyInfos(effectiveToDos, toDos);
 		
-		long roomBookings = elementWithInfos.numOfLectureBlocks();
+		long roomBookings = elementWithInfos.numOfRoomBookings();
 		long effectiveRoomBookings = context.getCopyRoomBookings() != CopyRoomBookings.dont ? roomBookings : 0;
 		CopyInfos numOfRoomBookings = new CopyInfos(effectiveRoomBookings, roomBookings);
 		
