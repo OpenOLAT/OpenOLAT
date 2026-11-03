@@ -1741,8 +1741,14 @@ function o_urlComponent(id) {
 		}
 	});
 	const input = root.querySelector('.o_url_input');
+	let selectAll = false;
+	input.addEventListener('mousedown', function() {
+		selectAll = document.activeElement !== input;
+	});
 	input.addEventListener('click', function() {
-		input.select();
+		if (selectAll && input.selectionStart === input.selectionEnd) {
+			input.select();
+		}
 	});
 	root.querySelector('.o_url_copy').addEventListener('click', function() {
 		o_copyToClipboardInfo(input.value, root.dataset.infoTitle, root.dataset.copied).catch(function() {
