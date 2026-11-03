@@ -19,36 +19,13 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
-import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
-import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.mail.MailContext;
-import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumRoles;
-import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.ui.list.AbstractInfoPageGetStartedController;
 import org.olat.repository.ui.list.DetailsHeaderConfig;
-import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.Order;
-import org.olat.resource.accesscontrol.OrderStatus;
-import org.olat.resource.accesscontrol.Price;
-import org.olat.resource.accesscontrol.ui.PriceFormat;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -58,27 +35,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementInfoPageGetStartedController extends AbstractInfoPageGetStartedController {
 
-	private CloseableModalController cmc;
-	private ConfirmationController leaveConfirmationCtrl;
-
 	private final CurriculumElement element;
-	private final Identity bookedIdentity;
-
-	@Autowired
-	private CurriculumService curriculumService;
 
 	public CurriculumElementInfoPageGetStartedController(UserRequest ureq, WindowControl wControl,
 			DetailsHeaderConfig config, CurriculumElement element) {
 		super(ureq, wControl, config);
 		this.element = element;
-		this.bookedIdentity = config.getBookedIdentity();
 
 		init(ureq);
-	}
-
-	@Override
-	protected String getCancelText(boolean withFee) {
-		return withFee ? translate("leave.cancel.fee") : translate("leave.cancel");
 	}
 
 	@Override
@@ -89,85 +53,6 @@ public class CurriculumElementInfoPageGetStartedController extends AbstractInfoP
 	@Override
 	protected OLATResource getResource() {
 		return element.getResource();
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == startCtrl) {
-			if (event == CANCEL_EVENT) {
-				doConfirmLeave(ureq);
-			}
-		} else if (leaveConfirmationCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				doLeave(ureq);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if (cmc == source) {
-			cmc.deactivate();
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(leaveConfirmationCtrl);
-		removeAsListenerAndDispose(cmc);
-		leaveConfirmationCtrl = null;
-		cmc = null;
-	}
-
-	private void doConfirmLeave(UserRequest ureq) {
-		List<Order> orders = acService.findOrders(bookedIdentity, element.getResource(),
-				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
-		Price cancellationFee = acService.getCancellationFee(element.getResource(), element.getBeginDate(), orders);
-
-		String modalTitle;
-		if (cancellationFee == null) {
-			leaveConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
-					translate("leave.cancel.text", StringHelper.escapeHtml(element.getDisplayName())),
-					null,
-					translate("leave.cancel"),
-					ButtonType.regular, translate("leave.cancel.cancel"), true);
-			modalTitle = translate("leave.cancel");
-		} else {
-			leaveConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
-					translate("leave.cancel.fee.text", StringHelper.escapeHtml(element.getDisplayName()), PriceFormat.fullFormat(cancellationFee)),
-					translate("leave.cancel.fee.confirmation", PriceFormat.fullFormat(cancellationFee)),
-					translate("leave.cancel.fee"),
-					ButtonType.regular, translate("leave.cancel.cancel"), true);
-			modalTitle = translate("leave.cancel.fee");
-		}
-		listenTo(leaveConfirmationCtrl);
-
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				leaveConfirmationCtrl.getInitialComponent(), true, modalTitle, true);
-		listenTo(cmc);
-		cmc.activate();
-	}
-
-	private void doLeave(UserRequest ureq) {
-		List<Order> orders = acService.findOrders(bookedIdentity, element.getResource(),
-				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
-		if (orders.isEmpty()) {
-			curriculumService.removeMember(element, bookedIdentity, CurriculumRoles.participant, GroupMembershipStatus.removed, getIdentity(), null);
-		} else {
-			for (Order order : orders) {
-				Map<Long, Price> cancellationFees = new HashMap<>(1);
-				Price cancellationFee = acService.getCancellationFee(element.getResource(), element.getBeginDate(), List.of(order));
-				if (cancellationFee != null) {
-					cancellationFees.put(bookedIdentity.getKey(), cancellationFee);
-				}
-				MailerResult result = new MailerResult();
-				MailTemplate template = CurriculumMailing.getMembershipCancelledByParticipantTemplate(
-						element.getCurriculum(), element, cancellationFees, getIdentity());
-				MailPackage mailing = new MailPackage(template, result, (MailContext) null, template != null);
-				acService.cancelOrder(order, getIdentity(), null, mailing);
-				curriculumService.removeMemberReservation(element, bookedIdentity, CurriculumRoles.participant, GroupMembershipStatus.removed, getIdentity(), null);
-			}
-		}
-
-		fireEvent(ureq, new LeavingEvent(element));
 	}
 
 }

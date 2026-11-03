@@ -78,6 +78,7 @@ public class CurriculumElementInfosController extends BasicController {
 	private final InfoPageHeaderController headerCtrl;
 	private final InfoPageTeaserImageController teaserImageCtrl;
 	private final CurriculumElementInfoPageGetStartedController getStartedCtrl;
+	private final CurriculumElementInfoPageMyProductController myProductCtrl;
 	private final InfoPageFactsController factsCtrl;
 	private final CurriculumElementInfoPageSectionsController sectionsCtrl;
 	private LectureBlocksTimelineController lectureBlocksCtrl;
@@ -148,6 +149,12 @@ public class CurriculumElementInfosController extends BasicController {
 		if (getStartedCtrl.hasContent()) {
 			mainVC.put("getStarted", getStartedCtrl.getInitialComponent());
 		}
+		
+		myProductCtrl = new CurriculumElementInfoPageMyProductController(ureq, wControl, headerConfig, element);
+		listenTo(myProductCtrl);
+		if (myProductCtrl.hasContent()) {
+			mainVC.put("myCourse", myProductCtrl.getInitialComponent());
+		}
 
 		factsCtrl = new InfoPageFactsController(ureq, wControl, element, lectureBlocks.size());
 		listenTo(factsCtrl);
@@ -193,7 +200,9 @@ public class CurriculumElementInfosController extends BasicController {
 				fireEvent(ureq, new BookedEvent(element));
 			} else if (event == OffersController.LOGIN_EVENT) {
 				fireEvent(ureq, new BookEvent(element.getResource().getKey()));
-			} else if (event instanceof LeavingEvent) {
+			}
+		} else if (source == myProductCtrl) {
+			if (event instanceof LeavingEvent) {
 				fireEvent(ureq, event);
 			}
 		} else if (source == headerCtrl) {

@@ -44,7 +44,6 @@ public class HeaderStartController extends BasicController {
 
 	private final VelocityContainer mainVC;
 	private final Link startLink;
-	private final Link cancelLink;
 	private final Link startAdminLink;
 	private final ExternalLink guestStartLink;
 	
@@ -59,12 +58,6 @@ public class HeaderStartController extends BasicController {
 		startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 		startLink.setPrimary(true);
 		startLink.setElementCssClass("o_start o_button_call_to_action o_nowrap");
-		
-		cancelLink = LinkFactory.createCustomLink("cancel", "header.cancel", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
-		cancelLink.setElementCssClass("o_cancel btn-danger");
-		cancelLink.setIconLeftCSS("o_icon o_icon_sign_out");
-		cancelLink.setGhost(true);
-		cancelLink.setVisible(false);
 		
 		startAdminLink = LinkFactory.createCustomLink("start.admin", "start.admin", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
 		startAdminLink.setCustomDisplayText(translate("start.admin"));
@@ -81,10 +74,6 @@ public class HeaderStartController extends BasicController {
 	
 	public Link getStartLink() {
 		return startLink;
-	}
-
-	public Link getCancelLink() {
-		return cancelLink;
 	}
 
 	public ExternalLink getGuestStartLink() {
@@ -107,8 +96,6 @@ public class HeaderStartController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == startLink) {
 			fireEvent(ureq, AbstractInfoPageGetStartedController.START_EVENT);
-		} else if (source == cancelLink) {
-			fireEvent(ureq, AbstractInfoPageGetStartedController.CANCEL_EVENT);
 		} else if (source == startAdminLink) {
 			fireEvent(ureq, AbstractInfoPageGetStartedController.START_ADMIN_EVENT);
 		}

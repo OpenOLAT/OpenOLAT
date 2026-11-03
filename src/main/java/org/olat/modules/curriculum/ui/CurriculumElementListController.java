@@ -80,7 +80,6 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
-import org.olat.modules.catalog.ui.CatalogRepositoryEntryHeaderConfig;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -682,13 +681,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		} else if(entry == null) {
 			showWarning("repositoryentry.not.existing");
 		} else {
-			BasicDetailsHeaderConfig infoConfig = null;
-			if (config.withEnhancedInfoHeader()) {
-				infoConfig = new CatalogRepositoryEntryHeaderConfig(entry, assessedIdentity, Roles.userRoles(), false);
-				infoConfig.hideOpenButtons();
-			} else {
-				infoConfig = new BasicDetailsHeaderConfig(assessedIdentity);
-			}
+			BasicDetailsHeaderConfig infoConfig = new BasicDetailsHeaderConfig(assessedIdentity);
 			detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, infoConfig, false);
 			listenTo(detailsCtrl);
 			addToHistory(ureq, detailsCtrl);

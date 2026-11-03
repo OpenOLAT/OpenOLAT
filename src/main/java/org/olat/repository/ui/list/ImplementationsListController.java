@@ -74,6 +74,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -406,6 +407,9 @@ public class ImplementationsListController extends FormBasicController implement
 		if(implementationCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);
+			} else if(event instanceof LeavingEvent || event instanceof BookedEvent) {
+				doCloseImplementation();
+				fireEvent(ureq, event);
 			}
 		}
 	}
@@ -434,6 +438,14 @@ public class ImplementationsListController extends FormBasicController implement
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doCloseImplementation() {
+		removeAsListenerAndDispose(implementationCtrl);
+		implementationCtrl = null;
+		
+		stackPanel.popUpToController(this);
+		loadModel();
 	}
 	
 	private void doOpenImplementation(UserRequest ureq, ImplementationRow row) {

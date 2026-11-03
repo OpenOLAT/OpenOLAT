@@ -54,6 +54,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.coach.site.CoachSite;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembershipEvent;
@@ -378,6 +379,8 @@ public class OverviewRepositoryListController extends BasicController implements
 		} else if(implementationsListCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				loadScopes();
+			} else if(event instanceof LeavingEvent || event instanceof BookedEvent) {
+				doMembershipChanged(ureq);
 			}
 		}
 	}
@@ -406,6 +409,17 @@ public class OverviewRepositoryListController extends BasicController implements
 					&& implementationsListStackPanel.getLastController() == implementationsListCtrl) {
 				scopesSelection.setSelectedKey(CMD_IMPLEMENTATIONS_LIST);
 			}
+		}
+	}
+	
+	private void doMembershipChanged(UserRequest ureq) {
+		entriesDirty = true;
+		loadScopes();
+		if(hasScope(CMD_IMPLEMENTATIONS_LIST)) {
+			doOpenImplementationsList(ureq);
+			scopesSelection.setSelectedKey(CMD_IMPLEMENTATIONS_LIST);
+		} else {
+			activateMyEntries(ureq);
 		}
 	}
 	
@@ -447,6 +461,7 @@ public class OverviewRepositoryListController extends BasicController implements
 
 			ImplementationsListConfig.Builder configBuilder = ImplementationsListConfig.builder(asRoles)
 					.enablePreparationWarning()
+					.enableCatalogDetailsHeader()
 					.enableBookmarks()
 					.enableCompletion()
 					.enableCalendar();
