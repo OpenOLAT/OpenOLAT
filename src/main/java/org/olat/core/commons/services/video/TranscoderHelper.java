@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.video.model.TranscoderDeleteGeneratedReply;
 import org.olat.core.commons.services.video.model.TranscoderJob;
@@ -71,9 +72,7 @@ public class TranscoderHelper {
 			
 	@Autowired
 	private HttpClientService httpClientService;
-	@Autowired
-	private VideoModule videoModule;
-	
+
 	/**
 	 * 
 	 * @param transcoderJob The transcoder job to post.
@@ -180,7 +179,7 @@ public class TranscoderHelper {
 	 * @return The Base64url-encoded token (no padding), safe as a URL path segment
 	 */
 	private String createCallbackToken(TranscoderJobType type, String uuid, Long referenceId) {
-		byte[] mac = hmac(videoModule.getCallbackSecret(), callbackTokenData(type, uuid, referenceId));
+		byte[] mac = hmac(getCallbackSecret(), callbackTokenData(type, uuid, referenceId));
 		return Base64.getUrlEncoder().withoutPadding().encodeToString(mac);
 	}
 
@@ -208,8 +207,19 @@ public class TranscoderHelper {
 		} catch (IllegalArgumentException e) {
 			return false;
 		}
-		byte[] expected = hmac(videoModule.getCallbackSecret(), callbackTokenData(type, uuid, referenceId));
+		byte[] expected = hmac(getCallbackSecret(), callbackTokenData(type, uuid, referenceId));
 		return MessageDigest.isEqual(expected, actual);
+	}
+
+	/**
+	 * The secret is looked up on demand and not injected: VideoModule depends on
+	 * VideoHandler, which depends on VideoManagerImpl, which depends on this
+	 * helper, so an {@code @Autowired} VideoModule would close a dependency cycle.
+	 *
+	 * @return The secret that signs and verifies the callback tokens
+	 */
+	String getCallbackSecret() {
+		return CoreSpringFactory.getImpl(VideoModule.class).getCallbackSecret();
 	}
 
 	private static String callbackTokenData(TranscoderJobType type, String uuid, Long referenceId) {
