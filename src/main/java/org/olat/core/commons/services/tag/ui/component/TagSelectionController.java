@@ -140,6 +140,7 @@ public class TagSelectionController extends FormBasicController {
 		tagItem.setKey(tagInfo.getKey());
 		tagItem.setDisplayValue(tagInfo.getDisplayName());
 		tagItem.setCount(tagInfo.getCount() != null? tagInfo.getCount().longValue(): 0l);
+		tagItem.setCountVisible(tagInfo.getCount() != null);
 		tagItem.setSelected(currentSelectionKeys.contains(tagInfo.getKey()));
 		tagItem.setEditable(tagInfo.isEditable());
 		tagItem.setColor(tagInfo.getColor());
@@ -154,6 +155,8 @@ public class TagSelectionController extends FormBasicController {
 		TagItem tagItem = new TagItem();
 		tagItem.setDisplayValue(tag);
 		tagItem.setCount(1l);
+		// No counter for new tags if the existing tags have no usage information
+		tagItem.setCountVisible(allTags.isEmpty() || allTags.stream().anyMatch(tagInfo -> tagInfo.getCount() != null));
 		tagItem.setSelected(true);
 		tagItem.setEditable(true);
 		
@@ -183,6 +186,9 @@ public class TagSelectionController extends FormBasicController {
 	}
 	
 	private String getDisplayTag(TagItem tagItem) {
+		if (!tagItem.isCountVisible()) {
+			return StringHelper.escapeHtml(tagItem.getDisplayValue());
+		}
 		return translate("tag.num.count", StringHelper.escapeHtml(tagItem.getDisplayValue()), String.valueOf(tagItem.getCount()));
 	}
 	

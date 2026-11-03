@@ -33,6 +33,7 @@ public class TagItem {
 	private Long key;
 	private String displayValue;
 	private long count;
+	private boolean countVisible = true;
 	private boolean selected;
 	private boolean editable = true;
 	private String color;
@@ -62,6 +63,17 @@ public class TagItem {
 	
 	public void setCount(long count) {
 		this.count = count;
+	}
+
+	/**
+	 * @return false if the tag has no usage information and the counter must not be displayed
+	 */
+	public boolean isCountVisible() {
+		return countVisible;
+	}
+
+	public void setCountVisible(boolean countVisible) {
+		this.countVisible = countVisible;
 	}
 	
 	public boolean isSelected() {
