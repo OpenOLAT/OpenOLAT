@@ -36,10 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
-import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailPackage;
@@ -55,7 +52,6 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.Price;
-import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,7 +66,7 @@ public class CurriculumElementInfoPageMyProductController extends BasicControlle
 	
 	private Link cancelLink;
 	private CloseableModalController cmc;
-	private ConfirmationController cancelConfirmationCtrl;
+	private ConfirmCancelBookingController cancelConfirmationCtrl;
 	
 	private final CurriculumElement element;
 	private final Identity bookedIdentity;
@@ -143,26 +139,12 @@ public class CurriculumElementInfoPageMyProductController extends BasicControlle
 				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
 		Price cancellationFee = acService.getCancellationFee(element.getResource(), element.getBeginDate(), orders);
 		
-		String modalTitle;
-		if (cancellationFee == null) {
-			cancelConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
-					translate("leave.cancel.text", StringHelper.escapeHtml(element.getDisplayName())),
-					null,
-					translate("leave.cancel"),
-					ButtonType.regular, translate("leave.cancel.cancel"), true);
-			modalTitle = translate("leave.cancel");
-		} else {
-			cancelConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
-					translate("leave.cancel.fee.text", StringHelper.escapeHtml(element.getDisplayName()), PriceFormat.fullFormat(cancellationFee)),
-					translate("leave.cancel.fee.confirmation", PriceFormat.fullFormat(cancellationFee)),
-					translate("leave.cancel.fee"),
-					ButtonType.regular, translate("leave.cancel.cancel"), true);
-			modalTitle = translate("leave.cancel.fee");
-		}
+		cancelConfirmationCtrl = new ConfirmCancelBookingController(ureq, getWindowControl(), element, cancellationFee);
 		listenTo(cancelConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				cancelConfirmationCtrl.getInitialComponent(), true, modalTitle, true);
+				cancelConfirmationCtrl.getInitialComponent(), true,
+				translate(cancellationFee == null ? "leave.cancel" : "leave.cancel.fee"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
