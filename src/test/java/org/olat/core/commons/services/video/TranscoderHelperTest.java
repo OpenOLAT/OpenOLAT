@@ -22,14 +22,12 @@ package org.olat.core.commons.services.video;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.olat.core.commons.services.video.model.TranscoderJobType;
-import org.olat.modules.video.VideoModule;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -52,18 +50,12 @@ public class TranscoderHelperTest {
 	private static final String SECRET_A = "secret-A-01234567890123456789012345";
 	private static final String SECRET_B = "secret-B-98765432109876543210987654";
 
-	@Mock
-	private VideoModule videoModuleMock;
-
 	private TranscoderHelper transcoderHelper;
 
 	@Before
 	public void setUp() {
-		MockitoAnnotations.openMocks(this);
-		when(videoModuleMock.getCallbackSecret()).thenReturn(SECRET_A);
-
-		transcoderHelper = new TranscoderHelper();
-		ReflectionTestUtils.setField(transcoderHelper, "videoModule", videoModuleMock);
+		transcoderHelper = spy(new TranscoderHelper());
+		doReturn(SECRET_A).when(transcoderHelper).getCallbackSecret();
 	}
 
 	private String createToken(TranscoderJobType type, String uuid, Long referenceId) {
@@ -109,7 +101,7 @@ public class TranscoderHelperTest {
 	@Test
 	public void rejectsTheTokenWhenTheSecretDiffers() {
 		String token = createToken(TYPE_A, UUID_A, REFERENCE_ID_A);
-		when(videoModuleMock.getCallbackSecret()).thenReturn(SECRET_B);
+		doReturn(SECRET_B).when(transcoderHelper).getCallbackSecret();
 
 		assertFalse(transcoderHelper.verifyCallbackToken(token, TYPE_A, UUID_A, REFERENCE_ID_A));
 	}
