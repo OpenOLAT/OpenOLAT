@@ -34,6 +34,7 @@ public class EmptyStateRenderConfigBuilder {
 	private String indicatorIconCss;
 	private String messageTranslated;
 	private String hintTranslated;
+	private EmptyStateHintAlignment hintAlignment;
 	private String descTranslated;
 	private EmptyStateVariant variant = EmptyStateVariant.standard;
 	private String helpTranslated;
@@ -75,6 +76,11 @@ public class EmptyStateRenderConfigBuilder {
 		return this;
 	}
 
+	public EmptyStateRenderConfigBuilder withHintAlignment(EmptyStateHintAlignment hintAlignment) {
+		this.hintAlignment = hintAlignment;
+		return this;
+	}
+	
 	public EmptyStateRenderConfigBuilder withDescTranslated(String descTranslated) {
 		this.descTranslated = descTranslated;
 		return this;
@@ -100,7 +106,7 @@ public class EmptyStateRenderConfigBuilder {
 
 	public EmptyStateRenderConfig build() {
 		return new EmptyStateRenderConfigImpl(variant, wrapperSelector, iconCss, indicatorIconCss, messageTranslated, 
-				hintTranslated, descTranslated, helpTranslated, helpPage, primaryButtonRenderer, 
+				hintTranslated, hintAlignment, descTranslated, helpTranslated, helpPage, primaryButtonRenderer, 
 				secondaryButtonRenderers);
 	}
 
@@ -111,6 +117,7 @@ public class EmptyStateRenderConfigBuilder {
 		private final String indicatorIconCss;
 		private final String messageTranslated;
 		private final String hintTranslated;
+		private final EmptyStateHintAlignment hintAlignment;
 		private final String descTranslated;
 		private final String helpTranslated;
 		private final String helpPage;
@@ -120,6 +127,7 @@ public class EmptyStateRenderConfigBuilder {
 
 		public EmptyStateRenderConfigImpl(EmptyStateVariant variant, String wrapperSelector, String iconCss,
 										  String indicatorIconCss, String messageTranslated, String hintTranslated, 
+										  EmptyStateHintAlignment hintAlignment, 
 										  String descTranslated, String helpTranslated, String helpPage, 
 										  EmptyStateButtonRenderer primaryButtonRenderer, 
 										  List<EmptyStateButtonRenderer> secondaryButtonRenderers) {
@@ -129,6 +137,7 @@ public class EmptyStateRenderConfigBuilder {
 			this.indicatorIconCss = indicatorIconCss;
 			this.messageTranslated = messageTranslated;
 			this.hintTranslated = hintTranslated;
+			this.hintAlignment = hintAlignment;
 			this.descTranslated = descTranslated;
 			this.helpTranslated = helpTranslated;
 			this.helpPage = helpPage;
@@ -159,6 +168,11 @@ public class EmptyStateRenderConfigBuilder {
 		@Override
 		public String getHintTranslated() {
 			return hintTranslated;
+		}
+		
+		@Override
+		public EmptyStateHintAlignment getHintAlignment() {
+			return hintAlignment;
 		}
 
 		@Override

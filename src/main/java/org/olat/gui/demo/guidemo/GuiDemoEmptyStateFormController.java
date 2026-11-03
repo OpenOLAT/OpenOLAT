@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateHintAlignment;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.emptystate.EmptyStateVariant;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -83,6 +84,7 @@ public class GuiDemoEmptyStateFormController extends FormBasicController {
 				.withMessageI18nKey("empty.state.table.message")
 				.withIconCss("o_icon_square_rss")
 				.withHintI18nKey("empty.state.table.hint")
+				.withHintAlignment(EmptyStateHintAlignment.left)
 				.withHelp(translate("empty.state.help.additional"), "release_notes/")
 				.withPrimaryButton("o_icon_search", "select", null)
 				.withSecondaryButton("o_icon_add", "create", null, "create")

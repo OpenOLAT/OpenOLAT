@@ -55,6 +55,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 				.withIconCss(emptyState.getIconCss())
 				.withMessageTranslated(message)
 				.withHintTranslated(hint)
+				.withHintAlignment(emptyState.getHintAlignment())
 				.withDescTranslated(desc)
 				.withHelp(emptyState.getHelpTranslated(), emptyState.getHelpPage());
 
@@ -179,7 +180,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		// hint
 		if (StringHelper.containsNonWhitespace(config.getHintTranslated())) {
 			sb.append("<div class='o_empty_hint'>");
-			sb.append("<div class='o_empty_hint_text'>");
+			sb.append("<div class='o_empty_hint_text o_empty_hint_").append(getHintAlignment(config, variant).name()).append("'>");
 			sb.append(config.getHintTranslated());
 			sb.append("</div>");
 			sb.append("</div>");
@@ -187,7 +188,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 
 		// description
 		if (StringHelper.containsNonWhitespace(config.getDescTranslated())) {
-			sb.append("<small class='text-mutedx'>").append(config.getDescTranslated()).append("</small>");
+			sb.append("<small>").append(config.getDescTranslated()).append("</small>");
 		}
 		
 		if (StringHelper.containsNonWhitespace(config.getHelpTranslated()) && 
@@ -220,12 +221,19 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 
 		switch (variant) {
 			case standard -> {}
-			case small -> renderSmallVariantClose(sb, config);
+			case small -> renderSmallVariantClose(sb);
 		}
 
 		sb.append("</div>");
 	}
 
+	private static EmptyStateHintAlignment getHintAlignment(EmptyStateRenderConfig config, EmptyStateVariant variant) {
+		if (config.getHintAlignment() != null) {
+			return config.getHintAlignment();
+		}
+		return variant == EmptyStateVariant.small ? EmptyStateHintAlignment.left : EmptyStateHintAlignment.center;
+	}
+	
 	private static void renderStandardVariantIcon(StringOutput sb, EmptyStateRenderConfig config) {
 		String iconCss = StringHelper.containsNonWhitespace(config.getIconCss()) ?
 				config.getIconCss() : "o_icon_question";
@@ -248,7 +256,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		sb.append("<div class='o_empty_text'>");
 	}
 	
-	private static void renderSmallVariantClose(StringOutput sb, EmptyStateRenderConfig config) {
+	private static void renderSmallVariantClose(StringOutput sb) {
 		sb.append("</div>"); // o_empty_text
 		sb.append("</div>"); // o_empty_small
 	}

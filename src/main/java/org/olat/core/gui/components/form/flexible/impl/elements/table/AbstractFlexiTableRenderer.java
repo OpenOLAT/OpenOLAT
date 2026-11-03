@@ -189,6 +189,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				.withMessageTranslated(message)
 				.withHelp(config.getHelpTranslated(), config.getHelpPage())
 				.withHintTranslated(hint)
+				.withHintAlignment(config.getHintAlignment())
 				.withPrimaryButtonRenderer(buttonRenderer);
 		for (FormLink secondaryButton : ftE.getEmptyStateSecondaryButtons()) {
 			EmptyStateButtonRenderer secondaryButtonRenderer = 

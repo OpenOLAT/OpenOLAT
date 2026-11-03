@@ -45,12 +45,18 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	public static final int MAX_SECONDARY_BUTTONS = 3;
 
 	public class PrimaryEvent extends Event {
+		
+		private static final long serialVersionUID = 7949151704427391712L;
+		
 		public PrimaryEvent() {
 			super("empty-state-primary");
 		}
 	}
 
 	public class SecondaryEvent extends Event {
+		
+		private static final long serialVersionUID = 6222325861639216863L;
+		
 		private final String action;
 
 		public SecondaryEvent(String action) {
@@ -74,6 +80,7 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	private String hintI18nKey;
 	private String[] hintI18nArgs;
 	private String hintTranslated;
+	private EmptyStateHintAlignment hintAlignment;
 	private String descI18nKey;
 	private String[] descI18nArgs;
 	private String descTranslated;
@@ -174,6 +181,14 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 
 	public void setHintTranslated(String hintTranslated) {
 		this.hintTranslated = hintTranslated;
+	}
+	
+	public EmptyStateHintAlignment getHintAlignment() {
+		return hintAlignment;
+	}
+	
+	public void setHintAlignment(EmptyStateHintAlignment hintAlignment) {
+		this.hintAlignment = hintAlignment;
 	}
 
 	public String getDescI18nKey() {

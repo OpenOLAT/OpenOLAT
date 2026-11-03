@@ -52,6 +52,11 @@ public interface EmptyStateConfig {
 	 * @return translated hint
 	 */
 	public String getHintTranslated();
+	
+	/**
+	 * @return the alignment of the hint or null to align it according to the variant
+	 */
+	public EmptyStateHintAlignment getHintAlignment();
 
 	/**
 	 * retrieve i18n key for the description
