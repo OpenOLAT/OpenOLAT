@@ -126,7 +126,7 @@ public abstract class TableWidgetController extends FormBasicController implemen
 	}
 	
 	protected void setFooterText(int numShown, long numTotal, String figureLabel) {
-		if (numTotal > 0 && StringHelper.containsNonWhitespace(figureLabel)) {
+		if (StringHelper.containsNonWhitespace(figureLabel)) {
 			setFooterText(translate("table.widget.footer", String.valueOf(numShown), String.valueOf(numTotal), figureLabel));
 		} else {
 			setFooterText(null);
