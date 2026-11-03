@@ -38,6 +38,7 @@
 				<value>org.olat.course.assessment.restapi</value>
 				<value>org.olat.course.certificate.restapi</value>
 				<value>org.olat.course.db.restapi</value>
+				<value>org.olat.course.disclaimer.restapi</value>
 				<value>org.olat.course.nodes.co</value>
 				<value>org.olat.course.nodes.en</value>
 				<value>org.olat.modules.bigbluebutton.restapi</value>
