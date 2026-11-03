@@ -90,6 +90,9 @@ public class RestapiAdminMainController extends BasicController {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("AuditLog"), null);
 			logCtrl = new ApiAuditLogAdminController(ureq, bwControl);
 			listenTo(logCtrl);
+		} else {
+			// calls may have been logged in the meantime
+			logCtrl.reloadModel();
 		}
 		addToHistory(ureq, logCtrl);
 		mainVC.put("segmentCmp", logCtrl.getInitialComponent());

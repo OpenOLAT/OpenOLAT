@@ -156,7 +156,7 @@ public class ApiAuditLogAdminController extends FormBasicController {
 			tableEl.setFilterValue(channelFilter, presetChannel.name());
 		}
 		
-		loadModel();
+		reloadModel();
 	}
 	
 	private void initFilters() {
@@ -211,7 +211,10 @@ public class ApiAuditLogAdminController extends FormBasicController {
 				ScopeFactory.createDateScope(SCOPE_LAST_MONTH, translate("auditlog.scope.last.month"), null, lastMonthRange));
 	}
 	
-	private void loadModel() {
+	/**
+	 * Loads the rows again with the current date scope and filters.
+	 */
+	public void reloadModel() {
 		ApiAuditLogSearchParams searchParams = dataSource.getSearchParams();
 		DateRange dateRange = scopeEl.getSelectedDateRange();
 		if(dateRange != null) {
@@ -229,7 +232,7 @@ public class ApiAuditLogAdminController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(scopeEl == source) {
-			loadModel();
+			reloadModel();
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se && CMD_DETAILS.equals(se.getCommand())) {
 				doOpenDetails(ureq, tableModel.getObject(se.getIndex()));

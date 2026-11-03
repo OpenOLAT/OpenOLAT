@@ -174,6 +174,9 @@ public class McpAdminMainController extends BasicController implements Activatea
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("AuditLog"), null);
 			auditLogCtrl = new ApiAuditLogAdminController(ureq, bwControl, ApiAuditChannel.mcp);
 			listenTo(auditLogCtrl);
+		} else {
+			// calls may have been logged in the meantime
+			auditLogCtrl.reloadModel();
 		}
 		show(ureq, auditLogCtrl);
 	}
