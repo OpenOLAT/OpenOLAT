@@ -20,13 +20,10 @@
 package org.olat.course.run.leave;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
@@ -41,64 +38,36 @@ import org.olat.repository.RepositoryService;
  * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
-public class ConfirmLeaveController extends FormBasicController {
+public class ConfirmLeaveController extends ConfirmationController {
 
 	private final RepositoryEntry entry;
 
-	private MultipleSelectionElement acknowledgeEl;
-
 	public ConfirmLeaveController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		super(ureq, wControl, "confirm_leave", Util.createPackageTranslator(CourseRuntimeController.class, ureq.getLocale()));
-		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		this(ureq, wControl, entry, Util.createPackageTranslator(CourseRuntimeController.class, ureq.getLocale(),
+				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale())));
+	}
 
+	private ConfirmLeaveController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Translator translator) {
+		super(ureq, wControl, getMessage(translator, entry), getAcknowledge(translator, entry),
+				translator.translate("course.leave.button"), ButtonType.submitPrimary, null, false);
+		setTranslator(Util.createPackageTranslator(ConfirmationController.class, getLocale(), translator));
 		this.entry = entry;
 		initForm(ureq);
 	}
 
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer formLayoutContainer) {
-			boolean isCourseStandalone = CourseModule.ORES_TYPE_COURSE.equals(entry.getOlatResource().getResourceableTypeName())
-					&& entry.getRuntimeType() == RepositoryEntryRuntimeType.standalone;
-			String leaveMessage = isCourseStandalone ? translate("course.leave.message") : translate("course.leave.message.content");
-			formLayoutContainer.contextPut("leaveMessage", leaveMessage);
+	private static String getMessage(Translator translator, RepositoryEntry entry) {
+		boolean isCourseStandalone = CourseModule.ORES_TYPE_COURSE.equals(entry.getOlatResource().getResourceableTypeName())
+				&& entry.getRuntimeType() == RepositoryEntryRuntimeType.standalone;
+		return isCourseStandalone ? translator.translate("course.leave.message") : translator.translate("course.leave.message.content");
+	}
 
-			FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
-			formLayout.add("confirm", layoutCont);
-			layoutCont.setRootForm(mainForm);
-
-			uifactory.addStaticTextElement("rows", entry.getOlatResource().getResourceableTypeName(), StringHelper.escapeHtml(entry.getDisplayname()), layoutCont);
-
-			String type = translate(entry.getOlatResource().getResourceableTypeName());
-			String[] acknowledge = new String[] { translate("course.leave.acknowledge", type) };
-			acknowledgeEl = uifactory.addCheckboxesHorizontal("confirm", "details.delete.acknowledge", layoutCont, new String[]{ "" }, acknowledge);
-			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			layoutCont.add(buttonsCont);
-			uifactory.addFormSubmitButton("course.leave.button", buttonsCont);
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		}
+	private static String getAcknowledge(Translator translator, RepositoryEntry entry) {
+		return translator.translate("course.leave.acknowledge", translator.translate(entry.getOlatResource().getResourceableTypeName()));
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-		
-		acknowledgeEl.clearError();
-		if (!acknowledgeEl.isAtLeastSelected(1)) {
-			acknowledgeEl.setErrorKey("details.delete.acknowledge.error");
-			allOk &= false;
-		}
-		
-		return allOk;
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
-	}
-
-	@Override
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);
+	protected void initFormElements(FormLayoutContainer confirmCont) {
+		uifactory.addStaticTextElement("rows", entry.getOlatResource().getResourceableTypeName(),
+				StringHelper.escapeHtml(entry.getDisplayname()), confirmCont);
 	}
 }
