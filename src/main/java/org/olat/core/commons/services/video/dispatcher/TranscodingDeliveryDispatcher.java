@@ -675,7 +675,8 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 
 		// OO-9999, WP4 H8: download to a temporary file next to the target, and only replace the
 		// target once the download fully succeeded, so a failed download never destroys an existing file.
-		File tmpFile = File.createTempFile("transcoder-download-", ".tmp", targetFile.getAbsoluteFile().getParentFile());
+		// The dot prefix hides the temporary file from VFS listings (VFSSystemItemFilter).
+		File tmpFile = File.createTempFile(".transcoder-download-", ".tmp", targetFile.getAbsoluteFile().getParentFile());
 		try {
 			HttpGet get = new HttpGet(url);
 		try (CloseableHttpClient httpClient = httpClientService.createHttpClient();
