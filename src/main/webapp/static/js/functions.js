@@ -1295,7 +1295,7 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 			let trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.modules.forms.ui');
 			let msgLimitExceeded = trans.translate('file.upload.error.limit.exeeded');
 			let msgUploadLimit = trans.translate('file.upload.limit');
-			let maxSizeFormatted = o_handleFileFormatSize(maxSize);
+			let maxSizeFormatted = fileInputElement.getAttribute('data-max-size-formatted');
 			let errorMsg = msgLimitExceeded + " (" + msgUploadLimit + ": " + maxSizeFormatted + ")";
 			fileErrorElement(fileInputElement, errorElementId, errorEl, errorMsg);
 			return false;
@@ -1434,7 +1434,7 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 				let trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.modules.forms.ui');
 				let msgLimitExceeded = trans.translate('file.upload.error.limit.exeeded');
 				let msgUploadLimit = trans.translate('file.upload.limit');
-				let maxSizeFormatted = o_handleFileFormatSize(maxSize);
+				let maxSizeFormatted = fileInputElement.getAttribute('data-max-size-formatted');
 				let errorElementId = fileInputElement.getAttribute('id') + "_validation_error";
 				let errorEl = document.getElementById(errorElementId);
 				if (!errorEl) {
