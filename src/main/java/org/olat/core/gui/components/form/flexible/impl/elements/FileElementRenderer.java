@@ -227,6 +227,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			sb.append(id); // id to make dirty button work
 			if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
 				sb.append("\" data-max-size=\"").append(fileElem.getMaxUploadSizeKB() * 1024l);
+				sb.append("\" data-max-size-formatted=\"").append(Formatter.formatKBytes(fileElem.getMaxUploadSizeKB()));
 			}
 			
 			int maxNumFiles = 100; // Limit of Browser / Apache / something else
