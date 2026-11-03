@@ -132,6 +132,7 @@ public class McpConfigurationController extends FormBasicController {
 		userTokenGenerationEl = uifactory.addCheckboxesHorizontal("config.user.token.generation", tokenCont,
 				ON_KEYS, new String[] { translate("config.user.token.generation.on") });
 		userTokenGenerationEl.select(ON_KEY, mcpModule.isUserTokenGenerationEnabled());
+		userTokenGenerationEl.setEvaluationOnlyVisible(true);
 
 		userTokenMaxEl = uifactory.addIntegerElement("config.user.token.max", "config.user.token.max",
 				mcpModule.getUserTokenMax(), tokenCont);
@@ -187,11 +188,13 @@ public class McpConfigurationController extends FormBasicController {
 				ON_KEYS, new String[] { translate("config.auditlog.reads.on") });
 		auditReadsEl.select(ON_KEY, mcpModule.isAuditLogReads());
 		auditReadsEl.setExampleKey("config.auditlog.reads.hint", null);
+		auditReadsEl.setEvaluationOnlyVisible(true);
 
 		auditBodyEl = uifactory.addCheckboxesHorizontal("config.auditlog.body", auditCont,
 				ON_KEYS, new String[] { translate("config.auditlog.body.on") });
 		auditBodyEl.select(ON_KEY, mcpModule.isAuditLogBody());
 		auditBodyEl.setExampleKey("config.auditlog.body.hint", null);
+		auditBodyEl.setEvaluationOnlyVisible(true);
 		auditBodyEl.addActionListener(FormEvent.ONCHANGE);
 
 		auditBodyMaxSizeEl = uifactory.addIntegerElement("config.auditlog.body.maxsize", "config.auditlog.body.maxsize",
@@ -214,6 +217,9 @@ public class McpConfigurationController extends FormBasicController {
 		tokenCont.setVisible(enabled);
 		rateLimitCont.setVisible(enabled);
 		auditCont.setVisible(enabled);
+		// A hidden container does not hide its checkboxes, and a hidden checkbox
+		// would lose its selection in the next request: hide the checkboxes too
+		userTokenGenerationEl.setVisible(enabled);
 
 		boolean rateLimit = rateLimitEnabledEl.isOn();
 		requestsPerMinuteEl.setVisible(rateLimit);
@@ -222,9 +228,9 @@ public class McpConfigurationController extends FormBasicController {
 		anonymousRequestsPerMinuteEl.setVisible(rateLimit);
 
 		boolean audit = auditEnabledEl.isOn();
-		auditReadsEl.setVisible(audit);
-		auditBodyEl.setVisible(audit);
-		auditBodyMaxSizeEl.setVisible(audit && auditBodyEl.isAtLeastSelected(1));
+		auditReadsEl.setVisible(enabled && audit);
+		auditBodyEl.setVisible(enabled && audit);
+		auditBodyMaxSizeEl.setVisible(enabled && audit && auditBodyEl.isAtLeastSelected(1));
 	}
 
 	@Override
