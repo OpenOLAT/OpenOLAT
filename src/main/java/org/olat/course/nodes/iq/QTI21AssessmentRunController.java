@@ -85,12 +85,12 @@ import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.AssessmentDocumentsSupplier;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.PanelInfo;
-import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -257,6 +257,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.contextPut("type", "test");
 		} else if(courseNode instanceof IQSELFCourseNode) {
 			mainVC.contextPut("type", "self");
+		}
+		
+		if(Boolean.TRUE.equals(ureq.getUserSession().removeEntry("testRetrievedMessage"))) {
+			mainVC.contextPut("testRetrieved", Boolean.TRUE);
 		}
 		
 		DisadvantageCompensation c = disadvantageCompensationService
@@ -791,6 +795,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		// The variable needs to survive a redraw and can be called twice before doing its thing
+		mainVC.contextRemove("testRetrieved");
+		
 		if(startButton == source && startButton.isEnabled() && startButton.isVisible()) {
 			doStart(ureq);
 		} else if(messagesButton == source) {

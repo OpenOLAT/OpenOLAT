@@ -549,8 +549,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				qtiWorksCtrl.extraTime();
 				getWindow().getWindowBackOffice().requestImmediateRender();
 			}
-			if(checkConcurrentExit(new SyntheticUserRequest(getIdentity(), getLocale(), usess))) {
-				showInfo("warning.pull.assessmenttest.data");
+			if(checkConcurrentExit(new SyntheticUserRequest(getIdentity(), getLocale(), usess), true)) {
 				getWindow().getWindowBackOffice().requestImmediateRender();
 			}
 		}
@@ -608,8 +607,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @param ureq The user request
 	 * @return true if the test exited, false if not
 	 */
-	private boolean checkConcurrentExit(UserRequest ureq) {
+	private boolean checkConcurrentExit(UserRequest ureq, boolean testRetrivedMarker) {
 		if(candidateSession != null && candidateSession.getFinishTime() != null) {
+			if(testRetrivedMarker) {
+				usess.putEntry("testRetrievedMessage", Boolean.TRUE);
+			}
 			doExitTest(ureq);
 			return true;
 		}
@@ -1034,7 +1036,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 
 	private void processSelectItem(UserRequest ureq, String key) {
-		if (checkConcurrentExit(ureq)) {
+		if (checkConcurrentExit(ureq, false)) {
 			return;
 		}
 
@@ -1090,7 +1092,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private void processNextItem(UserRequest ureq) {
-		if (checkConcurrentExit(ureq)) {
+		if (checkConcurrentExit(ureq, false)) {
 			return;
 		}
 
@@ -1353,7 +1355,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
     //        final String candidateComment)       
 	private void handleResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap,
 			Map<Identifier, ResponseInput> fileResponseMap, String candidateComment) {
-		if(checkConcurrentExit(ureq)) {
+		if(checkConcurrentExit(ureq, false)) {
 			return;
 		}
 

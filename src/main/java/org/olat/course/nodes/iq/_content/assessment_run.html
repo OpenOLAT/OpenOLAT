@@ -7,6 +7,15 @@
 	$r.render("highScore")
 #end
 
+#if($r.isTrue($testRetrieved))
+<script>
+"use strict";
+setTimeout(() => {
+	showInfoBox('', '$r.translate("warning.pull.assessmenttest.data")');
+})
+</script>
+#end
+
 #if($showResultsOnHomePage && $r.isNotNull($attempts) && $attempts > 0)	
 	<div class="panel panel-default o_results o_msg_panel">
 	  	<div class="panel-heading">
