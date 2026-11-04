@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.Certificates;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
@@ -74,6 +75,10 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 
 	public void setMarked(boolean marked) {
 		this.marked = marked;
+	}
+	
+	public CoachingRoles getRole() {
+		return entry.getRole();
 	}
 
 	@Override

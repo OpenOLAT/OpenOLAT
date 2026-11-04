@@ -19,6 +19,11 @@
  */
 package org.olat.modules.coach.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.modules.coach.CoachingRoles;
+
 /**
  * 
  * Initial date: 14 août 2019<br>
@@ -28,7 +33,7 @@ package org.olat.modules.coach.model;
 public record CoachingSecurity(boolean masterCoach, boolean owner, boolean coach, boolean teacher, boolean userRelationSource, 
 		boolean lineManager, boolean educationManager) {
 
-	public boolean isMasterCoachForLectures() {
+	public boolean isMasterCoach() {
 		return masterCoach;
 	}
 
@@ -46,5 +51,19 @@ public record CoachingSecurity(boolean masterCoach, boolean owner, boolean coach
 
 	public boolean isEducationManager() {
 		return educationManager;
+	}
+	
+	public List<CoachingRoles> getCoachingRoles() {
+		List<CoachingRoles> roles = new ArrayList<>();
+		if(owner) {
+			roles.add(CoachingRoles.owner);
+		}
+		if(masterCoach) {
+			roles.add(CoachingRoles.mastercoach);
+		}
+		if(coach) {
+			roles.add(CoachingRoles.coach);
+		}
+		return roles;
 	}
 }

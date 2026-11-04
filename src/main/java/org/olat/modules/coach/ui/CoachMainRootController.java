@@ -170,7 +170,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		lecturesButton = LinkFactory.createLink("lectures.menu.title", "lectures.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		lecturesButton.setIconLeftCSS("o_icon o_icon-xl o_icon_calendar_day");
 		lecturesButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_lectures");
-		lecturesButton.setVisible(lectureModule.isEnabled() && (coachingSec.isTeacher() || coachingSec.isMasterCoachForLectures()));
+		lecturesButton.setVisible(lectureModule.isEnabled() && (coachingSec.isTeacher() || coachingSec.isMasterCoach()));
 		
 		ordersButton = LinkFactory.createLink("orders.menu.title", "orders.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		ordersButton.setIconLeftCSS("o_icon o_icon-xl o_icon_assessment_tool");
@@ -195,7 +195,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		coursesButton = LinkFactory.createLink("courses.menu.title", "courses.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		coursesButton.setIconLeftCSS("o_icon o_icon-xl o_CourseModule_icon");
 		coursesButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_courses");
-		coursesButton.setVisible(coachingSec.coach() || coachingSec.owner());
+		coursesButton.setVisible(coachingSec.coach() || coachingSec.masterCoach() || coachingSec.owner());
 	
 		businessGroupsButton = LinkFactory.createLink("groups.menu.title", "groups.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		businessGroupsButton.setIconLeftCSS("o_icon o_icon-xl o_icon_group");

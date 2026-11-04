@@ -19,20 +19,12 @@
  */
 package org.olat.modules.coach.ui.dashboard;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.GroupRoles;
-import org.olat.core.commons.services.mark.Mark;
-import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -58,22 +50,21 @@ import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigProvider;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
-import org.olat.modules.coach.model.CoursesStatisticsParams;
-import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
+import org.olat.modules.coach.model.CoursesSummaryKeyFigures;
+import org.olat.modules.coach.model.CoursesSummary;
 import org.olat.modules.coach.ui.CourseListController;
 import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,8 +94,6 @@ public class CourseWidgetController extends TableWidgetController
 	private SelectionValues figureValues;
 	private String keyFigureKey;
 	
-	@Autowired
-	private MarkManager markManager;
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
@@ -136,12 +125,12 @@ public class CourseWidgetController extends TableWidgetController
 		
 		keyToFigureCard = new LinkedHashMap<>();
 		figureValues = new SelectionValues();
-		createIndicator(widgetCont, "marked", "search.mark", "[CoachSite:0][Courses:0][owner:0][Bookmarks:0]");
-		createIndicator(widgetCont, "all", "all", "[CoachSite:0][Courses:0][owner:0][All:0]");
-		createIndicator(widgetCont, "relevant", "relevant", "[CoachSite:0][Courses:0][owner:0][Relevant:0]");
-		createIndicator(widgetCont, "published", "filter.published", "[CoachSite:0][Courses:0][owner:0][Published:0]");
-		createIndicator(widgetCont, "access", "filter.access.for.coach", "[CoachSite:0][Courses:0][owner:0][AccessForCoach:0]");
-		createIndicator(widgetCont, "finished", "filter.finished", "[CoachSite:0][Courses:0][owner:0][Finished:0]");
+		createIndicator(widgetCont, CoursesSummaryKeyFigures.marked.name(), "search.mark", "[CoachSite:0][Courses:0][owner:0][Bookmarks:0]");
+		createIndicator(widgetCont, CoursesSummaryKeyFigures.all.name(), "all", "[CoachSite:0][Courses:0][owner:0][All:0]");
+		createIndicator(widgetCont, CoursesSummaryKeyFigures.relevant.name(), "relevant", "[CoachSite:0][Courses:0][owner:0][Relevant:0]");
+		createIndicator(widgetCont, CoursesSummaryKeyFigures.published.name(), "filter.published", "[CoachSite:0][Courses:0][owner:0][Published:0]");
+		createIndicator(widgetCont, CoursesSummaryKeyFigures.access.name(), "filter.access.for.coach", "[CoachSite:0][Courses:0][owner:0][AccessForCoach:0]");
+		createIndicator(widgetCont, CoursesSummaryKeyFigures.finished.name(), "filter.finished", "[CoachSite:0][Courses:0][owner:0][Finished:0]");
 		
 		return figuresEl.getComponent().getComponentName();
 	}
@@ -222,69 +211,33 @@ public class CourseWidgetController extends TableWidgetController
 	}
 	
 	public void reload() {
-		Set<Long> markedKeys = markManager.getMarks(getIdentity(), List.of("RepositoryEntry")).stream()
-				.map(Mark::getOLATResourceable)
-				.map(OLATResourceable::getResourceableId)
-				.collect(Collectors.toSet());
-		
-		List<GroupRoles> roles = new ArrayList<>();
-		if(coachingSec.owner()) {
-			roles.add(GroupRoles.owner);
-		}
-		if(coachingSec.coach()) {
-			roles.add(GroupRoles.coach);
-		}
-		
-		CoursesStatisticsParams coursesStatisticsParams = new CoursesStatisticsParams(true, false, true, false, false,
-				CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular.runtimeTypes());
-		List<CourseStatEntry> courseStatistics = coachingService.getCoursesStatistics(getIdentity(), roles,
-				coursesStatisticsParams);
-		updateIndicators(courseStatistics, markedKeys);
-		updateTable(courseStatistics, markedKeys);
+		List<CoachingRoles> roles = coachingSec.getCoachingRoles();
+		CoursesSummaryKeyFigures keyFigure = CoursesSummaryKeyFigures.secureValueOf(keyFigureKey);
+		CoursesSummary coursesSummary = coachingService.getCoursesSummaryStatistics(getIdentity(), roles,
+				keyFigure, tableEl.getPageSize());
+		updateIndicators(coursesSummary);
+		updateTable(coursesSummary, keyFigure);
 	}
 
-	private void updateIndicators(List<CourseStatEntry> courseStatistics, Set<Long> markedKeys) {
+	private void updateIndicators(CoursesSummary coursesSummary) {
 		keyToFigureCard.get("all").setI18nKey(FigureCardsFactory.createCardText(null, null,
-				String.valueOf(courseStatistics.size()), translate("all")));
-		
-		int numMarked = 0;
-		int numCoachPublished = 0;
-		int numPublished = 0;
-		int numFinished = 0;
-		for (CourseStatEntry entry : courseStatistics) {
-			if (markedKeys.contains(entry.getRepoKey())) {
-				numMarked++;
-			}
-			
-			if (RepositoryEntryStatusEnum.coachpublished == entry.getRepoStatus()) {
-				numCoachPublished++;
-			} else if (RepositoryEntryStatusEnum.published == entry.getRepoStatus()) {
-				numPublished++;
-			} else if (RepositoryEntryStatusEnum.closed == entry.getRepoStatus()) {
-				numFinished++;
-			}
-		}
-		
+				String.valueOf(coursesSummary.numCourses()), translate("all")));
+
+		int numRelevant = coursesSummary.numCoachPublished() + coursesSummary.numPublished();
 		keyToFigureCard.get("relevant").setI18nKey(FigureCardsFactory.createCardText(null, null,
-				String.valueOf(numCoachPublished + numPublished), translate("relevant")));
+				String.valueOf(numRelevant), translate("relevant")));
 		keyToFigureCard.get("marked").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_bookmark", null,
-				String.valueOf(numMarked), translate("search.mark")));
+				String.valueOf(coursesSummary.numMarked()), translate("search.mark")));
 		keyToFigureCard.get("access").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_coach", null,
-				String.valueOf(numCoachPublished), translate("filter.access.for.coach")));
+				String.valueOf(coursesSummary.numCoachPublished()), translate("filter.access.for.coach")));
 		keyToFigureCard.get("published").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_repo_status_published", null,
-				String.valueOf(numPublished), translate("filter.published")));
+				String.valueOf(coursesSummary.numPublished()), translate("filter.published")));
 		keyToFigureCard.get("finished").setI18nKey(FigureCardsFactory.createCardText("o_course_widget_icon o_icon_repo_status_closed", null,
-				String.valueOf(numFinished), translate("filter.finished")));
+				String.valueOf(coursesSummary.numFinished()), translate("filter.finished")));
 	}
 
-	private void updateTable(List<CourseStatEntry> courseStatistics, Set<Long> markedKeys) {
-		Predicate<? super CourseStatEntry> filterPredicate = getFilterPredicate(markedKeys);
-		List<CourseStatEntry> filteredStatistics = courseStatistics.stream()
-				.filter(filterPredicate)
-				.toList();
-		List<CourseRow> rows = filteredStatistics.stream()
-				.sorted(Comparator.comparing(CourseStatEntry::getLastVisit, Comparator.nullsFirst(Date::compareTo).reversed()))
-				.limit(tableEl.getPageSize())
+	private void updateTable(CoursesSummary coursesSummary, CoursesSummaryKeyFigures keyFigure) {
+		List<CourseRow> rows = coursesSummary.courseStatistics().stream()
 				.map(this::toRow)
 				.toList();
 		
@@ -293,22 +246,7 @@ public class CourseWidgetController extends TableWidgetController
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-		setFooterText(rows.size(), filteredStatistics.size(), getFigureLabel(keyFigureKey));
-	}
-	
-	private Predicate<CourseStatEntry> getFilterPredicate(Set<Long> markedKeys) {
-		if (keyFigureKey != null) {
-			return switch (keyFigureKey) {
-			case "marked" -> entry -> markedKeys.contains(entry.getRepoKey());
-			case "relevant" -> entry -> RepositoryEntryStatusEnum.published == entry.getRepoStatus()
-										|| RepositoryEntryStatusEnum.coachpublished == entry.getRepoStatus();
-			case "published" -> entry -> RepositoryEntryStatusEnum.published == entry.getRepoStatus();
-			case "access" -> entry -> RepositoryEntryStatusEnum.coachpublished == entry.getRepoStatus();
-			case "finished" -> entry -> RepositoryEntryStatusEnum.closed == entry.getRepoStatus();
-			default -> entry -> true;
-			};
-		}
-		return entry -> true;
+		setFooterText(rows.size(), coursesSummary.numOf(keyFigure), getFigureLabel(keyFigureKey));
 	}
 	
 	private CourseRow toRow(CourseStatEntry entry) {

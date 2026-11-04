@@ -22,7 +22,6 @@ package org.olat.modules.coach.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.scope.Scope;
@@ -40,6 +39,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
@@ -54,7 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CoursesAndOthersController extends BasicController implements Activateable2 {
 	
-	private static final String SCOPE_COURSES = GroupRoles.owner.name();
+	private static final String SCOPE_COURSES = "owner";
 	private static final String SCOPE_OTHERS = "Others";
 	
 	private final List<Scope> scopes;
@@ -125,23 +125,17 @@ public class CoursesAndOthersController extends BasicController implements Activ
 	}
 	
 	private CourseListController doOpenCourses(UserRequest ureq) {
-		List<GroupRoles> roles = new ArrayList<>();
-		if(coachingSec.owner()) {
-			roles.add(GroupRoles.owner);
-		}
-		if(coachingSec.coach()) {
-			roles.add(GroupRoles.coach);
-		}
+		List<CoachingRoles> roles = coachingSec.getCoachingRoles();
 		return doOpenCourses(ureq, SCOPE_COURSES, roles,
 				CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 	}
 	
 	private CourseListController doOpenOthers(UserRequest ureq) {
-		return doOpenCourses(ureq, SCOPE_OTHERS, List.of(GroupRoles.owner),
+		return doOpenCourses(ureq, SCOPE_OTHERS, List.of(CoachingRoles.owner),
 				CoursesStatisticsRuntimeTypesGroup.embeddedAndTemplate);
 	}
 	
-	private CourseListController doOpenCourses(UserRequest ureq, String scope, List<GroupRoles> roles, CoursesStatisticsRuntimeTypesGroup runtimesGroup) {
+	private CourseListController doOpenCourses(UserRequest ureq, String scope, List<CoachingRoles> roles, CoursesStatisticsRuntimeTypesGroup runtimesGroup) {
 		removeAsListenerAndDispose(coursesListCtrl);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(scope, 0l);

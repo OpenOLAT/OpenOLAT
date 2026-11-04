@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.Certificates;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -56,6 +57,9 @@ public class CourseStatEntry implements OLATResourceable {
 	private Long resourceId;
 	private String resourceTypeName;
 	
+	private double myActivity;
+	private Date myLastVisit;
+	
 	private Double averageRating;
 	
 	private int participants;
@@ -71,8 +75,14 @@ public class CourseStatEntry implements OLATResourceable {
 	
 	private List<Long> curriculumsKeys;
 	
-	public CourseStatEntry() {
-		//
+	private final CoachingRoles role;
+	
+	public CourseStatEntry(CoachingRoles role) {
+		this.role = role;
+	}
+	
+	public CoachingRoles getRole() {
+		return role;
 	}
 
 	public Long getRepoKey() {
@@ -195,6 +205,22 @@ public class CourseStatEntry implements OLATResourceable {
 
 	public void setLifecycleEndDate(Date lifecycleEndDate) {
 		this.lifecycleEndDate = lifecycleEndDate;
+	}
+
+	public double getMyActivity() {
+		return myActivity;
+	}
+
+	public void setMyActivity(double myActivity) {
+		this.myActivity = myActivity;
+	}
+
+	public Date getMyLastVisit() {
+		return myLastVisit;
+	}
+
+	public void setMyLastVisit(Date myLastVisit) {
+		this.myLastVisit = myLastVisit;
 	}
 
 	public int getParticipants() {

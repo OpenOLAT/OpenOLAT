@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -97,6 +96,7 @@ import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.CoursesStatisticsParams;
@@ -192,7 +192,7 @@ public class CourseListController extends FormBasicController implements Activat
 	private CoursesTableDataModel tableModel;
 
 	private int counter = 0;
-	private List<GroupRoles> roles;
+	private List<CoachingRoles> roles;
 	private final CourseListConfig config;
 	private final MapperKey mapperThumbnailKey;
 	private final CurriculumElement curriculumElement;
@@ -227,7 +227,7 @@ public class CourseListController extends FormBasicController implements Activat
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public CourseListController(UserRequest ureq, WindowControl wControl,
-			List<GroupRoles> roles, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup, CourseListConfig config) {
+			List<CoachingRoles> roles, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup, CourseListConfig config) {
 		super(ureq, wControl, "course_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
@@ -416,7 +416,7 @@ public class CourseListController extends FormBasicController implements Activat
 		}
 		
 		SelectionValues statusPK = new SelectionValues();
-		boolean owner = roles.contains(GroupRoles.owner);
+		boolean owner = roles.contains(CoachingRoles.owner);
 		if(owner) {
 			statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate(RepositoryEntryStatusEnum.preparation.i18nKey())));
 			statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.review.name(), translate(RepositoryEntryStatusEnum.review.i18nKey())));
@@ -581,7 +581,7 @@ public class CourseListController extends FormBasicController implements Activat
 		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(runtimeTypesGroup);
 		Instant statisticsStart = Instant.now();
 		List<CourseStatEntry> courseStatistics = curriculumElement != null
-				? coachingService.getCoursesStatistics(curriculumElement)
+				? coachingService.getCoursesStatistics(curriculumElement, getIdentity())
 				: coachingService.getCoursesStatistics(getIdentity(), roles, coursesStatisticsParams);
 		log.debug("Statistics loaded in {} millis", Duration.between(statisticsStart, Instant.now()).toMillis());
 		Map<Long,VFSThumbnailInfos> thumbnails = mapperThumbnail.getResourceableThumbnails(courseStatistics);
@@ -864,7 +864,7 @@ public class CourseListController extends FormBasicController implements Activat
 	}
 	
 	private void doOpenReferences(UserRequest ureq, CourseStatEntryRow entry, FormLink link) {
-		GroupRoles role = null;//TODO
+		CoachingRoles role = entry.getRole();
 		referencesCtrl = new CourseReferencesController(ureq, getWindowControl(), entry, role);
 		listenTo(referencesCtrl);
 		

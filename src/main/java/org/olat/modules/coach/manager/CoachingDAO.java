@@ -19,6 +19,7 @@
  */
 package org.olat.modules.coach.manager;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.model.CompletionStats;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.CoursesStatisticsParams;
@@ -493,11 +495,11 @@ public class CoachingDAO {
 		return !rawList.isEmpty();
 	}
 	
-	protected List<CourseStatEntry> getCoursesStatistics(CurriculumElement element) {
+	protected List<CourseStatEntry> getCoursesStatistics(CurriculumElement element, Identity identity) {
 		final List<RepositoryEntryRuntimeType> runtimeTypes = CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular.runtimeTypes();
 		final List<RepositoryEntryStatusEnum> status = List.of(RepositoryEntryStatusEnum.coachPublishedToClosed());
 		
-		Map<Long,CourseStatEntry> map = getCourses(element, null, null, status, runtimeTypes);
+		Map<Long,CourseStatEntry> map = getCourses(element, identity, null, status, runtimeTypes);
 		if(!map.isEmpty()) {
 			loadCoursesStatistics(element, null, null, true, map);
 			loadCoursesStatementsAndCompletions(element, null, null, true, true, map);
@@ -505,71 +507,81 @@ public class CoachingDAO {
 		return new ArrayList<>(map.values());
 	}
 	
-	protected List<CourseStatEntry> getCoursesStatistics(Identity identity, List<GroupRoles> roles, CoursesStatisticsParams params) {
-		final List<RepositoryEntryRuntimeType> runtimeTypes = params.runtimeTypes();
+	protected List<CourseStatEntry> getCoursesStatistics(Identity identity, List<CoachingRoles> roles, CoursesStatisticsParams params) {
+		List<CourseStatEntry> courseStatistics = loadCoursesAndDeduplicateByRole(identity, roles, params.runtimeTypes());
+		loadCoursesStatistics(identity, CoachingRoles.intersect(roles, List.of(CoachingRoles.owner)), params, courseStatistics);
+		loadCoursesStatistics(identity, CoachingRoles.intersect(roles, List.of(CoachingRoles.mastercoach, CoachingRoles.coach)), params, courseStatistics);
+		return courseStatistics;
+	}
+	
+	protected List<CourseStatEntry> loadCoursesAndDeduplicateByRole(Identity identity, List<CoachingRoles> roles,
+			List<RepositoryEntryRuntimeType> runtimeTypes) {
+		Map<Long,CourseStatEntry> mapOwner = roles.contains(CoachingRoles.owner)
+				? getCourses(null, identity, CoachingRoles.owner, List.of(RepositoryEntryStatusEnum.preparationToClosed()), runtimeTypes)
+				: new HashMap<>();
+		Map<Long,CourseStatEntry> mapMasterCoach = roles.contains(CoachingRoles.mastercoach)
+				? getCourses(null, identity, CoachingRoles.mastercoach, List.of(RepositoryEntryStatusEnum.coachPublishedToClosed()), runtimeTypes)
+				: new HashMap<>();
+		mapMasterCoach.keySet().removeAll(mapOwner.keySet());
 
-		Map<Long,CourseStatEntry> mapOwner = roles.contains(GroupRoles.owner)
-				? getCourses(null, identity, GroupRoles.owner, List.of(RepositoryEntryStatusEnum.preparationToClosed()), runtimeTypes)
-				: Map.of();
-		Map<Long,CourseStatEntry> mapCoach = roles.contains(GroupRoles.coach)
-				? getCourses(null, identity, GroupRoles.coach, List.of(RepositoryEntryStatusEnum.coachPublishedToClosed()), runtimeTypes)
-				: Map.of();
+		Map<Long,CourseStatEntry> mapCoach = roles.contains(CoachingRoles.coach)
+				? getCourses(null, identity, CoachingRoles.coach, List.of(RepositoryEntryStatusEnum.coachPublishedToClosed()), runtimeTypes)
+				: new HashMap<>();
+		mapCoach.keySet().removeAll(mapOwner.keySet());
+		mapCoach.keySet().removeAll(mapMasterCoach.keySet());
 		
-		if(!mapOwner.isEmpty()) {
-			loadCoursesStatistics(identity, GroupRoles.owner, params, mapOwner);
-		}
-		if(!mapCoach.isEmpty()) {
-			for(Long courseKey:mapOwner.keySet()) {
-				mapCoach.remove(courseKey);
+		List<CourseStatEntry> courseStatistics = new ArrayList<>();
+		courseStatistics.addAll(mapOwner.values());
+		courseStatistics.addAll(mapMasterCoach.values());
+		courseStatistics.addAll(mapCoach.values());
+		return courseStatistics;
+	}
+	
+	private void loadCoursesStatistics(Identity identity, List<CoachingRoles> roles,
+			CoursesStatisticsParams params, List<CourseStatEntry> statistics) {
+		if(identity == null || roles.isEmpty()) return;
+		
+		Map<Long,CourseStatEntry> mapAs = statistics.stream()
+				.filter(se -> roles.contains(se.getRole()))
+				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, v) -> u));
+		if(!mapAs.isEmpty()) {
+			if(params.withStatistics() || params.withCertificates()) {
+				loadCoursesStatistics(null, identity, roles, params.withCertificates(), mapAs);
 			}
-			loadCoursesStatistics(identity, GroupRoles.coach, params, mapCoach);
+			loadCoursesStatementsAndCompletions(null, identity, roles, params.withStatements(), params.withCompletions(), mapAs);
+			if(params.withReferences()) {
+				loadCoursesReferences(identity, roles, mapAs);
+			}
 		}
-		
-		List<CourseStatEntry> list = new ArrayList<>(mapOwner.size() + mapCoach.size());
-		list.addAll(mapOwner.values());
-		list.addAll(mapCoach.values());
-		return list;
 	}
 	
-
-	private void loadCoursesStatistics(Identity identity, GroupRoles role,
-			CoursesStatisticsParams params, Map<Long,CourseStatEntry> map) {
-		if(params.withStatistics() || params.withCertificates()) {
-			loadCoursesStatistics(null, identity, role, params.withCertificates(), map);
-		}
-		loadCoursesStatementsAndCompletions(null, identity, role, params.withStatements(), params.withCompletions(), map);
-		if(params.withReferences()) {
-			loadCoursesReferences(identity, role, map);
-		}
-		
-	}
-	
-	private Map<Long,CourseStatEntry> getCourses(CurriculumElement element, IdentityRef coach, GroupRoles role,
+	protected Map<Long,CourseStatEntry> getCourses(CurriculumElement element, IdentityRef coach, CoachingRoles role,
 			List<RepositoryEntryStatusEnum> status, List<RepositoryEntryRuntimeType> runtimeTypes) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key, lifecycle.key, v.displayname, v.technicalType, v.externalId, v.externalRef, v.status,")
 		  .append("  v.teaser, v.location, v.authors, res.resId, res.resName, lifecycle.validFrom, lifecycle.validTo,")
-		  .append("  stats.rating, v.educationalType.key")
+		  .append("  stats.rating, v.educationalType.key, courseInfos.activity, courseInfos.recentLaunch")
 		  .append(" from repositoryentry v")
 		  .append(" inner join v.olatResource as res")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as participantGroup")
 		  .append(" left join v.lifecycle as lifecycle")
 		  .append(" left join v.statistics as stats")
+		  .append(" left join usercourseinfos as courseInfos on (courseInfos.resource.key=res.key and courseInfos.identity.key=:coachKey)")
 		  .where()
 		  .append(" v.status in :status and v.runtimeTypeString in :runtimeTypes")
 		  .and();
 		
 		if(element != null) {
 			sb.append("participantGroup.key=:elementGroupKey");
-		} else if(role == GroupRoles.owner) {
+		} else if(role == CoachingRoles.owner) {
 			sb.append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  inner join bgroupmember as owner on (owner.role=:role and owner.group.key=reToOwnerGroup.group.key)")
 			  .append("  where owner.identity.key=:coachKey")
 			  .append(")");
-		} else if(role == GroupRoles.coach)  {
+		} else if(role == CoachingRoles.coach || role == CoachingRoles.mastercoach)  {
 			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append("  where coach.role=:role and coach.identity.key=:coachKey")
 			  .append(")");
 		}
 		
@@ -584,11 +596,12 @@ public class CoachingDAO {
  				.createQuery(sb.toString(), Object[].class)
 				.setFlushMode(FlushModeType.COMMIT)
 				.setParameter("status", statusList)
-				.setParameter("runtimeTypes", runtimeTypesList);
+				.setParameter("runtimeTypes", runtimeTypesList)
+				.setParameter("coachKey", coach.getKey());
 		if(element != null) {
 			query.setParameter("elementGroupKey", element.getGroup().getKey());
 		} else {
-			query.setParameter("coachKey", coach.getKey());
+			query.setParameter("role", role.name());
 		}
 		
 		List<Object[]> list = query.getResultList();
@@ -596,7 +609,7 @@ public class CoachingDAO {
 		for(Object[] rawStat:list) {
 			Long repoKey = ((Number)rawStat[0]).longValue();
 			map.computeIfAbsent(repoKey, key -> {
-				CourseStatEntry entry = new CourseStatEntry();
+				CourseStatEntry entry = new CourseStatEntry(role);
 				entry.setRepoKey(key);
 				entry.setRepoDisplayName((String)rawStat[2]);
 				entry.setRepoTechnicalType((String)rawStat[3]);
@@ -612,13 +625,15 @@ public class CoachingDAO {
 				entry.setLifecycleEndDate((Date)rawStat[13]);
 				entry.setAverageRating(PersistenceHelper.extractDouble(rawStat, 14));
 				entry.setEducationalTypeKey(PersistenceHelper.extractLong(rawStat, 15));
+				entry.setMyActivity(PersistenceHelper.extractPrimitiveDouble(rawStat, 16));
+				entry.setMyLastVisit((Date)rawStat[17]);
 				return entry;
 			});
 		}
 		return map;
 	}
 	
-	private void loadCoursesStatistics(CurriculumElement element, IdentityRef coach, GroupRoles role,
+	protected void loadCoursesStatistics(CurriculumElement element, IdentityRef coach, List<CoachingRoles> roles,
 			boolean withCertificates, Map<Long,CourseStatEntry> map) {
 		if(map.isEmpty()) return;
 		
@@ -650,9 +665,9 @@ public class CoachingDAO {
 
 		if(element != null) {
 			sb.and().append(" participantGroup.key=:elementGroupKey");
-		} else if(role == GroupRoles.coach) {
+		} else if(roles.contains(CoachingRoles.coach) || roles.contains(CoachingRoles.mastercoach)) {
 			sb.and().append(" participantGroup.key in (select coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append("  where coach.role in (:roles) and coach.identity.key=:coachKey")
 			  .append(")");
 		}
 		sb.append(" group by v.key");
@@ -661,12 +676,16 @@ public class CoachingDAO {
 				.createQuery(sb.toString(), Object[].class)
 				.setFlushMode(FlushModeType.COMMIT);
 		if(withCertificates) {
-			query.setParameter("now", new Date(), TemporalType.TIMESTAMP);
+			query.setParameter("now", LocalDateTime.now());
 		}
 		if(element != null) {
 			query.setParameter("elementGroupKey", element.getGroup().getKey());
-		} else if(role == GroupRoles.coach) {
-			query.setParameter("coachKey", coach.getKey());
+		} else if(roles.contains(CoachingRoles.coach) || roles.contains(CoachingRoles.mastercoach)) {
+			List<String> coachingRolesList = roles.stream()
+					.filter(r -> r == CoachingRoles.coach || r == CoachingRoles.mastercoach)
+					.map(CoachingRoles::name).toList();
+			query.setParameter("coachKey", coach.getKey())
+			     .setParameter("roles", coachingRolesList);
 		}
 
 		for(List<Long> entryKeys:PersistenceHelper.collectionOfChunks(new ArrayList<>(map.keySet()), 2)) {
@@ -693,7 +712,7 @@ public class CoachingDAO {
 		}
 	}
 
-	private void loadCoursesStatementsAndCompletions(CurriculumElement element, Identity coach, GroupRoles role,
+	protected void loadCoursesStatementsAndCompletions(CurriculumElement element, Identity coach, List<CoachingRoles> roles,
 			boolean withStatements, boolean withCompletions, Map<Long,CourseStatEntry> map) {
 		if(!withStatements && !withCompletions) {
 			return;
@@ -731,9 +750,9 @@ public class CoachingDAO {
 
 		if(element != null) {
 			sb.append("   and reToParticipantGroup.group.key=:elementGroupKey");
-		} else if(role == GroupRoles.coach) {
+		} else if(roles.contains(CoachingRoles.coach) || roles.contains(CoachingRoles.mastercoach)) {
 			sb.append("   and reToParticipantGroup.group.key in (select coach.group.key from bgroupmember as coach")
-			  .append("    where coach.role='coach' and coach.identity.key=:coachKey)");
+			  .append("    where coach.role in (:roles) and coach.identity.key=:coachKey)");
 		}
 
 		sb.append("  )")
@@ -744,8 +763,12 @@ public class CoachingDAO {
 				.setFlushMode(FlushModeType.COMMIT);
 		if(element != null) {
 			query.setParameter("elementGroupKey", element.getGroup().getKey());
-		} else if(role == GroupRoles.coach) {
-			query.setParameter("coachKey", coach.getKey());
+		} else if(roles.contains(CoachingRoles.coach) || roles.contains(CoachingRoles.mastercoach)) {
+			List<String> rolesString = roles.stream()
+					.filter(r -> r == CoachingRoles.coach || r == CoachingRoles.mastercoach)
+					.map(CoachingRoles::name).toList();
+			query.setParameter("coachKey", coach.getKey())
+			     .setParameter("roles", rolesString);
 		}
 
 		for(List<Long> entryKeys:PersistenceHelper.collectionOfChunks(new ArrayList<>(map.keySet()), 2)) {
@@ -777,7 +800,7 @@ public class CoachingDAO {
 		}
 	}
 
-	private void loadCoursesReferences(Identity coach, GroupRoles role, Map<Long,CourseStatEntry> map) {
+	private void loadCoursesReferences(Identity coach, List<CoachingRoles> roles, Map<Long,CourseStatEntry> map) {
 		if(map.isEmpty()) return;
 		
 		QueryBuilder sb = new QueryBuilder();
@@ -789,24 +812,29 @@ public class CoachingDAO {
 		  .append(" inner join reToGroup.group as rGroup")
 		  .append(" inner join curriculumelement as curEl on (curEl.group.key=rGroup.key)")
 		  .where()
-		  .append("  re.status").in(role == GroupRoles.owner
+		  .append("  re.status").in(roles.contains(CoachingRoles.owner)
 			  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .and();
 
-		if(role == GroupRoles.owner) {
+		if(roles.contains(CoachingRoles.owner)) {
 			sb.append("re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  inner join bgroupmember as owner on (owner.role in (:roles) and owner.group.key=reToOwnerGroup.group.key)")
 			  .append("  where owner.identity.key=:coachKey")
 			  .append(")");
 		} else {
 			sb.append("rGroup.key in (select coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append("  where coach.role in (:roles) and coach.identity.key=:coachKey")
 			  .append(" )");
 		}
+		
+		List<String> rolesList = roles.stream()
+				.map(CoachingRoles::name)
+				.toList();
 		
 		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("coachKey", coach.getKey())
+				.setParameter("roles", rolesList)
 				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();
 		for(Object[] rawObjects:rawList) {
@@ -832,39 +860,40 @@ public class CoachingDAO {
 	 * @param role
 	 * @return
 	 */
-	public List<Curriculum> getCourseReferences(RepositoryEntryRef entry, Identity coach, GroupRoles role) {
+	public List<Curriculum> getCourseReferences(RepositoryEntryRef entry, Identity coach, CoachingRoles role) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct cur")
 		  .append(" from repositoryentry as re")
 		  .append(" inner join re.groups as reToGroup")
 		  .append(" inner join reToGroup.group as rGroup")
 		  .append(" inner join curriculumelement as curEl on (curEl.group.key=rGroup.key)")
-		  .append(" inner join curriculum as cur")
+		  .append(" inner join curEl.curriculum as cur")
 		  .where()
-		  .append(" entry.key=:repositoryEntryKey and re.status").in(role == GroupRoles.owner
+		  .append(" entry.key=:repositoryEntryKey and re.status").in(role == CoachingRoles.owner
 			  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .and();
 
-		if(role == GroupRoles.owner) {
+		if(role == CoachingRoles.owner) {
 			sb.append("re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  inner join bgroupmember as owner on (owner.role=:role and owner.group.key=reToOwnerGroup.group.key)")
 			  .append("  where owner.identity.key=:coachKey")
 			  .append(")");
 		} else {
 			sb.append("rGroup.key in (select coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append("  where coach.role=:role and coach.identity.key=:coachKey")
 			  .append(" )");
 		}
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Curriculum.class)
 				.setParameter("coachKey", coach.getKey())
+				.setParameter("role", role.name())
 				.setParameter("repositoryEntryKey", entry.getKey())
 				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();
 	}
 	
-	public List<Curriculum> getCoursesReferences(Identity coach, GroupRoles role, List<RepositoryEntryRuntimeType> runtimeTypes) {
+	public List<Curriculum> getCoursesReferences(Identity coach, CoachingRoles role, List<RepositoryEntryRuntimeType> runtimeTypes) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select distinct cur")
 		  .append(" from repositoryentry v")
@@ -875,20 +904,20 @@ public class CoachingDAO {
 		  .append(" inner join curriculumelement as curEl on (curEl.group.key=rGroup.key)")
 		  .append(" inner join curriculum as cur")
 		  .where()
-		  .append(" v.status ").in(role == null || role == GroupRoles.owner
+		  .append(" v.status ").in(role == CoachingRoles.owner
 		  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .and()
 		  .append(" v.runtimeTypeString in :runtimeTypes")
 		  .and();
 
-		if(role == GroupRoles.owner) {
+		if(role == CoachingRoles.owner) {
 			sb.append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  inner join bgroupmember as owner on (owner.role=:role and owner.group.key=reToOwnerGroup.group.key)")
 			  .append("  where owner.identity.key=:coachKey")
 			  .append(")");
-		} else if(role == GroupRoles.coach)  {
+		} else if(role == CoachingRoles.coach || role == CoachingRoles.mastercoach)  {
 			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append("  where coach.role=:role and coach.identity.key=:coachKey")
 			  .append(")");
 		}
 		
@@ -899,6 +928,7 @@ public class CoachingDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Curriculum.class)
 				.setParameter("coachKey", coach.getKey())
+				.setParameter("role", role.name())
 				.setParameter("runtimeTypes", runtimeTypesList)
 				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();

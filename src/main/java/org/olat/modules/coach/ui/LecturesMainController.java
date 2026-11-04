@@ -75,7 +75,7 @@ public class LecturesMainController extends BasicController implements Activatea
 		if(coachingSec.isTeacher()) {
 			scopes.add(ScopeFactory.createScope(TEACHER_SCOPE, translate("lectures.teacher.menu.title"), null, "o_icon o_icon_coaching_tool"));
 		}
-		if(coachingSec.isMasterCoachForLectures()) {
+		if(coachingSec.isMasterCoach()) {
 			scopes.add(ScopeFactory.createScope(MASTER_COACH_SCOPE, translate("lectures.mastercoach.menu.title"), null, "o_icon o_icon_num_participants"));
 		}
 		searchScopes = ScopeFactory.createScopeSelection("search.scopes", mainVC, this, scopes);
@@ -86,7 +86,7 @@ public class LecturesMainController extends BasicController implements Activatea
 		if(coachingSec.isTeacher()) {
 			searchScopes.setSelectedKey(TEACHER_SCOPE);
 			doOpenAsTeacher(ureq);
-		} else if(coachingSec.isMasterCoachForLectures()) {
+		} else if(coachingSec.isMasterCoach()) {
 			searchScopes.setSelectedKey(MASTER_COACH_SCOPE);
 			doOpenAsMasterCoach(ureq);
 		}

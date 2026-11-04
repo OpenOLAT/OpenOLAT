@@ -55,6 +55,7 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.coach.CoachingLargeTest;
+import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.CoursesStatisticsParams;
@@ -413,7 +414,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		// Courses statistics
 		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> nativeStats = coachingDAO.getCoursesStatistics(coach,
-				List.of(GroupRoles.coach), coursesStatisticsParams);
+				List.of(CoachingRoles.coach), coursesStatisticsParams);
 		Assert.assertNotNull(nativeStats);
 		Assert.assertEquals(1, nativeStats.size());
 		CourseStatEntry nativeStat = nativeStats.get(0);
@@ -490,7 +491,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, course, false);
 		dbInstance.commitAndCloseSession();
 		
-		List<Curriculum> list = coachingService.getCoursesCurriculums(owner, List.of(GroupRoles.owner),
+		List<Curriculum> list = coachingService.getCoursesCurriculums(owner, List.of(CoachingRoles.owner),
 				CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		Assertions.assertThat(list)
 			.contains(curriculum);
@@ -515,7 +516,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, course, false);
 		dbInstance.commitAndCloseSession();
 
-		List<CourseStatEntry> statistics = coachingDAO.getCoursesStatistics(element);
+		List<CourseStatEntry> statistics = coachingDAO.getCoursesStatistics(element, owner);
 		Assertions.assertThat(statistics)
 			.map(CourseStatEntry::getRepoKey)
 			.contains(course.getKey());
@@ -540,7 +541,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, course, false);
 		dbInstance.commitAndCloseSession();
 		
-		List<Curriculum> list = coachingService.getCourseReferences(course, owner, GroupRoles.owner);
+		List<Curriculum> list = coachingService.getCourseReferences(course, owner, CoachingRoles.owner);
 		Assertions.assertThat(list)
 			.contains(curriculum);
 	}
@@ -610,7 +611,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		// Course statistics
 		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> nativeStats = coachingDAO.getCoursesStatistics(coach,
-				List.of(GroupRoles.coach), coursesStatisticsParams);
+				List.of(CoachingRoles.coach), coursesStatisticsParams);
 		Assert.assertNotNull(nativeStats);
 		Assert.assertEquals(3, nativeStats.size());
 		CourseStatEntry entryRe1 = getCourseStatEntry(re1, nativeStats);
@@ -792,7 +793,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		// Course statistics
 		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> coursesStatisticsAsOwner = coachingDAO.getCoursesStatistics(coach,
-				List.of(GroupRoles.owner), coursesStatisticsParams);
+				List.of(CoachingRoles.owner), coursesStatisticsParams);
 		Assertions.assertThat(coursesStatisticsAsOwner)
 			.hasSize(2);
 		//re 1
@@ -815,7 +816,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(5.5f, entryCourse2.getAverageScore(), 0.0001f);
 		
 		List<CourseStatEntry> coursesStatisticsAsCoach = coachingDAO.getCoursesStatistics(coach,
-				List.of(GroupRoles.coach), coursesStatisticsParams);
+				List.of(CoachingRoles.coach), coursesStatisticsParams);
 		Assertions.assertThat(coursesStatisticsAsCoach)
 			.hasSize(1);
 		//re 3
@@ -1000,7 +1001,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		// Course statistics
 		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> courseCoachCourseStats = coachingDAO.getCoursesStatistics(courseCoach,
-				List.of(GroupRoles.coach), coursesStatisticsParams);
+				List.of(CoachingRoles.coach), coursesStatisticsParams);
 		Assert.assertNotNull(courseCoachCourseStats);
 		Assert.assertEquals(1, courseCoachCourseStats.size());
 		CourseStatEntry entryCourse3 = getCourseStatEntry(re3, courseCoachCourseStats);
@@ -1014,7 +1015,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		// Group coach can see course 3 via group 3
 		List<CourseStatEntry> groupCoachCourseStats = coachingDAO.getCoursesStatistics(groupCoach,
-				List.of(GroupRoles.coach), coursesStatisticsParams);
+				List.of(CoachingRoles.coach), coursesStatisticsParams);
 		Assert.assertNotNull(groupCoachCourseStats);
 		Assert.assertEquals(1, groupCoachCourseStats.size());
 		CourseStatEntry entryCourse3g = getCourseStatEntry(re3, groupCoachCourseStats);
@@ -1137,7 +1138,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		//courses
 		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> nativeCourseStatsAsOwner = coachingDAO.getCoursesStatistics(coach,
-				List.of(GroupRoles.owner), coursesStatisticsParams);
+				List.of(CoachingRoles.owner), coursesStatisticsParams);
 		Assertions.assertThat(nativeCourseStatsAsOwner)
 			.hasSize(1);
 		//re 1
@@ -1204,11 +1205,11 @@ public class CoachingDAOTest extends OlatTestCase {
 		//courses (method doesn't return courses without participant)
 		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> nativeCourseStatsAsCoach = coachingDAO.getCoursesStatistics(coach,
-				List.of(GroupRoles.coach), coursesStatisticsParams);
+				List.of(CoachingRoles.coach), coursesStatisticsParams);
 		Assertions.assertThat(nativeCourseStatsAsCoach)
 			.hasSize(1);
 		List<CourseStatEntry> nativeCourseStatsAsOwner = coachingDAO.getCoursesStatistics(coach,
-				List.of(GroupRoles.owner), coursesStatisticsParams);
+				List.of(CoachingRoles.owner), coursesStatisticsParams);
 		Assertions.assertThat(nativeCourseStatsAsOwner)
 			.hasSize(1);
 		
@@ -1317,7 +1318,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		// Assert average completions of courses
 		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> courseCoachCourseStats = coachingDAO.getCoursesStatistics(coach,
-				List.of(GroupRoles.coach), coursesStatisticsParams);
+				List.of(CoachingRoles.coach), coursesStatisticsParams);
 		CourseStatEntry statsCourse1 = getCourseStatEntry(re1, courseCoachCourseStats);
 		Assert.assertNotNull(statsCourse1);
 		Assert.assertEquals(0.7, statsCourse1.getAverageCompletion(), 0.0001f);
@@ -1612,7 +1613,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		templateCourse = repositoryManager.setRuntimeType(templateCourse, RepositoryEntryRuntimeType.template);
 		dbInstance.commitAndCloseSession();
 
-		List<CourseStatEntry> standaloneStats = coachingDAO.getCoursesStatistics(owner, List.of(GroupRoles.owner),
+		List<CourseStatEntry> standaloneStats = coachingDAO.getCoursesStatistics(owner, List.of(CoachingRoles.owner),
 				CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular));
 		Assertions.assertThat(standaloneStats)
 			.map(CourseStatEntry::getRepoKey)
@@ -1622,7 +1623,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assertions.assertThat(standaloneEntry.getParticipants()).isEqualTo(1);
 		Assertions.assertThat(standaloneEntry.getSuccessStatus().numPassed()).isEqualTo(1);
 
-		List<CourseStatEntry> templateStats = coachingDAO.getCoursesStatistics(owner, List.of(GroupRoles.owner),
+		List<CourseStatEntry> templateStats = coachingDAO.getCoursesStatistics(owner, List.of(CoachingRoles.owner),
 				CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.embeddedAndTemplate));
 		Assertions.assertThat(templateStats)
 			.map(CourseStatEntry::getRepoKey)
@@ -1663,7 +1664,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		setScoreInformations(new Date(), 3.0f, null, "g1", "gs1", "pc1", false, participant, foreignCourse);
 		dbInstance.commitAndCloseSession();
 
-		List<CourseStatEntry> statistics = coachingDAO.getCoursesStatistics(owner, List.of(GroupRoles.owner),
+		List<CourseStatEntry> statistics = coachingDAO.getCoursesStatistics(owner, List.of(CoachingRoles.owner),
 				CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular));
 		Assertions.assertThat(statistics)
 			.map(CourseStatEntry::getRepoKey)
@@ -1690,7 +1691,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		repositoryService.addRole(owner, trashedCourse, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 
-		List<CourseStatEntry> statistics = coachingDAO.getCoursesStatistics(owner, List.of(GroupRoles.owner),
+		List<CourseStatEntry> statistics = coachingDAO.getCoursesStatistics(owner, List.of(CoachingRoles.owner),
 				CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular));
 		Assertions.assertThat(statistics)
 			.map(CourseStatEntry::getRepoKey)
@@ -1765,7 +1766,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, course, false);
 		dbInstance.commitAndCloseSession();
 
-		List<Curriculum> list = coachingDAO.getCoursesReferences(owner, GroupRoles.owner,
+		List<Curriculum> list = coachingDAO.getCoursesReferences(owner, CoachingRoles.owner,
 				CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular.runtimeTypes());
 		Assertions.assertThat(list)
 			.contains(curriculum);

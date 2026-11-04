@@ -57,7 +57,7 @@ public class CoachDashboardController extends BasicController {
 		listenTo(dashbordCtrl);
 		putInitialPanel(dashbordCtrl.getInitialComponent());
 		
-		if (coachingSec.coach()) {
+		if (coachingSec.coach() || coachingSec.owner() || coachingSec.masterCoach()) {
 			coursesCtrl = new CourseWidgetController(ureq, wControl, coachingSec);
 			listenTo(coursesCtrl);
 			dashbordCtrl.addWidget("courseCoach", translate("courses"), coursesCtrl, BentoBoxSize.box_4_1);
@@ -65,7 +65,7 @@ public class CoachDashboardController extends BasicController {
 			hasWidgets = true;
 		}
 		
-		if (lectureModule.isEnabled() && (coachingSec.isTeacher() || coachingSec.isMasterCoachForLectures())) {
+		if (lectureModule.isEnabled() && (coachingSec.isTeacher() || coachingSec.isMasterCoach())) {
 			lectureBlocksCtrl = new CoachLectureBlocksWidgetController(ureq, wControl);
 			listenTo(lectureBlocksCtrl);
 			lectureBlocksCtrl.reload();

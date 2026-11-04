@@ -21,6 +21,7 @@ package org.olat.modules.coach.manager;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -41,9 +43,12 @@ import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.manager.IdentityToIdentityRelationDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.mark.Mark;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
@@ -57,11 +62,14 @@ import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementForCoaching;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesSummaryKeyFigures;
 import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
+import org.olat.modules.coach.model.CoursesSummary;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GeneratedReport;
 import org.olat.modules.coach.model.GroupStatEntry;
@@ -75,6 +83,7 @@ import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +103,8 @@ public class CoachingServiceImpl implements CoachingService {
 	
 	private static final Logger log = Tracing.createLoggerFor(CoachingServiceImpl.class);
 
+	@Autowired
+	private MarkManager markManager;
 	@Autowired
 	private CoachingDAO coachingDao;
 	@Autowired
@@ -118,7 +129,7 @@ public class CoachingServiceImpl implements CoachingService {
 		boolean coach = coachingDao.isMember(identity, GroupRoles.coach, RepositoryEntryStatusEnum.coachPublishedToClosed());
 		boolean owner = coachingDao.isMember(identity, GroupRoles.owner, RepositoryEntryStatusEnum.preparationToClosed());
 		boolean teacher = lectureModule.isEnabled() && coachingDao.isTeacher(identity);
-		boolean masterCoach =  lectureModule.isEnabled() && coachingDao.isMasterCoach(identity);
+		boolean masterCoach =  curriculumModule.isEnabled() && coachingDao.isMasterCoach(identity);
 		boolean isUserRelationSource = identityToIdentityRelationDao.hasRelationsAsSource(identity);
 		boolean lineManager = organisationModule.isEnabled() && roles.isLineManager();
 		boolean educationManager = organisationModule.isEnabled() && roles.isEducationManager();
@@ -201,36 +212,112 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
-	public List<CourseStatEntry> getCoursesStatistics(Identity coach, List<GroupRoles> roles, CoursesStatisticsParams params) {
-		if(!roles.contains(GroupRoles.coach) && !roles.contains(GroupRoles.owner)) {
-			log.warn("Search courses in course with illegal role: {}", roles);
+	public List<CourseStatEntry> getCoursesStatistics(Identity coach, List<CoachingRoles> roles, CoursesStatisticsParams params) {
+		if(roles.isEmpty()) {
+			log.warn("Search courses in course with no role");
 			return new ArrayList<>();
 		}
 		return coachingDao.getCoursesStatistics(coach, roles, params);
 	}
 
 	@Override
-	public List<CourseStatEntry> getCoursesStatistics(CurriculumElement curriculumElement) {
-		return coachingDao.getCoursesStatistics(curriculumElement);
+	public CoursesSummary getCoursesSummaryStatistics(Identity identity, List<CoachingRoles> roles, CoursesSummaryKeyFigures keyFigure, int maxResults) {
+		List<RepositoryEntryRuntimeType> runtimeTypes = CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular.runtimeTypes();
+		List<CourseStatEntry> courseStatistics = coachingDao.loadCoursesAndDeduplicateByRole(identity, roles, runtimeTypes);
+		
+		Set<Long> markedKeys = markManager.getMarks(identity, List.of("RepositoryEntry")).stream()
+				.map(Mark::getOLATResourceable)
+				.map(OLATResourceable::getResourceableId)
+				.collect(Collectors.toSet());
+
+		int numMarked = 0;
+		int numCoachPublished = 0;
+		int numPublished = 0;
+		int numFinished = 0;
+		for (CourseStatEntry entry : courseStatistics) {
+			if (markedKeys.contains(entry.getRepoKey())) {
+				numMarked++;
+			}
+			
+			if (RepositoryEntryStatusEnum.coachpublished == entry.getRepoStatus()) {
+				numCoachPublished++;
+			} else if (RepositoryEntryStatusEnum.published == entry.getRepoStatus()) {
+				numPublished++;
+			} else if (RepositoryEntryStatusEnum.closed == entry.getRepoStatus()) {
+				numFinished++;
+			}
+		}
+		
+		Predicate<? super CourseStatEntry> filterPredicate = getFilterPredicate(keyFigure, markedKeys);
+		List<CourseStatEntry> filteredStatistics = courseStatistics.stream()
+				.filter(filterPredicate)
+				.toList();
+		
+		List<CourseStatEntry> summaryStatistics = filteredStatistics.stream()
+				.sorted(Comparator.comparingDouble(CourseStatEntry::getMyActivity).reversed()
+						.thenComparing(CourseStatEntry::getMyLastVisit, Comparator.nullsLast(Comparator.reverseOrder()))
+						.thenComparing(CourseStatEntry::getRepoDisplayName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+						.thenComparing(CourseStatEntry::getRepoKey))
+				.limit(maxResults)
+				.toList();
+		loadCoursesStatisticsAdditionalDataByRole(identity, summaryStatistics, CoachingRoles.intersect(roles, List.of(CoachingRoles.owner)));
+		loadCoursesStatisticsAdditionalDataByRole(identity, summaryStatistics, CoachingRoles.intersect(roles, List.of(CoachingRoles.mastercoach, CoachingRoles.coach)));
+		return new CoursesSummary(summaryStatistics, courseStatistics.size(), numMarked, numCoachPublished, numPublished, numFinished);
+	}
+	
+	private void loadCoursesStatisticsAdditionalDataByRole(Identity identity, List<CourseStatEntry> statistics, List<CoachingRoles> roles) {
+		if(identity == null || statistics.isEmpty() || roles.isEmpty()) return;
+		
+		Map<Long,CourseStatEntry> mapAs = statistics.stream()
+				.filter(se -> roles.contains(se.getRole()))
+				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, v) -> u));
+		if(!mapAs.isEmpty()) {
+			coachingDao.loadCoursesStatistics(null, identity, roles, false, mapAs);
+			coachingDao.loadCoursesStatementsAndCompletions(null, identity, roles, true, false, mapAs);
+		}
+	}
+	
+	private Predicate<CourseStatEntry> getFilterPredicate(CoursesSummaryKeyFigures keyFigure, Set<Long> markedKeys) {
+		if (keyFigure != null) {
+			return switch (keyFigure) {
+				case marked -> entry -> markedKeys.contains(entry.getRepoKey());
+				case relevant -> entry -> RepositoryEntryStatusEnum.published == entry.getRepoStatus()
+											|| RepositoryEntryStatusEnum.coachpublished == entry.getRepoStatus();
+				case published -> entry -> RepositoryEntryStatusEnum.published == entry.getRepoStatus();
+				case access -> entry -> RepositoryEntryStatusEnum.coachpublished == entry.getRepoStatus();
+				case finished -> entry -> RepositoryEntryStatusEnum.closed == entry.getRepoStatus();
+				default -> entry -> true;
+			};
+		}
+		return entry -> true;
 	}
 
 	@Override
-	public List<Curriculum> getCoursesCurriculums(Identity identity, List<GroupRoles> roles,
+	public List<CourseStatEntry> getCoursesStatistics(CurriculumElement curriculumElement, Identity identity) {
+		return coachingDao.getCoursesStatistics(curriculumElement, identity);
+	}
+
+	@Override
+	public List<Curriculum> getCoursesCurriculums(Identity identity, List<CoachingRoles> roles,
 			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
 		Set<Curriculum> curriculums = new HashSet<>();
-		if(roles.contains(GroupRoles.owner)) {
-			List<Curriculum> list = coachingDao.getCoursesReferences(identity, GroupRoles.owner, runtimeTypesGroup.runtimeTypes());
+		if(roles.contains(CoachingRoles.owner)) {
+			List<Curriculum> list = coachingDao.getCoursesReferences(identity, CoachingRoles.owner, runtimeTypesGroup.runtimeTypes());
 			curriculums.addAll(list);
 		}
-		if(roles.contains(GroupRoles.coach)) {
-			List<Curriculum> list = coachingDao.getCoursesReferences(identity, GroupRoles.coach, runtimeTypesGroup.runtimeTypes());
+		if(roles.contains(CoachingRoles.mastercoach)) {
+			List<Curriculum> list = coachingDao.getCoursesReferences(identity, CoachingRoles.mastercoach, runtimeTypesGroup.runtimeTypes());
+			curriculums.addAll(list);
+		}
+		if(roles.contains(CoachingRoles.coach)) {
+			List<Curriculum> list = coachingDao.getCoursesReferences(identity, CoachingRoles.coach, runtimeTypesGroup.runtimeTypes());
 			curriculums.addAll(list);
 		}
 		return new ArrayList<>(curriculums);
 	}
 
 	@Override
-	public List<Curriculum> getCourseReferences(RepositoryEntryRef entry, Identity identity, GroupRoles role) {
+	public List<Curriculum> getCourseReferences(RepositoryEntryRef entry, Identity identity, CoachingRoles role) {
 		return coachingDao.getCourseReferences(entry, identity, role);
 	}
 

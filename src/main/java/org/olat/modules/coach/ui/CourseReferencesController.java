@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -36,6 +35,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
@@ -53,7 +53,7 @@ public class CourseReferencesController extends BasicController {
 	@Autowired
 	private CoachingService coachingService;
 	
-	public CourseReferencesController(UserRequest ureq, WindowControl wControl, CourseStatEntryRow entry, GroupRoles role) {
+	public CourseReferencesController(UserRequest ureq, WindowControl wControl, CourseStatEntryRow entry, CoachingRoles role) {
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 
 		VelocityContainer mainVC = createVelocityContainer("course_references");

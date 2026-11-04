@@ -22,7 +22,6 @@ package org.olat.modules.coach;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -35,8 +34,10 @@ import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesSummaryKeyFigures;
 import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
+import org.olat.modules.coach.model.CoursesSummary;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GeneratedReport;
 import org.olat.modules.coach.model.GroupStatEntry;
@@ -94,13 +95,16 @@ public interface CoachingService {
 	 * @param role The role to search for, coach or owner only
 	 * @return A list of courses statistics
 	 */
-	public List<CourseStatEntry> getCoursesStatistics(Identity identity, List<GroupRoles> roles,
+	public List<CourseStatEntry> getCoursesStatistics(Identity identity, List<CoachingRoles> roles,
 			CoursesStatisticsParams coursesStatisticsParams);
 
-	public List<Curriculum> getCoursesCurriculums(Identity identity, List<GroupRoles> roles,
+	public List<Curriculum> getCoursesCurriculums(Identity identity, List<CoachingRoles> roles,
 			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
 	
-	public List<CourseStatEntry> getCoursesStatistics(CurriculumElement curriculumElement);
+	public CoursesSummary getCoursesSummaryStatistics(Identity identity, List<CoachingRoles> roles,
+			CoursesSummaryKeyFigures keyFigure, int maxResults);
+	
+	public List<CourseStatEntry> getCoursesStatistics(CurriculumElement curriculumElement, Identity identity);
 
 	/**
 	 * Load the curriculums which match the statistics of the method above.
@@ -110,7 +114,7 @@ public interface CoachingService {
 	 * @param role The role to search for, coach or owner only
 	 * @return A list of curriculums
 	 */
-	public List<Curriculum> getCourseReferences(RepositoryEntryRef entry, Identity identity, GroupRoles role);
+	public List<Curriculum> getCourseReferences(RepositoryEntryRef entry, Identity identity, CoachingRoles role);
 	
 	public List<GroupStatEntry> getGroupsStatistics(Identity coach);
 	
