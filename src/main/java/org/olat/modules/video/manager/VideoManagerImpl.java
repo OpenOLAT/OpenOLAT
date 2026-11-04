@@ -853,10 +853,10 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		Long resourceKey = status.getReferenceId();
 		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getVideoTranscodings(resourceKey, uuid);
 		// OO-9999, WP4 H3: accept a status update only for a row that is still pending. Without this,
-		// a replayed status callback for a uuid that already finished (status DONE) could revert it
-		// back to "in progress" indefinitely.
+		// a replayed status callback for a uuid that already finished (status DONE) or failed (ERROR,
+		// INEFFICIENT, TIMEOUT) could revert it back to "in progress" indefinitely.
 		List<VideoTranscoding> pendingVideoTranscodings = videoTranscodings.stream()
-				.filter(videoTranscoding -> videoTranscoding.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE)
+				.filter(videoTranscoding -> VideoTranscoding.isPending(videoTranscoding.getStatus()))
 				.collect(Collectors.toList());
 		if (pendingVideoTranscodings.size() != videoTranscodings.size()) {
 			log.info("Ignoring video transcoding status update for already finished rows [uuid={}, resourceKey={}]", uuid, resourceKey);
