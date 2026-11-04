@@ -448,7 +448,13 @@ public class IFrameDeliveryMapper implements Mapper {
 				sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
 				sb.appendStaticCss("js/openolat/iFrameResizerHelper.css", "iframeresizercss");
 			}
-	
+
+			if(useContentDomain) {
+				sb.append("\n<script>\n")
+				  .append(" b_registerCourseLinkBridge('").append(Settings.createServerURI()).append("');\n")
+				  .append("</script>\n");
+			}
+
 			if (parser.getHtmlContent().length() > 0) {
 				if (edusharingModule.isEnabled()) {
 					if(useContentDomain) {

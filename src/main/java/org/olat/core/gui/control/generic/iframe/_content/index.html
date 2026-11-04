@@ -20,5 +20,24 @@
 		</script>
 	#end
 	$r.render("newUriEvent")
+	
+	<script>
+	## OO-10015: receive course internal link clicks from iframes on the content domain
+	if (!window.o_courseLinkBridge) {
+		window.o_courseLinkBridge = true;
+		window.addEventListener('message', function(e) {
+			if (e.origin !== '$serverUri') return;
+			if (!e.source || e.source.parent !== window) return;
+			let d = e.data;
+			if (!d || typeof d !== 'object' || typeof d.id !== 'string' || !/^[\w-]{1,64}$/.test(d.id)) return;
+			if (navigator.userActivation && !navigator.userActivation.isActive) return;
+			if (d.type === 'olat-gotonode') {
+				gotonode(d.id);
+			} else if (d.type === 'olat-gototool') {
+				gototool(d.id);
+			}
+		});
+	}
+	</script>
 </div>
 

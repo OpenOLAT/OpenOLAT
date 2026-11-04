@@ -233,3 +233,17 @@ function b_changeLinkTargets() {
 		}
 	}
 }
+
+// OO-10015: course internal links across the content domain. The iframe cannot call
+// parent.gotonode() because the parent has another origin. Send a message instead.
+function b_registerCourseLinkBridge(server_origin) {
+	const re = /^javascript:\s*(?:window\.)?(?:parent|top)\.(gotonode|gototool)\(\s*['"]?([\w-]{1,64})['"]?\s*\)\s*;?\s*$/;
+	document.addEventListener('click', function(e) {
+		let a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+		if (!a) return;
+		let m = re.exec(a.getAttribute('href'));
+		if (!m) return;
+		e.preventDefault();
+		window.parent.postMessage({ type: 'olat-' + m[1], id: m[2] }, server_origin);
+	}, true);
+}
