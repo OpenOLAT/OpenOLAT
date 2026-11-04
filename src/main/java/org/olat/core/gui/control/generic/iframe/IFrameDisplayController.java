@@ -187,12 +187,12 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		}
 
 		String token = "";
+		String serverUri = Settings.isContentDomainNameEnabled()
+				? Settings.createContentServerURI()
+				: Settings.createServerURI();
 		if(iframeSettings != null && iframeSettings.isUseContentDomain() && Settings.isContentDomainNameEnabled()) {
 			contentMapper.setUseContentDomain(true);
 			MapperKey mKey = registerSandboxedMapper(ureq, contentMapper);
-			String serverUri = Settings.isContentDomainNameEnabled()
-					? Settings.createContentServerURI()
-					: Settings.createServerURI();
 			baseURI = serverUri + mKey.getUrl();
 			token = "?token=" + mKey.getToken();
 		} else {
@@ -209,6 +209,8 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		}
 		myContent.contextPut("token", token);
 		myContent.contextPut("baseURI", baseURI);
+		myContent.contextPut("serverUri", serverUri);
+		
 		newUriEventPanel = new Panel("newUriEvent");
 		newUriEventPanel.setContent(eventVC);
 		
