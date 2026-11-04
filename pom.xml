@@ -72,7 +72,7 @@
 		<org.glassfish.jaxb.runtime>4.0.9</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.2.4</apache.cxf>
 		<apache.pdfbox>3.0.8</apache.pdfbox>
-		<apache.poi>5.5.1</apache.poi>
+		<apache.poi>6.0.0</apache.poi>
 		<apache.log4j>2.26.1</apache.log4j>
 		<org.slf4j>2.0.20</org.slf4j>
 		<org.bouncycastle>1.86</org.bouncycastle>
@@ -2025,7 +2025,7 @@
 		<dependency>
 			<groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
 			<artifactId>owasp-java-html-sanitizer</artifactId>
-			<version>20261011.1</version>
+			<version>20261103.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.w3c.css</groupId>
