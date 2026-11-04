@@ -38,6 +38,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CorruptedCourseException;
@@ -59,6 +60,7 @@ import org.olat.repository.ui.list.DetailsHeaderConfig;
 import org.olat.repository.ui.list.InfoPageData;
 import org.olat.repository.ui.list.InfoPageFactsController;
 import org.olat.repository.ui.list.InfoPageHeaderController;
+import org.olat.repository.ui.list.InfoPageMyCourseController;
 import org.olat.repository.ui.list.InfoPageTeaserImageController;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
@@ -78,7 +80,8 @@ public class CurriculumElementInfosController extends BasicController {
 	private final InfoPageHeaderController headerCtrl;
 	private final InfoPageTeaserImageController teaserImageCtrl;
 	private final CurriculumElementInfoPageGetStartedController getStartedCtrl;
-	private final CurriculumElementInfoPageMyProductController myProductCtrl;
+	private CurriculumElementInfoPageMyProductController myProductCtrl;
+	private InfoPageMyCourseController myCourseCtrl;
 	private final InfoPageFactsController factsCtrl;
 	private final CurriculumElementInfoPageSectionsController sectionsCtrl;
 	private LectureBlocksTimelineController lectureBlocksCtrl;
@@ -92,6 +95,8 @@ public class CurriculumElementInfosController extends BasicController {
 
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
@@ -150,10 +155,21 @@ public class CurriculumElementInfosController extends BasicController {
 			mainVC.put("getStarted", getStartedCtrl.getInitialComponent());
 		}
 		
-		myProductCtrl = new CurriculumElementInfoPageMyProductController(ureq, wControl, headerConfig, element);
-		listenTo(myProductCtrl);
-		if (myProductCtrl.hasContent()) {
-			mainVC.put("myCourse", myProductCtrl.getInitialComponent());
+		if (element.isSingleCourseImplementation()) {
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean guestOnly = roles == null || roles.isGuestOnly();
+			boolean isMember = entry != null && getIdentity() != null && repositoryService.isMember(getIdentity(), entry);
+			myCourseCtrl = new InfoPageMyCourseController(ureq, wControl, entry, element, isMember, guestOnly, false, headerConfig);
+			listenTo(myCourseCtrl);
+			if (myCourseCtrl.hasContent()) {
+				mainVC.put("myCourse", myCourseCtrl.getInitialComponent());
+			}
+		} else {
+			myProductCtrl = new CurriculumElementInfoPageMyProductController(ureq, wControl, headerConfig, element);
+			listenTo(myProductCtrl);
+			if (myProductCtrl.hasContent()) {
+				mainVC.put("myCourse", myProductCtrl.getInitialComponent());
+			}
 		}
 
 		factsCtrl = new InfoPageFactsController(ureq, wControl, element, lectureBlocks.size());
@@ -201,7 +217,7 @@ public class CurriculumElementInfosController extends BasicController {
 			} else if (event == OffersController.LOGIN_EVENT) {
 				fireEvent(ureq, new BookEvent(element.getResource().getKey()));
 			}
-		} else if (source == myProductCtrl) {
+		} else if (source == myProductCtrl || source == myCourseCtrl) {
 			if (event instanceof LeavingEvent) {
 				fireEvent(ureq, event);
 			}

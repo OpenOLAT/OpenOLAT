@@ -57,6 +57,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.ui.CancelBookingController;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.LeavingStatusList;
@@ -75,12 +77,16 @@ public class InfoPageMyCourseController extends BasicController {
 
 	private static final String CMD_GROUP = "group";
 	private static final String CMD_LEAVE = "leave";
+	private static final String CMD_CANCEL = "cancel";
 
 	private Link leaveLink;
+	private Link cancelLink;
 	private CloseableModalController cmc;
 	private ConfirmLeaveController leaveDialogBox;
+	private CancelBookingController cancelBookingCtrl;
 
 	private final RepositoryEntry entry;
+	private final CurriculumElement element;
 	private final DetailsHeaderConfig config;
 	private final boolean closeTabOnLeave;
 	private boolean hasContent;
@@ -94,22 +100,24 @@ public class InfoPageMyCourseController extends BasicController {
 	@Autowired
 	private RepositoryManager repositoryManager;
 
-	public InfoPageMyCourseController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+	public InfoPageMyCourseController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, CurriculumElement element,
 			boolean isMember, boolean guestOnly, boolean closeTabOnLeave, DetailsHeaderConfig config) {
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
-				Util.createPackageTranslator(GradeUIFactory.class, ureq.getLocale())));
+				Util.createPackageTranslator(GradeUIFactory.class, ureq.getLocale(),
+				Util.createPackageTranslator(CancelBookingController.class, ureq.getLocale()))));
 		this.entry = entry;
+		this.element = element;
 		this.config = config;
 		this.closeTabOnLeave = closeTabOnLeave;
 
 		List<Fact> facts = new ArrayList<>();
-		if (!guestOnly && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+		if (entry != null && !guestOnly && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			addCourseFacts(facts, entry);
 		}
-		if (isMember) {
+		if (entry != null && isMember) {
 			addGroupsFact(facts, entry);
 		}
-		init(facts);
+		init(ureq, facts);
 	}
 
 	private void addCourseFacts(List<Fact> facts, RepositoryEntry entry) {
@@ -216,8 +224,10 @@ public class InfoPageMyCourseController extends BasicController {
 		return hasContent;
 	}
 
-	private void init(List<Fact> facts) {
-		hasContent = !facts.isEmpty() || config.isLeaveAvailable();
+	private void init(UserRequest ureq, List<Fact> facts) {
+		boolean cancelAvailable = element != null && config.isCancelAvailable();
+		boolean leaveAvailable = !cancelAvailable && entry != null && config.isLeaveAvailable();
+		hasContent = !facts.isEmpty() || cancelAvailable || leaveAvailable;
 		if (!hasContent) {
 			putInitialPanel(new Panel("empty"));
 			return;
@@ -227,7 +237,18 @@ public class InfoPageMyCourseController extends BasicController {
 		factSheet.setTitle(translate("details.my.course"));
 		factSheet.setFacts(facts);
 		putInitialPanel(factSheet);
-		if (config.isLeaveAvailable()) {
+		if (cancelAvailable) {
+			String cancelText = config.isCancelWithFee() ? translate("leave.cancel.fee") : translate("leave.cancel");
+			cancelLink = LinkFactory.createCustomLink(CMD_CANCEL, CMD_CANCEL, cancelText, Link.BUTTON | Link.NONTRANSLATED, null, this);
+			cancelLink.setElementCssClass("o_cancel btn-danger " + FactSheet.CSS_FOOTER_LINK_FULL_WIDTH);
+			cancelLink.setIconLeftCSS("o_icon o_icon_sign_out");
+			cancelLink.setGhost(true);
+			cancelLink.setEnabled(config.isCancelEnabled());
+			factSheet.setFooterLinks(List.of(cancelLink));
+			
+			cancelBookingCtrl = new CancelBookingController(ureq, getWindowControl(), element, config.getBookedIdentity(), true);
+			listenTo(cancelBookingCtrl);
+		} else if (leaveAvailable) {
 			String typeName = translate(entry.getOlatResource().getResourceableTypeName());
 			leaveLink = LinkFactory.createCustomLink(CMD_LEAVE, CMD_LEAVE, translate("sign.out.type", typeName),
 					Link.BUTTON | Link.NONTRANSLATED, null, this);
@@ -243,6 +264,8 @@ public class InfoPageMyCourseController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == leaveLink) {
 			doConfirmLeave(ureq);
+		} else if (source == cancelLink) {
+			cancelBookingCtrl.doConfirmCancel(ureq);
 		} else if (source instanceof Link link && CMD_GROUP.equals(link.getCommand())) {
 			doOpenGroup(ureq, (Long) link.getUserObject());
 		}
@@ -250,7 +273,11 @@ public class InfoPageMyCourseController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (leaveDialogBox == source) {
+		if (cancelBookingCtrl == source) {
+			if (event instanceof LeavingEvent) {
+				fireEvent(ureq, event);
+			}
+		} else if (leaveDialogBox == source) {
 			if (event.equals(Event.DONE_EVENT)) {
 				doLeave(ureq);
 				fireEvent(ureq, new LeavingEvent(entry));
