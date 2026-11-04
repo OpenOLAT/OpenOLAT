@@ -302,31 +302,34 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldFilterActiveOnly() {
+	public void shouldFilterByStatus() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null,
 				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
-		CurriculumElement active = curriculumService.createCurriculumElement(random(), random(),
-				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		dbInstance.commitAndCloseSession();
-
-		CurriculumElement inactive = curriculumService.createCurriculumElement(random(), random(),
-				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		((CurriculumElementImpl)inactive).setElementStatus(CurriculumElementStatus.inactive);
-		inactive = curriculumService.updateCurriculumElement(inactive);
-		CurriculumElement deleted = curriculumService.createCurriculumElement(random(), random(),
-				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
-				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		((CurriculumElementImpl)deleted).setElementStatus(CurriculumElementStatus.deleted);
-		deleted = curriculumService.updateCurriculumElement(deleted);
+		CurriculumElement preparation = createCurriculumElement(curriculum, CurriculumElementStatus.preparation);
+		CurriculumElement provisional = createCurriculumElement(curriculum, CurriculumElementStatus.provisional);
+		CurriculumElement confirmed = createCurriculumElement(curriculum, CurriculumElementStatus.confirmed);
+		CurriculumElement active = createCurriculumElement(curriculum, CurriculumElementStatus.active);
+		CurriculumElement finished = createCurriculumElement(curriculum, CurriculumElementStatus.finished);
+		CurriculumElement cancelled = createCurriculumElement(curriculum, CurriculumElementStatus.cancelled);
+		CurriculumElement inactive = createCurriculumElement(curriculum, CurriculumElementStatus.inactive);
+		CurriculumElement deleted = createCurriculumElement(curriculum, CurriculumElementStatus.deleted);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
-		assertThat(pending).contains(active).doesNotContain(inactive, deleted);
+		assertThat(pending)
+				.contains(preparation, provisional, confirmed, active, finished)
+				.doesNotContain(cancelled, inactive, deleted);
+	}
+
+	private CurriculumElement createCurriculumElement(Curriculum curriculum, CurriculumElementStatus status) {
+		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		((CurriculumElementImpl)element).setElementStatus(status);
+		return curriculumService.updateCurriculumElement(element);
 	}
 	
 	private String random() {

@@ -42,6 +42,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class CurriculumElementProviderDAO {
 	
+	private static final List<String> STATUS = List.of(CurriculumElementStatus.preparation.name(),
+			CurriculumElementStatus.provisional.name(), CurriculumElementStatus.confirmed.name(),
+			CurriculumElementStatus.active.name(), CurriculumElementStatus.finished.name());
+	
 	@Autowired
 	private DB dbInstance;
 
@@ -59,7 +63,7 @@ public class CurriculumElementProviderDAO {
 	}
 
 	private void appendWhere(QueryBuilder sb, SearchParameters searchParams) {
-		sb.and().append("curEle.status = '").append(CurriculumElementStatus.active.name()).append("'");
+		sb.and().append("curEle.status in (:status)");
 		if (searchParams.isStartDate() && searchParams.getFrom() != null) {
 			sb.and().append("curEle.beginDate >= :beginFrom");
 		}
@@ -107,6 +111,7 @@ public class CurriculumElementProviderDAO {
 	}
 	
 	private void appendParameter(TypedQuery<?> query, SearchParameters searchParams) {
+		query.setParameter("status", STATUS);
 		if (searchParams.isStartDate() && searchParams.getFrom() != null) {
 			query.setParameter("beginFrom", searchParams.getFrom());
 		}
