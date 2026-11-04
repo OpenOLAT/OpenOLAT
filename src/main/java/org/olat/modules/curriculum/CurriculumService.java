@@ -384,6 +384,8 @@ public interface CurriculumService {
 	 */
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntryRef entry);
 	
+	public CurriculumElement getSingleCourseImplementation(RepositoryEntryRef entry);
+	
 	public boolean hasCurriculumElements(RepositoryEntryRef entry);
 	
 	

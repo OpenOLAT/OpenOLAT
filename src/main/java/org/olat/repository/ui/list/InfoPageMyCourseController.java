@@ -278,12 +278,12 @@ public class InfoPageMyCourseController extends BasicController {
 				fireEvent(ureq, event);
 			}
 		} else if (leaveDialogBox == source) {
+			cmc.deactivate();
+			cleanUp();
 			if (event.equals(Event.DONE_EVENT)) {
 				doLeave(ureq);
 				fireEvent(ureq, new LeavingEvent(entry));
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
 		}

@@ -95,7 +95,11 @@ import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.modules.assessment.ui.component.GradeCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.catalog.ui.BookedEvent;
+import org.olat.modules.catalog.ui.CatalogCurriculumElementSingleCourseHeaderConfig;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryHeaderConfig;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
@@ -148,7 +152,7 @@ public class RepositoryEntryListController extends FormBasicController
 	private SearchMyRepositoryEntryViewParams searchParams;
 	
 	private final BreadcrumbPanel stackPanel;
-	private RepositoryEntryDetailsController detailsCtrl;
+	private Controller detailsCtrl;
 
 	private final MapperKey mapperThumbnailKey;
 	private final RepositoryEntryImageMapper mapperThumbnail;
@@ -165,6 +169,8 @@ public class RepositoryEntryListController extends FormBasicController
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private LifecycleModule lifecycleModule;
 	@Autowired
@@ -782,13 +788,20 @@ public class RepositoryEntryListController extends FormBasicController
 		if(entry == null) {
 			showWarning("repositoryentry.not.existing");
 		} else {
-			DetailsHeaderConfig config;
-			if (ureq.getUserSession().getRoles().isGuestOnly()) {
-				config = new GuestHeaderConfig(entry, getIdentity());
+			CurriculumElement curriculumElement = guestOnly ? null : curriculumService.getSingleCourseImplementation(entry);
+			if (curriculumElement != null) {
+				DetailsHeaderConfig config = new CatalogCurriculumElementSingleCourseHeaderConfig(curriculumElement, entry,
+						getIdentity(), ureq.getUserSession().getRoles());
+				detailsCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, config);
 			} else {
-				config = new CatalogRepositoryEntryHeaderConfig(entry, getIdentity(), ureq.getUserSession().getRoles(), false);
+				DetailsHeaderConfig config;
+				if (guestOnly) {
+					config = new GuestHeaderConfig(entry, getIdentity());
+				} else {
+					config = new CatalogRepositoryEntryHeaderConfig(entry, getIdentity(), ureq.getUserSession().getRoles(), false);
+				}
+				detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, config, false);
 			}
-			detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, config, false);
 			listenTo(detailsCtrl);
 			addToHistory(ureq, detailsCtrl);
 			

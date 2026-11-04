@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.commons.services.mark.Mark;
@@ -78,6 +79,7 @@ import org.olat.course.run.leave.LeaveCourseContext;
 import org.olat.course.run.leave.LeaveCourseEvaluator;
 import org.olat.course.run.leave.LeaveCourseStatus;
 import org.olat.course.run.leave.RepositoryEntryLeaveCourseContext;
+import org.olat.modules.catalog.ui.CatalogCurriculumElementSingleCourseHeaderConfig;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
@@ -105,6 +107,7 @@ import org.olat.repository.ui.author.ConfirmRestoreController;
 import org.olat.repository.ui.author.RepositoryMembersController;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
 import org.olat.repository.ui.list.BasicDetailsHeaderConfig;
+import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.repository.ui.list.RepositoryEntryDetailsTechnicalController;
 import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
@@ -978,6 +981,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				popToRoot(ureq);
 				cleanUp();
 				doPostSuccessfullAccess(ureq);
+			} else if(event instanceof LeavingEvent) {
+				doCloseAndOpenMyCourses(ureq);
 			}
 		} else if(confirmDeleteCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
@@ -1145,6 +1150,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			.closeDTab(ureq, re.getOlatResource(), launchedFromPoint);
 	}
 	
+	private void doCloseAndOpenMyCourses(UserRequest ureq) {
+		WindowControl wControl = getWindowControl();
+		wControl.getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, re.getOlatResource(), null);
+		NewControllerFactory.getInstance().launch("[MyCoursesSite:0][Courses:0]", ureq, wControl);
+	}
+	
 	protected void doEdit(UserRequest ureq) {
 		if(!reSecurity.isEntryAdmin()) return;
 		removeAsListenerAndDispose(editorCtrl);
@@ -1164,9 +1175,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		RepositoryEntry entry = loadRepositoryEntry();
 		Controller ctrl;
-		CurriculumElement curriculumElement = isInSingleCourseImplementation(entry);
+		CurriculumElement curriculumElement = curriculumService.getSingleCourseImplementation(entry);
 		if(curriculumElement != null) {
-			ctrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, new BasicDetailsHeaderConfig(getIdentity()));
+			CatalogCurriculumElementSingleCourseHeaderConfig headerConfig = new CatalogCurriculumElementSingleCourseHeaderConfig(curriculumElement, entry,
+					getIdentity(), ureq.getUserSession().getRoles());
+			headerConfig.hideOpenButtons();
+			ctrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, headerConfig);
 		} else {
 			ctrl = new RepositoryEntryInfosController(ureq, addToHistory(ureq, bwControl), entry, new InfoToolConfig(), true);
 		}
@@ -1185,15 +1199,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), aboutCtrl.getInitialComponent(), true, getAboutTitle());
 		listenTo(cmc);
 		cmc.activate();
-	}
-
-	// Perhaps check 
-	private CurriculumElement isInSingleCourseImplementation(RepositoryEntry entry) {
-		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
-		if(elements.size() == 1 && elements.get(0).isSingleCourseImplementation()) {
-			return elements.get(0);
-		}
-		return null;
 	}
 	
 	private final class InfoToolConfig extends BasicDetailsHeaderConfig {

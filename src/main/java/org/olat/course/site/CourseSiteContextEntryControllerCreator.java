@@ -137,10 +137,10 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			if(re.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 				return AccessDeniedFactory.createRepositoryStatusClosed(ureq, wControl);
 			} else if (reSecurity.isMember() && CoreSpringFactory.getImpl(ACService.class).isAccessRefusedByStatus(re, usess.getIdentity())) {
-				CurriculumElement curriculumElement = isInSingleCourseImplementation(curriculumService, re);
+				CurriculumElement curriculumElement = curriculumService.getSingleCourseImplementation(re);
 				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, curriculumElement, re, reSecurity.isParticipant());
 			} else if (reSecurity.isMember() || reSecurity.isMasterCoach()) {
-				CurriculumElement curriculumElement = isInSingleCourseImplementation(curriculumService, re);
+				CurriculumElement curriculumElement = curriculumService.getSingleCourseImplementation(re);
 				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, curriculumElement, re, reSecurity.isParticipant());
 			}
 		}
@@ -158,7 +158,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			searchParams.setIdentities(List.of(ureq.getIdentity()));
 			List<ResourceReservation> reservations = acService.getReservations(searchParams);
 			if (!reservations.isEmpty()) {
-				CurriculumElement curriculumElement = isInSingleCourseImplementation(curriculumService, re);
+				CurriculumElement curriculumElement = curriculumService.getSingleCourseImplementation(re);
 				return AccessDeniedFactory.createReservationPending(ureq, wControl, curriculumElement, re, reservations, reSecurity.isParticipant());
 			}
 		}
@@ -251,14 +251,6 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			}
 		}
 		return false;
-	}
-	
-	private CurriculumElement isInSingleCourseImplementation(CurriculumService curriculumService, RepositoryEntry entry) {
-		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
-		if(elements.size() == 1 && elements.get(0).isSingleCourseImplementation()) {
-			return elements.get(0);
-		}
-		return null;
 	}
 
 	@Override

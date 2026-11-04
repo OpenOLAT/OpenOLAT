@@ -87,11 +87,11 @@ public class CancelBookingController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (cancelConfirmationCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
 			if (event == Event.DONE_EVENT) {
 				doCancel(ureq);
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if (cmc == source) {
 			cmc.deactivate();
 			cleanUp();

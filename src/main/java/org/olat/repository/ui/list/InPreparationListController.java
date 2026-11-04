@@ -531,21 +531,13 @@ public class InPreparationListController extends FormBasicController implements 
 			doOpenDetails(ureq, curriculumElement, entry);
 		} else if (row.getRepositoryEntryKey() != null) {
 			RepositoryEntry entry = repositoryService.loadByKey(row.getRepositoryEntryKey());
-			CurriculumElement singleCourseImplementation = isInSingleCourseImplementation(() -> row.getRepositoryEntryKey());
+			CurriculumElement singleCourseImplementation = curriculumService.getSingleCourseImplementation(row::getRepositoryEntryKey);
 			if (singleCourseImplementation != null) {
 				doOpenDetails(ureq, singleCourseImplementation, entry);
 			} else {
 				doOpenDetails(ureq, entry);
 			}
 		} 
-	}
-	
-	private CurriculumElement isInSingleCourseImplementation(RepositoryEntryRef entry) {
-		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
-		if(elements.size() == 1 && elements.get(0).isSingleCourseImplementation()) {
-			return elements.get(0);
-		}
-		return null;
 	}
 	
 	private void doOpenDetails(UserRequest ureq, RepositoryEntry entry) {
