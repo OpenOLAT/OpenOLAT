@@ -27,6 +27,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 
@@ -39,24 +40,29 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
 public class ConfirmCancelBookingController extends ConfirmationController {
 
 	private final CurriculumElement element;
+	private final boolean singleCourse;
 
-	public ConfirmCancelBookingController(UserRequest ureq, WindowControl wControl, CurriculumElement element, Price cancellationFee) {
-		this(ureq, wControl, element, cancellationFee, Util.createPackageTranslator(ConfirmCancelBookingController.class, ureq.getLocale()));
+	public ConfirmCancelBookingController(UserRequest ureq, WindowControl wControl, CurriculumElement element, Price cancellationFee,
+			boolean singleCourse) {
+		this(ureq, wControl, element, cancellationFee, singleCourse, Util.createPackageTranslator(ConfirmCancelBookingController.class, ureq.getLocale(),
+				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale())));
 	}
 
 	private ConfirmCancelBookingController(UserRequest ureq, WindowControl wControl, CurriculumElement element, Price cancellationFee,
-			Translator translator) {
-		super(ureq, wControl, getMessage(translator, cancellationFee), getConfirmation(translator, cancellationFee),
+			boolean singleCourse, Translator translator) {
+		super(ureq, wControl, getMessage(translator, cancellationFee, singleCourse), getConfirmation(translator, cancellationFee),
 				translator.translate("leave.cancel.button"), ButtonType.submitPrimary, null, false);
 		setTranslator(Util.createPackageTranslator(ConfirmationController.class, getLocale(), translator));
 		this.element = element;
+		this.singleCourse = singleCourse;
 		initForm(ureq);
 	}
 
-	private static String getMessage(Translator translator, Price cancellationFee) {
+	private static String getMessage(Translator translator, Price cancellationFee, boolean singleCourse) {
+		String prefix = singleCourse ? "leave.cancel.course" : "leave.cancel";
 		return cancellationFee == null
-				? translator.translate("leave.cancel.message")
-				: translator.translate("leave.cancel.fee.message", PriceFormat.fullFormat(cancellationFee));
+				? translator.translate(prefix + ".message")
+				: translator.translate(prefix + ".fee.message", PriceFormat.fullFormat(cancellationFee));
 	}
 
 	private static String getConfirmation(Translator translator, Price cancellationFee) {
@@ -67,6 +73,7 @@ public class ConfirmCancelBookingController extends ConfirmationController {
 
 	@Override
 	protected void initFormElements(FormLayoutContainer confirmCont) {
-		uifactory.addStaticTextElement("element", "leave.cancel.element", StringHelper.escapeHtml(element.getDisplayName()), confirmCont);
+		uifactory.addStaticTextElement("element", singleCourse ? "CourseModule" : "leave.cancel.element",
+				StringHelper.escapeHtml(element.getDisplayName()), confirmCont);
 	}
 }

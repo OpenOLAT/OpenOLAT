@@ -151,7 +151,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController i
 			}
 		}
 
-		myCourseCtrl = new InfoPageMyCourseController(ureq, wControl, entry, isMember, guestOnly, closeTabOnLeave, config);
+		myCourseCtrl = new InfoPageMyCourseController(ureq, wControl, entry, null, isMember, guestOnly, closeTabOnLeave, config);
 		listenTo(myCourseCtrl);
 		if (myCourseCtrl.hasContent()) {
 			mainVC.put("myCourse", myCourseCtrl.getInitialComponent());
