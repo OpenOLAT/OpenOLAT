@@ -24,6 +24,8 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.course.run.leave.LeaveCourseEvaluator;
+import org.olat.course.run.leave.RepositoryEntryLeaveCourseContext;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumService;
@@ -62,6 +64,15 @@ public class CatalogCurriculumElementSingleCourseHeaderConfig extends CatalogCur
 		initOpenBookOffers();
 		initAdminAccess();
 		initCancel();
+		initLeave();
+	}
+	
+	private void initLeave() {
+		if (reSecurity == null || !reSecurity.isParticipant()) {
+			return;
+		}
+	
+		setLeave(new LeaveCourseEvaluator().evaluate(new RepositoryEntryLeaveCourseContext(repositoryEntry, identity)));
 	}
 	
 	private void initOpenBookOffers() {

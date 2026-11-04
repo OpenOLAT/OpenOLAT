@@ -1156,6 +1156,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
+	public CurriculumElement getSingleCourseImplementation(RepositoryEntryRef entry) {
+		List<CurriculumElement> elements = getCurriculumElements(entry);
+		return elements.size() == 1 && elements.get(0).isSingleCourseImplementation() ? elements.get(0) : null;
+	}
+	
+	@Override
 	public boolean hasCurriculumElements(RepositoryEntryRef entry) {
 		return curriculumElementDao.hasElements(entry);
 	}
