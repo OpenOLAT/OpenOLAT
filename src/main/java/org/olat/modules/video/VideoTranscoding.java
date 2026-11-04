@@ -39,7 +39,22 @@ public interface VideoTranscoding extends CreateInfo {
 	public static final int TRANSCODING_STATUS_TIMEOUT = -4;
 	public static final String FORMAT_MP4 = "mp4";
 	public static final String TRANSCODER_LOCAL = "Local HandBrakeCLI";
-	
+
+	/**
+	 * Whether a row with this status is still waiting for, or in, transcoding
+	 * and can accept a result or status callback (OO-9999). DONE is not
+	 * pending because it is terminal and successful; ERROR, INEFFICIENT and
+	 * TIMEOUT are not pending either, because they are terminal failures that
+	 * a late or replayed callback must not revert back to "in progress".
+	 *
+	 * @param status One of the TRANSCODING_STATUS_* constants, or the live
+	 *               HandBrake/service percentage (0-99)
+	 * @return true if the status is WAITING or an in-progress percentage
+	 */
+	public static boolean isPending(int status) {
+		return status == TRANSCODING_STATUS_WAITING || (status >= 0 && status <= 99);
+	}
+
 	/**
 	 * @return key, the database identifier
 	 */
