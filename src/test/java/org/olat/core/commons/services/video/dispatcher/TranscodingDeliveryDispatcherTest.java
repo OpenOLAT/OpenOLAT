@@ -65,9 +65,13 @@ import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
+import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoTranscodingDAO;
+import org.olat.modules.video.model.VideoTranscodingImpl;
 import org.olat.modules.video.model.VideoTranscodingMode;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.resource.OLATResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -226,6 +230,46 @@ public class TranscodingDeliveryDispatcherTest {
 		// Reaches the business logic: proof the token gate let it through.
 		verify(vfsMetadataDaoMock).loadMetadata(REFERENCE_ID_A);
 		verify(response, never()).sendError(HttpServletResponse.SC_FORBIDDEN);
+	}
+
+	@Test
+	public void ignoresAVideoTranscodingResultForARowInErrorStatus() throws Exception {
+		// gnaegi, code review OO-9999: a valid token must not resurrect a row that
+		// has already failed terminally (ERROR, INEFFICIENT or TIMEOUT).
+		String token = "valid-token-for-transcoding";
+		Long videoResourceKey = 999L;
+		when(transcoderHelperMock.verifyCallbackToken(token, TranscoderJobType.videoTranscoding, UUID_A, REFERENCE_ID_A))
+				.thenReturn(true);
+		when(videoModuleMock.isTranscodingEnabled()).thenReturn(true);
+		when(videoModuleMock.getVideoTranscodingMode()).thenReturn(VideoTranscodingMode.service);
+
+		RepositoryEntry entryMock = Mockito.mock(RepositoryEntry.class);
+		OLATResource videoResourceMock = Mockito.mock(OLATResource.class);
+		when(repositoryEntryDaoMock.loadByResourceKey(REFERENCE_ID_A)).thenReturn(entryMock);
+		when(entryMock.getOlatResource()).thenReturn(videoResourceMock);
+		when(videoResourceMock.getKey()).thenReturn(videoResourceKey);
+
+		VideoTranscodingImpl erroredRow = new VideoTranscodingImpl();
+		erroredRow.setResolution(720);
+		erroredRow.setStatus(VideoTranscoding.TRANSCODING_STATUS_ERROR);
+		when(videoTranscodingDaoMock.getVideoTranscodings(videoResourceKey, UUID_A))
+				.thenReturn(java.util.List.of(erroredRow));
+
+		String body = "{\"uuid\":\"" + UUID_A + "\",\"type\":\"videoTranscoding\",\"referenceId\":" + REFERENCE_ID_A
+				+ ",\"generated\":{\"status\":100,\"url\":\"https://service.example.org/720file.mp4\",\"resolution\":720}}";
+		HttpServletRequest request = mockRequest("notifyResult/" + token, body);
+		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+
+		dispatcher.execute(request, response);
+
+		// The token gate let it through (proof: the pending check was reached)...
+		verify(videoTranscodingDaoMock).getVideoTranscodings(videoResourceKey, UUID_A);
+		// ...but since no row for this uuid is pending, nothing downstream ever runs:
+		// no download, no status change, no file write, and no error response either.
+		verifyNoInteractions(videoManagerMock, movieServiceMock, textServiceMock, vfsRepositoryServiceMock, httpClientServiceMock);
+		verify(response, never()).sendError(org.mockito.ArgumentMatchers.anyInt());
+		assertEquals("Row must stay in its terminal ERROR status, not revert to in-progress",
+				VideoTranscoding.TRANSCODING_STATUS_ERROR, erroredRow.getStatus());
 	}
 
 	@Test

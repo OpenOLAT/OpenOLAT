@@ -504,7 +504,7 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 
 		// OO-9999, WP4 H3: accept a result only for a row this instance is actually waiting on for this uuid.
 		List<VideoTranscoding> jobTranscodings = videoTranscodingDao.getVideoTranscodings(videoResource.getKey(), result.getUuid());
-		boolean hasPendingJob = jobTranscodings.stream().anyMatch(t -> t.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE);
+		boolean hasPendingJob = jobTranscodings.stream().anyMatch(t -> VideoTranscoding.isPending(t.getStatus()));
 		if (!hasPendingJob) {
 			log.info("Ignoring transcoding job result: no pending job for this uuid [uuid={}, resKey={}]", result.getUuid(), videoResource.getKey());
 			return;
@@ -578,11 +578,12 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 			return;
 		}
 
-		// OO-9999, WP4 H3: pick the row among this uuid's own rows, and only if it is not already done (replay).
+		// OO-9999, WP4 H3: pick the row among this uuid's own rows, and only if it is still pending
+		// (not already done or failed: a replay or a late result must not revert a terminal row).
 		int resolution = result.getGenerated().getResolution();
 		VideoTranscoding videoTranscoding = jobTranscodings.stream()
 				.filter(t -> t.getResolution() == resolution)
-				.filter(t -> t.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE)
+				.filter(t -> VideoTranscoding.isPending(t.getStatus()))
 				.findFirst()
 				.orElse(null);
 		if (videoTranscoding == null) {
