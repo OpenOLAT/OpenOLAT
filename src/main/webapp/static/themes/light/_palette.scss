@@ -1,7 +1,7 @@
 /*
  * =================================================
  *
- * OpenOLAT colour palette: 15 hues x 10 steps
+ * OpenOLAT colour palette: 14 hues x 10 steps
  *
  * @author gnaegi,  www.frentix.com
  * @date October 2026
@@ -15,7 +15,8 @@
  * 5. Bright hues use step 400 as solid fill, deep hues step 500
  *
  * Generated from fxWorkspace/projects/OO-colors/scripts/palette_v2.json,
- * teal and slate (blue-gray) from gen_palette_v3_additions.py,
+ * teal, slate (blue-gray), green (hue 143) and blue (hue 255) from
+ * gen_palette_v3_additions.py,
  * do not edit values by hand.
  *
  * modules/_palette_vars.scss emits the map as custom properties
@@ -36,11 +37,10 @@ $o-palette: (
 	"orange": (50: #FEF5F0, 100: #FFE8DA, 200: #FFD4BB, 300: #FFBD96, 400: #FFA268, 500: #B55604, 600: #914303, 700: #753400, 800: #5B2601, 900: #3D1701),
 	"yellow": (50: #FAF7EC, 100: #F4ECD1, 200: #EFDBA5, 300: #EAC874, 400: #E4B132, 500: #926A06, 600: #765300, 700: #5F4102, 800: #4B3000, 900: #321E00),
 	"lime": (50: #F3F9EB, 100: #E1F2CF, 200: #C7E7A0, 300: #ACDA6A, 400: #8ECA05, 500: #567C05, 600: #436202, 700: #354E02, 800: #273B01, 900: #182600),
-	"green": (50: #EDFAF4, 100: #D3F4E4, 200: #A8EBCB, 300: #77DFAF, 400: #2BD18F, 500: #038253, 600: #01673E, 700: #02522F, 800: #003E21, 900: #012812),
+	"green": (50: #F1F9F0, 100: #DDF2DB, 200: #BEE8BB, 300: #9CDB98, 400: #76CC71, 500: #1F8320, 600: #016807, 700: #025305, 800: #013F03, 900: #012902),
 	"teal": (50: #EFF9F8, 100: #D7F2EF, 200: #B0E7E3, 300: #84DAD4, 400: #4ACBC4, 500: #027F7A, 600: #026460, 700: #00504C, 800: #003D3A, 900: #012725),
 	"cyan": (50: #EDF9FF, 100: #D5F1FE, 200: #ADE5FF, 300: #7BD7FF, 400: #1FC6FE, 500: #047A9F, 600: #05617E, 700: #034D65, 800: #003A4E, 900: #012533),
-	"blue": (50: #F4F7FF, 100: #E5ECFE, 200: #CFDDFF, 300: #B7CBFF, 400: #9BB7FE, 500: #4166E8, 600: #2E4EC3, 700: #203CA2, 800: #162D7F, 900: #0C1D54),
-	"indigo": (50: #F5F7FF, 100: #E8EBFF, 200: #D5DBFE, 300: #C0C9FE, 400: #A9B3FF, 500: #6057FE, 600: #4D35E8, 700: #3E24C3, 800: #2E1A98, 900: #1D1166),
+	"blue": (50: #F2F8FF, 100: #E0EEFF, 200: #C6DFFF, 300: #A9CEFE, 400: #87BBFF, 500: #0470D8, 600: #0058AD, 700: #00468B, 800: #01356C, 900: #002249),
 	"violet": (50: #F8F6FF, 100: #EFE9FE, 200: #E3D7FF, 300: #D4C3FE, 400: #C4ABFF, 500: #8A4EE5, 600: #6F37C1, 700: #5928A1, 800: #431D7E, 900: #2B1254),
 	"magenta": (50: #FEF4FD, 100: #FEE5FB, 200: #FECEF9, 300: #FFB3F7, 400: #FF91F6, 500: #BA37B4, 600: #9A1F95, 700: #7E0F7A, 800: #620A5E, 900: #41073E),
 	"pink": (50: #FEF5F8, 100: #FEE6EE, 200: #FED1E0, 300: #FEB8D1, 400: #FF9AC0, 500: #CE2E7D, 600: #AB1364, 700: #8C0150, 800: #6D003D, 900: #480327),
@@ -177,9 +177,9 @@ $o-swatch-alias-keys-colorservice: (
 	"red": ("red", "solid"),
 	"orchid": ("pink", "solid"),
 	"purple": ("violet", "dark"),
-	"lightblue": ("blue", "solid"),
-	"cobaltblue": ("indigo", "solid"),
-	"darkblue": ("indigo", "dark"),
+	"lightblue": ("cyan", "solid"),
+	"cobaltblue": ("blue", "solid"),
+	"darkblue": ("blue", "dark"),
 	"lightgreen": ("lime", "dark"),
 	"seagreen": ("green", "dark"),
 	"gold": ("yellow", "solid"),
@@ -190,8 +190,8 @@ $o-swatch-alias-keys-colorservice: (
 // Course colour categories, project avatars and user initials (8 keys).
 // Used with the prefixes o_colcat_, o_proj_avatar_, o_user_initials_
 $o-swatch-alias-keys-category: (
-	"dark_blue": ("indigo", "dark"),
-	"light_blue": ("blue", "solid"),
+	"dark_blue": ("blue", "solid"),
+	"light_blue": ("cyan", "solid"),
 	"purple": ("magenta", "dark"),
 	"red": ("red", "solid"),
 	"orange": ("orange", "solid"),
@@ -208,7 +208,7 @@ $o-swatch-alias-keys-calendar: (
 	"red": ("red", "tint"),
 	"maroon": ("red", "dark"),
 	"blue": ("blue", "dark"),
-	"navy": ("indigo", "dark"),
+	"navy": ("blue", "dark"),
 	"fuchsia": ("magenta", "solid"),
 	"rebeccapurple": ("violet", "dark"),
 	"lime": ("lime", "solid"),

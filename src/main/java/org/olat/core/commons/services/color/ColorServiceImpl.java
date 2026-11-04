@@ -53,9 +53,9 @@ public class ColorServiceImpl implements ColorService, InitializingBean {
 			"red", "red", Swatch.SOLID,
 			"orchid", "pink", Swatch.SOLID,
 			"purple", "violet", Swatch.DARK,
-			"lightblue", "blue", Swatch.SOLID,
-			"cobaltblue", "indigo", Swatch.SOLID,
-			"darkblue", "indigo", Swatch.DARK,
+			"lightblue", "cyan", Swatch.SOLID,
+			"cobaltblue", "blue", Swatch.SOLID,
+			"darkblue", "blue", Swatch.DARK,
 			"lightgreen", "lime", Swatch.DARK,
 			"seagreen", "green", Swatch.DARK,
 			"gold", "yellow", Swatch.SOLID,
@@ -70,7 +70,7 @@ public class ColorServiceImpl implements ColorService, InitializingBean {
 			"red", "red", Swatch.TINT,
 			"maroon", "red", Swatch.DARK,
 			"blue", "blue", Swatch.DARK,
-			"navy", "indigo", Swatch.DARK,
+			"navy", "blue", Swatch.DARK,
 			"fuchsia", "magenta", Swatch.SOLID,
 			"rebeccapurple", "violet", Swatch.DARK,
 			"lime", "lime", Swatch.SOLID,
@@ -79,8 +79,8 @@ public class ColorServiceImpl implements ColorService, InitializingBean {
 	
 	/** Predefined colour categories, identifier with "_" instead of "." */
 	static final Map<String,Swatch> CATEGORY_ALIASES = Collections.unmodifiableMap(aliases(
-			"dark_blue", "indigo", Swatch.DARK,
-			"light_blue", "blue", Swatch.SOLID,
+			"dark_blue", "blue", Swatch.SOLID,
+			"light_blue", "cyan", Swatch.SOLID,
 			"purple", "magenta", Swatch.DARK,
 			"red", "red", Swatch.SOLID,
 			"orange", "orange", Swatch.SOLID,

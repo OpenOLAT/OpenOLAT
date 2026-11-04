@@ -61,7 +61,7 @@ public class PaletteTest {
 
 	@Test
 	public void loadPalette() {
-		Assert.assertEquals(15, palette.getHues().size());
+		Assert.assertEquals(14, palette.getHues().size());
 
 		int count = 0;
 		for (String hue : palette.getHues()) {
@@ -73,7 +73,7 @@ public class PaletteTest {
 				count++;
 			}
 		}
-		Assert.assertEquals(150, count);
+		Assert.assertEquals(140, count);
 	}
 
 	@Test
@@ -135,10 +135,10 @@ public class PaletteTest {
 		// Values of the report oo-colors-p1-scss, computed by the theme build
 		Assert.assertEquals("#E4B132", palette.bg(new Swatch("yellow", Swatch.SOLID)));
 		Assert.assertEquals("#321E00", palette.fg(new Swatch("yellow", Swatch.SOLID)));
-		Assert.assertEquals("#4166E8", palette.bg(new Swatch("blue", Swatch.SOLID)));
+		Assert.assertEquals("#0470D8", palette.bg(new Swatch("blue", Swatch.SOLID)));
 		Assert.assertEquals(Palette.WHITE, palette.fg(new Swatch("blue", Swatch.SOLID)));
-		Assert.assertEquals("#0C1D54", palette.fg(new Swatch("blue", Swatch.TINT)));
-		Assert.assertEquals("#203CA2", palette.bg(new Swatch("blue", Swatch.DARK)));
+		Assert.assertEquals("#002249", palette.fg(new Swatch("blue", Swatch.TINT)));
+		Assert.assertEquals("#00468B", palette.bg(new Swatch("blue", Swatch.DARK)));
 	}
 
 	@Test

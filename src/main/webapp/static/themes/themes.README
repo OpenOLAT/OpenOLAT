@@ -51,8 +51,8 @@ the light theme and extends on top of it.
 - theme.js (optional): javascript code that should be embedded to the page to add some more complex
   features that can't be done with CSS alone
 - _config.scss: all OpenOLAT and bootstrap SASS variables
-- _palette.scss: the colour palette for all user colour choosers (15 hues x 10 steps) and the swatch roles
-- _palette_theme.scss: the theme colours, the brand colours of the theme the choosers offer after the 15 hues
+- _palette.scss: the colour palette for all user colour choosers (14 hues x 10 steps) and the swatch roles
+- _palette_theme.scss: the theme colours, the brand colours of the theme the choosers offer after the 14 hues
 - modules/*: tons of include files for different aspects of OpenOLAT
 
 
@@ -87,7 +87,7 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     the client, default is ($brand-primary). Example with 3 colours:
       $o-theme-colors: ($brand-primary, $brand-accent, #0090C5);
     The compile generates 10 steps per colour; the colour itself is the solid fill when a text
-    colour reaches 4.5:1 on it. The choosers show them as "Theme 1" ... "Theme n" after the 15 hues.
+    colour reaches 4.5:1 on it. The choosers show them as "Theme 1" ... "Theme n" after the 14 hues.
     An entry can also be a map with all 10 steps (50: ..., 900: ...). The theme colours need
     Dart Sass 1.79.0 or later.
 - Open mytheme/_mytheme_theme.scss and override or extend styles from the light theme. Best is to use the 

@@ -157,8 +157,8 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 Every colour a user can pick (calendar, course element category, video markers, project avatar, user initials, rooms, page editor blocks, badges, evaluation form report series) comes from one palette in `light/_palette.scss`.
 
 ```
-$o-palette      15 hues × 10 steps: red, orange, yellow, lime, green, teal, cyan,
-                blue, indigo, violet, magenta, pink, brown, slate, gray; steps 50 … 900,
+$o-palette      14 hues × 10 steps: red, orange, yellow, lime, green, teal, cyan,
+                blue, violet, magenta, pink, brown, slate, gray; steps 50 … 900,
                 plus the theme colours theme1 … themeN (_palette_theme.scss)
 $o-swatches     per hue: bg, fg, border, soft-bg, soft-fg, soft-border, text,
                 tint-* and dark-* variants; fg chosen by o-on-color() at compile time,

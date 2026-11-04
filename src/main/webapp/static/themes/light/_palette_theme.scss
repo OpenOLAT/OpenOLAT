@@ -6,7 +6,7 @@
  * @author gnaegi,  www.frentix.com
  * @date November 2026
  *
- * The brand colours of the theme, in addition to the 15 hues of
+ * The brand colours of the theme, in addition to the 14 hues of
  * $o-palette. The list $o-theme-colors defines 1 to n colours, the
  * default is $brand-primary. A client theme sets the list in its config
  * before the import of the light theme, e.g.
@@ -270,6 +270,6 @@ $_o-theme-entries: $o-theme-colors;
 	$o-theme-swatches: map.merge($o-theme-swatches, ($_o-theme-key: o-theme-swatch($_o-theme-steps, $_o-theme-bg-step)));
 }
 
-// Appended after the 15 hues: the emitters and Java see them last
+// Appended after the 14 hues: the emitters and Java see them last
 $o-palette: map.merge($o-palette, $o-theme-palette);
 $o-swatches: map.merge($o-swatches, $o-theme-swatches);

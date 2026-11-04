@@ -5,7 +5,7 @@
 <table class="table table-condensed">
 	<thead><tr><th>Where</th><th>What</th></tr></thead>
 	<tbody>
-		<tr><td><code>themes/light/_palette.scss</code></td><td><code>$o-palette</code> (15 hues &times; 10 steps), <code>$o-palette-bright</code>, the computed roles <code>$o-swatches</code>, the legacy alias tables and the functions <code>o-palette()</code>, <code>o-swatch-alias-color()</code>, <code>o-swatch-alias-on-white()</code>, <code>o-swatch-alias-selector()</code></td></tr>
+		<tr><td><code>themes/light/_palette.scss</code></td><td><code>$o-palette</code> (14 hues &times; 10 steps), <code>$o-palette-bright</code>, the computed roles <code>$o-swatches</code>, the legacy alias tables and the functions <code>o-palette()</code>, <code>o-swatch-alias-color()</code>, <code>o-swatch-alias-on-white()</code>, <code>o-swatch-alias-selector()</code></td></tr>
 		<tr><td><code>themes/light/_functions.scss</code></td><td><code>o-on-color()</code>: selects the foreground from a fixed list and stops the build below 4.5:1</td></tr>
 		<tr><td><code>themes/light/modules/_palette_vars.scss</code></td><td>emits <code>--o-{hue}-{step}</code> on <code>:root</code> in <code>theme.css</code> and <code>content.css</code> (not in <code>email.css</code>)</td></tr>
 		<tr><td><code>themes/light/modules/_swatches.scss</code></td><td><code>.o_swatch_{hue}</code>, <code>.o_swatch_tint</code>, <code>.o_swatch_light</code>, <code>.o_swatch_dark</code>; every legacy chooser class (<code>.o_cal_blue</code>, <code>.o_colcat_red</code>, ...) extends its swatch</td></tr>
@@ -70,7 +70,7 @@ String onWhite = palette.text("blue");                                     // st
 </ul>
 
 <h4>Theme colors</h4>
-<p>The brand colors of a theme, in addition to the 15 hues. Default: one color, <code>$brand-primary</code>. Needs Dart Sass 1.79.0 or later.</p>
+<p>The brand colors of a theme, in addition to the 14 hues. Default: one color, <code>$brand-primary</code>. Needs Dart Sass 1.79.0 or later.</p>
 <pre><code>// client config, before the import of the light theme
 $o-theme-colors: ($brand-primary, $brand-accent, #0090C5);</code></pre>
 <ul>
