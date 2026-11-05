@@ -478,6 +478,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_reload { @include o-add-icon('undo');}
 .o_icon_reminder { @include o-add-icon('bell', false);}
 .o_icon_remove { @include o-add-icon('times');}
+.o_icon_remove_entry { @include o-add-icon('circle-minus');}
 .o_icon_remove_filters { @include o-add-icon('times-circle');}
 .o_icon_remove_member { @include o-add-icon('user-times');}
 .o_icon_rename { @include o-add-icon('pencil');}

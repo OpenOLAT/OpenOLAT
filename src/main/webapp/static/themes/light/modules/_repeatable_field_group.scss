@@ -1,0 +1,170 @@
+@mixin o-rfg-visually-hidden() {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+@mixin o-rfg-visible() {
+	position: static;
+	width: auto;
+	height: auto;
+	margin: 0;
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+}
+
+.o_rfg {
+	container-type: inline-size;
+	margin-bottom: 15px;
+
+	.o_rfg_head {
+		display: none;
+	}
+
+	.o_rfg_row {
+		display: flex;
+		flex-direction: column;
+		padding: 12px 0;
+		border-bottom: 1px solid $table-border-color;
+	}
+
+	.o_rfg_title {
+		@include o-rfg-visually-hidden();
+	}
+
+	&.o_rfg_numbered .o_rfg_title {
+		@include o-rfg-visible();
+		font-size: 16px;
+		font-weight: bold;
+		margin-bottom: 8px;
+	}
+
+	.o_rfg_fields {
+		display: flex;
+		flex-wrap: wrap;
+		column-gap: 12px;
+	}
+
+	.o_rfg_cell {
+		flex: 1 1 100%;
+		min-width: 0;
+
+		.form-group {
+			margin-bottom: 8px;
+		}
+
+		.o_date {
+			padding-right: 0;
+
+			.o_date_bloc {
+				flex: 1 1 auto;
+			}
+
+			.o_first_date {
+				display: block;
+				width: 100%;
+				padding-right: 0;
+				margin-bottom: 0;
+			}
+
+			.o_date_picker {
+				display: table;
+				width: 100%;
+			}
+
+			.o_date_day {
+				width: 100%;
+			}
+		}
+	}
+
+	.o_rfg_actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+
+		.btn {
+			padding: 1px 5px;
+			font-size: $font-size-small;
+		}
+	}
+
+	.o_rfg_add {
+		margin-top: 12px;
+	}
+
+	@container (min-width: 530px) {
+		.o_rfg_head,
+		.o_rfg_row {
+			flex-direction: row;
+			align-items: flex-start;
+			column-gap: 12px;
+		}
+
+		.o_rfg_head {
+			display: flex;
+			font-weight: bold;
+			padding-bottom: 4px;
+		}
+
+		.o_rfg_fields {
+			flex: 1 1 auto;
+			flex-wrap: nowrap;
+		}
+
+		.o_rfg_cell {
+			flex: 1 1 0;
+		}
+
+		.o_rfg_col_xs {
+			flex: 0 0 120px;
+		}
+
+		.o_rfg_col_s {
+			flex: 0 0 170px;
+		}
+
+		.o_rfg_col_l {
+			flex: 2 1 0;
+		}
+
+		.o_rfg_row .control-label,
+		&.o_rfg_numbered .o_rfg_title {
+			@include o-rfg-visually-hidden();
+		}
+
+		.o_rfg_actions {
+			flex: 0 0 70px;
+			flex-wrap: nowrap;
+			justify-content: flex-end;
+			padding-top: 2px;
+
+			.btn {
+				padding: 5px 8px;
+				font-size: $font-size-base;
+
+				> span {
+					@include o-rfg-visually-hidden();
+				}
+			}
+		}
+	}
+
+	@container (min-width: 800px) {
+		.o_rfg_actions {
+			flex-basis: 240px;
+			gap: 14px;
+
+			.btn > span {
+				@include o-rfg-visible();
+			}
+		}
+	}
+}

@@ -1,0 +1,30 @@
+<div class="o_rfg#if($numbered) o_rfg_numbered#end">
+	#if($rows && $rows.size() > 0)
+	<div class="o_rfg_list">
+		<div class="o_rfg_head" aria-hidden="true">
+			<div class="o_rfg_fields">
+			#foreach($cell in $rows.get(0).cells)
+				#if($f.isVisible($cell.name))
+				<div class="o_rfg_cell $!cell.cssClass">#if($f.isMandatory($cell.name))<i class="o_icon o_icon_mandatory"></i> #end$!f.getLabelText($cell.name)</div>
+				#end
+			#end
+			</div>
+			<div class="o_rfg_actions"></div>
+		</div>
+		#foreach($row in $rows)
+		<div class="o_rfg_row" role="group" aria-labelledby="${row.id}_title">
+			<div id="${row.id}_title" class="o_rfg_title">$r.escapeHtml($row.title)</div>
+			<div class="o_rfg_fields">
+			#foreach($cell in $row.cells)
+				#if($f.isVisible($cell.name))
+				<div class="o_rfg_cell $!cell.cssClass">$r.render($cell.name, "vertical")</div>
+				#end
+			#end
+			</div>
+			<div class="o_rfg_actions">$r.render($row.duplicateLink.name) $r.render($row.removeLink.name)</div>
+		</div>
+		#end
+	</div>
+	#end
+	<div class="o_rfg_add">$r.render($addName)</div>
+</div>
