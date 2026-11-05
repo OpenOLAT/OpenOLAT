@@ -528,6 +528,10 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			for(Identity teacher : getTeachers(block)) {
 				addTeacher(copy, teacher);
 			}
+
+			for(Group group : lectureBlockToGroupDao.getGroups(block)) {
+				lectureBlockToGroupDao.createAndPersist(copy, group);
+			}
 		} else {
 			// Not persisted (OO-9744): a caller that opens an edit dialog for review before saving must
 			// not have the copy be indistinguishable from a real, live lecture block in the meantime -
