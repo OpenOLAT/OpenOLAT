@@ -718,6 +718,7 @@ public class UserAdminController extends BasicController implements Activateable
 						.enableId()
 						.enableExtRefVisibilityDefault()
 						.enableRoles()
+						.enableAllRoles()
 						.enableCalendar();
 				ImplementationsListConfig config = configBuilder.build();
 				

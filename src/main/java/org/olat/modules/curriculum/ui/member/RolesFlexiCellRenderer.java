@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui.member;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -53,6 +54,14 @@ public class RolesFlexiCellRenderer implements FlexiCellRenderer {
 			render(target, membership.getRoles());
 		} else if (cellValue instanceof org.olat.repository.ui.list.ImplementationRow implementationRow) {
 			render(target, implementationRow.getRoles());
+		} else if (cellValue instanceof List<?> rawRoles) {
+			List<CurriculumRoles> roles = new ArrayList<>(rawRoles.size());
+			for (Object rawRole : rawRoles) {
+				if (rawRole instanceof CurriculumRoles role) {
+					roles.add(role);
+				}
+			}
+			render(target, roles);
 		}
 	}
 

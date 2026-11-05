@@ -21,6 +21,7 @@ package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -205,6 +206,10 @@ public class ImplementationsListController extends FormBasicController implement
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.roles,
 					new RolesFlexiCellRenderer(getTranslator())));
 		}
+		if (config.withAllRoles()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.allRoles,
+					new RolesFlexiCellRenderer(getTranslator())));
+		}
 		if (config.withStatus()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ImplementationsCols.elementStatus,
 					new CurriculumStatusCellRenderer(getTranslator())));
@@ -327,6 +332,10 @@ public class ImplementationsListController extends FormBasicController implement
 				.collect(Collectors.toMap(CurriculumElementMembership::getCurriculumElementKey, CurriculumElementMembership::getRoles));
 		}
 		
+		Map<Long, Set<CurriculumRoles>> eleKeyToAllRoles = config.withAllRoles()
+				? loadAllRolesInStructure(implementations)
+				: Map.of();
+
 		List<ImplementationRow> rows = new ArrayList<>();
 		for(CurriculumElement implementation:implementations) {
 			boolean marked = markedElementKeys.contains(implementation.getKey());
@@ -335,7 +344,10 @@ public class ImplementationsListController extends FormBasicController implement
 			List<CurriculumRoles> roles = eleKeyToRoles.getOrDefault(implementation.getKey(), List.of()).stream()
 					.sorted((r1, r2) -> rolesComparator.compare(r1, r2))
 					.toList();
-			rows.add(forgeRow(implementation, curriculum, roles, marked));
+			List<CurriculumRoles> allRoles = eleKeyToAllRoles.getOrDefault(implementation.getKey(), Set.of()).stream()
+					.sorted((r1, r2) -> rolesComparator.compare(r1, r2))
+					.toList();
+			rows.add(forgeRow(implementation, curriculum, roles, allRoles, marked));
 		}
 		forgeCalendarsLinks(rows);
 		if (config.withCompletion()) {
@@ -345,9 +357,40 @@ public class ImplementationsListController extends FormBasicController implement
 		tableEl.reset(true, true, true);
 	}
 	
+	/**
+	 * Loads all curriculum roles assigned to the assessed identity within the structures of the
+	 * specified curriculum element implementations.
+	 *
+	 * @param implementations the curriculum element implementations for which roles in the structure should be loaded
+	 * @return a map from implementation keys to the set of curriculum roles assigned in their structure
+	 */
+	private Map<Long, Set<CurriculumRoles>> loadAllRolesInStructure(List<CurriculumElement> implementations) {
+		Map<Long, Set<CurriculumRoles>> implementationKeyToAllRoles = new HashMap<>();
+		for (CurriculumElement implementation : implementations) {
+			implementationKeyToAllRoles.put(implementation.getKey(), EnumSet.noneOf(CurriculumRoles.class));
+		}
+
+		Set<Curriculum> curriculums = implementations.stream()
+				.map(CurriculumElement::getCurriculum)
+				.collect(Collectors.toSet());
+		for (Curriculum curriculum : curriculums) {
+			List<CurriculumElementMembership> memberships = curriculumService
+					.getCurriculumElementMemberships(curriculum, assessedIdentity);
+			for (CurriculumElementMembership membership : memberships) {
+				for (Long pathElementKey : membership.getMaterializedPathKeysList()) {
+					Set<CurriculumRoles> allRoles = implementationKeyToAllRoles.get(pathElementKey);
+					if (allRoles != null) {
+						allRoles.addAll(membership.getRoles());
+					}
+				}
+			}
+		}
+		return implementationKeyToAllRoles;
+	}
+
 	private ImplementationRow forgeRow(CurriculumElement implementation, Curriculum curriculum,
-			List<CurriculumRoles> roles, boolean marked) {
-		ImplementationRow row = new ImplementationRow(implementation, curriculum, roles);
+			List<CurriculumRoles> roles, List<CurriculumRoles> allRoles, boolean marked) {
+		ImplementationRow row = new ImplementationRow(implementation, curriculum, roles, allRoles);
 		
 		if (config.withBookmarks()) {
 			FormLink markLink = uifactory.addFormLink("mark_" + implementation.getResource().getKey(), "mark", "", tableEl, Link.NONTRANSLATED);

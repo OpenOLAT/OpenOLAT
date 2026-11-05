@@ -43,6 +43,7 @@ public record ImplementationsListConfig(
 		boolean withId,
 		boolean extRefVisibilityDefault,
 		boolean withRoles,
+		boolean withAllRoles,
 		boolean withStatus,
 		boolean withCompletion,
 		boolean withCalendar,
@@ -66,6 +67,7 @@ public record ImplementationsListConfig(
 		private boolean withId;
 		private boolean extRefVisibilityDefault;
 		private boolean withRoles;
+		private boolean withAllRoles;
 		private boolean withStatus;
 		private boolean withCompletion;
 		private boolean withCalendar;
@@ -130,6 +132,11 @@ public record ImplementationsListConfig(
 			return this;
 		}
 
+		public Builder enableAllRoles() {
+			this.withAllRoles = true;
+			return this;
+		}
+
 		public Builder enableStatus() {
 			this.withStatus = true;
 			return this;
@@ -153,7 +160,7 @@ public record ImplementationsListConfig(
 		public ImplementationsListConfig build() {
 			return new ImplementationsListConfig(asRoles, coachIdentity, withPreparation, withPreparationWarning,
 					withCatalogDetailsHeader, withFormTitle, withFormLegend, helpUrl, withBookmarks, withId,
-					extRefVisibilityDefault, withRoles, withStatus, withCompletion, withCalendar,
+					extRefVisibilityDefault, withRoles, withAllRoles, withStatus, withCompletion, withCalendar,
 					withCancelledFilter);
 		}
 	}
