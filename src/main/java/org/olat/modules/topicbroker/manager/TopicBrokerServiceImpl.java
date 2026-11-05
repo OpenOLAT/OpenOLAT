@@ -40,6 +40,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.vfs.VFSContainer;
@@ -79,6 +80,10 @@ import org.olat.modules.topicbroker.TBParticipantSearchParams;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicDate;
+import org.olat.modules.topicbroker.TBTopicDateSearchParams;
+import org.olat.modules.topicbroker.TBTopicDateValues;
+import org.olat.modules.topicbroker.TBTopicExecutionType;
 import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerModule;
@@ -117,6 +122,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	private TBParticipantDAO participantDao;
 	@Autowired
 	private TBTopicDAO topicDao;
+	@Autowired
+	private TBTopicDateDAO topicDateDao;
 	@Autowired
 	private TopicBrokerStorage tbStorage;
 	@Autowired
@@ -159,6 +166,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		customFieldDao.deleteCustomFields(broker);
 		customFieldDefinitionDao.deleteDefinitions(broker);
 		selectionDao.deleteSelections(broker);
+		topicDateDao.deleteDates(broker);
 		topicDao.deleteTopics(broker);
 		participantDao.deleteParticipants(broker);
 		tbStorage.deleteLeafs(broker);
@@ -496,7 +504,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	@Override
 	public TBTopic createTopic(Identity doer, TBBrokerRef broker) {
 		TBBroker reloadedBroker = getBroker(broker);
-		if (broker == null) {
+		if (reloadedBroker == null) {
 			return null;
 		}
 		
@@ -545,8 +553,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 
 	@Override
 	public TBTopic updateTopic(Identity doer, TBTopicRef topic, String identifier, String title, String description,
-			Date beginDate, Date endDate, Integer minParticipants, Integer maxParticipants,
-			Set<Long> groupRestricionKeys) {
+			TBTopicExecutionType executionType, Date beginDate, Date endDate, Integer minParticipants,
+			Integer maxParticipants, Set<Long> groupRestricionKeys) {
 		TBTopic reloadedTopic = getTopic(topic);
 		if (reloadedTopic == null) {
 			return null;
@@ -566,6 +574,14 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		if (!Objects.equals(reloadedTopic.getDescription(), description)) {
 			reloadedTopic.setDescription(description);
 			contentChanged = true;
+		}
+		if (reloadedTopic.getExecutionType() != executionType) {
+			reloadedTopic.setExecutionType(executionType);
+			contentChanged = true;
+		}
+		if (TBTopicExecutionType.dates == executionType) {
+			beginDate = null;
+			endDate = null;
 		}
 		if (!Objects.equals(reloadedTopic.getBeginDate(), beginDate)) {
 			reloadedTopic.setBeginDate(beginDate);
@@ -695,6 +711,10 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	}
 
 	private TBTopic getTopic(TBTopicRef topic, boolean active) {
+		if (topic == null) {
+			return null;
+		}
+		
 		TBTopicSearchParams searchParams = new TBTopicSearchParams();
 		searchParams.setTopic(topic);
 		searchParams.setFetchIdentities(true);
@@ -712,6 +732,78 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		return topicDao.loadTopics(searchParams);
 	}
 
+	@Override
+	public void updateTopicDates(Identity doer, TBTopicRef topic, List<TBTopicDateValues> dateValues) {
+		TBTopic reloadedTopic = getTopic(topic);
+		if (reloadedTopic == null) {
+			return;
+		}
+		
+		TBTopicDateSearchParams searchParams = new TBTopicDateSearchParams();
+		searchParams.setTopic(reloadedTopic);
+		searchParams.setDeletedTopic(null);
+		Map<Long,TBTopicDate> keyToDate = topicDateDao.loadDates(searchParams).stream()
+				.collect(Collectors.toMap(TBTopicDate::getKey, Function.identity()));
+		
+		for (TBTopicDateValues values : dateValues) {
+			TBTopicDate date = values.key() != null? keyToDate.remove(values.key()): null;
+			if (date == null) {
+				date = topicDateDao.createDate(reloadedTopic, values);
+				
+				String after = TopicBrokerXStream.toXml(date);
+				auditLogDao.create(TBAuditLog.Action.topicDateCreate, null, after, doer, reloadedTopic);
+			} else {
+				String before = TopicBrokerXStream.toXml(date);
+				if (updateDateValues(date, values)) {
+					date = topicDateDao.updateDate(date);
+					
+					String after = TopicBrokerXStream.toXml(date);
+					auditLogDao.create(TBAuditLog.Action.topicDateUpdateContent, before, after, doer, reloadedTopic);
+				}
+			}
+		}
+		
+		for (TBTopicDate date : keyToDate.values()) {
+			String before = TopicBrokerXStream.toXml(date);
+			topicDateDao.deleteDate(date);
+			auditLogDao.create(TBAuditLog.Action.topicDateDelete, before, null, doer, reloadedTopic);
+		}
+	}
+	
+	private boolean updateDateValues(TBTopicDate date, TBTopicDateValues values) {
+		boolean contentChanged = false;
+		if (!DateUtils.isSameMinute(date.getStartDate(), values.startDate())) {
+			date.setStartDate(values.startDate());
+			contentChanged = true;
+		}
+		if (!DateUtils.isSameMinute(date.getEndDate(), values.endDate())) {
+			date.setEndDate(values.endDate());
+			contentChanged = true;
+		}
+		if (!Objects.equals(date.getLocation(), values.location())) {
+			date.setLocation(values.location());
+			contentChanged = true;
+		}
+		if (!Objects.equals(date.getDescription(), values.description())) {
+			date.setDescription(values.description());
+			contentChanged = true;
+		}
+		return contentChanged;
+	}
+	
+	@Override
+	public List<TBTopicDate> getTopicDates(TBTopicDateSearchParams searchParams) {
+		return topicDateDao.loadDates(searchParams);
+	}
+	
+	@Override
+	public Map<Long, List<TBTopicDate>> getExecutionDates(Collection<? extends TBTopic> topics) {
+		TBTopicDateSearchParams searchParams = new TBTopicDateSearchParams();
+		searchParams.setTopics(topics.stream().filter(topic -> TBTopicExecutionType.dates == topic.getExecutionType()).toList());
+		return topicDateDao.loadDates(searchParams).stream()
+				.collect(Collectors.groupingBy(date -> date.getTopic().getKey()));
+	}
+	
 	@Override
 	public VFSLeaf storeTopicLeaf(Identity doer, TBTopicRef topic, String identifier, File file, String filename) {
 		TBTopic reloadedTopic = getTopic(topic);
@@ -1317,8 +1409,10 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	@Override
 	public TBEnrollmentProcessor createProcessor(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections,
 			TBEnrollmentStrategy strategy, List<TBEnrollmentStrategy> debugStrategies) {
+		Map<Long, List<TBTopicDate>> topicKeyToDates = getExecutionDates(topics);
+		
 		return new TBEnrollmentProcessorImpl(topicBrokerModule.getProcessMaxDurationMillis(),
-				broker, topics, selections, strategy, debugStrategies);
+				broker, topics, topicKeyToDates, selections, strategy, debugStrategies);
 	}
 	
 	@Override

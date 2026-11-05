@@ -138,7 +138,7 @@ public class TBTopicBulkGroupRestrictionController extends FormBasicController {
 			groupRestricionKeys.addAll(keysAdd);
 			groupRestricionKeys.removeAll(keysRemove);
 			topicBrokerService.updateTopic(getIdentity(), topic, topic.getIdentifier(), topic.getTitle(),
-					topic.getDescription(), topic.getBeginDate(), topic.getEndDate(), topic.getMinParticipants(),
+					topic.getDescription(), topic.getExecutionType(), topic.getBeginDate(), topic.getEndDate(), topic.getMinParticipants(),
 					topic.getMaxParticipants(), groupRestricionKeys);
 		}
 		

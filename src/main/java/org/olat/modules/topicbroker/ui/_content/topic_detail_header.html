@@ -6,14 +6,16 @@
 			</div>
 		</div>
 	#else 
-		<div class="o_tb_topic_title_abbr">
-			$titleAbbr
+		<div class="o_tb_topic_teaser_visual o_tb_topic_placeholder">
+			<div class="o_tb_topic_title_abbr">
+				$r.escapeHtml($titleAbbr)
+			</div>
 		</div>
 	#end
 	<div class="o_tb_topic_meta">
 		<div class="o_flex_first_grow">
 			<div>
-				<h2>$r.escapeHtml($title)</h2>
+				<h2>$r.escapeHtml($title)#if($r.isNotEmpty($identifier)) <span class="o_spacer">&middot;</span> <small class="text-muted">$r.escapeHtml($identifier)</small>#end</h2>
 			</div>
 			<div>
 				#if($r.available("editDropdown") && $r.visible("editDropdown"))

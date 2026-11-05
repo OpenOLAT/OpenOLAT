@@ -20,11 +20,46 @@
 	#if($r.isNotEmpty($executionPeriod))
 		<div class="o_tb_topic_execution_period">
 			<div class="o_tb_legend">
-				$r.translate("topic.execution.period")
+				$executionLabel
 			</div>
 			<div>
 				$executionPeriod
 			</div>
+		</div>
+	#end
+	#if($dates && $dates.size() > 0)
+		<div class="o_tb_topic_dates">
+			<div class="o_tb_legend">
+				$r.translate("topic.dates")
+			</div>
+			<table class="table table-condensed o_tb_topic_dates_table">
+				<thead>
+					<tr>
+						<th scope="col">$r.translate("topic.date.date")</th>
+						<th scope="col">$r.translate("topic.date.time")</th>
+						#if($datesLocation)
+							<th scope="col">$r.translate("topic.date.location")</th>
+						#end
+						#if($datesDescription)
+							<th scope="col">$r.translate("topic.date.description")</th>
+						#end
+					</tr>
+				</thead>
+				<tbody>
+					#foreach($date in $dates)
+						<tr>
+							<td class="o_nowrap">$date.date</td>
+							<td class="o_nowrap">$date.time</td>
+							#if($datesLocation)
+								<td>$r.escapeHtml($date.location)</td>
+							#end
+							#if($datesDescription)
+								<td>$r.escapeHtml($date.description)</td>
+							#end
+						</tr>
+					#end
+				</tbody>
+			</table>
 		</div>
 	#end
 	#if($groups && $groups.size() > 0)

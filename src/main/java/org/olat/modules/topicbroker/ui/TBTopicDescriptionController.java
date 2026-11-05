@@ -47,6 +47,9 @@ import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicDate;
+import org.olat.modules.topicbroker.TBTopicDateSearchParams;
+import org.olat.modules.topicbroker.TBTopicExecutionType;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,6 +64,7 @@ public class TBTopicDescriptionController extends BasicController {
 	
 	private static final String CMD_OPEN_GROUP = "open.group";
 	private static final String CMD_OPEN_FILE = "open.file";
+	private static final String DIVIDER = " <span class=\"o_spacer\">&middot;</span> ";
 	
 	private Controller docEditorCtrl;
 	
@@ -77,7 +81,7 @@ public class TBTopicDescriptionController extends BasicController {
 
 		mainVC.contextPut("description", TBUIFactory.formatPrettyText(topic.getDescription(), null));
 		mainVC.contextPut("participantRange", TBUIFactory.getParticipantRange(getTranslator(), topic));
-		mainVC.contextPut("executionPeriod", TBUIFactory.getExecutionPeriod(Formatter.getInstance(getLocale()), topic));
+		initExecution(mainVC, topic);
 		
 		if (groupRestrictions != null && !groupRestrictions.isEmpty()) {
 			Collections.sort(groupRestrictions,  (i1, i2) -> i1.getGroupName().compareToIgnoreCase(i2.getGroupName()));
@@ -140,6 +144,44 @@ public class TBTopicDescriptionController extends BasicController {
 		}
 	}
 	
+	private void initExecution(VelocityContainer mainVC, TBTopic topic) {
+		Formatter formatter = Formatter.getInstance(getLocale());
+		TBTopicDateSearchParams searchParams = new TBTopicDateSearchParams();
+		searchParams.setTopic(topic);
+		List<TBTopicDate> dates = topicBrokerService.getTopicDates(searchParams);
+		
+		if (TBTopicExecutionType.dates == topic.getExecutionType()) {
+			mainVC.contextPut("executionLabel", translate("topic.execution"));
+			if (dates.size() == 1) {
+				mainVC.contextPut("executionPeriod", TBUIFactory.ICON_CALENDAR_DAY + translate("topic.specific.dates.count.one"));
+			} else if (dates.size() > 1) {
+				mainVC.contextPut("executionPeriod", TBUIFactory.ICON_CALENDAR_DAY + translate("topic.specific.dates.count", String.valueOf(dates.size()))
+						+ DIVIDER + translate("topic.date.first", formatter.formatDateWithDay(TBUIFactory.getBeginDate(topic, dates)))
+						+ DIVIDER + translate("topic.date.last", formatter.formatDateWithDay(TBUIFactory.getEndDate(topic, dates))));
+			}
+		} else {
+			mainVC.contextPut("executionLabel", translate("topic.execution.period"));
+			String executionPeriod = TBUIFactory.getExecutionPeriod(formatter, topic);
+			if (StringHelper.containsNonWhitespace(executionPeriod) && !dates.isEmpty()) {
+				executionPeriod += DIVIDER + (dates.size() == 1
+						? translate("topic.dates.count.one")
+						: translate("topic.dates.count", String.valueOf(dates.size())));
+			}
+			mainVC.contextPut("executionPeriod", executionPeriod);
+		}
+		
+		if (!dates.isEmpty()) {
+			List<DateItem> dateItems = new ArrayList<>(dates.size());
+			for (TBTopicDate date : dates) {
+				dateItems.add(new DateItem(formatter.formatDateWithDay(date.getStartDate()), TBUIFactory.getTime(formatter, date),
+						date.getLocation(), date.getDescription()));
+			}
+			mainVC.contextPut("dates", dateItems);
+			mainVC.contextPut("datesLocation", Boolean.valueOf(dates.stream().anyMatch(date -> StringHelper.containsNonWhitespace(date.getLocation()))));
+			mainVC.contextPut("datesDescription", Boolean.valueOf(dates.stream().anyMatch(date -> StringHelper.containsNonWhitespace(date.getDescription()))));
+		}
+	}
+	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (docEditorCtrl == source) {
@@ -196,6 +238,38 @@ public class TBTopicDescriptionController extends BasicController {
 		VFSMediaResource resource = new VFSMediaResource(topicLeaf);
 		resource.setDownloadable(true);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	public static final class DateItem {
+		
+		private final String date;
+		private final String time;
+		private final String location;
+		private final String description;
+		
+		public DateItem(String date, String time, String location, String description) {
+			this.date = date;
+			this.time = time;
+			this.location = location != null? location: "";
+			this.description = description != null? description: "";
+		}
+		
+		public String getDate() {
+			return date;
+		}
+		
+		public String getTime() {
+			return time;
+		}
+		
+		public String getLocation() {
+			return location;
+		}
+		
+		public String getDescription() {
+			return description;
+		}
+		
 	}
 	
 	public static final class CustomFieldItem {

@@ -23,12 +23,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -53,7 +56,7 @@ public class TopicBrokerServiceTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.getDefaultAuthor();
 		TBBroker broker = createRandomBroker(identity);
 		TBTopic topic = sut.createTopic(identity, broker);
-		topic = sut.updateTopic(identity, topic, "Identifier", random(), random(), null, null, 0, 6, null);
+		topic = sut.updateTopic(identity, topic, "Identifier", random(), random(), TBTopicExecutionType.period, null, null, 0, 6, null);
 		dbInstance.commitAndCloseSession();
 		
 		boolean identifierAvailable = sut.isTopicIdentifierAvailable(broker, "Identifier2");
@@ -66,7 +69,7 @@ public class TopicBrokerServiceTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.getDefaultAuthor();
 		TBBroker broker = createRandomBroker(identity);
 		TBTopic topic = sut.createTopic(identity, broker);
-		topic = sut.updateTopic(identity, topic, random(), random(), random(), null, null, 0, 6, null);
+		topic = sut.updateTopic(identity, topic, random(), random(), random(), TBTopicExecutionType.period, null, null, 0, 6, null);
 		dbInstance.commitAndCloseSession();
 		
 		boolean identifierAvailable = sut.isTopicIdentifierAvailable(broker, topic.getIdentifier());
@@ -80,7 +83,7 @@ public class TopicBrokerServiceTest extends OlatTestCase {
 		TBBroker broker = createRandomBroker(identity);
 		TBTopic topic = sut.createTopic(identity, broker);
 		String identifier = "Identifier";
-		topic = sut.updateTopic(identity, topic, identifier, random(), random(), null, null, 0, 6, null);
+		topic = sut.updateTopic(identity, topic, identifier, random(), random(), TBTopicExecutionType.period, null, null, 0, 6, null);
 		dbInstance.commitAndCloseSession();
 		
 		boolean identifierAvailable = sut.isTopicIdentifierAvailable(broker, identifier.toLowerCase());
@@ -272,6 +275,126 @@ public class TopicBrokerServiceTest extends OlatTestCase {
 		assertThat(selections.get(3).getTopic().getKey()).isEqualTo(topic4.getKey());
 	}
 	
+	@Test
+	public void shouldUpdateTopic_datesTypeWithoutPeriod() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		TBTopic topic = createRandomTopic(identity);
+		Date beginDate = DateUtils.truncateSeconds(DateUtils.addDays(new Date(), 1));
+		Date endDate = DateUtils.truncateSeconds(DateUtils.addDays(new Date(), 2));
+		
+		topic = sut.updateTopic(identity, topic, topic.getIdentifier(), topic.getTitle(), topic.getDescription(),
+				TBTopicExecutionType.dates, beginDate, endDate, 0, 6, null);
+		dbInstance.commitAndCloseSession();
+		
+		TBTopic reloadedTopic = sut.getTopic(topic);
+		assertThat(reloadedTopic.getExecutionType()).isEqualTo(TBTopicExecutionType.dates);
+		assertThat(reloadedTopic.getBeginDate()).isNull();
+		assertThat(reloadedTopic.getEndDate()).isNull();
+	}
+	
+	@Test
+	public void shouldUpdateTopicDates() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		TBTopic topic = createRandomTopic(identity);
+		Date start1 = DateUtils.truncateSeconds(DateUtils.addDays(new Date(), 1));
+		Date start2 = DateUtils.truncateSeconds(DateUtils.addDays(new Date(), 2));
+		Date start3 = DateUtils.truncateSeconds(DateUtils.addDays(new Date(), 3));
+		
+		sut.updateTopicDates(identity, topic, List.of(
+				new TBTopicDateValues(null, start1, DateUtils.addHours(start1, 1), "Location 1", null),
+				new TBTopicDateValues(null, start2, DateUtils.addHours(start2, 1), null, "Description 2")));
+		dbInstance.commitAndCloseSession();
+		
+		List<TBTopicDate> dates = getTopicDates(topic);
+		assertThat(dates).hasSize(2);
+		assertThat(dates.get(0).getLocation()).isEqualTo("Location 1");
+		assertThat(dates.get(1).getDescription()).isEqualTo("Description 2");
+		
+		TBTopicDate date2 = dates.get(1);
+		sut.updateTopicDates(identity, topic, List.of(
+				new TBTopicDateValues(date2.getKey(), start2, DateUtils.addHours(start2, 2), "Location 2", "Description 2"),
+				new TBTopicDateValues(null, start3, DateUtils.addHours(start3, 1), null, null)));
+		dbInstance.commitAndCloseSession();
+		
+		dates = getTopicDates(topic);
+		assertThat(dates).hasSize(2);
+		assertThat(dates.get(0).getKey()).isEqualTo(date2.getKey());
+		assertThat(dates.get(0).getLocation()).isEqualTo("Location 2");
+		assertThat(DateUtils.isSameMinute(dates.get(0).getEndDate(), DateUtils.addHours(start2, 2))).isTrue();
+		assertThat(DateUtils.isSameMinute(dates.get(1).getStartDate(), start3)).isTrue();
+		
+		sut.updateTopicDates(identity, topic, List.of());
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(getTopicDates(topic)).isEmpty();
+	}
+	
+	@Test
+	public void shouldUpdateTopicDates_auditLog() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		TBTopic topic = createRandomTopic(identity);
+		Date start = DateUtils.truncateSeconds(DateUtils.addDays(new Date(), 1));
+		
+		sut.updateTopicDates(identity, topic, List.of(new TBTopicDateValues(null, start, null, null, null)));
+		dbInstance.commitAndCloseSession();
+		TBTopicDate date = getTopicDates(topic).get(0);
+		
+		sut.updateTopicDates(identity, topic, List.of(new TBTopicDateValues(date.getKey(), start, null, null, null)));
+		sut.updateTopicDates(identity, topic, List.of(new TBTopicDateValues(date.getKey(), start, null, random(), null)));
+		sut.updateTopicDates(identity, topic, List.of());
+		dbInstance.commitAndCloseSession();
+		
+		TBAuditLogSearchParams searchParams = new TBAuditLogSearchParams();
+		searchParams.setTopic(topic);
+		List<TBAuditLog.Action> actions = sut.getAuditLog(searchParams, 0, -1).stream()
+				.map(TBAuditLog::getAction)
+				.filter(action -> action.name().startsWith("topicDate"))
+				.toList();
+		assertThat(actions).containsExactlyInAnyOrder(
+				TBAuditLog.Action.topicDateCreate,
+				TBAuditLog.Action.topicDateUpdateContent,
+				TBAuditLog.Action.topicDateDelete);
+	}
+	
+	@Test
+	public void shouldDeleteBroker_withTopicDates() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		TBTopic topic = createRandomTopic(identity);
+		sut.updateTopicDates(identity, topic, List.of(new TBTopicDateValues(null, new Date(), null, null, null)));
+		dbInstance.commitAndCloseSession();
+		TBBroker broker = sut.getBroker(topic.getBroker());
+		
+		sut.deleteBroker(broker.getRepositoryEntry(), broker.getSubIdent());
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(getTopicDates(topic)).isEmpty();
+	}
+	
+	@Test
+	public void shouldGetExecutionDates() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		TBBroker broker = createRandomBroker(identity);
+		TBTopic periodTopic = createRandomTopic(identity, broker);
+		sut.updateTopicDates(identity, periodTopic, List.of(new TBTopicDateValues(null, new Date(), new Date(), null, null)));
+		TBTopic datesTopic = createRandomTopic(identity, broker);
+		datesTopic = sut.updateTopic(identity, datesTopic, datesTopic.getIdentifier(), datesTopic.getTitle(),
+				datesTopic.getDescription(), TBTopicExecutionType.dates, null, null, 0, 6, null);
+		sut.updateTopicDates(identity, datesTopic, List.of(new TBTopicDateValues(null, new Date(), new Date(), null, null)));
+		dbInstance.commitAndCloseSession();
+		
+		Map<Long, List<TBTopicDate>> topicKeyToDates = sut.getExecutionDates(List.of(periodTopic, datesTopic));
+		
+		assertThat(topicKeyToDates).containsOnlyKeys(datesTopic.getKey());
+		assertThat(topicKeyToDates.get(datesTopic.getKey())).hasSize(1);
+	}
+	
+	private List<TBTopicDate> getTopicDates(TBTopic topic) {
+		TBTopicDateSearchParams searchParams = new TBTopicDateSearchParams();
+		searchParams.setTopic(topic);
+		searchParams.setDeletedTopic(null);
+		return sut.getTopicDates(searchParams);
+	}
+	
 	private TBTopic createRandomTopic(Identity identity) {
 		TBBroker broker = createRandomBroker(identity);
 		return createRandomTopic(identity, broker);
@@ -279,7 +402,7 @@ public class TopicBrokerServiceTest extends OlatTestCase {
 
 	private TBTopic createRandomTopic(Identity identity, TBBroker broker) {
 		TBTopic topic = sut.createTopic(identity, broker);
-		topic = sut.updateTopic(identity, topic, random(), random(), random(), null, null, 0, 6, null);
+		topic = sut.updateTopic(identity, topic, random(), random(), random(), TBTopicExecutionType.period, null, null, 0, 6, null);
 		dbInstance.commitAndCloseSession();
 		
 		return topic;

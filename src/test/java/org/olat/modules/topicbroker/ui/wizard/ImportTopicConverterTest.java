@@ -20,6 +20,7 @@
 package org.olat.modules.topicbroker.ui.wizard;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,11 +29,19 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
+import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicExecutionType;
+import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.model.TBImportTopic;
 import org.olat.modules.topicbroker.model.TBTransientBroker;
+import org.olat.repository.RepositoryEntry;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,6 +50,11 @@ import org.olat.test.OlatTestCase;
  *
  */
 public class ImportTopicConverterTest extends OlatTestCase {
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private TopicBrokerService topicBrokerService;
 
 	@Test
 	public void shouldConvertInput() {
@@ -228,6 +242,32 @@ public class ImportTopicConverterTest extends OlatTestCase {
 		assertThat(topics.get(0).getEndDate()).isEqualTo("6/18/a25");
 		assertThat(topics.get(0).getTopic().getEndDate()).isNull();
 		assertThat(topics.get(0).getMessage()).isNotNull();
+	}
+	
+	@Test
+	public void shouldInformIgnoredPeriod_datesTopic() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		TBBroker broker = topicBrokerService.createBroker(identity, repositoryEntry, random());
+		TBTopic datesTopic = topicBrokerService.createTopic(identity, broker);
+		topicBrokerService.updateTopic(identity, datesTopic, "DATES", random(), null, TBTopicExecutionType.dates, null, null, 0, 6, null);
+		TBTopic periodTopic = topicBrokerService.createTopic(identity, broker);
+		topicBrokerService.updateTopic(identity, periodTopic, "PERIOD", random(), null, TBTopicExecutionType.period, null, null, 0, 6, null);
+		dbInstance.commitAndCloseSession();
+		
+		String input = "DATES	B	C	1	2	tbd	3/19/29					\n"
+				+ "PERIOD	B	C	1	2	6/18/25	3/19/29					\n"
+				+ "NEW	B	C	1	2							";
+		ImportTopicConverter converter = new ImportTopicConverter(Locale.ENGLISH, broker, List.of(), new TestingGroupRestrictionCandidates(), input, null);
+		List<TBImportTopic> topics = converter.getTopics();
+		
+		assertThat(topics).hasSize(3);
+		assertThat(topics.get(0).getMessage()).isNull();
+		assertThat(topics.get(0).getInfo()).isNotNull();
+		assertThat(topics.get(0).getTopic().getBeginDate()).isNull();
+		assertThat(topics.get(0).getTopic().getEndDate()).isNull();
+		assertThat(topics.get(1).getInfo()).isNull();
+		assertThat(topics.get(2).getInfo()).isNull();
 	}
 	
 	private ImportTopicConverter createConverter(String input) {

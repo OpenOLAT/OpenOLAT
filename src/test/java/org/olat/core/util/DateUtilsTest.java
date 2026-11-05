@@ -102,6 +102,14 @@ public class DateUtilsTest {
 	}
 	
 	@Test
+	public void shouldCheckIfIsSameYear() {
+		assertThat(DateUtils.isSameYear(toDate(LocalDate.of(2026, 1, 1)), toDate(LocalDate.of(2026, 12, 31)))).isTrue();
+		assertThat(DateUtils.isSameYear(toDate(LocalDate.of(2026, 12, 31)), toDate(LocalDate.of(2027, 1, 1)))).isFalse();
+		assertThat(DateUtils.isSameYear(null, toDate(LocalDate.of(2026, 1, 1)))).isFalse();
+		assertThat(DateUtils.isSameYear(toDate(LocalDate.of(2026, 1, 1)), null)).isFalse();
+	}
+	
+	@Test
 	public void shouldGetLaterIfFirstIsLater() {
 		Date date1 = toDate(LocalDate.of(2011, 10, 12));
 		Date date2 = toDate(LocalDate.of(2011, 9, 12));
@@ -275,6 +283,45 @@ public class DateUtilsTest {
 				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
 				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime()))
 		.isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIfIsOverlapping_touching() {
+		Date date8 = new GregorianCalendar(2020, 5, 1, 8, 0, 0).getTime();
+		Date date10 = new GregorianCalendar(2020, 5, 1, 10, 0, 0).getTime();
+		Date date12 = new GregorianCalendar(2020, 5, 1, 12, 0, 0).getTime();
+		
+		assertThat(DateUtils.isOverlapping(date8, date10, date10, date12)).isFalse();
+		assertThat(DateUtils.isOverlapping(date10, date12, date8, date10)).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIfIsOverlapping_zoned() {
+		ZonedDateTime date8 = ZonedDateTime.of(2020, 6, 1, 8, 0, 0, 0, ZoneId.systemDefault());
+		ZonedDateTime date9 = date8.plusHours(1);
+		ZonedDateTime date10 = date8.plusHours(2);
+		ZonedDateTime date12 = date8.plusHours(4);
+		
+		assertThat(DateUtils.isOverlapping(date8, date10, date9, date12)).isTrue();
+		assertThat(DateUtils.isOverlapping(date9, date12, date8, date10)).isTrue();
+		assertThat(DateUtils.isOverlapping(date8, date12, date9, date10)).isTrue();
+		assertThat(DateUtils.isOverlapping(date8, date9, date10, date12)).isFalse();
+		assertThat(DateUtils.isOverlapping(date10, date12, date8, date9)).isFalse();
+		assertThat(DateUtils.isOverlapping(date8, date10, date10, date12)).isFalse();
+		assertThat(DateUtils.isOverlapping(date10, date12, date8, date10)).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIfIsOverlapping_ranges() {
+		DateRange range8to10 = new DateRange(new GregorianCalendar(2020, 5, 1, 8, 0, 0).getTime(), new GregorianCalendar(2020, 5, 1, 10, 0, 0).getTime());
+		DateRange range9to11 = new DateRange(new GregorianCalendar(2020, 5, 1, 9, 0, 0).getTime(), new GregorianCalendar(2020, 5, 1, 11, 0, 0).getTime());
+		DateRange range10to12 = new DateRange(new GregorianCalendar(2020, 5, 1, 10, 0, 0).getTime(), new GregorianCalendar(2020, 5, 1, 12, 0, 0).getTime());
+		DateRange range14to16 = new DateRange(new GregorianCalendar(2020, 5, 1, 14, 0, 0).getTime(), new GregorianCalendar(2020, 5, 1, 16, 0, 0).getTime());
+		
+		assertThat(DateUtils.isOverlapping(List.of(range8to10, range14to16), List.of(range9to11))).isTrue();
+		assertThat(DateUtils.isOverlapping(List.of(range8to10, range14to16), List.of(range10to12))).isFalse();
+		assertThat(DateUtils.isOverlapping(List.of(range8to10), List.of())).isFalse();
+		assertThat(DateUtils.isOverlapping(List.of(), List.of(range8to10))).isFalse();
 	}
 	
 

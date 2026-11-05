@@ -43,3 +43,22 @@ create unique index idx_mcp_prof_to_org_uniq_idx on o_mcp_profile_to_organisatio
 
 -- User course infos
 alter table o_as_user_course_infos add column activity double default 0;
+
+-- Topic broker
+alter table o_tb_topic add column t_execution_type varchar(16) default 'period' not null;
+
+create table o_tb_topic_date (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   d_start datetime,
+   d_end datetime,
+   d_location varchar(255),
+   d_description varchar(1024),
+   fk_topic bigint not null,
+   primary key (id)
+);
+
+alter table o_tb_topic_date ENGINE = InnoDB;
+
+alter table o_tb_topic_date add constraint tbtopicdate_topic_idx foreign key (fk_topic) references o_tb_topic (id);

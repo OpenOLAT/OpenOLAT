@@ -78,6 +78,7 @@ import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicDate;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.manager.TopicBrokerXStream;
@@ -117,6 +118,9 @@ public class TBActivityLogController extends FormBasicController {
 			Action.topicUpdateSortOrder,
 			Action.topicUpdateFile,
 			Action.topicDeleteFile,
+			Action.topicDateCreate,
+			Action.topicDateUpdateContent,
+			Action.topicDateDelete,
 			Action.customFieldUpdateContent,
 			Action.customFieldDeletePermanently,
 			Action.selectionCreate,
@@ -134,6 +138,9 @@ public class TBActivityLogController extends FormBasicController {
 			Action.topicUpdateSortOrder,
 			Action.topicUpdateFile,
 			Action.topicDeleteFile,
+			Action.topicDateCreate,
+			Action.topicDateUpdateContent,
+			Action.topicDateDelete,
 			Action.customFieldUpdateContent,
 			Action.customFieldDeletePermanently,
 			Action.selectionCreate,
@@ -437,6 +444,7 @@ public class TBActivityLogController extends FormBasicController {
 		if (actions.contains(Action.topicUpdateContent)) {
 			addSelectionValue(filterSV, translate("activity.topic.change.title"));
 			addSelectionValue(filterSV, translate("activity.topic.change.description"));
+			addSelectionValue(filterSV, translate("activity.topic.change.execution.type"));
 			addSelectionValue(filterSV, translate("activity.topic.change.begin.date"));
 			addSelectionValue(filterSV, translate("activity.topic.change.end.date"));
 			addSelectionValue(filterSV, translate("activity.topic.change.min.participants"));
@@ -449,6 +457,9 @@ public class TBActivityLogController extends FormBasicController {
 		if (actions.contains(Action.topicUpdateFile) || actions.contains(Action.topicDeleteFile)) {
 			addSelectionValue(filterSV, translate("activity.topic.file.updated.teaserimage"));
 			addSelectionValue(filterSV, translate("activity.topic.file.updated.teaservideo"));
+		}
+		if (actions.contains(Action.topicDateCreate) || actions.contains(Action.topicDateUpdateContent) || actions.contains(Action.topicDateDelete)) {
+			addSelectionValue(filterSV, translate("activity.topic.change.date"));
 		}
 		if (actions.contains(Action.customFieldUpdateContent)) {
 			for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
@@ -620,6 +631,12 @@ public class TBActivityLogController extends FormBasicController {
 				addRow(rows, auditLog, TBActivityLogContext.topic, getTopicObject(auditLog), "activity.topic.change.description", valueOriginal, valueNew);
 			}
 			
+			valueOriginal = valueOrBlank(before, TBTopic::getExecutionType, type -> TBUIFactory.getTranslatedType(getTranslator(), type));
+			valueNew = valueOrBlank(after, TBTopic::getExecutionType, type -> TBUIFactory.getTranslatedType(getTranslator(), type));
+			if (!Objects.equals(valueOriginal, valueNew)) {
+				addRow(rows, auditLog, TBActivityLogContext.topic, getTopicObject(auditLog), "activity.topic.change.execution.type", valueOriginal, valueNew);
+			}
+			
 			valueOriginal = valueOrBlank(before, TBTopic::getBeginDate, date -> formatter.formatDateAndTime(date));
 			valueNew = valueOrBlank(after, TBTopic::getBeginDate, date -> formatter.formatDateAndTime(date));
 			if (!Objects.equals(valueOriginal, valueNew)) {
@@ -681,6 +698,19 @@ public class TBActivityLogController extends FormBasicController {
 					return List.of(createRow(auditLog, TBActivityLogContext.topic, getTopicObject(auditLog), "activity.topic.file.updated.teaservideo", valueOriginal, valueNew));
 				}
 				// else custom field file
+			}
+			return null;
+		}
+		case topicDateCreate:
+		case topicDateUpdateContent:
+		case topicDateDelete: {
+			TBTopicDate before = TopicBrokerXStream.fromXml(auditLog.getBefore(), TBTopicDate.class);
+			TBTopicDate after = TopicBrokerXStream.fromXml(auditLog.getAfter(), TBTopicDate.class);
+			
+			String valueOriginal = valueOrBlank(before, date -> date, this::formatTopicDate);
+			String valueNew = valueOrBlank(after, date -> date, this::formatTopicDate);
+			if (!Objects.equals(valueOriginal, valueNew)) {
+				return List.of(createRow(auditLog, TBActivityLogContext.topic, getTopicObject(auditLog), "activity.topic.change.date", valueOriginal, valueNew));
 			}
 			return null;
 		}
@@ -769,6 +799,17 @@ public class TBActivityLogController extends FormBasicController {
 		return null;
 	}
 
+	private String formatTopicDate(TBTopicDate topicDate) {
+		String value = TBUIFactory.getDateAndTime(formatter, topicDate);
+		if (StringHelper.containsNonWhitespace(topicDate.getLocation())) {
+			value += ", " + topicDate.getLocation();
+		}
+		if (StringHelper.containsNonWhitespace(topicDate.getDescription())) {
+			value += ", " + topicDate.getDescription();
+		}
+		return value;
+	}
+	
 	private void addRow(List<TBActivityLogRow> rows, TBAuditLog auditLog, TBActivityLogContext context, String object,
 			String activityI18nKey, String valueBefore, String valueNew) {
 		rows.add(createRow(auditLog, context, object, activityI18nKey, valueBefore, valueNew));

@@ -74,6 +74,8 @@ public class TBTopicDataModel extends DefaultFlexiTableDataModel<TBTopicRow> imp
 		case title: return row.getTitle();
 		case beginDate: return row.getBeginDate();
 		case endDate: return row.getEndDate();
+		case executionType: return row.getTranslatedExecutionType();
+		case numDates: return row.getNumDates();
 		case minParticipants: return row.getMinParticipantsString();
 		case maxParticipants: return row.getMaxParticipants();
 		case enrolled: return row.getEnrolledString();
@@ -91,8 +93,10 @@ public class TBTopicDataModel extends DefaultFlexiTableDataModel<TBTopicRow> imp
 	public enum TopicCols implements FlexiColumnDef {
 		identifier("topic.identifier"),
 		title("topic.title"),
-		beginDate("topic.begin.date"),
-		endDate("topic.end.date"),
+		beginDate("topic.begin.first.date"),
+		endDate("topic.end.last.date"),
+		executionType("topic.execution"),
+		numDates("topic.dates.num"),
 		minParticipants("topic.participants.min"),
 		maxParticipants("topic.participants.max"),
 		enrolled("selection.status.enrolled"),

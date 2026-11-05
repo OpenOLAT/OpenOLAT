@@ -25,6 +25,7 @@ import java.util.Set;
 import org.olat.core.id.Identity;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicExecutionType;
 
 /**
  * 
@@ -40,6 +41,7 @@ public class TBTransientTopic implements TBTopic {
 	private String identifier;
 	private String title;
 	private String description;
+	private TBTopicExecutionType executionType;
 	private Integer minParticipants;
 	private Integer maxParticipants;
 	private Date beginDate;
@@ -109,6 +111,16 @@ public class TBTransientTopic implements TBTopic {
 		this.description = description;
 	}
 
+	@Override
+	public TBTopicExecutionType getExecutionType() {
+		return executionType;
+	}
+	
+	@Override
+	public void setExecutionType(TBTopicExecutionType executionType) {
+		this.executionType = executionType;
+	}
+	
 	@Override
 	public Date getBeginDate() {
 		return beginDate;

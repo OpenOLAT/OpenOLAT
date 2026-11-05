@@ -305,6 +305,16 @@
 	}
 }
 
+.o_button_danger_light {
+	@include button-variant($o-button-danger-light-color, $o-button-danger-light-bg, $o-button-danger-light-border);
+	&:focus,
+	&:hover {
+		color: $o-button-danger-light-hover-color;
+		background-color: $o-button-danger-light-hover-bg;
+		border-color: $o-button-danger-light-hover-border;
+	}
+}
+
 /* Call to action button */
 .btn.o_button_call_to_action {
 	font-size: floor($font-size-base * 1.3);

@@ -5131,6 +5131,7 @@ create table o_tb_topic (
    t_identifier varchar(64),
    t_title varchar(1024),
    t_description longtext,
+   t_execution_type varchar(16) default 'period' not null,
    t_begin_date datetime,
    t_end_date datetime,
    t_min_participants integer,
@@ -5141,6 +5142,17 @@ create table o_tb_topic (
    fk_deleted_by bigint,
    fk_creator bigint not null,
    fk_broker bigint,
+   primary key (id)
+);
+create table o_tb_topic_date (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   d_start datetime,
+   d_end datetime,
+   d_location varchar(255),
+   d_description varchar(1024),
+   fk_topic bigint not null,
    primary key (id)
 );
 create table o_tb_custom_field_definition (
@@ -6496,6 +6508,7 @@ alter table o_badge_organization ENGINE = InnoDB;
 alter table o_tb_broker ENGINE = InnoDB;
 alter table o_tb_participant ENGINE = InnoDB;
 alter table o_tb_topic ENGINE = InnoDB;
+alter table o_tb_topic_date ENGINE = InnoDB;
 alter table o_tb_custom_field_definition ENGINE = InnoDB;
 alter table o_tb_custom_field ENGINE = InnoDB;
 alter table o_tb_selection ENGINE = InnoDB;
@@ -7719,6 +7732,7 @@ create index idx_tb_broker__enr_start_idx on o_tb_broker (t_enrollment_start_dat
 alter table o_tb_participant add constraint tbpart_broker_idx foreign key (fk_broker) references o_tb_broker (id);
 alter table o_tb_participant add constraint tbpart_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_tb_topic add constraint tbtopic_broker_idx foreign key (fk_broker) references o_tb_broker (id);
+alter table o_tb_topic_date add constraint tbtopicdate_topic_idx foreign key (fk_topic) references o_tb_topic (id);
 alter table o_tb_custom_field_definition add constraint tbcfielddef_broker_idx foreign key (fk_broker) references o_tb_broker (id);
 alter table o_tb_custom_field add constraint tbcfield_def_idx foreign key (fk_definition) references o_tb_custom_field_definition (id);
 alter table o_tb_custom_field add constraint tbcfield_topic_idx foreign key (fk_topic) references o_tb_topic (id);

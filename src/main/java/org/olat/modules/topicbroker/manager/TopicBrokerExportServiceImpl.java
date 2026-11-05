@@ -52,6 +52,8 @@ import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicDate;
+import org.olat.modules.topicbroker.TBTopicDateSearchParams;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerExportService;
 import org.olat.modules.topicbroker.TopicBrokerService;
@@ -142,6 +144,11 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 		searchParams.setBroker(broker);
 		List<TBTopic> topics = topicBrokerService.getTopics(searchParams);
 		
+		TBTopicDateSearchParams datesSearchParams = new TBTopicDateSearchParams();
+		datesSearchParams.setBroker(broker);
+		Map<Long, List<TBTopicDate>> topicKeyToDates = topicBrokerService.getTopicDates(datesSearchParams).stream()
+				.collect(Collectors.groupingBy(date -> date.getTopic().getKey()));
+		
 		Map<Long, List<String>> topicKeyToCustomFieldTexts = new HashMap<>(topics.size());
 		Map<String, Map<String, VFSLeaf>> topicIdentToFileIdentToLeaf = new HashMap<>(topics.size());
 		for (TBTopic topic : topics) {
@@ -194,7 +201,7 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 		TopicBrokerFilesExport filesExport = new TopicBrokerFilesExport(reloadedBorker, topicIdentToFileIdentToLeaf);
 		
 		TopicBrokerExcelExport excelExport = new TopicBrokerExcelExport(ureq, topics, customFieldNames,
-				topicKeyToCustomFieldTexts, true, true, new ArrayList<>(identities), identityKeyToTopicToSelections);
+				topicKeyToCustomFieldTexts, topicKeyToDates, true, true, new ArrayList<>(identities), identityKeyToTopicToSelections);
 		
 		Map<Long, List<TBSelection>> topicKeyToEnrollments = selections.stream()
 				.filter(TBSelection::isEnrolled)
@@ -208,7 +215,7 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 					? enrollments.stream().map(selection -> selection.getParticipant().getIdentity()).collect(Collectors.toList())
 					: new ArrayList<>(0);
 			TopicBrokerExcelExport topicExcelExport = new TopicBrokerExcelExport(ureq, topicList, customFieldNames,
-					topicKeyToCustomFieldTexts, true, false, topicIdentities, identityKeyToTopicToSelections);
+					topicKeyToCustomFieldTexts, topicKeyToDates, true, false, topicIdentities, identityKeyToTopicToSelections);
 			topicIdentToExcelExport.put(topic.getIdentifier(), topicExcelExport);
 		}
 		
@@ -237,7 +244,7 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 				.toList();
 		
 		TopicBrokerExcelExport excelExport = new TopicBrokerExcelExport(ureq, Collections.emptyList(), customFieldNames,
-				Map.of(), false, true, List.of(), Map.of());
+				Map.of(), Map.of(), false, true, List.of(), Map.of());
 		return new TopicBrokerExcelMediaResource(excelExport, filename);
 	}
 	
@@ -287,8 +294,8 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 						topicExisting = topicBrokerService.createTopic(doer, broker);
 					}
 					topicBrokerService.updateTopic(doer, topicExisting, topicImported.getIdentifier(),
-							topicImported.getTitle(), topicImported.getDescription(), topicImported.getBeginDate(),
-							topicImported.getEndDate(), topicImported.getMinParticipants(),
+							topicImported.getTitle(), topicImported.getDescription(), topicExisting.getExecutionType(),
+							topicImported.getBeginDate(), topicImported.getEndDate(), topicImported.getMinParticipants(),
 							topicImported.getMaxParticipants(), topicImported.getGroupRestrictionKeys());
 					orderedIdentificators.add(topicImported.getIdentifier());
 					

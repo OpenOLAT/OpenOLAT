@@ -95,6 +95,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -120,6 +121,8 @@ import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicDate;
+import org.olat.modules.topicbroker.TBTopicDateSearchParams;
 import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerExportService;
@@ -343,6 +346,12 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		DateWithDayFlexiCellRenderer dateRenderer = new DateWithDayFlexiCellRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.beginDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.endDate, dateRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.executionType));
+		DefaultFlexiColumnModel numDatesColumn = new DefaultFlexiColumnModel(TopicCols.numDates);
+		numDatesColumn.setIconHeader("o_icon o_icon-fw o_icon_calendar_day");
+		numDatesColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		numDatesColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(numDatesColumn);
 		
 		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(TopicCols.minParticipants, new TextFlexiCellRenderer(EscapeMode.none));
 		minParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -385,7 +394,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		
 		dataModel = new TBTopicDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setAndLoadPersistedPreferences(ureq, "topic-broker-v2-" + broker.getKey());
+		tableEl.setAndLoadPersistedPreferences(ureq, "topic-broker-v3-" + broker.getKey());
 		tableEl.setSearchEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
@@ -433,6 +442,11 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				.collect(Collectors.groupingBy(customField -> customField.getTopic().getKey(),
 						Collectors.toMap(customField -> customField.getDefinition().getKey(), Function.identity())));
 		
+		TBTopicDateSearchParams datesSearchParams = new TBTopicDateSearchParams();
+		datesSearchParams.setBroker(broker);
+		Map<Long, List<TBTopicDate>> topicKeyToDates = topicBrokerService.getTopicDates(datesSearchParams).stream()
+				.collect(Collectors.groupingBy(date -> date.getTopic().getKey()));
+		
 		Map<Long, List<TBSelection>> topicKeyToSelections = null;
 		Set<Long> fullyEnrolledParticipantKeys = Set.of();
 		if (isShowSelections()) {
@@ -457,6 +471,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			row.setCreatedByDisplayname(userManager.getUserDisplayName(topic.getCreator().getKey()));
 			row.setMinEnrollments(topic.getMinParticipants() != null ? topic.getMinParticipants() : 0);
 			row.setMinParticipantsString(topic.getMinParticipants() != null? topic.getMinParticipants().toString(): null);
+			forgeExecution(row, topic, topicKeyToDates.getOrDefault(topic.getKey(), List.of()));
 			
 			forgeSelections(row, topic, topicKeyToSelections, fullyEnrolledParticipantKeys);
 			
@@ -507,6 +522,15 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		}
 	}
 
+	private void forgeExecution(TBTopicRow row, TBTopic topic, List<TBTopicDate> dates) {
+		row.setTranslatedExecutionType(TBUIFactory.getTranslatedType(getTranslator(), topic.getExecutionType()));
+		if (!dates.isEmpty()) {
+			row.setNumDates(Integer.valueOf(dates.size()));
+		}
+		row.setBeginDate(TBUIFactory.getBeginDate(topic, dates));
+		row.setEndDate(TBUIFactory.getEndDate(topic, dates));
+	}
+	
 	private void applyFilters(List<TBTopicRow> rows) {
 		if (tableEl.getSelectedFilterTab() != null) {
 			if (tableEl.getSelectedFilterTab() == tabGroupRestriction) {
@@ -543,7 +567,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 					
 					Date filterTo = dateRange != null? dateRange.getEnd(): null;
 					if (filterTo != null) {
-						rows.removeIf(row -> row.getEndDate()== null || row.getEndDate().after(filterTo));
+						rows.removeIf(row -> row.getEndDate()== null || row.getEndDate().after(DateUtils.getEndOfDay(filterTo)));
 					}
 				}
 			}
@@ -837,7 +861,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (source instanceof TBTopicDetailController detailsCtrl) {
+		} else if (source instanceof TBTopicDetailController) {
 			if (event instanceof TBTopicEditEvent teEvent) {
 				doEditTopic(ureq, teEvent.getTopic());
 			} else if (event instanceof TBTopicEditEnrollmentsEvent teEvent) {
@@ -944,7 +968,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			} else if (event instanceof FlexiTableFilterTabEvent) {
 				detailsOpenTopicKeys = null;
 				loadModel(ureq);
-			} else if (event instanceof FlexiTableSearchEvent ftse) {
+			} else if (event instanceof FlexiTableSearchEvent) {
 				loadModel(ureq);
 			}
 		} else if (source instanceof FormLink link) {

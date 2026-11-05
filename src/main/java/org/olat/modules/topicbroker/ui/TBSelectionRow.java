@@ -44,6 +44,8 @@ public class TBSelectionRow {
 	private TBSelectionRef selectionRef;
 	private String titleAbbr;
 	private String participants;
+	private Date beginDate;
+	private Date endDate;
 	private String executionPeriod;
 	private String thumbnailUrl;
 	private boolean enrolled;
@@ -85,11 +87,19 @@ public class TBSelectionRow {
 	}
 	
 	public Date getBeginDate() {
-		return topic != null? topic.getBeginDate(): null;
+		return beginDate;
+	}
+	
+	public void setBeginDate(Date beginDate) {
+		this.beginDate = beginDate;
 	}
 	
 	public Date getEndDate() {
-		return topic != null? topic.getEndDate(): null;
+		return endDate;
+	}
+	
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
 	}
 
 	public Integer getMinParticipants() {

@@ -21,6 +21,7 @@ package org.olat.modules.topicbroker.manager;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -30,6 +31,7 @@ import org.olat.modules.topicbroker.TBEnrollmentProcessor;
 import org.olat.modules.topicbroker.TBEnrollmentStrategy;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicDate;
 
 /**
  * 
@@ -44,6 +46,7 @@ public class TBEnrollmentProcessorImpl implements TBEnrollmentProcessor {
 	private final int maxDurationMillis;
 	private final TBBroker broker;
 	private final List<TBTopic> topics;
+	private final Map<Long, List<TBTopicDate>> topicKeyToDates;
 	private final List<TBSelection> selections;
 	private final TBEnrollmentStrategy strategy;
 	private final List<TBEnrollmentStrategy> debugStrategies;
@@ -52,11 +55,13 @@ public class TBEnrollmentProcessorImpl implements TBEnrollmentProcessor {
 	private double bestStrategyValue = 0;
 	private DefaultEnrollmentProcess bestProcess;
 
-	public TBEnrollmentProcessorImpl(int maxDurationMillis, TBBroker broker, List<TBTopic> topics, List<TBSelection> selections,
-			TBEnrollmentStrategy strategy, List<TBEnrollmentStrategy> debugStrategies) {
+	public TBEnrollmentProcessorImpl(int maxDurationMillis, TBBroker broker, List<TBTopic> topics,
+			Map<Long, List<TBTopicDate>> topicKeyToDates, List<TBSelection> selections, TBEnrollmentStrategy strategy,
+			List<TBEnrollmentStrategy> debugStrategies) {
 		this.maxDurationMillis = maxDurationMillis;
 		this.broker = broker;
 		this.topics = topics;
+		this.topicKeyToDates = topicKeyToDates;
 		this.selections = selections;
 		this.strategy = strategy;
 		this.debugStrategies = debugStrategies;
@@ -85,7 +90,7 @@ public class TBEnrollmentProcessorImpl implements TBEnrollmentProcessor {
 	}
 
 	private void runProcess(long currentRun) {
-		DefaultEnrollmentProcess currentProcess = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess currentProcess = new DefaultEnrollmentProcess(broker, topics, topicKeyToDates, selections);
 		List<TBSelection> previewSelections = currentProcess.getPreviewSelections();
 		//logSelections(previewSelections);
 		

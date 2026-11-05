@@ -41,6 +41,7 @@ public final class TBImportTopic {
 	private Map<String, File> identifierToFile;
 	private boolean filesOnly;
 	private String message;
+	private String info;
 	
 	public String getIdentifier() {
 		return identifier;
@@ -150,6 +151,14 @@ public final class TBImportTopic {
 
 	public void setMessage(String message) {
 		this.message = message;
+	}
+	
+	public String getInfo() {
+		return info;
+	}
+	
+	public void setInfo(String info) {
+		this.info = info;
 	}
 	
 }

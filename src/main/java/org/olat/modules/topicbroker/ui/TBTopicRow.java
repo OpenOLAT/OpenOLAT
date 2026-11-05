@@ -43,6 +43,10 @@ import org.olat.modules.topicbroker.TBTopicRef;
 public class TBTopicRow implements TBTopicRef {
 
 	private final TBTopic topic;
+	private Date beginDate;
+	private Date endDate;
+	private String translatedExecutionType;
+	private Integer numDates;
 	private String minParticipantsString;
 	private int minEnrollments;
 	private int numEnrollments;
@@ -64,6 +68,8 @@ public class TBTopicRow implements TBTopicRef {
 	
 	public TBTopicRow(TBTopic topic) {
 		this.topic = topic;
+		this.beginDate = topic.getBeginDate();
+		this.endDate = topic.getEndDate();
 	}
 	
 	public TBTopic getTopic() {
@@ -84,11 +90,35 @@ public class TBTopicRow implements TBTopicRef {
 	}
 	
 	public Date getBeginDate() {
-		return topic.getBeginDate();
+		return beginDate;
+	}
+	
+	public void setBeginDate(Date beginDate) {
+		this.beginDate = beginDate;
 	}
 	
 	public Date getEndDate() {
-		return topic.getEndDate();
+		return endDate;
+	}
+	
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+	
+	public String getTranslatedExecutionType() {
+		return translatedExecutionType;
+	}
+	
+	public void setTranslatedExecutionType(String translatedExecutionType) {
+		this.translatedExecutionType = translatedExecutionType;
+	}
+	
+	public Integer getNumDates() {
+		return numDates;
+	}
+	
+	public void setNumDates(Integer numDates) {
+		this.numDates = numDates;
 	}
 	
 	public Integer getMinParticipants() {

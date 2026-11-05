@@ -1,21 +1,11 @@
 <div class="o_card o_tb_topic_card">
 	<div class="o_tb_topic_card_thumbnail">
-		<div class="o_tb_topic_card_img #if($row.getThumbnailCss())$row.getThumbnailCss()#end">
+		<div class="o_tb_topic_card_img #if(!$row.isThumbnailAvailable()) o_tb_topic_placeholder#end">
 			#if($row.isThumbnailAvailable())
 				<img src="$row.getThumbnailUrl()" alt=""/>
 			#else
-				<div class="o_tb_topic_row_thumbnail">
-					<div class="o_tb_topic_icon_container">
-						<div class="o_tb_topic_row_thumbnail_icon"><i class="o_icon"></i></div>
-							#if($row.getElementsLabel())
-							<div class="o_tb_topic_elements_labels">
-								$row.getElementsLabel()
-							</div>
-						#end
-					</div>
-				</div>
 				<div class="o_tb_topic_title_abbr">
-					$row.getTitleAbbr()
+					$r.escapeHtml($row.getTitleAbbr())
 				</div>
 			#end
 		</div>
@@ -43,7 +33,7 @@
 		</div>
 		#if($r.isNotEmpty($row.executionPeriod))
 			<div class="o_tb_topic_card_execution_period o_flex_block_one_line_left">
-				<div class="o_nowrap ">
+				<div>
 					$row.executionPeriod
 				</div>
 			</div>

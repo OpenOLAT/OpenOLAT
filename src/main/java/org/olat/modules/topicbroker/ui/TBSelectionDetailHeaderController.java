@@ -115,6 +115,7 @@ public class TBSelectionDetailHeaderController extends FormBasicController {
 		selectButton.setVisible(false);
 		
 		unselectButton = uifactory.addFormLink("unselect", CMD_UNSELECT, "withdraw", null, flc, Link.BUTTON);
+		unselectButton.setElementCssClass("o_button_danger_light");
 		unselectButton.setVisible(false);
 		
 		selectDropdown = uifactory.addDropdownMenu("selectDropdown", null, null, formLayout, getTranslator());

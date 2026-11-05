@@ -23,6 +23,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Level;
@@ -78,7 +79,7 @@ public class TBEnrollmentProcessorImplTest {
 		// Get duration from log
 		Tracing.setLevelForLogger(Level.DEBUG, Tracing.createLoggerFor(TBEnrollmentProcessorImpl.class).getName());
 		
-		new TBEnrollmentProcessorImpl(5000, broker, topics, selections, strategy, debugStrategies).getBest();
+		new TBEnrollmentProcessorImpl(5000, broker, topics, Map.of(), selections, strategy, debugStrategies).getBest();
 		
 		Tracing.setLevelForLogger(Level.INFO, Tracing.createLoggerFor(TBEnrollmentProcessorImpl.class).getName());
 	}

@@ -20,6 +20,7 @@
 package org.olat.modules.topicbroker.manager;
 
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicDate;
 import org.olat.modules.topicbroker.ui.TBParticipantDataModel;
 import org.olat.modules.topicbroker.ui.TBUIFactory;
 import org.olat.user.UserManager;
@@ -58,6 +60,7 @@ public class TopicBrokerExcelExport {
 	private final List<TBTopic> topics;
 	private final List<String> customFieldNames;
 	private final Map<Long, List<String>> topicKeyToCustomFieldTexts;
+	private final Map<Long, List<TBTopicDate>> topicKeyToDates;
 	private final boolean participantsSheet;
 	private final boolean enrollmentColumn;
 	private final List<Identity> identities;
@@ -71,11 +74,12 @@ public class TopicBrokerExcelExport {
 	private UserManager userManager;
 
 	public TopicBrokerExcelExport(UserRequest ureq, List<TBTopic> topics, List<String> customFieldNames,
-			Map<Long, List<String>> topicKeyToCustomFieldTexts, boolean participantsSheet,
+			Map<Long, List<String>> topicKeyToCustomFieldTexts, Map<Long, List<TBTopicDate>> topicKeyToDates, boolean participantsSheet,
 			boolean enrollmentColumn, List<Identity> identities, Map<Long, Map<Long, TBSelection>> identityKeyToTopicToSelections) {
 		this.topics = topics;
 		this.customFieldNames = customFieldNames;
 		this.topicKeyToCustomFieldTexts = topicKeyToCustomFieldTexts;
+		this.topicKeyToDates = topicKeyToDates;
 		this.participantsSheet = participantsSheet;
 		this.identities = identities;
 		this.identityKeyToTopicToSelections = identityKeyToTopicToSelections;
@@ -92,12 +96,21 @@ public class TopicBrokerExcelExport {
 	}
 	
 	public void export(OutputStream out) {
-		List<String> sheetNames = participantsSheet
-				? List.of(translator.translate("export.topics"), translator.translate("export.participants"))
-				: List.of(translator.translate("export.topics"));
+		boolean datesSheet = topics.stream().anyMatch(topic -> topicKeyToDates.containsKey(topic.getKey()));
+		List<String> sheetNames = new ArrayList<>(3);
+		sheetNames.add(translator.translate("export.topics"));
+		if (datesSheet) {
+			sheetNames.add(translator.translate("topic.dates"));
+		}
+		if (participantsSheet) {
+			sheetNames.add(translator.translate("export.participants"));
+		}
 	
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, sheetNames.size(), sheetNames)) {
 			addTopics(workbook);
+			if (datesSheet) {
+				addDates(workbook);
+			}
 			if (participantsSheet) {
 				addSelections(workbook);
 			}
@@ -159,6 +172,31 @@ public class TopicBrokerExcelExport {
 		}
 	}
 
+	private void addDates(OpenXMLWorkbook workbook) {
+		OpenXMLWorksheet worksheet = workbook.nextWorksheet();
+		worksheet.setHeaderRows(1);
+		
+		int col = 0;
+		Row headerRow = worksheet.newRow();
+		headerRow.addCell(col++, translator.translate("topic.identifier"));
+		headerRow.addCell(col++, translator.translate("topic.date.start"));
+		headerRow.addCell(col++, translator.translate("topic.date.end"));
+		headerRow.addCell(col++, translator.translate("topic.date.location"));
+		headerRow.addCell(col++, translator.translate("topic.date.description"));
+		
+		for (TBTopic topic : topics) {
+			for (TBTopicDate date : topicKeyToDates.getOrDefault(topic.getKey(), List.of())) {
+				col = 0;
+				Row row = worksheet.newRow();
+				row.addCell(col++, topic.getIdentifier());
+				row.addCell(col++, date.getStartDate(), workbook.getStyles().getDateTimeStyle());
+				row.addCell(col++, date.getEndDate(), workbook.getStyles().getDateTimeStyle());
+				row.addCell(col++, date.getLocation());
+				row.addCell(col++, date.getDescription(), workbook.getStyles().getBottomAlignStyle());
+			}
+		}
+	}
+	
 	private void addSelections(OpenXMLWorkbook workbook) {
 		OpenXMLWorksheet worksheet = workbook.nextWorksheet();
 		addSelectionHeader(workbook, worksheet);

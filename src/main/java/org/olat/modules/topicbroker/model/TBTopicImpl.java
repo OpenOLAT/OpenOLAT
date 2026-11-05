@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -42,6 +44,7 @@ import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicExecutionType;
 
 /**
  * 
@@ -73,6 +76,9 @@ public class TBTopicImpl implements Persistable, TBTopic {
 	private String title;
 	@Column(name="t_description", nullable=true, insertable=true, updatable=true)
 	private String description;
+	@Enumerated(EnumType.STRING)
+	@Column(name="t_execution_type", nullable=false, insertable=true, updatable=true)
+	private TBTopicExecutionType executionType;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="t_begin_date", nullable=true, insertable=true, updatable=true)
 	private Date beginDate;
@@ -162,6 +168,16 @@ public class TBTopicImpl implements Persistable, TBTopic {
 		this.description = description;
 	}
 
+	@Override
+	public TBTopicExecutionType getExecutionType() {
+		return executionType;
+	}
+	
+	@Override
+	public void setExecutionType(TBTopicExecutionType executionType) {
+		this.executionType = executionType;
+	}
+	
 	@Override
 	public Date getBeginDate() {
 		return beginDate;

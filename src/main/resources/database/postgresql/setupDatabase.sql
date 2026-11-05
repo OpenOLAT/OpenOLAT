@@ -5150,6 +5150,7 @@ create table o_tb_topic (
    t_identifier varchar(64),
    t_title varchar(1024),
    t_description text,
+   t_execution_type varchar(16) default 'period' not null,
    t_begin_date timestamp,
    t_end_date timestamp,
    t_min_participants int8,
@@ -5160,6 +5161,17 @@ create table o_tb_topic (
    fk_deleted_by int8,
    fk_creator int8 not null,
    fk_broker int8 not null,
+   primary key (id)
+);
+create table o_tb_topic_date (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   d_start timestamp,
+   d_end timestamp,
+   d_location varchar(255),
+   d_description varchar(1024),
+   fk_topic int8 not null,
    primary key (id)
 );
 create table o_tb_custom_field_definition (
@@ -7899,6 +7911,8 @@ create index idx_tb_part_to_ident_idx on o_tb_participant (fk_identity);
 alter table o_tb_participant add constraint tbpart_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_tbtopic_to_broker_idx on o_tb_topic (fk_broker);
 alter table o_tb_topic add constraint tbtopic_broker_idx foreign key (fk_broker) references o_tb_broker (id);
+create index idx_tbtopicdate_to_topic_idx on o_tb_topic_date (fk_topic);
+alter table o_tb_topic_date add constraint tbtopicdate_topic_idx foreign key (fk_topic) references o_tb_topic (id);
 create index idx_tbpart_to_broker_idx on o_tb_participant (fk_broker);
 alter table o_tb_participant add constraint tbpart_broker_idx foreign key (fk_broker) references o_tb_broker (id);
 create index idx_tbcfielddef_to_broker_idx on o_tb_custom_field_definition (fk_broker);

@@ -48,6 +48,10 @@ public interface TBTopic extends TBTopicRef, ModifiedInfo, CreateInfo {
 	String getDescription();
 
 	void setDescription(String description);
+	
+	TBTopicExecutionType getExecutionType();
+	
+	void setExecutionType(TBTopicExecutionType executionType);
 
 	public Date getBeginDate();
 	

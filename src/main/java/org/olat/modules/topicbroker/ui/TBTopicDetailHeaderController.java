@@ -96,6 +96,7 @@ public class TBTopicDetailHeaderController extends FormBasicController {
 		}
 		
 		flc.contextPut("title", topic.getTitle());
+		flc.contextPut("identifier", topic.getIdentifier());
 		flc.contextPut("numEnrollments", numEnrollments);
 		flc.contextPut("waitingList", waitingList);
 		

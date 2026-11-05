@@ -6,8 +6,10 @@
 			</div>
 		</div>
 	#else 
-		<div class="o_tb_topic_title_abbr">
-			$titleAbbr
+		<div class="o_tb_topic_teaser_visual o_tb_topic_placeholder">
+			<div class="o_tb_topic_title_abbr">
+				$r.escapeHtml($titleAbbr)
+			</div>
 		</div>
 	#end
 	<div class="o_tb_topic_meta">

@@ -21,9 +21,7 @@ package org.olat.modules.topicbroker.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -90,6 +88,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Roles;
+import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -112,6 +111,8 @@ import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBSelectionStatus;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicDate;
+import org.olat.modules.topicbroker.TBTopicExecutionType;
 import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerService;
@@ -128,8 +129,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TBSelectionController extends FormBasicController implements FlexiTableComponentDelegate, GenericEventListener {
 	
-	private static final Date TOPIC_START_INFINITY = new GregorianCalendar(2000, Calendar.JANUARY, 1).getTime();
-	private static final Date TOPIC_END_INFINITY = new GregorianCalendar(2099, Calendar.DECEMBER, 31).getTime();
 	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_ENROLLED = "Enrolled";
 	private static final String TAB_ID_NOT_ENROLLED = "NotEnrolled";
@@ -179,6 +178,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private final List<TBCustomFieldDefinition> customFieldDefinitions;
 	private final List<TBCustomFieldDefinition> customFieldDefinitionsInTable;
 	private int selectionsSize;
+	private Map<Long, List<TBTopicDate>> topicKeyToDates = Map.of();
 	private final Roles roles;
 	private int counter = 0;
 
@@ -224,7 +224,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		
 		loadParticipantGroupKeys(topics);
 		for (TBTopic topic : topics) {
-			if (topic.getBeginDate() != null || topic.getEndDate() != null) {
+			if (topic.getBeginDate() != null || topic.getEndDate() != null || TBTopicExecutionType.dates == topic.getExecutionType()) {
 				if (topic.getGroupRestrictionKeys() == null || topic.getGroupRestrictionKeys().stream().anyMatch(key -> participantGroupKeys.contains(key))) {
 					return true;
 				}
@@ -489,6 +489,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		Map<Long, TBSelection> topicKeyToSelection = selections.stream()
 				.collect(Collectors.toMap(selection -> selection.getTopic().getKey(), Function.identity()));
 		selectionsSize = selections.size();
+		
+		topicKeyToDates = topicBrokerService.getExecutionDates(topics);
 		int maxEnrollments = TBUIFactory.getRequiredEnrollments(broker, participant);
 		int numEnrollments = (int)selections.stream().filter(TBSelection::isEnrolled).count();
 	
@@ -501,7 +503,10 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			row.setTopic(topic);
 			row.setTitleAbbr(TBUIFactory.getTitleAbbr(topic.getTitle()));
 			row.setParticipants(TBUIFactory.getParticipantRange(getTranslator(), topic));
-			row.setExecutionPeriod(TBUIFactory.getExecutionPeriod(formatter, topic));
+			List<TBTopicDate> dates = topicKeyToDates.getOrDefault(topic.getKey(), List.of());
+			row.setBeginDate(TBUIFactory.getBeginDate(topic, dates));
+			row.setEndDate(TBUIFactory.getEndDate(topic, dates));
+			row.setExecutionPeriod(TBUIFactory.getExecutionPeriod(getTranslator(), formatter, topic, dates));
 			row.setTopicSortOrder(topic.getSortOrder());
 			
 			TBSelection selection = topicKeyToSelection.get(topic.getKey());
@@ -535,7 +540,6 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		selectionTableEl.reset(false, false, true);
 		
 		if (!periodEvaluator.isBeforeSelectionPeriod()) {
-			applyTopicFilters(topicRows);
 			applyTopicFilters(topicRows);
 			applySearch(topicRows);
 			applyGroupRestricions(topicRows);
@@ -585,7 +589,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 					
 					Date filterTo = dateRange != null? dateRange.getEnd(): null;
 					if (filterTo != null) {
-						rows.removeIf(row -> row.getEndDate()== null || row.getEndDate().after(filterTo));
+						rows.removeIf(row -> row.getEndDate()== null || row.getEndDate().after(DateUtils.getEndOfDay(filterTo)));
 					}
 				}
 			}
@@ -750,6 +754,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		if (periodEvaluator.isWithdrawPeriod() && row.getSelectionRef() != null) {
 			if (periodEvaluator.isSelectionPeriod() || row.isEnrolled()) {
 				FormLink unselectButton = uifactory.addFormLink("unselect_" + row.getTopic().getKey(), CMD_UNSELECT, "withdraw", null, flc, Link.BUTTON);
+				unselectButton.setElementCssClass("o_button_danger_light");
 				unselectButton.setUserObject(row);
 				row.setUnselectButton(unselectButton);
 			}
@@ -888,33 +893,29 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			return 0;
 		}
 		
-		List<TBTopic> topicsWithDates = selectionDataModel.getObjects().stream()
+		List<TBTopic> topics = selectionDataModel.getObjects().stream()
 				.map(TBSelectionRow::getTopic)
 				.filter(Objects::nonNull)
-				.filter(row -> row.getBeginDate() != null || row.getEndDate() != null)
 				.toList();
-		if (topicsWithDates.isEmpty()) {
+		if (topics.size() < 2) {
 			return 0;
 		}
 		
-		Set<Long> overlappingTopiKeys = new HashSet<>(2);
+		List<List<DateRange>> topicPeriods = topics.stream()
+				.map(topic -> TBUIFactory.getExecutionPeriods(topic, topicKeyToDates.get(topic.getKey())))
+				.toList();
 		
-		for (int i = 0; i<topicsWithDates.size(); i++) {
-			for (int j = i+1; j<topicsWithDates.size(); j++) {
-				TBTopic topic1 = topicsWithDates.get(i);
-				TBTopic topic2 = topicsWithDates.get(j);
-				Date start1 = topic1.getBeginDate() != null? DateUtils.setTime(topic1.getBeginDate(), 0, 0, 0): TOPIC_START_INFINITY;
-				Date end1 = topic1.getEndDate() != null? DateUtils.setTime(topic1.getEndDate(), 23, 59, 59): TOPIC_END_INFINITY;
-				Date start2 = topic2.getBeginDate() != null? DateUtils.setTime(topic2.getBeginDate(), 0, 0, 0): TOPIC_START_INFINITY;
-				Date end2 = topic2.getEndDate() != null? DateUtils.setTime(topic2.getEndDate(), 23, 59, 59): TOPIC_END_INFINITY;
-				if (DateUtils.isOverlapping(start1, end1, start2, end2)) {
-					overlappingTopiKeys.add(topic1.getKey());
-					overlappingTopiKeys.add(topic2.getKey());
+		Set<Long> overlappingTopicKeys = new HashSet<>(2);
+		for (int i = 0; i<topics.size(); i++) {
+			for (int j = i+1; j<topics.size(); j++) {
+				if (DateUtils.isOverlapping(topicPeriods.get(i), topicPeriods.get(j))) {
+					overlappingTopicKeys.add(topics.get(i).getKey());
+					overlappingTopicKeys.add(topics.get(j).getKey());
 				}
 			}
 		}
 		
-		return overlappingTopiKeys.size();
+		return overlappingTopicKeys.size();
 	}
 
 	private void updateBrokerStatusUI() {
@@ -1063,9 +1064,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 				}
 			} else if (event instanceof FlexiTableFilterTabEvent) {
 				loadModel(false);
-			} else if (event instanceof FlexiTableSearchEvent ftse) {
+			} else if (event instanceof FlexiTableSearchEvent) {
 				loadModel(true);
-			} else if (event instanceof FlexiTableRenderEvent gtre) {
+			} else if (event instanceof FlexiTableRenderEvent) {
 				saveTopicRenderStyle(ureq);
 			}
 		} else if (source instanceof FormLink link) {

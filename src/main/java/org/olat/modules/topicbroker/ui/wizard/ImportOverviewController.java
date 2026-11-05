@@ -188,11 +188,19 @@ public class ImportOverviewController extends StepFormBasicController {
 					? row.getIdentifierToFile().get(EXPORT_TEASER_IMAGE).getName() : null;
 			case teaserVideo: return row.getIdentifierToFile() != null && row.getIdentifierToFile().containsKey(EXPORT_TEASER_VIDEO)
 					? row.getIdentifierToFile().get(EXPORT_TEASER_VIDEO).getName() : null;
-			case importMessage: return StringHelper.containsNonWhitespace(row.getMessage())
-					? "<span><i class=\"o_icon o_icon_error\"></i> " + row.getMessage() + "</span>"
-					: null;
+			case importMessage: return getImportMessage(row);
 			default: return null;
 			}
+		}
+		
+		private String getImportMessage(TBImportTopic row) {
+			if (StringHelper.containsNonWhitespace(row.getMessage())) {
+				return "<span><i class=\"o_icon o_icon_error\"></i> " + row.getMessage() + "</span>";
+			}
+			if (StringHelper.containsNonWhitespace(row.getInfo())) {
+				return "<span><i class=\"o_icon o_icon_info\"></i> " + row.getInfo() + "</span>";
+			}
+			return null;
 		}
 		
 		public enum TopicImportCols implements FlexiColumnDef {

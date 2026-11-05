@@ -19,15 +19,20 @@
  */
 package org.olat.modules.topicbroker.ui;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateRange;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.topicbroker.TBBroker;
@@ -40,7 +45,9 @@ import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionStatus;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicDate;
 import org.olat.modules.topicbroker.TBTopicEnrollmentStatus;
+import org.olat.modules.topicbroker.TBTopicExecutionType;
 
 /**
  * 
@@ -49,6 +56,10 @@ import org.olat.modules.topicbroker.TBTopicEnrollmentStatus;
  *
  */
 public class TBUIFactory {
+	
+	public static final String ICON_CALENDAR_DAY = "<i class=\"o_icon o_icon-fw o_icon_calendar_day\"></i> ";
+	private static final Date TOPIC_START_INFINITY = new GregorianCalendar(2000, Calendar.JANUARY, 1).getTime();
+	private static final Date TOPIC_END_INFINITY = new GregorianCalendar(2099, Calendar.DECEMBER, 31).getTime();
 	
 	public static int getRequiredEnrollments(TBBroker broker, TBParticipant participant) {
 		int maxEnrollments = broker.getRequiredEnrollments();
@@ -290,7 +301,7 @@ public class TBUIFactory {
 		String label = "<div class=\"o_tb_priority_label\"";
 		if (StringHelper.containsNonWhitespace(topicTitle)) {
 			label += " title=\"";
-			label += topicTitle;
+			label += StringHelper.escapeHtml(topicTitle);
 			label += "\"";
 		}
 		label += ">";
@@ -300,7 +311,7 @@ public class TBUIFactory {
 		if (TBSelectionStatus.surplus == status) {
 			label += translator.translate("selection.surplus.abbr");
 		} else {
-			label += sortOrder;
+			label += translator.translate("selection.priority.tag", String.valueOf(sortOrder));
 		}
 		label += "</div>";
 		label += "</div>";
@@ -348,8 +359,16 @@ public class TBUIFactory {
 		}
 		
 		String executionPeriod = "<i class=\"o_icon o_icon-fw o_icon_calendar\"></i> ";
+		if (topic.getBeginDate() != null && topic.getEndDate() != null && DateUtils.isSameDay(topic.getBeginDate(), topic.getEndDate())) {
+			return executionPeriod + formatter.formatDateWithDay(topic.getBeginDate());
+		}
+		
 		if (topic.getBeginDate() != null) {
-			executionPeriod += formatter.formatDateWithDay(topic.getBeginDate());
+			if (topic.getEndDate() != null && DateUtils.isSameYear(topic.getBeginDate(), topic.getEndDate())) {
+				executionPeriod += formatter.formatDateWithDayWithoutYear(topic.getBeginDate());
+			} else {
+				executionPeriod += formatter.formatDateWithDay(topic.getBeginDate());
+			}
 			if (topic.getEndDate() != null) {
 				executionPeriod += " - ";
 			}
@@ -359,6 +378,68 @@ public class TBUIFactory {
 		}
 		
 		return executionPeriod;
+	}
+	
+	public static String getExecutionPeriod(Translator translator, Formatter formatter, TBTopic topic, List<TBTopicDate> dates) {
+		if (TBTopicExecutionType.dates != topic.getExecutionType()) {
+			return getExecutionPeriod(formatter, topic);
+		}
+		if (dates == null || dates.isEmpty()) {
+			return null;
+		}
+		
+		Date firstStartDate = dates.get(0).getStartDate();
+		if (dates.stream().allMatch(date -> DateUtils.isSameDay(date.getStartDate(), firstStartDate))) {
+			return ICON_CALENDAR_DAY + formatter.formatDateWithDay(firstStartDate) + ", "
+					+ dates.stream().map(date -> getTime(formatter, date)).collect(Collectors.joining(", "));
+		}
+		return ICON_CALENDAR_DAY + translator.translate("topic.dates.first.last", String.valueOf(dates.size()),
+				formatter.formatDateWithDay(getBeginDate(topic, dates)), formatter.formatDateWithDay(getEndDate(topic, dates)));
+	}
+	
+	public static String getDateAndTime(Formatter formatter, TBTopicDate date) {
+		return formatter.formatDateWithDay(date.getStartDate()) + ", " + getTime(formatter, date);
+	}
+	
+	public static String getTime(Formatter formatter, TBTopicDate date) {
+		String time = date.getStartDate() != null? formatter.formatTimeShort(date.getStartDate()): "";
+		if (date.getEndDate() != null) {
+			time += " - " + formatter.formatTimeShort(date.getEndDate());
+		}
+		return time;
+	}
+	
+	public static Date getBeginDate(TBTopic topic, List<TBTopicDate> dates) {
+		if (TBTopicExecutionType.dates == topic.getExecutionType()) {
+			return dates == null? null: dates.stream().map(TBTopicDate::getStartDate).filter(Objects::nonNull).min(Date::compareTo).orElse(null);
+		}
+		return topic.getBeginDate();
+	}
+	
+	public static Date getEndDate(TBTopic topic, List<TBTopicDate> dates) {
+		if (TBTopicExecutionType.dates == topic.getExecutionType()) {
+			return dates == null? null: dates.stream().map(TBTopicDate::getEndDate).filter(Objects::nonNull).max(Date::compareTo).orElse(null);
+		}
+		return topic.getEndDate();
+	}
+	
+	public static List<DateRange> getExecutionPeriods(TBTopic topic, List<TBTopicDate> dates) {
+		if (TBTopicExecutionType.dates == topic.getExecutionType()) {
+			if (dates == null) {
+				return List.of();
+			}
+			return dates.stream()
+					.filter(date -> date.getStartDate() != null && date.getEndDate() != null)
+					.map(date -> new DateRange(date.getStartDate(), date.getEndDate()))
+					.toList();
+		}
+		
+		if (topic.getBeginDate() != null || topic.getEndDate() != null) {
+			Date begin = topic.getBeginDate() != null? DateUtils.setTime(topic.getBeginDate(), 0, 0, 0): TOPIC_START_INFINITY;
+			Date end = topic.getEndDate() != null? DateUtils.setTime(topic.getEndDate(), 23, 59, 59): TOPIC_END_INFINITY;
+			return List.of(new DateRange(begin, end));
+		}
+		return List.of();
 	}
 	
 	public static String getTranslatedType(Translator translator, TBCustomFieldType type) {
@@ -479,6 +560,17 @@ public class TBUIFactory {
 			case maxPriorities: return translator.translate("enrollment.strategy.max.priorities");
 			case maxTopics: return translator.translate("enrollment.strategy.max.topics");
 			case custom: return translator.translate("enrollment.strategy.custom");
+			default:
+			}
+		}
+		return null;
+	}
+	
+	public static String getTranslatedType(Translator translator, TBTopicExecutionType type) {
+		if (type != null) {
+			switch (type) {
+			case period: return translator.translate("topic.execution.type.period");
+			case dates: return translator.translate("topic.execution.type.dates");
 			default:
 			}
 		}

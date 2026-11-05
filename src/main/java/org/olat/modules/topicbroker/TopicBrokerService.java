@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
@@ -91,8 +92,8 @@ public interface TopicBrokerService {
 	public boolean isTopicIdentifierValid(String identifier, Collection<String> existingIdentifiers);
 	
 	public TBTopic updateTopic(Identity doer, TBTopicRef topic, String identifier, String title, String description,
-			Date beginDate, Date endDate, Integer minParticipants, Integer maxParticipants,
-			Set<Long> groupRestricionKeys);
+			TBTopicExecutionType executionType, Date beginDate, Date endDate, Integer minParticipants,
+			Integer maxParticipants, Set<Long> groupRestricionKeys);
 	
 	public void moveTopic(Identity doer, TBTopicRef topic, boolean up);
 	
@@ -112,6 +113,12 @@ public interface TopicBrokerService {
 	public TBTopic getTopic(TBTopicRef topic);
 	
 	public List<TBTopic> getTopics(TBTopicSearchParams searchParams);
+	
+	public void updateTopicDates(Identity doer, TBTopicRef topic, List<TBTopicDateValues> dateValues);
+	
+	public List<TBTopicDate> getTopicDates(TBTopicDateSearchParams searchParams);
+	
+	public Map<Long, List<TBTopicDate>> getExecutionDates(Collection<? extends TBTopic> topics);
 	
 	public VFSLeaf storeTopicLeaf(Identity doer, TBTopicRef topic, String identifier, File file, String filename);
 	

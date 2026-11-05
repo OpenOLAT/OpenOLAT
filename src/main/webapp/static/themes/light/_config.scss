@@ -542,6 +542,12 @@ $o-button-primary-light-border				: $o-button-primary-light-color !default;
 $o-button-primary-light-hover-bg			: $o-button-primary-light-color !default;
 $o-button-primary-light-hover-color			: $o-button-primary-light-bg !default;
 $o-button-primary-light-hover-border		: $btn-default-hover-border !default;
+$o-button-danger-light-bg					: #fff !default;
+$o-button-danger-light-color				: o-a11y-color($brand-danger, $o-button-danger-light-bg) !default;
+$o-button-danger-light-border				: $o-button-danger-light-color !default;
+$o-button-danger-light-hover-bg			: $o-button-danger-light-color !default;
+$o-button-danger-light-hover-color			: $o-button-danger-light-bg !default;
+$o-button-danger-light-hover-border		: $o-button-danger-light-color !default;
 
 /* Bento layout */
 $o-bento-cols							: 8 !default;
@@ -1913,6 +1919,7 @@ $o-tb-topic-card-title-abbr-color			: $btn-primary-color !default;
 $o-tb-topic-card-title-abbr-bg-color			: $btn-primary-bg !default;
 $o-tb-topic-card-title-abbr-border			: 1px solid $btn-primary-color !default;
 $o-tb-topic-card-title-abbr-border-radius	: 4px !default;
+$o-tb-topic-placeholder-title-abbr-border	: 2px solid #fff !default;
 $o-tb-details-separator-border-bottom		: 1px solid $panel-default-border !default;
 $o-tb-broker-not-started-color				: #666 !default;
 $o-tb-broker-selection-in-progress-color		: #fcca46 !default;

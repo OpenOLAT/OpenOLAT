@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.test.OlatTestCase;
@@ -212,6 +213,16 @@ public class FormatterTest extends OlatTestCase {
 		ZonedDateTime date = ZonedDateTime.of(2025, 1, 12, 12, 23, 34, 456, ZoneId.systemDefault());
 		String value = Formatter.getInstance(Locale.GERMAN).formatDateAndTime(date);
 		Assert.assertEquals("12.01.2025, 12:23", value);
+	}
+	
+	@Test
+	public void testDateWithDayWithoutYear() {
+		Calendar cal = Calendar.getInstance();
+		cal.set(2025, 0, 12, 12, 23, 34);
+		Date date = cal.getTime();
+		Assertions.assertThat(Formatter.getInstance(Locale.GERMAN).formatDateWithDayWithoutYear(date)).isEqualTo("So., 12.01.");
+		Assertions.assertThat(Formatter.getInstance(Locale.ENGLISH).formatDateWithDayWithoutYear(date)).isEqualTo("Sun, 1/12");
+		Assertions.assertThat(Formatter.getInstance(Locale.GERMAN).formatDateWithDayWithoutYear(null)).isNull();
 	}
 	
 }

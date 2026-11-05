@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBBrokerRef;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicExecutionType;
 import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.model.TBTopicImpl;
@@ -52,6 +53,7 @@ public class TBTopicDAO {
 		TBTopicImpl topic = new TBTopicImpl();
 		topic.setCreationDate(new Date());
 		topic.setLastModified(topic.getCreationDate());
+		topic.setExecutionType(TBTopicExecutionType.period);
 		topic.setCreator(creator);
 		topic.setBroker(broker);
 		topic.setSortOrder(getNextSortOrder(broker));

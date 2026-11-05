@@ -64,6 +64,7 @@ import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBGroupRestrictionCandidates;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicExecutionType;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerExportService;
 import org.olat.modules.topicbroker.TopicBrokerService;
@@ -93,6 +94,7 @@ public class ImportTopicConverter {
 	private final List<DateFormat> dateFormatters = new ArrayList<>();
 	private final List<TBCustomFieldDefinition> definitions;
 	private final Set<String> existingIdentifiers;
+	private final Set<String> datesTopicIdentifiers;
 	private final TBGroupRestrictionCandidates groupRestrictionCandidates;
 	private final String input;
 	private File tempFilesDir;
@@ -127,7 +129,12 @@ public class ImportTopicConverter {
 		
 		TBTopicSearchParams searchParams = new TBTopicSearchParams();
 		searchParams.setBroker(broker);
-		existingIdentifiers = topicBrokerService.getTopics(searchParams).stream()
+		List<TBTopic> existingTopics = topicBrokerService.getTopics(searchParams);
+		existingIdentifiers = existingTopics.stream()
+				.map(TBTopic::getIdentifier)
+				.collect(Collectors.toSet());
+		datesTopicIdentifiers = existingTopics.stream()
+				.filter(topic -> TBTopicExecutionType.dates == topic.getExecutionType())
 				.map(TBTopic::getIdentifier)
 				.collect(Collectors.toSet());
 		}
@@ -219,11 +226,15 @@ public class ImportTopicConverter {
 			String endDateInput = line[6];
 			if (StringHelper.containsNonWhitespace(endDateInput)) {
 				importTopic.setEndDate(endDateInput);
-				Date endDate = parseDate(endDateInput);
-				if (endDate != null) {
-					topic.setEndDate(endDate);
+				if (datesTopicIdentifiers.contains(line[0])) {
+					importTopic.setInfo(translate("import.info.dates.topic.period.ignored"));
 				} else {
-					importTopic.setMessage(translate("import.error.date.end"));
+					Date endDate = parseDate(endDateInput);
+					if (endDate != null) {
+						topic.setEndDate(endDate);
+					} else {
+						importTopic.setMessage(translate("import.error.date.end"));
+					}
 				}
 			}
 		}
@@ -233,11 +244,15 @@ public class ImportTopicConverter {
 			String beginDateInput = line[5];
 			if (StringHelper.containsNonWhitespace(beginDateInput)) {
 				importTopic.setBeginDate(beginDateInput);
-				Date beginDate = parseDate(beginDateInput);
-				if (beginDate != null) {
-					topic.setBeginDate(beginDate);
+				if (datesTopicIdentifiers.contains(line[0])) {
+					importTopic.setInfo(translate("import.info.dates.topic.period.ignored"));
 				} else {
-					importTopic.setMessage(translate("import.error.date.begin"));
+					Date beginDate = parseDate(beginDateInput);
+					if (beginDate != null) {
+						topic.setBeginDate(beginDate);
+					} else {
+						importTopic.setMessage(translate("import.error.date.begin"));
+					}
 				}
 			}
 		}

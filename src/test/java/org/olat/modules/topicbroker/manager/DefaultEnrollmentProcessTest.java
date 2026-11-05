@@ -22,6 +22,7 @@ package org.olat.modules.topicbroker.manager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +36,9 @@ import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicDate;
+import org.olat.modules.topicbroker.TBTopicExecutionType;
+import org.olat.modules.topicbroker.model.TBTopicDateImpl;
 import org.olat.modules.topicbroker.model.TBTransientBroker;
 import org.olat.modules.topicbroker.model.TBTransientParticipant;
 import org.olat.modules.topicbroker.model.TBTransientSelection;
@@ -62,14 +66,14 @@ public class DefaultEnrollmentProcessTest {
 		
 		// Needs an enrollment
 		participant1.setRequiredEnrollments(1);
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		assertThat(previewSelections.get(0).isEnrolled()).isTrue();
 		
 		// Needs no enrollment
 		participant1.setRequiredEnrollments(0);
-		sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		previewSelections = sut.getPreviewSelections();
 		
 		assertThat(previewSelections.get(0).isEnrolled()).isFalse();
@@ -91,7 +95,7 @@ public class DefaultEnrollmentProcessTest {
 				createSelection(participant1, topic2, 2, false),
 				createSelection(participant1, topic3, 3, false));
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledTopicKeys = previewSelections.stream()
@@ -107,7 +111,7 @@ public class DefaultEnrollmentProcessTest {
 				createSelection(participant1, topic3, 3, true));
 		
 		participant1.setRequiredEnrollments(2);
-		sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		previewSelections = sut.getPreviewSelections();
 		
 		enrolledTopicKeys = previewSelections.stream()
@@ -118,7 +122,7 @@ public class DefaultEnrollmentProcessTest {
 		
 		// 1 require, 2 pre-selected
 		participant1.setRequiredEnrollments(1);
-		sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		previewSelections = sut.getPreviewSelections();
 		
 		enrolledTopicKeys = previewSelections.stream()
@@ -143,7 +147,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 2, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		assertThat(previewSelections).hasSize(3);
@@ -166,7 +170,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 2, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		assertThat(previewSelections.stream().filter(TBSelection::isEnrolled).count()).isEqualTo(0);
@@ -188,7 +192,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 2, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		assertThat(previewSelections.stream().filter(TBSelection::isEnrolled).count()).isEqualTo(2);
@@ -215,7 +219,7 @@ public class DefaultEnrollmentProcessTest {
 	}
 	
 	private Long getParticipantKey_ensureShuffle(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections) {
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		return sut.getPreviewSelections().stream()
 				.filter(TBSelection::isEnrolled)
 				.map(selection -> selection.getParticipant().getKey())
@@ -251,7 +255,7 @@ public class DefaultEnrollmentProcessTest {
 	}
 	
 	private Long getParticipantKey_ensureShuffleSamePriority(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections, Long topic1Key) {
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		return sut.getPreviewSelections().stream()
 				.filter(TBSelection::isEnrolled)
 				.filter(selection -> selection.getTopic().getKey().equals(topic1Key))
@@ -275,7 +279,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 1, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys = previewSelections.stream()
@@ -302,7 +306,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection32 = createSelection(participant3, topic, 2, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection31, selection32);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys = previewSelections.stream()
@@ -328,7 +332,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 1, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys = previewSelections.stream()
@@ -358,7 +362,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection32 = createSelection(participant3, topic2, 1, false);
 		List<TBSelection> selections = List.of(selection1, selection2, selection31, selection32);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys = previewSelections.stream()
@@ -384,7 +388,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection3 = createSelection(participant3, topic, 2, true);
 		List<TBSelection> selections = List.of(selection1, selection2, selection3);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys = previewSelections.stream()
@@ -420,7 +424,7 @@ public class DefaultEnrollmentProcessTest {
 	}
 
 	private Long getParticipantKey_ensurePreEnrollmentConsumesBudget(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections, Long topic2Key) {
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		return sut.getPreviewSelections().stream()
 				.filter(TBSelection::isEnrolled)
 				.filter(selection -> selection.getTopic().getKey().equals(topic2Key))
@@ -456,7 +460,7 @@ public class DefaultEnrollmentProcessTest {
 		List<TBSelection> selections = List.of(selection11, selection12, selection13, selection21, selection22,
 				selection23, selection31);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		Map<Long, Long> participantKeyToTopicKey = previewSelections.stream()
@@ -488,7 +492,7 @@ public class DefaultEnrollmentProcessTest {
 		TBTransientSelection selection32 = createSelection(participant3, topic2, 1, false);
 		List<TBSelection> selections = List.of(selection11, selection12, selection21, selection22, selection31, selection32);
 		
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		List<Long> enrolledParticipantKeys = previewSelections.stream()
@@ -522,7 +526,7 @@ public class DefaultEnrollmentProcessTest {
 		
 		// Overlapping allowed
 		broker.setOverlappingPeriodAllowed(true);
-		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		List<Long> enrolledTopicKeys = sut.getPreviewSelections().stream()
 				.filter(TBSelection::isEnrolled)
 				.map(selection -> selection.getTopic().getKey())
@@ -531,7 +535,7 @@ public class DefaultEnrollmentProcessTest {
 		
 		// Overlapping not allowed
 		broker.setOverlappingPeriodAllowed(false);
-		sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		sut = new DefaultEnrollmentProcess(broker, topics, Map.of(), selections);
 		enrolledTopicKeys = sut.getPreviewSelections().stream()
 				.filter(TBSelection::isEnrolled)
 				.map(selection -> selection.getTopic().getKey())
@@ -539,6 +543,178 @@ public class DefaultEnrollmentProcessTest {
 		assertThat(enrolledTopicKeys).containsExactlyInAnyOrder(topic1.getKey(), topic3.getKey());
 	}
 
+	@Test
+	public void shouldEvaluate_periodOverlapping_beginOnly() {
+		TBTransientTopic topic1 = createTopic(1, 1, 10);
+		topic1.setBeginDate(date(2024, Calendar.JUNE, 20, 0));
+		TBTransientTopic topic2 = createTopic(2, 1, 10);
+		topic2.setBeginDate(date(2030, Calendar.JUNE, 20, 0));
+		topic2.setEndDate(date(2030, Calendar.JUNE, 21, 0));
+		
+		assertThat(getEnrolledTopicKeys(topic1, topic2, Map.of())).hasSize(1);
+	}
+	
+	@Test
+	public void shouldEvaluate_periodOverlapping_endOnly() {
+		TBTransientTopic topic1 = createTopic(1, 1, 10);
+		topic1.setEndDate(date(2024, Calendar.JUNE, 20, 0));
+		TBTransientTopic topic2 = createTopic(2, 1, 10);
+		topic2.setBeginDate(date(2010, Calendar.JUNE, 20, 0));
+		topic2.setEndDate(date(2010, Calendar.JUNE, 21, 0));
+		
+		assertThat(getEnrolledTopicKeys(topic1, topic2, Map.of())).hasSize(1);
+	}
+	
+	@Test
+	public void shouldEvaluate_periodOverlapping_sameDay() {
+		TBTransientTopic topic1 = createTopic(1, 1, 10);
+		topic1.setBeginDate(date(2024, Calendar.JUNE, 20, 8));
+		topic1.setEndDate(date(2024, Calendar.JUNE, 20, 8));
+		TBTransientTopic topic2 = createTopic(2, 1, 10);
+		topic2.setBeginDate(date(2024, Calendar.JUNE, 20, 14));
+		topic2.setEndDate(date(2024, Calendar.JUNE, 20, 14));
+		
+		assertThat(getEnrolledTopicKeys(topic1, topic2, Map.of())).hasSize(1);
+	}
+	
+	@Test
+	public void shouldEvaluate_datesWithoutDates() {
+		TBTransientTopic topic1 = createDatesTopic(1);
+		TBTransientTopic topic2 = createTopic(2, 1, 10);
+		topic2.setBeginDate(date(2024, Calendar.JUNE, 20, 0));
+		topic2.setEndDate(date(2024, Calendar.JUNE, 21, 0));
+		
+		assertThat(getEnrolledTopicKeys(topic1, topic2, Map.of())).containsExactlyInAnyOrder(topic1.getKey(), topic2.getKey());
+	}
+	
+	@Test
+	public void shouldEvaluate_periodOverlapping_anytime() {
+		TBTransientTopic topic1 = createTopic(1, 1, 10);
+		TBTransientTopic topic2 = createTopic(2, 1, 10);
+		topic2.setBeginDate(date(2024, Calendar.JUNE, 20, 0));
+		topic2.setEndDate(date(2024, Calendar.JUNE, 21, 0));
+		
+		assertThat(getEnrolledTopicKeys(topic1, topic2, Map.of())).containsExactlyInAnyOrder(topic1.getKey(), topic2.getKey());
+	}
+	
+	@Test
+	public void shouldEvaluate_datesOverlapping() {
+		TBTransientTopic topic1 = createDatesTopic(1);
+		TBTransientTopic topic2 = createDatesTopic(2);
+		Map<Long, List<TBTopicDate>> topicKeyToDates = Map.of(
+				topic1.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 20, 8), date(2024, Calendar.JUNE, 20, 10)),
+						createDate(date(2024, Calendar.JUNE, 27, 8), date(2024, Calendar.JUNE, 27, 10))),
+				topic2.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 27, 9), date(2024, Calendar.JUNE, 27, 11))));
+		
+		assertThat(getEnrolledTopicKeys(topic1, topic2, topicKeyToDates)).hasSize(1);
+	}
+	
+	@Test
+	public void shouldEvaluate_datesNotOverlapping() {
+		TBTransientTopic topic1 = createDatesTopic(1);
+		TBTransientTopic topic2 = createDatesTopic(2);
+		Map<Long, List<TBTopicDate>> topicKeyToDates = Map.of(
+				topic1.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 20, 8), date(2024, Calendar.JUNE, 20, 10)),
+						createDate(date(2024, Calendar.JUNE, 27, 8), date(2024, Calendar.JUNE, 27, 10))),
+				topic2.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 20, 10), date(2024, Calendar.JUNE, 20, 11)),
+						createDate(date(2024, Calendar.JUNE, 27, 13), date(2024, Calendar.JUNE, 27, 15))));
+		
+		assertThat(getEnrolledTopicKeys(topic1, topic2, topicKeyToDates)).containsExactlyInAnyOrder(topic1.getKey(), topic2.getKey());
+	}
+	
+	@Test
+	public void shouldEvaluate_datesOverlappingWithinTopic() {
+		TBTransientTopic topic1 = createDatesTopic(1);
+		TBTransientTopic topic2 = createDatesTopic(2);
+		Map<Long, List<TBTopicDate>> topicKeyToDates = Map.of(
+				topic1.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 20, 8), date(2024, Calendar.JUNE, 20, 10)),
+						createDate(date(2024, Calendar.JUNE, 20, 9), date(2024, Calendar.JUNE, 20, 12))),
+				topic2.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 21, 8), date(2024, Calendar.JUNE, 21, 10))));
+		
+		assertThat(getEnrolledTopicKeys(topic1, topic2, topicKeyToDates)).containsExactlyInAnyOrder(topic1.getKey(), topic2.getKey());
+	}
+	
+	@Test
+	public void shouldEvaluate_periodAndDatesOverlapping() {
+		TBTransientTopic topic1 = createTopic(1, 1, 10);
+		topic1.setBeginDate(date(2024, Calendar.JUNE, 20, 0));
+		topic1.setEndDate(date(2024, Calendar.JUNE, 20, 0));
+		TBTransientTopic topic2 = createDatesTopic(2);
+		Map<Long, List<TBTopicDate>> topicKeyToDates = Map.of(
+				topic2.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 20, 22), date(2024, Calendar.JUNE, 20, 23))));
+		
+		assertThat(getEnrolledTopicKeys(topic1, topic2, topicKeyToDates)).hasSize(1);
+	}
+	
+	@Test
+	public void shouldEvaluate_periodAndDatesNotOverlapping() {
+		TBTransientTopic topic1 = createTopic(1, 1, 10);
+		topic1.setBeginDate(date(2024, Calendar.JUNE, 20, 0));
+		topic1.setEndDate(date(2024, Calendar.JUNE, 20, 0));
+		TBTransientTopic topic2 = createDatesTopic(2);
+		Map<Long, List<TBTopicDate>> topicKeyToDates = Map.of(
+				topic2.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 21, 8), date(2024, Calendar.JUNE, 21, 10))));
+		
+		assertThat(getEnrolledTopicKeys(topic1, topic2, topicKeyToDates)).containsExactlyInAnyOrder(topic1.getKey(), topic2.getKey());
+	}
+	
+	@Test
+	public void shouldEvaluate_informativeDatesIgnored() {
+		TBTransientTopic topic1 = createTopic(1, 1, 10);
+		topic1.setBeginDate(date(2024, Calendar.JUNE, 1, 0));
+		topic1.setEndDate(date(2024, Calendar.JUNE, 10, 0));
+		TBTransientTopic topic2 = createDatesTopic(2);
+		Map<Long, List<TBTopicDate>> topicKeyToDates = Map.of(
+				topic1.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 20, 8), date(2024, Calendar.JUNE, 20, 10))),
+				topic2.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 20, 8), date(2024, Calendar.JUNE, 20, 10))));
+		
+		assertThat(getEnrolledTopicKeys(topic1, topic2, topicKeyToDates)).containsExactlyInAnyOrder(topic1.getKey(), topic2.getKey());
+	}
+	
+	@Test
+	public void shouldEvaluate_datesOverlappingAllowed() {
+		TBTransientTopic topic1 = createDatesTopic(1);
+		TBTransientTopic topic2 = createDatesTopic(2);
+		Map<Long, List<TBTopicDate>> topicKeyToDates = Map.of(
+				topic1.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 20, 8), date(2024, Calendar.JUNE, 20, 10))),
+				topic2.getKey(), List.of(
+						createDate(date(2024, Calendar.JUNE, 20, 9), date(2024, Calendar.JUNE, 20, 11))));
+		
+		TBBroker broker = createBroker(2, 2);
+		broker.setOverlappingPeriodAllowed(true);
+		assertThat(getEnrolledTopicKeys(broker, topic1, topic2, topicKeyToDates)).containsExactlyInAnyOrder(topic1.getKey(), topic2.getKey());
+	}
+	
+	private List<Long> getEnrolledTopicKeys(TBTopic topic1, TBTopic topic2, Map<Long, List<TBTopicDate>> topicKeyToDates) {
+		TBBroker broker = createBroker(2, 2);
+		broker.setOverlappingPeriodAllowed(false);
+		return getEnrolledTopicKeys(broker, topic1, topic2, topicKeyToDates);
+	}
+	
+	private List<Long> getEnrolledTopicKeys(TBBroker broker, TBTopic topic1, TBTopic topic2, Map<Long, List<TBTopicDate>> topicKeyToDates) {
+		TBTransientParticipant participant1 = createParticipant(1, null);
+		List<TBSelection> selections = List.of(
+				createSelection(participant1, topic1, 1, false),
+				createSelection(participant1, topic2, 2, false));
+		
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, List.of(topic1, topic2), topicKeyToDates, selections);
+		return sut.getPreviewSelections().stream()
+				.filter(TBSelection::isEnrolled)
+				.map(selection -> selection.getTopic().getKey())
+				.toList();
+	}
+	
 	private TBBroker createBroker(int maxSelections, int requiredEnrollments) {
 		TBTransientBroker broker = new TBTransientBroker();
 		broker.setMaxSelections(maxSelections);
@@ -560,6 +736,23 @@ public class DefaultEnrollmentProcessTest {
 		topic1.setMinParticipants(Integer.valueOf(minParticipants));
 		topic1.setMaxParticipants(Integer.valueOf(maxParticipants));
 		return topic1;
+	}
+	
+	private TBTransientTopic createDatesTopic(int key) {
+		TBTransientTopic topic = createTopic(key, 1, 10);
+		topic.setExecutionType(TBTopicExecutionType.dates);
+		return topic;
+	}
+	
+	private TBTopicDate createDate(Date startDate, Date endDate) {
+		TBTopicDateImpl date = new TBTopicDateImpl();
+		date.setStartDate(startDate);
+		date.setEndDate(endDate);
+		return date;
+	}
+	
+	private Date date(int year, int month, int day, int hour) {
+		return new GregorianCalendar(year, month, day, hour, 0).getTime();
 	}
 	
 	private TBTransientSelection createSelection(TBParticipant participant, TBTopic topic, int priority, boolean enrolled) {

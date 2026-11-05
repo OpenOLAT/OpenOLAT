@@ -93,6 +93,7 @@ public class Formatter {
 	private final Translator translator;
 	private final DateFormat shortDateFormat;
 	private final DateFormat shortDateWithDayFormat;
+	private final DateFormat shortDateWithDayWithoutYearFormat;
 	private final DateFormat longDateFormat;
 	private final DateFormat shortDateTimeFormat;
 	private final DateFormat longDateTimeFormat;
@@ -122,12 +123,16 @@ public class Formatter {
 		
 		shortDateWithDayFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
 		shortDateWithDayFormat.setLenient(false);
+		shortDateWithDayWithoutYearFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+		shortDateWithDayWithoutYearFormat.setLenient(false);
 		
-		if (shortDateFormat instanceof SimpleDateFormat sdf && shortDateWithDayFormat instanceof SimpleDateFormat sdfwd) {
+		if (shortDateFormat instanceof SimpleDateFormat sdf && shortDateWithDayFormat instanceof SimpleDateFormat sdfwd
+				&& shortDateWithDayWithoutYearFormat instanceof SimpleDateFormat sdfwdwy) {
 			// by default year has only two digits, however most people prefer a four digits year, even in short format
 			String pattern = sdf.toPattern().replaceAll("y+","yyyy");
 			sdf.applyPattern(pattern);
 			sdfwd.applyPattern("EEE, " + pattern);
+			sdfwdwy.applyPattern("EEE, " + pattern.replaceAll("[^A-Za-z.]*y+[^A-Za-z]*", ""));
 		}
 		longDateFormat = DateFormat.getDateInstance(DateFormat.LONG, locale);
 		longDateFormat.setLenient(false);
@@ -274,6 +279,15 @@ public class Formatter {
 		return shortDateWithDayFormatter.format(date);
 	}
 
+	public String formatDateWithDayWithoutYear(Date date) {
+		if (date == null) {
+			return null;
+		}
+		synchronized (shortDateWithDayWithoutYearFormat) {
+			return shortDateWithDayWithoutYearFormat.format(date);
+		}
+	}
+	
 	/**
 	 * Formats the given date in a medium sized format, e.g. 12. Dezember 2015 or December 12, 2015
 	 * 

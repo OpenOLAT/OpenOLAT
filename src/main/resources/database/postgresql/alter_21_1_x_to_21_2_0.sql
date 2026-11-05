@@ -44,3 +44,21 @@ create unique index idx_mcp_prof_to_org_uniq_idx on o_mcp_profile_to_organisatio
 
 -- User course infos
 alter table o_as_user_course_infos add column activity float8 default 0;
+
+-- Topic broker
+alter table o_tb_topic add column t_execution_type varchar(16) default 'period' not null;
+
+create table o_tb_topic_date (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   d_start timestamp,
+   d_end timestamp,
+   d_location varchar(255),
+   d_description varchar(1024),
+   fk_topic int8 not null,
+   primary key (id)
+);
+
+create index idx_tbtopicdate_to_topic_idx on o_tb_topic_date (fk_topic);
+alter table o_tb_topic_date add constraint tbtopicdate_topic_idx foreign key (fk_topic) references o_tb_topic (id);

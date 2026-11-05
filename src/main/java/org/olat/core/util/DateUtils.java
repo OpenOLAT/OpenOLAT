@@ -142,6 +142,13 @@ public class DateUtils {
 				&& date1.getDayOfYear() == date2.getDayOfYear();
 	}
 	
+	public static boolean isSameYear(Date date1, Date date2) {
+		if (date1 == null || date2 == null) {
+			return false;
+		}
+		return toLocalDate(date1).getYear() == toLocalDate(date2).getYear();
+	}
+	
 	/**
 	 * Compare two dates at minute precision. Seconds and milliseconds are
 	 * ignored. Two null dates are the same, a null date and a date are not.
@@ -475,29 +482,34 @@ public class DateUtils {
 	}
 
 	public static boolean isOverlapping(Date start1, Date end1, Date start2, Date end2) {
-		if (start1.before(start2)) {
-			if (end1.before(start2)) {
-				return false;
-			}
-		} else {
-			if (end2.before(start1)) {
-				return false;
-			}
+		if (!end1.after(start2)) {
+			return false;
+		}
+		if (!end2.after(start1)) {
+			return false;
 		}
 		return true;
 	}
 	
 	public static boolean isOverlapping(ZonedDateTime start1, ZonedDateTime end1, ZonedDateTime start2, ZonedDateTime end2) {
-		if (start1.isBefore(start2)) {
-			if (end1.isBefore(start2)) {
-				return false;
-			}
-		} else {
-			if (end2.isBefore(start1)) {
-				return false;
-			}
+		if (!end1.isAfter(start2)) {
+			return false;
+		}
+		if (!end2.isAfter(start1)) {
+			return false;
 		}
 		return true;
+	}
+	
+	public static boolean isOverlapping(List<DateRange> ranges1, List<DateRange> ranges2) {
+		for (DateRange range1 : ranges1) {
+			for (DateRange range2 : ranges2) {
+				if (isOverlapping(range1.getFrom(), range1.getTo(), range2.getFrom(), range2.getTo())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public static boolean isWeekend(Date date) {
