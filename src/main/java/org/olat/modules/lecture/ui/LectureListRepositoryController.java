@@ -1325,15 +1325,22 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		return searchParams;
 	}
 	
-	private void reloadModelWithDetails(UserRequest ureq, LectureBlock lectureBlock) {
-		int row = tableModel.getIndexByKey(lectureBlock.getKey());
-		boolean expanded = tableEl.isDetailsExpended(row);
+	private void reloadModelWithDetails(UserRequest ureq) {
+		Set<Long> expandedKeys = new HashSet<>();
+		for(Integer index : tableEl.getDetailsIndex()) {
+			LectureBlockRow expandedRow = tableModel.getObject(index);
+			if(expandedRow != null) {
+				expandedKeys.add(expandedRow.getKey());
+			}
+		}
+		tableEl.collapseAllDetails();
 		loadModel(ureq, true);
-		if(expanded) {
-			int index = tableModel.getIndexByKey(lectureBlock.getKey());
-			LectureBlockRow detailsRow = tableModel.getObject(index);
+		for(Long expandedKey : expandedKeys) {
+			int index = tableModel.getIndexByKey(expandedKey);
+			LectureBlockRow detailsRow = index >= 0 ? tableModel.getObject(index) : null;
 			if(detailsRow != null) {
 				doOpenLectureBlockDetails(ureq, detailsRow);
+				tableEl.expandDetails(index);
 			}
 		}
 	}
@@ -1569,7 +1576,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			cleanUp();
 		} else if(editLectureCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				reloadModelWithDetails(ureq, editLectureCtrl.getLectureBlock());
+				reloadModelWithDetails(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -1583,7 +1590,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			}
 		} else if(onlineMeetingURLCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				reloadModelWithDetails(ureq, onlineMeetingURLCtrl.getLectureBlock());
+				reloadModelWithDetails(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();

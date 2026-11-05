@@ -927,7 +927,6 @@ public class EditLectureBlockController extends FormBasicController {
 		if(lectureBlock == null || lectureBlock.getKey() == null) {
 			beforeXml = null;
 			action = LectureBlockAuditLog.Action.createLectureBlock;
-			selectedGroups = new ArrayList<>();	
 			if(curriculumElement != null) {
 				RepositoryEntry singleEntry;
 				if(entry != null) {
@@ -939,12 +938,23 @@ public class EditLectureBlockController extends FormBasicController {
 				lectureBlock = lectureBlock != null && lectureBlock.getKey() == null
 						? lectureBlock
 						: lectureService.createLectureBlock(curriculumElement, singleEntry);
-				selectedGroups.add(curriculumElement.getGroup());
 			} else if(entry != null) {
 				lectureBlock = lectureBlock != null && lectureBlock.getKey() == null
 						? lectureBlock
 						: lectureService.createLectureBlock(entry);
+			} else {
+				showWarning("error.no.entry.curriculum");
+				return;
+			}
+
+			if(copySource != null) {
+				selectedGroups = new ArrayList<>(lectureService.getLectureBlockToGroups(copySource));
+			} else if(curriculumElement != null) {
+				selectedGroups = new ArrayList<>();
+				selectedGroups.add(curriculumElement.getGroup());
+			} else {
 				// Add default group and business groups automatically
+				selectedGroups = new ArrayList<>();
 				Group defGroup = repositoryService.getDefaultGroup(entry);
 				selectedGroups.add(defGroup);
 				
@@ -954,9 +964,6 @@ public class EditLectureBlockController extends FormBasicController {
 				for(StatisticsBusinessGroupRow businessGroup:businessGroups) {
 					selectedGroups.add(businessGroup.getBaseGroup());
 				}
-			} else {
-				showWarning("error.no.entry.curriculum");
-				return;
 			}
 			create = true;
 		} else {
