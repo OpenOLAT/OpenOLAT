@@ -189,6 +189,7 @@ public class TBTopicEditController extends FormBasicController implements Repeat
 		minParticipantsEl = uifactory.addTextElement("topic.participants.min", null, 20, minParticipants, participantsCont);
 		minParticipantsEl.setElementCssClass("o_sel_tb_min_participants");
 		minParticipantsEl.setDisplaySize(15);
+		minParticipantsEl.setAriaLabel(translate("topic.participants.num") + " " + translate("abbrev.min"));
 		
 		String maxParticipants = topic != null && topic.getMaxParticipants() != null
 				? topic.getMaxParticipants().toString()
@@ -196,6 +197,7 @@ public class TBTopicEditController extends FormBasicController implements Repeat
 		maxParticipantsEl = uifactory.addTextElement("topic.participants.max", null, 320, maxParticipants, participantsCont);
 		maxParticipantsEl.setElementCssClass("o_sel_tb_max_participants");
 		maxParticipantsEl.setDisplaySize(15);
+		maxParticipantsEl.setAriaLabel(translate("topic.participants.num") + " " + translate("abbrev.max"));
 		
 		initExecution(formLayout, ureq);
 		

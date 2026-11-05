@@ -137,6 +137,7 @@ public class TBConfigController extends FormBasicController implements Controlle
 			selectionPeriodDurationEl = uifactory.addTextElement("config.selection.period.duration", 10, selectionPeriodDuration, selectionPeriodDurationCont);
 			selectionPeriodDurationEl.setMandatory(true);
 			selectionPeriodDurationEl.setDisplaySize(15);
+			selectionPeriodDurationEl.setAriaLabel(translate("config.selection.period.duration"));
 			selectionPeriodDurationCont.contextPut("itemName", selectionPeriodDurationEl.getName());
 			selectionPeriodDurationCont.contextPut("suffix", translate("config.selection.period.duration.days"));
 		} else {
@@ -165,6 +166,7 @@ public class TBConfigController extends FormBasicController implements Controlle
 		selectionsPerIdentityEl = uifactory.addTextElement("config.selections.per.participant", 10, selectionsPerIdentity, selectionsPerIdentityCont);
 		selectionsPerIdentityEl.setMandatory(true);
 		selectionsPerIdentityEl.setDisplaySize(15);
+		selectionsPerIdentityEl.setAriaLabel(translate("config.selections.per.participant"));
 		selectionsPerIdentityCont.contextPut("itemName", selectionsPerIdentityEl.getName());
 		selectionsPerIdentityCont.contextPut("suffix", translate("config.selections.per.participant.max"));
 		
@@ -200,6 +202,7 @@ public class TBConfigController extends FormBasicController implements Controlle
 		String withdrawEndRelative = moduleConfig.getStringValue(TopicBrokerCourseNode.CONFIG_KEY_WITHDRAW_END_RELATIVE);
 		withdrawEndRelativeEl = uifactory.addTextElement("config.withdraw.end", 10, withdrawEndRelative, withdrawEndRelCont);
 		withdrawEndRelativeEl.setDisplaySize(15);
+		withdrawEndRelativeEl.setAriaLabel(translate("config.withdraw.end"));
 		withdrawEndRelativeEl.setVisible(false);
 		withdrawEndRelCont.contextPut("itemName", withdrawEndRelativeEl.getName());
 		withdrawEndRelCont.contextPut("suffix", translate("config.withdraw.end.after.selection.period"));
