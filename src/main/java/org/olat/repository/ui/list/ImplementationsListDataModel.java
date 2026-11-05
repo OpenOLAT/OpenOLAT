@@ -208,6 +208,7 @@ implements SortableFlexiTableDataModel<ImplementationRow>, FilterableFlexiTableM
 			case lifecycleStart -> row.getBeginDate();
 			case lifecycleEnd -> row.getEndDate();
 			case roles -> row;
+			case allRoles -> row.getAllRoles();
 			case elementStatus -> row.getStatus();
 			case completion -> row.getCompletionItem();
 			case calendars -> row.getCalendarsLink();
@@ -230,6 +231,7 @@ implements SortableFlexiTableDataModel<ImplementationRow>, FilterableFlexiTableM
 		lifecycleStart("table.header.lifecycle.start"),
 		lifecycleEnd("table.header.lifecycle.end"),
 		roles("table.header.roles"),
+		allRoles("table.header.allRoles"),
 		elementStatus("table.header.status"),
 		completion("table.header.completion"),
 		calendars("table.header.calendars"),

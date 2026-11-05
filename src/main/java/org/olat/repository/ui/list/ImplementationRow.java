@@ -45,15 +45,18 @@ public class ImplementationRow implements CurriculumElementRef {
 	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
 	private final List<CurriculumRoles> roles;
+	private final List<CurriculumRoles> allRoles;
 
 	private Double completion;
 	private ProgressBarItem completionItem;
 	private FormLink calendarsLink;
 	
-	public ImplementationRow(CurriculumElement curriculumElement, Curriculum curriculum, List<CurriculumRoles> roles) {
+	public ImplementationRow(CurriculumElement curriculumElement, Curriculum curriculum, List<CurriculumRoles> roles,
+			List<CurriculumRoles> allRoles) {
 		this.curriculumElement = curriculumElement;
 		this.curriculum = curriculum;
 		this.roles = roles;
+		this.allRoles = allRoles;
 	}
 
 	public CurriculumElement getCurriculumElement() {
@@ -87,6 +90,10 @@ public class ImplementationRow implements CurriculumElementRef {
 	
 	public List<CurriculumRoles> getRoles() {
 		return roles;
+	}
+
+	public List<CurriculumRoles> getAllRoles() {
+		return allRoles;
 	}
 	
 	public CurriculumElementStatus getStatus() {
