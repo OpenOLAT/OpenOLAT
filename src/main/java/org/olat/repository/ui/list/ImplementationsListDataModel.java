@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.list;
 
+import static org.olat.repository.ui.list.ImplementationsListController.FILTER_ALL_ROLES;
 import static org.olat.repository.ui.list.ImplementationsListController.FILTER_CURRICULUM;
 import static org.olat.repository.ui.list.ImplementationsListController.FILTER_MARKED;
 import static org.olat.repository.ui.list.ImplementationsListController.FILTER_PERIOD;
@@ -44,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
  * 
@@ -89,6 +91,7 @@ implements SortableFlexiTableDataModel<ImplementationRow>, FilterableFlexiTableM
 					: status.stream().map(CurriculumElementStatus::valueOf).collect(Collectors.toSet());
 			final Boolean marked = getFilteredOneClick(filters, FILTER_MARKED);
 			final List<String> curriculumKeys = getFilteredList(filters, FILTER_CURRICULUM);
+			final List<String> allRoles = getFilteredList(filters, FILTER_ALL_ROLES);
 			final DateRange period = getFilteredDateRange(filters, FILTER_PERIOD);
 			
 			List<ImplementationRow> filteredRows = new ArrayList<>(backups.size());
@@ -97,6 +100,7 @@ implements SortableFlexiTableDataModel<ImplementationRow>, FilterableFlexiTableM
 						&& acceptMarked(marked, row)
 						&& acceptStatus(statusSet, row)
 						&& acceptCurriculum(curriculumKeys, row)
+						&& acceptAllRoles(allRoles, row)
 						&& acceptDateRange(period, row);
 				if(accept) {
 					filteredRows.add(row);
@@ -133,6 +137,12 @@ implements SortableFlexiTableDataModel<ImplementationRow>, FilterableFlexiTableM
 	private boolean acceptCurriculum(List<String> curriculumKeys, ImplementationRow implementationRow) {
 		if(curriculumKeys == null || curriculumKeys.isEmpty()) return true;
 		return curriculumKeys.contains(implementationRow.getCurriculum().getKey().toString());
+	}
+
+	private boolean acceptAllRoles(List<String> roleNames, ImplementationRow implementationRow) {
+		if(roleNames == null || roleNames.isEmpty()) return true;
+		List<CurriculumRoles> allRoles = implementationRow.getAllRoles();
+		return allRoles != null && allRoles.stream().map(CurriculumRoles::name).anyMatch(roleNames::contains);
 	}
 	
 	private boolean acceptDateRange(DateRange dateRange, ImplementationRow row) {

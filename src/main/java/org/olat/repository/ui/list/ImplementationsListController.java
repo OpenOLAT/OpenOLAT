@@ -116,6 +116,7 @@ public class ImplementationsListController extends FormBasicController implement
 	static final String FILTER_STATUS = "Status";
 	static final String FILTER_PERIOD = "Period";
 	static final String FILTER_CURRICULUM = "Curriculum";
+	static final String FILTER_ALL_ROLES = "AllRoles";
 	
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab favoriteTab;
@@ -255,6 +256,16 @@ public class ImplementationsListController extends FormBasicController implement
 			filters.add(curriculumFilter);
 		}
 		
+		if (config.withAllRoles()) {
+			SelectionValues rolesValues = new SelectionValues();
+			for (CurriculumRoles role : CurriculumRoles.curriculumElementsRoles()) {
+				rolesValues.add(SelectionValues.entry(role.name(), translate("role." + role.name())));
+			}
+			FlexiTableMultiSelectionFilter rolesFilter = new FlexiTableMultiSelectionFilter(translate("filter.roles"),
+					FILTER_ALL_ROLES, rolesValues, true);
+			filters.add(rolesFilter);
+		}
+
 		SelectionValues statusValues = new SelectionValues();
 		if(config.withPreparation()) {
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.preparation.name(), translate("filter.preparation")));
