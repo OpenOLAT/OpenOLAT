@@ -41,6 +41,7 @@ public class DueDateConfigComponent extends FormBaseComponentImpl {
 		this.formItem = formItem;
 	}
 	
+	@Override
 	public DueDateFormItemImpl getFormItem() {
 		return formItem;
 	}

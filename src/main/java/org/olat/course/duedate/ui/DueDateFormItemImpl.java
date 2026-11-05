@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.duedate.DueDateConfig;
 
 /**
@@ -89,6 +90,7 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 			realtiveToDateEl.setDomReplacementWrapperRequired(false);
 			realtiveToDateEl.setRootForm(getRootForm());
 			realtiveToDateEl.setEnabled(isEnabled());
+			realtiveToDateEl.setAriaLabel(Util.createPackageTranslator(DueDateFormItemImpl.class, getTranslator().getLocale()).translate("days.after"));
 			
 			realtiveToDateEl.setKeysAndValues(relativeToDates.keys(), relativeToDates.values(), null);
 			String relativeToDateType = initialDueDateConfig.getRelativeToType();
@@ -206,6 +208,17 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 	}
 
 	@Override
+	public String getForId() {
+		if (relative && numOfDaysEl != null) {
+			return numOfDaysEl.getFormDispatchId();
+		}
+		if (!relative && absoluteDateEl != null) {
+			return absoluteDateEl.getForId();
+		}
+		return super.getForId();
+	}
+
+	@Override
 	public void reset() {
 		//
 	}
@@ -258,6 +271,7 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 		return period;
 	}
 
+	@Override
 	public void setPeriod(boolean period) {
 		this.period = period;
 	}
