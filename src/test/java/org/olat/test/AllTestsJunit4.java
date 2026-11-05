@@ -431,6 +431,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.curriculum.manager.CurriculumAutomationExecutionDAOTest.class,
 	org.olat.modules.curriculum.manager.CurriculumAutomationDAOChunkingTest.class,
 	org.olat.modules.curriculum.manager.CurriculumAutomationServiceTest.class,
+	org.olat.modules.curriculum.model.CurriculumElementMembershipImplTest.class,
 	org.olat.modules.curriculum.manager.CurriculumAutomationStandardRulesTest.class,
 	org.olat.modules.curriculum.manager.CurriculumDAOTest.class,
 	org.olat.modules.curriculum.manager.CurriculumAccountingDAOTest.class,

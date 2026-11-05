@@ -2058,11 +2058,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		List<CurriculumElementMembership> memberships = curriculumElementDao.getMembershipInfos(curriculums, null, identity);
 		Map<Long,CurriculumElementMembership> membershipMap = new HashMap<>();
 		
-		List<Long> elementsKeys = new ArrayList<>(memberships.size());
 		Set<Long> elementsWithParentsKeys = new HashSet<>();
 		for(CurriculumElementMembership membership:memberships) {
 			membershipMap.put(membership.getCurriculumElementKey(), membership);
-			elementsKeys.add(membership.getCurriculumElementKey());
 			elementsWithParentsKeys.add(membership.getCurriculumElementKey());
 			List<Long> parentLine = membership.getMaterializedPathKeysList();
 			if(parentLine != null && !parentLine.isEmpty()) {
@@ -2070,57 +2068,98 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			}
 		}
 		
+		return getCurriculumElementsWithEntries(identity, roles, curriculums, status, runtimeTypes, asRoles,
+				entriesWithLecturesEnabled, elementsWithParentsKeys, membershipMap, true);
+	}
+
+	@Override
+	public List<CurriculumElementRepositoryEntryViews> getCurriculumElementsOfStructure(Identity identity, Roles roles,
+			CurriculumElement rootElement, CurriculumElementStatus[] status, RepositoryEntryRuntimeType[] runtimeTypes,
+			List<CurriculumRoles> asRoles, boolean entriesWithLecturesEnabled) {
+		List<? extends CurriculumRef> curriculums = List.of(rootElement.getCurriculum());
+
+		List<CurriculumElementMembership> memberships = curriculumElementDao.getMembershipInfos(curriculums, null, identity);
+		Map<Long,CurriculumElementMembership> membershipMap = new HashMap<>();
+		for(CurriculumElementMembership membership:memberships) {
+			membershipMap.put(membership.getCurriculumElementKey(), membership);
+		}
+
+		Set<Long> elementsWithParentsKeys = new HashSet<>();
+		elementsWithParentsKeys.add(rootElement.getKey());
+		for(CurriculumElement descendant:curriculumElementDao.getDescendants(rootElement)) {
+			elementsWithParentsKeys.add(descendant.getKey());
+		}
+
+		return getCurriculumElementsWithEntries(identity, roles, curriculums, status, runtimeTypes, asRoles,
+				entriesWithLecturesEnabled, elementsWithParentsKeys, membershipMap, false);
+	}
+
+	/**
+	 * Loads the repository entries of the given curriculum elements and assembles the
+	 * {@link CurriculumElementRepositoryEntryViews} tree. When trimByMembership is true,
+	 * branches the identity isn't a member of (directly or through a descendant) are
+	 * dropped (participant "my courses" use case). When false, every element in
+	 * elementsWithParentsKeys is kept regardless of membership (admin view of a
+	 * whole implementation structure) while still annotating each row with whatever
+	 * membership the identity happens to have on it.
+	 */
+	private List<CurriculumElementRepositoryEntryViews> getCurriculumElementsWithEntries(Identity identity, Roles roles,
+			List<? extends CurriculumRef> curriculums, CurriculumElementStatus[] status,
+			RepositoryEntryRuntimeType[] runtimeTypes, List<CurriculumRoles> asRoles, boolean entriesWithLecturesEnabled,
+			Set<Long> elementsWithParentsKeys, Map<Long,CurriculumElementMembership> membershipMap, boolean trimByMembership) {
+		if(elementsWithParentsKeys.isEmpty()) return List.of();
+
 		Map<CurriculumElement, List<Long>> elementsToEntriesMap = curriculumRepositoryEntryRelationDao
 				.getCurriculumElementsWithRepositoryEntryKeys(List.copyOf(elementsWithParentsKeys), status);
 		
 		List<CurriculumElementRepositoryEntryViews> elementsViews = new ArrayList<>(elementsToEntriesMap.size());
-		if(!elementsKeys.isEmpty()) {
 
-			Set<RepositoryEntryRef> entriesRefs = new HashSet<>();
-			for(List<Long> keys:elementsToEntriesMap.values()) {
-				for(Long key:keys) {
-					entriesRefs.add(new RepositoryEntryRefImpl(key));
-				}
+		Set<RepositoryEntryRef> entriesRefs = new HashSet<>();
+		for(List<Long> keys:elementsToEntriesMap.values()) {
+			for(Long key:keys) {
+				entriesRefs.add(new RepositoryEntryRefImpl(key));
 			}
+		}
 
-			Map<Long, RepositoryEntryMyView> entryKeyToViewMap = new HashMap<>();
-			if(!entriesRefs.isEmpty()) {
-				List<RepositoryEntryMyView> views = internal(identity, roles, curriculums, runtimeTypes, asRoles,
-						new ArrayList<>(entriesRefs), entriesWithLecturesEnabled);
-				for(RepositoryEntryMyView view:views) {
-					entryKeyToViewMap.put(view.getKey(), view);
-				}
+		Map<Long, RepositoryEntryMyView> entryKeyToViewMap = new HashMap<>();
+		if(!entriesRefs.isEmpty()) {
+			List<RepositoryEntryMyView> views = internal(identity, roles, curriculums, runtimeTypes, asRoles,
+					new ArrayList<>(entriesRefs), entriesWithLecturesEnabled);
+			for(RepositoryEntryMyView view:views) {
+				entryKeyToViewMap.put(view.getKey(), view);
 			}
-			
-			Map<Long,CurriculumElementRepositoryEntryViews> elementKeyMap = new HashMap<>();
-			for(Map.Entry<CurriculumElement, List<Long>> elementEntry:elementsToEntriesMap.entrySet()) {
-				CurriculumElement element = elementEntry.getKey();
-				Long elementKey = element.getKey();
-				
-				List<Long> entriesKeys = elementEntry.getValue();
-				List<RepositoryEntryMyView> elementViews = new ArrayList<>(entriesKeys.size());
-				Set<Long> deduplicatedEntryKeys = Set.copyOf(entriesKeys);
-				for(Long entryKey:deduplicatedEntryKeys) {
-					RepositoryEntryMyView elementView = entryKeyToViewMap.get(entryKey);
-					if(elementView != null) {
-						elementViews.add(elementView);
-					}
+		}
+
+		Map<Long,CurriculumElementRepositoryEntryViews> elementKeyMap = new HashMap<>();
+		for(Map.Entry<CurriculumElement, List<Long>> elementEntry:elementsToEntriesMap.entrySet()) {
+			CurriculumElement element = elementEntry.getKey();
+			Long elementKey = element.getKey();
+
+			List<Long> entriesKeys = elementEntry.getValue();
+			List<RepositoryEntryMyView> elementViews = new ArrayList<>(entriesKeys.size());
+			Set<Long> deduplicatedEntryKeys = Set.copyOf(entriesKeys);
+			for(Long entryKey:deduplicatedEntryKeys) {
+				RepositoryEntryMyView elementView = entryKeyToViewMap.get(entryKey);
+				if(elementView != null) {
+					elementViews.add(elementView);
 				}
-				
-				CurriculumElementMembership membership = membershipMap.get(elementKey);
-				CurriculumElementRepositoryEntryViews view = new CurriculumElementRepositoryEntryViews(element, elementViews, membership);
-				elementsViews.add(view);
-				elementKeyMap.put(elementKey, view);
 			}
 
-			// calculate parents
-			for(CurriculumElementRepositoryEntryViews element:elementsViews) {
-				CurriculumElement parent = element.getCurriculumElement().getParent();
-				if(parent != null) {
-					element.setParent(elementKeyMap.get(parent.getKey()));
-				}
+			CurriculumElementMembership membership = membershipMap.get(elementKey);
+			CurriculumElementRepositoryEntryViews view = new CurriculumElementRepositoryEntryViews(element, elementViews, membership);
+			elementsViews.add(view);
+			elementKeyMap.put(elementKey, view);
+		}
+
+		// calculate parents
+		for(CurriculumElementRepositoryEntryViews element:elementsViews) {
+			CurriculumElement parent = element.getCurriculumElement().getParent();
+			if(parent != null) {
+				element.setParent(elementKeyMap.get(parent.getKey()));
 			}
-			
+		}
+
+		if(trimByMembership) {
 			// propagate to the parents
 			for(CurriculumElementRepositoryEntryViews element:elementsViews) {
 				if(element.isCurriculumMember()) {

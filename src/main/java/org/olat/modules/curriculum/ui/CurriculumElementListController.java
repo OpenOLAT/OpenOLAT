@@ -344,8 +344,10 @@ public class CurriculumElementListController extends FormBasicController impleme
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
 		CurriculumElementStatus[] visibleStatus = ALL_STATUS.toArray(new CurriculumElementStatus[0]);
-		List<CurriculumElementRepositoryEntryViews> elementsWithViews = new ArrayList<>(curriculumService
-				.getCurriculumElements(assessedIdentity, roles, curriculumList, visibleStatus,
+		List<CurriculumElementRepositoryEntryViews> elementsWithViews = new ArrayList<>(config.withFullStructure() && rootElement != null
+				? curriculumService.getCurriculumElementsOfStructure(assessedIdentity, roles, rootElement, visibleStatus,
+						RepositoryEntryRuntimeType.notEmbedded(), config.asRoles(), false)
+				: curriculumService.getCurriculumElements(assessedIdentity, roles, curriculumList, visibleStatus,
 						RepositoryEntryRuntimeType.notEmbedded(), config.asRoles(), false));
 		if (config.coachIdentity() != null) {
 			List<CurriculumElement> elements = elementsWithViews.stream()
@@ -427,7 +429,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 			logError("", e);
 		}
 		
-		removeByPermissions(rows);
+		if(!config.withFullStructure()) {
+			removeByPermissions(rows);
+		}
 		
 		forgeCurriculumCompletions(rows);
 		
