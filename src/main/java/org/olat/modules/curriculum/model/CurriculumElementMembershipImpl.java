@@ -76,7 +76,7 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 	
 	@Override
 	public boolean hasMembership() {
-		return repositoryEntryOwner || coach || participant || curriculumElementOwner;
+		return repositoryEntryOwner || coach || participant || curriculumElementOwner || masterCoach;
 	}
 
 	@Override

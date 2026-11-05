@@ -738,6 +738,21 @@ public interface CurriculumService {
 	
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status);
 
+	/**
+	 * Returns the whole descendant structure of rootElement (the element itself and all its
+	 * descendants), regardless of whether the identity is a member of each one, annotated
+	 * with whatever membership the identity happens to have on each element. Use this instead of
+	 * {@link #getCurriculumElements(Identity, Roles, List, CurriculumElementStatus[], RepositoryEntryRuntimeType[], List, boolean)}
+	 * when the caller needs to see the full structure (e.g. an admin inspecting another
+	 * identity's roles), not only the branches that identity has a role on.
+	 *
+	 * @param rootElement The implementation / root curriculum element whose structure to load
+	 * @return A list of views, one per element of the structure
+	 */
+	public List<CurriculumElementRepositoryEntryViews> getCurriculumElementsOfStructure(Identity identity, Roles roles,
+			CurriculumElement rootElement, CurriculumElementStatus[] status, RepositoryEntryRuntimeType[] runtimeTypes,
+			List<CurriculumRoles> asRoles, boolean entriesWithLecturesEnabled);
+
 	public List<CurriculumElementKeyToRepositoryEntryKey> getRepositoryEntryKeyToCurriculumElementKeys(List<? extends CurriculumElementRef> curriculumElements);
 	
 	public List<CurriculumElementWebDAVInfos> getCurriculumElementInfosForWebDAV(IdentityRef identity);
