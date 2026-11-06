@@ -58,8 +58,16 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append("o_no_value");
 		}
-		sb.append("'><span id='").append(sliderId).append("_handle' class='ui-slider-handle'")
-		  .append(" tabindex='0'", sec.isEnabled()).append("></span></div>");
+		sb.append("'><span id='").append(sliderId).append("_handle' class='ui-slider-handle' role='slider'")
+		  .append(" tabindex='0'", sec.isEnabled())
+		  .append(" aria-labelledby='o_cl").append(sec.getDispatchID()).append("'", sel.hasLabel())
+		  .append(" aria-valuemin='").append(sec.getMinValue()).append("' aria-valuemax='").append(sec.getMaxValue()).append("'");
+		if (sec.hasValue()) {
+			sb.append(" aria-valuenow='").append(sec.getValue()).append("'");
+		}
+		sb.append(" aria-orientation='vertical'", sec.isVertical())
+		  .append(" aria-disabled='true'", !sec.isEnabled())
+		  .append("></span></div>");
 		sb.append("<input id='").append(inputId).append("' type='hidden' name='").append(sec.getFormDispatchId()).append("' value=''/>");
 		
 		sb.append("<script>/* <![CDATA[ */\n")
@@ -76,6 +84,7 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("  slide: function(event, ui) {\n")
 		  .append("    jQuery('#").append(inputId).append("').val(ui.value);\n")
+		  .append("    jQuery('#").append(sliderId).append("_handle').attr('aria-valuenow', ui.value);\n")
 		  .append("    setFlexiFormDirty('").append(formDispatchFieldId).append("');\n")
 		  .append("  },\n")
 		  .append("  stop: function(event, ui) {\n")

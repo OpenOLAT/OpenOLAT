@@ -103,6 +103,11 @@ public class SliderElementImpl extends FormItemImpl implements SliderElement {
 	}
 
 	@Override
+	public String getForId() {
+		return null;
+	}
+
+	@Override
 	public void setDomReplacementWrapperRequired(boolean required) {
 		component.setDomReplacementWrapperRequired(required);
 	}
