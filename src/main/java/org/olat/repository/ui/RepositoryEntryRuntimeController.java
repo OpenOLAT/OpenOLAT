@@ -1150,10 +1150,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			.closeDTab(ureq, re.getOlatResource(), launchedFromPoint);
 	}
 	
-	private void doCloseAndOpenMyCourses(UserRequest ureq) {
+	protected void doCloseAndOpenMyCourses(UserRequest ureq) {
 		WindowControl wControl = getWindowControl();
-		wControl.getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, re.getOlatResource(), null);
 		NewControllerFactory.getInstance().launch("[MyCoursesSite:0][Courses:0]", ureq, wControl);
+		wControl.getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, re.getOlatResource(), null);
 	}
 	
 	protected void doEdit(UserRequest ureq) {

@@ -1629,11 +1629,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				toolControllerDone(ureq, qpe.getSelectedCourseNodeIdent());
 			}
 		}  else if(source == leaveCtrl) {
+			cmc.deactivate();
+			cleanUpModals();
 			if (event.equals(Event.DONE_EVENT)) {
 				doLeave(ureq);
 			}
-			cmc.deactivate();
-			cleanUpModals();
 		} else if (source == searchController) {
 			if (QuickSearchEvent.QUICKSEARCH.equals(event.getCommand())) {
 				doDeactivateQuickSearch();
@@ -2334,7 +2334,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			showInfo("sign.out.success", new String[]{ getRepositoryEntry().getDisplayname() });
 		}
 
-		doClose(ureq);
+		doCloseAndOpenMyCourses(ureq);
 	}
 	
 	private void doDeactivateQuickSearch() {
