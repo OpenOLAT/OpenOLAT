@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 
@@ -848,6 +849,34 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		}
 	}
 	
+	@Override
+	public void verifyAssignmentAsCoach(RepositoryEntryRef re, IdentityRef coach) {
+		List<AssessmentEntry> entries = assessmentService.getAssessmentEntriesForCoachAssignment(re, coach);
+
+		if(!entries.isEmpty()) {
+			List<Identity> identities = repositoryEntryRelationDao.getRelatedMembers(re, coach, GroupRoles.coach, GroupRoles.participant);
+			Set<Long> coachedIdentities = identities.stream()
+					.map(Identity::getKey)
+					.collect(Collectors.toSet());
+
+			RepositoryEntry courseEntry = repositoryEntryDao.loadByKey(re.getKey());
+			if(CourseModule.ORES_TYPE_COURSE.equals(courseEntry.getOlatResource().getResourceableTypeName())) {
+				ICourse course = CourseFactory.loadCourse(courseEntry);
+				for(AssessmentEntry entry:entries) {
+					CourseNode courseNode = course.getRunStructure().getNode(entry.getSubIdent());
+					if(courseNode == null) {
+						unassignCoach(entry, false, course.getCourseEnvironment(), courseNode);
+					} else if(!coachedIdentities.contains(entry.getIdentity().getKey())) {
+						AssessmentConfig assessmentConfig = getAssessmentConfig(courseEntry, courseNode);
+						boolean replace = assessmentConfig.getCoachAssignmentMode() == CoachAssignmentMode.automatic;
+						unassignCoach(entry, replace, course.getCourseEnvironment(), courseNode);
+					}
+				}
+			}
+		}
+	}
+
+
 	@Override
 	public void orderCoach(AssessmentEntry assessmentEntry, boolean replace, CourseEnvironment courseEnv,
 			CourseNode courseNode) {

@@ -205,8 +205,10 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 			invitationService.inactivateInvitations(re, identity);
 		}
 		
-		if(!remainingRoles.contains(GroupRoles.coach.name()) || !remainingRoles.contains(GroupRoles.owner.name())) {
+		if(!remainingRoles.contains(GroupRoles.coach.name()) && !remainingRoles.contains(GroupRoles.owner.name())) {
 			courseAssessmentService.unassignCoach(re, identity);	
+		} else if(!remainingRoles.contains(GroupRoles.owner.name())) {
+			courseAssessmentService.verifyAssignmentAsCoach(re, identity);	
 		}
 	}
 	

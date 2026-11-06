@@ -171,8 +171,10 @@ public class BusinessGroupMembershipProcessor implements InitializingBean, Gener
 					OLATResource resource = repositoryManager.lookupRepositoryEntryResource(entryRef.getKey());
 					notificationsManager.unsubscribeAllForIdentityAndResId(identityRef, resource.getResourceableId());
 				}
-				if(!remainingRoles.contains(GroupRoles.coach.name()) || !remainingRoles.contains(GroupRoles.owner.name())) {
+				if(!remainingRoles.contains(GroupRoles.coach.name()) && !remainingRoles.contains(GroupRoles.owner.name())) {
 					courseAssessmentService.unassignCoach(entryRef, identityRef);	
+				} else if(!remainingRoles.contains(GroupRoles.owner.name())) {
+					courseAssessmentService.verifyAssignmentAsCoach(entryRef, identityRef);	
 				}
 			}
 		}
