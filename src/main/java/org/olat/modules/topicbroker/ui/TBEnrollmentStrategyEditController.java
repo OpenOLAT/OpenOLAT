@@ -53,6 +53,8 @@ import org.olat.modules.topicbroker.ui.events.TBEnrollmentProcessRunEvent;
 public class TBEnrollmentStrategyEditController extends FormBasicController {
 
 	private static final String KEY_NO_BREAK_POINT = "-1";
+	private static final int WEIGHT_MIN = 1;
+	private static final int WEIGHT_MAX = 5;
 	
 	private SingleSelection presetEl;
 	private SliderElement weightMaxEnrollmentEl;
@@ -115,26 +117,28 @@ public class TBEnrollmentStrategyEditController extends FormBasicController {
 		presetEl = uifactory.addCardSingleSelectHorizontal("preset", "enrollment.strategy.preset", formLayout, presetValues);
 		presetEl.addActionListener(FormEvent.ONCHANGE);
 		presetEl.select(initialStrategyConfig.getType().name(), true);
+		flc.contextPut("weightMin", WEIGHT_MIN);
+		flc.contextPut("weightMax", WEIGHT_MAX);
 		
 		weightMaxEnrollmentEl = uifactory.addSliderElement("max.enrollments.slider", null, formLayout);
 		weightMaxEnrollmentEl.setLabel("<i class=\"o_icon o_icon_tb_enrollments\"> </i> " + translate("enrollment.criterion.max.enrollments.weighting.label"), null, false);
 		weightMaxEnrollmentEl.setVertical(true);
-		weightMaxEnrollmentEl.setMinValue(1);
-		weightMaxEnrollmentEl.setMaxValue(5);
+		weightMaxEnrollmentEl.setMinValue(WEIGHT_MIN);
+		weightMaxEnrollmentEl.setMaxValue(WEIGHT_MAX);
 		weightMaxEnrollmentEl.setValue(intOrThree(initialStrategyConfig.getMaxEnrollmentsWeight()));
 		
 		weightMaxTopicEl = uifactory.addSliderElement("max.topics.slider", null, formLayout);
 		weightMaxTopicEl.setLabel("<i class=\"o_icon o_icon_tb_topics\"> </i> " + translate("enrollment.criterion.max.topics.weighting.label"), null, false);
 		weightMaxTopicEl.setVertical(true);
-		weightMaxTopicEl.setMinValue(1);
-		weightMaxTopicEl.setMaxValue(5);
+		weightMaxTopicEl.setMinValue(WEIGHT_MIN);
+		weightMaxTopicEl.setMaxValue(WEIGHT_MAX);
 		weightMaxTopicEl.setValue(intOrThree(initialStrategyConfig.getMaxTopicsWeight()));
 		
 		weightMaxPrioritiesEl = uifactory.addSliderElement("max.priorities.slider", null, formLayout);
 		weightMaxPrioritiesEl.setLabel("<i class=\"o_icon o_icon_tb_priority\"> </i> " + translate("enrollment.criterion.max.priorities.weighting.label"), null, false);
 		weightMaxPrioritiesEl.setVertical(true);
-		weightMaxPrioritiesEl.setMinValue(1);
-		weightMaxPrioritiesEl.setMaxValue(5);
+		weightMaxPrioritiesEl.setMinValue(WEIGHT_MIN);
+		weightMaxPrioritiesEl.setMaxValue(WEIGHT_MAX);
 		weightMaxPrioritiesEl.setValue(intOrThree(initialStrategyConfig.getMaxPrioritiesWeight()));
 		
 		if (broker.getMaxSelections() >= 3) {

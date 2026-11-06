@@ -2,7 +2,7 @@
 $r.render("preset", "vertical")
 #if($custom)
 	<fieldset class="o_block_large">
-		<legend>$r.translate("enrollment.strategy.weighting")</legend>
+		<legend>$r.translate("enrollment.strategy.weighting")<span class="sr-only"> ($weightMin = $r.translate("enrollment.strategy.weighting.low"), $weightMax = $r.translate("enrollment.strategy.weighting.high"))</span></legend>
 		<div class="o_tb_weighting o_block">
 			<div class="o_tb_weighting_legend_top">
 				$r.translate("enrollment.strategy.weighting.high")
