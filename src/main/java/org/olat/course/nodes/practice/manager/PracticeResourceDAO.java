@@ -95,6 +95,21 @@ public class PracticeResourceDAO {
 				.getResultList();
 	}
 	
+	public List<PracticeResource> getAllTestResources(RepositoryEntry courseEntry) {
+		String sb = """
+				select rsrc from practiceresource as rsrc
+				inner join fetch rsrc.testEntry as test
+				left join fetch test.olatResource as testRsrc
+				left join fetch rsrc.pool as pool
+				left join fetch rsrc.itemCollection as iCollection
+				left join fetch rsrc.resourceShare as share
+				where test.key=:repoEntryKey""";
+		
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), PracticeResource.class)
+				.setParameter("repoEntryKey", courseEntry.getKey())
+				.getResultList();
+	}
+	
 	public List<PracticeResource> getResources(Pool pool) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select rsrc from practiceresource as rsrc")

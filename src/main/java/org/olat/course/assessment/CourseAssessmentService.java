@@ -401,6 +401,15 @@ public interface CourseAssessmentService {
 	
 	public void unassignCoach(RepositoryEntryRef entry, IdentityRef coach);
 	
+	/**
+	 * Verify if the specified coach is still coached of the participants it is assigned. If
+	 * not, it will be unassigned.
+	 * 
+	 * @param entry The course
+	 * @param coach The coach
+	 */
+	public void verifyAssignmentAsCoach(RepositoryEntryRef entry, IdentityRef coach);
+	
 	public void orderCoach(AssessmentEntry assessmentEntry, boolean replace, CourseEnvironment courseEnv, CourseNode courseNode);
 
 }

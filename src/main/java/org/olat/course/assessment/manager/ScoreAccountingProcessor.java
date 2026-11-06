@@ -496,7 +496,9 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		if(assessmentConfig.hasCoachAssignment() && assessmentConfig.getCoachAssignmentMode() == CoachAssignmentMode.automatic) {
 			AssessmentEntry entry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
-			courseAssessmentService.assignCoach(entry, null, userCourseEnv.getCourseEnvironment(), courseNode);
+			if(entry.getCoach() == null) {
+				courseAssessmentService.assignCoach(entry, null, userCourseEnv.getCourseEnvironment(), courseNode);
+			}
 		}
 		
 		int numOfChild = courseNode.getChildCount();
