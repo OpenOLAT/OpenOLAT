@@ -30,15 +30,11 @@ import org.olat.repository.RepositoryEntryRuntimeType;
  *
  */
 public record CoursesStatisticsParams(boolean withStatistics, boolean withCertificates, boolean withStatements, boolean withCompletions,
-			boolean withReferences, List<RepositoryEntryRuntimeType> runtimeTypes) {
+			boolean withReferences, List<RepositoryEntryRuntimeType> runtimeTypes, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
 
 	public static CoursesStatisticsParams valueOf(CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
 		boolean withStatistics = runtimeTypesGroup.loadStatistics();
-		return new CoursesStatisticsParams(withStatistics, withStatistics, withStatistics, withStatistics, withStatistics, runtimeTypesGroup.runtimeTypes());
+		return new CoursesStatisticsParams(withStatistics, withStatistics, withStatistics, withStatistics, withStatistics,
+				runtimeTypesGroup.runtimeTypes(), runtimeTypesGroup);
 	}
-	
-	public static CoursesStatisticsParams withoutStatistics(CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
-		return new CoursesStatisticsParams(false, false, false, false, false, runtimeTypesGroup.runtimeTypes());
-	}
-
 }

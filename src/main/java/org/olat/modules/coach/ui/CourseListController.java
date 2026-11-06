@@ -21,8 +21,6 @@ package org.olat.modules.coach.ui;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +28,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.Mark;
@@ -83,11 +80,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -98,6 +95,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.CoachingService;
+import org.olat.modules.coach.manager.CoachingDAO;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
@@ -139,8 +137,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 
-	private static final Logger log = Tracing.createLoggerFor(CourseListController.class);
-	
 	protected static final String COURSE_MODULE = "CourseModule";
 	
 	protected static final String FILTER_MARKED = "Marked";
@@ -188,6 +184,7 @@ public class CourseListController extends FormBasicController implements Activat
 
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab bookmarkTab;
+	private FlexiFiltersTab relevantTab;
 	private FlexiTableElement tableEl;
 	private CoursesTableDataModel tableModel;
 
@@ -207,6 +204,8 @@ public class CourseListController extends FormBasicController implements Activat
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private CoachingDAO coachingDao;
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
@@ -254,6 +253,7 @@ public class CourseListController extends FormBasicController implements Activat
 		runtimeTypesGroup = CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular;
 		this.curriculumElement = curriculumElement;
 		this.config = config;
+		roles = List.of();
 		
 		initForm(ureq);
 	}
@@ -332,7 +332,9 @@ public class CourseListController extends FormBasicController implements Activat
         actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(actionsCol);
 		
-		tableModel = new CoursesTableDataModel(columnsModel, getLocale());
+		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(runtimeTypesGroup);
+		tableModel = new CoursesTableDataModel(columnsModel, roles, coursesStatisticsParams, curriculumElement,
+				getIdentity(), getLocale(), coachingDao, this);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		if(config.withToolbar()) {
 			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
@@ -362,9 +364,14 @@ public class CourseListController extends FormBasicController implements Activat
 			initFilters();
 		}
 		if(config.withPresetsFilters()) {
-			initFiltersPresets(ureq);
+			initFiltersPresets();
 		}
-		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.6-" + runtimeTypesGroup.name());
+
+		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.7-" + runtimeTypesGroup.name());
+		if(config.withPresetsFilters() && tableEl.getSelectedFilterTab() == null) {
+			FlexiFiltersTab defaultTab = runtimeTypesGroup.loadStatistics() ? relevantTab : allTab;
+			tableEl.setSelectedFilterTab(ureq, defaultTab);
+		}
 	}
 	
 	private String[] getEmptyArgs() {
@@ -492,7 +499,7 @@ public class CourseListController extends FormBasicController implements Activat
     	tableEl.setFilters(true, filters, true, false);
     }
 	
-    private void initFiltersPresets(UserRequest ureq) {
+    private void initFiltersPresets() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
 		bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitFilters(BOOKMARK_TAB_ID, translate("search.mark"),
@@ -505,7 +512,6 @@ public class CourseListController extends FormBasicController implements Activat
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		FlexiFiltersTab relevantTab = null;
 		if(runtimeTypesGroup.loadStatistics()) {
 			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("relevant"),
 					TabSelectionBehavior.clear,
@@ -535,11 +541,6 @@ public class CourseListController extends FormBasicController implements Activat
 		tabs.add(finishedTab);
 
 		tableEl.setFilterTabs(true, tabs);
-		if(runtimeTypesGroup.loadStatistics()) {
-			tableEl.setSelectedFilterTab(ureq, relevantTab);
-		} else {
-			tableEl.setSelectedFilterTab(ureq, allTab);
-		}
     }
     
 	@Override
@@ -569,55 +570,45 @@ public class CourseListController extends FormBasicController implements Activat
 	}
 
 	private void loadModel() {
-		Instant start = Instant.now();
-		
+		tableModel.loadModel();
+		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+		tableEl.reset(true, true, true);
+	}
+	
+	protected void forgeRows(List<CourseStatEntryRow> rows) {
 		List<Mark> marks = markManager.getMarks(getIdentity(), List.of("RepositoryEntry"));
-		log.debug("Favorites loaded in {} millis", Duration.between(start, Instant.now()).toMillis());
 		Set<Long> markedKeys = marks.stream()
 				.map(Mark::getOLATResourceable)
 				.map(OLATResourceable::getResourceableId)
 				.collect(Collectors.toSet());
 		
-		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(runtimeTypesGroup);
-		Instant statisticsStart = Instant.now();
-		List<CourseStatEntry> courseStatistics = curriculumElement != null
-				? coachingService.getCoursesStatistics(curriculumElement, getIdentity())
-				: coachingService.getCoursesStatistics(getIdentity(), roles, coursesStatisticsParams);
-		log.debug("Statistics loaded in {} millis", Duration.between(statisticsStart, Instant.now()).toMillis());
-		Map<Long,VFSThumbnailInfos> thumbnails = mapperThumbnail.getResourceableThumbnails(courseStatistics);
-
-		List<CourseStatEntryRow> rows = courseStatistics.stream()
-				.map(stats -> forgeRow(stats, markedKeys.contains(stats.getRepoKey()), thumbnails))
-				.collect(Collectors.toList());
-		Instant taxonomyStart = Instant.now();
+		List<CourseStatEntry> entries = rows.stream().map(CourseStatEntryRow::getEntry).toList();
+		Map<Long,VFSThumbnailInfos> thumbnails = getResourceableThumbnails(entries);
+		for(CourseStatEntryRow row:rows) {
+			forgeRow(row, markedKeys.contains(row.getKey()), thumbnails);
+		}
 		loadTaxonomy(rows);
-		log.debug("Taxonomy loaded in {} millis", Duration.between(taxonomyStart, Instant.now()).toMillis());
-		
-		log.debug("Data loaded in {} millis", Duration.between(start, Instant.now()).toMillis());
-		
-		tableModel.setObjects(rows);
-		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
-		tableEl.reset(true, true, true);
 	}
 	
 	private void loadTaxonomy(List<CourseStatEntryRow> rows) {
-		Map<RepositoryEntryRef, AtomicLong> taxonomy = repositoryService.getNumOfTaxonomyLevels(rows);
-		for(CourseStatEntryRow row:rows) {
+		List<CourseStatEntryRow> rowsToLoad = rows.stream()
+				.filter(row -> row.getNumOfTaxonomyLevels() == -1l)
+				.toList();
+		
+		Map<RepositoryEntryRef, AtomicLong> taxonomy = repositoryService.getNumOfTaxonomyLevels(rowsToLoad);
+		for(CourseStatEntryRow row:rowsToLoad) {
 			AtomicLong levels = taxonomy.get(row);
 			long numOfLevels = levels == null ? 0 : levels.get();
 			row.setNumOfTaxonomyLevels(numOfLevels);
 			forgeTaxonomyLevels(row);
 		}
 	}
-	
-	private CourseStatEntryRow forgeRow(CourseStatEntry entry, boolean marked, Map<Long,VFSThumbnailInfos> thumbnails) {
-		RepositoryEntryEducationalType educationalType = getEducationalType(entry);
-		boolean showStatistics = runtimeTypesGroup.loadStatistics();
-		CourseStatEntryRow row = new CourseStatEntryRow(entry, educationalType, showStatistics);
-		row.setMarked(marked);
-		row.setLifecyclePeriod(RepositoyUIFactory.formatExecutionPeriod(getTranslator(), row.getLifecycleStart(), row.getLifecycleEnd()));
 
-		if(showStatistics && row.isCourse() && entry.getSuccessStatus() != null) {
+	private void forgeRow(CourseStatEntryRow row, boolean marked, Map<Long,VFSThumbnailInfos> thumbnails) {
+		if(row.getMarkLink() != null) return;
+		
+		CourseStatEntry entry = row.getEntry();
+		if(runtimeTypesGroup.loadStatistics() && row.isCourse() && entry.getSuccessStatus() != null) {
 			StringOutput target = new StringOutput();
 			successStatusCellRenderer.render(null, target, entry.getSuccessStatus(), 0, null, null, getTranslator());
 			row.setSuccessStatusHTML(target.toString());
@@ -626,6 +617,7 @@ public class CourseListController extends FormBasicController implements Activat
 		forgeActionsLinks(row);
 		forgeRatings(entry, row);
 		
+		row.setMarked(marked);
 		String url = mapperThumbnail.getThumbnailURL(mapperThumbnailKey.getUrl(), entry.getRepoKey(), thumbnails);
 		if(url != null) {
 			row.setThumbnailRelPath(url);
@@ -638,16 +630,23 @@ public class CourseListController extends FormBasicController implements Activat
 					: nodeAccessService.getNodeAccessTypeName(type, getLocale());
 			row.setTranslatedTechnicalType(translatedType);
 		}
-		
-		return row;
 	}
 	
-	private RepositoryEntryEducationalType getEducationalType(CourseStatEntry entry) {
+	@Override
+	protected Translator getTranslator() {
+		return super.getTranslator();
+	}
+	
+	protected RepositoryEntryEducationalType getEducationalType(CourseStatEntry entry) {
 		if(entry.getEducationalTypeKey() == null) return null;
 		return educationalTypesMap.get(entry.getEducationalTypeKey());
 	}
 	
-	private void forgeRatings(CourseStatEntry entry, CourseStatEntryRow row) {
+	protected Map<Long,VFSThumbnailInfos> getResourceableThumbnails(List<? extends OLATResourceable> resources) {
+		return mapperThumbnail.getResourceableThumbnails(resources);
+	}
+	
+	protected void forgeRatings(CourseStatEntry entry, CourseStatEntryRow row) {
 		if(!repositoryModule.isRatingEnabled()) return;
 		
 		Double averageRating = entry.getAverageRating();
@@ -659,7 +658,7 @@ public class CourseListController extends FormBasicController implements Activat
 		ratingEl.setUserObject(row);
 	}
 	
-	private void forgeTaxonomyLevels(CourseStatEntryRow row) {
+	protected void forgeTaxonomyLevels(CourseStatEntryRow row) {
 		if(row.getNumOfTaxonomyLevels() <= 0) return;
 		
 		String title = Long.toString(row.getNumOfTaxonomyLevels());

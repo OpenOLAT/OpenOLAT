@@ -49,6 +49,17 @@ public interface FlexiTableDataModel<T> {
 	public T getObject(int row);
 	
 	public void setObjects(List<T> objects);
+	
+	/**
+	 * Preload the specified range of objects to fill extra content like links
+	 * or data which are costly to retrieve.
+	 * 
+	 * @param firstRow First row to load
+	 * @param maxResults Max. number of rows
+	 */
+	public default void preload(int firstRow, int maxResults) {
+		//
+	}
 
 	/**
 	 * Return Object for certain table cell.

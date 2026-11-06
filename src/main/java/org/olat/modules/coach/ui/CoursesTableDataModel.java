@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -37,9 +39,17 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
+import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.coach.CoachingRoles;
+import org.olat.modules.coach.manager.CoachingDAO;
+import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsParams;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.RepositoyUIFactory;
 
 /**
  * 
@@ -57,10 +67,34 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	private List<CourseStatEntryRow> backupList;
 	
 	private static final Columns[] COLS = Columns.values();
-
-	public CoursesTableDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	
+	private final CoachingDAO coachingDao;
+	
+	private boolean coursesStatisticsLoaded = false;
+	private boolean coursesCompletionLoaded = false;
+	private boolean coursesReferencesLoaded = false;
+	
+	private final Identity identity;
+	private final List<CoachingRoles> roles;
+	private final List<CoachingRoles> rolesAsOwner;
+	private final List<CoachingRoles> rolesAsCoaches;
+	private final CurriculumElement element;
+	private final CourseListController controller;
+	private final CoursesStatisticsParams coursesStatisticsParams;
+	
+	public CoursesTableDataModel(FlexiTableColumnModel columnsModel, List<CoachingRoles> roles,
+			CoursesStatisticsParams coursesStatisticsParams, CurriculumElement element,
+			Identity identity,  Locale locale, CoachingDAO coachingDao, CourseListController controller) {
 		super(columnsModel);
+		this.roles = roles;
 		this.locale = locale;
+		this.identity = identity;
+		this.element = element;
+		this.coachingDao = coachingDao;
+		this.controller = controller;
+		this.coursesStatisticsParams = coursesStatisticsParams;
+		rolesAsOwner = CoachingRoles.intersect(roles, List.of(CoachingRoles.owner));
+		rolesAsCoaches = CoachingRoles.intersect(roles, List.of(CoachingRoles.coach, CoachingRoles.mastercoach));
 	}
 	
 	public int getIndexOfObject(CourseStatEntryRow entry) {
@@ -69,8 +103,29 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 
 	@Override
 	public void sort(SortKey orderBy) {
-		if(orderBy != null) {
+		if(orderBy != null && backupList != null) {
+			ensureLoaded(orderBy.getKey());
 			super.setObjects(new CoursesTableSortDelegate(orderBy, this, locale).sort());
+		}
+	}
+
+	private void ensureLoaded(String column) {
+		if(!coursesStatisticsLoaded && (Columns.participants.name().equals(column) || Columns.participantsVisited.name().equals(column)
+				|| Columns.participantsNotVisited.name().equals(column) || Columns.lastVisit.name().equals(column)
+				|| Columns.certificates.name().equals(column))) {
+			List<CourseStatEntry> entries = backupList.stream().map(CourseStatEntryRow::getEntry).toList();
+			loadCoursesStatistics(entries, true, true, false, false, false);
+			coursesStatisticsLoaded = true;
+		} else if(!coursesCompletionLoaded && (Columns.completion.name().equals(column) || Columns.averageScore.name().equals(column)
+				|| Columns.statusPassed.name().equals(column) || Columns.statusNotPassed.name().equals(column)
+				|| Columns.successStatus.name().equals(column) || Columns.statusUndefined.name().equals(column))) {
+			List<CourseStatEntry> entries = backupList.stream().map(CourseStatEntryRow::getEntry).toList();
+			loadCoursesStatistics(entries, false, false, true, true, false);
+			coursesCompletionLoaded = true;
+		} else if(!coursesReferencesLoaded && (Columns.references.name().equals(column))) {
+			List<CourseStatEntry> entries = backupList.stream().map(CourseStatEntryRow::getEntry).toList();
+			loadCoursesStatistics(entries, false, false, false, false, true);
+			coursesReferencesLoaded = true;
 		}
 	}
 	
@@ -101,6 +156,20 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			final Boolean withParticipants = getFilteredOneClick(filters, CourseListController.FILTER_WITH_PARTICIPANTS);	
 			final Boolean withoutParticipants = getFilteredOneClick(filters, CourseListController.FILTER_WITHOUT_PARTICIPANTS);	
 			final DateRange executionPeriod = getFilterRange(filters);
+			
+			if(notVisited != null || withParticipants != null || withoutParticipants != null
+					|| StringHelper.containsNonWhitespace(lastVisit)) {
+				ensureLoaded(Columns.participants.name());
+			}
+			if(StringHelper.containsNonWhitespace(certificates)) {
+				ensureLoaded(Columns.certificates.name());
+			}
+			if(assessment != null && !assessment.isEmpty()) {
+				ensureLoaded(Columns.statusPassed.name());// Equivalent
+			}
+			if(curriculumsKeysList != null && !curriculumsKeysList.isEmpty()) {
+				ensureLoaded(Columns.references.name());
+			}
 			
 			List<CourseStatEntryRow> filteredRows = new ArrayList<>(backupList.size());
 			for(CourseStatEntryRow row:backupList) {
@@ -347,6 +416,103 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	public void setObjects(List<CourseStatEntryRow> objects) {
 		this.backupList = objects;
 		super.setObjects(objects);
+	}
+	
+	public void loadModel() {
+		if(backupList == null) {
+			List<CourseStatEntryRow> list = loadRows();
+			setObjects(list);
+		}
+	}
+	
+	@Override
+	public void preload(int firstRow, int maxResults) {
+		loadModel();
+		if(maxResults == -1) {
+			maxResults = getRowCount() - firstRow;
+		}
+		preloadRows(firstRow, maxResults);
+	}
+
+	private List<CourseStatEntryRow> loadRows() {
+		List<CourseStatEntryRow> rows = new ArrayList<>();
+		List<CourseStatEntry> entries = element != null
+			? coachingDao.loadCoursesByElement(identity, element, coursesStatisticsParams.runtimeTypes())
+			: coachingDao.loadCoursesAndDeduplicateByRole(identity, roles, coursesStatisticsParams.runtimeTypes());
+		for(CourseStatEntry entry:entries) {
+			RepositoryEntryEducationalType educationalType = controller.getEducationalType(entry);
+			boolean showStatistics = coursesStatisticsParams.runtimeTypesGroup().loadStatistics();
+			CourseStatEntryRow row = new CourseStatEntryRow(entry, educationalType, showStatistics);
+			row.setLifecyclePeriod(RepositoyUIFactory.formatExecutionPeriod(controller.getTranslator(), row.getLifecycleStart(), row.getLifecycleEnd()));
+			rows.add(row);
+		}
+		return rows;
+	}
+	
+	private void preloadRows(int firstResult, int maxResults) {
+		List<CourseStatEntryRow> rows = new ArrayList<>(maxResults);
+		List<CourseStatEntry> entries = new ArrayList<>(maxResults);
+		List<CourseStatEntryRow> entriesRows = getObjects();
+		for(int i=firstResult; i<entriesRows.size() && i<(firstResult + maxResults); i++) {
+			CourseStatEntryRow backupRow = entriesRows.get(i);
+			rows.add(backupRow);
+			entries.add(backupRow.getEntry());
+		}
+		loadCoursesStatistics(entries, true, true, true, true, true); 
+		
+		controller.forgeRows(rows);
+	}
+	
+	private void loadCoursesStatistics(List<CourseStatEntry> entries, boolean withStatistics,
+			boolean withCertificates, boolean withStatements, boolean withCompletions, boolean withReferences) {
+		withStatistics &= coursesStatisticsParams.withStatistics();
+		withCertificates &= coursesStatisticsParams.withCertificates();
+		withStatements &= coursesStatisticsParams.withStatements();
+		withCompletions &= coursesStatisticsParams.withCompletions();
+		withReferences &= coursesStatisticsParams.withReferences();
+
+		if(element != null) {
+			loadCoursesStatistics(element, entries, withStatistics, withCertificates, withStatements, withCompletions);
+		} else {
+			loadCoursesStatistics(rolesAsOwner, entries, withStatistics, withCertificates, withStatements, withCompletions, withReferences);
+			loadCoursesStatistics(rolesAsCoaches, entries, withStatistics, withCertificates, withStatements, withCompletions, withReferences);
+		}
+	}
+	
+	private void loadCoursesStatistics(CurriculumElement curriculumElement, List<CourseStatEntry> statistics,
+			boolean withStatistics, boolean withCertificates, boolean withStatements, boolean withCompletions) {
+
+		Map<Long,CourseStatEntry> mapAs = statistics.stream()
+				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, v) -> u));
+		if(!mapAs.isEmpty()) {
+			if(withStatistics || withCertificates) {
+				coachingDao.loadCoursesStatistics(curriculumElement, identity, roles, withCertificates, mapAs);
+			}
+			if(withStatements || withCompletions) {
+				coachingDao.loadCoursesStatementsAndCompletions(curriculumElement, identity, roles, withStatements, withCompletions, mapAs);
+			}
+		}
+	}
+	
+	private void loadCoursesStatistics(List<CoachingRoles> roles, List<CourseStatEntry> statistics,
+			boolean withStatistics, boolean withCertificates, boolean withStatements, boolean withCompletions,
+			boolean withReferences) {
+		if(roles.isEmpty()) return;
+		
+		Map<Long,CourseStatEntry> mapAs = statistics.stream()
+				.filter(se -> roles.contains(se.getRole()))
+				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, v) -> u));
+		if(!mapAs.isEmpty()) {
+			if(!coursesStatisticsLoaded && (withStatistics || withCertificates)) {
+				coachingDao.loadCoursesStatistics(null, identity, roles, withCertificates, mapAs);
+			}
+			if(!coursesCompletionLoaded && (withStatements || withCompletions)) {
+				coachingDao.loadCoursesStatementsAndCompletions(null, identity, roles, withStatements, withCompletions, mapAs);
+			}
+			if(!coursesReferencesLoaded && withReferences) {
+				coachingDao.loadCoursesReferences(identity, roles, mapAs);
+			}
+		}
 	}
 	
 	public enum Columns implements FlexiSortableColumnDef {

@@ -50,7 +50,7 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 	private String translatedTechnicalType;
 	private String lifecyclePeriod;
 	
-	private long numOfTaxonomyLevels;
+	private long numOfTaxonomyLevels = -1L;
 	private final boolean showStatistics;
 	private final RepositoryEntryEducationalType educationalType;
 	private String successStatusHTML;
@@ -139,6 +139,10 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 	
 	public RepositoryEntryEducationalType getEducationalType() {
 		return educationalType;
+	}
+	
+	public String getEducationalTypeIdentifier() {
+		return educationalType == null ? null : educationalType.getIdentifier();
 	}
 
 	public String getLocation() {

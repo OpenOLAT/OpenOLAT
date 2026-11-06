@@ -514,7 +514,14 @@ public class CoachingDAO {
 		return courseStatistics;
 	}
 	
-	protected List<CourseStatEntry> loadCoursesAndDeduplicateByRole(Identity identity, List<CoachingRoles> roles,
+	public List<CourseStatEntry> loadCoursesByElement(Identity identity, CurriculumElement element,
+			List<RepositoryEntryRuntimeType> runtimeTypes) {
+		Map<Long,CourseStatEntry> mapElement =  getCourses(element, identity, null,
+				List.of(RepositoryEntryStatusEnum.coachPublishedToClosed()), runtimeTypes);
+		return new ArrayList<>(mapElement.values());
+	}
+	
+	public List<CourseStatEntry> loadCoursesAndDeduplicateByRole(Identity identity, List<CoachingRoles> roles,
 			List<RepositoryEntryRuntimeType> runtimeTypes) {
 		Map<Long,CourseStatEntry> mapOwner = roles.contains(CoachingRoles.owner)
 				? getCourses(null, identity, CoachingRoles.owner, List.of(RepositoryEntryStatusEnum.preparationToClosed()), runtimeTypes)
@@ -537,7 +544,7 @@ public class CoachingDAO {
 		return courseStatistics;
 	}
 	
-	private void loadCoursesStatistics(Identity identity, List<CoachingRoles> roles,
+	protected void loadCoursesStatistics(Identity identity, List<CoachingRoles> roles,
 			CoursesStatisticsParams params, List<CourseStatEntry> statistics) {
 		if(identity == null || roles.isEmpty()) return;
 		
@@ -633,7 +640,7 @@ public class CoachingDAO {
 		return map;
 	}
 	
-	protected void loadCoursesStatistics(CurriculumElement element, IdentityRef coach, List<CoachingRoles> roles,
+	public void loadCoursesStatistics(CurriculumElement element, IdentityRef coach, List<CoachingRoles> roles,
 			boolean withCertificates, Map<Long,CourseStatEntry> map) {
 		if(map.isEmpty()) return;
 		
@@ -712,7 +719,7 @@ public class CoachingDAO {
 		}
 	}
 
-	protected void loadCoursesStatementsAndCompletions(CurriculumElement element, Identity coach, List<CoachingRoles> roles,
+	public void loadCoursesStatementsAndCompletions(CurriculumElement element, Identity coach, List<CoachingRoles> roles,
 			boolean withStatements, boolean withCompletions, Map<Long,CourseStatEntry> map) {
 		if(!withStatements && !withCompletions) {
 			return;
@@ -800,7 +807,7 @@ public class CoachingDAO {
 		}
 	}
 
-	private void loadCoursesReferences(Identity coach, List<CoachingRoles> roles, Map<Long,CourseStatEntry> map) {
+	public void loadCoursesReferences(Identity coach, List<CoachingRoles> roles, Map<Long,CourseStatEntry> map) {
 		if(map.isEmpty()) return;
 		
 		QueryBuilder sb = new QueryBuilder();
@@ -826,7 +833,7 @@ public class CoachingDAO {
 			  .append("  where coach.role in (:roles) and coach.identity.key=:coachKey")
 			  .append(" )");
 		}
-		
+
 		List<String> rolesList = roles.stream()
 				.map(CoachingRoles::name)
 				.toList();

@@ -1131,14 +1131,17 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			page = 0;
 		}
 		currentPage = page;
+		
+		int firstResult = currentPage * getPageSize();
+		int maxResults = getPageSize();
 		if(dataSource != null) {
-			int firstResult = currentPage * getPageSize();
-			int maxResults = getPageSize();
 			if(dataModel instanceof FlexiTableDataSource) {
 				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getFilters(), firstResult, maxResults, orderBy);
 			} else {
 				dataSource.load(getSearchText(), getFilters(), firstResult, maxResults, orderBy);
 			}
+		} else {
+			dataModel.preload(firstResult, maxResults);
 		}
 		component.setDirty(true);
 	}
@@ -1156,6 +1159,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getFilters(), firstResult, maxResults, orderBy);
 		} else if(this.dataSource != null) {
 			dataSource.load(getSearchText(), getFilters(), firstResult, maxResults, orderBy);
+		} else {
+			dataModel.preload(firstResult, maxResults);
 		}
 	}
 
@@ -1526,6 +1531,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				doOpenAll();
 			}
 			((SortableFlexiTableDataModel<?>)dataModel).sort(key);
+			dataModel.preload(0, getPageSize());
 		} else if(dataSource != null) {
 			currentPage = 0;
 			if(dataModel instanceof FlexiTableDataSource) {
@@ -1551,6 +1557,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				doOpenAll();
 			}
 			((SortableFlexiTableDataModel<?>)dataModel).sort(sortKey);
+			dataModel.preload(0, getPageSize());
 		} else if(dataSource != null) {
 			currentPage = 0;
 
@@ -1679,6 +1686,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 					((SortableFlexiTableDataModel<?>)dataModel).sort(orderBy[0]);
 				}
 			}
+			dataModel.preload(0, getPageSize());
 		} else if(dataSource != null) {
 			rowCount = -1;
 			currentPage = 0;
@@ -1803,6 +1811,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			} else {
 				dataSource.load(getSearchText(), getFilters(), 0, -1, orderBy);
 			}
+		} else {
+			dataModel.preload(0, -1);
 		}
 		
 		MediaResource resource;
@@ -2488,8 +2498,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public void reloadData() {
+		int firstResult = currentPage * getPageSize();
 		if(dataSource != null) {
-			int firstResult = currentPage * getPageSize();
 			if(dataModel instanceof FlexiTableDataSource) {
 				((FlexiTableDataSource<?>)dataModel).clear();
 				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getFilters(), firstResult, getPageSize(), orderBy);//reload needed rows
@@ -2510,6 +2520,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 					((SortableFlexiTableDataModel<?>)dataModel).sort(orderBy[0]);
 				}
 			}
+			dataModel.preload(firstResult, getPageSize());
 			
 			if(dataModel instanceof FlexiTreeTableDataModel) {
 				crumbs = ((FlexiTreeTableDataModel<?>)dataModel).reloadBreadcrumbs(crumbs);
