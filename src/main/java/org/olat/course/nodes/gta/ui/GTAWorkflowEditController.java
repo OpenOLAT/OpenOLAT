@@ -261,7 +261,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		stepsCont.setFormDescription(translate("task.steps.description"));
 		stepsCont.setElementCssClass("o_sel_course_gta_steps");
 		stepsCont.setRootForm(mainForm);
-		stepsCont.setFormContextHelp("manual_user/learningresources/Course_Element_Task/#workflow");
+		stepsCont.setFormContextHelp("manual_user/learningresources/Course_Element_Task/Task_Setup/#workflow");
 		formLayout.add(stepsCont);
 
 		String[] optionalValues = new String[] {
@@ -637,7 +637,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	
 	private void doConfirmChanges(UserRequest ureq) {
 		String title = translate("warning.tasks.in.process.title");
-		String url = helpModule.getManualProvider().getURL(getLocale(), "manual_user/learningresources/Course_Element_Task/");
+		String url = helpModule.getManualProvider().getURL(getLocale(), "manual_user/learningresources/Course_Element_Task/Task_Setup/#workflow");
 		String text = translate("warning.tasks.in.process.text", url);
 		confirmChangesCtrl = activateOkCancelDialog(ureq, title, text, confirmChangesCtrl);
 	}

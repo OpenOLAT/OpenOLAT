@@ -1847,7 +1847,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 
 	@Override
 	public String getCourseNodeConfigManualUrl() {
-		return "manual_user/learningresources/Course_Element_Task/#tab-workflow";
+		return "manual_user/learningresources/Course_Element_Task/Task_Setup/#workflow";
 	}
 
 	@Override

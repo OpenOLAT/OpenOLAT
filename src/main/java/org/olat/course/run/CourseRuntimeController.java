@@ -2947,7 +2947,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		searchController = null;
 		SearchServiceUIFactory searchServiceUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
 		searchController = searchServiceUIFactory.createInputController(ureq, getWindowControl(), DisplayOption.STANDARD, null);
-		searchController.setContextHelpPage("manual_user/learningresources/Additional_Course_Features/");
+		searchController.setContextHelpPage("manual_user/basic_concepts/Search_in_Course/");
 		listenTo(searchController);
 		courseSearchCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				searchController.getInitialComponent(), searchLink, null, true, null);

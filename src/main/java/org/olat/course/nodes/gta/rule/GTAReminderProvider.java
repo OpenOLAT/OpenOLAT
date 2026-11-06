@@ -52,7 +52,7 @@ public class GTAReminderProvider implements CourseNodeReminderProvider {
 
 	@Override
 	public String getContextHelpUrl() {
-		return "manual_user/learningresources/Course_Element_Task/#reminders";
+		return "manual_user/learningresources/Course_Element_Task/Task_Setup/#reminders";
 	}
 
 	@Override

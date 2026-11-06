@@ -1040,7 +1040,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	@Override
 	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
 		AssessmentReminderProvider provider = new AssessmentReminderProvider(getIdent(), new IQTESTAssessmentConfig(courseEntry, this));
-		provider.setContextHelpUrl("manual_user/learningresources/Course_Element_Test/#tab_reminders");
+		provider.setContextHelpUrl("manual_user/learningresources/Course_Element_Test/Test_Setup/#tab_reminders");
 		return provider;
 	}
 	
@@ -1141,7 +1141,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 
 	@Override
 	public String getCourseNodeConfigManualUrl() {
-		return "manual_user/learningresources/Course_Element_Test/#tab-test-konfiguration";
+		return "manual_user/learningresources/Course_Element_Test/Test_Setup/#tab_configuration";
 	}
 
 	@Override

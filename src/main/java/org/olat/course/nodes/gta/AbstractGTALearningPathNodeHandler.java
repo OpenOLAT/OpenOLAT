@@ -40,7 +40,7 @@ import org.olat.repository.RepositoryEntry;
 public abstract class AbstractGTALearningPathNodeHandler implements LearningPathNodeHandler {
 
 	private static final LearningPathEditConfigs EDIT_CONFIGS = LearningPathEditConfigs.builder()
-			.setCustomContextHelpUrl("manual_user/learningresources/Course_Element_Task/#learningpath")
+			.setCustomContextHelpUrl("manual_user/learningresources/Course_Element_Task/Task_Setup/#learningpath")
 			.enableNodeVisited()
 			.enableConfirmed()
 			.enableScore()
