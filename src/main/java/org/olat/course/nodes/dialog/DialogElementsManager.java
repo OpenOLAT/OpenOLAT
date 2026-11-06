@@ -54,6 +54,14 @@ public interface DialogElementsManager {
 	public List<DialogElement> getDialogElements(RepositoryEntryRef entry, String subIdent);
 
 	/**
+	 * @param entry The repository entry
+	 * @return All dialog elements of the entry, regardless of the course element (subIdent)
+	 * 		that created them - including ones whose course element was never published
+	 * 		and therefore never reached the run structure.
+	 */
+	public List<DialogElement> getDialogElements(RepositoryEntryRef entry);
+
+	/**
 	 * check if there is already any dialogElement with given filename
 	 * in current repoEntry and course element
 	 *

@@ -30,6 +30,8 @@ import java.util.UUID;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -38,12 +40,14 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.CourseModule;
 import org.olat.course.nodes.dialog.DialogElement;
 import org.olat.course.nodes.dialog.DialogElementsManager;
 import org.olat.course.nodes.dialog.model.DialogElementImpl;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,13 +59,15 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class DialogElementsManagerImpl implements DialogElementsManager {
+public class DialogElementsManagerImpl implements DialogElementsManager, RepositoryEntryDataDeletable {
 
 
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private ForumManager forumManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	@Override
 	public DialogElement createDialogElement(RepositoryEntry entry, Identity author,
@@ -105,6 +111,21 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 			.createQuery(sb.toString(), DialogElement.class)
 			.setParameter("entryKey", entry.getKey())
 			.setParameter("subIdent", subIdent)
+			.getResultList();
+	}
+
+	@Override
+	public List<DialogElement> getDialogElements(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select element from dialogelement as element")
+		  .append(" inner join fetch element.entry entry")
+		  .append(" left join fetch element.author author")
+		  .append(" left join fetch author.user authorUser")
+		  .append(" where element.entry.key=:entryKey");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), DialogElement.class)
+			.setParameter("entryKey", entry.getKey())
 			.getResultList();
 	}
 
@@ -201,6 +222,18 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 				.getReference(DialogElementImpl.class, element.getKey());
 		dbInstance.getCurrentEntityManager().remove(reloadedElement);
 		forumManager.deleteForum(forum.getKey());
+	}
+
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		Long resourceableId = re.getOlatResource().getResourceableId();
+		for (DialogElement element : getDialogElements(re)) {
+			SubscriptionContext subsContext = new SubscriptionContext(CourseModule.getCourseTypeName(),
+					resourceableId, element.getSubIdent() + ":" + element.getForum().getKey());
+			notificationsManager.delete(subsContext);
+			deleteDialogElement(element);
+		}
+		return true;
 	}
 
 	@Override
