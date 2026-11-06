@@ -8,7 +8,7 @@
 				<div class="o_curriculum_element_taughtby_name">
 					$r.escapeHtml($row.getDisplayName())
 				</div>
-				<div class="o_curriculum_element_taughtby_links">
+				<div class="o_curriculum_element_taughtby_links o_noprint">
 					#if($r.available($row.getVisitingCardLinkName()))
 						$r.render($row.getVisitingCardLinkName())
 					#end

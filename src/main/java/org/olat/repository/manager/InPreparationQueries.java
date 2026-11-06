@@ -230,7 +230,7 @@ public class InPreparationQueries {
 		  .append("  and (")
 		  .append("   (type.singleElement=true and type.maxRepositoryEntryRelations=1 and v.key is null and el.status").in(CE_SINGLE_NO_CONTENT_STATUS).append(")")
 		  .append("   or (type.singleElement=true and type.maxRepositoryEntryRelations=1 and v.key is not null)")
-		  .append("   or ((type.singleElement=false or type.maxRepositoryEntryRelations<>1) and el.status").in(CE_STRUCTURE_IN_PREPARATION_STATUS).append(")")
+		  .append("   or ((type.singleElement=false or type.maxRepositoryEntryRelations<>1) and el.status").in(CE_RESERVATION_SUB_STATUS).append(")")
 		  .append("  )")
 		  .append(" )");
 		sb.append(")");

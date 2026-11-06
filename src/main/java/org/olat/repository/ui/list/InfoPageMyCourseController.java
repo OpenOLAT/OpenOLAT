@@ -111,7 +111,7 @@ public class InfoPageMyCourseController extends BasicController {
 		this.closeTabOnLeave = closeTabOnLeave;
 
 		List<Fact> facts = new ArrayList<>();
-		if (entry != null && !guestOnly && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+		if (entry != null && isMember && !guestOnly && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			addCourseFacts(facts, entry);
 		}
 		if (entry != null && isMember) {

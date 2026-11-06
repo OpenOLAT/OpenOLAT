@@ -323,10 +323,10 @@ public class InPreparationQueriesTest extends OlatTestCase {
 		
 		// Participant (Bundle, no content)
 		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.preparation, null, true);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, null, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, null, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, null, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, null, false);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, null, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, null, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, null, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, null, true);
 		
 		// Participant (Bundle, content available)
 		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.preparation, RepositoryEntryStatusEnum.preparation, true);
@@ -334,26 +334,26 @@ public class InPreparationQueriesTest extends OlatTestCase {
 		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.preparation, RepositoryEntryStatusEnum.coachpublished, true);
 		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.preparation, RepositoryEntryStatusEnum.published, true);
 		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.preparation, RepositoryEntryStatusEnum.closed, true);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, RepositoryEntryStatusEnum.preparation, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, RepositoryEntryStatusEnum.review, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, RepositoryEntryStatusEnum.coachpublished, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, RepositoryEntryStatusEnum.published, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, RepositoryEntryStatusEnum.closed, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, RepositoryEntryStatusEnum.preparation, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, RepositoryEntryStatusEnum.review, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, RepositoryEntryStatusEnum.coachpublished, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, RepositoryEntryStatusEnum.published, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, RepositoryEntryStatusEnum.closed, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, RepositoryEntryStatusEnum.preparation, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, RepositoryEntryStatusEnum.review, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, RepositoryEntryStatusEnum.coachpublished, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, RepositoryEntryStatusEnum.published, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, RepositoryEntryStatusEnum.closed, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, RepositoryEntryStatusEnum.preparation, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, RepositoryEntryStatusEnum.review, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, RepositoryEntryStatusEnum.coachpublished, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, RepositoryEntryStatusEnum.published, false);
-		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, RepositoryEntryStatusEnum.closed, false);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, RepositoryEntryStatusEnum.preparation, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, RepositoryEntryStatusEnum.review, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, RepositoryEntryStatusEnum.coachpublished, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, RepositoryEntryStatusEnum.published, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.provisional, RepositoryEntryStatusEnum.closed, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, RepositoryEntryStatusEnum.preparation, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, RepositoryEntryStatusEnum.review, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, RepositoryEntryStatusEnum.coachpublished, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, RepositoryEntryStatusEnum.published, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.confirmed, RepositoryEntryStatusEnum.closed, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, RepositoryEntryStatusEnum.preparation, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, RepositoryEntryStatusEnum.review, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, RepositoryEntryStatusEnum.coachpublished, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, RepositoryEntryStatusEnum.published, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.cancelled, RepositoryEntryStatusEnum.closed, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, RepositoryEntryStatusEnum.preparation, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, RepositoryEntryStatusEnum.review, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, RepositoryEntryStatusEnum.coachpublished, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, RepositoryEntryStatusEnum.published, true);
+		searchElementReservation(curriculum, bundleType, CurriculumElementStatus.finished, RepositoryEntryStatusEnum.closed, true);
 		
 		// No reservation for coaches / owners.
 	}
