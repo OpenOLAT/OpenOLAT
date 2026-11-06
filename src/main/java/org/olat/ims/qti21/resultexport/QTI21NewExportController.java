@@ -105,7 +105,7 @@ public class QTI21NewExportController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("new.export.title");
 		setFormInfo("export.info");
-		setFormInfoHelp("manual_user/learningresources/Course_Element_Test/#archive");
+		setFormInfoHelp("manual_user/learningresources/Course_Element_Test/Test_Results/#archive");
 		
 		String text;
 		int numOfUsers = identities.getIdentities().size();

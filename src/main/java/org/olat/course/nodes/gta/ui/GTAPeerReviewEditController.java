@@ -130,7 +130,7 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer referenceCont = uifactory.addVerticalFormLayout("reference", null, formLayout);
 		referenceCont.setFormTitle(translate("peer.review.title"));
-		referenceCont.setFormContextHelp("manual_user/learningresources/Course_Element_Task/#configurations");
+		referenceCont.setFormContextHelp("manual_user/learningresources/Course_Element_Task/Task_Peer_Review/#peer_review_rubric");
 		initReferenceForm(referenceCont, ureq);
 		
 		FormLayoutContainer configurationCont = uifactory.addDefaultFormLayout("configuration", null, formLayout);
