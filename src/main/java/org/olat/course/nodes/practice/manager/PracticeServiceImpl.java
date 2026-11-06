@@ -78,6 +78,7 @@ import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -197,6 +198,11 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
 		List<PracticeResource> resources = practiceResourceDao.getAllCourseResources(re);
 		for(PracticeResource resource:resources) {
+			practiceResourceDao.deleteResource(resource);
+		}
+		
+		List<PracticeResource> testResources = practiceResourceDao.getAllTestResources(re);
+		for(PracticeResource resource:testResources) {
 			practiceResourceDao.deleteResource(resource);
 		}
 		return true;
@@ -566,6 +572,10 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 	}
 	
 	private int countItemsOfRepositoryEntry(RepositoryEntry testEntry) {
+		if(testEntry.getEntryStatus() == RepositoryEntryStatusEnum.deleted || testEntry.getEntryStatus() == RepositoryEntryStatusEnum.trash) {
+			return 0;
+		}
+		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
@@ -574,6 +584,10 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 	
 	private List<PracticeItem> loadItemsOfRepositoryEntry(RepositoryEntry testEntry, Locale locale,
 			SearchPracticeItemParameters searchParams, QTI21MetadataConverter metadataConverter, Set<String> identifiers) {
+		if(testEntry.getEntryStatus() == RepositoryEntryStatusEnum.deleted || testEntry.getEntryStatus() == RepositoryEntryStatusEnum.trash) {
+			return new ArrayList<>();
+		}
+		
 		final String language = locale == null ? "de" : locale.getLanguage();
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
