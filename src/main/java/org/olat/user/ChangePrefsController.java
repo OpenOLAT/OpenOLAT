@@ -56,6 +56,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesFactory;
+import org.olat.core.util.prefs.gui.GuiPreferenceService;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.properties.PropertyManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -288,6 +289,8 @@ class UserPrefsResetForm extends FormBasicController {
 	private HistoryManager historyManager;
 	@Autowired
 	private UserSessionManager sessionManager;
+	@Autowired
+	private GuiPreferenceService guiPreferenceService;
 	
 	public UserPrefsResetForm(UserRequest ureq, WindowControl wControl, Identity changeableIdentity) {
 		super(ureq, wControl);
@@ -342,8 +345,7 @@ class UserPrefsResetForm extends FormBasicController {
 			}
 			// Delete gui prefs
 			if (resetElements.isSelected(0)) {
-				PropertyManager pm = PropertyManager.getInstance();
-				pm.deleteProperties(tobeChangedIdentity, null, null, null, "v2guipreferences");
+				guiPreferenceService.deleteGuiPrefsByUniqueProperties(tobeChangedIdentity, null, null);
 			}
 			// Reset preferences
 			if (resetElements.isSelected(1)) {
