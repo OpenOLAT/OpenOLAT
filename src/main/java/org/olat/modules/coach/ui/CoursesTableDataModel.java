@@ -29,7 +29,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.mark.Mark;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -40,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.CoachingRoles;
@@ -49,7 +53,7 @@ import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.repository.ui.RepositoyUIFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -68,8 +72,6 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	
 	private static final Columns[] COLS = Columns.values();
 	
-	private final CoachingDAO coachingDao;
-	
 	private boolean coursesStatisticsLoaded = false;
 	private boolean coursesCompletionLoaded = false;
 	private boolean coursesReferencesLoaded = false;
@@ -79,19 +81,24 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	private final List<CoachingRoles> rolesAsOwner;
 	private final List<CoachingRoles> rolesAsCoaches;
 	private final CurriculumElement element;
-	private final CourseListController controller;
+	private final CoursesListUIFactory uifactory;
 	private final CoursesStatisticsParams coursesStatisticsParams;
+	
+	@Autowired
+	private CoachingDAO coachingDao;
+	@Autowired
+	private MarkManager markManager;
 	
 	public CoursesTableDataModel(FlexiTableColumnModel columnsModel, List<CoachingRoles> roles,
 			CoursesStatisticsParams coursesStatisticsParams, CurriculumElement element,
-			Identity identity,  Locale locale, CoachingDAO coachingDao, CourseListController controller) {
+			Identity identity,  Locale locale, CoursesListUIFactory controller) {
 		super(columnsModel);
+		CoreSpringFactory.autowireObject(this);
 		this.roles = roles;
 		this.locale = locale;
 		this.identity = identity;
 		this.element = element;
-		this.coachingDao = coachingDao;
-		this.controller = controller;
+		this.uifactory = controller;
 		this.coursesStatisticsParams = coursesStatisticsParams;
 		rolesAsOwner = CoachingRoles.intersect(roles, List.of(CoachingRoles.owner));
 		rolesAsCoaches = CoachingRoles.intersect(roles, List.of(CoachingRoles.coach, CoachingRoles.mastercoach));
@@ -147,6 +154,10 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 				resourcesTypesList.addAll(RepositoryHandlerFactory.getInstance().getOtherTypes());
 			}
 			final Set<String> resourcesTypes = resourcesTypesList == null ? Set.of() : Set.copyOf(resourcesTypesList);
+			List<String> coachingRolesList = getFilteredList(filters, CourseListController.FILTER_ROLES);
+			final Set<CoachingRoles> coachingRoles = coachingRolesList == null
+					? Set.of()
+					: coachingRolesList.stream().map(r -> CoachingRoles.valueOf(r)).collect(Collectors.toSet());
 			final List<String> curriculumsKeysList = getFilteredList(filters, CourseListController.FILTER_CURRICULUM);
 			final Set<String> curriculumsKeys = curriculumsKeysList == null ? Set.of() : Set.copyOf(curriculumsKeysList);
 			final LocalDateTime now = DateUtils.toLocalDateTime(new Date());
@@ -176,6 +187,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 				boolean accept = accept(loweredSearchString, row)
 						&& acceptAssessment(assessment, row)
 						&& acceptStatus(status, row)
+						&& acceptRoles(coachingRoles, row)
 						&& acceptResourceType(resourcesTypes, row)
 						&& acceptEducationalType(educationalTypes, row)
 						&& acceptMarked(marked, row)
@@ -214,6 +226,11 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		
 		String entryType = entry.getEducationalType() == null ? null : entry.getEducationalType().getKey().toString();
 		return entryType != null && types.contains(entryType);
+	}
+
+	private boolean acceptRoles(Set<CoachingRoles> roles, CourseStatEntryRow entry) {
+		if(roles == null || roles.isEmpty()) return true;
+		return roles.contains(entry.getRole());
 	}
 	
 	private boolean acceptResourceType(Set<String> types, CourseStatEntryRow entry) {
@@ -435,16 +452,20 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	}
 
 	private List<CourseStatEntryRow> loadRows() {
+		List<Mark> marks = markManager.getMarks(identity, List.of("RepositoryEntry"));
+		Set<Long> markedKeys = marks.stream()
+				.map(Mark::getOLATResourceable)
+				.map(OLATResourceable::getResourceableId)
+				.collect(Collectors.toSet());
+		
 		List<CourseStatEntryRow> rows = new ArrayList<>();
 		List<CourseStatEntry> entries = element != null
 			? coachingDao.loadCoursesByElement(identity, element, coursesStatisticsParams.runtimeTypes())
 			: coachingDao.loadCoursesAndDeduplicateByRole(identity, roles, coursesStatisticsParams.runtimeTypes());
 		for(CourseStatEntry entry:entries) {
-			RepositoryEntryEducationalType educationalType = controller.getEducationalType(entry);
+			RepositoryEntryEducationalType educationalType = uifactory.getEducationalType(entry);
 			boolean showStatistics = coursesStatisticsParams.runtimeTypesGroup().loadStatistics();
-			CourseStatEntryRow row = new CourseStatEntryRow(entry, educationalType, showStatistics);
-			row.setLifecyclePeriod(RepositoyUIFactory.formatExecutionPeriod(controller.getTranslator(), row.getLifecycleStart(), row.getLifecycleEnd()));
-			rows.add(row);
+			rows.add(new CourseStatEntryRow(entry, markedKeys.contains(entry.getRepoKey()), educationalType, showStatistics));
 		}
 		return rows;
 	}
@@ -460,7 +481,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		}
 		loadCoursesStatistics(entries, true, true, true, true, true); 
 		
-		controller.forgeRows(rows);
+		uifactory.forgeRows(rows);
 	}
 	
 	private void loadCoursesStatistics(List<CourseStatEntry> entries, boolean withStatistics,
@@ -572,5 +593,13 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			}
 			return name;
 		}
+	}
+	
+	public interface CoursesListUIFactory {
+
+		RepositoryEntryEducationalType getEducationalType(CourseStatEntry entry);
+
+		void forgeRows(List<CourseStatEntryRow> rows);
+		
 	}
 }

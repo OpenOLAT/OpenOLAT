@@ -63,8 +63,9 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 	private FormLink referencesLink;
 	private FormLink taxonomyLevelsLink;
 	
-	public CourseStatEntryRow(CourseStatEntry entry, RepositoryEntryEducationalType educationalType, boolean showStatistics) {
+	public CourseStatEntryRow(CourseStatEntry entry, boolean marked, RepositoryEntryEducationalType educationalType, boolean showStatistics) {
 		this.entry = entry;
+		this.marked = marked;
 		this.showStatistics = showStatistics;
 		this.educationalType = educationalType;
 	}

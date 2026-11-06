@@ -24,7 +24,6 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -80,7 +79,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -95,11 +93,11 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.CoachingService;
-import org.olat.modules.coach.manager.CoachingDAO;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.ui.CoursesTableDataModel.Columns;
+import org.olat.modules.coach.ui.CoursesTableDataModel.CoursesListUIFactory;
 import org.olat.modules.coach.ui.ParticipantsTableDataModel.ParticipantCols;
 import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.LastVisitCellRenderer;
@@ -135,13 +133,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
-public class CourseListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
+public class CourseListController extends FormBasicController
+implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 
 	protected static final String COURSE_MODULE = "CourseModule";
 	
 	protected static final String FILTER_MARKED = "Marked";
 	protected static final String FILTER_PERIOD = "Period";
 	protected static final String FILTER_STATUS = "status";
+	protected static final String FILTER_ROLES = "Roles";
 	protected static final String FILTER_NOT_VISITED = "not-visited";
 	protected static final String FILTER_LAST_VISIT = "last-visit";
 	protected static final String FILTER_ASSESSMENT = "assessment";
@@ -204,8 +204,6 @@ public class CourseListController extends FormBasicController implements Activat
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private CoachingDAO coachingDao;
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
@@ -334,7 +332,7 @@ public class CourseListController extends FormBasicController implements Activat
 		
 		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(runtimeTypesGroup);
 		tableModel = new CoursesTableDataModel(columnsModel, roles, coursesStatisticsParams, curriculumElement,
-				getIdentity(), getLocale(), coachingDao, this);
+				getIdentity(), getLocale(), this);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		if(config.withToolbar()) {
 			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
@@ -433,7 +431,22 @@ public class CourseListController extends FormBasicController implements Activat
 		statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate("status.closed")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_STATUS, statusPK, owner));
-		
+
+		if(roles.size() > 1) {
+			SelectionValues rolesPK = new SelectionValues();
+			if(roles.contains(CoachingRoles.owner)) {
+				rolesPK.add(SelectionValues.entry(CoachingRoles.owner.name(), translate("lectures.owner.menu.title")));
+			}
+			if(roles.contains(CoachingRoles.mastercoach)) {
+				rolesPK.add(SelectionValues.entry(CoachingRoles.mastercoach.name(), translate("lectures.mastercoach.menu.title")));
+			}
+			if(roles.contains(CoachingRoles.coach)) {
+				rolesPK.add(SelectionValues.entry(CoachingRoles.coach.name(), translate("lectures.teacher.menu.title")));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.roles"),
+					FILTER_ROLES, rolesPK, true));
+		}
+
 		List<Curriculum> curriculums = loadCurriculumsForFilter();
 		if(!curriculums.isEmpty()) {
 			SelectionValues curriculumValues = new SelectionValues();
@@ -575,17 +588,12 @@ public class CourseListController extends FormBasicController implements Activat
 		tableEl.reset(true, true, true);
 	}
 	
-	protected void forgeRows(List<CourseStatEntryRow> rows) {
-		List<Mark> marks = markManager.getMarks(getIdentity(), List.of("RepositoryEntry"));
-		Set<Long> markedKeys = marks.stream()
-				.map(Mark::getOLATResourceable)
-				.map(OLATResourceable::getResourceableId)
-				.collect(Collectors.toSet());
-		
+	@Override
+	public void forgeRows(List<CourseStatEntryRow> rows) {
 		List<CourseStatEntry> entries = rows.stream().map(CourseStatEntryRow::getEntry).toList();
 		Map<Long,VFSThumbnailInfos> thumbnails = getResourceableThumbnails(entries);
 		for(CourseStatEntryRow row:rows) {
-			forgeRow(row, markedKeys.contains(row.getKey()), thumbnails);
+			forgeRow(row, thumbnails);
 		}
 		loadTaxonomy(rows);
 	}
@@ -604,8 +612,10 @@ public class CourseListController extends FormBasicController implements Activat
 		}
 	}
 
-	private void forgeRow(CourseStatEntryRow row, boolean marked, Map<Long,VFSThumbnailInfos> thumbnails) {
+	private void forgeRow(CourseStatEntryRow row,Map<Long,VFSThumbnailInfos> thumbnails) {
 		if(row.getMarkLink() != null) return;
+		
+		row.setLifecyclePeriod(RepositoyUIFactory.formatExecutionPeriod(getTranslator(), row.getLifecycleStart(), row.getLifecycleEnd()));
 		
 		CourseStatEntry entry = row.getEntry();
 		if(runtimeTypesGroup.loadStatistics() && row.isCourse() && entry.getSuccessStatus() != null) {
@@ -617,7 +627,6 @@ public class CourseListController extends FormBasicController implements Activat
 		forgeActionsLinks(row);
 		forgeRatings(entry, row);
 		
-		row.setMarked(marked);
 		String url = mapperThumbnail.getThumbnailURL(mapperThumbnailKey.getUrl(), entry.getRepoKey(), thumbnails);
 		if(url != null) {
 			row.setThumbnailRelPath(url);
@@ -633,11 +642,7 @@ public class CourseListController extends FormBasicController implements Activat
 	}
 	
 	@Override
-	protected Translator getTranslator() {
-		return super.getTranslator();
-	}
-	
-	protected RepositoryEntryEducationalType getEducationalType(CourseStatEntry entry) {
+	public RepositoryEntryEducationalType getEducationalType(CourseStatEntry entry) {
 		if(entry.getEducationalTypeKey() == null) return null;
 		return educationalTypesMap.get(entry.getEducationalTypeKey());
 	}
