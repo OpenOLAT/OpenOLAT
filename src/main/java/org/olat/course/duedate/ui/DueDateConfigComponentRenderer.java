@@ -68,6 +68,9 @@ public class DueDateConfigComponentRenderer extends DefaultComponentRenderer {
 					JSDateChooser pushTo = ((DueDateFormItemImpl)dueDateItem.getPushDateValueTo()).getAbsoluteDateEl();
 					absoluteDateEl.setPushDateValueTo(pushTo);
 				}
+				if(dueDateItem.hasLabel()) {
+					absoluteDateEl.setLabel(dueDateItem.getLabelText(), null, false);
+				}
 				
 				Component cmp = absoluteDateEl.getComponent();
 				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, new String[] { "form" });
