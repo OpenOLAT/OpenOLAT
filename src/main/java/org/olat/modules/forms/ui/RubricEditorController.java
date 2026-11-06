@@ -286,9 +286,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 		} else if (selectedType == SliderType.discrete_star) {
 			return createDescreteStarEl();
 		} else if (selectedType == SliderType.discrete_slider) {
-			return createDescreteSliderEl();
+			return createDescreteSliderEl(row.getSlider());
 		}
-		return createContinousSliderEl();
+		return createContinousSliderEl(row.getSlider());
 	}
 	
 	private FormItem createSliderStepLabelsEl(SliderRow row) {
@@ -356,18 +356,20 @@ public class RubricEditorController extends FormBasicController implements PageE
 		return sliderEl;
 	}
 
-	private FormItem createDescreteSliderEl() {
+	private FormItem createDescreteSliderEl(Slider slider) {
 		SliderElement sliderEl = uifactory.addSliderElement("slider_" + CodeHelper.getRAMUniqueID(), null, flc);
 		sliderEl.setDomReplacementWrapperRequired(false);
+		sliderEl.setAriaLabel(RubricController.createSliderAriaLabel(slider));
 		sliderEl.setMinValue(1);
 		sliderEl.setMaxValue(rubric.getSteps());
 		sliderEl.setStep(1);
 		return sliderEl;
 	}
 
-	private FormItem createContinousSliderEl() {
+	private FormItem createContinousSliderEl(Slider slider) {
 		SliderElement sliderEl = uifactory.addSliderElement("slider_" + CodeHelper.getRAMUniqueID(), null, flc);
 		sliderEl.setDomReplacementWrapperRequired(false);
+		sliderEl.setAriaLabel(RubricController.createSliderAriaLabel(slider));
 		sliderEl.setMinValue(1);
 		sliderEl.setMaxValue(100);
 		return sliderEl;
@@ -642,6 +644,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 			
 			Integer weight = getIntOrNull(row.getWeightEl());
 			row.getSlider().setWeight(weight);
+			if (row.getSliderEl() instanceof SliderElement sliderEl) {
+				sliderEl.setAriaLabel(RubricController.createSliderAriaLabel(row.getSlider()));
+			}
 			if (row.getSlider().getStartLabel() != null || row.getSlider().getEndLabel() != null) {
 				editedSliders.add(row.getSlider());
 			}

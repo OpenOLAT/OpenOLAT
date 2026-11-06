@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.form.flexible.elements;
 
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.FormItem;
 
 /**
@@ -63,6 +65,17 @@ public interface SliderElement extends FormItem {
 	 *
 	 */
 	public void deleteValue();
+	
+	public String getAriaLabel();
+	
+	public void setAriaLabel(String ariaLabel);
+	
+	public List<String> getValueTexts();
+	
+	/**
+	 * Texts read by screen readers instead of the value, one per step from the min value.
+	 */
+	public void setValueTexts(List<String> valueTexts);
 
 	public void setDomReplacementWrapperRequired(boolean required);
 

@@ -117,7 +117,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 			} else if(type == SliderType.discrete_star) {
 				sliderWrapper = forgeDiscreteStar(slider, rubric, wrapper);
 			} else if(type == SliderType.discrete_slider) {
-				sliderWrapper = forgeDiscreteSlider(slider, rubric);
+				sliderWrapper = forgeDiscreteSlider(slider, rubric, wrapper);
 			} else if(type == SliderType.continuous) {
 				sliderWrapper = forgeContinuousSlider(slider, rubric);
 			}
@@ -135,6 +135,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		sliderEl.setDomReplacementWrapperRequired(false);
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
+		sliderEl.setAriaLabel(createSliderAriaLabel(slider));
 		sliderEl.addActionListener(FormEvent.ONCHANGE);
 		SingleSelection noResponseEl = createNoResponseEl(element);
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl, createSliderCommentEl(element));
@@ -178,12 +179,16 @@ public class RubricController extends FormBasicController implements EvaluationF
 		}
 	}
 	
-	private SliderWrapper forgeDiscreteSlider(Slider slider, Rubric element) {
+	private SliderWrapper forgeDiscreteSlider(Slider slider, Rubric element, RubricWrapper wrapper) {
 		SliderElement sliderEl = uifactory.addSliderElement("slider_" + CodeHelper.getRAMUniqueID(), null, flc);
 		sliderEl.setDomReplacementWrapperRequired(false);
 		sliderEl.setMinValue(element.getStart());
 		sliderEl.setMaxValue(element.getEnd());
 		sliderEl.setStep(1);
+		sliderEl.setAriaLabel(createSliderAriaLabel(slider));
+		if (wrapper.isStepLabels()) {
+			sliderEl.setValueTexts(wrapper.getStepLabels());
+		}
 		sliderEl.addActionListener(FormEvent.ONCHANGE);
 		SingleSelection noResponseEl = createNoResponseEl(element);
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, sliderEl, noResponseEl, createSliderCommentEl(element));
@@ -192,6 +197,22 @@ public class RubricController extends FormBasicController implements EvaluationF
 			noResponseEl.setUserObject(sliderWrapper);
 		}
 		return sliderWrapper;
+	}
+
+	public static String createSliderAriaLabel(Slider slider) {
+		String start = toPlainText(slider.getStartLabel());
+		String end = toPlainText(slider.getEndLabel());
+		if (StringHelper.containsNonWhitespace(start) && StringHelper.containsNonWhitespace(end)) {
+			return start + " \u2013 " + end;
+		}
+		return StringHelper.containsNonWhitespace(start) ? start : end;
+	}
+
+	private static String toPlainText(String label) {
+		if (!StringHelper.containsNonWhitespace(label)) {
+			return null;
+		}
+		return StringHelper.unescapeHtml(FilterFactory.getHtmlTagsFilter().filter(label)).trim();
 	}
 
 	private SliderWrapper forgeDiscreteRadioButtons(Slider slider, Rubric element) {

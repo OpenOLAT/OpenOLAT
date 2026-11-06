@@ -60,13 +60,19 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 	}
 	
 	public void setValue(double value) {
-		this.hasValue = true;
-		this.value = value;
+		if (!hasValue || Double.compare(this.value, value) != 0) {
+			this.hasValue = true;
+			this.value = value;
+			setDirty(true);
+		}
 	}
 	
 	public void deleteValue() {
-		this.hasValue = false;
-		this.value = 0;
+		if (hasValue) {
+			this.hasValue = false;
+			this.value = 0;
+			setDirty(true);
+		}
 	}
 	
 	public boolean hasValue() {
@@ -78,7 +84,10 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 	}
 	
 	public void setMinValue(double min) {
-		minValue = min;
+		if (Double.compare(minValue, min) != 0) {
+			minValue = min;
+			setDirty(true);
+		}
 	}
 	
 	public double getMaxValue() {
@@ -86,7 +95,10 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 	}
 	
 	public void setMaxValue(double max) {
-		maxValue = max;
+		if (Double.compare(maxValue, max) != 0) {
+			maxValue = max;
+			setDirty(true);
+		}
 	}
 
 	public int getStep() {
@@ -94,7 +106,10 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 	}
 
 	public void setStep(int step) {
-		this.step = step;
+		if (this.step != step) {
+			this.step = step;
+			setDirty(true);
+		}
 	}
 
 	public boolean isVertical() {
@@ -102,7 +117,10 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 	}
 
 	public void setVertical(boolean vertical) {
-		this.vertical = vertical;
+		if (this.vertical != vertical) {
+			this.vertical = vertical;
+			setDirty(true);
+		}
 	}
 
 	@Override

@@ -19,6 +19,9 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.util.List;
+import java.util.Objects;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,6 +43,8 @@ public class SliderElementImpl extends FormItemImpl implements SliderElement {
 	private final SliderElementComponent component;
 	
 	private double value;
+	private String ariaLabel;
+	private List<String> valueTexts;
 	
 	public SliderElementImpl(String name) {
 		super(name);
@@ -103,6 +108,32 @@ public class SliderElementImpl extends FormItemImpl implements SliderElement {
 	}
 
 	@Override
+	public String getAriaLabel() {
+		return ariaLabel;
+	}
+
+	@Override
+	public void setAriaLabel(String ariaLabel) {
+		if (!Objects.equals(this.ariaLabel, ariaLabel)) {
+			this.ariaLabel = ariaLabel;
+			component.setDirty(true);
+		}
+	}
+
+	@Override
+	public List<String> getValueTexts() {
+		return valueTexts;
+	}
+
+	@Override
+	public void setValueTexts(List<String> valueTexts) {
+		if (!Objects.equals(this.valueTexts, valueTexts)) {
+			this.valueTexts = valueTexts;
+			component.setDirty(true);
+		}
+	}
+
+	@Override
 	public String getForId() {
 		return null;
 	}
@@ -132,7 +163,6 @@ public class SliderElementImpl extends FormItemImpl implements SliderElement {
 			} catch (NumberFormatException e) {
 				log.error("Cannot parse: " + paramValue, e);
 			}
-			component.setDirty(true);
 		}
 	}
 
