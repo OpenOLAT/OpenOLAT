@@ -83,10 +83,13 @@
 
 		a {
 			// Following rules copied from .navbar-link;
-			color: $o-toolbar-link-color;
-	    	&:hover { 
-	      		color: $o-toolbar-link-hover-color;
-	    	}
+			// a status label as link keeps the colours of its state (_states.scss, OO-10042)
+			&:not(.o_labeled, .o_labeled_light) {
+				color: $o-toolbar-link-color;
+				&:hover {
+					color: $o-toolbar-link-hover-color;
+				}
+			}
 	    	@extend %o_undecorated;
 	    	display: inline-block;
 	    	

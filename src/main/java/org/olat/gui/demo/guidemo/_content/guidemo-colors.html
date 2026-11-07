@@ -44,6 +44,13 @@ All values on this page come from the compiled <code>theme.css</code> of the cur
 .o_gd_col .o_gd_col_keys { display: block; font-size: 10px; word-break: break-word; }
 .o_gd_col .o_gd_col_detail h4 { margin-top: 16px; }
 .o_gd_col pre { font-size: 12px; }
+.o_gd_col .o_gd_col_lab { display: inline-block; font-size: 14px; line-height: 1; padding: 3px 5px; border: 1px solid; border-radius: 3px; white-space: nowrap; }
+.o_gd_col .o_gd_col_lab_solid { background: var(--o-sw-bg); color: var(--o-sw-fg); border-color: var(--o-sw-border); }
+.o_gd_col .o_gd_col_lab_outline { background: #FFFFFF; color: var(--o-sw-text); border-color: var(--o-sw-text); padding: 2px 5px; font-size: 85%; line-height: 85%; }
+.o_gd_col .o_gd_col_measure { display: block; margin-top: 3px; font-size: 10px; color: #595959; white-space: nowrap; }
+.o_gd_col .o_gd_col_fail_border { outline: 2px dashed #D2343C; outline-offset: 2px; }
+.o_gd_col table.o_gd_col_badges td, .o_gd_col table.o_gd_col_badges th { vertical-align: top; }
+.o_gd_col h5.o_gd_col_badge_group { margin-top: 20px; font-weight: bold; }
 </style>
 <div class="o_gd_col">
 	$r.render("tabs")

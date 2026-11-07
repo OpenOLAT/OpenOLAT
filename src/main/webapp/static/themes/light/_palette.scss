@@ -288,3 +288,30 @@ $o-swatch-aliases: o-swatch-build-aliases($o-swatch-alias-families) !default;
 	}
 	@return $selectors;
 }
+
+// Semantic states of badges and status labels (OO-10042): state -> hue.
+// modules/_states.scss generates .o_state_<name> in the styles dark,
+// solid, tint, light and text. A client theme sets its own $o-states
+// in its config, before the import of the light theme.
+$o-states: (
+	"neutral": "blue",
+	"success": "green",
+	"warning": "yellow",
+	"critical": "orange",
+	"danger": "red",
+	"finished": "brown",
+	"inactive": "slate",
+	"highlight": "magenta"
+) !default;
+
+// Colour of a state at compile time, for a rule that cannot extend the state
+// placeholder, e.g. the border of another component. $role: bg, fg, border or text;
+// $style: solid, dark, tint or light (as in modules/_states.scss).
+@function o-state-color($state, $role: "border", $style: "solid") {
+	$hue: map.get($o-states, $state);
+	@if $hue == null {
+		@error "o-state-color: unknown state '#{$state}'";
+	}
+	$key: if($style == "solid" or $role == "text", $role, "#{$style}-#{$role}");
+	@return map.get($o-swatches, $hue, $key);
+}

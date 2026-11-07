@@ -41,9 +41,7 @@
 	}
 	
 	.o_export_expiration.o_labeled {
-		border-color: $alert-warning-text;
-		color: $alert-warning-text;
-		background-color: $alert-warning-bg;
+		// colour: semantic state in _states.scss (OO-10042)
 		text-transform: none;
 		font-weight: normal;
 		display: inline-block;

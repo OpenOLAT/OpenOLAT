@@ -194,10 +194,9 @@
 				margin: 0;
 
 				.o_assessmentitem_status {
-					&:not(.answered):not(.notAnswered) {
-						i:before {
-							color: #fff;
-						}
+					// the icon takes the text colour of the state (OO-10042)
+					i, i:before {
+						color: inherit;
 					}
 				}
 			}

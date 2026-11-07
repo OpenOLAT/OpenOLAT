@@ -1,0 +1,128 @@
+<div class="o_block_top" id="o_gd_col_bd_$r.getCId()">
+<p>Badges and status labels show the meaning of a status, not a colour. Each status class belongs to one of 8 semantic states.
+The state defines the hue, the style defines the weight. A new status uses the state class <code>o_state_&lt;name&gt;</code> that matches its meaning (OO-10042).
+The existing status classes keep their names; <code>&#36;o-state-wiring</code> in <code>themes/light/modules/_states.scss</code> assigns each of them a state and a style.
+All badges on this tab use the classes of the current theme.
+The numbers under each badge are measured in the browser: text on its background, and the border on white.
+A red outline marks text below 4.5:1, a dashed red outline a border below 3:1.</p>
+
+<h4>Styles</h4>
+<table class="table table-condensed">
+	<thead><tr><th scope="col">Style</th><th scope="col">Use</th><th scope="col">Classes</th></tr></thead>
+	<tbody>
+		<tr><td>dark</td><td>Stronger weight, mostly counters</td><td><code>o_labeled o_state_&lt;name&gt; o_state_dark</code></td></tr>
+		<tr><td>solid</td><td>Default for a status label</td><td><code>o_labeled o_state_&lt;name&gt;</code></td></tr>
+		<tr><td>tint</td><td>Pre-status: draft, preparation, provisional</td><td><code>o_labeled o_state_&lt;name&gt; o_state_tint</code></td></tr>
+		<tr><td>light</td><td>Not seen, in process</td><td><code>o_labeled o_state_&lt;name&gt; o_state_light</code></td></tr>
+		<tr><td>text</td><td>Outline labels, instant messaging and media status</td><td><code>o_labeled_light o_state_&lt;name&gt;</code></td></tr>
+	</tbody>
+</table>
+
+<h4>States</h4>
+<div class="o_gd_col_scroll">
+<table class="table table-condensed o_gd_col_badges">
+	<thead><tr>
+		<th scope="col">State</th><th scope="col">Meaning</th>
+		<th scope="col">dark</th><th scope="col">solid</th><th scope="col">tint</th><th scope="col">light</th><th scope="col">text</th>
+	</tr></thead>
+	<tbody>
+	#foreach($state in $states)
+		<tr>
+			<th scope="row"><code>$state.getCssClass()</code><br><small>$state.hue()</small></th>
+			<td>$state.meaning()</td>
+			#foreach($sample in $state.getStyles())
+			<td><span class="$sample.cssClass()" data-o-contrast>$state.name()</span></td>
+			#end
+		</tr>
+	#end
+	</tbody>
+</table>
+</div>
+
+<h4>Status classes</h4>
+<p>Not wired to a state: <code>label-primary</code> and the theme area chip of Open Badges (<code>o_badge_theme_area</code>) keep the brand colour of the theme (<code>&#36;brand-primary</code>).</p>
+#foreach($group in $groups)
+<h5 class="o_gd_col_badge_group">$group.name()</h5>
+<table class="table table-condensed o_gd_col_badges">
+	<thead><tr><th scope="col">Class</th><th scope="col">Badge</th><th scope="col">State</th><th scope="col">Style</th></tr></thead>
+	<tbody>
+	#foreach($sample in $group.samples())
+		<tr>
+			<td><code>$sample.cssClass()</code></td>
+			<td>#if($group.wrapper())<div class="$group.wrapper()">#end<span class="$sample.cssClass()" data-o-contrast>$sample.text()</span>#if($group.wrapper())</div>#end</td>
+			<td>$sample.getStateName()</td>
+			<td>$sample.getStyleName()</td>
+		</tr>
+	#end
+	</tbody>
+</table>
+#end
+</div>
+<script>
+"use strict";
+jQuery(function() {
+	function parse(c) {
+		var m = c.match(/[\d.]+/g);
+		if (!m) return null;
+		return { r: +m[0], g: +m[1], b: +m[2], a: m.length > 3 ? +m[3] : 1 };
+	}
+	function blend(top, bottom, alpha) {
+		return { r: top.r * alpha + bottom.r * (1 - alpha), g: top.g * alpha + bottom.g * (1 - alpha), b: top.b * alpha + bottom.b * (1 - alpha), a: 1 };
+	}
+	function channel(c) {
+		c = c / 255;
+		return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+	}
+	function luminance(c) {
+		return 0.2126 * channel(c.r) + 0.7152 * channel(c.g) + 0.0722 * channel(c.b);
+	}
+	function ratio(c1, c2) {
+		var l1 = luminance(c1), l2 = luminance(c2);
+		return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+	}
+	// the background behind an element: the first non-transparent fill up the tree, on white
+	function background(el) {
+		var white = { r: 255, g: 255, b: 255, a: 1 };
+		var layers = [];
+		for (var node = el; node && node.nodeType === 1; node = node.parentElement) {
+			var bg = parse(window.getComputedStyle(node).backgroundColor);
+			if (bg && bg.a > 0) {
+				layers.push(bg);
+				if (bg.a >= 1) break;
+			}
+		}
+		var result = white;
+		for (var i = layers.length - 1; i >= 0; i--) {
+			result = blend(layers[i], result, layers[i].a);
+		}
+		return result;
+	}
+	jQuery("#o_gd_col_bd_$r.getCId() [data-o-contrast]").each(function() {
+		var style = window.getComputedStyle(this);
+		var page = this.parentElement ? background(this.parentElement) : { r: 255, g: 255, b: 255, a: 1 };
+		var fill = background(this);
+		var opacity = parseFloat(style.opacity);
+		var text = parse(style.color);
+		text = blend(text, fill, text.a);
+		if (opacity < 1) {
+			fill = blend(fill, page, opacity);
+			text = blend(text, page, opacity);
+		}
+		var textRatio = ratio(text, fill);
+		var out = "text " + textRatio.toFixed(2);
+		var jThis = jQuery(this);
+		if (textRatio < 4.5) {
+			jThis.addClass("o_gd_col_fail");
+		}
+		if (style.borderTopStyle !== "none" && parseFloat(style.borderTopWidth) > 0) {
+			var border = parse(style.borderTopColor);
+			var borderRatio = ratio(blend(border, page, border.a), page);
+			out += " / border " + borderRatio.toFixed(2);
+			if (borderRatio < 3) {
+				jThis.addClass("o_gd_col_fail_border");
+			}
+		}
+		jThis.after("<span class='o_gd_col_measure'>" + out + "</span>");
+	});
+});
+</script>

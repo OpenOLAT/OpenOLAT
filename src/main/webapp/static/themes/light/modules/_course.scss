@@ -1445,9 +1445,6 @@ div.o_correction_navigation {
 .o_infomsg {
 	.o_labeled_light {
 		margin-bottom: 6px;
-		&.o_status_scheduled {
-			@extend %o_labeled_light_yellow;;
-		}
 	}
 	.o_title {
 		display: inline;

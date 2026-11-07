@@ -871,34 +871,14 @@ body>li.o_assessmentitem_order_item  {
 		line-height: 1.2em;
 		color: #fff;
 
-		&.correct {
-			background-color: $o-qti-status-correct-color;
-		}
-		&.ended {
-		  background-color: $o-qti-status-ended-color;
-		}
-		&.incorrect {
-			background-color: $o-qti-status-incorrect-color;
-		}
+		// correct, ended, incorrect, answered, notAnswered, notPresented, review and reviewNotSeen:
+		// semantic states in _states.scss (OO-10042)
 		&.invalid {
 		  background-color: $o-qti-status-invalid-color;
 		}
-		&.answered {
-		  @extend %o_labeled_blue;
-		}
-		&.notAnswered {
-		  @extend %o_labeled_orange;
-		}
-		&.notPresented {
-			background-color: $o-qti-status-notPresented-color;
-		}
-		&.review {
-			background-color: $o-qti-status-review-color;
-		}
 		&.reviewNotAllowed, 
 		&.reviewInvalid, 
-		&.reviewNotAnswered, 
-		&.reviewNotSeen {
+		&.reviewNotAnswered {
 			background-color: $o-qti-status-review-color;
 			opacity: 0.7;
 		}
@@ -906,25 +886,9 @@ body>li.o_assessmentitem_order_item  {
 }
 
 .o_labeled_light.o_assessmentitem_status {
-	&.answered {
+	// colours: semantic states in _states.scss (OO-10042)
+	&.answered, &.notAnswered, &.notPresented, &.toCorrect, &.adjusted, &.auto, &.manual {
 		font-weight: normal;
-		@extend %o_labeled_light_blue
-	}
-	&.notAnswered {
-		font-weight: normal;
-		@extend %o_labeled_light_orange
-	}
-	&.notPresented {
-		font-weight: normal;
-		@extend %o_labeled_light_grey
-	}
-	&.toCorrect {
-		font-weight: normal;
-		@extend %o_labeled_light_red
-	}
-	&.adjusted, &.auto, &.manual {
-		font-weight: normal;
-		@extend %o_labeled_light_green
 	}
 }
 

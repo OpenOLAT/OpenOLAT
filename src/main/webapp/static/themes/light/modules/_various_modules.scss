@@ -1804,9 +1804,7 @@ a.o_labeled_light {
  }
 /* labeled dropdown element */
 .dropdown-toggle.o_with_labeled {
-	.o_inner_wrapper.o_labeled  + .o_label + .o_icon_caret {
-		color: $o-repo-status-color-bright !important;
-	}
+	// the caret takes the text colour of the state (_states.scss, OO-10042)
 	.o_icon_caret {
 		margin-left: 6px;
 	}

@@ -555,17 +555,7 @@ fieldset.o_letter_preview legend {
 	width: 8em;
 	text-align: center;
 	
-	&.o_step_enabled {
-		background-color: $o-step-status-enabled;
-	}
-	
-	&.o_step_disabled {
-		background-color:  $o-step-status-disabled
-	}
-	
-	&.o_step_staff_only {
-		background-color: $o-step-status-staff-only
-	}
+	// colours of o_step_enabled, o_step_disabled, o_step_staff_only: semantic states in _states.scss (OO-10042)
 }
 
 /* Notifications */

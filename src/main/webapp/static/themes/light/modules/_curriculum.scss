@@ -917,60 +917,14 @@ fieldset.o_validation_result {
 }
 
 .o_labeled_light {
+	// Colours of the membership statuses: semantic states in _states.scss (OO-10042)
 	&.o_gmembership_status_booking,
-	&.o_gmembership_status_transfer {
-		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-curriculum-status-preparation-color;
-	    color: $o-curriculum-status-preparation-color !important;
-	}
-	
-	&.o_gmembership_status_reservation {
-		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-curriculum-status-reservation-border-color;
-	    color: $o-curriculum-status-reservation-color !important;
-	}
-	
+	&.o_gmembership_status_transfer,
+	&.o_gmembership_status_reservation,
 	&.o_gmembership_status_active,
-	&.o_gmembership_status_parentbooking  {
-		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-curriculum-status-active-border-color;
-	    color: $o-curriculum-status-active-color !important;
-	}
-	
-	&.o_gmembership_status_declined {
-	    border-color: $o-curriculum-status-declined-border-color;
-	    color: $o-curriculum-status-declined-color !important;
-	}
-	
-	&.o_gmembership_status_cancelwithfee,
-	&.o_gmembership_status_cancel {
-	    border-color: $o-curriculum-status-cancelled-border-color;
-	    color: $o-curriculum-status-cancelled-color !important;
-	}
-	
-	&.o_gmembership_status_finished {
-		border-color: $o-curriculum-status-finished-border-color;
-	    color: $o-curriculum-status-finished-color !important;
-	}
-	
+	&.o_gmembership_status_parentbooking,
 	&.o_gmembership_status_select {
 		font-weight: normal;
-	    background-color: #fff;
-		border-color: $o-curriculum-status-select-border-color;
-	    color: $o-curriculum-status-select-color !important;
-	}
-	
-	&.o_gmembership_status_removed {
-		border-color: $o-curriculum-status-removed-border-color;
-	    color: $o-curriculum-status-removed-color !important;
-	}
-	
-	&.o_gmembership_status_resourcedeleted {
-		border-color: $o-curriculum-status-deleted-border-color;
-	    color: $o-curriculum-status-deleted-color !important;
 	}
 }
 

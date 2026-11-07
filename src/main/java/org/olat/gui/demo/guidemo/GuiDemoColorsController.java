@@ -92,6 +92,11 @@ public class GuiDemoColorsController extends BasicController {
 		swatchesVC.contextPut("rows", rows);
 		tabPane.addTab("Swatches", swatchesVC);
 
+		VelocityContainer badgesVC = createVelocityContainer("guidemo-colors-badges");
+		badgesVC.contextPut("states", GuiDemoColorBadges.states());
+		badgesVC.contextPut("groups", GuiDemoColorBadges.groups());
+		tabPane.addTab("Badges / Status", badgesVC);
+
 		VelocityContainer usageVC = createVelocityContainer("guidemo-colors-usage");
 		tabPane.addTab("Sources and usage", usageVC);
 

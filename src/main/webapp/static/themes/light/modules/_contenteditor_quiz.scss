@@ -168,20 +168,13 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 				}
 
 				.o_assessmentitem_status {
-					&.correct {
-						border-color: darken($o-qti-status-correct-color, 10%);
-					}
 					&.solution {
 						border-color: darken($o-qti-status-correct-color, 10%);
 						background-color: $o-qti-status-correct-color;
 					}
-					&.incorrect {
-						border-color: darken($o-qti-status-incorrect-color, 10%);
-					}
-					&:not(.answered):not(.notAnswered) {
-						i:before {
-							color: #fff;
-						}
+					// the icon takes the text colour of the state (OO-10042)
+					i, i:before {
+						color: inherit;
 					}
 				}
 			}

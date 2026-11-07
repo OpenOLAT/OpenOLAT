@@ -1,0 +1,525 @@
+/*
+ * =================================================
+ *
+ * Semantic states of badges and status labels (OO-10042).
+ *
+ * A status shows a meaning, not a colour. Each state takes the
+ * hue of $o-states (_palette.scss) and renders in one of five
+ * styles from the palette swatches:
+ *
+ *   dark   stronger weight, mostly counters
+ *   solid  default status label
+ *   tint   pre-status: draft, preparation, provisional
+ *   light  not seen, in process
+ *   text   outline: white fill, text and border in the text
+ *          colour of the hue (o_labeled_light)
+ *
+ * Use in new code:
+ *   <span class="o_labeled o_state_success">              solid
+ *   <span class="o_labeled o_state_neutral o_state_tint">  tint
+ *   <span class="o_labeled_light o_state_danger">          text
+ *
+ * The existing status classes keep their names. $o-state-wiring
+ * assigns each of them a state and a style; the list is generated
+ * from the OO-colors mapping (fxWorkspace/projects/OO-colors/
+ * ux-handover/gen_states_code.py), do not edit it by hand.
+ * The module is imported after all other modules, so the state
+ * colours win over the old colour rules of the status modules.
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+@use "sass:list";
+@use "sass:map";
+
+$o-state-styles: ("dark", "solid", "tint", "light", "text");
+
+@each $state, $hue in $o-states {
+	@each $style in $o-state-styles {
+		%o_state_#{$state}_#{$style} {
+			@extend %o_swatch_#{$hue};
+			@if $style == "text" {
+				background-color: #FFFFFF;
+				color: var(--o-sw-text);
+				border-color: var(--o-sw-text);
+				// a status label as link (.o_empty is a drop down button without a menu),
+				// or the label of a dropdown toggle
+				&:is(a):not(.o_empty):hover,
+				.dropdown-toggle:not(.o_empty):hover > & {
+					background-color: var(--o-sw-soft-bg);
+					color: var(--o-sw-text);
+					border-color: var(--o-sw-text);
+				}
+			} @else {
+				@if $style != "solid" {
+					@extend %o_swatch_#{$hue}_#{$style};
+				}
+				background-color: var(--o-sw-bg);
+				color: var(--o-sw-fg);
+				border-color: var(--o-sw-border);
+				&:is(a):not(.o_empty):hover,
+				.dropdown-toggle:not(.o_empty):hover > & {
+					background-color: color-mix(in srgb, var(--o-sw-bg), #000 10%);
+					color: var(--o-sw-fg);
+					border-color: color-mix(in srgb, var(--o-sw-border), #000 12%);
+				}
+			}
+			// caret of a labeled dropdown (DropdownRenderer): sibling of the label, so the colour is set here
+			& + .o_label + .o_icon_caret {
+				color: o-hex(map.get($o-swatches, $hue, if($style == "solid", "fg", if($style == "text", "text", "#{$style}-fg"))));
+			}
+		}
+	}
+
+	.o_state_#{$state} {
+		@extend %o_state_#{$state}_solid;
+	}
+	.o_state_#{$state}.o_state_dark {
+		@extend %o_state_#{$state}_dark;
+	}
+	.o_state_#{$state}.o_state_tint {
+		@extend %o_state_#{$state}_tint;
+	}
+	.o_state_#{$state}.o_state_light {
+		@extend %o_state_#{$state}_light;
+	}
+	.o_labeled_light.o_state_#{$state} {
+		@extend %o_state_#{$state}_text;
+	}
+}
+
+// Status class: (state, style)
+$o-state-wiring: (
+	// BEGIN WIRING
+	// Repository
+	".o_labeled.o_repo_status_preparation": ("neutral", "tint"),
+	".o_labeled.o_repo_status_review": ("warning", "solid"),
+	".o_labeled.o_repo_status_coachpublished": ("success", "tint"),
+	".o_labeled.o_repo_status_published": ("success", "solid"),
+	".o_labeled.o_repo_status_closed": ("finished", "solid"),
+	".o_labeled.o_repo_status_trash": ("inactive", "solid"),
+	".o_labeled.o_repo_status_deleted": ("inactive", "dark"),
+	".o_labeled_light.o_repo_status_preparation": ("neutral", "text"),
+	".o_labeled_light.o_repo_status_review": ("warning", "text"),
+	".o_labeled_light.o_repo_status_coachpublished": ("success", "text"),
+	".o_labeled_light.o_repo_status_published": ("success", "text"),
+	".o_labeled_light.o_repo_status_closed": ("finished", "text"),
+	".o_labeled_light.o_repo_status_trash": ("inactive", "text"),
+	".o_labeled_light.o_repo_status_deleted": ("inactive", "text"),
+	// Process badge
+	".o_process_status_badge.o_process_status_done": ("success", "solid"),
+	".o_process_status_badge.o_process_status_waiting": ("warning", "solid"),
+	".o_process_status_badge.o_process_status_review": ("warning", "solid"),
+	".o_labeled_light.o_process_status_review": ("warning", "text"),
+	".o_process_status_badge.o_process_status_active": ("neutral", "solid"),
+	".o_labeled_light.o_process_status_active": ("neutral", "text"),
+	".o_process_status_badge.o_process_status_notavailable": ("inactive", "tint"),
+	".o_process_status_badge.o_process_status_expired": ("danger", "solid"),
+	".o_process_status_badge.o_process_status_late": ("critical", "solid"),
+	// Process
+	".o_labeled_light.o_process_status_done": ("success", "text"),
+	".o_labeled_light.o_process_status_waiting": ("warning", "text"),
+	".o_labeled_light.o_process_status_extended": ("neutral", "text"),
+	".o_labeled_light.o_process_status_auto_collect": ("danger", "text"),
+	".o_labeled_light.o_process_status_expired": ("danger", "text"),
+	".o_labeled_light.o_process_status_late": ("critical", "text"),
+	".o_labeled_light.o_process_status_need_revision": ("danger", "text"),
+	".o_labeled_light.o_process_status_notavailable": ("inactive", "text"),
+	// User
+	".o_user_status_badge.o_user_status_active": ("success", "solid"),
+	".o_user_status_badge.o_user_status_inactive": ("inactive", "tint"),
+	".o_user_status_badge.o_user_status_login_denied": ("danger", "solid"),
+	".o_user_status_badge.o_user_status_pending": ("warning", "solid"),
+	".o_user_status_badge.o_user_status_deleted": ("inactive", "dark"),
+	// Business group
+	".o_businessgroup_status_badge.o_businessgroup_status_active": ("success", "solid"),
+	".o_labeled_light.o_businessgroup_status_active": ("success", "text"),
+	".o_businessgroup_status_badge.o_businessgroup_status_inactive": ("inactive", "tint"),
+	".o_labeled_light.o_businessgroup_status_inactive": ("inactive", "text"),
+	".o_businessgroup_status_badge.o_businessgroup_status_trash": ("inactive", "solid"),
+	".o_labeled_light.o_businessgroup_status_trash": ("inactive", "text"),
+	".o_businessgroup_status_badge.o_businessgroup_status_deleted": ("inactive", "dark"),
+	".o_labeled_light.o_businessgroup_status_deleted": ("inactive", "text"),
+	// Project
+	".o_labeled_light.o_proj_project_status_active": ("success", "text"),
+	".o_labeled_light.o_proj_project_status_done": ("finished", "text"),
+	".o_labeled_light.o_proj_project_status_deleted": ("inactive", "text"),
+	// Question pool
+	".o_labeled.o_qpool_status_ai_draft": ("highlight", "solid"),
+	".o_labeled.o_qpool_status_draft": ("neutral", "tint"),
+	".o_labeled_light.o_qpool_status_draft_light": ("neutral", "text"),
+	".o_labeled.o_qpool_status_review": ("warning", "solid"),
+	".o_labeled_light.o_qpool_status_review_light": ("warning", "text"),
+	".o_labeled.o_qpool_status_revised": ("danger", "solid"),
+	".o_labeled_light.o_qpool_status_revised_light": ("danger", "text"),
+	".o_labeled.o_qpool_status_finalVersion": ("success", "solid"),
+	".o_labeled_light.o_qpool_status_finalVersion_light": ("success", "text"),
+	".o_labeled.o_qpool_status_endOfLife": ("inactive", "solid"),
+	".o_labeled_light.o_qpool_status_endOfLife_light": ("inactive", "text"),
+	".o_labeled.o_qpool_status_aiDraft": ("highlight", "solid"),
+	".o_labeled_light.o_qpool_status_aiDraft_light": ("highlight", "text"),
+	".o_labeled.o_qpool_status_unavailable": ("inactive", "solid"),
+	".o_labeled_light.o_qpool_status_unavailable_light": ("inactive", "text"),
+	// Quality data collection
+	".o_labeled.o_qual_dc_status_preparation": ("neutral", "tint"),
+	".o_labeled_light.o_qual_dc_status_preparation_light": ("neutral", "text"),
+	".o_labeled.o_qual_dc_status_ready": ("warning", "solid"),
+	".o_labeled_light.o_qual_dc_status_ready_light": ("warning", "text"),
+	".o_labeled.o_qual_dc_status_running": ("neutral", "solid"),
+	".o_labeled_light.o_qual_dc_status_running_light": ("neutral", "text"),
+	".o_labeled.o_qual_dc_status_finished": ("finished", "solid"),
+	".o_labeled_light.o_qual_dc_status_finished_light": ("finished", "text"),
+	// Quality execution
+	".o_labeled_light.o_qual_exec_status_future_light": ("inactive", "text"),
+	".o_labeled_light.o_qual_exec_status_ready_light": ("warning", "text"),
+	".o_labeled_light.o_qual_exec_status_participating_light": ("neutral", "text"),
+	".o_labeled_light.o_qual_exec_status_participated_light": ("success", "text"),
+	".o_labeled_light.o_qual_exec_status_over_light": ("finished", "text"),
+	// Group membership
+	".o_labeled_light.o_gmembership_status_booking": ("neutral", "text"),
+	".o_labeled_light.o_gmembership_status_reservation": ("warning", "text"),
+	".o_labeled_light.o_gmembership_status_active": ("success", "text"),
+	".o_labeled_light.o_gmembership_status_declined": ("critical", "text"),
+	".o_labeled_light.o_gmembership_status_cancel": ("inactive", "text"),
+	".o_labeled_light.o_gmembership_status_finished": ("finished", "text"),
+	".o_labeled_light.o_gmembership_status_transfer": ("inactive", "text"),
+	".o_labeled_light.o_gmembership_status_parentbooking": ("inactive", "text"),
+	".o_labeled_light.o_gmembership_status_cancelwithfee": ("inactive", "text"),
+	".o_labeled_light.o_gmembership_status_removed": ("inactive", "text"),
+	".o_labeled_light.o_gmembership_status_resourcedeleted": ("inactive", "text"),
+	".o_labeled_light.o_gmembership_status_select": ("inactive", "text"),
+	// Curriculum
+	".o_labeled.o_curriculum_status_preparation": ("neutral", "tint"),
+	".o_labeled_light.o_curriculum_status_preparation": ("neutral", "text"),
+	".o_labeled.o_curriculum_status_provisional": ("warning", "tint"),
+	".o_labeled_light.o_curriculum_status_provisional": ("warning", "text"),
+	".o_labeled.o_curriculum_status_confirmed": ("success", "tint"),
+	".o_labeled_light.o_curriculum_status_confirmed": ("success", "text"),
+	".o_labeled.o_curriculum_status_active": ("success", "solid"),
+	".o_labeled_light.o_curriculum_status_active": ("success", "text"),
+	".o_labeled.o_curriculum_status_cancelled": ("inactive", "solid"),
+	".o_labeled_light.o_curriculum_status_cancelled": ("inactive", "text"),
+	".o_labeled.o_curriculum_status_finished": ("finished", "solid"),
+	".o_labeled_light.o_curriculum_status_finished": ("finished", "text"),
+	".o_labeled.o_curriculum_status_deleted": ("inactive", "text"),
+	".o_labeled_light.o_curriculum_status_deleted": ("inactive", "text"),
+	".o_labeled.o_curriculum_status_inactive": ("inactive", "solid"),
+	".o_labeled_light.o_curriculum_status_inactive": ("inactive", "text"),
+	".o_labeled_light.o_curriculum_default_element": ("success", "text"),
+	// Certification
+	".o_labeled_light.o_certification_status_valid": ("success", "text"),
+	".o_labeled.o_certification_status_valid": ("success", "solid"),
+	".o_labeled_light.o_certification_status_expired": ("critical", "text"),
+	".o_labeled.o_certification_status_expired": ("critical", "solid"),
+	".o_labeled_light.o_certification_status_revoked": ("danger", "text"),
+	".o_labeled.o_certification_status_revoked": ("danger", "solid"),
+	".o_labeled_light.o_certification_status_paused": ("inactive", "text"),
+	".o_labeled.o_certification_status_paused": ("inactive", "tint"),
+	".o_labeled.o_certification_status_certified": ("success", "solid"),
+	".o_labeled_light.o_certification_status_certified": ("success", "text"),
+	".o_labeled.o_certification_status_active": ("success", "solid"),
+	".o_labeled_light.o_certification_status_active": ("success", "text"),
+	".o_labeled.o_certification_status_recertifying": ("neutral", "solid"),
+	".o_labeled_light.o_certification_status_recertifying": ("neutral", "text"),
+	".o_labeled_light.o_certification_status_pending": ("warning", "text"),
+	".o_labeled_light.o_certification_status_rendering": ("neutral", "text"),
+	".o_labeled.o_certification_status_expired_renewable": ("warning", "solid"),
+	".o_labeled_light.o_certification_status_expired_renewable": ("warning", "text"),
+	".o_labeled_light.o_certification_status_error": ("danger", "text"),
+	".o_labeled.o_certification_status_inactive": ("inactive", "solid"),
+	".o_labeled_light.o_certification_status_inactive": ("inactive", "text"),
+	".o_labeled.o_certification_status_archived": ("inactive", "solid"),
+	".o_labeled_light.o_certification_status_archived": ("inactive", "text"),
+	".o_labeled.o_certification_status_removed": ("inactive", "solid"),
+	".o_labeled_light.o_certification_status_removed": ("inactive", "text"),
+	// Order
+	".o_labeled.o_ac_order_status_new": ("neutral", "solid"),
+	".o_labeled_light.o_ac_order_status_new": ("neutral", "text"),
+	".o_labeled.o_ac_order_status_pending": ("warning", "solid"),
+	".o_labeled_light.o_ac_order_status_pending": ("warning", "text"),
+	".o_labeled.o_ac_order_status_payed": ("success", "solid"),
+	".o_labeled_light.o_ac_order_status_payed": ("success", "text"),
+	".o_labeled.o_ac_order_status_error": ("danger", "solid"),
+	".o_labeled_light.o_ac_order_status_error": ("danger", "text"),
+	".o_labeled.o_ac_order_status_canceled": ("inactive", "solid"),
+	".o_labeled_light.o_ac_order_status_canceled": ("inactive", "text"),
+	".o_labeled.o_ac_order_status_open": ("warning", "solid"),
+	".o_labeled_light.o_ac_order_status_open": ("warning", "text"),
+	".o_labeled.o_ac_order_status_in_process": ("warning", "solid"),
+	".o_labeled_light.o_ac_order_status_in_process": ("warning", "text"),
+	".o_labeled.o_ac_order_status_payed_pending": ("warning", "solid"),
+	".o_labeled_light.o_ac_order_status_payed_pending": ("warning", "text"),
+	".o_labeled.o_ac_order_status_warning": ("critical", "solid"),
+	".o_labeled_light.o_ac_order_status_warning": ("critical", "text"),
+	".o_labeled.o_ac_order_status_written_off": ("inactive", "solid"),
+	".o_labeled_light.o_ac_order_status_written_off": ("inactive", "text"),
+	// Lecture
+	".o_labeled.o_lecture_status_planned": ("warning", "solid"),
+	".o_labeled_light.o_lecture_status_planned": ("warning", "text"),
+	".o_labeled.o_lecture_status_active": ("neutral", "solid"),
+	".o_labeled_light.o_lecture_status_active": ("neutral", "text"),
+	".o_labeled.o_lecture_status_done": ("finished", "solid"),
+	".o_labeled_light.o_lecture_status_done": ("finished", "text"),
+	".o_labeled.o_lecture_status_cancelled": ("inactive", "solid"),
+	".o_labeled_light.o_lecture_status_cancelled": ("inactive", "text"),
+	".o_labeled.o_lecture_status_next": ("warning", "solid"),
+	".o_labeled_light.o_lecture_status_next": ("warning", "text"),
+	".o_labeled.o_lecture_status_running": ("neutral", "solid"),
+	".o_labeled_light.o_lecture_status_running": ("neutral", "text"),
+	// Assessment mode
+	".o_labeled_light.o_assessment_status_none": ("neutral", "text"),
+	".o_labeled_light.o_assessment_status_leadtime": ("warning", "text"),
+	".o_labeled_light.o_assessment_status_assessment": ("success", "text"),
+	".o_labeled_light.o_assessment_status_followup": ("finished", "text"),
+	".o_labeled_light.o_assessment_status_end": ("finished", "text"),
+	// Assessment inspection
+	".o_labeled_light.o_assessment_inspection_scheduled": ("warning", "text"),
+	".o_labeled_light.o_assessment_inspection_active": ("neutral", "text"),
+	".o_labeled_light.o_assessment_inspection_inprogress": ("warning", "text"),
+	".o_labeled_light.o_assessment_inspection_carriedout": ("success", "text"),
+	".o_labeled_light.o_assessment_inspection_cancelled": ("inactive", "text"),
+	".o_labeled_light.o_assessment_inspection_withdrawn": ("inactive", "text"),
+	".o_labeled_light.o_assessment_inspection_noshow": ("warning", "text"),
+	// QTI item
+	".o_assessmentitem_status.correct": ("success", "solid"),
+	".o_assessmentitem_status.ended": ("finished", "solid"),
+	".o_assessmentitem_status.incorrect": ("danger", "solid"),
+	".o_assessmentitem_status.answered": ("neutral", "solid"),
+	".o_labeled_light.o_assessmentitem_status.answered": ("neutral", "text"),
+	".o_assessmentitem_status.notAnswered": ("critical", "solid"),
+	".o_labeled_light.o_assessmentitem_status.notAnswered": ("critical", "text"),
+	".o_assessmentitem_status.notPresented": ("inactive", "light"),
+	".o_labeled_light.o_assessmentitem_status.notPresented": ("inactive", "text"),
+	".o_assessmentitem_status.review": ("warning", "solid"),
+	".o_assessmentitem_status.reviewNotSeen": ("warning", "solid"),
+	".o_labeled.o_assessmentitem_status.submitted": ("neutral", "solid"),
+	// Portfolio
+	".o_labeled.o_portfolio_entry_draft": ("neutral", "tint"),
+	".o_labeled_light.o_portfolio_entry_draft": ("neutral", "text"),
+	".o_labeled.o_portfolio_entry_published": ("success", "solid"),
+	".o_labeled_light.o_portfolio_entry_published": ("success", "text"),
+	".o_labeled.o_portfolio_entry_revision": ("danger", "solid"),
+	".o_labeled_light.o_portfolio_entry_revision": ("danger", "text"),
+	".o_labeled.o_portfolio_entry_closed": ("finished", "solid"),
+	".o_labeled_light.o_portfolio_entry_closed": ("finished", "text"),
+	".o_labeled.o_portfolio_entry_inprocess": ("inactive", "light"),
+	".o_labeled_light.o_portfolio_entry_inprocess": ("inactive", "text"),
+	".o_labeled.o_portfolio_entry_deleted": ("inactive", "dark"),
+	".o_labeled_light.o_portfolio_entry_deleted": ("inactive", "text"),
+	".o_labeled.o_portfolio_entry_incoming": ("neutral", "solid"),
+	".o_labeled_light.o_portfolio_entry_incoming": ("neutral", "text"),
+	".o_labeled.o_portfolio_entry_done": ("success", "solid"),
+	".o_labeled_light.o_portfolio_entry_done": ("success", "text"),
+	// Learning path
+	".o_labeled.o_lp_not_accessible": ("inactive", "tint"),
+	".o_labeled_light.o_lp_not_accessible": ("inactive", "text"),
+	".o_labeled.o_lp_ready": ("warning", "solid"),
+	".o_labeled_light.o_lp_ready": ("warning", "text"),
+	".o_labeled.o_lp_in_progress": ("neutral", "solid"),
+	".o_labeled_light.o_lp_in_progress": ("neutral", "text"),
+	".o_labeled.o_lp_in_review": ("warning", "tint"),
+	".o_labeled_light.o_lp_in_review": ("warning", "text"),
+	".o_labeled.o_lp_done": ("success", "solid"),
+	".o_labeled_light.o_lp_done": ("success", "text"),
+	// Evaluation form
+	".o_labeled.o_evaluation_open": ("warning", "solid"),
+	".o_labeled_light.o_evaluation_open": ("warning", "text"),
+	".o_labeled.o_evaluation_in_progress": ("neutral", "solid"),
+	".o_labeled_light.o_evaluation_in_progress": ("neutral", "text"),
+	".o_labeled.o_evaluation_invalid": ("critical", "solid"),
+	".o_labeled_light.o_evaluation_invalid": ("critical", "text"),
+	".o_labeled.o_evaluation_done": ("success", "solid"),
+	".o_labeled_light.o_evaluation_done": ("success", "text"),
+	// Topic broker
+	".o_labeled.o_tb_label_broker_not_started": ("inactive", "tint"),
+	".o_labeled.o_tb_label_broker_enrollment_in_progress": ("success", "tint"),
+	".o_labeled.o_tb_label_enrolled": ("success", "solid"),
+	".o_labeled_light.o_tb_label_light_enrolled": ("success", "text"),
+	".o_labeled.o_tb_label_waiting": ("warning", "solid"),
+	".o_labeled_light.o_tb_label_light_waiting": ("warning", "text"),
+	".o_labeled.o_tb_label_not_enrolled": ("inactive", "tint"),
+	".o_labeled_light.o_tb_label_light_not_enrolled": ("inactive", "text"),
+	".o_labeled.o_tb_label_surplus": ("highlight", "solid"),
+	".o_labeled_light.o_tb_label_light_surplus": ("highlight", "text"),
+	".o_labeled.o_tb_label_broker_selection_in_progress": ("neutral", "solid"),
+	".o_labeled.o_tb_label_broker_enrollment_done": ("success", "solid"),
+	".o_labeled.o_tb_label_selected": ("neutral", "solid"),
+	".o_labeled_light.o_tb_label_light_selected": ("neutral", "text"),
+	".o_labeled_light.o_tb_label_light_held": ("success", "text"),
+	".o_labeled_light.o_tb_label_light_not_held": ("inactive", "text"),
+	// Appointments
+	".o_labeled.o_ap_status_planned": ("neutral", "solid"),
+	".o_labeled_light.o_ap_status_planned": ("neutral", "text"),
+	".o_labeled.o_ap_status_confirmed": ("success", "solid"),
+	".o_labeled_light.o_ap_status_confirmed": ("success", "text"),
+	".o_labeled_light.o_today": ("warning", "text"),
+	".o_labeled_light.o_after_today": ("neutral", "text"),
+	".o_labeled_light.o_past_deadline": ("critical", "text"),
+	// Open Badges
+	".o_labeled.o_badge_class_status_preparation": ("neutral", "tint"),
+	".o_labeled.o_badge_class_status_active": ("success", "solid"),
+	".o_labeled.o_badge_class_status_deleted": ("inactive", "dark"),
+	".o_labeled.o_badge_class_status_revoked": ("danger", "solid"),
+	".o_labeled.o_badge_assertion_status_reset": ("warning", "solid"),
+	".o_labeled.o_badge_assertion_status_expired": ("critical", "solid"),
+	".o_labeled.o_badge_assertion_status_editing": ("neutral", "tint"),
+	".o_labeled.o_badge_assertion_status_issued": ("success", "solid"),
+	".o_labeled.o_badge_assertion_status_revoked": ("danger", "solid"),
+	".o_labeled.o_badge_verification_signed": ("neutral", "solid"),
+	".o_labeled.o_badge_verification_verified": ("neutral", "solid"),
+	// Instant messaging and media status
+	".o_labeled.o_im_status_active": ("success", "text"),
+	".o_labeled.o_im_status_completed": ("neutral", "text"),
+	".o_labeled.o_im_status_requested": ("warning", "text"),
+	".o_labeled_light.o_media_status_valid": ("success", "text"),
+	".o_labeled_light.o_media_status_revoked": ("danger", "text"),
+	// Folder
+	".o_folder_label.o_folder_label_elements": ("inactive", "text"),
+	".o_folder_label.o_folder_label_locked": ("danger", "text"),
+	".o_folder_label.o_folder_label_editing": ("neutral", "text"),
+	".o_folder_label.o_folder_label_new": ("neutral", "solid"),
+	// Bootstrap label
+	".label.label-default": ("inactive", "solid"),
+	".label.label-success": ("success", "solid"),
+	".label.label-info": ("neutral", "solid"),
+	".label.label-warning": ("warning", "solid"),
+	".label.label-danger": ("danger", "solid"),
+	// Bootstrap badge
+	".badge": ("inactive", "solid"),
+	".badge.o_midpub": ("success", "solid"),
+	".badge.o_midwarn": ("warning", "dark"),
+	".badge.o_midlock": ("danger", "dark"),
+	".badge.o_miderr": ("danger", "solid"),
+	".badge.o_middel": ("inactive", "dark"),
+	// Brand
+	".o_ai_pulse_badge": ("highlight", "solid"),
+	// Offer
+	".o_labeled_light.o_ac_offer_pending": ("neutral", "text"),
+	".o_labeled_light.o_ac_offer_bookable": ("success", "text"),
+	".o_labeled_light.o_ac_offer_fully_booked": ("critical", "text"),
+	".o_labeled_light.o_ac_offer_finished": ("finished", "text"),
+	".o_labeled_light.o_ac_offer_not_available": ("inactive", "text"),
+	// Billing address
+	".o_labeled_light.o_ac_billing_address_active_light": ("success", "text"),
+	".o_labeled_light.o_ac_billing_address_inactive_light": ("inactive", "text"),
+	// Offer survey
+	".o_labeled.o_offer_survey_status_prepared": ("neutral", "tint"),
+	".o_labeled_light.o_offer_survey_status_prepared": ("neutral", "text"),
+	".o_labeled.o_offer_survey_status_done": ("success", "solid"),
+	".o_labeled_light.o_offer_survey_status_done": ("success", "text"),
+	".o_labeled.o_offer_survey_status_canceled": ("inactive", "solid"),
+	".o_labeled_light.o_offer_survey_status_canceled": ("inactive", "text"),
+	// Curriculum element type
+	".o_labeled_light.o_cur_el_type_status_active": ("success", "text"),
+	".o_labeled_light.o_cur_el_type_status_inactive": ("inactive", "text"),
+	// Lecture roll call
+	".o_labeled.o_lecture_rollcall_status_open": ("neutral", "solid"),
+	".o_labeled_light.o_lecture_rollcall_status_open": ("neutral", "text"),
+	".o_labeled.o_lecture_rollcall_status_reopen": ("warning", "solid"),
+	".o_labeled_light.o_lecture_rollcall_status_reopen": ("warning", "text"),
+	".o_labeled.o_lecture_rollcall_status_closed": ("finished", "solid"),
+	".o_labeled_light.o_lecture_rollcall_status_closed": ("finished", "text"),
+	".o_labeled.o_lecture_rollcall_status_autoclosed": ("finished", "solid"),
+	".o_labeled_light.o_lecture_rollcall_status_autoclosed": ("finished", "text"),
+	// Lecture participant group
+	".o_labeled_light.o_lecture_included": ("success", "text"),
+	".o_labeled_light.o_lecture_excluded": ("inactive", "text"),
+	// Room availability
+	".o_labeled_light.o_lecture_room_availability_available": ("success", "text"),
+	".o_labeled_light.o_lecture_room_availability_my_event": ("neutral", "text"),
+	".o_labeled_light.o_lecture_room_availability_occupied": ("danger", "text"),
+	// Room
+	".o_labeled.o_rm_status_active": ("success", "solid"),
+	".o_labeled_light.o_rm_status_active": ("success", "text"),
+	".o_labeled.o_rm_status_inactive": ("inactive", "solid"),
+	".o_labeled_light.o_rm_status_inactive": ("inactive", "text"),
+	".o_labeled.o_rm_status_deleted": ("inactive", "dark"),
+	".o_labeled_light.o_rm_status_deleted": ("inactive", "text"),
+	// Test session
+	".o_labeled_light.o_assessment_test_session_status_running": ("neutral", "text"),
+	".o_labeled_light.o_assessment_test_session_status_suspended": ("warning", "text"),
+	".o_labeled_light.o_assessment_test_session_status_reviewing": ("warning", "text"),
+	".o_labeled_light.o_assessment_test_session_status_finished": ("success", "text"),
+	".o_labeled_light.o_assessment_test_session_status_cancelled": ("inactive", "text"),
+	".o_labeled_light.o_assessment_test_session_status_error": ("danger", "text"),
+	// QTI correction
+	".o_labeled_light.o_assessmentitem_status.toCorrect": ("warning", "text"),
+	".o_labeled_light.o_assessmentitem_status.auto": ("success", "text"),
+	".o_labeled_light.o_assessmentitem_status.manual": ("success", "text"),
+	".o_labeled_light.o_assessmentitem_status.adjusted": ("success", "text"),
+	// Results visibility
+	".o_labeled.o_results_visible": ("success", "solid"),
+	".o_labeled_light.o_results_visible": ("success", "text"),
+	".o_labeled.o_results_hidden": ("warning", "solid"),
+	".o_labeled_light.o_results_hidden": ("warning", "text"),
+	// SEB template
+	".o_labeled.o_seb_template_status_active": ("success", "solid"),
+	".o_labeled_light.o_seb_template_status_active": ("success", "text"),
+	".o_labeled.o_seb_template_status_inactive": ("inactive", "solid"),
+	".o_labeled_light.o_seb_template_status_inactive": ("inactive", "text"),
+	// Portfolio section
+	".o_labeled.o_portfolio_section_draft": ("neutral", "tint"),
+	".o_labeled_light.o_portfolio_section_draft": ("neutral", "text"),
+	".o_labeled.o_portfolio_section_progress": ("neutral", "solid"),
+	".o_labeled_light.o_portfolio_section_progress": ("neutral", "text"),
+	".o_labeled.o_portfolio_section_closed": ("finished", "solid"),
+	".o_labeled_light.o_portfolio_section_closed": ("finished", "text"),
+	// Course element selection
+	".o_labeled.o_cns_labled_status_selected": ("warning", "solid"),
+	".o_labeled_light.o_cns_labled_light_status_selected": ("warning", "text"),
+	".o_labeled.o_cns_labled_status_in_progress": ("neutral", "solid"),
+	".o_labeled_light.o_cns_labled_light_status_in_progress": ("neutral", "text"),
+	".o_labeled.o_cns_labled_status_done": ("success", "solid"),
+	".o_labeled_light.o_cns_labled_light_status_done": ("success", "text"),
+	// To-do
+	".o_labeled.o_todo_status_open": ("neutral", "tint"),
+	".o_labeled_light.o_todo_status_open": ("neutral", "text"),
+	".o_labeled.o_todo_status_in_progress": ("neutral", "solid"),
+	".o_labeled_light.o_todo_status_in_progress": ("neutral", "text"),
+	".o_labeled.o_todo_status_done": ("success", "solid"),
+	".o_labeled_light.o_todo_status_done": ("success", "text"),
+	".o_labeled.o_todo_status_deleted": ("inactive", "dark"),
+	".o_labeled_light.o_todo_status_deleted": ("inactive", "text"),
+	".o_labeled.o_todo_priority_urgent": ("danger", "solid"),
+	".o_labeled_light.o_todo_priority_urgent": ("danger", "text"),
+	".o_labeled.o_todo_priority_high": ("critical", "solid"),
+	".o_labeled_light.o_todo_priority_high": ("critical", "text"),
+	".o_labeled.o_todo_priority_medium": ("warning", "solid"),
+	".o_labeled_light.o_todo_priority_medium": ("warning", "text"),
+	".o_labeled.o_todo_priority_low": ("neutral", "solid"),
+	".o_labeled_light.o_todo_priority_low": ("neutral", "text"),
+	".o_labeled_light.o_todo_new": ("neutral", "text"),
+	// Repository lifecycle
+	".o_labeled.o_lifecycle_scheduled": ("neutral", "tint"),
+	".o_labeled.o_lifecycle_running": ("neutral", "solid"),
+	// Bulk change
+	".o_labeled_light.o_bulk_status_add": ("success", "text"),
+	".o_labeled_light.o_bulk_status_remove": ("danger", "text"),
+	// Credit points
+	".o_labeled_light.o_cp_status_active": ("success", "text"),
+	".o_labeled_light.o_cp_status_inactive": ("inactive", "text"),
+	".o_labeled_light.o_cp_status_deleted": ("inactive", "text"),
+	// Invitation
+	".o_labeled_light.o_invitation_status_active": ("success", "text"),
+	".o_labeled_light.o_invitation_status_inactive": ("inactive", "text"),
+	// Info message
+	".o_labeled_light.o_status_scheduled": ("warning", "text"),
+	// Export
+	".o_labeled.o_export_expiration": ("warning", "tint"),
+	// Selection step
+	".o_labeled.o_step_enabled": ("success", "solid"),
+	".o_labeled.o_step_staff_only": ("warning", "solid"),
+	".o_labeled.o_step_disabled": ("inactive", "solid"),
+	// REST API audit
+	".o_labeled_light.o_http_code_success": ("success", "text"),
+	".o_labeled_light.o_http_code_warning": ("warning", "text"),
+	".o_labeled_light.o_http_code_error": ("danger", "text"),
+	// END WIRING
+);
+
+@each $selector, $wiring in $o-state-wiring {
+	#{$selector} {
+		@extend %o_state_#{list.nth($wiring, 1)}_#{list.nth($wiring, 2)};
+	}
+}
