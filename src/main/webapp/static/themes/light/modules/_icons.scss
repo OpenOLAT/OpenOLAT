@@ -15,9 +15,9 @@ $fa-css-prefix: "o_icon" !default;
 /* OpenOLAT Icons */ 
 .o_icon_about { @include o-add-icon('info');}
 .o_icon_absence { @include o-add-icon('times');}
-.o_icon_absence_authorized { @include o-add-icon('circle-check', false); color: $brand-success;}
+.o_icon_absence_authorized { @include o-add-icon('circle-check', false); color: o-state-color("success", "text");}
 .o_icon_absence_leave { @include o-add-icon('clock', false);}
-.o_icon_absence_unauthorized { @include o-add-icon('exclamation-circle'); color: $brand-danger }
+.o_icon_absence_unauthorized { @include o-add-icon('exclamation-circle'); color: o-state-color("danger", "text");}
 .o_icon_abstain { @include o-add-icon('hand', false); }
 .o_icon_accepted { @include o-add-icon('thumbs-up', false);}
 .o_icon_accessibility { @include o-add-icon('wheelchair');}
@@ -816,16 +816,16 @@ $fa-css-prefix: "o_icon" !default;
 .o_calendar_icon { @include o-add-icon('calendar-days', false);}
 
 /* portfolio icons */
-.o_icon_pf_section_draft { @include o-add-icon('eye-slash'); color: $o-portfolio-entry-draft-color;}
-.o_icon_pf_section_progress { @include o-add-icon('refresh'); color: $o-portfolio-entry-draft-color;}
-.o_icon_pf_section_closed { @include o-add-icon('lock'); color: $o-portfolio-entry-closed-color;}
+.o_icon_pf_section_draft { @include o-add-icon('eye-slash'); color: o-state-color("neutral", "text");}
+.o_icon_pf_section_progress { @include o-add-icon('refresh'); color: o-state-color("neutral", "text");}
+.o_icon_pf_section_closed { @include o-add-icon('lock'); color: o-state-color("finished", "text");}
 .o_icon_pf_binder { @include o-add-icon('briefcase');}
 .o_icon_pf_entry { @include o-add-icon('file');}
-.o_icon_pf_entry_draft { @include o-add-icon('pencil'); color: $o-portfolio-entry-draft-color;}
-.o_icon_pf_entry_published { @include o-add-icon('check'); color: $o-portfolio-entry-published-color;}
-.o_icon_pf_entry_revision { @include o-add-icon('rotate-left'); color: $o-portfolio-entry-inrevision-color;}
-.o_icon_pf_entry_closed { @include o-add-icon('lock'); color: $o-portfolio-entry-closed-color;}
-.o_icon_pf_entry_deleted { @include o-add-icon('trash-can', false); color: $o-portfolio-entry-deleted-color;}
+.o_icon_pf_entry_draft { @include o-add-icon('pencil'); color: o-state-color("neutral", "text");}
+.o_icon_pf_entry_published { @include o-add-icon('check'); color: o-state-color("success", "text");}
+.o_icon_pf_entry_revision { @include o-add-icon('rotate-left'); color: o-state-color("danger", "text");}
+.o_icon_pf_entry_closed { @include o-add-icon('lock'); color: o-state-color("finished", "text");}
+.o_icon_pf_entry_deleted { @include o-add-icon('trash-can', false); color: o-state-color("inactive", "text");}
 .o_icon_pf_history { @include o-add-icon('clock', false);}
 .o_icon_pf_my_shares { @include o-add-icon('share-alt');}
 .o_icon_pf_new_entry { @include o-add-icon('pencil');}
@@ -840,10 +840,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_forum_status_thread_icon { @include o-add-icon('comments', false);}
 .o_forum_status_sticky_closed_icon { @include o-add-icon('ban');}
 .o_forum_status_sticky_icon { @include o-add-icon('comments');}
-.o_forum_status_closed_icon { @include o-add-icon('ban'); color: $state-danger-text}
-.o_forum_status_opened_icon { @include o-add-icon('ban'); color: $state-success-text}
-.o_forum_status_hidden_icon { @include o-add-icon('eye-slash'); color: $state-danger-text}
-.o_forum_status_visible_icon { @include o-add-icon('eye'); color: $state-success-text}
+.o_forum_status_closed_icon { @include o-add-icon('ban'); color: o-state-color("danger", "text");}
+.o_forum_status_opened_icon { @include o-add-icon('ban'); color: o-state-color("success", "text");}
+.o_forum_status_hidden_icon { @include o-add-icon('eye-slash'); color: o-state-color("danger", "text");}
+.o_forum_status_visible_icon { @include o-add-icon('eye'); color: o-state-color("success", "text");}
 
 .o_forum_all_icon { @include o-add-icon('align-right');}
 .o_forum_all_flat_icon { @include o-add-icon('align-justify');}
@@ -945,12 +945,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_lectures_pending { @include o-add-icon('circle'); color: $brand-danger;}
 .o_lectures_closed { @include o-add-icon('circle');}
 
-.o_lectures_rollcall_ok { @include o-add-icon('circle'); color: $brand-success;}
-.o_lectures_rollcall_warning { @include o-add-icon('adjust'); color: $brand-warning;}
-.o_lectures_rollcall_danger { @include o-add-icon('circle', false); color: $brand-danger;}
-.o_lectures_rollcall_free { @include o-add-icon('circle'); color: #969696;}
-.o_lectures_rollcall_notice { @include o-add-icon('circle'); color: #969696;}
-.o_lectures_rollcall_ { @include o-add-icon('clock', false); color: #b8b8b8;}
+.o_lectures_rollcall_ok { @include o-add-icon('circle'); color: o-state-color("success", "text");}
+.o_lectures_rollcall_warning { @include o-add-icon('adjust'); color: o-state-color("warning", "text");}
+.o_lectures_rollcall_danger { @include o-add-icon('circle', false); color: o-state-color("danger", "text");}
+.o_lectures_rollcall_free { @include o-add-icon('circle'); color: o-state-color("inactive", "text");}
+.o_lectures_rollcall_notice { @include o-add-icon('circle'); color: o-state-color("inactive", "text");}
+.o_lectures_rollcall_ { @include o-add-icon('clock', false); color: o-state-color("inactive", "border", "light");}
 .o_lectures_attended { @include o-add-icon('circle'); color: $brand-success !important;}
 .o_lectures_authorized { @include o-add-icon('circle'); color: $brand-warning !important;}
 .o_lectures_absent { @include o-add-icon('circle'); color: $brand-danger !important;}
@@ -976,7 +976,7 @@ $fa-css-prefix: "o_icon" !default;
 /* grading */
 .o_grader_active { @include o-add-icon('check-circle', false); color: $brand-success;}
 .o_grader_inactive { @include o-add-icon('ban'); color: $brand-danger;}
-.o_grader_absence { @include o-add-icon('clock', false); color: $brand-warning;}
+.o_grader_absence { @include o-add-icon('clock', false); color: o-state-color("warning", "text");}
 .o_grad_assignment_unassigned { @include o-add-icon('exclamation-circle'); color: $brand-danger;}
 .o_grad_assignment_assigned { @include o-add-icon('square', false);}
 .o_grad_assignment_inprocess { @include o-add-icon('refresh');}
@@ -999,17 +999,17 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_guests_icon { @include o-add-icon('user-circle', false);}
 .o_ac_openaccess_icon { @include o-add-icon('door-open');}
 .o_ac_paypal_icon { @include o-add-brand-icon('cc-paypal');}
-.o_ac_status_canceled_icon { @include o-add-icon('minus'); color: $brand-warning;}
-.o_ac_status_error_icon { @include o-add-icon('times'); color: $brand-danger;}
-.o_ac_status_new_icon { @include o-add-icon('asterisk'); color: $brand-primary;}
-.o_ac_status_success_icon { @include o-add-icon('check'); color: $brand-success;}
-.o_ac_status_waiting_icon { @include o-add-icon('clock', false); color: $brand-primary;}
-.o_ac_offer_active_icon { @include o-add-icon('eye'); color: $o-ac-offer-active-color;}
+.o_ac_status_canceled_icon { @include o-add-icon('minus'); color: o-state-color("inactive", "text");}
+.o_ac_status_error_icon { @include o-add-icon('times'); color: o-state-color("danger", "text");}
+.o_ac_status_new_icon { @include o-add-icon('asterisk'); color: o-state-color("neutral", "text");}
+.o_ac_status_success_icon { @include o-add-icon('check'); color: o-state-color("success", "text");}
+.o_ac_status_waiting_icon { @include o-add-icon('clock', false); color: o-state-color("warning", "text");}
+.o_ac_offer_active_icon { @include o-add-icon('eye'); color: o-state-color("success", "text");}
 .o_ac_offer_almost_fully_booked_icon { @include o-add-icon('circle-half-stroke'); }
 .o_ac_offer_bookable_icon { @include o-add-icon('cart-shopping'); }
 .o_ac_offer_finished_icon { @include o-add-icon('ban'); }
 .o_ac_offer_fully_booked_icon { @include o-add-icon('ban'); }
-.o_ac_offer_inactive_icon { @include o-add-icon('eye-slash'); color: $o-ac-offer-inactive-color;}
+.o_ac_offer_inactive_icon { @include o-add-icon('eye-slash'); color: o-state-color("inactive", "text");}
 .o_ac_offer_not_available_icon { @include o-add-icon('eye-slash'); }
 .o_ac_offer_overbooked_icon { @include o-add-icon('circle-exclamation'); }
 .o_ac_offer_pending_icon { @include o-add-icon('clock'); }
@@ -1044,7 +1044,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_curriculum_status_transition { @include o-add-icon('chevron-right');}
 
 /* Membership status (and pseudo status) */
-.o_membership_status_booking { @include o-add-icon('clock', false); color: $brand-primary; }
+.o_membership_status_booking { @include o-add-icon('clock', false); color: o-state-color("neutral", "text"); }
 .o_membership_status_parentbooking { @include o-add-icon('arrow-up');}
 .o_membership_status_transfer { @include o-add-icon('arrow-right');}
 .o_membership_status_reservation { @include o-add-icon('hourglass-half');}
@@ -1075,7 +1075,7 @@ $fa-css-prefix: "o_icon" !default;
 
 .o_icon_certificate_status_pending { @include o-add-icon('hourglass-half'); }
 .o_icon_certificate_status_error { @include o-add-icon('circle-xmark'); }
-.o_icon_certificate_status_failed { @include o-add-icon('circle-xmark'); color: $brand-danger; }
+.o_icon_certificate_status_failed { @include o-add-icon('circle-xmark'); color: o-state-color("danger", "text"); }
 
 /* Menu tree status icons for course editor and SCORM module */
 .o_scorm_org { @include o-add-icon('archive');}
@@ -1265,7 +1265,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_proj_recurrence { @include o-add-icon('refresh');}
 .o_icon_proj_milestone { @include o-add-icon('bullseye');}
 .o_icon_proj_milestone_status_open { @include o-add-icon('circle', false);}
-.o_icon_proj_milestone_status_achieved { @include o-add-icon('check-circle'); color: $brand-success;}
+.o_icon_proj_milestone_status_achieved { @include o-add-icon('check-circle'); color: o-state-color("success", "text");}
 .o_icon_proj_reference { @include o-add-icon('link');}
 .o_icon_proj_whiteboard{ @include o-add-icon('paint-brush');}
 .o_icon_proj_project { @include o-add-icon('leaf');}
@@ -1279,7 +1279,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_todo_task { @include o-add-icon('check-square', false);}
 .o_icon_todo_status_open { @include o-add-icon('circle', false);}
 .o_icon_todo_status_in_progress { @include o-add-icon('adjust'); transform: rotate(270deg);}
-.o_icon_todo_status_done { @include o-add-icon('check-circle'); color: $brand-success;}
+.o_icon_todo_status_done { @include o-add-icon('check-circle'); color: o-state-color("success", "text");}
 .o_icon_todo_status_deleted { @include o-add-icon('trash-can', false);}
 .o_icon_todo_priority_urgent { @include o-add-icon('bell'); color: $brand-danger;}
 .o_icon_todo_priority_high { @include o-add-icon('exclamation'); color: $brand-danger;}

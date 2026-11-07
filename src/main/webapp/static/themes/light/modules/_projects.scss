@@ -51,38 +51,13 @@
 	}
 }
 
-.o_labeled_light {
-	&.o_proj_project_status_active {
-		border-color: 		$o-repo-published-color;
-		color: 				$o-repo-published-color;
-	}
-	&.o_proj_project_status_done {
-		border-color: 		$o-repo-closed-color;
-		color: 				$o-repo-closed-color;
-	}
-	&.o_proj_project_status_deleted {
-		border-color: 		$o-repo-deleted-color;
-		color: 				$o-repo-deleted-color;
-	}
-}
 .o_proj_project_status_badge {
 	float: right;
 	display: inline-block;
 	padding: 1px 25px;
 	border-radius: $border-radius-small;
 	
-	&.o_proj_project_status_active {
-		background-color: 	$o-repo-published-color;
-		color: 				#fff;
-	}
-	&.o_proj_project_status_done {
-		background-color: 	$o-repo-closed-color;
-		color: 				#fff;
-	}
-	&.o_proj_project_status_deleted {
-		background-color: 	$o-repo-deleted-color;
-		color: 				#fff;
-	}
+	// Colours of the statuses: semantic states in _states.scss (OO-10042)
 }
 
 .o_proj_avatar {

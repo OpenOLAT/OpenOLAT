@@ -172,31 +172,10 @@
 
 .o_labeled_light {
 	&.o_todo_new {
-		background-color: $o-folder-label-new-color;
-		border-color: $o-folder-label-new-bg-color;
-		color: $o-folder-label-new-bg-color;
 		margin-left: 5px;
 	}
-	&.o_todo_status_open        { @extend %o_labeled_light_blue; }
-	&.o_todo_status_in_progress { @extend %o_labeled_light_yellow; }
-	&.o_todo_status_done        { @extend %o_labeled_light_green; }
-	&.o_todo_status_deleted     { @extend %o_labeled_light_grey; }
-	&.o_todo_priority_urgent    { @extend %o_labeled_light_red; }
-	&.o_todo_priority_high      { @extend %o_labeled_light_orange; }
-	&.o_todo_priority_medium    { @extend %o_labeled_light_yellow; }
-	&.o_todo_priority_low       { @extend %o_labeled_light_blue; }
 }
 
-.o_labeled {
-	&.o_todo_status_open        { @extend %o_labeled_blue; }
-	&.o_todo_status_in_progress { @extend %o_labeled_yellow; }
-	&.o_todo_status_done        { @extend %o_labeled_green; }
-	&.o_todo_status_deleted     { @extend %o_labeled_grey; }
-	&.o_todo_priority_urgent    { @extend %o_labeled_red; }
-	&.o_todo_priority_high      { @extend %o_labeled_orange; }
-	&.o_todo_priority_medium    { @extend %o_labeled_yellow; }
-	&.o_todo_priority_low       { @extend %o_labeled_blue; }
-}
 
 // Override icon's own semantic color so it matches the label text color.
 .o_labeled[class*="o_todo_status_"] .o_icon,

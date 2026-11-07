@@ -174,76 +174,11 @@
 	}
 }
 
-.o_labeled {
-	&.o_tb_label_broker_not_started {
-		background-color: $o-tb-broker-not-started-color;
-		border-color: $o-tb-broker-not-started-color;
-	}
-	&.o_tb_label_broker_selection_in_progress {
-		@extend %o_labeled_yellow;
-	}
-	&.o_tb_label_broker_enrollment_in_progress {
-		background-color: $o-tb-broker-enrollment-in-progress-color;
-		border-color: $o-tb-broker-enrollment-in-progress-color;
-	}
-	&.o_tb_label_broker_enrollment_done {
-		background-color: $o-tb-broker-enrollment-done-color;
-		border-color: $o-tb-broker-enrollment-done-color;
-	}
-}
 .o_tb_icon_colored_enrolled {
 	color: 				$o-tb-priority-enrolled-color;
 }
 .o_tb_icon_colored_waiting  {
 	color: 				$o-tb-priority-waiting-color;
-}
-.o_labeled {
-	&.o_tb_label_selected {
-		@extend %o_labeled_yellow;
-	}
-	&.o_tb_label_enrolled {
-		background-color: 	$o-tb-priority-enrolled-color;
-		border-color: 		$o-tb-priority-enrolled-color;
-	}
-	&.o_tb_label_waiting {
-		background-color:	$o-tb-priority-waiting-color;
-		border-color: 		$o-tb-priority-waiting-color;
-	}
-	&.o_tb_label_not_enrolled {
-		background-color: 	$o-tb-priority-not-enrolled-color;
-		border-color: 		$o-tb-priority-not-enrolled-color;
-	}
-	&.o_tb_label_surplus {
-		background-color: 	$o-tb-priority-surplus-color;
-		border-color: 		$o-tb-priority-surplus-color;
-	}
-}
-.o_labeled_light {
-	&.o_tb_label_light_held {
-		@extend %o_labeled_light_green;
-	}
-	&.o_tb_label_light_not_held {
-		@extend %o_labeled_light_red;
-	}
-	&.o_tb_label_light_selected {
-		@extend %o_labeled_light_yellow;
-	}
-	&.o_tb_label_light_enrolled {
-		color: 				$o-tb-priority-enrolled-color;
-		border-color: 		$o-tb-priority-enrolled-color;
-	}
-	&.o_tb_label_light_waiting {
-		color: 				$o-tb-priority-waiting-color;
-		border-color: 		$o-tb-priority-waiting-color;
-	}
-	&.o_tb_label_light_not_enrolled {
-		color: 				$o-tb-priority-not-enrolled-color;
-		border-color: 		$o-tb-priority-not-enrolled-color;
-	}
-	&.o_tb_label_light_surplus {
-		color: 				$o-tb-priority-surplus-color;
-		border-color: 		$o-tb-priority-surplus-color;
-	}
 }
 .o_tb_priority_label {
 	display: grid;
@@ -253,32 +188,12 @@
 		display: grid;
 		justify-items: center;
 		border-radius: 20px;
-		border: 1px solid;
+		// width and style only: the border colour comes from the state (_states.scss, OO-10042)
+		border-width: 1px;
+		border-style: solid;
 		padding: 0 6px;
 	}
-	>.o_tb_priority_selected {
-		@extend %o_labeled_light_yellow;
-	}
-	>.o_tb_priority_enrolled {
-		color: $o-tb-priority-enrolled-color-inv;
-		border-color: $o-tb-priority-enrolled-color-inv;
-		background-color: $o-tb-priority-enrolled-color;
-	}
-	>.o_tb_priority_waiting {
-		color: $o-tb-priority-waiting-color;
-		border-color: $o-tb-priority-waiting-color;
-		background-color: $o-tb-priority-waiting-color-inv;
-	}
-	>.o_tb_priority_not_enrolled {
-		color: $o-tb-priority-not-enrolled-color;
-		border-color: $o-tb-priority-not-enrolled-color;
-		background-color: $o-tb-priority-not-enrolled-color-inv;
-	}
-	>.o_tb_priority_surplus {
-		color: $o-tb-priority-surplus-color;
-		border-color: $o-tb-priority-surplus-color;
-		background-color: $o-tb-priority-surplus-color-inv;
-	}
+	// selected, enrolled, waiting, not_enrolled, surplus: semantic states in _states.scss (OO-10042)
 	>.o_tb_priority_fillin {
 		color: $o-tb-priority-fillin-color;
 		border: none;

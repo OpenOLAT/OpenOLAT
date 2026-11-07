@@ -603,67 +603,7 @@
 	}
 }
 
-.o_labeled_light {
-	&.o_ac_offer_pending {
-		@extend %o_labeled_light_blue;
-	}
-	&.o_ac_offer_finished {
-		@extend %o_labeled_light_brown;
-	}
-	&.o_ac_offer_bookable {
-		@extend %o_labeled_light_green;
-	}
-	&.o_ac_offer_fully_booked {
-		@extend %o_labeled_light_red;
-	}
-	&.o_ac_offer_not_available {
-		@extend %o_labeled_light_grey;
-	}
-	
-	&.o_ac_order_status_new {
-		@extend %o_labeled_light_blue;
-	}
-	&.o_ac_order_status_pending,
-	&.o_ac_order_status_payed_pending,
-	&.o_ac_order_status_warning,
-	&.o_ac_order_status_in_process,
-	&.o_ac_order_status_open {
-		@extend %o_labeled_light_yellow;
-	}
-	&.o_ac_order_status_written_off,
-	&.o_ac_order_status_canceled {
-		@extend %o_labeled_light_grey;
-	}
-	&.o_ac_order_status_payed {
-		@extend %o_labeled_light_green;
-	}
-	&.o_ac_order_status_error {
-		@extend %o_labeled_light_red;
-	}
-}
 
-.o_labeled {
-	&.o_ac_order_status_new {
-		@extend %o_labeled_blue;
-	}
-	&.o_ac_order_status_pending,
-	&.o_ac_order_status_payed_pending,
-	&.o_ac_order_status_warning,
-	&.o_ac_order_status_in_process,
-	&.o_ac_order_status_open {
-		@extend %o_labeled_yellow;
-	}
-	&.o_ac_order_status_written_off,
-	&.o_ac_order_status_canceled {
-		@extend %o_labeled_grey;
-	}
-	&.o_ac_order_status_payed {
-		@extend %o_labeled_green;
-	}
-	&.o_ac_order_status_error {
-		@extend %o_labeled_red;
-	}
-}
 
 .o_ac_billing_address {
 	background-color: $o-ac-ba-bg-color;
@@ -693,11 +633,9 @@
 .o_labeled_light {
 	&.o_ac_billing_address_active_light {
 		font-weight: normal;
-		@extend %o_labeled_light_green;
 	}
 	&.o_ac_billing_address_inactive_light {
 		font-weight: normal;
-		@extend %o_labeled_light_grey;
 	}
 }
 .o_ac_billing_address_selection.o_form {
@@ -816,19 +754,6 @@ form { .o_form { .o_radio_cards_wrapper {
 	background-image:url('#{$o-images-path}course/course-design-classic.png')
 }
 
-/* Bulk change */
-.o_labeled_light {
-	&.o_bulk_status_add {
-		background-color: $state-success-text;
-		border-color: $state-success-text;
-		color: $o-repo-status-color-bright;
-	}
-	&.o_bulk_status_remove {
-		background-color:  $state-danger-text;
-		border-color: $state-danger-text;
-		color: $o-repo-status-color-bright;
-	}
-}
 .o_settings_bulk_overview {
 	table {
 		width: auto;
@@ -1077,11 +1002,3 @@ form { .o_form { .o_radio_cards_wrapper {
 	align-items: center;
 }
 
-.o_labeled {
-	&.o_lifecycle_scheduled {
-		@extend %o_labeled_grey;
-	}
-	&.o_lifecycle_running {
-		@extend %o_labeled_yellow;
-	}
-}

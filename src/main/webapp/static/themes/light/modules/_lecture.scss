@@ -105,17 +105,14 @@
 .o_labeled {
 	&.o_lecture_rollcall_status_open {
 		font-weight: normal;
-		@extend %o_labeled_blue;
 	}
 	&.o_lecture_rollcall_status_reopen {
 		font-weight: normal;
-		@extend %o_labeled_red;
 	}
 	&.o_lecture_status_done,
 	&.o_lecture_rollcall_status_closed,
 	&.o_lecture_rollcall_status_autoclosed {
 		font-weight: normal;
-		@extend %o_labeled_brown;
 	}
 }
 
@@ -123,61 +120,28 @@
 	&.o_lecture_status_planned,
 	&.o_lecture_status_next {
 		font-weight: normal;
-		@extend %o_labeled_light_blue;
 	}
 	&.o_lecture_status_active,
 	&.o_lecture_status_running {
 		font-weight: normal;
-		@extend %o_labeled_light_orange;
 	}
 	&.o_lecture_status_cancelled {
 		font-weight: normal;
-		@extend %o_labeled_light_grey;
 	}
 	&.o_lecture_rollcall_status_open {
 		font-weight: normal;
-		@extend %o_labeled_light_blue;
 	}
 	&.o_lecture_rollcall_status_reopen {
 		font-weight: normal;
-		@extend %o_labeled_light_red;
 	}
 	&.o_lecture_status_done,
 	&.o_lecture_rollcall_status_closed,
 	&.o_lecture_rollcall_status_autoclosed {
 		font-weight: normal;
-		@extend %o_labeled_light_brown;
 	}
 }
 
-.o_labeled {
-	&.o_lecture_status_planned,
-	&.o_lecture_status_next {
-		@extend %o_labeled_blue;
-	}
-	&.o_lecture_status_active,
-	&.o_lecture_status_running {
-		@extend %o_labeled_orange;
-	}
-	&.o_lecture_status_cancelled {
-		@extend %o_labeled_grey;
-	}
-	&.o_lecture_status_done {
-		@extend %o_labeled_brown;
-	}
-}
 
-.o_labeled_light {
-	&.o_lecture_room_availability_available {
-		@extend %o_labeled_light_green;
-	}
-	&.o_lecture_room_availability_occupied {
-		@extend %o_labeled_light_red;
-	}
-	&.o_lecture_room_availability_my_event {
-		@extend %o_labeled_light_blue;
-	}
-}
 
 .o_lecture_rooms_add_buttons {
 	margin-top: 1em;
@@ -759,14 +723,6 @@ tr.o_rm_room_preselected {
 	}
 }
 
-.o_labeled_light {
-	&.o_lecture_included {
-		@extend %o_labeled_light_green;
-	}
-	&.o_lecture_excluded {
-		@extend %o_labeled_light_red;
-	}
-}
 
 /* Edit */
 .o_lecture_date_planned >.col-sm-12,
@@ -796,11 +752,12 @@ tr.o_rm_room_preselected {
 		width: 3px;
 		>div {
 			height: 80%;
+			// fill of the state of the lecture status (OO-10042)
 			&.o_lecture_widget_status_next {
-				background-color: $o-labeled-blue-light-border-color;
+				background-color: o-state-color("warning", "bg");
 			}
 			&.o_lecture_widget_status_running {
-				background-color: $o-labeled-orange-light-border-color;
+				background-color: o-state-color("neutral", "bg");
 			}
 		}
 	}

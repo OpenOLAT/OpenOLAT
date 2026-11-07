@@ -657,14 +657,7 @@ ul.o_certificates li {
 	.o_certificate_label {
 		margin: 0 0 3px 0;
 		
-		.o_certificate_expiration {
-			border-color: $alert-warning-text;
-			color: $alert-warning-text;
-			background-color: $alert-warning-bg;
-		}
-		.o_certificate_archived {
-			@extend %o_labeled_light_grey;
-		}
+		// .o_certificate_expiration: semantic state in _states.scss (OO-10042)
 		.o_labeled, o_labeled_light {
 			text-transform: none;
 			font-weight: bold;
@@ -892,27 +885,6 @@ div.o_assessment_inspection_status_list {
 	}
 }
 
-.o_labeled_light.o_assessment_inspection_scheduled { 
-	color: $o-assessment-inspection-scheduled-color;
-}
-.o_labeled_light.o_assessment_inspection_active { 
-	color: $o-assessment-inspection-active-color;
-}
-.o_labeled_light.o_assessment_inspection_inprogress {
-	color: $o-assessment-inspection-inprogress-color;
-}
-.o_labeled_light.o_assessment_inspection_carriedout {
-	color: $o-assessment-inspection-carriedout-color;
-}
-.o_labeled_light.o_assessment_inspection_noshow {
-	@extend %o_labeled_light_yellow;
-}
-.o_labeled_light.o_assessment_inspection_cancelled {
-	color: $o-assessment-inspection-cancelled-color;
-}
-.o_labeled_light.o_assessment_inspection_withdrawn {
-	color: $o-assessment-inspection-withdrawn-color;
-}
 
 div.panel.o_assessment_mini_overview {
 	display: grid;
@@ -1006,22 +978,18 @@ div.o_assessment_mini_conditional_overview {
 .o_labeled_light {
 	&.o_seb_template_status_active {
 		font-weight: normal;
-		@extend %o_labeled_light_green;
 	}
 	&.o_seb_template_status_inactive {
 		font-weight: normal;
-		@extend %o_labeled_light_grey;
 	}
 }
 
 .o_labeled {
 	&.o_seb_template_status_active {
 		font-weight: normal;
-		@extend %o_labeled_green;
 	}
 	&.o_seb_template_status_inactive {
 		font-weight: normal;
-		@extend %o_labeled_grey;
 	}
 }
 
@@ -1056,30 +1024,24 @@ div.o_assessment_mini_conditional_overview {
 .o_labeled_light {
 	&.o_offer_survey_status_prepared {
 		font-weight: normal;
-		@extend %o_labeled_light_blue;
 	}
 	&.o_offer_survey_status_done {
 		font-weight: normal;
-		@extend %o_labeled_light_green;
 	}
 	&.o_offer_survey_status_canceled {
 		font-weight: normal;
-		@extend %o_labeled_light_red;
 	}
 }
 
 .o_labeled {
 	&.o_offer_survey_status_prepared {
 		font-weight: normal;
-		@extend %o_labeled_blue;
 	}
 	&.o_offer_survey_status_done {
 		font-weight: normal;
-		@extend %o_labeled_green;
 	}
 	&.o_offer_survey_status_canceled {
 		font-weight: normal;
-		@extend %o_labeled_red;
 	}
 }
 
@@ -1114,15 +1076,12 @@ div.o_assessment_mini_conditional_overview {
 .o_labeled_light {
 	&.o_http_code_success {
 		font-weight: normal;
-		@extend %o_labeled_light_green;
 	}
 	&.o_http_code_warning {
 		font-weight: normal;
-		@extend %o_labeled_light_orange;
 	}
 	&.o_http_code_error {
 		font-weight: normal;
-		@extend %o_labeled_light_red;
 	}
 }
 
@@ -1744,38 +1703,11 @@ ul.o_assessment_docs>li:last-child {
 	}
 }
 
-%o_labeled_blue { @include labeled-variant($o-labeled-blue-color, $o-labeled-blue-bg-color, $o-labeled-blue-border-color); }
-%o_labeled_light_blue { @include labeled-variant($o-labeled-blue-light-color, $o-labeled-blue-light-bg-color,$o-labeled-blue-light-border-color); }
-%o_labeled_mega_blue { @include labeled-variant($o-labeled-blue-mega-color, $o-labeled-blue-mega-bg-color,$o-labeled-blue-mega-border-color); }
-%o_labeled_green { @include labeled-variant($o-labeled-green-color, $o-labeled-green-bg-color, $o-labeled-green-border-color); }
-%o_labeled_light_green { @include labeled-variant($o-labeled-green-light-color, $o-labeled-green-light-bg-color,$o-labeled-green-light-border-color); }
-%o_labeled_mega_green { @include labeled-variant($o-labeled-green-mega-color, $o-labeled-green-mega-bg-color,$o-labeled-green-mega-border-color); }
-%o_labeled_yellow { @include labeled-variant($o-labeled-yellow-color, $o-labeled-yellow-bg-color, $o-labeled-yellow-border-color); }
-%o_labeled_light_yellow { @include labeled-variant($o-labeled-yellow-light-color, $o-labeled-yellow-light-bg-color,$o-labeled-yellow-light-border-color); }
-%o_labeled_mega_yellow { @include labeled-variant($o-labeled-yellow-mega-color, $o-labeled-yellow-mega-bg-color,$o-labeled-yellow-mega-border-color); }
-%o_labeled_orange { @include labeled-variant($o-labeled-orange-color, $o-labeled-orange-bg-color, $o-labeled-orange-border-color); }
-%o_labeled_light_orange { @include labeled-variant($o-labeled-orange-light-color, $o-labeled-orange-light-bg-color,$o-labeled-orange-light-border-color); }
-%o_labeled_mega_orange { @include labeled-variant($o-labeled-orange-mega-color, $o-labeled-orange-mega-bg-color,$o-labeled-orange-mega-border-color); }
-%o_labeled_red { @include labeled-variant($o-labeled-red-color, $o-labeled-red-bg-color, $o-labeled-red-border-color); }
-%o_labeled_light_red { @include labeled-variant($o-labeled-red-light-color, $o-labeled-red-light-bg-color,$o-labeled-red-light-border-color); }
-%o_labeled_mega_red { @include labeled-variant($o-labeled-red-mega-color, $o-labeled-red-mega-bg-color,$o-labeled-red-mega-border-color); }
-%o_labeled_brown { @include labeled-variant($o-labeled-brown-color, $o-labeled-brown-bg-color, $o-labeled-brown-border-color); }
-%o_labeled_light_brown { @include labeled-variant($o-labeled-brown-light-color, $o-labeled-brown-light-bg-color,$o-labeled-brown-light-border-color); }
-%o_labeled_mega_brown { @include labeled-variant($o-labeled-brown-mega-color, $o-labeled-brown-mega-bg-color,$o-labeled-brown-mega-border-color); }
-%o_labeled_grey { @include labeled-variant($o-labeled-grey-color, $o-labeled-grey-bg-color, $o-labeled-grey-border-color); }
-%o_labeled_light_grey { @include labeled-variant($o-labeled-grey-light-color, $o-labeled-grey-light-bg-color,$o-labeled-grey-light-border-color); }
-%o_labeled_mega_grey { @include labeled-variant($o-labeled-grey-mega-color, $o-labeled-grey-mega-bg-color,$o-labeled-grey-mega-border-color); }
-%o_labeled_yellow { @include labeled-variant($o-labeled-yellow-color, $o-labeled-yellow-bg-color, $o-labeled-yellow-border-color); }
-%o_labeled_light_yellow { @include labeled-variant($o-labeled-yellow-light-color, $o-labeled-yellow-light-bg-color,$o-labeled-yellow-light-border-color); }
-%o_labeled_mega_yellow { @include labeled-variant($o-labeled-yellow-mega-color, $o-labeled-yellow-mega-bg-color,$o-labeled-yellow-mega-border-color); }
-%o_labeled_yellow { @include labeled-variant($o-labeled-yellow-color, $o-labeled-yellow-bg-color, $o-labeled-yellow-border-color); }
-%o_labeled_light_yellow { @include labeled-variant($o-labeled-yellow-light-color, $o-labeled-yellow-light-bg-color,$o-labeled-yellow-light-border-color); }
-%o_labeled_mega_yellow { @include labeled-variant($o-labeled-yellow-mega-color, $o-labeled-yellow-mega-bg-color,$o-labeled-yellow-mega-border-color); }
-
 %o_labeled,
 .o_labeled,
 a.o_labeled {
-	@extend %o_labeled_grey;
+	// a label without a status class (status colours: semantic states in _states.scss, OO-10042)
+	@include labeled-variant(#FFFFFF, o-palette("gray", 600), o-palette("gray", 700));
 	display: inline-block;
 	text-align: center;
 	text-decoration: none;
@@ -1792,7 +1724,7 @@ a.o_labeled {
 .o_labeled_light,
 a.o_labeled_light {
 	@extend %o_labeled;
-	@extend %o_labeled_light_grey;
+	@include labeled-variant(o-palette("gray", 600), #FFFFFF, o-palette("gray", 600));
 	padding: 2px 5px;
 	font-size: 85%;
 	line-height: 85%;
@@ -1825,10 +1757,7 @@ a.o_labeled_light {
 	}
 }
 
-.o_default_config {
-	border-color: #14892c;
-	color: #14892c;
-}
+// .o_default_config: semantic state in _states.scss (OO-10042)
 
  /* Multiselect dropdown element */
  .o_ms_button {
@@ -2187,13 +2116,14 @@ ul.o_list_narrow {
 }
 
 /* Figure cards component */
+// tint swatch of the palette hue (name of the class, hue)
 $o-figure-card-icon-colors:
-		("blue", $o-labeled-blue-mega-color, $o-labeled-blue-mega-bg-color),
-		("green", $o-labeled-green-mega-color, $o-labeled-green-mega-bg-color),
-		("yellow", $o-labeled-yellow-mega-color, $o-labeled-yellow-mega-bg-color),
-		("orange", $o-labeled-orange-mega-color, $o-labeled-orange-mega-bg-color),
-		("red", $o-labeled-red-mega-color, $o-labeled-red-mega-bg-color),
-		("grey", $o-labeled-grey-mega-color, $o-labeled-grey-mega-bg-color);
+		("blue", o-swatch-color("blue", "tint-fg"), o-swatch-color("blue", "tint-bg")),
+		("green", o-swatch-color("green", "tint-fg"), o-swatch-color("green", "tint-bg")),
+		("yellow", o-swatch-color("yellow", "tint-fg"), o-swatch-color("yellow", "tint-bg")),
+		("orange", o-swatch-color("orange", "tint-fg"), o-swatch-color("orange", "tint-bg")),
+		("red", o-swatch-color("red", "tint-fg"), o-swatch-color("red", "tint-bg")),
+		("grey", o-swatch-color("gray", "tint-fg"), o-swatch-color("gray", "tint-bg"));
 
 @mixin o-figure-cards-two-line($n) {
 	grid-template-columns: repeat($n, minmax(0, 1fr));

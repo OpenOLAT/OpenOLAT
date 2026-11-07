@@ -159,7 +159,7 @@
 	}
 	
 	.o_expired_warning {
-		color: darken($o-step-status-expired-color, 20%);
+		color: $o-step-status-expired-color;
 	}
 }
 
@@ -169,37 +169,6 @@
 	padding: 1px 25px;
 	border-radius: $border-radius-small;
 	
-	&.o_process_status_done {
-	    background-color: 	$o-step-status-done-color;
-	    color: 				#fff;
-	}
-	&.o_process_status_waiting {
-	    border-color		: $o-step-status-waiting-border-color;
-	    background-color	: $o-step-status-waiting-bg-color;
-	    color				: $o-step-status-waiting-color;
-	}
-	&.o_process_status_review {
-		border-color		: $o-step-status-review-border-color;
-	    background-color	: $o-step-status-review-bg-color;
-	    color				: $o-step-status-review-color;
-	}
-	&.o_process_status_notavailable {
-	    background-color: 	$o-step-status-notavailable-color;
-	    color: 				#fff;
-	}
-	&.o_process_status_active {
-	    border-color		: $o-step-status-active-border-color;
-	    background-color	: $o-step-status-active-bg-color;
-	    color				: $o-step-status-active-color;
-	}
-	&.o_process_status_expired {
-	    background-color: 	$o-step-status-expired-color;
-	    color: 				#fff;
-	}
-	&.o_process_status_late {
-		background-color: 	$o-step-status-late-color;
-	    color: 				#fff;
-	}
 }
 
 .o_process_status_late {
@@ -213,63 +182,33 @@
 .o_labeled_light {
 	&.o_process_status_done {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-step-status-done-color;
-	    color: $o-step-status-done-color;
 	}
 	&.o_process_status_waiting {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-step-status-waiting-color;
-	    color: $o-step-status-waiting-color;
 	}
 	&.o_process_status_review {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-step-status-review-color;
-	    color: $o-step-status-review-color;
 	}
 	&.o_process_status_notavailable {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-step-status-notavailable-color;
-	    color: $o-step-status-notavailable-color;
 	}
 	&.o_process_status_extended {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-step-status-extended-color;
-	    color: $o-step-status-extended-color;
 	}
 	&.o_process_status_auto_collect {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-step-status-auto-collect-color;
-	    color: $o-step-status-auto-collect-color;
 	}
 	&.o_process_status_active {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-step-status-active-color;
-	    color: $o-step-status-active-color;
 	}
 	&.o_process_status_expired {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-step-status-expired-color;
-	    color: $o-step-status-expired-color;
 	}
 	&.o_process_status_late {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-step-status-expired-color;
-	    color: $o-step-status-expired-color;
 	}
 	&.o_process_status_need_revision {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-step-status-need-revision-color;
-	    color: $o-step-status-need-revision-color;
 	}
 }
 

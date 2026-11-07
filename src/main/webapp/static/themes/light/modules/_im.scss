@@ -306,27 +306,18 @@
 }
 
 .o_im_status_active.o_labeled {
-	border-color: $alert-success-text;
-	color: $alert-success-text;
-	background-color: $alert-success-bg;
 	text-transform: none;
 	font-weight: normal;
 	display: inline-block;
 }
 
 .o_im_status_completed.o_labeled {
-	border-color: $alert-info-text;
-	color: $alert-info-text;
-	background-color: $alert-info-bg;
 	text-transform: none;
 	font-weight: normal;
 	display: inline-block;
 }
 
 .o_im_status_requested.o_labeled {
-	border-color: $alert-warning-text;
-	color: $alert-warning-text;
-	background-color: $alert-warning-bg;
 	text-transform: none;
 	font-weight: normal;
 	display: inline-block;

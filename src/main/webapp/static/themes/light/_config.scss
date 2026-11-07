@@ -86,71 +86,8 @@ $table-bg-accent				: #f9fafb !default;
 
 /* Colors (style guide) */
 $o-base-blue-color						: #105CAD !default;
-$o-labeled-blue-color					: #FFFFFF !default;
-$o-labeled-blue-bg-color					: #146DCC !default;
-$o-labeled-blue-border-color				: $o-base-blue-color !default;
-$o-labeled-blue-light-color				: $o-base-blue-color !default;
-$o-labeled-blue-light-bg-color			: #FFFFFF !default;
-$o-labeled-blue-light-border-color		: $o-base-blue-color !default;
-$o-labeled-blue-mega-color				: $o-base-blue-color !default;
-$o-labeled-blue-mega-bg-color			: #cde3f9 !default;
-$o-labeled-blue-mega-border-color		: $o-base-blue-color !default;
 $o-base-green-color						: #268000 !default;
-$o-labeled-green-color					: #FFFFFF !default;
-$o-labeled-green-bg-color				: #37AD00 !default;
-$o-labeled-green-border-color			: $o-base-green-color !default;
-$o-labeled-green-light-color				: $o-base-green-color !default;
-$o-labeled-green-light-bg-color			: #FFFFFF !default;
-$o-labeled-green-light-border-color		: $o-base-green-color !default;
-$o-labeled-green-mega-color				: $o-base-green-color !default;
-$o-labeled-green-mega-bg-color			: #C4E6B8 !default;
-$o-labeled-green-mega-border-color		: $o-base-green-color !default;
-$o-labeled-yellow-color					: #574000 !default;
-$o-labeled-yellow-bg-color				: #FBD774 !default;
-$o-labeled-yellow-border-color			: #FCCA46 !default;
-$o-labeled-yellow-light-color			: #574000 !default;
-$o-labeled-yellow-light-bg-color			: #FFFFFF !default;
-$o-labeled-yellow-light-border-color		: #FCCA46 !default;
-$o-labeled-yellow-mega-color				: #805e00 !default;
-$o-labeled-yellow-mega-bg-color			: #fbe6a7 !default;
-$o-labeled-yellow-mega-border-color		: #fbe6a7 !default;
 $o-base-orange-color					: #D17A00 !default;
-$o-labeled-orange-color					: #663B00 !default;
-$o-labeled-orange-bg-color				: #F4AC47 !default;
-$o-labeled-orange-border-color			: $o-base-orange-color !default;
-$o-labeled-orange-light-color			: $o-base-orange-color !default;
-$o-labeled-orange-light-bg-color			: #FFFFFF !default;
-$o-labeled-orange-light-border-color		: $o-base-orange-color !default;
-$o-labeled-orange-mega-color				: #663B00 !default;
-$o-labeled-orange-mega-bg-color			: #FFDAA6 !default;
-$o-labeled-orange-mega-border-color		: $o-base-orange-color !default;
-$o-labeled-red-color					: #FFFFFF !default;
-$o-labeled-red-bg-color					: #b30018 !default;
-$o-labeled-red-border-color				: #b30018 !default;
-$o-labeled-red-light-color				: #b30018 !default;
-$o-labeled-red-light-bg-color			: #FFFFFF !default;
-$o-labeled-red-light-border-color		: #b30018 !default;
-$o-labeled-red-mega-color				: #b30018 !default;
-$o-labeled-red-mega-bg-color				: #ffc9bd !default;
-$o-labeled-red-mega-border-color			: #ffc9bd !default;
-$o-labeled-brown-color					: #FFFFFF !default;
-$o-labeled-brown-bg-color				: #804A33 !default;
-$o-labeled-brown-border-color			: #6D3F2C !default;
-$o-labeled-brown-light-color				: #804A33 !default;
-$o-labeled-brown-light-bg-color			: #FFFFFF !default;
-$o-labeled-brown-light-border-color		: #6D3F2C !default;
-$o-labeled-brown-mega-color				: #804A33 !default;
-$o-labeled-brown-mega-bg-color			: #E7D2BC !default;
-$o-labeled-brown-mega-border-color		: #E7D2BC !default;
-$o-labeled-grey-color					: #FFFFFF !default;
-$o-labeled-grey-bg-color					: #595959 !default;
-$o-labeled-grey-border-color				: #454545 !default;
-$o-labeled-grey-light-color				: #595959 !default;
-$o-labeled-grey-light-bg-color			: #FFFFFF !default;
-$o-labeled-grey-light-border-color		: #454545 !default;
-$o-labeled-grey-mega-color				: #342c24 !default;
-$o-labeled-grey-mega-bg-color			: #F6F6F6 !default;
-$o-labeled-grey-mega-border-color		: #F6F6F6 !default;
 
 /* other general colors, override bootstrap counterparts */
 $brand-info						: #2B78E4 !default;
@@ -637,14 +574,6 @@ $o-cat2-card-meta-padding				: 10px !default;
 $o-cat2-tax-launcher-square-font-size	: 14px !default;
 
 /* Repository */
-$o-repo-preparation-color			: #4a6785;	/* blue */
-$o-repo-coachpublished-color		: #1DC63F;	/* green-light */
-$o-repo-published-color				: #14892c;	/* green */
-$o-repo-closed-color				: #99583D;	/* brown */
-$o-repo-trash-color					: #5A5958;	/* gray */
-$o-repo-deleted-color				: #888;		/* black */
-$o-repo-status-color-dark			: #333;
-$o-repo-status-color-bright			: #fff;
 $o-repo-access-denied-cross-fill		: $brand-primary  !default;
 $o-repo-info-border						: solid 1px #d4d4d4 !default;
 $o-repo-info-border-radius				: 4px !default;
@@ -655,15 +584,6 @@ $o-repo-info-print-logo-height			: $o-navbar-brand-height !default;
 
 /* Access control */
 $o-ac-offers-container-max-width		: math.div($o-page-width-max, 3) !default;
-$o-ac-offer-active-color			: #3c763d !default;
-$o-ac-offer-inactive-color			: #8A6D40 !default;
-$o-ac-order-new-color				: $o-labeled-blue-light-color !default;
-$o-ac-order-prepayment-color		: $o-labeled-yellow-light-color !default;
-$o-ac-order-payed-color				: $o-labeled-green-light-color !default;
-$o-ac-order-canceled-color			: $o-labeled-grey-light-color !default;
-$o-ac-order-error-color				: $o-labeled-red-light-color !default;
-$o-ac-order-warning-color			: $o-labeled-yellow-light-color !default;
-$o-ac-order-pending-color			: $o-labeled-yellow-light-color !default;
 $o-ac-ba-radio-card-width			: 270px !default;
 $o-ac-ba-min-width					: 250px !default;
 $o-ac-ba-bg-color					: #f9fafb !default;
@@ -674,11 +594,6 @@ $o-ac-ba-icon-width					: 65px !default;
 $o-ac-ba-icon-font-size				: 28px !default;
 $o-ac-ba-no-ident-bg-color			: $o-color-warning-text-bg !default;
 
-/* Feed (Blog/Podcast) */
-$o-feed-planned-color				: $o-repo-preparation-color;	/* blue */
-$o-feed-published-color				: $o-repo-published-color;		/* green */
-$o-feed-status-color-bright			: #fff;
-
 /* Curriculum in course site */
 $o-coursesite-curriculum-rowelem-height-md :	40px !default;
 
@@ -687,21 +602,9 @@ $o-course-show-icon-title		: false !default; 	// don't show icon in title - no i
 $o-course-show-icon-toc			: true !default;	// show icons in menu - looks prettier
 $o-course-show-icon-menu		: true !default;	// show icons in menu - looks prettier
 $o-course-show-icon-editor-menu : true !default;	// show icons in menu - looks prettier
-$o-course-state-passed-color	: $state-success-text !default;
-$o-course-state-failed-color	: $state-danger-text !default;
-$o-course-state-unknown-color	: $state-warning-text !default;
-$o-course-results-visible-color		: #3c763d !default;
-$o-course-results-visible-bg-color	: #e4f1e7 !default;
-$o-course-results-hidden-color		: #8A6D40 !default;
-$o-course-results-hidden-bg-color	: #f3efeb !default;
-$o-course-results-evaluation-done-color				: #3c763d !default;
-$o-course-results-evaluation-done-bg-color			: #e4f1e7 !default;
-$o-course-results-evaluation-in-progress-color		: #004C93 !default;
-$o-course-results-evaluation-in-progress-bg-color	: #f3efeb !default;
-$o-course-results-evaluation-open-color				: #F1C232 !default;
-$o-course-results-evaluation-open-bg-color			: #f3efeb !default;
-$o-course-results-evaluation-invalid-color			: #ff8113 !default;
-$o-course-results-evaluation-invalid-bg-color		: #f4eeeb !default;
+$o-course-state-passed-color	: o-state-color("success", "text") !default;
+$o-course-state-failed-color	: o-state-color("danger", "text") !default;
+$o-course-state-unknown-color	: o-state-color("warning", "text") !default;
 $o-course-assessment-table-part-bg-color	: $panel-default-heading-bg !default;
 $o-course-assessment-chart-size:	62px !default;
 $o-course-assessment-chart-padding:	2px !default;
@@ -736,11 +639,11 @@ $o-st-peekview-bg					: $body-bg !default;
 $o-st-peekview-text-padding			: 2px 15px !default;
 
 /* Learning path */
-$o-lp-not-accessible			: lighten($text-muted,10%) !default;
-$o-lp-ready						: #FCCA46 !default; /* yellow */
-$o-lp-in-progress				: $o-lp-ready !default;
-$o-lp-in-review					: $state-success-text !default;
-$o-lp-done						: $state-success-text !default;
+$o-lp-not-accessible			: o-state-color("inactive", "text") !default;
+$o-lp-ready						: o-state-color("warning", "text") !default;
+$o-lp-in-progress				: o-state-color("neutral", "text") !default;
+$o-lp-in-review					: o-state-color("warning", "text") !default;
+$o-lp-done						: o-state-color("success", "text") !default;
 $o-lp-default					: #888 !default;
 $o-lp-icon-bg-color				: #fff !default;
 $o-lp-icon-radius				: 6px !default;
@@ -867,28 +770,6 @@ $o-curriculum-avatar-color						: #fff !default;
 $o-curriculum-avatar-bg-color					: $brand-primary !default;
 $o-curriculum-avatar-border-radius				: 6px !default;
 
-$o-curriculum-status-preparation-border-color	: $o-repo-preparation-color !default;
-$o-curriculum-status-preparation-color			: $o-repo-preparation-color !default;
-$o-curriculum-status-provisional-border-color	: $o-repo-preparation-color !default;
-$o-curriculum-status-provisional-color			: $o-repo-preparation-color !default;
-$o-curriculum-status-confirmed-border-color		: $o-repo-coachpublished-color !default;
-$o-curriculum-status-confirmed-color			: $o-repo-coachpublished-color !default;
-$o-curriculum-status-reservation-border-color	: $o-labeled-yellow-light-border-color !default;
-$o-curriculum-status-reservation-color			: $o-labeled-yellow-light-color !default;
-$o-curriculum-status-active-border-color		: $o-labeled-green-light-border-color !default;
-$o-curriculum-status-active-color				: $o-labeled-green-light-color !default;
-$o-curriculum-status-finished-border-color		: $o-repo-published-color !default;
-$o-curriculum-status-finished-color				: $o-repo-published-color !default;
-$o-curriculum-status-declined-border-color		: $o-labeled-orange-light-border-color !default;
-$o-curriculum-status-declined-color				: $o-labeled-orange-light-color !default;
-$o-curriculum-status-cancelled-border-color		: $o-labeled-grey-light-border-color!default;
-$o-curriculum-status-cancelled-color			: $o-labeled-grey-light-color !default;
-$o-curriculum-status-deleted-border-color		: $o-labeled-grey-light-border-color !default;
-$o-curriculum-status-deleted-color				: $o-labeled-grey-light-border-color !default;
-$o-curriculum-status-removed-border-color		: $o-labeled-grey-light-border-color !default;
-$o-curriculum-status-removed-color				: $o-labeled-grey-light-border-color !default;
-$o-curriculum-status-select-border-color		: #707070 !default;
-$o-curriculum-status-select-color				: #707070 !default;
 
 /* Curriculum overview */
 $o-curriculum-widget-border						: 1px solid #e4e7ec !default;
@@ -919,7 +800,7 @@ $o-curriculum-import-bg-ignored					: $o-color-note-text-bg !default;
 /* Activity */
 $o-activity-add-border							: 1px solid $brand-success !default;
 $o-activity-modify-border						: 1px solid $brand-warning !default;
-$o-activity-remove-border						: 1px solid $o-labeled-grey-light-border-color !default;
+$o-activity-remove-border						: 1px solid o-swatch-color("gray", "border") !default;
 $o-activity-border-radius						: 4px !default;
 $o-activity-remove-color						: $brand-danger !default;
 
@@ -928,23 +809,10 @@ $o-assessment-mode-today-bg						: $state-success-bg !default;
 $o-assessment-mode-today-border-color			: $state-success-text !default;
 $o-assessment-mode-end-soon-bg					: $state-danger-bg !default;
 $o-assessment-mode-end-soon-border-color		: $state-danger-text !default;
-$o_assessment-mode-status-color-bright			: #fff;
 
 $o-assessment-inspection-border-color			: 1px solid #d0d5dd !default;
 
-$o-assessment-inspection-scheduled-color		: #4a6785 !default;
-$o-assessment-inspection-active-color			: #32cd32 !default;
-$o-assessment-inspection-inprogress-color		: #ff8c00 !default;
-$o-assessment-inspection-carriedout-color		: #228b22 !default;
-$o-assessment-inspection-cancelled-color		: #99583d !default;
-$o-assessment-inspection-withdrawn-color		: #5a5958 !default;
 
-$o-assessment-inspection-scheduled-color-bg		: #4a67850C;
-$o-assessment-inspection-active-color-bg		: #32cd320C;
-$o-assessment-inspection-inprogress-color-bg	: #ff8c000C;
-$o-assessment-inspection-carriedout-color-bg	: #228b220C;
-$o-assessment-inspection-cancelled-color-bg		: #99583d0C;
-$o-assessment-inspection-withdrawn-color-bg		: #5a59580C;
 
 /* Portfolio v2 */
 $o-portfolio-assignment-color						: $brand-danger !default;
@@ -953,14 +821,6 @@ $o-portfolio-assignment-font-size					: $font-size-small !default;
 $o-portfolio-editor-border-color					: lighten($brand-primary, 20%) !default;
 $o-portfolio-editor-border-width					: 25px !default;
 
-$o-portfolio-entry-draft-color						: $brand-warning !default;
-$o-portfolio-entry-published-color					: $brand-primary !default;
-$o-portfolio-entry-inrevision-color					: $brand-danger !default;
-$o-portfolio-entry-closed-color						: $brand-success !default;
-$o-portfolio-entry-deleted-color					: #000 !default;
-$o-portfolio-entry-incoming-color					: $brand-success !default;
-$o-portfolio-entry-inprocess-color					: #c8c8c8 !default;
-$o-portfolio-entry-done-color						: $brand-success !default;
 $o-portfolio-media-content-background-color			: #f9fafb !default;
 $o-portfolio-media-content-space					: $padding-large-vertical !default;
 $o-portfolio-lead-space-sm							: $padding-large-vertical !default;
@@ -1001,12 +861,6 @@ $o-editor-layout-pseudo-icon-bg-color				: #eaecf0;
 $o-editor-layout-pseudo-icon-bg-active-color		: $brand-primary;
 
 /* Media */
-$o-media-status-valid-color							: $alert-success-text;
-$o-media-status-valid-text							: $alert-success-text;
-$o-media-status-valid-bg							: $alert-success-bg;
-$o-media-status-revoked-color						: $alert-warning-text;
-$o-media-status-revoked-text						: $alert-warning-text;
-$o-media-status-revoked-bg							: $alert-warning-bg;
 
 $o-media-version-label-color						: $alert-info-text;
 $o-media-version-label-text							: $alert-info-text;
@@ -1030,14 +884,14 @@ $o-ce-padding-compact								: 8px;
 $o-cc-box-shadow		 							: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04) !default;
 
 /* QTI2 eAssessment */
-$o-qti-status-notPresented-color					: lighten($text-muted,40%) !default;
-$o-qti-status-notAnswered-color						: $o-base-orange-color !default;
-$o-qti-status-answered-color							: $o-base-blue-color !default;
-$o-qti-status-correct-color							: $brand-success !default;
-$o-qti-status-ended-color							: $brand-info !default;
-$o-qti-status-incorrect-color						: $brand-danger !default;
-$o-qti-status-invalid-color							: $brand-danger !default;
-$o-qti-status-review-color							: $brand-info !default;
+$o-qti-status-notPresented-color					: o-state-color("inactive", "border", "light") !default;
+$o-qti-status-notAnswered-color						: o-state-color("critical", "text") !default;
+$o-qti-status-answered-color							: o-state-color("neutral", "text") !default;
+$o-qti-status-correct-color							: o-state-color("success", "text") !default;
+$o-qti-status-ended-color							: o-state-color("finished", "text") !default;
+$o-qti-status-incorrect-color						: o-state-color("danger", "text") !default;
+$o-qti-status-invalid-color							: o-state-color("danger", "text") !default;
+$o-qti-status-review-color							: o-state-color("warning", "text") !default;
 $o-qti-attempts-color								: $text-muted !default;
 $o-qti-menu-link-color								: $o-tree-link-color !default;
 $o-qti-menu-link-hover-color						: $o-tree-link-hover-color !default;
@@ -1159,11 +1013,11 @@ $o-lm-timeline-path-color							: $o-coursesite-sidecol-border !default;
 $o-lm-timeline-path-stroke-width					: 0.3rem !default;
 $o-lm-timeline-path-top-height						: $o-lm-timeline-row-padding !default;
 
-$o-lm-table-timeline-running-border-color			: $o-labeled-orange-light-border-color !default;
-$o-lm-table-timeline-running-bg-color				: transparentize($o-labeled-orange-light-border-color, 0.9) !default;
+$o-lm-table-timeline-running-border-color			: o-state-color("neutral", "border") !default;
+$o-lm-table-timeline-running-bg-color				: o-state-color("neutral", "soft-bg") !default;
 
-$o-lm-table-timeline-next-border-color				: $o-labeled-blue-light-border-color !default;
-$o-lm-table-timeline-next-bg-color					: transparentize($o-labeled-blue-light-border-color, 0.9) !default;
+$o-lm-table-timeline-next-border-color				: o-state-color("warning", "border") !default;
+$o-lm-table-timeline-next-bg-color					: o-state-color("warning", "soft-bg") !default;
 
 /* Chat and other floating window */
 $o-dialog-window-bg				: #fff !default;
@@ -1200,9 +1054,9 @@ $o-im-buddies-link-color		: $link-color !default;
 $o-im-buddies-link-hover-color	: $link-hover-color !default;
 $o-im-summary-color				: $badge-color !default;
 $o-im-summary-bg				: $badge-bg !default;
-$o-im-status-available-color	: #006633 !default;
-$o-im-status-dnd-color			: #CCCC33 !default;
-$o-im-status-unavailable-color	: #996633 !default;
+$o-im-status-available-color	: o-state-color("success", "text") !default;
+$o-im-status-dnd-color			: o-state-color("critical", "text") !default;
+$o-im-status-unavailable-color	: o-state-color("danger", "text") !default;
 $o-im-newmessage-color			: $brand-danger !default;
 $o-im-newmessage-hover-color	: lighten($brand-warning, 10%) !default;
 
@@ -1246,34 +1100,7 @@ $o-box-plot-values-color	 				: $brand-primary !default;
 $o-box-plot-quartile-fill		 			: lighten($brand-primary, 45%) !default;
 
 /* Quality management */
-$o-qual-status-color-dark			: #333;
-$o-qual-status-color-bright			: #fff;
-$o-qual-dc-preparation-color		: #4a6785;
-$o-qual-dc-running-color			: #993333;
-$o-qual-dc-finished-color			: #14892c;
-$o-qual-exec-future-color			: #4a6785;
-$o-qual-exec-ready-color			: #ffd351;
-$o-qual-exec-ready-color-dark		: #333;
-$o-qual-exec-participating-color	: #993333;
-$o-qual-exec-participated-color		: #14892c;
-$o-qual-exec-over-color				: #aaa;
 $o-qual-hm-base-background-color	: #337ab7;
-$o-qual-prev-data-collection-color	: $o-repo-trash-color !default;
-$o-qual-prev-regular-color			: $o-repo-preparation-color !default;
-$o-qual-prev-blacklisted-color		: $o-repo-deleted-color !default;
-
-/* Invitation */
-$o-invitation-active-color			: #14892c;	/* green */
-$o-invitation-inactive-color		: #99583D;	/* brown */
-
-
-$o-repo-trash-color					: #5A5958;	/* gray */
-$o-repo-deleted-color				: #888;		/* black */
-$o-repo-status-color-dark			: #333;
-$o-repo-status-color-bright			: #fff;
-$o-repo-access-denied-cross-fill		: $brand-primary  !default;
-
-
 
 /* Portlets site */
 $o-portlet-border				: $panel-default-border !default;
@@ -1314,10 +1141,10 @@ $o-box-error-color				: $o-color-error !default;
 $o-message-line-padding			: 5px !default;
 $o-message-line-padding-table	: 1px 5px !default;
 $o-message-line-radius			: $border-radius-base !default;
-$o-line-warning-bg				: $o-labeled-orange-mega-bg-color !default;
-$o-line-warning-color			: $o-labeled-orange-mega-color !default;
-$o-line-error-bg				: $o-labeled-red-mega-bg-color !default;
-$o-line-error-color				: $o-labeled-red-mega-color !default;
+$o-line-warning-bg				: o-state-color("critical", "bg", "tint") !default;
+$o-line-warning-color			: o-state-color("critical", "fg", "tint") !default;
+$o-line-error-bg				: o-state-color("danger", "bg", "tint") !default;
+$o-line-error-color				: o-state-color("danger", "fg", "tint") !default;
 
 /* Context help buttons */
 $o-chelp-font-size				: 10px !default;
@@ -1439,13 +1266,6 @@ $o-qpool-arrow-border-bottom-width	: 3px !default;
 $o-qpool-arrow-selected-bg-color	: $o-navbar-link-active-bg !default;
 $o-qpool-arrow-selected-color		: $o-navbar-link-active-color !default;
 
-$o-qpool-status-color-dark			: #333 !default;
-$o-qpool-status-color-bright		: #fff !default;
-$o-qpool-ai-draft-color				: #2c4f73 !default;
-$o-qpool-draft-color				: #4a6785 !default;
-$o-qpool-revised-color				: #993333 !default;
-$o-qpool-finalVersion-color			: #14892c !default;
-$o-qpool-endOfLife-color			: #aaa !default;
 
 /* Process step component */
 $o-step-border						: 1px solid #e4e7ec !default;
@@ -1461,41 +1281,22 @@ $o-step-padding-top					: 10px !default;
 $o-step-padding-left				: 30px !default;
 $o-step-padding-bottom				: 10px !default;
 $o-step-color						: #999 !default;
-$o-step-active-color				: #F1C232 !default;
+$o-step-active-color				: o-state-color("warning", "border") !default;
 $o-step-active-marker-color			: $o-step-color !default;
 $o-step-notavailable-color			: $o-step-color !default;
 $o-step-notavailable-marker-color	: $o-step-notavailable-color !default;
-$o-step-done-color					: $state-success-text !default;
+$o-step-done-color					: o-state-color("success", "border") !default;
 $o-step-done-marker-color			: $o-step-done-color;
 
-$o-step-expired-color				: #F1C232 !default;
+$o-step-expired-color				: o-state-color("danger", "border") !default;
 $o-step-expired-marker-color		: $o-step-color;
 
 $o-step-meta-color					: $text-muted !default;
 $o-step-meta-size					: $font-size-small !default;
 
-$o-step-status-active-color			: $o-labeled-yellow-color;
-$o-step-status-active-bg-color		: $o-labeled-yellow-bg-color;
-$o-step-status-active-border-color	: $o-labeled-yellow-border-color;
-$o-step-status-waiting-color		: $o-labeled-yellow-color;
-$o-step-status-waiting-bg-color		: $o-labeled-yellow-bg-color;
-$o-step-status-waiting-border-color	: $o-labeled-yellow-border-color;
-$o-step-status-review-color			: $o-labeled-yellow-color;
-$o-step-status-review-bg-color		: $o-labeled-yellow-bg-color;
-$o-step-status-review-border-color	: $o-labeled-yellow-border-color;
-$o-step-status-done-color			: $o-repo-published-color !default;
-$o-step-status-review-color			: $o-step-status-waiting-color;
-$o-step-status-done-color			: $o-repo-published-color;
-$o-step-status-notavailable-color	: $gray-light !default;
-$o-step-status-expired-color		: #E69138 !default;
-$o-step-status-late-color			: #B45E05 !default;
-$o-step-status-extended-color		: #31708F !default;
-$o-step-status-auto-collect-color	: $brand-danger !default;
-$o-step-status-extended-color		: $brand-info !default;
-$o-step-status-need-revision-color	: $brand-danger !default;
-$o-step-status-enabled				: $brand-success !default;
-$o-step-status-disabled				: $brand-danger !default;
-$o-step-status-staff-only			: $brand-warning !default;
+$o-step-status-expired-color		: o-state-color("danger", "text") !default;
+$o-step-status-late-color			: o-state-color("critical", "text") !default;
+$o-step-status-extended-color		: o-state-color("neutral", "text") !default;
 
 /* Email */
 $o-email-brand							: $btn-primary-bg !default;
@@ -1630,14 +1431,6 @@ $o-folder-row-thumbnail-folder-icon-color		: $brand-primary !default;
 $o-folder-card-thumbnail-height					: 172px !default;
 $o-folder-card-thumbnail-icon-color				: #ccc !default;
 $o-folder-card-thumbnail-folder-icon-color		: $brand-primary !default;
-$o-folder-label-elements-bg-color				: white !default;
-$o-folder-label-elements-color					: o-a11y-color($text-color, $o-folder-label-elements-bg-color) !default;
-$o-folder-label-locked-bg-color					: white !default;
-$o-folder-label-locked-color					: o-a11y-color(#D6001C, $o-folder-label-locked-bg-color) !default;
-$o-folder-label-editing-bg-color				: white !default;
-$o-folder-label-editing-color					: o-a11y-color(#337ab7, $o-folder-label-editing-bg-color) !default;
-$o-folder-label-new-bg-color					: $btn-primary-bg !default;
-$o-folder-label-new-color						: $btn-primary-color !default;
 $o-folder-muted-color							: $text-muted !default;
 
 /* Contact tracing */
@@ -1921,18 +1714,8 @@ $o-tb-topic-card-title-abbr-border			: 1px solid $btn-primary-color !default;
 $o-tb-topic-card-title-abbr-border-radius	: 4px !default;
 $o-tb-topic-placeholder-title-abbr-border	: 2px solid #fff !default;
 $o-tb-details-separator-border-bottom		: 1px solid $panel-default-border !default;
-$o-tb-broker-not-started-color				: #666 !default;
-$o-tb-broker-selection-in-progress-color		: #fcca46 !default;
-$o-tb-broker-enrollment-in-progress-color	: $o-repo-coachpublished-color !default;
-$o-tb-broker-enrollment-done-color			: $brand-success !default;
-$o-tb-priority-enrolled-color				: $brand-success !default;
-$o-tb-priority-enrolled-color-inv			: white !default;
-$o-tb-priority-surplus-color					: purple !default;
-$o-tb-priority-surplus-color-inv				: white !default;
-$o-tb-priority-waiting-color					: brown !default;
-$o-tb-priority-waiting-color-inv				: white !default;
-$o-tb-priority-not-enrolled-color			: #aaa !default;
-$o-tb-priority-not-enrolled-color-inv		: white !default;
+$o-tb-priority-enrolled-color				: o-state-color("success", "text") !default;
+$o-tb-priority-waiting-color					: o-state-color("warning", "text") !default;
 $o-tb-priority-fillin-color					: $text-muted !default;
 $o-tb-weighting-heigth						: 200px !default;
 $o-tb-weighting-legend-width					: 100px !default;
@@ -1943,10 +1726,6 @@ $o-tb-weighting-label-padding				: 1em !default;
 $o-cp-deposit-color							: $brand-success;
 $o-cp-withdraw-color						: $brand-danger;
 
-
-/* Course node selection */
-$o-cns-status-selected-color					: brown !default;
-$o-cns-status-done-color						: $brand-success !default;
 
 /* Not available visual */
 $o-not-available-bg: 		linear-gradient(40deg, rgba($brand-primary,1), rgba(#fff, 0.5) 90%), linear-gradient(160deg, rgba(#000,1), rgba($brand-primary, 0.3) 40%), linear-gradient(280deg, rgba($brand-primary,0.7), rgba(#000, 0.6) 80%) !default;
@@ -1964,10 +1743,10 @@ $o-v-timeline-path-top-height						: $o-v-timeline-row-padding !default;
 
 /* Speedometer */
 $o-o_speedometer-not-border-color		: $gray-lighter !default;
-$o-o_speedometer-default-border-color	: $o-labeled-blue-border-color !default;
-$o-o_speedometer-success-border-color	: $o-labeled-green-border-color !default;
-$o-o_speedometer-warning-border-color	: $o-labeled-yellow-border-color !default;
-$o-o_speedometer-danger-border-color	: $o-labeled-red-border-color !default;
+$o-o_speedometer-default-border-color	: o-state-color("neutral", "border") !default;
+$o-o_speedometer-success-border-color	: o-state-color("success", "border") !default;
+$o-o_speedometer-warning-border-color	: o-state-color("warning", "border") !default;
+$o-o_speedometer-danger-border-color	: o-state-color("danger", "border") !default;
 
 /* Indicators */
 $o-indicator-indicators-gap					: 20px !default;

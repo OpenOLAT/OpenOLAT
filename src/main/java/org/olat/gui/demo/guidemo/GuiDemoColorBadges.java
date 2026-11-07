@@ -122,7 +122,10 @@ public class GuiDemoColorBadges {
 		groups.add(new Group("Project", null, List.of(
 				new Sample("o_labeled_light o_proj_project_status_active", "Active", SUCCESS, TEXT),
 				new Sample("o_labeled_light o_proj_project_status_done", "Done", FINISHED, TEXT),
-				new Sample("o_labeled_light o_proj_project_status_deleted", "Deleted", INACTIVE, TEXT))));
+				new Sample("o_labeled_light o_proj_project_status_deleted", "Deleted", INACTIVE, TEXT),
+				new Sample("o_proj_project_status_badge o_proj_project_status_active", "Active", SUCCESS, SOLID),
+				new Sample("o_proj_project_status_badge o_proj_project_status_done", "Done", FINISHED, SOLID),
+				new Sample("o_proj_project_status_badge o_proj_project_status_deleted", "Deleted", INACTIVE, DARK))));
 		groups.add(new Group("Question pool", null, List.of(
 				new Sample("o_labeled o_qpool_status_ai_draft", "AI draft", HIGHLIGHT, SOLID),
 				new Sample("o_labeled o_qpool_status_draft", "Draft", NEUTRAL, TINT),
@@ -250,7 +253,12 @@ public class GuiDemoColorBadges {
 				new Sample("o_labeled_light o_assessment_status_leadtime", "Lead time", WARNING, TEXT),
 				new Sample("o_labeled_light o_assessment_status_assessment", "Running", SUCCESS, TEXT),
 				new Sample("o_labeled_light o_assessment_status_followup", "Follow-up", FINISHED, TEXT),
-				new Sample("o_labeled_light o_assessment_status_end", "Ended", FINISHED, TEXT))));
+				new Sample("o_labeled_light o_assessment_status_end", "Ended", FINISHED, TEXT),
+				new Sample("o_labeled o_assessment_status_none", "Not started", NEUTRAL, SOLID),
+				new Sample("o_labeled o_assessment_status_leadtime", "Lead time", WARNING, SOLID),
+				new Sample("o_labeled o_assessment_status_assessment", "Running", SUCCESS, SOLID),
+				new Sample("o_labeled o_assessment_status_followup", "Follow-up time", FINISHED, SOLID),
+				new Sample("o_labeled o_assessment_status_end", "Ended", FINISHED, SOLID))));
 		groups.add(new Group("Assessment inspection", null, List.of(
 				new Sample("o_labeled_light o_assessment_inspection_scheduled", "Scheduled", WARNING, TEXT),
 				new Sample("o_labeled_light o_assessment_inspection_active", "Active", NEUTRAL, TEXT),
@@ -495,6 +503,27 @@ public class GuiDemoColorBadges {
 				new Sample("o_labeled_light o_http_code_success", "200", SUCCESS, TEXT),
 				new Sample("o_labeled_light o_http_code_warning", "404", WARNING, TEXT),
 				new Sample("o_labeled_light o_http_code_error", "500", DANGER, TEXT))));
+		groups.add(new Group("Blog and podcast", null, List.of(
+				new Sample("o_labeled_light o_feed_status_draft", "Draft", NEUTRAL, TEXT),
+				new Sample("o_labeled_light o_feed_status_planned", "Planned", WARNING, TEXT),
+				new Sample("o_labeled_light o_feed_status_published", "Published", SUCCESS, TEXT))));
+		groups.add(new Group("Quality preview", null, List.of(
+				new Sample("o_labeled_light o_qual_prev_regular_light", "Regular", NEUTRAL, TEXT),
+				new Sample("o_labeled_light o_qual_prev_changed_light", "Changed", WARNING, TEXT),
+				new Sample("o_labeled_light o_qual_prev_data_collection_light", "Data collection", INACTIVE, TEXT),
+				new Sample("o_labeled_light o_qual_prev_blacklisted_light", "Excluded", INACTIVE, TEXT))));
+		groups.add(new Group("Topic broker priority", null, List.of(
+				new Sample("o_tb_priority_selected", "Selected", NEUTRAL, TEXT),
+				new Sample("o_tb_priority_enrolled", "Enrolled", SUCCESS, SOLID),
+				new Sample("o_tb_priority_waiting", "Waiting list", WARNING, TEXT),
+				new Sample("o_tb_priority_not_enrolled", "Not enrolled", INACTIVE, TEXT),
+				new Sample("o_tb_priority_surplus", "Surplus", HIGHLIGHT, TEXT))));
+		groups.add(new Group("Certificate", null, List.of(
+				new Sample("o_labeled o_certificate_expiration", "Expires in 3 days", WARNING, TINT))));
+		groups.add(new Group("MCP token", null, List.of(
+				new Sample("o_labeled_light o_mcp_token_expired", "Expired", CRITICAL, TEXT))));
+		groups.add(new Group("Table", null, List.of(
+				new Sample("o_labeled_light o_default_config", "Default", SUCCESS, TEXT))));
 		// END GROUPS
 		return groups;
 	}

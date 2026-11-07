@@ -1,19 +1,6 @@
 /* Feed (Blog/Podcast) */
 
-/* Status style, mainly for in-table renderings */
-.o_status_table {
-	&.o_feed_status_draft {
-		@extend %o_labeled_light_yellow;
-	}
-	&.o_feed_status_planned {
-		border-color: 		$o-feed-planned-color;
-		color: 				$o-feed-planned-color;
-	}
-	&.o_feed_status_published {
-		border-color: 		$o-feed-published-color;
-		color: 				$o-feed-published-color;
-	}
-}
+// Status labels (o_feed_status_*): semantic states in _states.scss (OO-10042)
 
 /* special case for table, last child behaves different */
 .o_table_body {

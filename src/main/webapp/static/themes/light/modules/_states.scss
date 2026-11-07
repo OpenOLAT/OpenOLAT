@@ -145,6 +145,9 @@ $o-state-wiring: (
 	".o_labeled_light.o_proj_project_status_active": ("success", "text"),
 	".o_labeled_light.o_proj_project_status_done": ("finished", "text"),
 	".o_labeled_light.o_proj_project_status_deleted": ("inactive", "text"),
+	".o_proj_project_status_badge.o_proj_project_status_active": ("success", "solid"),
+	".o_proj_project_status_badge.o_proj_project_status_done": ("finished", "solid"),
+	".o_proj_project_status_badge.o_proj_project_status_deleted": ("inactive", "dark"),
 	// Question pool
 	".o_labeled.o_qpool_status_ai_draft": ("highlight", "solid"),
 	".o_labeled.o_qpool_status_draft": ("neutral", "tint"),
@@ -273,6 +276,11 @@ $o-state-wiring: (
 	".o_labeled_light.o_assessment_status_assessment": ("success", "text"),
 	".o_labeled_light.o_assessment_status_followup": ("finished", "text"),
 	".o_labeled_light.o_assessment_status_end": ("finished", "text"),
+	".o_labeled.o_assessment_status_none": ("neutral", "solid"),
+	".o_labeled.o_assessment_status_leadtime": ("warning", "solid"),
+	".o_labeled.o_assessment_status_assessment": ("success", "solid"),
+	".o_labeled.o_assessment_status_followup": ("finished", "solid"),
+	".o_labeled.o_assessment_status_end": ("finished", "solid"),
 	// Assessment inspection
 	".o_labeled_light.o_assessment_inspection_scheduled": ("warning", "text"),
 	".o_labeled_light.o_assessment_inspection_active": ("neutral", "text"),
@@ -515,6 +523,27 @@ $o-state-wiring: (
 	".o_labeled_light.o_http_code_success": ("success", "text"),
 	".o_labeled_light.o_http_code_warning": ("warning", "text"),
 	".o_labeled_light.o_http_code_error": ("danger", "text"),
+	// Blog and podcast
+	".o_labeled_light.o_feed_status_draft": ("neutral", "text"),
+	".o_labeled_light.o_feed_status_planned": ("warning", "text"),
+	".o_labeled_light.o_feed_status_published": ("success", "text"),
+	// Quality preview
+	".o_labeled_light.o_qual_prev_regular_light": ("neutral", "text"),
+	".o_labeled_light.o_qual_prev_changed_light": ("warning", "text"),
+	".o_labeled_light.o_qual_prev_data_collection_light": ("inactive", "text"),
+	".o_labeled_light.o_qual_prev_blacklisted_light": ("inactive", "text"),
+	// Topic broker priority
+	".o_tb_priority_selected": ("neutral", "text"),
+	".o_tb_priority_enrolled": ("success", "solid"),
+	".o_tb_priority_waiting": ("warning", "text"),
+	".o_tb_priority_not_enrolled": ("inactive", "text"),
+	".o_tb_priority_surplus": ("highlight", "text"),
+	// Certificate
+	".o_labeled.o_certificate_expiration": ("warning", "tint"),
+	// MCP token
+	".o_labeled_light.o_mcp_token_expired": ("critical", "text"),
+	// Table
+	".o_labeled_light.o_default_config": ("success", "text"),
 	// END WIRING
 );
 

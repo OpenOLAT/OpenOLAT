@@ -1,26 +1,4 @@
-.o_labeled_light {
-	&.o_rm_status_active {
-		@extend %o_labeled_light_green;
-	}
-	&.o_rm_status_inactive {
-		@extend %o_labeled_light_grey;
-	}
-	&.o_rm_status_deleted {
-		@extend %o_labeled_light_red;
-	}
-}
 
-.o_labeled {
-	&.o_rm_status_active {
-		@extend %o_labeled_green;
-	}
-	&.o_rm_status_inactive {
-		@extend %o_labeled_grey;
-	}
-	&.o_rm_status_deleted {
-		@extend %o_labeled_red;
-	}
-}
 
 .o_building_color_picker {
 	ul.o_color_picker_dropdown {

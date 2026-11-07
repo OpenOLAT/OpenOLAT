@@ -284,20 +284,21 @@
 				right: $o-user-info-status-right;
 			}
 			.o_user_portrait_border {
+				// border of the state of the user status badge (OO-10042)
 				&:is(:has(.o_user_status_active) *) {
-					outline: solid 2px $o-repo-published-color;
+					outline: solid 2px o-state-color("success", "border");
 				}
 				&:is(:has(.o_user_status_inactive) *) {
-					outline: solid 2px $o-repo-closed-color;
+					outline: solid 2px o-state-color("inactive", "border", "tint");
 				}
 				&:is(:has(.o_user_status_login_denied) *) {
-					outline: solid 2px $o-repo-trash-color;
+					outline: solid 2px o-state-color("danger", "border");
 				}
 				&:is(:has(.o_user_status_pending) *) {
-					outline: solid 2px $o-labeled-yellow-border-color;
+					outline: solid 2px o-state-color("warning", "border");
 				}
 				&:is(:has(.o_user_status_deleted) *) {
-					outline: solid 2px $o-repo-deleted-color;
+					outline: solid 2px o-state-color("inactive", "border", "dark");
 				}
 			}
 			.o_user_info_profile_name {
@@ -444,27 +445,6 @@
 	padding: 1px 15px;
 	border-radius: $border-radius-small;
 	
-	&.o_user_status_active {
-	    background-color: 	$o-repo-published-color;
-	    color: 				#fff;
-	}
-	&.o_user_status_inactive {
-	    background-color: 	$o-repo-closed-color;
-	    color: 				#fff;
-	}
-	&.o_user_status_login_denied {
-	    background-color: 	$o-repo-trash-color;
-	    color: 				#fff;
-	}
-	&.o_user_status_pending {
-	    background-color: 	$o-labeled-yellow-bg-color;
-	    color: 				$o-labeled-yellow-color;
-	    border-color: 		$o-labeled-yellow-border-color;
-	}
-	&.o_user_status_deleted {
-	    background-color: 	$o-repo-deleted-color;
-	    color: 				#fff;
-	}
 }
 
 div.o_skype_button {
@@ -482,17 +462,6 @@ div.o_skype_button {
 	margin-top: 0px;
 }
 
-.o_labeled_light {
-	&.o_invitation_status_active {
-	    border-color: $o-invitation-active-color;
-	    color: $o-invitation-active-color;
-	}
-	
-	&.o_invitation_status_inactive {
-	    border-color: $o-invitation-inactive-color;
-	    color: $o-invitation-inactive-color;
-	}
-}
 
 .o_organisation_small_list {
 	>li {

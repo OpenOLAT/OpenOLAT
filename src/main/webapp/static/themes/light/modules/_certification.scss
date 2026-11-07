@@ -203,31 +203,26 @@
 	&.o_certification_status_valid,
 	&.o_certification_status_certified {
 		font-weight: normal;
-		@extend %o_labeled_green;
 	}
 	
 	&.o_certification_status_recertifying {
 		font-weight: normal;
-		@extend %o_labeled_blue;
 	}
 	
 	&.o_certification_status_inactive,
 	&.o_certification_status_expired,
 	&.o_certification_status_expired_renewable {
 		font-weight: normal;
-		@extend %o_labeled_yellow;
 	}
 	
 	&.o_certification_status_paused,
 	&.o_certification_status_archived,
 	&.o_certification_status_removed {
 		font-weight: normal;
-		@extend %o_labeled_grey;
 	}
 	
 	&.o_certification_status_revoked {
 		font-weight: normal;
-		@extend %o_labeled_red;
 	}
 }
 
@@ -236,34 +231,29 @@
 	&.o_certification_status_valid,
 	&.o_certification_status_certified {
 		font-weight: normal;
-		@extend %o_labeled_light_green;
 	}
 	
 	&.o_certification_status_recertifying,
 	&.o_certification_status_pending,
 	&.o_certification_status_rendering {
 		font-weight: normal;
-		@extend %o_labeled_light_blue;
 	}
 	
 	&.o_certification_status_inactive,
 	&.o_certification_status_expired,
 	&.o_certification_status_expired_renewable {
 		font-weight: normal;
-		@extend %o_labeled_light_yellow;
 	}
 	
 	&.o_certification_status_paused,
 	&.o_certification_status_archived,
 	&.o_certification_status_removed {
 		font-weight: normal;
-		@extend %o_labeled_light_grey;
 	}
 	
 	&.o_certification_status_revoked,
 	&.o_certification_status_error {
 		font-weight: normal;
-		@extend %o_labeled_light_red;
 	}
 }
 

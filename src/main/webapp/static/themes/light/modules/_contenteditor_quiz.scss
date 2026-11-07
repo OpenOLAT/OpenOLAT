@@ -169,8 +169,7 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 
 				.o_assessmentitem_status {
 					&.solution {
-						border-color: darken($o-qti-status-correct-color, 10%);
-						background-color: $o-qti-status-correct-color;
+						@extend %o_state_success_solid;
 					}
 					// the icon takes the text colour of the state (OO-10042)
 					i, i:before {

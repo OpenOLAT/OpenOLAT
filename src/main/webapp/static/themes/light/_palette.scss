@@ -304,6 +304,15 @@ $o-states: (
 	"highlight": "magenta"
 ) !default;
 
+// Colour of a swatch role of a hue at compile time, e.g. o-swatch-color("blue", "tint-bg")
+@function o-swatch-color($hue, $role) {
+	$color: map.get($o-swatches, $hue, $role);
+	@if $color == null {
+		@error "o-swatch-color: unknown hue or role '#{$hue}' '#{$role}'";
+	}
+	@return $color;
+}
+
 // Colour of a state at compile time, for a rule that cannot extend the state
 // placeholder, e.g. the border of another component. $role: bg, fg, border or text;
 // $style: solid, dark, tint or light (as in modules/_states.scss).

@@ -469,28 +469,28 @@ span.o_qti_gaptext_score_alternative {
 		}
 
 		&.o_assessment_status_none {
-			background-color: $o-assessment-inspection-scheduled-color-bg;
-			border-color: $o-assessment-inspection-scheduled-color;
+			background-color: o-state-color("neutral", "soft-bg");
+			border-color: o-state-color("neutral", "border");
 		}
 
 		&.o_assessment_status_leadtime {
-			background-color: $o-assessment-inspection-inprogress-color-bg;
-			border-color: $o-assessment-inspection-inprogress-color;
+			background-color: o-state-color("warning", "soft-bg");
+			border-color: o-state-color("warning", "border");
 		}
 
 		&.o_assessment_status_assessment {
-			background-color: $o-assessment-inspection-active-color-bg;
-			border-color: $o-assessment-inspection-active-color;
+			background-color: o-state-color("success", "soft-bg");
+			border-color: o-state-color("success", "border");
 		}
 
 		&.o_assessment_status_followup {
-			background-color: $o-assessment-inspection-cancelled-color-bg;
-			border-color: $o-assessment-inspection-cancelled-color;
+			background-color: o-state-color("finished", "soft-bg");
+			border-color: o-state-color("finished", "border");
 		}
 
 		&.o_assessment_status_end {
-			background-color: $o-assessment-inspection-withdrawn-color-bg;
-			border-color: $o-assessment-inspection-withdrawn-color;
+			background-color: o-state-color("finished", "soft-bg");
+			border-color: o-state-color("finished", "border");
 		}
 
 		&.o_assessment_mode_warn {
@@ -519,93 +519,25 @@ span.o_qti_gaptext_score_alternative {
 		justify-content: center;
 	}
 
-	&.o_assessment_status_none {
-		background-color: $o-assessment-inspection-scheduled-color;
-		border-color: $o-assessment-inspection-scheduled-color;
-		color: $o_assessment-mode-status-color-bright;
-	}
-
-	&.o_assessment_status_leadtime {
-		background-color: $o-assessment-inspection-inprogress-color;
-		border-color: $o-assessment-inspection-inprogress-color;
-		color: $o_assessment-mode-status-color-bright;
-	}
-
-	&.o_assessment_status_assessment {
-		background-color: $o-assessment-inspection-active-color;
-		border-color: $o-assessment-inspection-active-color;
-		color: $o_assessment-mode-status-color-bright;
-	}
-
-	&.o_assessment_status_followup {
-		background-color: $o-assessment-inspection-cancelled-color;
-		border-color: $o-assessment-inspection-cancelled-color;
-		color: $o_assessment-mode-status-color-bright;
-	}
-
-	&.o_assessment_status_end {
-		background-color: $o-assessment-inspection-withdrawn-color;
-		border-color: $o-assessment-inspection-withdrawn-color;
-		color: $o_assessment-mode-status-color-bright;
-	}
+	// filled status label (o_labeled o_assessment_status_*): semantic states in _states.scss (OO-10042)
 }
 
-/* Status light style, mainly for in-table renderings */
-.o_labeled_light {
-	&.o_assessment_status_none {
-		background-color: $o_assessment-mode-status-color-bright;
-		border-color: $o-assessment-inspection-scheduled-color;
-		color: $o-assessment-inspection-scheduled-color;
-	}
-
-	&.o_assessment_status_leadtime {
-		background-color: $o_assessment-mode-status-color-bright;
-		border-color: $o-assessment-inspection-inprogress-color;
-		color: $o-assessment-inspection-inprogress-color;
-	}
-
-	&.o_assessment_status_assessment {
-		background-color: $o_assessment-mode-status-color-bright;
-		border-color: $o-assessment-inspection-active-color;
-		color: $o-assessment-inspection-active-color;
-	}
-
-	&.o_assessment_status_followup {
-		background-color: $o_assessment-mode-status-color-bright;
-		border-color: $o-assessment-inspection-cancelled-color;
-		color: $o-assessment-inspection-cancelled-color;
-	}
-
-	&.o_assessment_status_end {
-		background-color: $o_assessment-mode-status-color-bright;
-		border-color: $o-assessment-inspection-withdrawn-color;
-		color: $o-assessment-inspection-withdrawn-color;
-	}
-}
 
 .o_labeled_light {
 	&.o_assessment_test_session_status_running  {
 		font-weight: normal;
-		@extend %o_labeled_light_orange
-	}
-	&.o_assessment_test_session_status_reviewing  {
-		@extend %o_labeled_light_yellow
 	}
 	&.o_assessment_test_session_status_suspended {
 		font-weight: normal;
-		@extend %o_labeled_light_blue
 	}
 	&.o_assessment_test_session_status_finished {
 		font-weight: normal;
-		@extend %o_labeled_light_green
 	}
 	&.o_assessment_test_session_status_error {
 		font-weight: normal;
-		@extend %o_labeled_light_red
 	}
 	&.o_assessment_test_session_status_cancelled {
 		font-weight: normal;
-		@extend %o_labeled_light_grey
 	}
 }
 
@@ -874,12 +806,12 @@ body>li.o_assessmentitem_order_item  {
 		// correct, ended, incorrect, answered, notAnswered, notPresented, review and reviewNotSeen:
 		// semantic states in _states.scss (OO-10042)
 		&.invalid {
-		  background-color: $o-qti-status-invalid-color;
+			@extend %o_state_danger_solid;
 		}
 		&.reviewNotAllowed, 
 		&.reviewInvalid, 
 		&.reviewNotAnswered {
-			background-color: $o-qti-status-review-color;
+			@extend %o_state_warning_solid;
 			opacity: 0.7;
 		}
 	}
@@ -1652,8 +1584,6 @@ table.o_qti_item_kprim {
 		background-color:$o-qti-error;
 	}
 
-	div.upConversionAjaxControlError {
-	}
 
 	div.upConversionAjaxControlPreview {
 		margin: 0.5em 0;
@@ -1980,23 +1910,9 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 	div.o_userShortDescription th {
 		width: 40%;	
 	}
-	.o_qti_metainfo {
-		.o_qti_metainfo_listing{
-			.o_qti_run_durationinfo {}
-			.o_qti_run_questioninfo {}
-			.o_qti_run_scoreinfo {}
-			.o_qti_cutinfo {}
-			.o_qti_stateinfo {}
-			.o_qti_signature {}
-		
-		}
-		.o_qti_metainfo_visual{}
-	}
 	.o_qti_sectionsummary {
 		.o_qti_section {
 			text-align: center;
-			.o_qti_section_visual{}
-			.o_qti_section_goto {}
 			.o_qti_section_sublisting {
 				padding: 0 10%;
 				min-height: 3em;

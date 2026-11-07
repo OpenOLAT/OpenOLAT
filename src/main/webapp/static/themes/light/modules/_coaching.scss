@@ -163,13 +163,14 @@
 	}
 }
 .o_course_widget_icon {
+	// colour of the state of the course status (OO-10042)
 	&.o_icon_coach {
-		color: $o-repo-coachpublished-color;
+		color: o-state-color("success", "text");
 	}
 	&.o_icon_repo_status_published {
-		color: $o-repo-published-color;
+		color: o-state-color("success", "text");
 	}
 	&.o_icon_repo_status_closed {
-		color: $o-repo-closed-color;
+		color: o-state-color("finished", "text");
 	}
 }

@@ -422,15 +422,9 @@
 
 	&.o_media_status_valid {
 		text-transform: none;
-	    border-color: $o-media-status-valid-color;
-	    color: $o-media-status-valid-color;
-	    background-color: $o-media-status-valid-bg;
 	}
 	&.o_media_status_revoked {
 		text-transform: none;
-	    border-color: $o-media-status-revoked-color;
-	    color: $o-media-status-revoked-text;
-		background-color: $o-media-status-revoked-bg;
 	}
 }
 

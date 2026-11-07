@@ -560,59 +560,12 @@ span.o_labeled_light {
 		color: o-a11y-color($btn-info-border, $o-toolbar-bg-color);
 	}
 	
-	&.o_badge_verification_hosted {
-	}
 	
 	&.o_badge_verification_signed {
 		color: o-a11y-color($btn-info-border, $o-toolbar-bg-color);
 	}
 }
 
-.o_labeled {
-	&.o_badge_class_status_preparation {
-		background-color: o-a11y-color($btn-info-bg, $o-labeled-grey-color);
-	}
-	&.o_badge_class_status_active {
-		background-color: o-a11y-color($btn-success-bg, $o-labeled-grey-color);
-	}
-	&.o_badge_class_status_revoked {
-		background-color: o-a11y-color($btn-danger-bg, $o-labeled-grey-color);
-	}
-	&.o_badge_class_status_deleted {
-		background-color: o-a11y-color($btn-warning-bg, $o-labeled-grey-color);
-	}
-
-	&.o_badge_assertion_status_editing {
-		background-color: o-a11y-color($btn-info-bg, $o-labeled-grey-color);
-	}
-
-	&.o_badge_assertion_status_issued {
-		background-color: o-a11y-color($btn-success-bg, $o-labeled-grey-color);
-	}
-
-	&.o_badge_assertion_status_revoked {
-		background-color: o-a11y-color($btn-danger-bg, $o-labeled-grey-color);
-	}
-
-	&.o_badge_assertion_status_reset {
-		background-color: $btn-warning-bg;
-	}
-	
-	&.o_badge_assertion_status_expired {
-		background-color: $btn-warning-bg;
-	}
-	
-	&.o_badge_verification_verified {
-		background-color: o-a11y-color($btn-info-bg, $o-labeled-grey-color);
-	}
-	
-	&.o_badge_verification_hosted {
-	}
-	
-	&.o_badge_verification_signed {
-		background-color: o-a11y-color($btn-info-bg, $o-labeled-grey-color);
-	}
-}
 
 .o_badge_class_image_wrapper {
 	padding-right: 0;

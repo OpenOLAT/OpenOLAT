@@ -257,13 +257,7 @@
 
 /* Bages */
 .badge {
-	/* badge color */
-	&.o_midpub            { background-color: $o-course-node-published; }
-	&.o_midwarn           { background-color: $o-course-node-warning; }
-	&.o_midlock           { background-color: $o-course-node-locked;}
 	&.o_midlpexob         { background-color: $o-course-node-locked;}
-	&.o_miderr            { background-color: $o-course-node-error;}
-	&.o_middel            { background-color: $o-course-node-deleted;}
 	&:before {
 		content: none;
 	}
@@ -452,26 +446,6 @@
 	}
 }
 
-.o_lp_not_accessible {
-	&.o_labeled { background-color: $o-lp-not-accessible; border-color: $o-lp-not-accessible; }
-	&.o_labeled_light { color: $o-lp-not-accessible; border-color: $o-lp-not-accessible; }
-}
-.o_lp_ready {
-	&.o_labeled { background-color: $o-lp-ready; border-color: $o-lp-ready; }
-	&.o_labeled_light { color: $o-lp-ready; border-color: $o-lp-ready; }
-}
-.o_lp_in_progress {
-	&.o_labeled { background-color: $o-lp-in-progress; border-color: $o-lp-in-progress; }
-	&.o_labeled_light { color: $o-lp-in-progress; border-color: $o-lp-in-progress; }
-}
-.o_lp_in_review {
-	&.o_labeled { background-color: $o-lp-in-review; border-color: $o-lp-in-review; }
-	&.o_labeled_light { color: $o-lp-in-review; border-color: $o-lp-in-review; }
-}
-.o_lp_done {
-	&.o_labeled { background-color: $o-lp-done; border-color: $o-lp-done; }
-	&.o_labeled_light { color: $o-lp-done; border-color: $o-lp-done; }
-}
 
 /* progress bar in tools */
 .o_course_progress {
@@ -698,44 +672,32 @@
 
 .o_labeled {
 	&.o_results_visible {
-		border-color: 		$o-course-results-visible-color;
-		background-color:	$o-course-results-visible-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
 	}
 	&.o_results_hidden {
-		border-color: 		$o-course-results-hidden-color;
-		background-color:	$o-course-results-hidden-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
 	}
 	
 	&.o_evaluation_in_progress {
-		border-color: 		$o-course-results-evaluation-in-progress-color;
-		background-color: 	$o-course-results-evaluation-in-progress-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
 	}
 	&.o_evaluation_invalid {
-		border-color: 		$o-course-results-evaluation-invalid-color;
-		background-color: 	$o-course-results-evaluation-invalid-bg-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
 	}
 	&.o_evaluation_done {
-		border-color: 		$o-course-results-evaluation-done-color;
-		background-color: 	$o-course-results-evaluation-done-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
 	}
 	&.o_evaluation_open {
-		border-color: 		$o-course-results-evaluation-open-color;
-		background-color: 	$o-course-results-evaluation-open-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
@@ -743,44 +705,32 @@
 }
 .o_labeled_light {
 	&.o_results_visible {
-		border-color: 		$o-course-results-visible-color;
-		color: 				$o-course-results-visible-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
 	}
 	&.o_results_hidden {
-		border-color: 		$o-course-results-hidden-color;
-		color: 				$o-course-results-hidden-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
 	}
 
 	&.o_evaluation_in_progress {
-		border-color: 		$o-course-results-evaluation-in-progress-color;
-		color: 				$o-course-results-evaluation-in-progress-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
 	}
 	&.o_evaluation_invalid {
-		border-color: 		$o-course-results-evaluation-invalid-color;
-		color: 				$o-course-results-evaluation-invalid-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
 	}
 	&.o_evaluation_done {
-		border-color: 		$o-course-results-evaluation-done-color;
-		color: 				$o-course-results-evaluation-done-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
 	}
 	&.o_evaluation_open {
-		border-color: 		$o-course-results-evaluation-open-color;
-		color: 				$o-course-results-evaluation-open-color;
 		font-size:			100%;
 		font-weight: 		normal;
 		text-transform:		none;
@@ -1358,30 +1308,6 @@ div.o_correction_navigation {
 	}
 }
 
-.o_labeled {
-	&.o_cns_labled_status_in_progress {
-		@extend %o_labeled_yellow;
-	}
-	&.o_cns_labled_status_selected {
-		@extend %o_labeled_yellow;
-	}
-	&.o_cns_labled_status_done {
-		background-color: 	$o-cns-status-done-color;
-		border-color: 		$o-cns-status-done-color;
-	}
-}
-.o_labeled_light {
-	&.o_cns_labled_light_status_in_progress {
-		@extend %o_labeled_light_yellow;
-	}
-	&.o_cns_labled_light_status_selected {
-		@extend %o_labeled_light_yellow;
-	}
-	&.o_cns_labled_light_status_done {
-		color: 				$o-cns-status-done-color;
-		border-color: 		$o-cns-status-done-color;
-	}
-}
 
 /* Participant folder */
 #o_pf_participant_folder i.o_icon_time {
