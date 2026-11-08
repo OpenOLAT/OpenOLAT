@@ -1,0 +1,233 @@
+/*
+ * =================================================
+ *
+ * Colour tokens as CSS custom properties (OO-9994).
+ *
+ * Three token layers (doc/openolat-frontend.md, chapter 26):
+ *
+ *   palette    literal colours: --o-{hue}-{step} and --o-theme{n}-{step}
+ *              (_palette_vars.scss), --o-white and the base colours
+ *              --o-base-{name} of this file
+ *   semantic   the meaning of a colour: --o-text, --o-heading, --o-primary, ...
+ *              and the states --o-state-{state}-{role}
+ *   component  --o-{component}-{part}, only where a client theme or the
+ *              dark mode sets a colour separately (OO-10043)
+ *
+ * Literal colours exist only in the palette layer. A semantic token is
+ * always a var() reference: to its base colour, or to the palette step of
+ * its state.
+ *
+ * The base colours carry the colour inputs of the theme 1:1 ($text-color,
+ * $brand-primary, $link-color, ...). A client theme keeps setting them in
+ * its config as before.
+ *
+ * A client theme overrides a semantic or state token with the map
+ * $o-tokens in its config, before the import of the light theme. The key
+ * is the token name without "--o-", the value a palette step as
+ * "{hue}-{step}" (also "theme1-500" or "white") or a colour:
+ *
+ *   $o-tokens: (
+ *       "text-muted": "slate-600",
+ *       "state-success-bg": "green-600",
+ *       "state-success-fg": "white",
+ *       "link": #1A4F99,
+ *   );
+ *
+ * The compile stops for an unknown token, an unknown palette step, a value
+ * that is not a colour and an override that breaks a contrast pair (4.5:1
+ * text, 3:1 border and focus). With $o-contrast-check: "warn"; in the client
+ * config the compile reports the broken pair and accepts it (_functions.scss). A palette step is emitted as
+ * var(--o-{hue}-{step}), any other colour as a literal value.
+ *
+ * Emitted in theme.css and content.css, not in email.css (mail clients do
+ * not support custom properties). Modules read the tokens with var(--o-*);
+ * the migration of the modules is OO-10043.
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+@use "sass:color";
+@use "sass:list";
+@use "sass:map";
+@use "sass:meta";
+@use "sass:string";
+
+// Client overrides of semantic and state tokens: name without "--o-" -> colour
+$o-tokens: () !default;
+
+// Base colours: the colour inputs of the theme, emitted as --o-base-{name}.
+// Each semantic token with the same name reads its base colour.
+$o-token-base: (
+	"text": $text-color,
+	"text-muted": $text-muted,
+	// Bootstrap default of $headings-color is "inherit": the headings use the text colour
+	"heading": if(meta.type-of($headings-color) == "color", $headings-color, $text-color),
+	"bg": $body-bg,
+	"bg-subtle": $panel-default-heading-bg,
+	"border": $panel-default-border,
+	"border-strong": $input-border,
+	"primary": $brand-primary,
+	"primary-fg": o-a11y-color(#fff, $brand-primary),
+	"primary-hover": color.adjust($brand-primary, $lightness: -10%, $space: hsl),
+	"primary-text": $o-brand-text,
+	"link": $link-color,
+	"link-hover": $link-hover-color,
+	"focus": $input-border-focus
+);
+
+// The swatch roles of the state tokens --o-state-{state}-{role}
+$o-token-state-roles: ("text", "bg", "fg", "border", "soft-bg", "soft-fg", "soft-border");
+
+// Contrast pairs of the semantic tokens: (foreground, background, ratio)
+$o-token-contrast-pairs: (
+	("text", "bg", 4.5),
+	("text-muted", "bg", 4.5),
+	("heading", "bg", 4.5),
+	("link", "bg", 4.5),
+	("link-hover", "bg", 4.5),
+	("primary-text", "bg", 4.5),
+	("primary-fg", "primary", 4.5),
+	("focus", "bg", 3)
+);
+@each $state, $hue in $o-states {
+	$o-token-contrast-pairs: list.join($o-token-contrast-pairs, (
+		("state-#{$state}-fg", "state-#{$state}-bg", 4.5),
+		("state-#{$state}-soft-fg", "state-#{$state}-soft-bg", 4.5),
+		("state-#{$state}-text", #FFFFFF, 4.5),
+		("state-#{$state}-text", "state-#{$state}-soft-bg", 4.5),
+		("state-#{$state}-border", #FFFFFF, 3)
+	));
+}
+
+// The default colour of every semantic and state token
+@function o-token-defaults() {
+	$values: $o-token-base;
+	@each $state, $hue in $o-states {
+		@each $role in $o-token-state-roles {
+			$values: map.merge($values, ("state-#{$state}-#{$role}": o-state-color($state, $role)));
+		}
+	}
+	@return $values;
+}
+$o-token-defaults: o-token-defaults();
+
+@each $name, $value in $o-token-base {
+	@if meta.type-of($value) != "color" {
+		@error "_tokens.scss: the base colour '#{$name}' needs a colour, got '#{$value}'";
+	}
+}
+// Resolves an override value: a palette step "{hue}-{step}", "white" or a colour
+@function o-token-resolve($name, $value) {
+	@if meta.type-of($value) == "color" {
+		@return $value;
+	}
+	@if meta.type-of($value) == "string" {
+		@if $value == "white" {
+			@return #FFFFFF;
+		}
+		$dash: null;
+		@for $i from string.length($value) through 1 {
+			@if $dash == null and string.slice($value, $i, $i) == "-" {
+				$dash: $i;
+			}
+		}
+		@if $dash != null {
+			$hue: string.slice($value, 1, $dash - 1);
+			$step-name: string.slice($value, $dash + 1);
+			@if map.has-key($o-palette, $hue) {
+				@each $step, $color in map.get($o-palette, $hue) {
+					@if "#{$step}" == $step-name {
+						@return $color;
+					}
+				}
+			}
+		}
+		@error "$o-tokens: '#{$name}' has the unknown palette step '#{$value}', use \"{hue}-{step}\" (e.g. \"slate-600\"), \"white\" or a colour";
+	}
+	@error "$o-tokens: '#{$name}' needs a palette step like \"slate-600\", \"white\" or a colour, got '#{$value}'";
+}
+
+// The client overrides as colours
+$o-token-overrides: ();
+@each $name, $value in $o-tokens {
+	@if not map.has-key($o-token-defaults, $name) {
+		@error "$o-tokens: unknown token '#{$name}', known: #{map.keys($o-token-defaults)}";
+	}
+	$o-token-overrides: map.merge($o-token-overrides, ($name: o-token-resolve($name, $value)));
+}
+
+// The colour of every token after the client overrides
+$o-token-values: map.merge($o-token-defaults, $o-token-overrides);
+
+// Contrast check of the pairs that contain an override. A pair that fails
+// already with the default colours fails only when its foreground is
+// overridden, an override of the background is not blamed for it.
+@each $pair in $o-token-contrast-pairs {
+	$fg: list.nth($pair, 1);
+	$bg: list.nth($pair, 2);
+	$ratio: list.nth($pair, 3);
+	$bg-is-token: meta.type-of($bg) == "string";
+	$fg-overridden: map.has-key($o-token-overrides, $fg);
+	@if $fg-overridden or ($bg-is-token and map.has-key($o-token-overrides, $bg)) {
+		$bg-color: if($bg-is-token, map.get($o-token-values, $bg), $bg);
+		$fg-color: map.get($o-token-values, $fg);
+		$default-bg: if($bg-is-token, map.get($o-token-defaults, $bg), $bg);
+		$default-ok: contrast(map.get($o-token-defaults, $fg), $default-bg) >= $ratio;
+		@if contrast($fg-color, $bg-color) < $ratio and ($fg-overridden or $default-ok) {
+			$failed: o-contrast-failed("$o-tokens: '#{$fg}' #{$fg-color} on '#{$bg}' #{$bg-color} has #{o-contrast-rounded($fg-color, $bg-color)}:1, needs #{$ratio}:1");
+		}
+	}
+}
+
+// A colour as literal value: #RRGGBB, or rgba() with transparency
+@function o-token-literal($color) {
+	@if color.channel($color, "alpha") < 1 {
+		@return color.to-space($color, rgb);
+	}
+	@return o-hex($color);
+}
+
+// A colour as token value: var(--o-{hue}-{step}) for a palette step,
+// var(--o-white) for white, else the literal value. $hue is searched first.
+@function o-token-ref($color, $hue: null) {
+	$hues: map.keys($o-palette);
+	@if $hue != null {
+		$hues: list.join(($hue,), $hues);
+	}
+	@each $h in $hues {
+		@each $step, $value in map.get($o-palette, $h) {
+			@if $value == $color {
+				@return var(--o-#{$h}-#{$step});
+			}
+		}
+	}
+	@if $color == #FFFFFF {
+		@return var(--o-white);
+	}
+	@return o-token-literal($color);
+}
+
+:root {
+	// palette layer: white and the base colours of the theme
+	--o-white: #FFFFFF;
+	@each $name, $value in $o-token-base {
+		--o-base-#{$name}: #{o-token-literal($value)};
+	}
+
+	// semantic tokens
+	@each $name, $value in $o-token-base {
+		@if map.has-key($o-token-overrides, $name) {
+			--o-#{$name}: #{o-token-ref(map.get($o-token-overrides, $name))};
+		} @else {
+			--o-#{$name}: var(--o-base-#{$name});
+		}
+	}
+
+	// state tokens: the swatch roles of the hue in $o-states
+	@each $state, $hue in $o-states {
+		@each $role in $o-token-state-roles {
+			--o-state-#{$state}-#{$role}: #{o-token-ref(map.get($o-token-values, "state-#{$state}-#{$role}"), $hue)};
+		}
+	}
+}

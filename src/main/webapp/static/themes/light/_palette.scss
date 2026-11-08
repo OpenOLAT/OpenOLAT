@@ -148,7 +148,7 @@ $o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
 		);
 		// hover of the text style (o_labeled_light): text colour on soft-bg
 		@if contrast(map.get($swatch, "text"), $soft-bg) < 4.5 {
-			@error "o-palette-swatches: text colour of '#{$hue}' does not reach 4.5:1 on its soft-bg #{$soft-bg}";
+			$failed: o-contrast-failed("o-palette-swatches: text colour of '#{$hue}' does not reach 4.5:1 on its soft-bg #{$soft-bg}");
 		}
 		$swatches: map.merge($swatches, ($hue: $swatch));
 	}

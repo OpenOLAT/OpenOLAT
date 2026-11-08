@@ -51,3 +51,5 @@
 
 /* palette primitives --o-{hue}-{step} */
 @import "modules/palette_vars";
+/* base, semantic and state tokens --o-base-*, --o-text, --o-state-* (OO-9994) */
+@import "modules/tokens";

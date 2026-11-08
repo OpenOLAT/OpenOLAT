@@ -98,11 +98,24 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     to its state. For a new status use the classes "o_labeled o_state_<name>" (styles o_state_dark,
     o_state_tint, o_state_light) or "o_labeled_light o_state_<name>" (outline). In SCSS use
     o-state-color($state, $role, $style) for a component colour.
-  - the colours are moving to three token layers of CSS custom properties: palette (--o-{hue}-{step}),
-    semantic (--o-text, --o-primary, --o-state-{state}-{role}) and component (--o-{component}-{part},
-    only where a theme or the dark mode sets a colour separately). Do not add new Sass colour variables
-    to your theme for new components; a new customization point is a CSS custom property.
+  - the colours are moving to three token layers of CSS custom properties: palette (--o-{hue}-{step},
+    --o-white and the base colours --o-base-*), semantic (--o-text, --o-heading, --o-primary,
+    --o-state-{state}-{role}) and component (--o-{component}-{part}, only where a theme or the dark
+    mode sets a colour separately). The base colours come from your Sass variables
+    ($text-color, $headings-color, $brand-primary, $link-color, ...), so keep setting them as
+    before. To override a semantic or state token, set the map $o-tokens in your config. The
+    value is a palette step "{hue}-{step}", "white" or a colour, e.g.
+      $o-tokens: ("text-muted": "slate-600", "state-success-bg": "green-600", "state-success-fg": "white");
+    The compile stops for an unknown token or step and for an override below the contrast of its
+    pair (4.5:1 text, 3:1 borders and focus). Do not add new Sass colour variables to your theme for
+    new components; a new customization point is a CSS custom property.
     Details: doc/openolat-frontend.md, chapter 26.
+  - when the client insists on colours with too little contrast: set
+      $o-contrast-check: "warn";
+    in your config. The compile then reports each colour pair below its contrast ratio
+    (palette, theme colours, $o-tokens) as a warning and accepts it. The default "error" stops
+    the compile. With "warn" the theme does not meet WCAG 2.1 AA; set it only on the explicit
+    wish of the client. The light and openolat themes always use "error".
 - Open mytheme/_mytheme_theme.scss and override or extend styles from the light theme. Best is to use the 
   browser to lookup the CSS classes and then search in the light theme for the definitions. Don't miss the 
   tag hierarchies and the responsive rules!

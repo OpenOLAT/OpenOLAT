@@ -1312,7 +1312,7 @@ The colour of each badge comes from its state in `$o-state-wiring` ([Color Syste
 
 ## 26. Color System
 
-**Changed in 21.2.0:** The status colours come from 8 semantic states on the palette (OO-10042). The `$o-labeled-*` variables and the `%o_labeled_<colour>` placeholders are removed. The modules move to three token layers (OO-9994, OO-10043).
+**Changed in 21.2.0:** The status colours come from 8 semantic states on the palette (OO-10042). The `$o-labeled-*` variables and the `%o_labeled_<colour>` placeholders are removed. The theme emits the semantic and state tokens as CSS custom properties (OO-9994, 26.5). The modules move to the three token layers (OO-10043).
 
 ### 26.1 Token Layers
 
@@ -1322,9 +1322,11 @@ Every colour belongs to one of three layers. A module reads the semantic layer, 
 
 | Layer | Holds | Example | Defined in | Status |
 |---|---|---|---|---|
-| Palette | 14 hues x 10 steps, the theme colours | `--o-yellow-400`, `--o-theme1` | `_palette.scss`, `modules/_palette_vars.scss` | done (OO-9991, OO-9993) |
-| Semantic | the meaning: text, surface, border, brand, link, focus, the 8 states with their roles | `--o-text-muted`, `--o-primary`, `--o-state-success-text` | `_tokens.scss` | states as Sass functions done (OO-10042); custom properties planned (OO-9994) |
-| Component | a colour of one component that a client theme or the dark mode sets separately | `--o-navbar-bg`, `--o-rating-star` | `_tokens.scss` | planned (OO-10043) |
+| Palette | literal colours: 14 hues x 10 steps, the theme colours, white, the base colours of the theme | `--o-yellow-400`, `--o-theme1`, `--o-white`, `--o-base-text` | `_palette.scss`, `modules/_palette_vars.scss`, `modules/_tokens.scss` | done (OO-9991, OO-9993, OO-9994) |
+| Semantic | the meaning: text, surface, border, brand, link, focus, the 8 states with their roles | `--o-text-muted`, `--o-primary`, `--o-state-success-text` | `modules/_tokens.scss` | done (OO-9994) |
+| Component | a colour of one component that a client theme or the dark mode sets separately | `--o-navbar-bg`, `--o-rating-star` | `modules/_tokens.scss` | planned (OO-10043) |
+
+Literal colours exist only in the palette layer. A semantic or component token is always a `var()` reference to another token.
 
 Goal: the modules read every colour with `var(--o-*)`. A client theme changes a colour with one CSS line, a dark mode redefines the semantic tokens, and the removal of Bootstrap ports modules that already read tokens. Spec and module inventory: OO-10043.
 
@@ -1387,12 +1389,62 @@ A component that shows a status without a label (icon, marker, progress bar, cha
 
 1. A new status uses a state: `o_labeled o_state_<state>` in the template, or a status class added to `$o-state-wiring`. Do not set a colour on a status class in a module.
 2. Choose the state by the meaning (26.2), not by the colour.
-3. A status colour outside a label uses `o-state-color()`. Do not use `$brand-success`, `$brand-danger`, `$brand-warning`, `$brand-info` or `$state-*-text` for a status.
+3. A status colour outside a label reads the state token `var(--o-state-<state>-<role>)` (26.5). `o-state-color()` returns the same colour at compile time, for `email.scss` and for Sass that needs the value. Do not use `$brand-success`, `$brand-danger`, `$brand-warning`, `$brand-info` or `$state-*-text` for a status.
 4. A fixed colour that is not a status (rating stars, pen colours, chart series) comes from the palette (`o-palette()`), not from a hex value.
 5. Do not add a Sass colour variable. A new customization point is a CSS custom property (component token, OO-10043).
 6. Do not use colour maths (`darken()`, `lighten()`, `mix()`, `rgba($var)`) on a palette or state colour. Use a role (`soft-fg`, `dark-bg`) or another palette step.
+7. Text, surface, border, brand, link and focus colours read the semantic tokens (`var(--o-text)`, `var(--o-border)`, ...), not `$text-color`, `$gray-*` or a hex value. The unit test `ThemeColorRatchetTest` fails when a module gets more old colour references than `theme_color_baseline.properties` allows.
 
 Buttons, alerts and form messages still read the Bootstrap colours `$brand-*`. OO-10043 moves them to the state tokens.
+
+### 26.5 Colour Tokens
+
+`modules/_tokens.scss` emits the tokens on `:root` in `theme.css` and `content.css`, not in `email.css` (mail clients do not support custom properties). The component library page "Colours", section "Colour Tokens", shows every token with its value and contrast for the selected theme.
+
+**Base colours** (palette layer) carry the colour inputs of the theme 1:1. A client theme keeps setting the Sass variables in its config.
+
+| Token | Source | Semantic token | Use |
+|---|---|---|---|
+| `--o-base-text` | `$text-color` | `--o-text` | body text |
+| `--o-base-text-muted` | `$text-muted` | `--o-text-muted` | secondary text |
+| `--o-base-heading` | `$headings-color`, else `$text-color` | `--o-heading` | headings, legend, dialog title |
+| `--o-base-bg` | `$body-bg` | `--o-bg` | page surface |
+| `--o-base-bg-subtle` | `$panel-default-heading-bg` | `--o-bg-subtle` | panel heading, striped row |
+| `--o-base-border` | `$panel-default-border` | `--o-border` | panel, divider |
+| `--o-base-border-strong` | `$input-border` | `--o-border-strong` | form field |
+| `--o-base-primary` | `$brand-primary` | `--o-primary` | brand fill, primary button |
+| `--o-base-primary-fg` | text colour on `$brand-primary` with 4.5:1 | `--o-primary-fg` | text on primary |
+| `--o-base-primary-hover` | `$brand-primary` 10 % darker (Bootstrap button hover) | `--o-primary-hover` | primary button hover |
+| `--o-base-primary-text` | `$o-brand-text` | `--o-primary-text` | brand colour as text on white |
+| `--o-base-link` | `$link-color` | `--o-link` | link |
+| `--o-base-link-hover` | `$link-hover-color` | `--o-link-hover` | link hover |
+| `--o-base-focus` | `$input-border-focus` | `--o-focus` | focus ring |
+
+Each semantic token reads its base colour: `--o-text: var(--o-base-text)`. A dark mode redefines the semantic tokens.
+
+**State tokens:** `--o-state-{state}-{role}` for the 8 states of `$o-states` (26.2) and the roles `text`, `bg`, `fg`, `border`, `soft-bg`, `soft-fg`, `soft-border` (56 tokens). Each one reads the palette step of its hue, e.g. `--o-state-success-bg: var(--o-green-400)`, `--o-state-danger-fg: var(--o-white)`.
+
+```css
+.my_note        { color: var(--o-text-muted); border: 1px solid var(--o-border); background: var(--o-bg-subtle); }
+.my_marker_done { border-left: 4px solid var(--o-state-success-border); }
+```
+
+**Client override:** a client theme sets the map `$o-tokens` in its config, before the import of the light theme. The key is the token name without `--o-`, the value a palette step `"{hue}-{step}"`, `"white"` or a colour:
+
+```scss
+$o-tokens: (
+	"text-muted": "slate-600",
+	"state-success-bg": "green-600",
+	"state-success-fg": "white",
+	"link": #1A4F99,
+);
+```
+
+The compile stops for an unknown token, an unknown palette step, a value that is not a colour, and an override that breaks a contrast pair: 4.5:1 for text (`text`, `text-muted`, `heading`, `link`, `link-hover`, `primary-text` on `bg`; `primary-fg` on `primary`; per state `fg` on `bg`, `soft-fg` on `soft-bg`, `text` on white and on `soft-bg`), 3:1 for `focus` on `bg` and the state `border` on white. A pair that already fails with the default colours fails only when its foreground is overridden. The default `--o-focus` (`#66AFE9`, Bootstrap) has 2.37:1 on white.
+
+The contrast check covers the palette, the theme colours and `$o-tokens`. `$o-contrast-check` in `_functions.scss` sets its mode: `"error"` (default) stops the compile at a pair below its ratio, `"warn"` reports each such pair as a Sass warning and accepts it. A client theme whose client insists on colours with too little contrast sets `$o-contrast-check: "warn";` in its config; the theme then does not meet WCAG 2.1 AA. The `light` and `openolat` themes always use `"error"`.
+
+Until OO-10043 migrates the modules, an override changes only the custom property, not the rendered modules. The unit test `ColorTokensTest` checks the tokens in the compiled `light/theme.css`.
 
 ## 27. SCSS Module Index
 
@@ -1409,6 +1461,7 @@ Buttons, alerts and form messages still read the Bootstrap colours `$brand-*`. O
 | `_swatches.scss` | Swatch classes `o_swatch_{hue}` with the tokens `--o-sw-*` |
 | `_palette_vars.scss` | Palette values as `--o-{hue}-{step}` on `:root` |
 | `_states.scss` | Semantic states: `o_state_*` classes and the wiring of the status classes (imported last) |
+| `_tokens.scss` | Base, semantic and state tokens on `:root`, client overrides `$o-tokens` (not in `email.css`) |
 | `_type.scss` | Typography and heading styles |
 
 ### 27.2 Layout Modules
@@ -1773,4 +1826,5 @@ Colour epic OO-9989:
 | OO-9991 | Palette of 14 hues x 10 steps, swatch tokens `--o-sw-*`, `--o-{hue}-{step}` on `:root` | [Colour Palette](#61-colour-palette-for-user-colour-choosers) |
 | OO-9992, OO-9993 | Colour choosers on the palette, theme colours `--o-theme{n}` | [Colour Palette](#61-colour-palette-for-user-colour-choosers) |
 | OO-10042 | 8 semantic states in 5 styles, `o_state_*` classes, `$o-state-wiring` for 395 status classes, `o-state-color()`, `o-swatch-color()`; `$o-labeled-*` removed | [Color System](#26-color-system) |
-| OO-9994, OO-10043 | Token layers palette, semantic, component; rules for new code (planned) | [Token Layers](#261-token-layers) |
+| OO-9994 | Base, semantic and state tokens `--o-base-*`, `--o-text`, `--o-state-{state}-{role}` on `:root`, client overrides with `$o-tokens`, unit tests `ColorTokensTest` and `ThemeColorRatchetTest` | [Colour Tokens](#265-colour-tokens) |
+| OO-10043 | Modules read the token layers, component tokens (planned) | [Token Layers](#261-token-layers) |

@@ -185,6 +185,264 @@
   </div>
 </section>
 
+<section class="cl-section" id="tokens">
+  <h2>Colour Tokens</h2>
+  <p>The semantic layer of the three token layers (OO-9994). <code>modules/_tokens.scss</code> emits all tokens on <code>:root</code> in <code>theme.css</code> and <code>content.css</code>, not in <code>email.css</code>. Literal colours exist only in the palette layer: the palette steps, <code>--o-white</code> and the base colours <code>--o-base-{name}</code>. The base colours carry the colour inputs of the theme 1:1 (<code>$text-color</code>, <code>$brand-primary</code>, <code>$link-color</code>, …). Every semantic token is a <code>var()</code> reference: to its base colour, or to the palette step of its state. Modules read the semantic tokens; the migration of the modules is OO-10043.</p>
+  <p>A client theme overrides a token with the map <code>$o-tokens</code> in its config. The value is a palette step <code>"{hue}-{step}"</code>, <code>"white"</code> or a colour. The compile stops for an unknown token or step, and for an override that breaks a contrast pair. Values and ratios below are read from the selected theme.</p>
+
+  <div class="cl-component" id="semantic-tokens">
+    <div class="cl-component-header">
+      <h3>Semantic tokens</h3>
+      <p>"Reads" shows the declared value in the theme CSS, "Value" the resolved colour. The ratio is the contrast pair the compile checks for an override.</p>
+      <div class="cl-classes">
+        <code>--o-text</code> <code>--o-text-muted</code> <code>--o-heading</code> <code>--o-bg</code> <code>--o-bg-subtle</code> <code>--o-border</code> <code>--o-border-strong</code> <code>--o-primary</code> <code>--o-primary-fg</code> <code>--o-primary-hover</code> <code>--o-primary-text</code> <code>--o-link</code> <code>--o-link-hover</code> <code>--o-focus</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example cl-pal-wrap">
+          <table class="table cl-tok-table" id="cl-tok-semantic">
+            <thead><tr><th>Token</th><th>Use</th><th>Reads</th><th>Value</th><th>Contrast</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>/* CSS: new code reads the semantic tokens */
+.my_note { color: var(--o-text-muted); border: 1px solid var(--o-border); background: var(--o-bg-subtle); }
+.my_note a { color: var(--o-link); }
+.my_note a:hover { color: var(--o-link-hover); }
+
+// client theme config, before the import of the light theme
+$o-tokens: (
+	"text-muted": "slate-600",
+	"link": #1A4F99,
+);</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="cl-component" id="state-tokens">
+    <div class="cl-component-header">
+      <h3>State tokens</h3>
+      <p>The 8 states of the status labels (<code>$o-states</code>) with the swatch roles of their hue. Hover a chip for the declared value. Ratios: <code>fg</code> on <code>bg</code>, <code>soft-fg</code> on <code>soft-bg</code> and <code>text</code> on white (4.5:1), <code>border</code> on white (3:1).</p>
+      <div class="cl-classes">
+        <code>--o-state-{state}-text</code> <code>-bg</code> <code>-fg</code> <code>-border</code> <code>-soft-bg</code> <code>-soft-fg</code> <code>-soft-border</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example cl-pal-wrap">
+          <table class="table cl-tok-table" id="cl-tok-states">
+            <thead><tr><th>State</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>/* CSS: a status marker that is not a label */
+.my_marker_done { border-left: 4px solid var(--o-state-success-border); background: var(--o-state-success-soft-bg); color: var(--o-state-success-soft-fg); }
+
+// client theme config: a darker success fill needs a matching text colour
+$o-tokens: (
+	"state-success-bg": "green-600",
+	"state-success-fg": "white",
+);</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.cl-tok-table { font-size: 12px; width: auto; }
+.cl-tok-table td, .cl-tok-table th { vertical-align: middle !important; white-space: nowrap; }
+.cl-tok-chip { display: inline-block; width: 18px; height: 18px; border-radius: 3px; border: 1px solid #cbd5e1; vertical-align: middle; margin-right: 6px; }
+.cl-tok-hex { font-family: monospace; font-size: 11px; }
+.cl-tok-ref { font-family: monospace; font-size: 11px; color: #475569; }
+.cl-tok-state td { padding: 4px 6px !important; }
+.cl-tok-state .cl-tok-cell { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.cl-tok-state .cl-tok-chip { width: 54px; margin: 0; }
+#tokens .cl-pal-wrap { overflow-x: auto; }
+.cl-tok-table td.cl-tok-ratios { white-space: normal; }
+.cl-tok-ratios .cl-ratio-badge { display: block; margin: 1px 0; width: max-content; }
+</style>
+
+<script>
+(function() {
+  var SEMANTIC = [
+    ['text', 'body text', 'bg', 4.5],
+    ['text-muted', 'secondary text', 'bg', 4.5],
+    ['heading', 'headings, legend, dialog title', 'bg', 4.5],
+    ['bg', 'page surface', null, 0],
+    ['bg-subtle', 'panel heading, striped row', null, 0],
+    ['border', 'panel, divider', null, 0],
+    ['border-strong', 'form field', null, 0],
+    ['primary', 'brand fill, primary button', null, 0],
+    ['primary-fg', 'text on primary', 'primary', 4.5],
+    ['primary-hover', 'primary button hover', null, 0],
+    ['primary-text', 'brand colour as text on white', 'bg', 4.5],
+    ['link', 'link', 'bg', 4.5],
+    ['link-hover', 'link hover', 'bg', 4.5],
+    ['focus', 'focus ring', 'bg', 3]
+  ];
+  var STATES = ['neutral', 'success', 'warning', 'critical', 'danger', 'finished', 'inactive', 'highlight'];
+  var ROLES = ['text', 'bg', 'fg', 'border', 'soft-bg', 'soft-fg', 'soft-border'];
+  var PALETTE_HUES = ['red', 'orange', 'yellow', 'lime', 'green', 'teal', 'cyan', 'blue', 'violet', 'magenta', 'pink', 'brown', 'slate', 'gray', 'theme1', 'theme2', 'theme3', 'theme4'];
+  var PALETTE_STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+
+  function parseColor(value) {
+    var v = (value || '').trim();
+    var m = v.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (m) {
+      var h = m[1].length === 3 ? m[1].replace(/(.)/g, '$1$1') : m[1];
+      return [0, 2, 4].map(function(i) { return parseInt(h.substr(i, 2), 16); });
+    }
+    m = v.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i);
+    if (m) return [+m[1], +m[2], +m[3]];
+    return null;
+  }
+  function luminance(rgb) {
+    var c = rgb.map(function(v) { v = v / 255; return v < 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function contrast(a, b) {
+    var ca = parseColor(a), cb = parseColor(b);
+    if (!ca || !cb) return NaN;
+    var la = luminance(ca), lb = luminance(cb);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+  function badge(ratio, min, label) {
+    var span = document.createElement('span');
+    var ok = ratio >= min;
+    span.className = 'cl-ratio-badge' + (ok ? '' : ' cl-fail');
+    span.textContent = (label ? label + ' ' : '') + (isNaN(ratio) ? 'n/a' : ratio.toFixed(2) + ':1');
+    span.title = (ok ? 'passes ' : 'fails ') + min + ':1';
+    return span;
+  }
+  // resolved value of a token on :root
+  function value(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue('--o-' + name).trim();
+  }
+  // declared values of the :root rules of the theme CSS (null when the browser blocks the CSSOM)
+  function declared() {
+    var map = {};
+    try {
+      Array.prototype.forEach.call(document.styleSheets, function(sheet) {
+        Array.prototype.forEach.call(sheet.cssRules || [], function(rule) {
+          if (rule.selectorText === ':root') {
+            for (var i = 0; i < rule.style.length; i++) {
+              var p = rule.style[i];
+              if (p.indexOf('--o-') === 0) map[p.substr(4)] = rule.style.getPropertyValue(p).trim();
+            }
+          }
+        });
+      });
+    } catch (e) {
+      map = {};
+    }
+    // file:// pages may block the CSSOM: derive the reference from the resolved values
+    if (!map.text) {
+      var byHex = { '#FFFFFF': 'var(--o-white)' };
+      PALETTE_HUES.forEach(function(hue) {
+        PALETTE_STEPS.forEach(function(step) {
+          var hex = value(hue + '-' + step).toUpperCase();
+          if (hex && !byHex[hex]) byHex[hex] = 'var(--o-' + hue + '-' + step + ')';
+        });
+      });
+      SEMANTIC.forEach(function(s) {
+        var v = value(s[0]).toUpperCase();
+        map[s[0]] = v === value('base-' + s[0]).toUpperCase() ? 'var(--o-base-' + s[0] + ')' : (byHex[v] || v);
+      });
+      STATES.forEach(function(state) {
+        ROLES.forEach(function(role) {
+          var name = 'state-' + state + '-' + role;
+          var v = value(name).toUpperCase();
+          map[name] = byHex[v] || v;
+        });
+      });
+    }
+    return map;
+  }
+  function chip(name) {
+    var c = document.createElement('span');
+    c.className = 'cl-tok-chip';
+    c.style.background = 'var(--o-' + name + ')';
+    return c;
+  }
+
+  function renderSemantic(decl) {
+    var tbody = document.getElementById('cl-tok-semantic').tBodies[0];
+    tbody.innerHTML = '';
+    SEMANTIC.forEach(function(s) {
+      var tr = tbody.insertRow();
+      tr.insertCell().innerHTML = '<code>--o-' + s[0] + '</code>';
+      tr.insertCell().textContent = s[1];
+      var ref = tr.insertCell();
+      ref.className = 'cl-tok-ref';
+      ref.textContent = decl ? (decl[s[0]] || 'missing') : 'n/a';
+      var val = tr.insertCell();
+      val.appendChild(chip(s[0]));
+      var hex = document.createElement('span');
+      hex.className = 'cl-tok-hex';
+      hex.textContent = (value(s[0]) || 'missing').toUpperCase();
+      val.appendChild(hex);
+      var ratio = tr.insertCell();
+      if (s[2]) ratio.appendChild(badge(contrast(value(s[0]), value(s[2])), s[3], 'on ' + s[2]));
+    });
+  }
+
+  function renderStates(decl) {
+    var table = document.getElementById('cl-tok-states');
+    var headRow = table.tHead.rows[0];
+    while (headRow.cells.length > 1) headRow.deleteCell(1);
+    ROLES.concat(['contrast']).forEach(function(r) {
+      var th = document.createElement('th');
+      th.textContent = r;
+      headRow.appendChild(th);
+    });
+    var tbody = table.tBodies[0];
+    tbody.innerHTML = '';
+    STATES.forEach(function(state) {
+      var tr = tbody.insertRow();
+      tr.className = 'cl-tok-state';
+      tr.insertCell().innerHTML = '<code>' + state + '</code>';
+      ROLES.forEach(function(role) {
+        var name = 'state-' + state + '-' + role;
+        var td = tr.insertCell();
+        var cell = document.createElement('span');
+        cell.className = 'cl-tok-cell';
+        cell.title = '--o-' + name + (decl ? ': ' + (decl[name] || 'missing') : '');
+        cell.appendChild(chip(name));
+        var hex = document.createElement('span');
+        hex.className = 'cl-tok-hex';
+        hex.textContent = (value(name) || 'missing').toUpperCase();
+        cell.appendChild(hex);
+        td.appendChild(cell);
+      });
+      var p = 'state-' + state + '-';
+      var ratios = tr.insertCell();
+      ratios.className = 'cl-tok-ratios';
+      ratios.appendChild(badge(contrast(value(p + 'fg'), value(p + 'bg')), 4.5, 'fg'));
+      ratios.appendChild(badge(contrast(value(p + 'soft-fg'), value(p + 'soft-bg')), 4.5, 'soft'));
+      ratios.appendChild(badge(contrast(value(p + 'text'), '#FFFFFF'), 4.5, 'text'));
+      ratios.appendChild(badge(contrast(value(p + 'border'), '#FFFFFF'), 3, 'border'));
+    });
+  }
+
+  function render() {
+    var decl = declared();
+    renderSemantic(decl);
+    renderStates(decl);
+  }
+
+  render();
+  var link = document.getElementById('o_theme_css');
+  if (link) link.addEventListener('load', render);
+})();
+</script>
+
 <script>
 (function() {
   var HUES = ['red', 'orange', 'yellow', 'lime', 'green', 'teal', 'cyan', 'blue', 'violet', 'magenta', 'pink', 'brown', 'slate', 'gray'];

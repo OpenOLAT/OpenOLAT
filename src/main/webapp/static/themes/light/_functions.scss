@@ -9,6 +9,43 @@
 @use "sass:color";
 @use "sass:math";
 @use "sass:map";
+@use "sass:list";
+
+/* Contrast check of the theme colours (palette, theme colours, $o-tokens).
+ * "error": a colour pair below its contrast ratio stops the compile.
+ * "warn":  the compile reports each such pair and accepts it.
+ * The light and openolat themes keep "error". A
+ * client theme whose client insists on colours with too little contrast
+ * sets $o-contrast-check: "warn"; in its config, see themes.README.
+ */
+$o-contrast-check: "error" !default;
+@if not list.index(("error", "warn"), $o-contrast-check) {
+	@error "$o-contrast-check: use \"error\" or \"warn\", got '#{$o-contrast-check}'";
+}
+
+/* The contrast ratio of two colours, rounded to 2 decimals for messages
+ *
+ * @param {Color} $fg - The foreground color
+ * @param {Color} $bg - The background color
+ * @return {Number}
+ */
+@function o-contrast-rounded($fg, $bg) {
+	@return math.div(math.round(contrast($fg, $bg) * 100), 100);
+}
+
+/* Reports a colour pair below its contrast ratio: stops the compile, or
+ * with $o-contrast-check "warn" prints a warning and continues.
+ *
+ * @param {String} $message - The colour pair and its ratio
+ * @return {Null}
+ */
+@function o-contrast-failed($message) {
+	@if $o-contrast-check == "warn" {
+		@warn "Contrast accepted ($o-contrast-check: \"warn\"): #{$message}";
+		@return null;
+	}
+	@error "#{$message}. To accept it in a client theme, set $o-contrast-check: \"warn\"; in the theme config (themes.README)";
+}
  
  
 /* Helper method to calculate the relative luminance required to
@@ -106,7 +143,8 @@
 /* Helper method to select the foreground color for a background color.
  * Unlike o-a11y-color() it does not modify a color. It returns the first
  * candidate that reaches the contrast ratio on the background and stops
- * the build when no candidate does. Used for the palette swatches, see
+ * the build when no candidate does (with $o-contrast-check "warn" it
+ * returns the candidate with the best contrast). Used for the palette swatches, see
  * _palette.scss.
  *
  * @param {Color} $bg - The background color
@@ -115,10 +153,15 @@
  * @return {Color}
  */
 @function o-on-color($bg, $candidates, $ratio: 4.5) {
+	$best: null;
 	@each $c in $candidates {
 		@if contrast($c, $bg) >= $ratio {
 			@return $c;
 		}
+		@if $best == null or contrast($c, $bg) > contrast($best, $bg) {
+			$best: $c;
+		}
 	}
-	@error "o-on-color: no candidate of (#{$candidates}) reaches #{$ratio}:1 on #{$bg}";
+	$failed: o-contrast-failed("o-on-color: no candidate of (#{$candidates}) reaches #{$ratio}:1 on #{$bg}, best #{$best} with #{o-contrast-rounded($best, $bg)}:1");
+	@return $best;
 }

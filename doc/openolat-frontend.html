@@ -1862,7 +1862,7 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <!-- ==================== SECTION 26: COLORS ==================== -->
 <h2 id="css-colors">26. Color System</h2>
 
-<p><span class="version-badge changed">Changed in 21.2.0</span> The status colours come from 8 semantic states on the palette (OO-10042). The <code>$o-labeled-*</code> variables and the <code>%o_labeled_&lt;colour&gt;</code> placeholders are removed. The modules move to three token layers (OO-9994, OO-10043).</p>
+<p><span class="version-badge changed">Changed in 21.2.0</span> The status colours come from 8 semantic states on the palette (OO-10042). The <code>$o-labeled-*</code> variables and the <code>%o_labeled_&lt;colour&gt;</code> placeholders are removed. The theme emits the semantic and state tokens as CSS custom properties (OO-9994, 26.5). The modules move to the three token layers (OO-10043).</p>
 
 <h3 id="token-layers">26.1 Token Layers</h3>
 
@@ -1877,8 +1877,8 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
   <text x="115" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">Palette</text>
   <text x="115" y="78" text-anchor="middle" font-size="9" fill="#475569">14 hues x 10 steps, theme colours</text>
   <rect x="45" y="88" width="20" height="14" fill="#E4B132"/><rect x="65" y="88" width="20" height="14" fill="#0470D8"/><rect x="85" y="88" width="20" height="14" fill="#1F8320"/><rect x="105" y="88" width="20" height="14" fill="#D2343C"/><rect x="125" y="88" width="20" height="14" fill="#637286"/><rect x="145" y="88" width="20" height="14" fill="#BA37B4"/>
-  <text x="115" y="122" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-yellow-400</text>
-  <text x="115" y="136" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-theme1</text>
+  <text x="115" y="122" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-yellow-400, --o-theme1</text>
+  <text x="115" y="136" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-white, --o-base-text</text>
   <text x="115" y="152" text-anchor="middle" font-size="8" fill="#64748b">_palette.scss, _palette_vars.scss</text>
 
   <rect x="255" y="40" width="190" height="120" rx="6" fill="#f0fdfa" stroke="#16797c"/>
@@ -1905,7 +1905,7 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
   <text x="350" y="216" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">Module: color: var(--o-*)</text>
   <line x1="350" y1="162" x2="350" y2="191" stroke="#16797c" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
   <line x1="585" y1="162" x2="480" y2="191" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#tl-arrow)"/>
-  <text x="115" y="190" text-anchor="middle" font-size="8" fill="#64748b">set by $o-palette, $o-theme-colors</text>
+  <text x="115" y="190" text-anchor="middle" font-size="8" fill="#64748b">set by the theme config (Sass)</text>
   <text x="595" y="190" text-anchor="middle" font-size="8" fill="#64748b">set by client theme, dark mode</text>
 </svg>
 <div class="diagram-caption">Figure 5: The three colour token layers: palette, semantic, component</div>
@@ -1914,11 +1914,13 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <table>
 <thead><tr><th>Layer</th><th>Holds</th><th>Example</th><th>Defined in</th><th>Status</th></tr></thead>
 <tbody>
-<tr><td>Palette</td><td>14 hues x 10 steps, the theme colours</td><td><code>--o-yellow-400</code>, <code>--o-theme1</code></td><td><code>_palette.scss</code>, <code>modules/_palette_vars.scss</code></td><td>done (OO-9991, OO-9993)</td></tr>
-<tr><td>Semantic</td><td>the meaning: text, surface, border, brand, link, focus, the 8 states with their roles</td><td><code>--o-text-muted</code>, <code>--o-primary</code>, <code>--o-state-success-text</code></td><td><code>_tokens.scss</code></td><td>states as Sass functions done (OO-10042); custom properties planned (OO-9994)</td></tr>
-<tr><td>Component</td><td>a colour of one component that a client theme or the dark mode sets separately</td><td><code>--o-navbar-bg</code>, <code>--o-rating-star</code></td><td><code>_tokens.scss</code></td><td>planned (OO-10043)</td></tr>
+<tr><td>Palette</td><td>literal colours: 14 hues x 10 steps, the theme colours, white, the base colours of the theme</td><td><code>--o-yellow-400</code>, <code>--o-theme1</code>, <code>--o-white</code>, <code>--o-base-text</code></td><td><code>_palette.scss</code>, <code>modules/_palette_vars.scss</code>, <code>modules/_tokens.scss</code></td><td>done (OO-9991, OO-9993, OO-9994)</td></tr>
+<tr><td>Semantic</td><td>the meaning: text, surface, border, brand, link, focus, the 8 states with their roles</td><td><code>--o-text-muted</code>, <code>--o-primary</code>, <code>--o-state-success-text</code></td><td><code>modules/_tokens.scss</code></td><td>done (OO-9994)</td></tr>
+<tr><td>Component</td><td>a colour of one component that a client theme or the dark mode sets separately</td><td><code>--o-navbar-bg</code>, <code>--o-rating-star</code></td><td><code>modules/_tokens.scss</code></td><td>planned (OO-10043)</td></tr>
 </tbody>
 </table>
+
+<p>Literal colours exist only in the palette layer. A semantic or component token is always a <code>var()</code> reference to another token.</p>
 
 <p>Goal: the modules read every colour with <code>var(--o-*)</code>. A client theme changes a colour with one CSS line, a dark mode redefines the semantic tokens, and the removal of Bootstrap ports modules that already read tokens. Spec and module inventory: OO-10043.</p>
 
@@ -1987,13 +1989,61 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <ol>
 <li>A new status uses a state: <code>o_labeled o_state_&lt;state&gt;</code> in the template, or a status class added to <code>$o-state-wiring</code>. Do not set a colour on a status class in a module.</li>
 <li>Choose the state by the meaning (26.2), not by the colour.</li>
-<li>A status colour outside a label uses <code>o-state-color()</code>. Do not use <code>$brand-success</code>, <code>$brand-danger</code>, <code>$brand-warning</code>, <code>$brand-info</code> or <code>$state-*-text</code> for a status.</li>
+<li>A status colour outside a label reads the state token <code>var(--o-state-&lt;state&gt;-&lt;role&gt;)</code> (26.5). <code>o-state-color()</code> returns the same colour at compile time, for <code>email.scss</code> and for Sass that needs the value. Do not use <code>$brand-success</code>, <code>$brand-danger</code>, <code>$brand-warning</code>, <code>$brand-info</code> or <code>$state-*-text</code> for a status.</li>
 <li>A fixed colour that is not a status (rating stars, pen colours, chart series) comes from the palette (<code>o-palette()</code>), not from a hex value.</li>
 <li>Do not add a Sass colour variable. A new customization point is a CSS custom property (component token, OO-10043).</li>
 <li>Do not use colour maths (<code>darken()</code>, <code>lighten()</code>, <code>mix()</code>, <code>rgba($var)</code>) on a palette or state colour. Use a role (<code>soft-fg</code>, <code>dark-bg</code>) or another palette step.</li>
+<li>Text, surface, border, brand, link and focus colours read the semantic tokens (<code>var(--o-text)</code>, <code>var(--o-border)</code>, ...), not <code>$text-color</code>, <code>$gray-*</code> or a hex value. The unit test <code>ThemeColorRatchetTest</code> fails when a module gets more old colour references than <code>theme_color_baseline.properties</code> allows.</li>
 </ol>
 
 <p>Buttons, alerts and form messages still read the Bootstrap colours <code>$brand-*</code>. OO-10043 moves them to the state tokens.</p>
+
+<h3 id="colour-tokens">26.5 Colour Tokens</h3>
+
+<p><code>modules/_tokens.scss</code> emits the tokens on <code>:root</code> in <code>theme.css</code> and <code>content.css</code>, not in <code>email.css</code> (mail clients do not support custom properties). The component library page <a href="component-library/colors.html#tokens">Colours</a>, section "Colour Tokens", shows every token with its value and contrast for the selected theme.</p>
+
+<p><strong>Base colours</strong> (palette layer) carry the colour inputs of the theme 1:1. A client theme keeps setting the Sass variables in its config.</p>
+
+<table>
+<thead><tr><th>Token</th><th>Source</th><th>Semantic token</th><th>Use</th></tr></thead>
+<tbody>
+<tr><td><code>--o-base-text</code></td><td><code>$text-color</code></td><td><code>--o-text</code></td><td>body text</td></tr>
+<tr><td><code>--o-base-text-muted</code></td><td><code>$text-muted</code></td><td><code>--o-text-muted</code></td><td>secondary text</td></tr>
+<tr><td><code>--o-base-heading</code></td><td><code>$headings-color</code>, else <code>$text-color</code></td><td><code>--o-heading</code></td><td>headings, legend, dialog title</td></tr>
+<tr><td><code>--o-base-bg</code></td><td><code>$body-bg</code></td><td><code>--o-bg</code></td><td>page surface</td></tr>
+<tr><td><code>--o-base-bg-subtle</code></td><td><code>$panel-default-heading-bg</code></td><td><code>--o-bg-subtle</code></td><td>panel heading, striped row</td></tr>
+<tr><td><code>--o-base-border</code></td><td><code>$panel-default-border</code></td><td><code>--o-border</code></td><td>panel, divider</td></tr>
+<tr><td><code>--o-base-border-strong</code></td><td><code>$input-border</code></td><td><code>--o-border-strong</code></td><td>form field</td></tr>
+<tr><td><code>--o-base-primary</code></td><td><code>$brand-primary</code></td><td><code>--o-primary</code></td><td>brand fill, primary button</td></tr>
+<tr><td><code>--o-base-primary-fg</code></td><td>text colour on <code>$brand-primary</code> with 4.5:1</td><td><code>--o-primary-fg</code></td><td>text on primary</td></tr>
+<tr><td><code>--o-base-primary-hover</code></td><td><code>$brand-primary</code> 10 % darker (Bootstrap button hover)</td><td><code>--o-primary-hover</code></td><td>primary button hover</td></tr>
+<tr><td><code>--o-base-primary-text</code></td><td><code>$o-brand-text</code></td><td><code>--o-primary-text</code></td><td>brand colour as text on white</td></tr>
+<tr><td><code>--o-base-link</code></td><td><code>$link-color</code></td><td><code>--o-link</code></td><td>link</td></tr>
+<tr><td><code>--o-base-link-hover</code></td><td><code>$link-hover-color</code></td><td><code>--o-link-hover</code></td><td>link hover</td></tr>
+<tr><td><code>--o-base-focus</code></td><td><code>$input-border-focus</code></td><td><code>--o-focus</code></td><td>focus ring</td></tr>
+</tbody>
+</table>
+
+<p>Each semantic token reads its base colour: <code>--o-text: var(--o-base-text)</code>. A dark mode redefines the semantic tokens.</p>
+
+<p><strong>State tokens:</strong> <code>--o-state-{state}-{role}</code> for the 8 states of <code>$o-states</code> (26.2) and the roles <code>text</code>, <code>bg</code>, <code>fg</code>, <code>border</code>, <code>soft-bg</code>, <code>soft-fg</code>, <code>soft-border</code> (56 tokens). Each one reads the palette step of its hue, e.g. <code>--o-state-success-bg: var(--o-green-400)</code>, <code>--o-state-danger-fg: var(--o-white)</code>.</p>
+
+<pre><code>.my_note        { color: var(--o-text-muted); border: 1px solid var(--o-border); background: var(--o-bg-subtle); }
+.my_marker_done { border-left: 4px solid var(--o-state-success-border); }</code></pre>
+
+<p><strong>Client override:</strong> a client theme sets the map <code>$o-tokens</code> in its config, before the import of the light theme. The key is the token name without <code>--o-</code>, the value a palette step <code>"{hue}-{step}"</code>, <code>"white"</code> or a colour:</p>
+
+<pre><code>$o-tokens: (
+	"text-muted": "slate-600",
+	"state-success-bg": "green-600",
+	"state-success-fg": "white",
+	"link": #1A4F99,
+);</code></pre>
+
+<p>The compile stops for an unknown token, an unknown palette step, a value that is not a colour, and an override that breaks a contrast pair: 4.5:1 for text (<code>text</code>, <code>text-muted</code>, <code>heading</code>, <code>link</code>, <code>link-hover</code>, <code>primary-text</code> on <code>bg</code>; <code>primary-fg</code> on <code>primary</code>; per state <code>fg</code> on <code>bg</code>, <code>soft-fg</code> on <code>soft-bg</code>, <code>text</code> on white and on <code>soft-bg</code>), 3:1 for <code>focus</code> on <code>bg</code> and the state <code>border</code> on white. A pair that already fails with the default colours fails only when its foreground is overridden. The default <code>--o-focus</code> (<code>#66AFE9</code>, Bootstrap) has 2.37:1 on white.</p>
+<p>The contrast check covers the palette, the theme colours and <code>$o-tokens</code>. <code>$o-contrast-check</code> in <code>_functions.scss</code> sets its mode: <code>"error"</code> (default) stops the compile at a pair below its ratio, <code>"warn"</code> reports each such pair as a Sass warning and accepts it. A client theme whose client insists on colours with too little contrast sets <code>$o-contrast-check: "warn";</code> in its config; the theme then does not meet WCAG 2.1 AA. The <code>light</code> and <code>openolat</code> themes always use <code>"error"</code>.</p>
+
+<p>Until OO-10043 migrates the modules, an override changes only the custom property, not the rendered modules. The unit test <code>ColorTokensTest</code> checks the tokens in the compiled <code>light/theme.css</code>.</p>
 
 <!-- ==================== SECTION 27: SCSS MODULES ==================== -->
 <h2 id="scss-modules">27. SCSS Module Index</h2>
@@ -2011,6 +2061,7 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <tr><td><code>_swatches.scss</code></td><td>Swatch classes <code>o_swatch_{hue}</code> with the tokens <code>--o-sw-*</code></td></tr>
 <tr><td><code>_palette_vars.scss</code></td><td>Palette values as <code>--o-{hue}-{step}</code> on <code>:root</code></td></tr>
 <tr><td><code>_states.scss</code></td><td>Semantic states: <code>o_state_*</code> classes and the wiring of the status classes (imported last)</td></tr>
+<tr><td><code>_tokens.scss</code></td><td>Base, semantic and state tokens on <code>:root</code>, client overrides <code>$o-tokens</code> (not in <code>email.css</code>)</td></tr>
 <tr><td><code>_type.scss</code></td><td>Typography and heading styles</td></tr>
 </tbody>
 </table>
@@ -2455,7 +2506,8 @@ if (itemDeleted) {
 <tr><td>OO-9991</td><td>Palette of 14 hues x 10 steps, swatch tokens <code>--o-sw-*</code>, <code>--o-{hue}-{step}</code> on <code>:root</code></td><td><a href="#palette">Colour Palette</a></td></tr>
 <tr><td>OO-9992, OO-9993</td><td>Colour choosers on the palette, theme colours <code>--o-theme{n}</code></td><td><a href="#palette">Colour Palette</a></td></tr>
 <tr><td>OO-10042</td><td>8 semantic states in 5 styles, <code>o_state_*</code> classes, <code>$o-state-wiring</code> for 395 status classes, <code>o-state-color()</code>, <code>o-swatch-color()</code>; <code>$o-labeled-*</code> removed</td><td><a href="#css-colors">Color System</a></td></tr>
-<tr><td>OO-9994, OO-10043</td><td>Token layers palette, semantic, component; rules for new code (planned)</td><td><a href="#token-layers">Token Layers</a></td></tr>
+<tr><td>OO-9994</td><td>Base, semantic and state tokens <code>--o-base-*</code>, <code>--o-text</code>, <code>--o-state-{state}-{role}</code> on <code>:root</code>, client overrides with <code>$o-tokens</code>, unit tests <code>ColorTokensTest</code> and <code>ThemeColorRatchetTest</code></td><td><a href="#colour-tokens">Colour Tokens</a></td></tr>
+<tr><td>OO-10043</td><td>Modules read the token layers, component tokens (planned)</td><td><a href="#token-layers">Token Layers</a></td></tr>
 </tbody>
 </table>
 

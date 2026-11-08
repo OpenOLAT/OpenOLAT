@@ -126,6 +126,8 @@
 /* palette primitives --o-{hue}-{step} and swatch role tokens --o-sw-* */
 @import "modules/palette_vars";
 @import "modules/swatches";
+/* base, semantic and state tokens --o-base-*, --o-text, --o-state-* (OO-9994) */
+@import "modules/tokens";
 
 /* semantic states of badges and status labels, after all modules (OO-10042) */
 @import "modules/states";
